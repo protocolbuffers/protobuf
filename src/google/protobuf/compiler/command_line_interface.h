@@ -38,6 +38,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_COMMAND_LINE_INTERFACE_H__
 #define GOOGLE_PROTOBUF_COMPILER_COMMAND_LINE_INTERFACE_H__
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <set>
@@ -104,7 +105,7 @@ class DiskSourceTree;    // importer.h
 //   2. protoc --proto_path=src foo.proto (virtual path relative to src)
 //
 // If a file path can be interpreted both as a physical file path and as a
-// relative virtual path, the physical file path takes precendence.
+// relative virtual path, the physical file path takes precedence.
 //
 // For a full description of the command-line syntax, invoke it with --help.
 class PROTOC_EXPORT CommandLineInterface {
@@ -226,15 +227,10 @@ class PROTOC_EXPORT CommandLineInterface {
   bool MakeInputsBeProtoPathRelative(DiskSourceTree* source_tree,
                                      DescriptorDatabase* fallback_database);
 
-  // Is this .proto file whitelisted, or do we have a command-line flag allowing
-  // us to use proto3 optional? This is a temporary control to avoid people from
-  // using proto3 optional until code generators have implemented it.
-  bool AllowProto3Optional(const FileDescriptor& file) const;
-
   // Fails if these files use proto3 optional and the code generator doesn't
   // support it. This is a permanent check.
   bool EnforceProto3OptionalSupport(
-      const std::string& codegen_name, uint64 supported_features,
+      const std::string& codegen_name, uint64_t supported_features,
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
 
@@ -397,6 +393,9 @@ class PROTOC_EXPORT CommandLineInterface {
 
   ErrorFormat error_format_ = ERROR_FORMAT_GCC;
 
+  // True if we should treat warnings as errors that fail the compilation.
+  bool fatal_warnings_ = false;
+
   std::vector<std::pair<std::string, std::string> >
       proto_path_;                        // Search path for proto files.
   std::vector<std::string> input_files_;  // Names of the input proto files.
@@ -448,8 +447,8 @@ class PROTOC_EXPORT CommandLineInterface {
   // Was the --disallow_services flag used?
   bool disallow_services_ = false;
 
-  // Was the --experimental_allow_proto3_optional flag used?
-  bool allow_proto3_optional_ = false;
+  // When using --encode, this will be passed to SetSerializationDeterministic.
+  bool deterministic_output_ = false;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CommandLineInterface);
 };

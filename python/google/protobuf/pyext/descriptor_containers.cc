@@ -81,9 +81,9 @@ struct PyContainer;
 typedef int (*CountMethod)(PyContainer* self);
 typedef const void* (*GetByIndexMethod)(PyContainer* self, int index);
 typedef const void* (*GetByNameMethod)(PyContainer* self,
-                                       const std::string& name);
+                                       ConstStringParam name);
 typedef const void* (*GetByCamelcaseNameMethod)(PyContainer* self,
-                                                const std::string& name);
+                                                ConstStringParam name);
 typedef const void* (*GetByNumberMethod)(PyContainer* self, int index);
 typedef PyObject* (*NewObjectFromItemMethod)(const void* descriptor);
 typedef const std::string& (*GetItemNameMethod)(const void* descriptor);
@@ -183,7 +183,7 @@ static bool _GetItemByKey(PyContainer* self, PyObject* key, const void** item) {
           return false;
         }
         *item = self->container_def->get_by_name_fn(
-            self, std::string(name, name_size));
+            self, StringParam(name, name_size));
         return true;
       }
     case PyContainer::KIND_BYCAMELCASENAME:
@@ -200,7 +200,7 @@ static bool _GetItemByKey(PyContainer* self, PyObject* key, const void** item) {
           return false;
         }
         *item = self->container_def->get_by_camelcase_name_fn(
-            self, std::string(camelcase_name, name_size));
+            self, StringParam(camelcase_name, name_size));
         return true;
       }
     case PyContainer::KIND_BYNUMBER:
@@ -962,12 +962,12 @@ static int Count(PyContainer* self) {
   return GetDescriptor(self)->field_count();
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindFieldByName(name);
 }
 
 static const void* GetByCamelcaseName(PyContainer* self,
-                                      const std::string& name) {
+                                      ConstStringParam name) {
   return GetDescriptor(self)->FindFieldByCamelcaseName(name);
 }
 
@@ -1040,7 +1040,7 @@ static int Count(PyContainer* self) {
   return GetDescriptor(self)->nested_type_count();
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindNestedTypeByName(name);
 }
 
@@ -1092,7 +1092,7 @@ static int Count(PyContainer* self) {
   return GetDescriptor(self)->enum_type_count();
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindEnumTypeByName(name);
 }
 
@@ -1155,7 +1155,7 @@ static int Count(PyContainer* self) {
   return count;
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindEnumValueByName(name);
 }
 
@@ -1215,7 +1215,7 @@ static int Count(PyContainer* self) {
   return GetDescriptor(self)->extension_count();
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindExtensionByName(name);
 }
 
@@ -1267,7 +1267,7 @@ static int Count(PyContainer* self) {
   return GetDescriptor(self)->oneof_decl_count();
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindOneofByName(name);
 }
 
@@ -1333,7 +1333,7 @@ static const void* GetByIndex(PyContainer* self, int index) {
   return GetDescriptor(self)->value(index);
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindValueByName(name);
 }
 
@@ -1454,7 +1454,7 @@ static int Count(PyContainer* self) {
   return GetDescriptor(self)->method_count();
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindMethodByName(name);
 }
 
@@ -1516,7 +1516,7 @@ static int Count(PyContainer* self) {
   return GetDescriptor(self)->message_type_count();
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindMessageTypeByName(name);
 }
 
@@ -1564,7 +1564,7 @@ static int Count(PyContainer* self) {
   return GetDescriptor(self)->enum_type_count();
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindEnumTypeByName(name);
 }
 
@@ -1612,7 +1612,7 @@ static int Count(PyContainer* self) {
   return GetDescriptor(self)->extension_count();
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindExtensionByName(name);
 }
 
@@ -1660,7 +1660,7 @@ static int Count(PyContainer* self) {
   return GetDescriptor(self)->service_count();
 }
 
-static const void* GetByName(PyContainer* self, const std::string& name) {
+static const void* GetByName(PyContainer* self, ConstStringParam name) {
   return GetDescriptor(self)->FindServiceByName(name);
 }
 

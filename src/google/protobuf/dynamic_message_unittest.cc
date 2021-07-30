@@ -74,7 +74,7 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
 
   DynamicMessageTest() : factory_(&pool_) {}
 
-  virtual void SetUp() {
+  virtual void SetUp() override {
     // We want to make sure that DynamicMessage works (particularly with
     // extensions) even if we use descriptors that are *not* from compiled-in
     // types, so we make copies of the descriptors for unittest.proto and
@@ -252,7 +252,7 @@ TEST_P(DynamicMessageTest, Oneof) {
 }
 
 TEST_P(DynamicMessageTest, SpaceUsed) {
-  // Test that SpaceUsed() works properly
+  // Test that SpaceUsedLong() works properly
 
   // Since we share the implementation with generated messages, we don't need
   // to test very much here.  Just make sure it appears to be working.
@@ -261,10 +261,10 @@ TEST_P(DynamicMessageTest, SpaceUsed) {
   Message* message = prototype_->New(GetParam() ? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
-  int initial_space_used = message->SpaceUsed();
+  size_t initial_space_used = message->SpaceUsedLong();
 
   reflection_tester.SetAllFieldsViaReflection(message);
-  EXPECT_LT(initial_space_used, message->SpaceUsed());
+  EXPECT_LT(initial_space_used, message->SpaceUsedLong());
 
   if (!GetParam()) {
     delete message;
@@ -285,6 +285,7 @@ TEST_F(DynamicMessageTest, Arena) {
   (void)oneof_message;
   // Return without freeing: should not leak.
 }
+
 
 TEST_F(DynamicMessageTest, Proto3) {
   Message* message = proto3_prototype_->New();

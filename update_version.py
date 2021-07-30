@@ -13,25 +13,25 @@ import sys
 from xml.dom import minidom
 
 if len(sys.argv) < 2 or len(sys.argv) > 3:
-  print """
+  print("""
 [ERROR] Please specify a version.
 
 ./update_version.py <MAJOR>.<MINOR>.<MICRO> [<RC version>]
 
 Example:
 ./update_version.py 3.7.1 2
-"""
+""")
   exit(1)
 
 NEW_VERSION = sys.argv[1]
 NEW_VERSION_INFO = [int(x) for x in NEW_VERSION.split('.')]
 if len(NEW_VERSION_INFO) != 3:
-  print """
+  print("""
 [ERROR] Version must be in the format <MAJOR>.<MINOR>.<MICRO>
 
 Example:
 ./update_version.py 3.7.3
-"""
+""")
   exit(1)
 
 RC_VERSION = -1
@@ -71,9 +71,9 @@ def RewriteXml(filename, rewriter, add_xml_prefix=True):
   content = document.toxml().replace('<?xml version="1.0" ?>', '')
   file_handle = open(filename, 'wb')
   if add_xml_prefix:
-    file_handle.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-  file_handle.write(content)
-  file_handle.write('\n')
+    file_handle.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
+  file_handle.write(content.encode('utf-8'))
+  file_handle.write(b'\n')
   file_handle.close()
 
 
@@ -83,7 +83,7 @@ def RewriteTextFile(filename, line_rewriter):
   for line in lines:
     updated_lines.append(line_rewriter(line))
   if lines == updated_lines:
-    print '%s was not updated. Please double check.' % filename
+    print('%s was not updated. Please double check.' % filename)
   f = open(filename, 'w')
   f.write(''.join(updated_lines))
   f.close()
@@ -101,6 +101,9 @@ def UpdateConfigure():
 def UpdateCpp():
   cpp_version = '%d%03d%03d' % (
     NEW_VERSION_INFO[0], NEW_VERSION_INFO[1], NEW_VERSION_INFO[2])
+  version_suffix = ''
+  if RC_VERSION != -1:
+    version_suffix = '-rc%s' % RC_VERSION
   def RewriteCommon(line):
     line = re.sub(
       r'^#define GOOGLE_PROTOBUF_VERSION .*$',
@@ -110,6 +113,14 @@ def UpdateCpp():
       r'^#define PROTOBUF_VERSION .*$',
       '#define PROTOBUF_VERSION %s' % cpp_version,
       line)
+    line = re.sub(
+        r'^#define GOOGLE_PROTOBUF_VERSION_SUFFIX .*$',
+        '#define GOOGLE_PROTOBUF_VERSION_SUFFIX "%s"' % version_suffix,
+        line)
+    line = re.sub(
+        r'^#define PROTOBUF_VERSION_SUFFIX .*$',
+        '#define PROTOBUF_VERSION_SUFFIX "%s"' % version_suffix,
+        line)
     if NEW_VERSION_INFO[2] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
@@ -128,12 +139,16 @@ def UpdateCpp():
         'static const int kMinHeaderVersionForProtoc = %s;' % cpp_version,
         line)
     return line
-  
+
   def RewritePortDef(line):
     line = re.sub(
       r'^#define PROTOBUF_VERSION .*$',
       '#define PROTOBUF_VERSION %s' % cpp_version,
       line)
+    line = re.sub(
+        r'^#define PROTOBUF_VERSION_SUFFIX .*$',
+        '#define PROTOBUF_VERSION_SUFFIX "%s"' % version_suffix,
+        line)
     if NEW_VERSION_INFO[2] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
@@ -213,6 +228,16 @@ def UpdateJava():
       Find(Find(document.documentElement, 'parent'), 'version'),
       GetFullVersion()))
 
+  RewriteXml('java/kotlin/pom.xml',
+    lambda document : ReplaceText(
+      Find(Find(document.documentElement, 'parent'), 'version'),
+      GetFullVersion()))
+
+  RewriteXml('java/kotlin-lite/pom.xml',
+    lambda document : ReplaceText(
+      Find(Find(document.documentElement, 'parent'), 'version'),
+      GetFullVersion()))
+
   RewriteXml('protoc-artifacts/pom.xml',
     lambda document : ReplaceText(
       Find(document.documentElement, 'version'), GetFullVersion()))
@@ -230,11 +255,11 @@ def UpdateMakefile():
   protobuf_version_offset = 11
   expected_major_version = 3
   if NEW_VERSION_INFO[0] != expected_major_version:
-    print """[ERROR] Major protobuf version has changed. Please update
+    print("""[ERROR] Major protobuf version has changed. Please update
 update_version.py to readjust the protobuf_version_offset and
 expected_major_version such that the PROTOBUF_VERSION in src/Makefile.am is
 always increasing.
-    """
+    """)
     exit(1)
 
   protobuf_version_info = '%d:%d:0' % (
@@ -302,7 +327,7 @@ def UpdatePhp():
           FindAndClone(root, 'date'),
           FindAndClone(root, 'time'),
           FindAndClone(root, 'license'),
-          FindAndClone(root, 'notes')
+          CreateNode('notes', 3, []),
         ])
       changelog.appendChild(release)
       changelog.appendChild(document.createTextNode('\n '))
@@ -339,6 +364,13 @@ def UpdateRuby():
       '  s.version     = "%s"' % GetFullVersion(rc_suffix = '.rc.'),
       line))
 
+def UpdateBazel():
+  RewriteTextFile('protobuf_version.bzl',
+    lambda line : re.sub(
+     r"^PROTOBUF_VERSION = '.*'$",
+     "PROTOBUF_VERSION = '%s'" % GetFullVersion(),
+     line))
+
 
 UpdateConfigure()
 UpdateCsharp()
@@ -350,3 +382,4 @@ UpdateObjectiveC()
 UpdatePhp()
 UpdatePython()
 UpdateRuby()
+UpdateBazel()

@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTO_WRITER_H__
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTO_WRITER_H__
 
+#include <cstdint>
 #include <deque>
 #include <string>
 #include <vector>
@@ -46,6 +47,7 @@
 #include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/stubs/status.h>
 
@@ -81,16 +83,16 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   ProtoWriter* RenderBool(StringPiece name, bool value) override {
     return RenderDataPiece(name, DataPiece(value));
   }
-  ProtoWriter* RenderInt32(StringPiece name, int32 value) override {
+  ProtoWriter* RenderInt32(StringPiece name, int32_t value) override {
     return RenderDataPiece(name, DataPiece(value));
   }
-  ProtoWriter* RenderUint32(StringPiece name, uint32 value) override {
+  ProtoWriter* RenderUint32(StringPiece name, uint32_t value) override {
     return RenderDataPiece(name, DataPiece(value));
   }
-  ProtoWriter* RenderInt64(StringPiece name, int64 value) override {
+  ProtoWriter* RenderInt64(StringPiece name, int64_t value) override {
     return RenderDataPiece(name, DataPiece(value));
   }
-  ProtoWriter* RenderUint64(StringPiece name, uint64 value) override {
+  ProtoWriter* RenderUint64(StringPiece name, uint64_t value) override {
     return RenderDataPiece(name, DataPiece(value));
   }
   ProtoWriter* RenderDouble(StringPiece name, double value) override {
@@ -159,6 +161,11 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     case_insensitive_enum_parsing_ = case_insensitive_enum_parsing;
   }
 
+  void set_use_json_name_in_missing_fields(
+      bool use_json_name_in_missing_fields) {
+    use_json_name_in_missing_fields_ = use_json_name_in_missing_fields;
+  }
+
  protected:
   class PROTOBUF_EXPORT ProtoElement : public BaseElement,
                                        public LocationTrackerInterface {
@@ -198,11 +205,11 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     }
 
     // Returns true if the index is already taken by a preceding oneof input.
-    bool IsOneofIndexTaken(int32 index);
+    bool IsOneofIndexTaken(int32_t index);
 
     // Marks the oneof 'index' as taken. Future inputs to this oneof will
     // generate an error.
-    void TakeOneofIndex(int32 index);
+    void TakeOneofIndex(int32_t index);
 
     bool proto3() { return proto3_; }
 
@@ -309,11 +316,11 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
  private:
   // Writes an ENUM field, including tag, to the stream.
   static util::Status WriteEnum(int field_number, const DataPiece& data,
-                                  const google::protobuf::Enum* enum_type,
-                                  io::CodedOutputStream* stream,
-                                  bool use_lower_camel_for_enums,
-                                  bool case_insensitive_enum_parsing,
-                                  bool ignore_unknown_values);
+                                const google::protobuf::Enum* enum_type,
+                                io::CodedOutputStream* stream,
+                                bool use_lower_camel_for_enums,
+                                bool case_insensitive_enum_parsing,
+                                bool ignore_unknown_values);
 
   // Variables for describing the structure of the input tree:
   // master_type_: descriptor for the whole protobuf message.
@@ -338,6 +345,9 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
   // If true, check if enum name in UPPER_CASE matches the field name.
   bool case_insensitive_enum_parsing_;
+
+  // If true, use the json name in missing fields errors.
+  bool use_json_name_in_missing_fields_;
 
   // Variable for internal state processing:
   // element_    : the current element.

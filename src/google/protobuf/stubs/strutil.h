@@ -113,18 +113,13 @@ inline int hex_digit_to_int(char c) {
 //    prefix string if the prefix matches, otherwise the original
 //    string.
 // ----------------------------------------------------------------------
-inline bool HasPrefixString(const string& str,
-                            const string& prefix) {
-  return str.size() >= prefix.size() &&
-         str.compare(0, prefix.size(), prefix) == 0;
-}
-
 inline bool HasPrefixString(StringPiece str, StringPiece prefix) {
   return str.size() >= prefix.size() &&
          memcmp(str.data(), prefix.data(), prefix.size()) == 0;
 }
 
-inline string StripPrefixString(const string& str, const string& prefix) {
+inline std::string StripPrefixString(const std::string& str,
+                                     const std::string& prefix) {
   if (HasPrefixString(str, prefix)) {
     return str.substr(prefix.size());
   } else {
@@ -140,13 +135,14 @@ inline string StripPrefixString(const string& str, const string& prefix) {
 //    suffix string if the suffix matches, otherwise the original
 //    string.
 // ----------------------------------------------------------------------
-inline bool HasSuffixString(const string& str,
-                            const string& suffix) {
+inline bool HasSuffixString(StringPiece str, StringPiece suffix) {
   return str.size() >= suffix.size() &&
-         str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+         memcmp(str.data() + str.size() - suffix.size(), suffix.data(),
+                suffix.size()) == 0;
 }
 
-inline string StripSuffixString(const string& str, const string& suffix) {
+inline std::string StripSuffixString(const std::string& str,
+                                     const std::string& suffix) {
   if (HasSuffixString(str, suffix)) {
     return str.substr(0, str.size() - suffix.size());
   } else {
@@ -163,10 +159,10 @@ inline string StripSuffixString(const string& str, const string& suffix) {
 // StripWhitespace
 //    Removes whitespaces from both ends of the given string.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT void ReplaceCharacters(string* s, const char* remove,
+PROTOBUF_EXPORT void ReplaceCharacters(std::string* s, const char* remove,
                                        char replacewith);
 
-PROTOBUF_EXPORT void StripWhitespace(string* s);
+PROTOBUF_EXPORT void StripWhitespace(std::string* s);
 
 // ----------------------------------------------------------------------
 // LowerString()
@@ -178,24 +174,26 @@ PROTOBUF_EXPORT void StripWhitespace(string* s);
 //    strings.
 // ----------------------------------------------------------------------
 
-inline void LowerString(string * s) {
-  string::iterator end = s->end();
-  for (string::iterator i = s->begin(); i != end; ++i) {
+inline void LowerString(std::string* s) {
+  std::string::iterator end = s->end();
+  for (std::string::iterator i = s->begin(); i != end; ++i) {
     // tolower() changes based on locale.  We don't want this!
     if ('A' <= *i && *i <= 'Z') *i += 'a' - 'A';
   }
 }
 
-inline void UpperString(string * s) {
-  string::iterator end = s->end();
-  for (string::iterator i = s->begin(); i != end; ++i) {
+inline void UpperString(std::string* s) {
+  std::string::iterator end = s->end();
+  for (std::string::iterator i = s->begin(); i != end; ++i) {
     // toupper() changes based on locale.  We don't want this!
     if ('a' <= *i && *i <= 'z') *i += 'A' - 'a';
   }
 }
 
-inline string ToUpper(const string& s) {
-  string out = s;
+inline void ToUpper(std::string* s) { UpperString(s); }
+
+inline std::string ToUpper(const std::string& s) {
+  std::string out = s;
   UpperString(&out);
   return out;
 }
@@ -208,8 +206,10 @@ inline string ToUpper(const string& s) {
 //    happened or not.
 // ----------------------------------------------------------------------
 
-PROTOBUF_EXPORT string StringReplace(const string& s, const string& oldsub,
-                                     const string& newsub, bool replace_all);
+PROTOBUF_EXPORT std::string StringReplace(const std::string& s,
+                                          const std::string& oldsub,
+                                          const std::string& newsub,
+                                          bool replace_all);
 
 // ----------------------------------------------------------------------
 // SplitStringUsing()
@@ -217,8 +217,8 @@ PROTOBUF_EXPORT string StringReplace(const string& s, const string& oldsub,
 //    to 'result'.  If there are consecutive delimiters, this function skips
 //    over all of them.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT void SplitStringUsing(const string& full, const char* delim,
-                                      std::vector<string>* res);
+PROTOBUF_EXPORT void SplitStringUsing(StringPiece full, const char* delim,
+                                      std::vector<std::string>* res);
 
 // Split a string using one or more byte delimiters, presented
 // as a nul-terminated c string. Append the components to 'result'.
@@ -228,17 +228,16 @@ PROTOBUF_EXPORT void SplitStringUsing(const string& full, const char* delim,
 //
 // If "full" is the empty string, yields an empty string as the only value.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT void SplitStringAllowEmpty(const string& full,
-                                           const char* delim,
-                                           std::vector<string>* result);
+PROTOBUF_EXPORT void SplitStringAllowEmpty(StringPiece full, const char* delim,
+                                           std::vector<std::string>* result);
 
 // ----------------------------------------------------------------------
 // Split()
 //    Split a string using a character delimiter.
 // ----------------------------------------------------------------------
-inline std::vector<string> Split(
-    const string& full, const char* delim, bool skip_empty = true) {
-  std::vector<string> result;
+inline std::vector<std::string> Split(StringPiece full, const char* delim,
+                                      bool skip_empty = true) {
+  std::vector<std::string> result;
   if (skip_empty) {
     SplitStringUsing(full, delim, &result);
   } else {
@@ -255,12 +254,12 @@ inline std::vector<string> Split(
 //    another takes a pointer to the target string. In the latter case the
 //    target string is cleared and overwritten.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT void JoinStrings(const std::vector<string>& components,
-                                 const char* delim, string* result);
+PROTOBUF_EXPORT void JoinStrings(const std::vector<std::string>& components,
+                                 const char* delim, std::string* result);
 
-inline string JoinStrings(const std::vector<string>& components,
-                          const char* delim) {
-  string result;
+inline std::string JoinStrings(const std::vector<std::string>& components,
+                               const char* delim) {
+  std::string result;
   JoinStrings(components, delim, &result);
   return result;
 }
@@ -298,7 +297,7 @@ inline string JoinStrings(const std::vector<string>& components,
 
 PROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest);
 PROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest,
-                                             std::vector<string>* errors);
+                                             std::vector<std::string>* errors);
 
 // ----------------------------------------------------------------------
 // UnescapeCEscapeString()
@@ -315,10 +314,12 @@ PROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest,
 //    the third call, the new string is returned.
 // ----------------------------------------------------------------------
 
-PROTOBUF_EXPORT int UnescapeCEscapeString(const string& src, string* dest);
-PROTOBUF_EXPORT int UnescapeCEscapeString(const string& src, string* dest,
-                                          std::vector<string>* errors);
-PROTOBUF_EXPORT string UnescapeCEscapeString(const string& src);
+PROTOBUF_EXPORT int UnescapeCEscapeString(const std::string& src,
+                                          std::string* dest);
+PROTOBUF_EXPORT int UnescapeCEscapeString(const std::string& src,
+                                          std::string* dest,
+                                          std::vector<std::string>* errors);
+PROTOBUF_EXPORT std::string UnescapeCEscapeString(const std::string& src);
 
 // ----------------------------------------------------------------------
 // CEscape()
@@ -327,21 +328,21 @@ PROTOBUF_EXPORT string UnescapeCEscapeString(const string& src);
 //
 //    Escaped chars: \n, \r, \t, ", ', \, and !isprint().
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT string CEscape(const string& src);
+PROTOBUF_EXPORT std::string CEscape(const std::string& src);
 
 // ----------------------------------------------------------------------
 // CEscapeAndAppend()
 //    Escapes 'src' using C-style escape sequences, and appends the escaped
 //    string to 'dest'.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT void CEscapeAndAppend(StringPiece src, string* dest);
+PROTOBUF_EXPORT void CEscapeAndAppend(StringPiece src, std::string* dest);
 
 namespace strings {
 // Like CEscape() but does not escape bytes with the upper bit set.
-PROTOBUF_EXPORT string Utf8SafeCEscape(const string& src);
+PROTOBUF_EXPORT std::string Utf8SafeCEscape(const std::string& src);
 
 // Like CEscape() but uses hex (\x) escapes instead of octals.
-PROTOBUF_EXPORT string CHexEscape(const string& src);
+PROTOBUF_EXPORT std::string CHexEscape(const std::string& src);
 }  // namespace strings
 
 // ----------------------------------------------------------------------
@@ -376,14 +377,14 @@ inline uint32 strtou32(const char *nptr, char **endptr, int base) {
 // For now, long long is 64-bit on all the platforms we care about, so these
 // functions can simply pass the call to strto[u]ll.
 inline int64 strto64(const char *nptr, char **endptr, int base) {
-  GOOGLE_COMPILE_ASSERT(sizeof(int64) == sizeof(long long),
-                        sizeof_int64_is_not_sizeof_long_long);
+  static_assert(sizeof(int64) == sizeof(long long),
+                "sizeof_int64_is_not_sizeof_long_long");
   return strtoll(nptr, endptr, base);
 }
 
 inline uint64 strtou64(const char *nptr, char **endptr, int base) {
-  GOOGLE_COMPILE_ASSERT(sizeof(uint64) == sizeof(unsigned long long),
-                        sizeof_uint64_is_not_sizeof_long_long);
+  static_assert(sizeof(uint64) == sizeof(unsigned long long),
+                "sizeof_uint64_is_not_sizeof_long_long");
   return strtoull(nptr, endptr, base);
 }
 
@@ -398,31 +399,31 @@ inline uint64 strtou64(const char *nptr, char **endptr, int base) {
 // ----------------------------------------------------------------------
 PROTOBUF_EXPORT bool safe_strtob(StringPiece str, bool* value);
 
-PROTOBUF_EXPORT bool safe_strto32(const string& str, int32* value);
-PROTOBUF_EXPORT bool safe_strtou32(const string& str, uint32* value);
+PROTOBUF_EXPORT bool safe_strto32(const std::string& str, int32* value);
+PROTOBUF_EXPORT bool safe_strtou32(const std::string& str, uint32* value);
 inline bool safe_strto32(const char* str, int32* value) {
-  return safe_strto32(string(str), value);
+  return safe_strto32(std::string(str), value);
 }
 inline bool safe_strto32(StringPiece str, int32* value) {
   return safe_strto32(str.ToString(), value);
 }
 inline bool safe_strtou32(const char* str, uint32* value) {
-  return safe_strtou32(string(str), value);
+  return safe_strtou32(std::string(str), value);
 }
 inline bool safe_strtou32(StringPiece str, uint32* value) {
   return safe_strtou32(str.ToString(), value);
 }
 
-PROTOBUF_EXPORT bool safe_strto64(const string& str, int64* value);
-PROTOBUF_EXPORT bool safe_strtou64(const string& str, uint64* value);
+PROTOBUF_EXPORT bool safe_strto64(const std::string& str, int64* value);
+PROTOBUF_EXPORT bool safe_strtou64(const std::string& str, uint64* value);
 inline bool safe_strto64(const char* str, int64* value) {
-  return safe_strto64(string(str), value);
+  return safe_strto64(std::string(str), value);
 }
 inline bool safe_strto64(StringPiece str, int64* value) {
   return safe_strto64(str.ToString(), value);
 }
 inline bool safe_strtou64(const char* str, uint64* value) {
-  return safe_strtou64(string(str), value);
+  return safe_strtou64(std::string(str), value);
 }
 inline bool safe_strtou64(StringPiece str, uint64* value) {
   return safe_strtou64(str.ToString(), value);
@@ -430,10 +431,10 @@ inline bool safe_strtou64(StringPiece str, uint64* value) {
 
 PROTOBUF_EXPORT bool safe_strtof(const char* str, float* value);
 PROTOBUF_EXPORT bool safe_strtod(const char* str, double* value);
-inline bool safe_strtof(const string& str, float* value) {
+inline bool safe_strtof(const std::string& str, float* value) {
   return safe_strtof(str.c_str(), value);
 }
-inline bool safe_strtod(const string& str, double* value) {
+inline bool safe_strtod(const std::string& str, double* value) {
   return safe_strtod(str.c_str(), value);
 }
 inline bool safe_strtof(StringPiece str, float* value) {
@@ -526,9 +527,7 @@ inline char* FastUInt64ToBuffer(uint64 i, char* buffer) {
   return buffer;
 }
 
-inline string SimpleBtoa(bool value) {
-  return value ? "true" : "false";
-}
+inline std::string SimpleBtoa(bool value) { return value ? "true" : "false"; }
 
 // ----------------------------------------------------------------------
 // SimpleItoa()
@@ -536,12 +535,12 @@ inline string SimpleBtoa(bool value) {
 //
 //    Return value: string
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT string SimpleItoa(int i);
-PROTOBUF_EXPORT string SimpleItoa(unsigned int i);
-PROTOBUF_EXPORT string SimpleItoa(long i);
-PROTOBUF_EXPORT string SimpleItoa(unsigned long i);
-PROTOBUF_EXPORT string SimpleItoa(long long i);
-PROTOBUF_EXPORT string SimpleItoa(unsigned long long i);
+PROTOBUF_EXPORT std::string SimpleItoa(int i);
+PROTOBUF_EXPORT std::string SimpleItoa(unsigned int i);
+PROTOBUF_EXPORT std::string SimpleItoa(long i);
+PROTOBUF_EXPORT std::string SimpleItoa(unsigned long i);
+PROTOBUF_EXPORT std::string SimpleItoa(long long i);
+PROTOBUF_EXPORT std::string SimpleItoa(unsigned long long i);
 
 // ----------------------------------------------------------------------
 // SimpleDtoa()
@@ -562,8 +561,8 @@ PROTOBUF_EXPORT string SimpleItoa(unsigned long long i);
 //
 //    Return value: string
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT string SimpleDtoa(double value);
-PROTOBUF_EXPORT string SimpleFtoa(float value);
+PROTOBUF_EXPORT std::string SimpleDtoa(double value);
+PROTOBUF_EXPORT std::string SimpleFtoa(float value);
 
 PROTOBUF_EXPORT char* DoubleToBuffer(double i, char* buffer);
 PROTOBUF_EXPORT char* FloatToBuffer(float i, char* buffer);
@@ -659,13 +658,10 @@ struct PROTOBUF_EXPORT AlphaNum {
   // TODO: Add a string_ref constructor, eventually
   // AlphaNum(const StringPiece &pc) : piece(pc) {}
 
-  AlphaNum(const string& str)
+  AlphaNum(const std::string& str)
       : piece_data_(str.data()), piece_size_(str.size()) {}
 
   AlphaNum(StringPiece str)
-      : piece_data_(str.data()), piece_size_(str.size()) {}
-
-  AlphaNum(internal::StringPiecePod str)
       : piece_data_(str.data()), piece_size_(str.size()) {}
 
   size_t size() const { return piece_size_; }
@@ -707,32 +703,34 @@ using strings::AlphaNum;
 //    be a reference into str.
 // ----------------------------------------------------------------------
 
-PROTOBUF_EXPORT string StrCat(const AlphaNum& a, const AlphaNum& b);
-PROTOBUF_EXPORT string StrCat(const AlphaNum& a, const AlphaNum& b,
-                              const AlphaNum& c);
-PROTOBUF_EXPORT string StrCat(const AlphaNum& a, const AlphaNum& b,
-                              const AlphaNum& c, const AlphaNum& d);
-PROTOBUF_EXPORT string StrCat(const AlphaNum& a, const AlphaNum& b,
-                              const AlphaNum& c, const AlphaNum& d,
-                              const AlphaNum& e);
-PROTOBUF_EXPORT string StrCat(const AlphaNum& a, const AlphaNum& b,
-                              const AlphaNum& c, const AlphaNum& d,
-                              const AlphaNum& e, const AlphaNum& f);
-PROTOBUF_EXPORT string StrCat(const AlphaNum& a, const AlphaNum& b,
-                              const AlphaNum& c, const AlphaNum& d,
-                              const AlphaNum& e, const AlphaNum& f,
-                              const AlphaNum& g);
-PROTOBUF_EXPORT string StrCat(const AlphaNum& a, const AlphaNum& b,
-                              const AlphaNum& c, const AlphaNum& d,
-                              const AlphaNum& e, const AlphaNum& f,
-                              const AlphaNum& g, const AlphaNum& h);
-PROTOBUF_EXPORT string StrCat(const AlphaNum& a, const AlphaNum& b,
-                              const AlphaNum& c, const AlphaNum& d,
-                              const AlphaNum& e, const AlphaNum& f,
-                              const AlphaNum& g, const AlphaNum& h,
-                              const AlphaNum& i);
+PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b);
+PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+                                   const AlphaNum& c);
+PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+                                   const AlphaNum& c, const AlphaNum& d);
+PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+                                   const AlphaNum& c, const AlphaNum& d,
+                                   const AlphaNum& e);
+PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+                                   const AlphaNum& c, const AlphaNum& d,
+                                   const AlphaNum& e, const AlphaNum& f);
+PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+                                   const AlphaNum& c, const AlphaNum& d,
+                                   const AlphaNum& e, const AlphaNum& f,
+                                   const AlphaNum& g);
+PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+                                   const AlphaNum& c, const AlphaNum& d,
+                                   const AlphaNum& e, const AlphaNum& f,
+                                   const AlphaNum& g, const AlphaNum& h);
+PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+                                   const AlphaNum& c, const AlphaNum& d,
+                                   const AlphaNum& e, const AlphaNum& f,
+                                   const AlphaNum& g, const AlphaNum& h,
+                                   const AlphaNum& i);
 
-inline string StrCat(const AlphaNum& a) { return string(a.data(), a.size()); }
+inline std::string StrCat(const AlphaNum& a) {
+  return std::string(a.data(), a.size());
+}
 
 // ----------------------------------------------------------------------
 // StrAppend()
@@ -755,12 +753,12 @@ inline string StrCat(const AlphaNum& a) { return string(a.data(), a.size()); }
 //    worked around as consecutive calls to StrAppend are quite efficient.
 // ----------------------------------------------------------------------
 
-PROTOBUF_EXPORT void StrAppend(string* dest, const AlphaNum& a);
-PROTOBUF_EXPORT void StrAppend(string* dest, const AlphaNum& a,
+PROTOBUF_EXPORT void StrAppend(std::string* dest, const AlphaNum& a);
+PROTOBUF_EXPORT void StrAppend(std::string* dest, const AlphaNum& a,
                                const AlphaNum& b);
-PROTOBUF_EXPORT void StrAppend(string* dest, const AlphaNum& a,
+PROTOBUF_EXPORT void StrAppend(std::string* dest, const AlphaNum& a,
                                const AlphaNum& b, const AlphaNum& c);
-PROTOBUF_EXPORT void StrAppend(string* dest, const AlphaNum& a,
+PROTOBUF_EXPORT void StrAppend(std::string* dest, const AlphaNum& a,
                                const AlphaNum& b, const AlphaNum& c,
                                const AlphaNum& d);
 
@@ -770,8 +768,8 @@ PROTOBUF_EXPORT void StrAppend(string* dest, const AlphaNum& a,
 //    the C-string "delim" as a separator between components.
 // ----------------------------------------------------------------------
 template <typename Iterator>
-void Join(Iterator start, Iterator end,
-          const char* delim, string* result) {
+void Join(Iterator start, Iterator end, const char* delim,
+          std::string* result) {
   for (Iterator it = start; it != end; ++it) {
     if (it != start) {
       result->append(delim);
@@ -781,9 +779,8 @@ void Join(Iterator start, Iterator end,
 }
 
 template <typename Range>
-string Join(const Range& components,
-            const char* delim) {
-  string result;
+std::string Join(const Range& components, const char* delim) {
+  std::string result;
   Join(components.begin(), components.end(), delim, &result);
   return result;
 }
@@ -792,7 +789,7 @@ string Join(const Range& components,
 // ToHex()
 //    Return a lower-case hex string representation of the given integer.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT string ToHex(uint64 num);
+PROTOBUF_EXPORT std::string ToHex(uint64 num);
 
 // ----------------------------------------------------------------------
 // GlobalReplaceSubstring()
@@ -801,9 +798,9 @@ PROTOBUF_EXPORT string ToHex(uint64 num);
 //
 //    NOTE: The string pieces must not overlap s.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT int GlobalReplaceSubstring(const string& substring,
-                                           const string& replacement,
-                                           string* s);
+PROTOBUF_EXPORT int GlobalReplaceSubstring(const std::string& substring,
+                                           const std::string& replacement,
+                                           std::string* s);
 
 // ----------------------------------------------------------------------
 // Base64Unescape()
@@ -811,7 +808,7 @@ PROTOBUF_EXPORT int GlobalReplaceSubstring(const string& substring,
 //    writes it to "dest". If src contains invalid characters, dest is cleared
 //    and the function returns false. Returns true on success.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT bool Base64Unescape(StringPiece src, string* dest);
+PROTOBUF_EXPORT bool Base64Unescape(StringPiece src, std::string* dest);
 
 // ----------------------------------------------------------------------
 // WebSafeBase64Unescape()
@@ -826,7 +823,7 @@ PROTOBUF_EXPORT bool Base64Unescape(StringPiece src, string* dest);
 // ----------------------------------------------------------------------
 PROTOBUF_EXPORT int WebSafeBase64Unescape(const char* src, int slen, char* dest,
                                           int szdest);
-PROTOBUF_EXPORT bool WebSafeBase64Unescape(StringPiece src, string* dest);
+PROTOBUF_EXPORT bool WebSafeBase64Unescape(StringPiece src, std::string* dest);
 
 // Return the length to use for the output buffer given to the base64 escape
 // routines. Make sure to use the same value for do_padding in both.
@@ -854,17 +851,17 @@ PROTOBUF_EXPORT int WebSafeBase64Escape(const unsigned char* src, int slen,
                                         char* dest, int szdest,
                                         bool do_padding);
 // Encode src into dest with padding.
-PROTOBUF_EXPORT void Base64Escape(StringPiece src, string* dest);
+PROTOBUF_EXPORT void Base64Escape(StringPiece src, std::string* dest);
 // Encode src into dest web-safely without padding.
-PROTOBUF_EXPORT void WebSafeBase64Escape(StringPiece src, string* dest);
+PROTOBUF_EXPORT void WebSafeBase64Escape(StringPiece src, std::string* dest);
 // Encode src into dest web-safely with padding.
 PROTOBUF_EXPORT void WebSafeBase64EscapeWithPadding(StringPiece src,
-                                                    string* dest);
+                                                    std::string* dest);
 
 PROTOBUF_EXPORT void Base64Escape(const unsigned char* src, int szsrc,
-                                  string* dest, bool do_padding);
+                                  std::string* dest, bool do_padding);
 PROTOBUF_EXPORT void WebSafeBase64Escape(const unsigned char* src, int szsrc,
-                                         string* dest, bool do_padding);
+                                         std::string* dest, bool do_padding);
 
 inline bool IsValidCodePoint(uint32 code_point) {
   return code_point < 0xD800 ||
@@ -920,11 +917,12 @@ PROTOBUF_EXPORT int UTF8FirstLetterNumBytes(const char* src, int len);
 //
 //       (1) determines the presence of LF (first one is ok)
 //       (2) if yes, removes any CR, else convert every CR to LF
-PROTOBUF_EXPORT void CleanStringLineEndings(const string& src, string* dst,
+PROTOBUF_EXPORT void CleanStringLineEndings(const std::string& src,
+                                            std::string* dst,
                                             bool auto_end_last_line);
 
 // Same as above, but transforms the argument in place.
-PROTOBUF_EXPORT void CleanStringLineEndings(string* str,
+PROTOBUF_EXPORT void CleanStringLineEndings(std::string* str,
                                             bool auto_end_last_line);
 
 namespace strings {

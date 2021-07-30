@@ -37,6 +37,9 @@
 #undef PROTOBUF_NAMESPACE
 #undef PROTOBUF_NAMESPACE_ID
 #undef PROTOBUF_ALWAYS_INLINE
+#undef PROTOBUF_NDEBUG_INLINE
+#undef PROTOBUF_MUSTTAIL
+#undef PROTOBUF_TAILCALL
 #undef PROTOBUF_COLD
 #undef PROTOBUF_NOINLINE
 #undef PROTOBUF_SECTION_VARIABLE
@@ -54,14 +57,13 @@
 #undef PROTOBUF_MIN_PROTOC_VERSION
 #undef PROTOBUF_PREDICT_TRUE
 #undef PROTOBUF_PREDICT_FALSE
-#undef PROTOBUF_LONGLONG
-#undef PROTOBUF_ULONGLONG
-#undef PROTOBUF_LL_FORMAT
-#undef PROTOBUF_GUARDED_BY
 #undef PROTOBUF_FALLTHROUGH_INTENDED
 #undef PROTOBUF_EXPORT
 #undef PROTOC_EXPORT
 #undef PROTOBUF_MUST_USE_RESULT
+#undef PROTOBUF_MUST_USE_EXTRACT_RESULT
+#undef PROTOBUF_FORCE_COPY_IN_RELEASE
+#undef PROTOBUF_FORCE_COPY_IN_SWAP
 #undef PROTOBUF_NAMESPACE_OPEN
 #undef PROTOBUF_NAMESPACE_CLOSE
 #undef PROTOBUF_UNUSED
@@ -69,40 +71,64 @@
 #undef PROTOBUF_EXPORT_TEMPLATE_DECLARE
 #undef PROTOBUF_EXPORT_TEMPLATE_DEFINE
 #undef PROTOBUF_ALIGNAS
-#undef PROTOBUF_EXPORT_TEMPLATE_INVOKE_2
-#undef PROTOBUF_EXPORT_TEMPLATE_DECLARE_DEFAULT
-#undef PROTOBUF_EXPORT_TEMPLATE_DEFINE_DEFAULT
-#undef PROTOBUF_EXPORT_TEMPLATE_DECLARE_MSVC_HACK
-#undef PROTOBUF_EXPORT_TEMPLATE_DEFINE_MSVC_HACK
-#undef PROTOBUF_EXPORT_TEMPLATE_STYLE
-#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_2
-#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_3
-#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_MATCH_foj3FJo5StF0OvIzl7oMxA
-#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_MATCH_foj3FJo5StF0OvIzl7oMxA__attribute__
-#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_MATCH_foj3FJo5StF0OvIzl7oMxA__declspec
-#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_MATCH_DECLSPEC_dllexport
-#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_MATCH_DECLSPEC_dllimport
 #undef PROTOBUF_FINAL
+#undef PROTOBUF_THREAD_LOCAL
+#undef PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
+#undef PROTOBUF_CONSTINIT
+#undef PROTOBUF_ATTRIBUTE_WEAK
+#undef PROTOBUF_ATTRIBUTE_NO_DESTROY
+#undef PROTOBUF_ATTRIBUTE_INIT_PRIORITY
+#undef PROTOBUF_PRAGMA_INIT_SEG
+#undef PROTOBUF_ASAN
+#undef PROTOBUF_MSAN
+#undef PROTOBUF_TSAN
+#undef PROTOBUF_EXCLUSIVE_LOCKS_REQUIRED
+#undef PROTOBUF_LOCKS_EXCLUDED
+#undef PROTOBUF_NO_THREAD_SAFETY_ANALYSIS
+#undef PROTOBUF_GUARDED_BY
+
+#ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
+#undef PROTOBUF_FUTURE_BREAKING_CHANGES
+#endif
 
 // Restore macro that may have been #undef'd in port_def.inc.
 #ifdef _MSC_VER
+#pragma pop_macro("CREATE_NEW")
+#pragma pop_macro("DELETE")
+#pragma pop_macro("DOUBLE_CLICK")
 #pragma pop_macro("ERROR")
+#pragma pop_macro("ERROR_BUSY")
+#pragma pop_macro("ERROR_INSTALL_FAILED")
+#pragma pop_macro("ERROR_NOT_FOUND")
 #pragma pop_macro("GetMessage")
 #pragma pop_macro("IGNORE")
 #pragma pop_macro("IN")
+#pragma pop_macro("INPUT_KEYBOARD")
 #pragma pop_macro("OUT")
 #pragma pop_macro("OPTIONAL")
 #pragma pop_macro("min")
 #pragma pop_macro("max")
+#pragma pop_macro("NEAR")
+#pragma pop_macro("NO_DATA")
+#pragma pop_macro("NO_ERROR")
+#pragma pop_macro("REASON_UNKNOWN")
+#pragma pop_macro("SERVICE_DISABLED")
+#pragma pop_macro("SEVERITY_ERROR")
+#pragma pop_macro("STRICT")
+#pragma pop_macro("timezone")
 #endif
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
-#pragma pop_macro("YES")
-#pragma pop_macro("NO")
+#pragma pop_macro("DEBUG")
 #endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)
 #pragma GCC diagnostic pop
+#endif
+
+// Pop the warning(push) from port_def.inc
+#if _MSC_VER
+#pragma warning(pop)
 #endif

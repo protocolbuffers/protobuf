@@ -71,13 +71,16 @@ gulp.task('genproto_group1_closure', function (cb) {
   });
 });
 
-gulp.task('genproto_group2_closure', function (cb) {
-  exec(protoc + ' --js_out=library=testproto_libs2,binary:.  -I ../src -I . -I commonjs ' + group2Protos.join(' '),
-       function (err, stdout, stderr) {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  });
+gulp.task('genproto_group2_closure', function(cb) {
+  exec(
+      protoc +
+          ' --experimental_allow_proto3_optional --js_out=library=testproto_libs2,binary:.  -I ../src -I . -I commonjs ' +
+          group2Protos.join(' '),
+      function(err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        cb(err);
+      });
 });
 
 gulp.task('genproto_well_known_types_commonjs', function (cb) {
@@ -98,13 +101,16 @@ gulp.task('genproto_group1_commonjs', function (cb) {
   });
 });
 
-gulp.task('genproto_group2_commonjs', function (cb) {
-  exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I commonjs -I . ' + group2Protos.join(' '),
-       function (err, stdout, stderr) {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  });
+gulp.task('genproto_group2_commonjs', function(cb) {
+  exec(
+      'mkdir -p commonjs_out && ' + protoc +
+          ' --experimental_allow_proto3_optional --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I commonjs -I . ' +
+          group2Protos.join(' '),
+      function(err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        cb(err);
+      });
 });
 
 gulp.task('genproto_commonjs_wellknowntypes', function (cb) {
@@ -134,21 +140,31 @@ gulp.task('genproto_group3_commonjs_strict', function (cb) {
 });
 
 
-function getClosureBuilderCommand(exportsFile, outputFile) {
-  return './node_modules/google-closure-library/closure/bin/build/closurebuilder.py ' +
-  '--root node_modules ' +
-  '-o compiled ' +
-  '--compiler_jar node_modules/google-closure-compiler-java/compiler.jar ' +
-  '-i ' + exportsFile + ' ' +
-  'map.js message.js binary/arith.js binary/constants.js binary/decoder.js ' +
-  'binary/encoder.js binary/reader.js binary/utils.js binary/writer.js ' +
-  exportsFile  + ' > ' + outputFile;
+function getClosureCompilerCommand(exportsFile, outputFile) {
+  const closureLib = 'node_modules/google-closure-library';
+  return [
+    'node_modules/.bin/google-closure-compiler',
+    `--js=${closureLib}/closure/goog/**.js`,
+    `--js=${closureLib}/third_party/closure/goog/**.js`,
+    '--js=map.js',
+    '--js=message.js',
+    '--js=binary/arith.js',
+    '--js=binary/constants.js',
+    '--js=binary/decoder.js',
+    '--js=binary/encoder.js',
+    '--js=binary/reader.js',
+    '--js=binary/utils.js',
+    '--js=binary/writer.js',
+    `--js=${exportsFile}`,
+    `--entry_point=${exportsFile}`,
+    `> ${outputFile}`
+  ].join(' ');
 }
 
 gulp.task('dist', gulp.series(['genproto_wellknowntypes'], function(cb) {
   // TODO(haberman): minify this more aggressively.
   // Will require proper externs/exports.
-  exec(getClosureBuilderCommand('commonjs/export.js', 'google-protobuf.js'),
+  exec(getClosureCompilerCommand('commonjs/export.js', 'google-protobuf.js'),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -158,7 +174,7 @@ gulp.task('dist', gulp.series(['genproto_wellknowntypes'], function(cb) {
 
 gulp.task('commonjs_asserts', function (cb) {
   exec('mkdir -p commonjs_out/test_node_modules && ' +
-       getClosureBuilderCommand(
+       getClosureCompilerCommand(
            'commonjs/export_asserts.js',
            'commonjs_out/test_node_modules/closure_asserts_commonjs.js'),
        function (err, stdout, stderr) {
@@ -170,7 +186,7 @@ gulp.task('commonjs_asserts', function (cb) {
 
 gulp.task('commonjs_testdeps', function (cb) {
   exec('mkdir -p commonjs_out/test_node_modules && ' +
-       getClosureBuilderCommand(
+       getClosureCompilerCommand(
            'commonjs/export_testdeps.js',
            'commonjs_out/test_node_modules/testdeps_commonjs.js'),
        function (err, stdout, stderr) {
@@ -223,7 +239,7 @@ gulp.task(
         ],
         function(cb) {
           exec(
-              './node_modules/google-closure-library/closure/bin/build/depswriter.py binary/arith.js binary/constants.js binary/decoder.js binary/encoder.js binary/reader.js binary/utils.js binary/writer.js debug.js map.js message.js node_loader.js test_bootstrap.js > deps.js',
+              './node_modules/.bin/closure-make-deps --closure-path=. --file=node_modules/google-closure-library/closure/goog/deps.js binary/arith.js binary/constants.js binary/decoder.js binary/encoder.js binary/reader.js binary/utils.js binary/writer.js debug.js map.js message.js node_loader.js test_bootstrap.js > deps.js',
               function(err, stdout, stderr) {
                 console.log(stdout);
                 console.log(stderr);

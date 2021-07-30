@@ -6,11 +6,10 @@
     and without the internal visibility from the test project (all of which have caused issues in the past).
   -->
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard1.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;netstandard1.1;netstandard2.0</TargetFrameworks>
     <LangVersion>3.0</LangVersion>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
 

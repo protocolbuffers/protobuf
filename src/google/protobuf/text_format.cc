@@ -54,7 +54,6 @@
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/message.h>
-#include <google/protobuf/port_def.inc>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -63,6 +62,10 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+// Must be included last.
+#include <google/protobuf/port_def.inc>
+
+#define DEBUG_STRING_SILENT_MARKER "\t "
 
 namespace google {
 namespace protobuf {
@@ -161,7 +164,7 @@ TextFormat::ParseLocation TextFormat::ParseInfoTree::GetLocation(
 
   const std::vector<TextFormat::ParseLocation>* locations =
       FindOrNull(locations_, field);
-  if (locations == nullptr || index >= locations->size()) {
+  if (locations == nullptr || index >= static_cast<int64>(locations->size())) {
     return TextFormat::ParseLocation();
   }
 
@@ -176,7 +179,7 @@ TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::GetTreeForNested(
   }
 
   auto it = nested_.find(field);
-  if (it == nested_.end() || index >= it->second.size()) {
+  if (it == nested_.end() || index >= static_cast<int64>(it->second.size())) {
     return nullptr;
   }
 
@@ -258,6 +261,7 @@ class TextFormat::Parser::ParserImpl {
         allow_unknown_enum_(allow_unknown_enum),
         allow_field_number_(allow_field_number),
         allow_partial_(allow_partial),
+        initial_recursion_limit_(recursion_limit),
         recursion_limit_(recursion_limit),
         had_errors_(false) {
     // For backwards-compatibility with proto1, we need to allow the 'f' suffix
@@ -285,6 +289,15 @@ class TextFormat::Parser::ParserImpl {
     // Consume fields until we cannot do so anymore.
     while (true) {
       if (LookingAtType(io::Tokenizer::TYPE_END)) {
+        // Ensures recursion limit properly unwinded, but only for success
+        // cases. This implicitly avoids the check when `Parse` returns false
+        // via `DO(...)`.
+        GOOGLE_DCHECK(had_errors_ || recursion_limit_ == initial_recursion_limit_)
+            << "Recursion limit at end of parse should be "
+            << initial_recursion_limit_ << ", but was " << recursion_limit_
+            << ". Difference of " << initial_recursion_limit_ - recursion_limit_
+            << " stack frames not accounted for stack unwind.";
+
         return !had_errors_;
       }
 
@@ -446,8 +459,7 @@ class TextFormat::Parser::ParserImpl {
       DO(ConsumeIdentifier(&field_name));
 
       int32 field_number;
-      if (allow_field_number_ &&
-          safe_strto32(field_name, &field_number)) {
+      if (allow_field_number_ && safe_strto32(field_name, &field_number)) {
         if (descriptor->IsExtensionNumber(field_number)) {
           field = finder_
                       ? finder_->FindExtensionByNumber(descriptor, field_number)
@@ -636,7 +648,10 @@ class TextFormat::Parser::ParserImpl {
   bool ConsumeFieldMessage(Message* message, const Reflection* reflection,
                            const FieldDescriptor* field) {
     if (--recursion_limit_ < 0) {
-      ReportError("Message is too deep");
+      ReportError(
+          StrCat("Message is too deep, the parser exceeded the "
+                       "configured recursion limit of ",
+                       initial_recursion_limit_, "."));
       return false;
     }
     // If the parse information tree is not nullptr, create a nested one
@@ -668,12 +683,22 @@ class TextFormat::Parser::ParserImpl {
   // Skips the whole body of a message including the beginning delimiter and
   // the ending delimiter.
   bool SkipFieldMessage() {
+    if (--recursion_limit_ < 0) {
+      ReportError(
+          StrCat("Message is too deep, the parser exceeded the "
+                       "configured recursion limit of ",
+                       initial_recursion_limit_, "."));
+      return false;
+    }
+
     std::string delimiter;
     DO(ConsumeMessageDelimiter(&delimiter));
     while (!LookingAt(">") && !LookingAt("}")) {
       DO(SkipField());
     }
     DO(Consume(delimiter));
+
+    ++recursion_limit_;
     return true;
   }
 
@@ -818,10 +843,19 @@ class TextFormat::Parser::ParserImpl {
   }
 
   bool SkipFieldValue() {
+    if (--recursion_limit_ < 0) {
+      ReportError(
+          StrCat("Message is too deep, the parser exceeded the "
+                       "configured recursion limit of ",
+                       initial_recursion_limit_, "."));
+      return false;
+    }
+
     if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
       while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
         tokenizer_.Next();
       }
+      ++recursion_limit_;
       return true;
     }
     if (TryConsume("[")) {
@@ -836,6 +870,7 @@ class TextFormat::Parser::ParserImpl {
         }
         DO(Consume(","));
       }
+      ++recursion_limit_;
       return true;
     }
     // Possible field values other than string:
@@ -865,6 +900,7 @@ class TextFormat::Parser::ParserImpl {
         !LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
       std::string text = tokenizer_.current().text;
       ReportError("Cannot skip field value, unexpected token: " + text);
+      ++recursion_limit_;
       return false;
     }
     // Combination of '-' and TYPE_IDENTIFIER may result in an invalid field
@@ -879,10 +915,12 @@ class TextFormat::Parser::ParserImpl {
       if (text != "inf" &&
           text != "infinity" && text != "nan") {
         ReportError("Invalid float number: " + text);
+        ++recursion_limit_;
         return false;
       }
     }
     tokenizer_.Next();
+    ++recursion_limit_;
     return true;
   }
 
@@ -1192,6 +1230,7 @@ class TextFormat::Parser::ParserImpl {
   const bool allow_unknown_enum_;
   const bool allow_field_number_;
   const bool allow_partial_;
+  const int initial_recursion_limit_;
   int recursion_limit_;
   bool had_errors_;
 };
@@ -1209,6 +1248,18 @@ class TextFormat::Printer::TextGenerator
         buffer_size_(0),
         at_start_of_line_(true),
         failed_(false),
+        insert_silent_marker_(false),
+        indent_level_(initial_indent_level),
+        initial_indent_level_(initial_indent_level) {}
+
+  explicit TextGenerator(io::ZeroCopyOutputStream* output,
+                         bool insert_silent_marker, int initial_indent_level)
+      : output_(output),
+        buffer_(nullptr),
+        buffer_size_(0),
+        at_start_of_line_(true),
+        failed_(false),
+        insert_silent_marker_(insert_silent_marker),
         indent_level_(initial_indent_level),
         initial_indent_level_(initial_indent_level) {}
 
@@ -1271,6 +1322,22 @@ class TextFormat::Printer::TextGenerator
   // error.)
   bool failed() const { return failed_; }
 
+  void PrintMaybeWithMarker(StringPiece text) {
+    Print(text.data(), text.size());
+    if (ConsumeInsertSilentMarker()) {
+      PrintLiteral(DEBUG_STRING_SILENT_MARKER);
+    }
+  }
+
+  void PrintMaybeWithMarker(StringPiece text_head,
+                            StringPiece text_tail) {
+    Print(text_head.data(), text_head.size());
+    if (ConsumeInsertSilentMarker()) {
+      PrintLiteral(DEBUG_STRING_SILENT_MARKER);
+    }
+    Print(text_tail.data(), text_tail.size());
+  }
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextGenerator);
 
@@ -1285,7 +1352,7 @@ class TextFormat::Printer::TextGenerator
       if (failed_) return;
     }
 
-    while (size > buffer_size_) {
+    while (static_cast<int64>(size) > buffer_size_) {
       // Data exceeds space in the buffer.  Copy what we can and request a
       // new buffer.
       if (buffer_size_ > 0) {
@@ -1331,14 +1398,65 @@ class TextFormat::Printer::TextGenerator
     buffer_size_ -= size;
   }
 
+  // Return the current value of insert_silent_marker_. If it is true, set it
+  // to false as we assume that a silent marker is inserted after a call to this
+  // function.
+  bool ConsumeInsertSilentMarker() {
+    if (insert_silent_marker_) {
+      insert_silent_marker_ = false;
+      return true;
+    }
+    return false;
+  }
+
   io::ZeroCopyOutputStream* const output_;
   char* buffer_;
   int buffer_size_;
   bool at_start_of_line_;
   bool failed_;
+  // This flag is false when inserting silent marker is disabled or a silent
+  // marker has been inserted.
+  bool insert_silent_marker_;
 
   int indent_level_;
   int initial_indent_level_;
+};
+
+// ===========================================================================
+//  An internal field value printer that may insert a silent marker in
+//  DebugStrings.
+class TextFormat::Printer::DebugStringFieldValuePrinter
+    : public TextFormat::FastFieldValuePrinter {
+ public:
+  void PrintMessageStart(const Message& message, int field_index,
+                         int field_count, bool single_line_mode,
+                         BaseTextGenerator* generator) const override {
+    // This is safe as only TextGenerator is used with
+    // DebugStringFieldValuePrinter.
+    TextGenerator* text_generator = static_cast<TextGenerator*>(generator);
+    if (single_line_mode) {
+      text_generator->PrintMaybeWithMarker(" ", "{ ");
+    } else {
+      text_generator->PrintMaybeWithMarker(" ", "{\n");
+    }
+  }
+};
+
+// ===========================================================================
+//  An internal field value printer that escape UTF8 strings.
+class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
+    : public TextFormat::Printer::DebugStringFieldValuePrinter {
+ public:
+  void PrintString(const std::string& val,
+                   TextFormat::BaseTextGenerator* generator) const override {
+    generator->PrintLiteral("\"");
+    generator->PrintString(strings::Utf8SafeCEscape(val));
+    generator->PrintLiteral("\"");
+  }
+  void PrintBytes(const std::string& val,
+                  TextFormat::BaseTextGenerator* generator) const override {
+    return FastFieldValuePrinter::PrintString(val, generator);
+  }
 };
 
 // ===========================================================================
@@ -1417,7 +1535,7 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
   return MergeUsingImpl(input, output, &parser);
 }
 
-bool TextFormat::Parser::ParseFromString(const std::string& input,
+bool TextFormat::Parser::ParseFromString(ConstStringParam input,
                                          Message* output) {
   DO(CheckParseInputSize(input, error_collector_));
   io::ArrayInputStream input_stream(input.data(), input.size());
@@ -1436,7 +1554,7 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
   return MergeUsingImpl(input, output, &parser);
 }
 
-bool TextFormat::Parser::MergeFromString(const std::string& input,
+bool TextFormat::Parser::MergeFromString(ConstStringParam input,
                                          Message* output) {
   DO(CheckParseInputSize(input, error_collector_));
   io::ArrayInputStream input_stream(input.data(), input.size());
@@ -1482,12 +1600,12 @@ bool TextFormat::Parser::ParseFieldValueFromString(const std::string& input,
   return Parser().Merge(input, output);
 }
 
-/* static */ bool TextFormat::ParseFromString(const std::string& input,
+/* static */ bool TextFormat::ParseFromString(ConstStringParam input,
                                               Message* output) {
   return Parser().ParseFromString(input, output);
 }
 
-/* static */ bool TextFormat::MergeFromString(const std::string& input,
+/* static */ bool TextFormat::MergeFromString(ConstStringParam input,
                                               Message* output) {
   return Parser().MergeFromString(input, output);
 }
@@ -1510,9 +1628,9 @@ class StringBaseTextGenerator : public TextFormat::BaseTextGenerator {
 
 // Some compilers do not support ref-qualifiers even in C++11 mode.
 // Disable the optimization for now and revisit it later.
-#if 0   // LANG_CXX11
+#if 0  // LANG_CXX11
   std::string Consume() && { return std::move(output_); }
-#else   // !LANG_CXX11
+#else  // !LANG_CXX11
   const std::string& Get() { return output_; }
 #endif  // LANG_CXX11
 
@@ -1770,29 +1888,17 @@ class FieldValuePrinterWrapper : public TextFormat::FastFieldValuePrinter {
   std::unique_ptr<const TextFormat::FieldValuePrinter> delegate_;
 };
 
-// Our own specialization: for UTF8 escaped strings.
-class FastFieldValuePrinterUtf8Escaping
-    : public TextFormat::FastFieldValuePrinter {
- public:
-  void PrintString(const std::string& val,
-                   TextFormat::BaseTextGenerator* generator) const override {
-    generator->PrintLiteral("\"");
-    generator->PrintString(strings::Utf8SafeCEscape(val));
-    generator->PrintLiteral("\"");
-  }
-  void PrintBytes(const std::string& val,
-                  TextFormat::BaseTextGenerator* generator) const override {
-    return FastFieldValuePrinter::PrintString(val, generator);
-  }
-};
-
 }  // namespace
+
+const char* const TextFormat::Printer::kDoNotParse =
+    "DO NOT PARSE: fields may be stripped and missing.\n";
 
 TextFormat::Printer::Printer()
     : initial_indent_level_(0),
       single_line_mode_(false),
       use_field_number_(false),
       use_short_repeated_primitives_(false),
+      insert_silent_marker_(false),
       hide_unknown_fields_(false),
       print_message_fields_in_index_order_(false),
       expand_any_(false),
@@ -1803,7 +1909,7 @@ TextFormat::Printer::Printer()
 
 void TextFormat::Printer::SetUseUtf8StringEscaping(bool as_utf8) {
   SetDefaultFieldValuePrinter(as_utf8 ? new FastFieldValuePrinterUtf8Escaping()
-                                      : new FastFieldValuePrinter());
+                                      : new DebugStringFieldValuePrinter());
 }
 
 void TextFormat::Printer::SetDefaultFieldValuePrinter(
@@ -1883,7 +1989,7 @@ bool TextFormat::Printer::PrintUnknownFieldsToString(
 
 bool TextFormat::Printer::Print(const Message& message,
                                 io::ZeroCopyOutputStream* output) const {
-  TextGenerator generator(output, initial_indent_level_);
+  TextGenerator generator(output, insert_silent_marker_, initial_indent_level_);
 
   Print(message, &generator);
 
@@ -2004,14 +2110,17 @@ void TextFormat::Printer::Print(const Message& message,
     fields.push_back(descriptor->field(0));
     fields.push_back(descriptor->field(1));
   } else {
-    reflection->ListFields(message, &fields);
+    reflection->ListFieldsOmitStripped(message, &fields);
+    if (reflection->IsMessageStripped(message.GetDescriptor())) {
+      generator->Print(kDoNotParse, std::strlen(kDoNotParse));
+    }
   }
 
   if (print_message_fields_in_index_order_) {
     std::sort(fields.begin(), fields.end(), FieldIndexSorter());
   }
-  for (int i = 0; i < fields.size(); i++) {
-    PrintField(message, reflection, fields[i], generator);
+  for (const FieldDescriptor* field : fields) {
+    PrintField(message, reflection, field, generator);
   }
   if (!hide_unknown_fields_) {
     PrintUnknownFields(reflection->GetUnknownFields(message), generator,
@@ -2086,7 +2195,7 @@ class MapFieldPrinterHelper {
   // DynamicMapSorter::Sort cannot be used because it enfores syncing with
   // repeated field.
   static bool SortMap(const Message& message, const Reflection* reflection,
-                      const FieldDescriptor* field, MessageFactory* factory,
+                      const FieldDescriptor* field,
                       std::vector<const Message*>* sorted_map_field);
   static void CopyKey(const MapKey& key, Message* message,
                       const FieldDescriptor* field_desc);
@@ -2097,7 +2206,7 @@ class MapFieldPrinterHelper {
 // Returns true if elements contained in sorted_map_field need to be released.
 bool MapFieldPrinterHelper::SortMap(
     const Message& message, const Reflection* reflection,
-    const FieldDescriptor* field, MessageFactory* factory,
+    const FieldDescriptor* field,
     std::vector<const Message*>* sorted_map_field) {
   bool need_release = false;
   const MapFieldBase& base = *reflection->GetMapData(message, field);
@@ -2113,7 +2222,8 @@ bool MapFieldPrinterHelper::SortMap(
     // TODO(teboring): For performance, instead of creating map entry message
     // for each element, just store map keys and sort them.
     const Descriptor* map_entry_desc = field->message_type();
-    const Message* prototype = factory->GetPrototype(map_entry_desc);
+    const Message* prototype =
+        reflection->GetMessageFactory()->GetPrototype(map_entry_desc);
     for (MapIterator iter =
              reflection->MapBegin(const_cast<Message*>(&message), field);
          iter != reflection->MapEnd(const_cast<Message*>(&message), field);
@@ -2226,13 +2336,12 @@ void TextFormat::Printer::PrintField(const Message& message,
     count = 1;
   }
 
-  DynamicMessageFactory factory;
   std::vector<const Message*> sorted_map_field;
   bool need_release = false;
   bool is_map = field->is_map();
   if (is_map) {
     need_release = internal::MapFieldPrinterHelper::SortMap(
-        message, reflection, field, &factory, &sorted_map_field);
+        message, reflection, field, &sorted_map_field);
   }
 
   for (int j = 0; j < count; ++j) {
@@ -2258,7 +2367,7 @@ void TextFormat::Printer::PrintField(const Message& message,
       printer->PrintMessageEnd(sub_message, field_index, count,
                                single_line_mode_, generator);
     } else {
-      generator->PrintLiteral(": ");
+      generator->PrintMaybeWithMarker(": ");
       // Write the field value.
       PrintFieldValue(message, reflection, field, field_index, generator);
       if (single_line_mode_) {
@@ -2270,8 +2379,8 @@ void TextFormat::Printer::PrintField(const Message& message,
   }
 
   if (need_release) {
-    for (int j = 0; j < sorted_map_field.size(); ++j) {
-      delete sorted_map_field[j];
+    for (const Message* message_to_delete : sorted_map_field) {
+      delete message_to_delete;
     }
   }
 }
@@ -2283,7 +2392,7 @@ void TextFormat::Printer::PrintShortRepeatedField(
   int size = reflection->FieldSize(message, field);
   PrintFieldName(message, /*field_index=*/-1, /*field_count=*/size, reflection,
                  field, generator);
-  generator->PrintLiteral(": [");
+  generator->PrintMaybeWithMarker(": ", "[");
   for (int i = 0; i < size; i++) {
     if (i > 0) generator->PrintLiteral(", ");
     PrintFieldValue(message, reflection, field, i, generator);
@@ -2351,7 +2460,8 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
       const std::string* value_to_print = &value;
       std::string truncated_value;
       if (truncate_string_field_longer_than_ > 0 &&
-          truncate_string_field_longer_than_ < value.size()) {
+          static_cast<size_t>(truncate_string_field_longer_than_) <
+              value.size()) {
         truncated_value = value.substr(0, truncate_string_field_longer_than_) +
                           "...<truncated>...";
         value_to_print = &truncated_value;
@@ -2436,7 +2546,7 @@ void TextFormat::Printer::PrintUnknownFields(
     switch (field.type()) {
       case UnknownField::TYPE_VARINT:
         generator->PrintString(field_number);
-        generator->PrintLiteral(": ");
+        generator->PrintMaybeWithMarker(": ");
         generator->PrintString(StrCat(field.varint()));
         if (single_line_mode_) {
           generator->PrintLiteral(" ");
@@ -2446,7 +2556,7 @@ void TextFormat::Printer::PrintUnknownFields(
         break;
       case UnknownField::TYPE_FIXED32: {
         generator->PrintString(field_number);
-        generator->PrintLiteral(": 0x");
+        generator->PrintMaybeWithMarker(": ", "0x");
         generator->PrintString(
             StrCat(strings::Hex(field.fixed32(), strings::ZERO_PAD_8)));
         if (single_line_mode_) {
@@ -2458,7 +2568,7 @@ void TextFormat::Printer::PrintUnknownFields(
       }
       case UnknownField::TYPE_FIXED64: {
         generator->PrintString(field_number);
-        generator->PrintLiteral(": 0x");
+        generator->PrintMaybeWithMarker(": ", "0x");
         generator->PrintString(
             StrCat(strings::Hex(field.fixed64(), strings::ZERO_PAD_16)));
         if (single_line_mode_) {
@@ -2483,9 +2593,9 @@ void TextFormat::Printer::PrintUnknownFields(
           // This field is parseable as a Message.
           // So it is probably an embedded message.
           if (single_line_mode_) {
-            generator->PrintLiteral(" { ");
+            generator->PrintMaybeWithMarker(" ", "{ ");
           } else {
-            generator->PrintLiteral(" {\n");
+            generator->PrintMaybeWithMarker(" ", "{\n");
             generator->Indent();
           }
           PrintUnknownFields(embedded_unknown_fields, generator,
@@ -2499,7 +2609,7 @@ void TextFormat::Printer::PrintUnknownFields(
         } else {
           // This field is not parseable as a Message (or we ran out of
           // recursion budget). So it is probably just a plain string.
-          generator->PrintLiteral(": \"");
+          generator->PrintMaybeWithMarker(": ", "\"");
           generator->PrintString(CEscape(value));
           if (single_line_mode_) {
             generator->PrintLiteral("\" ");
@@ -2512,9 +2622,9 @@ void TextFormat::Printer::PrintUnknownFields(
       case UnknownField::TYPE_GROUP:
         generator->PrintString(field_number);
         if (single_line_mode_) {
-          generator->PrintLiteral(" { ");
+          generator->PrintMaybeWithMarker(" ", "{ ");
         } else {
-          generator->PrintLiteral(" {\n");
+          generator->PrintMaybeWithMarker(" ", "{\n");
           generator->Indent();
         }
         // For groups, we recurse without checking the budget. This is OK,
@@ -2534,3 +2644,5 @@ void TextFormat::Printer::PrintUnknownFields(
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

@@ -73,7 +73,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                 GeneratorContext* generator_context,
                 std::string* error) const override;
 
-  uint64 GetSupportedFeatures() const override;
+  uint64_t GetSupportedFeatures() const override;
 
  private:
   void PrintImports() const;

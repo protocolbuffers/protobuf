@@ -31,14 +31,15 @@
 #include <google/protobuf/util/field_mask_util.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/field_mask.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
 
 namespace google {
 namespace protobuf {
@@ -46,7 +47,7 @@ namespace util {
 
 class SnakeCaseCamelCaseTest : public ::testing::Test {
  protected:
-  string SnakeCaseToCamelCase(const std::string& input) {
+  std::string SnakeCaseToCamelCase(const std::string& input) {
     std::string output;
     if (FieldMaskUtil::SnakeCaseToCamelCase(input, &output)) {
       return output;
@@ -55,7 +56,7 @@ class SnakeCaseCamelCaseTest : public ::testing::Test {
     }
   }
 
-  string CamelCaseToSnakeCase(const std::string& input) {
+  std::string CamelCaseToSnakeCase(const std::string& input) {
     std::string output;
     if (FieldMaskUtil::CamelCaseToSnakeCase(input, &output)) {
       return output;
@@ -164,7 +165,7 @@ TEST(FieldMaskUtilTest, JsonStringFormat) {
 
 TEST(FieldMaskUtilTest, FromFieldNumbers) {
   FieldMask mask;
-  std::vector<int64> field_numbers = {
+  std::vector<int64_t> field_numbers = {
       TestAllTypes::kOptionalInt64FieldNumber,
       TestAllTypes::kOptionalBoolFieldNumber,
       TestAllTypes::kRepeatedStringFieldNumber,

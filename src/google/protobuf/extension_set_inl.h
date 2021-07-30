@@ -207,6 +207,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
     internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
   std::string payload;
   uint32 type_id = 0;
+  bool payload_read = false;
   while (!ctx->Done(&ptr)) {
     uint32 tag = static_cast<uint8>(*ptr++);
     if (tag == WireFormatLite::kMessageSetTypeIdTag) {
@@ -214,7 +215,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
       ptr = ParseBigVarint(ptr, &tmp);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       type_id = tmp;
-      if (!payload.empty()) {
+      if (payload_read) {
         ExtensionInfo extension;
         bool was_packed_on_wire;
         if (!FindExtension(2, type_id, containing_type, ctx, &extension,
@@ -253,6 +254,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ptr = ctx->ReadString(ptr, size, &payload);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+        payload_read = true;
       }
     } else {
       ptr = ReadTag(ptr - 1, &tag);

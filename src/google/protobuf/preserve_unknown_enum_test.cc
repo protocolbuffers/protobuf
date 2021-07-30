@@ -137,7 +137,7 @@ TEST(PreserveUnknownEnumTest, Proto2HidesUnknownValues) {
   // The intermediate message has everything in its "unknown fields".
   proto2_preserve_unknown_enum_unittest::MyMessage message2 = message;
   message2.DiscardUnknownFields();
-  EXPECT_EQ(0, message2.ByteSize());
+  EXPECT_EQ(0, message2.ByteSizeLong());
 
   // But when we pass it to the correct structure, all values are there.
   serialized.clear();
@@ -165,7 +165,7 @@ TEST(PreserveUnknownEnumTest, DynamicProto2HidesUnknownValues) {
   proto2_preserve_unknown_enum_unittest::MyMessage message2;
   message2.CopyFrom(*message);
   message2.DiscardUnknownFields();
-  EXPECT_EQ(0, message2.ByteSize());
+  EXPECT_EQ(0, message2.ByteSizeLong());
 
   // But when we pass it to the correct structure, all values are there.
   serialized.clear();

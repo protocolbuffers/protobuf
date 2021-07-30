@@ -142,7 +142,12 @@ abstract class AbstractProtobufList<E> extends AbstractList<E> implements Protob
   @Override
   public boolean remove(Object o) {
     ensureIsMutable();
-    return super.remove(o);
+    int index = indexOf(o);
+    if (index == -1) {
+      return false;
+    }
+    remove(index);
+    return true;
   }
 
   @Override

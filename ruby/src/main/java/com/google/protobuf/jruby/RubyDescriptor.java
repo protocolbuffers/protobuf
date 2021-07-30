@@ -32,12 +32,14 @@
 
 package com.google.protobuf.jruby;
 
-import com.google.protobuf.DescriptorProtos;
-import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.OneofDescriptor;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.Helpers;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -58,27 +60,12 @@ public class RubyDescriptor extends RubyObject {
         });
         cDescriptor.includeModule(runtime.getEnumerable());
         cDescriptor.defineAnnotatedMethods(RubyDescriptor.class);
+        cFieldDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::FieldDescriptor");
+        cOneofDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::OneofDescriptor");
     }
 
     public RubyDescriptor(Ruby runtime, RubyClass klazz) {
         super(runtime, klazz);
-    }
-
-    /*
-     * call-seq:
-     *     Descriptor.new => descriptor
-     *
-     * Creates a new, empty, message type descriptor. At a minimum, its name must be
-     * set before it is added to a pool. It cannot be used to create messages until
-     * it is added to a pool, after which it becomes immutable (as part of a
-     * finalization process).
-     */
-    @JRubyMethod
-    public IRubyObject initialize(ThreadContext context) {
-        this.builder = DescriptorProtos.DescriptorProto.newBuilder();
-        this.fieldDefMap = new HashMap<String, RubyFieldDescriptor>();
-        this.oneofDefs = new HashMap<IRubyObject, RubyOneofDescriptor>();
-        return this;
     }
 
     /*
@@ -90,38 +77,7 @@ public class RubyDescriptor extends RubyObject {
      */
     @JRubyMethod(name = "name")
     public IRubyObject getName(ThreadContext context) {
-        return this.name;
-    }
-
-    /*
-     * call-seq:
-     *    Descriptor.name = name
-     *
-     * Assigns a name to this message type. The descriptor must not have been added
-     * to a pool yet.
-     */
-    @JRubyMethod(name = "name=")
-    public IRubyObject setName(ThreadContext context, IRubyObject name) {
-        this.name = name;
-        this.builder.setName(Utils.escapeIdentifier(this.name.asJavaString()));
-        return context.runtime.getNil();
-    }
-
-    /*
-     * call-seq:
-     *     Descriptor.add_field(field) => nil
-     *
-     * Adds the given FieldDescriptor to this message type. The descriptor must not
-     * have been added to a pool yet. Raises an exception if a field with the same
-     * name or number already exists. Sub-type references (e.g. for fields of type
-     * message) are not resolved at this point.
-     */
-    @JRubyMethod(name = "add_field")
-    public IRubyObject addField(ThreadContext context, IRubyObject obj) {
-        RubyFieldDescriptor fieldDef = (RubyFieldDescriptor) obj;
-        this.fieldDefMap.put(fieldDef.getName(context).asJavaString(), fieldDef);
-        this.builder.addField(fieldDef.build());
-        return context.runtime.getNil();
+        return name;
     }
 
     /*
@@ -133,7 +89,7 @@ public class RubyDescriptor extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject lookup(ThreadContext context, IRubyObject fieldName) {
-        return this.fieldDefMap.get(fieldName.asJavaString());
+        return Helpers.nullToNil(fieldDescriptors.get(fieldName), context.nil);
     }
 
     /*
@@ -145,10 +101,7 @@ public class RubyDescriptor extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject msgclass(ThreadContext context) {
-        if (this.klazz == null) {
-            this.klazz = buildClassFromDescriptor(context);
-        }
-        return this.klazz;
+        return klazz;
     }
 
     /*
@@ -159,33 +112,22 @@ public class RubyDescriptor extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject each(ThreadContext context, Block block) {
-        for (Map.Entry<String, RubyFieldDescriptor> entry : fieldDefMap.entrySet()) {
+        for (Map.Entry<IRubyObject, RubyFieldDescriptor> entry : fieldDescriptors.entrySet()) {
             block.yield(context, entry.getValue());
         }
-        return context.runtime.getNil();
+        return context.nil;
     }
 
     /*
      * call-seq:
-     *     Descriptor.add_oneof(oneof) => nil
+     *    Descriptor.file_descriptor
      *
-     * Adds the given OneofDescriptor to this message type. This descriptor must not
-     * have been added to a pool yet. Raises an exception if a oneof with the same
-     * name already exists, or if any of the oneof's fields' names or numbers
-     * conflict with an existing field in this message type. All fields in the oneof
-     * are added to the message descriptor. Sub-type references (e.g. for fields of
-     * type message) are not resolved at this point.
+     * Returns the FileDescriptor object this message belongs to.
      */
-    @JRubyMethod(name = "add_oneof")
-    public IRubyObject addOneof(ThreadContext context, IRubyObject obj) {
-        RubyOneofDescriptor def = (RubyOneofDescriptor) obj;
-        builder.addOneofDecl(def.build(builder.getOneofDeclCount()));
-        for (RubyFieldDescriptor fieldDescriptor : def.getFields()) {
-            addField(context, fieldDescriptor);
-        }
-        oneofDefs.put(def.getName(context), def);
-        return context.runtime.getNil();
-    }
+     @JRubyMethod(name = "file_descriptor")
+     public IRubyObject getFileDescriptor(ThreadContext context) {
+        return RubyFileDescriptor.getRubyFileDescriptor(context, descriptor);
+     }
 
     /*
      * call-seq:
@@ -196,10 +138,10 @@ public class RubyDescriptor extends RubyObject {
      */
     @JRubyMethod(name = "each_oneof")
     public IRubyObject eachOneof(ThreadContext context, Block block) {
-        for (RubyOneofDescriptor oneofDescriptor : oneofDefs.values()) {
+        for (RubyOneofDescriptor oneofDescriptor : oneofDescriptors.values()) {
             block.yieldSpecific(context, oneofDescriptor);
         }
-        return context.runtime.getNil();
+        return context.nil;
     }
 
     /*
@@ -211,29 +153,44 @@ public class RubyDescriptor extends RubyObject {
      */
     @JRubyMethod(name = "lookup_oneof")
     public IRubyObject lookupOneof(ThreadContext context, IRubyObject name) {
-        if (name instanceof RubySymbol) {
-            name = ((RubySymbol) name).id2name();
-        }
-        return oneofDefs.containsKey(name) ? oneofDefs.get(name) : context.runtime.getNil();
+        return Helpers.nullToNil(oneofDescriptors.get(Utils.symToString(name)), context.nil);
     }
 
-    public void setDescriptor(Descriptors.Descriptor descriptor) {
+    protected FieldDescriptor getField(String name) {
+        return descriptor.findFieldByName(name);
+    }
+
+    protected void setDescriptor(ThreadContext context, Descriptor descriptor, RubyDescriptorPool pool) {
+        Ruby runtime = context.runtime;
+        Map<FieldDescriptor, RubyFieldDescriptor> cache = new HashMap();
         this.descriptor = descriptor;
+
+        // Populate the field caches
+        fieldDescriptors = new HashMap<IRubyObject, RubyFieldDescriptor>();
+        oneofDescriptors = new HashMap<IRubyObject, RubyOneofDescriptor>();
+
+        for (FieldDescriptor fieldDescriptor : descriptor.getFields()) {
+            RubyFieldDescriptor fd = (RubyFieldDescriptor) cFieldDescriptor.newInstance(context, Block.NULL_BLOCK);
+            fd.setDescriptor(context, fieldDescriptor, pool);
+            fieldDescriptors.put(runtime.newString(fieldDescriptor.getName()), fd);
+            cache.put(fieldDescriptor, fd);
+        }
+
+        for (OneofDescriptor oneofDescriptor : descriptor.getRealOneofs()) {
+            RubyOneofDescriptor ood = (RubyOneofDescriptor) cOneofDescriptor.newInstance(context, Block.NULL_BLOCK);
+            ood.setDescriptor(context, oneofDescriptor, cache);
+            oneofDescriptors.put(runtime.newString(oneofDescriptor.getName()), ood);
+        }
+
+        // Make sure our class is built
+        this.klazz = buildClassFromDescriptor(context);
     }
 
-    public Descriptors.Descriptor getDescriptor() {
-        return this.descriptor;
+    protected void setName(IRubyObject name) {
+        this.name = name;
     }
 
-    public DescriptorProtos.DescriptorProto.Builder getBuilder() {
-        return builder;
-    }
-
-    public void setMapEntry(boolean isMapEntry) {
-        this.builder.setOptions(DescriptorProtos.MessageOptions.newBuilder().setMapEntry(isMapEntry));
-    }
-
-    private RubyModule buildClassFromDescriptor(ThreadContext context) {
+    private RubyClass buildClassFromDescriptor(ThreadContext context) {
         Ruby runtime = context.runtime;
 
         ObjectAllocator allocator = new ObjectAllocator() {
@@ -255,15 +212,12 @@ public class RubyDescriptor extends RubyObject {
         return klass;
     }
 
-    protected RubyFieldDescriptor lookup(String fieldName) {
-        return fieldDefMap.get(Utils.unescapeIdentifier(fieldName));
-    }
+    private static RubyClass cFieldDescriptor;
+    private static RubyClass cOneofDescriptor;
 
+    private Descriptor descriptor;
     private IRubyObject name;
-    private RubyModule klazz;
-
-    private DescriptorProtos.DescriptorProto.Builder builder;
-    private Descriptors.Descriptor descriptor;
-    private Map<String, RubyFieldDescriptor> fieldDefMap;
-    private Map<IRubyObject, RubyOneofDescriptor> oneofDefs;
+    private Map<IRubyObject, RubyFieldDescriptor> fieldDescriptors;
+    private Map<IRubyObject, RubyOneofDescriptor> oneofDescriptors;
+    private RubyClass klazz;
 }

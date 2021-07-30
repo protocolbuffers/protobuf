@@ -38,6 +38,8 @@
 #include <google/protobuf/repeated_field.h>
 
 #include <algorithm>
+#include <cstdlib>
+#include <iterator>
 #include <limits>
 #include <list>
 #include <sstream>
@@ -53,12 +55,20 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+// Must be included last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace {
 
 using ::protobuf_unittest::TestAllTypes;
 using ::testing::ElementsAre;
+
+TEST(RepeatedField, ConstInit) {
+  PROTOBUF_CONSTINIT static RepeatedField<int> field{};  // NOLINT
+  EXPECT_TRUE(field.empty());
+}
 
 // Test operations on a small RepeatedField.
 TEST(RepeatedField, Small) {
@@ -268,6 +278,76 @@ TEST(RepeatedField, Resize) {
   EXPECT_TRUE(field.empty());
 }
 
+TEST(RepeatedField, ReserveNothing) {
+  RepeatedField<int> field;
+  EXPECT_EQ(0, field.Capacity());
+
+  field.Reserve(-1);
+  EXPECT_EQ(0, field.Capacity());
+}
+
+TEST(RepeatedField, ReserveLowerClamp) {
+  const int clamped_value = internal::CalculateReserveSize(0, 1);
+  EXPECT_EQ(internal::kRepeatedFieldLowerClampLimit, clamped_value);
+  EXPECT_EQ(clamped_value, internal::CalculateReserveSize(clamped_value, 2));
+}
+
+TEST(RepeatedField, ReserveGrowth) {
+  // Make sure the field capacity doubles in size on repeated reservation.
+  for (int size = internal::kRepeatedFieldLowerClampLimit, i = 0; i < 4;
+       ++i, size *= 2) {
+    EXPECT_EQ(size * 2, internal::CalculateReserveSize(size, size + 1));
+  }
+}
+
+TEST(RepeatedField, ReserveLarge) {
+  const int old_size = 10;
+  // This is a size we won't get by doubling:
+  const int new_size = old_size * 3 + 1;
+
+  // Reserving more than 2x current capacity should grow directly to that size.
+  EXPECT_EQ(new_size, internal::CalculateReserveSize(old_size, new_size));
+}
+
+TEST(RepeatedField, ReserveHuge) {
+  // Largest value that does not clamp to the large limit:
+  constexpr int non_clamping_limit = std::numeric_limits<int>::max() / 2;
+  ASSERT_LT(2 * non_clamping_limit, std::numeric_limits<int>::max());
+  EXPECT_LT(internal::CalculateReserveSize(non_clamping_limit,
+                                           non_clamping_limit + 1),
+            std::numeric_limits<int>::max());
+
+  // Smallest size that *will* clamp to the upper limit:
+  constexpr int min_clamping_size = std::numeric_limits<int>::max() / 2 + 1;
+  EXPECT_EQ(
+      internal::CalculateReserveSize(min_clamping_size, min_clamping_size + 1),
+      std::numeric_limits<int>::max());
+
+#ifdef PROTOBUF_TEST_ALLOW_LARGE_ALLOC
+  // The rest of this test may allocate several GB of memory, so it is only
+  // built if explicitly requested.
+  RepeatedField<int> huge_field;
+
+  // Reserve a size for huge_field that will clamp.
+  huge_field.Reserve(min_clamping_size);
+  EXPECT_GE(huge_field.Capacity(), min_clamping_size);
+  ASSERT_LT(huge_field.Capacity(), std::numeric_limits<int>::max() - 1);
+
+#ifndef PROTOBUF_ASAN
+  // The array containing all the fields is, in theory, up to MAXINT-1 in size.
+  // However, some compilers can't handle a struct whose size is larger
+  // than 2GB, and the protocol buffer format doesn't handle more than 2GB of
+  // data at once, either.  So we limit it, but the code below accesses beyond
+  // that limit.
+
+  // Allocation may return more memory than we requested. However, the updated
+  // size must still be clamped to a valid range.
+  huge_field.Reserve(huge_field.Capacity() + 1);
+  EXPECT_EQ(huge_field.Capacity(), std::numeric_limits<int>::max());
+#endif  // PROTOBUF_ASAN
+#endif  // PROTOBUF_TEST_ALLOW_LARGE_ALLOC
+}
+
 TEST(RepeatedField, MergeFrom) {
   RepeatedField<int> source, destination;
   source.Add(4);
@@ -406,6 +486,30 @@ TEST(RepeatedField, AddRange5) {
   ASSERT_EQ(me.size(), 2);
   ASSERT_EQ(me.Get(0), 1);
   ASSERT_EQ(me.Get(1), 2);
+}
+
+TEST(RepeatedField, AddAndAssignRanges) {
+  RepeatedField<int> field;
+
+  int vals[] = {2, 27, 2875, 609250};
+  field.Assign(std::begin(vals), std::end(vals));
+
+  ASSERT_EQ(field.size(), 4);
+  EXPECT_EQ(field.Get(0), 2);
+  EXPECT_EQ(field.Get(1), 27);
+  EXPECT_EQ(field.Get(2), 2875);
+  EXPECT_EQ(field.Get(3), 609250);
+
+  field.Add(std::begin(vals), std::end(vals));
+  ASSERT_EQ(field.size(), 8);
+  EXPECT_EQ(field.Get(0), 2);
+  EXPECT_EQ(field.Get(1), 27);
+  EXPECT_EQ(field.Get(2), 2875);
+  EXPECT_EQ(field.Get(3), 609250);
+  EXPECT_EQ(field.Get(4), 2);
+  EXPECT_EQ(field.Get(5), 27);
+  EXPECT_EQ(field.Get(6), 2875);
+  EXPECT_EQ(field.Get(7), 609250);
 }
 
 TEST(RepeatedField, CopyConstruct) {
@@ -740,9 +844,61 @@ TEST(RepeatedField, ClearThenReserveMore) {
   // strings.
 }
 
+TEST(RepeatedField, TestSAddFromSelf) {
+  RepeatedField<int> field;
+  field.Add(0);
+  for (int i = 0; i < 1000; i++) {
+    field.Add(field[0]);
+  }
+}
+
 // ===================================================================
 // RepeatedPtrField tests.  These pretty much just mirror the RepeatedField
 // tests above.
+
+TEST(RepeatedPtrField, ConstInit) {
+  PROTOBUF_CONSTINIT static RepeatedPtrField<std::string> field{};  // NOLINT
+  EXPECT_TRUE(field.empty());
+}
+
+// This helper overload set tests whether X::f can be called with a braced pair,
+// X::f({a, b}) of std::string iterators (specifically, pointers: That call is
+// ambiguous if and only if the call to ValidResolutionPointerRange is not.
+template <typename X>
+auto ValidResolutionPointerRange(const std::string* p)
+    -> decltype(X::f({p, p + 2}), std::true_type{});
+template <typename X>
+std::false_type ValidResolutionPointerRange(void*);
+
+TEST(RepeatedPtrField, UnambiguousConstructor) {
+  struct X {
+    static bool f(std::vector<std::string>) { return false; }
+    static bool f(google::protobuf::RepeatedPtrField<std::string>) { return true; }
+
+    static bool g(std::vector<int>) { return false; }
+    static bool g(google::protobuf::RepeatedPtrField<std::string>) { return true; }
+  };
+
+  // RepeatedPtrField has no initializer-list constructor, and a constructor
+  // from to const char* values is excluded by its constraints.
+  EXPECT_FALSE(X::f({"abc", "xyz"}));
+
+  // Construction from a pair of int* is also not ambiguous.
+  int a[5] = {};
+  EXPECT_FALSE(X::g({a, a + 5}));
+
+  // Construction from string iterators for the unique string overload "g"
+  // works.
+  // Disabling this for now, this is actually ambiguous with libstdc++.
+  // std::string b[2] = {"abc", "xyz"};
+  // EXPECT_TRUE(X::g({b, b + 2}));
+
+  // Construction from string iterators for "f" is ambiguous, since both
+  // containers are equally good.
+  //
+  // X::f({b, b + 2});  // error => ValidResolutionPointerRange is unambiguous.
+  EXPECT_FALSE(decltype(ValidResolutionPointerRange<X>(nullptr))::value);
+}
 
 TEST(RepeatedPtrField, Small) {
   RepeatedPtrField<std::string> field;
@@ -804,6 +960,30 @@ TEST(RepeatedPtrField, Large) {
 
   int min_expected_usage = 16 * sizeof(std::string);
   EXPECT_GE(field.SpaceUsedExcludingSelf(), min_expected_usage);
+}
+
+TEST(RepeatedPtrField, AddAndAssignRanges) {
+  RepeatedPtrField<std::string> field;
+
+  const char* vals[] = {"abc", "x", "yz", "xyzzy"};
+  field.Assign(std::begin(vals), std::end(vals));
+
+  ASSERT_EQ(field.size(), 4);
+  EXPECT_EQ(field.Get(0), "abc");
+  EXPECT_EQ(field.Get(1), "x");
+  EXPECT_EQ(field.Get(2), "yz");
+  EXPECT_EQ(field.Get(3), "xyzzy");
+
+  field.Add(std::begin(vals), std::end(vals));
+  ASSERT_EQ(field.size(), 8);
+  EXPECT_EQ(field.Get(0), "abc");
+  EXPECT_EQ(field.Get(1), "x");
+  EXPECT_EQ(field.Get(2), "yz");
+  EXPECT_EQ(field.Get(3), "xyzzy");
+  EXPECT_EQ(field.Get(4), "abc");
+  EXPECT_EQ(field.Get(5), "x");
+  EXPECT_EQ(field.Get(6), "yz");
+  EXPECT_EQ(field.Get(7), "xyzzy");
 }
 
 TEST(RepeatedPtrField, SwapSmallSmall) {
@@ -1927,39 +2107,35 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithStringIntData) {
   std::vector<Nested*> data;
-  TestAllTypes goldenproto;
+  Arena arena;
+  auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
-    Nested* new_data = new Nested;
+    auto* new_data = goldenproto->add_repeated_nested_message();
     new_data->set_bb(i);
     data.push_back(new_data);
-
-    new_data = goldenproto.add_repeated_nested_message();
-    new_data->set_bb(i);
   }
-  TestAllTypes testproto;
+  auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
-                testproto.mutable_repeated_nested_message()));
-  EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
+                testproto->mutable_repeated_nested_message()));
+  EXPECT_EQ(testproto->DebugString(), goldenproto->DebugString());
 }
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithString) {
   std::vector<std::string*> data;
-  TestAllTypes goldenproto;
+  Arena arena;
+  auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
-    std::string* new_data = new std::string;
+    auto* new_data = goldenproto->add_repeated_string();
     *new_data = "name-" + StrCat(i);
     data.push_back(new_data);
-
-    new_data = goldenproto.add_repeated_string();
-    *new_data = "name-" + StrCat(i);
   }
-  TestAllTypes testproto;
+  auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
-                testproto.mutable_repeated_string()));
-  EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
+                testproto->mutable_repeated_string()));
+  EXPECT_EQ(testproto->DebugString(), goldenproto->DebugString());
 }
 
 TEST_F(RepeatedFieldInsertionIteratorsTest, MoveStrings) {
@@ -1997,3 +2173,5 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

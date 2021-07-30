@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
+
 #include <google/protobuf/util/internal/expecting_objectwriter.h>
 #include <google/protobuf/util/internal/testdata/default_value_test.pb.h>
 #include <google/protobuf/util/internal/type_info_test_helper.h>

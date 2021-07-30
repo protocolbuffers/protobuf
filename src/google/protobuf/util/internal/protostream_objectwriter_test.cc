@@ -93,12 +93,6 @@ std::string GetTypeUrl(const Descriptor* descriptor) {
 }
 }  // namespace
 
-#if __cplusplus >= 201103L
-using std::get;
-#else
-using std::tr1::get;
-#endif
-
 class BaseProtoStreamObjectWriterTest
     : public ::testing::TestWithParam<testing::TypeInfoSource> {
  protected:
@@ -171,8 +165,8 @@ class BaseProtoStreamObjectWriterTest
 
 MATCHER_P(HasObjectLocation, expected,
           "Verifies the expected object location") {
-  std::string actual = get<0>(arg).ToString();
-  if (actual.compare(expected) == 0) return true;
+  std::string actual = std::get<0>(arg).ToString();
+  if (actual == expected) return true;
   *result_listener << "actual location is: " << actual;
   return false;
 }
@@ -705,6 +699,61 @@ TEST_P(ProtoStreamObjectWriterTest, ImplicitMessageList) {
   CheckOutput(expected);
 }
 
+TEST_P(ProtoStreamObjectWriterTest, DisableImplicitMessageList) {
+  options_.disable_implicit_message_list = true;
+  options_.suppress_implicit_message_list_error = true;
+  ResetProtoWriter();
+
+  Book expected;
+  // The repeated friend field of the author is empty.
+  expected.mutable_author();
+
+  EXPECT_CALL(listener_, InvalidValue(_, _, _)).Times(0);
+
+  ow_->StartObject("")
+      ->StartObject("author")
+      ->StartObject("friend")
+      ->RenderString("name", "first")
+      ->EndObject()
+      ->StartObject("friend")
+      ->RenderString("name", "second")
+      ->EndObject()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(expected);
+}
+
+TEST_P(ProtoStreamObjectWriterTest,
+       DisableImplicitMessageListWithoutErrorSuppressed) {
+  options_.disable_implicit_message_list = true;
+  ResetProtoWriter();
+
+  Book expected;
+  // The repeated friend field of the author is empty.
+  expected.mutable_author();
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(
+          _, StringPiece("friend"),
+          StringPiece(
+              "Starting an object in a repeated field but the parent object "
+              "is not a list")))
+      .With(Args<0>(HasObjectLocation("author")))
+      .Times(2);
+
+  ow_->StartObject("")
+      ->StartObject("author")
+      ->StartObject("friend")
+      ->RenderString("name", "first")
+      ->EndObject()
+      ->StartObject("friend")
+      ->RenderString("name", "second")
+      ->EndObject()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(expected);
+}
+
 TEST_P(ProtoStreamObjectWriterTest,
        LastWriteWinsOnNonRepeatedMessageFieldWithDuplicates) {
   Book expected;
@@ -1006,7 +1055,10 @@ TEST_P(ProtoStreamObjectWriterTest,
   Proto3Message expected;
   EXPECT_CALL(
       listener_,
-      InvalidValue(_, StringPiece("TYPE_ENUM"),
+      InvalidValue(_,
+                   StringPiece(
+                       "type.googleapis.com/"
+                       "proto_util_converter.testing.Proto3Message.NestedEnum"),
                    StringPiece("\"someunknownvalueyouwillneverknow\"")))
       .With(Args<0>(HasObjectLocation("enum_value")));
   ow_->StartObject("")

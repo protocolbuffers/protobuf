@@ -17,76 +17,82 @@ http_archive(
     ],
 )
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//:protobuf_deps.bzl", "protobuf_deps")
+http_archive(
+    name = "com_github_google_benchmark",
+    sha256 = "2a778d821997df7d8646c9c59b8edb9a573a6e04c534c01892a40aa524a7b68c",
+    strip_prefix = "benchmark-bf585a2789e30585b4e3ce6baf11ef2750b54677",
+    urls = [
+        "https://github.com/google/benchmark/archive/bf585a2789e30585b4e3ce6baf11ef2750b54677.zip",
+    ],
+)
 
 # Load common dependencies.
+load("//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
-load("@bazel_tools//tools/build_defs/repo:jvm.bzl", "jvm_maven_import_external")
 
 bind(
     name = "python_headers",
     actual = "//util/python:python_headers",
 )
 
-# TODO(yannic): Remove in 3.13.0.
-bind(
-    name = "gtest",
-    actual = "@com_google_googletest//:gtest",
-)
-
-# TODO(yannic): Remove in 3.13.0.
-bind(
-    name = "gtest_main",
-    actual = "@com_google_googletest//:gtest_main",
-)
-
-jvm_maven_import_external(
-    name = "guava_maven",
-    artifact = "com.google.guava:guava:18.0",
-    artifact_sha256 = "d664fbfc03d2e5ce9cab2a44fb01f1d0bf9dfebeccc1a473b1f9ea31f79f6f99",
-    server_urls = [
-        "https://jcenter.bintray.com/",
-        "https://repo1.maven.org/maven2",
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+maven_install(
+    artifacts = [
+        "com.google.code.gson:gson:2.8.6",
+        "com.google.errorprone:error_prone_annotations:2.3.2",
+        "com.google.guava:guava:30.1.1-jre",
+        "com.google.truth:truth:1.1.2",
+        "junit:junit:4.12",
+        "org.easymock:easymock:3.2",
+        "org.easymock:easymockclassextension:3.2",
     ],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
+    ],
+    # For updating instructions, see: 
+    # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
+    maven_install_json = "//:maven_install.json",
 )
+
+load("@maven//:defs.bzl", "pinned_maven_install")
+pinned_maven_install()
 
 bind(
     name = "guava",
-    actual = "@guava_maven//jar",
-)
-
-jvm_maven_import_external(
-    name = "gson_maven",
-    artifact = "com.google.code.gson:gson:2.7",
-    artifact_sha256 = "2d43eb5ea9e133d2ee2405cc14f5ee08951b8361302fdd93494a3a997b508d32",
-    server_urls = [
-        "https://jcenter.bintray.com/",
-        "https://repo1.maven.org/maven2",
-    ],
+    actual = "@maven//:com_google_guava_guava",
 )
 
 bind(
     name = "gson",
-    actual = "@gson_maven//jar",
-)
-
-jvm_maven_import_external(
-    name = "error_prone_annotations_maven",
-    artifact = "com.google.errorprone:error_prone_annotations:2.3.2",
-    artifact_sha256 = "357cd6cfb067c969226c442451502aee13800a24e950fdfde77bcdb4565a668d",
-    server_urls = [
-        "https://jcenter.bintray.com/",
-        "https://repo1.maven.org/maven2",
-    ],
+    actual = "@maven//:com_google_code_gson_gson",
 )
 
 bind(
     name = "error_prone_annotations",
-    actual = "@error_prone_annotations_maven//jar",
+    actual = "@maven//:com_google_errorprone_error_prone_annotations",
 )
 
-# For `cc_proto_blacklist_test`.
-load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+bind(
+    name = "junit",
+    actual = "@maven//:junit_junit",
+)
 
+bind(
+    name = "easymock",
+    actual = "@maven//:org_easymock_easymock",
+)
+
+bind(
+    name = "easymock_classextension",
+    actual = "@maven//:org_easymock_easymockclassextension",
+)
+
+bind(
+    name = "truth",
+    actual = "@maven//:com_google_truth_truth",
+)
+
+# For `cc_proto_blacklist_test` and `build_test`.
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()

@@ -97,7 +97,7 @@ foo.GetOrInitializeExtension(RepeatedFooExt).Add(new Baz());
 
 ### Message initialization
 
-Initialization refers to checking the status of required fields in a proto2 message. If a message is uninitialized, not all required fields are set in either the message itself or any of its submessages. In other languages, missing required fields throw errors depending on the merge method used. This could cause unforseen errors at runtime if the incorrect method is used. 
+Initialization refers to checking the status of required fields in a proto2 message. If a message is uninitialized, not all required fields are set in either the message itself or any of its submessages. In other languages, missing required fields throw errors depending on the merge method used. This could cause unforeseen errors at runtime if the incorrect method is used. 
 However, in this implementation, parsers and input streams don't check messages for initialization on their own and throw errors. Instead it's up to you to handle messages with missing required fields in whatever way you see fit.
 Checking message initialization can be done manually via the `IsInitialized` extension method in `MessageExtensions`.
 

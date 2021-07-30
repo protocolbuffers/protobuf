@@ -100,7 +100,7 @@ template <typename ImplicitWeakType>
 class ImplicitWeakTypeHandler {
  public:
   typedef MessageLite Type;
-  static const bool Moveable = false;
+  static constexpr bool Moveable = false;
 
   static inline MessageLite* NewFromPrototype(const MessageLite* prototype,
                                               Arena* arena = NULL) {
@@ -129,7 +129,7 @@ class ImplicitWeakTypeHandler {
 template <typename T>
 struct WeakRepeatedPtrField {
   using TypeHandler = internal::ImplicitWeakTypeHandler<T>;
-  WeakRepeatedPtrField() : weak() {}
+  constexpr WeakRepeatedPtrField() : weak() {}
   explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
   ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }
 

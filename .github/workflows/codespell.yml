@@ -1,0 +1,16 @@
+# GitHub Action to automate the identification of common misspellings in text files.
+# https://github.com/codespell-project/actions-codespell
+# https://github.com/codespell-project/codespell
+name: codespell
+on: [push, pull_request]
+jobs:
+  codespell:
+    name: Check for spelling errors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: codespell-project/actions-codespell@master
+        with:
+          check_filenames: true
+          skip: ./.git,./conformance/third_party,*.snk,*.pb,*.pb.cc,*.pb.h,./src/google/protobuf/testdata,./objectivec/Tests,./python/compatibility_tests/v2.5.0/tests/google/protobuf/internal,./.github/workflows/codespell.yml
+          ignore_words_list: "alow,alse,ba,cleare,copyable,cloneable,dedup,dur,errorprone,files',fo,fundementals,hel,importd,inout,leapyear,nd,nin,ois,ons,parseable,process',te,testof,ue,unparseable,wasn,wee,gae,keyserver,objext,od,optin,sur"

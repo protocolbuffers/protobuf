@@ -72,12 +72,12 @@ describe('Indexer does', () => {
 
   it('fail for invalid wire type (6)', () => {
     expect(() => buildIndex(createBufferDecoder(0x0E, 0x01), PIVOT))
-        .toThrowError('Invalid wire type: 6');
+        .toThrowError('Unexpected wire type: 6');
   });
 
   it('fail for invalid wire type (7)', () => {
     expect(() => buildIndex(createBufferDecoder(0x0F, 0x01), PIVOT))
-        .toThrowError('Invalid wire type: 7');
+        .toThrowError('Unexpected wire type: 7');
   });
 
   it('index varint', () => {
@@ -269,33 +269,8 @@ describe('Indexer does', () => {
 
   it('fail on unmatched stop group', () => {
     const data = createBufferDecoder(0x0C, 0x01);
-    if (CHECK_CRITICAL_STATE) {
-      expect(() => buildIndex(data, PIVOT))
-          .toThrowError('Found unmatched stop group.');
-    } else {
-      // Note in unchecked mode we produce invalid output for invalid inputs.
-      // This test just documents our behavior in those cases.
-      // These values might change at any point and are not considered
-      // what the implementation should be doing here.
-      const storage = buildIndex(data, PIVOT);
-
-      expect(getStorageSize(storage)).toBe(1);
-      const entryArray = storage.get(1).getIndexArray();
-      expect(entryArray).not.toBeUndefined();
-      expect(entryArray.length).toBe(1);
-      const entry = entryArray[0];
-
-      expect(Field.getWireType(entry)).toBe(WireType.END_GROUP);
-      expect(Field.getStartIndex(entry)).toBe(1);
-
-      const entryArray2 = storage.get(0).getIndexArray();
-      expect(entryArray2).not.toBeUndefined();
-      expect(entryArray2.length).toBe(1);
-      const entry2 = entryArray2[0];
-
-      expect(Field.getWireType(entry2)).toBe(WireType.FIXED64);
-      expect(Field.getStartIndex(entry2)).toBe(2);
-    }
+    expect(() => buildIndex(data, PIVOT))
+        .toThrowError('Unexpected wire type: 4');
   });
 
   it('fail for groups without matching stop group', () => {

@@ -722,8 +722,8 @@ public class JsonFormatTest extends TestCase {
     mergeFromJson(
         "{\n" + "  int32ToInt32Map: {1: 2},\n" + "  stringToInt32Map: {hello: 3}\n" + "}", builder);
     TestMap message = builder.build();
-    assertEquals(2, message.getInt32ToInt32Map().get(1).intValue());
-    assertEquals(3, message.getStringToInt32Map().get("hello").intValue());
+    assertEquals(2, message.getInt32ToInt32MapMap().get(1).intValue());
+    assertEquals(3, message.getStringToInt32MapMap().get("hello").intValue());
   }
 
   public void testWrappers() throws Exception {
@@ -1697,6 +1697,7 @@ public class JsonFormatTest extends TestCase {
   public void testJsonException() throws Exception {
     InputStream throwingInputStream =
         new InputStream() {
+          @Override
           public int read() throws IOException {
             throw new IOException("12345");
           }

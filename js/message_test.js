@@ -121,6 +121,8 @@ goog.require('proto.jspb.test.TestAllowAliasEnum');
 // CommonJS-LoadFromFile: testlargenumbers_pb proto.jspb.test
 goog.require('proto.jspb.test.MessageWithLargeFieldNumbers');
 
+goog.require('proto.jspb.test.simple1');
+
 describe('Message test suite', function() {
   var stubs = new goog.testing.PropertyReplacer();
 
@@ -185,7 +187,6 @@ describe('Message test suite', function() {
           $jspbMessageInstance: foo
         },
         result);
-
   });
 
   it('testMissingFields', function() {
@@ -209,7 +210,6 @@ describe('Message test suite', function() {
           aFloatingPointField: undefined,
         },
         result);
-
   });
 
   it('testNestedComplexMessage', function() {
@@ -1108,5 +1108,4 @@ describe('Message test suite', function() {
     message.setAInt(42);
     assertEquals(42, message.getAInt());
   });
-
 });

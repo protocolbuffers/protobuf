@@ -38,6 +38,7 @@ Modules and Packages
    google/protobuf/duration_pb2
    google/protobuf/empty_pb2
    google/protobuf/field_mask_pb2
+   google/protobuf/internal/containers
    google/protobuf/json_format
    google/protobuf/message
    google/protobuf/message_factory

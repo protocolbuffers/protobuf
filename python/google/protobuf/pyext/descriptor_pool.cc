@@ -176,9 +176,10 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
 // The public DescriptorPool constructor.
 static PyObject* New(PyTypeObject* type,
                      PyObject* args, PyObject* kwargs) {
-  static char* kwlist[] = {"descriptor_db", 0};
+  static const char* kwlist[] = {"descriptor_db", 0};
   PyObject* py_database = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &py_database)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O",
+                                   const_cast<char**>(kwlist), &py_database)) {
     return NULL;
   }
   DescriptorDatabase* database = NULL;
@@ -218,7 +219,7 @@ static int GcClear(PyObject* pself) {
 }
 
 PyObject* SetErrorFromCollector(DescriptorPool::ErrorCollector* self,
-                                char* name, char* error_type) {
+                                const char* name, const char* error_type) {
   BuildFileErrorCollector* error_collector =
       reinterpret_cast<BuildFileErrorCollector*>(self);
   if (error_collector && !error_collector->error_message.empty()) {
@@ -240,7 +241,7 @@ static PyObject* FindMessageByName(PyObject* self, PyObject* arg) {
 
   const Descriptor* message_descriptor =
       reinterpret_cast<PyDescriptorPool*>(self)->pool->FindMessageTypeByName(
-          std::string(name, name_size));
+          StringParam(name, name_size));
 
   if (message_descriptor == NULL) {
     return SetErrorFromCollector(
@@ -264,7 +265,7 @@ static PyObject* FindFileByName(PyObject* self, PyObject* arg) {
 
   PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
   const FileDescriptor* file_descriptor =
-      py_pool->pool->FindFileByName(std::string(name, name_size));
+      py_pool->pool->FindFileByName(StringParam(name, name_size));
 
   if (file_descriptor == NULL) {
     return SetErrorFromCollector(py_pool->error_collector, name, "file");
@@ -280,7 +281,7 @@ PyObject* FindFieldByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const FieldDescriptor* field_descriptor =
-      self->pool->FindFieldByName(std::string(name, name_size));
+      self->pool->FindFieldByName(StringParam(name, name_size));
   if (field_descriptor == NULL) {
     return SetErrorFromCollector(self->error_collector, name, "field");
   }
@@ -301,7 +302,7 @@ PyObject* FindExtensionByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const FieldDescriptor* field_descriptor =
-      self->pool->FindExtensionByName(std::string(name, name_size));
+      self->pool->FindExtensionByName(StringParam(name, name_size));
   if (field_descriptor == NULL) {
     return SetErrorFromCollector(self->error_collector, name,
                                  "extension field");
@@ -323,7 +324,7 @@ PyObject* FindEnumTypeByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const EnumDescriptor* enum_descriptor =
-      self->pool->FindEnumTypeByName(std::string(name, name_size));
+      self->pool->FindEnumTypeByName(StringParam(name, name_size));
   if (enum_descriptor == NULL) {
     return SetErrorFromCollector(self->error_collector, name, "enum");
   }
@@ -344,7 +345,7 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const OneofDescriptor* oneof_descriptor =
-      self->pool->FindOneofByName(std::string(name, name_size));
+      self->pool->FindOneofByName(StringParam(name, name_size));
   if (oneof_descriptor == NULL) {
     return SetErrorFromCollector(self->error_collector, name, "oneof");
   }
@@ -366,7 +367,7 @@ static PyObject* FindServiceByName(PyObject* self, PyObject* arg) {
 
   const ServiceDescriptor* service_descriptor =
       reinterpret_cast<PyDescriptorPool*>(self)->pool->FindServiceByName(
-          std::string(name, name_size));
+          StringParam(name, name_size));
   if (service_descriptor == NULL) {
     return SetErrorFromCollector(
         reinterpret_cast<PyDescriptorPool*>(self)->error_collector, name,
@@ -386,7 +387,7 @@ static PyObject* FindMethodByName(PyObject* self, PyObject* arg) {
 
   const MethodDescriptor* method_descriptor =
       reinterpret_cast<PyDescriptorPool*>(self)->pool->FindMethodByName(
-          std::string(name, name_size));
+          StringParam(name, name_size));
   if (method_descriptor == NULL) {
     return SetErrorFromCollector(
         reinterpret_cast<PyDescriptorPool*>(self)->error_collector, name,
@@ -406,7 +407,7 @@ static PyObject* FindFileContainingSymbol(PyObject* self, PyObject* arg) {
 
   const FileDescriptor* file_descriptor =
       reinterpret_cast<PyDescriptorPool*>(self)->pool->FindFileContainingSymbol(
-          std::string(name, name_size));
+          StringParam(name, name_size));
   if (file_descriptor == NULL) {
     return SetErrorFromCollector(
         reinterpret_cast<PyDescriptorPool*>(self)->error_collector, name,

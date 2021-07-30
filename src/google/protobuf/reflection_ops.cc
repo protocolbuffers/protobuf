@@ -43,7 +43,6 @@
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -85,10 +84,8 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
                           google::protobuf::MessageFactory::generated_factory());
 
   std::vector<const FieldDescriptor*> fields;
-  from_reflection->ListFields(from, &fields);
-  for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
-
+  from_reflection->ListFieldsOmitStripped(from, &fields);
+  for (const FieldDescriptor* field : fields) {
     if (field->is_repeated()) {
       // Use map reflection if both are in map status and have the
       // same map type to avoid sync with repeated field.
@@ -180,12 +177,74 @@ void ReflectionOps::Clear(Message* message) {
   const Reflection* reflection = GetReflectionOrDie(*message);
 
   std::vector<const FieldDescriptor*> fields;
-  reflection->ListFields(*message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
-    reflection->ClearField(message, fields[i]);
+  reflection->ListFieldsOmitStripped(*message, &fields);
+  for (const FieldDescriptor* field : fields) {
+    reflection->ClearField(message, field);
   }
 
   reflection->MutableUnknownFields(message)->Clear();
+}
+
+bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
+                                  bool check_descendants) {
+  const Descriptor* descriptor = message.GetDescriptor();
+  const Reflection* reflection = GetReflectionOrDie(message);
+  if (const int field_count = descriptor->field_count()) {
+    const FieldDescriptor* begin = descriptor->field(0);
+    const FieldDescriptor* end = begin + field_count;
+    GOOGLE_DCHECK_EQ(descriptor->field(field_count - 1), end - 1);
+
+    if (check_fields) {
+      // Check required fields of this message.
+      for (const FieldDescriptor* field = begin; field != end; ++field) {
+        if (field->is_required() && !reflection->HasField(message, field)) {
+          return false;
+        }
+      }
+    }
+
+    if (check_descendants) {
+      for (const FieldDescriptor* field = begin; field != end; ++field) {
+        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+          const Descriptor* message_type = field->message_type();
+          if (PROTOBUF_PREDICT_FALSE(message_type->options().map_entry())) {
+            if (message_type->field(1)->cpp_type() ==
+                FieldDescriptor::CPPTYPE_MESSAGE) {
+              const MapFieldBase* map_field =
+                  reflection->GetMapData(message, field);
+              if (map_field->IsMapValid()) {
+                MapIterator it(const_cast<Message*>(&message), field);
+                MapIterator end(const_cast<Message*>(&message), field);
+                for (map_field->MapBegin(&it), map_field->MapEnd(&end);
+                     it != end; ++it) {
+                  if (!it.GetValueRef().GetMessageValue().IsInitialized()) {
+                    return false;
+                  }
+                }
+              }
+            }
+          } else if (field->is_repeated()) {
+            const int size = reflection->FieldSize(message, field);
+            for (int j = 0; j < size; j++) {
+              if (!reflection->GetRepeatedMessage(message, field, j)
+                       .IsInitialized()) {
+                return false;
+              }
+            }
+          } else if (reflection->HasField(message, field)) {
+            if (!reflection->GetMessage(message, field).IsInitialized()) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+  }
+  if (check_descendants && reflection->HasExtensionSet(message) &&
+      !reflection->GetExtensionSet(message).IsInitialized()) {
+    return false;
+  }
+  return true;
 }
 
 bool ReflectionOps::IsInitialized(const Message& message) {
@@ -206,9 +265,10 @@ bool ReflectionOps::IsInitialized(const Message& message) {
 
   // Check that sub-messages are initialized.
   std::vector<const FieldDescriptor*> fields;
-  reflection->ListFields(message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
+  // Should be safe to skip stripped fields because required fields are not
+  // stripped.
+  reflection->ListFieldsOmitStripped(message, &fields);
+  for (const FieldDescriptor* field : fields) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 
       if (field->is_map()) {
@@ -266,8 +326,7 @@ void ReflectionOps::DiscardUnknownFields(Message* message) {
   // messages present.
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
+  for (const FieldDescriptor* field : fields) {
     // Skip over non-message fields.
     if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
       continue;
@@ -337,9 +396,8 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
 
   // Check sub-messages.
   std::vector<const FieldDescriptor*> fields;
-  reflection->ListFields(message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
+  reflection->ListFieldsOmitStripped(message, &fields);
+  for (const FieldDescriptor* field : fields) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 
       if (field->is_repeated()) {
@@ -360,21 +418,37 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
   }
 }
 
-void GenericSwap(Message* m1, Message* m2) {
-  Arena* m2_arena = m2->GetArena();
-  GOOGLE_DCHECK(m1->GetArena() != m2_arena);
+void GenericSwap(Message* lhs, Message* rhs) {
+#ifndef PROTOBUF_FORCE_COPY_IN_SWAP
+  GOOGLE_DCHECK(Arena::InternalHelper<Message>::GetOwningArena(lhs) !=
+         Arena::InternalHelper<Message>::GetOwningArena(rhs));
+  GOOGLE_DCHECK(Arena::InternalHelper<Message>::GetOwningArena(lhs) != nullptr ||
+         Arena::InternalHelper<Message>::GetOwningArena(rhs) != nullptr);
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  // At least one of these must have an arena, so make `rhs` point to it.
+  Arena* arena = Arena::InternalHelper<Message>::GetOwningArena(rhs);
+  if (arena == nullptr) {
+    std::swap(lhs, rhs);
+    arena = Arena::InternalHelper<Message>::GetOwningArena(rhs);
+  }
 
-  // Copy semantics in this case. We try to improve efficiency by placing the
-  // temporary on |m2|'s arena so that messages are copied twice rather than
-  // three times.
-  Message* tmp = m2->New(m2_arena);
-  std::unique_ptr<Message> tmp_deleter(m2_arena == nullptr ? tmp : nullptr);
-  tmp->CheckTypeAndMergeFrom(*m1);
-  m1->Clear();
-  m1->CheckTypeAndMergeFrom(*m2);
-  m2->GetReflection()->Swap(tmp, m2);
+  // Improve efficiency by placing the temporary on an arena so that messages
+  // are copied twice rather than three times.
+  Message* tmp = rhs->New(arena);
+  tmp->CheckTypeAndMergeFrom(*lhs);
+  lhs->Clear();
+  lhs->CheckTypeAndMergeFrom(*rhs);
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+  rhs->Clear();
+  rhs->CheckTypeAndMergeFrom(*tmp);
+  if (arena == nullptr) delete tmp;
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
+  rhs->GetReflection()->Swap(tmp, rhs);
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
 }
 
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

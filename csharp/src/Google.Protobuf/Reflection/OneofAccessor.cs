@@ -43,19 +43,31 @@ namespace Google.Protobuf.Reflection
     {
         private readonly Func<IMessage, int> caseDelegate;
         private readonly Action<IMessage> clearDelegate;
-        private OneofDescriptor descriptor;
 
-        internal OneofAccessor(PropertyInfo caseProperty, MethodInfo clearMethod, OneofDescriptor descriptor)
+        private OneofAccessor(OneofDescriptor descriptor, Func<IMessage, int> caseDelegate, Action<IMessage> clearDelegate)
         {
-            if (!caseProperty.CanRead)
-            {
-                throw new ArgumentException("Cannot read from property");
-            }
-            this.descriptor = descriptor;
-            caseDelegate = ReflectionUtil.CreateFuncIMessageInt32(caseProperty.GetGetMethod());
+            Descriptor = descriptor;
+            this.caseDelegate = caseDelegate;
+            this.clearDelegate = clearDelegate;
+        }
 
-            this.descriptor = descriptor;
-            clearDelegate = ReflectionUtil.CreateActionIMessage(clearMethod);
+        internal static OneofAccessor ForRegularOneof(
+            OneofDescriptor descriptor,
+            PropertyInfo caseProperty,
+            MethodInfo clearMethod) =>
+            new OneofAccessor(
+                descriptor,
+                ReflectionUtil.CreateFuncIMessageInt32(caseProperty.GetGetMethod()),
+                ReflectionUtil.CreateActionIMessage(clearMethod));
+
+        internal static OneofAccessor ForSyntheticOneof(OneofDescriptor descriptor)
+        {
+            // Note: descriptor.Fields will be null when this method is called, because we haven't
+            // cross-linked yet. But by the time the delegates are called by user code, all will be
+            // well. (That's why we capture the descriptor itself rather than a field.)
+            return new OneofAccessor(descriptor,
+                message => descriptor.Fields[0].Accessor.HasValue(message) ? descriptor.Fields[0].FieldNumber : 0,
+                message => descriptor.Fields[0].Accessor.Clear(message));
         }
 
         /// <summary>
@@ -64,15 +76,12 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// The descriptor of the oneof.
         /// </value>
-        public OneofDescriptor Descriptor { get { return descriptor; } }
+        public OneofDescriptor Descriptor { get; }
 
         /// <summary>
         /// Clears the oneof in the specified message.
         /// </summary>
-        public void Clear(IMessage message)
-        {
-            clearDelegate(message);
-        }
+        public void Clear(IMessage message) => clearDelegate(message);
 
         /// <summary>
         /// Indicates which field in the oneof is set for specified message
@@ -80,11 +89,9 @@ namespace Google.Protobuf.Reflection
         public FieldDescriptor GetCaseFieldDescriptor(IMessage message)
         {
             int fieldNumber = caseDelegate(message);
-            if (fieldNumber > 0)
-            {
-                return descriptor.ContainingType.FindFieldByNumber(fieldNumber);
-            }
-            return null;
+            return fieldNumber > 0
+                ? Descriptor.ContainingType.FindFieldByNumber(fieldNumber)
+                : null;
         }
     }
 }

@@ -841,8 +841,7 @@ class MessageTest(unittest.TestCase):
     m1.MergeFromString(m2.SerializeToString())
     self.assertEqual(1, m1.optional_nested_message.bb)
 
-  @unittest.skipIf(six.PY2, 'memoryview objects are not supported on py2')
-  def testMergeFromStringUsingMemoryViewWorksInPy3(self, message_module):
+  def testMergeFromStringUsingMemoryView(self, message_module):
     m2 = message_module.TestAllTypes()
     m2.optional_string = 'scalar string'
     m2.repeated_string.append('repeated string')
@@ -863,12 +862,6 @@ class MessageTest(unittest.TestCase):
     self.assertIsInstance(m1.repeated_bytes[0], bytes)
     self.assertIsInstance(m1.optional_string, six.text_type)
     self.assertIsInstance(m1.repeated_string[0], six.text_type)
-
-  @unittest.skipIf(six.PY3, 'memoryview is supported by py3')
-  def testMergeFromStringUsingMemoryViewIsPy2Error(self, message_module):
-    memview = memoryview(b'')
-    with self.assertRaises(TypeError):
-      message_module.TestAllTypes.FromString(memview)
 
   def testMergeFromEmpty(self, message_module):
     m1 = message_module.TestAllTypes()
@@ -1059,7 +1052,7 @@ class MessageTest(unittest.TestCase):
     self.assertIsInstance(m.optional_string, six.text_type)
 
   def testLongValuedSlice(self, message_module):
-    """It should be possible to use long-valued indicies in slices
+    """It should be possible to use long-valued indices in slices.
 
     This didn't used to work in the v2 C++ implementation.
     """
@@ -1675,6 +1668,17 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(False, message.optional_bool)
     self.assertEqual(0, message.optional_nested_message.bb)
 
+  def testProto3ParserDropDefaultScalar(self):
+    message_proto2 = unittest_pb2.TestAllTypes()
+    message_proto2.optional_int32 = 0
+    message_proto2.optional_string = ''
+    message_proto2.optional_bytes = b''
+    self.assertEqual(len(message_proto2.ListFields()), 3)
+
+    message_proto3 = unittest_proto3_arena_pb2.TestAllTypes()
+    message_proto3.ParseFromString(message_proto2.SerializeToString())
+    self.assertEqual(len(message_proto3.ListFields()), 0)
+
   def testProto3Optional(self):
     msg = test_proto3_optional_pb2.TestProto3Optional()
     self.assertFalse(msg.HasField('optional_int32'))
@@ -2095,6 +2099,11 @@ class Proto3Test(unittest.TestCase):
     msg.MergeFromString(msg2.SerializeToString())
     self.assertEqual(msg.map_int32_foreign_message[222].d, 20)
     self.assertNotEqual(msg.map_int32_foreign_message[222].c, 123)
+
+    # Merge a dict to map field is not accepted
+    with self.assertRaises(AttributeError):
+      m1.map_int32_all_types.MergeFrom(
+          {1: unittest_proto3_arena_pb2.TestAllTypes()})
 
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()

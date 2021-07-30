@@ -26,6 +26,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\cshar
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_names.h" include\google\protobuf\compiler\csharp\csharp_names.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\importer.h" include\google\protobuf\compiler\importer.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_generator.h" include\google\protobuf\compiler\java\java_generator.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_kotlin_generator.h" include\google\protobuf\compiler\java\java_kotlin_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_names.h" include\google\protobuf\compiler\java\java_names.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\js\js_generator.h" include\google\protobuf\compiler\js\js_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\js\well_known_types_embed.h" include\google\protobuf\compiler\js\well_known_types_embed.h
@@ -45,15 +46,18 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\dynamic_message.h" in
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\empty.pb.h" include\google\protobuf\empty.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\extension_set.h" include\google\protobuf\extension_set.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\extension_set_inl.h" include\google\protobuf\extension_set_inl.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\field_access_listener.h" include\google\protobuf\field_access_listener.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\field_mask.pb.h" include\google\protobuf\field_mask.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_enum_reflection.h" include\google\protobuf\generated_enum_reflection.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_enum_util.h" include\google\protobuf\generated_enum_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_reflection.h" include\google\protobuf\generated_message_reflection.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_table_driven.h" include\google\protobuf\generated_message_table_driven.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_tctable_decl.h" include\google\protobuf\generated_message_tctable_decl.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_tctable_impl.h" include\google\protobuf\generated_message_tctable_impl.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_tctable_impl.inc" include\google\protobuf\generated_message_tctable_impl.inc
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_util.h" include\google\protobuf\generated_message_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\has_bits.h" include\google\protobuf\has_bits.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\implicit_weak_message.h" include\google\protobuf\implicit_weak_message.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\inlined_string_field.h" include\google\protobuf\inlined_string_field.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\coded_stream.h" include\google\protobuf\io\coded_stream.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\gzip_stream.h" include\google\protobuf\io\gzip_stream.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\io_win32.h" include\google\protobuf\io\io_win32.h
@@ -88,7 +92,6 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\bytestream.h" i
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\callback.h" include\google\protobuf\stubs\callback.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\casts.h" include\google\protobuf\stubs\casts.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\common.h" include\google\protobuf\stubs\common.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\fastmem.h" include\google\protobuf\stubs\fastmem.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\hash.h" include\google\protobuf\stubs\hash.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\logging.h" include\google\protobuf\stubs\logging.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\macros.h" include\google\protobuf\stubs\macros.h

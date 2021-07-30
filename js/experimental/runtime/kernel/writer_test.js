@@ -148,7 +148,7 @@ describe('Writer.writeBufferDecoder does', () => {
     const expected = createArrayBuffer(
         0x08, /* varint start= */ 0xFF, /* varint end= */ 0x01, 0x08, 0x01);
     writer.writeBufferDecoder(
-        BufferDecoder.fromArrayBuffer(expected), 1, WireType.VARINT);
+        BufferDecoder.fromArrayBuffer(expected), 1, WireType.VARINT, 1);
     const result = writer.getAndResetResultBuffer();
     expect(result).toEqual(arrayBufferSlice(expected, 1, 3));
   });
@@ -159,7 +159,7 @@ describe('Writer.writeBufferDecoder does', () => {
         0x09, /* fixed64 start= */ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
         /* fixed64 end= */ 0x08, 0x08, 0x01);
     writer.writeBufferDecoder(
-        BufferDecoder.fromArrayBuffer(expected), 1, WireType.FIXED64);
+        BufferDecoder.fromArrayBuffer(expected), 1, WireType.FIXED64, 1);
     const result = writer.getAndResetResultBuffer();
     expect(result).toEqual(arrayBufferSlice(expected, 1, 9));
   });
@@ -170,7 +170,7 @@ describe('Writer.writeBufferDecoder does', () => {
         0xA, /* length= */ 0x03, /* data start= */ 0x01, 0x02,
         /* data end= */ 0x03, 0x08, 0x01);
     writer.writeBufferDecoder(
-        BufferDecoder.fromArrayBuffer(expected), 1, WireType.DELIMITED);
+        BufferDecoder.fromArrayBuffer(expected), 1, WireType.DELIMITED, 1);
     const result = writer.getAndResetResultBuffer();
     expect(result).toEqual(arrayBufferSlice(expected, 1, 5));
   });
@@ -181,7 +181,7 @@ describe('Writer.writeBufferDecoder does', () => {
         0xB, /* group start= */ 0x08, 0x01, /* nested group start= */ 0x0B,
         /* nested group end= */ 0x0C, /* group end= */ 0x0C, 0x08, 0x01);
     writer.writeBufferDecoder(
-        BufferDecoder.fromArrayBuffer(expected), 1, WireType.START_GROUP);
+        BufferDecoder.fromArrayBuffer(expected), 1, WireType.START_GROUP, 1);
     const result = writer.getAndResetResultBuffer();
     expect(result).toEqual(arrayBufferSlice(expected, 1, 6));
   });
@@ -192,7 +192,7 @@ describe('Writer.writeBufferDecoder does', () => {
         0x09, /* fixed64 start= */ 0x01, 0x02, 0x03, /* fixed64 end= */ 0x04,
         0x08, 0x01);
     writer.writeBufferDecoder(
-        BufferDecoder.fromArrayBuffer(expected), 1, WireType.FIXED32);
+        BufferDecoder.fromArrayBuffer(expected), 1, WireType.FIXED32, 1);
     const result = writer.getAndResetResultBuffer();
     expect(result).toEqual(arrayBufferSlice(expected, 1, 5));
   });
@@ -203,7 +203,7 @@ describe('Writer.writeBufferDecoder does', () => {
     const subBuffer = arrayBufferSlice(buffer, 0, 2);
     expect(
         () => writer.writeBufferDecoder(
-            BufferDecoder.fromArrayBuffer(subBuffer), 0, WireType.DELIMITED))
+            BufferDecoder.fromArrayBuffer(subBuffer), 0, WireType.DELIMITED, 1))
         .toThrow();
   });
 });

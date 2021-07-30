@@ -137,14 +137,10 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
   // of the data to compare to.
   std::map<std::string, std::string> vpath_map;
   std::map<std::string, std::string> rpath_map;
-  rpath_map
-      ["third_party/protobuf_legacy_opensource/src/google/protobuf/"
-       "test_messages_proto2"] =
-          "net/proto2/z_generated_example/test_messages_proto2";
-  rpath_map
-      ["third_party/protobuf_legacy_opensource/src/google/protobuf/"
-       "test_messages_proto3"] =
-          "net/proto2/z_generated_example/test_messages_proto3";
+  rpath_map["third_party/protobuf/src/google/protobuf/test_messages_proto2"] =
+      "net/proto2/z_generated_example/test_messages_proto2";
+  rpath_map["third_party/protobuf/src/google/protobuf/test_messages_proto3"] =
+      "net/proto2/z_generated_example/test_messages_proto3";
   rpath_map["net/proto2/internal/proto2_weak"] =
       "net/proto2/z_generated_example/proto2_weak";
 

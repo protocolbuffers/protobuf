@@ -313,11 +313,11 @@ bool MessageLite::ParsePartialFromBoundedZeroCopyStream(
   return ParseFrom<kParsePartial>(internal::BoundedZCIS{input, size});
 }
 
-bool MessageLite::ParseFromString(const std::string& data) {
+bool MessageLite::ParseFromString(ConstStringParam data) {
   return ParseFrom<kParse>(data);
 }
 
-bool MessageLite::ParsePartialFromString(const std::string& data) {
+bool MessageLite::ParsePartialFromString(ConstStringParam data) {
   return ParseFrom<kParsePartial>(data);
 }
 
@@ -329,7 +329,7 @@ bool MessageLite::ParsePartialFromArray(const void* data, int size) {
   return ParseFrom<kParsePartial>(as_string_view(data, size));
 }
 
-bool MessageLite::MergeFromString(const std::string& data) {
+bool MessageLite::MergeFromString(ConstStringParam data) {
   return ParseFrom<kMerge>(data);
 }
 
@@ -389,7 +389,7 @@ bool MessageLite::SerializePartialToCodedStream(
   }
   int final_byte_count = output->ByteCount();
 
-  if (final_byte_count - original_byte_count != size) {
+  if (final_byte_count - original_byte_count != static_cast<int64>(size)) {
     ByteSizeConsistencyError(size, ByteSizeLong(),
                              final_byte_count - original_byte_count, *this);
   }
@@ -488,7 +488,7 @@ bool MessageLite::SerializePartialToArray(void* data, int size) const {
                << " exceeded maximum protobuf size of 2GB: " << byte_size;
     return false;
   }
-  if (size < byte_size) return false;
+  if (size < static_cast<int64>(byte_size)) return false;
   uint8* start = reinterpret_cast<uint8*>(data);
   SerializeToArrayImpl(*this, start, byte_size);
   return true;
@@ -527,6 +527,23 @@ template <>
 void GenericTypeHandler<std::string>::Merge(const std::string& from,
                                             std::string* to) {
   *to = from;
+}
+
+// Non-inline variants of std::string specializations for
+// various InternalMetadata routines.
+template <>
+void InternalMetadata::DoClear<std::string>() {
+  mutable_unknown_fields<std::string>()->clear();
+}
+
+template <>
+void InternalMetadata::DoMergeFrom<std::string>(const std::string& other) {
+  mutable_unknown_fields<std::string>()->append(other);
+}
+
+template <>
+void InternalMetadata::DoSwap<std::string>(std::string* other) {
+  mutable_unknown_fields<std::string>()->swap(*other);
 }
 
 }  // namespace internal
@@ -581,3 +598,5 @@ void ShutdownProtobufLibrary() {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

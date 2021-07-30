@@ -56,10 +56,12 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   }
   Rep* old_rep = rep_;
   Arena* arena = GetArena();
-  new_size = std::max(kMinRepeatedFieldAllocationSize,
+  new_size = std::max(internal::kRepeatedFieldLowerClampLimit,
                       std::max(total_size_ * 2, new_size));
-  GOOGLE_CHECK_LE(new_size, (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
-                         sizeof(old_rep->elements[0]))
+  GOOGLE_CHECK_LE(
+      static_cast<int64>(new_size),
+      static_cast<int64>((std::numeric_limits<size_t>::max() - kRepHeaderSize) /
+                         sizeof(old_rep->elements[0])))
       << "Requested size is too large to fit into size_t.";
   size_t bytes = kRepHeaderSize + sizeof(old_rep->elements[0]) * new_size;
   if (arena == NULL) {
@@ -96,6 +98,15 @@ void RepeatedPtrFieldBase::Reserve(int new_size) {
   }
 }
 
+void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
+  if (!rep_ || rep_->allocated_size == total_size_) {
+    InternalExtend(1);  // Equivalent to "Reserve(total_size_ + 1)"
+  }
+  ++rep_->allocated_size;
+  rep_->elements[current_size_++] = obj;
+  return obj;
+}
+
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
   if (rep_ == NULL) return;
   // Close up a gap of "num" elements starting at offset "start".
@@ -123,22 +134,16 @@ MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
 }  // namespace internal
 
 
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
-    RepeatedField<bool>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
-    RepeatedField<int32>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
-    RepeatedField<uint32>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
-    RepeatedField<int64>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
-    RepeatedField<uint64>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
-    RepeatedField<float>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
-    RepeatedField<double>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
-    RepeatedPtrField<std::string>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<bool>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int32>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint32>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int64>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint64>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<float>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<double>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedPtrField<std::string>;
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

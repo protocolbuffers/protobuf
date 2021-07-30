@@ -35,7 +35,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__
 
+#include <cstdint>
 #include <string>
+
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -50,6 +52,8 @@ namespace java {
 // of '-'.
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
+
+bool IsForbiddenKotlin(const std::string& field_name);
 
 // If annotation_file is non-empty, prints a javax.annotation.Generated
 // annotation to the given Printer. annotation_file will be referenced in the
@@ -69,6 +73,13 @@ void PrintEnumVerifierLogic(io::Printer* printer,
                             const std::map<std::string, std::string>& variables,
                             const char* var_name,
                             const char* terminating_string, bool enforce_lite);
+
+// Converts a name to camel-case. If cap_first_letter is true, capitalize the
+// first letter.
+std::string ToCamelCase(const std::string& input, bool lower_first);
+
+char ToUpperCh(char ch);
+char ToLowerCh(char ch);
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
@@ -95,9 +106,6 @@ std::string CamelCaseFieldName(const FieldDescriptor* field);
 // outermost file scope.
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor);
 
-// Strips ".proto" or ".protodevel" from the end of a filename.
-std::string StripProto(const std::string& filename);
-
 // Gets the unqualified class name for the file.  For each .proto file, there
 // will be one Java class containing all the immutable messages and another
 // Java class containing all the mutable messages.
@@ -105,20 +113,10 @@ std::string StripProto(const std::string& filename);
 std::string FileClassName(const FileDescriptor* file, bool immutable = true);
 
 // Returns the file's Java package name.
-std::string FileJavaPackage(const FileDescriptor* file);
 std::string FileJavaPackage(const FileDescriptor* file, bool immutable);
 
 // Returns output directory for the given package name.
 std::string JavaPackageToDir(std::string package_name);
-
-// TODO(xiaofeng): the following methods are kept for they are exposed
-// publicly in //net/proto2/compiler/java/public/names.h. They return
-// immutable names only and should be removed after mutable API is
-// integrated into google3.
-std::string ClassName(const Descriptor* descriptor);
-std::string ClassName(const EnumDescriptor* descriptor);
-std::string ClassName(const ServiceDescriptor* descriptor);
-std::string ClassName(const FileDescriptor* descriptor);
 
 // Comma-separate list of option-specified interfaces implemented by the
 // Message, to follow the "implements" declaration of the Message definition.
@@ -157,6 +155,7 @@ std::string GetOneofStoredType(const FieldDescriptor* field);
 // Whether we should generate multiple java files for messages.
 inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
                               bool immutable) {
+  (void) immutable;
   return descriptor->options().java_multiple_files();
 }
 
@@ -226,6 +225,10 @@ const char* PrimitiveTypeName(JavaType type);
 // types.
 const char* BoxedPrimitiveTypeName(JavaType type);
 
+// Kotlin source does not distinguish between primitives and non-primitives,
+// but does use Kotlin-specific qualified types for them.
+const char* KotlinTypeName(JavaType type);
+
 // Get the name of the java enum constant representing this type. E.g.,
 // "INT32" for FieldDescriptor::TYPE_INT32. The enum constant's full
 // name is "com.google.protobuf.WireFormat.FieldType.INT32".
@@ -242,15 +245,15 @@ bool IsDefaultValueJavaDefault(const FieldDescriptor* field);
 bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field);
 
 // Does this message class have descriptor and reflection methods?
-inline bool HasDescriptorMethods(const Descriptor* descriptor,
+inline bool HasDescriptorMethods(const Descriptor* /* descriptor */,
                                  bool enforce_lite) {
   return !enforce_lite;
 }
-inline bool HasDescriptorMethods(const EnumDescriptor* descriptor,
+inline bool HasDescriptorMethods(const EnumDescriptor* /* descriptor */,
                                  bool enforce_lite) {
   return !enforce_lite;
 }
-inline bool HasDescriptorMethods(const FileDescriptor* descriptor,
+inline bool HasDescriptorMethods(const FileDescriptor* /* descriptor */,
                                  bool enforce_lite) {
   return !enforce_lite;
 }
@@ -358,24 +361,22 @@ inline bool IsProto2(const FileDescriptor* descriptor) {
   return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
 }
 
-inline bool SupportFieldPresence(const FieldDescriptor* descriptor) {
-  // Note that while proto3 oneofs do conceptually support present, we return
-  // false for them because they do not offer a public hazzer. Therefore this
-  // method could be named HasHazzer().
-  return !descriptor->is_repeated() &&
-         (descriptor->message_type() || descriptor->has_optional_keyword() ||
-          IsProto2(descriptor->file()));
-}
-
 inline bool IsRealOneof(const FieldDescriptor* descriptor) {
   return descriptor->containing_oneof() &&
          !descriptor->containing_oneof()->is_synthetic();
+}
+
+inline bool HasHazzer(const FieldDescriptor* descriptor) {
+  return !descriptor->is_repeated() &&
+         (descriptor->message_type() || descriptor->has_optional_keyword() ||
+          IsProto2(descriptor->file()) || IsRealOneof(descriptor));
 }
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
   // Note that currently message fields inside oneofs have hasbits. This is
   // surprising, as the oneof case should avoid any need for a hasbit. But if
   // you change this method to remove hasbits for oneofs, a few tests fail.
+  // TODO(b/124347790): remove hasbits for oneofs
   return !descriptor->is_repeated() &&
          (descriptor->has_optional_keyword() || IsProto2(descriptor->file()));
 }
@@ -425,15 +426,16 @@ inline std::string GeneratedCodeVersionSuffix() {
   return "V3";
 }
 
-void WriteUInt32ToUtf16CharSequence(uint32 number, std::vector<uint16>* output);
+void WriteUInt32ToUtf16CharSequence(uint32_t number,
+                                    std::vector<uint16_t>* output);
 
 inline void WriteIntToUtf16CharSequence(int value,
-                                        std::vector<uint16>* output) {
-  WriteUInt32ToUtf16CharSequence(static_cast<uint32>(value), output);
+                                        std::vector<uint16_t>* output) {
+  WriteUInt32ToUtf16CharSequence(static_cast<uint32_t>(value), output);
 }
 
 // Escape a UTF-16 character so it can be embedded in a Java string literal.
-void EscapeUtf16ToString(uint16 code, std::string* output);
+void EscapeUtf16ToString(uint16_t code, std::string* output);
 
 // Only the lowest two bytes of the return value are used. The lowest byte
 // is the integer value of a j/c/g/protobuf/FieldType enum. For the other

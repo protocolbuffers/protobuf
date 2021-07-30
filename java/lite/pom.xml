@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.11.4</version>
+    <version>3.17.3</version>
   </parent>
 
   <artifactId>protobuf-javalite</artifactId>
@@ -52,6 +52,7 @@
         <includes>
           <include>google/protobuf/any.proto</include>
           <include>google/protobuf/api.proto</include>
+          <include>google/protobuf/duration.proto</include>
           <include>google/protobuf/empty.proto</include>
           <include>google/protobuf/field_mask.proto</include>
           <include>google/protobuf/source_context.proto</include>
@@ -172,6 +173,7 @@
                     <include>UnknownFieldSetLite.java</include>
                     <include>UnknownFieldSetLiteSchema.java</include>
                     <include>UnmodifiableLazyStringList.java</include>
+                    <include>UnsafeByteOperations.java</include>
                     <include>UnsafeUtil.java</include>
                     <include>Utf8.java</include>
                     <include>WireFormat.java</include>
@@ -197,6 +199,7 @@
                   and exclude only the full runtime exclusive tests so we don't accidentally miss
                   any test. -->
                   <excludes>
+                    <!-- Keep in sync with //java/core:lite_tests BUILD rule. -->
                     <exclude>AbstractMessageTest.java</exclude>
                     <exclude>AbstractProto2SchemaTest.java</exclude>
                     <exclude>AnyTest.java</exclude>

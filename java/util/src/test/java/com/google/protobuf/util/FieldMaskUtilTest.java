@@ -224,6 +224,24 @@ public class FieldMaskUtilTest extends TestCase {
     assertEquals("bar,foo", FieldMaskUtil.toString(result));
   }
 
+  public void testSubstract() throws Exception {
+    // Only test a simple case here and expect
+    // {@link FieldMaskTreeTest#testRemoveFieldPath} to cover all scenarios.
+    FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz");
+    FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar");
+    FieldMask result = FieldMaskUtil.subtract(mask1, mask2);
+    assertEquals("foo", FieldMaskUtil.toString(result));
+  }
+
+  public void testSubstract_usingVarArgs() throws Exception {
+    FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz.bar");
+    FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar.baz.quz");
+    FieldMask mask3 = FieldMaskUtil.fromString("bar.quz");
+    FieldMask mask4 = FieldMaskUtil.fromString("foo,bar.baz");
+    FieldMask result = FieldMaskUtil.subtract(mask1, mask2, mask3, mask4);
+    assertThat(FieldMaskUtil.toString(result)).isEmpty();
+  }
+
   public void testIntersection() throws Exception {
     // Only test a simple case here and expect
     // {@link FieldMaskTreeTest#testIntersectFieldPath} to cover all scenarios.

@@ -34,14 +34,8 @@
 
 #include <google/protobuf/generated_message_util.h>
 
+#include <atomic>
 #include <limits>
-
-#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-// We're only using this as a standard way for getting the thread id.
-// We're not using any thread functionality.
-#include <thread>  // NOLINT
-#endif             // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-
 #include <vector>
 
 #include <google/protobuf/io/coded_stream.h>
@@ -51,10 +45,13 @@
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
-#include <google/protobuf/stubs/mutex.h>
-#include <google/protobuf/port_def.inc>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
+
+// Must be included last
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_PRAGMA_INIT_SEG
 
 
 namespace google {
@@ -65,22 +62,33 @@ void DestroyMessage(const void* message) {
   static_cast<const MessageLite*>(message)->~MessageLite();
 }
 void DestroyString(const void* s) {
-  static_cast<const std::string*>(s)->~string();
+  static_cast<const std::string*>(s)->~basic_string();
 }
 
-ExplicitlyConstructed<std::string> fixed_address_empty_string;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY ExplicitlyConstructed<std::string>
+        fixed_address_empty_string{};  // NOLINT
 
 
+PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
 static bool InitProtobufDefaultsImpl() {
   fixed_address_empty_string.DefaultConstruct();
   OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
+
+
+  init_protobuf_defaults_state.store(true, std::memory_order_release);
   return true;
 }
 
-void InitProtobufDefaults() {
+void InitProtobufDefaultsSlow() {
   static bool is_inited = InitProtobufDefaultsImpl();
   (void)is_inited;
 }
+// Force the initialization of the empty string.
+// Normally, registration would do it, but we don't have any guarantee that
+// there is any object with reflection.
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY static std::true_type init_empty_string =
+    (InitProtobufDefaultsSlow(), std::true_type{});
 
 size_t StringSpaceUsedExcludingSelfLong(const std::string& str) {
   const void* start = &str;
@@ -246,10 +254,6 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_BYTES>
     : PrimitiveTypeHelper<WireFormatLite::TYPE_STRING> {};
 
 
-template <>
-struct PrimitiveTypeHelper<FieldMetadata::kInlinedType>
-    : PrimitiveTypeHelper<WireFormatLite::TYPE_STRING> {};
-
 // We want to serialize to both CodedOutputStream and directly into byte arrays
 // without duplicating the code. In fact we might want extra output channels in
 // the future.
@@ -408,15 +412,6 @@ struct SingularFieldHelper<WireFormatLite::TYPE_MESSAGE> {
   }
 };
 
-template <>
-struct SingularFieldHelper<FieldMetadata::kInlinedType> {
-  template <typename O>
-  static void Serialize(const void* field, const FieldMetadata& md, O* output) {
-    WriteTagTo(md.tag, output);
-    SerializeTo<FieldMetadata::kInlinedType>(&Get<std::string>(field), output);
-  }
-};
-
 template <int type>
 struct RepeatedFieldHelper {
   template <typename O>
@@ -489,10 +484,6 @@ struct RepeatedFieldHelper<WireFormatLite::TYPE_MESSAGE> {
 };
 
 
-template <>
-struct RepeatedFieldHelper<FieldMetadata::kInlinedType>
-    : RepeatedFieldHelper<WireFormatLite::TYPE_STRING> {};
-
 template <int type>
 struct PackedFieldHelper {
   template <typename O>
@@ -528,9 +519,6 @@ struct PackedFieldHelper<WireFormatLite::TYPE_GROUP>
 template <>
 struct PackedFieldHelper<WireFormatLite::TYPE_MESSAGE>
     : PackedFieldHelper<WireFormatLite::TYPE_STRING> {};
-template <>
-struct PackedFieldHelper<FieldMetadata::kInlinedType>
-    : PackedFieldHelper<WireFormatLite::TYPE_STRING> {};
 
 template <int type>
 struct OneOfFieldHelper {
@@ -540,15 +528,6 @@ struct OneOfFieldHelper {
   }
 };
 
-
-template <>
-struct OneOfFieldHelper<FieldMetadata::kInlinedType> {
-  template <typename O>
-  static void Serialize(const void* field, const FieldMetadata& md, O* output) {
-    SingularFieldHelper<FieldMetadata::kInlinedType>::Serialize(
-        Get<const std::string*>(field), md, output);
-  }
-};
 
 void SerializeNotImplemented(int field) {
   GOOGLE_LOG(FATAL) << "Not implemented field number " << field;
@@ -589,11 +568,6 @@ bool IsNull<WireFormatLite::TYPE_MESSAGE>(const void* ptr) {
   return Get<const MessageLite*>(ptr) == NULL;
 }
 
-
-template <>
-bool IsNull<FieldMetadata::kInlinedType>(const void* ptr) {
-  return static_cast<const std::string*>(ptr)->empty();
-}
 
 #define SERIALIZERS_FOR_TYPE(type)                                            \
   case SERIALIZE_TABLE_OP(type, FieldMetadata::kPresence):                    \
@@ -642,7 +616,6 @@ void SerializeInternal(const uint8* base,
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SFIXED64);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT32);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT64);
-      SERIALIZERS_FOR_TYPE(FieldMetadata::kInlinedType);
 
       // Special cases
       case FieldMetadata::kSpecial:
@@ -687,7 +660,6 @@ uint8* SerializeInternalToArray(const uint8* base,
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SFIXED64);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT32);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT64);
-      SERIALIZERS_FOR_TYPE(FieldMetadata::kInlinedType);
       // Special cases
       case FieldMetadata::kSpecial: {
         io::ArrayOutputStream array_stream(array_output.ptr, INT_MAX);
@@ -746,8 +718,12 @@ void GenericSwap(MessageLite* m1, MessageLite* m2) {
 MessageLite* GetOwnedMessageInternal(Arena* message_arena,
                                      MessageLite* submessage,
                                      Arena* submessage_arena) {
-  GOOGLE_DCHECK(submessage->GetArena() == submessage_arena);
+  GOOGLE_DCHECK(Arena::InternalHelper<MessageLite>::GetOwningArena(submessage) ==
+         submessage_arena);
   GOOGLE_DCHECK(message_arena != submessage_arena);
+#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
+  GOOGLE_DCHECK_EQ(submessage_arena, nullptr);
+#endif  // PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
   if (message_arena != NULL && submessage_arena == NULL) {
     message_arena->Own(submessage);
     return submessage;
@@ -758,74 +734,8 @@ MessageLite* GetOwnedMessageInternal(Arena* message_arena,
   }
 }
 
-namespace {
-
-void InitSCC_DFS(SCCInfoBase* scc) {
-  if (scc->visit_status.load(std::memory_order_relaxed) !=
-      SCCInfoBase::kUninitialized)
-    return;
-  scc->visit_status.store(SCCInfoBase::kRunning, std::memory_order_relaxed);
-  // Each base is followed by an array of void*, containing first pointers to
-  // SCCInfoBase and then pointers-to-pointers to SCCInfoBase.
-  auto deps = reinterpret_cast<void**>(scc + 1);
-  auto strong_deps = reinterpret_cast<SCCInfoBase* const*>(deps);
-  for (int i = 0; i < scc->num_deps; ++i) {
-    if (strong_deps[i]) InitSCC_DFS(strong_deps[i]);
-  }
-  auto implicit_weak_deps =
-      reinterpret_cast<SCCInfoBase** const*>(deps + scc->num_deps);
-  for (int i = 0; i < scc->num_implicit_weak_deps; ++i) {
-    if (*implicit_weak_deps[i]) {
-      InitSCC_DFS(*implicit_weak_deps[i]);
-    }
-  }
-  scc->init_func();
-  // Mark done (note we use memory order release here), other threads could
-  // now see this as initialized and thus the initialization must have happened
-  // before.
-  scc->visit_status.store(SCCInfoBase::kInitialized, std::memory_order_release);
-}
-
-}  // namespace
-
-void InitSCCImpl(SCCInfoBase* scc) {
-  static WrappedMutex mu{GOOGLE_PROTOBUF_LINKER_INITIALIZED};
-  // Either the default in case no initialization is running or the id of the
-  // thread that is currently initializing.
-#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-  static std::atomic<std::thread::id> runner;
-  auto me = std::this_thread::get_id();
-#else
-  // This is a lightweight replacement for std::thread::id. std::thread does not
-  // work on Windows XP SP2 with the latest VC++ libraries, because it utilizes
-  // the Concurrency Runtime that is only supported on Windows XP SP3 and above.
-  static std::atomic_llong runner(-1);
-  auto me = ::GetCurrentThreadId();
-#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-
-  // This will only happen because the constructor will call InitSCC while
-  // constructing the default instance.
-  if (runner.load(std::memory_order_relaxed) == me) {
-    // Because we're in the process of constructing the default instance.
-    // We can be assured that we're already exploring this SCC.
-    GOOGLE_CHECK_EQ(scc->visit_status.load(std::memory_order_relaxed),
-             SCCInfoBase::kRunning);
-    return;
-  }
-  InitProtobufDefaults();
-  mu.Lock();
-  runner.store(me, std::memory_order_relaxed);
-  InitSCC_DFS(scc);
-
-#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-  runner.store(std::thread::id{}, std::memory_order_relaxed);
-#else
-  runner.store(-1, std::memory_order_relaxed);
-#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-
-  mu.Unlock();
-}
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

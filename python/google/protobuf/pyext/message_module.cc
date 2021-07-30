@@ -30,12 +30,11 @@
 
 #include <Python.h>
 
+#include <google/protobuf/message_lite.h>
 #include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/proto_api.h>
-
-#include <google/protobuf/message_lite.h>
 
 namespace {
 
@@ -54,6 +53,15 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   google::protobuf::MessageFactory* GetDefaultMessageFactory() const override {
     return google::protobuf::python::GetDefaultDescriptorPool()
         ->py_message_factory->message_factory;
+  }
+  PyObject* NewMessage(const google::protobuf::Descriptor* descriptor,
+                       PyObject* py_message_factory) const override {
+    return google::protobuf::python::PyMessage_New(descriptor, py_message_factory);
+  }
+  PyObject* NewMessageOwnedExternally(
+      google::protobuf::Message* msg, PyObject* py_message_factory) const override {
+    return google::protobuf::python::PyMessage_NewMessageOwnedExternally(
+        msg, py_message_factory);
   }
 };
 

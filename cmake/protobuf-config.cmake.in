@@ -15,7 +15,7 @@ function(protobuf_generate)
   if(COMMAND target_sources)
     list(APPEND _singleargs TARGET)
   endif()
-  set(_multiargs PROTOS IMPORT_DIRS GENERATE_EXTENSIONS)
+  set(_multiargs PROTOS IMPORT_DIRS GENERATE_EXTENSIONS PROTOC_OPTIONS)
 
   cmake_parse_arguments(protobuf_generate "${_options}" "${_singleargs}" "${_multiargs}" "${ARGN}")
 
@@ -99,13 +99,17 @@ function(protobuf_generate)
   foreach(_proto ${protobuf_generate_PROTOS})
     get_filename_component(_abs_file ${_proto} ABSOLUTE)
     get_filename_component(_abs_dir ${_abs_file} DIRECTORY)
-    get_filename_component(_basename ${_proto} NAME_WLE)
+
+    get_filename_component(_file_full_name ${_proto} NAME)
+    string(FIND "${_file_full_name}" "." _file_last_ext_pos REVERSE)
+    string(SUBSTRING "${_file_full_name}" 0 ${_file_last_ext_pos} _basename)
 
     set(_suitable_include_found FALSE)
     foreach(DIR ${_protobuf_include_path})
       if(NOT DIR STREQUAL "-I")
         file(RELATIVE_PATH _rel_dir ${DIR} ${_abs_dir})
-        if(NOT "${_rel_dir}" MATCHES "^\.\.[/\\].*")
+        string(FIND "${_rel_dir}" "../" _is_in_parent_folder)
+        if (NOT ${_is_in_parent_folder} EQUAL 0)
           set(_suitable_include_found TRUE)
           break()
         endif()
@@ -126,9 +130,9 @@ function(protobuf_generate)
     add_custom_command(
       OUTPUT ${_generated_srcs}
       COMMAND  protobuf::protoc
-      ARGS --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${protobuf_generate_PROTOC_OUT_DIR} ${_plugin} ${_protobuf_include_path} ${_abs_file}
+      ARGS ${protobuf_generate_PROTOC_OPTIONS} --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${protobuf_generate_PROTOC_OUT_DIR} ${_plugin} ${_protobuf_include_path} ${_abs_file}
       DEPENDS ${_abs_file} protobuf::protoc
-      COMMENT "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}"
+      COMMENT "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}. Custom options: ${protobuf_generate_PROTOC_OPTIONS}"
       VERBATIM )
   endforeach()
 

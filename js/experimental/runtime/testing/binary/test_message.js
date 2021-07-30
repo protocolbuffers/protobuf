@@ -14,6 +14,13 @@ const Kernel = goog.require('protobuf.runtime.Kernel');
  */
 class TestMessage {
   /**
+   * @return {!TestMessage}
+   */
+  static createEmpty() {
+    return TestMessage.instanceCreator(Kernel.createEmpty());
+  }
+
+  /**
    * @param {!Kernel} kernel
    * @return {!TestMessage}
    */
@@ -31,7 +38,6 @@ class TestMessage {
 
   /**
    * @override
-   * @package
    * @return {!Kernel}
    */
   internalGetKernel() {

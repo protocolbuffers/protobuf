@@ -130,6 +130,17 @@ TEST(LITE_TEST_NAME, Swap) {
   EXPECT_EQ(msg1.ByteSize(), msg2.ByteSize() + 1);
 }
 
+TEST(LITE_TEST_NAME, OneofHazzers) {
+  TestAllTypes msg;
+  msg.set_oneof_uint32(1);
+  msg.set_oneof_string("test");
+
+  EXPECT_EQ(true, msg.has_oneof_string());
+  EXPECT_EQ(false, msg.has_oneof_uint32());
+  EXPECT_EQ(false, msg.has_oneof_bytes());
+  EXPECT_EQ(false, msg.has_oneof_nested_message());
+}
+
 }  // namespace
 }  // namespace protobuf
 }  // namespace google

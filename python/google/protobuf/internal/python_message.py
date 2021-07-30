@@ -295,6 +295,7 @@ def _AttachFieldHelpers(cls, field_descriptor):
   is_repeated = (field_descriptor.label == _FieldDescriptor.LABEL_REPEATED)
   is_packable = (is_repeated and
                  wire_format.IsTypePackable(field_descriptor.type))
+  is_proto3 = field_descriptor.containing_type.syntax == 'proto3'
   if not is_packable:
     is_packed = False
   elif field_descriptor.containing_type.syntax == 'proto2':
@@ -333,8 +334,12 @@ def _AttachFieldHelpers(cls, field_descriptor):
       decode_type = _FieldDescriptor.TYPE_INT32
 
     oneof_descriptor = None
+    clear_if_default = False
     if field_descriptor.containing_oneof is not None:
       oneof_descriptor = field_descriptor
+    elif (is_proto3 and not is_repeated and
+          field_descriptor.cpp_type != _FieldDescriptor.CPPTYPE_MESSAGE):
+      clear_if_default = True
 
     if is_map_entry:
       is_message_map = _IsMessageMapField(field_descriptor)
@@ -347,11 +352,17 @@ def _AttachFieldHelpers(cls, field_descriptor):
       field_decoder = decoder.StringDecoder(
           field_descriptor.number, is_repeated, is_packed,
           field_descriptor, field_descriptor._default_constructor,
-          is_strict_utf8_check)
-    else:
+          is_strict_utf8_check, clear_if_default)
+    elif field_descriptor.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
       field_decoder = type_checkers.TYPE_TO_DECODER[decode_type](
           field_descriptor.number, is_repeated, is_packed,
           field_descriptor, field_descriptor._default_constructor)
+    else:
+      field_decoder = type_checkers.TYPE_TO_DECODER[decode_type](
+          field_descriptor.number, is_repeated, is_packed,
+          # pylint: disable=protected-access
+          field_descriptor, field_descriptor._default_constructor,
+          clear_if_default)
 
     cls._decoders_by_tag[tag_bytes] = (field_decoder, oneof_descriptor)
 
@@ -1122,12 +1133,6 @@ def _AddSerializePartialToStringMethod(message_descriptor, cls):
 def _AddMergeFromStringMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
   def MergeFromString(self, serialized):
-    if isinstance(serialized, memoryview) and six.PY2:
-      raise TypeError(
-          'memoryview not supported in Python 2 with the pure Python proto '
-          'implementation: this is to maintain compatibility with the C++ '
-          'implementation')
-
     serialized = memoryview(serialized)
     length = len(serialized)
     try:

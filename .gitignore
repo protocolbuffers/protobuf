@@ -82,9 +82,7 @@ src/**/*.log
 src/**/*.trs
 
 # JavaBuild output.
-java/core/target
-java/util/target
-javanano/target
+java/**/target
 java/.idea
 java/**/*.iml
 
@@ -104,7 +102,7 @@ build_msvc
 # needed to trigger "pod install" to rerun the preinstall commands.
 Pods/
 
-# Comformance test output
+# Conformance test output
 conformance/.libs/
 conformance/com/
 conformance/conformance-cpp
@@ -137,19 +135,25 @@ conformance/*.class
 
 # php test output
 composer.lock
+php/.phpunit.result.cache
+php/tests/.phpunit.result.cache
 php/tests/generated/
 php/tests/old_protoc
+php/tests/phpunit-9.phar
 php/tests/protobuf/
 php/tests/core
 php/tests/vgcore*
 php/tests/multirequest.result
 php/tests/nohup.out
+php/tests/.phpunit.result.cache
+php/tests/phpunit-*
 php/ext/google/protobuf/.libs/
 php/ext/google/protobuf/Makefile.fragments
 php/ext/google/protobuf/Makefile.global
 php/ext/google/protobuf/Makefile.objects
 php/ext/google/protobuf/acinclude.m4
 php/ext/google/protobuf/build/
+php/ext/google/protobuf/bundled_php.c
 php/ext/google/protobuf/config.h
 php/ext/google/protobuf/config.h.in~
 php/ext/google/protobuf/config.nice
@@ -157,6 +161,7 @@ php/ext/google/protobuf/configure.ac
 php/ext/google/protobuf/configure.in
 php/ext/google/protobuf/mkinstalldirs
 php/ext/google/protobuf/run-tests.php
+php/ext/google/protobuf/third_party/
 vendor/
 
 # JavaScript artifacts
@@ -184,6 +189,7 @@ ruby/tests/generated_code_pb.rb
 ruby/tests/test_import_pb.rb
 ruby/tests/test_ruby_package_pb.rb
 ruby/tests/generated_code_proto2_pb.rb
+ruby/tests/multi_level_nesting_test_pb.rb
 ruby/tests/test_import_proto2_pb.rb
 ruby/tests/test_ruby_package_proto2_pb.rb
 ruby/Gemfile.lock
@@ -208,3 +214,6 @@ cmake/cmake-build-debug/
 # IntelliJ
 .idea
 *.iml
+
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/

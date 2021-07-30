@@ -45,6 +45,7 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
 # and old_extensions2.proto, which are generated with an older version
 # of protoc.
 $PROTOC -Isrc -Icsharp/protos \
+    --experimental_allow_proto3_optional \
     --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos \
     --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
     --include_source_info \
@@ -61,9 +62,11 @@ $PROTOC -Isrc -Icsharp/protos \
     csharp/protos/unittest_issue6936_a.proto \
     csharp/protos/unittest_issue6936_b.proto \
     csharp/protos/unittest_issue6936_c.proto \
+    csharp/protos/unittest_selfreferential_options.proto \
     src/google/protobuf/unittest_well_known_types.proto \
     src/google/protobuf/test_messages_proto3.proto \
-    src/google/protobuf/test_messages_proto2.proto
+    src/google/protobuf/test_messages_proto2.proto \
+    src/google/protobuf/unittest_proto3_optional.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \

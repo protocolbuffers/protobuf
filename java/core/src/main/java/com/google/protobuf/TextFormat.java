@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
@@ -58,6 +60,7 @@ public final class TextFormat {
   private TextFormat() {}
 
   private static final Logger logger = Logger.getLogger(TextFormat.class.getName());
+
 
   /**
    * Outputs a textual representation of the Protocol Message supplied into the parameter output.
@@ -490,27 +493,11 @@ public final class TextFormat {
         }
         switch (fieldType) {
           case BOOLEAN:
-            boolean aBoolean = (boolean) getKey();
-            boolean bBoolean = (boolean) b.getKey();
-            if (aBoolean == bBoolean) {
-              return 0;
-            } else if (aBoolean) {
-              return 1;
-            } else {
-              return -1;
-            }
+            return Boolean.compare((boolean) getKey(), (boolean) b.getKey());
           case LONG:
-            long aLong = (long) getKey();
-            long bLong = (long) b.getKey();
-            if (aLong < bLong) {
-              return -1;
-            } else if (aLong > bLong) {
-              return 1;
-            } else {
-              return 0;
-            }
+            return Long.compare((long) getKey(), (long) b.getKey());
           case INT:
-            return (int) getKey() - (int) b.getKey();
+            return Integer.compare((int) getKey(), (int) b.getKey());
           case STRING:
             String aString = (String) getKey();
             String bString = (String) b.getKey();
@@ -741,9 +728,9 @@ public final class TextFormat {
           // Groups must be serialized with their original capitalization.
           generator.print(field.getMessageType().getName());
         } else {
-          generator.print(field.getName());
+            generator.print(field.getName());
+          }
         }
-      }
 
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
         generator.print(" {");
@@ -1677,7 +1664,7 @@ public final class TextFormat {
         throws IOException {
       // Read the entire input to a String then parse that.
 
-      // If StreamTokenizer were not quite so crippled, or if there were a kind
+      // If StreamTokenizer was not so limited, or if there were a kind
       // of Reader that could read in chunks that match some particular regex,
       // or if we wanted to write a custom Reader to tokenize our stream, then
       // we would not have to read to one big String.  Alas, none of these is
@@ -1825,16 +1812,16 @@ public final class TextFormat {
         extension = target.findExtensionByName(extensionRegistry, name.toString());
 
         if (extension == null) {
-          String message =
-              (tokenizer.getPreviousLine() + 1)
-                  + ":"
-                  + (tokenizer.getPreviousColumn() + 1)
-                  + ":\t"
-                  + type.getFullName()
-                  + ".["
-                  + name
-                  + "]";
-          unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
+            String message =
+                (tokenizer.getPreviousLine() + 1)
+                    + ":"
+                    + (tokenizer.getPreviousColumn() + 1)
+                    + ":\t"
+                    + type.getFullName()
+                    + ".["
+                    + name
+                    + "]";
+            unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
         } else {
           if (extension.descriptor.getContainingType() != type) {
             throw tokenizer.parseExceptionPreviousToken(
@@ -2389,6 +2376,73 @@ public final class TextFormat {
                   code = code * 16 + digitValue(input.byteAt(i));
                 }
                 result[pos++] = (byte) code;
+                break;
+
+              case 'u':
+                // Unicode escape
+                ++i;
+                if (i + 3 < input.size()
+                    && isHex(input.byteAt(i))
+                    && isHex(input.byteAt(i + 1))
+                    && isHex(input.byteAt(i + 2))
+                    && isHex(input.byteAt(i + 3))) {
+                  char ch =
+                      (char)
+                          (digitValue(input.byteAt(i)) << 12
+                              | digitValue(input.byteAt(i + 1)) << 8
+                              | digitValue(input.byteAt(i + 2)) << 4
+                              | digitValue(input.byteAt(i + 3)));
+                  if (Character.isSurrogate(ch)) {
+                    throw new InvalidEscapeSequenceException(
+                        "Invalid escape sequence: '\\u' refers to a surrogate");
+                  }
+                  byte[] chUtf8 = Character.toString(ch).getBytes(UTF_8);
+                  System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
+                  pos += chUtf8.length;
+                  i += 3;
+                } else {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\u' with too few hex chars");
+                }
+                break;
+
+              case 'U':
+                // Unicode escape
+                ++i;
+                if (i + 7 >= input.size()) {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\U' with too few hex chars");
+                }
+                int codepoint = 0;
+                for (int offset = i; offset < i + 8; offset++) {
+                  byte b = input.byteAt(offset);
+                  if (!isHex(b)) {
+                    throw new InvalidEscapeSequenceException(
+                        "Invalid escape sequence: '\\U' with too few hex chars");
+                  }
+                  codepoint = (codepoint << 4) | digitValue(b);
+                }
+                if (!Character.isValidCodePoint(codepoint)) {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\U"
+                          + input.substring(i, i + 8).toStringUtf8()
+                          + "' is not a valid code point value");
+                }
+                Character.UnicodeBlock unicodeBlock = Character.UnicodeBlock.of(codepoint);
+                if (unicodeBlock.equals(Character.UnicodeBlock.LOW_SURROGATES)
+                    || unicodeBlock.equals(Character.UnicodeBlock.HIGH_SURROGATES)
+                    || unicodeBlock.equals(Character.UnicodeBlock.HIGH_PRIVATE_USE_SURROGATES)) {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\U"
+                          + input.substring(i, i + 8).toStringUtf8()
+                          + "' refers to a surrogate code unit");
+                }
+                int[] codepoints = new int[1];
+                codepoints[0] = codepoint;
+                byte[] chUtf8 = new String(codepoints, 0, 1).getBytes(UTF_8);
+                System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
+                pos += chUtf8.length;
+                i += 7;
                 break;
 
               default:

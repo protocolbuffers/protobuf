@@ -32,6 +32,8 @@ syntax = "proto3";
 
 package protobuf_unittest;
 
+import "google/protobuf/descriptor.proto";
+
 option java_multiple_files = true;
 option java_package = "com.google.protobuf.testing.proto";
 
@@ -72,4 +74,27 @@ message TestProto3Optional {
   optional NestedMessage optional_nested_message = 18;
   optional NestedMessage lazy_nested_message = 19 [lazy = true];
   optional NestedEnum optional_nested_enum = 21;
+
+  // Add some non-optional fields to verify we can mix them.
+  int32 singular_int32 = 22;
+  int64 singular_int64 = 23;
+}
+
+message TestProto3OptionalMessage {
+  message NestedMessage {
+    string s = 1;
+  }
+
+  NestedMessage nested_message = 1;
+  optional NestedMessage optional_nested_message = 2;
+}
+
+message Proto3OptionalExtensions {
+  option (protobuf_unittest.Proto3OptionalExtensions.ext_no_optional) = 8;
+  option (protobuf_unittest.Proto3OptionalExtensions.ext_with_optional) = 16;
+
+  extend google.protobuf.MessageOptions {
+    int32 ext_no_optional = 355886728;
+    optional int32 ext_with_optional = 355886729;
+  }
 }

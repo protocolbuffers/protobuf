@@ -31,12 +31,51 @@ module BasicTest
     end
     include CommonTests
 
+    def test_issue_8311_crash
+      Google::Protobuf::DescriptorPool.generated_pool.build do
+        add_file("inner.proto", :syntax => :proto3) do
+          add_message "Inner" do
+            # Removing either of these fixes the segfault.
+            optional :foo, :string, 1
+            optional :bar, :string, 2
+          end
+        end
+      end
+
+      Google::Protobuf::DescriptorPool.generated_pool.build do
+        add_file("outer.proto", :syntax => :proto3) do
+          add_message "Outer" do
+            repeated :inners, :message, 1, "Inner"
+          end
+        end
+      end
+
+      outer = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("Outer").msgclass
+
+      outer.new(
+          inners: []
+      )['inners'].to_s
+
+      assert_raise Google::Protobuf::TypeError do
+        outer.new(
+            inners: [nil]
+        ).to_s
+      end
+    end
+
+    def test_issue_8559_crash
+      msg = TestMessage.new
+      msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
+      GC.start(full_mark: true, immediate_sweep: true)
+      TestMessage.encode(msg)
+    end
+
     def test_has_field
-      m = TestMessage.new
-      assert !m.has_optional_msg?
-      m.optional_msg = TestMessage2.new
-      assert m.has_optional_msg?
-      assert TestMessage.descriptor.lookup('optional_msg').has?(m)
+      m = TestSingularFields.new
+      assert !m.has_singular_msg?
+      m.singular_msg = TestMessage2.new
+      assert m.has_singular_msg?
+      assert TestSingularFields.descriptor.lookup('singular_msg').has?(m)
 
       m = OneofMessage.new
       assert !m.has_my_oneof?
@@ -45,32 +84,31 @@ module BasicTest
       assert_raise NoMethodError do
         m.has_a?
       end
+      assert_true OneofMessage.descriptor.lookup('a').has?(m)
+
+      m = TestSingularFields.new
+      assert_raise NoMethodError do
+        m.has_singular_int32?
+      end
       assert_raise ArgumentError do
-        OneofMessage.descriptor.lookup('a').has?(m)
+        TestSingularFields.descriptor.lookup('singular_int32').has?(m)
+      end
+
+      assert_raise NoMethodError do
+        m.has_singular_string?
+      end
+      assert_raise ArgumentError do
+        TestSingularFields.descriptor.lookup('singular_string').has?(m)
+      end
+
+      assert_raise NoMethodError do
+        m.has_singular_bool?
+      end
+      assert_raise ArgumentError do
+        TestSingularFields.descriptor.lookup('singular_bool').has?(m)
       end
 
       m = TestMessage.new
-      assert_raise NoMethodError do
-        m.has_optional_int32?
-      end
-      assert_raise ArgumentError do
-        TestMessage.descriptor.lookup('optional_int32').has?(m)
-      end
-
-      assert_raise NoMethodError do
-        m.has_optional_string?
-      end
-      assert_raise ArgumentError do
-        TestMessage.descriptor.lookup('optional_string').has?(m)
-      end
-
-      assert_raise NoMethodError do
-        m.has_optional_bool?
-      end
-      assert_raise ArgumentError do
-        TestMessage.descriptor.lookup('optional_bool').has?(m)
-      end
-
       assert_raise NoMethodError do
         m.has_repeated_msg?
       end
@@ -79,40 +117,59 @@ module BasicTest
       end
     end
 
+    def test_no_presence
+      m = TestSingularFields.new
+
+      # Explicitly setting to zero does not cause anything to be serialized.
+      m.singular_int32 = 0
+      assert_equal "", TestSingularFields.encode(m)
+
+      # Explicitly setting to a non-zero value *does* cause serialization.
+      m.singular_int32 = 1
+      assert_not_equal "", TestSingularFields.encode(m)
+
+      m.singular_int32 = 0
+      assert_equal "", TestSingularFields.encode(m)
+    end
+
     def test_set_clear_defaults
+      m = TestSingularFields.new
+
+      m.singular_int32 = -42
+      assert_equal -42, m.singular_int32
+      m.clear_singular_int32
+      assert_equal 0, m.singular_int32
+
+      m.singular_int32 = 50
+      assert_equal 50, m.singular_int32
+      TestSingularFields.descriptor.lookup('singular_int32').clear(m)
+      assert_equal 0, m.singular_int32
+
+      m.singular_string = "foo bar"
+      assert_equal "foo bar", m.singular_string
+      m.clear_singular_string
+      assert_equal "", m.singular_string
+
+      m.singular_string = "foo"
+      assert_equal "foo", m.singular_string
+      TestSingularFields.descriptor.lookup('singular_string').clear(m)
+      assert_equal "", m.singular_string
+
+      m.singular_msg = TestMessage2.new(:foo => 42)
+      assert_equal TestMessage2.new(:foo => 42), m.singular_msg
+      assert m.has_singular_msg?
+      m.clear_singular_msg
+      assert_equal nil, m.singular_msg
+      assert !m.has_singular_msg?
+
+      m.singular_msg = TestMessage2.new(:foo => 42)
+      assert_equal TestMessage2.new(:foo => 42), m.singular_msg
+      TestSingularFields.descriptor.lookup('singular_msg').clear(m)
+      assert_equal nil, m.singular_msg
+    end
+
+    def test_clear_repeated_fields
       m = TestMessage.new
-
-      m.optional_int32 = -42
-      assert_equal -42, m.optional_int32
-      m.clear_optional_int32
-      assert_equal 0, m.optional_int32
-
-      m.optional_int32 = 50
-      assert_equal 50, m.optional_int32
-      TestMessage.descriptor.lookup('optional_int32').clear(m)
-      assert_equal 0, m.optional_int32
-
-      m.optional_string = "foo bar"
-      assert_equal "foo bar", m.optional_string
-      m.clear_optional_string
-      assert_equal "", m.optional_string
-
-      m.optional_string = "foo"
-      assert_equal "foo", m.optional_string
-      TestMessage.descriptor.lookup('optional_string').clear(m)
-      assert_equal "", m.optional_string
-
-      m.optional_msg = TestMessage2.new(:foo => 42)
-      assert_equal TestMessage2.new(:foo => 42), m.optional_msg
-      assert m.has_optional_msg?
-      m.clear_optional_msg
-      assert_equal nil, m.optional_msg
-      assert !m.has_optional_msg?
-
-      m.optional_msg = TestMessage2.new(:foo => 42)
-      assert_equal TestMessage2.new(:foo => 42), m.optional_msg
-      TestMessage.descriptor.lookup('optional_msg').clear(m)
-      assert_equal nil, m.optional_msg
 
       m.repeated_int32.push(1)
       assert_equal [1], m.repeated_int32
@@ -128,6 +185,7 @@ module BasicTest
       m.a = "foo"
       assert_equal "foo", m.a
       assert m.has_my_oneof?
+      assert_equal :a, m.my_oneof
       m.clear_a
       assert !m.has_my_oneof?
 
@@ -142,7 +200,6 @@ module BasicTest
       OneofMessage.descriptor.lookup('a').clear(m)
       assert !m.has_my_oneof?
     end
-
 
     def test_initialization_map_errors
       e = assert_raise ArgumentError do
@@ -198,7 +255,7 @@ module BasicTest
         m.map_string_int32 = {}
       end
 
-      assert_raise TypeError do
+      assert_raise Google::Protobuf::TypeError do
         m = MapMessage.new(:map_string_int32 => { 1 => "I am not a number" })
       end
     end
@@ -223,8 +280,12 @@ module BasicTest
         :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
                             "b" => TestMessage2.new(:foo => 2)},
         :map_string_enum => {"a" => :A, "b" => :B})
-      expected = "<BasicTest::MapMessage: map_string_int32: {\"b\"=>2, \"a\"=>1}, map_string_msg: {\"b\"=><BasicTest::TestMessage2: foo: 2>, \"a\"=><BasicTest::TestMessage2: foo: 1>}, map_string_enum: {\"b\"=>:B, \"a\"=>:A}>"
-      assert_equal expected, m.inspect
+
+      # JRuby doesn't keep consistent ordering so check for either version
+      expected_a = "<BasicTest::MapMessage: map_string_int32: {\"b\"=>2, \"a\"=>1}, map_string_msg: {\"b\"=><BasicTest::TestMessage2: foo: 2>, \"a\"=><BasicTest::TestMessage2: foo: 1>}, map_string_enum: {\"b\"=>:B, \"a\"=>:A}>"
+      expected_b = "<BasicTest::MapMessage: map_string_int32: {\"a\"=>1, \"b\"=>2}, map_string_msg: {\"a\"=><BasicTest::TestMessage2: foo: 1>, \"b\"=><BasicTest::TestMessage2: foo: 2>}, map_string_enum: {\"a\"=>:A, \"b\"=>:B}>"
+      inspect_result = m.inspect
+      assert expected_a == inspect_result || expected_b == inspect_result, "Incorrect inspect result: #{inspect_result}"
     end
 
     def test_map_corruption
@@ -425,6 +486,7 @@ module BasicTest
         :optional_int32=>0,
         :optional_int64=>0,
         :optional_msg=>nil,
+        :optional_msg2=>nil,
         :optional_string=>"foo",
         :optional_uint32=>0,
         :optional_uint64=>0,
@@ -462,9 +524,9 @@ module BasicTest
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
       expected = {mapStringInt32: {a: 1}, mapStringMsg: {}, mapStringEnum: {}}
       expected_preserve = {map_string_int32: {a: 1}, map_string_msg: {}, map_string_enum: {}}
-      assert_equal JSON.parse(MapMessage.encode_json(m), :symbolize_names => true), expected
+      assert_equal JSON.parse(MapMessage.encode_json(m, :emit_defaults=>true), :symbolize_names => true), expected
 
-      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true)
+      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true, :emit_defaults=>true)
       assert_equal JSON.parse(json, :symbolize_names => true), expected_preserve
 
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
@@ -474,12 +536,36 @@ module BasicTest
     def test_json_maps_emit_defaults_submsg
       # TODO: Fix JSON in JRuby version.
       return if RUBY_PLATFORM == "java"
-      m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new})
+      m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new(foo: 0)})
       expected = {mapStringInt32: {}, mapStringMsg: {a: {foo: 0}}, mapStringEnum: {}}
 
       actual = MapMessage.encode_json(m, :emit_defaults => true)
 
       assert_equal JSON.parse(actual, :symbolize_names => true), expected
+    end
+
+    def test_json_emit_defaults_submsg
+      # TODO: Fix JSON in JRuby version.
+      return if RUBY_PLATFORM == "java"
+      m = TestSingularFields.new(singular_msg: proto_module::TestMessage2.new)
+
+      expected = {
+        singularInt32: 0,
+        singularInt64: "0",
+        singularUint32: 0,
+        singularUint64: "0",
+        singularBool: false,
+        singularFloat: 0,
+        singularDouble: 0,
+        singularString: "",
+        singularBytes: "",
+        singularMsg: {},
+        singularEnum: "Default",
+      }
+
+      actual = proto_module::TestMessage.encode_json(m, :emit_defaults => true)
+
+      assert_equal expected, JSON.parse(actual, :symbolize_names => true)
     end
 
     def test_respond_to

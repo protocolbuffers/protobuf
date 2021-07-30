@@ -138,7 +138,7 @@ inline bool IsDescriptorOptionMessage(const Descriptor* descriptor) {
   if (!IsDescriptorProto(descriptor->file())) {
     return false;
   }
-  const string name = descriptor->full_name();
+  const std::string name = descriptor->full_name();
   return name == "google.protobuf.FileOptions" ||
       name == "google.protobuf.MessageOptions" ||
       name == "google.protobuf.FieldOptions" ||
@@ -156,6 +156,33 @@ inline bool IsWrapperType(const FieldDescriptor* descriptor) {
 
 inline bool IsProto2(const FileDescriptor* descriptor) {
   return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
+}
+
+inline bool SupportsPresenceApi(const FieldDescriptor* descriptor) {
+  // Unlike most languages, we don't generate Has/Clear members for message
+  // types, because they can always be set to null in C#. They're not really
+  // needed for oneof fields in proto2 either, as everything can be done via
+  // oneof case, but we follow the convention from other languages. Proto3
+  // oneof fields never have Has/Clear members - but will also never have
+  // the explicit optional keyword either.
+  //
+  // None of the built-in helpers (descriptor->has_presence() etc) describe
+  // quite the behavior we want, so the rules are explicit below.
+
+  if (descriptor->is_repeated() ||
+      descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
+    return false;
+  }
+  // has_optional_keyword() has more complex rules for proto2, but that
+  // doesn't matter given the first part of this condition.
+  return IsProto2(descriptor->file()) || descriptor->has_optional_keyword();
+}
+
+inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {
+  return SupportsPresenceApi(descriptor) &&
+    !IsNullable(descriptor) &&
+    !descriptor->is_extension() &&
+    !descriptor->real_containing_oneof();
 }
 
 }  // namespace csharp

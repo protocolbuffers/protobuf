@@ -32,6 +32,7 @@
  * @fileoverview This file contains helper code used by jspb.BinaryReader
  * and BinaryWriter.
  *
+ * @suppress {missingRequire} TODO(b/152540451): this shouldn't be needed
  * @author aappleby@google.com (Austin Appleby)
  */
 
@@ -258,7 +259,7 @@ jspb.utils.splitFloat64 = function(value) {
   // Compute the least significant exponent needed to represent the magnitude of
   // the value by repeadly dividing/multiplying by 2 until the magnitude
   // crosses 2. While tempting to use log math to find the exponent, at the
-  // bounadaries of precision, the result can be off by one.
+  // boundaries of precision, the result can be off by one.
   var maxDoubleExponent = 1023;
   var minDoubleExponent = -1022;
   var x = value;
@@ -510,7 +511,7 @@ jspb.utils.joinUnsignedDecimalString = function(bitsLow, bitsHigh) {
   // Skip the expensive conversion if the number is small enough to use the
   // built-in conversions.
   if (bitsHigh <= 0x1FFFFF) {
-    return '' + (jspb.BinaryConstants.TWO_TO_32 * bitsHigh + bitsLow);
+    return '' + jspb.utils.joinUint64(bitsLow, bitsHigh);
   }
 
   // What this code is doing is essentially converting the input number from

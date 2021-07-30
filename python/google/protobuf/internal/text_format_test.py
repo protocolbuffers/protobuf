@@ -57,6 +57,7 @@ from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import any_test_pb2 as test_extend_any
 from google.protobuf.internal import message_set_extensions_pb2
+from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
 from google.protobuf import descriptor_pool
 from google.protobuf import text_format
@@ -141,6 +142,8 @@ class TextFormatMessageToStringTests(TextFormatBase):
     message.repeated_float.append(1.234e10)
     message.repeated_float.append(1.2345e10)
     message.repeated_float.append(1.23456e10)
+    message.repeated_float.append(float('NaN'))
+    message.repeated_float.append(float('inf'))
     message.repeated_double.append(0.0)
     message.repeated_double.append(0.8)
     message.repeated_double.append(1.0)
@@ -176,14 +179,12 @@ class TextFormatMessageToStringTests(TextFormatBase):
     self.CompareToGoldenText(
         self.RemoveRedundantZeros(text_format.MessageToString(message)),
         'repeated_float: 0\n'
-        # This should be 0.8
-        'repeated_float: 0.80000001\n'
+        'repeated_float: 0.8\n'
         'repeated_float: 1\n'
         'repeated_float: 1.2\n'
         'repeated_float: 1.23\n'
         'repeated_float: 1.234\n'
-        # This should be 1.2345
-        'repeated_float: 1.2345001\n'
+        'repeated_float: 1.2345\n'
         'repeated_float: 1.23456\n'
         # Note that these don't use scientific notation.
         'repeated_float: 12000000000\n'
@@ -191,6 +192,8 @@ class TextFormatMessageToStringTests(TextFormatBase):
         'repeated_float: 12340000000\n'
         'repeated_float: 12345000000\n'
         'repeated_float: 12345600000\n'
+        'repeated_float: nan\n'
+        'repeated_float: inf\n'
         'repeated_double: 0\n'
         'repeated_double: 0.8\n'
         'repeated_double: 1\n'
@@ -400,8 +403,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     # 32-bit 1.2 is noisy when extended to 64-bit:
     #  >>> struct.unpack('f', struct.pack('f', 1.2))[0]
     #  1.2000000476837158
-    # TODO(jieluo): change to 1.2 with cl/241634942.
-    message.payload.optional_float = 1.2000000476837158
+    message.payload.optional_float = 1.2
     formatted_fields = ['optional_float: 1.2',
                         'optional_double: -3.45678901234568e-6',
                         'repeated_float: -5642', 'repeated_double: 7.89e-5']
@@ -422,7 +424,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
         'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
             *formatted_fields))
 
-    # Test default float_format has 8 valid digits.
+    # Test default float_format will automatic print shortest float.
     message.payload.optional_float = 1.2345678912
     message.payload.optional_double = 1.2345678912
     formatted_fields = ['optional_float: 1.2345679',
@@ -433,6 +435,17 @@ class TextFormatMessageToStringTests(TextFormatBase):
         self.RemoveRedundantZeros(text_message),
         'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
             *formatted_fields))
+
+    message.Clear()
+    message.payload.optional_float = 1.1000000000011
+    self.assertEqual(text_format.MessageToString(message),
+                     'payload {\n  optional_float: 1.1\n}\n')
+    message.payload.optional_float = 1.00000075e-36
+    self.assertEqual(text_format.MessageToString(message),
+                     'payload {\n  optional_float: 1.00000075e-36\n}\n')
+    message.payload.optional_float = 12345678912345e+11
+    self.assertEqual(text_format.MessageToString(message),
+                     'payload {\n  optional_float: 1.234568e+24\n}\n')
 
   def testMessageToString(self, message_module):
     message = message_module.ForeignMessage()
@@ -1163,6 +1176,54 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
         '  }\n'
         '}\n')
 
+  def testDuplicateMapKey(self):
+    message = map_unittest_pb2.TestMap()
+    text = (
+        'map_uint64_uint64 {\n'
+        '  key: 123\n'
+        '  value: 17179869184\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "abc"\n'
+        '  value: "first"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 5\n'
+        '  }\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  key: 123\n'
+        '  value: 321\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "abc"\n'
+        '  value: "second"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    d: 5\n'
+        '  }\n'
+        '}\n')
+    text_format.Parse(text, message)
+    self.CompareToGoldenText(
+        text_format.MessageToString(message), 'map_uint64_uint64 {\n'
+        '  key: 123\n'
+        '  value: 321\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "abc"\n'
+        '  value: "second"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    d: 5\n'
+        '  }\n'
+        '}\n')
+
   # In cpp implementation, __str__ calls the cpp implementation of text format.
   def testPrintMapUsingCppImplementation(self):
     message = map_unittest_pb2.TestMap()
@@ -1850,6 +1911,24 @@ class Proto3Tests(unittest.TestCase):
       text_format.Merge(text, message)
     self.assertEqual(str(e.exception), '3:11 : Expected "}".')
 
+  def testProto3Optional(self):
+    msg = test_proto3_optional_pb2.TestProto3Optional()
+    self.assertEqual(text_format.MessageToString(msg), '')
+    msg.optional_int32 = 0
+    msg.optional_float = 0.0
+    msg.optional_string = ''
+    msg.optional_nested_message.bb = 0
+    text = ('optional_int32: 0\n'
+            'optional_float: 0.0\n'
+            'optional_string: ""\n'
+            'optional_nested_message {\n'
+            '  bb: 0\n'
+            '}\n')
+    self.assertEqual(text_format.MessageToString(msg), text)
+    msg2 = test_proto3_optional_pb2.TestProto3Optional()
+    text_format.Parse(text, msg2)
+    self.assertEqual(text_format.MessageToString(msg2), text)
+
 
 class TokenizerTest(unittest.TestCase):
 
@@ -2316,6 +2395,13 @@ class OptionalColonMessageToStringTest(unittest.TestCase):
                 '  }\n'
                 '}\n')
     self.assertEqual(expected, output)
+
+  def testPrintShortFormatRepeatedFields(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_int32.append(1)
+    output = text_format.MessageToString(
+        message, use_short_repeated_primitives=True, force_colon=True)
+    self.assertEqual('repeated_int32: [1]\n', output)
 
 
 if __name__ == '__main__':

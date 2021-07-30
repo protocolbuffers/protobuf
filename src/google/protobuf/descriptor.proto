@@ -41,7 +41,7 @@ syntax = "proto2";
 
 package google.protobuf;
 
-option go_package = "github.com/golang/protobuf/protoc-gen-go/descriptor;descriptor";
+option go_package = "google.golang.org/protobuf/types/descriptorpb";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "DescriptorProtos";
 option csharp_namespace = "Google.Protobuf.Reflection";
@@ -348,17 +348,17 @@ message FileOptions {
   optional string java_package = 1;
 
 
-  // If set, all the classes from the .proto file are wrapped in a single
-  // outer class with the given name.  This applies to both Proto1
-  // (equivalent to the old "--one_java_file" option) and Proto2 (where
-  // a .proto always translates to a single class, but you may want to
-  // explicitly choose the class name).
+  // Controls the name of the wrapper Java class generated for the .proto file.
+  // That class will always contain the .proto file's getDescriptor() method as
+  // well as any top-level extensions defined in the .proto file.
+  // If java_multiple_files is disabled, then all the other classes from the
+  // .proto file will be nested inside the single wrapper outer class.
   optional string java_outer_classname = 8;
 
-  // If set true, then the Java code generator will generate a separate .java
+  // If enabled, then the Java code generator will generate a separate .java
   // file for each top-level message, enum, and service defined in the .proto
-  // file.  Thus, these types will *not* be nested inside the outer class
-  // named by java_outer_classname.  However, the outer class will still be
+  // file.  Thus, these types will *not* be nested inside the wrapper class
+  // named by java_outer_classname.  However, the wrapper class will still be
   // generated to contain the file's getDescriptor() method as well as any
   // top-level extensions defined in the file.
   optional bool java_multiple_files = 10 [default = false];
@@ -495,6 +495,8 @@ message MessageOptions {
   // for the message, or it will be completely ignored; in the very least,
   // this is a formalization for deprecating messages.
   optional bool deprecated = 3 [default = false];
+
+  reserved 4, 5, 6;
 
   // Whether the message is an automatically generated map entry type for the
   // maps field.

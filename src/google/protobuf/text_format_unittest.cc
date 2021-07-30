@@ -42,7 +42,6 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/map_unittest.pb.h>
@@ -55,9 +54,11 @@
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
+#include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/substitute.h>
 
 
 #include <google/protobuf/port_def.inc>
@@ -346,14 +347,13 @@ TEST_F(TextFormatTest, PrintUnknownMessage) {
   UnknownFieldSet unknown_fields;
   EXPECT_TRUE(unknown_fields.ParseFromString(data));
   EXPECT_TRUE(TextFormat::PrintUnknownFieldsToString(unknown_fields, &text));
-  EXPECT_EQ(
-      "44: \"abc\"\n"
-      "44: \"def\"\n"
-      "44: \"\"\n"
-      "48 {\n"
-      "  1: 123\n"
-      "}\n",
-      text);
+  // Field 44 and 48 can be printed in any order.
+  EXPECT_THAT(text, testing::HasSubstr("44: \"abc\"\n"
+                                       "44: \"def\"\n"
+                                       "44: \"\"\n"));
+  EXPECT_THAT(text, testing::HasSubstr("48 {\n"
+                                       "  1: 123\n"
+                                       "}\n"));
 }
 
 TEST_F(TextFormatTest, PrintDeeplyNestedUnknownMessage) {
@@ -718,7 +718,7 @@ TEST_F(TextFormatTest, CompactRepeatedFieldPrinter) {
       text);
 }
 
-// Print strings into multiple line, with indention. Use this to test
+// Print strings into multiple line, with indentation. Use this to test
 // BaseTextGenerator::Indent and BaseTextGenerator::Outdent.
 class MultilineStringPrinter : public TextFormat::FastFieldValuePrinter {
  public:
@@ -1069,13 +1069,8 @@ static std::string RemoveRedundantZeros(std::string text) {
 TEST_F(TextFormatTest, PrintExotic) {
   unittest::TestAllTypes message;
 
-  // Note:  In C, a negative integer literal is actually the unary negation
-  //   operator being applied to a positive integer literal, and
-  //   9223372036854775808 is outside the range of int64.  However, it is not
-  //   outside the range of uint64.  Confusingly, this means that everything
-  //   works if we make the literal unsigned, even though we are negating it.
-  message.add_repeated_int64(-PROTOBUF_ULONGLONG(9223372036854775808));
-  message.add_repeated_uint64(PROTOBUF_ULONGLONG(18446744073709551615));
+  message.add_repeated_int64(int64_t{-9223372036854775807} - 1);
+  message.add_repeated_uint64(uint64_t{18446744073709551615u});
   message.add_repeated_double(123.456);
   message.add_repeated_double(1.23e21);
   message.add_repeated_double(1.23e-18);
@@ -1240,32 +1235,19 @@ TEST_F(TextFormatTest, ParseExotic) {
 
   ASSERT_EQ(2, message.repeated_int32_size());
   EXPECT_EQ(-1, message.repeated_int32(0));
-  // Note:  In C, a negative integer literal is actually the unary negation
-  //   operator being applied to a positive integer literal, and 2147483648 is
-  //   outside the range of int32.  However, it is not outside the range of
-  //   uint32.  Confusingly, this means that everything works if we make the
-  //   literal unsigned, even though we are negating it.
-  EXPECT_EQ(-2147483648u, message.repeated_int32(1));
+  EXPECT_EQ(-2147483648, message.repeated_int32(1));
 
   ASSERT_EQ(2, message.repeated_int64_size());
   EXPECT_EQ(-1, message.repeated_int64(0));
-  // Note:  In C, a negative integer literal is actually the unary negation
-  //   operator being applied to a positive integer literal, and
-  //   9223372036854775808 is outside the range of int64.  However, it is not
-  //   outside the range of uint64.  Confusingly, this means that everything
-  //   works if we make the literal unsigned, even though we are negating it.
-  EXPECT_EQ(-PROTOBUF_ULONGLONG(9223372036854775808),
-            message.repeated_int64(1));
+  EXPECT_EQ(int64_t{-9223372036854775807} - 1, message.repeated_int64(1));
 
   ASSERT_EQ(2, message.repeated_uint32_size());
   EXPECT_EQ(4294967295u, message.repeated_uint32(0));
   EXPECT_EQ(2147483648u, message.repeated_uint32(1));
 
   ASSERT_EQ(2, message.repeated_uint64_size());
-  EXPECT_EQ(PROTOBUF_ULONGLONG(18446744073709551615),
-            message.repeated_uint64(0));
-  EXPECT_EQ(PROTOBUF_ULONGLONG(9223372036854775808),
-            message.repeated_uint64(1));
+  EXPECT_EQ(uint64_t{18446744073709551615u}, message.repeated_uint64(0));
+  EXPECT_EQ(uint64_t{9223372036854775808u}, message.repeated_uint64(1));
 
   ASSERT_EQ(13, message.repeated_double_size());
   EXPECT_EQ(123.0, message.repeated_double(0));
@@ -1409,9 +1391,8 @@ class TextFormatParserTest : public testing::Test {
     parser_.RecordErrorsTo(&error_collector);
     EXPECT_EQ(expected_result, parser_.ParseFromString(input, proto))
         << input << " -> " << proto->DebugString();
-    EXPECT_EQ(
-        StrCat(line) + ":" + StrCat(col) + ": " + message + "\n",
-        error_collector.text_);
+    EXPECT_EQ(StrCat(line, ":", col, ": ", message, "\n"),
+              error_collector.text_);
     parser_.RecordErrorsTo(nullptr);
   }
 
@@ -1911,7 +1892,58 @@ TEST_F(TextFormatParserTest, SetRecursionLimit) {
 
   input = strings::Substitute(format, input);
   parser_.SetRecursionLimit(100);
-  ExpectMessage(input, "Message is too deep", 1, 908, &message, false);
+  ExpectMessage(input,
+                "Message is too deep, the parser exceeded the configured "
+                "recursion limit of 100.",
+                1, 908, &message, false);
+
+  parser_.SetRecursionLimit(101);
+  ExpectSuccessAndTree(input, &message, nullptr);
+}
+
+TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldValue) {
+  const char* format = "[$0]";
+  std::string input = "\"test_value\"";
+  for (int i = 0; i < 99; ++i) input = strings::Substitute(format, input);
+  std::string not_deep_input = StrCat("unknown_nested_array: ", input);
+
+  parser_.AllowUnknownField(true);
+  parser_.SetRecursionLimit(100);
+
+  unittest::NestedTestAllTypes message;
+  ExpectSuccessAndTree(not_deep_input, &message, nullptr);
+
+  input = strings::Substitute(format, input);
+  std::string deep_input = StrCat("unknown_nested_array: ", input);
+  ExpectMessage(
+      deep_input,
+      "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "
+      "field named \"unknown_nested_array\".\n1:123: Message is too deep, the "
+      "parser exceeded the configured recursion limit of 100.",
+      1, 21, &message, false);
+
+  parser_.SetRecursionLimit(101);
+  ExpectSuccessAndTree(deep_input, &message, nullptr);
+}
+
+TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
+  const char* format = "unknown_child: { $0 }";
+  std::string input;
+  for (int i = 0; i < 100; ++i) input = strings::Substitute(format, input);
+
+  parser_.AllowUnknownField(true);
+  parser_.SetRecursionLimit(100);
+
+  unittest::NestedTestAllTypes message;
+  ExpectSuccessAndTree(input, &message, nullptr);
+
+  input = strings::Substitute(format, input);
+  ExpectMessage(
+      input,
+      "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "
+      "field named \"unknown_child\".\n1:1716: Message is too deep, the parser "
+      "exceeded the configured recursion limit of 100.",
+      1, 14, &message, false);
 
   parser_.SetRecursionLimit(101);
   ExpectSuccessAndTree(input, &message, nullptr);
@@ -2005,7 +2037,7 @@ TEST(TextFormatUnknownFieldTest, TestUnknownField) {
                              "  }\n"
                              ">",
                              &proto));
-  // Unmatched delimeters for message body
+  // Unmatched delimiters for message body
   EXPECT_FALSE(parser.ParseFromString("unknown_message: {>", &proto));
   // Unknown extension
   EXPECT_TRUE(
@@ -2110,3 +2142,5 @@ TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
 }  // namespace text_format_unittest
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

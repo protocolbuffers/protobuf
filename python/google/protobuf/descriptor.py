@@ -227,7 +227,8 @@ class _NestedDescriptorBase(DescriptorBase):
       proto: An empty proto instance from descriptor_pb2.
 
     Raises:
-      Error: If self couldnt be serialized, due to to few constructor arguments.
+      Error: If self couldn't be serialized, due to to few constructor
+        arguments.
     """
     if (self.file is not None and
         self._serialized_start is not None and
@@ -286,12 +287,26 @@ class Descriptor(_NestedDescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.Descriptor
 
-    def __new__(cls, name, full_name, filename, containing_type, fields,
-                nested_types, enum_types, extensions, options=None,
-                serialized_options=None,
-                is_extendable=True, extension_ranges=None, oneofs=None,
-                file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
-                syntax=None, create_key=None):
+    def __new__(
+        cls,
+        name=None,
+        full_name=None,
+        filename=None,
+        containing_type=None,
+        fields=None,
+        nested_types=None,
+        enum_types=None,
+        extensions=None,
+        options=None,
+        serialized_options=None,
+        is_extendable=True,
+        extension_ranges=None,
+        oneofs=None,
+        file=None,  # pylint: disable=redefined-builtin
+        serialized_start=None,
+        serialized_end=None,
+        syntax=None,
+        create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindMessageTypeByName(full_name)
 
@@ -798,9 +813,18 @@ class ServiceDescriptor(_NestedDescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.ServiceDescriptor
 
-    def __new__(cls, name, full_name, index, methods, options=None,
-                serialized_options=None, file=None,  # pylint: disable=redefined-builtin
-                serialized_start=None, serialized_end=None, create_key=None):
+    def __new__(
+        cls,
+        name=None,
+        full_name=None,
+        index=None,
+        methods=None,
+        options=None,
+        serialized_options=None,
+        file=None,  # pylint: disable=redefined-builtin
+        serialized_start=None,
+        serialized_end=None,
+        create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindServiceByName(full_name)
 
@@ -827,7 +851,7 @@ class ServiceDescriptor(_NestedDescriptorBase):
     Args:
       name (str): Name of the method.
     Returns:
-      MethodDescriptor or None: the desctiptor for the requested method, if
+      MethodDescriptor or None: the descriptor for the requested method, if
       found.
     """
     return self.methods_by_name.get(name, None)
@@ -888,6 +912,24 @@ class MethodDescriptor(DescriptorBase):
     self.containing_service = containing_service
     self.input_type = input_type
     self.output_type = output_type
+
+  def CopyToProto(self, proto):
+    """Copies this to a descriptor_pb2.MethodDescriptorProto.
+
+    Args:
+      proto (descriptor_pb2.MethodDescriptorProto): An empty descriptor proto.
+
+    Raises:
+      Error: If self couldn't be serialized, due to too few constructor
+        arguments.
+    """
+    if self.containing_service is not None:
+      from google.protobuf import descriptor_pb2
+      service_proto = descriptor_pb2.ServiceDescriptorProto()
+      self.containing_service.CopyToProto(service_proto)
+      proto.CopyFrom(service_proto.method[self.index])
+    else:
+      raise Error('Descriptor does not contain a service.')
 
 
 class FileDescriptor(DescriptorBase):

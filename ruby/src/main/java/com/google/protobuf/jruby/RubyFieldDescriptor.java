@@ -32,8 +32,8 @@
 
 package com.google.protobuf.jruby;
 
-import com.google.protobuf.DescriptorProtos;
-import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -43,7 +43,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 @JRubyClass(name = "FieldDescriptor")
 public class RubyFieldDescriptor extends RubyObject {
-    public static void createRubyFileDescriptor(Ruby runtime) {
+    public static void createRubyFieldDescriptor(Ruby runtime) {
         RubyModule mProtobuf = runtime.getClassFromPath("Google::Protobuf");
         RubyClass cFieldDescriptor = mProtobuf.defineClassUnder("FieldDescriptor", runtime.getObject(), new ObjectAllocator() {
             @Override
@@ -60,42 +60,30 @@ public class RubyFieldDescriptor extends RubyObject {
 
     /*
      * call-seq:
-     *     FieldDescriptor.new => field
+     *     FieldDescriptor.default => default
      *
-     * Returns a new field descriptor. Its name, type, etc. must be set before it is
-     * added to a message type.
+     * Returns this field's default, as a Ruby object, or nil if not yet set.
      */
-    @JRubyMethod
-    public IRubyObject initialize(ThreadContext context) {
-        builder = DescriptorProtos.FieldDescriptorProto.newBuilder();
-        return this;
-    }
+    // VALUE FieldDescriptor_default(VALUE _self) {
+    //   DEFINE_SELF(FieldDescriptor, self, _self);
+    //   return layout_get_default(self->fielddef);
+    // }
 
     /*
      * call-seq:
-     *     FieldDescriptor.label
+     *     FieldDescriptor.label => label
      *
-     * Return the label of this field.
+     * Returns this field's label (i.e., plurality), as a Ruby symbol.
+     *
+     * Valid field labels are:
+     *     :optional, :repeated
      */
     @JRubyMethod(name = "label")
     public IRubyObject getLabel(ThreadContext context) {
-        return this.label;
-    }
-
-    /*
-     * call-seq:
-     *     FieldDescriptor.label = label
-     *
-     * Sets the label on this field. Cannot be called if field is part of a message
-     * type already in a pool.
-     */
-    @JRubyMethod(name = "label=")
-    public IRubyObject setLabel(ThreadContext context, IRubyObject value) {
-        String labelName = value.asJavaString();
-        this.label = context.runtime.newSymbol(labelName.toLowerCase());
-        this.builder.setLabel(
-                DescriptorProtos.FieldDescriptorProto.Label.valueOf("LABEL_" + labelName.toUpperCase()));
-        return context.runtime.getNil();
+        if (label == null) {
+            calculateLabel(context);
+        }
+        return label;
     }
 
     /*
@@ -111,23 +99,19 @@ public class RubyFieldDescriptor extends RubyObject {
 
     /*
      * call-seq:
-     *     FieldDescriptor.name = name
+     *     FieldDescriptor.subtype => message_or_enum_descriptor
      *
-     * Sets the name of this field. Cannot be called once the containing message
-     * type, if any, is added to a pool.
+     * Returns the message or enum descriptor corresponding to this field's type if
+     * it is a message or enum field, respectively, or nil otherwise. Cannot be
+     * called *until* the containing message type is added to a pool (and thus
+     * resolved).
      */
-    @JRubyMethod(name = "name=")
-    public IRubyObject setName(ThreadContext context, IRubyObject value) {
-        String nameStr = value.asJavaString();
-        this.name = context.runtime.newString(nameStr);
-        this.builder.setName(Utils.escapeIdentifier(nameStr));
-        return context.runtime.getNil();
-    }
-
-
     @JRubyMethod(name = "subtype")
-    public IRubyObject getSubType(ThreadContext context) {
-        return subType;
+    public IRubyObject getSubtype(ThreadContext context) {
+        if (subtype == null) {
+            calculateSubtype(context);
+        }
+        return subtype;
     }
 
     /*
@@ -142,48 +126,42 @@ public class RubyFieldDescriptor extends RubyObject {
      */
     @JRubyMethod(name = "type")
     public IRubyObject getType(ThreadContext context) {
-        return Utils.fieldTypeToRuby(context, this.builder.getType());
-    }
-
-    /*
-     * call-seq:
-     *     FieldDescriptor.type = type
-     *
-     * Sets this field's type. Cannot be called if field is part of a message type
-     * already in a pool.
-     */
-    @JRubyMethod(name = "type=")
-    public IRubyObject setType(ThreadContext context, IRubyObject value) {
-        this.builder.setType(DescriptorProtos.FieldDescriptorProto.Type.valueOf("TYPE_" + value.asJavaString().toUpperCase()));
-        return context.runtime.getNil();
+        return Utils.fieldTypeToRuby(context, descriptor.getType());
     }
 
     /*
      * call-seq:
      *     FieldDescriptor.number => number
      *
-     * Returns this field's number, as a Ruby Integer, or nil if not yet set.
-     *
+     * Returns the tag number for this field.
      */
     @JRubyMethod(name = "number")
-    public IRubyObject getnumber(ThreadContext context) {
+    public IRubyObject getNumber(ThreadContext context) {
         return this.number;
     }
 
     /*
      * call-seq:
-     *     FieldDescriptor.number = number
+     *     FieldDescriptor.submsg_name => submsg_name
      *
-     * Sets the tag number for this field. Cannot be called if field is part of a
-     * message type already in a pool.
+     * Returns the name of the message or enum type corresponding to this field, if
+     * it is a message or enum field (respectively), or nil otherwise. This type
+     * name will be resolved within the context of the pool to which the containing
+     * message type is added.
      */
-    @JRubyMethod(name = "number=")
-    public IRubyObject setNumber(ThreadContext context, IRubyObject value) {
-        this.number = value;
-        this.builder.setNumber(RubyNumeric.num2int(value));
-        return context.runtime.getNil();
-    }
-
+    // VALUE FieldDescriptor_submsg_name(VALUE _self) {
+    //   DEFINE_SELF(FieldDescriptor, self, _self);
+    //   switch (upb_fielddef_type(self->fielddef)) {
+    //     case UPB_TYPE_ENUM:
+    //       return rb_str_new2(
+    //           upb_enumdef_fullname(upb_fielddef_enumsubdef(self->fielddef)));
+    //     case UPB_TYPE_MESSAGE:
+    //       return rb_str_new2(
+    //           upb_msgdef_fullname(upb_fielddef_msgsubdef(self->fielddef)));
+    //     default:
+    //       return Qnil;
+    //   }
+    // }
     /*
      * call-seq:
      *     FieldDescriptor.submsg_name = submsg_name
@@ -194,10 +172,21 @@ public class RubyFieldDescriptor extends RubyObject {
      * Cannot be called on field that are not of message or enum type, or on fields
      * that are part of a message type already added to a pool.
      */
-    @JRubyMethod(name = "submsg_name=")
-    public IRubyObject setSubmsgName(ThreadContext context, IRubyObject name) {
-        this.builder.setTypeName("." + Utils.escapeIdentifier(name.asJavaString()));
-        return context.runtime.getNil();
+    // @JRubyMethod(name = "submsg_name=")
+    // public IRubyObject setSubmsgName(ThreadContext context, IRubyObject name) {
+    //     this.builder.setTypeName("." + Utils.escapeIdentifier(name.asJavaString()));
+    //     return context.runtime.getNil();
+    // }
+
+    /*
+     * call-seq:
+     *     FieldDescriptor.clear(message)
+     *
+     * Clears the field from the message if it's set.
+     */
+    @JRubyMethod(name = "clear")
+    public IRubyObject clearValue(ThreadContext context, IRubyObject message) {
+        return ((RubyMessage) message).clearField(context, descriptor);
     }
 
     /*
@@ -208,13 +197,21 @@ public class RubyFieldDescriptor extends RubyObject {
      * exception if message is of the wrong type.
      */
     @JRubyMethod(name = "get")
-    public IRubyObject getValue(ThreadContext context, IRubyObject msgRb) {
-        RubyMessage message = (RubyMessage) msgRb;
-        if (message.getDescriptor() != fieldDef.getContainingType()) {
-            throw context.runtime.newTypeError("set method called on wrong message type");
-        }
-        return message.getField(context, fieldDef);
+    public IRubyObject getValue(ThreadContext context, IRubyObject message) {
+        return ((RubyMessage) message).getField(context, descriptor);
     }
+
+    /*
+     * call-seq:
+     *     FieldDescriptor.has?(message) => boolean
+     *
+     * Returns whether the value is set on the given message. Raises an
+     * exception when calling for fields that do not have presence.
+     */
+     @JRubyMethod(name = "has?")
+     public IRubyObject has(ThreadContext context, IRubyObject message) {
+        return ((RubyMessage) message).hasField(context, descriptor);
+     }
 
     /*
      * call-seq:
@@ -225,53 +222,46 @@ public class RubyFieldDescriptor extends RubyObject {
      * ordinary type-checks for field setting.
      */
     @JRubyMethod(name = "set")
-    public IRubyObject setValue(ThreadContext context, IRubyObject msgRb, IRubyObject value) {
-        RubyMessage message = (RubyMessage) msgRb;
-        if (message.getDescriptor() != fieldDef.getContainingType()) {
-            throw context.runtime.newTypeError("set method called on wrong message type");
+    public IRubyObject setValue(ThreadContext context, IRubyObject message, IRubyObject value) {
+        ((RubyMessage) message).setField(context, descriptor, value);
+        return context.nil;
+    }
+
+    protected void setDescriptor(ThreadContext context, FieldDescriptor descriptor, RubyDescriptorPool pool) {
+        this.descriptor = descriptor;
+        this.name = context.runtime.newString(descriptor.getName());
+        this.pool = pool;
+    }
+
+    private void calculateLabel(ThreadContext context) {
+        if (descriptor.isRepeated()) {
+            this.label = context.runtime.newSymbol("repeated");
+        } else if (descriptor.isOptional()) {
+            this.label = context.runtime.newSymbol("optional");
+        } else {
+            this.label = context.nil;
         }
-        message.setField(context, fieldDef, value);
-        return context.runtime.getNil();
     }
 
-    protected void setSubType(IRubyObject rubyDescriptor) {
-        this.subType = rubyDescriptor;
+    private void calculateSubtype(ThreadContext context) {
+        FieldDescriptor.Type fdType = descriptor.getType();
+        if (fdType == FieldDescriptor.Type.MESSAGE) {
+            RubyString messageName = context.runtime.newString(descriptor.getMessageType().getFullName());
+            this.subtype = pool.lookup(context, messageName);
+        } else if (fdType == FieldDescriptor.Type.ENUM) {
+            RubyString enumName = context.runtime.newString(descriptor.getEnumType().getFullName());
+            this.subtype = pool.lookup(context, enumName);
+        } else {
+            this.subtype = context.nil;
+        }
     }
 
-    protected void setFieldDef(Descriptors.FieldDescriptor fieldDescriptor) {
-        this.fieldDef = fieldDescriptor;
-    }
+    private static final String DOT = ".";
 
-    protected void setOneofName(IRubyObject name) {
-        oneofName = name;
-    }
-
-    protected void setOneofIndex(int index) {
-        hasOneofIndex = true;
-        oneofIndex = index;
-    }
-
-    protected IRubyObject getOneofName() {
-        return oneofName;
-    }
-
-    protected Descriptors.FieldDescriptor getFieldDef() {
-        return fieldDef;
-    }
-
-    protected DescriptorProtos.FieldDescriptorProto build() {
-        if (hasOneofIndex)
-            builder.setOneofIndex(oneofIndex);
-        return this.builder.build();
-    }
-
-    private DescriptorProtos.FieldDescriptorProto.Builder builder;
+    private FieldDescriptor descriptor;
     private IRubyObject name;
     private IRubyObject label;
     private IRubyObject number;
-    private IRubyObject subType;
-    private IRubyObject oneofName;
-    private Descriptors.FieldDescriptor fieldDef;
-    private int oneofIndex;
-    private boolean hasOneofIndex = false;
+    private IRubyObject subtype;
+    private RubyDescriptorPool pool;
 }

@@ -53,21 +53,25 @@ class MessageFieldGenerator : public FieldGenerator {
   ~MessageFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GeneratePrivateMembers(io::Printer* printer) const;
-  void GenerateAccessorDeclarations(io::Printer* printer) const;
-  void GenerateInlineAccessorDefinitions(io::Printer* printer) const;
-  void GenerateNonInlineAccessorDefinitions(io::Printer* printer) const;
-  void GenerateInternalAccessorDeclarations(io::Printer* printer) const;
-  void GenerateInternalAccessorDefinitions(io::Printer* printer) const;
-  void GenerateClearingCode(io::Printer* printer) const;
-  void GenerateMessageClearingCode(io::Printer* printer) const;
-  void GenerateMergingCode(io::Printer* printer) const;
-  void GenerateSwappingCode(io::Printer* printer) const;
-  void GenerateDestructorCode(io::Printer* printer) const;
-  void GenerateConstructorCode(io::Printer* printer) const;
-  void GenerateCopyConstructorCode(io::Printer* printer) const;
-  void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
-  void GenerateByteSize(io::Printer* printer) const;
+  void GeneratePrivateMembers(io::Printer* printer) const override;
+  void GenerateAccessorDeclarations(io::Printer* printer) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateNonInlineAccessorDefinitions(
+      io::Printer* printer) const override;
+  void GenerateInternalAccessorDeclarations(
+      io::Printer* printer) const override;
+  void GenerateInternalAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMessageClearingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateDestructorCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override;
+  void GenerateCopyConstructorCode(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateConstinitInitializer(io::Printer* printer) const override;
 
  protected:
   const bool implicit_weak_field_;
@@ -84,16 +88,17 @@ class MessageOneofFieldGenerator : public MessageFieldGenerator {
   ~MessageOneofFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GenerateInlineAccessorDefinitions(io::Printer* printer) const;
-  void GenerateNonInlineAccessorDefinitions(io::Printer* printer) const;
-  void GenerateClearingCode(io::Printer* printer) const;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateNonInlineAccessorDefinitions(
+      io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
 
   // MessageFieldGenerator, from which we inherit, overrides this so we need to
   // override it as well.
-  void GenerateMessageClearingCode(io::Printer* printer) const;
-  void GenerateSwappingCode(io::Printer* printer) const;
-  void GenerateDestructorCode(io::Printer* printer) const;
-  void GenerateConstructorCode(io::Printer* printer) const;
+  void GenerateMessageClearingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateDestructorCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageOneofFieldGenerator);
@@ -107,16 +112,18 @@ class RepeatedMessageFieldGenerator : public FieldGenerator {
   ~RepeatedMessageFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GeneratePrivateMembers(io::Printer* printer) const;
-  void GenerateAccessorDeclarations(io::Printer* printer) const;
-  void GenerateInlineAccessorDefinitions(io::Printer* printer) const;
-  void GenerateClearingCode(io::Printer* printer) const;
-  void GenerateMergingCode(io::Printer* printer) const;
-  void GenerateSwappingCode(io::Printer* printer) const;
-  void GenerateConstructorCode(io::Printer* printer) const;
-  void GenerateCopyConstructorCode(io::Printer* printer) const {}
-  void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
-  void GenerateByteSize(io::Printer* printer) const;
+  void GeneratePrivateMembers(io::Printer* printer) const override;
+  void GenerateAccessorDeclarations(io::Printer* printer) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override;
+  void GenerateCopyConstructorCode(io::Printer* printer) const override {}
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateConstinitInitializer(io::Printer* printer) const override;
 
  private:
   const bool implicit_weak_field_;

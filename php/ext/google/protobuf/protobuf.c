@@ -30,273 +30,259 @@
 
 #include "protobuf.h"
 
-#include <zend_hash.h>
+#include <php.h>
+#include <Zend/zend_interfaces.h>
 
-static PHP_GINIT_FUNCTION(protobuf);
-static PHP_GSHUTDOWN_FUNCTION(protobuf);
-static PHP_RINIT_FUNCTION(protobuf);
-static PHP_RSHUTDOWN_FUNCTION(protobuf);
-static PHP_MINIT_FUNCTION(protobuf);
-static PHP_MSHUTDOWN_FUNCTION(protobuf);
+#include "arena.h"
+#include "array.h"
+#include "convert.h"
+#include "def.h"
+#include "map.h"
+#include "message.h"
+#include "names.h"
+
+// -----------------------------------------------------------------------------
+// Module "globals"
+// -----------------------------------------------------------------------------
+
+// Despite the name, module "globals" are really thread-locals:
+//  * PROTOBUF_G(var) accesses the thread-local variable for 'var'. Either:
+//    * PROTOBUF_G(var) -> protobuf_globals.var (Non-ZTS / non-thread-safe)
+//    * PROTOBUF_G(var) -> <Zend magic>         (ZTS / thread-safe builds)
+
+#define PROTOBUF_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(protobuf, v)
+
+ZEND_BEGIN_MODULE_GLOBALS(protobuf)
+  // Set by the user to make the descriptor pool persist between requests.
+  zend_bool keep_descriptor_pool_after_request;
+
+  // Currently we make the generated pool a "global", which means that if a user
+  // does explicitly create threads within their request, the other threads will
+  // get different results from DescriptorPool::getGeneratedPool(). We require
+  // that all descriptors are loaded from the main thread.
+  zval generated_pool;
+
+  // A upb_symtab that we are saving for the next request so that we don't have
+  // to rebuild it from scratch. When keep_descriptor_pool_after_request==true,
+  // we steal the upb_symtab from the global DescriptorPool object just before
+  // destroying it.
+  upb_symtab *saved_symtab;
+
+  // Object cache (see interface in protobuf.h).
+  HashTable object_cache;
+
+  // Name cache (see interface in protobuf.h).
+  HashTable name_msg_cache;
+  HashTable name_enum_cache;
+
+  // An array of descriptor objects constructed during this request. These are
+  // logically referenced by the corresponding class entry, but since we can't
+  // actually write a class entry destructor, we reference them here, to be
+  // destroyed on request shutdown.
+  HashTable descriptors;
+ZEND_END_MODULE_GLOBALS(protobuf)
 
 ZEND_DECLARE_MODULE_GLOBALS(protobuf)
 
-// Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
-// instances.
-static HashTable* upb_def_to_php_obj_map;
-static upb_inttable upb_def_to_desc_map_persistent;
-static upb_inttable upb_def_to_enumdesc_map_persistent;
-// Global map from message/enum's php class entry to corresponding wrapper
-// Descriptor/EnumDescriptor instances.
-static HashTable* ce_to_php_obj_map;
-static upb_strtable ce_to_desc_map_persistent;
-static upb_strtable ce_to_enumdesc_map_persistent;
-// Global map from message/enum's proto fully-qualified name to corresponding
-// wrapper Descriptor/EnumDescriptor instances.
-static upb_strtable proto_to_desc_map_persistent;
-static upb_strtable class_to_desc_map_persistent;
-
-upb_strtable reserved_names;
-
-// -----------------------------------------------------------------------------
-// Global maps.
-// -----------------------------------------------------------------------------
-
-static void add_to_table(HashTable* t, const void* def, void* value) {
-  zval* pDest = NULL;
-  php_proto_zend_hash_index_update_mem(t, (zend_ulong)def, &value,
-                                       sizeof(zval*), (void**)&pDest);
+const zval *get_generated_pool() {
+  return &PROTOBUF_G(generated_pool);
 }
 
-static void* get_from_table(const HashTable* t, const void* def) {
-  void** value;
-  if (php_proto_zend_hash_index_find_mem(t, (zend_ulong)def, (void**)&value) ==
-      FAILURE) {
-    return NULL;
+// This is a PHP extension (not a Zend extension). What follows is a summary of
+// a PHP extension's lifetime and when various handlers are called.
+//
+//  * PHP_GINIT_FUNCTION(protobuf) / PHP_GSHUTDOWN_FUNCTION(protobuf)
+//    are the constructor/destructor for the globals. The sequence over the
+//    course of a process lifetime is:
+//
+//    # Process startup
+//    GINIT(<Main Thread Globals>)
+//    MINIT
+//
+//    foreach request:
+//      RINIT
+//        # Request is processed here.
+//      RSHUTDOWN
+//
+//    foreach thread:
+//      GINIT(<This Thread Globals>)
+//        # Code for the thread runs here.
+//      GSHUTDOWN(<This Thread Globals>)
+//
+//    # Process Shutdown
+//    #
+//    # These should be running per the docs, but I have not been able to
+//    # actually get the process-wide shutdown functions to run.
+//    #
+//    # MSHUTDOWN
+//    # GSHUTDOWN(<Main Thread Globals>)
+//
+//  * Threads can be created either explicitly by the user, inside a request,
+//    or implicitly by the runtime, to process multiple requests concurrently.
+//    If the latter is being used, then the "foreach thread" block above
+//    actually looks like this:
+//
+//    foreach thread:
+//      GINIT(<This Thread Globals>)
+//      # A non-main thread will only receive requests when using a threaded
+//      # MPM with Apache
+//      foreach request:
+//        RINIT
+//          # Request is processed here.
+//        RSHUTDOWN
+//      GSHUTDOWN(<This Thread Globals>)
+//
+// That said, it appears that few people use threads with PHP:
+//   * The pthread package documented at
+//     https://www.php.net/manual/en/class.thread.php nas not been released
+//     since 2016, and the current release fails to compile against any PHP
+//     newer than 7.0.33.
+//     * The GitHub master branch supports 7.2+, but this has not been released
+//       to PECL.
+//     * Its owner has disavowed it as "broken by design" and "in an untenable
+//       position for the future": https://github.com/krakjoe/pthreads/issues/929
+//   * The only way to use PHP with requests in different threads is to use the
+//     Apache 2 mod_php with the "worker" MPM. But this is explicitly
+//     discouraged by the documentation: https://serverfault.com/a/231660
+
+static PHP_GSHUTDOWN_FUNCTION(protobuf) {
+  if (protobuf_globals->saved_symtab) {
+    upb_symtab_free(protobuf_globals->saved_symtab);
   }
-  return *value;
 }
 
-void add_def_obj(const void* def, PHP_PROTO_HASHTABLE_VALUE value) {
-#if PHP_MAJOR_VERSION < 7
-  Z_ADDREF_P(value);
+static PHP_GINIT_FUNCTION(protobuf) {
+  ZVAL_NULL(&protobuf_globals->generated_pool);
+  protobuf_globals->saved_symtab = NULL;
+}
+
+/**
+ * PHP_RINIT_FUNCTION(protobuf)
+ *
+ * This function is run at the beginning of processing each request.
+ */
+static PHP_RINIT_FUNCTION(protobuf) {
+  // Create the global generated pool.
+  // Reuse the symtab (if any) left to us by the last request.
+  upb_symtab *symtab = PROTOBUF_G(saved_symtab);
+  DescriptorPool_CreateWithSymbolTable(&PROTOBUF_G(generated_pool), symtab);
+
+  zend_hash_init(&PROTOBUF_G(object_cache), 64, NULL, NULL, 0);
+  zend_hash_init(&PROTOBUF_G(name_msg_cache), 64, NULL, NULL, 0);
+  zend_hash_init(&PROTOBUF_G(name_enum_cache), 64, NULL, NULL, 0);
+  zend_hash_init(&PROTOBUF_G(descriptors), 64, NULL, ZVAL_PTR_DTOR, 0);
+
+  return SUCCESS;
+}
+
+/**
+ * PHP_RSHUTDOWN_FUNCTION(protobuf)
+ *
+ * This function is run at the end of processing each request.
+ */
+static PHP_RSHUTDOWN_FUNCTION(protobuf) {
+  // Preserve the symtab if requested.
+  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
+    zval *zv = &PROTOBUF_G(generated_pool);
+    PROTOBUF_G(saved_symtab) = DescriptorPool_Steal(zv);
+  }
+
+  zval_dtor(&PROTOBUF_G(generated_pool));
+  zend_hash_destroy(&PROTOBUF_G(object_cache));
+  zend_hash_destroy(&PROTOBUF_G(name_msg_cache));
+  zend_hash_destroy(&PROTOBUF_G(name_enum_cache));
+  zend_hash_destroy(&PROTOBUF_G(descriptors));
+
+  return SUCCESS;
+}
+
+// -----------------------------------------------------------------------------
+// Object Cache.
+// -----------------------------------------------------------------------------
+
+void Descriptors_Add(zend_object *desc) {
+  // The hash table will own a ref (it will destroy it when the table is
+  // destroyed), but for some reason the insert operation does not add a ref, so
+  // we do that here with ZVAL_OBJ_COPY().
+  zval zv;
+  ZVAL_OBJ_COPY(&zv, desc);
+  zend_hash_next_index_insert(&PROTOBUF_G(descriptors), &zv);
+}
+
+void ObjCache_Add(const void *upb_obj, zend_object *php_obj) {
+  zend_ulong k = (zend_ulong)upb_obj;
+  zend_hash_index_add_ptr(&PROTOBUF_G(object_cache), k, php_obj);
+}
+
+void ObjCache_Delete(const void *upb_obj) {
+  if (upb_obj) {
+    zend_ulong k = (zend_ulong)upb_obj;
+    int ret = zend_hash_index_del(&PROTOBUF_G(object_cache), k);
+    PBPHP_ASSERT(ret == SUCCESS);
+  }
+}
+
+bool ObjCache_Get(const void *upb_obj, zval *val) {
+  zend_ulong k = (zend_ulong)upb_obj;
+  zend_object *obj = zend_hash_index_find_ptr(&PROTOBUF_G(object_cache), k);
+
+  if (obj) {
+    ZVAL_OBJ_COPY(val, obj);
+    return true;
+  } else {
+    ZVAL_NULL(val);
+    return false;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Name Cache.
+// -----------------------------------------------------------------------------
+
+void NameMap_AddMessage(const upb_msgdef *m) {
+  char *k = GetPhpClassname(upb_msgdef_file(m), upb_msgdef_fullname(m));
+  zend_hash_str_add_ptr(&PROTOBUF_G(name_msg_cache), k, strlen(k), (void*)m);
+  free(k);
+}
+
+void NameMap_AddEnum(const upb_enumdef *e) {
+  char *k = GetPhpClassname(upb_enumdef_file(e), upb_enumdef_fullname(e));
+  zend_hash_str_add_ptr(&PROTOBUF_G(name_enum_cache), k, strlen(k), (void*)e);
+  free(k);
+}
+
+const upb_msgdef *NameMap_GetMessage(zend_class_entry *ce) {
+  const upb_msgdef *ret =
+      zend_hash_find_ptr(&PROTOBUF_G(name_msg_cache), ce->name);
+
+  if (!ret && ce->create_object) {
+#if PHP_VERSION_ID < 80000
+    zval tmp;
+    zval zv;
+    ZVAL_OBJ(&tmp, ce->create_object(ce));
+    zend_call_method_with_0_params(&tmp, ce, NULL, "__construct", &zv);
+    zval_ptr_dtor(&tmp);
 #else
-  GC_ADDREF(value);
+    zval zv;
+    zend_object *tmp = ce->create_object(ce);
+    zend_call_method_with_0_params(tmp, ce, NULL, "__construct", &zv);
+    OBJ_RELEASE(tmp);
 #endif
-  add_to_table(upb_def_to_php_obj_map, def, value);
-}
-
-PHP_PROTO_HASHTABLE_VALUE get_def_obj(const void* def) {
-  return (PHP_PROTO_HASHTABLE_VALUE)get_from_table(upb_def_to_php_obj_map, def);
-}
-
-void add_msgdef_desc(const upb_msgdef* m, DescriptorInternal* desc) {
-  upb_inttable_insertptr(&upb_def_to_desc_map_persistent,
-                         m, upb_value_ptr(desc));
-}
-
-DescriptorInternal* get_msgdef_desc(const upb_msgdef* m) {
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_PTR;
-#endif
-  if (!upb_inttable_lookupptr(&upb_def_to_desc_map_persistent, m, &v)) {
-    return NULL;
-  } else {
-    return upb_value_getptr(v);
+    zval_ptr_dtor(&zv);
+    ret = zend_hash_find_ptr(&PROTOBUF_G(name_msg_cache), ce->name);
   }
+
+  return ret;
 }
 
-void add_enumdef_enumdesc(const upb_enumdef* e, EnumDescriptorInternal* desc) {
-  upb_inttable_insertptr(&upb_def_to_enumdesc_map_persistent,
-                         e, upb_value_ptr(desc));
-}
-
-EnumDescriptorInternal* get_enumdef_enumdesc(const upb_enumdef* e) {
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_PTR;
-#endif
-  if (!upb_inttable_lookupptr(&upb_def_to_enumdesc_map_persistent, e, &v)) {
-    return NULL;
-  } else {
-    return upb_value_getptr(v);
-  }
-}
-
-void add_ce_obj(const void* ce, PHP_PROTO_HASHTABLE_VALUE value) {
-#if PHP_MAJOR_VERSION < 7
-  Z_ADDREF_P(value);
-#else
-  GC_ADDREF(value);
-#endif
-  add_to_table(ce_to_php_obj_map, ce, value);
-}
-
-PHP_PROTO_HASHTABLE_VALUE get_ce_obj(const void* ce) {
-  return (PHP_PROTO_HASHTABLE_VALUE)get_from_table(ce_to_php_obj_map, ce);
-}
-
-void add_ce_desc(const zend_class_entry* ce, DescriptorInternal* desc) {
-#if PHP_MAJOR_VERSION < 7
-  const char* klass = ce->name;
-#else
-  const char* klass = ZSTR_VAL(ce->name);
-#endif
-  upb_strtable_insert(&ce_to_desc_map_persistent, klass,
-                      upb_value_ptr(desc));
-}
-
-DescriptorInternal* get_ce_desc(const zend_class_entry* ce) {
-#if PHP_MAJOR_VERSION < 7
-  const char* klass = ce->name;
-#else
-  const char* klass = ZSTR_VAL(ce->name);
-#endif
-
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_PTR;
-#endif
-
-  if (!upb_strtable_lookup(&ce_to_desc_map_persistent, klass, &v)) {
-    return NULL;
-  } else {
-    return upb_value_getptr(v);
-  }
-}
-
-void add_ce_enumdesc(const zend_class_entry* ce, EnumDescriptorInternal* desc) {
-#if PHP_MAJOR_VERSION < 7
-  const char* klass = ce->name;
-#else
-  const char* klass = ZSTR_VAL(ce->name);
-#endif
-  upb_strtable_insert(&ce_to_enumdesc_map_persistent, klass,
-                      upb_value_ptr(desc));
-}
-
-EnumDescriptorInternal* get_ce_enumdesc(const zend_class_entry* ce) {
-#if PHP_MAJOR_VERSION < 7
-  const char* klass = ce->name;
-#else
-  const char* klass = ZSTR_VAL(ce->name);
-#endif
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_PTR;
-#endif
-  if (!upb_strtable_lookup(&ce_to_enumdesc_map_persistent, klass, &v)) {
-    return NULL;
-  } else {
-    return upb_value_getptr(v);
-  }
-}
-
-bool class_added(const void* ce) {
-  return get_ce_desc(ce) != NULL;
-}
-
-void add_proto_desc(const char* proto, DescriptorInternal* desc) {
-  upb_strtable_insert(&proto_to_desc_map_persistent, proto,
-                      upb_value_ptr(desc));
-}
-
-DescriptorInternal* get_proto_desc(const char* proto) {
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_PTR;
-#endif
-  if (!upb_strtable_lookup(&proto_to_desc_map_persistent, proto, &v)) {
-    return NULL;
-  } else {
-    return upb_value_getptr(v);
-  }
-}
-
-void add_class_desc(const char* klass, DescriptorInternal* desc) {
-  upb_strtable_insert(&class_to_desc_map_persistent, klass,
-                      upb_value_ptr(desc));
-}
-
-DescriptorInternal* get_class_desc(const char* klass) {
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_PTR;
-#endif
-  if (!upb_strtable_lookup(&class_to_desc_map_persistent, klass, &v)) {
-    return NULL;
-  } else {
-    return upb_value_getptr(v);
-  }
-}
-
-void add_class_enumdesc(const char* klass, EnumDescriptorInternal* desc) {
-  upb_strtable_insert(&class_to_desc_map_persistent, klass,
-                      upb_value_ptr(desc));
-}
-
-EnumDescriptorInternal* get_class_enumdesc(const char* klass) {
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_PTR;
-#endif
-  if (!upb_strtable_lookup(&class_to_desc_map_persistent, klass, &v)) {
-    return NULL;
-  } else {
-    return upb_value_getptr(v);
-  }
+const upb_enumdef *NameMap_GetEnum(zend_class_entry *ce) {
+  const upb_enumdef *ret =
+      zend_hash_find_ptr(&PROTOBUF_G(name_enum_cache), ce->name);
+  return ret;
 }
 
 // -----------------------------------------------------------------------------
-// Well Known Types.
-// -----------------------------------------------------------------------------
-
-bool is_inited_file_any;
-bool is_inited_file_api;
-bool is_inited_file_duration;
-bool is_inited_file_field_mask;
-bool is_inited_file_empty;
-bool is_inited_file_source_context;
-bool is_inited_file_struct;
-bool is_inited_file_timestamp;
-bool is_inited_file_type;
-bool is_inited_file_wrappers;
-
-// -----------------------------------------------------------------------------
-// Reserved Name.
-// -----------------------------------------------------------------------------
-
-// Although we already have kReservedNames, we still add them to hash table to
-// speed up look up.
-const char *const kReservedNames[] = {
-    "abstract",   "and",        "array",        "as",           "break",
-    "callable",   "case",       "catch",        "class",        "clone",
-    "const",      "continue",   "declare",      "default",      "die",
-    "do",         "echo",       "else",         "elseif",       "empty",
-    "enddeclare", "endfor",     "endforeach",   "endif",        "endswitch",
-    "endwhile",   "eval",       "exit",         "extends",      "final",
-    "for",        "foreach",    "function",     "global",       "goto",
-    "if",         "implements", "include",      "include_once", "instanceof",
-    "insteadof",  "interface",  "isset",        "list",         "namespace",
-    "new",        "or",         "print",        "private",      "protected",
-    "public",     "require",    "require_once", "return",       "static",
-    "switch",     "throw",      "trait",        "try",          "unset",
-    "use",        "var",        "while",        "xor",          "int",
-    "float",      "bool",       "string",       "true",         "false",
-    "null",       "void",       "iterable"};
-const int kReservedNamesSize = 73;
-
-bool is_reserved_name(const char* name) {
-  upb_value v;
-#ifndef NDEBUG
-  v.ctype = UPB_CTYPE_UINT64;
-#endif
-  return upb_strtable_lookup2(&reserved_names, name, strlen(name), &v);
-}
-
-// -----------------------------------------------------------------------------
-// Utilities.
+// Module init.
 // -----------------------------------------------------------------------------
 
 zend_function_entry protobuf_functions[] = {
@@ -308,203 +294,6 @@ static const zend_module_dep protobuf_deps[] = {
   ZEND_MOD_END
 };
 
-zend_module_entry protobuf_module_entry = {
-  STANDARD_MODULE_HEADER_EX,
-  NULL,
-  protobuf_deps,
-  PHP_PROTOBUF_EXTNAME,     // extension name
-  protobuf_functions,       // function list
-  PHP_MINIT(protobuf),      // process startup
-  PHP_MSHUTDOWN(protobuf),  // process shutdown
-  PHP_RINIT(protobuf),      // request shutdown
-  PHP_RSHUTDOWN(protobuf),  // request shutdown
-  NULL,                 // extension info
-  PHP_PROTOBUF_VERSION, // extension version
-  PHP_MODULE_GLOBALS(protobuf),  // globals descriptor
-  PHP_GINIT(protobuf),  // globals ctor
-  PHP_GSHUTDOWN(protobuf),  // globals dtor
-  NULL,  // post deactivate
-  STANDARD_MODULE_PROPERTIES_EX
-};
-
-// install module
-ZEND_GET_MODULE(protobuf)
-
-// global variables
-static PHP_GINIT_FUNCTION(protobuf) {
-}
-
-static PHP_GSHUTDOWN_FUNCTION(protobuf) {
-}
-
-#if PHP_MAJOR_VERSION >= 7
-static void php_proto_hashtable_descriptor_release(zval* value) {
-  void* ptr = Z_PTR_P(value);
-  zend_object* object = *(zend_object**)ptr;
-  GC_DELREF(object);
-  if(GC_REFCOUNT(object) == 0) {
-    zend_objects_store_del(object);
-  }
-  efree(ptr);
-}
-#endif
-
-static void initialize_persistent_descriptor_pool(TSRMLS_D) {
-  upb_inttable_init(&upb_def_to_desc_map_persistent, UPB_CTYPE_PTR);
-  upb_inttable_init(&upb_def_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
-  upb_strtable_init(&ce_to_desc_map_persistent, UPB_CTYPE_PTR);
-  upb_strtable_init(&ce_to_enumdesc_map_persistent, UPB_CTYPE_PTR);
-  upb_strtable_init(&proto_to_desc_map_persistent, UPB_CTYPE_PTR);
-  upb_strtable_init(&class_to_desc_map_persistent, UPB_CTYPE_PTR);
-
-  internal_descriptor_pool_impl_init(&generated_pool_impl TSRMLS_CC);
-
-  is_inited_file_any = false;
-  is_inited_file_api = false;
-  is_inited_file_duration = false;
-  is_inited_file_field_mask = false;
-  is_inited_file_empty = false;
-  is_inited_file_source_context = false;
-  is_inited_file_struct = false;
-  is_inited_file_timestamp = false;
-  is_inited_file_type = false;
-  is_inited_file_wrappers = false;
-}
-
-static PHP_RINIT_FUNCTION(protobuf) {
-  ALLOC_HASHTABLE(upb_def_to_php_obj_map);
-  zend_hash_init(upb_def_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
-
-  ALLOC_HASHTABLE(ce_to_php_obj_map);
-  zend_hash_init(ce_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
-
-  generated_pool = NULL;
-  generated_pool_php = NULL;
-  internal_generated_pool_php = NULL;
-
-  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
-    // Needs to clean up obsolete class entry
-    upb_strtable_iter i;
-    upb_value v;
-
-    DescriptorInternal* desc;
-    for(upb_strtable_begin(&i, &ce_to_desc_map_persistent);
-        !upb_strtable_done(&i);
-        upb_strtable_next(&i)) {
-      v = upb_strtable_iter_value(&i);
-      desc = upb_value_getptr(v);
-      desc->klass = NULL;
-    }
-
-    EnumDescriptorInternal* enumdesc;
-    for(upb_strtable_begin(&i, &ce_to_enumdesc_map_persistent);
-        !upb_strtable_done(&i);
-        upb_strtable_next(&i)) {
-      v = upb_strtable_iter_value(&i);
-      enumdesc = upb_value_getptr(v);
-      enumdesc->klass = NULL;
-    }
-  } else {
-    initialize_persistent_descriptor_pool(TSRMLS_C);
-  }
-
-  return 0;
-}
-
-static void cleanup_desc_table(upb_inttable* t) {
-  upb_inttable_iter i;
-  upb_value v;
-  DescriptorInternal* desc;
-  for(upb_inttable_begin(&i, t);
-      !upb_inttable_done(&i);
-      upb_inttable_next(&i)) {
-    v = upb_inttable_iter_value(&i);
-    desc = upb_value_getptr(v);
-    if (desc->layout) {
-      free_layout(desc->layout);
-      desc->layout = NULL;
-    }
-    free(desc->classname);
-    SYS_FREE(desc);
-  }
-}
-
-static void cleanup_enumdesc_table(upb_inttable* t) {
-  upb_inttable_iter i;
-  upb_value v;
-  EnumDescriptorInternal* desc;
-  for(upb_inttable_begin(&i, t);
-      !upb_inttable_done(&i);
-      upb_inttable_next(&i)) {
-    v = upb_inttable_iter_value(&i);
-    desc = upb_value_getptr(v);
-    free(desc->classname);
-    SYS_FREE(desc);
-  }
-}
-
-static void cleanup_persistent_descriptor_pool(TSRMLS_D) {
-  // Clean up
-
-  // Only needs to clean one map out of three (def=>desc, ce=>desc, proto=>desc)
-  cleanup_desc_table(&upb_def_to_desc_map_persistent);
-  cleanup_enumdesc_table(&upb_def_to_enumdesc_map_persistent);
-
-  internal_descriptor_pool_impl_destroy(&generated_pool_impl TSRMLS_CC);
-
-  upb_inttable_uninit(&upb_def_to_desc_map_persistent);
-  upb_inttable_uninit(&upb_def_to_enumdesc_map_persistent);
-  upb_strtable_uninit(&ce_to_desc_map_persistent);
-  upb_strtable_uninit(&ce_to_enumdesc_map_persistent);
-  upb_strtable_uninit(&proto_to_desc_map_persistent);
-  upb_strtable_uninit(&class_to_desc_map_persistent);
-}
-
-static PHP_RSHUTDOWN_FUNCTION(protobuf) {
-  zend_hash_destroy(upb_def_to_php_obj_map);
-  FREE_HASHTABLE(upb_def_to_php_obj_map);
-
-  zend_hash_destroy(ce_to_php_obj_map);
-  FREE_HASHTABLE(ce_to_php_obj_map);
-
-#if PHP_MAJOR_VERSION < 7
-  if (generated_pool_php != NULL) {
-    zval_dtor(generated_pool_php);
-    FREE_ZVAL(generated_pool_php);
-  }
-  if (internal_generated_pool_php != NULL) {
-    zval_dtor(internal_generated_pool_php);
-    FREE_ZVAL(internal_generated_pool_php);
-  }
-#else
-  if (generated_pool_php != NULL) {
-    zval tmp;
-    ZVAL_OBJ(&tmp, generated_pool_php);
-    zval_dtor(&tmp);
-  }
-  if (internal_generated_pool_php != NULL) {
-    zval tmp;
-    ZVAL_OBJ(&tmp, internal_generated_pool_php);
-    zval_dtor(&tmp);
-  }
-#endif
-
-  if (!PROTOBUF_G(keep_descriptor_pool_after_request)) {
-    cleanup_persistent_descriptor_pool(TSRMLS_C);
-  }
-
-  return 0;
-}
-
-static void reserved_names_init() {
-  size_t i;
-  upb_value v = upb_value_bool(false);
-  for (i = 0; i < kReservedNamesSize; i++) {
-    upb_strtable_insert2(&reserved_names, kReservedNames[i],
-                         strlen(kReservedNames[i]), v);
-  }
-}
-
 PHP_INI_BEGIN()
 STD_PHP_INI_ENTRY("protobuf.keep_descriptor_pool_after_request", "0",
                   PHP_INI_SYSTEM, OnUpdateBool,
@@ -514,86 +303,37 @@ PHP_INI_END()
 
 static PHP_MINIT_FUNCTION(protobuf) {
   REGISTER_INI_ENTRIES();
-
-  upb_strtable_init(&reserved_names, UPB_CTYPE_UINT64);
-  reserved_names_init();
-
-  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
-    initialize_persistent_descriptor_pool(TSRMLS_C);
-  }
-
-  descriptor_pool_init(TSRMLS_C);
-  descriptor_init(TSRMLS_C);
-  enum_descriptor_init(TSRMLS_C);
-  enum_value_descriptor_init(TSRMLS_C);
-  field_descriptor_init(TSRMLS_C);
-  gpb_type_init(TSRMLS_C);
-  internal_descriptor_pool_init(TSRMLS_C);
-  map_field_init(TSRMLS_C);
-  map_field_iter_init(TSRMLS_C);
-  message_init(TSRMLS_C);
-  oneof_descriptor_init(TSRMLS_C);
-  repeated_field_init(TSRMLS_C);
-  repeated_field_iter_init(TSRMLS_C);
-  util_init(TSRMLS_C);
-
-  gpb_metadata_any_init(TSRMLS_C);
-  gpb_metadata_api_init(TSRMLS_C);
-  gpb_metadata_duration_init(TSRMLS_C);
-  gpb_metadata_field_mask_init(TSRMLS_C);
-  gpb_metadata_empty_init(TSRMLS_C);
-  gpb_metadata_source_context_init(TSRMLS_C);
-  gpb_metadata_struct_init(TSRMLS_C);
-  gpb_metadata_timestamp_init(TSRMLS_C);
-  gpb_metadata_type_init(TSRMLS_C);
-  gpb_metadata_wrappers_init(TSRMLS_C);
-
-  any_init(TSRMLS_C);
-  api_init(TSRMLS_C);
-  bool_value_init(TSRMLS_C);
-  bytes_value_init(TSRMLS_C);
-  double_value_init(TSRMLS_C);
-  duration_init(TSRMLS_C);
-  enum_init(TSRMLS_C);
-  enum_value_init(TSRMLS_C);
-  field_cardinality_init(TSRMLS_C);
-  field_init(TSRMLS_C);
-  field_kind_init(TSRMLS_C);
-  field_mask_init(TSRMLS_C);
-  float_value_init(TSRMLS_C);
-  empty_init(TSRMLS_C);
-  int32_value_init(TSRMLS_C);
-  int64_value_init(TSRMLS_C);
-  list_value_init(TSRMLS_C);
-  method_init(TSRMLS_C);
-  mixin_init(TSRMLS_C);
-  null_value_init(TSRMLS_C);
-  option_init(TSRMLS_C);
-  source_context_init(TSRMLS_C);
-  string_value_init(TSRMLS_C);
-  struct_init(TSRMLS_C);
-  syntax_init(TSRMLS_C);
-  timestamp_init(TSRMLS_C);
-  type_init(TSRMLS_C);
-  u_int32_value_init(TSRMLS_C);
-  u_int64_value_init(TSRMLS_C);
-  value_init(TSRMLS_C);
-
-  return 0;
+  Arena_ModuleInit();
+  Array_ModuleInit();
+  Convert_ModuleInit();
+  Def_ModuleInit();
+  Map_ModuleInit();
+  Message_ModuleInit();
+  return SUCCESS;
 }
 
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {
-  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
-    cleanup_persistent_descriptor_pool(TSRMLS_C);
-  }
-
-  upb_strtable_uninit(&reserved_names);
-
-  PEFREE(message_handlers);
-  PEFREE(repeated_field_handlers);
-  PEFREE(repeated_field_iter_handlers);
-  PEFREE(map_field_handlers);
-  PEFREE(map_field_iter_handlers);
-
-  return 0;
+  UNREGISTER_INI_ENTRIES();
+  return SUCCESS;
 }
+
+zend_module_entry protobuf_module_entry = {
+  STANDARD_MODULE_HEADER_EX,
+  NULL,
+  protobuf_deps,
+  "protobuf",               // extension name
+  protobuf_functions,       // function list
+  PHP_MINIT(protobuf),      // process startup
+  PHP_MSHUTDOWN(protobuf),  // process shutdown
+  PHP_RINIT(protobuf),      // request shutdown
+  PHP_RSHUTDOWN(protobuf),  // request shutdown
+  NULL,                     // extension info
+  PHP_PROTOBUF_VERSION,     // extension version
+  PHP_MODULE_GLOBALS(protobuf),  // globals descriptor
+  PHP_GINIT(protobuf),      // globals ctor
+  PHP_GSHUTDOWN(protobuf),  // globals dtor
+  NULL,                     // post deactivate
+  STANDARD_MODULE_PROPERTIES_EX
+};
+
+ZEND_GET_MODULE(protobuf)

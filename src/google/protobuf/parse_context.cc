@@ -48,7 +48,7 @@ namespace internal {
 namespace {
 
 // Only call if at start of tag.
-bool ParseEndsInSlopRegion(const char* begin, int overrun, int d) {
+bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth) {
   constexpr int kSlopBytes = EpsCopyInputStream::kSlopBytes;
   GOOGLE_DCHECK(overrun >= 0);
   GOOGLE_DCHECK(overrun <= kSlopBytes);
@@ -79,11 +79,11 @@ bool ParseEndsInSlopRegion(const char* begin, int overrun, int d) {
         break;
       }
       case 3: {  // start group
-        d++;
+        depth++;
         break;
       }
       case 4: {                    // end group
-        if (--d < 0) return true;  // We exit early
+        if (--depth < 0) return true;  // We exit early
         break;
       }
       case 5: {  // fixed32
@@ -99,7 +99,7 @@ bool ParseEndsInSlopRegion(const char* begin, int overrun, int d) {
 
 }  // namespace
 
-const char* EpsCopyInputStream::Next(int overrun, int d) {
+const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   if (next_chunk_ == nullptr) return nullptr;  // We've reached end of stream.
   if (next_chunk_ != buffer_) {
     GOOGLE_DCHECK(size_ > kSlopBytes);
@@ -115,7 +115,7 @@ const char* EpsCopyInputStream::Next(int overrun, int d) {
   // buffer_.
   std::memmove(buffer_, buffer_end_, kSlopBytes);
   if (overall_limit_ > 0 &&
-      (d < 0 || !ParseEndsInSlopRegion(buffer_, overrun, d))) {
+      (depth < 0 || !ParseEndsInSlopRegion(buffer_, overrun, depth))) {
     const void* data;
     // ZeroCopyInputStream indicates Next may return 0 size buffers. Hence
     // we loop.
@@ -154,11 +154,22 @@ const char* EpsCopyInputStream::Next(int overrun, int d) {
   return buffer_;
 }
 
-std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(const char* ptr,
-                                                              int d) {
-  GOOGLE_DCHECK(ptr >= limit_end_);
-  int overrun = ptr - buffer_end_;
-  GOOGLE_DCHECK(overrun <= kSlopBytes);  // Guaranteed by parse loop.
+const char* EpsCopyInputStream::Next() {
+  GOOGLE_DCHECK(limit_ > kSlopBytes);
+  auto p = NextBuffer(0 /* immaterial */, -1);
+  if (p == nullptr) {
+    limit_end_ = buffer_end_;
+    // Distinguish ending on a pushed limit or ending on end-of-stream.
+    SetEndOfStream();
+    return nullptr;
+  }
+  limit_ -= buffer_end_ - p;  // Adjust limit_ relative to new anchor
+  limit_end_ = buffer_end_ + std::min(0, limit_);
+  return p;
+}
+
+std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
+                                                              int depth) {
   // Did we exceeded the limit (parse error).
   if (PROTOBUF_PREDICT_FALSE(overrun > limit_)) return {nullptr, true};
   GOOGLE_DCHECK(overrun != limit_);  // Guaranteed by caller.
@@ -171,25 +182,26 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(const char* ptr,
   // At this point we know the following assertion holds.
   GOOGLE_DCHECK(limit_ > 0);
   GOOGLE_DCHECK(limit_end_ == buffer_end_);  // because limit_ > 0
+  const char* p;
   do {
     // We are past the end of buffer_end_, in the slop region.
     GOOGLE_DCHECK(overrun >= 0);
-    auto p = Next(overrun, d);
+    p = NextBuffer(overrun, depth);
     if (p == nullptr) {
       // We are at the end of the stream
       if (PROTOBUF_PREDICT_FALSE(overrun != 0)) return {nullptr, true};
       GOOGLE_DCHECK(limit_ > 0);
       limit_end_ = buffer_end_;
-      // Distinquish ending on a pushed limit or ending on end-of-stream.
+      // Distinguish ending on a pushed limit or ending on end-of-stream.
       SetEndOfStream();
-      return {ptr, true};
+      return {buffer_end_, true};
     }
     limit_ -= buffer_end_ - p;  // Adjust limit_ relative to new anchor
-    ptr = p + overrun;
-    overrun = ptr - buffer_end_;
+    p += overrun;
+    overrun = p - buffer_end_;
   } while (overrun >= 0);
   limit_end_ = buffer_end_ + std::min(0, limit_);
-  return {ptr, false};
+  return {p, false};
 }
 
 const char* EpsCopyInputStream::SkipFallback(const char* ptr, int size) {
@@ -222,18 +234,6 @@ const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
 }
 
 
-template <typename Tag, typename T>
-const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
-                                                  Tag expected_tag,
-                                                  RepeatedField<T>* out) {
-  do {
-    out->Add(UnalignedLoad<T>(ptr));
-    ptr += sizeof(T);
-    if (PROTOBUF_PREDICT_FALSE(ptr >= limit_end_)) return ptr;
-  } while (UnalignedLoad<Tag>(ptr) == expected_tag&& ptr += sizeof(Tag));
-  return ptr;
-}
-
 template <int>
 void byteswap(void* p);
 template <>
@@ -245,42 +245,6 @@ void byteswap<4>(void* p) {
 template <>
 void byteswap<8>(void* p) {
   *static_cast<uint64*>(p) = bswap_64(*static_cast<uint64*>(p));
-}
-
-template <typename T>
-const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
-                                                RepeatedField<T>* out) {
-  int nbytes = buffer_end_ + kSlopBytes - ptr;
-  while (size > nbytes) {
-    int num = nbytes / sizeof(T);
-    int old_entries = out->size();
-    out->Reserve(old_entries + num);
-    int block_size = num * sizeof(T);
-    auto dst = out->AddNAlreadyReserved(num);
-#ifdef PROTOBUF_LITTLE_ENDIAN
-    std::memcpy(dst, ptr, block_size);
-#else
-    for (int i = 0; i < num; i++)
-      dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
-#endif
-    ptr += block_size;
-    size -= block_size;
-    if (DoneWithCheck(&ptr, -1)) return nullptr;
-    nbytes = buffer_end_ + kSlopBytes - ptr;
-  }
-  int num = size / sizeof(T);
-  int old_entries = out->size();
-  out->Reserve(old_entries + num);
-  int block_size = num * sizeof(T);
-  auto dst = out->AddNAlreadyReserved(num);
-#ifdef PROTOBUF_LITTLE_ENDIAN
-  std::memcpy(dst, ptr, block_size);
-#else
-  for (int i = 0; i < num; i++) dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
-#endif
-  ptr += block_size;
-  if (size != block_size) return nullptr;
-  return ptr;
 }
 
 const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
@@ -310,6 +274,18 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
   size_ = 0;
   limit_end_ = buffer_end_ = buffer_;
   return buffer_;
+}
+
+const char* ParseContext::ReadSizeAndPushLimitAndDepth(const char* ptr,
+                                                       int* old_limit) {
+  int size = ReadSize(&ptr);
+  if (PROTOBUF_PREDICT_FALSE(!ptr)) {
+    *old_limit = 0;  // Make sure this isn't uninitialized even on error return
+    return nullptr;
+  }
+  *old_limit = PushLimit(ptr, size);
+  if (--depth_ < 0) return nullptr;
+  return ptr;
 }
 
 const char* ParseContext::ParseMessage(MessageLite* msg, const char* ptr) {
@@ -577,3 +553,5 @@ const char* UnknownFieldParse(uint32 tag, std::string* unknown, const char* ptr,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

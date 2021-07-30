@@ -34,6 +34,8 @@
 
 #include <google/protobuf/compiler/command_line_interface.h>
 
+#include <cstdint>
+
 #include <google/protobuf/stubs/platform_macros.h>
 
 #include <stdio.h>
@@ -58,8 +60,10 @@
 
 #include <memory>
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <mach-o/dyld.h>
+#elif defined(__FreeBSD__)
+#include <sys/sysctl.h>
 #endif
 
 #include <google/protobuf/stubs/common.h>
@@ -202,6 +206,13 @@ bool GetProtocAbsolutePath(std::string* path) {
     realpath(dirtybuffer, buffer);
     len = strlen(buffer);
   }
+#elif defined(__FreeBSD__)
+  char buffer[PATH_MAX];
+  size_t len = PATH_MAX;
+  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+  if (sysctl(mib, 4, &buffer, &len, NULL, 0) != 0) {
+    len = 0;
+  }
 #else
   char buffer[PATH_MAX];
   int len = readlink("/proc/self/exe", buffer, PATH_MAX);
@@ -225,7 +236,7 @@ bool IsInstalledProtoPath(const std::string& path) {
 // Add the paths where google/protobuf/descriptor.proto and other well-known
 // type protos are installed.
 void AddDefaultProtoPaths(
-    std::vector<std::pair<std::string, std::string> >* paths) {
+    std::vector<std::pair<std::string, std::string>>* paths) {
   // TODO(xiaofeng): The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.
@@ -279,44 +290,50 @@ class CommandLineInterface::ErrorPrinter
       public DescriptorPool::ErrorCollector {
  public:
   ErrorPrinter(ErrorFormat format, DiskSourceTree* tree = NULL)
-      : format_(format), tree_(tree), found_errors_(false) {}
+      : format_(format),
+        tree_(tree),
+        found_errors_(false),
+        found_warnings_(false) {}
   ~ErrorPrinter() {}
 
   // implements MultiFileErrorCollector ------------------------------
   void AddError(const std::string& filename, int line, int column,
-                const std::string& message) {
+                const std::string& message) override {
     found_errors_ = true;
     AddErrorOrWarning(filename, line, column, message, "error", std::cerr);
   }
 
   void AddWarning(const std::string& filename, int line, int column,
-                  const std::string& message) {
+                  const std::string& message) override {
+    found_warnings_ = true;
     AddErrorOrWarning(filename, line, column, message, "warning", std::clog);
   }
 
   // implements io::ErrorCollector -----------------------------------
-  void AddError(int line, int column, const std::string& message) {
+  void AddError(int line, int column, const std::string& message) override {
     AddError("input", line, column, message);
   }
 
-  void AddWarning(int line, int column, const std::string& message) {
+  void AddWarning(int line, int column, const std::string& message) override {
     AddErrorOrWarning("input", line, column, message, "warning", std::clog);
   }
 
   // implements DescriptorPool::ErrorCollector-------------------------
   void AddError(const std::string& filename, const std::string& element_name,
                 const Message* descriptor, ErrorLocation location,
-                const std::string& message) {
+                const std::string& message) override {
     AddErrorOrWarning(filename, -1, -1, message, "error", std::cerr);
   }
 
   void AddWarning(const std::string& filename, const std::string& element_name,
                   const Message* descriptor, ErrorLocation location,
-                  const std::string& message) {
+                  const std::string& message) override {
     AddErrorOrWarning(filename, -1, -1, message, "warning", std::clog);
   }
 
   bool FoundErrors() const { return found_errors_; }
+
+  bool FoundWarnings() const { return found_warnings_; }
 
  private:
   void AddErrorOrWarning(const std::string& filename, int line, int column,
@@ -356,6 +373,7 @@ class CommandLineInterface::ErrorPrinter
   const ErrorFormat format_;
   DiskSourceTree* tree_;
   bool found_errors_;
+  bool found_warnings_;
 };
 
 // -------------------------------------------------------------------
@@ -382,18 +400,22 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   void GetOutputFilenames(std::vector<std::string>* output_filenames);
 
   // implements GeneratorContext --------------------------------------
-  io::ZeroCopyOutputStream* Open(const std::string& filename);
-  io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename);
+  io::ZeroCopyOutputStream* Open(const std::string& filename) override;
+  io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename) override;
   io::ZeroCopyOutputStream* OpenForInsert(const std::string& filename,
-                                          const std::string& insertion_point);
-  void ListParsedFiles(std::vector<const FileDescriptor*>* output) {
+                                          const std::string& insertion_point) override;
+  io::ZeroCopyOutputStream* OpenForInsertWithGeneratedCodeInfo(
+      const std::string& filename, const std::string& insertion_point,
+      const google::protobuf::GeneratedCodeInfo& info) override;
+  void ListParsedFiles(std::vector<const FileDescriptor*>* output) override {
     *output = parsed_files_;
   }
 
  private:
   friend class MemoryOutputStream;
 
-  // map instead of unordered_map so that files are written in order (good when
+  // The files_ field maps from path keys to file content values. It's a map
+  // instead of an unordered_map so that files are written in order (good when
   // writing zips).
   std::map<std::string, std::string> files_;
   const std::vector<const FileDescriptor*>& parsed_files_;
@@ -408,6 +430,10 @@ class CommandLineInterface::MemoryOutputStream
   MemoryOutputStream(GeneratorContextImpl* directory,
                      const std::string& filename,
                      const std::string& insertion_point);
+  MemoryOutputStream(GeneratorContextImpl* directory,
+                     const std::string& filename,
+                     const std::string& insertion_point,
+                     const google::protobuf::GeneratedCodeInfo& info);
   virtual ~MemoryOutputStream();
 
   // implements ZeroCopyOutputStream ---------------------------------
@@ -418,12 +444,23 @@ class CommandLineInterface::MemoryOutputStream
   int64_t ByteCount() const override { return inner_->ByteCount(); }
 
  private:
-  // Checks to see if "filename_.meta" exists in directory_; if so, fixes the
+  // Checks to see if "filename_.pb.meta" exists in directory_; if so, fixes the
   // offsets in that GeneratedCodeInfo record to reflect bytes inserted in
   // filename_ at original offset insertion_offset with length insertion_length.
-  // We assume that insertions will not occur within any given annotated span
-  // of text.
-  void UpdateMetadata(size_t insertion_offset, size_t insertion_length);
+  // Also adds in the data from info_to_insert_ with updated offsets governed by
+  // insertion_offset and indent_length. We assume that insertions will not
+  // occur within any given annotated span of text. insertion_content must end
+  // with an endline.
+  void UpdateMetadata(const std::string& insertion_content,
+                      size_t insertion_offset, size_t insertion_length,
+                      size_t indent_length);
+
+  // Inserts info_to_insert_ into target_info, assuming that the relevant
+  // insertion was made at insertion_offset in file_content with the given
+  // indent_length. insertion_content must end with an endline.
+  void InsertShiftedInfo(const std::string& insertion_content,
+                         size_t insertion_offset, size_t indent_length,
+                         google::protobuf::GeneratedCodeInfo& target_info);
 
   // Where to insert the string when it's done.
   GeneratorContextImpl* directory_;
@@ -438,6 +475,9 @@ class CommandLineInterface::MemoryOutputStream
 
   // StringOutputStream writing to data_.
   std::unique_ptr<io::StringOutputStream> inner_;
+
+  // The GeneratedCodeInfo to insert at the insertion point.
+  google::protobuf::GeneratedCodeInfo info_to_insert_;
 };
 
 // -------------------------------------------------------------------
@@ -551,10 +591,12 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
 
   if (stream.GetErrno() != 0) {
     std::cerr << filename << ": " << strerror(stream.GetErrno()) << std::endl;
+    return false;
   }
 
   if (!stream.Close()) {
     std::cerr << filename << ": " << strerror(stream.GetErrno()) << std::endl;
+    return false;
   }
 
   return true;
@@ -594,6 +636,13 @@ CommandLineInterface::GeneratorContextImpl::OpenForInsert(
   return new MemoryOutputStream(this, filename, insertion_point);
 }
 
+io::ZeroCopyOutputStream*
+CommandLineInterface::GeneratorContextImpl::OpenForInsertWithGeneratedCodeInfo(
+    const std::string& filename, const std::string& insertion_point,
+    const google::protobuf::GeneratedCodeInfo& info) {
+  return new MemoryOutputStream(this, filename, insertion_point, info);
+}
+
 // -------------------------------------------------------------------
 
 CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
@@ -612,40 +661,114 @@ CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
       insertion_point_(insertion_point),
       inner_(new io::StringOutputStream(&data_)) {}
 
+CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
+    GeneratorContextImpl* directory, const std::string& filename,
+    const std::string& insertion_point, const google::protobuf::GeneratedCodeInfo& info)
+    : directory_(directory),
+      filename_(filename),
+      insertion_point_(insertion_point),
+      inner_(new io::StringOutputStream(&data_)),
+      info_to_insert_(info) {}
+
+void CommandLineInterface::MemoryOutputStream::InsertShiftedInfo(
+    const std::string& insertion_content, size_t insertion_offset,
+    size_t indent_length, google::protobuf::GeneratedCodeInfo& target_info) {
+  // Keep track of how much extra data was added for indents before the
+  // current annotation being inserted. `pos` and `source_annotation.begin()`
+  // are offsets in `insertion_content`. `insertion_offset` is updated so that
+  // it can be added to an annotation's `begin` field to reflect that
+  // annotation's updated location after `insertion_content` was inserted into
+  // the target file.
+  size_t pos = 0;
+  insertion_offset += indent_length;
+  for (const auto& source_annotation : info_to_insert_.annotation()) {
+    GeneratedCodeInfo::Annotation* annotation = target_info.add_annotation();
+    int inner_indent = 0;
+    // insertion_content is guaranteed to end in an endline. This last endline
+    // has no effect on indentation.
+    for (; pos < source_annotation.end() && pos < insertion_content.size() - 1;
+         ++pos) {
+      if (insertion_content[pos] == '\n') {
+        if (pos >= source_annotation.begin()) {
+          // The beginning of the annotation is at insertion_offset, but the end
+          // can still move further in the target file.
+          inner_indent += indent_length;
+        } else {
+          insertion_offset += indent_length;
+        }
+      }
+    }
+    *annotation = source_annotation;
+    annotation->set_begin(annotation->begin() + insertion_offset);
+    insertion_offset += inner_indent;
+    annotation->set_end(annotation->end() + insertion_offset);
+  }
+}
+
 void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
-    size_t insertion_offset, size_t insertion_length) {
-  auto it = directory_->files_.find(filename_ + ".meta");
-  if (it == directory_->files_.end()) {
+    const std::string& insertion_content, size_t insertion_offset,
+    size_t insertion_length, size_t indent_length) {
+  auto it = directory_->files_.find(filename_ + ".pb.meta");
+  if (it == directory_->files_.end() && info_to_insert_.annotation().empty()) {
     // No metadata was recorded for this file.
     return;
   }
-  std::string& encoded_data = it->second;
   GeneratedCodeInfo metadata;
   bool is_text_format = false;
-  if (!metadata.ParseFromString(encoded_data)) {
-    if (!TextFormat::ParseFromString(encoded_data, &metadata)) {
-      // The metadata is invalid.
-      std::cerr << filename_
-                << ".meta: Could not parse metadata as wire or text format."
-                << std::endl;
-      return;
+  std::string* encoded_data = nullptr;
+  if (it != directory_->files_.end()) {
+    encoded_data = &it->second;
+    // Try to decode a GeneratedCodeInfo proto from the .pb.meta file. It may be
+    // in wire or text format. Keep the same format when the data is written out
+    // later.
+    if (!metadata.ParseFromString(*encoded_data)) {
+      if (!TextFormat::ParseFromString(*encoded_data, &metadata)) {
+        // The metadata is invalid.
+        std::cerr
+            << filename_
+            << ".pb.meta: Could not parse metadata as wire or text format."
+            << std::endl;
+        return;
+      }
+      // Generators that use the public plugin interface emit text-format
+      // metadata (because in the public plugin protocol, file content must be
+      // UTF8-encoded strings).
+      is_text_format = true;
     }
-    // Generators that use the public plugin interface emit text-format
-    // metadata (because in the public plugin protocol, file content must be
-    // UTF8-encoded strings).
-    is_text_format = true;
+  } else {
+    // Create a new file to store the new metadata in info_to_insert_.
+    encoded_data =
+        &directory_->files_.insert({filename_ + ".pb.meta", ""}).first->second;
   }
-  for (int i = 0; i < metadata.annotation_size(); ++i) {
-    GeneratedCodeInfo::Annotation* annotation = metadata.mutable_annotation(i);
-    if (annotation->begin() >= insertion_offset) {
-      annotation->set_begin(annotation->begin() + insertion_length);
-      annotation->set_end(annotation->end() + insertion_length);
+  GeneratedCodeInfo new_metadata;
+  bool crossed_offset = false;
+  size_t to_add = 0;
+  for (const auto& source_annotation : metadata.annotation()) {
+    // The first time an annotation at or after the insertion point is found,
+    // insert the new metadata from info_to_insert_. Shift all annotations
+    // after the new metadata by the length of the text that was inserted
+    // (including any additional indent length).
+    if (source_annotation.begin() >= insertion_offset && !crossed_offset) {
+      crossed_offset = true;
+      InsertShiftedInfo(insertion_content, insertion_offset, indent_length,
+                        new_metadata);
+      to_add += insertion_length;
     }
+    GeneratedCodeInfo::Annotation* annotation = new_metadata.add_annotation();
+    *annotation = source_annotation;
+    annotation->set_begin(annotation->begin() + to_add);
+    annotation->set_end(annotation->end() + to_add);
+  }
+  // If there were never any annotations at or after the insertion point,
+  // make sure to still insert the new metadata from info_to_insert_.
+  if (!crossed_offset) {
+    InsertShiftedInfo(insertion_content, insertion_offset, indent_length,
+                      new_metadata);
   }
   if (is_text_format) {
-    TextFormat::PrintToString(metadata, &encoded_data);
+    TextFormat::PrintToString(new_metadata, encoded_data);
   } else {
-    metadata.SerializeToString(&encoded_data);
+    new_metadata.SerializeToString(encoded_data);
   }
 }
 
@@ -728,7 +851,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
     if (indent_.empty()) {
       // No indent.  This makes things easier.
       target->insert(pos, data_);
-      UpdateMetadata(pos, data_.size());
+      UpdateMetadata(data_, pos, data_.size(), 0);
     } else {
       // Calculate how much space we need.
       int indent_size = 0;
@@ -738,7 +861,6 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
 
       // Make a hole for it.
       target->insert(pos, data_.size() + indent_size, '\0');
-      UpdateMetadata(pos, data_.size() + indent_size);
 
       // Now copy in the data.
       std::string::size_type data_pos = 0;
@@ -757,6 +879,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
         target_ptr += line_length;
         data_pos += line_length;
       }
+      UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
 
       GOOGLE_CHECK_EQ(target_ptr,
                ::google::protobuf::string_as_array(target) + pos + data_.size() + indent_size);
@@ -924,16 +1047,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
 
-  for (auto fd : parsed_files) {
-    if (!AllowProto3Optional(*fd) && ContainsProto3Optional(fd)) {
-      std::cerr << fd->name()
-                << ": This file contains proto3 optional fields, but "
-                   "--experimental_allow_proto3_optional was not set."
-                << std::endl;
-      return 1;
-    }
-  }
-
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
   // they should share a single GeneratorContext so that OpenForInsert() works.
@@ -1015,7 +1128,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
-  if (error_collector->FoundErrors()) {
+  if (error_collector->FoundErrors() ||
+      (fatal_warnings_ && error_collector->FoundWarnings())) {
     return 1;
   }
 
@@ -1102,19 +1216,6 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
 
 }  // namespace
 
-bool CommandLineInterface::AllowProto3Optional(
-    const FileDescriptor& file) const {
-  if (allow_proto3_optional_) return true;
-  // Whitelist all ads protos. Ads is an early adopter of this feature.
-  if (file.name().find("google/ads/googleads") != std::string::npos) {
-    return true;
-  }
-  if (file.name() == "google/protobuf/unittest_proto3_optional.proto" ||
-      file.name() == "google/protobuf/internal/test_proto3_optional.proto") {
-    return true;
-  }
-  return false;
-}
 
 bool CommandLineInterface::VerifyInputFilesInDescriptors(
     DescriptorDatabase* database) {
@@ -1134,6 +1235,7 @@ bool CommandLineInterface::VerifyInputFilesInDescriptors(
                 << std::endl;
       return false;
     }
+
   }
   return true;
 }
@@ -1184,6 +1286,7 @@ bool CommandLineInterface::ParseInputFiles(
       break;
     }
 
+
     // Enforce --direct_dependencies
     if (direct_dependencies_explicitly_set_) {
       bool indirect_imports = false;
@@ -1229,7 +1332,7 @@ void CommandLineInterface::Clear() {
   source_info_in_descriptor_set_ = false;
   disallow_services_ = false;
   direct_dependencies_explicitly_set_ = false;
-  allow_proto3_optional_ = false;
+  deterministic_output_ = false;
 }
 
 bool CommandLineInterface::MakeProtoProtoPathRelative(
@@ -1269,13 +1372,17 @@ bool CommandLineInterface::MakeProtoProtoPathRelative(
                    "comes first."
                 << std::endl;
       return false;
-    case DiskSourceTree::CANNOT_OPEN:
+    case DiskSourceTree::CANNOT_OPEN: {
       if (in_fallback_database) {
         return true;
       }
+      std::string error_str = source_tree->GetLastErrorMessage().empty()
+                                  ? strerror(errno)
+                                  : source_tree->GetLastErrorMessage();
       std::cerr << "Could not map to virtual file: " << *proto << ": "
-                << strerror(errno) << std::endl;
+                << error_str << std::endl;
       return false;
+    }
     case DiskSourceTree::NO_MAPPING: {
       // Try to interpret the path as a virtual path.
       std::string disk_file;
@@ -1418,13 +1525,36 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     proto_path_.push_back(std::pair<std::string, std::string>("", "."));
   }
 
-  // Check some error cases.
-  bool decoding_raw = (mode_ == MODE_DECODE) && codec_type_.empty();
-  if (decoding_raw && !input_files_.empty()) {
-    std::cerr << "When using --decode_raw, no input files should be given."
+  // Check error cases that span multiple flag values.
+  bool missing_proto_definitions = false;
+  switch (mode_) {
+    case MODE_COMPILE:
+      missing_proto_definitions = input_files_.empty();
+      break;
+    case MODE_DECODE:
+      // Handle --decode_raw separately, since it requires that no proto
+      // definitions are specified.
+      if (codec_type_.empty()) {
+        if (!input_files_.empty() || !descriptor_set_in_names_.empty()) {
+          std::cerr
+              << "When using --decode_raw, no input files should be given."
               << std::endl;
-    return PARSE_ARGUMENT_FAIL;
-  } else if (!decoding_raw && input_files_.empty()) {
+          return PARSE_ARGUMENT_FAIL;
+        }
+        missing_proto_definitions = false;
+        break;  // only for --decode_raw
+      }
+      // --decode (not raw) is handled the same way as the rest of the modes.
+      PROTOBUF_FALLTHROUGH_INTENDED;
+    case MODE_ENCODE:
+    case MODE_PRINT:
+      missing_proto_definitions =
+          input_files_.empty() && descriptor_set_in_names_.empty();
+      break;
+    default:
+      GOOGLE_LOG(FATAL) << "Unexpected mode: " << mode_;
+  }
+  if (missing_proto_definitions) {
     std::cerr << "Missing input file." << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
@@ -1435,6 +1565,11 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
   }
   if (mode_ != MODE_COMPILE && !dependency_out_name_.empty()) {
     std::cerr << "Can only use --dependency_out=FILE when generating code."
+              << std::endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
+  if (mode_ != MODE_ENCODE && deterministic_output_) {
+    std::cerr << "Can only use --deterministic_output with --encode."
               << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
@@ -1506,7 +1641,8 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--include_imports" || *name == "--include_source_info" ||
       *name == "--version" || *name == "--decode_raw" ||
       *name == "--print_free_field_numbers" ||
-      *name == "--experimental_allow_proto3_optional") {
+      *name == "--experimental_allow_proto3_optional" ||
+      *name == "--deterministic_output" || *name == "--fatal_warnings") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -1707,15 +1843,15 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       std::cout << version_info_ << std::endl;
     }
     std::cout << "libprotoc " << internal::VersionString(PROTOBUF_VERSION)
-              << std::endl;
+              << PROTOBUF_VERSION_SUFFIX << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
 
   } else if (name == "--disallow_services") {
     disallow_services_ = true;
 
-  } else if (name == "--experimental_allow_proto3_optional") {
-    allow_proto3_optional_ = true;
 
+  } else if (name == "--experimental_allow_proto3_optional") {
+    // Flag is no longer observed, but we allow it for backward compat.
   } else if (name == "--encode" || name == "--decode" ||
              name == "--decode_raw") {
     if (mode_ != MODE_COMPILE) {
@@ -1746,6 +1882,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
     codec_type_ = value;
 
+  } else if (name == "--deterministic_output") {
+    deterministic_output_ = true;
+
   } else if (name == "--error_format") {
     if (value == "gcc") {
       error_format_ = ERROR_FORMAT_GCC;
@@ -1756,6 +1895,12 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
 
+  } else if (name == "--fatal_warnings") {
+    if (fatal_warnings_) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    fatal_warnings_ = true;
   } else if (name == "--plugin") {
     if (plugin_prefix_.empty()) {
       std::cerr << "This compiler does not support plugins." << std::endl;
@@ -1860,124 +2005,80 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
 void CommandLineInterface::PrintHelpText() {
   // Sorry for indentation here; line wrapping would be uglier.
-  std::cout
-      <<
-      "Usage: " << executable_name_
-      << " [OPTION] PROTO_FILES\n"
-         "Parse PROTO_FILES and generate output based on the options given:\n"
-         "  -IPATH, --proto_path=PATH   Specify the directory in which to "
-         "search for\n"
-         "                              imports.  May be specified multiple "
-         "times;\n"
-         "                              directories will be searched in order. "
-         " If not\n"
-         "                              given, the current working directory "
-         "is used.\n"
-         "                              If not found in any of the these "
-         "directories,\n"
-         "                              the --descriptor_set_in descriptors "
-         "will be\n"
-         "                              checked for required proto file.\n"
-         "  --version                   Show version info and exit.\n"
-         "  -h, --help                  Show this text and exit.\n"
-         "  --encode=MESSAGE_TYPE       Read a text-format message of the "
-         "given type\n"
-         "                              from standard input and write it in "
-         "binary\n"
-         "                              to standard output.  The message type "
-         "must\n"
-         "                              be defined in PROTO_FILES or their "
-         "imports.\n"
-         "  --decode=MESSAGE_TYPE       Read a binary message of the given "
-         "type from\n"
-         "                              standard input and write it in text "
-         "format\n"
-         "                              to standard output.  The message type "
-         "must\n"
-         "                              be defined in PROTO_FILES or their "
-         "imports.\n"
-         "  --decode_raw                Read an arbitrary protocol message "
-         "from\n"
-         "                              standard input and write the raw "
-         "tag/value\n"
-         "                              pairs in text format to standard "
-         "output.  No\n"
-         "                              PROTO_FILES should be given when using "
-         "this\n"
-         "                              flag.\n"
-         "  --descriptor_set_in=FILES   Specifies a delimited list of FILES\n"
-         "                              each containing a FileDescriptorSet "
-         "(a\n"
-         "                              protocol buffer defined in "
-         "descriptor.proto).\n"
-         "                              The FileDescriptor for each of the "
-         "PROTO_FILES\n"
-         "                              provided will be loaded from these\n"
-         "                              FileDescriptorSets. If a "
-         "FileDescriptor\n"
-         "                              appears multiple times, the first "
-         "occurrence\n"
-         "                              will be used.\n"
-         "  -oFILE,                     Writes a FileDescriptorSet (a protocol "
-         "buffer,\n"
-         "    --descriptor_set_out=FILE defined in descriptor.proto) "
-         "containing all of\n"
-         "                              the input files to FILE.\n"
-         "  --include_imports           When using --descriptor_set_out, also "
-         "include\n"
-         "                              all dependencies of the input files in "
-         "the\n"
-         "                              set, so that the set is "
-         "self-contained.\n"
-         "  --include_source_info       When using --descriptor_set_out, do "
-         "not strip\n"
-         "                              SourceCodeInfo from the "
-         "FileDescriptorProto.\n"
-         "                              This results in vastly larger "
-         "descriptors that\n"
-         "                              include information about the "
-         "original\n"
-         "                              location of each decl in the source "
-         "file as\n"
-         "                              well as surrounding comments.\n"
-         "  --dependency_out=FILE       Write a dependency output file in the "
-         "format\n"
-         "                              expected by make. This writes the "
-         "transitive\n"
-         "                              set of input file paths to FILE\n"
-         "  --error_format=FORMAT       Set the format in which to print "
-         "errors.\n"
-         "                              FORMAT may be 'gcc' (the default) or "
-         "'msvs'\n"
-         "                              (Microsoft Visual Studio format).\n"
-         "  --print_free_field_numbers  Print the free field numbers of the "
-         "messages\n"
-         "                              defined in the given proto files. "
-         "Groups share\n"
-         "                              the same field number space with the "
-         "parent \n"
-         "                              message. Extension ranges are counted "
-         "as \n"
-         "                              occupied fields numbers.\n"
-      << std::endl;
+  std::cout << "Usage: " << executable_name_ << " [OPTION] PROTO_FILES";
+  std::cout << R"(
+Parse PROTO_FILES and generate output based on the options given:
+  -IPATH, --proto_path=PATH   Specify the directory in which to search for
+                              imports.  May be specified multiple times;
+                              directories will be searched in order.  If not
+                              given, the current working directory is used.
+                              If not found in any of the these directories,
+                              the --descriptor_set_in descriptors will be
+                              checked for required proto file.
+  --version                   Show version info and exit.
+  -h, --help                  Show this text and exit.
+  --encode=MESSAGE_TYPE       Read a text-format message of the given type
+                              from standard input and write it in binary
+                              to standard output.  The message type must
+                              be defined in PROTO_FILES or their imports.
+  --deterministic_output      When using --encode, ensure map fields are
+                              deterministically ordered. Note that this order
+                              is not canonical, and changes across builds or
+                              releases of protoc.
+  --decode=MESSAGE_TYPE       Read a binary message of the given type from
+                              standard input and write it in text format
+                              to standard output.  The message type must
+                              be defined in PROTO_FILES or their imports.
+  --decode_raw                Read an arbitrary protocol message from
+                              standard input and write the raw tag/value
+                              pairs in text format to standard output.  No
+                              PROTO_FILES should be given when using this
+                              flag.
+  --descriptor_set_in=FILES   Specifies a delimited list of FILES
+                              each containing a FileDescriptorSet (a
+                              protocol buffer defined in descriptor.proto).
+                              The FileDescriptor for each of the PROTO_FILES
+                              provided will be loaded from these
+                              FileDescriptorSets. If a FileDescriptor
+                              appears multiple times, the first occurrence
+                              will be used.
+  -oFILE,                     Writes a FileDescriptorSet (a protocol buffer,
+    --descriptor_set_out=FILE defined in descriptor.proto) containing all of
+                              the input files to FILE.
+  --include_imports           When using --descriptor_set_out, also include
+                              all dependencies of the input files in the
+                              set, so that the set is self-contained.
+  --include_source_info       When using --descriptor_set_out, do not strip
+                              SourceCodeInfo from the FileDescriptorProto.
+                              This results in vastly larger descriptors that
+                              include information about the original
+                              location of each decl in the source file as
+                              well as surrounding comments.
+  --dependency_out=FILE       Write a dependency output file in the format
+                              expected by make. This writes the transitive
+                              set of input file paths to FILE
+  --error_format=FORMAT       Set the format in which to print errors.
+                              FORMAT may be 'gcc' (the default) or 'msvs'
+                              (Microsoft Visual Studio format).
+  --fatal_warnings            Make warnings be fatal (similar to -Werr in
+                              gcc). This flag will make protoc return
+                              with a non-zero exit code if any warnings
+                              are generated.
+  --print_free_field_numbers  Print the free field numbers of the messages
+                              defined in the given proto files. Groups share
+                              the same field number space with the parent
+                              message. Extension ranges are counted as
+                              occupied fields numbers.)";
   if (!plugin_prefix_.empty()) {
-    std::cout
-        << "  --plugin=EXECUTABLE         Specifies a plugin executable to "
-           "use.\n"
-           "                              Normally, protoc searches the PATH "
-           "for\n"
-           "                              plugins, but you may specify "
-           "additional\n"
-           "                              executables not in the path using "
-           "this flag.\n"
-           "                              Additionally, EXECUTABLE may be of "
-           "the form\n"
-           "                              NAME=PATH, in which case the given "
-           "plugin name\n"
-           "                              is mapped to the given executable "
-           "even if\n"
-           "                              the executable's own name differs."
-        << std::endl;
+    std::cout << R"(
+  --plugin=EXECUTABLE         Specifies a plugin executable to use.
+                              Normally, protoc searches the PATH for
+                              plugins, but you may specify additional
+                              executables not in the path using this flag.
+                              Additionally, EXECUTABLE may be of the form
+                              NAME=PATH, in which case the given plugin name
+                              is mapped to the given executable even if
+                              the executable's own name differs.)";
   }
 
   for (GeneratorMap::iterator iter = generators_by_flag_name_.begin();
@@ -1985,39 +2086,30 @@ void CommandLineInterface::PrintHelpText() {
     // FIXME(kenton):  If the text is long enough it will wrap, which is ugly,
     //   but fixing this nicely (e.g. splitting on spaces) is probably more
     //   trouble than it's worth.
-    std::cout << "  " << iter->first << "=OUT_DIR "
+    std::cout << std::endl
+              << "  " << iter->first << "=OUT_DIR "
               << std::string(19 - iter->first.size(),
                              ' ')  // Spaces for alignment.
-              << iter->second.help_text << std::endl;
+              << iter->second.help_text;
   }
-  std::cout << "  @<filename>                 Read options and filenames from "
-               "file. If a\n"
-               "                              relative file path is specified, "
-               "the file\n"
-               "                              will be searched in the working "
-               "directory.\n"
-               "                              The --proto_path option will not "
-               "affect how\n"
-               "                              this argument file is searched. "
-               "Content of\n"
-               "                              the file will be expanded in the "
-               "position of\n"
-               "                              @<filename> as in the argument "
-               "list. Note\n"
-               "                              that shell expansion is not "
-               "applied to the\n"
-               "                              content of the file (i.e., you "
-               "cannot use\n"
-               "                              quotes, wildcards, escapes, "
-               "commands, etc.).\n"
-               "                              Each line corresponds to a "
-               "single argument,\n"
-               "                              even if it contains spaces."
-            << std::endl;
+  std::cout << R"(
+  @<filename>                 Read options and filenames from file. If a
+                              relative file path is specified, the file
+                              will be searched in the working directory.
+                              The --proto_path option will not affect how
+                              this argument file is searched. Content of
+                              the file will be expanded in the position of
+                              @<filename> as in the argument list. Note
+                              that shell expansion is not applied to the
+                              content of the file (i.e., you cannot use
+                              quotes, wildcards, escapes, commands, etc.).
+                              Each line corresponds to a single argument,
+                              even if it contains spaces.)";
+  std::cout << std::endl;
 }
 
 bool CommandLineInterface::EnforceProto3OptionalSupport(
-    const std::string& codegen_name, uint64 supported_features,
+    const std::string& codegen_name, uint64_t supported_features,
     const std::vector<const FileDescriptor*>& parsed_files) const {
   bool supports_proto3_optional =
       supported_features & CodeGenerator::FEATURE_PROTO3_OPTIONAL;
@@ -2215,8 +2307,10 @@ bool CommandLineInterface::GeneratePluginOutput(
       // We reset current_output to NULL first so that the old file is closed
       // before the new one is opened.
       current_output.reset();
-      current_output.reset(generator_context->OpenForInsert(
-          filename, output_file.insertion_point()));
+      current_output.reset(
+          generator_context->OpenForInsertWithGeneratedCodeInfo(
+              filename, output_file.insertion_point(),
+              output_file.generated_code_info()));
     } else if (!output_file.name().empty()) {
       // Starting a new file.  Open it.
       // We reset current_output to NULL first so that the old file is closed
@@ -2298,7 +2392,9 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
 
   if (mode_ == MODE_ENCODE) {
     // Output is binary.
-    if (!message->SerializePartialToZeroCopyStream(&out)) {
+    io::CodedOutputStream coded_out(&out);
+    coded_out.SetSerializationDeterministic(deterministic_output_);
+    if (!message->SerializePartialToCodedStream(&coded_out)) {
       std::cerr << "output: I/O error." << std::endl;
       return false;
     }

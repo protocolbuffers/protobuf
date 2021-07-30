@@ -40,6 +40,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
@@ -128,27 +129,12 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   const DescriptorPool* pool_;
   bool delegate_to_generated_factory_;
 
-  // This struct just contains a hash_map.  We can't #include <hash_map> from
-  // this header due to hacks needed for hash_map portability in the open source
-  // release.  Namely, stubs/hash.h, which defines hash_map portably, is not a
-  // public header (for good reason), but dynamic_message.h is, and public
-  // headers may only #include other public headers.
-  struct PrototypeMap;
-  std::unique_ptr<PrototypeMap> prototypes_;
+  struct TypeInfo;
+  std::unordered_map<const Descriptor*, const TypeInfo*> prototypes_;
   mutable internal::WrappedMutex prototypes_mutex_;
 
   friend class DynamicMessage;
   const Message* GetPrototypeNoLock(const Descriptor* type);
-
-  // Construct default oneof instance for reflection usage if oneof
-  // is defined.
-  static void ConstructDefaultOneofInstance(const Descriptor* type,
-                                            const uint32 offsets[],
-                                            void* default_oneof_instance);
-  // Delete default oneof instance. Called by ~DynamicMessageFactory.
-  static void DeleteDefaultOneofInstance(const Descriptor* type,
-                                         const uint32 offsets[],
-                                         const void* default_oneof_instance);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessageFactory);
 };

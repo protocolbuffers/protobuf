@@ -24,15 +24,13 @@ class ReservedRange extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional int32 start = 1;</code>
      */
-    protected $start = 0;
-    private $has_start = false;
+    protected $start = null;
     /**
      * Exclusive.
      *
      * Generated from protobuf field <code>optional int32 end = 2;</code>
      */
-    protected $end = 0;
-    private $has_end = false;
+    protected $end = null;
 
     /**
      * Constructor.
@@ -59,7 +57,17 @@ class ReservedRange extends \Google\Protobuf\Internal\Message
      */
     public function getStart()
     {
-        return $this->start;
+        return isset($this->start) ? $this->start : 0;
+    }
+
+    public function hasStart()
+    {
+        return isset($this->start);
+    }
+
+    public function clearStart()
+    {
+        unset($this->start);
     }
 
     /**
@@ -73,14 +81,8 @@ class ReservedRange extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->start = $var;
-        $this->has_start = true;
 
         return $this;
-    }
-
-    public function hasStart()
-    {
-        return $this->has_start;
     }
 
     /**
@@ -91,7 +93,17 @@ class ReservedRange extends \Google\Protobuf\Internal\Message
      */
     public function getEnd()
     {
-        return $this->end;
+        return isset($this->end) ? $this->end : 0;
+    }
+
+    public function hasEnd()
+    {
+        return isset($this->end);
+    }
+
+    public function clearEnd()
+    {
+        unset($this->end);
     }
 
     /**
@@ -105,14 +117,8 @@ class ReservedRange extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->end = $var;
-        $this->has_end = true;
 
         return $this;
-    }
-
-    public function hasEnd()
-    {
-        return $this->has_end;
     }
 
 }

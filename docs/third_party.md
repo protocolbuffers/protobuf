@@ -11,6 +11,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Action Script: https://code.google.com/p/protoc-gen-as3/
 * Action Script: https://github.com/matrix3d/JProtoc
 * Action Script: https://github.com/zhongfq/protobuf-as3/
+* Ada: https://github.com/reznikmm/protobuf
 * C: https://github.com/protobuf-c/protobuf-c
 * C: http://koti.kapsi.fi/jpa/nanopb/
 * C: https://github.com/cloudwu/pbc/
@@ -18,6 +19,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * C: https://github.com/squidfunk/protobluff
 * C: https://github.com/eerimoq/pbtools
 * C++: https://github.com/google/protobuf (Google-official implementation)
+* C++: https://EmbeddedProto.com
 * C/C++: http://spbc.sf.net/
 * C#: http://code.google.com/p/protobuf-csharp-port
 * C#: https://silentorbit.com/protobuf/
@@ -25,8 +27,8 @@ These are projects we know about implementing Protocol Buffers for other program
 * Clojure: http://github.com/ninjudd/clojure-protobuf
 * Clojure: https://github.com/clojusc/protobuf
 * Clojure: https://protojure.github.io
-* Common Lisp: http://github.com/ndantam/s-protobuf
 * Common Lisp: http://github.com/brown/protobuf
+* Common Lisp: http://github.com/qitab/cl-protobuf
 * D: https://github.com/dcarp/protobuf-d
 * D: https://github.com/msoucy/dproto
 * D: https://github.com/opticron/ProtocolBuffer
@@ -35,6 +37,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Delphi: http://fundementals.sourceforge.net/dl.html
 * Elixir: https://github.com/jeremyong/exprotoc
 * Elixir: https://github.com/tony612/protobuf-elixir
+* Elixir: https://github.com/ahamez/protox
 * Elm: https://github.com/tiziano88/elm-protobuf
 * Erlang: https://github.com/tomas-abrahamsson/gpb
 * Erlang: http://piqi.org/
@@ -60,9 +63,13 @@ These are projects we know about implementing Protocol Buffers for other program
 * Javascript: https://github.com/dcodeIO/ProtoBuf.js
 * Javascript: http://code.google.com/p/protobuf-for-node/
 * Javascript: http://code.google.com/p/protostuff/
+* Javascript: https://github.com/seishun/node-protoc-plugin (Node.js port of plugin.h)
+* Javascript: https://github.com/seishun/node-protoc-gen-javascript (Node.js port of the Google-official implementation)
+* Javascript: https://github.com/ButterCam/sisyphus-js
 * Julia: https://github.com/tanmaykm/ProtoBuf.jl
 * Kotlin: https://github.com/marcoferrer/kroto-plus
 * Kotlin: https://github.com/Kotlin/kotlinx.serialization
+* Kotlin: https://github.com/ButterCam/sisyphus
 * Lua: http://code.google.com/p/protoc-gen-lua/
 * Lua: http://github.com/indygreg/lua-protobuf
 * Lua: https://github.com/Neopallium/lua-pb
@@ -80,6 +87,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * PHP: https://github.com/chobie/php-protocolbuffers
 * PHP: http://drslump.github.com/Protobuf-PHP
 * Prolog: http://www.swi-prolog.org/pldoc/package/protobufs.html
+* Purescript: https://github.com/xc-jp/purescript-protobuf
 * Python: https://github.com/google/protobuf (Google-official implementation)
 * Python: https://github.com/eigenein/protobuf
 * Python: https://github.com/danielgtaylor/python-betterproto
@@ -96,7 +104,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Solidity: https://github.com/celer-network/pb3-gen-sol
 * Swift: https://github.com/alexeyxo/protobuf-swift
 * Swift: https://github.com/apple/swift-protobuf/
-* Typescript: https://github.com/y3llowcake/protoc-gen-ts
+* Typescript: https://github.com/thesayyn/protoc-gen-ts
 * Vala: https://launchpad.net/protobuf-vala
 * Visual Basic: http://code.google.com/p/protobuf-net/
 
@@ -152,7 +160,8 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Alternate encodings (JSON, XML, HTML) for Java protobufs](http://code.google.com/p/protobuf-java-format/)
 * [Another JSON encoder/decoder for Java](https://github.com/sijuv/protobuf-codec)
 * [Editor for serialized protobufs](http://code.google.com/p/protobufeditor/)
-* [Intellij IDEA plugin](http://github.com/nnmatveev/idea-plugin-protobuf)
+* [IntelliJ IDEA plugin](http://github.com/jvolkman/intellij-protobuf-editor)
+* [IntelliJ Protobuf Plugin](https://github.com/devkanro/intellij-protobuf-plugin)
 * [TextMate syntax highlighting](http://github.com/michaeledgar/protobuf-tmbundle)
 * [Oracle PL SQL plugin](http://code.google.com/p/protocol-buffer-plsql/)
 * [Eclipse editor for protobuf (from Google)](http://code.google.com/p/protobuf-dt/)
@@ -182,3 +191,9 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Protocol Buffer property-based testing utility and example message generator (Python / Hypothesis)](https://github.com/CurataEng/hypothesis-protobuf)
 * [Protolock - CLI utility to prevent backward-incompatible changes to .proto files](https://github.com/nilslice/protolock)
 * [Optional GRPC - GRPC for testable microservices (Python)](https://github.com/mattpaletta/optional-grpc.git)
+* [Protobuf Parser - Yet another Go package which parses a Protocol Buffer file (proto2+proto3)](https://github.com/yoheimuta/go-protoparser)
+* [Protolint - A tool to enforce Protocol Buffer style and conventions.](https://github.com/yoheimuta/protolint)
+    * [vscode-protolint: A protobuf linter for visual studio code](https://github.com/plexsystems/vscode-protolint)
+    * [intellij-protolint: A protobuf linter for JetBrains IDEs](https://github.com/yoheimuta/intellij-protolint)
+    * [vim-protolint: A protobuf linter for Vim](https://github.com/yoheimuta/vim-protolint)
+* [super-linter: Protocol Buffer lint as GitHub Action](https://github.com/github/super-linter)

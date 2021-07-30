@@ -41,7 +41,7 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-ExtensionGenerator::ExtensionGenerator(const string& root_class_name,
+ExtensionGenerator::ExtensionGenerator(const std::string& root_class_name,
                                        const FieldDescriptor* descriptor)
     : method_name_(ExtensionMethodName(descriptor)),
       root_class_and_method_name_(root_class_name + "_" + method_name_),
@@ -59,7 +59,7 @@ ExtensionGenerator::ExtensionGenerator(const string& root_class_name,
 ExtensionGenerator::~ExtensionGenerator() {}
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   vars["method_name"] = method_name_;
   if (IsRetainedName(method_name_)) {
     vars["storage_attribute"] = " NS_RETURNS_NOT_RETAINED";
@@ -82,13 +82,13 @@ void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
 
 void ExtensionGenerator::GenerateStaticVariablesInitialization(
     io::Printer* printer) {
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   vars["root_class_and_method_name"] = root_class_and_method_name_;
-  const string containing_type = ClassName(descriptor_->containing_type());
+  const std::string containing_type = ClassName(descriptor_->containing_type());
   vars["extended_type"] = ObjCClass(containing_type);
   vars["number"] = StrCat(descriptor_->number());
 
-  std::vector<string> options;
+  std::vector<std::string> options;
   if (descriptor_->is_repeated()) options.push_back("GPBExtensionRepeated");
   if (descriptor_->is_packed()) options.push_back("GPBExtensionPacked");
   if (descriptor_->containing_type()->options().message_set_wire_format()) {
@@ -110,8 +110,8 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   } else {
     vars["default"] = DefaultValue(descriptor_);
   }
-  string type = GetCapitalizedType(descriptor_);
-  vars["extension_type"] = string("GPBDataType") + type;
+  std::string type = GetCapitalizedType(descriptor_);
+  vars["extension_type"] = std::string("GPBDataType") + type;
 
   if (objc_type == OBJECTIVECTYPE_ENUM) {
     vars["enum_desc_func_name"] =
@@ -134,12 +134,12 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
 }
 
 void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<string>* fwd_decls) {
-  string extended_type = ClassName(descriptor_->containing_type());
+    std::set<std::string>* fwd_decls) {
+  std::string extended_type = ClassName(descriptor_->containing_type());
   fwd_decls->insert(ObjCClassDeclaration(extended_type));
   ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
   if (objc_type == OBJECTIVECTYPE_MESSAGE) {
-    string message_type = ClassName(descriptor_->message_type());
+    std::string message_type = ClassName(descriptor_->message_type());
     fwd_decls->insert(ObjCClassDeclaration(message_type));
   }
 }

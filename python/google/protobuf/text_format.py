@@ -46,19 +46,19 @@ __author__ = 'kenton@google.com (Kenton Varda)'
 import encodings.raw_unicode_escape  # pylint: disable=unused-import
 import encodings.unicode_escape  # pylint: disable=unused-import
 import io
+import math
 import re
-
 import six
 
-if six.PY3:
-  long = int  # pylint: disable=redefined-builtin,invalid-name
-
-# pylint: disable=g-import-not-at-top
 from google.protobuf.internal import decoder
 from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 from google.protobuf import text_encoding
 
+if six.PY3:
+  long = int  # pylint: disable=redefined-builtin,invalid-name
+
+# pylint: disable=g-import-not-at-top
 __all__ = ['MessageToString', 'Parse', 'PrintMessage', 'PrintField',
            'PrintFieldValue', 'Merge', 'MessageToBytes']
 
@@ -120,20 +120,21 @@ class TextWriter(object):
     return self._writer.getvalue()
 
 
-def MessageToString(message,
-                    as_utf8=False,
-                    as_one_line=False,
-                    use_short_repeated_primitives=False,
-                    pointy_brackets=False,
-                    use_index_order=False,
-                    float_format=None,
-                    double_format=None,
-                    use_field_number=False,
-                    descriptor_pool=None,
-                    indent=0,
-                    message_formatter=None,
-                    print_unknown_fields=False,
-                    force_colon=False):
+def MessageToString(
+    message,
+    as_utf8=False,
+    as_one_line=False,
+    use_short_repeated_primitives=False,
+    pointy_brackets=False,
+    use_index_order=False,
+    float_format=None,
+    double_format=None,
+    use_field_number=False,
+    descriptor_pool=None,
+    indent=0,
+    message_formatter=None,
+    print_unknown_fields=False,
+    force_colon=False):
   # type: (...) -> str
   """Convert protobuf message to text format.
 
@@ -157,9 +158,9 @@ def MessageToString(message,
       determined by the extension number. By default, use the field number
       order.
     float_format (str): If set, use this to specify float field formatting
-      (per the "Format Specification Mini-Language"); otherwise, 8 valid
-      digits is used (default '.8g'). Also affect double field if
-      double_format is not set but float_format is set.
+      (per the "Format Specification Mini-Language"); otherwise, shortest float
+      that has same value in wire will be printed. Also affect double field
+      if double_format is not set but float_format is set.
     double_format (str): If set, use this to specify double field formatting
       (per the "Format Specification Mini-Language"); if it is not set but
       float_format is set, use float_format. Otherwise, use ``str()``
@@ -329,21 +330,22 @@ WIRETYPE_START_GROUP = 3
 class _Printer(object):
   """Text format printer for protocol message."""
 
-  def __init__(self,
-               out,
-               indent=0,
-               as_utf8=False,
-               as_one_line=False,
-               use_short_repeated_primitives=False,
-               pointy_brackets=False,
-               use_index_order=False,
-               float_format=None,
-               double_format=None,
-               use_field_number=False,
-               descriptor_pool=None,
-               message_formatter=None,
-               print_unknown_fields=False,
-               force_colon=False):
+  def __init__(
+      self,
+      out,
+      indent=0,
+      as_utf8=False,
+      as_one_line=False,
+      use_short_repeated_primitives=False,
+      pointy_brackets=False,
+      use_index_order=False,
+      float_format=None,
+      double_format=None,
+      use_field_number=False,
+      descriptor_pool=None,
+      message_formatter=None,
+      print_unknown_fields=False,
+      force_colon=False):
     """Initialize the Printer.
 
     Double values can be formatted compactly with 15 digits of precision
@@ -365,9 +367,9 @@ class _Printer(object):
         defined in source code instead of the field number. By default, use the
         field number order.
       float_format: If set, use this to specify float field formatting
-        (per the "Format Specification Mini-Language"); otherwise, 8 valid
-        digits is used (default '.8g'). Also affect double field if
-        double_format is not set but float_format is set.
+        (per the "Format Specification Mini-Language"); otherwise, shortest
+        float that has same value in wire will be printed. Also affect double
+        field if double_format is not set but float_format is set.
       double_format: If set, use this to specify double field formatting
         (per the "Format Specification Mini-Language"); if it is not set but
         float_format is set, use float_format. Otherwise, str() is used.
@@ -539,7 +541,7 @@ class _Printer(object):
         # For groups, use the capitalized name.
         out.write(field.message_type.name)
       else:
-        out.write(field.name)
+          out.write(field.name)
 
     if (self.force_colon or
         field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE):
@@ -565,8 +567,6 @@ class _Printer(object):
       self.out.write(', ')
     self.PrintFieldValue(field, value[-1])
     self.out.write(']')
-    if self.force_colon:
-      self.out.write(':')
     self.out.write(' ' if self.as_one_line else '\n')
 
   def _PrintMessageFieldValue(self, value):
@@ -628,7 +628,10 @@ class _Printer(object):
       if self.float_format is not None:
         out.write('{1:{0}}'.format(self.float_format, value))
       else:
-        out.write(str(float(format(value, '.8g'))))
+        if math.isnan(value):
+          out.write(str(value))
+        else:
+          out.write(str(type_checkers.ToShortestFloat(value)))
     elif (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_DOUBLE and
           self.double_format is not None):
       out.write('{1:{0}}'.format(self.double_format, value))
@@ -877,8 +880,11 @@ class _Parser(object):
           raise tokenizer.ParseErrorPreviousToken('Expected "%s".' %
                                                   (expanded_any_end_token,))
         self._MergeField(tokenizer, expanded_any_sub_message)
+      deterministic = False
+
       message.Pack(expanded_any_sub_message,
-                   type_url_prefix=type_url_prefix)
+                   type_url_prefix=type_url_prefix,
+                   deterministic=deterministic)
       return
 
     if tokenizer.TryConsume('['):
@@ -894,6 +900,8 @@ class _Parser(object):
       # pylint: disable=protected-access
       field = message.Extensions._FindExtensionByName(name)
       # pylint: enable=protected-access
+
+
       if not field:
         if self.allow_unknown_extension:
           field = None
@@ -980,6 +988,7 @@ class _Parser(object):
     if not tokenizer.TryConsume(','):
       tokenizer.TryConsume(';')
 
+
   def _ConsumeAnyTypeUrl(self, tokenizer):
     """Consumes a google.protobuf.Any type URL and returns the type name."""
     # Consume "type.googleapis.com/".
@@ -1049,7 +1058,7 @@ class _Parser(object):
       value_cpptype = field.message_type.fields_by_name['value'].cpp_type
       if value_cpptype == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
         value = getattr(message, field.name)[sub_message.key]
-        value.MergeFrom(sub_message.value)
+        value.CopyFrom(sub_message.value)
       else:
         getattr(message, field.name)[sub_message.key] = sub_message.value
 

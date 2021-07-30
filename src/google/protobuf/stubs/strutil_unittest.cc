@@ -52,7 +52,7 @@ TEST(StringUtilityTest, ImmuneToLocales) {
   // Remember the old locale.
   char* old_locale_cstr = setlocale(LC_NUMERIC, nullptr);
   ASSERT_TRUE(old_locale_cstr != nullptr);
-  string old_locale = old_locale_cstr;
+  std::string old_locale = old_locale_cstr;
 
   // Set the locale to "C".
   ASSERT_TRUE(setlocale(LC_NUMERIC, "C") != nullptr);
@@ -83,7 +83,7 @@ TEST(StringUtilityTest, ImmuneToLocales) {
 static struct {
   int plain_length;
   const char* plaintext;
-  const char* cyphertext;
+  const char* ciphertext;
 } base64_tests[] = {
   // Empty string.
   { 0, "", ""},
@@ -343,10 +343,10 @@ static struct {
 
 static struct {
   const char* plaintext;
-  const char* cyphertext;
+  const char* ciphertext;
 } base64_strings[] = {
   // Some google quotes
-  // Cyphertext created with "uuencode (GNU sharutils) 4.6.3"
+  // Ciphertext created with "uuencode (GNU sharutils) 4.6.3"
   // (Note that we're testing the websafe encoding, though, so if
   // you add messages, be sure to run "tr -- '+/' '-_'" on the output)
   { "I was always good at math and science, and I never realized "
@@ -441,8 +441,8 @@ TEST(Base64, EscapeAndUnescape) {
     int encode_length;
     char decode_buffer[100];
     int decode_length;
-    int cypher_length;
-    string decode_str;
+    int cipher_length;
+    std::string decode_str;
 
     const unsigned char* unsigned_plaintext =
       reinterpret_cast<const unsigned char*>(base64_tests[i].plaintext);
@@ -450,7 +450,7 @@ TEST(Base64, EscapeAndUnescape) {
     StringPiece plaintext(base64_tests[i].plaintext,
                           base64_tests[i].plain_length);
 
-    cypher_length = strlen(base64_tests[i].cyphertext);
+    cipher_length = strlen(base64_tests[i].ciphertext);
 
     // The basic escape function:
     memset(encode_buffer, 0, sizeof(encode_buffer));
@@ -459,30 +459,30 @@ TEST(Base64, EscapeAndUnescape) {
                                  encode_buffer,
                                  sizeof(encode_buffer));
     //    Is it of the expected length?
-    EXPECT_EQ(encode_length, cypher_length);
+    EXPECT_EQ(encode_length, cipher_length);
     // Would it have been okay to allocate only CalculateBase64EscapeLen()?
     EXPECT_EQ(CalculateBase64EscapedLen(base64_tests[i].plain_length),
               encode_length);
 
     //    Is it the expected encoded value?
-    ASSERT_STREQ(encode_buffer, base64_tests[i].cyphertext);
+    ASSERT_STREQ(encode_buffer, base64_tests[i].ciphertext);
 
     // If we encode it into a buffer of exactly the right length...
     memset(encode_buffer, 0, sizeof(encode_buffer));
     encode_length = Base64Escape(unsigned_plaintext,
                                           base64_tests[i].plain_length,
                                           encode_buffer,
-                                          cypher_length);
+                                          cipher_length);
     //    Is it still of the expected length?
-    EXPECT_EQ(encode_length, cypher_length);
+    EXPECT_EQ(encode_length, cipher_length);
 
     //    And is the value still correct?  (i.e., not losing the last byte)
-    EXPECT_STREQ(encode_buffer, base64_tests[i].cyphertext);
+    EXPECT_STREQ(encode_buffer, base64_tests[i].ciphertext);
 
     // If we decode it back:
     decode_str.clear();
     EXPECT_TRUE(Base64Unescape(
-        StringPiece(encode_buffer, cypher_length), &decode_str));
+        StringPiece(encode_buffer, cipher_length), &decode_str));
 
     //    Is it of the expected length?
     EXPECT_EQ(base64_tests[i].plain_length, decode_str.length());
@@ -491,15 +491,15 @@ TEST(Base64, EscapeAndUnescape) {
     EXPECT_EQ(plaintext, decode_str);
 
     // Let's try with a pre-populated string.
-    string encoded("this junk should be ignored");
-    Base64Escape(string(base64_tests[i].plaintext,
-                        base64_tests[i].plain_length),
-                 &encoded);
-    EXPECT_EQ(encoded, string(encode_buffer, cypher_length));
+    std::string encoded("this junk should be ignored");
+    Base64Escape(
+        std::string(base64_tests[i].plaintext, base64_tests[i].plain_length),
+        &encoded);
+    EXPECT_EQ(encoded, std::string(encode_buffer, cipher_length));
 
-    string decoded("this junk should be ignored");
+    std::string decoded("this junk should be ignored");
     EXPECT_TRUE(Base64Unescape(
-        StringPiece(encode_buffer, cypher_length), &decoded));
+        StringPiece(encode_buffer, cipher_length), &decoded));
     EXPECT_EQ(decoded.size(), base64_tests[i].plain_length);
     EXPECT_EQ_ARRAY(decoded.size(), decoded, base64_tests[i].plaintext, i);
 
@@ -514,7 +514,7 @@ TEST(Base64, EscapeAndUnescape) {
 
       // Try chopping off the equals sign(s) entirely.  The decoder
       // should still be okay with this.
-      string decoded2("this junk should also be ignored");
+      std::string decoded2("this junk should also be ignored");
       *first_equals = '\0';
       EXPECT_TRUE(Base64Unescape(
           StringPiece(encode_buffer, first_equals - encode_buffer), &decoded2));
@@ -578,7 +578,7 @@ TEST(Base64, EscapeAndUnescape) {
 
     char websafe[100];
     memset(websafe, 0, sizeof(websafe));
-    strncpy(websafe, base64_tests[i].cyphertext, cypher_length);
+    strncpy(websafe, base64_tests[i].ciphertext, cipher_length);
     for (int c = 0; c < sizeof(websafe); ++c) {
       if ('+' == websafe[c]) { websafe[c] = '-'; }
       if ('/' == websafe[c]) { websafe[c] = '_'; }
@@ -592,7 +592,7 @@ TEST(Base64, EscapeAndUnescape) {
                                                  sizeof(encode_buffer),
                                                  true);
     //    Is it of the expected length?
-    EXPECT_EQ(encode_length, cypher_length);
+    EXPECT_EQ(encode_length, cipher_length);
     EXPECT_EQ(
         CalculateBase64EscapedLen(base64_tests[i].plain_length, true),
         encode_length);
@@ -605,10 +605,10 @@ TEST(Base64, EscapeAndUnescape) {
     encode_length = WebSafeBase64Escape(unsigned_plaintext,
                                                  base64_tests[i].plain_length,
                                                  encode_buffer,
-                                                 cypher_length,
+                                                 cipher_length,
                                                  true);
     //    Is it still of the expected length?
-    EXPECT_EQ(encode_length, cypher_length);
+    EXPECT_EQ(encode_length, cipher_length);
 
     //    And is the value still correct?  (i.e., not losing the last byte)
     EXPECT_STREQ(encode_buffer, websafe);
@@ -618,13 +618,13 @@ TEST(Base64, EscapeAndUnescape) {
     WebSafeBase64Escape(
         unsigned_plaintext, base64_tests[i].plain_length,
         &encoded, true);
-    EXPECT_EQ(encoded.size(), cypher_length);
+    EXPECT_EQ(encoded.size(), cipher_length);
     EXPECT_STREQ(encoded.c_str(), websafe);
 
     //    If we decode it back:
     memset(decode_buffer, 0, sizeof(decode_buffer));
     decode_length = WebSafeBase64Unescape(encode_buffer,
-                                                   cypher_length,
+                                                   cipher_length,
                                                    decode_buffer,
                                                    sizeof(decode_buffer));
 
@@ -638,7 +638,7 @@ TEST(Base64, EscapeAndUnescape) {
     //    If we decode it into a buffer of exactly the right length...
     memset(decode_buffer, 0, sizeof(decode_buffer));
     decode_length = WebSafeBase64Unescape(encode_buffer,
-                                                   cypher_length,
+                                                   cipher_length,
                                                    decode_buffer,
                                                    decode_length);
 
@@ -650,14 +650,14 @@ TEST(Base64, EscapeAndUnescape) {
               memcmp(decode_buffer, base64_tests[i].plaintext, decode_length));
 
     // Try using '.' for the pad character.
-    for (int c = cypher_length - 1; c >= 0 && '=' == encode_buffer[c]; --c) {
+    for (int c = cipher_length - 1; c >= 0 && '=' == encode_buffer[c]; --c) {
       encode_buffer[c] = '.';
     }
 
     // If we decode it back:
     memset(decode_buffer, 0, sizeof(decode_buffer));
     decode_length = WebSafeBase64Unescape(encode_buffer,
-                                                   cypher_length,
+                                                   cipher_length,
                                                    decode_buffer,
                                                    sizeof(decode_buffer));
 
@@ -671,7 +671,7 @@ TEST(Base64, EscapeAndUnescape) {
     // If we decode it into a buffer of exactly the right length...
     memset(decode_buffer, 0, sizeof(decode_buffer));
     decode_length = WebSafeBase64Unescape(encode_buffer,
-                                                   cypher_length,
+                                                   cipher_length,
                                                    decode_buffer,
                                                    decode_length);
 
@@ -685,7 +685,7 @@ TEST(Base64, EscapeAndUnescape) {
     // Let's try the string version of the decoder
     decoded = "this junk should be ignored";
     EXPECT_TRUE(WebSafeBase64Unescape(
-        StringPiece(encode_buffer, cypher_length), &decoded));
+        StringPiece(encode_buffer, cipher_length), &decoded));
     EXPECT_EQ(decoded.size(), base64_tests[i].plain_length);
     EXPECT_EQ_ARRAY(decoded.size(), decoded, base64_tests[i].plaintext, i);
 
@@ -695,7 +695,7 @@ TEST(Base64, EscapeAndUnescape) {
     for (int c = 0; c < sizeof(websafe); ++c) {
       if ('=' == websafe[c]) {
         websafe[c] = '\0';
-        cypher_length = c;
+        cipher_length = c;
         break;
       }
     }
@@ -708,7 +708,7 @@ TEST(Base64, EscapeAndUnescape) {
                                                  sizeof(encode_buffer),
                                                  false);
     //    Is it of the expected length?
-    EXPECT_EQ(encode_length, cypher_length);
+    EXPECT_EQ(encode_length, cipher_length);
     EXPECT_EQ(
         CalculateBase64EscapedLen(base64_tests[i].plain_length, false),
         encode_length);
@@ -721,25 +721,25 @@ TEST(Base64, EscapeAndUnescape) {
     encode_length = WebSafeBase64Escape(unsigned_plaintext,
                                                  base64_tests[i].plain_length,
                                                  encode_buffer,
-                                                 cypher_length,
+                                                 cipher_length,
                                                  false);
     //    Is it still of the expected length?
-    EXPECT_EQ(encode_length, cypher_length);
+    EXPECT_EQ(encode_length, cipher_length);
 
     //    And is the value still correct?  (i.e., not losing the last byte)
     EXPECT_STREQ(encode_buffer, websafe);
 
     // Let's try the (other) string version of the encoder
-    string plain(base64_tests[i].plaintext, base64_tests[i].plain_length);
+    std::string plain(base64_tests[i].plaintext, base64_tests[i].plain_length);
     encoded = "this junk should be ignored";
     WebSafeBase64Escape(plain, &encoded);
-    EXPECT_EQ(encoded.size(), cypher_length);
+    EXPECT_EQ(encoded.size(), cipher_length);
     EXPECT_STREQ(encoded.c_str(), websafe);
 
     //    If we decode it back:
     memset(decode_buffer, 0, sizeof(decode_buffer));
     decode_length = WebSafeBase64Unescape(encode_buffer,
-                                                   cypher_length,
+                                                   cipher_length,
                                                    decode_buffer,
                                                    sizeof(decode_buffer));
 
@@ -753,7 +753,7 @@ TEST(Base64, EscapeAndUnescape) {
     //    If we decode it into a buffer of exactly the right length...
     memset(decode_buffer, 0, sizeof(decode_buffer));
     decode_length = WebSafeBase64Unescape(encode_buffer,
-                                                   cypher_length,
+                                                   cipher_length,
                                                    decode_buffer,
                                                    decode_length);
 
@@ -768,7 +768,7 @@ TEST(Base64, EscapeAndUnescape) {
     // Let's try the string version of the decoder
     decoded = "this junk should be ignored";
     EXPECT_TRUE(WebSafeBase64Unescape(
-        StringPiece(encode_buffer, cypher_length), &decoded));
+        StringPiece(encode_buffer, cipher_length), &decoded));
     EXPECT_EQ(decoded.size(), base64_tests[i].plain_length);
     EXPECT_EQ_ARRAY(decoded.size(), decoded, base64_tests[i].plaintext, i);
 
@@ -781,24 +781,24 @@ TEST(Base64, EscapeAndUnescape) {
     const unsigned char* unsigned_plaintext =
       reinterpret_cast<const unsigned char*>(base64_strings[i].plaintext);
     int plain_length = strlen(base64_strings[i].plaintext);
-    int cypher_length = strlen(base64_strings[i].cyphertext);
-    std::vector<char> buffer(cypher_length+1);
+    int cipher_length = strlen(base64_strings[i].ciphertext);
+    std::vector<char> buffer(cipher_length+1);
     int encode_length = WebSafeBase64Escape(unsigned_plaintext,
                                                      plain_length,
                                                      &buffer[0],
                                                      buffer.size(),
                                                      false);
-    EXPECT_EQ(cypher_length, encode_length);
+    EXPECT_EQ(cipher_length, encode_length);
     EXPECT_EQ(
         CalculateBase64EscapedLen(plain_length, false), encode_length);
     buffer[ encode_length ] = '\0';
-    EXPECT_STREQ(base64_strings[i].cyphertext, &buffer[0]);
+    EXPECT_STREQ(base64_strings[i].ciphertext, &buffer[0]);
   }
 
   // Verify the behavior when decoding bad data
   {
     const char* bad_data = "ab-/";
-    string buf;
+    std::string buf;
     EXPECT_FALSE(Base64Unescape(StringPiece(bad_data), &buf));
     EXPECT_TRUE(!WebSafeBase64Unescape(bad_data, &buf));
     EXPECT_TRUE(buf.empty());
@@ -819,7 +819,7 @@ TEST(StrCat, Ints) {
   const size_t size = 10;
   const intptr_t intptr = -12;
   const uintptr_t uintptr = 13;
-  string answer;
+  std::string answer;
   answer = StrCat(s, us);
   EXPECT_EQ(answer, "-12");
   answer = StrCat(i, ui);
@@ -836,12 +836,13 @@ TEST(StrCat, Ints) {
   EXPECT_EQ(answer, "130");
 }
 
-class ReplaceChars : public ::testing::TestWithParam<
-                         std::tuple<string, string, const char*, char>> {};
+class ReplaceChars
+    : public ::testing::TestWithParam<
+          std::tuple<std::string, std::string, const char*, char>> {};
 
 TEST_P(ReplaceChars, ReplacesAllOccurencesOfAnyCharInReplaceWithAReplaceChar) {
-  string expected = std::get<0>(GetParam());
-  string string_to_replace_in = std::get<1>(GetParam());
+  std::string expected = std::get<0>(GetParam());
+  std::string string_to_replace_in = std::get<1>(GetParam());
   const char* what_to_replace = std::get<2>(GetParam());
   char replacement = std::get<3>(GetParam());
   ReplaceCharacters(&string_to_replace_in, what_to_replace, replacement);
@@ -864,11 +865,12 @@ INSTANTIATE_TEST_CASE_P(
         std::make_tuple("qvvvvvng v T", "queueing a T", "aeiou",
                         'v')));  // replace all voewls
 
-class StripWs : public ::testing::TestWithParam<std::tuple<string, string>> {};
+class StripWs
+    : public ::testing::TestWithParam<std::tuple<std::string, std::string>> {};
 
 TEST_P(StripWs, AlwaysStripsLeadingAndTrailingWhitespace) {
-  string expected = std::get<0>(GetParam());
-  string string_to_strip = std::get<1>(GetParam());
+  std::string expected = std::get<0>(GetParam());
+  std::string string_to_strip = std::get<1>(GetParam());
   StripWhitespace(&string_to_strip);
   ASSERT_EQ(expected, string_to_strip);
 }

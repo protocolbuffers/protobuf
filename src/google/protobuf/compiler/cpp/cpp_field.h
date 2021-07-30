@@ -35,6 +35,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -164,9 +165,11 @@ class FieldGenerator {
     return false;
   }
 
-  // Generate code that allocates the fields's default instance.
-  virtual void GenerateDefaultInstanceAllocator(
-      io::Printer* /*printer*/) const {}
+  // Generate initialization code for private members declared by
+  // GeneratePrivateMembers(), specifically for the constexpr constructor.
+  // These go into the constructor's initializer list and must follow that
+  // syntax (eg `field_(args)`). Does not include `:` or `,` separators.
+  virtual void GenerateConstinitInitializer(io::Printer* printer) const {}
 
   // Generate lines to serialize this field directly to the array "target",
   // which are placed within the message's SerializeWithCachedSizesToArray()
@@ -178,12 +181,7 @@ class FieldGenerator {
   // are placed in the message's ByteSize() method.
   virtual void GenerateByteSize(io::Printer* printer) const = 0;
 
-  // Any tags about field layout decisions (such as inlining) to embed in the
-  // offset.
-  virtual uint32 CalculateFieldTag() const { return 0; }
-  virtual bool IsInlined() const { return false; }
-
-  void SetHasBitIndex(int32 has_bit_index);
+  void SetHasBitIndex(int32_t has_bit_index);
 
  protected:
   const FieldDescriptor* descriptor_;

@@ -47,7 +47,7 @@ namespace internal {
 // When you use implicit_cast, the compiler checks that the cast is safe.
 // Such explicit implicit_casts are necessary in surprisingly many
 // situations where C++ demands an exact type match instead of an
-// argument type convertable to a target type.
+// argument type convertible to a target type.
 //
 // The From type can be inferred, so the preferred syntax for using
 // implicit_cast is the same as for static_cast etc.:
@@ -116,8 +116,7 @@ inline To down_cast(From& f) {
 
 template<typename To, typename From>
 inline To bit_cast(const From& from) {
-  GOOGLE_COMPILE_ASSERT(sizeof(From) == sizeof(To),
-                        bit_cast_with_different_sizes);
+  static_assert(sizeof(From) == sizeof(To), "bit_cast_with_different_sizes");
   To dest;
   memcpy(&dest, &from, sizeof(dest));
   return dest;

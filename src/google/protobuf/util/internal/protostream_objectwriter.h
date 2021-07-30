@@ -48,6 +48,7 @@
 #include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/port_def.inc>
@@ -100,6 +101,27 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // If true, accepts repeated key/value pair for a map proto field.
     bool use_legacy_json_map_format;
 
+    // If true, disable implicitly creating message list.
+    bool disable_implicit_message_list;
+
+    // If true, suppress the error of implicitly creating message list when it
+    // is disabled.
+    bool suppress_implicit_message_list_error;
+
+    // If true, disable implicitly creating scalar list.
+    bool disable_implicit_scalar_list;
+
+    // If true, suppress the error of implicitly creating scalar list when it
+    // is disabled.
+    bool suppress_implicit_scalar_list_error;
+
+    // If true, suppress the error of rendering scalar field if the source is an
+    // object.
+    bool suppress_object_to_scalar_error;
+
+    // If true, use the json name in missing fields errors.
+    bool use_json_name_in_missing_fields;
+
     Options()
         : struct_integers_as_strings(false),
           ignore_unknown_fields(false),
@@ -107,7 +129,13 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
           use_lower_camel_for_enums(false),
           case_insensitive_enum_parsing(false),
           ignore_null_value_map_entry(false),
-          use_legacy_json_map_format(false) {}
+          use_legacy_json_map_format(false),
+          disable_implicit_message_list(false),
+          suppress_implicit_message_list_error(false),
+          disable_implicit_scalar_list(false),
+          suppress_implicit_scalar_list_error(false),
+          suppress_object_to_scalar_error(false),
+          use_json_name_in_missing_fields(false) {}
 
     // Default instance of Options with all options set to defaults.
     static const Options& Defaults() {
@@ -138,7 +166,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
  protected:
   // Function that renders a well known type with modified behavior.
   typedef util::Status (*TypeRenderer)(ProtoStreamObjectWriter*,
-                                         const DataPiece&);
+                                       const DataPiece&);
 
   // Handles writing Anys out using nested object writers and the like.
   class PROTOBUF_EXPORT AnyWriter {
@@ -347,24 +375,24 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
   // Renders google.protobuf.Value in struct.proto. It picks the right oneof
   // type based on value's type.
   static util::Status RenderStructValue(ProtoStreamObjectWriter* ow,
-                                          const DataPiece& data);
+                                        const DataPiece& data);
 
   // Renders google.protobuf.Timestamp value.
   static util::Status RenderTimestamp(ProtoStreamObjectWriter* ow,
-                                        const DataPiece& data);
+                                      const DataPiece& data);
 
   // Renders google.protobuf.FieldMask value.
   static util::Status RenderFieldMask(ProtoStreamObjectWriter* ow,
-                                        const DataPiece& data);
+                                      const DataPiece& data);
 
   // Renders google.protobuf.Duration value.
   static util::Status RenderDuration(ProtoStreamObjectWriter* ow,
-                                       const DataPiece& data);
+                                     const DataPiece& data);
 
   // Renders wrapper message types for primitive types in
   // google/protobuf/wrappers.proto.
   static util::Status RenderWrapperType(ProtoStreamObjectWriter* ow,
-                                          const DataPiece& data);
+                                        const DataPiece& data);
 
   static void InitRendererMap();
   static void DeleteRendererMap();

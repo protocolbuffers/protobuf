@@ -37,11 +37,14 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/parse_context.h>
-#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/extension_set.h>
+#include <google/protobuf/generated_message_tctable_decl.h>
+#include <google/protobuf/generated_message_tctable_impl.h>
 #include <google/protobuf/wire_format.h>
+#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 #include <google/protobuf/port_def.inc>
@@ -108,8 +111,7 @@ size_t UnknownFieldSet::SpaceUsedExcludingSelfLong() const {
 
   size_t total_size = sizeof(fields_) + sizeof(UnknownField) * fields_.size();
 
-  for (int i = 0; i < fields_.size(); i++) {
-    const UnknownField& field = (fields_)[i];
+  for (const UnknownField& field : fields_) {
     switch (field.type()) {
       case UnknownField::TYPE_LENGTH_DELIMITED:
         total_size += sizeof(*field.data_.length_delimited_.string_value) +
@@ -184,7 +186,7 @@ void UnknownFieldSet::DeleteSubrange(int start, int num) {
     (fields_)[i + start].Delete();
   }
   // Slide down the remaining fields.
-  for (int i = start + num; i < fields_.size(); ++i) {
+  for (size_t i = start + num; i < fields_.size(); ++i) {
     (fields_)[i - num] = (fields_)[i];
   }
   // Pop off the # of deleted fields.
@@ -194,8 +196,8 @@ void UnknownFieldSet::DeleteSubrange(int start, int num) {
 }
 
 void UnknownFieldSet::DeleteByNumber(int number) {
-  int left = 0;  // The number of fields left after deletion.
-  for (int i = 0; i < fields_.size(); ++i) {
+  size_t left = 0;  // The number of fields left after deletion.
+  for (size_t i = 0; i < fields_.size(); ++i) {
     UnknownField* field = &(fields_)[i];
     if (field->number() == number) {
       field->Delete();
@@ -325,3 +327,5 @@ const char* UnknownFieldParse(uint64 tag, UnknownFieldSet* unknown,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
