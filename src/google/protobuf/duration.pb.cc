@@ -99,7 +99,7 @@ Duration::Duration(const Duration& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Duration)
 }
 
-inline void Duration::SharedCtor() {
+void Duration::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&seconds_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
