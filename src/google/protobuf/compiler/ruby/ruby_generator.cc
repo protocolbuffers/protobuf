@@ -555,13 +555,11 @@ bool GenerateDSLDescriptor(const FileDescriptor* file, io::Printer* printer,
 
 bool GenerateBinaryDescriptor(const FileDescriptor* file, io::Printer* printer,
                               std::string* error) {
-  FileDescriptorProto file_proto;
-  file->CopyTo(&file_proto);
-  std::string file_data;
-  file_proto.SerializeToString(&file_data);
-
-  printer->Print("Google::Protobuf::DescriptorPool.generated_pool.add_serialized_file(\n");
-  printer->Print("\"$str$\")\n\n", "str", CEscape(file_data));
+  printer->Print(
+      R"(descriptor_data = File.binread(__FILE__).split("\n__END__\n", 2)[1])");
+  printer->Print(
+      "\nGoogle::Protobuf::DescriptorPool.generated_pool.add_serialized_file("
+      "descriptor_data)\n\n");
   return true;
 }
 
@@ -585,7 +583,9 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
     GOOGLE_LOG(WARNING) << "Extensions are not yet supported for proto2 .proto files.";
   }
 
-  if (file->name() == "google/protobuf/descriptor.proto") {
+  bool use_raw_descriptor = file->name() == "google/protobuf/descriptor.proto";
+
+  if (use_raw_descriptor) {
     GenerateBinaryDescriptor(file, printer, error);
   } else {
     GenerateDSLDescriptor(file, printer, error);
@@ -599,6 +599,15 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
     GenerateEnumAssignment("", file->enum_type(i), printer);
   }
   EndPackageModules(levels, printer);
+
+  if (use_raw_descriptor) {
+    printer->Print("\n__END__\n");
+    FileDescriptorProto file_proto;
+    file->CopyTo(&file_proto);
+    std::string file_data;
+    file_proto.SerializeToString(&file_data);
+    printer->Print("$raw_descriptor$", "raw_descriptor", file_data);
+  }
   return true;
 }
 
