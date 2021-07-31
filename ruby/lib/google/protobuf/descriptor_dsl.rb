@@ -376,7 +376,7 @@ module Google
                 default = default.to_s
               end
               # XXX: we should be C-escaping bytes defaults.
-              field_proto.default_value = default.force_encoding("UTF-8")
+              field_proto.default_value = default.dup.force_encoding("UTF-8")
             end
             if options.key?(:json_name)
               field_proto.json_name = options[:json_name]
