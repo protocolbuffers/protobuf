@@ -438,7 +438,7 @@ build_ruby27() {
 }
 build_ruby30() {
   internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh ruby-3.0.0 && cd ..
+  cd ruby && bash travis-test.sh ruby-3.0.2 && cd ..
 }
 
 build_jruby() {
