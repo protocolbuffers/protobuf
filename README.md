@@ -3,6 +3,12 @@ Protocol Buffers - Google's data interchange format
 
 Copyright 2008 Google Inc.
 
+This package is based on google protobuf package with the following changes:
+1. The name of the package was change to "google-protobuf-minified"
+2. The only file which will be included when this package is installed as a dependency,
+is the google-protobuf.js file in order to reduce package size. 
+
+
 https://developers.google.com/protocol-buffers/
 
 Overview
