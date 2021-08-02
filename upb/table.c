@@ -321,6 +321,10 @@ static uint32_t UnalignedLoad32(const void *p) {
   return val;
 }
 
+#if defined(_MSC_VER) && defined(_M_X64)
+#include <intrin.h>
+#endif
+
 /* Computes a * b, returning the low 64 bits of the result and storing the high
  * 64 bits in |*high|. */
 static uint64_t upb_umul128(uint64_t v0, uint64_t v1, uint64_t* out_high) {
