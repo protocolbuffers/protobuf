@@ -29,7 +29,7 @@ set -ex
 
 # Install the latest version of Bazel.
 if [ -x "$(command -v use_bazel.sh)" ]; then
-  use_bazel.sh latest
+  use_bazel.sh 4.1.0
 fi
 
 # Verify/query CMake
