@@ -31,7 +31,7 @@
 #include "benchmarks/descriptor.upb.h"
 #include "benchmarks/descriptor.upbdefs.h"
 #include "benchmarks/descriptor_sv.pb.h"
-#include "google/ads/googleads/v5/services/google_ads_service.upbdefs.h"
+#include "google/ads/googleads/v7/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "upb/def.hpp"
 
@@ -84,7 +84,7 @@ static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
   size_t bytes_per_iter = 0;
   for (auto _ : state) {
     upb::SymbolTable symtab;
-    google_ads_googleads_v5_services_SearchGoogleAdsRequest_getmsgdef(
+    google_ads_googleads_v7_services_SearchGoogleAdsRequest_getmsgdef(
         symtab.ptr());
     bytes_per_iter = _upb_symtab_bytesloaded(symtab.ptr());
   }
@@ -111,11 +111,11 @@ static void BM_LoadDescriptor_Proto2(benchmark::State& state) {
 BENCHMARK(BM_LoadDescriptor_Proto2);
 
 static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
-  extern upb_def_init google_ads_googleads_v5_services_google_ads_service_proto_upbdefinit;
+  extern upb_def_init google_ads_googleads_v7_services_google_ads_service_proto_upbdefinit;
   std::vector<upb_strview> serialized_files;
   absl::flat_hash_set<const upb_def_init*> seen_files;
   CollectFileDescriptors(
-      &google_ads_googleads_v5_services_google_ads_service_proto_upbdefinit,
+      &google_ads_googleads_v7_services_google_ads_service_proto_upbdefinit,
       serialized_files, seen_files);
   size_t bytes_per_iter = 0;
   for (auto _ : state) {
