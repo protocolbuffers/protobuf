@@ -1138,6 +1138,7 @@ ruby_EXTRA_DIST=                                                             \
   ruby/ext/google/protobuf_c/ruby-upb.h                                      \
   ruby/ext/google/protobuf_c/wrap_memcpy.c                                   \
   ruby/google-protobuf.gemspec                                               \
+  ruby/lib/google/protobuf/descriptor_dsl.rb                                 \
   ruby/lib/google/protobuf/message_exts.rb                                   \
   ruby/lib/google/protobuf/repeated_field.rb                                 \
   ruby/lib/google/protobuf/well_known_types.rb                               \
