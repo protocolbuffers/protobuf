@@ -527,7 +527,7 @@ bool MaybeEmitDependency(const FileDescriptor* import,
   }
 }
 
-bool GenerateDSLDescriptor(const FileDescriptor* file, io::Printer* printer,
+bool GenerateDslDescriptor(const FileDescriptor* file, io::Printer* printer,
                            std::string* error) {
   printer->Print(
     "require 'google/protobuf'\n\n");
@@ -588,7 +588,7 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
   if (use_raw_descriptor) {
     GenerateBinaryDescriptor(file, printer, error);
   } else {
-    GenerateDSLDescriptor(file, printer, error);
+    GenerateDslDescriptor(file, printer, error);
   }
 
   int levels = GeneratePackageModules(file, printer);

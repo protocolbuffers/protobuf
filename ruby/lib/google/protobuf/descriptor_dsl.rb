@@ -79,7 +79,7 @@ module Google
             last_common_dot = nil
             min.size.times { |i|
               if min[i] != max[i] then break end
-              if min[i] == ?. then last_common_dot = i end
+              if min[i] == "." then last_common_dot = i end
             }
             if last_common_dot
               return min.slice(0, last_common_dot)
@@ -97,11 +97,11 @@ module Google
           value = field.default_value
           type_name = field.type_name
 
-          if value.empty? or value[0].ord < ?0.ord or value[0].ord > ?9.ord
+          if value.empty? or value[0].ord < "0".ord or value[0].ord > "9".ord
             return
           end
 
-          if type_name.empty? || type_name[0] != ?.
+          if type_name.empty? || type_name[0] != "."
             return
           end
 
@@ -193,14 +193,13 @@ module Google
         # above descriptor.  We need to infer that "foo" is the package name, and not
         # a message itself. */
 
-        def get_parent_name(msg_or_enum)
+        def split_parent_name(msg_or_enum)
           name = msg_or_enum.name
           idx = name.rindex(?.)
           if idx
-            msg_or_enum.name = name[idx+1..-1]
-            return name[0...idx]
+            return name[0...idx], name[idx+1..-1]
           else
-            return nil
+            return nil, name
           end
         end
 
@@ -229,7 +228,7 @@ module Google
           # Note: We don't iterate over msgs_by_name.values because we want to
           # preserve order as listed in the DSL.
           @file_proto.message_type.each { |msg|
-            parent_name = get_parent_name(msg)
+            parent_name, msg.name = split_parent_name(msg)
             if parent_name == package
               final_msgs << msg
             else
@@ -238,7 +237,7 @@ module Google
           }
 
           @file_proto.enum_type.each { |enum|
-            parent_name = get_parent_name(enum)
+            parent_name, enum.name = split_parent_name(enum)
             if parent_name == package
               final_enums << enum
             else
