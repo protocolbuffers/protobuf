@@ -1,7 +1,7 @@
 ---
 tasks:
   ubuntu:
-    platform: ubuntu1604
+    platform: ubuntu1804
     test_targets:
     - //...
   macos:
