@@ -78,12 +78,6 @@ if RUBY_PLATFORM == "java"
     system("mvn --batch-mode package")
   end
 else
-  unless ENV['IN_DOCKER'] == 'true'
-    # We need wyhash in-tree.
-    FileUtils.mkdir_p("ext/google/protobuf_c/third_party/wyhash")
-    FileUtils.cp("../third_party/wyhash/wyhash.h", "ext/google/protobuf_c/third_party/wyhash/wyhash.h")
-  end
-
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
     unless RUBY_PLATFORM =~ /darwin/
       # TODO: also set "no_native to true" for mac if possible. As is,
