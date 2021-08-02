@@ -79,8 +79,7 @@ add_library(upb
   ../upb/upb.hpp)
 target_link_libraries(upb
   fastdecode
-  port
-  /third_party/wyhash)
+  port)
 add_library(fastdecode
   ../upb/decode_internal.h
   ../upb/decode_fast.c
@@ -126,6 +125,5 @@ target_link_libraries(json
 add_library(table INTERFACE)
 target_link_libraries(table INTERFACE
   port)
-add_library(wyhash INTERFACE)
 
 
