@@ -340,7 +340,7 @@ static uint64_t upb_umul128(uint64_t v0, uint64_t v1, uint64_t* out_high) {
   uint64_t a00 = v0 & 0xffffffff;
   uint64_t b32 = v1 >> 32;
   uint64_t b00 = v1 & 0xffffffff;
-  uint64_t *high = a32 * b32
+  uint64_t high = a32 * b32;
   uint64_t low = a00 * b00;
   uint64_t mid1 = a32 * b00;
   uint64_t mid2 = a00 * b32;
