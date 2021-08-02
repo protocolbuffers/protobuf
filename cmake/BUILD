@@ -53,7 +53,6 @@ genrule(
         "//:BUILD",
         "//:WORKSPACE",
         "//:cmake_files",
-        "//third_party/wyhash:cmake_files",
         ":cmake_files",
     ],
     outs = ["generated-in/CMakeLists.txt"],
@@ -102,7 +101,6 @@ sh_test(
     data = [
         ":cmake_files",
         "//:cmake_files",
-        "//third_party/wyhash:cmake_files",
     ],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )
