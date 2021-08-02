@@ -342,7 +342,7 @@ static uint64_t upb_umul128(uint64_t v0, uint64_t v1, uint64_t* out_high) {
   uint64_t mid2 = a00 * b32;
   low += (mid1 << 32) + (mid2 << 32);
   // Omit carry bit, for mixing we do not care about exact numerical precision.
-  high += (mid1 >> 32) + (mid2 >> 32);  
+  high += (mid1 >> 32) + (mid2 >> 32);
   *out_high = high;
   return low;
 #endif
