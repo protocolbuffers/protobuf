@@ -30,11 +30,17 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import com.google.protobuf.ArrayDecoders.Registers;
 import java.io.IOException;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-public class ArrayDecodersTest extends TestCase {
+@RunWith(JUnit4.class)
+public class ArrayDecodersTest {
 
   private static final int TAG = WireFormat.makeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
   private static final ByteString NEGATIVE_SIZE_0 = generateNegativeLength(0);
@@ -42,36 +48,40 @@ public class ArrayDecodersTest extends TestCase {
 
   private Registers registers;
 
-  @Override
+  @Before
   public void setUp() {
     registers = new Registers();
     registers.int1 = TAG;
   }
 
+  @Test
   public void testException_decodeString() {
     try {
       ArrayDecoders.decodeString(NEGATIVE_SIZE_0.toByteArray(), 0, registers);
-      fail();
+      assertWithMessage("should throw exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }
 
+  @Test
   public void testException_decodeStringRequireUtf8() {
     try {
       ArrayDecoders.decodeStringRequireUtf8(NEGATIVE_SIZE_0.toByteArray(), 0, registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }
 
+  @Test
   public void testException_decodeBytes() {
     try {
       ArrayDecoders.decodeBytes(NEGATIVE_SIZE_0.toByteArray(), 0, registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }
 
+  @Test
   public void testException_decodeStringList_first() {
     try {
       ArrayDecoders.decodeStringList(
@@ -81,11 +91,12 @@ public class ArrayDecodersTest extends TestCase {
           NEGATIVE_SIZE_0.size(),
           new ProtobufArrayList<Object>(),
           registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }
 
+  @Test
   public void testException_decodeStringList_second() {
     try {
       ArrayDecoders.decodeStringList(
@@ -95,11 +106,12 @@ public class ArrayDecodersTest extends TestCase {
           NEGATIVE_SIZE_1.size(),
           new ProtobufArrayList<Object>(),
           registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }
 
+  @Test
   public void testException_decodeStringListRequireUtf8_first() {
     try {
       ArrayDecoders.decodeStringListRequireUtf8(
@@ -109,11 +121,12 @@ public class ArrayDecodersTest extends TestCase {
           NEGATIVE_SIZE_0.size(),
           new ProtobufArrayList<Object>(),
           registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }
 
+  @Test
   public void testException_decodeStringListRequireUtf8_second() {
     try {
       ArrayDecoders.decodeStringListRequireUtf8(
@@ -123,11 +136,12 @@ public class ArrayDecodersTest extends TestCase {
           NEGATIVE_SIZE_1.size(),
           new ProtobufArrayList<Object>(),
           registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }
 
+  @Test
   public void testException_decodeBytesList_first() {
     try {
       ArrayDecoders.decodeBytesList(
@@ -137,11 +151,12 @@ public class ArrayDecodersTest extends TestCase {
           NEGATIVE_SIZE_0.size(),
           new ProtobufArrayList<Object>(),
           registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }
 
+  @Test
   public void testException_decodeBytesList_second() {
     try {
       ArrayDecoders.decodeBytesList(
@@ -151,11 +166,12 @@ public class ArrayDecodersTest extends TestCase {
           NEGATIVE_SIZE_1.size(),
           new ProtobufArrayList<Object>(),
           registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }
 
+  @Test
   public void testException_decodeUnknownField() {
     try {
       ArrayDecoders.decodeUnknownField(
@@ -165,11 +181,12 @@ public class ArrayDecodersTest extends TestCase {
           NEGATIVE_SIZE_0.size(),
           UnknownFieldSetLite.newInstance(),
           registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }
 
+  @Test
   public void testException_decodeHugeField() {
     byte[] badBytes =
         new byte[] {
@@ -178,13 +195,13 @@ public class ArrayDecodersTest extends TestCase {
     try {
       ArrayDecoders.decodeUnknownField(
           TAG, badBytes, 0, badBytes.length, UnknownFieldSetLite.newInstance(), registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
 
     try {
       ArrayDecoders.decodeBytes(badBytes, 0, registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
 
@@ -206,7 +223,7 @@ public class ArrayDecodersTest extends TestCase {
     try {
       ArrayDecoders.decodeBytesList(
           TAG, badBytesList, 0, badBytes.length, new ProtobufArrayList<>(), registers);
-      fail();
+      assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }

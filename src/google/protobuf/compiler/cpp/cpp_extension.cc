@@ -57,8 +57,9 @@ std::string ExtendeeClassName(const FieldDescriptor* descriptor) {
 }  // anonymous namespace
 
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
-                                       const Options& options)
-    : descriptor_(descriptor), options_(options) {
+                                       const Options& options,
+                                       MessageSCCAnalyzer* scc_analyzer)
+    : descriptor_(descriptor), options_(options), scc_analyzer_(scc_analyzer) {
   // Construct type_traits_.
   if (descriptor_->is_repeated()) {
     type_traits_ = "Repeated";
@@ -179,6 +180,18 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
       "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
       "  $scoped_name$($constant_name$, $1$);\n",
       default_str);
+
+  // Register extension verify function if needed.
+  if (descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+      ShouldVerify(descriptor_->message_type(), options_, scc_analyzer_) &&
+      ShouldVerify(descriptor_->containing_type(), options_, scc_analyzer_)) {
+    format(
+        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY "
+        "::$proto_ns$::internal::RegisterExtensionVerify< $extendee$,\n"
+        "    $1$, $number$> $2$_$name$_register;\n",
+        ClassName(descriptor_->message_type(), true),
+        IsScoped() ? ClassName(descriptor_->extension_scope(), false) : "");
+  }
 }
 
 }  // namespace cpp

@@ -1457,7 +1457,7 @@ void ImmutableMessageGenerator::GenerateKotlinMembers(
     io::Printer* printer) const {
   printer->Print(
       "@kotlin.jvm.JvmSynthetic\n"
-      "inline fun $camelcase_name$(block: $message_kt$.Dsl.() -> Unit): "
+      "inline fun $camelcase_name$(block: $message_kt$.Dsl.() -> kotlin.Unit): "
       "$message$ "
       "=\n"
       "  $message_kt$.Dsl._create($message$.newBuilder()).apply { block() "
@@ -1482,7 +1482,7 @@ void ImmutableMessageGenerator::GenerateTopLevelKotlinMembers(
     io::Printer* printer) const {
   printer->Print(
       "@kotlin.jvm.JvmSynthetic\n"
-      "inline fun $message$.copy(block: $message_kt$.Dsl.() -> Unit): "
+      "inline fun $message$.copy(block: $message_kt$.Dsl.() -> kotlin.Unit): "
       "$message$ =\n"
       "  $message_kt$.Dsl._create(this.toBuilder()).apply { block() "
       "}._build()\n",

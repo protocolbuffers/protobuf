@@ -111,6 +111,8 @@ static PyDescriptorPool* _CreateDescriptorPool() {
   cpool->error_collector = nullptr;
   cpool->underlay = NULL;
   cpool->database = NULL;
+  cpool->is_owned = false;
+  cpool->is_mutable = false;
 
   cpool->descriptor_options = new std::unordered_map<const void*, PyObject*>();
 
@@ -138,6 +140,8 @@ static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
     return NULL;
   }
   cpool->pool = new DescriptorPool(underlay);
+  cpool->is_owned = true;
+  cpool->is_mutable = true;
   cpool->underlay = underlay;
 
   if (!descriptor_pool_map->insert(
@@ -159,10 +163,13 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
   if (database != NULL) {
     cpool->error_collector = new BuildFileErrorCollector();
     cpool->pool = new DescriptorPool(database, cpool->error_collector);
+    cpool->is_mutable = false;
     cpool->database = database;
   } else {
     cpool->pool = new DescriptorPool();
+    cpool->is_mutable = true;
   }
+  cpool->is_owned = true;
 
   if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
     // Should never happen -- would indicate an internal error / bug.
@@ -201,7 +208,9 @@ static void Dealloc(PyObject* pself) {
   }
   delete self->descriptor_options;
   delete self->database;
-  delete self->pool;
+  if (self->is_owned) {
+    delete self->pool;
+  }
   delete self->error_collector;
   Py_TYPE(self)->tp_free(pself);
 }
@@ -582,6 +591,12 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
         "Add your file to the underlying database.");
     return NULL;
   }
+  if (!self->is_mutable) {
+    PyErr_SetString(
+        PyExc_ValueError,
+        "This DescriptorPool is not mutable and cannot add new definitions.");
+    return nullptr;
+  }
 
   if (PyBytes_AsStringAndSize(serialized_pb, &message_type, &message_len) < 0) {
     return NULL;
@@ -606,14 +621,16 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
 
   BuildFileErrorCollector error_collector;
   const FileDescriptor* descriptor =
-      self->pool->BuildFileCollectingErrors(file_proto,
-                                            &error_collector);
+      // Pool is mutable, we can remove the "const".
+      const_cast<DescriptorPool*>(self->pool)
+          ->BuildFileCollectingErrors(file_proto, &error_collector);
   if (descriptor == NULL) {
     PyErr_Format(PyExc_TypeError,
                  "Couldn't build proto file into descriptor pool!\n%s",
                  error_collector.error_message.c_str());
     return NULL;
   }
+
 
   return PyFileDescriptor_FromDescriptorWithSerializedPb(
       descriptor, serialized_pb);
@@ -766,6 +783,33 @@ PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool) {
     return NULL;
   }
   return it->second;
+}
+
+PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool) {
+  PyDescriptorPool* existing_pool = GetDescriptorPool_FromPool(pool);
+  if (existing_pool != nullptr) {
+    Py_INCREF(existing_pool);
+    return reinterpret_cast<PyObject*>(existing_pool);
+  } else {
+    PyErr_Clear();
+  }
+
+  PyDescriptorPool* cpool = cdescriptor_pool::_CreateDescriptorPool();
+  if (cpool == nullptr) {
+    return nullptr;
+  }
+  cpool->pool = const_cast<DescriptorPool*>(pool);
+  cpool->is_owned = false;
+  cpool->is_mutable = false;
+  cpool->underlay = nullptr;
+
+  if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
+    // Should never happen -- We already checked the existence above.
+    PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
+    return nullptr;
+  }
+
+  return reinterpret_cast<PyObject*>(cpool);
 }
 
 }  // namespace python

@@ -80,8 +80,8 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   size_t ByteSizeLong() const override { return data_.size(); }
 
-  uint8* _InternalSerialize(uint8* target,
-                            io::EpsCopyOutputStream* stream) const final {
+  uint8_t* _InternalSerialize(uint8_t* target,
+                              io::EpsCopyOutputStream* stream) const final {
     return stream->WriteRaw(data_.data(), static_cast<int>(data_.size()),
                             target);
   }

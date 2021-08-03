@@ -107,6 +107,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
   google/protobuf/implicit_weak_message.h                        \
+  google/protobuf/inlined_string_field.h                         \
   google/protobuf/io/io_win32.h                                \
   google/protobuf/map_entry.h                                    \
   google/protobuf/map_entry_lite.h                               \
@@ -128,6 +129,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/repeated_field.h                               \
   google/protobuf/service.h                                      \
   google/protobuf/source_context.pb.h                            \
+  google/protobuf/string_member_robber.h                         \
   google/protobuf/struct.pb.h                                    \
   google/protobuf/text_format.h                                  \
   google/protobuf/timestamp.pb.h                                 \
@@ -212,6 +214,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/generated_message_table_driven_lite.h        \
   google/protobuf/generated_message_table_driven_lite.cc       \
   google/protobuf/implicit_weak_message.cc                     \
+  google/protobuf/inlined_string_field.cc                      \
   google/protobuf/map.cc                                       \
   google/protobuf/message_lite.cc                              \
   google/protobuf/parse_context.cc                             \
@@ -703,6 +706,8 @@ COMMON_TEST_SOURCES =                                          \
   google/protobuf/map_test_util.inc                            \
   google/protobuf/map_test_util.h                              \
   google/protobuf/map_test_util_impl.h                         \
+  google/protobuf/reflection_tester.cc                         \
+  google/protobuf/reflection_tester.h                          \
   google/protobuf/test_util.cc                                 \
   google/protobuf/test_util.h                                  \
   google/protobuf/test_util.inc                                \
@@ -754,6 +759,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/dynamic_message_unittest.cc                  \
   google/protobuf/extension_set_unittest.cc                    \
   google/protobuf/generated_message_reflection_unittest.cc     \
+  google/protobuf/inlined_string_field_unittest.cc             \
   google/protobuf/map_field_test.cc                            \
   google/protobuf/map_test.cc                                  \
   google/protobuf/message_unittest.cc                          \
@@ -771,6 +777,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/unknown_field_set_unittest.cc                \
   google/protobuf/well_known_types_unittest.cc                 \
   google/protobuf/wire_format_unittest.cc                      \
+  google/protobuf/wire_format_unittest.inc                     \
   google/protobuf/io/coded_stream_unittest.cc                  \
   google/protobuf/io/printer_unittest.cc                       \
   google/protobuf/io/tokenizer_unittest.cc                     \

@@ -209,10 +209,19 @@ void PrimitiveFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   Formatter format(printer, variables_);
   int fixed_size = FixedSize(descriptor_->type());
   if (fixed_size == -1) {
-    format(
-        "total_size += $tag_size$ +\n"
-        "  ::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
-        "    this->_internal_$name$());\n");
+    if (internal::WireFormat::TagSize(descriptor_->number(),
+                                      descriptor_->type()) == 1) {
+      // Adding one is very common and it turns out it can be done for
+      // free inside of WireFormatLite, so we can save an instruction here.
+      format(
+          "total_size += ::$proto_ns$::internal::WireFormatLite::"
+          "$declared_type$SizePlusOne(this->_internal_$name$());\n");
+    } else {
+      format(
+          "total_size += $tag_size$ +\n"
+          "  ::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
+          "    this->_internal_$name$());\n");
+    }
   } else {
     format("total_size += $tag_size$ + $fixed_size$;\n");
   }

@@ -352,12 +352,15 @@ inline void ArenaStringPtr::UnsafeSetDefault(const std::string* value) {
   tagged_ptr_.Set(const_cast<std::string*>(value));
 }
 
+// Make sure rhs_arena allocated rhs, and lhs_arena allocated lhs.
 inline PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(  //
     const std::string* default_value,                             //
     ArenaStringPtr* rhs, Arena* rhs_arena,                        //
     ArenaStringPtr* lhs, Arena* lhs_arena) {
+  // Silence unused variable warnings in release buildls.
   (void)default_value;
-  std::swap(lhs_arena, rhs_arena);
+  (void)rhs_arena;
+  (void)lhs_arena;
   std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
   auto force_realloc = [default_value](ArenaStringPtr* p, Arena* arena) {
@@ -370,8 +373,10 @@ inline PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(  //
     if (arena == nullptr) delete old_value;
     p->tagged_ptr_.Set(new_value);
   };
-  force_realloc(lhs, lhs_arena);
-  force_realloc(rhs, rhs_arena);
+  // Because, at this point, tagged_ptr_ has been swapped, arena should also be
+  // swapped.
+  force_realloc(lhs, rhs_arena);
+  force_realloc(rhs, lhs_arena);
 #endif  // PROTOBUF_FORCE_COPY_IN_SWAP
 }
 

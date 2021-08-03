@@ -336,15 +336,15 @@ bool MessageLite::MergeFromString(ConstStringParam data) {
 
 // ===================================================================
 
-inline uint8* SerializeToArrayImpl(const MessageLite& msg, uint8* target,
-                                   int size) {
+inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
+                                     int size) {
   constexpr bool debug = false;
   if (debug) {
     // Force serialization to a stream with a block size of 1, which forces
     // all writes to the stream to cross buffers triggering all fallback paths
     // in the unittests when serializing to string / array.
     io::ArrayOutputStream stream(target, size, 1);
-    uint8* ptr;
+    uint8_t* ptr;
     io::EpsCopyOutputStream out(
         &stream, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
         &ptr);
@@ -362,7 +362,7 @@ inline uint8* SerializeToArrayImpl(const MessageLite& msg, uint8* target,
   }
 }
 
-uint8* MessageLite::SerializeWithCachedSizesToArray(uint8* target) const {
+uint8_t* MessageLite::SerializeWithCachedSizesToArray(uint8_t* target) const {
   // We only optimize this when using optimize_for = SPEED.  In other cases
   // we just use the CodedOutputStream path.
   return SerializeToArrayImpl(*this, target, GetCachedSize());
@@ -389,7 +389,7 @@ bool MessageLite::SerializePartialToCodedStream(
   }
   int final_byte_count = output->ByteCount();
 
-  if (final_byte_count - original_byte_count != static_cast<int64>(size)) {
+  if (final_byte_count - original_byte_count != static_cast<int64_t>(size)) {
     ByteSizeConsistencyError(size, ByteSizeLong(),
                              final_byte_count - original_byte_count, *this);
   }
@@ -412,7 +412,7 @@ bool MessageLite::SerializePartialToZeroCopyStream(
     return false;
   }
 
-  uint8* target;
+  uint8_t* target;
   io::EpsCopyOutputStream stream(
       output, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
       &target);
@@ -459,9 +459,9 @@ bool MessageLite::AppendPartialToString(std::string* output) const {
     return false;
   }
 
-  STLStringResizeUninitialized(output, old_size + byte_size);
-  uint8* start =
-      reinterpret_cast<uint8*>(io::mutable_string_data(output) + old_size);
+  STLStringResizeUninitializedAmortized(output, old_size + byte_size);
+  uint8_t* start =
+      reinterpret_cast<uint8_t*>(io::mutable_string_data(output) + old_size);
   SerializeToArrayImpl(*this, start, byte_size);
   return true;
 }
@@ -488,8 +488,8 @@ bool MessageLite::SerializePartialToArray(void* data, int size) const {
                << " exceeded maximum protobuf size of 2GB: " << byte_size;
     return false;
   }
-  if (size < static_cast<int64>(byte_size)) return false;
-  uint8* start = reinterpret_cast<uint8*>(data);
+  if (size < static_cast<int64_t>(byte_size)) return false;
+  uint8_t* start = reinterpret_cast<uint8_t*>(data);
   SerializeToArrayImpl(*this, start, byte_size);
   return true;
 }

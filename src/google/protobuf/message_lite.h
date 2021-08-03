@@ -158,7 +158,7 @@ class ExplicitlyConstructed {
   // Prefer c++14 aligned_storage, but for compatibility this will do.
   union AlignedUnion {
     alignas(T) char space[sizeof(T)];
-    int64 align_to_int64;
+    int64_t align_to_int64;
     void* align_to_ptr;
   } union_;
 };
@@ -449,7 +449,7 @@ class PROTOBUF_EXPORT MessageLite {
   // must point at a byte array of at least ByteSize() bytes.  Whether to use
   // deterministic serialization, e.g., maps in sorted order, is determined by
   // CodedOutputStream::IsDefaultSerializationDeterministic().
-  uint8* SerializeWithCachedSizesToArray(uint8* target) const;
+  uint8_t* SerializeWithCachedSizesToArray(uint8_t* target) const;
 
   // Returns the result of the last call to ByteSize().  An embedded message's
   // size is needed both to serialize it (because embedded messages are
@@ -507,9 +507,9 @@ class PROTOBUF_EXPORT MessageLite {
   bool ParseFrom(const T& input);
 
   // Fast path when conditions match (ie. non-deterministic)
-  //  uint8* _InternalSerialize(uint8* ptr) const;
-  virtual uint8* _InternalSerialize(uint8* ptr,
-                                    io::EpsCopyOutputStream* stream) const = 0;
+  //  uint8_t* _InternalSerialize(uint8_t* ptr) const;
+  virtual uint8_t* _InternalSerialize(
+      uint8_t* ptr, io::EpsCopyOutputStream* stream) const = 0;
 
   // Identical to IsInitialized() except that it logs an error message.
   bool IsInitializedWithErrors() const {

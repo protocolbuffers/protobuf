@@ -53,19 +53,45 @@ class UnknownFieldSet;
 
 namespace internal {
 
-// PROTOBUF_TC_PARAM_DECL are the parameters for tailcall functions.
+// PROTOBUF_TC_PARAM_DECL are the parameters for tailcall functions, it is
+// defined in port_def.inc.
 //
 // Note that this is performance sensitive: changing the parameters will change
 // the registers used by the ABI calling convention, which subsequently affects
 // register selection logic inside the function.
-#define PROTOBUF_TC_PARAM_DECL                                 \
-  ::google::protobuf::MessageLite *msg, const char *ptr,                 \
-      ::google::protobuf::internal::ParseContext *ctx,                   \
-      const ::google::protobuf::internal::TailCallParseTableBase *table, \
-      uint64_t hasbits, ::google::protobuf::internal::TcFieldData data
 
 // PROTOBUF_TC_PARAM_PASS passes values to match PROTOBUF_TC_PARAM_DECL.
 #define PROTOBUF_TC_PARAM_PASS msg, ptr, ctx, table, hasbits, data
+
+// PROTOBUF_TC_PARSE_* decide which function is used to parse message-typed
+// fields. The guard macros are defined in port_def.inc.
+#if PROTOBUF_TC_STATIC_PARSE_SINGULAR1
+#define PROTOBUF_TC_PARSE_SINGULAR1(MESSAGE) MESSAGE::Tct_ParseS1
+#else
+#define PROTOBUF_TC_PARSE_SINGULAR1(MESSAGE) \
+  ::google::protobuf::internal::TcParserBase::SingularParseMessage<MESSAGE, uint8_t>
+#endif  // PROTOBUF_TC_STATIC_PARSE_SINGULAR1
+
+#if PROTOBUF_TC_STATIC_PARSE_SINGULAR2
+#define PROTOBUF_TC_PARSE_SINGULAR2(MESSAGE) MESSAGE::Tct_ParseS2
+#else
+#define PROTOBUF_TC_PARSE_SINGULAR2(MESSAGE) \
+  ::google::protobuf::internal::TcParserBase::SingularParseMessage<MESSAGE, uint16_t>
+#endif  // PROTOBUF_TC_STATIC_PARSE_SINGULAR2
+
+#if PROTOBUF_TC_STATIC_PARSE_REPEATED1
+#define PROTOBUF_TC_PARSE_REPEATED1(MESSAGE) MESSAGE::Tct_ParseR1
+#else
+#define PROTOBUF_TC_PARSE_REPEATED1(MESSAGE) \
+  ::google::protobuf::internal::TcParserBase::RepeatedParseMessage<MESSAGE, uint8_t>
+#endif  // PROTOBUF_TC_STATIC_PARSE_REPEATED1
+
+#if PROTOBUF_TC_STATIC_PARSE_REPEATED2
+#define PROTOBUF_TC_PARSE_REPEATED2(MESSAGE) MESSAGE::Tct_ParseR2
+#else
+#define PROTOBUF_TC_PARSE_REPEATED2(MESSAGE) \
+  ::google::protobuf::internal::TcParserBase::RepeatedParseMessage<MESSAGE, uint16_t>
+#endif  // PROTOBUF_TC_STATIC_PARSE_REPEATED2
 
 class TcParserBase {
  public:
@@ -75,7 +101,7 @@ class TcParserBase {
   template <typename FieldType, typename TagType>
   PROTOBUF_NOINLINE static const char* SingularParseMessage(
       PROTOBUF_TC_PARAM_DECL) {
-    if (PROTOBUF_PREDICT_FALSE(static_cast<TagType>(data.coded_tag()) != 0)) {
+    if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
       return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
     ptr += sizeof(TagType);
@@ -96,7 +122,7 @@ class TcParserBase {
   template <typename FieldType, typename TagType>
   PROTOBUF_NOINLINE static const char* RepeatedParseMessage(
       PROTOBUF_TC_PARAM_DECL) {
-    if (PROTOBUF_PREDICT_FALSE(static_cast<TagType>(data.coded_tag()) != 0)) {
+    if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
       return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
     ptr += sizeof(TagType);
@@ -123,7 +149,6 @@ class TcParserBase {
   template <typename TagType, Utf8Type utf8>
   static const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
 
- protected:
   template <typename T>
   static T& RefAt(void* x, size_t offset) {
     T* target = reinterpret_cast<T*>(static_cast<char*>(x) + offset);
@@ -141,6 +166,7 @@ class TcParserBase {
     }
   }
 
+ protected:
   static inline PROTOBUF_ALWAYS_INLINE const char* Return(
       PROTOBUF_TC_PARAM_DECL) {
     SyncHasbits(msg, hasbits, table);

@@ -114,6 +114,7 @@ endforeach(proto_file)
 set(common_test_files
   ${protobuf_source_dir}/src/google/protobuf/arena_test_util.cc
   ${protobuf_source_dir}/src/google/protobuf/map_test_util.inc
+  ${protobuf_source_dir}/src/google/protobuf/reflection_tester.cc
   ${protobuf_source_dir}/src/google/protobuf/test_util.cc
   ${protobuf_source_dir}/src/google/protobuf/test_util.inc
   ${protobuf_source_dir}/src/google/protobuf/testing/file.cc
@@ -199,6 +200,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/util/type_resolver_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/well_known_types_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/wire_format_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/wire_format_unittest.inc
 )
 
 set(non_msvc_tests_files

@@ -3770,7 +3770,7 @@ public final class TestUtil {
     } catch (IOException e) {
       throw new RuntimeException("Couldn't get canonical name of working directory.", e);
     }
-    
+
     String srcRootCheck = "src/google/protobuf";
 
     // If we're running w/ Bazel on Windows, we're not in a sandbox, so we
@@ -3779,6 +3779,7 @@ public final class TestUtil {
     if (testBinaryName != null && testBinaryName.endsWith(".exe")) {
       srcRootCheck = srcRootCheck + "/descriptor.cc";
     }
+
     while (ancestor != null && ancestor.exists()) {
       // Identify the true source root.
       if (new File(ancestor, srcRootCheck).exists()) {

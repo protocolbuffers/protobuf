@@ -174,7 +174,7 @@ class PROTOBUF_EXPORT DoubleValue final :
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const DoubleValue& from);
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -313,7 +313,7 @@ class PROTOBUF_EXPORT FloatValue final :
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const FloatValue& from);
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -452,7 +452,7 @@ class PROTOBUF_EXPORT Int64Value final :
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const Int64Value& from);
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -591,7 +591,7 @@ class PROTOBUF_EXPORT UInt64Value final :
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const UInt64Value& from);
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -730,7 +730,7 @@ class PROTOBUF_EXPORT Int32Value final :
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const Int32Value& from);
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -869,7 +869,7 @@ class PROTOBUF_EXPORT UInt32Value final :
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const UInt32Value& from);
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -1008,7 +1008,7 @@ class PROTOBUF_EXPORT BoolValue final :
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const BoolValue& from);
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -1147,7 +1147,7 @@ class PROTOBUF_EXPORT StringValue final :
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const StringValue& from);
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -1291,7 +1291,7 @@ class PROTOBUF_EXPORT BytesValue final :
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const BytesValue& from);
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
