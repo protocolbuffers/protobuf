@@ -162,6 +162,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/io/zero_copy_stream_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/map_field_test.cc
   ${protobuf_source_dir}/src/google/protobuf/map_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/map_test.inc
   ${protobuf_source_dir}/src/google/protobuf/message_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/message_unittest.inc
   ${protobuf_source_dir}/src/google/protobuf/no_field_presence_test.cc

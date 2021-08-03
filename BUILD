@@ -701,6 +701,7 @@ cc_test(
         "src/google/protobuf/io/zero_copy_stream_unittest.cc",
         "src/google/protobuf/map_field_test.cc",
         "src/google/protobuf/map_test.cc",
+        "src/google/protobuf/map_test.inc",
         "src/google/protobuf/message_unittest.cc",
         "src/google/protobuf/message_unittest.inc",
         "src/google/protobuf/no_field_presence_test.cc",
