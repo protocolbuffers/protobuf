@@ -154,6 +154,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/dynamic_message_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/extension_set_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_reflection_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/inlined_string_field_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/io/coded_stream_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/io/io_win32_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/io/printer_unittest.cc
