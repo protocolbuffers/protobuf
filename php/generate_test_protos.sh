@@ -4,15 +4,12 @@ set -e
 
 cd `dirname $0`
 
-./prepare_c_extension.sh
-
 if ../src/protoc --help > /dev/null; then
   PROTOC=src/protoc
 else
   (cd .. && bazel build -c opt :protoc)
   PROTOC=bazel-bin/protoc
 fi
-
 
 if [[ -d tmp && -z $(find tests/proto ../$PROTOC -newer tmp) ]]; then
   # Generated protos are already present and up to date, so we can skip protoc.

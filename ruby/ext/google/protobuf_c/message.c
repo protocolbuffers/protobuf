@@ -35,7 +35,6 @@
 #include "map.h"
 #include "protobuf.h"
 #include "repeated_field.h"
-#include "third_party/wyhash/wyhash.h"
 
 static VALUE cParseError = Qnil;
 static ID descriptor_instancevar_interned;
@@ -717,7 +716,7 @@ uint64_t Message_Hash(const upb_msg* msg, const upb_msgdef* m, uint64_t seed) {
                        &size);
 
   if (data) {
-    uint64_t ret = wyhash(data, size, seed, _wyp);
+    uint64_t ret = Wyhash(data, size, seed, kWyhashSalt);
     upb_arena_free(arena);
     return ret;
   } else {

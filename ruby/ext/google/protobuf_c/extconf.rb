@@ -17,5 +17,4 @@ end
 $objs = ["protobuf.o", "convert.o", "defs.o", "message.o",
          "repeated_field.o", "map.o", "ruby-upb.o", "wrap_memcpy.o"]
 
-find_header('third_party/wyhash/wyhash.h', '../../../..')
 create_makefile("google/protobuf_c")

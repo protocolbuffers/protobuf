@@ -827,7 +827,6 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/wkt.inc                                     \
   php/generate_descriptor_protos.sh                                   \
   php/generate_test_protos.sh                                         \
-  php/prepare_c_extension.sh                                          \
   php/release.sh                                                      \
   php/src/GPBMetadata/Google/Protobuf/Any.php                         \
   php/src/GPBMetadata/Google/Protobuf/Api.php                         \
@@ -1427,8 +1426,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   protobuf_deps.bzl                      \
   third_party/six.BUILD                  \
   third_party/zlib.BUILD                 \
-  third_party/wyhash/LICENSE             \
-  third_party/wyhash/wyhash.h            \
   util/python/BUILD                      \
   internal.bzl
 
