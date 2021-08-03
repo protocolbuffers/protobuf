@@ -545,11 +545,11 @@ inline static bool ShouldIgnoreRequiredFieldCheck(const FieldDescriptor* field,
 }
 
 struct MessageAnalysis {
-  bool is_recursive;
-  bool contains_cord;
-  bool contains_extension;
-  bool contains_required;
-  bool contains_weak;  // Implicit weak as well.
+  bool is_recursive = false;
+  bool contains_cord = false;
+  bool contains_extension = false;
+  bool contains_required = false;
+  bool contains_weak = false;  // Implicit weak as well.
 };
 
 // This class is used in FileGenerator, to ensure linear instead of
