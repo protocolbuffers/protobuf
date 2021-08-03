@@ -1,3 +1,37 @@
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  C++
+  * Better Smaller ByteSizeLong
+  * Introduce event filters for inject_field_listener_events
+  * Reduce memory usage of DescriptorPool
+  * For lazy fields copy serialized form when allowed.
+  * Re-introduce the InlinedStringField class
+  * v2 access listener
+  * Reduce padding in the proto's ExtensionRegistry map.
+  * GetExtension performance optimizations
+  * Make tracker a static variable rather than call static functions
+  * Support extensions in field access listener
+  * Annotate MergeFrom for field access listener
+  * Fix incomplete types for field access listener
+  * Add map_entry/new_map_entry to SpecificField in MessageDifferencer. They
+    record the map items which are different in MessageDifferencer's reporter.
+  * Reduce binary size due to fieldless proto messages
+  * TextFormat: ParseInfoTree supports getting field end location in addition to
+    start.
+  * Fix repeated enum extension size in field listener
+  * Enable Any Text Expansion for Descriptors::DebugString()
+  * Switch from int{8,16,32,64} to int{8,16,32,64}_t
+
+  Java
+  * Optimized FieldDescriptor.valueOf() to avoid array copying.
+  * Removing deprecated TimeUtil class.
+  * Add Durations.parseUnchecked(String) and Timestamps.parseUnchecked(String)
+  * FieldMaskUtil: Add convenience method to mask the fields out of a given proto.
+
+  JavaScript
+  * Optimize binary parsing of repeated float64
+  * Fix for optimization when reading doubles from binary wire format
+  * Replace toArray implementation with toJSON.
+
 2021-06-04 version 3.17.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   C++
   * Introduce FieldAccessListener.
