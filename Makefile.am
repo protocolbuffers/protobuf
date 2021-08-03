@@ -1426,8 +1426,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   protobuf_deps.bzl                      \
   third_party/six.BUILD                  \
   third_party/zlib.BUILD                 \
-  third_party/wyhash/LICENSE             \
-  third_party/wyhash/wyhash.h            \
   util/python/BUILD                      \
   internal.bzl
 
