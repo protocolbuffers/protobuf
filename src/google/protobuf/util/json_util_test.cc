@@ -241,6 +241,25 @@ TEST_F(JsonUtilTest, TestPrintEnumsAsIntsWithDefaultValue) {
   EXPECT_EQ(proto3::BAR, parsed.enum_value3());
 }
 
+TEST_F(JsonUtilTest, TestPrintProto2EnumAsIntWithDefaultValue) {
+  protobuf_unittest::TestDefaultEnumValue orig;
+
+  JsonPrintOptions print_options;
+  // use enum as int
+  print_options.always_print_enums_as_ints = true;
+  print_options.always_print_primitive_fields = true;
+
+  // result should be int rather than string
+  std::string expected_json = "{\"enumValue\":2}";
+  EXPECT_EQ(expected_json, ToJson(orig, print_options));
+
+  protobuf_unittest::TestDefaultEnumValue parsed;
+  JsonParseOptions parse_options;
+  ASSERT_TRUE(FromJson(expected_json, &parsed, parse_options));
+
+  EXPECT_EQ(protobuf_unittest::DEFAULT, parsed.enum_value());
+}
+
 TEST_F(JsonUtilTest, ParseMessage) {
   // Some random message but good enough to verify that the parsing wrapper
   // functions are working properly.
