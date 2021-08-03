@@ -7,24 +7,7 @@ require 'google/protobuf/descriptor_pb'
 module Google
   module Protobuf
     module Internal
-      class AtomicCounter
-        def initialize
-          @n = 0
-          @mu = Mutex.new
-        end
-
-        def get_and_increment
-          n = @n
-          @mu.synchronize {
-            @n += 1
-          }
-          return n
-        end
-      end
-
       class Builder
-        @@file_number = AtomicCounter.new
-
         def initialize(pool)
           @pool = pool
           @default_file = nil  # Constructed lazily
@@ -59,9 +42,7 @@ module Google
         end
 
         private def internal_default_file
-          number = @@file_number.get_and_increment
-          filename = "ruby_default_file#{number}.proto"
-          @default_file ||= FileBuilder.new(@pool, filename)
+          @default_file ||= FileBuilder.new(@pool, "ruby_default_file.proto")
         end
       end
 
