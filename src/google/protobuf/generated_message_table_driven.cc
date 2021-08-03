@@ -45,7 +45,7 @@ namespace internal {
 
 namespace {
 
-UnknownFieldSet* MutableUnknownFields(MessageLite* msg, int64 arena_offset) {
+UnknownFieldSet* MutableUnknownFields(MessageLite* msg, int64_t arena_offset) {
   return Raw<InternalMetadata>(msg, arena_offset)
       ->mutable_unknown_fields<UnknownFieldSet>();
 }

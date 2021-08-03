@@ -90,6 +90,8 @@ namespace cpp {
 namespace cpp_unittest {
 
 
+void DoNothing() {}
+
 class MockErrorCollector : public MultiFileErrorCollector {
  public:
   MockErrorCollector() {}

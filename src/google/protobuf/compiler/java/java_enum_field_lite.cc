@@ -569,9 +569,14 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
   printer->Print(
       variables_,
+      // NB: Do not use the "$name$_converter_" field; the usage of generics
+      // (and requisite upcasts to Object) prevent optimizations.  Even
+      // without any optimizations, the below code is cheaper because it
+      // avoids boxing an int and a checkcast from the generics.
       "@java.lang.Override\n"
       "$deprecation$public $type$ ${$get$capitalized_name$$}$(int index) {\n"
-      "  return $name$_converter_.convert($name$_.getInt(index));\n"
+      "  $type$ result = $type$.forNumber($name$_.getInt(index));\n"
+      "  return result == null ? $unknown$ : result;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
   if (SupportUnknownEnumValue(descriptor_->file())) {

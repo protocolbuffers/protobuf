@@ -48,26 +48,27 @@ const std::string kDescriptorMetadataFile =
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {
-    "abstract",   "and",        "array",        "as",           "break",
-    "callable",   "case",       "catch",        "class",        "clone",
-    "const",      "continue",   "declare",      "default",      "die",
-    "do",         "echo",       "else",         "elseif",       "empty",
-    "enddeclare", "endfor",     "endforeach",   "endif",        "endswitch",
-    "endwhile",   "eval",       "exit",         "extends",      "final",
-    "for",        "foreach",    "function",     "global",       "goto",
-    "if",         "implements", "include",      "include_once", "instanceof",
-    "insteadof",  "interface",  "isset",        "list",         "namespace",
-    "new",        "or",         "print",        "private",      "protected",
-    "public",     "require",    "require_once", "return",       "static",
-    "switch",     "throw",      "trait",        "try",          "unset",
-    "use",        "var",        "while",        "xor",          "int",
-    "float",      "bool",       "string",       "true",         "false",
-    "null",       "void",       "iterable"};
+    "abstract",     "and",        "array",      "as",         "break",
+    "callable",     "case",       "catch",      "class",      "clone",
+    "const",        "continue",   "declare",    "default",    "die",
+    "do",           "echo",       "else",       "elseif",     "empty",
+    "enddeclare",   "endfor",     "endforeach", "endif",      "endswitch",
+    "endwhile",     "eval",       "exit",       "extends",    "final",
+    "finally",      "fn",         "for",        "foreach",    "function",
+    "global",       "goto",       "if",         "implements", "include",
+    "include_once", "instanceof", "insteadof",  "interface",  "isset",
+    "list",         "match",      "namespace",  "new",        "or",
+    "print",        "private",    "protected",  "public",     "require",
+    "require_once", "return",     "static",     "switch",     "throw",
+    "trait",        "try",        "unset",      "use",        "var",
+    "while",        "xor",        "yield",      "int",        "float",
+    "bool",         "string",     "true",       "false",      "null",
+    "void",         "iterable"};
 const char* const kValidConstantNames[] = {
     "int",   "float", "bool", "string",   "true",
     "false", "null",  "void", "iterable",
 };
-const int kReservedNamesSize = 73;
+const int kReservedNamesSize = 77;
 const int kValidConstantNamesSize = 9;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
@@ -648,32 +649,21 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   std::string deprecation_trigger = (field->options().deprecated()) ? "@trigger_error('" +
       field->name() + " is deprecated.', E_USER_DEPRECATED);\n        " : "";
 
+  // Emit getter.
   if (oneof != NULL) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
         "    ^deprecation_trigger^return $this->readOneof(^number^);\n"
-        "}\n\n"
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    ^deprecation_trigger^return $this->hasOneof(^number^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "number", IntToString(field->number()),
         "deprecation_trigger", deprecation_trigger);
-  } else if (field->has_presence()) {
+  } else if (field->has_presence() && !field->message_type()) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
         "    ^deprecation_trigger^return isset($this->^name^) ? $this->^name^ : ^default_value^;\n"
-        "}\n\n"
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    ^deprecation_trigger^return isset($this->^name^);\n"
-        "}\n\n"
-        "public function clear^camel_name^()\n"
-        "{\n"
-        "    ^deprecation_trigger^unset($this->^name^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
@@ -687,6 +677,32 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
+        "deprecation_trigger", deprecation_trigger);
+  }
+
+  // Emit hazzers/clear.
+  if (oneof) {
+    printer->Print(
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^return $this->hasOneof(^number^);\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "number", IntToString(field->number()),
+        "deprecation_trigger", deprecation_trigger);
+  } else if (field->has_presence()) {
+    printer->Print(
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^return isset($this->^name^);\n"
+        "}\n\n"
+        "public function clear^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^unset($this->^name^);\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "name", field->name(),
+        "default_value", DefaultForField(field),
         "deprecation_trigger", deprecation_trigger);
   }
 

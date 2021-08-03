@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_TYPE_HANDLER_H__
-#define GOOGLE_PROTOBUF_TYPE_HANDLER_H__
+#ifndef GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__
+#define GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__
 
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -100,19 +100,19 @@ class MapWireFieldTypeTraits {};
 TYPE_TRAITS(MESSAGE, Type, LENGTH_DELIMITED, true, false)
 TYPE_TRAITS(STRING, ArenaStringPtr, LENGTH_DELIMITED, false, false)
 TYPE_TRAITS(BYTES, ArenaStringPtr, LENGTH_DELIMITED, false, false)
-TYPE_TRAITS(INT64, int64, VARINT, false, false)
-TYPE_TRAITS(UINT64, uint64, VARINT, false, false)
-TYPE_TRAITS(INT32, int32, VARINT, false, false)
-TYPE_TRAITS(UINT32, uint32, VARINT, false, false)
-TYPE_TRAITS(SINT64, int64, VARINT, false, false)
-TYPE_TRAITS(SINT32, int32, VARINT, false, false)
+TYPE_TRAITS(INT64, int64_t, VARINT, false, false)
+TYPE_TRAITS(UINT64, uint64_t, VARINT, false, false)
+TYPE_TRAITS(INT32, int32_t, VARINT, false, false)
+TYPE_TRAITS(UINT32, uint32_t, VARINT, false, false)
+TYPE_TRAITS(SINT64, int64_t, VARINT, false, false)
+TYPE_TRAITS(SINT32, int32_t, VARINT, false, false)
 TYPE_TRAITS(ENUM, int, VARINT, false, true)
 TYPE_TRAITS(DOUBLE, double, FIXED64, false, false)
 TYPE_TRAITS(FLOAT, float, FIXED32, false, false)
-TYPE_TRAITS(FIXED64, uint64, FIXED64, false, false)
-TYPE_TRAITS(FIXED32, uint32, FIXED32, false, false)
-TYPE_TRAITS(SFIXED64, int64, FIXED64, false, false)
-TYPE_TRAITS(SFIXED32, int32, FIXED32, false, false)
+TYPE_TRAITS(FIXED64, uint64_t, FIXED64, false, false)
+TYPE_TRAITS(FIXED32, uint32_t, FIXED32, false, false)
+TYPE_TRAITS(SFIXED64, int64_t, FIXED64, false, false)
+TYPE_TRAITS(SFIXED32, int32_t, FIXED32, false, false)
 TYPE_TRAITS(BOOL, bool, VARINT, false, false)
 
 #undef TYPE_TRAITS
@@ -149,8 +149,8 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
   static inline const char* Read(const char* ptr, ParseContext* ctx,
                                  MapEntryAccessorType* value);
 
-  static inline uint8* Write(int field, const MapEntryAccessorType& value,
-                             uint8* ptr, io::EpsCopyOutputStream* stream);
+  static inline uint8_t* Write(int field, const MapEntryAccessorType& value,
+                               uint8_t* ptr, io::EpsCopyOutputStream* stream);
 
   // Functions to manipulate data on memory. ========================
   static inline const Type& GetExternalReference(const Type* value);
@@ -170,46 +170,47 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
   static inline bool IsInitialized(Type* value);
 };
 
-#define MAP_HANDLER(FieldType)                                                \
-  template <typename Type>                                                    \
-  class MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type> {              \
-   public:                                                                    \
-    typedef typename MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType, \
-                                            Type>::MapEntryAccessorType       \
-        MapEntryAccessorType;                                                 \
-    typedef typename MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType, \
-                                            Type>::TypeOnMemory TypeOnMemory; \
-    static const WireFormatLite::WireType kWireType =                         \
-        MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,              \
-                               Type>::kWireType;                              \
-    static const bool kIsMessage =                                            \
-        MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,              \
-                               Type>::kIsMessage;                             \
-    static const bool kIsEnum =                                               \
-        MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,              \
-                               Type>::kIsEnum;                                \
-    static inline int ByteSize(const MapEntryAccessorType& value);            \
-    static inline int GetCachedSize(const MapEntryAccessorType& value);       \
-    static inline bool Read(io::CodedInputStream* input,                      \
-                            MapEntryAccessorType* value);                     \
-    static inline const char* Read(const char* begin, ParseContext* ctx,      \
-                                   MapEntryAccessorType* value);              \
-    static inline uint8* Write(int field, const MapEntryAccessorType& value,  \
-                               uint8* ptr, io::EpsCopyOutputStream* stream);  \
-    static inline const MapEntryAccessorType& GetExternalReference(           \
-        const TypeOnMemory& value);                                           \
-    static inline void DeleteNoArena(const TypeOnMemory& x);                  \
-    static inline void Merge(const MapEntryAccessorType& from,                \
-                             TypeOnMemory* to, Arena* arena);                 \
-    static inline void Clear(TypeOnMemory* value, Arena* arena);              \
-    static inline size_t SpaceUsedInMapEntryLong(const TypeOnMemory& value);  \
-    static inline const MapEntryAccessorType& DefaultIfNotInitialized(        \
-        const TypeOnMemory& value);                                           \
-    static inline bool IsInitialized(const TypeOnMemory& value);              \
-    static void DeleteNoArena(TypeOnMemory& value);                           \
-    static constexpr TypeOnMemory Constinit();                                \
-    static inline MapEntryAccessorType* EnsureMutable(TypeOnMemory* value,    \
-                                                      Arena* arena);          \
+#define MAP_HANDLER(FieldType)                                                 \
+  template <typename Type>                                                     \
+  class MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type> {               \
+   public:                                                                     \
+    typedef typename MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,  \
+                                            Type>::MapEntryAccessorType        \
+        MapEntryAccessorType;                                                  \
+    typedef typename MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,  \
+                                            Type>::TypeOnMemory TypeOnMemory;  \
+    static const WireFormatLite::WireType kWireType =                          \
+        MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,               \
+                               Type>::kWireType;                               \
+    static const bool kIsMessage =                                             \
+        MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,               \
+                               Type>::kIsMessage;                              \
+    static const bool kIsEnum =                                                \
+        MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,               \
+                               Type>::kIsEnum;                                 \
+    static inline int ByteSize(const MapEntryAccessorType& value);             \
+    static inline int GetCachedSize(const MapEntryAccessorType& value);        \
+    static inline bool Read(io::CodedInputStream* input,                       \
+                            MapEntryAccessorType* value);                      \
+    static inline const char* Read(const char* begin, ParseContext* ctx,       \
+                                   MapEntryAccessorType* value);               \
+    static inline uint8_t* Write(int field, const MapEntryAccessorType& value, \
+                                 uint8_t* ptr,                                 \
+                                 io::EpsCopyOutputStream* stream);             \
+    static inline const MapEntryAccessorType& GetExternalReference(            \
+        const TypeOnMemory& value);                                            \
+    static inline void DeleteNoArena(const TypeOnMemory& x);                   \
+    static inline void Merge(const MapEntryAccessorType& from,                 \
+                             TypeOnMemory* to, Arena* arena);                  \
+    static inline void Clear(TypeOnMemory* value, Arena* arena);               \
+    static inline size_t SpaceUsedInMapEntryLong(const TypeOnMemory& value);   \
+    static inline const MapEntryAccessorType& DefaultIfNotInitialized(         \
+        const TypeOnMemory& value);                                            \
+    static inline bool IsInitialized(const TypeOnMemory& value);               \
+    static void DeleteNoArena(TypeOnMemory& value);                            \
+    static constexpr TypeOnMemory Constinit();                                 \
+    static inline MapEntryAccessorType* EnsureMutable(TypeOnMemory* value,     \
+                                                      Arena* arena);           \
   };
 MAP_HANDLER(STRING)
 MAP_HANDLER(BYTES)
@@ -317,33 +318,35 @@ GET_FIXED_CACHED_SIZE(BOOL, Bool)
 #undef GET_FIXED_CACHED_SIZE
 
 template <typename Type>
-inline uint8* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Write(
-    int field, const MapEntryAccessorType& value, uint8* ptr,
+inline uint8_t* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Write(
+    int field, const MapEntryAccessorType& value, uint8_t* ptr,
     io::EpsCopyOutputStream* stream) {
   ptr = stream->EnsureSpace(ptr);
   return WireFormatLite::InternalWriteMessage(field, value, ptr, stream);
 }
 
-#define WRITE_METHOD(FieldType, DeclaredType)                                  \
-  template <typename Type>                                                     \
-  inline uint8* MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Write( \
-      int field, const MapEntryAccessorType& value, uint8* ptr,                \
-      io::EpsCopyOutputStream* stream) {                                       \
-    ptr = stream->EnsureSpace(ptr);                                            \
-    return stream->Write##DeclaredType(field, value, ptr);                     \
+#define WRITE_METHOD(FieldType, DeclaredType)                     \
+  template <typename Type>                                        \
+  inline uint8_t*                                                 \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Write(  \
+      int field, const MapEntryAccessorType& value, uint8_t* ptr, \
+      io::EpsCopyOutputStream* stream) {                          \
+    ptr = stream->EnsureSpace(ptr);                               \
+    return stream->Write##DeclaredType(field, value, ptr);        \
   }
 
 WRITE_METHOD(STRING, String)
 WRITE_METHOD(BYTES, Bytes)
 
 #undef WRITE_METHOD
-#define WRITE_METHOD(FieldType, DeclaredType)                                  \
-  template <typename Type>                                                     \
-  inline uint8* MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Write( \
-      int field, const MapEntryAccessorType& value, uint8* ptr,                \
-      io::EpsCopyOutputStream* stream) {                                       \
-    ptr = stream->EnsureSpace(ptr);                                            \
-    return WireFormatLite::Write##DeclaredType##ToArray(field, value, ptr);    \
+#define WRITE_METHOD(FieldType, DeclaredType)                               \
+  template <typename Type>                                                  \
+  inline uint8_t*                                                           \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Write(            \
+      int field, const MapEntryAccessorType& value, uint8_t* ptr,           \
+      io::EpsCopyOutputStream* stream) {                                    \
+    ptr = stream->EnsureSpace(ptr);                                         \
+    return WireFormatLite::Write##DeclaredType##ToArray(field, value, ptr); \
   }
 
 WRITE_METHOD(INT64, Int64)
@@ -403,23 +406,23 @@ const char* MapTypeHandler<WireFormatLite::TYPE_BYTES, Type>::Read(
   return ctx->ReadString(ptr, size, value);
 }
 
-inline const char* ReadINT64(const char* ptr, int64* value) {
-  return VarintParse(ptr, reinterpret_cast<uint64*>(value));
+inline const char* ReadINT64(const char* ptr, int64_t* value) {
+  return VarintParse(ptr, reinterpret_cast<uint64_t*>(value));
 }
-inline const char* ReadUINT64(const char* ptr, uint64* value) {
+inline const char* ReadUINT64(const char* ptr, uint64_t* value) {
   return VarintParse(ptr, value);
 }
-inline const char* ReadINT32(const char* ptr, int32* value) {
-  return VarintParse(ptr, reinterpret_cast<uint32*>(value));
+inline const char* ReadINT32(const char* ptr, int32_t* value) {
+  return VarintParse(ptr, reinterpret_cast<uint32_t*>(value));
 }
-inline const char* ReadUINT32(const char* ptr, uint32* value) {
+inline const char* ReadUINT32(const char* ptr, uint32_t* value) {
   return VarintParse(ptr, value);
 }
-inline const char* ReadSINT64(const char* ptr, int64* value) {
+inline const char* ReadSINT64(const char* ptr, int64_t* value) {
   *value = ReadVarintZigZag64(&ptr);
   return ptr;
 }
-inline const char* ReadSINT32(const char* ptr, int32* value) {
+inline const char* ReadSINT32(const char* ptr, int32_t* value) {
   *value = ReadVarintZigZag32(&ptr);
   return ptr;
 }
@@ -444,16 +447,16 @@ inline const char* ReadFLOAT(const char* ptr, float* value) {
 inline const char* ReadDOUBLE(const char* ptr, double* value) {
   return ReadUnaligned(ptr, value);
 }
-inline const char* ReadFIXED64(const char* ptr, uint64* value) {
+inline const char* ReadFIXED64(const char* ptr, uint64_t* value) {
   return ReadUnaligned(ptr, value);
 }
-inline const char* ReadFIXED32(const char* ptr, uint32* value) {
+inline const char* ReadFIXED32(const char* ptr, uint32_t* value) {
   return ReadUnaligned(ptr, value);
 }
-inline const char* ReadSFIXED64(const char* ptr, int64* value) {
+inline const char* ReadSFIXED64(const char* ptr, int64_t* value) {
   return ReadUnaligned(ptr, value);
 }
-inline const char* ReadSFIXED32(const char* ptr, int32* value) {
+inline const char* ReadSFIXED32(const char* ptr, int32_t* value) {
   return ReadUnaligned(ptr, value);
 }
 
@@ -685,4 +688,4 @@ PRIMITIVE_HANDLER_FUNCTIONS(BOOL)
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_TYPE_HANDLER_H__
+#endif  // GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__

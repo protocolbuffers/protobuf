@@ -54,6 +54,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_tab
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_util.h" include\google\protobuf\generated_message_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\has_bits.h" include\google\protobuf\has_bits.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\implicit_weak_message.h" include\google\protobuf\implicit_weak_message.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\inlined_string_field.h" include\google\protobuf\inlined_string_field.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\coded_stream.h" include\google\protobuf\io\coded_stream.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\gzip_stream.h" include\google\protobuf\io\gzip_stream.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\io_win32.h" include\google\protobuf\io\io_win32.h
@@ -83,6 +84,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\reflection_ops.h" inc
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\repeated_field.h" include\google\protobuf\repeated_field.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\service.h" include\google\protobuf\service.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\source_context.pb.h" include\google\protobuf\source_context.pb.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\string_member_robber.h" include\google\protobuf\string_member_robber.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\struct.pb.h" include\google\protobuf\struct.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\bytestream.h" include\google\protobuf\stubs\bytestream.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\callback.h" include\google\protobuf\stubs\callback.h

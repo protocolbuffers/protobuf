@@ -169,13 +169,13 @@ TEST(ArenaTest, DestructorSkippable) {
 
 TEST(ArenaTest, BasicCreate) {
   Arena arena;
-  EXPECT_TRUE(Arena::Create<int32>(&arena) != NULL);
-  EXPECT_TRUE(Arena::Create<int64>(&arena) != NULL);
+  EXPECT_TRUE(Arena::Create<int32_t>(&arena) != NULL);
+  EXPECT_TRUE(Arena::Create<int64_t>(&arena) != NULL);
   EXPECT_TRUE(Arena::Create<float>(&arena) != NULL);
   EXPECT_TRUE(Arena::Create<double>(&arena) != NULL);
   EXPECT_TRUE(Arena::Create<std::string>(&arena) != NULL);
-  arena.Own(new int32);
-  arena.Own(new int64);
+  arena.Own(new int32_t);
+  arena.Own(new int64_t);
   arena.Own(new float);
   arena.Own(new double);
   arena.Own(new std::string);
@@ -622,7 +622,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenas) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
+#ifdef PROTOBUF_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(arena1_message->set_allocated_optional_nested_message(
                            arena2_submessage),
                        "submessage_arena");
@@ -635,7 +635,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenas) {
       Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena1);
   arena1_submessage->set_bb(42);
   TestAllTypes* heap_message = new TestAllTypes;
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
+#ifdef PROTOBUF_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(
       heap_message->set_allocated_optional_nested_message(arena1_submessage),
       "submessage_arena");
@@ -691,7 +691,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
+#ifdef PROTOBUF_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(
         r->SetAllocatedMessage(arena1_message, arena2_submessage, msg_field),
         "GetOwningArena");
@@ -704,7 +704,7 @@ TEST(ArenaTest, SetAllocatedAcrossArenasWithReflection) {
       Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena1);
   arena1_submessage->set_bb(42);
   TestAllTypes* heap_message = new TestAllTypes;
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
+#ifdef PROTOBUF_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(
       r->SetAllocatedMessage(heap_message, arena1_submessage, msg_field),
       "GetOwningArena");
@@ -803,7 +803,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedField) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
+#ifdef PROTOBUF_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(
         arena1_message->mutable_repeated_nested_message()->AddAllocated(
             arena2_submessage),
@@ -820,7 +820,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedField) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
+#ifdef PROTOBUF_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(
         heap_message->mutable_repeated_nested_message()->AddAllocated(
             arena2_submessage),
@@ -925,7 +925,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedFieldViaReflection) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
+#ifdef PROTOBUF_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(
         r->AddAllocatedMessage(arena1_message, fd, arena2_submessage),
         "value_arena");
@@ -941,7 +941,7 @@ TEST(ArenaTest, AddAllocatedToRepeatedFieldViaReflection) {
     TestAllTypes::NestedMessage* arena2_submessage =
         Arena::CreateMessage<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
+#ifdef PROTOBUF_HAS_DEATH_TEST
     EXPECT_DEBUG_DEATH(
         r->AddAllocatedMessage(heap_message, fd, arena2_submessage),
         "value_arena");
@@ -1339,7 +1339,7 @@ TEST(ArenaTest, RepeatedFieldWithNonPODType) {
 }
 
 // Align n to next multiple of 8
-uint64 Align8(uint64 n) { return (n + 7) & -8; }
+uint64_t Align8(uint64_t n) { return (n + 7) & -8; }
 
 TEST(ArenaTest, SpaceAllocated_and_Used) {
   Arena arena_1;
@@ -1402,11 +1402,11 @@ TEST(ArenaTest, BlockSizeSmallerThanAllocation) {
     opt.start_block_size = opt.max_block_size = i;
     Arena arena(opt);
 
-    *Arena::Create<int64>(&arena) = 42;
+    *Arena::Create<int64_t>(&arena) = 42;
     EXPECT_GE(arena.SpaceAllocated(), 8);
     EXPECT_EQ(8, arena.SpaceUsed());
 
-    *Arena::Create<int64>(&arena) = 42;
+    *Arena::Create<int64_t>(&arena) = 42;
     EXPECT_GE(arena.SpaceAllocated(), 16);
     EXPECT_EQ(16, arena.SpaceUsed());
   }
@@ -1464,10 +1464,10 @@ TEST(ArenaTest, AddCleanup) {
 }
 
 namespace {
-uint32 hooks_num_init = 0;
-uint32 hooks_num_allocations = 0;
-uint32 hooks_num_reset = 0;
-uint32 hooks_num_destruct = 0;
+uint32_t hooks_num_init = 0;
+uint32_t hooks_num_allocations = 0;
+uint32_t hooks_num_reset = 0;
+uint32_t hooks_num_destruct = 0;
 
 void ClearHookCounts() {
   hooks_num_init = 0;
@@ -1502,13 +1502,13 @@ class ArenaOptionsTestFriend final : public internal::ArenaMetricsCollector {
       : ArenaMetricsCollector(record_allocs) {
     ++hooks_num_init;
   }
-  void OnDestroy(uint64 space_allocated) override {
+  void OnDestroy(uint64_t space_allocated) override {
     ++hooks_num_destruct;
     delete this;
   }
-  void OnReset(uint64 space_allocated) override { ++hooks_num_reset; }
+  void OnReset(uint64_t space_allocated) override { ++hooks_num_reset; }
   void OnAlloc(const std::type_info* allocated_type,
-               uint64 alloc_size) override {
+               uint64_t alloc_size) override {
     ++hooks_num_allocations;
   }
 };
@@ -1523,8 +1523,8 @@ TEST(ArenaTest, ArenaHooksSanity) {
     Arena arena(options);
     EXPECT_EQ(1, hooks_num_init);
     EXPECT_EQ(0, hooks_num_allocations);
-    Arena::Create<uint64>(&arena);
-    if (std::is_trivially_destructible<uint64>::value) {
+    Arena::Create<uint64_t>(&arena);
+    if (std::is_trivially_destructible<uint64_t>::value) {
       EXPECT_EQ(1, hooks_num_allocations);
     } else {
       EXPECT_EQ(2, hooks_num_allocations);
@@ -1544,7 +1544,7 @@ TEST(ArenaTest, ArenaHooksWhenAllocationsNotNeeded) {
 
   Arena arena(options);
   EXPECT_EQ(0, hooks_num_allocations);
-  Arena::Create<uint64>(&arena);
+  Arena::Create<uint64_t>(&arena);
   EXPECT_EQ(0, hooks_num_allocations);
 }
 

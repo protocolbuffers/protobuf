@@ -860,8 +860,8 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
 // are given is text that the tokenizer actually parsed as a token
 // of the given type.
 
-bool Tokenizer::ParseInteger(const std::string& text, uint64 max_value,
-                             uint64* output) {
+bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
+                             uint64_t* output) {
   // Sadly, we can't just use strtoul() since it is only 32-bit and strtoull()
   // is non-standard.  I hate the C standard library.  :(
 
@@ -880,7 +880,7 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64 max_value,
     }
   }
 
-  uint64 result = 0;
+  uint64_t result = 0;
   for (; *ptr != '\0'; ptr++) {
     int digit = DigitValue(*ptr);
     if (digit < 0 || digit >= base) {
@@ -888,7 +888,7 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64 max_value,
       // token, but Tokenizer still think it's integer.
       return false;
     }
-    if (static_cast<uint64>(digit) > max_value ||
+    if (static_cast<uint64_t>(digit) > max_value ||
         result > (max_value - digit) / base) {
       // Overflow.
       return false;
@@ -929,8 +929,8 @@ double Tokenizer::ParseFloat(const std::string& text) {
 
 // Helper to append a Unicode code point to a string as UTF8, without bringing
 // in any external dependencies.
-static void AppendUTF8(uint32 code_point, std::string* output) {
-  uint32 tmp = 0;
+static void AppendUTF8(uint32_t code_point, std::string* output) {
+  uint32_t tmp = 0;
   int len = 0;
   if (code_point <= 0x7f) {
     tmp = code_point;
@@ -960,7 +960,7 @@ static void AppendUTF8(uint32 code_point, std::string* output) {
 
 // Try to read <len> hex digits from ptr, and stuff the numeric result into
 // *result. Returns true if that many digits were successfully consumed.
-static bool ReadHexDigits(const char* ptr, int len, uint32* result) {
+static bool ReadHexDigits(const char* ptr, int len, uint32_t* result) {
   *result = 0;
   if (len == 0) return false;
   for (const char* end = ptr + len; ptr < end; ++ptr) {
@@ -975,22 +975,22 @@ static bool ReadHexDigits(const char* ptr, int len, uint32* result) {
 // surrogate. These numbers are in a reserved range of Unicode code points, so
 // if we encounter such a pair we know how to parse it and convert it into a
 // single code point.
-static const uint32 kMinHeadSurrogate = 0xd800;
-static const uint32 kMaxHeadSurrogate = 0xdc00;
-static const uint32 kMinTrailSurrogate = 0xdc00;
-static const uint32 kMaxTrailSurrogate = 0xe000;
+static const uint32_t kMinHeadSurrogate = 0xd800;
+static const uint32_t kMaxHeadSurrogate = 0xdc00;
+static const uint32_t kMinTrailSurrogate = 0xdc00;
+static const uint32_t kMaxTrailSurrogate = 0xe000;
 
-static inline bool IsHeadSurrogate(uint32 code_point) {
+static inline bool IsHeadSurrogate(uint32_t code_point) {
   return (code_point >= kMinHeadSurrogate) && (code_point < kMaxHeadSurrogate);
 }
 
-static inline bool IsTrailSurrogate(uint32 code_point) {
+static inline bool IsTrailSurrogate(uint32_t code_point) {
   return (code_point >= kMinTrailSurrogate) &&
          (code_point < kMaxTrailSurrogate);
 }
 
 // Combine a head and trail surrogate into a single Unicode code point.
-static uint32 AssembleUTF16(uint32 head_surrogate, uint32 trail_surrogate) {
+static uint32_t AssembleUTF16(uint32_t head_surrogate, uint32_t trail_surrogate) {
   GOOGLE_DCHECK(IsHeadSurrogate(head_surrogate));
   GOOGLE_DCHECK(IsTrailSurrogate(trail_surrogate));
   return 0x10000 + (((head_surrogate - kMinHeadSurrogate) << 10) |
@@ -1008,7 +1008,7 @@ static inline int UnicodeLength(char key) {
 // to parse that sequence. On success, returns a pointer to the first char
 // beyond that sequence, and fills in *code_point. On failure, returns ptr
 // itself.
-static const char* FetchUnicodePoint(const char* ptr, uint32* code_point) {
+static const char* FetchUnicodePoint(const char* ptr, uint32_t* code_point) {
   const char* p = ptr;
   // Fetch the code point.
   const int len = UnicodeLength(*p++);
@@ -1020,7 +1020,7 @@ static const char* FetchUnicodePoint(const char* ptr, uint32* code_point) {
   // "trail surrogate," and together they form a UTF-16 pair which decodes into
   // a single Unicode point. Trail surrogates may only use \u, not \U.
   if (IsHeadSurrogate(*code_point) && *p == '\\' && *(p + 1) == 'u') {
-    uint32 trail_surrogate;
+    uint32_t trail_surrogate;
     if (ReadHexDigits(p + 2, 4, &trail_surrogate) &&
         IsTrailSurrogate(trail_surrogate)) {
       *code_point = AssembleUTF16(*code_point, trail_surrogate);
@@ -1092,7 +1092,7 @@ void Tokenizer::ParseStringAppend(const std::string& text,
         output->push_back(static_cast<char>(code));
 
       } else if (*ptr == 'u' || *ptr == 'U') {
-        uint32 unicode;
+        uint32_t unicode;
         const char* end = FetchUnicodePoint(ptr, &unicode);
         if (end == ptr) {
           // Failure: Just dump out what we saw, don't try to parse it.

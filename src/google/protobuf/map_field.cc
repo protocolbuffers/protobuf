@@ -236,15 +236,15 @@ void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
     map_val->SetValue(value);                                \
     break;                                                   \
   }
-    HANDLE_TYPE(INT32, int32);
-    HANDLE_TYPE(INT64, int64);
-    HANDLE_TYPE(UINT32, uint32);
-    HANDLE_TYPE(UINT64, uint64);
+    HANDLE_TYPE(INT32, int32_t);
+    HANDLE_TYPE(INT64, int64_t);
+    HANDLE_TYPE(UINT32, uint32_t);
+    HANDLE_TYPE(UINT64, uint64_t);
     HANDLE_TYPE(DOUBLE, double);
     HANDLE_TYPE(FLOAT, float);
     HANDLE_TYPE(BOOL, bool);
     HANDLE_TYPE(STRING, std::string);
-    HANDLE_TYPE(ENUM, int32);
+    HANDLE_TYPE(ENUM, int32_t);
 #undef HANDLE_TYPE
     case FieldDescriptor::CPPTYPE_MESSAGE: {
       const Message& message =
@@ -543,15 +543,15 @@ void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
     map_val.SetValue(value);                                 \
     break;                                                   \
   }
-      HANDLE_TYPE(INT32, int32, Int32);
-      HANDLE_TYPE(INT64, int64, Int64);
-      HANDLE_TYPE(UINT32, uint32, UInt32);
-      HANDLE_TYPE(UINT64, uint64, UInt64);
+      HANDLE_TYPE(INT32, int32_t, Int32);
+      HANDLE_TYPE(INT64, int64_t, Int64);
+      HANDLE_TYPE(UINT32, uint32_t, UInt32);
+      HANDLE_TYPE(UINT64, uint64_t, UInt64);
       HANDLE_TYPE(DOUBLE, double, Double);
       HANDLE_TYPE(FLOAT, float, Float);
       HANDLE_TYPE(BOOL, bool, Bool);
       HANDLE_TYPE(STRING, std::string, String);
-      HANDLE_TYPE(ENUM, int32, EnumValue);
+      HANDLE_TYPE(ENUM, int32_t, EnumValue);
 #undef HANDLE_TYPE
       case FieldDescriptor::CPPTYPE_MESSAGE: {
         const Message& message = reflection->GetMessage(*it, val_des);
@@ -586,15 +586,15 @@ size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
     size += sizeof(TYPE) * map_size;         \
     break;                                   \
   }
-      HANDLE_TYPE(INT32, int32);
-      HANDLE_TYPE(INT64, int64);
-      HANDLE_TYPE(UINT32, uint32);
-      HANDLE_TYPE(UINT64, uint64);
+      HANDLE_TYPE(INT32, int32_t);
+      HANDLE_TYPE(INT64, int64_t);
+      HANDLE_TYPE(UINT32, uint32_t);
+      HANDLE_TYPE(UINT64, uint64_t);
       HANDLE_TYPE(DOUBLE, double);
       HANDLE_TYPE(FLOAT, float);
       HANDLE_TYPE(BOOL, bool);
       HANDLE_TYPE(STRING, std::string);
-      HANDLE_TYPE(ENUM, int32);
+      HANDLE_TYPE(ENUM, int32_t);
 #undef HANDLE_TYPE
       case FieldDescriptor::CPPTYPE_MESSAGE: {
         while (it != map_.end()) {

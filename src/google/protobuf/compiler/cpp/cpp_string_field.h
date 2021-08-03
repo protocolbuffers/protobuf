@@ -66,8 +66,10 @@ class StringFieldGenerator : public FieldGenerator {
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
   void GenerateByteSize(io::Printer* printer) const;
   void GenerateConstinitInitializer(io::Printer* printer) const;
+  bool IsInlined() const override { return inlined_; }
 
  private:
+  bool inlined_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringFieldGenerator);
 };
 

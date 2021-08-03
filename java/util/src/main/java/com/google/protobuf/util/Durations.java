@@ -43,6 +43,7 @@ import static com.google.protobuf.util.Timestamps.NANOS_PER_MILLISECOND;
 import static com.google.protobuf.util.Timestamps.NANOS_PER_SECOND;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.CompileTimeConstant;
 import com.google.protobuf.Duration;
 import java.io.Serializable;
 import java.text.ParseException;
@@ -272,6 +273,25 @@ public final class Durations {
       return normalizedDuration(seconds, nanos);
     } catch (IllegalArgumentException e) {
       throw new ParseException("Duration value is out of range.", 0);
+    }
+  }
+
+  /**
+   * Parses a string in RFC 3339 format into a {@link Duration}.
+   *
+   * <p>Identical to {@link #parse(String)}, but throws an {@link IllegalArgumentException} instead
+   * of a {@link ParseException} if parsing fails.
+   *
+   * @return a {@link Duration} parsed from the string
+   * @throws IllegalArgumentException if parsing fails
+   */
+  public static Duration parseUnchecked(@CompileTimeConstant String value) {
+    try {
+      return parse(value);
+    } catch (ParseException e) {
+      // While `java.time.format.DateTimeParseException` is a more accurate representation of the
+      // failure, this library is currently not JDK8 ready because of Android dependencies.
+      throw new IllegalArgumentException(e);
     }
   }
 

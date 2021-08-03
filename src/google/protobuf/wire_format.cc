@@ -70,7 +70,7 @@ static size_t MapValueRefDataOnlyByteSize(const FieldDescriptor* field,
 // ===================================================================
 
 bool UnknownFieldSetFieldSkipper::SkipField(io::CodedInputStream* input,
-                                            uint32 tag) {
+                                            uint32_t tag) {
   return WireFormat::SkipField(input, tag, unknown_fields_);
 }
 
@@ -82,7 +82,7 @@ void UnknownFieldSetFieldSkipper::SkipUnknownEnum(int field_number, int value) {
   unknown_fields_->AddVarint(field_number, value);
 }
 
-bool WireFormat::SkipField(io::CodedInputStream* input, uint32 tag,
+bool WireFormat::SkipField(io::CodedInputStream* input, uint32_t tag,
                            UnknownFieldSet* unknown_fields) {
   int number = WireFormatLite::GetTagFieldNumber(tag);
   // Field number 0 is illegal.
@@ -90,19 +90,19 @@ bool WireFormat::SkipField(io::CodedInputStream* input, uint32 tag,
 
   switch (WireFormatLite::GetTagWireType(tag)) {
     case WireFormatLite::WIRETYPE_VARINT: {
-      uint64 value;
+      uint64_t value;
       if (!input->ReadVarint64(&value)) return false;
       if (unknown_fields != NULL) unknown_fields->AddVarint(number, value);
       return true;
     }
     case WireFormatLite::WIRETYPE_FIXED64: {
-      uint64 value;
+      uint64_t value;
       if (!input->ReadLittleEndian64(&value)) return false;
       if (unknown_fields != NULL) unknown_fields->AddFixed64(number, value);
       return true;
     }
     case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
-      uint32 length;
+      uint32_t length;
       if (!input->ReadVarint32(&length)) return false;
       if (unknown_fields == NULL) {
         if (!input->Skip(length)) return false;
@@ -134,7 +134,7 @@ bool WireFormat::SkipField(io::CodedInputStream* input, uint32 tag,
       return false;
     }
     case WireFormatLite::WIRETYPE_FIXED32: {
-      uint32 value;
+      uint32_t value;
       if (!input->ReadLittleEndian32(&value)) return false;
       if (unknown_fields != NULL) unknown_fields->AddFixed32(number, value);
       return true;
@@ -148,7 +148,7 @@ bool WireFormat::SkipField(io::CodedInputStream* input, uint32 tag,
 bool WireFormat::SkipMessage(io::CodedInputStream* input,
                              UnknownFieldSet* unknown_fields) {
   while (true) {
-    uint32 tag = input->ReadTag();
+    uint32_t tag = input->ReadTag();
     if (tag == 0) {
       // End of input.  This is a valid place to end, so return true.
       return true;
@@ -166,11 +166,11 @@ bool WireFormat::SkipMessage(io::CodedInputStream* input,
 }
 
 bool WireFormat::ReadPackedEnumPreserveUnknowns(io::CodedInputStream* input,
-                                                uint32 field_number,
+                                                uint32_t field_number,
                                                 bool (*is_valid)(int),
                                                 UnknownFieldSet* unknown_fields,
                                                 RepeatedField<int>* values) {
-  uint32 length;
+  uint32_t length;
   if (!input->ReadVarint32(&length)) return false;
   io::CodedInputStream::Limit limit = input->PushLimit(length);
   while (input->BytesUntilLimit() > 0) {
@@ -189,8 +189,8 @@ bool WireFormat::ReadPackedEnumPreserveUnknowns(io::CodedInputStream* input,
   return true;
 }
 
-uint8* WireFormat::InternalSerializeUnknownFieldsToArray(
-    const UnknownFieldSet& unknown_fields, uint8* target,
+uint8_t* WireFormat::InternalSerializeUnknownFieldsToArray(
+    const UnknownFieldSet& unknown_fields, uint8_t* target,
     io::EpsCopyOutputStream* stream) {
   for (int i = 0; i < unknown_fields.field_count(); i++) {
     const UnknownField& field = unknown_fields.field(i);
@@ -227,8 +227,8 @@ uint8* WireFormat::InternalSerializeUnknownFieldsToArray(
   return target;
 }
 
-uint8* WireFormat::InternalSerializeUnknownMessageSetItemsToArray(
-    const UnknownFieldSet& unknown_fields, uint8* target,
+uint8_t* WireFormat::InternalSerializeUnknownMessageSetItemsToArray(
+    const UnknownFieldSet& unknown_fields, uint8_t* target,
     io::EpsCopyOutputStream* stream) {
   for (int i = 0; i < unknown_fields.field_count(); i++) {
     const UnknownField& field = unknown_fields.field(i);
@@ -278,12 +278,12 @@ size_t WireFormat::ComputeUnknownFieldsSize(
       case UnknownField::TYPE_FIXED32:
         size += io::CodedOutputStream::VarintSize32(WireFormatLite::MakeTag(
             field.number(), WireFormatLite::WIRETYPE_FIXED32));
-        size += sizeof(int32);
+        size += sizeof(int32_t);
         break;
       case UnknownField::TYPE_FIXED64:
         size += io::CodedOutputStream::VarintSize32(WireFormatLite::MakeTag(
             field.number(), WireFormatLite::WIRETYPE_FIXED64));
-        size += sizeof(int64);
+        size += sizeof(int64_t);
         break;
       case UnknownField::TYPE_LENGTH_DELIMITED:
         size += io::CodedOutputStream::VarintSize32(WireFormatLite::MakeTag(
@@ -334,7 +334,7 @@ bool WireFormat::ParseAndMergePartial(io::CodedInputStream* input,
   const Reflection* message_reflection = message->GetReflection();
 
   while (true) {
-    uint32 tag = input->ReadTag();
+    uint32_t tag = input->ReadTag();
     if (tag == 0) {
       // End of input.  This is a valid place to end, so return true.
       return true;
@@ -380,15 +380,15 @@ bool WireFormat::ParseAndMergePartial(io::CodedInputStream* input,
 }
 
 bool WireFormat::SkipMessageSetField(io::CodedInputStream* input,
-                                     uint32 field_number,
+                                     uint32_t field_number,
                                      UnknownFieldSet* unknown_fields) {
-  uint32 length;
+  uint32_t length;
   if (!input->ReadVarint32(&length)) return false;
   return input->ReadString(unknown_fields->AddLengthDelimited(field_number),
                            length);
 }
 
-bool WireFormat::ParseAndMergeMessageSetField(uint32 field_number,
+bool WireFormat::ParseAndMergeMessageSetField(uint32_t field_number,
                                               const FieldDescriptor* field,
                                               Message* message,
                                               io::CodedInputStream* input) {
@@ -415,7 +415,7 @@ static bool StrictUtf8Check(const FieldDescriptor* field) {
 }
 
 bool WireFormat::ParseAndMergeField(
-    uint32 tag,
+    uint32_t tag,
     const FieldDescriptor* field,  // May be NULL for unknown
     Message* message, io::CodedInputStream* input) {
   const Reflection* message_reflection = message->GetReflection();
@@ -441,7 +441,7 @@ bool WireFormat::ParseAndMergeField(
     return SkipField(input, tag,
                      message_reflection->MutableUnknownFields(message));
   } else if (value_format == PACKED_FORMAT) {
-    uint32 length;
+    uint32_t length;
     if (!input->ReadVarint32(&length)) return false;
     io::CodedInputStream::Limit limit = input->PushLimit(length);
 
@@ -459,17 +459,17 @@ bool WireFormat::ParseAndMergeField(
     break;                                                                     \
   }
 
-      HANDLE_PACKED_TYPE(INT32, int32, Int32)
-      HANDLE_PACKED_TYPE(INT64, int64, Int64)
-      HANDLE_PACKED_TYPE(SINT32, int32, Int32)
-      HANDLE_PACKED_TYPE(SINT64, int64, Int64)
-      HANDLE_PACKED_TYPE(UINT32, uint32, UInt32)
-      HANDLE_PACKED_TYPE(UINT64, uint64, UInt64)
+      HANDLE_PACKED_TYPE(INT32, int32_t, Int32)
+      HANDLE_PACKED_TYPE(INT64, int64_t, Int64)
+      HANDLE_PACKED_TYPE(SINT32, int32_t, Int32)
+      HANDLE_PACKED_TYPE(SINT64, int64_t, Int64)
+      HANDLE_PACKED_TYPE(UINT32, uint32_t, UInt32)
+      HANDLE_PACKED_TYPE(UINT64, uint64_t, UInt64)
 
-      HANDLE_PACKED_TYPE(FIXED32, uint32, UInt32)
-      HANDLE_PACKED_TYPE(FIXED64, uint64, UInt64)
-      HANDLE_PACKED_TYPE(SFIXED32, int32, Int32)
-      HANDLE_PACKED_TYPE(SFIXED64, int64, Int64)
+      HANDLE_PACKED_TYPE(FIXED32, uint32_t, UInt32)
+      HANDLE_PACKED_TYPE(FIXED64, uint64_t, UInt64)
+      HANDLE_PACKED_TYPE(SFIXED32, int32_t, Int32)
+      HANDLE_PACKED_TYPE(SFIXED64, int64_t, Int64)
 
       HANDLE_PACKED_TYPE(FLOAT, float, Float)
       HANDLE_PACKED_TYPE(DOUBLE, double, Double)
@@ -494,7 +494,7 @@ bool WireFormat::ParseAndMergeField(
             } else {
               // The enum value is not one of the known values.  Add it to the
               // UnknownFieldSet.
-              int64 sign_extended_value = static_cast<int64>(value);
+              int64_t sign_extended_value = static_cast<int64_t>(value);
               message_reflection->MutableUnknownFields(message)->AddVarint(
                   WireFormatLite::GetTagFieldNumber(tag), sign_extended_value);
             }
@@ -532,17 +532,17 @@ bool WireFormat::ParseAndMergeField(
     break;                                                                    \
   }
 
-      HANDLE_TYPE(INT32, int32, Int32)
-      HANDLE_TYPE(INT64, int64, Int64)
-      HANDLE_TYPE(SINT32, int32, Int32)
-      HANDLE_TYPE(SINT64, int64, Int64)
-      HANDLE_TYPE(UINT32, uint32, UInt32)
-      HANDLE_TYPE(UINT64, uint64, UInt64)
+      HANDLE_TYPE(INT32, int32_t, Int32)
+      HANDLE_TYPE(INT64, int64_t, Int64)
+      HANDLE_TYPE(SINT32, int32_t, Int32)
+      HANDLE_TYPE(SINT64, int64_t, Int64)
+      HANDLE_TYPE(UINT32, uint32_t, UInt32)
+      HANDLE_TYPE(UINT64, uint64_t, UInt64)
 
-      HANDLE_TYPE(FIXED32, uint32, UInt32)
-      HANDLE_TYPE(FIXED64, uint64, UInt64)
-      HANDLE_TYPE(SFIXED32, int32, Int32)
-      HANDLE_TYPE(SFIXED64, int64, Int64)
+      HANDLE_TYPE(FIXED32, uint32_t, UInt32)
+      HANDLE_TYPE(FIXED64, uint64_t, UInt64)
+      HANDLE_TYPE(SFIXED32, int32_t, Int32)
+      HANDLE_TYPE(SFIXED64, int64_t, Int64)
 
       HANDLE_TYPE(FLOAT, float, Float)
       HANDLE_TYPE(DOUBLE, double, Double)
@@ -641,7 +641,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(io::CodedInputStream* input,
       return ParseAndMergeMessageSetField(type_id, field, message, input);
     }
 
-    bool SkipField(uint32 tag, io::CodedInputStream* input) {
+    bool SkipField(uint32_t tag, io::CodedInputStream* input) {
       return WireFormat::SkipField(input, tag, NULL);
     }
 
@@ -658,14 +658,14 @@ struct WireFormat::MessageSetParser {
     // Parse a MessageSetItem
     auto metadata = reflection->MutableInternalMetadata(msg);
     std::string payload;
-    uint32 type_id = 0;
+    uint32_t type_id = 0;
     bool payload_read = false;
     while (!ctx->Done(&ptr)) {
       // We use 64 bit tags in order to allow typeid's that span the whole
       // range of 32 bit numbers.
-      uint32 tag = static_cast<uint8>(*ptr++);
+      uint32_t tag = static_cast<uint8_t>(*ptr++);
       if (tag == WireFormatLite::kMessageSetTypeIdTag) {
-        uint64 tmp;
+        uint64_t tmp;
         ptr = ParseBigVarint(ptr, &tmp);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         type_id = tmp;
@@ -701,7 +701,7 @@ struct WireFormat::MessageSetParser {
         continue;
       } else if (tag == WireFormatLite::kMessageSetMessageTag) {
         if (type_id == 0) {
-          int32 size = ReadSize(&ptr);
+          int32_t size = ReadSize(&ptr);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
           ptr = ctx->ReadString(ptr, size, &payload);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
@@ -718,7 +718,7 @@ struct WireFormat::MessageSetParser {
             }
           }
           ptr = WireFormat::_InternalParseAndMergeField(
-              msg, ptr, ctx, static_cast<uint64>(type_id) * 8 + 2, reflection,
+              msg, ptr, ctx, static_cast<uint64_t>(type_id) * 8 + 2, reflection,
               field);
           type_id = 0;
         }
@@ -740,7 +740,7 @@ struct WireFormat::MessageSetParser {
 
   const char* ParseMessageSet(const char* ptr, internal::ParseContext* ctx) {
     while (!ctx->Done(&ptr)) {
-      uint32 tag;
+      uint32_t tag;
       ptr = ReadTag(ptr, &tag);
       if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
       if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
@@ -786,7 +786,7 @@ const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
     return message_set.ParseMessageSet(ptr, ctx);
   }
   while (!ctx->Done(&ptr)) {
-    uint32 tag;
+    uint32_t tag;
     ptr = ReadTag(ptr, &tag);
     if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
     if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
@@ -815,7 +815,7 @@ const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
 }
 
 const char* WireFormat::_InternalParseAndMergeField(
-    Message* msg, const char* ptr, internal::ParseContext* ctx, uint64 tag,
+    Message* msg, const char* ptr, internal::ParseContext* ctx, uint64_t tag,
     const Reflection* reflection, const FieldDescriptor* field) {
   if (field == nullptr) {
     // unknown field set parser takes 64bit tags, because message set type ids
@@ -836,17 +836,17 @@ const char* WireFormat::_InternalParseAndMergeField(
     return ptr;                                                             \
   }
 
-        HANDLE_PACKED_TYPE(INT32, int32, Int32)
-        HANDLE_PACKED_TYPE(INT64, int64, Int64)
-        HANDLE_PACKED_TYPE(SINT32, int32, SInt32)
-        HANDLE_PACKED_TYPE(SINT64, int64, SInt64)
-        HANDLE_PACKED_TYPE(UINT32, uint32, UInt32)
-        HANDLE_PACKED_TYPE(UINT64, uint64, UInt64)
+        HANDLE_PACKED_TYPE(INT32, int32_t, Int32)
+        HANDLE_PACKED_TYPE(INT64, int64_t, Int64)
+        HANDLE_PACKED_TYPE(SINT32, int32_t, SInt32)
+        HANDLE_PACKED_TYPE(SINT64, int64_t, SInt64)
+        HANDLE_PACKED_TYPE(UINT32, uint32_t, UInt32)
+        HANDLE_PACKED_TYPE(UINT64, uint64_t, UInt64)
 
-        HANDLE_PACKED_TYPE(FIXED32, uint32, Fixed32)
-        HANDLE_PACKED_TYPE(FIXED64, uint64, Fixed64)
-        HANDLE_PACKED_TYPE(SFIXED32, int32, SFixed32)
-        HANDLE_PACKED_TYPE(SFIXED64, int64, SFixed64)
+        HANDLE_PACKED_TYPE(FIXED32, uint32_t, Fixed32)
+        HANDLE_PACKED_TYPE(FIXED64, uint64_t, Fixed64)
+        HANDLE_PACKED_TYPE(SFIXED32, int32_t, SFixed32)
+        HANDLE_PACKED_TYPE(SFIXED64, int64_t, SFixed64)
 
         HANDLE_PACKED_TYPE(FLOAT, float, Float)
         HANDLE_PACKED_TYPE(DOUBLE, double, Double)
@@ -863,7 +863,7 @@ const char* WireFormat::_InternalParseAndMergeField(
             ptr = internal::PackedEnumParser(rep_enum, ptr, ctx);
           } else {
             return ctx->ReadPackedVarint(
-                ptr, [rep_enum, field, reflection, msg](uint64 val) {
+                ptr, [rep_enum, field, reflection, msg](uint64_t val) {
                   if (field->enum_type()->FindValueByNumber(val) != nullptr) {
                     rep_enum->Add(val);
                   } else {
@@ -906,14 +906,14 @@ const char* WireFormat::_InternalParseAndMergeField(
     return ptr;                                           \
   }
 
-    HANDLE_TYPE(BOOL, uint64, Bool)
-    HANDLE_TYPE(INT32, uint32, Int32)
-    HANDLE_TYPE(INT64, uint64, Int64)
-    HANDLE_TYPE(UINT32, uint32, UInt32)
-    HANDLE_TYPE(UINT64, uint64, UInt64)
+    HANDLE_TYPE(BOOL, uint64_t, Bool)
+    HANDLE_TYPE(INT32, uint32_t, Int32)
+    HANDLE_TYPE(INT64, uint64_t, Int64)
+    HANDLE_TYPE(UINT32, uint32_t, UInt32)
+    HANDLE_TYPE(UINT64, uint64_t, UInt64)
 
     case FieldDescriptor::TYPE_SINT32: {
-      int32 value = ReadVarintZigZag32(&ptr);
+      int32_t value = ReadVarintZigZag32(&ptr);
       if (ptr == nullptr) return nullptr;
       if (field->is_repeated()) {
         reflection->AddInt32(msg, field, value);
@@ -923,7 +923,7 @@ const char* WireFormat::_InternalParseAndMergeField(
       return ptr;
     }
     case FieldDescriptor::TYPE_SINT64: {
-      int64 value = ReadVarintZigZag64(&ptr);
+      int64_t value = ReadVarintZigZag64(&ptr);
       if (ptr == nullptr) return nullptr;
       if (field->is_repeated()) {
         reflection->AddInt64(msg, field, value);
@@ -946,10 +946,10 @@ const char* WireFormat::_InternalParseAndMergeField(
     return ptr;                                           \
   }
 
-      HANDLE_TYPE(FIXED32, uint32, UInt32)
-      HANDLE_TYPE(FIXED64, uint64, UInt64)
-      HANDLE_TYPE(SFIXED32, int32, Int32)
-      HANDLE_TYPE(SFIXED64, int64, Int64)
+      HANDLE_TYPE(FIXED32, uint32_t, UInt32)
+      HANDLE_TYPE(FIXED64, uint64_t, UInt64)
+      HANDLE_TYPE(SFIXED32, int32_t, Int32)
+      HANDLE_TYPE(SFIXED64, int64_t, Int64)
 
       HANDLE_TYPE(FLOAT, float, Float)
       HANDLE_TYPE(DOUBLE, double, Double)
@@ -957,7 +957,7 @@ const char* WireFormat::_InternalParseAndMergeField(
 #undef HANDLE_TYPE
 
     case FieldDescriptor::TYPE_ENUM: {
-      uint32 value;
+      uint32_t value;
       ptr = VarintParse(ptr, &value);
       if (ptr == nullptr) return nullptr;
       if (field->is_repeated()) {
@@ -1030,8 +1030,8 @@ const char* WireFormat::_InternalParseAndMergeField(
 
 // ===================================================================
 
-uint8* WireFormat::_InternalSerialize(const Message& message, uint8* target,
-                                      io::EpsCopyOutputStream* stream) {
+uint8_t* WireFormat::_InternalSerialize(const Message& message, uint8_t* target,
+                                        io::EpsCopyOutputStream* stream) {
   const Descriptor* descriptor = message.GetDescriptor();
   const Reflection* message_reflection = message.GetReflection();
 
@@ -1059,9 +1059,9 @@ uint8* WireFormat::_InternalSerialize(const Message& message, uint8* target,
   }
 }
 
-uint8* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
-                                      const MapKey& value, uint8* target,
-                                      io::EpsCopyOutputStream* stream) {
+uint8_t* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
+                                        const MapKey& value, uint8_t* target,
+                                        io::EpsCopyOutputStream* stream) {
   target = stream->EnsureSpace(target);
   switch (field->type()) {
     case FieldDescriptor::TYPE_DOUBLE:
@@ -1096,9 +1096,9 @@ uint8* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
   return target;
 }
 
-static uint8* SerializeMapValueRefWithCachedSizes(
-    const FieldDescriptor* field, const MapValueConstRef& value, uint8* target,
-    io::EpsCopyOutputStream* stream) {
+static uint8_t* SerializeMapValueRefWithCachedSizes(
+    const FieldDescriptor* field, const MapValueConstRef& value,
+    uint8_t* target, io::EpsCopyOutputStream* stream) {
   target = stream->EnsureSpace(target);
   switch (field->type()) {
 #define CASE_TYPE(FieldType, CamelFieldType, CamelCppType)   \
@@ -1180,11 +1180,11 @@ class MapKeySorter {
   };
 };
 
-static uint8* InternalSerializeMapEntry(const FieldDescriptor* field,
-                                        const MapKey& key,
-                                        const MapValueConstRef& value,
-                                        uint8* target,
-                                        io::EpsCopyOutputStream* stream) {
+static uint8_t* InternalSerializeMapEntry(const FieldDescriptor* field,
+                                          const MapKey& key,
+                                          const MapValueConstRef& value,
+                                          uint8_t* target,
+                                          io::EpsCopyOutputStream* stream) {
   const FieldDescriptor* key_field = field->message_type()->field(0);
   const FieldDescriptor* value_field = field->message_type()->field(1);
 
@@ -1201,9 +1201,10 @@ static uint8* InternalSerializeMapEntry(const FieldDescriptor* field,
   return target;
 }
 
-uint8* WireFormat::InternalSerializeField(const FieldDescriptor* field,
-                                          const Message& message, uint8* target,
-                                          io::EpsCopyOutputStream* stream) {
+uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
+                                            const Message& message,
+                                            uint8_t* target,
+                                            io::EpsCopyOutputStream* stream) {
   const Reflection* message_reflection = message.GetReflection();
 
   if (field->is_extension() &&
@@ -1286,12 +1287,12 @@ uint8* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     break;                                                                     \
   }
 
-      HANDLE_PRIMITIVE_TYPE(INT32, int32, Int32, Int32)
-      HANDLE_PRIMITIVE_TYPE(INT64, int64, Int64, Int64)
-      HANDLE_PRIMITIVE_TYPE(SINT32, int32, SInt32, Int32)
-      HANDLE_PRIMITIVE_TYPE(SINT64, int64, SInt64, Int64)
-      HANDLE_PRIMITIVE_TYPE(UINT32, uint32, UInt32, UInt32)
-      HANDLE_PRIMITIVE_TYPE(UINT64, uint64, UInt64, UInt64)
+      HANDLE_PRIMITIVE_TYPE(INT32, int32_t, Int32, Int32)
+      HANDLE_PRIMITIVE_TYPE(INT64, int64_t, Int64, Int64)
+      HANDLE_PRIMITIVE_TYPE(SINT32, int32_t, SInt32, Int32)
+      HANDLE_PRIMITIVE_TYPE(SINT64, int64_t, SInt64, Int64)
+      HANDLE_PRIMITIVE_TYPE(UINT32, uint32_t, UInt32, UInt32)
+      HANDLE_PRIMITIVE_TYPE(UINT64, uint64_t, UInt64, UInt64)
       HANDLE_PRIMITIVE_TYPE(ENUM, int, Enum, Enum)
 
 #undef HANDLE_PRIMITIVE_TYPE
@@ -1303,10 +1304,10 @@ uint8* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     break;                                                                     \
   }
 
-      HANDLE_PRIMITIVE_TYPE(FIXED32, uint32, Fixed32, UInt32)
-      HANDLE_PRIMITIVE_TYPE(FIXED64, uint64, Fixed64, UInt64)
-      HANDLE_PRIMITIVE_TYPE(SFIXED32, int32, SFixed32, Int32)
-      HANDLE_PRIMITIVE_TYPE(SFIXED64, int64, SFixed64, Int64)
+      HANDLE_PRIMITIVE_TYPE(FIXED32, uint32_t, Fixed32, UInt32)
+      HANDLE_PRIMITIVE_TYPE(FIXED64, uint64_t, Fixed64, UInt64)
+      HANDLE_PRIMITIVE_TYPE(SFIXED32, int32_t, SFixed32, Int32)
+      HANDLE_PRIMITIVE_TYPE(SFIXED64, int64_t, SFixed64, Int64)
 
       HANDLE_PRIMITIVE_TYPE(FLOAT, float, Float, Float)
       HANDLE_PRIMITIVE_TYPE(DOUBLE, double, Double, Double)
@@ -1334,17 +1335,17 @@ uint8* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     break;                                                                    \
   }
 
-      HANDLE_PRIMITIVE_TYPE(INT32, int32, Int32, Int32)
-      HANDLE_PRIMITIVE_TYPE(INT64, int64, Int64, Int64)
-      HANDLE_PRIMITIVE_TYPE(SINT32, int32, SInt32, Int32)
-      HANDLE_PRIMITIVE_TYPE(SINT64, int64, SInt64, Int64)
-      HANDLE_PRIMITIVE_TYPE(UINT32, uint32, UInt32, UInt32)
-      HANDLE_PRIMITIVE_TYPE(UINT64, uint64, UInt64, UInt64)
+      HANDLE_PRIMITIVE_TYPE(INT32, int32_t, Int32, Int32)
+      HANDLE_PRIMITIVE_TYPE(INT64, int64_t, Int64, Int64)
+      HANDLE_PRIMITIVE_TYPE(SINT32, int32_t, SInt32, Int32)
+      HANDLE_PRIMITIVE_TYPE(SINT64, int64_t, SInt64, Int64)
+      HANDLE_PRIMITIVE_TYPE(UINT32, uint32_t, UInt32, UInt32)
+      HANDLE_PRIMITIVE_TYPE(UINT64, uint64_t, UInt64, UInt64)
 
-      HANDLE_PRIMITIVE_TYPE(FIXED32, uint32, Fixed32, UInt32)
-      HANDLE_PRIMITIVE_TYPE(FIXED64, uint64, Fixed64, UInt64)
-      HANDLE_PRIMITIVE_TYPE(SFIXED32, int32, SFixed32, Int32)
-      HANDLE_PRIMITIVE_TYPE(SFIXED64, int64, SFixed64, Int64)
+      HANDLE_PRIMITIVE_TYPE(FIXED32, uint32_t, Fixed32, UInt32)
+      HANDLE_PRIMITIVE_TYPE(FIXED64, uint64_t, Fixed64, UInt64)
+      HANDLE_PRIMITIVE_TYPE(SFIXED32, int32_t, SFixed32, Int32)
+      HANDLE_PRIMITIVE_TYPE(SFIXED64, int64_t, SFixed64, Int64)
 
       HANDLE_PRIMITIVE_TYPE(FLOAT, float, Float, Float)
       HANDLE_PRIMITIVE_TYPE(DOUBLE, double, Double, Double)
@@ -1418,8 +1419,8 @@ uint8* WireFormat::InternalSerializeField(const FieldDescriptor* field,
   return target;
 }
 
-uint8* WireFormat::InternalSerializeMessageSetItem(
-    const FieldDescriptor* field, const Message& message, uint8* target,
+uint8_t* WireFormat::InternalSerializeMessageSetItem(
+    const FieldDescriptor* field, const Message& message, uint8_t* target,
     io::EpsCopyOutputStream* stream) {
   const Reflection* message_reflection = message.GetReflection();
 

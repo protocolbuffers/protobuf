@@ -166,8 +166,8 @@ const char* Message::_InternalParse(const char* ptr,
   return WireFormat::_InternalParse(this, ptr, ctx);
 }
 
-uint8* Message::_InternalSerialize(uint8* target,
-                                   io::EpsCopyOutputStream* stream) const {
+uint8_t* Message::_InternalSerialize(uint8_t* target,
+                                     io::EpsCopyOutputStream* stream) const {
   return WireFormat::_InternalSerialize(*this, target, stream);
 }
 
@@ -183,13 +183,109 @@ void Message::SetCachedSize(int /* size */) const {
                 "Must implement one or the other.";
 }
 
+size_t Message::ComputeUnknownFieldsSize(
+    size_t total_size, internal::CachedSize* cached_size) const {
+  total_size += WireFormat::ComputeUnknownFieldsSize(
+      _internal_metadata_.unknown_fields<UnknownFieldSet>(
+          UnknownFieldSet::default_instance));
+  cached_size->Set(internal::ToCachedSize(total_size));
+  return total_size;
+}
+
+size_t Message::MaybeComputeUnknownFieldsSize(
+    size_t total_size, internal::CachedSize* cached_size) const {
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ComputeUnknownFieldsSize(total_size, cached_size);
+  }
+  cached_size->Set(internal::ToCachedSize(total_size));
+  return total_size;
+}
+
 size_t Message::SpaceUsedLong() const {
   return GetReflection()->SpaceUsedLong(*this);
 }
 
-uint64 Message::GetInvariantPerBuild(uint64 salt) {
+uint64_t Message::GetInvariantPerBuild(uint64_t salt) {
   return salt;
 }
+
+// =============================================================================
+// ZeroFieldsBase
+
+namespace internal {
+
+void ZeroFieldsBase::Clear() {
+  _internal_metadata_.Clear<UnknownFieldSet>();  //
+}
+
+ZeroFieldsBase::~ZeroFieldsBase() {
+  if (GetArenaForAllocation() != nullptr) return;
+  _internal_metadata_.Delete<UnknownFieldSet>();
+}
+
+size_t ZeroFieldsBase::ByteSizeLong() const {
+  return MaybeComputeUnknownFieldsSize(0, &_cached_size_);
+}
+
+const char* ZeroFieldsBase::_InternalParse(const char* ptr,
+                                           internal::ParseContext* ctx) {
+#define CHK_(x)                       \
+  if (PROTOBUF_PREDICT_FALSE(!(x))) { \
+    goto failure;                     \
+  }
+
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = internal::ReadTag(ptr, &tag);
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag, _internal_metadata_.mutable_unknown_fields<UnknownFieldSet>(), ptr,
+        ctx);
+    CHK_(ptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+::uint8_t* ZeroFieldsBase::_InternalSerialize(
+    ::uint8_t* target, io::EpsCopyOutputStream* stream) const {
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<UnknownFieldSet>(
+            UnknownFieldSet::default_instance),
+        target, stream);
+  }
+  return target;
+}
+
+void ZeroFieldsBase::MergeImpl(Message* to_param, const Message& from_param) {
+  auto* to = static_cast<ZeroFieldsBase*>(to_param);
+  const auto* from = static_cast<const ZeroFieldsBase*>(&from_param);
+  GOOGLE_DCHECK_NE(from, to);
+  to->_internal_metadata_.MergeFrom<UnknownFieldSet>(from->_internal_metadata_);
+}
+
+void ZeroFieldsBase::CopyImpl(Message* to_param, const Message& from_param) {
+  auto* to = static_cast<ZeroFieldsBase*>(to_param);
+  const auto* from = static_cast<const ZeroFieldsBase*>(&from_param);
+  if (from == to) return;
+  to->_internal_metadata_.Clear<UnknownFieldSet>();
+  to->_internal_metadata_.MergeFrom<UnknownFieldSet>(from->_internal_metadata_);
+}
+
+void ZeroFieldsBase::InternalSwap(ZeroFieldsBase* other) {
+  _internal_metadata_.Swap<UnknownFieldSet>(&other->_internal_metadata_);
+}
+
+}  // namespace internal
 
 // =============================================================================
 // MessageFactory
@@ -325,14 +421,14 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
 #define HANDLE_PRIMITIVE_TYPE(TYPE, type) \
   case FieldDescriptor::CPPTYPE_##TYPE:   \
     return GetSingleton<internal::RepeatedFieldPrimitiveAccessor<type> >();
-    HANDLE_PRIMITIVE_TYPE(INT32, int32)
-    HANDLE_PRIMITIVE_TYPE(UINT32, uint32)
-    HANDLE_PRIMITIVE_TYPE(INT64, int64)
-    HANDLE_PRIMITIVE_TYPE(UINT64, uint64)
+    HANDLE_PRIMITIVE_TYPE(INT32, int32_t)
+    HANDLE_PRIMITIVE_TYPE(UINT32, uint32_t)
+    HANDLE_PRIMITIVE_TYPE(INT64, int64_t)
+    HANDLE_PRIMITIVE_TYPE(UINT64, uint64_t)
     HANDLE_PRIMITIVE_TYPE(FLOAT, float)
     HANDLE_PRIMITIVE_TYPE(DOUBLE, double)
     HANDLE_PRIMITIVE_TYPE(BOOL, bool)
-    HANDLE_PRIMITIVE_TYPE(ENUM, int32)
+    HANDLE_PRIMITIVE_TYPE(ENUM, int32_t)
 #undef HANDLE_PRIMITIVE_TYPE
     case FieldDescriptor::CPPTYPE_STRING:
       switch (field->options().ctype()) {

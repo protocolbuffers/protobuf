@@ -46,6 +46,19 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+// Get/Set if the proto package should be used to make the default prefix for
+// symbols. This will then impact most of the type naming apis below. It is done
+// as a global to not break any other generator reusing the methods since they
+// are exported.
+bool PROTOC_EXPORT UseProtoPackageAsDefaultPrefix();
+void PROTOC_EXPORT SetUseProtoPackageAsDefaultPrefix(bool on_or_off);
+// Get/Set the path to a file to load as exceptions when
+// `UseProtoPackageAsDefaultPrefixUseProtoPackageAsDefaultPrefix()` is `true`.
+// And empty string means there should be no exceptions loaded.
+std::string PROTOC_EXPORT GetProtoPackagePrefixExceptionList();
+void PROTOC_EXPORT SetProtoPackagePrefixExceptionList(
+    const std::string& file_path);
+
 // Generator options (see objectivec_generator.cc for a description of each):
 struct Options {
   Options();
@@ -70,7 +83,7 @@ bool PROTOC_EXPORT IsRetainedName(const std::string& name);
 // handling under ARC.
 bool PROTOC_EXPORT IsInitName(const std::string& name);
 
-// Gets the objc_class_prefix.
+// Gets the objc_class_prefix or the prefix made from the proto package.
 std::string PROTOC_EXPORT FileClassPrefix(const FileDescriptor* file);
 
 // Gets the path of the file we're going to generate (sans the .pb.h
@@ -90,7 +103,7 @@ std::string PROTOC_EXPORT FileClassName(const FileDescriptor* file);
 // descriptor.
 std::string PROTOC_EXPORT ClassName(const Descriptor* descriptor);
 std::string PROTOC_EXPORT ClassName(const Descriptor* descriptor,
-                               std::string* out_suffix_added);
+                                    std::string* out_suffix_added);
 std::string PROTOC_EXPORT EnumName(const EnumDescriptor* descriptor);
 
 // Returns the fully-qualified name of the enum value corresponding to the
@@ -283,9 +296,9 @@ class PROTOC_EXPORT ImportWriter {
   ~ImportWriter();
 
   void AddFile(const FileDescriptor* file, const std::string& header_extension);
-  void Print(io::Printer *printer) const;
+  void Print(io::Printer* printer) const;
 
-  static void PrintRuntimeImports(io::Printer *printer,
+  static void PrintRuntimeImports(io::Printer* printer,
                                   const std::vector<std::string>& header_to_import,
                                   const std::string& runtime_import_prefix,
                                   bool default_cpp_symbol = false);
@@ -296,7 +309,7 @@ class PROTOC_EXPORT ImportWriter {
     ProtoFrameworkCollector(std::map<std::string, std::string>* inout_proto_file_to_framework_name)
         : map_(inout_proto_file_to_framework_name) {}
 
-    virtual bool ConsumeLine(const StringPiece& line, std::string* out_error);
+    virtual bool ConsumeLine(const StringPiece& line, std::string* out_error) override;
 
    private:
     std::map<std::string, std::string>* map_;

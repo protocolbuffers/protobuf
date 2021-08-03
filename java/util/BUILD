@@ -1,9 +1,13 @@
-load("@rules_java//java:defs.bzl", "java_library", "java_proto_library")
+load("@rules_java//java:defs.bzl", "java_proto_library")
+load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
 load("//java/internal:testing.bzl", "junit_tests")
 
-java_library(
+java_export(
     name = "util",
+    maven_coordinates = "com.google.protobuf:protobuf-java-util:%s" % PROTOBUF_VERSION,
+    pom_template = "pom_template.xml",
     srcs = glob([
         "src/main/java/com/google/protobuf/util/*.java",
     ]),
@@ -13,8 +17,18 @@ java_library(
         "//external:gson",
         "//external:guava",
         "//java/core",
-        "//java/lite",
     ],
+)
+
+filegroup(
+    name = "release",
+    visibility = ["//java:__pkg__"],
+    srcs = [
+        ":util-pom",
+        ":util-maven-source",
+        ":util-docs",
+        ":util-project",
+    ]
 )
 
 proto_library(

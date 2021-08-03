@@ -185,22 +185,22 @@ bool IsDirectDependency(const FileDescriptor* dep, const FileDescriptor* file) {
 
 }  // namespace
 
-FileGenerator::FileGenerator(const FileDescriptor *file, const Options& options)
+FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
     : file_(file),
       root_class_name_(FileClassName(file)),
       is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)),
       options_(options) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
-    EnumGenerator *generator = new EnumGenerator(file_->enum_type(i));
+    EnumGenerator* generator = new EnumGenerator(file_->enum_type(i));
     enum_generators_.emplace_back(generator);
   }
   for (int i = 0; i < file_->message_type_count(); i++) {
-    MessageGenerator *generator =
+    MessageGenerator* generator =
         new MessageGenerator(root_class_name_, file_->message_type(i), options_);
     message_generators_.emplace_back(generator);
   }
   for (int i = 0; i < file_->extension_count(); i++) {
-    ExtensionGenerator *generator =
+    ExtensionGenerator* generator =
         new ExtensionGenerator(root_class_name_, file_->extension(i));
     extension_generators_.emplace_back(generator);
   }
@@ -208,7 +208,7 @@ FileGenerator::FileGenerator(const FileDescriptor *file, const Options& options)
 
 FileGenerator::~FileGenerator() {}
 
-void FileGenerator::GenerateHeader(io::Printer *printer) {
+void FileGenerator::GenerateHeader(io::Printer* printer) {
   std::vector<std::string> headers;
   // Generated files bundled with the library get minimal imports, everything
   // else gets the wrapper so everything is usable.
@@ -336,7 +336,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       "// @@protoc_insertion_point(global_scope)\n");
 }
 
-void FileGenerator::GenerateSource(io::Printer *printer) {
+void FileGenerator::GenerateSource(io::Printer* printer) {
   // #import the runtime support.
   std::vector<std::string> headers;
   headers.push_back("GPBProtocolBuffers_RuntimeSupport.h");
@@ -381,7 +381,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     // imported so it can get merged into the root's extensions registry.
     // See the Note by CollectMinimalFileDepsContainingExtensions before
     // changing this.
-    for (std::vector<const FileDescriptor *>::iterator iter =
+    for (std::vector<const FileDescriptor*>::iterator iter =
              deps_with_extensions.begin();
          iter != deps_with_extensions.end(); ++iter) {
       if (!IsDirectDependency(*iter, file_)) {
@@ -498,7 +498,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     } else {
       printer->Print(
           "// Merge in the imports (direct or indirect) that defined extensions.\n");
-      for (std::vector<const FileDescriptor *>::iterator iter =
+      for (std::vector<const FileDescriptor*>::iterator iter =
                deps_with_extensions.begin();
            iter != deps_with_extensions.end(); ++iter) {
         const std::string root_class_name(FileClassName((*iter)));

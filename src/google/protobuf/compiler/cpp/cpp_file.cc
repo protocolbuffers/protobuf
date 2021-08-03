@@ -130,7 +130,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   }
   for (int i = 0; i < file->extension_count(); i++) {
     extension_generators_.emplace_back(
-        new ExtensionGenerator(file->extension(i), options));
+        new ExtensionGenerator(file->extension(i), options, &scc_analyzer_));
   }
   for (int i = 0; i < file->weak_dependency_count(); ++i) {
     weak_deps_.insert(file->weak_dependency(i));
@@ -463,6 +463,19 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
          DefaultInstanceType(generator->descriptor_, options_),
          DefaultInstanceName(generator->descriptor_, options_));
 
+  for (int i = 0; i < generator->descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = generator->descriptor_->field(i);
+    if (IsStringInlined(field, options_)) {
+      // Force the initialization of the inlined string in the default instance.
+      format(
+          "PROTOBUF_ATTRIBUTE_INIT_PRIORITY std::true_type "
+          "$1$::_init_inline_$2$_ = "
+          "($3$._instance.$2$_.Init(), std::true_type{});\n",
+          ClassName(generator->descriptor_), FieldName(field),
+          DefaultInstanceName(generator->descriptor_, options_));
+    }
+  }
+
   if (options_.lite_implicit_weak_fields) {
     format("$1$* $2$ = &$3$;\n",
            DefaultInstanceType(generator->descriptor_, options_),
@@ -578,6 +591,13 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* printer) {
       "// @@protoc_insertion_point(global_scope)\n");
 }
 
+void FileGenerator::GenerateSourceForExtension(int idx, io::Printer* printer) {
+  Formatter format(printer, variables_);
+  GenerateSourceIncludes(printer);
+  NamespaceOpener ns(Namespace(file_, options_), format);
+  extension_generators_[idx]->GenerateDefinition(printer);
+}
+
 void FileGenerator::GenerateGlobalSource(io::Printer* printer) {
   Formatter format(printer, variables_);
   GenerateSourceIncludes(printer);
@@ -597,21 +617,6 @@ void FileGenerator::GenerateGlobalSource(io::Printer* printer) {
   // Generate enums.
   for (int i = 0; i < enum_generators_.size(); i++) {
     enum_generators_[i]->GenerateMethods(i, printer);
-  }
-
-  // Define extensions.
-  for (int i = 0; i < extension_generators_.size(); i++) {
-    extension_generators_[i]->GenerateDefinition(printer);
-  }
-
-  if (HasGenericServices(file_, options_)) {
-    // Generate services.
-    for (int i = 0; i < service_generators_.size(); i++) {
-      if (i == 0) format("\n");
-      format(kThickSeparator);
-      format("\n");
-      service_generators_[i]->GenerateImplementation(printer);
-    }
   }
 }
 
@@ -1143,6 +1148,9 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
     GOOGLE_CHECK(!options_.opensource_runtime);
     IncludeFile("net/proto2/public/lazy_field.h", printer);
   }
+  if (ShouldVerify(file_, options_, &scc_analyzer_)) {
+    IncludeFile("net/proto2/public/wire_format_verify.h", printer);
+  }
 
   if (options_.opensource_runtime) {
     // Verify the protobuf library header version is compatible with the protoc
@@ -1170,6 +1178,9 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
   IncludeFile("net/proto2/io/public/coded_stream.h", printer);
   IncludeFile("net/proto2/public/arena.h", printer);
   IncludeFile("net/proto2/public/arenastring.h", printer);
+  if (options_.force_inline_string || options_.profile_driven_inline_string) {
+    IncludeFile("net/proto2/public/inlined_string_field.h", printer);
+  }
   IncludeFile("net/proto2/public/generated_message_table_driven.h", printer);
   if (HasGeneratedMethods(file_, options_) &&
       options_.tctable_mode != Options::kTCTableNever) {

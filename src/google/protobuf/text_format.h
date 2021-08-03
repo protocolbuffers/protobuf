@@ -126,17 +126,17 @@ class PROTOBUF_EXPORT TextFormat {
     FastFieldValuePrinter();
     virtual ~FastFieldValuePrinter();
     virtual void PrintBool(bool val, BaseTextGenerator* generator) const;
-    virtual void PrintInt32(int32 val, BaseTextGenerator* generator) const;
-    virtual void PrintUInt32(uint32 val, BaseTextGenerator* generator) const;
-    virtual void PrintInt64(int64 val, BaseTextGenerator* generator) const;
-    virtual void PrintUInt64(uint64 val, BaseTextGenerator* generator) const;
+    virtual void PrintInt32(int32_t val, BaseTextGenerator* generator) const;
+    virtual void PrintUInt32(uint32_t val, BaseTextGenerator* generator) const;
+    virtual void PrintInt64(int64_t val, BaseTextGenerator* generator) const;
+    virtual void PrintUInt64(uint64_t val, BaseTextGenerator* generator) const;
     virtual void PrintFloat(float val, BaseTextGenerator* generator) const;
     virtual void PrintDouble(double val, BaseTextGenerator* generator) const;
     virtual void PrintString(const std::string& val,
                              BaseTextGenerator* generator) const;
     virtual void PrintBytes(const std::string& val,
                             BaseTextGenerator* generator) const;
-    virtual void PrintEnum(int32 val, const std::string& name,
+    virtual void PrintEnum(int32_t val, const std::string& name,
                            BaseTextGenerator* generator) const;
     virtual void PrintFieldName(const Message& message, int field_index,
                                 int field_count, const Reflection* reflection,
@@ -171,15 +171,15 @@ class PROTOBUF_EXPORT TextFormat {
     FieldValuePrinter();
     virtual ~FieldValuePrinter();
     virtual std::string PrintBool(bool val) const;
-    virtual std::string PrintInt32(int32 val) const;
-    virtual std::string PrintUInt32(uint32 val) const;
-    virtual std::string PrintInt64(int64 val) const;
-    virtual std::string PrintUInt64(uint64 val) const;
+    virtual std::string PrintInt32(int32_t val) const;
+    virtual std::string PrintUInt32(uint32_t val) const;
+    virtual std::string PrintInt64(int64_t val) const;
+    virtual std::string PrintUInt64(uint64_t val) const;
     virtual std::string PrintFloat(float val) const;
     virtual std::string PrintDouble(double val) const;
     virtual std::string PrintString(const std::string& val) const;
     virtual std::string PrintBytes(const std::string& val) const;
-    virtual std::string PrintEnum(int32 val, const std::string& name) const;
+    virtual std::string PrintEnum(int32_t val, const std::string& name) const;
     virtual std::string PrintFieldName(const Message& message,
                                        const Reflection* reflection,
                                        const FieldDescriptor* field) const;
@@ -341,7 +341,7 @@ class PROTOBUF_EXPORT TextFormat {
     // property of TextFormat::Printer.  That is, from the printed message, we
     // cannot fully recover the original string field any more.
     void SetTruncateStringFieldLongerThan(
-        const int64 truncate_string_field_longer_than) {
+        const int64_t truncate_string_field_longer_than) {
       truncate_string_field_longer_than_ = truncate_string_field_longer_than;
     }
 
@@ -431,7 +431,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool hide_unknown_fields_;
     bool print_message_fields_in_index_order_;
     bool expand_any_;
-    int64 truncate_string_field_longer_than_;
+    int64_t truncate_string_field_longer_than_;
 
     std::unique_ptr<const FastFieldValuePrinter> default_field_value_printer_;
     typedef std::map<const FieldDescriptor*,
@@ -488,6 +488,16 @@ class PROTOBUF_EXPORT TextFormat {
         : line(line_param), column(column_param) {}
   };
 
+  // A range of locations in the parsed text, including `start` and excluding
+  // `end`.
+  struct ParseLocationRange {
+    ParseLocation start;
+    ParseLocation end;
+    ParseLocationRange() : start(), end() {}
+    ParseLocationRange(ParseLocation start_param, ParseLocation end_param)
+        : start(start_param), end(end_param) {}
+  };
+
   // Data structure which is populated with the locations of each field
   // value parsed from the text.
   class PROTOBUF_EXPORT ParseInfoTree {
@@ -496,10 +506,18 @@ class PROTOBUF_EXPORT TextFormat {
     ParseInfoTree(const ParseInfoTree&) = delete;
     ParseInfoTree& operator=(const ParseInfoTree&) = delete;
 
-    // Returns the parse location for index-th value of the field in the parsed
-    // text. If none exists, returns a location with line = -1. Index should be
-    // -1 for not-repeated fields.
-    ParseLocation GetLocation(const FieldDescriptor* field, int index) const;
+    // Returns the parse location range for index-th value of the field in
+    // the parsed text. If none exists, returns a location with start and end
+    // line -1. Index should be -1 for not-repeated fields.
+    ParseLocationRange GetLocationRange(const FieldDescriptor* field,
+                                        int index) const;
+
+    // Returns the starting parse location for index-th value of the field in
+    // the parsed text. If none exists, returns a location with line = -1. Index
+    // should be -1 for not-repeated fields.
+    ParseLocation GetLocation(const FieldDescriptor* field, int index) const {
+      return GetLocationRange(field, index).start;
+    }
 
     // Returns the parse info tree for the given field, which must be a message
     // type. The nested information tree is owned by the root tree and will be
@@ -511,14 +529,14 @@ class PROTOBUF_EXPORT TextFormat {
     // Allow the text format parser to record information into the tree.
     friend class TextFormat;
 
-    // Records the starting location of a single value for a field.
-    void RecordLocation(const FieldDescriptor* field, ParseLocation location);
+    // Records the starting and ending locations of a single value for a field.
+    void RecordLocation(const FieldDescriptor* field, ParseLocationRange range);
 
     // Create and records a nested tree for a nested message field.
     ParseInfoTree* CreateNested(const FieldDescriptor* field);
 
     // Defines the map from the index-th field descriptor to its parse location.
-    typedef std::map<const FieldDescriptor*, std::vector<ParseLocation> >
+    typedef std::map<const FieldDescriptor*, std::vector<ParseLocationRange>>
         LocationMap;
 
     // Defines the map from the index-th field descriptor to the nested parse
@@ -635,7 +653,7 @@ class PROTOBUF_EXPORT TextFormat {
   // helpers for ParserImpl to call methods of ParseInfoTree.
   static inline void RecordLocation(ParseInfoTree* info_tree,
                                     const FieldDescriptor* field,
-                                    ParseLocation location);
+                                    ParseLocationRange location);
   static inline ParseInfoTree* CreateNested(ParseInfoTree* info_tree,
                                             const FieldDescriptor* field);
 
@@ -644,7 +662,7 @@ class PROTOBUF_EXPORT TextFormat {
 
 inline void TextFormat::RecordLocation(ParseInfoTree* info_tree,
                                        const FieldDescriptor* field,
-                                       ParseLocation location) {
+                                       ParseLocationRange location) {
   info_tree->RecordLocation(field, location);
 }
 

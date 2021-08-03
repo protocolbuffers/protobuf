@@ -1,22 +1,32 @@
-Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
-  Protocol Compiler
+2021-06-04 version 3.17.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  C++
+  * Introduce FieldAccessListener.
   * Stop emitting boilerplate {Copy/Merge}From in each ProtoBuf class
-  * split the accessor annotations according to their operation
-  * introduce proto message injector
-  * let proto message injector decide whether to calculate address info based on field descriptor and access type.
-  * Disable LITE_RUNTIME injector annotations
-  * move callback and @protoc_insertion_point after internal set of enum fields
-  * Improve ExtractFieldInfo codegen for string fields with oneof or default value
-  * Rename MessageInjector to FieldAccessListener
-  * Change the API of FieldAccessListener to support callbacks for info extraction
-  * make field_access_injector private
+  * Fixed some uninitialized variable warnings in generated_message_reflection.cc.
+
+  Kotlin
+  * Fix duplicate proto files error (#8699)
+
+  Java
+  * Fixed parser to check that we are at a proper limit when a sub-message has
+    finished parsing.
+
+2021-05-25 version 3.17.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Kotlin
+  * Fix duplicate class error (#8653)
+
+  PHP
+  * Fixed SEGV in sub-message getters for well-known types when message is unset
+    (#8670)
 
 2021-05-07 version 3.17.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   PHP
+  * Fixed PHP memory leaks and arginfo errors. (#8614)
   * Fixed JSON parser to allow multiple values from the same oneof as long as
     all but one are null.
 
   Ruby
+  * Fixed memory bug: properly root repeated/map field when assigning. (#8639)
   * Fixed JSON parser to allow multiple values from the same oneof as long as
     all but one are null.
 
@@ -267,7 +277,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
     collection directly instead of using the other methods of the BaseContainer.
   * MessageFactory.CreateProtoype can be overridden to customize class creation.
   * Fix PyUnknownFields memory leak (#7928)
-  * Add macOS big sur compatibility (#8126)
+  * Add macOS Big Sur compatibility (#8126)
 
   JavaScript
   * Generate `getDescriptor` methods with `*` as their `this` type.

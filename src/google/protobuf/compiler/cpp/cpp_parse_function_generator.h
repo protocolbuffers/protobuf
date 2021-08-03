@@ -76,6 +76,7 @@ class ParseFunctionGenerator {
  public:
   ParseFunctionGenerator(const Descriptor* descriptor, int max_has_bit_index,
                          const std::vector<int>& has_bit_indices,
+                         const std::vector<int>& inlined_string_indices,
                          const Options& options,
                          MessageSCCAnalyzer* scc_analyzer,
                          const std::map<std::string, std::string>& vars);
@@ -93,8 +94,24 @@ class ParseFunctionGenerator {
   void GenerateDataDefinitions(io::Printer* printer);
 
  private:
+  // Returns true if tailcall table code should be generated.
+  bool should_generate_tctable() const;
+
+  // Returns true if tailcall table code should be generated, but inside an
+  // #ifdef guard.
+  bool should_generate_guarded_tctable() const {
+    return should_generate_tctable() &&
+           options_.tctable_mode == Options::kTCTableGuarded;
+  }
+
+  // Generates a tail-calling `_InternalParse` function.
+  void GenerateTailcallParseFunction(Formatter& format);
+
   // Generates a fallback function for tailcall table-based parsing.
   void GenerateTailcallFallbackFunction(Formatter& format);
+
+  // Generates functions for parsing this message as a field.
+  void GenerateTailcallFieldParseFunctions(Formatter& format);
 
   // Generates a looping `_InternalParse` function.
   void GenerateLoopingParseFunction(Formatter& format);
@@ -123,17 +140,19 @@ class ParseFunctionGenerator {
       Formatter& format, const Descriptor* descriptor,
       const std::vector<const FieldDescriptor*>& ordered_fields);
 
+  // Generates a `switch` statement to parse each of `ordered_fields`.
+  void GenerateFieldSwitch(
+      Formatter& format,
+      const std::vector<const FieldDescriptor*>& ordered_fields);
+
   const Descriptor* descriptor_;
   MessageSCCAnalyzer* scc_analyzer_;
   const Options& options_;
   std::map<std::string, std::string> variables_;
   std::unique_ptr<TailCallTableInfo> tc_table_info_;
+  std::vector<int> inlined_string_indices_;
   int num_hasbits_;
 };
-
-// Returns the integer type that holds a tag of the given length (in bytes) when
-// wire-encoded.
-const char* CodedTagType(int tag_size);
 
 enum class ParseCardinality {
   kSingular,

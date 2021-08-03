@@ -192,6 +192,7 @@ cc_library(
         "src/google/protobuf/dynamic_message.cc",
         "src/google/protobuf/empty.pb.cc",
         "src/google/protobuf/extension_set_heavy.cc",
+        "src/google/protobuf/field_access_listener.cc",
         "src/google/protobuf/field_mask.pb.cc",
         "src/google/protobuf/generated_message_reflection.cc",
         "src/google/protobuf/generated_message_table_driven.cc",
@@ -292,9 +293,42 @@ WELL_KNOWN_PROTO_MAP = {
 
 WELL_KNOWN_PROTOS = [value[0] for value in WELL_KNOWN_PROTO_MAP.values()]
 
+LITE_WELL_KNOWN_PROTO_MAP = {
+    "any": ("src/google/protobuf/any.proto", []),
+    "api": (
+        "src/google/protobuf/api.proto",
+        [
+            "source_context",
+            "type",
+        ],
+    ),
+    "duration": ("src/google/protobuf/duration.proto", []),
+    "empty": ("src/google/protobuf/empty.proto", []),
+    "field_mask": ("src/google/protobuf/field_mask.proto", []),
+    "source_context": ("src/google/protobuf/source_context.proto", []),
+    "struct": ("src/google/protobuf/struct.proto", []),
+    "timestamp": ("src/google/protobuf/timestamp.proto", []),
+    "type": (
+        "src/google/protobuf/type.proto",
+        [
+            "any",
+            "source_context",
+        ],
+    ),
+    "wrappers": ("src/google/protobuf/wrappers.proto", []),
+}
+
+LITE_WELL_KNOWN_PROTOS = [value[0] for value in LITE_WELL_KNOWN_PROTO_MAP.values()]
+
 filegroup(
     name = "well_known_protos",
     srcs = WELL_KNOWN_PROTOS,
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "lite_well_known_protos",
+    srcs = LITE_WELL_KNOWN_PROTOS,
     visibility = ["//visibility:public"],
 )
 
@@ -746,7 +780,7 @@ internal_gen_well_known_protos_java(
 
 internal_gen_well_known_protos_java(
     name = "gen_well_known_protos_javalite",
-    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    deps = [proto + "_proto" for proto in LITE_WELL_KNOWN_PROTO_MAP.keys()],
     javalite = True,
     visibility = [
         "//java:__subpackages__",

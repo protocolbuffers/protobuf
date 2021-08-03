@@ -226,8 +226,13 @@ build_java_with_conformance_tests() {
   # This local installation avoids the problem caused by a new version not yet in Maven Central
   cd java/bom && $MVN install
   cd ../..
-  cd java && $MVN test && $MVN install
-  cd util && $MVN package assembly:single
+  cd java/core && $MVN test && $MVN install
+  cd ../lite && $MVN test && $MVN install
+  cd ../util && $MVN test && $MVN install && $MVN package assembly:single
+  if [ "$version" == "jdk8" ]; then
+    cd ../kotlin && $MVN test && $MVN install
+    cd ../kotlin-lite && $MVN test && $MVN install
+  fi
   cd ../..
   cd conformance && make test_java && cd ..
 }
@@ -433,7 +438,7 @@ build_ruby27() {
 }
 build_ruby30() {
   internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh ruby-3.0.0 && cd ..
+  cd ruby && bash travis-test.sh ruby-3.0.2 && cd ..
 }
 
 build_jruby() {

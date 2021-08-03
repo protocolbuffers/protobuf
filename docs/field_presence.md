@@ -66,7 +66,7 @@ Singular fields (of all types) track presence explicitly in the generated API. T
 
 Similar to singular fields, `oneof` fields explicitly track which one of the members, if any, contains a value. For example, consider this example `oneof`:
 
-```
+```protobuf
 oneof foo {
   int32 a = 1;
   float b = 2;
@@ -144,7 +144,7 @@ This change may or may not be safe, depending on the application's semantics. Fo
 
 Client A uses this definition of the message, which follows the _explicit presence_ serialization discipline for field `foo`:
 
-```
+```protobuf
 syntax = "proto3";
 message Msg {
   optional int32 foo = 1;
@@ -153,7 +153,7 @@ message Msg {
 
 Client B uses a definition of the same message, except that it follows the _no presence_ discipline:
 
-```
+```protobuf
 syntax = "proto3";
 message Msg {
   int32 foo = 1;
@@ -162,7 +162,7 @@ message Msg {
 
 Now, consider a scenario where client A observes `foo`'s presence as the clients repeatedly exchange the "same" message by deserializing and reserializing:
 
-```
+```protobuf
 // Client A:
 Msg m_a;
 m_a.set_foo(1);                  // non-default value
@@ -208,7 +208,7 @@ These are the general steps to use the experimental field tracking support for p
 
 This is an example of a proto3 message with fields which follow both _no presence_ and _explicit presence_ semantics:
 
-```
+```protobuf
 syntax = "proto3";
 package example;
 
@@ -231,7 +231,7 @@ The generated code for proto3 fields with _explicit presence_ (the `optional` la
 
 This is the definition used in the "no presence" examples below:
 
-```
+```protobuf
 syntax = "proto3";
 package example;
 message Msg {  
@@ -241,7 +241,7 @@ message Msg {
 
 This is the definition used in the "explicit presence" examples below:
 
-```
+```protobuf
 syntax = "proto3";
 package example;
 message Msg {
@@ -255,7 +255,7 @@ In the examples, a function `GetProto` constructs and returns a message of type 
 
 No presence:
 
-```
+```C++
 Msg m = GetProto();
 if (m.foo() != 0) {
   // "Clear" the field:
@@ -268,7 +268,7 @@ if (m.foo() != 0) {
 
 Explicit presence:
 
-```
+```C++
 Msg m = GetProto();
 if (m.has_foo()) {
   // Clear the field:
@@ -283,7 +283,7 @@ if (m.has_foo()) {
 
 No presence:
 
-```
+```C#
 var m = GetProto();
 if (m.Foo != 0) {
   // "Clear" the field:
@@ -296,7 +296,7 @@ if (m.Foo != 0) {
 
 Explicit presence:
 
-```
+```C#
 var m = GetProto();
 if (m.HasFoo) {
   // Clear the field:
@@ -311,27 +311,27 @@ if (m.HasFoo) {
 
 No presence:
 
-```
+```go
 m := GetProto()
-if (m.GetFoo() != 0) {
+if m.Foo != 0 {
   // "Clear" the field:
-  m.Foo = 0;
+  m.Foo = 0
 } else {
   // Default value: field may not have been present.
-  m.Foo = 1;
+  m.Foo = 1
 }
 ```
 
 Explicit presence:
 
-```
+```go
 m := GetProto()
-if (m.HasFoo()) {
+if m.Foo != nil {
   // Clear the field:
   m.Foo = nil
 } else {
   // Field is not present, so set it.
-  m.Foo = proto.Int32(1);
+  m.Foo = proto.Int32(1)
 }
 ```
 
@@ -341,7 +341,7 @@ These examples use a `Builder` to demonstrate clearing. Simply checking presence
 
 No presence:
 
-```
+```java
 Msg.Builder m = GetProto().toBuilder();
 if (m.getFoo() != 0) {
   // "Clear" the field:
@@ -354,7 +354,7 @@ if (m.getFoo() != 0) {
 
 Explicit presence:
 
-```
+```java
 Msg.Builder m = GetProto().toBuilder();
 if (m.hasFoo()) {
   // Clear the field:
@@ -369,25 +369,25 @@ if (m.hasFoo()) {
 
 No presence:
 
-```
+```python
 m = example.Msg()
 if m.foo != 0:
-  // "Clear" the field:
+  # "Clear" the field:
   m.foo = 0
 else:
-  // Default value: field may not have been present.
+  # Default value: field may not have been present.
   m.foo = 1
 ```
 
 Explicit presence:
 
-```
+```python
 m = example.Msg()
 if m.HasField('foo'):
-  // Clear the field:
+  # Clear the field:
   m.ClearField('foo')
 else:
-  // Field is not present, so set it.
+  # Field is not present, so set it.
   m.foo = 1
 ```
 
@@ -395,26 +395,26 @@ else:
 
 No presence:
 
-```
+```ruby
 m = Msg.new
 if m.foo != 0
-  // "Clear" the field:
+  # "Clear" the field:
   m.foo = 0
 else
-  // Default value: field may not have been present.
+  # Default value: field may not have been present.
   m.foo = 1
 end
 ```
 
 Explicit presence:
 
-```
+```ruby
 m = Msg.new
 if m.has_foo?
-  // Clear the field:
+  # Clear the field:
   m.clear_foo
 else
-  // Field is not present, so set it.
+  # Field is not present, so set it.
   m.foo = 1
 end
 ```
@@ -423,7 +423,7 @@ end
 
 No presence:
 
-```
+```js
 var m = new Msg();
 if (m.getFoo() != 0) {
   // "Clear" the field:
@@ -436,7 +436,7 @@ if (m.getFoo() != 0) {
 
 Explicit presence:
 
-```
+```js
 var m = new Msg();
 if (m.hasFoo()) {
   // Clear the field:
@@ -451,7 +451,7 @@ if (m.hasFoo()) {
 
 No presence:
 
-```
+```Objective-C
 Msg *m = [[Msg alloc] init];
 if (m.foo != 0) {
   // "Clear" the field:
@@ -464,7 +464,7 @@ if (m.foo != 0) {
 
 Explicit presence:
 
-```
+```Objective-C
 Msg *m = [[Msg alloc] init];
 if (m.hasFoo()) {
   // Clear the field:

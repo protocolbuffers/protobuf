@@ -1128,14 +1128,13 @@ TEST(RepeatedPtrField, ClearedElements) {
 
   EXPECT_EQ(field.Add(),
             original);  // Should return same string for reuse.
-
-  EXPECT_EQ(field.ReleaseLast(), original);  // We take ownership.
+  EXPECT_EQ(field.UnsafeArenaReleaseLast(), original);  // We take ownership.
   EXPECT_EQ(field.ClearedCount(), 0);
 
   EXPECT_NE(field.Add(), original);  // Should NOT return the same string.
   EXPECT_EQ(field.ClearedCount(), 0);
 
-  field.AddAllocated(original);  // Give ownership back.
+  field.UnsafeArenaAddAllocated(original);  // Give ownership back.
   EXPECT_EQ(field.ClearedCount(), 0);
   EXPECT_EQ(field.Mutable(1), original);
 
@@ -1514,7 +1513,9 @@ TEST(RepeatedPtrField, ExtractSubrange) {
           std::vector<std::string*> subject;
 
           // Create an array with "sz" elements and "extra" cleared elements.
-          RepeatedPtrField<std::string> field;
+          // Use an arena to avoid copies from debug-build stability checks.
+          Arena arena;
+          RepeatedPtrField<std::string> field(&arena);
           for (int i = 0; i < sz + extra; ++i) {
             subject.push_back(new std::string());
             field.AddAllocated(subject[i]);
@@ -1534,7 +1535,7 @@ TEST(RepeatedPtrField, ExtractSubrange) {
 
           // Were the removed elements extracted into the catcher array?
           for (int i = 0; i < num; ++i)
-            EXPECT_EQ(catcher[i], subject[start + i]);
+            EXPECT_EQ(*catcher[i], *subject[start + i]);
           EXPECT_EQ(NULL, catcher[num]);
 
           // Does the resulting array contain the right values?

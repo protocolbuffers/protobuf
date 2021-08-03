@@ -48,10 +48,12 @@ class EnumFieldGenerator : public SingleFieldGenerator {
   EnumFieldGenerator& operator=(const EnumFieldGenerator&) = delete;
 
  public:
-  virtual void GenerateCFunctionDeclarations(io::Printer* printer) const;
-  virtual void GenerateCFunctionImplementations(io::Printer* printer) const;
+  virtual void GenerateCFunctionDeclarations(
+      io::Printer* printer) const override;
+  virtual void GenerateCFunctionImplementations(
+      io::Printer* printer) const override;
   virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls) const;
+      std::set<std::string>* fwd_decls) const override;
 
  protected:
   EnumFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
@@ -63,7 +65,7 @@ class RepeatedEnumFieldGenerator : public RepeatedFieldGenerator {
                                               const Options& options);
 
  public:
-  virtual void FinishInitialization();
+  virtual void FinishInitialization() override;
 
  protected:
   RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
