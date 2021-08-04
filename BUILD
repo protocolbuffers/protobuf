@@ -50,7 +50,6 @@ COPTS = select({
         "-DHAVE_ZLIB",
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
-        "-Wno-deprecated-declarations",
     ],
 })
 
@@ -740,7 +739,12 @@ cc_test(
         ],
         ":msvc": [],
     }),
-    copts = COPTS,
+    copts = COPTS + select({
+        ":msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
     data = [
         ":test_plugin",
     ] + glob([
