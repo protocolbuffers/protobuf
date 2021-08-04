@@ -1130,7 +1130,7 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
 
 MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
   if (analysis_cache_.count(scc)) return analysis_cache_[scc];
-  MessageAnalysis result{};
+  MessageAnalysis result;
   if (UsingImplicitWeakFields(scc->GetFile(), options_)) {
     result.contains_weak = true;
   }

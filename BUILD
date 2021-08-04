@@ -48,6 +48,7 @@ COPTS = select({
     "//conditions:default": [
         "-DHAVE_PTHREAD",
         "-DHAVE_ZLIB",
+        "-Wmissing-field-initializers",
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
     ],
