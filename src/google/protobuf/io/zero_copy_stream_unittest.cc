@@ -772,7 +772,12 @@ TEST_F(IoTest, NonBlockingFileIo) {
   for (int i = 0; i < kBlockSizeCount; i++) {
     for (int j = 0; j < kBlockSizeCount; j++) {
       int fd[2];
-      ASSERT_EQ(pipe2(fd, O_NONBLOCK), 0);
+      // On Linux we could use pipe2 to make the pipe non-blocking in one step,
+      // but we instead use pipe and fcntl because pipe2 is not available on
+      // Mac OS.
+      ASSERT_EQ(pipe(fd), 0);
+      ASSERT_EQ(fcntl(fd[0], F_SETFL, O_NONBLOCK), 0);
+      ASSERT_EQ(fcntl(fd[1], F_SETFL, O_NONBLOCK), 0);
 
       std::mutex go_write;
       go_write.lock();
