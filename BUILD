@@ -39,7 +39,6 @@ MSVC_COPTS = [
     "/wd4334",  # 'operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
     "/wd4355",  # 'this' : used in base member initializer list
     "/wd4506",  # no definition for inline function 'function'
-    "/wd4514",  # -Wno-unused-function
     "/wd4800",  # 'type' : forcing value to bool 'true' or 'false' (performance warning)
     "/wd4996",  # The compiler encountered a deprecated declaration.
 ]
@@ -51,9 +50,6 @@ COPTS = select({
         "-DHAVE_ZLIB",
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
-        "-Wno-unused-function",
-        # Prevents ISO C++ const string assignment warnings for pyext sources.
-        "-Wno-write-strings",
         "-Wno-deprecated-declarations",
     ],
 })
