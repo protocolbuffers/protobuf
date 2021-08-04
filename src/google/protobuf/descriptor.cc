@@ -1010,7 +1010,7 @@ class TableArena {
   }
 
   Block* current_ = nullptr;
-  std::array<Block*, kSmallSizes.size()> small_size_blocks_{};
+  std::array<Block*, kSmallSizes.size()> small_size_blocks_ = {};
   Block* full_blocks_ = nullptr;
 
   size_t num_allocations_ = 0;
