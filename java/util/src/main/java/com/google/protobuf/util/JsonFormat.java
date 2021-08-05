@@ -490,6 +490,16 @@ public class JsonFormat {
           .merge(json, builder);
     }
 
+    /**
+     * Parses from JsonElement into a protobuf message.
+     *
+     * @throws InvalidProtocolBufferException if there are unknown fields in the input.
+     */
+    public void merge(JsonElement json, Message.Builder builder) throws IOException {
+      new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
+          .merge(json, builder);
+    }
+
     // For testing only.
     Parser usingRecursionLimit(int recursionLimit) {
       return new Parser(registry, oldRegistry, ignoringUnknownFields, recursionLimit);
