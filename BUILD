@@ -1302,3 +1302,9 @@ exports_files([
     "conformance/text_format_failure_list_java.txt",
     "conformance/text_format_failure_list_java_lite.txt",
 ])
+
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob(["**/*.bzl"]),
+    visibility = ["//visibility:public"],
+)
