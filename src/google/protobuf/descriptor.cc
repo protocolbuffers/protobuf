@@ -686,7 +686,7 @@ class TableArena {
         T(std::forward<Args>(args)...);
   }
 
-  TableArena() {}
+  TableArena(): small_size_blocks_() {}
 
   TableArena(const TableArena&) = delete;
   TableArena& operator=(const TableArena&) = delete;
@@ -1010,7 +1010,7 @@ class TableArena {
   }
 
   Block* current_ = nullptr;
-  std::array<Block*, kSmallSizes.size()> small_size_blocks_ = {};
+  std::array<Block*, kSmallSizes.size()> small_size_blocks_;
   Block* full_blocks_ = nullptr;
 
   size_t num_allocations_ = 0;
