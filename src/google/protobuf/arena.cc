@@ -136,14 +136,14 @@ std::pair<void*, SerialArena::CleanupNode*>
 SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, const AllocationPolicy* policy) {
   AllocateNewBlock(n + kCleanupSize, policy);
-  return AllocateAlignedWithCleanup(n, policy);
+  return AllocateFromExistingWithCleanupFallback(n);
 }
 
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedFallback(size_t n,
                                            const AllocationPolicy* policy) {
   AllocateNewBlock(n, policy);
-  return AllocateAligned(n, policy);
+  return AllocateFromExisting(n);
 }
 
 void SerialArena::AllocateNewBlock(size_t n, const AllocationPolicy* policy) {
@@ -168,8 +168,8 @@ void SerialArena::AllocateNewBlock(size_t n, const AllocationPolicy* policy) {
 #endif  // ADDRESS_SANITIZER
 }
 
-uint64 SerialArena::SpaceUsed() const {
-  uint64 space_used = ptr_ - head_->Pointer(kBlockHeaderSize);
+uint64_t SerialArena::SpaceUsed() const {
+  uint64_t space_used = ptr_ - head_->Pointer(kBlockHeaderSize);
   space_used += space_used_;
   // Remove the overhead of the SerialArena itself.
   space_used -= ThreadSafeArena::kSerialArenaSize;
@@ -263,11 +263,11 @@ void ThreadSafeArena::Init(bool record_allocs) {
   auto id = tc.next_lifecycle_id;
   // We increment lifecycle_id's by multiples of two so we can use bit 0 as
   // a tag.
-  constexpr uint64 kDelta = 2;
-  constexpr uint64 kInc = ThreadCache::kPerThreadIds * kDelta;
+  constexpr uint64_t kDelta = 2;
+  constexpr uint64_t kInc = ThreadCache::kPerThreadIds * kDelta;
   if (PROTOBUF_PREDICT_FALSE((id & (kInc - 1)) == 0)) {
     constexpr auto relaxed = std::memory_order_relaxed;
-    // On platforms that don't support uint64 atomics we can certainly not
+    // On platforms that don't support uint64_t atomics we can certainly not
     // afford to increment by large intervals and expect uniqueness due to
     // wrapping, hence we only add by 1.
     id = lifecycle_id_generator_.id.fetch_add(1, relaxed) * kInc;
@@ -316,7 +316,7 @@ SerialArena::Memory ThreadSafeArena::Free(size_t* space_allocated) {
   return mem;
 }
 
-uint64 ThreadSafeArena::Reset() {
+uint64_t ThreadSafeArena::Reset() {
   // Have to do this in a first pass, because some of the destructors might
   // refer to memory in other blocks.
   CleanupList();
@@ -406,18 +406,18 @@ void ThreadSafeArena::AddCleanupFallback(void* elem, void (*cleanup)(void*)) {
       ->AddCleanup(elem, cleanup, AllocPolicy());
 }
 
-uint64 ThreadSafeArena::SpaceAllocated() const {
+uint64_t ThreadSafeArena::SpaceAllocated() const {
   SerialArena* serial = threads_.load(std::memory_order_acquire);
-  uint64 res = 0;
+  uint64_t res = 0;
   for (; serial; serial = serial->next()) {
     res += serial->SpaceAllocated();
   }
   return res;
 }
 
-uint64 ThreadSafeArena::SpaceUsed() const {
+uint64_t ThreadSafeArena::SpaceUsed() const {
   SerialArena* serial = threads_.load(std::memory_order_acquire);
-  uint64 space_used = 0;
+  uint64_t space_used = 0;
   for (; serial; serial = serial->next()) {
     space_used += serial->SpaceUsed();
   }

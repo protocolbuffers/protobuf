@@ -43,7 +43,7 @@ namespace internal {
 
 namespace {
 
-std::string* MutableUnknownFields(MessageLite* msg, int64 arena_offset) {
+std::string* MutableUnknownFields(MessageLite* msg, int64_t arena_offset) {
   return Raw<InternalMetadata>(msg, arena_offset)
       ->mutable_unknown_fields<std::string>();
 }

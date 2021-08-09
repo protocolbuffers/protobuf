@@ -37,6 +37,7 @@ import static com.google.common.math.LongMath.checkedMultiply;
 import static com.google.common.math.LongMath.checkedSubtract;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.CompileTimeConstant;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
 import java.io.Serializable;
@@ -280,6 +281,25 @@ public final class Timestamps {
       return normalizedTimestamp(seconds, nanos);
     } catch (IllegalArgumentException e) {
       throw new ParseException("Failed to parse timestamp: timestamp is out of range.", 0);
+    }
+  }
+
+  /**
+   * Parses a string in RFC 3339 format into a {@link Timestamp}.
+   *
+   * <p>Identical to {@link #parse(String)}, but throws an {@link IllegalArgumentException} instead
+   * of a {@link ParseException} if parsing fails.
+   *
+   * @return a {@link Timestamp} parsed from the string
+   * @throws IllegalArgumentException if parsing fails
+   */
+  public static Timestamp parseUnchecked(@CompileTimeConstant String value) {
+    try {
+      return parse(value);
+    } catch (ParseException e) {
+      // While `java.time.format.DateTimeParseException` is a more accurate representation of the
+      // failure, this library is currently not JDK8 ready because of Android dependencies.
+      throw new IllegalArgumentException(e);
     }
   }
 

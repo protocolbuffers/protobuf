@@ -30,6 +30,9 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import protobuf_unittest.MessageWithNoOuter;
@@ -43,17 +46,17 @@ import protobuf_unittest.UnittestProto.TestService;
 import protobuf_unittest.no_generic_services_test.UnittestNoGenericServices;
 import java.util.HashSet;
 import java.util.Set;
-import junit.framework.TestCase;
 import org.easymock.classextension.EasyMock;
 import org.easymock.IArgumentMatcher;
 import org.easymock.classextension.IMocksControl;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-/**
- * Tests services and stubs.
- *
- * @author kenton@google.com Kenton Varda
- */
-public class ServiceTest extends TestCase {
+/** Tests services and stubs. */
+@RunWith(JUnit4.class)
+public class ServiceTest {
   private IMocksControl control;
   private RpcController mockController;
 
@@ -62,9 +65,8 @@ public class ServiceTest extends TestCase {
   private final Descriptors.MethodDescriptor barDescriptor =
       TestService.getDescriptor().getMethods().get(1);
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
     control = EasyMock.createStrictControl();
     mockController = control.createMock(RpcController.class);
   }
@@ -72,6 +74,7 @@ public class ServiceTest extends TestCase {
   // =================================================================
 
   /** Tests Service.callMethod(). */
+  @Test
   public void testCallMethod() throws Exception {
     FooRequest fooRequest = FooRequest.newBuilder().build();
     BarRequest barRequest = BarRequest.newBuilder().build();
@@ -99,16 +102,22 @@ public class ServiceTest extends TestCase {
   }
 
   /** Tests Service.get{Request,Response}Prototype(). */
+  @Test
   public void testGetPrototype() throws Exception {
     TestService mockService = control.createMock(TestService.class);
 
-    assertSame(mockService.getRequestPrototype(fooDescriptor), FooRequest.getDefaultInstance());
-    assertSame(mockService.getResponsePrototype(fooDescriptor), FooResponse.getDefaultInstance());
-    assertSame(mockService.getRequestPrototype(barDescriptor), BarRequest.getDefaultInstance());
-    assertSame(mockService.getResponsePrototype(barDescriptor), BarResponse.getDefaultInstance());
+    assertThat(mockService.getRequestPrototype(fooDescriptor))
+        .isSameInstanceAs(FooRequest.getDefaultInstance());
+    assertThat(mockService.getResponsePrototype(fooDescriptor))
+        .isSameInstanceAs(FooResponse.getDefaultInstance());
+    assertThat(mockService.getRequestPrototype(barDescriptor))
+        .isSameInstanceAs(BarRequest.getDefaultInstance());
+    assertThat(mockService.getResponsePrototype(barDescriptor))
+        .isSameInstanceAs(BarResponse.getDefaultInstance());
   }
 
   /** Tests generated stubs. */
+  @Test
   public void testStub() throws Exception {
     FooRequest fooRequest = FooRequest.newBuilder().build();
     BarRequest barRequest = BarRequest.newBuilder().build();
@@ -137,6 +146,7 @@ public class ServiceTest extends TestCase {
   }
 
   /** Tests generated blocking stubs. */
+  @Test
   public void testBlockingStub() throws Exception {
     FooRequest fooRequest = FooRequest.newBuilder().build();
     BarRequest barRequest = BarRequest.newBuilder().build();
@@ -162,11 +172,12 @@ public class ServiceTest extends TestCase {
         .andReturn(barResponse);
     control.replay();
 
-    assertSame(fooResponse, stub.foo(mockController, fooRequest));
-    assertSame(barResponse, stub.bar(mockController, barRequest));
+    assertThat(fooResponse).isSameInstanceAs(stub.foo(mockController, fooRequest));
+    assertThat(barResponse).isSameInstanceAs(stub.bar(mockController, barRequest));
     control.verify();
   }
 
+  @Test
   public void testNewReflectiveService() {
     ServiceWithNoOuter.Interface impl = control.createMock(ServiceWithNoOuter.Interface.class);
     RpcController controller = control.createMock(RpcController.class);
@@ -179,7 +190,7 @@ public class ServiceTest extends TestCase {
           @Override
           public void run(Message parameter) {
             // No reason this should be run.
-            fail();
+            assertWithMessage("should not run").fail();
           }
         };
     RpcCallback<TestAllTypes> specializedCallback = RpcUtil.specializeCallback(callback);
@@ -194,6 +205,7 @@ public class ServiceTest extends TestCase {
     control.verify();
   }
 
+  @Test
   public void testNewReflectiveBlockingService() throws ServiceException {
     ServiceWithNoOuter.BlockingInterface impl =
         control.createMock(ServiceWithNoOuter.BlockingInterface.class);
@@ -210,11 +222,12 @@ public class ServiceTest extends TestCase {
     control.replay();
 
     Message response = service.callBlockingMethod(fooMethod, controller, request);
-    assertEquals(expectedResponse, response);
+    assertThat(response).isEqualTo(expectedResponse);
 
     control.verify();
   }
 
+  @Test
   public void testNoGenericServices() throws Exception {
     // Non-services should be usable.
     UnittestNoGenericServices.TestMessage message =
@@ -222,8 +235,8 @@ public class ServiceTest extends TestCase {
             .setA(123)
             .setExtension(UnittestNoGenericServices.testExtension, 456)
             .build();
-    assertEquals(123, message.getA());
-    assertEquals(1, UnittestNoGenericServices.TestEnum.FOO.getNumber());
+    assertThat(message.getA()).isEqualTo(123);
+    assertThat(UnittestNoGenericServices.TestEnum.FOO.getNumber()).isEqualTo(1);
 
     // Build a list of the class names nested in UnittestNoGenericServices.
     String outerName =
@@ -239,7 +252,7 @@ public class ServiceTest extends TestCase {
       //   mentioned in the documentation for java.lang.Class.  I don't want to
       //   make assumptions, so I'm just going to accept any character as the
       //   separator.
-      assertTrue(fullName.startsWith(outerName));
+      assertThat(fullName).startsWith(outerName);
 
       if (!Service.class.isAssignableFrom(innerClass)
           && !Message.class.isAssignableFrom(innerClass)
@@ -252,16 +265,16 @@ public class ServiceTest extends TestCase {
     }
 
     // No service class should have been generated.
-    assertTrue(innerClassNames.contains("TestMessage"));
-    assertTrue(innerClassNames.contains("TestEnum"));
-    assertFalse(innerClassNames.contains("TestService"));
+    assertThat(innerClassNames).contains("TestMessage");
+    assertThat(innerClassNames).contains("TestEnum");
+    assertThat(innerClassNames).doesNotContain("TestService");
 
     // But descriptors are there.
     FileDescriptor file = UnittestNoGenericServices.getDescriptor();
-    assertEquals(1, file.getServices().size());
-    assertEquals("TestService", file.getServices().get(0).getName());
-    assertEquals(1, file.getServices().get(0).getMethods().size());
-    assertEquals("Foo", file.getServices().get(0).getMethods().get(0).getName());
+    assertThat(file.getServices()).hasSize(1);
+    assertThat(file.getServices().get(0).getName()).isEqualTo("TestService");
+    assertThat(file.getServices().get(0).getMethods()).hasSize(1);
+    assertThat(file.getServices().get(0).getMethods().get(0).getName()).isEqualTo("Foo");
   }
 
 
@@ -308,7 +321,7 @@ public class ServiceTest extends TestCase {
       if (!(actual instanceof RpcCallback)) {
         return false;
       }
-      RpcCallback actualCallback = (RpcCallback) actual;
+      RpcCallback<?> actualCallback = (RpcCallback<?>) actual;
 
       callback.reset();
       actualCallback.run(null);

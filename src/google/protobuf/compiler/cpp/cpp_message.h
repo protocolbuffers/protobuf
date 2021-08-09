@@ -134,6 +134,7 @@ class MessageGenerator {
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);
   void GenerateOneofClear(io::Printer* printer);
+  void GenerateVerify(io::Printer* printer);
   void GenerateSerializeWithCachedSizes(io::Printer* printer);
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer);
   void GenerateSerializeWithCachedSizesBody(io::Printer* printer);
@@ -177,6 +178,7 @@ class MessageGenerator {
                                bool copy_constructor) const;
 
   size_t HasBitsSize() const;
+  size_t InlinedStringDonatedSize() const;
   int HasBitIndex(const FieldDescriptor* a) const;
   int HasByteIndex(const FieldDescriptor* a) const;
   int HasWordIndex(const FieldDescriptor* a) const;
@@ -196,6 +198,13 @@ class MessageGenerator {
   std::vector<const FieldDescriptor*> optimized_order_;
   std::vector<int> has_bit_indices_;
   int max_has_bit_index_;
+
+  // A map from field index to inlined_string index. For non-inlined-string
+  // fields, the element is -1.
+  std::vector<int> inlined_string_indices_;
+  // The count of inlined_string fields in the message.
+  int max_inlined_string_index_;
+
   std::vector<const EnumGenerator*> enum_generators_;
   std::vector<const ExtensionGenerator*> extension_generators_;
   int num_required_fields_;

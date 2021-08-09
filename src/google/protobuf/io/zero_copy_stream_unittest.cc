@@ -46,8 +46,11 @@
 //   "parametized tests" so that one set of tests can be used on all the
 //   implementations.
 
+#include <chrono>
+#include <thread>
 
 #ifndef _MSC_VER
+#include <sys/socket.h>
 #include <unistd.h>
 #endif
 #include <errno.h>
@@ -117,7 +120,7 @@ class IoTest : public testing::Test {
   int WriteStuff(ZeroCopyOutputStream* output);
   // Reads text from an input stream and expects it to match what
   // WriteStuff() writes.
-  void ReadStuff(ZeroCopyInputStream* input);
+  void ReadStuff(ZeroCopyInputStream* input, bool read_eof = true);
 
   // Similar to WriteStuff, but performs more sophisticated testing.
   int WriteStuffLarge(ZeroCopyOutputStream* output);
@@ -228,7 +231,7 @@ int IoTest::WriteStuff(ZeroCopyOutputStream* output) {
 
 // Reads text from an input stream and expects it to match what WriteStuff()
 // writes.
-void IoTest::ReadStuff(ZeroCopyInputStream* input) {
+void IoTest::ReadStuff(ZeroCopyInputStream* input, bool read_eof) {
   ReadString(input, "Hello world!\n");
   ReadString(input, "Some text.  ");
   ReadString(input, "Blah ");
@@ -240,8 +243,10 @@ void IoTest::ReadStuff(ZeroCopyInputStream* input) {
 
   EXPECT_EQ(input->ByteCount(), 68);
 
-  uint8 byte;
-  EXPECT_EQ(ReadFromInput(input, &byte, 1), 0);
+  if (read_eof) {
+    uint8 byte;
+    EXPECT_EQ(ReadFromInput(input, &byte, 1), 0);
+  }
 }
 
 int IoTest::WriteStuffLarge(ZeroCopyOutputStream* output) {
@@ -758,6 +763,72 @@ TEST_F(IoTest, FileIo) {
     }
   }
 }
+
+#ifndef _MSC_VER
+// This tests the FileInputStream with a non blocking file. It opens a pipe in
+// non blocking mode, then starts reading it. The writing thread starts writing
+// 100ms after that.
+TEST_F(IoTest, NonBlockingFileIo) {
+  for (int i = 0; i < kBlockSizeCount; i++) {
+    for (int j = 0; j < kBlockSizeCount; j++) {
+      int fd[2];
+      // On Linux we could use pipe2 to make the pipe non-blocking in one step,
+      // but we instead use pipe and fcntl because pipe2 is not available on
+      // Mac OS.
+      ASSERT_EQ(pipe(fd), 0);
+      ASSERT_EQ(fcntl(fd[0], F_SETFL, O_NONBLOCK), 0);
+      ASSERT_EQ(fcntl(fd[1], F_SETFL, O_NONBLOCK), 0);
+
+      std::mutex go_write;
+      go_write.lock();
+
+      bool done_reading = false;
+
+      std::thread write_thread([this, fd, &go_write, i]() {
+        go_write.lock();
+        go_write.unlock();
+        FileOutputStream output(fd[1], kBlockSizes[i]);
+        WriteStuff(&output);
+        EXPECT_EQ(0, output.GetErrno());
+      });
+
+      std::thread read_thread([this, fd, &done_reading, j]() {
+        FileInputStream input(fd[0], kBlockSizes[j]);
+        ReadStuff(&input, false /* read_eof */);
+        done_reading = true;
+        close(fd[0]);
+        close(fd[1]);
+        EXPECT_EQ(0, input.GetErrno());
+      });
+
+      // Sleeping is not necessary but makes the next expectation relevant: the
+      // reading thread waits for the data to be available before returning.
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      EXPECT_FALSE(done_reading);
+      go_write.unlock();
+      write_thread.join();
+      read_thread.join();
+      EXPECT_TRUE(done_reading);
+    }
+  }
+}
+
+TEST_F(IoTest, BlockingFileIoWithTimeout) {
+  int fd[2];
+
+  for (int i = 0; i < kBlockSizeCount; i++) {
+    ASSERT_EQ(socketpair(AF_UNIX, SOCK_STREAM, 0, fd), 0);
+    struct timeval tv {
+      .tv_sec = 0, .tv_usec = 5000
+    };
+    ASSERT_EQ(setsockopt(fd[0], SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)), 0);
+    FileInputStream input(fd[0], kBlockSizes[i]);
+    uint8 byte;
+    EXPECT_EQ(ReadFromInput(&input, &byte, 1), 0);
+    EXPECT_EQ(EAGAIN, input.GetErrno());
+  }
+}
+#endif
 
 #if HAVE_ZLIB
 TEST_F(IoTest, GzipFileIo) {

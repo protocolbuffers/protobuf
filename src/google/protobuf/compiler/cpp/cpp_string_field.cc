@@ -104,7 +104,8 @@ void SetStringVariables(const FieldDescriptor* descriptor,
 
 StringFieldGenerator::StringFieldGenerator(const FieldDescriptor* descriptor,
                                            const Options& options)
-    : FieldGenerator(descriptor, options) {
+    : FieldGenerator(descriptor, options),
+      inlined_(IsStringInlined(descriptor, options)) {
   SetStringVariables(descriptor, &variables_, options);
 }
 
@@ -112,7 +113,14 @@ StringFieldGenerator::~StringFieldGenerator() {}
 
 void StringFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("::$proto_ns$::internal::ArenaStringPtr $name$_;\n");
+  if (!inlined_) {
+    format("::$proto_ns$::internal::ArenaStringPtr $name$_;\n");
+  } else {
+    // `_init_inline_xxx` is used for initializing default instances.
+    format(
+        "::$proto_ns$::internal::InlinedStringField $name$_;\n"
+        "static std::true_type _init_inline_$name$_;\n");
+  }
 }
 
 void StringFieldGenerator::GenerateStaticMembers(io::Printer* printer) const {
@@ -172,8 +180,13 @@ void StringFieldGenerator::GenerateAccessorDeclarations(
       "const std::string& _internal_$name$() const;\n"
       "inline PROTOBUF_ALWAYS_INLINE void "
       "_internal_set_$name$(const std::string& value);\n"
-      "std::string* _internal_mutable_$name$();\n"
-      "public:\n");
+      "std::string* _internal_mutable_$name$();\n");
+  if (inlined_) {
+    format(
+        "inline PROTOBUF_ALWAYS_INLINE bool _internal_$name$_donated() "
+        "const;\n");
+  }
+  format("public:\n");
 
   if (unknown_ctype) {
     format.Outdent();
@@ -196,16 +209,36 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
   }
   format(
       "  return _internal_$name$();\n"
-      "}\n"
-      "template <typename ArgT0, typename... ArgT>\n"
-      "inline PROTOBUF_ALWAYS_INLINE\n"
-      "void $classname$::set_$name$(ArgT0&& arg0, ArgT... args) {\n"
-      " $set_hasbit$\n"
-      " $name$_.$setter$($default_value_tag$, static_cast<ArgT0 &&>(arg0),"
-      " args..., GetArenaForAllocation());\n"
-      "$annotate_set$"
-      "  // @@protoc_insertion_point(field_set:$full_name$)\n"
-      "}\n"
+      "}\n");
+  if (!inlined_) {
+    format(
+        "template <typename ArgT0, typename... ArgT>\n"
+        "inline PROTOBUF_ALWAYS_INLINE\n"
+        "void $classname$::set_$name$(ArgT0&& arg0, ArgT... args) {\n"
+        " $set_hasbit$\n"
+        " $name$_.$setter$($default_value_tag$, static_cast<ArgT0 &&>(arg0),"
+        " args..., GetArenaForAllocation());\n"
+        "$annotate_set$"
+        "  // @@protoc_insertion_point(field_set:$full_name$)\n"
+        "}\n");
+  } else {
+    format(
+        "template <typename ArgT0, typename... ArgT>\n"
+        "inline PROTOBUF_ALWAYS_INLINE\n"
+        "void $classname$::set_$name$(ArgT0&& arg0, ArgT... args) {\n"
+        " $set_hasbit$\n"
+        " $name$_.$setter$(nullptr, static_cast<ArgT0 &&>(arg0),"
+        " args..., GetArenaForAllocation(), _internal_$name$_donated(), "
+        "&$donating_states_word$, $mask_for_undonate$);\n"
+        "$annotate_set$"
+        "  // @@protoc_insertion_point(field_set:$full_name$)\n"
+        "}\n"
+        "inline bool $classname$::_internal_$name$_donated() const {\n"
+        "  bool value = $inlined_string_donated$\n"
+        "  return value;\n"
+        "}\n");
+  }
+  format(
       "inline std::string* $classname$::mutable_$name$() {\n"
       "  std::string* _s = _internal_mutable_$name$();\n"
       "$annotate_mutable$"
@@ -217,15 +250,34 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline void $classname$::_internal_set_$name$(const std::string& "
       "value) {\n"
-      "  $set_hasbit$\n"
-      "  $name$_.Set($default_value_tag$, value, GetArenaForAllocation());\n"
-      "}\n");
+      "  $set_hasbit$\n");
+  if (!inlined_) {
+    format(
+        "  $name$_.Set($default_value_tag$, value, GetArenaForAllocation());\n"
+        "}\n");
+  } else {
+    format(
+        "  $name$_.Set(nullptr, value, GetArenaForAllocation(),\n"
+        "    _internal_$name$_donated(), &$donating_states_word$, "
+        "$mask_for_undonate$);\n"
+        "}\n");
+  }
   format(
       "inline std::string* $classname$::_internal_mutable_$name$() {\n"
-      "  $set_hasbit$\n"
-      "  return $name$_.Mutable($default_variable_or_tag$, "
-      "GetArenaForAllocation());\n"
-      "}\n"
+      "  $set_hasbit$\n");
+  if (!inlined_) {
+    format(
+        "  return $name$_.Mutable($default_variable_or_tag$, "
+        "GetArenaForAllocation());\n"
+        "}\n");
+  } else {
+    format(
+        "  return $name$_.Mutable($default_variable_or_tag$, "
+        "GetArenaForAllocation(), _internal_$name$_donated(), "
+        "&$donating_states_word$, $mask_for_undonate$);\n"
+        "}\n");
+  }
+  format(
       "inline std::string* $classname$::$release_name$() {\n"
       "$annotate_release$"
       "  // @@protoc_insertion_point(field_release:$full_name$)\n");
@@ -235,9 +287,16 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
         "  if (!_internal_has_$name$()) {\n"
         "    return nullptr;\n"
         "  }\n"
-        "  $clear_hasbit$\n"
-        "  return $name$_.ReleaseNonDefault($init_value$, "
-        "GetArenaForAllocation());\n");
+        "  $clear_hasbit$\n");
+    if (!inlined_) {
+      format(
+          "  return $name$_.ReleaseNonDefault($init_value$, "
+          "GetArenaForAllocation());\n");
+    } else {
+      format(
+          "  return $name$_.Release(nullptr, GetArenaForAllocation(), "
+          "_internal_$name$_donated());\n");
+    }
   } else {
     format(
         "  return $name$_.Release($init_value$, GetArenaForAllocation());\n");
@@ -250,9 +309,19 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
       "    $set_hasbit$\n"
       "  } else {\n"
       "    $clear_hasbit$\n"
-      "  }\n"
-      "  $name$_.SetAllocated($init_value$, $name$,\n"
-      "      GetArenaForAllocation());\n"
+      "  }\n");
+  if (!inlined_) {
+    format(
+        "  $name$_.SetAllocated($init_value$, $name$,\n"
+        "      GetArenaForAllocation());\n");
+  } else {
+    // Currently, string fields with default value can't be inlined.
+    format(
+        "    $name$_.SetAllocated(nullptr, $name$, GetArenaForAllocation(), "
+        "_internal_$name$_donated(), &$donating_states_word$, "
+        "$mask_for_undonate$);\n");
+  }
+  format(
       "$annotate_set$"
       "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
       "}\n");
@@ -274,6 +343,7 @@ void StringFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   if (descriptor_->default_value_string().empty()) {
     format("$name$_.ClearToEmpty();\n");
   } else {
+    GOOGLE_DCHECK(!inlined_);
     format(
         "$name$_.ClearToDefault($lazy_variable$, GetArenaForAllocation());\n");
   }
@@ -291,6 +361,18 @@ void StringFieldGenerator::GenerateMessageClearingCode(
   // will have checked that this field is set.  If so, we can avoid redundant
   // checks against the default variable.
   const bool must_be_present = HasHasbit(descriptor_);
+
+  if (inlined_ && must_be_present) {
+    // Calling mutable_$name$() gives us a string reference and sets the has bit
+    // for $name$ (in proto2).  We may get here when the string field is inlined
+    // but the string's contents have not been changed by the user, so we cannot
+    // make an assertion about the contents of the string and could never make
+    // an assertion about the string instance.
+    //
+    // For non-inlined strings, we distinguish from non-default by comparing
+    // instances, rather than contents.
+    format("$DCHK$(!$name$_.IsDefault(nullptr));\n");
+  }
 
   if (descriptor_->default_value_string().empty()) {
     if (must_be_present) {
@@ -314,16 +396,31 @@ void StringFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 
 void StringFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format(
-      "::$proto_ns$::internal::ArenaStringPtr::InternalSwap(\n"
-      "    $init_value$,\n"
-      "    &$name$_, GetArenaForAllocation(),\n"
-      "    &other->$name$_, other->GetArenaForAllocation()\n"
-      ");\n");
+  if (!inlined_) {
+    format(
+        "::$proto_ns$::internal::ArenaStringPtr::InternalSwap(\n"
+        "    $init_value$,\n"
+        "    &$name$_, lhs_arena,\n"
+        "    &other->$name$_, rhs_arena\n"
+        ");\n");
+  } else {
+    // At this point, it's guaranteed that the two fields being swapped are on
+    // the same arena.
+    format(
+        "$name$_.Swap(&other->$name$_, nullptr, GetArenaForAllocation(), "
+        "_internal_$name$_donated(), other->_internal_$name$_donated(), "
+        "&$donating_states_word$, &(other->$donating_states_word$), "
+        "$mask_for_undonate$);\n");
+  }
 }
 
 void StringFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
+  if (inlined_ && descriptor_->default_value_string().empty()) {
+    // Automatic initialization will construct the string.
+    return;
+  }
+  GOOGLE_DCHECK(!inlined_);
   format("$name$_.UnsafeSetDefault($init_value$);\n");
 }
 
@@ -340,10 +437,16 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
 
   format.Indent();
 
-  // TODO(gpike): improve this
-  format(
-      "$name$_.Set($default_value_tag$, from._internal_$name$(), \n"
-      "  GetArenaForAllocation());\n");
+  if (!inlined_) {
+    format(
+        "$name$_.Set($default_value_tag$, from._internal_$name$(), \n"
+        "  GetArenaForAllocation());\n");
+  } else {
+    format(
+        "$name$_.Set(nullptr, from._internal_$name$(),\n"
+        "  GetArenaForAllocation(), _internal_$name$_donated(), "
+        "&$donating_states_word$, $mask_for_undonate$);\n");
+  }
 
   format.Outdent();
   format("}\n");
@@ -351,6 +454,11 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
 
 void StringFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
+  if (inlined_) {
+    // The destructor is automatically invoked.
+    return;
+  }
+
   format("$name$_.DestroyNoArena($init_value$);\n");
 }
 
@@ -380,6 +488,10 @@ void StringFieldGenerator::GenerateByteSize(io::Printer* printer) const {
 void StringFieldGenerator::GenerateConstinitInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
+  if (inlined_) {
+    format("$name$_(nullptr, false)");
+    return;
+  }
   if (descriptor_->default_value_string().empty()) {
     format("$name$_(&::$proto_ns$::internal::fixed_address_empty_string)");
   } else {

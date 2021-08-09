@@ -78,8 +78,8 @@ namespace internal {
 //                         field.
 //
 // cpp type | proto type  | in-memory type | MapEntry accessor type
-// int32      TYPE_INT32    int32            int32
-// int32      TYPE_FIXED32  int32            int32
+// int32_t    TYPE_INT32    int32_t          int32_t
+// int32_t    TYPE_FIXED32  int32_t          int32_t
 // string     TYPE_STRING   ArenaStringPtr   string
 // FooEnum    TYPE_ENUM     int              int
 // FooMessage TYPE_MESSAGE  FooMessage*      FooMessage

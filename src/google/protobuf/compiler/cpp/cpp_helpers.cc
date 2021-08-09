@@ -430,9 +430,14 @@ std::string FileDllExport(const FileDescriptor* file, const Options& options) {
 
 std::string SuperClassName(const Descriptor* descriptor,
                            const Options& options) {
-  return "::" + ProtobufNamespace(options) +
-         (HasDescriptorMethods(descriptor->file(), options) ? "::Message"
-                                                            : "::MessageLite");
+  if (!HasDescriptorMethods(descriptor->file(), options)) {
+    return "::" + ProtobufNamespace(options) + "::MessageLite";
+  }
+  auto simple_base = SimpleBaseClass(descriptor, options);
+  if (simple_base.empty()) {
+    return "::" + ProtobufNamespace(options) + "::Message";
+  }
+  return "::" + ProtobufNamespace(options) + "::internal::" + simple_base;
 }
 
 std::string ResolveKeyword(const std::string& name) {
@@ -772,6 +777,11 @@ std::string SafeFunctionName(const Descriptor* descriptor,
   return function_name;
 }
 
+bool IsStringInlined(const FieldDescriptor* /* descriptor */,
+                     const Options& /* options */) {
+  return false;
+}
+
 static bool HasLazyFields(const Descriptor* descriptor, const Options& options,
                           MessageSCCAnalyzer* scc_analyzer) {
   for (int field_idx = 0; field_idx < descriptor->field_count(); field_idx++) {
@@ -929,6 +939,18 @@ bool HasEnumDefinitions(const FileDescriptor* file) {
   return false;
 }
 
+bool ShouldVerify(const Descriptor* /* descriptor */,
+                  const Options& /* options */,
+                  MessageSCCAnalyzer* /* scc_analyzer */) {
+  return false;
+}
+
+bool ShouldVerify(const FileDescriptor* /* file */,
+                  const Options& /* options */,
+                  MessageSCCAnalyzer* /* scc_analyzer */) {
+  return false;
+}
+
 bool IsStringOrMessage(const FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
@@ -1075,21 +1097,12 @@ void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
                         "VerifyUTF8CordNamedField", format);
 }
 
-namespace {
-
-void Flatten(const Descriptor* descriptor,
-             std::vector<const Descriptor*>* flatten) {
-  for (int i = 0; i < descriptor->nested_type_count(); i++)
-    Flatten(descriptor->nested_type(i), flatten);
-  flatten->push_back(descriptor);
-}
-
-}  // namespace
-
 void FlattenMessagesInFile(const FileDescriptor* file,
                            std::vector<const Descriptor*>* result) {
   for (int i = 0; i < file->message_type_count(); i++) {
-    Flatten(file->message_type(i), result);
+    ForEachMessage(file->message_type(i), [&](const Descriptor* descriptor) {
+      result->push_back(descriptor);
+    });
   }
 }
 
@@ -1455,6 +1468,10 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
   GOOGLE_LOG(FATAL) << "Unknown optimization enforcement requested.";
   // The phony return below serves to silence a warning from GCC 8.
   return FileOptions::SPEED;
+}
+
+bool EnableMessageOwnedArena(const Descriptor* /* desc */) {
+  return false;
 }
 
 }  // namespace cpp

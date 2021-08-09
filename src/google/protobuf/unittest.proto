@@ -972,6 +972,7 @@ message TestJsonName {
   optional int32 _field_name4 = 4;
   optional int32 FIELD_NAME5 = 5;
   optional int32 field_name6 = 6 [json_name = "@type"];
+  optional int32 fieldname7 = 7;
 }
 
 message TestHugeFieldNumbers {

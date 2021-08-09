@@ -61,37 +61,39 @@ using internal::WireFormat;
 
 namespace {
 
-std::string GenerateAnnotation(StringPiece substitute_template_prefix,
-                               StringPiece prepared_template,
-                               StringPiece substitute_template_suffix,
-                               int field_index, StringPiece lambda_args,
-                               StringPiece access_type) {
-  return strings::Substitute(
-      StrCat(substitute_template_prefix, prepared_template,
-                   substitute_template_suffix),
-      field_index, access_type, lambda_args);
+void MaySetAnnotationVariable(const Options& options,
+                              StringPiece annotation_name,
+                              StringPiece substitute_template_prefix,
+                              StringPiece prepared_template,
+                              int field_index, StringPiece access_type,
+                              std::map<std::string, std::string>* variables) {
+  if (options.field_listener_options.forbidden_field_listener_events.count(
+          std::string(annotation_name)))
+    return;
+  (*variables)[StrCat("annotate_", annotation_name)] = strings::Substitute(
+      StrCat(substitute_template_prefix, prepared_template, ");\n"),
+      field_index, access_type);
 }
 
 std::string GenerateTemplateForOneofString(const FieldDescriptor* descriptor,
                                            StringPiece proto_ns,
                                            StringPiece field_member) {
+  std::string field_name = google::protobuf::compiler::cpp::FieldName(descriptor);
   std::string field_pointer =
       descriptor->options().ctype() == google::protobuf::FieldOptions::STRING
           ? "$0.GetPointer()"
           : "$0";
 
   if (descriptor->default_value_string().empty()) {
-    return strings::Substitute(
-        StrCat("_internal_has_",
-                     google::protobuf::compiler::cpp::FieldName(descriptor),
-                     "()? _listener_->ExtractFieldInfo(", field_pointer,
-                     "): ::", proto_ns, "::FieldAccessListener::AddressInfo()"),
-        field_member);
+    return strings::Substitute(StrCat("_internal_has_", field_name, "() ? ",
+                                         field_pointer, ": nullptr"),
+                            field_member);
   }
 
   if (descriptor->options().ctype() == google::protobuf::FieldOptions::STRING_PIECE) {
-    return StrCat("_listener_->ExtractFieldInfo(_internal_",
-                        google::protobuf::compiler::cpp::FieldName(descriptor), "())");
+    return strings::Substitute(StrCat("_internal_has_", field_name, "() ? ",
+                                         field_pointer, ": nullptr"),
+                            field_member);
   }
 
   std::string default_value_pointer =
@@ -99,26 +101,24 @@ std::string GenerateTemplateForOneofString(const FieldDescriptor* descriptor,
           ? "&$1.get()"
           : "&$1";
   return strings::Substitute(
-      StrCat("_listener_->ExtractFieldInfo(_internal_has_",
-                   google::protobuf::compiler::cpp::FieldName(descriptor), "()? ",
-                   field_pointer, " : ", default_value_pointer, ")"),
+      StrCat("_internal_has_", field_name, "() ? ", field_pointer, " : ",
+                   default_value_pointer),
       field_member, MakeDefaultName(descriptor));
 }
 
 std::string GenerateTemplateForSingleString(const FieldDescriptor* descriptor,
                                             StringPiece field_member) {
   if (descriptor->default_value_string().empty()) {
-    return strings::Substitute("_listener_->ExtractFieldInfo(&$0)", field_member);
+    return StrCat("&", field_member);
   }
 
   if (descriptor->options().ctype() == google::protobuf::FieldOptions::STRING) {
     return strings::Substitute(
-        "_listener_->ExtractFieldInfo($0.IsDefault("
-        "nullptr) ? &$1.get() : $0.GetPointer())",
-        field_member, MakeDefaultName(descriptor));
+        "$0.IsDefault(nullptr) ? &$1.get() : $0.GetPointer()", field_member,
+        MakeDefaultName(descriptor));
   }
 
-  return strings::Substitute("_listener_->ExtractFieldInfo(&$0)", field_member);
+  return StrCat("&", field_member);
 }
 
 }  // namespace
@@ -143,7 +143,7 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
           "  ", FieldName(descriptor), "_AccessedNoStrip = true;\n");
     }
   }
-  if (!options.inject_field_listener_events) {
+  if (!options.field_listener_options.inject_field_listener_events) {
     return;
   }
   if (descriptor->file()->options().optimize_for() ==
@@ -157,50 +157,29 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
     field_member = StrCat(oneof_member->name(), "_.", field_member);
   }
   const std::string proto_ns = (*variables)["proto_ns"];
-  std::string lambda_args = "_listener_, this";
-  std::string lambda_flat_args = "_listener_, this";
-  const std::string substitute_template_prefix = StrCat(
-      "  {\n"
-      "    auto _listener_ = ::",
-      proto_ns,
-      "::FieldAccessListener::GetListener();\n"
-      "    if (_listener_) _listener_->OnFieldAccess([$2] { return ");
-  const std::string substitute_template_suffix = StrCat(
-      "; }, "
-      "GetDescriptor()->field($0), "
-      "::",
-      proto_ns,
-      "::FieldAccessListener::FieldAccessType::$1);\n"
-      "  }\n");
+  const std::string substitute_template_prefix = "  _tracker_.$1<$0>(this, ";
   std::string prepared_template;
 
   // Flat template is needed if the prepared one is introspecting the values
   // inside the returned values, for example, for repeated fields and maps.
   std::string prepared_flat_template;
   std::string prepared_add_template;
-  // TODO(jianzhouzh): Fix all forward declared messages and deal with the
-  // weak fields.
+  // TODO(b/190614678): Support fields with type Message or Map.
   if (descriptor->is_repeated() && !descriptor->is_map()) {
     if (descriptor->type() != FieldDescriptor::TYPE_MESSAGE &&
         descriptor->type() != FieldDescriptor::TYPE_GROUP) {
-      lambda_args = "_listener_, this, index";
-      prepared_template = strings::Substitute(
-          "_listener_->ExtractFieldInfo(&$0.Get(index))", field_member);
-      prepared_add_template = strings::Substitute(
-          "_listener_->ExtractFieldInfo(&$0.Get($0.size() - 1))", field_member);
-    } else {
-      prepared_template =
-          StrCat("::", proto_ns, "::FieldAccessListener::AddressInfo()");
+      prepared_template = strings::Substitute("&$0.Get(index)", field_member);
       prepared_add_template =
-          StrCat("::", proto_ns, "::FieldAccessListener::AddressInfo()");
+          strings::Substitute("&$0.Get($0.size() - 1)", field_member);
+    } else {
+      prepared_template = "nullptr";
+      prepared_add_template = "nullptr";
     }
   } else if (descriptor->is_map()) {
-    prepared_template =
-        StrCat("::", proto_ns, "::FieldAccessListener::AddressInfo()");
+    prepared_template = "nullptr";
   } else if (descriptor->type() == FieldDescriptor::TYPE_MESSAGE &&
              !descriptor->options().lazy()) {
-    prepared_template =
-        StrCat("::", proto_ns, "::FieldAccessListener::AddressInfo()");
+    prepared_template = "nullptr";
   } else if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     if (oneof_member) {
       prepared_template = GenerateTemplateForOneofString(
@@ -210,56 +189,49 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
           GenerateTemplateForSingleString(descriptor, field_member);
     }
   } else {
-    prepared_template =
-        strings::Substitute("_listener_->ExtractFieldInfo(&$0)", field_member);
+    prepared_template = StrCat("&", field_member);
   }
   if (descriptor->is_repeated() && !descriptor->is_map() &&
       descriptor->type() != FieldDescriptor::TYPE_MESSAGE &&
       descriptor->type() != FieldDescriptor::TYPE_GROUP) {
-    prepared_flat_template =
-        strings::Substitute("_listener_->ExtractFieldInfo(&$0)", field_member);
+    prepared_flat_template = StrCat("&", field_member);
   } else {
     prepared_flat_template = prepared_template;
   }
-  (*variables)["annotate_get"] = GenerateAnnotation(
-      substitute_template_prefix, prepared_template, substitute_template_suffix,
-      descriptor->index(), lambda_args, "kGet");
-  (*variables)["annotate_set"] = GenerateAnnotation(
-      substitute_template_prefix, prepared_template, substitute_template_suffix,
-      descriptor->index(), lambda_args, "kSet");
-  (*variables)["annotate_has"] = GenerateAnnotation(
-      substitute_template_prefix, prepared_template, substitute_template_suffix,
-      descriptor->index(), lambda_args, "kHas");
-  (*variables)["annotate_mutable"] = GenerateAnnotation(
-      substitute_template_prefix, prepared_template, substitute_template_suffix,
-      descriptor->index(), lambda_args, "kMutable");
-  (*variables)["annotate_release"] = GenerateAnnotation(
-      substitute_template_prefix, prepared_template, substitute_template_suffix,
-      descriptor->index(), lambda_args, "kRelease");
-  (*variables)["annotate_clear"] =
-      GenerateAnnotation(substitute_template_prefix, prepared_flat_template,
-                         substitute_template_suffix, descriptor->index(),
-                         lambda_flat_args, "kClear");
-  (*variables)["annotate_size"] =
-      GenerateAnnotation(substitute_template_prefix, prepared_flat_template,
-                         substitute_template_suffix, descriptor->index(),
-                         lambda_flat_args, "kSize");
-  (*variables)["annotate_list"] =
-      GenerateAnnotation(substitute_template_prefix, prepared_flat_template,
-                         substitute_template_suffix, descriptor->index(),
-                         lambda_flat_args, "kList");
-  (*variables)["annotate_mutable_list"] =
-      GenerateAnnotation(substitute_template_prefix, prepared_flat_template,
-                         substitute_template_suffix, descriptor->index(),
-                         lambda_flat_args, "kMutableList");
-  (*variables)["annotate_add"] =
-      GenerateAnnotation(substitute_template_prefix, prepared_add_template,
-                         substitute_template_suffix, descriptor->index(),
-                         lambda_flat_args, "kAdd");
-  (*variables)["annotate_add_mutable"] =
-      GenerateAnnotation(substitute_template_prefix, prepared_add_template,
-                         substitute_template_suffix, descriptor->index(),
-                         lambda_flat_args, "kAddMutable");
+
+  MaySetAnnotationVariable(options, "get", substitute_template_prefix,
+                           prepared_template, descriptor->index(), "OnGet",
+                           variables);
+  MaySetAnnotationVariable(options, "set", substitute_template_prefix,
+                           prepared_template, descriptor->index(), "OnSet",
+                           variables);
+  MaySetAnnotationVariable(options, "has", substitute_template_prefix,
+                           prepared_template, descriptor->index(), "OnHas",
+                           variables);
+  MaySetAnnotationVariable(options, "mutable", substitute_template_prefix,
+                           prepared_template, descriptor->index(), "OnMutable",
+                           variables);
+  MaySetAnnotationVariable(options, "release", substitute_template_prefix,
+                           prepared_template, descriptor->index(), "OnRelease",
+                           variables);
+  MaySetAnnotationVariable(options, "clear", substitute_template_prefix,
+                           prepared_flat_template, descriptor->index(),
+                           "OnClear", variables);
+  MaySetAnnotationVariable(options, "size", substitute_template_prefix,
+                           prepared_flat_template, descriptor->index(),
+                           "OnSize", variables);
+  MaySetAnnotationVariable(options, "list", substitute_template_prefix,
+                           prepared_flat_template, descriptor->index(),
+                           "OnList", variables);
+  MaySetAnnotationVariable(options, "mutable_list", substitute_template_prefix,
+                           prepared_flat_template, descriptor->index(),
+                           "OnMutableList", variables);
+  MaySetAnnotationVariable(options, "add", substitute_template_prefix,
+                           prepared_add_template, descriptor->index(), "OnAdd",
+                           variables);
+  MaySetAnnotationVariable(options, "add_mutable", substitute_template_prefix,
+                           prepared_add_template, descriptor->index(),
+                           "OnAddMutable", variables);
 }
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
@@ -308,6 +280,22 @@ void FieldGenerator::SetHasBitIndex(int32_t has_bit_index) {
   variables_["clear_hasbit"] = StrCat(
       "_has_bits_[", has_bit_index / 32, "] &= ~0x",
       strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8), "u;");
+}
+
+void FieldGenerator::SetInlinedStringIndex(int32_t inlined_string_index) {
+  if (!IsStringInlined(descriptor_, options_)) {
+    GOOGLE_CHECK_EQ(inlined_string_index, -1);
+    return;
+  }
+  variables_["inlined_string_donated"] = StrCat(
+      "(_inlined_string_donated_[", inlined_string_index / 32, "] & 0x",
+      strings::Hex(1u << (inlined_string_index % 32), strings::ZERO_PAD_8),
+      "u) != 0;");
+  variables_["donating_states_word"] =
+      StrCat("_inlined_string_donated_[", inlined_string_index / 32, "]");
+  variables_["mask_for_undonate"] = StrCat(
+      "~0x", strings::Hex(1u << (inlined_string_index % 32), strings::ZERO_PAD_8),
+      "u");
 }
 
 void SetCommonOneofFieldVariables(

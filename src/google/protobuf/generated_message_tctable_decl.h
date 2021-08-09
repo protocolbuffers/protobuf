@@ -41,6 +41,9 @@
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/message_lite.h>
 
+// Must come last:
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -52,7 +55,10 @@ struct TcFieldData {
       : data(static_cast<uint64_t>(offset) << 48 |
              static_cast<uint64_t>(hasbit_idx) << 16 | coded_tag) {}
 
-  uint16_t coded_tag() const { return static_cast<uint16_t>(data); }
+  template <typename TagType = uint16_t>
+  TagType coded_tag() const {
+    return static_cast<TagType>(data);
+  }
   uint8_t hasbit_idx() const { return static_cast<uint8_t>(data >> 16); }
   uint16_t offset() const { return static_cast<uint16_t>(data >> 48); }
 
@@ -62,19 +68,21 @@ struct TcFieldData {
 struct TailCallParseTableBase;
 
 // TailCallParseFunc is the function pointer type used in the tailcall table.
-typedef const char* (*TailCallParseFunc)(MessageLite* msg, const char* ptr,
-                                         ParseContext* ctx,
-                                         const TailCallParseTableBase* table,
-                                         uint64_t hasbits, TcFieldData data);
+typedef const char* (*TailCallParseFunc)(PROTOBUF_TC_PARAM_DECL);
+
+#if defined(_MSC_VER) && !defined(_WIN64)
+#pragma warning(push)
+// TailCallParseTableBase is intentionally overaligned on 32 bit targets.
+#pragma warning(disable : 4324)
+#endif
 
 // Base class for message-level table with info for the tail-call parser.
-struct TailCallParseTableBase {
+struct alignas(uint64_t) TailCallParseTableBase {
   // Common attributes for message layout:
   uint16_t has_bits_offset;
   uint16_t extension_offset;
   uint32_t extension_range_low;
   uint32_t extension_range_high;
-  uint32_t has_bits_required_mask;
   const MessageLite* default_instance;
 
   // Handler for fields which are not handled by table dispatch.
@@ -92,6 +100,10 @@ struct TailCallParseTableBase {
     return reinterpret_cast<const FieldEntry*>(this + 1);
   }
 };
+
+#if defined(_MSC_VER) && !defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 static_assert(sizeof(TailCallParseTableBase::FieldEntry) <= 16,
               "Field entry is too big.");
@@ -119,5 +131,7 @@ static_assert(offsetof(TailCallParseTable<1>, entries) ==
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_DECL_H__

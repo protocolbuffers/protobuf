@@ -587,10 +587,10 @@ bool EncodedDescriptorDatabase::FindNameOfFileContainingSymbol(
 
   // Optimization:  The name should be the first field in the encoded message.
   //   Try to just read it directly.
-  io::CodedInputStream input(static_cast<const uint8*>(encoded_file.first),
+  io::CodedInputStream input(static_cast<const uint8_t*>(encoded_file.first),
                              encoded_file.second);
 
-  const uint32 kNameTag = internal::WireFormatLite::MakeTag(
+  const uint32_t kNameTag = internal::WireFormatLite::MakeTag(
       FileDescriptorProto::kNameFieldNumber,
       internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
 

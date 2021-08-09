@@ -50,6 +50,7 @@ junit_tests(
     deps = [
         ":lite",
         "//external:junit",
+        "//external:truth",
         "//java/core:generic_test_protos_java_proto_lite",
         "//java/core:java_test_protos_java_proto_lite",
         "//java/core:test_util_lite",

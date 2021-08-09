@@ -107,7 +107,7 @@ class WeakFieldMap;  // weak_field_map.h
 //                  message, or -1 if the message type has no extension
 //                  ranges.
 //   oneof_case_offset:  Offset in the message of an array of uint32s of
-//                  size descriptor->oneof_decl_count().  Each uint32
+//                  size descriptor->oneof_decl_count().  Each uint32_t
 //                  indicates what field is set for each oneof.
 //   object_size:   The size of a message object of this type, as measured
 //                  by sizeof().
@@ -119,7 +119,7 @@ class WeakFieldMap;  // weak_field_map.h
 struct ReflectionSchema {
  public:
   // Size of a google::protobuf::Message object of this type.
-  uint32 GetObjectSize() const { return static_cast<uint32>(object_size_); }
+  uint32_t GetObjectSize() const { return static_cast<uint32_t>(object_size_); }
 
   bool InRealOneof(const FieldDescriptor* field) const {
     return field->containing_oneof() &&
@@ -128,13 +128,13 @@ struct ReflectionSchema {
 
   // Offset of a non-oneof field.  Getting a field offset is slightly more
   // efficient when we know statically that it is not a oneof field.
-  uint32 GetFieldOffsetNonOneof(const FieldDescriptor* field) const {
+  uint32_t GetFieldOffsetNonOneof(const FieldDescriptor* field) const {
     GOOGLE_DCHECK(!InRealOneof(field));
     return OffsetValue(offsets_[field->index()], field->type());
   }
 
   // Offset of any field.
-  uint32 GetFieldOffset(const FieldDescriptor* field) const {
+  uint32_t GetFieldOffset(const FieldDescriptor* field) const {
     if (InRealOneof(field)) {
       size_t offset =
           static_cast<size_t>(field->containing_type()->field_count() +
@@ -145,42 +145,62 @@ struct ReflectionSchema {
     }
   }
 
-  uint32 GetOneofCaseOffset(const OneofDescriptor* oneof_descriptor) const {
-    return static_cast<uint32>(oneof_case_offset_) +
-           static_cast<uint32>(static_cast<size_t>(oneof_descriptor->index()) *
-                               sizeof(uint32));
+  bool IsFieldInlined(const FieldDescriptor* field) const {
+    return Inlined(offsets_[field->index()], field->type());
+  }
+
+  uint32_t GetOneofCaseOffset(const OneofDescriptor* oneof_descriptor) const {
+    return static_cast<uint32_t>(oneof_case_offset_) +
+           static_cast<uint32_t>(
+               static_cast<size_t>(oneof_descriptor->index()) *
+               sizeof(uint32_t));
   }
 
   bool HasHasbits() const { return has_bits_offset_ != -1; }
 
   // Bit index within the bit array of hasbits.  Bit order is low-to-high.
-  uint32 HasBitIndex(const FieldDescriptor* field) const {
-    if (has_bits_offset_ == -1) return static_cast<uint32>(-1);
+  uint32_t HasBitIndex(const FieldDescriptor* field) const {
+    if (has_bits_offset_ == -1) return static_cast<uint32_t>(-1);
     GOOGLE_DCHECK(HasHasbits());
     return has_bit_indices_[field->index()];
   }
 
   // Byte offset of the hasbits array.
-  uint32 HasBitsOffset() const {
+  uint32_t HasBitsOffset() const {
     GOOGLE_DCHECK(HasHasbits());
-    return static_cast<uint32>(has_bits_offset_);
+    return static_cast<uint32_t>(has_bits_offset_);
+  }
+
+  bool HasInlinedString() const { return inlined_string_donated_offset_ != -1; }
+
+  // Bit index within the bit array of _inlined_string_donated_.  Bit order is
+  // low-to-high.
+  uint32_t InlinedStringIndex(const FieldDescriptor* field) const {
+    GOOGLE_DCHECK(HasInlinedString());
+    return inlined_string_indices_[field->index()];
+  }
+
+  // Byte offset of the _inlined_string_donated_ array.
+  uint32_t InlinedStringDonatedOffset() const {
+    GOOGLE_DCHECK(HasInlinedString());
+    return static_cast<uint32_t>(inlined_string_donated_offset_);
   }
 
   // The offset of the InternalMetadataWithArena member.
   // For Lite this will actually be an InternalMetadataWithArenaLite.
   // The schema doesn't contain enough information to distinguish between
   // these two cases.
-  uint32 GetMetadataOffset() const {
-    return static_cast<uint32>(metadata_offset_);
+  uint32_t GetMetadataOffset() const {
+    return static_cast<uint32_t>(metadata_offset_);
   }
 
   // Whether this message has an ExtensionSet.
   bool HasExtensionSet() const { return extensions_offset_ != -1; }
 
   // The offset of the ExtensionSet in this message.
-  uint32 GetExtensionSetOffset() const {
+  uint32_t GetExtensionSetOffset() const {
     GOOGLE_DCHECK(HasExtensionSet());
-    return static_cast<uint32>(extensions_offset_);
+    return static_cast<uint32_t>(extensions_offset_);
   }
 
   // The off set of WeakFieldMap when the message contains weak fields.
@@ -194,7 +214,7 @@ struct ReflectionSchema {
   // Returns a pointer to the default value for this field.  The size and type
   // of the underlying data depends on the field's type.
   const void* GetFieldDefault(const FieldDescriptor* field) const {
-    return reinterpret_cast<const uint8*>(default_instance_) +
+    return reinterpret_cast<const uint8_t*>(default_instance_) +
            OffsetValue(offsets_[field->index()], field->type());
   }
 
@@ -232,22 +252,36 @@ struct ReflectionSchema {
   //   ReflectionSchema schema = {a, b, c, d, e, ...};
   // private:
   const Message* default_instance_;
-  const uint32* offsets_;
-  const uint32* has_bit_indices_;
+  const uint32_t* offsets_;
+  const uint32_t* has_bit_indices_;
   int has_bits_offset_;
   int metadata_offset_;
   int extensions_offset_;
   int oneof_case_offset_;
   int object_size_;
   int weak_field_map_offset_;
+  const uint32_t* inlined_string_indices_;
+  int inlined_string_donated_offset_;
 
   // We tag offset values to provide additional data about fields (such as
-  // "unused" or "lazy").
-  static uint32 OffsetValue(uint32 v, FieldDescriptor::Type type) {
-    if (type == FieldDescriptor::TYPE_MESSAGE) {
+  // "unused" or "lazy" or "inlined").
+  static uint32_t OffsetValue(uint32_t v, FieldDescriptor::Type type) {
+    if (type == FieldDescriptor::TYPE_MESSAGE ||
+        type == FieldDescriptor::TYPE_STRING ||
+        type == FieldDescriptor::TYPE_BYTES) {
       return v & 0x7FFFFFFEu;
     }
     return v & 0x7FFFFFFFu;
+  }
+
+  static bool Inlined(uint32_t v, FieldDescriptor::Type type) {
+    if (type == FieldDescriptor::TYPE_STRING ||
+        type == FieldDescriptor::TYPE_BYTES) {
+      return (v & 1u) != 0u;
+    } else {
+      // Non string/byte fields are not inlined.
+      return false;
+    }
   }
 };
 
@@ -258,8 +292,9 @@ struct ReflectionSchema {
 // EXPERIMENTAL: these are changing rapidly, and may completely disappear
 // or merge with ReflectionSchema.
 struct MigrationSchema {
-  int32 offsets_index;
-  int32 has_bit_indices_index;
+  int32_t offsets_index;
+  int32_t has_bit_indices_index;
+  int32_t inlined_string_indices_index;
   int object_size;
 };
 
@@ -278,7 +313,7 @@ struct PROTOBUF_EXPORT DescriptorTable {
   int num_messages;
   const MigrationSchema* schemas;
   const Message* const* default_instances;
-  const uint32* offsets;
+  const uint32_t* offsets;
   // update the following descriptor arrays.
   Metadata* file_level_metadata;
   const EnumDescriptor** file_level_enum_descriptors;
@@ -309,8 +344,9 @@ Metadata PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* (*table)(),
                                            const Metadata& metadata);
 
 // These cannot be in lite so we put them in the reflection.
-PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8* base, uint32 offset,
-                                               uint32 tag, uint32 has_offset,
+PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8_t* base,
+                                               uint32_t offset, uint32_t tag,
+                                               uint32_t has_offset,
                                                io::CodedOutputStream* output);
 
 struct PROTOBUF_EXPORT AddDescriptorsRunner {

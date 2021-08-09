@@ -95,19 +95,19 @@ class PROTOBUF_EXPORT MapKey {
     return type_;
   }
 
-  void SetInt64Value(int64 value) {
+  void SetInt64Value(int64_t value) {
     SetType(FieldDescriptor::CPPTYPE_INT64);
     val_.int64_value_ = value;
   }
-  void SetUInt64Value(uint64 value) {
+  void SetUInt64Value(uint64_t value) {
     SetType(FieldDescriptor::CPPTYPE_UINT64);
     val_.uint64_value_ = value;
   }
-  void SetInt32Value(int32 value) {
+  void SetInt32Value(int32_t value) {
     SetType(FieldDescriptor::CPPTYPE_INT32);
     val_.int32_value_ = value;
   }
-  void SetUInt32Value(uint32 value) {
+  void SetUInt32Value(uint32_t value) {
     SetType(FieldDescriptor::CPPTYPE_UINT32);
     val_.uint32_value_ = value;
   }
@@ -120,19 +120,19 @@ class PROTOBUF_EXPORT MapKey {
     *val_.string_value_.get_mutable() = std::move(val);
   }
 
-  int64 GetInt64Value() const {
+  int64_t GetInt64Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_INT64, "MapKey::GetInt64Value");
     return val_.int64_value_;
   }
-  uint64 GetUInt64Value() const {
+  uint64_t GetUInt64Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT64, "MapKey::GetUInt64Value");
     return val_.uint64_value_;
   }
-  int32 GetInt32Value() const {
+  int32_t GetInt32Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_INT32, "MapKey::GetInt32Value");
     return val_.int32_value_;
   }
-  uint32 GetUInt32Value() const {
+  uint32_t GetUInt32Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT32, "MapKey::GetUInt32Value");
     return val_.uint32_value_;
   }
@@ -242,10 +242,10 @@ class PROTOBUF_EXPORT MapKey {
   union KeyValue {
     KeyValue() {}
     internal::ExplicitlyConstructed<std::string> string_value_;
-    int64 int64_value_;
-    int32 int32_value_;
-    uint64 uint64_value_;
-    uint32 uint32_value_;
+    int64_t int64_value_;
+    int32_t int32_value_;
+    uint64_t uint64_value_;
+    uint32_t uint32_value_;
     bool bool_value_;
   } val_;
 
@@ -591,7 +591,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   }
   template <typename UnknownType>
   const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
-                                      bool (*is_valid)(int), uint32 field_num,
+                                      bool (*is_valid)(int), uint32_t field_num,
                                       InternalMetadata* metadata) {
     return impl_.template ParseWithEnumValidation<UnknownType>(
         ptr, ctx, is_valid, field_num, metadata);
@@ -682,25 +682,25 @@ class PROTOBUF_EXPORT MapValueConstRef {
  public:
   MapValueConstRef() : data_(nullptr), type_() {}
 
-  int64 GetInt64Value() const {
+  int64_t GetInt64Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_INT64,
                "MapValueConstRef::GetInt64Value");
-    return *reinterpret_cast<int64*>(data_);
+    return *reinterpret_cast<int64_t*>(data_);
   }
-  uint64 GetUInt64Value() const {
+  uint64_t GetUInt64Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT64,
                "MapValueConstRef::GetUInt64Value");
-    return *reinterpret_cast<uint64*>(data_);
+    return *reinterpret_cast<uint64_t*>(data_);
   }
-  int32 GetInt32Value() const {
+  int32_t GetInt32Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_INT32,
                "MapValueConstRef::GetInt32Value");
-    return *reinterpret_cast<int32*>(data_);
+    return *reinterpret_cast<int32_t*>(data_);
   }
-  uint32 GetUInt32Value() const {
+  uint32_t GetUInt32Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT32,
                "MapValueConstRef::GetUInt32Value");
-    return *reinterpret_cast<uint32*>(data_);
+    return *reinterpret_cast<uint32_t*>(data_);
   }
   bool GetBoolValue() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_BOOL, "MapValueConstRef::GetBoolValue");
@@ -774,21 +774,21 @@ class PROTOBUF_EXPORT MapValueRef final : public MapValueConstRef {
  public:
   MapValueRef() {}
 
-  void SetInt64Value(int64 value) {
+  void SetInt64Value(int64_t value) {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_INT64, "MapValueRef::SetInt64Value");
-    *reinterpret_cast<int64*>(data_) = value;
+    *reinterpret_cast<int64_t*>(data_) = value;
   }
-  void SetUInt64Value(uint64 value) {
+  void SetUInt64Value(uint64_t value) {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT64, "MapValueRef::SetUInt64Value");
-    *reinterpret_cast<uint64*>(data_) = value;
+    *reinterpret_cast<uint64_t*>(data_) = value;
   }
-  void SetInt32Value(int32 value) {
+  void SetInt32Value(int32_t value) {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_INT32, "MapValueRef::SetInt32Value");
-    *reinterpret_cast<int32*>(data_) = value;
+    *reinterpret_cast<int32_t*>(data_) = value;
   }
-  void SetUInt32Value(uint32 value) {
+  void SetUInt32Value(uint32_t value) {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT32, "MapValueRef::SetUInt32Value");
-    *reinterpret_cast<uint32*>(data_) = value;
+    *reinterpret_cast<uint32_t*>(data_) = value;
   }
   void SetBoolValue(bool value) {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_BOOL, "MapValueRef::SetBoolValue");
@@ -829,15 +829,15 @@ class PROTOBUF_EXPORT MapValueRef final : public MapValueConstRef {
     delete reinterpret_cast<TYPE*>(data_);   \
     break;                                   \
   }
-      HANDLE_TYPE(INT32, int32);
-      HANDLE_TYPE(INT64, int64);
-      HANDLE_TYPE(UINT32, uint32);
-      HANDLE_TYPE(UINT64, uint64);
+      HANDLE_TYPE(INT32, int32_t);
+      HANDLE_TYPE(INT64, int64_t);
+      HANDLE_TYPE(UINT32, uint32_t);
+      HANDLE_TYPE(UINT64, uint64_t);
       HANDLE_TYPE(DOUBLE, double);
       HANDLE_TYPE(FLOAT, float);
       HANDLE_TYPE(BOOL, bool);
       HANDLE_TYPE(STRING, std::string);
-      HANDLE_TYPE(ENUM, int32);
+      HANDLE_TYPE(ENUM, int32_t);
       HANDLE_TYPE(MESSAGE, Message);
 #undef HANDLE_TYPE
     }

@@ -166,147 +166,185 @@ TEST(GeneratedMessageReflectionTest, DefaultsAfterClear) {
             &reflection->GetMessage(message, F("optional_import_message")));
 }
 
-TEST(GeneratedMessageReflectionTest, Swap) {
-  unittest::TestAllTypes message1;
-  unittest::TestAllTypes message2;
+class GeneratedMessageReflectionSwapTest : public testing::TestWithParam<bool> {
+ protected:
+  void Swap(const Reflection* reflection, Message* lhs, Message* rhs) {
+    if (GetParam()) {
+      reflection->UnsafeArenaSwap(lhs, rhs);
+    } else {
+      reflection->Swap(lhs, rhs);
+    }
+  }
+  void SwapFields(const Reflection* reflection, Message* lhs, Message* rhs,
+                  const std::vector<const FieldDescriptor*>& fields) {
+    if (GetParam()) {
+      reflection->UnsafeArenaSwapFields(lhs, rhs, fields);
+    } else {
+      reflection->SwapFields(lhs, rhs, fields);
+    }
+  }
+};
 
-  TestUtil::SetAllFields(&message1);
+// unsafe_shallow_swap: true -> UnsafeArena* API.
+INSTANTIATE_TEST_SUITE_P(ReflectionSwap, GeneratedMessageReflectionSwapTest,
+                         testing::Bool());
 
-  const Reflection* reflection = message1.GetReflection();
-  reflection->Swap(&message1, &message2);
+TEST_P(GeneratedMessageReflectionSwapTest, LhsSet) {
+  unittest::TestAllTypes lhs;
+  unittest::TestAllTypes rhs;
 
-  TestUtil::ExpectClear(message1);
-  TestUtil::ExpectAllFieldsSet(message2);
+  TestUtil::SetAllFields(&lhs);
+
+  Swap(lhs.GetReflection(), &lhs, &rhs);
+
+  TestUtil::ExpectClear(lhs);
+  TestUtil::ExpectAllFieldsSet(rhs);
 }
 
-TEST(GeneratedMessageReflectionTest, SwapWithBothSet) {
-  unittest::TestAllTypes message1;
-  unittest::TestAllTypes message2;
+TEST_P(GeneratedMessageReflectionSwapTest, BothSet) {
+  unittest::TestAllTypes lhs;
+  unittest::TestAllTypes rhs;
 
-  TestUtil::SetAllFields(&message1);
-  TestUtil::SetAllFields(&message2);
-  TestUtil::ModifyRepeatedFields(&message2);
+  TestUtil::SetAllFields(&lhs);
+  TestUtil::SetAllFields(&rhs);
+  TestUtil::ModifyRepeatedFields(&rhs);
 
-  const Reflection* reflection = message1.GetReflection();
-  reflection->Swap(&message1, &message2);
+  const Reflection* reflection = lhs.GetReflection();
+  Swap(reflection, &lhs, &rhs);
 
-  TestUtil::ExpectRepeatedFieldsModified(message1);
-  TestUtil::ExpectAllFieldsSet(message2);
+  TestUtil::ExpectRepeatedFieldsModified(lhs);
+  TestUtil::ExpectAllFieldsSet(rhs);
 
-  message1.set_optional_int32(532819);
+  lhs.set_optional_int32(532819);
 
-  reflection->Swap(&message1, &message2);
+  Swap(reflection, &lhs, &rhs);
 
-  EXPECT_EQ(532819, message2.optional_int32());
+  EXPECT_EQ(532819, rhs.optional_int32());
 }
 
-TEST(GeneratedMessageReflectionTest, SwapWithLhsCleared) {
-  unittest::TestAllTypes message1;
-  unittest::TestAllTypes message2;
+TEST_P(GeneratedMessageReflectionSwapTest, LhsCleared) {
+  unittest::TestAllTypes lhs;
+  unittest::TestAllTypes rhs;
 
-  TestUtil::SetAllFields(&message1);
+  TestUtil::SetAllFields(&lhs);
 
   // For proto2 message, for message field, Clear only reset hasbits, but
   // doesn't delete the underlying field.
-  message1.Clear();
+  lhs.Clear();
 
-  const Reflection* reflection = message1.GetReflection();
-  reflection->Swap(&message1, &message2);
+  Swap(lhs.GetReflection(), &lhs, &rhs);
 
-  TestUtil::ExpectClear(message2);
+  TestUtil::ExpectClear(rhs);
 }
 
-TEST(GeneratedMessageReflectionTest, SwapWithRhsCleared) {
-  unittest::TestAllTypes message1;
-  unittest::TestAllTypes message2;
+TEST_P(GeneratedMessageReflectionSwapTest, RhsCleared) {
+  unittest::TestAllTypes lhs;
+  unittest::TestAllTypes rhs;
 
-  TestUtil::SetAllFields(&message2);
+  TestUtil::SetAllFields(&rhs);
 
   // For proto2 message, for message field, Clear only reset hasbits, but
   // doesn't delete the underlying field.
-  message2.Clear();
+  rhs.Clear();
 
-  const Reflection* reflection = message1.GetReflection();
-  reflection->Swap(&message1, &message2);
+  Swap(lhs.GetReflection(), &lhs, &rhs);
 
-  TestUtil::ExpectClear(message1);
+  TestUtil::ExpectClear(lhs);
 }
 
-TEST(GeneratedMessageReflectionTest, SwapExtensions) {
-  unittest::TestAllExtensions message1;
-  unittest::TestAllExtensions message2;
+TEST_P(GeneratedMessageReflectionSwapTest, Extensions) {
+  unittest::TestAllExtensions lhs;
+  unittest::TestAllExtensions rhs;
 
-  TestUtil::SetAllExtensions(&message1);
+  TestUtil::SetAllExtensions(&lhs);
 
-  const Reflection* reflection = message1.GetReflection();
-  reflection->Swap(&message1, &message2);
+  Swap(lhs.GetReflection(), &lhs, &rhs);
 
-  TestUtil::ExpectExtensionsClear(message1);
-  TestUtil::ExpectAllExtensionsSet(message2);
+  TestUtil::ExpectExtensionsClear(lhs);
+  TestUtil::ExpectAllExtensionsSet(rhs);
 }
 
-TEST(GeneratedMessageReflectionTest, SwapUnknown) {
-  unittest::TestEmptyMessage message1, message2;
+TEST_P(GeneratedMessageReflectionSwapTest, Unknown) {
+  unittest::TestEmptyMessage lhs, rhs;
 
-  message1.mutable_unknown_fields()->AddVarint(1234, 1);
+  lhs.mutable_unknown_fields()->AddVarint(1234, 1);
 
-  EXPECT_EQ(1, message1.unknown_fields().field_count());
-  EXPECT_EQ(0, message2.unknown_fields().field_count());
-  const Reflection* reflection = message1.GetReflection();
-  reflection->Swap(&message1, &message2);
-  EXPECT_EQ(0, message1.unknown_fields().field_count());
-  EXPECT_EQ(1, message2.unknown_fields().field_count());
+  EXPECT_EQ(1, lhs.unknown_fields().field_count());
+  EXPECT_EQ(0, rhs.unknown_fields().field_count());
+  Swap(lhs.GetReflection(), &lhs, &rhs);
+  EXPECT_EQ(0, lhs.unknown_fields().field_count());
+  EXPECT_EQ(1, rhs.unknown_fields().field_count());
 }
 
-TEST(GeneratedMessageReflectionTest, SwapFields) {
-  unittest::TestAllTypes message1, message2;
-  message1.set_optional_double(12.3);
-  message1.mutable_repeated_int32()->Add(10);
-  message1.mutable_repeated_int32()->Add(20);
+TEST_P(GeneratedMessageReflectionSwapTest, Oneof) {
+  unittest::TestOneof2 lhs, rhs;
+  TestUtil::SetOneof1(&lhs);
 
-  message2.set_optional_string("hello");
-  message2.mutable_repeated_int64()->Add(30);
+  Swap(lhs.GetReflection(), &lhs, &rhs);
+
+  TestUtil::ExpectOneofClear(lhs);
+  TestUtil::ExpectOneofSet1(rhs);
+}
+
+TEST_P(GeneratedMessageReflectionSwapTest, OneofBothSet) {
+  unittest::TestOneof2 lhs, rhs;
+  TestUtil::SetOneof1(&lhs);
+  TestUtil::SetOneof2(&rhs);
+
+  Swap(lhs.GetReflection(), &lhs, &rhs);
+
+  TestUtil::ExpectOneofSet2(lhs);
+  TestUtil::ExpectOneofSet1(rhs);
+}
+
+TEST_P(GeneratedMessageReflectionSwapTest, SwapFields) {
+  unittest::TestAllTypes lhs, rhs;
+  lhs.set_optional_double(12.3);
+  lhs.mutable_repeated_int32()->Add(10);
+  lhs.mutable_repeated_int32()->Add(20);
+
+  rhs.set_optional_string("hello");
+  rhs.mutable_repeated_int64()->Add(30);
 
   std::vector<const FieldDescriptor*> fields;
-  const Descriptor* descriptor = message1.GetDescriptor();
+  const Descriptor* descriptor = lhs.GetDescriptor();
   fields.push_back(descriptor->FindFieldByName("optional_double"));
   fields.push_back(descriptor->FindFieldByName("repeated_int32"));
   fields.push_back(descriptor->FindFieldByName("optional_string"));
   fields.push_back(descriptor->FindFieldByName("optional_uint64"));
 
-  const Reflection* reflection = message1.GetReflection();
-  reflection->SwapFields(&message1, &message2, fields);
+  SwapFields(lhs.GetReflection(), &lhs, &rhs, fields);
 
-  EXPECT_FALSE(message1.has_optional_double());
-  EXPECT_EQ(0, message1.repeated_int32_size());
-  EXPECT_TRUE(message1.has_optional_string());
-  EXPECT_EQ("hello", message1.optional_string());
-  EXPECT_EQ(0, message1.repeated_int64_size());
-  EXPECT_FALSE(message1.has_optional_uint64());
+  EXPECT_FALSE(lhs.has_optional_double());
+  EXPECT_EQ(0, lhs.repeated_int32_size());
+  EXPECT_TRUE(lhs.has_optional_string());
+  EXPECT_EQ("hello", lhs.optional_string());
+  EXPECT_EQ(0, lhs.repeated_int64_size());
+  EXPECT_FALSE(lhs.has_optional_uint64());
 
-  EXPECT_TRUE(message2.has_optional_double());
-  EXPECT_EQ(12.3, message2.optional_double());
-  EXPECT_EQ(2, message2.repeated_int32_size());
-  EXPECT_EQ(10, message2.repeated_int32(0));
-  EXPECT_EQ(20, message2.repeated_int32(1));
-  EXPECT_FALSE(message2.has_optional_string());
-  EXPECT_EQ(1, message2.repeated_int64_size());
-  EXPECT_FALSE(message2.has_optional_uint64());
+  EXPECT_TRUE(rhs.has_optional_double());
+  EXPECT_EQ(12.3, rhs.optional_double());
+  EXPECT_EQ(2, rhs.repeated_int32_size());
+  EXPECT_EQ(10, rhs.repeated_int32(0));
+  EXPECT_EQ(20, rhs.repeated_int32(1));
+  EXPECT_FALSE(rhs.has_optional_string());
+  EXPECT_EQ(1, rhs.repeated_int64_size());
+  EXPECT_FALSE(rhs.has_optional_uint64());
 }
 
-TEST(GeneratedMessageReflectionTest, SwapFieldsAll) {
-  unittest::TestAllTypes message1;
-  unittest::TestAllTypes message2;
+TEST_P(GeneratedMessageReflectionSwapTest, SwapFieldsAll) {
+  unittest::TestAllTypes lhs;
+  unittest::TestAllTypes rhs;
 
-  TestUtil::SetAllFields(&message2);
+  TestUtil::SetAllFields(&rhs);
 
   std::vector<const FieldDescriptor*> fields;
-  const Reflection* reflection = message1.GetReflection();
-  reflection->ListFields(message2, &fields);
-  reflection->SwapFields(&message1, &message2, fields);
+  const Reflection* reflection = lhs.GetReflection();
+  reflection->ListFields(rhs, &fields);
+  SwapFields(reflection, &lhs, &rhs, fields);
 
-  TestUtil::ExpectAllFieldsSet(message1);
-  TestUtil::ExpectClear(message2);
+  TestUtil::ExpectAllFieldsSet(lhs);
+  TestUtil::ExpectClear(rhs);
 }
 
 TEST(GeneratedMessageReflectionTest, SwapFieldsAllOnDifferentArena) {
@@ -474,29 +512,6 @@ TEST(GeneratedMessageReflectionTest, UnsafeShallowSwapFieldsAllExtension) {
   EXPECT_EQ(kept_repeated_foreign_message_ext_ptr,
             message2->MutableRepeatedExtension(
                 unittest::repeated_foreign_message_extension));
-}
-
-TEST(GeneratedMessageReflectionTest, SwapOneof) {
-  unittest::TestOneof2 message1, message2;
-  TestUtil::SetOneof1(&message1);
-
-  const Reflection* reflection = message1.GetReflection();
-  reflection->Swap(&message1, &message2);
-
-  TestUtil::ExpectOneofClear(message1);
-  TestUtil::ExpectOneofSet1(message2);
-}
-
-TEST(GeneratedMessageReflectionTest, SwapOneofBothSet) {
-  unittest::TestOneof2 message1, message2;
-  TestUtil::SetOneof1(&message1);
-  TestUtil::SetOneof2(&message2);
-
-  const Reflection* reflection = message1.GetReflection();
-  reflection->Swap(&message1, &message2);
-
-  TestUtil::ExpectOneofSet2(message1);
-  TestUtil::ExpectOneofSet1(message2);
 }
 
 TEST(GeneratedMessageReflectionTest, SwapFieldsOneof) {

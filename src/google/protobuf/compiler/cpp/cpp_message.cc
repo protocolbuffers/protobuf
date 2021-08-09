@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/cpp/cpp_enum.h>
 #include <google/protobuf/compiler/cpp/cpp_extension.h>
 #include <google/protobuf/compiler/cpp/cpp_field.h>
@@ -52,6 +53,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map_entry_lite.h>
@@ -181,6 +183,10 @@ bool CanBeManipulatedAsRawBytes(const FieldDescriptor* field,
   return ret;
 }
 
+bool StrContains(const std::string& haystack, const std::string& needle) {
+  return haystack.find(needle) != std::string::npos;
+}
+
 // Finds runs of fields for which `predicate` is true.
 // RunMap maps from fields that start each run to the number of fields in that
 // run.  This is optimized for the common case that there are very few runs in
@@ -295,15 +301,6 @@ bool ShouldMarkClassAsFinal(const Descriptor* descriptor,
   return true;
 }
 
-bool ShouldMarkClearAsFinal(const Descriptor* descriptor,
-                            const Options& options) {
-  static std::set<std::string> exclusions{
-  };
-
-  const std::string name = ClassName(descriptor, true);
-  return exclusions.find(name) == exclusions.end() ||
-         options.opensource_runtime;
-}
 
 // Returns true to make the message serialize in order, decided by the following
 // factors in the order of precedence.
@@ -395,6 +392,16 @@ bool IsCrossFileMaybeMap(const FieldDescriptor* field) {
 
 bool IsRequired(const std::vector<const FieldDescriptor*>& v) {
   return v.front()->is_required();
+}
+
+bool HasSingularString(const Descriptor* desc, const Options& options) {
+  for (const auto* field : FieldRange(desc)) {
+    if (IsString(field, options) && !IsStringInlined(field, options) &&
+        !field->is_repeated() && !field->real_containing_oneof()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // Collects neighboring fields based on a given criteria (equivalent predicate).
@@ -553,6 +560,88 @@ bool ColdChunkSkipper::OnEndChunk(int chunk, io::Printer* printer) {
   return true;
 }
 
+void MaySetAnnotationVariable(const Options& options,
+                              StringPiece annotation_name,
+                              StringPiece injector_template_prefix,
+                              StringPiece injector_template_suffix,
+                              std::map<std::string, std::string>* variables) {
+  if (options.field_listener_options.forbidden_field_listener_events.count(
+          std::string(annotation_name)))
+    return;
+  (*variables)[StrCat("annotate_", annotation_name)] = strings::Substitute(
+      StrCat(injector_template_prefix, injector_template_suffix),
+      (*variables)["classtype"]);
+}
+
+void GenerateExtensionAnnotations(
+    const Descriptor* descriptor, const Options& options,
+    std::map<std::string, std::string>* variables) {
+  const std::map<std::string, std::string> accessor_annotations_to_hooks = {
+      {"annotate_extension_has", "OnHasExtension"},
+      {"annotate_extension_clear", "OnClearExtension"},
+      {"annotate_extension_repeated_size", "OnExtensionSize"},
+      {"annotate_extension_get", "OnGetExtension"},
+      {"annotate_extension_mutable", "OnMutableExtension"},
+      {"annotate_extension_set", "OnSetExtension"},
+      {"annotate_extension_release", "OnReleaseExtension"},
+      {"annotate_repeated_extension_get", "OnGetExtension"},
+      {"annotate_repeated_extension_mutable", "OnMutableExtension"},
+      {"annotate_repeated_extension_set", "OnSetExtension"},
+      {"annotate_repeated_extension_add", "OnAddExtension"},
+      {"annotate_repeated_extension_add_mutable", "OnAddMutableExtension"},
+      {"annotate_repeated_extension_list", "OnListExtension"},
+      {"annotate_repeated_extension_list_mutable", "OnMutableListExtension"},
+  };
+  for (const auto& annotation : accessor_annotations_to_hooks) {
+    (*variables)[annotation.first] = "";
+  }
+  if (!options.field_listener_options.inject_field_listener_events ||
+      descriptor->file()->options().optimize_for() ==
+          google::protobuf::FileOptions::LITE_RUNTIME) {
+    return;
+  }
+  for (const auto& annotation : accessor_annotations_to_hooks) {
+    const std::string& annotation_name = annotation.first;
+    const std::string& listener_call = annotation.second;
+    if (!StrContains(annotation_name, "repeated") &&
+        !StrContains(annotation_name, "size") &&
+        !StrContains(annotation_name, "clear")) {
+      // Primitive fields accessors.
+      // "Has" is here as users calling "has" on a repeated field is a mistake.
+      (*variables)[annotation_name] = StrCat(
+          "  _tracker_.", listener_call,
+          "(this, id.number(), _proto_TypeTraits::GetPtr(id.number(), "
+          "_extensions_, id.default_value_ref()));");
+    } else if (StrContains(annotation_name, "repeated") &&
+               !StrContains(annotation_name, "list") &&
+               !StrContains(annotation_name, "size")) {
+      // Repeated index accessors.
+      std::string str_index = "index";
+      if (StrContains(annotation_name, "add")) {
+        str_index = "_extensions_.ExtensionSize(id.number()) - 1";
+      }
+      (*variables)[annotation_name] =
+          StrCat("  _tracker_.", listener_call,
+                       "(this, id.number(), "
+                       "_proto_TypeTraits::GetPtr(id.number(), _extensions_, ",
+                       str_index, "));");
+    } else if (StrContains(annotation_name, "list") ||
+               StrContains(annotation_name, "size")) {
+      // Repeated full accessors.
+      (*variables)[annotation_name] = StrCat(
+          "  _tracker_.", listener_call,
+          "(this, id.number(), _proto_TypeTraits::GetRepeatedPtr(id.number(), "
+          "_extensions_));");
+    } else {
+      // Generic accessors such as "clear".
+      // TODO(b/190614678): Generalize clear from both repeated and non repeated
+      // calls, currently their underlying memory interfaces are very different.
+      // Or think of removing clear callback as no usages are needed and no
+      // memory exist after calling clear().
+    }
+  }
+}
+
 }  // anonymous namespace
 
 // ===================================================================
@@ -567,6 +656,7 @@ MessageGenerator::MessageGenerator(
       options_(options),
       field_generators_(descriptor, options, scc_analyzer),
       max_has_bit_index_(0),
+      max_inlined_string_index_(0),
       num_weak_fields_(0),
       scc_analyzer_(scc_analyzer),
       variables_(vars) {
@@ -583,35 +673,30 @@ MessageGenerator::MessageGenerator(
   variables_["annotate_deserialize"] = "";
   variables_["annotate_reflection"] = "";
   variables_["annotate_bytesize"] = "";
+  variables_["annotate_mergefrom"] = "";
 
-  if (options.inject_field_listener_events &&
+  if (options.field_listener_options.inject_field_listener_events &&
       descriptor->file()->options().optimize_for() !=
           google::protobuf::FileOptions::LITE_RUNTIME) {
-    const std::string injector_template = StrCat(
-        "  {\n"
-        "    auto _listener_ = ::",
-        variables_["proto_ns"],
-        "::FieldAccessListener::GetListener();\n"
-        "    if (_listener_) ");
+    const std::string injector_template = "  _tracker_.";
 
-    StrAppend(&variables_["annotate_serialize"], injector_template,
-                    "_listener_->OnSerializationAccess(this);\n"
-                    "  }\n");
-    StrAppend(&variables_["annotate_deserialize"], injector_template,
-                    " _listener_->OnDeserializationAccess(this);\n"
-                    "  }\n");
+    MaySetAnnotationVariable(options, "serialize", injector_template,
+                             "OnSerialize(this);\n", &variables_);
+    MaySetAnnotationVariable(options, "deserialize", injector_template,
+                             "OnDeserialize(this);\n", &variables_);
     // TODO(danilak): Ideally annotate_reflection should not exist and we need
     // to annotate all reflective calls on our own, however, as this is a cause
     // for side effects, i.e. reading values dynamically, we want the users know
     // that dynamic access can happen.
-    StrAppend(&variables_["annotate_reflection"], injector_template,
-                    "_listener_->OnReflectionAccess(default_instance()"
-                    ".GetMetadata().descriptor);\n"
-                    "  }\n");
-    StrAppend(&variables_["annotate_bytesize"], injector_template,
-                    "_listener_->OnByteSizeAccess(this);\n"
-                    "  }\n");
+    MaySetAnnotationVariable(options, "reflection", injector_template,
+                             "OnGetMetadata();\n", &variables_);
+    MaySetAnnotationVariable(options, "bytesize", injector_template,
+                             "OnByteSize(this);\n", &variables_);
+    MaySetAnnotationVariable(options, "mergefrom", injector_template,
+                             "OnMergeFrom(this, &from);\n", &variables_);
   }
+
+  GenerateExtensionAnnotations(descriptor_, options_, &variables_);
 
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
 
@@ -640,10 +725,20 @@ MessageGenerator::MessageGenerator(
       }
       has_bit_indices_[field->index()] = max_has_bit_index_++;
     }
+    if (IsStringInlined(field, options_)) {
+      if (inlined_string_indices_.empty()) {
+        inlined_string_indices_.resize(descriptor_->field_count(), kNoHasbit);
+      }
+      inlined_string_indices_[field->index()] = max_inlined_string_index_++;
+    }
   }
 
   if (!has_bit_indices_.empty()) {
     field_generators_.SetHasBitIndices(has_bit_indices_);
+  }
+
+  if (!inlined_string_indices_.empty()) {
+    field_generators_.SetInlinedStringIndices(inlined_string_indices_);
   }
 
   num_required_fields_ = 0;
@@ -656,14 +751,18 @@ MessageGenerator::MessageGenerator(
   table_driven_ =
       TableDrivenParsingEnabled(descriptor_, options_, scc_analyzer_);
   parse_function_generator_.reset(new ParseFunctionGenerator(
-      descriptor_, max_has_bit_index_, has_bit_indices_, options_,
-      scc_analyzer_, variables_));
+      descriptor_, max_has_bit_index_, has_bit_indices_,
+      inlined_string_indices_, options_, scc_analyzer_, variables_));
 }
 
 MessageGenerator::~MessageGenerator() = default;
 
 size_t MessageGenerator::HasBitsSize() const {
   return (max_has_bit_index_ + 31) / 32;
+}
+
+size_t MessageGenerator::InlinedStringDonatedSize() const {
+  return (max_inlined_string_index_ + 31) / 32;
 }
 
 int MessageGenerator::HasBitIndex(const FieldDescriptor* field) const {
@@ -690,8 +789,8 @@ void MessageGenerator::AddGenerators(
     enum_generators_.push_back(enum_generators->back().get());
   }
   for (int i = 0; i < descriptor_->extension_count(); i++) {
-    extension_generators->emplace_back(
-        new ExtensionGenerator(descriptor_->extension(i), options_));
+    extension_generators->emplace_back(new ExtensionGenerator(
+        descriptor_->extension(i), options_, scc_analyzer_));
     extension_generators_.push_back(extension_generators->back().get());
   }
 }
@@ -777,9 +876,206 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
   }
 
   if (descriptor_->extension_range_count() > 0) {
-    // Generate accessors for extensions.  We just call a macro located in
-    // extension_set.h since the accessors about 80 lines of static code.
-    format("$GOOGLE_PROTOBUF$_EXTENSION_ACCESSORS($classname$)\n");
+    // Generate accessors for extensions.
+    // We use "_proto_TypeTraits" as a type name below because "TypeTraits"
+    // causes problems if the class has a nested message or enum type with that
+    // name and "_TypeTraits" is technically reserved for the C++ library since
+    // it starts with an underscore followed by a capital letter.
+    //
+    // For similar reason, we use "_field_type" and "_is_packed" as parameter
+    // names below, so that "field_type" and "is_packed" can be used as field
+    // names.
+    format(R"(
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline bool HasExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
+$annotate_extension_has$
+  return _extensions_.Has(id.number());
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline void ClearExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
+  _extensions_.ClearExtension(id.number());
+$annotate_extension_clear$
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline int ExtensionSize(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
+$annotate_extension_repeated_size$
+  return _extensions_.ExtensionSize(id.number());
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
+$annotate_extension_get$
+  return _proto_TypeTraits::Get(id.number(), _extensions_,
+                                id.default_value());
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
+$annotate_extension_mutable$
+  return _proto_TypeTraits::Mutable(id.number(), _field_type,
+                                    &_extensions_);
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline void SetExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
+    typename _proto_TypeTraits::Singular::ConstType value) {
+  _proto_TypeTraits::Set(id.number(), _field_type, value, &_extensions_);
+$annotate_extension_set$
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline void SetAllocatedExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
+    typename _proto_TypeTraits::Singular::MutableType value) {
+  _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
+                                  &_extensions_);
+$annotate_extension_set$
+}
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline void UnsafeArenaSetAllocatedExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
+    typename _proto_TypeTraits::Singular::MutableType value) {
+  _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
+                                             value, &_extensions_);
+$annotate_extension_set$
+}
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline PROTOBUF_MUST_USE_RESULT
+    typename _proto_TypeTraits::Singular::MutableType
+    ReleaseExtension(
+        const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+            $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
+$annotate_extension_release$
+  return _proto_TypeTraits::Release(id.number(), _field_type,
+                                    &_extensions_);
+}
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline typename _proto_TypeTraits::Singular::MutableType
+UnsafeArenaReleaseExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
+$annotate_extension_release$
+  return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
+                                               &_extensions_);
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
+    int index) const {
+$annotate_repeated_extension_get$
+  return _proto_TypeTraits::Get(id.number(), _extensions_, index);
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
+    int index) {
+$annotate_repeated_extension_mutable$
+  return _proto_TypeTraits::Mutable(id.number(), index, &_extensions_);
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline void SetExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
+    int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+  _proto_TypeTraits::Set(id.number(), index, value, &_extensions_);
+$annotate_repeated_extension_set$
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
+  typename _proto_TypeTraits::Repeated::MutableType to_add =
+      _proto_TypeTraits::Add(id.number(), _field_type, &_extensions_);
+$annotate_repeated_extension_add_mutable$
+  return to_add;
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline void AddExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
+    typename _proto_TypeTraits::Repeated::ConstType value) {
+  _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
+                         &_extensions_);
+$annotate_repeated_extension_add$
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
+GetRepeatedExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
+$annotate_repeated_extension_list$
+  return _proto_TypeTraits::GetRepeated(id.number(), _extensions_);
+}
+
+template <typename _proto_TypeTraits,
+          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+          bool _is_packed>
+inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
+MutableRepeatedExtension(
+    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
+        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
+$annotate_repeated_extension_list_mutable$
+  return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
+                                            _is_packed, &_extensions_);
+}
+
+)");
     // Generate MessageSet specific APIs for proto2 MessageSet.
     // For testing purposes we don't check for bridge.MessageSet, so
     // we don't use IsProto2MessageSet
@@ -1145,8 +1441,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   } else {
     format("inline $classname$() : $classname$(nullptr) {}\n");
   }
+  if (!HasSimpleBaseClass(descriptor_, options_)) {
+    format("~$classname$() override;\n");
+  }
   format(
-      "~$classname$() override;\n"
       "explicit constexpr "
       "$classname$(::$proto_ns$::internal::ConstantInitialized);\n"
       "\n"
@@ -1213,7 +1511,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "  return default_instance().GetMetadata().descriptor;\n"
         "}\n"
         "static const ::$proto_ns$::Reflection* GetReflection() {\n"
-        "$annotate_reflection$"
         "  return default_instance().GetMetadata().reflection;\n"
         "}\n");
   }
@@ -1362,22 +1659,36 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format(
-          // Use Message's built-in MergeFrom and CopyFrom when the passed-in
-          // argument is a generic Message instance, and only define the custom
-          // MergeFrom and CopyFrom instances when the source of the merge/copy
-          // is known to be the same class as the destination.
-          // TODO(jorg): Define MergeFrom in terms of MergeImpl, rather than the
-          // other way around, to save even more code size.
-          "using $superclass$::CopyFrom;\n"
-          "void CopyFrom(const $classname$& from);\n"
-          ""
-          "using $superclass$::MergeFrom;\n"
-          "void MergeFrom(const $classname$& from);\n"
-          "private:\n"
-          "static void MergeImpl(::$proto_ns$::Message*to, const "
-          "::$proto_ns$::Message&from);\n"
-          "public:\n");
+      if (!HasSimpleBaseClass(descriptor_, options_)) {
+        format(
+            // Use Message's built-in MergeFrom and CopyFrom when the passed-in
+            // argument is a generic Message instance, and only define the
+            // custom MergeFrom and CopyFrom instances when the source of the
+            // merge/copy is known to be the same class as the destination.
+            // TODO(jorg): Define MergeFrom in terms of MergeImpl, rather than
+            // the other way around, to save even more code size.
+            "using $superclass$::CopyFrom;\n"
+            "void CopyFrom(const $classname$& from);\n"
+            ""
+            "using $superclass$::MergeFrom;\n"
+            "void MergeFrom(const $classname$& from);\n"
+            "private:\n"
+            "static void MergeImpl(::$proto_ns$::Message* to, const "
+            "::$proto_ns$::Message& from);\n"
+            "public:\n");
+      } else {
+        format(
+            "using $superclass$::CopyFrom;\n"
+            "inline void CopyFrom(const $classname$& from) {\n"
+            "  $superclass$::CopyImpl(this, from);\n"
+            "}\n"
+            ""
+            "using $superclass$::MergeFrom;\n"
+            "void MergeFrom(const $classname$& from) {\n"
+            "  $superclass$::MergeImpl(this, from);\n"
+            "}\n"
+            "public:\n");
+      }
     } else {
       format(
           "void CheckTypeAndMergeFrom(const ::$proto_ns$::MessageLite& from)"
@@ -1386,36 +1697,42 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "void MergeFrom(const $classname$& from);\n");
     }
 
-    format.Set("clear_final",
-               ShouldMarkClearAsFinal(descriptor_, options_) ? "final" : "");
+    if (!HasSimpleBaseClass(descriptor_, options_)) {
+      format(
+          "PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;\n"
+          "bool IsInitialized() const final;\n"
+          "\n"
+          "size_t ByteSizeLong() const final;\n");
 
-    format(
-        "PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear()$ clear_final$;\n"
-        "bool IsInitialized() const final;\n"
-        "\n"
-        "size_t ByteSizeLong() const final;\n");
+      parse_function_generator_->GenerateMethodDecls(printer);
 
-    parse_function_generator_->GenerateMethodDecls(printer);
+      format(
+          "$uint8$* _InternalSerialize(\n"
+          "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
+          "const final;\n");
 
-    format(
-        "$uint8$* _InternalSerialize(\n"
-        "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
-        "const final;\n");
-
-    // DiscardUnknownFields() is implemented in message.cc using reflections. We
-    // need to implement this function in generated code for messages.
-    if (!UseUnknownFieldSet(descriptor_->file(), options_)) {
-      format("void DiscardUnknownFields()$ full_final$;\n");
+      // DiscardUnknownFields() is implemented in message.cc using reflections.
+      // We need to implement this function in generated code for messages.
+      if (!UseUnknownFieldSet(descriptor_->file(), options_)) {
+        format("void DiscardUnknownFields()$ full_final$;\n");
+      }
     }
   }
 
-  format(
-      "int GetCachedSize() const final { return _cached_size_.Get(); }"
-      "\n\nprivate:\n"
-      "void SharedCtor();\n"
-      "void SharedDtor();\n"
-      "void SetCachedSize(int size) const$ full_final$;\n"
-      "void InternalSwap($classname$* other);\n");
+  if (options_.field_listener_options.inject_field_listener_events) {
+    format("static constexpr int _kInternalFieldNumber = $1$;\n",
+           descriptor_->field_count());
+  }
+
+  if (!HasSimpleBaseClass(descriptor_, options_)) {
+    format(
+        "int GetCachedSize() const final { return _cached_size_.Get(); }"
+        "\n\nprivate:\n"
+        "void SharedCtor();\n"
+        "void SharedDtor();\n"
+        "void SetCachedSize(int size) const$ full_final$;\n"
+        "void InternalSwap($classname$* other);\n");
+  }
 
   format(
       // Friend AnyMetadata so that it can call this FullMessageName() method.
@@ -1433,9 +1750,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "protected:\n"
       "explicit $classname$(::$proto_ns$::Arena* arena,\n"
       "                     bool is_message_owned = false);\n"
-      "private:\n"
-      "static void ArenaDtor(void* object);\n"
-      "inline void RegisterArenaDtor(::$proto_ns$::Arena* arena);\n");
+      "private:\n");
+
+  if (!HasSimpleBaseClass(descriptor_, options_)) {
+    format(
+        "static void ArenaDtor(void* object);\n"
+        "inline void RegisterArenaDtor(::$proto_ns$::Arena* arena);\n");
+  }
 
   format(
       "public:\n"
@@ -1560,6 +1881,21 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     format(
         "::$proto_ns$::internal::ExtensionSet _extensions_;\n"
         "\n");
+  }
+
+  if (options_.field_listener_options.inject_field_listener_events &&
+      descriptor_->file()->options().optimize_for() !=
+          google::protobuf::FileOptions::LITE_RUNTIME) {
+    format("static ::$proto_ns$::AccessListener<$1$> _tracker_;\n",
+           ClassName(descriptor_));
+  }
+
+  // Generate _inlined_string_donated_ for inlined string type.
+  // TODO(congliu): To avoid affecting the locality of `_has_bits_`, should this
+  // be below or above `_has_bits_`?
+  if (!inlined_string_indices_.empty()) {
+    format("::$proto_ns$::internal::HasBits<$1$> _inlined_string_donated_;\n",
+           InlinedStringDonatedSize());
   }
 
   format(
@@ -1731,8 +2067,17 @@ void MessageGenerator::GenerateSchema(io::Printer* printer, int offset,
   has_offset = !has_bit_indices_.empty() || IsMapEntryMessage(descriptor_)
                    ? offset + has_offset
                    : -1;
+  int inlined_string_indices_offset;
+  if (inlined_string_indices_.empty()) {
+    inlined_string_indices_offset = -1;
+  } else {
+    GOOGLE_DCHECK_NE(has_offset, -1);
+    GOOGLE_DCHECK(!IsMapEntryMessage(descriptor_));
+    inlined_string_indices_offset = has_offset + has_bit_indices_.size();
+  }
 
-  format("{ $1$, $2$, sizeof($classtype$)},\n", offset, has_offset);
+  format("{ $1$, $2$, $3$, sizeof($classtype$)},\n", offset, has_offset,
+         inlined_string_indices_offset);
 }
 
 namespace {
@@ -1746,7 +2091,9 @@ uint32_t CalcFieldNum(const FieldGenerator& generator,
   if (type == FieldDescriptor::TYPE_STRING ||
       type == FieldDescriptor::TYPE_BYTES) {
     // string field
-    if (IsCord(field, options)) {
+    if (generator.IsInlined()) {
+      type = internal::FieldMetadata::kInlinedType;
+    } else if (IsCord(field, options)) {
       type = internal::FieldMetadata::kCordType;
     } else if (IsStringPiece(field, options)) {
       type = internal::FieldMetadata::kStringPieceType;
@@ -1956,13 +2303,24 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
         "  MergeFromInternal(other);\n"
         "}\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "  return ::$proto_ns$::internal::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
+      if (!descriptor_->options().map_entry()) {
+        format(
+            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
+            "$annotate_reflection$"
+            "  return ::$proto_ns$::internal::AssignDescriptors(\n"
+            "      &$desc_table$_getter, &$desc_table$_once,\n"
+            "      $file_level_metadata$[$1$]);\n"
+            "}\n",
+            index_in_file_messages_);
+      } else {
+        format(
+            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
+            "  return ::$proto_ns$::internal::AssignDescriptors(\n"
+            "      &$desc_table$_getter, &$desc_table$_once,\n"
+            "      $file_level_metadata$[$1$]);\n"
+            "}\n",
+            index_in_file_messages_);
+      }
     }
     return;
   }
@@ -2059,10 +2417,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     GenerateClear(printer);
     format("\n");
 
-    parse_function_generator_->GenerateMethodImpls(printer);
-    format("\n");
+    if (!HasSimpleBaseClass(descriptor_, options_)) {
+      parse_function_generator_->GenerateMethodImpls(printer);
+      format("\n");
 
-    parse_function_generator_->GenerateDataDefinitions(printer);
+      parse_function_generator_->GenerateDataDefinitions(printer);
+    }
 
     GenerateSerializeWithCachedSizesToArray(printer);
     format("\n");
@@ -2083,6 +2443,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     format("\n");
   }
 
+  GenerateVerify(printer);
+
   GenerateSwap(printer);
   format("\n");
 
@@ -2095,13 +2457,24 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
         index_in_file_messages_);
   }
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    format(
-        "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-        "  return ::$proto_ns$::internal::AssignDescriptors(\n"
-        "      &$desc_table$_getter, &$desc_table$_once,\n"
-        "      $file_level_metadata$[$1$]);\n"
-        "}\n",
-        index_in_file_messages_);
+    if (!descriptor_->options().map_entry()) {
+      format(
+          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
+          "$annotate_reflection$"
+          "  return ::$proto_ns$::internal::AssignDescriptors(\n"
+          "      &$desc_table$_getter, &$desc_table$_once,\n"
+          "      $file_level_metadata$[$1$]);\n"
+          "}\n",
+          index_in_file_messages_);
+    } else {
+      format(
+          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
+          "  return ::$proto_ns$::internal::AssignDescriptors(\n"
+          "      &$desc_table$_getter, &$desc_table$_once,\n"
+          "      $file_level_metadata$[$1$]);\n"
+          "}\n",
+          index_in_file_messages_);
+    }
   } else {
     format(
         "std::string $classname$::GetTypeName() const {\n"
@@ -2110,6 +2483,14 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
         "\n");
   }
 
+  if (options_.field_listener_options.inject_field_listener_events &&
+      descriptor_->file()->options().optimize_for() !=
+          google::protobuf::FileOptions::LITE_RUNTIME) {
+    format(
+        "::$proto_ns$::AccessListener<$classtype$> "
+        "$1$::_tracker_(&FullMessageName);\n",
+        ClassName(descriptor_));
+  }
 }
 
 size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
@@ -2148,9 +2529,13 @@ size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
     }
 
     processing_type = static_cast<unsigned>(field->type());
+    const FieldGenerator& generator = field_generators_.get(field);
     if (field->type() == FieldDescriptor::TYPE_STRING) {
       switch (EffectiveStringCType(field, options_)) {
         case FieldOptions::STRING:
+          if (generator.IsInlined()) {
+            processing_type = internal::TYPE_STRING_INLINED;
+          }
           break;
         case FieldOptions::CORD:
           processing_type = internal::TYPE_STRING_CORD;
@@ -2162,6 +2547,9 @@ size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
     } else if (field->type() == FieldDescriptor::TYPE_BYTES) {
       switch (EffectiveStringCType(field, options_)) {
         case FieldOptions::STRING:
+          if (generator.IsInlined()) {
+            processing_type = internal::TYPE_BYTES_INLINED;
+          }
           break;
         case FieldOptions::CORD:
           processing_type = internal::TYPE_BYTES_CORD;
@@ -2326,7 +2714,12 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   } else {
     format("~0u,  // no _weak_field_map_\n");
   }
-  const int kNumGenericOffsets = 5;  // the number of fixed offsets above
+  if (!inlined_string_indices_.empty()) {
+    format("PROTOBUF_FIELD_OFFSET($classtype$, _inlined_string_donated_),\n");
+  } else {
+    format("~0u,  // no _inlined_string_donated_\n");
+  }
+  const int kNumGenericOffsets = 6;  // the number of fixed offsets above
   const size_t offsets = kNumGenericOffsets + descriptor_->field_count() +
                          descriptor_->real_oneof_decl_count();
   size_t entries = offsets;
@@ -2345,10 +2738,18 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
       format("PROTOBUF_FIELD_OFFSET($classtype$, $1$_)", FieldName(field));
     }
 
+    // Some information about a field is in the pdproto profile. The profile is
+    // only available at compile time. So we embed such information in the
+    // offset of the field, so that the information is available when reflective
+    // accessing the field at run time.
+    //
+    // Embed whether the field is used to the MSB of the offset.
     if (!IsFieldUsed(field, options_)) {
       format(" | 0x80000000u, // unused\n");
     } else if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
       format(" | 0x1u, // eagerly verified lazy\n");
+    } else if (IsStringInlined(field, options_)) {
+      format(" | 0x1u, // inlined\n");
     } else {
       format(",\n");
     }
@@ -2374,11 +2775,21 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
       format("$1$,\n", index);
     }
   }
+  if (!inlined_string_indices_.empty()) {
+    entries += inlined_string_indices_.size();
+    for (int inlined_string_indice : inlined_string_indices_) {
+      const std::string index = inlined_string_indice >= 0
+                                    ? StrCat(inlined_string_indice)
+                                    : "~0u";
+      format("$1$,\n", index);
+    }
+  }
 
   return std::make_pair(entries, offsets);
 }
 
 void MessageGenerator::GenerateSharedConstructorCode(io::Printer* printer) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(printer, variables_);
 
   format("void $classname$::SharedCtor() {\n");
@@ -2394,6 +2805,7 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateSharedDestructorCode(io::Printer* printer) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(printer, variables_);
 
   format("inline void $classname$::SharedDtor() {\n");
@@ -2424,6 +2836,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateArenaDestructorCode(io::Printer* printer) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(printer, variables_);
 
   // Generate the ArenaDtor() method. Track whether any fields actually produced
@@ -2593,7 +3006,8 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
     bool has_arena_constructor = field->is_repeated();
     if (!field->real_containing_oneof() &&
         (IsLazy(field, options_, scc_analyzer_) ||
-         IsStringPiece(field, options_))) {
+         IsStringPiece(field, options_) ||
+         (IsString(field, options_) && IsStringInlined(field, options_)))) {
       has_arena_constructor = true;
     }
     if (has_arena_constructor) {
@@ -2620,14 +3034,28 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
   format(
       "$classname$::$classname$(::$proto_ns$::Arena* arena,\n"
       "                         bool is_message_owned)\n"
-      "  : $1$ {\n"
-      "  SharedCtor();\n"
-      "  if (!is_message_owned) {\n"
-      "    RegisterArenaDtor(arena);\n"
-      "  }\n"
-      "  // @@protoc_insertion_point(arena_constructor:$full_name$)\n"
-      "}\n",
+      "  : $1$ {\n",
       initializer_with_arena);
+
+  if (!inlined_string_indices_.empty()) {
+    // Donate inline string fields.
+    format("  if (arena != nullptr) {\n");
+    for (size_t i = 0; i < InlinedStringDonatedSize(); ++i) {
+      format("    _inlined_string_donated_[$1$] = ~0u;\n", i);
+    }
+    format("  }\n");
+  }
+
+  if (!HasSimpleBaseClass(descriptor_, options_)) {
+    format(
+        "  SharedCtor();\n"
+        "  if (!is_message_owned) {\n"
+        "    RegisterArenaDtor(arena);\n"
+        "  }\n");
+  }
+  format(
+      "  // @@protoc_insertion_point(arena_constructor:$full_name$)\n"
+      "}\n");
 
   std::map<std::string, std::string> vars;
   SetUnknownFieldsVariable(descriptor_, options_, &vars);
@@ -2651,6 +3079,9 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
     format.Indent();
     format.Indent();
     format.Indent();
+
+    // Do not copy inlined_string_donated_, because this is not an arena
+    // constructor.
 
     if (!has_bit_indices_.empty()) {
       format(",\n_has_bits_(from._has_bits_)");
@@ -2726,14 +3157,22 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
   GenerateSharedConstructorCode(printer);
 
   // Generate the destructor.
-  format(
-      "$classname$::~$classname$() {\n"
-      "  // @@protoc_insertion_point(destructor:$full_name$)\n"
-      "  if (GetArenaForAllocation() != nullptr) return;\n"
-      "  SharedDtor();\n"
-      "  _internal_metadata_.Delete<$unknown_fields_type$>();\n"
-      "}\n"
-      "\n");
+  if (!HasSimpleBaseClass(descriptor_, options_)) {
+    format(
+        "$classname$::~$classname$() {\n"
+        "  // @@protoc_insertion_point(destructor:$full_name$)\n"
+        "  if (GetArenaForAllocation() != nullptr) return;\n"
+        "  SharedDtor();\n"
+        "  _internal_metadata_.Delete<$unknown_fields_type$>();\n"
+        "}\n"
+        "\n");
+  } else {
+    // For messages using simple base classes, having no destructor
+    // allows our vtable to share the same destructor as every other
+    // message with a simple base class.  This works only as long as
+    // we have no fields needing destruction, of course.  (No strings
+    // or extensions)
+  }
 
   // Generate the shared destructor code.
   GenerateSharedDestructorCode(printer);
@@ -2741,11 +3180,13 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
   // Generate the arena-specific destructor code.
   GenerateArenaDestructorCode(printer);
 
-  // Generate SetCachedSize.
-  format(
-      "void $classname$::SetCachedSize(int size) const {\n"
-      "  _cached_size_.Set(size);\n"
-      "}\n");
+  if (!HasSimpleBaseClass(descriptor_, options_)) {
+    // Generate SetCachedSize.
+    format(
+        "void $classname$::SetCachedSize(int size) const {\n"
+        "  _cached_size_.Set(size);\n"
+        "}\n");
+  }
 }
 
 void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* printer) {
@@ -2759,6 +3200,7 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateClear(io::Printer* printer) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(printer, variables_);
 
   // The maximum number of bytes we will memset to zero without checking their
@@ -2916,6 +3358,8 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
     format("_weak_field_map_.ClearAll();\n");
   }
 
+  // We don't clear donated status.
+
   if (!has_bit_indices_.empty()) {
     // Step 5: Everything else.
     format("_has_bits_.Clear();\n");
@@ -2975,6 +3419,7 @@ void MessageGenerator::GenerateOneofClear(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateSwap(io::Printer* printer) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(printer, variables_);
 
   format("void $classname$::InternalSwap($classname$* other) {\n");
@@ -2989,6 +3434,11 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
     std::map<std::string, std::string> vars;
     SetUnknownFieldsVariable(descriptor_, options_, &vars);
     format.AddMap(vars);
+    if (HasSingularString(descriptor_, options_)) {
+      format(
+          "auto* lhs_arena = GetArenaForAllocation();\n"
+          "auto* rhs_arena = other->GetArenaForAllocation();\n");
+    }
     format("_internal_metadata_.InternalSwap(&other->_internal_metadata_);\n");
 
     if (!has_bit_indices_.empty()) {
@@ -3056,47 +3506,64 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
 
 void MessageGenerator::GenerateMergeFrom(io::Printer* printer) {
   Formatter format(printer, variables_);
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    // We don't override the generalized MergeFrom (aka that which
-    // takes in the Message base class as a parameter); instead we just
-    // let the base Message::MergeFrom take care of it.  The base MergeFrom
-    // knows how to quickly confirm the types exactly match, and if so, will
-    // use GetClassData() to retrieve the address of MergeImpl, which calls
-    // the fast MergeFrom overload.  Most callers avoid all this by passing
-    // a "from" message that is the same type as the message being merged
-    // into, rather than a generic Message.
+  if (!HasSimpleBaseClass(descriptor_, options_)) {
+    if (HasDescriptorMethods(descriptor_->file(), options_)) {
+      // We don't override the generalized MergeFrom (aka that which
+      // takes in the Message base class as a parameter); instead we just
+      // let the base Message::MergeFrom take care of it.  The base MergeFrom
+      // knows how to quickly confirm the types exactly match, and if so, will
+      // use GetClassData() to retrieve the address of MergeImpl, which calls
+      // the fast MergeFrom overload.  Most callers avoid all this by passing
+      // a "from" message that is the same type as the message being merged
+      // into, rather than a generic Message.
 
+      format(
+          "const ::$proto_ns$::Message::ClassData "
+          "$classname$::_class_data_ = {\n"
+          "    ::$proto_ns$::Message::CopyWithSizeCheck,\n"
+          "    $classname$::MergeImpl\n"
+          "};\n"
+          "const ::$proto_ns$::Message::ClassData*"
+          "$classname$::GetClassData() const { return &_class_data_; }\n"
+          "\n"
+          "void $classname$::MergeImpl(::$proto_ns$::Message* to,\n"
+          "                      const ::$proto_ns$::Message& from) {\n"
+          "  static_cast<$classname$ *>(to)->MergeFrom(\n"
+          "      static_cast<const $classname$ &>(from));\n"
+          "}\n"
+          "\n");
+    } else {
+      // Generate CheckTypeAndMergeFrom().
+      format(
+          "void $classname$::CheckTypeAndMergeFrom(\n"
+          "    const ::$proto_ns$::MessageLite& from) {\n"
+          "  MergeFrom(*::$proto_ns$::internal::DownCast<const $classname$*>(\n"
+          "      &from));\n"
+          "}\n");
+    }
+  } else {
+    // In the simple case, we just define ClassData that vectors back to the
+    // simple implementation of Copy and Merge.
     format(
         "const ::$proto_ns$::Message::ClassData "
         "$classname$::_class_data_ = {\n"
-        "    ::$proto_ns$::Message::CopyWithSizeCheck,\n"
-        "    $classname$::MergeImpl\n"
+        "    $superclass$::CopyImpl,\n"
+        "    $superclass$::MergeImpl,\n"
         "};\n"
         "const ::$proto_ns$::Message::ClassData*"
         "$classname$::GetClassData() const { return &_class_data_; }\n"
         "\n"
-        "void $classname$::MergeImpl(::$proto_ns$::Message*to,\n"
-        "                      const ::$proto_ns$::Message&from) {\n"
-        "  static_cast<$classname$ *>(to)->MergeFrom(\n"
-        "      static_cast<const $classname$ &>(from));\n"
-        "}\n"
         "\n");
-  } else {
-    // Generate CheckTypeAndMergeFrom().
-    format(
-        "void $classname$::CheckTypeAndMergeFrom(\n"
-        "    const ::$proto_ns$::MessageLite& from) {\n"
-        "  MergeFrom(*::$proto_ns$::internal::DownCast<const $classname$*>(\n"
-        "      &from));\n"
-        "}\n");
   }
 }
 
 void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   // Generate the class-specific MergeFrom, which avoids the GOOGLE_CHECK and cast.
   Formatter format(printer, variables_);
   format(
       "void $classname$::MergeFrom(const $classname$& from) {\n"
+      "$annotate_mergefrom$"
       "// @@protoc_insertion_point(class_specific_merge_from_start:"
       "$full_name$)\n"
       "  $DCHK$_NE(&from, this);\n");
@@ -3255,6 +3722,7 @@ void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateCopyFrom(io::Printer* printer) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(printer, variables_);
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     // We don't override the generalized CopyFrom (aka that which
@@ -3299,6 +3767,9 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* printer) {
 
   format.Outdent();
   format("}\n");
+}
+
+void MessageGenerator::GenerateVerify(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateSerializeOneofFields(
@@ -3376,11 +3847,12 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
   format("// Extension range [$start$, $end$)\n");
   format(
       "target = _extensions_._InternalSerialize(\n"
-      "    $start$, $end$, target, stream);\n\n");
+      "internal_default_instance(), $start$, $end$, target, stream);\n\n");
 }
 
 void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(printer, variables_);
   if (descriptor_->options().message_set_wire_format()) {
     // Special-case MessageSet.
@@ -3390,7 +3862,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
         "const {\n"
         "$annotate_serialize$"
         "  target = _extensions_."
-        "InternalSerializeMessageSetWithCachedSizesToArray(target, stream);\n");
+        "InternalSerializeMessageSetWithCachedSizesToArray(\n"  //
+        "internal_default_instance(), target, stream);\n");
     std::map<std::string, std::string> vars;
     SetUnknownFieldsVariable(descriptor_, options_, &vars);
     format.AddMap(vars);
@@ -3443,6 +3916,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
 
 void MessageGenerator::GenerateSerializeWithCachedSizesBody(
     io::Printer* printer) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(printer, variables_);
   // If there are multiple fields in a row from the same oneof then we
   // coalesce them and emit a switch statement.  This is more efficient
@@ -3759,6 +4233,7 @@ std::vector<uint32_t> MessageGenerator::RequiredFieldsBitMask() const {
 }
 
 void MessageGenerator::GenerateByteSize(io::Printer* printer) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(printer, variables_);
 
   if (descriptor_->options().message_set_wire_format()) {
@@ -3987,37 +4462,37 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
     format("total_size += _weak_field_map_.ByteSizeLong();\n");
   }
 
-  format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
   if (UseUnknownFieldSet(descriptor_->file(), options_)) {
     // We go out of our way to put the computation of the uncommon path of
     // unknown fields in tail position. This allows for better code generation
     // of this function for simple protos.
     format(
-        "  return ::$proto_ns$::internal::ComputeUnknownFieldsSize(\n"
-        "      _internal_metadata_, total_size, &_cached_size_);\n");
+        "return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);\n");
   } else {
+    format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
     format("  total_size += $unknown_fields$.size();\n");
-  }
-  format("}\n");
+    format("}\n");
 
-  // We update _cached_size_ even though this is a const method.  Because
-  // const methods might be called concurrently this needs to be atomic
-  // operations or the program is undefined.  In practice, since any concurrent
-  // writes will be writing the exact same value, normal writes will work on
-  // all common processors. We use a dedicated wrapper class to abstract away
-  // the underlying atomic. This makes it easier on platforms where even relaxed
-  // memory order might have perf impact to replace it with ordinary loads and
-  // stores.
-  format(
-      "int cached_size = ::$proto_ns$::internal::ToCachedSize(total_size);\n"
-      "SetCachedSize(cached_size);\n"
-      "return total_size;\n");
+    // We update _cached_size_ even though this is a const method.  Because
+    // const methods might be called concurrently this needs to be atomic
+    // operations or the program is undefined.  In practice, since any
+    // concurrent writes will be writing the exact same value, normal writes
+    // will work on all common processors. We use a dedicated wrapper class to
+    // abstract away the underlying atomic. This makes it easier on platforms
+    // where even relaxed memory order might have perf impact to replace it with
+    // ordinary loads and stores.
+    format(
+        "int cached_size = ::$proto_ns$::internal::ToCachedSize(total_size);\n"
+        "SetCachedSize(cached_size);\n"
+        "return total_size;\n");
+  }
 
   format.Outdent();
   format("}\n");
 }
 
 void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(printer, variables_);
   format("bool $classname$::IsInitialized() const {\n");
   format.Indent();

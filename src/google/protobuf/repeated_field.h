@@ -144,15 +144,15 @@ inline typename std::enable_if<(kSize == 0), void>::type memswap(char*, char*) {
                                       q + sizeof(reg_type));                 \
   }
 
-PROTO_MEMSWAP_DEF_SIZE(uint8, 2)
-PROTO_MEMSWAP_DEF_SIZE(uint16, 4)
-PROTO_MEMSWAP_DEF_SIZE(uint32, 8)
+PROTO_MEMSWAP_DEF_SIZE(uint8_t, 2)
+PROTO_MEMSWAP_DEF_SIZE(uint16_t, 4)
+PROTO_MEMSWAP_DEF_SIZE(uint32_t, 8)
 
 #ifdef __SIZEOF_INT128__
-PROTO_MEMSWAP_DEF_SIZE(uint64, 16)
+PROTO_MEMSWAP_DEF_SIZE(uint64_t, 16)
 PROTO_MEMSWAP_DEF_SIZE(__uint128_t, (1u << 31))
 #else
-PROTO_MEMSWAP_DEF_SIZE(uint64, (1u << 31))
+PROTO_MEMSWAP_DEF_SIZE(uint64_t, (1u << 31))
 #endif
 
 #undef PROTO_MEMSWAP_DEF_SIZE
@@ -1089,18 +1089,18 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // It is also useful in legacy code that uses temporary ownership to avoid
   // copies. Example:
   //   RepeatedPtrField<T> temp_field;
-  //   temp_field.AddAllocated(new T);
+  //   temp_field.UnsafeArenaAddAllocated(new T);
   //   ... // Do something with temp_field
-  //   temp_field.ExtractSubrange(0, temp_field.size(), nullptr);
+  //   temp_field.UnsafeArenaExtractSubrange(0, temp_field.size(), nullptr);
   // If you put temp_field on the arena this fails, because the ownership
   // transfers to the arena at the "AddAllocated" call and is not released
   // anymore causing a double delete. UnsafeArenaAddAllocated prevents this.
   void UnsafeArenaAddAllocated(Element* value);
 
-  // Remove the last element and return it.  Works only when operating on an
-  // arena. The returned pointer is to the original object in the arena, hence
-  // has the arena's lifetime.
-  // Requires:  current_size_ > 0
+  // Remove the last element and return it.  Unlike ReleaseLast, the returned
+  // pointer is always to the original object.  This may be in an arena, and
+  // therefore have the arena's lifetime.
+  // Requires: current_size_ > 0
   Element* UnsafeArenaReleaseLast();
 
   // Extract elements with indices in the range "[start .. start+num-1]".
@@ -1120,10 +1120,10 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // UnsafeArenaExtractSubrange().
   void ExtractSubrange(int start, int num, Element** elements);
 
-  // Identical to ExtractSubrange() described above, except that when this
-  // repeated field is on an arena, no object copies are performed. Instead, the
-  // raw object pointers are returned. Thus, if on an arena, the returned
-  // objects must not be freed, because they will not be heap-allocated objects.
+  // Identical to ExtractSubrange() described above, except that no object
+  // copies are ever performed. Instead, the raw object pointers are returned.
+  // Thus, if on an arena, the returned objects must not be freed, because they
+  // will not be heap-allocated objects.
   void UnsafeArenaExtractSubrange(int start, int num, Element** elements);
 
   // When elements are removed by calls to RemoveLast() or Clear(), they
@@ -1362,7 +1362,7 @@ inline void RepeatedField<Element>::Set(int index, const Element& value) {
 
 template <typename Element>
 inline void RepeatedField<Element>::Add(const Element& value) {
-  uint32 size = current_size_;
+  uint32_t size = current_size_;
   if (static_cast<int>(size) == total_size_) {
     // value could reference an element of the array. Reserving new space will
     // invalidate the reference. So we must make a copy first.
@@ -1377,7 +1377,7 @@ inline void RepeatedField<Element>::Add(const Element& value) {
 
 template <typename Element>
 inline Element* RepeatedField<Element>::Add() {
-  uint32 size = current_size_;
+  uint32_t size = current_size_;
   if (static_cast<int>(size) == total_size_) Reserve(total_size_ + 1);
   auto ptr = &elements()[size];
   current_size_ = size + 1;
@@ -1624,7 +1624,7 @@ void RepeatedField<Element>::Reserve(int new_size) {
   // this, since Element is supposed to be POD, but a previous version of this
   // code allocated storage with "new Element[size]" and some code uses
   // RepeatedField with non-POD types, relying on constructor invocation. If
-  // Element has a trivial constructor (e.g., int32), gcc (tested with -O2)
+  // Element has a trivial constructor (e.g., int32_t), gcc (tested with -O2)
   // completely removes this loop because the loop body is empty, so this has no
   // effect unless its side-effects are required for correctness.
   // Note that we do this before MoveArray() below because Element's copy
@@ -1978,9 +1978,7 @@ void RepeatedPtrFieldBase::AddAllocatedSlowWithCopy(
     // Pass value_arena and my_arena to avoid duplicate virtual call (value) or
     // load (mine).
     typename TypeHandler::Type* value, Arena* value_arena, Arena* my_arena) {
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
   GOOGLE_DCHECK(value_arena == nullptr || value_arena == my_arena);
-#endif  // PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
   // Ensure that either the value is in the same arena, or if not, we do the
   // appropriate thing: Own() it (if it's on heap and we're in an arena) or copy
   // it to our arena/heap (otherwise).
@@ -2285,11 +2283,9 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
 
   if (num == 0) return;
 
-#ifdef PROTOBUF_MUST_USE_EXTRACT_RESULT
   GOOGLE_DCHECK_NE(elements, nullptr)
       << "Releasing elements without transferring ownership is an unsafe "
          "operation.  Use UnsafeArenaExtractSubrange.";
-#endif
   if (elements == nullptr) {
     CloseGap(start, num);
     return;
@@ -2906,9 +2902,9 @@ AllocatedRepeatedPtrFieldBackInserter(
 // This is slightly faster if that matters. It is also useful in legacy code
 // that uses temporary ownership to avoid copies. Example:
 //   RepeatedPtrField<T> temp_field;
-//   temp_field.AddAllocated(new T);
+//   temp_field.UnsafeArenaAddAllocated(new T);
 //   ... // Do something with temp_field
-//   temp_field.ExtractSubrange(0, temp_field.size(), nullptr);
+//   temp_field.UnsafeArenaExtractSubrange(0, temp_field.size(), nullptr);
 // If you put temp_field on the arena this fails, because the ownership
 // transfers to the arena at the "AddAllocated" call and is not released anymore
 // causing a double delete. Using UnsafeArenaAddAllocated prevents this.
@@ -2922,10 +2918,10 @@ UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
 
 // Extern declarations of common instantiations to reduce library bloat.
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<bool>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<int32>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<uint32>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<int64>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<uint64>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<int32_t>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<uint32_t>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<int64_t>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<uint64_t>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<float>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<double>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
