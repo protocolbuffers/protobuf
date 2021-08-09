@@ -26,20 +26,6 @@ http_archive(
     ],
 )
 
-rules_kotlin_version = "v1.5.0-beta-3"
-rules_kotlin_sha = "58edd86f0f3c5b959c54e656b8e7eb0b0becabd412465c37a2078693c2571f7f"
-http_archive(
-    name = "io_bazel_rules_kotlin",
-    urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/%s/rules_kotlin_release.tgz" % rules_kotlin_version],
-    sha256 = rules_kotlin_sha,
-)
-
-load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
-kotlin_repositories()
-
-load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
-kt_register_toolchains()
-
 # Load common dependencies.
 load("//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
@@ -110,3 +96,10 @@ bind(
 # For `cc_proto_blacklist_test` and `build_test`.
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
+
+# For kt_jvm_library
+load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
+kotlin_repositories()
+
+load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
+kt_register_toolchains()

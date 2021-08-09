@@ -71,3 +71,9 @@ def protobuf_deps():
             strip_prefix = "rules_jvm_external-4.1",
             urls = ["https://github.com/bazelbuild/rules_jvm_external/archive/4.1.zip"],
         )
+    if not native.existing_rule("io_bazel_rules_kotlin"):
+      http_archive(
+          name = "io_bazel_rules_kotlin",
+          urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.5.0-beta-3/rules_kotlin_release.tgz"],
+          sha256 = "58edd86f0f3c5b959c54e656b8e7eb0b0becabd412465c37a2078693c2571f7f"
+      )
