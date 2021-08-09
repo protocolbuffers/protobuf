@@ -118,6 +118,18 @@ java_library(
     srcs = LITE_SRCS,
 )
 
+java_library(
+    name = "java_runtime",
+    srcs = glob(
+        [
+            "src/main/java/com/google/protobuf/*.java",
+        ],
+    ) + [
+        "//:gen_well_known_protos_java",
+    ],
+    visibility = ["//java/kotlin:__pkg__"],
+)
+
 java_export(
     name = "core",
     maven_coordinates = "com.google.protobuf:protobuf-java:%s" % PROTOBUF_VERSION,
