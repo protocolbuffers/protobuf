@@ -40,7 +40,7 @@ However there are some features it does not support:
 
 - proto2 extensions (coming soon!)
 - text format parsing
-- deep descriptor verification: upb's descriptor validation is not is exhaustive
+- deep descriptor verification: upb's descriptor validation is not as exhaustive
   as `protoc`.
 
 ## Install
