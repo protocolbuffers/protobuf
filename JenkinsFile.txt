@@ -1,0 +1,26 @@
+pipeline {
+
+    agent any 
+
+    stages {
+
+        stage('Setup') { 
+            steps {
+               bat 'start cmd.exe /c C:\\Users\\vatsal.parmar\\Desktop\\trial.bat %CUSTOMER_NAME% %BUCKET_PREFIX% %GIT_BRANCH%'
+            }
+
+        }
+        stage('Test') { 
+            steps {
+                echo "hello world 1"
+            }
+        }
+        stage('Destroy') { 
+            steps {
+                echo "hello world 2"
+            }
+        }
+
+    }
+
+}
