@@ -149,15 +149,16 @@ def _upb_amalgamation(ctx):
         outputs = ctx.outputs.outs,
         arguments = [ctx.bin_dir.path + "/", ctx.attr.prefix] + [f.path for f in srcs] + ["-I" + root for root in _get_real_roots(inputs)],
         progress_message = "Making amalgamation",
-        executable = ctx.executable.amalgamator,
+        executable = ctx.executable._amalgamator,
     )
     return []
 
 upb_amalgamation = rule(
     attrs = {
-        "amalgamator": attr.label(
+        "_amalgamator": attr.label(
             executable = True,
             cfg = "host",
+            default = "//bazel:amalgamate",
         ),
         "prefix": attr.string(
             default = "",
