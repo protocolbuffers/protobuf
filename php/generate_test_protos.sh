@@ -10,7 +10,7 @@ else
   # Bazel seems to be creating a problematic symlink in
   # _build/out/external/com_google_protobuf, so we remove the _build directory
   # before building protoc.
-  (cd .. && rm -rf _build && bazel build -c opt :protoc)
+  (cd .. && bazel build -c opt :protoc)
   PROTOC=bazel-bin/protoc
 fi
 
