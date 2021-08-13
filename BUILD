@@ -1310,9 +1310,6 @@ exports_files([
 
 filegroup(
     name = "bzl_srcs",
-    srcs = glob(
-        ["**/*.bzl"],
-        exclude = ["**/_build/**"]
-    ),
+    srcs = glob(["**/*.bzl"]),
     visibility = ["//visibility:public"],
 )
