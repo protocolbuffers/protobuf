@@ -1312,7 +1312,7 @@ filegroup(
     name = "bzl_srcs",
     srcs = glob(
         ["**/*.bzl"],
-        exclude = ["**/_build/**/*.bzl"]
+        exclude = ["_build/*"]
     ),
     visibility = ["//visibility:public"],
 )
