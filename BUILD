@@ -233,18 +233,12 @@ cc_library(
 
 # copybara:strip_for_google3_begin
 
-py_binary(
-    name = "amalgamate",
-    srcs = ["tools/amalgamate.py"],
-)
-
 upb_amalgamation(
     name = "gen_amalgamation",
     outs = [
         "upb.c",
         "upb.h",
     ],
-    amalgamator = ":amalgamate",
     libs = [
         ":upb",
         ":fastdecode",
@@ -267,7 +261,6 @@ upb_amalgamation(
         "php-upb.c",
         "php-upb.h",
     ],
-    amalgamator = ":amalgamate",
     libs = [
         ":upb",
         ":fastdecode",
@@ -293,7 +286,6 @@ upb_amalgamation(
         "ruby-upb.c",
         "ruby-upb.h",
     ],
-    amalgamator = ":amalgamate",
     libs = [
         ":upb",
         ":fastdecode",
