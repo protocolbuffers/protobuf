@@ -34,7 +34,3 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                                             size, arena.ptr());
   return 0;
 }
-
-#ifndef HAVE_FUZZER
-int main() {}
-#endif
