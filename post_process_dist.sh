@@ -25,6 +25,12 @@ if [ ! -e $1 ]; then
   exit 1
 fi
 
+if [ "${1:0:2}" == ".." ]; then
+  echo "Illegal filename" >&2
+  exit 1
+fi
+
+
 set -ex
 
 LANGUAGES="cpp csharp java js objectivec python ruby php all"
