@@ -27,6 +27,8 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
-      
+
       - name: Use gcloud CLI
         run: gcloud info
+      - name: Run tests
+        run: kokoro/ubuntu/build.sh
