@@ -532,6 +532,23 @@ void test_arena_decode(void) {
   upb_arena_free(tmp);
 }
 
+void test_arena_unaligned(void) {
+  char buf1[1024];
+  // Force the pointer to be unaligned.
+  char *unaligned_buf_ptr = (char*)((uintptr_t)buf1 | 7);
+  upb_arena *arena = upb_arena_init(
+      unaligned_buf_ptr, &buf1[sizeof(buf1)] - unaligned_buf_ptr, NULL);
+  char *mem = upb_arena_malloc(arena, 5);
+  ASSERT(((uintptr_t)mem & 15) == 0);
+  upb_arena_free(arena);
+
+  // Try the same, but with a size so small that aligning up will overflow.
+  arena = upb_arena_init(unaligned_buf_ptr, 5, &upb_alloc_global);
+  mem = upb_arena_malloc(arena, 5);
+  ASSERT(((uintptr_t)mem & 15) == 0);
+  upb_arena_free(arena);
+}
+
 int run_tests(int argc, char *argv[]) {
   test_scalars();
   test_utf8();
@@ -544,5 +561,6 @@ int run_tests(int argc, char *argv[]) {
   test_arena_fuse();
   test_arena_fuse_with_initial_block();
   test_arena_decode();
+  test_arena_unaligned();
   return 0;
 }

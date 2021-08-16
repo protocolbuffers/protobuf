@@ -210,6 +210,14 @@ upb_arena *arena_initslow(void *mem, size_t n, upb_alloc *alloc) {
 upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
   upb_arena *a;
 
+  if (n) {
+    /* Align initial pointer up so that we return properly-aligned pointers. */
+    void *aligned = (void*)UPB_ALIGN_UP((uintptr_t)mem, 16);
+    size_t delta = (uintptr_t)aligned - (uintptr_t)mem;
+    n = delta <= n ? n - delta : 0;
+    mem = aligned;
+  }
+
   /* Round block size down to alignof(*a) since we will allocate the arena
    * itself at the end. */
   n = UPB_ALIGN_DOWN(n, UPB_ALIGN_OF(upb_arena));
