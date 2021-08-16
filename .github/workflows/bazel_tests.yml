@@ -1,4 +1,4 @@
-name: build
+name: Bazel Tests
 
 on:
   push:
@@ -17,8 +17,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - { CC: gcc, CXX: g++ }
-          - { CC: clang, CXX: clang++ }
+          - { flags: "" }
+          - { flags: "--//:fasttable_enabled=true -- -cmake:test_generated_files" }
+          - { flags: "--config=asan -- -benchmarks:benchmark" }
 
     steps:
       - name: Set up Cloud SDK
@@ -30,6 +31,8 @@ jobs:
 
       - name: Use gcloud CLI
         run: gcloud info
+      - name: Pull Docker Image
+        run: docker pull gcr.io/protobuf-build/bazel/linux:4.0.0-b87ca72acbc262f41506b004ac9ea0657c91b546
       - uses: actions/checkout@v2
       - name: Run tests
-        run: ${{ github.workspace }}/kokoro/ubuntu/build.sh
+        run: cd ${{ github.workspace }} && docker run -v$PWD:/workspace gcr.io/protobuf-build/bazel/linux:4.0.0-b87ca72acbc262f41506b004ac9ea0657c91b546 test ... ${{ matrix.flags }}
