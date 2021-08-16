@@ -31,7 +31,5 @@ jobs:
       - name: Use gcloud CLI
         run: gcloud info
       - uses: actions/checkout@v2
-        with:
-          path: upb
       - name: Run tests
         run: ${{ github.workspace }}/kokoro/ubuntu/build.sh
