@@ -1,7 +1,6 @@
 workspace(name = "upb")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
 load("//bazel:workspace_deps.bzl", "upb_deps")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
@@ -32,11 +31,11 @@ http_archive(
     sha256 = "59f918c8ccd4d74b6ac43484467b500f1d64b40cc1010daa055375b322a43ba3",
 )
 
-new_git_repository(
+http_archive(
     name = "com_google_googleapis",
-    remote = "https://github.com/googleapis/googleapis.git",
-    branch = "master",
+    urls = ["https://github.com/googleapis/googleapis/archive/refs/heads/master.zip"],
     build_file = "//benchmarks:BUILD.googleapis",
+    strip_prefix = "googleapis-master",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
