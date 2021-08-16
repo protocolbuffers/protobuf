@@ -250,7 +250,7 @@ def _upb_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider):
     dep_ccinfos += [dep[_UpbDefsWrappedCcInfo].cc_info for dep in deps if _UpbDefsWrappedCcInfo in dep]
     if generator == "upbdefs":
         if _UpbWrappedCcInfo not in target:
-            fail("Target should have _UpbDefsWrappedCcInfo provider")
+            fail("Target should have _UpbWrappedCcInfo provider")
         dep_ccinfos += [target[_UpbWrappedCcInfo].cc_info]
     cc_info = _cc_library_func(
         ctx = ctx,
