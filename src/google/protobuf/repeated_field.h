@@ -652,6 +652,15 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   void Reserve(int new_size);
 
+  template<typename TypeHandler>
+  void Truncate(int new_size) {
+    GOOGLE_DCHECK_LE(new_size, current_size_);
+    for (int i = new_size; i < current_size_; i++) {
+      TypeHandler::Clear(cast<TypeHandler>(rep_->elements[i]));
+    }
+    current_size_ = new_size;
+  }
+
   int Capacity() const;
 
   template <typename TypeHandler>
@@ -987,6 +996,10 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // resizes the pointer array; it doesn't allocate any objects.  If the
   // array is grown, it will always be at least doubled in size.
   void Reserve(int new_size);
+
+  void Truncate(int new_size) {
+    return RepeatedPtrFieldBase::Truncate<TypeHandler>(new_size);
+  }
 
   int Capacity() const;
 
