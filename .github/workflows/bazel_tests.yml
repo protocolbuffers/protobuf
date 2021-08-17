@@ -12,29 +12,19 @@ on:
 jobs:
 
   ubuntu:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         include:
-          - { flags: "" }
-          - { flags: "--//:fasttable_enabled=true -- -cmake:test_generated_files" }
-          - { flags: "--config=asan -- -benchmarks:benchmark" }
+          - { CC: clang, os: ubuntu-20.04, flags: "" }
+          - { CC: clang, os: ubuntu-20.04, flags: "-c opt" }  # Some warnings only fire with -c opt
+          - { CC: gcc, os: ubuntu-20.04, flags: "-c opt" }
+          - { CC: clang, os: ubuntu-20.04, flags: "--//:fasttable_enabled=true -- -cmake:test_generated_files" }
+          - { CC: clang, os: ubuntu-20.04, flags: "--config=asan -- -benchmarks:benchmark" }
+          - { CC: clang, os: macos-11, flags: "" }
 
     steps:
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
-
-      - name: Use gcloud CLI
-        run: gcloud info
-      - name: Configure Docker
-        run: gcloud auth configure-docker
-      - name: Pull Docker Image
-        run: docker pull gcr.io/protobuf-build/bazel/linux:4.0.0-b87ca72acbc262f41506b004ac9ea0657c91b546
       - uses: actions/checkout@v2
       - name: Run tests
-        run: cd ${{ github.workspace }} && docker run -v$PWD:/workspace gcr.io/protobuf-build/bazel/linux:4.0.0-b87ca72acbc262f41506b004ac9ea0657c91b546 test ... ${{ matrix.flags }}
+        run: cd ${{ github.workspace }} && CC=${{ matrix.CC }} bazel test ... ${{ matrix.flags }}
