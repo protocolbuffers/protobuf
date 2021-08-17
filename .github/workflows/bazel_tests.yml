@@ -1,0 +1,40 @@
+name: Bazel Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+
+  ubuntu:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - { flags: "" }
+          - { flags: "--//:fasttable_enabled=true -- -cmake:test_generated_files" }
+          - { flags: "--config=asan -- -benchmarks:benchmark" }
+
+    steps:
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Use gcloud CLI
+        run: gcloud info
+      - name: Configure Docker
+        run: gcloud auth configure-docker
+      - name: Pull Docker Image
+        run: docker pull gcr.io/protobuf-build/bazel/linux:4.0.0-b87ca72acbc262f41506b004ac9ea0657c91b546
+      - uses: actions/checkout@v2
+      - name: Run tests
+        run: cd ${{ github.workspace }} && docker run -v$PWD:/workspace gcr.io/protobuf-build/bazel/linux:4.0.0-b87ca72acbc262f41506b004ac9ea0657c91b546 test ... ${{ matrix.flags }}
