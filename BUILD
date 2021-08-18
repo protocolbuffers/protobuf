@@ -189,8 +189,8 @@ cc_library(
         "src/google/protobuf/dynamic_message.cc",
         "src/google/protobuf/empty.pb.cc",
         "src/google/protobuf/extension_set_heavy.cc",
-        "src/google/protobuf/field_access_listener.cc",
         "src/google/protobuf/field_mask.pb.cc",
+        "src/google/protobuf/generated_message_bases.cc",
         "src/google/protobuf/generated_message_reflection.cc",
         "src/google/protobuf/generated_message_table_driven.cc",
         "src/google/protobuf/io/gzip_stream.cc",
@@ -667,6 +667,7 @@ cc_test(
         "src/google/protobuf/arena_unittest.cc",
         "src/google/protobuf/arenastring_unittest.cc",
         "src/google/protobuf/compiler/annotation_test_util.cc",
+        "src/google/protobuf/compiler/command_line_interface_unittest.cc",
         "src/google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc",
         "src/google/protobuf/compiler/cpp/cpp_move_unittest.cc",
         "src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc",
@@ -741,7 +742,6 @@ cc_test(
     ] + select({
         "//conditions:default": [
             # AUTOGEN(non_msvc_test_srcs)
-            "src/google/protobuf/compiler/command_line_interface_unittest.cc",
         ],
         ":msvc": [],
     }),
