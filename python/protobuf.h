@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -36,9 +36,8 @@
 // This function was not officially added to the limited API until Python 3.10.
 // But in practice it has been stable since Python 3.1.  See:
 //   https://bugs.python.org/issue41784
-PyAPI_FUNC(const char *) PyUnicode_AsUTF8AndSize(
-    PyObject *unicode,
-    Py_ssize_t *size);
+PyAPI_FUNC(const char *)
+    PyUnicode_AsUTF8AndSize(PyObject *unicode, Py_ssize_t *size);
 
 #include "upb/table_internal.h"
 
@@ -88,7 +87,7 @@ PyObject *PyUpb_ObjCache_Get(const void *key);  // returns NULL if not present.
 // Utilities
 // -----------------------------------------------------------------------------
 
-PyTypeObject *AddObject(PyObject *m, const char* name, PyType_Spec* spec);
+PyTypeObject *AddObject(PyObject *m, const char *name, PyType_Spec *spec);
 const char *PyUpb_GetStrData(PyObject *obj);
 
 #endif  // PYUPB_PROTOBUF_H__

@@ -18,6 +18,8 @@ cc_binary(
         # casts between function pointers and object pointers.
         "-Wno-pedantic",
     ],
+    # We use a linker script to hide all symbols except the entry point for
+    # the module.
     linkopts = ["-Wl,--version-script,$(location :version_script.lds)"],
     linkshared = True,
     linkstatic = True,
