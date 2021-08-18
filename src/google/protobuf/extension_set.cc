@@ -1078,14 +1078,6 @@ void ExtensionSet::InternalExtensionMergeFrom(
                   other_extension.lazymessage_value->New(arena_);
               extension->lazymessage_value->MergeFrom(
                   *other_extension.lazymessage_value, arena_);
-            } else if (&MaybeCreateLazyExtension != nullptr &&
-                       (extension->lazymessage_value =
-                            MaybeCreateLazyExtension(arena_)) != nullptr) {
-              // Binary has opted into lazy-after-merge; the destination of the
-              // merge is now a LazyField.
-              extension->lazymessage_value->MergeFromMessage(
-                  *other_extension.message_value, arena_);
-              extension->is_lazy = true;
             } else {
               extension->is_lazy = false;
               extension->message_value =
@@ -2235,12 +2227,6 @@ size_t ExtensionSet::MessageSetByteSize() const {
   return total_size;
 }
 
-#if !PROTOBUF_HAVE_ATTRIBUTE_WEAK
-// If weak attributes are not supported define the default behavior.
-ExtensionSet::LazyMessageExtension* MaybeCreateLazyExtension(Arena* arena) {
-  return nullptr;
-}
-#endif  // PROTOBUF_HAVE_ATTRIBUTE_WEAK
 
 }  // namespace internal
 }  // namespace protobuf
