@@ -2,7 +2,7 @@ workspace(name = "upb")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//bazel:workspace_deps.bzl", "upb_deps")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//bazel:workspace_defs.bzl", "python_headers")
 
 upb_deps()
 
@@ -37,6 +37,10 @@ http_archive(
     build_file = "//benchmarks:BUILD.googleapis",
     strip_prefix = "googleapis-master",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
+)
+
+python_headers(
+    name = "python_headers"
 )
 
 http_archive(
