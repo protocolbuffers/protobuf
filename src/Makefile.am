@@ -248,7 +248,6 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/dynamic_message.cc                           \
   google/protobuf/empty.pb.cc                                  \
   google/protobuf/extension_set_heavy.cc                       \
-  google/protobuf/field_access_listener.cc                     \
   google/protobuf/field_mask.pb.cc                             \
   google/protobuf/generated_message_bases.cc                   \
   google/protobuf/generated_message_reflection.cc              \
