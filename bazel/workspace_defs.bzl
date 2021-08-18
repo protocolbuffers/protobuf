@@ -35,12 +35,11 @@ cc_library(
 """
 
 def _find_python_dir(repository_ctx):
-  versions = ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11"]
-  for version in versions:
-    path = "/usr/include/python" + version
-    if repository_ctx.path(path + "/" + "Python.h").exists:
-      return path
-  fail("No Python headers found in /usr/include/python3.* (require 3.6 or newer)")
+  py_program = "import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'), end='')"
+  result = repository_ctx.execute(["python3", "-c", py_program])
+  if result.return_code != 0:
+    fail("No python3 executable available on the system")
+  return result.stdout
 
 def _python_headers_impl(repository_ctx):
   path = _find_python_dir(repository_ctx)
@@ -61,9 +60,8 @@ def _python_headers_impl(repository_ctx):
 #     deps = ["@python_headers_repo//:python_headers"],
 #   )
 #
-# The headers will be from any version of Python >=3.6.  This is intended for
-# use with the Python "limited API," which only exposes symbols that are ABI
-# compatible from version to version.
+# The headers should correspond to the version of python obtained by running
+# the `python3` command on the system.
 python_headers = repository_rule(
     implementation = _python_headers_impl,
     local = True,
