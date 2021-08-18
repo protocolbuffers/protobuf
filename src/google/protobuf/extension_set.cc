@@ -43,14 +43,16 @@
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/arena.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/hash.h>
 
-#include <google/protobuf/port_def.inc>
-
+// clang-format off
+#include <google/protobuf/port_def.inc>  // must be last.
+// clang-format on
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -649,7 +651,7 @@ MessageLite* ExtensionSet::MutableMessage(int number, FieldType type,
     GOOGLE_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     extension->is_cleared = false;
     if (extension->is_lazy) {
-      return extension->lazymessage_value->MutableMessage(prototype);
+      return extension->lazymessage_value->MutableMessage(prototype, arena_);
     } else {
       return extension->message_value;
     }
@@ -1075,7 +1077,7 @@ void ExtensionSet::InternalExtensionMergeFrom(
               extension->lazymessage_value =
                   other_extension.lazymessage_value->New(arena_);
               extension->lazymessage_value->MergeFrom(
-                  *other_extension.lazymessage_value);
+                  *other_extension.lazymessage_value, arena_);
             } else {
               extension->is_lazy = false;
               extension->message_value =
@@ -1090,7 +1092,7 @@ void ExtensionSet::InternalExtensionMergeFrom(
             if (other_extension.is_lazy) {
               if (extension->is_lazy) {
                 extension->lazymessage_value->MergeFrom(
-                    *other_extension.lazymessage_value);
+                    *other_extension.lazymessage_value, arena_);
               } else {
                 extension->message_value->CheckTypeAndMergeFrom(
                     other_extension.lazymessage_value->GetMessage(
@@ -1099,7 +1101,7 @@ void ExtensionSet::InternalExtensionMergeFrom(
             } else {
               if (extension->is_lazy) {
                 extension->lazymessage_value
-                    ->MutableMessage(*other_extension.message_value)
+                    ->MutableMessage(*other_extension.message_value, arena_)
                     ->CheckTypeAndMergeFrom(*other_extension.message_value);
               } else {
                 extension->message_value->CheckTypeAndMergeFrom(
@@ -2224,6 +2226,7 @@ size_t ExtensionSet::MessageSetByteSize() const {
   });
   return total_size;
 }
+
 
 }  // namespace internal
 }  // namespace protobuf

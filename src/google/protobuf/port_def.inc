@@ -230,8 +230,9 @@
 #error PROTOBUF_TAILCALL was previously defined
 #endif
 #if __has_cpp_attribute(clang::musttail) && \
-  !defined(_ARCH_PPC) && !defined(__wasm__)
+  !defined(__arm__) && !defined(_ARCH_PPC) && !defined(__wasm__)
 #  ifndef PROTO2_OPENSOURCE
+// Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
 #  endif
 #define PROTOBUF_MUSTTAIL [[clang::musttail]]
@@ -463,6 +464,10 @@
 #error PROTOBUF_FORCE_COPY_IN_SWAP was previously defined
 #endif
 
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#error PROTOBUF_FORCE_COPY_IN_MOVE was previously defined
+#endif
+
 #ifdef PROTOBUF_FALLTHROUGH_INTENDED
 #error PROTOBUF_FALLTHROUGH_INTENDED was previously defined
 #endif
@@ -603,10 +608,15 @@
 #ifdef PROTOBUF_ATTRIBUTE_WEAK
 #error PROTOBUF_ATTRIBUTE_WEAK was previously defined
 #endif
-#if __has_attribute(weak) && !defined(__MINGW32__)
+#if __has_attribute(weak) && \
+    !defined(__APPLE__) && \
+    (!defined(_WIN32) || __clang_major__ < 9) && \
+    !defined(__MINGW32__)
 #define PROTOBUF_ATTRIBUTE_WEAK __attribute__((weak))
+#define PROTOBUF_HAVE_ATTRIBUTE_WEAK 1
 #else
 #define PROTOBUF_ATTRIBUTE_WEAK
+#define PROTOBUF_HAVE_ATTRIBUTE_WEAK 0
 #endif
 
 // Macros to detect sanitizers.

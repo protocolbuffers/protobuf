@@ -289,11 +289,12 @@ const char* ParseContext::ReadSizeAndPushLimitAndDepth(const char* ptr,
 }
 
 const char* ParseContext::ParseMessage(MessageLite* msg, const char* ptr) {
-  return ParseMessage<MessageLite>(msg, ptr);
-}
-const char* ParseContext::ParseMessage(Message* msg, const char* ptr) {
-  // Use reinterptret case to prevent inclusion of non lite header
-  return ParseMessage(reinterpret_cast<MessageLite*>(msg), ptr);
+  int old;
+  ptr = ReadSizeAndPushLimitAndDepth(ptr, &old);
+  ptr = ptr ? msg->_InternalParse(ptr, this) : nullptr;
+  depth_++;
+  if (!PopLimit(old)) return nullptr;
+  return ptr;
 }
 
 inline void WriteVarint(uint64_t val, std::string* s) {

@@ -40,7 +40,7 @@
 #include <google/protobuf/extension_set_inl.h>
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/message.h>
@@ -183,7 +183,7 @@ MessageLite* ExtensionSet::MutableMessage(const FieldDescriptor* descriptor,
     extension->is_cleared = false;
     if (extension->is_lazy) {
       return extension->lazymessage_value->MutableMessage(
-          *factory->GetPrototype(descriptor->message_type()));
+          *factory->GetPrototype(descriptor->message_type()), arena_);
     } else {
       return extension->message_value;
     }

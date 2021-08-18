@@ -343,16 +343,16 @@ util::Status JsonStreamParser::ParseValue(TokenType type) {
     case UNKNOWN:
       return ReportUnknown("Expected a value.", ParseErrorType::EXPECTED_VALUE);
     default: {
-      if (allow_empty_null_ && IsEmptyNullAllowed(type)) {
-        return ParseEmptyNull();
-      }
-
       // Special case for having been cut off while parsing, wait for more data.
       // This handles things like 'fals' being at the end of the string, we
       // don't know if the next char would be e, completing it, or something
       // else, making it invalid.
       if (!finishing_ && p_.length() < kKeywordFalse.length()) {
         return util::CancelledError("");
+      }
+
+      if (allow_empty_null_ && IsEmptyNullAllowed(type)) {
+        return ParseEmptyNull();
       }
       return ReportFailure("Unexpected token.",
                            ParseErrorType::UNEXPECTED_TOKEN);

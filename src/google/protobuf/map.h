@@ -1068,7 +1068,7 @@ class Map {
 
     void** CreateEmptyTable(size_type n) {
       GOOGLE_DCHECK(n >= kMinTableSize);
-      GOOGLE_DCHECK_EQ(n & (n - 1), 0);
+      GOOGLE_DCHECK_EQ(n & (n - 1), 0u);
       void** result = Alloc<void*>(n);
       memset(result, 0, n * sizeof(result[0]));
       return result;
@@ -1079,7 +1079,7 @@ class Map {
       // We get a little bit of randomness from the address of the map. The
       // lower bits are not very random, due to alignment, so we discard them
       // and shift the higher bits into their place.
-      size_type s = reinterpret_cast<uintptr_t>(this) >> 12;
+      size_type s = reinterpret_cast<uintptr_t>(this) >> 4;
 #if defined(__x86_64__) && defined(__GNUC__) && \
     !defined(GOOGLE_PROTOBUF_NO_RDTSC)
       uint32_t hi, lo;

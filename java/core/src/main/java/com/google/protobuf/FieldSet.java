@@ -832,8 +832,6 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
    */
   static int computeElementSizeNoTag(final WireFormat.FieldType type, final Object value) {
     switch (type) {
-        // Note:  Minor violation of 80-char limit rule here because this would
-        //   actually be harder to read if we wrapped the lines.
       case DOUBLE:
         return CodedOutputStream.computeDoubleSizeNoTag((Double) value);
       case FLOAT:

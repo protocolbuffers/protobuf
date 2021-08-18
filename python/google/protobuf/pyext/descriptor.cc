@@ -913,8 +913,9 @@ static int SetContainingType(PyBaseDescriptor *self, PyObject *value,
 }
 
 static PyObject* GetExtensionScope(PyBaseDescriptor *self, void *closure) {
+  const auto* desc = _GetDescriptor(self);
   const Descriptor* extension_scope =
-      _GetDescriptor(self)->extension_scope();
+      desc->is_extension() ? desc->extension_scope() : nullptr;
   if (extension_scope) {
     return PyMessageDescriptor_FromDescriptor(extension_scope);
   } else {

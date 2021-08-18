@@ -93,6 +93,19 @@ namespace internal {
   ::google::protobuf::internal::TcParserBase::RepeatedParseMessage<MESSAGE, uint16_t>
 #endif  // PROTOBUF_TC_STATIC_PARSE_REPEATED2
 
+#ifndef NDEBUG
+template <size_t align>
+#ifndef _MSC_VER
+[[noreturn]]
+#endif
+void AlignFail(uintptr_t address) {
+  GOOGLE_LOG(FATAL) << "Unaligned (" << align << ") access at " << address;
+}
+
+extern template void AlignFail<4>(uintptr_t);
+extern template void AlignFail<8>(uintptr_t);
+#endif
+
 class TcParserBase {
  public:
   static const char* GenericFallback(PROTOBUF_TC_PARAM_DECL);
@@ -150,9 +163,14 @@ class TcParserBase {
   static const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
 
   template <typename T>
-  static T& RefAt(void* x, size_t offset) {
+  static inline T& RefAt(void* x, size_t offset) {
     T* target = reinterpret_cast<T*>(static_cast<char*>(x) + offset);
-    GOOGLE_DCHECK_EQ(0, reinterpret_cast<uintptr_t>(target) % alignof(T));
+#ifndef NDEBUG
+    if (PROTOBUF_PREDICT_FALSE(
+            reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
+      AlignFail<alignof(T)>(reinterpret_cast<uintptr_t>(target));
+    }
+#endif
     return *target;
   }
 

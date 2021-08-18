@@ -218,13 +218,13 @@ class RepeatedField final {
   // Calling this routine inside a loop can cause quadratic behavior.
   void ExtractSubrange(int start, int num, Element* elements);
 
-  void Clear();
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear();
   void MergeFrom(const RepeatedField& other);
-  void CopyFrom(const RepeatedField& other);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void CopyFrom(const RepeatedField& other);
 
   // Replaces the contents with RepeatedField(begin, end).
   template <typename Iter>
-  void Assign(Iter begin, Iter end);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Assign(Iter begin, Iter end);
 
   // Reserve space to expand the field to at least the given size.  If the
   // array is grown, it will always be at least doubled in size.
@@ -975,13 +975,13 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // Calling this routine inside a loop can cause quadratic behavior.
   void DeleteSubrange(int start, int num);
 
-  void Clear();
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear();
   void MergeFrom(const RepeatedPtrField& other);
-  void CopyFrom(const RepeatedPtrField& other);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void CopyFrom(const RepeatedPtrField& other);
 
   // Replaces the contents with RepeatedPtrField(begin, end).
   template <typename Iter>
-  void Assign(Iter begin, Iter end);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Assign(Iter begin, Iter end);
 
   // Reserve space to expand the field to at least the given size.  This only
   // resizes the pointer array; it doesn't allocate any objects.  If the
@@ -1250,6 +1250,9 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(RepeatedField&& other) noexcept
     : RepeatedField() {
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+  CopyFrom(other);
+#else   // PROTOBUF_FORCE_COPY_IN_MOVE
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // other is on an arena. This field can't be on an arena because arena
   // construction always uses the Arena* accepting constructor.
@@ -1258,6 +1261,7 @@ inline RepeatedField<Element>::RepeatedField(RepeatedField&& other) noexcept
   } else {
     InternalSwap(&other);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
 }
 
 template <typename Element>
@@ -1266,7 +1270,11 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
-    if (this->GetArena() != other.GetArena()) {
+    if (GetArena() != other.GetArena()
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        || GetArena() == nullptr
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       CopyFrom(other);
     } else {
       InternalSwap(&other);
@@ -1978,7 +1986,6 @@ void RepeatedPtrFieldBase::AddAllocatedSlowWithCopy(
     // Pass value_arena and my_arena to avoid duplicate virtual call (value) or
     // load (mine).
     typename TypeHandler::Type* value, Arena* value_arena, Arena* my_arena) {
-  GOOGLE_DCHECK(value_arena == nullptr || value_arena == my_arena);
   // Ensure that either the value is in the same arena, or if not, we do the
   // appropriate thing: Own() it (if it's on heap and we're in an arena) or copy
   // it to our arena/heap (otherwise).
@@ -2170,6 +2177,9 @@ template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(
     RepeatedPtrField&& other) noexcept
     : RepeatedPtrField() {
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+  CopyFrom(other);
+#else   // PROTOBUF_FORCE_COPY_IN_MOVE
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // other is on an arena. This field can't be on an arena because arena
   // construction always uses the Arena* accepting constructor.
@@ -2178,6 +2188,7 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(
   } else {
     InternalSwap(&other);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
 }
 
 template <typename Element>
@@ -2186,7 +2197,11 @@ inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
-    if (this->GetArena() != other.GetArena()) {
+    if (GetArena() != other.GetArena()
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        || GetArena() == nullptr
+#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       CopyFrom(other);
     } else {
       InternalSwap(&other);
