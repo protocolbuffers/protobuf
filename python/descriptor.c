@@ -56,11 +56,16 @@ static PyObject *PyUpb_DescriptorBase_New(PyTypeObject *subtype, PyObject *args,
 static PyObject *PyUpb_DescriptorBase_NewInternal(PyTypeObject *type,
                                                   const void *def,
                                                   PyObject *pool) {
-  PyUpb_DescriptorBase *base = PyObject_New(PyUpb_DescriptorBase, type);
-  base->pool = pool;
-  base->def = def;
-  Py_INCREF(pool);
-  PyUpb_ObjCache_Add(def, &base->ob_base);
+  PyUpb_DescriptorBase *base = (PyUpb_DescriptorBase*)PyUpb_ObjCache_Get(def);
+
+  if (!base) {
+    base = PyObject_New(PyUpb_DescriptorBase, type);
+    base->pool = pool;
+    base->def = def;
+    Py_INCREF(pool);
+    PyUpb_ObjCache_Add(def, &base->ob_base);
+  }
+
   return &base->ob_base;
 }
 
@@ -79,11 +84,6 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase *self) {
 // FieldDescriptor
 // -----------------------------------------------------------------------------
 
-typedef struct {
-  PyObject_HEAD
-  upb_fielddef *fielddef;
-} PyUpb_FieldDescriptor;
-
 static PyObject *PyUpb_FieldDescriptor_GetType(PyUpb_DescriptorBase *self,
                                                void *closure) {
   return PyLong_FromLong(upb_fielddef_descriptortype(self->def));
@@ -92,6 +92,11 @@ static PyObject *PyUpb_FieldDescriptor_GetType(PyUpb_DescriptorBase *self,
 static PyObject *PyUpb_FieldDescriptor_GetLabel(PyUpb_DescriptorBase *self,
                                                   void *closure) {
   return PyLong_FromLong(upb_fielddef_label(self->def));
+}
+
+static PyObject *PyUpb_FieldDescriptor_GetNumber(PyUpb_DescriptorBase *self,
+                                                  void *closure) {
+  return PyLong_FromLong(upb_fielddef_number(self->def));
 }
 
 static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
@@ -107,8 +112,8 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
   { "cpp_type", (getter)PyUpb_FieldDescriptor_GetCppType, NULL, "C++ Type"},
   */
   { "label", (getter)PyUpb_FieldDescriptor_GetLabel, NULL, "Label"},
+  { "number", (getter)PyUpb_FieldDescriptor_GetNumber, NULL, "Number"},
   /*
-  { "number", (getter)GetNumber, NULL, "Number"},
   { "index", (getter)GetIndex, NULL, "Index"},
   { "default_value", (getter)GetDefaultValue, NULL, "Default Value"},
   { "has_default_value", (getter)HasDefaultValue},
@@ -148,10 +153,10 @@ static PyType_Slot PyUpb_FieldDescriptor_Slots[] = {
 };
 
 static PyType_Spec PyUpb_FieldDescriptor_Spec = {
-  PYUPB_MODULE_NAME ".FieldDescriptor",      // tp_name
-  sizeof(PyUpb_FieldDescriptor),             // tp_basicsize
+  PYUPB_MODULE_NAME ".FieldDescriptor",
+  sizeof(PyUpb_DescriptorBase),
   0,                                    // tp_itemsize
-  Py_TPFLAGS_DEFAULT,                   // tp_flags
+  Py_TPFLAGS_DEFAULT,
   PyUpb_FieldDescriptor_Slots,
 };
 

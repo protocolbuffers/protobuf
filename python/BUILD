@@ -28,3 +28,19 @@ cc_binary(
         "@python_headers",
     ],
 )
+
+# Copy the extension into the location recognized by Python.
+genrule(
+    name = "message_ext",
+    srcs = [":message"],
+    outs = ["google/protobuf/pyext/_message.cpython-39-x86_64-linux-gnu.so"],
+    cmd = "cp $< $@",
+)
+
+py_test(
+    name = "minimal_test",
+    srcs = ["minimal_test.py"],
+    data = [":message_ext"],
+    imports = ["."],
+    legacy_create_init = False,
+)

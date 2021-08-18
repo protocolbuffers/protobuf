@@ -27,10 +27,11 @@
 
 #include "protobuf.h"
 
+#include "descriptor.h"
 #include "descriptor_pool.h"
 
-static void PyUpb_ModuleDealloc(void *_s) {
-  PyUpb_ModuleState *s = _s;
+static void PyUpb_ModuleDealloc(void *module) {
+  PyUpb_ModuleState *s = PyModule_GetState(module);
   upb_arena_free(s->obj_cache_arena);
 }
 
@@ -114,10 +115,14 @@ PyMODINIT_FUNC PyInit__message(void) {
   state->obj_cache_arena = upb_arena_new();
   upb_inttable_init(&state->obj_cache, state->obj_cache_arena);
 
-  if (!PyUpb_InitDescriptorPool(m)) {
+  if (!PyUpb_InitDescriptorPool(m) || !PyUpb_InitDescriptor(m)) {
     Py_DECREF(m);
     return NULL;
   }
+
+  // Temporary: an cookie we can use in the tests to ensure we are testing upb
+  // and not another protobuf library on the system.
+  PyModule_AddObject(m, "_IS_UPB", Py_True);
 
   return m;
 }
