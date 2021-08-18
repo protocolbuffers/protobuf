@@ -83,15 +83,15 @@ struct UInt64ValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::BoolValue* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::BoolValue>(Arena*);
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::BytesValue* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::BytesValue>(Arena*);
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::DoubleValue* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::DoubleValue>(Arena*);
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::FloatValue* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::FloatValue>(Arena*);
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::Int32Value* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::Int32Value>(Arena*);
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::Int64Value* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::Int64Value>(Arena*);
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::StringValue* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::StringValue>(Arena*);
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::UInt32Value* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::UInt32Value>(Arena*);
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::UInt64Value* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::UInt64Value>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::BoolValue* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::BoolValue>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::BytesValue* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::BytesValue>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::DoubleValue* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::DoubleValue>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::FloatValue* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::FloatValue>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Int32Value* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::Int32Value>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Int64Value* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::Int64Value>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::StringValue* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::StringValue>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::UInt32Value* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::UInt32Value>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::UInt64Value* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::UInt64Value>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
 
@@ -116,7 +116,11 @@ class PROTOBUF_EXPORT DoubleValue final :
   }
   inline DoubleValue& operator=(DoubleValue&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -255,7 +259,11 @@ class PROTOBUF_EXPORT FloatValue final :
   }
   inline FloatValue& operator=(FloatValue&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -394,7 +402,11 @@ class PROTOBUF_EXPORT Int64Value final :
   }
   inline Int64Value& operator=(Int64Value&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -533,7 +545,11 @@ class PROTOBUF_EXPORT UInt64Value final :
   }
   inline UInt64Value& operator=(UInt64Value&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -672,7 +688,11 @@ class PROTOBUF_EXPORT Int32Value final :
   }
   inline Int32Value& operator=(Int32Value&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -811,7 +831,11 @@ class PROTOBUF_EXPORT UInt32Value final :
   }
   inline UInt32Value& operator=(UInt32Value&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -950,7 +974,11 @@ class PROTOBUF_EXPORT BoolValue final :
   }
   inline BoolValue& operator=(BoolValue&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -1089,7 +1117,11 @@ class PROTOBUF_EXPORT StringValue final :
   }
   inline StringValue& operator=(StringValue&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -1233,7 +1265,11 @@ class PROTOBUF_EXPORT BytesValue final :
   }
   inline BytesValue& operator=(BytesValue&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);

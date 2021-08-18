@@ -242,6 +242,7 @@ junit_tests(
         ":test_util",
         "//external:easymock",
         "//external:easymock_classextension",
+        "//external:guava",
         "//external:junit",
         "//external:truth",
     ]

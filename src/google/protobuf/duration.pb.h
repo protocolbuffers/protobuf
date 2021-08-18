@@ -59,7 +59,7 @@ struct DurationDefaultTypeInternal;
 PROTOBUF_EXPORT extern DurationDefaultTypeInternal _Duration_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::Duration* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::Duration>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Duration* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::Duration>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
 
@@ -84,7 +84,11 @@ class PROTOBUF_EXPORT Duration final :
   }
   inline Duration& operator=(Duration&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);

@@ -399,11 +399,15 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   Data& data() { return data_; }
   const Data& data() const { return data_; }
 
-  template <typename T>
-  PROTOBUF_MUST_USE_RESULT const char* ParseMessage(T* msg, const char* ptr);
-  // We outline when the type is generic and we go through a virtual
   const char* ParseMessage(MessageLite* msg, const char* ptr);
-  const char* ParseMessage(Message* msg, const char* ptr);
+
+  // This overload supports those few cases where ParseMessage is called
+  // on a class that is not actually a proto message.
+  // TODO(jorg): Eliminate this use case.
+  template <typename T,
+            typename std::enable_if<!std::is_base_of<MessageLite, T>::value,
+                                    bool>::type = true>
+  PROTOBUF_MUST_USE_RESULT const char* ParseMessage(T* msg, const char* ptr);
 
   template <typename T>
   PROTOBUF_MUST_USE_RESULT PROTOBUF_NDEBUG_INLINE const char* ParseGroup(
@@ -654,7 +658,8 @@ inline int32_t ReadVarintZigZag32(const char** p) {
   return WireFormatLite::ZigZagDecode32(static_cast<uint32_t>(tmp));
 }
 
-template <typename T>
+template <typename T, typename std::enable_if<
+                          !std::is_base_of<MessageLite, T>::value, bool>::type>
 PROTOBUF_MUST_USE_RESULT const char* ParseContext::ParseMessage(
     T* msg, const char* ptr) {
   int old;

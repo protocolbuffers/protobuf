@@ -400,7 +400,7 @@ std::string Namespace(const FileDescriptor* d, const Options& options) {
     ret = StringReplace(ret,
                         "::google::"
                         "protobuf",
-                        "PROTOBUF_NAMESPACE_ID", false);
+                        "::PROTOBUF_NAMESPACE_ID", false);
   }
   return ret;
 }

@@ -34,11 +34,11 @@
 #else
 #define PROTOBUF_TCT_EXTERN extern
 #endif
-PROTOBUF_TCT_EXTERN template const char *TcParser<1>::ParseLoop(PROTOBUF_NAMESPACE_ID::MessageLite*, char const*, PROTOBUF_NAMESPACE_ID::internal::ParseContext*, PROTOBUF_NAMESPACE_ID::internal::TailCallParseTableBase const*);
-PROTOBUF_TCT_EXTERN template const char *TcParser<2>::ParseLoop(PROTOBUF_NAMESPACE_ID::MessageLite*, char const*, PROTOBUF_NAMESPACE_ID::internal::ParseContext*, PROTOBUF_NAMESPACE_ID::internal::TailCallParseTableBase const*);
-PROTOBUF_TCT_EXTERN template const char *TcParser<3>::ParseLoop(PROTOBUF_NAMESPACE_ID::MessageLite*, char const*, PROTOBUF_NAMESPACE_ID::internal::ParseContext*, PROTOBUF_NAMESPACE_ID::internal::TailCallParseTableBase const*);
-PROTOBUF_TCT_EXTERN template const char *TcParser<4>::ParseLoop(PROTOBUF_NAMESPACE_ID::MessageLite*, char const*, PROTOBUF_NAMESPACE_ID::internal::ParseContext*, PROTOBUF_NAMESPACE_ID::internal::TailCallParseTableBase const*);
-PROTOBUF_TCT_EXTERN template const char *TcParser<5>::ParseLoop(PROTOBUF_NAMESPACE_ID::MessageLite*, char const*, PROTOBUF_NAMESPACE_ID::internal::ParseContext*, PROTOBUF_NAMESPACE_ID::internal::TailCallParseTableBase const*);
+PROTOBUF_TCT_EXTERN template const char *TcParser<1>::ParseLoop(::PROTOBUF_NAMESPACE_ID::MessageLite*, char const*, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext*, ::PROTOBUF_NAMESPACE_ID::internal::TailCallParseTableBase const*);
+PROTOBUF_TCT_EXTERN template const char *TcParser<2>::ParseLoop(::PROTOBUF_NAMESPACE_ID::MessageLite*, char const*, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext*, ::PROTOBUF_NAMESPACE_ID::internal::TailCallParseTableBase const*);
+PROTOBUF_TCT_EXTERN template const char *TcParser<3>::ParseLoop(::PROTOBUF_NAMESPACE_ID::MessageLite*, char const*, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext*, ::PROTOBUF_NAMESPACE_ID::internal::TailCallParseTableBase const*);
+PROTOBUF_TCT_EXTERN template const char *TcParser<4>::ParseLoop(::PROTOBUF_NAMESPACE_ID::MessageLite*, char const*, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext*, ::PROTOBUF_NAMESPACE_ID::internal::TailCallParseTableBase const*);
+PROTOBUF_TCT_EXTERN template const char *TcParser<5>::ParseLoop(::PROTOBUF_NAMESPACE_ID::MessageLite*, char const*, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext*, ::PROTOBUF_NAMESPACE_ID::internal::TailCallParseTableBase const*);
 PROTOBUF_TCT_EXTERN template const char* TcParser<1>::SingularFixed<uint64_t, uint8_t>(PROTOBUF_TC_PARAM_DECL);
 PROTOBUF_TCT_EXTERN template const char* TcParser<2>::SingularFixed<uint64_t, uint8_t>(PROTOBUF_TC_PARAM_DECL);
 PROTOBUF_TCT_EXTERN template const char* TcParser<3>::SingularFixed<uint64_t, uint8_t>(PROTOBUF_TC_PARAM_DECL);

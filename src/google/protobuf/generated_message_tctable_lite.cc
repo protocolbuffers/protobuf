@@ -45,6 +45,11 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+#ifndef NDEBUG
+template void AlignFail<4>(uintptr_t);
+template void AlignFail<8>(uintptr_t);
+#endif
+
 const char* TcParserBase::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
   return GenericFallbackImpl<MessageLite, std::string>(PROTOBUF_TC_PARAM_PASS);
 }

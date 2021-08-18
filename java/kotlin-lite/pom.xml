@@ -95,6 +95,7 @@
                 <resource>
                   <directory>${basedir}/../kotlin/src/main/kotlin/com/google/protobuf</directory>
                   <includes>
+                    <include>ByteStrings.kt</include>
                     <include>DslList.kt</include>
                     <include>DslMap.kt</include>
                     <include>DslProxy.kt</include>

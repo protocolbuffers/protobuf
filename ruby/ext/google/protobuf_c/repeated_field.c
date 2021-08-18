@@ -34,7 +34,6 @@
 #include "defs.h"
 #include "message.h"
 #include "protobuf.h"
-#include "third_party/wyhash/wyhash.h"
 
 // -----------------------------------------------------------------------------
 // Repeated field container type.

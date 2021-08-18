@@ -59,7 +59,7 @@ struct SourceContextDefaultTypeInternal;
 PROTOBUF_EXPORT extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::SourceContext* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::SourceContext>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::SourceContext* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::SourceContext>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
 
@@ -84,7 +84,11 @@ class PROTOBUF_EXPORT SourceContext final :
   }
   inline SourceContext& operator=(SourceContext&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);

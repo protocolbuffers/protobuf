@@ -955,48 +955,7 @@ void Reflection::Swap(Message* message1, Message* message2) const {
 
   GOOGLE_DCHECK_EQ(message1->GetOwningArena(), message2->GetOwningArena());
 
-  // TODO(seongkim): use UnsafeArenaSwap() after some flight miles.
-  for (int i = 0; i <= last_non_weak_field_index_; i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
-    if (schema_.InRealOneof(field)) continue;
-    if (schema_.IsFieldStripped(field)) continue;
-    SwapField(message1, message2, field);
-  }
-  const int oneof_decl_count = descriptor_->oneof_decl_count();
-  for (int i = 0; i < oneof_decl_count; i++) {
-    const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
-    if (!oneof->is_synthetic()) {
-      SwapOneofField<false>(message1, message2, oneof);
-    }
-  }
-
-  // Swapping bits need to happen after swapping fields, because the latter may
-  // depend on the has bit information.
-  if (schema_.HasHasbits()) {
-    uint32_t* has_bits1 = MutableHasBits(message1);
-    uint32_t* has_bits2 = MutableHasBits(message2);
-
-    int fields_with_has_bits = 0;
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-      const FieldDescriptor* field = descriptor_->field(i);
-      if (field->is_repeated() || schema_.InRealOneof(field)) {
-        continue;
-      }
-      fields_with_has_bits++;
-    }
-
-    int has_bits_size = (fields_with_has_bits + 31) / 32;
-
-    for (int i = 0; i < has_bits_size; i++) {
-      std::swap(has_bits1[i], has_bits2[i]);
-    }
-  }
-
-  if (schema_.HasExtensionSet()) {
-    MutableExtensionSet(message1)->Swap(MutableExtensionSet(message2));
-  }
-
-  MutableUnknownFields(message1)->Swap(MutableUnknownFields(message2));
+  UnsafeArenaSwap(message1, message2);
 }
 
 template <bool unsafe_shallow_swap>

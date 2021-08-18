@@ -1181,6 +1181,9 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
   if (options_.force_inline_string || options_.profile_driven_inline_string) {
     IncludeFile("net/proto2/public/inlined_string_field.h", printer);
   }
+  if (HasSimpleBaseClasses(file_, options_)) {
+    IncludeFile("net/proto2/public/generated_message_bases.h", printer);
+  }
   IncludeFile("net/proto2/public/generated_message_table_driven.h", printer);
   if (HasGeneratedMethods(file_, options_) &&
       options_.tctable_mode != Options::kTCTableNever) {

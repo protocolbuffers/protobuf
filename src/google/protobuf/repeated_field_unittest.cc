@@ -1154,7 +1154,7 @@ TEST(RepeatedPtrField, ClearedElements) {
 }
 
 // Test all code paths in AddAllocated().
-TEST(RepeatedPtrField, AddAlocated) {
+TEST(RepeatedPtrField, AddAllocated) {
   RepeatedPtrField<std::string> field;
   while (field.size() < field.Capacity()) {
     field.Add()->assign("filler");
@@ -1197,6 +1197,13 @@ TEST(RepeatedPtrField, AddAlocated) {
   // We should have discarded the cleared object.
   EXPECT_EQ(0, field.ClearedCount());
   EXPECT_EQ(qux, &field.Get(index));
+}
+
+TEST(RepeatedPtrField, AddAllocatedDifferentArena) {
+  RepeatedPtrField<TestAllTypes> field;
+  Arena arena;
+  auto* msg = Arena::CreateMessage<TestAllTypes>(&arena);
+  field.AddAllocated(msg);
 }
 
 TEST(RepeatedPtrField, MergeFrom) {
