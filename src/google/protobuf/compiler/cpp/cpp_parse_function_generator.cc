@@ -214,7 +214,8 @@ TailCallTableInfo::TailCallTableInfo(const Descriptor* descriptor,
 
       case FieldDescriptor::TYPE_BYTES:
         if (field->options().ctype() == FieldOptions::STRING &&
-            field->default_value_string().empty()) {
+            field->default_value_string().empty() &&
+            !IsStringInlined(field, options)) {
           name = FieldParseFunctionName(field, options, table_size_log2);
         }
         break;
@@ -628,8 +629,9 @@ void ParseFunctionGenerator::GenerateArenaString(Formatter& format,
     int inlined_string_index = inlined_string_indices_[field->index()];
     GOOGLE_DCHECK_GE(inlined_string_index, 0);
     format(
-        ", $msg$_internal_$name$_donated(), &_inlined_string_donated_[$1$], "
-        "~0x$2$u",
+        ", $msg$_internal_$name$_donated()"
+        ", &$msg$_inlined_string_donated_[$1$]"
+        ", ~0x$2$u",
         inlined_string_index / 32,
         strings::Hex(1u << (inlined_string_index % 32), strings::ZERO_PAD_8));
   }

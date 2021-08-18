@@ -510,7 +510,12 @@ TEST(GENERATED_MESSAGE_TEST_NAME, ADLSwap) {
   TestUtil::ExpectAllFieldsSet(message2);
   TestUtil::ExpectClear(message1);
 
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+  EXPECT_NE(addr, &message2.repeated_int32().Get(0));
+  EXPECT_EQ(*addr, message2.repeated_int32().Get(0));
+#else
   EXPECT_EQ(addr, &message2.repeated_int32().Get(0));
+#endif
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructor) {
@@ -938,12 +943,12 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestOneofSpaceUsed) {
 
   // Setting a message in oneof should delete the other fields and increase the
   // size by the size of the nested message type. NestedMessage is simple enough
-  // that it is equal to sizeof(NestedMessage)
+  // that it is equal to sizeof(NestedMessage). It may be backed by LazyField,
+  // increasing space used by LazyField and backing Cord.
   message1.mutable_foo_message();
   ASSERT_EQ(sizeof(UNITTEST::TestOneof2::NestedMessage),
             message1.foo_message().SpaceUsedLong());
-  EXPECT_EQ(empty_message_size +
-            sizeof(UNITTEST::TestOneof2::NestedMessage),
+  EXPECT_LE(empty_message_size + sizeof(UNITTEST::TestOneof2::NestedMessage),
             message1.SpaceUsedLong());
 }
 

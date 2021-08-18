@@ -53,7 +53,9 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
 
-#include <google/protobuf/port_def.inc>
+// clang-format off
+#include <google/protobuf/port_def.inc>  // Must be last
+// clang-format on
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -573,7 +575,8 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual LazyMessageExtension* New(Arena* arena) const = 0;
     virtual const MessageLite& GetMessage(
         const MessageLite& prototype) const = 0;
-    virtual MessageLite* MutableMessage(const MessageLite& prototype) = 0;
+    virtual MessageLite* MutableMessage(const MessageLite& prototype,
+                                        Arena* arena) = 0;
     virtual void SetAllocatedMessage(MessageLite* message) = 0;
     virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message) = 0;
     virtual PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseMessage(
@@ -588,7 +591,8 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual size_t ByteSizeLong() const = 0;
     virtual size_t SpaceUsedLong() const = 0;
 
-    virtual void MergeFrom(const LazyMessageExtension& other) = 0;
+    virtual void MergeFrom(const LazyMessageExtension& other, Arena* arena) = 0;
+    virtual void MergeFromMessage(const MessageLite& msg, Arena* arena) = 0;
     virtual void Clear() = 0;
 
     virtual bool ReadMessage(const MessageLite& prototype,
@@ -603,6 +607,8 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LazyMessageExtension);
   };
+  // Give access to function defined below to see LazyMessageExtension.
+  friend LazyMessageExtension* MaybeCreateLazyExtension(Arena* arena);
   struct Extension {
     // The order of these fields packs Extension into 24 bytes when using 8
     // byte alignment. Consider this when adding or removing fields here.
@@ -1496,6 +1502,11 @@ class ExtensionIdentifier {
 
 // -------------------------------------------------------------------
 // Generated accessors
+
+
+// Used to retrieve a lazy extension, may return nullptr in some environments.
+extern PROTOBUF_ATTRIBUTE_WEAK ExtensionSet::LazyMessageExtension*
+MaybeCreateLazyExtension(Arena* arena);
 
 }  // namespace internal
 

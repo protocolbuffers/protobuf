@@ -686,7 +686,7 @@ class TableArena {
         T(std::forward<Args>(args)...);
   }
 
-  TableArena(): small_size_blocks_() {}
+  TableArena() {}
 
   TableArena(const TableArena&) = delete;
   TableArena& operator=(const TableArena&) = delete;
@@ -1010,7 +1010,7 @@ class TableArena {
   }
 
   Block* current_ = nullptr;
-  std::array<Block*, kSmallSizes.size()> small_size_blocks_;
+  std::array<Block*, kSmallSizes.size()> small_size_blocks_ = {{}};
   Block* full_blocks_ = nullptr;
 
   size_t num_allocations_ = 0;
@@ -2465,7 +2465,7 @@ bool DescriptorPool::TryFindExtensionInFallbackDatabase(
 // ===================================================================
 
 bool FieldDescriptor::is_map_message_type() const {
-  return message_type_->options().map_entry();
+  return type_descriptor_.message_type->options().map_entry();
 }
 
 std::string FieldDescriptor::DefaultValueAsString(
@@ -5249,6 +5249,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->file_ = file_;
   result->number_ = proto.number();
   result->is_extension_ = is_extension;
+  result->is_oneof_ = false;
   result->proto3_optional_ = proto.proto3_optional();
 
   if (proto.proto3_optional() &&
@@ -5284,9 +5285,6 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
 
   // Some of these may be filled in when cross-linking.
   result->containing_type_ = nullptr;
-  result->extension_scope_ = nullptr;
-  result->message_type_ = nullptr;
-  result->enum_type_ = nullptr;
   result->type_once_ = nullptr;
   result->default_value_enum_ = nullptr;
 
@@ -5461,16 +5459,13 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                "FieldDescriptorProto.extendee not set for extension field.");
     }
 
-    result->extension_scope_ = parent;
+    result->scope_.extension_scope = parent;
 
     if (proto.has_oneof_index()) {
       AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                "FieldDescriptorProto.oneof_index should not be set for "
                "extensions.");
     }
-
-    // Fill in later (maybe).
-    result->containing_oneof_ = nullptr;
   } else {
     if (proto.has_extendee()) {
       AddError(result->full_name(), proto,
@@ -5488,12 +5483,11 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                  strings::Substitute("FieldDescriptorProto.oneof_index $0 is "
                                   "out of range for type \"$1\".",
                                   proto.oneof_index(), parent->name()));
-        result->containing_oneof_ = nullptr;
       } else {
-        result->containing_oneof_ = parent->oneof_decl(proto.oneof_index());
+        result->is_oneof_ = true;
+        result->scope_.containing_oneof =
+            parent->oneof_decl(proto.oneof_index());
       }
-    } else {
-      result->containing_oneof_ = nullptr;
     }
   }
 
@@ -6159,8 +6153,8 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
     }
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      field->message_type_ = type.descriptor();
-      if (field->message_type_ == nullptr) {
+      field->type_descriptor_.message_type = type.descriptor();
+      if (field->type_descriptor_.message_type == nullptr) {
         AddError(field->full_name(), proto,
                  DescriptorPool::ErrorCollector::TYPE,
                  "\"" + proto.type_name() + "\" is not a message type.");
@@ -6173,8 +6167,8 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                  "Messages can't have default values.");
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-      field->enum_type_ = type.enum_descriptor();
-      if (field->enum_type_ == nullptr) {
+      field->type_descriptor_.enum_type = type.enum_descriptor();
+      if (field->type_descriptor_.enum_type == nullptr) {
         AddError(field->full_name(), proto,
                  DescriptorPool::ErrorCollector::TYPE,
                  "\"" + proto.type_name() + "\" is not an enum type.");
@@ -7772,22 +7766,23 @@ Symbol DescriptorPool::CrossLinkOnDemandHelper(StringPiece name,
 // enum_type_, message_type_, and default_value_enum_ appropriately.
 void FieldDescriptor::InternalTypeOnceInit() const {
   GOOGLE_CHECK(file()->finished_building_ == true);
+  const EnumDescriptor* enum_type = nullptr;
   if (type_once_->field.type_name) {
     Symbol result = file()->pool()->CrossLinkOnDemandHelper(
         *type_once_->field.type_name, type_ == FieldDescriptor::TYPE_ENUM);
     if (result.type() == Symbol::MESSAGE) {
       type_ = FieldDescriptor::TYPE_MESSAGE;
-      message_type_ = result.descriptor();
+      type_descriptor_.message_type = result.descriptor();
     } else if (result.type() == Symbol::ENUM) {
       type_ = FieldDescriptor::TYPE_ENUM;
-      enum_type_ = result.enum_descriptor();
+      enum_type = type_descriptor_.enum_type = result.enum_descriptor();
     }
   }
-  if (enum_type_ && !default_value_enum_) {
+  if (enum_type && !default_value_enum_) {
     if (type_once_->field.default_value_enum_name) {
       // Have to build the full name now instead of at CrossLink time,
-      // because enum_type_ may not be known at the time.
-      std::string name = enum_type_->full_name();
+      // because enum_type may not be known at the time.
+      std::string name = enum_type->full_name();
       // Enum values reside in the same scope as the enum type.
       std::string::size_type last_dot = name.find_last_of('.');
       if (last_dot != std::string::npos) {
@@ -7802,8 +7797,8 @@ void FieldDescriptor::InternalTypeOnceInit() const {
     if (!default_value_enum_) {
       // We use the first defined value as the default
       // if a default is not explicitly defined.
-      GOOGLE_CHECK(enum_type_->value_count());
-      default_value_enum_ = enum_type_->value(0);
+      GOOGLE_CHECK(enum_type->value_count());
+      default_value_enum_ = enum_type->value(0);
     }
   }
 }
@@ -7819,14 +7814,16 @@ const Descriptor* FieldDescriptor::message_type() const {
   if (type_once_) {
     internal::call_once(type_once_->once, FieldDescriptor::TypeOnceInit, this);
   }
-  return message_type_;
+  return type_ == TYPE_MESSAGE || type_ == TYPE_GROUP
+             ? type_descriptor_.message_type
+             : nullptr;
 }
 
 const EnumDescriptor* FieldDescriptor::enum_type() const {
   if (type_once_) {
     internal::call_once(type_once_->once, FieldDescriptor::TypeOnceInit, this);
   }
-  return enum_type_;
+  return type_ == TYPE_ENUM ? type_descriptor_.enum_type : nullptr;
 }
 
 const EnumValueDescriptor* FieldDescriptor::default_value_enum() const {

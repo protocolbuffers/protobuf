@@ -659,6 +659,15 @@ inline bool HasSimpleBaseClass(const Descriptor* desc, const Options& options) {
   return false;
 }
 
+inline bool HasSimpleBaseClasses(const FileDescriptor* file,
+                                 const Options& options) {
+  bool v = false;
+  ForEachMessage(file, [&v, &options](const Descriptor* desc) {
+    v |= HasSimpleBaseClass(desc, options);
+  });
+  return v;
+}
+
 inline std::string SimpleBaseClass(const Descriptor* desc,
                                    const Options& options) {
   if (!HasDescriptorMethods(desc->file(), options)) return "";

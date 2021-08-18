@@ -70,27 +70,27 @@ static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptor
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2fstruct_2eproto = nullptr;
 
 const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse, _has_bits_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse, _has_bits_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse, key_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse, key_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse, value_),
   0,
   1,
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Struct, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Struct, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Struct, fields_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Struct, fields_),
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Value, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Value, _internal_metadata_),
   ~0u,  // no _extensions_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Value, _oneof_case_[0]),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Value, _oneof_case_[0]),
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
   ::PROTOBUF_NAMESPACE_ID::internal::kInvalidFieldOffsetTag,
@@ -99,27 +99,27 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_google_2fprotobuf_2fstruct_2ep
   ::PROTOBUF_NAMESPACE_ID::internal::kInvalidFieldOffsetTag,
   ::PROTOBUF_NAMESPACE_ID::internal::kInvalidFieldOffsetTag,
   ::PROTOBUF_NAMESPACE_ID::internal::kInvalidFieldOffsetTag,
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Value, kind_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Value, kind_),
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::ListValue, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::ListValue, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::ListValue, values_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::ListValue, values_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 8, -1, sizeof(PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse)},
-  { 10, -1, -1, sizeof(PROTOBUF_NAMESPACE_ID::Struct)},
-  { 17, -1, -1, sizeof(PROTOBUF_NAMESPACE_ID::Value)},
-  { 30, -1, -1, sizeof(PROTOBUF_NAMESPACE_ID::ListValue)},
+  { 0, 8, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse)},
+  { 10, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Struct)},
+  { 17, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Value)},
+  { 30, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ListValue)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Struct_FieldsEntry_DoNotUse_default_instance_),
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Struct_default_instance_),
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Value_default_instance_),
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_ListValue_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::PROTOBUF_NAMESPACE_ID::_Struct_FieldsEntry_DoNotUse_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::PROTOBUF_NAMESPACE_ID::_Struct_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::PROTOBUF_NAMESPACE_ID::_Value_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::PROTOBUF_NAMESPACE_ID::_ListValue_default_instance_),
 };
 
 const char descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
@@ -293,7 +293,7 @@ failure:
 
   // map<string, .google.protobuf.Value> fields = 1;
   if (!this->_internal_fields().empty()) {
-    typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::Value >::const_pointer
+    typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >::const_pointer
         ConstPtr;
     typedef ConstPtr SortItem;
     typedef ::PROTOBUF_NAMESPACE_ID::internal::CompareByDerefFirst<SortItem> Less;
@@ -311,9 +311,9 @@ failure:
         this->_internal_fields().size() > 1) {
       ::std::unique_ptr<SortItem[]> items(
           new SortItem[this->_internal_fields().size()]);
-      typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::Value >::size_type size_type;
+      typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >::size_type size_type;
       size_type n = 0;
-      for (::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::Value >::const_iterator
+      for (::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >::const_iterator
           it = this->_internal_fields().begin();
           it != this->_internal_fields().end(); ++it, ++n) {
         items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
@@ -324,7 +324,7 @@ failure:
         Utf8Check::Check(&(*items[static_cast<ptrdiff_t>(i)]));
       }
     } else {
-      for (::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::Value >::const_iterator
+      for (::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >::const_iterator
           it = this->_internal_fields().begin();
           it != this->_internal_fields().end(); ++it) {
         target = Struct_FieldsEntry_DoNotUse::Funcs::InternalSerialize(1, it->first, it->second, target, stream);
@@ -352,7 +352,7 @@ size_t Struct::ByteSizeLong() const {
   // map<string, .google.protobuf.Value> fields = 1;
   total_size += 1 *
       ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(this->_internal_fields_size());
-  for (::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::Value >::const_iterator
+  for (::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >::const_iterator
       it = this->_internal_fields().begin();
       it != this->_internal_fields().end(); ++it) {
     total_size += Struct_FieldsEntry_DoNotUse::Funcs::ByteSizeLong(it->first, it->second);
@@ -411,24 +411,24 @@ void Struct::InternalSwap(Struct* other) {
 
 class Value::_Internal {
  public:
-  static const PROTOBUF_NAMESPACE_ID::Struct& struct_value(const Value* msg);
-  static const PROTOBUF_NAMESPACE_ID::ListValue& list_value(const Value* msg);
+  static const ::PROTOBUF_NAMESPACE_ID::Struct& struct_value(const Value* msg);
+  static const ::PROTOBUF_NAMESPACE_ID::ListValue& list_value(const Value* msg);
 };
 
-const PROTOBUF_NAMESPACE_ID::Struct&
+const ::PROTOBUF_NAMESPACE_ID::Struct&
 Value::_Internal::struct_value(const Value* msg) {
   return *msg->kind_.struct_value_;
 }
-const PROTOBUF_NAMESPACE_ID::ListValue&
+const ::PROTOBUF_NAMESPACE_ID::ListValue&
 Value::_Internal::list_value(const Value* msg) {
   return *msg->kind_.list_value_;
 }
-void Value::set_allocated_struct_value(PROTOBUF_NAMESPACE_ID::Struct* struct_value) {
+void Value::set_allocated_struct_value(::PROTOBUF_NAMESPACE_ID::Struct* struct_value) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
   clear_kind();
   if (struct_value) {
     ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-      ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper<PROTOBUF_NAMESPACE_ID::Struct>::GetOwningArena(struct_value);
+      ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper<::PROTOBUF_NAMESPACE_ID::Struct>::GetOwningArena(struct_value);
     if (message_arena != submessage_arena) {
       struct_value = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, struct_value, submessage_arena);
@@ -438,12 +438,12 @@ void Value::set_allocated_struct_value(PROTOBUF_NAMESPACE_ID::Struct* struct_val
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.struct_value)
 }
-void Value::set_allocated_list_value(PROTOBUF_NAMESPACE_ID::ListValue* list_value) {
+void Value::set_allocated_list_value(::PROTOBUF_NAMESPACE_ID::ListValue* list_value) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
   clear_kind();
   if (list_value) {
     ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-      ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper<PROTOBUF_NAMESPACE_ID::ListValue>::GetOwningArena(list_value);
+      ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper<::PROTOBUF_NAMESPACE_ID::ListValue>::GetOwningArena(list_value);
     if (message_arena != submessage_arena) {
       list_value = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, list_value, submessage_arena);
@@ -484,11 +484,11 @@ Value::Value(const Value& from)
       break;
     }
     case kStructValue: {
-      _internal_mutable_struct_value()->PROTOBUF_NAMESPACE_ID::Struct::MergeFrom(from._internal_struct_value());
+      _internal_mutable_struct_value()->::PROTOBUF_NAMESPACE_ID::Struct::MergeFrom(from._internal_struct_value());
       break;
     }
     case kListValue: {
-      _internal_mutable_list_value()->PROTOBUF_NAMESPACE_ID::ListValue::MergeFrom(from._internal_list_value());
+      _internal_mutable_list_value()->::PROTOBUF_NAMESPACE_ID::ListValue::MergeFrom(from._internal_list_value());
       break;
     }
     case KIND_NOT_SET: {
@@ -586,7 +586,7 @@ const char* Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inte
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
           ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
-          _internal_set_null_value(static_cast<PROTOBUF_NAMESPACE_ID::NullValue>(val));
+          _internal_set_null_value(static_cast<::PROTOBUF_NAMESPACE_ID::NullValue>(val));
         } else
           goto handle_unusual;
         continue;
@@ -804,11 +804,11 @@ void Value::MergeFrom(const Value& from) {
       break;
     }
     case kStructValue: {
-      _internal_mutable_struct_value()->PROTOBUF_NAMESPACE_ID::Struct::MergeFrom(from._internal_struct_value());
+      _internal_mutable_struct_value()->::PROTOBUF_NAMESPACE_ID::Struct::MergeFrom(from._internal_struct_value());
       break;
     }
     case kListValue: {
-      _internal_mutable_list_value()->PROTOBUF_NAMESPACE_ID::ListValue::MergeFrom(from._internal_list_value());
+      _internal_mutable_list_value()->::PROTOBUF_NAMESPACE_ID::ListValue::MergeFrom(from._internal_list_value());
       break;
     }
     case KIND_NOT_SET: {
@@ -1030,17 +1030,17 @@ void ListValue::InternalSwap(ListValue* other) {
 // @@protoc_insertion_point(namespace_scope)
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_NOINLINE PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse* Arena::CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse >(Arena* arena) {
-  return Arena::CreateMessageInternal< PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse >(arena);
+template<> PROTOBUF_NOINLINE ::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse* Arena::CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse >(arena);
 }
-template<> PROTOBUF_NOINLINE PROTOBUF_NAMESPACE_ID::Struct* Arena::CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::Struct >(Arena* arena) {
-  return Arena::CreateMessageInternal< PROTOBUF_NAMESPACE_ID::Struct >(arena);
+template<> PROTOBUF_NOINLINE ::PROTOBUF_NAMESPACE_ID::Struct* Arena::CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::Struct >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::PROTOBUF_NAMESPACE_ID::Struct >(arena);
 }
-template<> PROTOBUF_NOINLINE PROTOBUF_NAMESPACE_ID::Value* Arena::CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::Value >(Arena* arena) {
-  return Arena::CreateMessageInternal< PROTOBUF_NAMESPACE_ID::Value >(arena);
+template<> PROTOBUF_NOINLINE ::PROTOBUF_NAMESPACE_ID::Value* Arena::CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::Value >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::PROTOBUF_NAMESPACE_ID::Value >(arena);
 }
-template<> PROTOBUF_NOINLINE PROTOBUF_NAMESPACE_ID::ListValue* Arena::CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::ListValue >(Arena* arena) {
-  return Arena::CreateMessageInternal< PROTOBUF_NAMESPACE_ID::ListValue >(arena);
+template<> PROTOBUF_NOINLINE ::PROTOBUF_NAMESPACE_ID::ListValue* Arena::CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::ListValue >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::PROTOBUF_NAMESPACE_ID::ListValue >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

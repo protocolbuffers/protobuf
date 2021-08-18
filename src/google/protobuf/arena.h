@@ -299,7 +299,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     // We must delegate to CreateMaybeMessage() and NOT CreateMessageInternal()
     // because protobuf generated classes specialize CreateMaybeMessage() and we
     // need to use that specialization for code size reasons.
-    return Arena::CreateMaybeMessage<T>(arena, std::forward<Args>(args)...);
+    return Arena::CreateMaybeMessage<T>(arena, static_cast<Args&&>(args)...);
   }
 
   // API to create any objects on the arena. Note that only the object will
@@ -320,7 +320,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE static T* Create(Arena* arena, Args&&... args) {
     return CreateInternal<T>(arena, std::is_convertible<T*, MessageLite*>(),
-                             std::forward<Args>(args)...);
+                             static_cast<Args&&>(args)...);
   }
 
   // Create an array of object type T on the arena *without* invoking the
@@ -484,7 +484,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
     template <typename... Args>
     static T* Construct(void* ptr, Args&&... args) {
-      return new (ptr) T(std::forward<Args>(args)...);
+      return new (ptr) T(static_cast<Args&&>(args)...);
     }
 
     static T* New() {
@@ -528,9 +528,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
         InternalHelper<T>::is_arena_constructable::value,
         "CreateMessage can only construct types that are ArenaConstructable");
     if (arena == NULL) {
-      return new T(nullptr, std::forward<Args>(args)...);
+      return new T(nullptr, static_cast<Args&&>(args)...);
     } else {
-      return arena->DoCreateMessage<T>(std::forward<Args>(args)...);
+      return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
     }
   }
 

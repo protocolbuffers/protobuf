@@ -316,7 +316,6 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   WriteMessageDocComment(printer, descriptor_);
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true);
-
   // The builder_type stores the super type name of the nested Builder class.
   std::string builder_type;
   if (descriptor_->extension_range_count() > 0) {

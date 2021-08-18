@@ -62,6 +62,7 @@
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/port.h>
@@ -916,6 +917,8 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   // Actually a `Label` but stored as uint8_t to save space.
   uint8_t label_;
 
+  bool is_oneof_ : 1;
+
   // Logically:
   //   all_names_ = [name, full_name, lower, camel, json]
   // However:
@@ -935,10 +938,14 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   int number_;
   int index_in_oneof_;
   const Descriptor* containing_type_;
-  const OneofDescriptor* containing_oneof_;
-  const Descriptor* extension_scope_;
-  mutable const Descriptor* message_type_;
-  mutable const EnumDescriptor* enum_type_;
+  union {
+    const OneofDescriptor* containing_oneof;
+    const Descriptor* extension_scope;
+  } scope_;
+  union {
+    mutable const Descriptor* message_type;
+    mutable const EnumDescriptor* enum_type;
+  } type_descriptor_;
   const FieldOptions* options_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<FieldDescriptor>() and AllocateArray<FieldDescriptor>() in
@@ -2089,10 +2096,7 @@ PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, file, const FileDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, is_extension, bool)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, containing_type, const Descriptor*)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, containing_oneof,
-                         const OneofDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, index_in_oneof, int)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, extension_scope, const Descriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(FieldDescriptor, FieldOptions)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, has_default_value, bool)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, has_json_name, bool)
@@ -2225,6 +2229,15 @@ inline const std::string& FieldDescriptor::json_name() const {
   return all_names_[json_name_index_];
 }
 
+inline const OneofDescriptor* FieldDescriptor::containing_oneof() const {
+  return is_oneof_ ? scope_.containing_oneof : nullptr;
+}
+
+inline const Descriptor* FieldDescriptor::extension_scope() const {
+  GOOGLE_CHECK(is_extension_);
+  return scope_.extension_scope;
+}
+
 inline FieldDescriptor::Label FieldDescriptor::label() const {
   return static_cast<Label>(label_);
 }
@@ -2263,9 +2276,8 @@ inline bool FieldDescriptor::has_optional_keyword() const {
 }
 
 inline const OneofDescriptor* FieldDescriptor::real_containing_oneof() const {
-  return containing_oneof_ && !containing_oneof_->is_synthetic()
-             ? containing_oneof_
-             : nullptr;
+  auto* oneof = containing_oneof();
+  return oneof && !oneof->is_synthetic() ? oneof : nullptr;
 }
 
 inline bool FieldDescriptor::has_presence() const {
@@ -2279,8 +2291,8 @@ inline bool FieldDescriptor::has_presence() const {
 inline int FieldDescriptor::index() const {
   if (!is_extension_) {
     return static_cast<int>(this - containing_type()->fields_);
-  } else if (extension_scope_ != nullptr) {
-    return static_cast<int>(this - extension_scope_->extensions_);
+  } else if (extension_scope() != nullptr) {
+    return static_cast<int>(this - extension_scope()->extensions_);
   } else {
     return static_cast<int>(this - file_->extensions_);
   }

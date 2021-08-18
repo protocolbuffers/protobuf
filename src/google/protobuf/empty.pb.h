@@ -23,6 +23,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
+#include <google/protobuf/generated_message_bases.h>
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/metadata_lite.h>
@@ -59,7 +60,7 @@ struct EmptyDefaultTypeInternal;
 PROTOBUF_EXPORT extern EmptyDefaultTypeInternal _Empty_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_EXPORT PROTOBUF_NAMESPACE_ID::Empty* Arena::CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::Empty>(Arena*);
+template<> PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Empty* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::Empty>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
 
@@ -83,7 +84,11 @@ class PROTOBUF_EXPORT Empty final :
   }
   inline Empty& operator=(Empty&& from) noexcept {
     if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()) {
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);

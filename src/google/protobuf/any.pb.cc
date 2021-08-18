@@ -38,20 +38,20 @@ static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_s
 
 const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_google_2fprotobuf_2fany_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Any, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Any, type_url_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::Any, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, type_url_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, value_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, -1, -1, sizeof(PROTOBUF_NAMESPACE_ID::Any)},
+  { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Any)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::_Any_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::PROTOBUF_NAMESPACE_ID::_Any_default_instance_),
 };
 
 const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
@@ -331,8 +331,8 @@ void Any::InternalSwap(Any* other) {
 // @@protoc_insertion_point(namespace_scope)
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_NOINLINE PROTOBUF_NAMESPACE_ID::Any* Arena::CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::Any >(Arena* arena) {
-  return Arena::CreateMessageInternal< PROTOBUF_NAMESPACE_ID::Any >(arena);
+template<> PROTOBUF_NOINLINE ::PROTOBUF_NAMESPACE_ID::Any* Arena::CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::Any >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::PROTOBUF_NAMESPACE_ID::Any >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

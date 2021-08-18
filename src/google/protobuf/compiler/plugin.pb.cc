@@ -84,73 +84,73 @@ static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptor
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto = nullptr;
 
 const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::Version, _has_bits_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::Version, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::Version, _has_bits_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::Version, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::Version, major_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::Version, minor_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::Version, patch_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::Version, suffix_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::Version, major_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::Version, minor_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::Version, patch_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::Version, suffix_),
   1,
   2,
   3,
   0,
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, _has_bits_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, _has_bits_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, file_to_generate_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, parameter_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, proto_file_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, compiler_version_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, file_to_generate_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, parameter_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, proto_file_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, compiler_version_),
   ~0u,
   0,
   ~0u,
   1,
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, _has_bits_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, _has_bits_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, name_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, insertion_point_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, content_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, generated_code_info_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, name_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, insertion_point_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, content_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, generated_code_info_),
   0,
   1,
   2,
   3,
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, _has_bits_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, _has_bits_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, error_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, supported_features_),
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, file_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, error_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, supported_features_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, file_),
   0,
   1,
   ~0u,
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 10, -1, sizeof(PROTOBUF_NAMESPACE_ID::compiler::Version)},
-  { 14, 24, -1, sizeof(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest)},
-  { 28, 38, -1, sizeof(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File)},
-  { 42, 51, -1, sizeof(PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse)},
+  { 0, 10, -1, sizeof(::PROTOBUF_NAMESPACE_ID::compiler::Version)},
+  { 14, 24, -1, sizeof(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest)},
+  { 28, 38, -1, sizeof(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File)},
+  { 42, 51, -1, sizeof(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::compiler::_Version_default_instance_),
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::compiler::_CodeGeneratorRequest_default_instance_),
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::compiler::_CodeGeneratorResponse_File_default_instance_),
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&PROTOBUF_NAMESPACE_ID::compiler::_CodeGeneratorResponse_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::PROTOBUF_NAMESPACE_ID::compiler::_Version_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::PROTOBUF_NAMESPACE_ID::compiler::_CodeGeneratorRequest_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::PROTOBUF_NAMESPACE_ID::compiler::_CodeGeneratorResponse_File_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::PROTOBUF_NAMESPACE_ID::compiler::_CodeGeneratorResponse_default_instance_),
 };
 
 const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
@@ -538,13 +538,13 @@ class CodeGeneratorRequest::_Internal {
   static void set_has_parameter(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
-  static const PROTOBUF_NAMESPACE_ID::compiler::Version& compiler_version(const CodeGeneratorRequest* msg);
+  static const ::PROTOBUF_NAMESPACE_ID::compiler::Version& compiler_version(const CodeGeneratorRequest* msg);
   static void set_has_compiler_version(HasBits* has_bits) {
     (*has_bits)[0] |= 2u;
   }
 };
 
-const PROTOBUF_NAMESPACE_ID::compiler::Version&
+const ::PROTOBUF_NAMESPACE_ID::compiler::Version&
 CodeGeneratorRequest::_Internal::compiler_version(const CodeGeneratorRequest* msg) {
   return *msg->compiler_version_;
 }
@@ -574,7 +574,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from)
       GetArenaForAllocation());
   }
   if (from._internal_has_compiler_version()) {
-    compiler_version_ = new PROTOBUF_NAMESPACE_ID::compiler::Version(*from.compiler_version_);
+    compiler_version_ = new ::PROTOBUF_NAMESPACE_ID::compiler::Version(*from.compiler_version_);
   } else {
     compiler_version_ = nullptr;
   }
@@ -833,7 +833,7 @@ void CodeGeneratorRequest::MergeFrom(const CodeGeneratorRequest& from) {
       _internal_set_parameter(from._internal_parameter());
     }
     if (cached_has_bits & 0x00000002u) {
-      _internal_mutable_compiler_version()->PROTOBUF_NAMESPACE_ID::compiler::Version::MergeFrom(from._internal_compiler_version());
+      _internal_mutable_compiler_version()->::PROTOBUF_NAMESPACE_ID::compiler::Version::MergeFrom(from._internal_compiler_version());
     }
   }
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -887,13 +887,13 @@ class CodeGeneratorResponse_File::_Internal {
   static void set_has_content(HasBits* has_bits) {
     (*has_bits)[0] |= 4u;
   }
-  static const PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& generated_code_info(const CodeGeneratorResponse_File* msg);
+  static const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& generated_code_info(const CodeGeneratorResponse_File* msg);
   static void set_has_generated_code_info(HasBits* has_bits) {
     (*has_bits)[0] |= 8u;
   }
 };
 
-const PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo&
+const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo&
 CodeGeneratorResponse_File::_Internal::generated_code_info(const CodeGeneratorResponse_File* msg) {
   return *msg->generated_code_info_;
 }
@@ -930,7 +930,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorRespon
       GetArenaForAllocation());
   }
   if (from._internal_has_generated_code_info()) {
-    generated_code_info_ = new PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo(*from.generated_code_info_);
+    generated_code_info_ = new ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo(*from.generated_code_info_);
   } else {
     generated_code_info_ = nullptr;
   }
@@ -1196,7 +1196,7 @@ void CodeGeneratorResponse_File::MergeFrom(const CodeGeneratorResponse_File& fro
       _internal_set_content(from._internal_content());
     }
     if (cached_has_bits & 0x00000008u) {
-      _internal_mutable_generated_code_info()->PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo::MergeFrom(from._internal_generated_code_info());
+      _internal_mutable_generated_code_info()->::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo::MergeFrom(from._internal_generated_code_info());
     }
   }
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -1529,17 +1529,17 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
 }  // namespace compiler
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_NOINLINE PROTOBUF_NAMESPACE_ID::compiler::Version* Arena::CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::compiler::Version >(Arena* arena) {
-  return Arena::CreateMessageInternal< PROTOBUF_NAMESPACE_ID::compiler::Version >(arena);
+template<> PROTOBUF_NOINLINE ::PROTOBUF_NAMESPACE_ID::compiler::Version* Arena::CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::compiler::Version >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::PROTOBUF_NAMESPACE_ID::compiler::Version >(arena);
 }
-template<> PROTOBUF_NOINLINE PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest* Arena::CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest >(Arena* arena) {
-  return Arena::CreateMessageInternal< PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest >(arena);
+template<> PROTOBUF_NOINLINE ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest* Arena::CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest >(arena);
 }
-template<> PROTOBUF_NOINLINE PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* Arena::CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File >(Arena* arena) {
-  return Arena::CreateMessageInternal< PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File >(arena);
+template<> PROTOBUF_NOINLINE ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* Arena::CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File >(arena);
 }
-template<> PROTOBUF_NOINLINE PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse* Arena::CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse >(Arena* arena) {
-  return Arena::CreateMessageInternal< PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse >(arena);
+template<> PROTOBUF_NOINLINE ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse* Arena::CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 
