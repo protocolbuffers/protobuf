@@ -11,25 +11,6 @@
   * Support arena allocation of google::protobuf::AnyMetadata (#8758)
   * Fix undefined symbol error around SharedCtor() (#8827)
   * Fix default value of enum(int) in json_util with proto2 (#8835)
-
-  Java
-  * Fix errorprone conflict (#8723)
-  * Removing deprecated TimeUtil class. (#8749)
-
-  PHP
-  * Migrate PHP & Ruby to ABSL wyhash (#8854)
-
-  Ruby
-  * Move DSL implementation from C to pure Ruby (#8850)
-
-  Other
-  * [csharp] ByteString.CreateCodedInput should use ArraySegment offset and count (#8740)
-  * [ObjC] Add support for using the proto package to prefix symbols. (#8760)
-  * field_presence.md: fix Go example (#8788)
-
-
-Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
-  C++
   * Better Smaller ByteSizeLong
   * Introduce event filters for inject_field_listener_events
   * Reduce memory usage of DescriptorPool
@@ -52,6 +33,8 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Switch from int{8,16,32,64} to int{8,16,32,64}_t
 
   Java
+  * Fix errorprone conflict (#8723)
+  * Removing deprecated TimeUtil class. (#8749)
   * Optimized FieldDescriptor.valueOf() to avoid array copying.
   * Removing deprecated TimeUtil class.
   * Add Durations.parseUnchecked(String) and Timestamps.parseUnchecked(String)
@@ -61,6 +44,18 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Optimize binary parsing of repeated float64
   * Fix for optimization when reading doubles from binary wire format
   * Replace toArray implementation with toJSON.
+
+  PHP
+  * Migrate PHP & Ruby to ABSL wyhash (#8854)
+
+  Ruby
+  * Move DSL implementation from C to pure Ruby (#8850)
+
+  Other
+  * [csharp] ByteString.CreateCodedInput should use ArraySegment offset and count (#8740)
+  * [ObjC] Add support for using the proto package to prefix symbols. (#8760)
+  * field_presence.md: fix Go example (#8788)
+
 
 2021-06-04 version 3.17.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   C++
