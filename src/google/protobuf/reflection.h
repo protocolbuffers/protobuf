@@ -392,13 +392,18 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
 
 // Implement (Mutable)RepeatedFieldRef::iterator
 template <typename T>
-class RepeatedFieldRefIterator
-    : public std::iterator<std::forward_iterator_tag, T> {
+class RepeatedFieldRefIterator {
   typedef typename RefTypeTraits<T>::AccessorValueType AccessorValueType;
   typedef typename RefTypeTraits<T>::IteratorValueType IteratorValueType;
   typedef typename RefTypeTraits<T>::IteratorPointerType IteratorPointerType;
 
  public:
+  using iterator_category = std::forward_iterator_tag;
+  using value_type = T;
+  using pointer = T*;
+  using reference = T&;
+  using difference_type = std::ptrdiff_t;
+
   // Constructor for non-message fields.
   RepeatedFieldRefIterator(const void* data,
                            const RepeatedFieldAccessor* accessor, bool begin)

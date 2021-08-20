@@ -297,7 +297,12 @@ inline InlinedStringField::InlinedStringField(
   new (get_mutable()) std::string(default_value);
 }
 
-inline InlinedStringField::InlinedStringField(Arena* /*arena*/) { Init(); }
+inline InlinedStringField::InlinedStringField(Arena* arena) {
+  Init();
+  if (arena != nullptr) {
+    arena->OwnDestructor(get_mutable());
+  }
+}
 
 inline const std::string& InlinedStringField::GetNoArena() const {
   return *get_const();

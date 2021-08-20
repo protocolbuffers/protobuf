@@ -41,18 +41,17 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-bool AnyMetadata::PackFrom(const Message& message) {
-  return PackFrom(message, kTypeGoogleApisComPrefix);
+bool AnyMetadata::PackFrom(Arena* arena, const Message& message) {
+  return PackFrom(arena, message, kTypeGoogleApisComPrefix);
 }
 
-bool AnyMetadata::PackFrom(const Message& message,
+bool AnyMetadata::PackFrom(Arena* arena, const Message& message,
                            StringPiece type_url_prefix) {
   type_url_->Set(
       &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString(),
-      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix),
-      nullptr);
+      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix), arena);
   return message.SerializeToString(
-      value_->Mutable(ArenaStringPtr::EmptyDefault{}, nullptr));
+      value_->Mutable(ArenaStringPtr::EmptyDefault{}, arena));
 }
 
 bool AnyMetadata::UnpackTo(Message* message) const {

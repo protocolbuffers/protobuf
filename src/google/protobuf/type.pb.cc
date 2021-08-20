@@ -385,7 +385,7 @@ Type::Type(const Type& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Type)
 }
 
-inline void Type::SharedCtor() {
+void Type::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&source_context_) - reinterpret_cast<char*>(this)),
@@ -767,7 +767,7 @@ Field::Field(const Field& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Field)
 }
 
-inline void Field::SharedCtor() {
+void Field::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 json_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -1259,7 +1259,7 @@ Enum::Enum(const Enum& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Enum)
 }
 
-inline void Enum::SharedCtor() {
+void Enum::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&source_context_) - reinterpret_cast<char*>(this)),
@@ -1588,7 +1588,7 @@ EnumValue::EnumValue(const EnumValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValue)
 }
 
-inline void EnumValue::SharedCtor() {
+void EnumValue::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 number_ = 0;
 }
@@ -1857,7 +1857,7 @@ Option::Option(const Option& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Option)
 }
 
-inline void Option::SharedCtor() {
+void Option::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 value_ = nullptr;
 }

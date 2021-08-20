@@ -393,9 +393,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT UninterpretedOptionDefaultTypeI
 constexpr SourceCodeInfo_Location::SourceCodeInfo_Location(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : path_()
-  , _path_cached_byte_size_()
+  , _path_cached_byte_size_(0)
   , span_()
-  , _span_cached_byte_size_()
+  , _span_cached_byte_size_(0)
   , leading_detached_comments_()
   , leading_comments_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
   , trailing_comments_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
@@ -423,7 +423,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT SourceCodeInfoDefaultTypeIntern
 constexpr GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : path_()
-  , _path_cached_byte_size_()
+  , _path_cached_byte_size_(0)
   , source_file_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
   , begin_(0)
   , end_(0){}
@@ -1282,7 +1282,7 @@ FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorSet)
 }
 
-inline void FileDescriptorSet::SharedCtor() {
+void FileDescriptorSet::SharedCtor() {
 }
 
 FileDescriptorSet::~FileDescriptorSet() {
@@ -1532,7 +1532,7 @@ FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorProto)
 }
 
-inline void FileDescriptorProto::SharedCtor() {
+void FileDescriptorProto::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 package_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 syntax_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -2159,7 +2159,7 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorP
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto.ExtensionRange)
 }
 
-inline void DescriptorProto_ExtensionRange::SharedCtor() {
+void DescriptorProto_ExtensionRange::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&options_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&end_) -
@@ -2430,7 +2430,7 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(const DescriptorPro
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto.ReservedRange)
 }
 
-inline void DescriptorProto_ReservedRange::SharedCtor() {
+void DescriptorProto_ReservedRange::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&start_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&end_) -
@@ -2695,7 +2695,7 @@ DescriptorProto::DescriptorProto(const DescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto)
 }
 
-inline void DescriptorProto::SharedCtor() {
+void DescriptorProto::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 options_ = nullptr;
 }
@@ -3206,7 +3206,7 @@ ExtensionRangeOptions::ExtensionRangeOptions(const ExtensionRangeOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions)
 }
 
-inline void ExtensionRangeOptions::SharedCtor() {
+void ExtensionRangeOptions::SharedCtor() {
 }
 
 ExtensionRangeOptions::~ExtensionRangeOptions() {
@@ -3481,7 +3481,7 @@ FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldDescriptorProto)
 }
 
-inline void FieldDescriptorProto::SharedCtor() {
+void FieldDescriptorProto::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 extendee_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 type_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -4073,7 +4073,7 @@ OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofDescriptorProto)
 }
 
-inline void OneofDescriptorProto::SharedCtor() {
+void OneofDescriptorProto::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 options_ = nullptr;
 }
@@ -4330,7 +4330,7 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(con
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
 }
 
-inline void EnumDescriptorProto_EnumReservedRange::SharedCtor() {
+void EnumDescriptorProto_EnumReservedRange::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&start_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&end_) -
@@ -4585,7 +4585,7 @@ EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto)
 }
 
-inline void EnumDescriptorProto::SharedCtor() {
+void EnumDescriptorProto::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 options_ = nullptr;
 }
@@ -4959,7 +4959,7 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProt
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueDescriptorProto)
 }
 
-inline void EnumValueDescriptorProto::SharedCtor() {
+void EnumValueDescriptorProto::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&options_) - reinterpret_cast<char*>(this)),
@@ -5263,7 +5263,7 @@ ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& fro
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceDescriptorProto)
 }
 
-inline void ServiceDescriptorProto::SharedCtor() {
+void ServiceDescriptorProto::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 options_ = nullptr;
 }
@@ -5589,7 +5589,7 @@ MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MethodDescriptorProto)
 }
 
-inline void MethodDescriptorProto::SharedCtor() {
+void MethodDescriptorProto::SharedCtor() {
 name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 input_type_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 output_type_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -6096,7 +6096,7 @@ FileOptions::FileOptions(const FileOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileOptions)
 }
 
-inline void FileOptions::SharedCtor() {
+void FileOptions::SharedCtor() {
 java_package_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 java_outer_classname_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 go_package_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -7029,7 +7029,7 @@ MessageOptions::MessageOptions(const MessageOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MessageOptions)
 }
 
-inline void MessageOptions::SharedCtor() {
+void MessageOptions::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&message_set_wire_format_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&map_entry_) -
@@ -7375,7 +7375,7 @@ FieldOptions::FieldOptions(const FieldOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldOptions)
 }
 
-inline void FieldOptions::SharedCtor() {
+void FieldOptions::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&ctype_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&jstype_) -
@@ -7759,7 +7759,7 @@ OneofOptions::OneofOptions(const OneofOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofOptions)
 }
 
-inline void OneofOptions::SharedCtor() {
+void OneofOptions::SharedCtor() {
 }
 
 OneofOptions::~OneofOptions() {
@@ -7976,7 +7976,7 @@ EnumOptions::EnumOptions(const EnumOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumOptions)
 }
 
-inline void EnumOptions::SharedCtor() {
+void EnumOptions::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&allow_alias_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&deprecated_) -
@@ -8259,7 +8259,7 @@ EnumValueOptions::EnumValueOptions(const EnumValueOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueOptions)
 }
 
-inline void EnumValueOptions::SharedCtor() {
+void EnumValueOptions::SharedCtor() {
 deprecated_ = false;
 }
 
@@ -8503,7 +8503,7 @@ ServiceOptions::ServiceOptions(const ServiceOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceOptions)
 }
 
-inline void ServiceOptions::SharedCtor() {
+void ServiceOptions::SharedCtor() {
 deprecated_ = false;
 }
 
@@ -8752,7 +8752,7 @@ MethodOptions::MethodOptions(const MethodOptions& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MethodOptions)
 }
 
-inline void MethodOptions::SharedCtor() {
+void MethodOptions::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&deprecated_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&idempotency_level_) -
@@ -9051,7 +9051,7 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOp
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UninterpretedOption.NamePart)
 }
 
-inline void UninterpretedOption_NamePart::SharedCtor() {
+void UninterpretedOption_NamePart::SharedCtor() {
 name_part_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 is_extension_ = false;
 }
@@ -9342,7 +9342,7 @@ UninterpretedOption::UninterpretedOption(const UninterpretedOption& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UninterpretedOption)
 }
 
-inline void UninterpretedOption::SharedCtor() {
+void UninterpretedOption::SharedCtor() {
 identifier_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 aggregate_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -9770,7 +9770,7 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(const SourceCodeInfo_Location& 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo.Location)
 }
 
-inline void SourceCodeInfo_Location::SharedCtor() {
+void SourceCodeInfo_Location::SharedCtor() {
 leading_comments_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 trailing_comments_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -10138,7 +10138,7 @@ SourceCodeInfo::SourceCodeInfo(const SourceCodeInfo& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo)
 }
 
-inline void SourceCodeInfo::SharedCtor() {
+void SourceCodeInfo::SharedCtor() {
 }
 
 SourceCodeInfo::~SourceCodeInfo() {
@@ -10342,7 +10342,7 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeIn
   // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
 }
 
-inline void GeneratedCodeInfo_Annotation::SharedCtor() {
+void GeneratedCodeInfo_Annotation::SharedCtor() {
 source_file_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&begin_) - reinterpret_cast<char*>(this)),
@@ -10652,7 +10652,7 @@ GeneratedCodeInfo::GeneratedCodeInfo(const GeneratedCodeInfo& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo)
 }
 
-inline void GeneratedCodeInfo::SharedCtor() {
+void GeneratedCodeInfo::SharedCtor() {
 }
 
 GeneratedCodeInfo::~GeneratedCodeInfo() {

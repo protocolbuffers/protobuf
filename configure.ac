@@ -17,7 +17,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.15.8],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.17.3],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -125,7 +125,7 @@ AC_LINK_IFELSE(
   [have_ld_version_script=yes; AC_MSG_RESULT(yes)],
   [have_ld_version_script=no; AC_MSG_RESULT(no)])
 LDFLAGS=$save_LDFLAGS
-AM_CONDITIONAL([HAVE_LD_VERSION_SCRIPT], [test "$have_ld_version_script" == "yes"])
+AM_CONDITIONAL([HAVE_LD_VERSION_SCRIPT], [test "$have_ld_version_script" = "yes"])
 
 # Checks for header files.
 AC_HEADER_STDC

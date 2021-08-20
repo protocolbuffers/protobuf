@@ -248,6 +248,12 @@ UnknownFieldSet* Reflection::MutableUnknownFields(Message* message) const {
       ->mutable_unknown_fields<UnknownFieldSet>();
 }
 
+bool Reflection::IsLazyExtension(const Message& message,
+                                 const FieldDescriptor* field) const {
+  return field->is_extension() &&
+         GetExtensionSet(message).HasLazy(field->number());
+}
+
 bool Reflection::IsLazilyVerifiedLazyField(const FieldDescriptor* field) const {
   return field->options().lazy();
 }

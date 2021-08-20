@@ -136,7 +136,9 @@
 #elif defined(__FreeBSD__)
 #include <sys/endian.h>  // __BYTE_ORDER
 #else
+#if !defined(__QNX__)
 #include <endian.h>  // __BYTE_ORDER
+#endif
 #endif
 #if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) ||    \
      (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN)) && \
@@ -397,13 +399,6 @@ class PROTOBUF_EXPORT CodedInputStream {
   //
   // This is unrelated to PushLimit()/PopLimit().
   void SetTotalBytesLimit(int total_bytes_limit);
-
-  PROTOBUF_DEPRECATED_MSG(
-      "Please use the single parameter version of SetTotalBytesLimit(). The "
-      "second parameter is ignored.")
-  void SetTotalBytesLimit(int total_bytes_limit, int) {
-    SetTotalBytesLimit(total_bytes_limit);
-  }
 
   // The Total Bytes Limit minus the Current Position, or -1 if the total bytes
   // limit is INT_MAX.

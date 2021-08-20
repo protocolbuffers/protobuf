@@ -52,10 +52,12 @@
   __attribute__((acquire_capability(__VA_ARGS__)))
 #define GOOGLE_PROTOBUF_RELEASE(...) \
   __attribute__((release_capability(__VA_ARGS__)))
+#define GOOGLE_PROTOBUF_SCOPED_CAPABILITY __attribute__((scoped_lockable))
 #define GOOGLE_PROTOBUF_CAPABILITY(x) __attribute__((capability(x)))
 #else
 #define GOOGLE_PROTOBUF_ACQUIRE(...)
 #define GOOGLE_PROTOBUF_RELEASE(...)
+#define GOOGLE_PROTOBUF_SCOPED_CAPABILITY
 #define GOOGLE_PROTOBUF_CAPABILITY(x)
 #endif
 
@@ -116,7 +118,11 @@ class CallOnceInitializedMutex {
 // mutexes.
 class GOOGLE_PROTOBUF_CAPABILITY("mutex") PROTOBUF_EXPORT WrappedMutex {
  public:
+#if defined(__QNX__)
+  constexpr WrappedMutex() = default;
+#else
   constexpr WrappedMutex() {}
+#endif
   void Lock() GOOGLE_PROTOBUF_ACQUIRE() { mu_.lock(); }
   void Unlock() GOOGLE_PROTOBUF_RELEASE() { mu_.unlock(); }
   // Crash if this Mutex is not held exclusively by this thread.
@@ -136,10 +142,13 @@ class GOOGLE_PROTOBUF_CAPABILITY("mutex") PROTOBUF_EXPORT WrappedMutex {
 using Mutex = WrappedMutex;
 
 // MutexLock(mu) acquires mu when constructed and releases it when destroyed.
-class PROTOBUF_EXPORT MutexLock {
+class GOOGLE_PROTOBUF_SCOPED_CAPABILITY PROTOBUF_EXPORT MutexLock {
  public:
-  explicit MutexLock(Mutex *mu) : mu_(mu) { this->mu_->Lock(); }
-  ~MutexLock() { this->mu_->Unlock(); }
+  explicit MutexLock(Mutex* mu) GOOGLE_PROTOBUF_ACQUIRE(mu) : mu_(mu) {
+    this->mu_->Lock();
+  }
+  ~MutexLock() GOOGLE_PROTOBUF_RELEASE() { this->mu_->Unlock(); }
+
  private:
   Mutex *const mu_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MutexLock);

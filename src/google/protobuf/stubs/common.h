@@ -82,7 +82,7 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 3015008
+#define GOOGLE_PROTOBUF_VERSION 3017003
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
 #define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
@@ -90,15 +90,15 @@ namespace internal {
 // The minimum header version which works with the current version of
 // the library.  This constant should only be used by protoc's C++ code
 // generator.
-static const int kMinHeaderVersionForLibrary = 3015000;
+static const int kMinHeaderVersionForLibrary = 3017000;
 
 // The minimum protoc version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 3015000
+#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 3017000
 
 // The minimum header version which works with the current version of
 // protoc.  This constant should only be used in VerifyVersion().
-static const int kMinHeaderVersionForProtoc = 3015000;
+static const int kMinHeaderVersionForProtoc = 3017000;
 
 // Verifies that the headers and libraries are compatible.  Use the macro
 // below to call this.
@@ -176,7 +176,7 @@ class FatalException : public std::exception {
       : filename_(filename), line_(line), message_(message) {}
   virtual ~FatalException() throw();
 
-  virtual const char* what() const throw();
+  const char* what() const throw() override;
 
   const char* filename() const { return filename_; }
   int line() const { return line_; }

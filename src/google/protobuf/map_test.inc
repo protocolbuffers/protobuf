@@ -30,7 +30,7 @@
 
 // A hack to include windows.h first, which ensures the GetMessage macro can
 // be undefined when we include <google/protobuf/stubs/common.h>
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 #define _WINSOCKAPI_  // to avoid re-definition in WinSock2.h
 #define NOMINMAX      // to avoid defining min/max macros
 #include <windows.h>
@@ -1023,6 +1023,33 @@ TEST_F(MapImplTest, SwapArena) {
   EXPECT_THAT(m2, testing::UnorderedElementsAre(testing::Pair(9398, 41999)));
 }
 
+TEST_F(MapImplTest, SwapFieldArenaReflection) {
+  MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+  Arena arena;
+
+  {
+    // Tests filled lfs and empty rhs.
+    TestMap rhs;
+
+    {
+      // Use local_arena to allocate lhs to trigger use-after-free error.
+      Arena local_arena;
+      auto* lhs = Arena::CreateMessage<TestMap>(&local_arena);
+      const auto* reflection = lhs->GetReflection();
+      std::vector<const FieldDescriptor*> fields;
+
+      reflection_tester.SetMapFieldsViaReflection(lhs);
+      reflection->ListFields(*lhs, &fields);
+
+      reflection->SwapFields(lhs, &rhs, fields);
+
+      reflection_tester.ExpectClearViaReflection(*lhs);
+    }
+
+    reflection_tester.ExpectMapFieldsSetViaReflection(rhs);
+  }
+}
+
 TEST_F(MapImplTest, CopyAssignMapIterator) {
   TestMap message;
   MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
@@ -1091,11 +1118,7 @@ bool MapOrderingIsRandom(int a, int b) {
 }
 
 // This test verifies that the iteration order is reasonably random even for
-// small maps. Currently we only have sufficient randomness for debug builds and
-// builds where we can use the RDTSC instruction, so we only test for those
-// builds.
-#if defined(__x86_64__) && defined(__GNUC__) && \
-    !defined(GOOGLE_PROTOBUF_NO_RDTSC)
+// small maps.
 TEST_F(MapImplTest, RandomOrdering) {
   for (int i = 0; i < 10; ++i) {
     for (int j = i + 1; j < 10; ++j) {
@@ -1105,7 +1128,6 @@ TEST_F(MapImplTest, RandomOrdering) {
     }
   }
 }
-#endif
 
 template <typename Key>
 void TestTransparent(const Key& key, const Key& miss_key) {

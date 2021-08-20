@@ -1312,7 +1312,7 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(
       std::max(size_t(1), message_generators_.size()));
   if (HasDescriptorMethods(file_, options_)) {
     format(
-        "extern $dllexport_decl $const ::$proto_ns$::internal::DescriptorTable "
+        "$dllexport_decl $extern const ::$proto_ns$::internal::DescriptorTable "
         "$desc_table$;\n");
   }
 }

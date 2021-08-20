@@ -843,7 +843,9 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       type_info->extensions_offset,
       type_info->oneof_case_offset,
       type_info->size,
-      type_info->weak_field_map_offset};
+      type_info->weak_field_map_offset,
+      nullptr /* inlined_string_indices_ */,
+      0 /* inlined_string_donated_offset_ */};
 
   type_info->reflection.reset(
       new Reflection(type_info->type, schema, type_info->pool, this));

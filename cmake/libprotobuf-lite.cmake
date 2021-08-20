@@ -7,6 +7,7 @@ set(libprotobuf_lite_files
   ${protobuf_source_dir}/src/google/protobuf/generated_message_table_driven_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_util.cc
   ${protobuf_source_dir}/src/google/protobuf/implicit_weak_message.cc
+  ${protobuf_source_dir}/src/google/protobuf/inlined_string_field.cc
   ${protobuf_source_dir}/src/google/protobuf/io/coded_stream.cc
   ${protobuf_source_dir}/src/google/protobuf/io/io_win32.cc
   ${protobuf_source_dir}/src/google/protobuf/io/strtod.cc
@@ -57,7 +58,7 @@ set(libprotobuf_lite_includes
   ${protobuf_source_dir}/src/google/protobuf/wire_format_lite.h
 )
 
-if (MSVC)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 set(libprotobuf_lite_rc_files
   ${CMAKE_CURRENT_BINARY_DIR}/version.rc
 )

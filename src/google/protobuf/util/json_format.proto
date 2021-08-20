@@ -128,3 +128,13 @@ message TestExtension {
   }
   optional string value = 1;
 }
+
+enum EnumValue {
+  PROTOCOL = 0;
+  BUFFER = 1;
+  DEFAULT = 2;
+}
+
+message TestDefaultEnumValue {
+  optional EnumValue enum_value = 1 [default = DEFAULT];
+}

@@ -266,10 +266,11 @@ inline void TableSerialize(const MessageLite& msg,
   SerializeInternal(base, field_table + 1, num_fields, output);
 }
 
-uint8_t* SerializeInternalToArray(const uint8_t* base,
-                                  const FieldMetadata* table,
-                                  int32_t num_fields, bool is_deterministic,
-                                  uint8_t* buffer);
+PROTOBUF_EXPORT uint8_t* SerializeInternalToArray(const uint8_t* base,
+                                                  const FieldMetadata* table,
+                                                  int32_t num_fields,
+                                                  bool is_deterministic,
+                                                  uint8_t* buffer);
 
 inline uint8_t* TableSerializeToArray(const MessageLite& msg,
                                       const SerializationTable* table,

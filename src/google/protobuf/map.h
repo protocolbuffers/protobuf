@@ -50,6 +50,10 @@
 #include <string_view>
 #endif  // defined(__cpp_lib_string_view)
 
+#if !defined(GOOGLE_PROTOBUF_NO_RDTSC) && defined(__APPLE__)
+#include <mach/mach_time.h>
+#endif
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_enum_util.h>
@@ -1080,12 +1084,24 @@ class Map {
       // lower bits are not very random, due to alignment, so we discard them
       // and shift the higher bits into their place.
       size_type s = reinterpret_cast<uintptr_t>(this) >> 4;
-#if defined(__x86_64__) && defined(__GNUC__) && \
-    !defined(GOOGLE_PROTOBUF_NO_RDTSC)
+#if !defined(GOOGLE_PROTOBUF_NO_RDTSC)
+#if defined(__APPLE__)
+      // Use a commpage-based fast time function on Apple environments (MacOS,
+      // iOS, tvOS, watchOS, etc).
+      s += mach_absolute_time();
+#elif defined(__x86_64__) && defined(__GNUC__)
       uint32_t hi, lo;
       asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
       s += ((static_cast<uint64_t>(hi) << 32) | lo);
+#elif defined(__aarch64__) && defined(__GNUC__)
+      // There is no rdtsc on ARMv8. CNTVCT_EL0 is the virtual counter of the
+      // system timer. It runs at a different frequency than the CPU's, but is
+      // the best source of time-based entropy we get.
+      uint64_t virtual_timer_value;
+      asm volatile("mrs %0, cntvct_el0" : "=r"(virtual_timer_value));
+      s += virtual_timer_value;
 #endif
+#endif  // !defined(GOOGLE_PROTOBUF_NO_RDTSC)
       return s;
     }
 

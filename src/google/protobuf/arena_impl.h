@@ -214,13 +214,15 @@ class PROTOBUF_EXPORT SerialArena {
   // Blocks are variable length malloc-ed objects.  The following structure
   // describes the common header for all blocks.
   struct Block {
+    Block(Block* next, size_t size) : next(next), size(size), start(nullptr) {}
+
     char* Pointer(size_t n) {
       GOOGLE_DCHECK(n <= size);
       return reinterpret_cast<char*>(this) + n;
     }
 
-    Block* next;
-    size_t size;
+    Block* const next;
+    const size_t size;
     CleanupNode* start;
     // data follows
   };

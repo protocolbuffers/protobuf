@@ -62,7 +62,9 @@
 #elif defined(__FreeBSD__)
 #include <sys/endian.h>  // __BYTE_ORDER
 #else
+#if !defined(__QNX__)
 #include <endian.h>  // __BYTE_ORDER
+#endif
 #endif
 #if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) ||   \
      (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || \
@@ -263,14 +265,13 @@ static inline uint32 bswap_32(uint32 x) {
 
 #ifndef bswap_64
 static inline uint64 bswap_64(uint64 x) {
-  return (((x & uint64_t{0xFFu)) << 56) |
-          ((x & uint64_t{0xFF00u)) << 40) |
-          ((x & uint64_t{0xFF0000u)) << 24) |
-          ((x & uint64_t{0xFF000000u)) << 8) |
-          ((x & uint64_t{0xFF00000000u)) >> 8) |
-          ((x & uint64_t{0xFF0000000000u)) >> 24) |
-          ((x & uint64_t{0xFF000000000000u)) >> 40) |
-          ((x & uint64_t{0xFF00000000000000u)) >> 56));
+  return (((x & uint64_t{0xFFu}) << 56) | ((x & uint64_t{0xFF00u}) << 40) |
+          ((x & uint64_t{0xFF0000u}) << 24) |
+          ((x & uint64_t{0xFF000000u}) << 8) |
+          ((x & uint64_t{0xFF00000000u}) >> 8) |
+          ((x & uint64_t{0xFF0000000000u}) >> 24) |
+          ((x & uint64_t{0xFF000000000000u}) >> 40) |
+          ((x & uint64_t{0xFF00000000000000u}) >> 56));
 }
 #define bswap_64(x) bswap_64(x)
 #endif

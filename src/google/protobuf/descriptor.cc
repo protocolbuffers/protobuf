@@ -994,11 +994,11 @@ class TableArena {
   }
 
   static constexpr std::array<uint8_t, 6> kSmallSizes = {
-      // Sizes for pointer arrays.
-      8, 16, 24, 32,
-      // Sizes for string arrays (for descriptor names).
-      // The most common array sizes are 2 and 3.
-      2 * sizeof(std::string), 3 * sizeof(std::string)};
+      {// Sizes for pointer arrays.
+       8, 16, 24, 32,
+       // Sizes for string arrays (for descriptor names).
+       // The most common array sizes are 2 and 3.
+       2 * sizeof(std::string), 3 * sizeof(std::string)}};
 
   // Helper function to iterate all lists.
   std::array<Block*, 2 + kSmallSizes.size()> GetLists() const {

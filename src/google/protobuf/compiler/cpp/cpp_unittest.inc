@@ -101,7 +101,7 @@ class MockErrorCollector : public MultiFileErrorCollector {
 
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
-                const std::string& message) {
+                const std::string& message) override {
     strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
@@ -1159,10 +1159,8 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
 
     // implements TestService ----------------------------------------
 
-    void Foo(RpcController* controller,
-             const UNITTEST::FooRequest* request,
-             UNITTEST::FooResponse* response,
-             Closure* done) {
+    void Foo(RpcController* controller, const UNITTEST::FooRequest* request,
+             UNITTEST::FooResponse* response, Closure* done) override {
       ASSERT_FALSE(called_);
       called_ = true;
       method_ = "Foo";
@@ -1172,10 +1170,8 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
       done_ = done;
     }
 
-    void Bar(RpcController* controller,
-             const UNITTEST::BarRequest* request,
-             UNITTEST::BarResponse* response,
-             Closure* done) {
+    void Bar(RpcController* controller, const UNITTEST::BarRequest* request,
+             UNITTEST::BarResponse* response, Closure* done) override {
       ASSERT_FALSE(called_);
       called_ = true;
       method_ = "Bar";
@@ -1214,11 +1210,9 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
 
     // implements TestService ----------------------------------------
 
-    void CallMethod(const MethodDescriptor* method,
-                    RpcController* controller,
-                    const Message* request,
-                    Message* response,
-                    Closure* done) {
+    void CallMethod(const MethodDescriptor* method, RpcController* controller,
+                    const Message* request, Message* response,
+                    Closure* done) override {
       ASSERT_FALSE(called_);
       called_ = true;
       method_ = method;
@@ -1241,28 +1235,28 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
 
   class MockController : public RpcController {
    public:
-    void Reset() {
+    void Reset() override {
       ADD_FAILURE() << "Reset() not expected during this test.";
     }
-    bool Failed() const {
+    bool Failed() const override {
       ADD_FAILURE() << "Failed() not expected during this test.";
       return false;
     }
-    std::string ErrorText() const {
+    std::string ErrorText() const override {
       ADD_FAILURE() << "ErrorText() not expected during this test.";
       return "";
     }
-    void StartCancel() {
+    void StartCancel() override {
       ADD_FAILURE() << "StartCancel() not expected during this test.";
     }
-    void SetFailed(const std::string& reason) {
+    void SetFailed(const std::string& reason) override {
       ADD_FAILURE() << "SetFailed() not expected during this test.";
     }
-    bool IsCanceled() const {
+    bool IsCanceled() const override {
       ADD_FAILURE() << "IsCanceled() not expected during this test.";
       return false;
     }
-    void NotifyOnCancel(Closure* callback) {
+    void NotifyOnCancel(Closure* callback) override {
       ADD_FAILURE() << "NotifyOnCancel() not expected during this test.";
     }
   };
@@ -1274,7 +1268,7 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
       stub_(&mock_channel_),
       done_(::google::protobuf::NewPermanentCallback(&DoNothing)) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(foo_ != NULL);
     ASSERT_TRUE(bar_ != NULL);
   }
@@ -1415,7 +1409,7 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, NotImplemented) {
    public:
     ExpectUnimplementedController() : called_(false) {}
 
-    void SetFailed(const std::string& reason) {
+    void SetFailed(const std::string& reason) override {
       EXPECT_FALSE(called_);
       called_ = true;
       EXPECT_EQ("Method Foo() not implemented.", reason);
@@ -1437,8 +1431,7 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, NotImplemented) {
 
 class OneofTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-  }
+  void SetUp() override {}
 
   void ExpectEnumCasesWork(const UNITTEST::TestOneof2 &message) {
     switch (message.foo_case()) {

@@ -325,10 +325,7 @@ TEST_1D(TokenizerTest, FloatSuffix, kBlockSizes) {
 // last token in "output" must have type TYPE_END.
 struct MultiTokenCase {
   std::string input;
-  Tokenizer::Token output[10];  // The compiler wants a constant array
-                                // size for initialization to work.  There
-                                // is no reason this can't be increased if
-                                // needed.
+  std::vector<Tokenizer::Token> output;
 };
 
 inline std::ostream& operator<<(std::ostream& out,

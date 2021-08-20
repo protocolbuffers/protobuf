@@ -70,6 +70,7 @@ class DescriptorPool;   // descriptor.h
 class MessageLite;      // message_lite.h
 class Message;          // message.h
 class MessageFactory;   // message.h
+class Reflection;       // message.h
 class UnknownFieldSet;  // unknown_field_set.h
 namespace internal {
 class FieldSkipper;  // wire_format_lite.h
@@ -544,6 +545,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename Type, bool IsValid(int)>
   friend class RepeatedEnumTypeTraits;
 
+  friend class google::protobuf::Reflection;
+
   const int32_t& GetRefInt32(int number, const int32_t& default_value) const;
   const int64_t& GetRefInt64(int number, const int64_t& default_value) const;
   const uint32_t& GetRefUInt32(int number, const uint32_t& default_value) const;
@@ -805,6 +808,9 @@ class PROTOBUF_EXPORT ExtensionSet {
                              io::CodedInputStream* input,
                              ExtensionFinder* extension_finder,
                              MessageSetFieldSkipper* field_skipper);
+
+  // Returns true if extension is present and lazy.
+  bool HasLazy(int number) const;
 
   // Gets the extension with the given number, creating it if it does not
   // already exist.  Returns true if the extension did not already exist.

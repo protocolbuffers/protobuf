@@ -466,6 +466,10 @@ class PROTOBUF_EXPORT MapFieldBase {
   // IncreaseIterator() is called by operator++() of MapIterator only.
   // It implements the ++ operator of MapIterator.
   virtual void IncreaseIterator(MapIterator* map_iter) const = 0;
+
+  // Swaps state_ with another MapFieldBase
+  void SwapState(MapFieldBase* other);
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldBase);
 };
 

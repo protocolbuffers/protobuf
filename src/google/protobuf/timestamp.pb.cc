@@ -100,7 +100,7 @@ Timestamp::Timestamp(const Timestamp& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Timestamp)
 }
 
-inline void Timestamp::SharedCtor() {
+void Timestamp::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&seconds_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -

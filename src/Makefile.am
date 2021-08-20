@@ -18,7 +18,7 @@ else
 PTHREAD_DEF =
 endif
 
-PROTOBUF_VERSION = 26:8:0
+PROTOBUF_VERSION = 28:3:0
 
 if GCC
 # Turn on all warnings except for sign comparison (we ignore sign comparison
@@ -105,6 +105,9 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_message_bases.h                      \
   google/protobuf/generated_message_reflection.h                 \
   google/protobuf/generated_message_table_driven.h               \
+  google/protobuf/generated_message_tctable_decl.h               \
+  google/protobuf/generated_message_tctable_impl.h               \
+  google/protobuf/generated_message_tctable_impl.inc             \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
   google/protobuf/implicit_weak_message.h                        \
@@ -772,6 +775,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/io/zero_copy_stream_unittest.cc              \
   google/protobuf/map_field_test.cc                            \
   google/protobuf/map_test.cc                                  \
+  google/protobuf/map_test.inc                                 \
   google/protobuf/message_unittest.cc                          \
   google/protobuf/message_unittest.inc                         \
   google/protobuf/no_field_presence_test.cc                    \
