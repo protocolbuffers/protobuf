@@ -242,9 +242,13 @@ void ExtensionSet::DeleteFlatMap(const ExtensionSet::KeyValue* flat,
 
 bool ExtensionSet::Has(int number) const {
   const Extension* ext = FindOrNull(number);
-  if (ext == NULL) return false;
+  if (ext == nullptr) return false;
   GOOGLE_DCHECK(!ext->is_repeated);
   return !ext->is_cleared;
+}
+
+bool ExtensionSet::HasLazy(int number) const {
+  return Has(number) && FindOrNull(number)->is_lazy;
 }
 
 int ExtensionSet::NumExtensions() const {

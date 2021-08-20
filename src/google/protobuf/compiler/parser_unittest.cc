@@ -2588,7 +2588,7 @@ class SourceInfoTest : public ParserTest {
     return true;
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     EXPECT_TRUE(spans_.empty()) << "Forgot to call HasSpan() for:\n"
                                 << spans_.begin()->second->DebugString();
   }

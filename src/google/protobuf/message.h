@@ -1020,6 +1020,11 @@ class PROTOBUF_EXPORT Reflection final {
            IsEagerlyVerifiedLazyField(field);
   }
 
+  // Returns true if the field is lazy extension. It is meant to allow python
+  // reparse lazy field until b/157559327 is fixed.
+  bool IsLazyExtension(const Message& message,
+                       const FieldDescriptor* field) const;
+
   bool IsLazilyVerifiedLazyField(const FieldDescriptor* field) const;
   bool IsEagerlyVerifiedLazyField(const FieldDescriptor* field) const;
 

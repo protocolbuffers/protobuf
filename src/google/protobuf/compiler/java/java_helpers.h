@@ -155,7 +155,7 @@ std::string GetOneofStoredType(const FieldDescriptor* field);
 // Whether we should generate multiple java files for messages.
 inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
                               bool immutable) {
-  (void) immutable;
+  (void)immutable;
   return descriptor->options().java_multiple_files();
 }
 

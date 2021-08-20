@@ -852,6 +852,7 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@JvmName(\"set$kt_capitalized_name$\")\n"
+      "@Suppress(\"NOTHING_TO_INLINE\")\n"
       "inline operator fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .set(key: $kt_key_type$, value: $kt_value_type$) {\n"

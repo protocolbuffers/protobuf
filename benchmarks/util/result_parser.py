@@ -300,29 +300,44 @@ def get_result_from_file(cpp_file="",
 
   return __results
 
+
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("-cpp", "--cpp_input_file",
-                      help="The CPP benchmark result file's name",
-                      default="")
-  parser.add_argument("-java", "--java_input_file",
-                      help="The Java benchmark result file's name",
-                      default="")
-  parser.add_argument("-python", "--python_input_file",
-                      help="The Python benchmark result file's name",
-                      default="")
-  parser.add_argument("-go", "--go_input_file",
-                      help="The golang benchmark result file's name",
-                      default="")
-  parser.add_argument("-node", "--node_input_file",
-                      help="The node.js benchmark result file's name",
-                      default="")
-  parser.add_argument("-php", "--php_input_file",
-                      help="The pure php benchmark result file's name",
-                      default="")
-  parser.add_argument("-php_c", "--php_c_input_file",
-                      help="The php with c ext benchmark result file's name",
-                      default="")
+  parser.add_argument(
+      "-cpp",
+      "--cpp_input_file",
+      help="The CPP benchmark result file's name",
+      default="")
+  parser.add_argument(
+      "-java",
+      "--java_input_file",
+      help="The Java benchmark result file's name",
+      default="")
+  parser.add_argument(
+      "-python",
+      "--python_input_file",
+      help="The Python benchmark result file's name",
+      default="")
+  parser.add_argument(
+      "-go",
+      "--go_input_file",
+      help="The golang benchmark result file's name",
+      default="")
+  parser.add_argument(
+      "-node",
+      "--node_input_file",
+      help="The node.js benchmark result file's name",
+      default="")
+  parser.add_argument(
+      "-php",
+      "--php_input_file",
+      help="The pure php benchmark result file's name",
+      default="")
+  parser.add_argument(
+      "-php_c",
+      "--php_c_input_file",
+      help="The php with c ext benchmark result file's name",
+      default="")
   args = parser.parse_args()
 
   results = get_result_from_file(

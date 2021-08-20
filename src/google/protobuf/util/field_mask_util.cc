@@ -62,7 +62,7 @@ bool FieldMaskUtil::SnakeCaseToCamelCase(StringPiece input,
                                          std::string* output) {
   output->clear();
   bool after_underscore = false;
-  for (const char& input_char : input) {
+  for (char input_char : input) {
     if (input_char >= 'A' && input_char <= 'Z') {
       // The field name must not contain uppercase letters.
       return false;

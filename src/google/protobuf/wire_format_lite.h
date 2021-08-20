@@ -66,6 +66,7 @@
 // #pragma pop_macro("TYPE_BOOL")
 #undef TYPE_BOOL
 
+
 #include <google/protobuf/port_def.inc>
 
 namespace google {

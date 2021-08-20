@@ -992,9 +992,9 @@ const char* WireFormat::_InternalParseAndMergeField(
         }
       }
       if (field->is_repeated()) {
-        reflection->AddString(msg, field, value);
+        reflection->AddString(msg, field, std::move(value));
       } else {
-        reflection->SetString(msg, field, value);
+        reflection->SetString(msg, field, std::move(value));
       }
       return ptr;
     }

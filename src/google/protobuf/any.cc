@@ -45,13 +45,11 @@ bool AnyMetadata::PackFrom(Arena* arena, const Message& message) {
   return PackFrom(arena, message, kTypeGoogleApisComPrefix);
 }
 
-bool AnyMetadata::PackFrom(Arena* arena,
-                           const Message& message,
+bool AnyMetadata::PackFrom(Arena* arena, const Message& message,
                            StringPiece type_url_prefix) {
   type_url_->Set(
       &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString(),
-      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix),
-      arena);
+      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix), arena);
   return message.SerializeToString(
       value_->Mutable(ArenaStringPtr::EmptyDefault{}, arena));
 }
