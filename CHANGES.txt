@@ -32,6 +32,9 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Fix for optimization when reading doubles from binary wire format
   * Replace toArray implementation with toJSON.
 
+  Kotlin
+  * Suppress NOTHING_TO_INLINE in generated inline functions.
+
 2021-06-04 version 3.17.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   C++
   * Introduce FieldAccessListener.
