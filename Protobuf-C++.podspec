@@ -22,6 +22,7 @@ Pod::Spec.new do |s|
                     'src/google/protobuf/test_util*.{h,cc}',
                     'src/google/protobuf/map_lite_test_util.{h,cc}',
                     'src/google/protobuf/map_test_util*.{h,cc,inc}'
+                    'src/google/protobuf/reflection_tester.{h,cc}'
 
   s.header_mappings_dir = 'src'
 
