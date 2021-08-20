@@ -45,6 +45,9 @@
   * Fix for optimization when reading doubles from binary wire format
   * Replace toArray implementation with toJSON.
 
+  Python
+  * Drops support for python 2.7.
+
   PHP
   * Migrate PHP & Ruby to ABSL wyhash (#8854)
 
