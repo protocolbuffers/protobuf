@@ -27,6 +27,10 @@ load(
     "//bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
 )
+load(
+    "@python_headers//:build_defs.bzl",
+    "EXT_SUFFIX",
+)
 
 cc_binary(
     name = "message",
@@ -45,7 +49,10 @@ cc_binary(
     ],
     # We use a linker script to hide all symbols except the entry point for
     # the module.
-    linkopts = ["-Wl,--version-script,$(location :version_script.lds)"],
+    linkopts = select({
+        "@platforms//os:linux": ["-Wl,--version-script,$(location :version_script.lds)"],
+        "@platforms//os:macos": ["-Wl,-exported_symbol", "-Wl,_PyInit__message"],
+    }),
     linkshared = True,
     linkstatic = True,
     deps = [
@@ -60,7 +67,7 @@ cc_binary(
 genrule(
     name = "message_ext",
     srcs = [":message"],
-    outs = ["google/protobuf/pyext/_message.cpython-39-x86_64-linux-gnu.so"],
+    outs = ["google/protobuf/pyext/_message" + EXT_SUFFIX],
     cmd = "cp $< $@",
 )
 

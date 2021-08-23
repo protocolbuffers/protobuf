@@ -34,17 +34,23 @@ cc_library(
 )
 """
 
-def _find_python_dir(repository_ctx):
-  py_program = "import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'), end='')"
-  result = repository_ctx.execute(["python3", "-c", py_program])
+_build_defs_file = """
+EXT_SUFFIX = "%s"
+"""
+
+def _get_config_var(repository_ctx, name):
+  py_program = "import sysconfig; print(sysconfig.get_config_var('%s'), end='')"
+  result = repository_ctx.execute(["python3", "-c", py_program % (name)])
   if result.return_code != 0:
     fail("No python3 executable available on the system")
   return result.stdout
 
 def _python_headers_impl(repository_ctx):
-  path = _find_python_dir(repository_ctx)
+  path = _get_config_var(repository_ctx, "INCLUDEPY")
+  ext_suffix = _get_config_var(repository_ctx, "EXT_SUFFIX")
   repository_ctx.symlink(path, "python")
   repository_ctx.file("BUILD.bazel", _build_file)
+  repository_ctx.file("build_defs.bzl", _build_defs_file % ext_suffix)
 
 # The python_headers() repository rule exposes Python headers from the system.
 #
