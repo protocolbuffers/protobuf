@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-"""A bare-bones unit test, to be removed once upb can pass existing unit tests."""
+"""A bare-bones unit test that doesn't load any generated code."""
 
 
 import unittest

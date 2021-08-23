@@ -79,9 +79,14 @@ PyUpb_ModuleState *PyUpb_ModuleState_Get(void);
 // remove itself from the map when it is destroyed. The map is weak so it does
 // not take references to the cached objects.
 
+// Adds the given object to the cache, indexed by the given key.
 void PyUpb_ObjCache_Add(const void *key, PyObject *py_obj);
+
+// Removes the given key from the cache. It must exist in the cache currently.
 void PyUpb_ObjCache_Delete(const void *key);
-PyObject *PyUpb_ObjCache_Get(const void *key);  // returns NULL if not present.
+
+// Returns a new reference to an object if it exists, otherwise returns NULL.
+PyObject *PyUpb_ObjCache_Get(const void *key);
 
 // -----------------------------------------------------------------------------
 // Utilities

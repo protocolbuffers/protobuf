@@ -46,12 +46,24 @@ static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
   PyUpb_DescriptorPool* pool = PyObject_New(PyUpb_DescriptorPool, type);
   pool->symtab = upb_symtab_new();
   pool->db = db;
+  Py_XINCREF(pool->db);
   return &pool->ob_base;
+}
+
+static int PyUpb_DescriptorPool_Traverse(PyUpb_DescriptorPool* self,
+                                         visitproc visit, void* arg) {
+  Py_VISIT(self->db);
+  return 0;
+}
+
+static int PyUpb_DescriptorPool_Clear(PyUpb_DescriptorPool* self) {
+  Py_CLEAR(self->db);
+  return 0;
 }
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
   upb_symtab_free(self->symtab);
-  Py_CLEAR(self->db);
+  PyUpb_DescriptorPool_Clear(self);
   PyObject_Del(self);
 }
 
@@ -105,7 +117,7 @@ static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
       google_protobuf_FileDescriptorProto_parse(buf, size, arena);
   if (!proto) {
     PyErr_SetString(PyExc_TypeError, "Couldn't parse file content!");
-    return NULL;
+    goto done;
   }
 
   upb_status status;
@@ -116,7 +128,7 @@ static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
     PyErr_Format(PyExc_TypeError,
                  "Couldn't build proto file into descriptor pool: %s",
                  upb_status_errmsg(&status));
-    return NULL;
+    goto done;
   }
 
   result = PyUpb_FileDescriptor_GetOrCreateWrapper(filedef, _self);
@@ -137,9 +149,7 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByName(PyObject* _self,
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
 
   const char* name = PyUpb_GetStrData(arg);
-  if (!name) {
-    return NULL;
-  }
+  if (!name) return NULL;
 
   const upb_fielddef* field = upb_symtab_lookupext(self->symtab, name);
   if (field == NULL) {
@@ -186,16 +196,18 @@ static PyMethodDef PyUpb_DescriptorPool_Methods[] = {
     {NULL}};
 
 static PyType_Slot PyUpb_DescriptorPool_Slots[] = {
-    {Py_tp_new, PyUpb_DescriptorPool_New},
+    {Py_tp_clear, PyUpb_DescriptorPool_Clear},
     {Py_tp_dealloc, PyUpb_DescriptorPool_Dealloc},
     {Py_tp_methods, PyUpb_DescriptorPool_Methods},
+    {Py_tp_new, PyUpb_DescriptorPool_New},
+    {Py_tp_traverse, PyUpb_DescriptorPool_Traverse},
     {0, NULL}};
 
 static PyType_Spec PyUpb_DescriptorPool_Spec = {
-    PYUPB_MODULE_NAME ".DescriptorPool",  // tp_name
-    sizeof(PyUpb_DescriptorPool),         // tp_basicsize
-    0,                                    // tp_itemsize
-    Py_TPFLAGS_DEFAULT,                   // tp_flags
+    PYUPB_MODULE_NAME ".DescriptorPool",
+    sizeof(PyUpb_DescriptorPool),
+    0,  // tp_itemsize
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
     PyUpb_DescriptorPool_Slots,
 };
 

@@ -72,7 +72,7 @@ static PyObject *PyUpb_DescriptorBase_NewInternal(PyTypeObject *type,
 static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase *self) {
   PyUpb_DescriptorBase *base = (PyUpb_DescriptorBase *)self;
   PyUpb_ObjCache_Delete(base->def);
-  Py_CLEAR(base->pool);
+  Py_DECREF(base->pool);
   PyObject_Del(self);
 }
 
