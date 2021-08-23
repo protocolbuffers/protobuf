@@ -21,7 +21,7 @@ jobs:
           - { CC: clang, os: ubuntu-20.04, flags: "-c opt" }  # Some warnings only fire with -c opt
           - { CC: gcc, os: ubuntu-20.04, flags: "-c opt" }
           - { CC: clang, os: ubuntu-20.04, flags: "--//:fasttable_enabled=true -- -cmake:test_generated_files" }
-          - { CC: clang, os: ubuntu-20.04, flags: "--config=asan -- -benchmarks:benchmark" }
+          - { CC: clang, os: ubuntu-20.04, flags: "--config=asan -- -benchmarks:benchmark -python:..." }
           - { CC: clang, os: macos-11, flags: "" }
 
     steps:
