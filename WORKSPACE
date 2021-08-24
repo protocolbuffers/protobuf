@@ -2,7 +2,7 @@ workspace(name = "upb")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//bazel:workspace_deps.bzl", "upb_deps")
-load("//bazel:workspace_defs.bzl", "python_headers")
+load("//bazel:workspace_defs.bzl", "system_python")
 
 upb_deps()
 
@@ -39,8 +39,8 @@ http_archive(
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-python_headers(
-    name = "python_headers"
+system_python(
+    name = "system_python"
 )
 
 http_archive(

@@ -1,11 +1,20 @@
 # temporary fix for https://github.com/bazelbuild/bazel/issues/12905 on macOS
 build --features=-debug_prefix_map_pwd_is_dot
 
+build --extra_toolchains=@system_python//:python_toolchain
+
 # Use our custom-configured c++ toolchain.
 
 build:m32 --copt=-m32 --linkopt=-m32
 build:asan --copt=-fsanitize=address --linkopt=-fsanitize=address
-build:valgrind --run_under='valgrind --leak-check=full --error-exitcode=1'
+
+# For Valgrind, we have to disable checks of "possible" leaks because the Python
+# interpreter does the sorts of things that flag Valgrind "possible" leak checks.
+# Ideally we could enforce a stricter check for the non-Python tests, but I don't
+# know of an easy way to do that.
+#
+# We also have to disable pymalloc to avoid triggering Valgrind.
+build:valgrind --run_under='valgrind --leak-check=full --trace-children=yes --show-possibly-lost=no --errors-for-leak-kinds=definite --error-exitcode=1' --action_env=PYTHONMALLOC=malloc
 
 build:ubsan --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 # Workaround for the fact that Bazel links with $CC, not $CXX

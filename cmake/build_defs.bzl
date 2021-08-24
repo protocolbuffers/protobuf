@@ -62,6 +62,7 @@ def generated_file_staleness_test(name, outs, generated_pattern):
         name = name,
         srcs = [script_name],
         data = existing_outs + [generated_pattern % file for file in outs],
+        python_version = "PY3",
         deps = [
             ":staleness_test_lib",
         ],

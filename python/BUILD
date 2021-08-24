@@ -28,7 +28,7 @@ load(
     "UPB_DEFAULT_COPTS",
 )
 load(
-    "@python_headers//:build_defs.bzl",
+    "@system_python//:build_defs.bzl",
     "EXT_SUFFIX",
 )
 
@@ -59,7 +59,7 @@ cc_binary(
         ":version_script.lds",
         "//:reflection",
         "//:upb",
-        "@python_headers",
+        "@system_python//:python_headers",
     ],
 )
 

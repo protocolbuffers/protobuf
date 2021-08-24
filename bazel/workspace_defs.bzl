@@ -26,11 +26,29 @@
 """Repository rule for using Python 3.x headers from the system."""
 
 _build_file = """
+load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
 cc_library(
    name = "python_headers",
    hdrs = glob(["python/**/*.h"]),
    includes = ["python"],
    visibility = ["//visibility:public"],
+)
+
+py_runtime(
+    name = "py3_runtime",
+    interpreter_path = "%s",
+    python_version = "PY3",
+)
+
+py_runtime_pair(
+    name = "runtime_pair",
+    py3_runtime = ":py3_runtime",
+)
+
+toolchain(
+    name = "python_toolchain",
+    toolchain = ":runtime_pair",
+    toolchain_type = "@rules_python//python:toolchain_type",
 )
 """
 
@@ -49,26 +67,27 @@ def _python_headers_impl(repository_ctx):
   path = _get_config_var(repository_ctx, "INCLUDEPY")
   ext_suffix = _get_config_var(repository_ctx, "EXT_SUFFIX")
   repository_ctx.symlink(path, "python")
-  repository_ctx.file("BUILD.bazel", _build_file)
+  python3 = repository_ctx.which("python3")
+  repository_ctx.file("BUILD.bazel", _build_file % python3)
   repository_ctx.file("build_defs.bzl", _build_defs_file % ext_suffix)
 
-# The python_headers() repository rule exposes Python headers from the system.
+# The system_python() repository rule exposes Python headers from the system.
 #
 # In WORKSPACE:
-#   python_headers(
-#       name = "python_headers_repo",
+#   system_python(
+#       name = "system_python_repo",
 #   )
 #
 # This repository exposes a single rule that you can depend on from BUILD:
 #   cc_library(
 #     name = "foobar",
 #     srcs = ["foobar.cc"],
-#     deps = ["@python_headers_repo//:python_headers"],
+#     deps = ["@system_python_repo//:python_headers"],
 #   )
 #
 # The headers should correspond to the version of python obtained by running
 # the `python3` command on the system.
-python_headers = repository_rule(
+system_python = repository_rule(
     implementation = _python_headers_impl,
     local = True,
 )

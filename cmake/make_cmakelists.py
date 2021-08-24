@@ -220,7 +220,7 @@ class WorkspaceFileFunctions(object):
   def rules_fuzzing_init(self):
     pass
 
-  def python_headers(self, **kwargs):
+  def system_python(self, **kwargs):
     pass
 
 
