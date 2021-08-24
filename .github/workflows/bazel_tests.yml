@@ -27,6 +27,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python venv
-        run: rm -rf /tmp/venv && python3 -m venv /tmp/venv && export PATH=/tmp/venv/bin:$PATH
+        run: rm -rf /tmp/venv && python3 -m venv /tmp/venv
       - name: Run tests
-        run: cd ${{ github.workspace }} && CC=${{ matrix.CC }} bazel test --test_output=errors ... ${{ matrix.flags }}
+        run: cd ${{ github.workspace }} && PATH=/tmp/venv/bin:$PATH CC=${{ matrix.CC }} bazel test --test_output=errors ... ${{ matrix.flags }}
