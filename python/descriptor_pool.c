@@ -43,10 +43,11 @@ typedef struct {
 
 static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
                                                PyObject* db) {
-  PyUpb_DescriptorPool* pool = PyObject_New(PyUpb_DescriptorPool, type);
+  PyUpb_DescriptorPool* pool = PyObject_GC_New(PyUpb_DescriptorPool, type);
   pool->symtab = upb_symtab_new();
   pool->db = db;
   Py_XINCREF(pool->db);
+  PyObject_GC_Track(&pool->ob_base);
   return &pool->ob_base;
 }
 
@@ -64,7 +65,7 @@ static int PyUpb_DescriptorPool_Clear(PyUpb_DescriptorPool* self) {
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
   upb_symtab_free(self->symtab);
   PyUpb_DescriptorPool_Clear(self);
-  PyObject_Del(self);
+  PyObject_GC_Del(self);
 }
 
 /*
