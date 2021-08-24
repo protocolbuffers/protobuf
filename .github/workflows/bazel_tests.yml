@@ -27,4 +27,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run tests
-        run: cd ${{ github.workspace }} && CC=${{ matrix.CC }} bazel test ... ${{ matrix.flags }}
+        run: cd ${{ github.workspace }} && CC=${{ matrix.CC }} bazel test --test_output=errors ... ${{ matrix.flags }}
