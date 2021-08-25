@@ -40,7 +40,7 @@ namespace protobuf {
 namespace internal {
 
 MapFieldBase::~MapFieldBase() {
-  if (repeated_field_ != NULL && arena_ == NULL) delete repeated_field_;
+  if (repeated_field_ != nullptr && arena_ == nullptr) delete repeated_field_;
 }
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
@@ -117,7 +117,7 @@ size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
 }
 
 size_t MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
-  if (repeated_field_ != NULL) {
+  if (repeated_field_ != nullptr) {
     return repeated_field_->SpaceUsedExcludingSelfLong();
   } else {
     return 0;
@@ -187,7 +187,7 @@ void MapFieldBase::SyncRepeatedFieldWithMap() const {
 }
 
 void MapFieldBase::SyncRepeatedFieldWithMapNoLock() const {
-  if (repeated_field_ == NULL) {
+  if (repeated_field_ == nullptr) {
     repeated_field_ = Arena::CreateMessage<RepeatedPtrField<Message> >(arena_);
   }
 }
@@ -434,7 +434,7 @@ void DynamicMapField::SyncRepeatedFieldWithMapNoLock() const {
   const Reflection* reflection = default_entry_->GetReflection();
   const FieldDescriptor* key_des = default_entry_->GetDescriptor()->map_key();
   const FieldDescriptor* val_des = default_entry_->GetDescriptor()->map_value();
-  if (MapFieldBase::repeated_field_ == NULL) {
+  if (MapFieldBase::repeated_field_ == nullptr) {
     MapFieldBase::repeated_field_ =
         Arena::CreateMessage<RepeatedPtrField<Message> >(MapFieldBase::arena_);
   }
@@ -597,7 +597,7 @@ void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
 
 size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
   size_t size = 0;
-  if (MapFieldBase::repeated_field_ != NULL) {
+  if (MapFieldBase::repeated_field_ != nullptr) {
     size += MapFieldBase::repeated_field_->SpaceUsedExcludingSelfLong();
   }
   size += sizeof(map_);

@@ -288,4 +288,28 @@ public class FieldMaskUtilTest {
     FieldMaskUtil.merge(FieldMaskUtil.fromString("payload"), source, builder);
     assertThat(builder.getPayload().getOptionalInt32()).isEqualTo(1234);
   }
+
+  @Test
+  public void testTrim() throws Exception {
+    NestedTestAllTypes source =
+        NestedTestAllTypes.newBuilder()
+            .setPayload(
+                TestAllTypes.newBuilder()
+                    .setOptionalInt32(1234)
+                    .setOptionalString("1234")
+                    .setOptionalBool(true))
+            .build();
+    FieldMask mask =
+        FieldMaskUtil.fromStringList(
+            ImmutableList.of("payload.optional_int32", "payload.optional_string"));
+
+    NestedTestAllTypes actual = FieldMaskUtil.trim(mask, source);
+
+    assertThat(actual)
+        .isEqualTo(
+            NestedTestAllTypes.newBuilder()
+                .setPayload(
+                    TestAllTypes.newBuilder().setOptionalInt32(1234).setOptionalString("1234"))
+                .build());
+  }
 }

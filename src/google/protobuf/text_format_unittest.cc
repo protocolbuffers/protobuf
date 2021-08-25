@@ -509,7 +509,7 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinterRegisterSameFieldTwice) {
 TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
   protobuf_unittest::TestAllTypes message;
   TextFormat::Printer printer;
-  // NULL printer.
+  // nullptr printer.
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(
       message.GetDescriptor()->FindFieldByName("optional_int32"),
       static_cast<const TextFormat::FieldValuePrinter*>(nullptr)));
@@ -518,7 +518,7 @@ TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
       static_cast<const TextFormat::FastFieldValuePrinter*>(nullptr)));
   // Because registration fails, the ownership of this printer is never taken.
   TextFormat::FieldValuePrinter my_field_printer;
-  // NULL field
+  // nullptr field
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(nullptr, &my_field_printer));
 }
 
@@ -1086,7 +1086,7 @@ TEST_F(TextFormatTest, PrintExotic) {
   //   seemed to trigger an odd case on MinGW/GCC 3.4.5 where GCC's parsing of
   //   the value differed from strtod()'s parsing.  That is to say, the
   //   following assertion fails on MinGW:
-  //     assert(1.23e22 == strtod("1.23e22", NULL));
+  //     assert(1.23e22 == strtod("1.23e22", nullptr));
   //   As a result, SimpleDtoa() would print the value as
   //   "1.2300000000000001e+22" to make sure strtod() produce the exact same
   //   result.  Our goal is to test runtime parsing, not compile-time parsing,
@@ -1504,11 +1504,11 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
   ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 12, 2, 12,
                  8);
 
-  // Verify a NULL tree for an unknown nested field.
+  // Verify a nullptr tree for an unknown nested field.
   TextFormat::ParseInfoTree* unknown_nested_tree =
       tree.GetTreeForNested(nested_field, 2);
 
-  EXPECT_EQ(NULL, unknown_nested_tree);
+  EXPECT_EQ(nullptr, unknown_nested_tree);
 }
 
 TEST_F(TextFormatParserTest, ParseFieldValueFromString) {

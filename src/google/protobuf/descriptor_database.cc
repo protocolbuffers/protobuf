@@ -381,7 +381,7 @@ bool SimpleDescriptorDatabase::FindAllFileNames(
 
 bool SimpleDescriptorDatabase::MaybeCopy(const FileDescriptorProto* file,
                                          FileDescriptorProto* output) {
-  if (file == NULL) return false;
+  if (file == nullptr) return false;
   output->CopyFrom(*file);
   return true;
 }
@@ -583,7 +583,7 @@ bool EncodedDescriptorDatabase::FindFileContainingSymbol(
 bool EncodedDescriptorDatabase::FindNameOfFileContainingSymbol(
     const std::string& symbol_name, std::string* output) {
   auto encoded_file = index_->FindSymbol(symbol_name);
-  if (encoded_file.first == NULL) return false;
+  if (encoded_file.first == nullptr) return false;
 
   // Optimization:  The name should be the first field in the encoded message.
   //   Try to just read it directly.
@@ -871,7 +871,7 @@ bool EncodedDescriptorDatabase::FindAllFileNames(
 
 bool EncodedDescriptorDatabase::MaybeParse(
     std::pair<const void*, int> encoded_file, FileDescriptorProto* output) {
-  if (encoded_file.first == NULL) return false;
+  if (encoded_file.first == nullptr) return false;
   return output->ParseFromArray(encoded_file.first, encoded_file.second);
 }
 
@@ -893,7 +893,7 @@ DescriptorPoolDatabase::~DescriptorPoolDatabase() {}
 bool DescriptorPoolDatabase::FindFileByName(const std::string& filename,
                                             FileDescriptorProto* output) {
   const FileDescriptor* file = pool_.FindFileByName(filename);
-  if (file == NULL) return false;
+  if (file == nullptr) return false;
   output->Clear();
   file->CopyTo(output);
   return true;
@@ -902,7 +902,7 @@ bool DescriptorPoolDatabase::FindFileByName(const std::string& filename,
 bool DescriptorPoolDatabase::FindFileContainingSymbol(
     const std::string& symbol_name, FileDescriptorProto* output) {
   const FileDescriptor* file = pool_.FindFileContainingSymbol(symbol_name);
-  if (file == NULL) return false;
+  if (file == nullptr) return false;
   output->Clear();
   file->CopyTo(output);
   return true;
@@ -912,11 +912,11 @@ bool DescriptorPoolDatabase::FindFileContainingExtension(
     const std::string& containing_type, int field_number,
     FileDescriptorProto* output) {
   const Descriptor* extendee = pool_.FindMessageTypeByName(containing_type);
-  if (extendee == NULL) return false;
+  if (extendee == nullptr) return false;
 
   const FieldDescriptor* extension =
       pool_.FindExtensionByNumber(extendee, field_number);
-  if (extension == NULL) return false;
+  if (extension == nullptr) return false;
 
   output->Clear();
   extension->file()->CopyTo(output);
@@ -926,7 +926,7 @@ bool DescriptorPoolDatabase::FindFileContainingExtension(
 bool DescriptorPoolDatabase::FindAllExtensionNumbers(
     const std::string& extendee_type, std::vector<int>* output) {
   const Descriptor* extendee = pool_.FindMessageTypeByName(extendee_type);
-  if (extendee == NULL) return false;
+  if (extendee == nullptr) return false;
 
   std::vector<const FieldDescriptor*> extensions;
   pool_.FindAllExtensions(extendee, &extensions);

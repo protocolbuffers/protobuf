@@ -1518,6 +1518,13 @@ bool Parser::ParseOption(Message* options,
         AddError("Unexpected end of stream while parsing option value.");
         return false;
 
+      case io::Tokenizer::TYPE_WHITESPACE:
+      case io::Tokenizer::TYPE_NEWLINE:
+        GOOGLE_CHECK(!input_->report_whitespace() && !input_->report_newlines())
+            << "Whitespace tokens were not requested.";
+        GOOGLE_LOG(FATAL) << "Tokenizer reported whitespace.";
+        return false;
+
       case io::Tokenizer::TYPE_IDENTIFIER: {
         value_location.AddPath(
             UninterpretedOption::kIdentifierValueFieldNumber);

@@ -218,7 +218,7 @@ class PROTOBUF_EXPORT MessageLite {
   virtual MessageLite* New() const = 0;
 
   // Construct a new instance on the arena. Ownership is passed to the caller
-  // if arena is a NULL. Default implementation for backwards compatibility.
+  // if arena is a nullptr. Default implementation for backwards compatibility.
   virtual MessageLite* New(Arena* arena) const;
 
   // Same as GetOwningArena.
@@ -520,7 +520,7 @@ class PROTOBUF_EXPORT MessageLite {
 
  private:
   // TODO(gerbens) make this a pure abstract function
-  virtual const void* InternalGetTable() const { return NULL; }
+  virtual const void* InternalGetTable() const { return nullptr; }
 
   friend class FastReflectionMessageMutator;
   friend class FastReflectionStringSetter;

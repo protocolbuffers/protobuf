@@ -884,7 +884,7 @@ TEST_F(MapImplTest, CopyConstructorWithArena) {
 }
 
 TEST_F(MapImplTest, CopyConstructorWithoutArena) {
-  CopyConstructorHelper(NULL, &map_);
+  CopyConstructorHelper(nullptr, &map_);
 }
 
 TEST_F(MapImplTest, IterConstructor) {
@@ -3040,8 +3040,8 @@ class MapFieldInDynamicMessageTest : public testing::Test {
         std::string(UNITTEST_PACKAGE_NAME) + ".TestMap");
     recursive_map_descriptor_ = pool_->FindMessageTypeByName(
         std::string(UNITTEST_PACKAGE_NAME) + ".TestRecursiveMapMessage");
-    ASSERT_TRUE(map_descriptor_ != NULL);
-    ASSERT_TRUE(recursive_map_descriptor_ != NULL);
+    ASSERT_TRUE(map_descriptor_ != nullptr);
+    ASSERT_TRUE(recursive_map_descriptor_ != nullptr);
     map_prototype_ = factory_.GetPrototype(map_descriptor_);
   }
 };
@@ -3781,7 +3781,7 @@ TEST(ArenaTest, StringMapNoLeak) {
   }
   (*message->mutable_map_string_string())[data] = data;
   // We rely on heap checkers to detect memory leak for us.
-  ASSERT_FALSE(message == NULL);
+  ASSERT_FALSE(message == nullptr);
 }
 
 TEST(ArenaTest, IsInitialized) {

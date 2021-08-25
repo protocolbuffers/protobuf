@@ -70,9 +70,9 @@ bool GetAnyFieldDescriptors(const Message& message,
   }
   *type_url_field = descriptor->FindFieldByNumber(1);
   *value_field = descriptor->FindFieldByNumber(2);
-  return (*type_url_field != NULL &&
+  return (*type_url_field != nullptr &&
           (*type_url_field)->type() == FieldDescriptor::TYPE_STRING &&
-          *value_field != NULL &&
+          *value_field != nullptr &&
           (*value_field)->type() == FieldDescriptor::TYPE_BYTES);
 }
 

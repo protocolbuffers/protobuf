@@ -78,7 +78,7 @@ struct UnknownFieldHandlerLite {
   static bool ParseExtension(MessageLite* msg, const ParseTable& table,
                              io::CodedInputStream* input, int tag) {
     ExtensionSet* extensions = GetExtensionSet(msg, table.extension_offset);
-    if (extensions == NULL) {
+    if (extensions == nullptr) {
       return false;
     }
 

@@ -100,7 +100,7 @@ SourceContext::SourceContext(const SourceContext& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
 }
 
-void SourceContext::SharedCtor() {
+inline void SourceContext::SharedCtor() {
 file_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 

@@ -87,7 +87,7 @@ public abstract class CodedInputStream {
       throw new IllegalArgumentException("bufferSize must be > 0");
     }
     if (input == null) {
-      // TODO(nathanmittler): Ideally we should throw here. This is done for backward compatibility.
+      // Ideally we would throw here. This is done for backward compatibility.
       return newInstance(EMPTY_BYTE_ARRAY);
     }
     return new StreamDecoder(input, bufferSize);
@@ -1146,7 +1146,7 @@ public abstract class CodedInputStream {
 
       final byte[] buffer = this.buffer;
       pos = tempPos + FIXED32_SIZE;
-      return (((buffer[tempPos] & 0xff))
+      return ((buffer[tempPos] & 0xff)
           | ((buffer[tempPos + 1] & 0xff) << 8)
           | ((buffer[tempPos + 2] & 0xff) << 16)
           | ((buffer[tempPos + 3] & 0xff) << 24));
@@ -1162,7 +1162,7 @@ public abstract class CodedInputStream {
 
       final byte[] buffer = this.buffer;
       pos = tempPos + FIXED64_SIZE;
-      return (((buffer[tempPos] & 0xffL))
+      return ((buffer[tempPos] & 0xffL)
           | ((buffer[tempPos + 1] & 0xffL) << 8)
           | ((buffer[tempPos + 2] & 0xffL) << 16)
           | ((buffer[tempPos + 3] & 0xffL) << 24)
@@ -1871,7 +1871,7 @@ public abstract class CodedInputStream {
       }
 
       pos = tempPos + FIXED32_SIZE;
-      return (((UnsafeUtil.getByte(tempPos) & 0xff))
+      return ((UnsafeUtil.getByte(tempPos) & 0xff)
           | ((UnsafeUtil.getByte(tempPos + 1) & 0xff) << 8)
           | ((UnsafeUtil.getByte(tempPos + 2) & 0xff) << 16)
           | ((UnsafeUtil.getByte(tempPos + 3) & 0xff) << 24));
@@ -1886,7 +1886,7 @@ public abstract class CodedInputStream {
       }
 
       pos = tempPos + FIXED64_SIZE;
-      return (((UnsafeUtil.getByte(tempPos) & 0xffL))
+      return ((UnsafeUtil.getByte(tempPos) & 0xffL)
           | ((UnsafeUtil.getByte(tempPos + 1) & 0xffL) << 8)
           | ((UnsafeUtil.getByte(tempPos + 2) & 0xffL) << 16)
           | ((UnsafeUtil.getByte(tempPos + 3) & 0xffL) << 24)
@@ -2014,11 +2014,16 @@ public abstract class CodedInputStream {
       int prevPos = buffer.position();
       int prevLimit = buffer.limit();
       try {
+        // Casts to Buffer here are required for Java 8 compatibility
+        // no matter what tricorder tells you. see
+        // https://issues.apache.org/jira/browse/MRESOLVER-85
         ((Buffer) buffer).position(bufferPos(begin));
         ((Buffer) buffer).limit(bufferPos(end));
         return buffer.slice();
       } catch (IllegalArgumentException e) {
-        throw InvalidProtocolBufferException.truncatedMessage();
+        InvalidProtocolBufferException ex = InvalidProtocolBufferException.truncatedMessage();
+        ex.initCause(e);
+        throw ex;
       } finally {
         ((Buffer) buffer).position(prevPos);
         ((Buffer) buffer).limit(prevLimit);
@@ -2660,7 +2665,7 @@ public abstract class CodedInputStream {
 
       final byte[] buffer = this.buffer;
       pos = tempPos + FIXED32_SIZE;
-      return (((buffer[tempPos] & 0xff))
+      return ((buffer[tempPos] & 0xff)
           | ((buffer[tempPos + 1] & 0xff) << 8)
           | ((buffer[tempPos + 2] & 0xff) << 16)
           | ((buffer[tempPos + 3] & 0xff) << 24));
@@ -2987,7 +2992,7 @@ public abstract class CodedInputStream {
       // by allocating and reading only a small chunk at a time, so that the
       // malicious message must actually *be* extremely large to cause
       // problems.  Meanwhile, we limit the allowed size of a message elsewhere.
-      final List<byte[]> chunks = new ArrayList<byte[]>();
+      final List<byte[]> chunks = new ArrayList<>();
 
       while (sizeLeft > 0) {
         // TODO(nathanmittler): Consider using a value larger than DEFAULT_BUFFER_SIZE.
@@ -3134,16 +3139,16 @@ public abstract class CodedInputStream {
    */
   private static final class IterableDirectByteBufferDecoder extends CodedInputStream {
     /** The object that need to decode. */
-    private Iterable<ByteBuffer> input;
+    private final Iterable<ByteBuffer> input;
     /** The {@link Iterator} with type {@link ByteBuffer} of {@code input} */
-    private Iterator<ByteBuffer> iterator;
+    private final Iterator<ByteBuffer> iterator;
     /** The current ByteBuffer; */
     private ByteBuffer currentByteBuffer;
     /**
-     * If {@code true}, indicates that all the buffer are backing a {@link ByteString} and are
+     * If {@code true}, indicates that all the buffers are backing a {@link ByteString} and are
      * therefore considered to be an immutable input source.
      */
-    private boolean immutable;
+    private final boolean immutable;
     /**
      * If {@code true}, indicates that calls to read {@link ByteString} or {@code byte[]}
      * <strong>may</strong> return slices of the underlying buffer, rather than copies.
@@ -3516,8 +3521,7 @@ public abstract class CodedInputStream {
           currentByteBufferPos += size;
           return result;
         } else {
-          byte[] bytes;
-          bytes = new byte[size];
+          byte[] bytes = new byte[size];
           UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, size);
           currentByteBufferPos += size;
           return ByteString.wrap(bytes);
@@ -3738,7 +3742,7 @@ public abstract class CodedInputStream {
       if (currentRemaining() >= FIXED32_SIZE) {
         long tempPos = currentByteBufferPos;
         currentByteBufferPos += FIXED32_SIZE;
-        return (((UnsafeUtil.getByte(tempPos) & 0xff))
+        return ((UnsafeUtil.getByte(tempPos) & 0xff)
             | ((UnsafeUtil.getByte(tempPos + 1) & 0xff) << 8)
             | ((UnsafeUtil.getByte(tempPos + 2) & 0xff) << 16)
             | ((UnsafeUtil.getByte(tempPos + 3) & 0xff) << 24));
@@ -3754,7 +3758,7 @@ public abstract class CodedInputStream {
       if (currentRemaining() >= FIXED64_SIZE) {
         long tempPos = currentByteBufferPos;
         currentByteBufferPos += FIXED64_SIZE;
-        return (((UnsafeUtil.getByte(tempPos) & 0xffL))
+        return ((UnsafeUtil.getByte(tempPos) & 0xffL)
             | ((UnsafeUtil.getByte(tempPos + 1) & 0xffL) << 8)
             | ((UnsafeUtil.getByte(tempPos + 2) & 0xffL) << 16)
             | ((UnsafeUtil.getByte(tempPos + 3) & 0xffL) << 24)
@@ -3875,11 +3879,6 @@ public abstract class CodedInputStream {
      * Try to get raw bytes from {@code input} with the size of {@code length} and copy to {@code
      * bytes} array. If the size is bigger than the number of remaining bytes in the input, then
      * throw {@code truncatedMessage} exception.
-     *
-     * @param bytes
-     * @param offset
-     * @param length
-     * @throws IOException
      */
     private void readRawBytesTo(byte[] bytes, int offset, final int length) throws IOException {
       if (length >= 0 && length <= remaining()) {
@@ -3966,6 +3965,9 @@ public abstract class CodedInputStream {
       int prevPos = currentByteBuffer.position();
       int prevLimit = currentByteBuffer.limit();
       try {
+        // casts to Buffer here are required for Java 8 compatibility
+        // no matter what tricorder tells you. see
+        // https://issues.apache.org/jira/browse/MRESOLVER-85
         ((Buffer) currentByteBuffer).position(begin);
         ((Buffer) currentByteBuffer).limit(end);
         return currentByteBuffer.slice();

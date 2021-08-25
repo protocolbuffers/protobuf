@@ -510,7 +510,7 @@ inline size_t MapTypeHandler<WireFormatLite::TYPE_MESSAGE,
 template <typename Type>
 inline void MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Clear(
     Type** value, Arena* /* arena */) {
-  if (*value != NULL) (*value)->Clear();
+  if (*value != nullptr) (*value)->Clear();
 }
 template <typename Type>
 inline void MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Merge(
@@ -533,7 +533,7 @@ constexpr auto MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Constinit()
 template <typename Type>
 inline Type* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::EnsureMutable(
     Type** value, Arena* arena) {
-  if (*value == NULL) {
+  if (*value == nullptr) {
     *value = MapArenaMessageCreator<
         Type,
         Arena::is_arena_constructable<Type>::type::value>::CreateMessage(arena);
@@ -545,7 +545,7 @@ template <typename Type>
 inline const Type&
 MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::DefaultIfNotInitialized(
     const Type* value) {
-  return value != NULL ? *value : *Type::internal_default_instance();
+  return value != nullptr ? *value : *Type::internal_default_instance();
 }
 
 template <typename Type>

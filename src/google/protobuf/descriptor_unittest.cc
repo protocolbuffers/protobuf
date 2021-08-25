@@ -3173,6 +3173,13 @@ TEST(CustomOptions, OptionLocations) {
 TEST(CustomOptions, OptionTypes) {
   const MessageOptions* options = nullptr;
 
+  constexpr int32_t kint32min = std::numeric_limits<int32_t>::min();
+  constexpr int32_t kint32max = std::numeric_limits<int32_t>::max();
+  constexpr uint32_t kuint32max = std::numeric_limits<uint32_t>::max();
+  constexpr int64_t kint64min = std::numeric_limits<int64_t>::min();
+  constexpr int64_t kint64max = std::numeric_limits<int64_t>::max();
+  constexpr uint64_t kuint64max = std::numeric_limits<uint64_t>::max();
+
   options =
       &protobuf_unittest::CustomOptionMinIntegerValues::descriptor()->options();
   EXPECT_EQ(false, options->GetExtension(protobuf_unittest::bool_opt));

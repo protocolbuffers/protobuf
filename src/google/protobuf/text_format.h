@@ -213,7 +213,7 @@ class PROTOBUF_EXPORT TextFormat {
     virtual ~Finder();
 
     // Try to find an extension of *message by fully-qualified field
-    // name.  Returns NULL if no extension is known for this name or number.
+    // name.  Returns nullptr if no extension is known for this name or number.
     // The base implementation uses the extensions already known by the message.
     virtual const FieldDescriptor* FindExtension(Message* message,
                                                  const std::string& name) const;
@@ -224,7 +224,7 @@ class PROTOBUF_EXPORT TextFormat {
         const Descriptor* descriptor, int number) const;
 
     // Find the message type for an Any proto.
-    // Returns NULL if no message is known for this name.
+    // Returns nullptr if no message is known for this name.
     // The base implementation only accepts prefixes of type.googleprod.com/ or
     // type.googleapis.com/, and searches the DescriptorPool of the parent
     // message.
@@ -564,18 +564,19 @@ class PROTOBUF_EXPORT TextFormat {
     // Like TextFormat::MergeFromString().
     bool MergeFromString(ConstStringParam input, Message* output);
 
-    // Set where to report parse errors.  If NULL (the default), errors will
+    // Set where to report parse errors.  If nullptr (the default), errors will
     // be printed to stderr.
     void RecordErrorsTo(io::ErrorCollector* error_collector) {
       error_collector_ = error_collector;
     }
 
-    // Set how parser finds extensions.  If NULL (the default), the
+    // Set how parser finds extensions.  If nullptr (the default), the
     // parser will use the standard Reflection object associated with
     // the message being parsed.
     void SetFinder(const Finder* finder) { finder_ = finder; }
 
-    // Sets where location information about the parse will be written. If NULL
+    // Sets where location information about the parse will be written. If
+    // nullptr
     // (the default), then no location will be written.
     void WriteLocationsTo(ParseInfoTree* tree) { parse_info_tree_ = tree; }
 

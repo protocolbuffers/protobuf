@@ -268,7 +268,7 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
   DescriptorIndex<const FileDescriptorProto*> index_;
   std::vector<std::unique_ptr<const FileDescriptorProto>> files_to_delete_;
 
-  // If file is non-NULL, copy it into *output and return true, otherwise
+  // If file is non-nullptr, copy it into *output and return true, otherwise
   // return false.
   bool MaybeCopy(const FileDescriptorProto* file, FileDescriptorProto* output);
 
@@ -320,8 +320,8 @@ class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
   std::unique_ptr<DescriptorIndex> index_;
   std::vector<void*> files_to_delete_;
 
-  // If encoded_file.first is non-NULL, parse the data into *output and return
-  // true, otherwise return false.
+  // If encoded_file.first is non-nullptr, parse the data into *output and
+  // return true, otherwise return false.
   bool MaybeParse(std::pair<const void*, int> encoded_file,
                   FileDescriptorProto* output);
 

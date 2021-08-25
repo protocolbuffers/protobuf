@@ -97,7 +97,7 @@ FieldMask::FieldMask(const FieldMask& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
 
-void FieldMask::SharedCtor() {
+inline void FieldMask::SharedCtor() {
 }
 
 FieldMask::~FieldMask() {
