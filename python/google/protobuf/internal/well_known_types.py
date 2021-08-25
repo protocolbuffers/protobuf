@@ -144,8 +144,7 @@ class Timestamp(object):
       ValueError: On parsing problems.
     """
     if not isinstance(value, six.string_types):
-      raise ValueError(
-          'Timestamp JSON value not a string: {!r}'.format(value))
+      raise ValueError('Timestamp JSON value not a string: {!r}'.format(value))
     timezone_offset = value.find('Z')
     if timezone_offset == -1:
       timezone_offset = value.find('+')
@@ -307,8 +306,7 @@ class Duration(object):
       ValueError: On parsing problems.
     """
     if not isinstance(value, six.string_types):
-      raise ValueError(
-          'Duration JSON value not a string: {!r}'.format(value))
+      raise ValueError('Duration JSON value not a string: {!r}'.format(value))
     if len(value) < 1 or value[-1] != 's':
       raise ValueError(
           'Duration must end with letter "s": {0}.'.format(value))
@@ -435,8 +433,7 @@ class FieldMask(object):
   def FromJsonString(self, value):
     """Converts string to FieldMask according to proto3 JSON spec."""
     if not isinstance(value, six.string_types):
-      raise ValueError(
-          'FieldMask JSON value not a string: {!r}'.format(value))
+      raise ValueError('FieldMask JSON value not a string: {!r}'.format(value))
     self.Clear()
     if value:
       for path in value.split(','):

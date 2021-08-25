@@ -122,6 +122,13 @@ class PROTOBUF_EXPORT Tokenizer {
     TYPE_SYMBOL,      // Any other printable character, like '!' or '+'.
                       // Symbols are always a single character, so "!+$%" is
                       // four tokens.
+    TYPE_WHITESPACE,  // A sequence of whitespace.  This token type is only
+                      // produced if report_whitespace() is true.  It is not
+                      // reported for whitespace within comments or strings.
+    TYPE_NEWLINE,     // A newline (\n).  This token type is only
+                      // produced if report_whitespace() is true and
+                      // report_newlines() is true.  It is not reported for
+                      // newlines in comments or strings.
   };
 
   // Structure representing a token read from the token stream.
@@ -252,6 +259,16 @@ class PROTOBUF_EXPORT Tokenizer {
     allow_multiline_strings_ = allow;
   }
 
+  // If true, whitespace tokens are reported by Next().
+  // Note: `set_report_whitespace(false)` implies `set_report_newlines(false)`.
+  bool report_whitespace() const;
+  void set_report_whitespace(bool report);
+
+  // If true, newline tokens are reported by Next().
+  // Note: `set_report_newlines(true)` implies `set_report_whitespace(true)`.
+  bool report_newlines() const;
+  void set_report_newlines(bool report);
+
   // External helper: validate an identifier.
   static bool IsIdentifier(const std::string& text);
 
@@ -287,6 +304,8 @@ class PROTOBUF_EXPORT Tokenizer {
   CommentStyle comment_style_;
   bool require_space_after_number_;
   bool allow_multiline_strings_;
+  bool report_whitespace_ = false;
+  bool report_newlines_ = false;
 
   // Since we count columns we need to interpret tabs somehow.  We'll take
   // the standard 8-character definition for lack of any way to do better.
@@ -359,6 +378,14 @@ class PROTOBUF_EXPORT Tokenizer {
   // If we're at the start of a new comment, consume it and return what kind
   // of comment it is.
   NextCommentStatus TryConsumeCommentStart();
+
+  // If we're looking at a TYPE_WHITESPACE token and `report_whitespace_` is
+  // true, consume it and return true.
+  bool TryConsumeWhitespace();
+
+  // If we're looking at a TYPE_NEWLINE token and `report_newlines_` is true,
+  // consume it and return true.
+  bool TryConsumeNewline();
 
   // -----------------------------------------------------------------
   // These helper methods make the parsing code more readable.  The

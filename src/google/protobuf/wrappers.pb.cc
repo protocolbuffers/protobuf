@@ -270,7 +270,7 @@ DoubleValue::DoubleValue(const DoubleValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DoubleValue)
 }
 
-void DoubleValue::SharedCtor() {
+inline void DoubleValue::SharedCtor() {
 value_ = 0;
 }
 
@@ -448,7 +448,7 @@ FloatValue::FloatValue(const FloatValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FloatValue)
 }
 
-void FloatValue::SharedCtor() {
+inline void FloatValue::SharedCtor() {
 value_ = 0;
 }
 
@@ -626,7 +626,7 @@ Int64Value::Int64Value(const Int64Value& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int64Value)
 }
 
-void Int64Value::SharedCtor() {
+inline void Int64Value::SharedCtor() {
 value_ = int64_t{0};
 }
 
@@ -804,7 +804,7 @@ UInt64Value::UInt64Value(const UInt64Value& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt64Value)
 }
 
-void UInt64Value::SharedCtor() {
+inline void UInt64Value::SharedCtor() {
 value_ = uint64_t{0u};
 }
 
@@ -982,7 +982,7 @@ Int32Value::Int32Value(const Int32Value& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int32Value)
 }
 
-void Int32Value::SharedCtor() {
+inline void Int32Value::SharedCtor() {
 value_ = 0;
 }
 
@@ -1160,7 +1160,7 @@ UInt32Value::UInt32Value(const UInt32Value& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt32Value)
 }
 
-void UInt32Value::SharedCtor() {
+inline void UInt32Value::SharedCtor() {
 value_ = 0u;
 }
 
@@ -1338,7 +1338,7 @@ BoolValue::BoolValue(const BoolValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BoolValue)
 }
 
-void BoolValue::SharedCtor() {
+inline void BoolValue::SharedCtor() {
 value_ = false;
 }
 
@@ -1520,7 +1520,7 @@ StringValue::StringValue(const StringValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.StringValue)
 }
 
-void StringValue::SharedCtor() {
+inline void StringValue::SharedCtor() {
 value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -1717,7 +1717,7 @@ BytesValue::BytesValue(const BytesValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BytesValue)
 }
 
-void BytesValue::SharedCtor() {
+inline void BytesValue::SharedCtor() {
 value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 

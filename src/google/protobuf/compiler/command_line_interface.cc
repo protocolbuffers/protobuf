@@ -402,8 +402,8 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   // implements GeneratorContext --------------------------------------
   io::ZeroCopyOutputStream* Open(const std::string& filename) override;
   io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename) override;
-  io::ZeroCopyOutputStream* OpenForInsert(const std::string& filename,
-                                          const std::string& insertion_point) override;
+  io::ZeroCopyOutputStream* OpenForInsert(
+      const std::string& filename, const std::string& insertion_point) override;
   io::ZeroCopyOutputStream* OpenForInsertWithGeneratedCodeInfo(
       const std::string& filename, const std::string& insertion_point,
       const google::protobuf::GeneratedCodeInfo& info) override;

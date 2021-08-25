@@ -146,17 +146,17 @@ class PROTOBUF_EXPORT WireFormat {
   // Helpers for dealing with unknown fields
 
   // Skips a field value of the given WireType.  The input should start
-  // positioned immediately after the tag.  If unknown_fields is non-NULL,
+  // positioned immediately after the tag.  If unknown_fields is non-nullptr,
   // the contents of the field will be added to it.
   static bool SkipField(io::CodedInputStream* input, uint32_t tag,
                         UnknownFieldSet* unknown_fields);
 
   // Reads and ignores a message from the input.  If unknown_fields is
-  // non-NULL, the contents will be added to it.
+  // non-nullptr, the contents will be added to it.
   static bool SkipMessage(io::CodedInputStream* input,
                           UnknownFieldSet* unknown_fields);
 
-  // Read a packed enum field. If the is_valid function is not NULL, values
+  // Read a packed enum field. If the is_valid function is not nullptr, values
   // for which is_valid(value) returns false are appended to
   // unknown_fields_stream.
   static bool ReadPackedEnumPreserveUnknowns(io::CodedInputStream* input,
@@ -225,24 +225,24 @@ class PROTOBUF_EXPORT WireFormat {
   // after the tag.
   static bool ParseAndMergeField(
       uint32_t tag,
-      const FieldDescriptor* field,  // May be NULL for unknown
+      const FieldDescriptor* field,  // May be nullptr for unknown
       Message* message, io::CodedInputStream* input);
 
   // Serialize a single field.
   static void SerializeFieldWithCachedSizes(
-      const FieldDescriptor* field,  // Cannot be NULL
+      const FieldDescriptor* field,  // Cannot be nullptr
       const Message& message, io::CodedOutputStream* output) {
     output->SetCur(InternalSerializeField(field, message, output->Cur(),
                                           output->EpsCopy()));
   }
   static uint8_t* InternalSerializeField(
-      const FieldDescriptor* field,  // Cannot be NULL
+      const FieldDescriptor* field,  // Cannot be nullptr
       const Message& message, uint8_t* target, io::EpsCopyOutputStream* stream);
 
   // Compute size of a single field.  If the field is a message type, this
   // will call ByteSize() for the embedded message, insuring that it caches
   // its size.
-  static size_t FieldByteSize(const FieldDescriptor* field,  // Cannot be NULL
+  static size_t FieldByteSize(const FieldDescriptor* field,  // Can't be nullptr
                               const Message& message);
 
   // Parse/serialize a MessageSet::Item group.  Used with messages that use
@@ -266,7 +266,7 @@ class PROTOBUF_EXPORT WireFormat {
   // length, but for other length-delimited types, the size of the length is
   // included.
   static size_t FieldDataOnlyByteSize(
-      const FieldDescriptor* field,  // Cannot be NULL
+      const FieldDescriptor* field,  // Cannot be nullptr
       const Message& message);
 
   enum Operation {
@@ -357,7 +357,7 @@ inline void WireFormat::VerifyUTF8String(const char* data, int size,
                                          WireFormat::Operation op) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   WireFormatLite::VerifyUtf8String(
-      data, size, static_cast<WireFormatLite::Operation>(op), NULL);
+      data, size, static_cast<WireFormatLite::Operation>(op), nullptr);
 #else
   // Avoid the compiler warning about unused variables.
   (void)data;

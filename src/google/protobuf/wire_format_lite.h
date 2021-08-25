@@ -66,6 +66,7 @@
 // #pragma pop_macro("TYPE_BOOL")
 #undef TYPE_BOOL
 
+
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -293,14 +294,15 @@ class PROTOBUF_EXPORT WireFormatLite {
   static bool ReadPackedPrimitiveNoInline(io::CodedInputStream* input,
                                           RepeatedField<CType>* value);
 
-  // Read a packed enum field. If the is_valid function is not NULL, values for
-  // which is_valid(value) returns false are silently dropped.
+  // Read a packed enum field. If the is_valid function is not nullptr, values
+  // for which is_valid(value) returns false are silently dropped.
   static bool ReadPackedEnumNoInline(io::CodedInputStream* input,
                                      bool (*is_valid)(int),
                                      RepeatedField<int>* values);
 
-  // Read a packed enum field. If the is_valid function is not NULL, values for
-  // which is_valid(value) returns false are appended to unknown_fields_stream.
+  // Read a packed enum field. If the is_valid function is not nullptr, values
+  // for which is_valid(value) returns false are appended to
+  // unknown_fields_stream.
   static bool ReadPackedEnumPreserveUnknowns(
       io::CodedInputStream* input, int field_number, bool (*is_valid)(int),
       io::CodedOutputStream* unknown_fields_stream, RepeatedField<int>* values);
@@ -1105,7 +1107,7 @@ inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
     int num_read = 0;
     while (num_read < elements_available &&
            (buffer = io::CodedInputStream::ExpectTagFromArray(buffer, tag)) !=
-               NULL) {
+               nullptr) {
       buffer = ReadPrimitiveFromArray<CType, DeclaredType>(buffer, &value);
       values->AddAlreadyReserved(value);
       ++num_read;

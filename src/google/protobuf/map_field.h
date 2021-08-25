@@ -324,7 +324,7 @@ class MapFieldAccessor;
 class PROTOBUF_EXPORT MapFieldBase {
  public:
   MapFieldBase()
-      : arena_(NULL), repeated_field_(NULL), state_(STATE_MODIFIED_MAP) {}
+      : arena_(nullptr), repeated_field_(nullptr), state_(STATE_MODIFIED_MAP) {}
 
   // This constructor is for constant initialized global instances.
   // It uses a linker initialized mutex, so it is not compatible with regular
@@ -466,6 +466,10 @@ class PROTOBUF_EXPORT MapFieldBase {
   // IncreaseIterator() is called by operator++() of MapIterator only.
   // It implements the ++ operator of MapIterator.
   virtual void IncreaseIterator(MapIterator* map_iter) const = 0;
+
+  // Swaps state_ with another MapFieldBase
+  void SwapState(MapFieldBase* other);
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldBase);
 };
 
@@ -573,15 +577,15 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   void InternalSwap(MapField* other);
 
   // Used in the implementation of parsing. Caller should take the ownership iff
-  // arena_ is NULL.
+  // arena_ is nullptr.
   EntryType* NewEntry() const { return impl_.NewEntry(); }
   // Used in the implementation of serializing enum value type. Caller should
-  // take the ownership iff arena_ is NULL.
+  // take the ownership iff arena_ is nullptr.
   EntryType* NewEnumEntryWrapper(const Key& key, const T t) const {
     return impl_.NewEnumEntryWrapper(key, t);
   }
   // Used in the implementation of serializing other value types. Caller should
-  // take the ownership iff arena_ is NULL.
+  // take the ownership iff arena_ is nullptr.
   EntryType* NewEntryWrapper(const Key& key, const T& t) const {
     return impl_.NewEntryWrapper(key, t);
   }

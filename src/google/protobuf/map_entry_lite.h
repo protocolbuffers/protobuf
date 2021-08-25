@@ -194,7 +194,7 @@ class MapEntryImpl : public Base {
         _has_bits_{} {}
 
   ~MapEntryImpl() {
-    if (Base::GetArenaForAllocation() != NULL) return;
+    if (Base::GetArenaForAllocation() != nullptr) return;
     KeyTypeHandler::DeleteNoArena(key_);
     ValueTypeHandler::DeleteNoArena(value_);
   }
@@ -528,7 +528,9 @@ class MapEntryLite : public MapEntryImpl<T, MessageLite, Key, Value,
       SuperType;
   constexpr MapEntryLite() {}
   explicit MapEntryLite(Arena* arena) : SuperType(arena) {}
-  ~MapEntryLite() { MessageLite::_internal_metadata_.template Delete<std::string>(); }
+  ~MapEntryLite() {
+    MessageLite::_internal_metadata_.template Delete<std::string>();
+  }
   void MergeFrom(const MapEntryLite& other) { MergeFromInternal(other); }
 
  private:

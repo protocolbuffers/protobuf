@@ -28,30 +28,30 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package com.google.protobuf.kotlin
+// Author: qrczak@google.com (Marcin Kowalczyk)
+//
+// This module exposes the C proto inside the given Python proto, in
+// case the Python proto is implemented with a C proto.
 
-import com.google.protobuf.ExtensionLite
-import com.google.protobuf.MessageLite
+#ifndef GOOGLE_PROTOBUF_PYTHON_PYTHON_PROTOBUF_H__
+#define GOOGLE_PROTOBUF_PYTHON_PYTHON_PROTOBUF_H__
 
-/**
- * Implementation for ExtensionList and ExtensionListLite. Like [DslList], represents an
- * unmodifiable view of a repeated proto field -- in this case, an extension field -- but supports
- * querying the extension.
- */
-class ExtensionList<E, M : MessageLite>
-@OnlyForUseByGeneratedProtoCode
-constructor(val extension: ExtensionLite<M, List<E>>, private val delegate: List<E>) :
-  List<E> by delegate {
-  override fun iterator(): Iterator<E> = UnmodifiableIterator(delegate.iterator())
+#include <Python.h>
 
-  override fun listIterator(): ListIterator<E> = UnmodifiableListIterator(delegate.listIterator())
+namespace google {
+namespace protobuf {
 
-  override fun listIterator(index: Int): ListIterator<E> =
-    UnmodifiableListIterator(delegate.listIterator(index))
+class Message;
 
-  override fun equals(other: Any?): Boolean = delegate == other
+namespace python {
 
-  override fun hashCode(): Int = delegate.hashCode()
+// Return the pointer to the C proto inside the given Python proto,
+// or NULL when this is not a Python proto implemented with a C proto.
+const Message* GetCProtoInsidePyProto(PyObject* msg);
+Message* MutableCProtoInsidePyProto(PyObject* msg);
 
-  override fun toString(): String = delegate.toString()
-}
+}  // namespace python
+}  // namespace protobuf
+}  // namespace google
+
+#endif  // GOOGLE_PROTOBUF_PYTHON_PYTHON_PROTOBUF_H__

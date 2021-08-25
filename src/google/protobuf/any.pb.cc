@@ -124,7 +124,7 @@ Any::Any(const Any& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
 }
 
-void Any::SharedCtor() {
+inline void Any::SharedCtor() {
 type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }

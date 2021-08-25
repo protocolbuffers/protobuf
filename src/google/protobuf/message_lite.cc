@@ -197,7 +197,7 @@ template bool MergeFromImpl<true>(BoundedZCIS input, MessageLite* msg,
 
 MessageLite* MessageLite::New(Arena* arena) const {
   MessageLite* message = New();
-  if (arena != NULL) {
+  if (arena != nullptr) {
     arena->Own(message);
   }
   return message;

@@ -1124,24 +1124,24 @@ class JsonFormatTest(JsonFormatBase):
     text = '{"value": {"foo": 123}}'
     self.assertRaisesRegexp(
         json_format.ParseError,
-        r"Timestamp JSON value not a string: {u?'foo': 123}",
-        json_format.Parse, text, message)
+        r"Timestamp JSON value not a string: {u?'foo': 123}", json_format.Parse,
+        text, message)
 
   def testDurationInvalidStringValue(self):
     message = json_format_proto3_pb2.TestDuration()
     text = '{"value": {"foo": 123}}'
     self.assertRaisesRegexp(
         json_format.ParseError,
-        r"Duration JSON value not a string: {u?'foo': 123}",
-        json_format.Parse, text, message)
+        r"Duration JSON value not a string: {u?'foo': 123}", json_format.Parse,
+        text, message)
 
   def testFieldMaskInvalidStringValue(self):
     message = json_format_proto3_pb2.TestFieldMask()
     text = '{"value": {"foo": 123}}'
     self.assertRaisesRegexp(
         json_format.ParseError,
-        r"FieldMask JSON value not a string: {u?'foo': 123}",
-        json_format.Parse, text, message)
+        r"FieldMask JSON value not a string: {u?'foo': 123}", json_format.Parse,
+        text, message)
 
   def testInvalidAny(self):
     message = any_pb2.Any()

@@ -157,7 +157,7 @@ const MessageLite& ExtensionSet::GetMessage(int number,
     GOOGLE_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
     if (extension->is_lazy) {
       return extension->lazymessage_value->GetMessage(
-          *factory->GetPrototype(message_type));
+          *factory->GetPrototype(message_type), arena_);
     } else {
       return *extension->message_value;
     }
@@ -194,14 +194,14 @@ MessageLite* ExtensionSet::ReleaseMessage(const FieldDescriptor* descriptor,
                                           MessageFactory* factory) {
   Extension* extension = FindOrNull(descriptor->number());
   if (extension == nullptr) {
-    // Not present.  Return NULL.
+    // Not present.  Return nullptr.
     return nullptr;
   } else {
     GOOGLE_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
       ret = extension->lazymessage_value->ReleaseMessage(
-          *factory->GetPrototype(descriptor->message_type()));
+          *factory->GetPrototype(descriptor->message_type()), arena_);
       if (arena_ == nullptr) {
         delete extension->lazymessage_value;
       }
@@ -222,14 +222,14 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
     const FieldDescriptor* descriptor, MessageFactory* factory) {
   Extension* extension = FindOrNull(descriptor->number());
   if (extension == nullptr) {
-    // Not present.  Return NULL.
+    // Not present.  Return nullptr.
     return nullptr;
   } else {
     GOOGLE_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
       ret = extension->lazymessage_value->UnsafeArenaReleaseMessage(
-          *factory->GetPrototype(descriptor->message_type()));
+          *factory->GetPrototype(descriptor->message_type()), arena_);
       if (arena_ == nullptr) {
         delete extension->lazymessage_value;
       }
@@ -313,7 +313,7 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
       output->message_info.prototype =
           factory_->GetPrototype(extension->message_type());
       GOOGLE_CHECK(output->message_info.prototype != nullptr)
-          << "Extension factory's GetPrototype() returned NULL for extension: "
+          << "Extension factory's GetPrototype() returned nullptr; extension: "
           << extension->full_name();
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       output->enum_validity_check.func = ValidateEnumUsingDescriptor;

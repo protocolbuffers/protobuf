@@ -905,19 +905,19 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   // Returns true if this is a map message type.
   bool is_map_message_type() const;
 
-  bool has_default_value_;
-  bool proto3_optional_;
+  bool has_default_value_ : 1;
+  bool proto3_optional_ : 1;
   // Whether the user has specified the json_name field option in the .proto
   // file.
-  bool has_json_name_;
-  bool is_extension_;
+  bool has_json_name_ : 1;
+  bool is_extension_ : 1;
+  bool is_oneof_ : 1;
+
+  // Actually a `Label` but stored as uint8_t to save space.
+  uint8_t label_ : 2;
 
   // Actually a `Type`, but stored as uint8_t to save space.
   mutable uint8_t type_;
-  // Actually a `Label` but stored as uint8_t to save space.
-  uint8_t label_;
-
-  bool is_oneof_ : 1;
 
   // Logically:
   //   all_names_ = [name, full_name, lower, camel, json]
@@ -929,14 +929,15 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   uint8_t lowercase_name_index_ : 2;
   uint8_t camelcase_name_index_ : 2;
   uint8_t json_name_index_ : 3;
+  // Sadly, `number_` located here to reduce padding. Unrelated to all_names_
+  // and its indices above.
+  int number_;
   const std::string* all_names_;
   const FileDescriptor* file_;
 
   internal::LazyInitData* type_once_;
   static void TypeOnceInit(const FieldDescriptor* to_init);
   void InternalTypeOnceInit() const;
-  int number_;
-  int index_in_oneof_;
   const Descriptor* containing_type_;
   union {
     const OneofDescriptor* containing_oneof;
@@ -1048,8 +1049,8 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   // all_names_ = [name, full_name]
   const std::string* all_names_;
   const Descriptor* containing_type_;
-  const FieldDescriptor** fields_;
   const OneofOptions* options_;
+  const FieldDescriptor* fields_;
 
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<OneofDescriptor>() and AllocateArray<OneofDescriptor>()
@@ -2096,7 +2097,6 @@ PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, file, const FileDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, is_extension, bool)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, containing_type, const Descriptor*)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, index_in_oneof, int)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(FieldDescriptor, FieldOptions)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, has_default_value, bool)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, has_json_name, bool)
@@ -2112,6 +2112,7 @@ PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, default_value_string)
 PROTOBUF_DEFINE_NAME_ACCESSOR(OneofDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(OneofDescriptor, containing_type, const Descriptor*)
 PROTOBUF_DEFINE_ACCESSOR(OneofDescriptor, field_count, int)
+PROTOBUF_DEFINE_ARRAY_ACCESSOR(OneofDescriptor, field, const FieldDescriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(OneofDescriptor, OneofOptions)
 
 PROTOBUF_DEFINE_NAME_ACCESSOR(EnumDescriptor)
@@ -2231,6 +2232,11 @@ inline const std::string& FieldDescriptor::json_name() const {
 
 inline const OneofDescriptor* FieldDescriptor::containing_oneof() const {
   return is_oneof_ ? scope_.containing_oneof : nullptr;
+}
+
+inline int FieldDescriptor::index_in_oneof() const {
+  GOOGLE_DCHECK(is_oneof_);
+  return static_cast<int>(this - scope_.containing_oneof->field(0));
 }
 
 inline const Descriptor* FieldDescriptor::extension_scope() const {
@@ -2388,12 +2394,6 @@ inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
 
 inline FileDescriptor::Syntax FileDescriptor::syntax() const {
   return static_cast<Syntax>(syntax_);
-}
-
-// Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because fields_ is actually an array
-// of pointers rather than the usual array of objects.
-inline const FieldDescriptor* OneofDescriptor::field(int index) const {
-  return fields_[index];
 }
 
 }  // namespace protobuf

@@ -92,19 +92,19 @@ bool WireFormat::SkipField(io::CodedInputStream* input, uint32_t tag,
     case WireFormatLite::WIRETYPE_VARINT: {
       uint64_t value;
       if (!input->ReadVarint64(&value)) return false;
-      if (unknown_fields != NULL) unknown_fields->AddVarint(number, value);
+      if (unknown_fields != nullptr) unknown_fields->AddVarint(number, value);
       return true;
     }
     case WireFormatLite::WIRETYPE_FIXED64: {
       uint64_t value;
       if (!input->ReadLittleEndian64(&value)) return false;
-      if (unknown_fields != NULL) unknown_fields->AddFixed64(number, value);
+      if (unknown_fields != nullptr) unknown_fields->AddFixed64(number, value);
       return true;
     }
     case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
       uint32_t length;
       if (!input->ReadVarint32(&length)) return false;
-      if (unknown_fields == NULL) {
+      if (unknown_fields == nullptr) {
         if (!input->Skip(length)) return false;
       } else {
         if (!input->ReadString(unknown_fields->AddLengthDelimited(number),
@@ -116,8 +116,8 @@ bool WireFormat::SkipField(io::CodedInputStream* input, uint32_t tag,
     }
     case WireFormatLite::WIRETYPE_START_GROUP: {
       if (!input->IncrementRecursionDepth()) return false;
-      if (!SkipMessage(input, (unknown_fields == NULL)
-                                  ? NULL
+      if (!SkipMessage(input, (unknown_fields == nullptr)
+                                  ? nullptr
                                   : unknown_fields->AddGroup(number))) {
         return false;
       }
@@ -136,7 +136,7 @@ bool WireFormat::SkipField(io::CodedInputStream* input, uint32_t tag,
     case WireFormatLite::WIRETYPE_FIXED32: {
       uint32_t value;
       if (!input->ReadLittleEndian32(&value)) return false;
-      if (unknown_fields != NULL) unknown_fields->AddFixed32(number, value);
+      if (unknown_fields != nullptr) unknown_fields->AddFixed32(number, value);
       return true;
     }
     default: {
@@ -179,7 +179,7 @@ bool WireFormat::ReadPackedEnumPreserveUnknowns(io::CodedInputStream* input,
             input, &value)) {
       return false;
     }
-    if (is_valid == NULL || is_valid(value)) {
+    if (is_valid == nullptr || is_valid(value)) {
       values->Add(value);
     } else {
       unknown_fields->AddVarint(field_number, value);
@@ -346,15 +346,15 @@ bool WireFormat::ParseAndMergePartial(io::CodedInputStream* input,
       return true;
     }
 
-    const FieldDescriptor* field = NULL;
+    const FieldDescriptor* field = nullptr;
 
-    if (descriptor != NULL) {
+    if (descriptor != nullptr) {
       int field_number = WireFormatLite::GetTagFieldNumber(tag);
       field = descriptor->FindFieldByNumber(field_number);
 
       // If that failed, check if the field is an extension.
-      if (field == NULL && descriptor->IsExtensionNumber(field_number)) {
-        if (input->GetExtensionPool() == NULL) {
+      if (field == nullptr && descriptor->IsExtensionNumber(field_number)) {
+        if (input->GetExtensionPool() == nullptr) {
           field = message_reflection->FindKnownExtensionByNumber(field_number);
         } else {
           field = input->GetExtensionPool()->FindExtensionByNumber(
@@ -364,7 +364,7 @@ bool WireFormat::ParseAndMergePartial(io::CodedInputStream* input,
 
       // If that failed, but we're a MessageSet, and this is the tag for a
       // MessageSet item, then parse that.
-      if (field == NULL && descriptor->options().message_set_wire_format() &&
+      if (field == nullptr && descriptor->options().message_set_wire_format() &&
           tag == WireFormatLite::kMessageSetItemStartTag) {
         if (!ParseAndMergeMessageSetItem(input, message)) {
           return false;
@@ -393,7 +393,7 @@ bool WireFormat::ParseAndMergeMessageSetField(uint32_t field_number,
                                               Message* message,
                                               io::CodedInputStream* input) {
   const Reflection* message_reflection = message->GetReflection();
-  if (field == NULL) {
+  if (field == nullptr) {
     // We store unknown MessageSet extensions as groups.
     return SkipMessageSetField(
         input, field_number, message_reflection->MutableUnknownFields(message));
@@ -416,13 +416,13 @@ static bool StrictUtf8Check(const FieldDescriptor* field) {
 
 bool WireFormat::ParseAndMergeField(
     uint32_t tag,
-    const FieldDescriptor* field,  // May be NULL for unknown
+    const FieldDescriptor* field,  // May be nullptr for unknown
     Message* message, io::CodedInputStream* input) {
   const Reflection* message_reflection = message->GetReflection();
 
   enum { UNKNOWN, NORMAL_FORMAT, PACKED_FORMAT } value_format;
 
-  if (field == NULL) {
+  if (field == nullptr) {
     value_format = UNKNOWN;
   } else if (WireFormatLite::GetTagWireType(tag) ==
              WireTypeForFieldType(field->type())) {
@@ -489,7 +489,7 @@ bool WireFormat::ParseAndMergeField(
           } else {
             const EnumValueDescriptor* enum_value =
                 field->enum_type()->FindValueByNumber(value);
-            if (enum_value != NULL) {
+            if (enum_value != nullptr) {
               message_reflection->AddEnum(message, field, enum_value);
             } else {
               // The enum value is not one of the known values.  Add it to the
@@ -642,7 +642,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(io::CodedInputStream* input,
     }
 
     bool SkipField(uint32_t tag, io::CodedInputStream* input) {
-      return WireFormat::SkipField(input, tag, NULL);
+      return WireFormat::SkipField(input, tag, nullptr);
     }
 
     const Reflection* message_reflection;
@@ -992,9 +992,9 @@ const char* WireFormat::_InternalParseAndMergeField(
         }
       }
       if (field->is_repeated()) {
-        reflection->AddString(msg, field, value);
+        reflection->AddString(msg, field, std::move(value));
       } else {
-        reflection->SetString(msg, field, value);
+        reflection->SetString(msg, field, std::move(value));
       }
       return ptr;
     }
