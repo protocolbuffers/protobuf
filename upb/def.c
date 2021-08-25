@@ -877,6 +877,12 @@ const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym) {
       unpack_def(v, UPB_DEFTYPE_ENUM) : NULL;
 }
 
+const upb_fielddef *upb_symtab_lookupext(const upb_symtab *s, const char *sym) {
+  upb_value v;
+  return upb_strtable_lookup(&s->syms, sym, &v) ?
+      unpack_def(v, UPB_DEFTYPE_FIELD) : NULL;
+}
+
 const upb_filedef *upb_symtab_lookupfile(const upb_symtab *s, const char *name) {
   upb_value v;
   return upb_strtable_lookup(&s->files, name, &v) ? upb_value_getconstptr(v)
