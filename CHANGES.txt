@@ -33,6 +33,10 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Replace toArray implementation with toJSON.
 
 2021-06-04 version 3.17.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Python
+  * Note: This is the last release to support Python 2.7. Future releases will
+    require Python >= 3.5.
+
   C++
   * Introduce FieldAccessListener.
   * Stop emitting boilerplate {Copy/Merge}From in each ProtoBuf class
