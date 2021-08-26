@@ -281,34 +281,35 @@ class PROTOBUF_EXPORT MessageLite {
   // format.  A successful return does not indicate the entire input is
   // consumed, ensure you call ConsumedEntireMessage() to check that if
   // applicable.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromCodedStream(
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParseFromCodedStream(
       io::CodedInputStream* input);
   // Like ParseFromCodedStream(), but accepts messages that are missing
   // required fields.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromCodedStream(
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParsePartialFromCodedStream(
       io::CodedInputStream* input);
   // Read a protocol buffer from the given zero-copy input stream.  If
   // successful, the entire input will be consumed.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromZeroCopyStream(
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParseFromZeroCopyStream(
       io::ZeroCopyInputStream* input);
   // Like ParseFromZeroCopyStream(), but accepts messages that are missing
   // required fields.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromZeroCopyStream(
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParsePartialFromZeroCopyStream(
       io::ZeroCopyInputStream* input);
   // Parse a protocol buffer from a file descriptor.  If successful, the entire
   // input will be consumed.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromFileDescriptor(
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParseFromFileDescriptor(
       int file_descriptor);
   // Like ParseFromFileDescriptor(), but accepts messages that are missing
   // required fields.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromFileDescriptor(
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParsePartialFromFileDescriptor(
       int file_descriptor);
   // Parse a protocol buffer from a C++ istream.  If successful, the entire
   // input will be consumed.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromIstream(std::istream* input);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParseFromIstream(
+      std::istream* input);
   // Like ParseFromIstream(), but accepts messages that are missing
   // required fields.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromIstream(
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParsePartialFromIstream(
       std::istream* input);
   // Read a protocol buffer from the given zero-copy input stream, expecting
   // the message to be exactly "size" bytes long.  If successful, exactly
@@ -317,30 +318,30 @@ class PROTOBUF_EXPORT MessageLite {
                                              int size);
   // Like ParseFromBoundedZeroCopyStream(), but accepts messages that are
   // missing required fields.
-  bool MergeFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input, int size);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromBoundedZeroCopyStream(
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool MergeFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input, int size);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParseFromBoundedZeroCopyStream(
       io::ZeroCopyInputStream* input, int size);
   // Like ParseFromBoundedZeroCopyStream(), but accepts messages that are
   // missing required fields.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromBoundedZeroCopyStream(
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParsePartialFromBoundedZeroCopyStream(
       io::ZeroCopyInputStream* input, int size);
   // Parses a protocol buffer contained in a string. Returns true on success.
   // This function takes a string in the (non-human-readable) binary wire
   // format, matching the encoding output by MessageLite::SerializeToString().
   // If you'd like to convert a human-readable string into a protocol buffer
   // object, see google::protobuf::TextFormat::ParseFromString().
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromString(ConstStringParam data);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParseFromString(ConstStringParam data);
   // Like ParseFromString(), but accepts messages that are missing
   // required fields.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromString(
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParsePartialFromString(
       ConstStringParam data);
   // Parse a protocol buffer contained in an array of bytes.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromArray(const void* data,
-                                                       int size);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParseFromArray(
+      const void* data, int size);
   // Like ParseFromArray(), but accepts messages that are missing
   // required fields.
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromArray(const void* data,
-                                                              int size);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES PROTOBUF_ERROR_CODE_CHECK_WARNING bool ParsePartialFromArray(
+      const void* data, int size);
 
 
   // Reads a protocol buffer from the stream and merges it into this
@@ -354,17 +355,17 @@ class PROTOBUF_EXPORT MessageLite {
   //
   // ParseFromCodedStream() is implemented as Clear() followed by
   // MergeFromCodedStream().
-  bool MergeFromCodedStream(io::CodedInputStream* input);
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool MergeFromCodedStream(io::CodedInputStream* input);
 
   // Like MergeFromCodedStream(), but succeeds even if required fields are
   // missing in the input.
   //
   // MergeFromCodedStream() is just implemented as MergePartialFromCodedStream()
   // followed by IsInitialized().
-  bool MergePartialFromCodedStream(io::CodedInputStream* input);
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool MergePartialFromCodedStream(io::CodedInputStream* input);
 
   // Merge a protocol buffer contained in a string.
-  bool MergeFromString(ConstStringParam data);
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool MergeFromString(ConstStringParam data);
 
 
   // Serialization ---------------------------------------------------
@@ -374,24 +375,24 @@ class PROTOBUF_EXPORT MessageLite {
   // Write a protocol buffer of this message to the given output.  Returns
   // false on a write error.  If the message is missing required fields,
   // this may GOOGLE_CHECK-fail.
-  bool SerializeToCodedStream(io::CodedOutputStream* output) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializeToCodedStream(io::CodedOutputStream* output) const;
   // Like SerializeToCodedStream(), but allows missing required fields.
-  bool SerializePartialToCodedStream(io::CodedOutputStream* output) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializePartialToCodedStream(io::CodedOutputStream* output) const;
   // Write the message to the given zero-copy output stream.  All required
   // fields must be set.
-  bool SerializeToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializeToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
   // Like SerializeToZeroCopyStream(), but allows missing required fields.
-  bool SerializePartialToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializePartialToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
   // Serialize the message and store it in the given string.  All required
   // fields must be set.
-  bool SerializeToString(std::string* output) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializeToString(std::string* output) const;
   // Like SerializeToString(), but allows missing required fields.
-  bool SerializePartialToString(std::string* output) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializePartialToString(std::string* output) const;
   // Serialize the message and store it in the given byte array.  All required
   // fields must be set.
-  bool SerializeToArray(void* data, int size) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializeToArray(void* data, int size) const;
   // Like SerializeToArray(), but allows missing required fields.
-  bool SerializePartialToArray(void* data, int size) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializePartialToArray(void* data, int size) const;
 
   // Make a string encoding the message. Is equivalent to calling
   // SerializeToString() on a string and using that.  Returns the empty
@@ -405,20 +406,20 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Serialize the message and write it to the given file descriptor.  All
   // required fields must be set.
-  bool SerializeToFileDescriptor(int file_descriptor) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializeToFileDescriptor(int file_descriptor) const;
   // Like SerializeToFileDescriptor(), but allows missing required fields.
-  bool SerializePartialToFileDescriptor(int file_descriptor) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializePartialToFileDescriptor(int file_descriptor) const;
   // Serialize the message and write it to the given C++ ostream.  All
   // required fields must be set.
-  bool SerializeToOstream(std::ostream* output) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializeToOstream(std::ostream* output) const;
   // Like SerializeToOstream(), but allows missing required fields.
-  bool SerializePartialToOstream(std::ostream* output) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool SerializePartialToOstream(std::ostream* output) const;
 
   // Like SerializeToString(), but appends to the data to the string's
   // existing contents.  All required fields must be set.
-  bool AppendToString(std::string* output) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool AppendToString(std::string* output) const;
   // Like AppendToString(), but allows missing required fields.
-  bool AppendPartialToString(std::string* output) const;
+  PROTOBUF_ERROR_CODE_CHECK_WARNING bool AppendPartialToString(std::string* output) const;
 
 
   // Computes the serialized size of the message.  This recursively calls
@@ -592,7 +593,7 @@ bool MergeFromImpl(const SourceWrapper<T>& input, MessageLite* msg,
 }  // namespace internal
 
 template <MessageLite::ParseFlags flags, typename T>
-bool MessageLite::ParseFrom(const T& input) {
+PROTOBUF_ERROR_CODE_CHECK_WARNING bool MessageLite::ParseFrom(const T& input) {
   if (flags & kParse) Clear();
   constexpr bool alias = (flags & kMergeWithAliasing) != 0;
   return internal::MergeFromImpl<alias>(input, this, flags);

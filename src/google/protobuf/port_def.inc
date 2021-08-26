@@ -349,6 +349,23 @@
 #define PROTOBUF_ATTRIBUTE_REINITIALIZES
 #endif
 
+
+// A lot of methods in the library (for example: Message interface) return bool to identify
+//   existing of errors during method processing
+// It is very common and hard detectable error to ignore return value
+// This macro add standertized attribute for functions, that lead to 'ignoring return value' warning
+// Very useful with -Werror
+// If it is hard to upgrade to new release of protocolbufers during vendoring
+//    just change this file or add -Wno-unused-result to your c++ compiling flags
+#ifdef PROTOBUF_ERROR_CODE_CHECK_WARNING
+#error PROTOBUF_ERROR_CODE_CHECK_WARNING was previously defined
+#endif
+#if __cplusplus >= 201703L
+#define PROTOBUF_ERROR_CODE_CHECK_WARNING [[nodiscard]]
+#else
+#define PROTOBUF_ERROR_CODE_CHECK_WARNING
+#endif
+
 // The minimum library version which works with the current version of the
 // headers.
 #define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3017000
