@@ -352,7 +352,7 @@
 
 // A lot of methods in the library (for example: Message interface) return bool to identify
 //   existing of errors during method processing
-// It is very common and hard detectable error to ignore return value
+// Ignoring return value of this methods is very common and hard detectable error
 // This macro add standertized attribute for functions, that lead to 'ignoring return value' warning
 // Very useful with -Werror
 // If it is hard to upgrade to new release of protocolbufers during vendoring
