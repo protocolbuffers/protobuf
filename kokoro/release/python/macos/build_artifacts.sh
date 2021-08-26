@@ -51,7 +51,6 @@ build_artifact_version() {
 }
 
 export MB_PYTHON_OSX_VER=10.9
-build_artifact_version 2.7
 build_artifact_version 3.6
 build_artifact_version 3.7
 build_artifact_version 3.8
