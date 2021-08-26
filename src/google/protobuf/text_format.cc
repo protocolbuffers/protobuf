@@ -348,6 +348,12 @@ class TextFormat::Parser::ParserImpl {
   }
 
  private:
+  static constexpr int32_t kint32max = std::numeric_limits<int32_t>::max();
+  static constexpr uint32_t kuint32max = std::numeric_limits<uint32_t>::max();
+  static constexpr int64_t kint64min = std::numeric_limits<int64_t>::min();
+  static constexpr int64_t kint64max = std::numeric_limits<int64_t>::max();
+  static constexpr uint64_t kuint64max = std::numeric_limits<uint64_t>::max();
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ParserImpl);
 
   // Reports an error with the given message with information indicating

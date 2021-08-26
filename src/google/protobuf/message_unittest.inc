@@ -39,6 +39,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <limits>
+
 #include <google/protobuf/message.h>
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -487,6 +489,8 @@ class RepeatedInputStream : public io::ZeroCopyInputStream {
 }  // namespace
 
 TEST(MESSAGE_TEST_NAME, TestParseMessagesCloseTo2G) {
+  constexpr int32_t kint32max = std::numeric_limits<int32_t>::max();
+
   // Create a message with a large std::string field.
   std::string value = std::string(64 * 1024 * 1024, 'x');
   UNITTEST::TestAllTypes message;

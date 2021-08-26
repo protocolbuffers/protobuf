@@ -84,17 +84,17 @@ class MapFieldLite {
   void InternalSwap(MapFieldLite* other) { map_.InternalSwap(other->map_); }
 
   // Used in the implementation of parsing. Caller should take the ownership iff
-  // arena_ is NULL.
+  // arena_ is nullptr.
   EntryType* NewEntry() const {
     return Arena::CreateMessage<EntryType>(map_.arena());
   }
   // Used in the implementation of serializing enum value type. Caller should
-  // take the ownership iff arena_ is NULL.
+  // take the ownership iff arena_ is nullptr.
   EntryType* NewEnumEntryWrapper(const Key& key, const T t) const {
     return EntryType::EnumWrap(key, t, map_.arena_);
   }
   // Used in the implementation of serializing other value types. Caller should
-  // take the ownership iff arena_ is NULL.
+  // take the ownership iff arena_ is nullptr.
   EntryType* NewEntryWrapper(const Key& key, const T& t) const {
     return EntryType::Wrap(key, t, map_.arena_);
   }

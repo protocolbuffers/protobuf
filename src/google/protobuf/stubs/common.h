@@ -176,7 +176,7 @@ class FatalException : public std::exception {
       : filename_(filename), line_(line), message_(message) {}
   virtual ~FatalException() throw();
 
-  virtual const char* what() const throw() override;
+  const char* what() const throw() override;
 
   const char* filename() const { return filename_; }
   int line() const { return line_; }

@@ -248,6 +248,12 @@ UnknownFieldSet* Reflection::MutableUnknownFields(Message* message) const {
       ->mutable_unknown_fields<UnknownFieldSet>();
 }
 
+bool Reflection::IsLazyExtension(const Message& message,
+                                 const FieldDescriptor* field) const {
+  return field->is_extension() &&
+         GetExtensionSet(message).HasLazy(field->number());
+}
+
 bool Reflection::IsLazilyVerifiedLazyField(const FieldDescriptor* field) const {
   return field->options().lazy();
 }
@@ -2620,19 +2626,19 @@ void Reflection::ClearOneof(Message* message,
   }
 }
 
-#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                                \
-  template <>                                                            \
-  const RepeatedField<TYPE>& Reflection::GetRepeatedFieldInternal<TYPE>( \
-      const Message& message, const FieldDescriptor* field) const {      \
-    return *static_cast<RepeatedField<TYPE>*>(MutableRawRepeatedField(   \
-        const_cast<Message*>(&message), field, CPPTYPE, CTYPE, NULL));   \
-  }                                                                      \
-                                                                         \
-  template <>                                                            \
-  RepeatedField<TYPE>* Reflection::MutableRepeatedFieldInternal<TYPE>(   \
-      Message * message, const FieldDescriptor* field) const {           \
-    return static_cast<RepeatedField<TYPE>*>(                            \
-        MutableRawRepeatedField(message, field, CPPTYPE, CTYPE, NULL));  \
+#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                                  \
+  template <>                                                              \
+  const RepeatedField<TYPE>& Reflection::GetRepeatedFieldInternal<TYPE>(   \
+      const Message& message, const FieldDescriptor* field) const {        \
+    return *static_cast<RepeatedField<TYPE>*>(MutableRawRepeatedField(     \
+        const_cast<Message*>(&message), field, CPPTYPE, CTYPE, nullptr));  \
+  }                                                                        \
+                                                                           \
+  template <>                                                              \
+  RepeatedField<TYPE>* Reflection::MutableRepeatedFieldInternal<TYPE>(     \
+      Message * message, const FieldDescriptor* field) const {             \
+    return static_cast<RepeatedField<TYPE>*>(                              \
+        MutableRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr)); \
   }
 
 HANDLE_TYPE(int32_t, FieldDescriptor::CPPTYPE_INT32, -1);
@@ -2651,7 +2657,7 @@ void* Reflection::MutableRawRepeatedString(Message* message,
                                            bool is_string) const {
   return MutableRawRepeatedField(message, field,
                                  FieldDescriptor::CPPTYPE_STRING,
-                                 FieldOptions::STRING, NULL);
+                                 FieldOptions::STRING, nullptr);
 }
 
 // Template implementations of basic accessors.  Inline because each

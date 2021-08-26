@@ -28,30 +28,32 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package com.google.protobuf.kotlin
+// Author: qrczak@google.com (Marcin Kowalczyk)
 
-import com.google.protobuf.ExtensionLite
-import com.google.protobuf.MessageLite
+#include <google/protobuf/python/python_protobuf.h>
 
-/**
- * Implementation for ExtensionList and ExtensionListLite. Like [DslList], represents an
- * unmodifiable view of a repeated proto field -- in this case, an extension field -- but supports
- * querying the extension.
- */
-class ExtensionList<E, M : MessageLite>
-@OnlyForUseByGeneratedProtoCode
-constructor(val extension: ExtensionLite<M, List<E>>, private val delegate: List<E>) :
-  List<E> by delegate {
-  override fun iterator(): Iterator<E> = UnmodifiableIterator(delegate.iterator())
+namespace google {
+namespace protobuf {
+namespace python {
 
-  override fun listIterator(): ListIterator<E> = UnmodifiableListIterator(delegate.listIterator())
+static const Message* GetCProtoInsidePyProtoStub(PyObject* msg) { return NULL; }
+static Message* MutableCProtoInsidePyProtoStub(PyObject* msg) { return NULL; }
 
-  override fun listIterator(index: Int): ListIterator<E> =
-    UnmodifiableListIterator(delegate.listIterator(index))
+// This is initialized with a default, stub implementation.
+// If python-google.protobuf.cc is loaded, the function pointer is overridden
+// with a full implementation.
+const Message* (*GetCProtoInsidePyProtoPtr)(PyObject* msg) =
+    GetCProtoInsidePyProtoStub;
+Message* (*MutableCProtoInsidePyProtoPtr)(PyObject* msg) =
+    MutableCProtoInsidePyProtoStub;
 
-  override fun equals(other: Any?): Boolean = delegate == other
-
-  override fun hashCode(): Int = delegate.hashCode()
-
-  override fun toString(): String = delegate.toString()
+const Message* GetCProtoInsidePyProto(PyObject* msg) {
+  return GetCProtoInsidePyProtoPtr(msg);
 }
+Message* MutableCProtoInsidePyProto(PyObject* msg) {
+  return MutableCProtoInsidePyProtoPtr(msg);
+}
+
+}  // namespace python
+}  // namespace protobuf
+}  // namespace google

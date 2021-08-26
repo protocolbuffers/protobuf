@@ -57,7 +57,7 @@ import org.junit.Ignore;
  * <p>The test mechanism employed here is based on the pattern in {@code
  * com.google.common.util.concurrent.AbstractFutureFallbackAtomicHelperTest}
  *
- * <p> This test is temporarily disabled while we figure out how to fix the class loading used for
+ * <p>This test is temporarily disabled while we figure out how to fix the class loading used for
  * testing lite functionality.
  */
 @SuppressWarnings("JUnit4ClassUsedInJUnit3")

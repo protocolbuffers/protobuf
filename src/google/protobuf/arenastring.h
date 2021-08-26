@@ -142,7 +142,7 @@ static_assert(std::is_trivial<TaggedPtr<std::string>>::value,
 //   free()/destructor-call list) as appropriate.
 //
 // - Pointer set to 'DonatedString' tag (LSB is 1): points to a std::string
-//   instance with a buffer on the arena (arena != NULL, always, in this case).
+//   instance with a buffer on the arena (arena is never nullptr in this case).
 //
 // For fields with a non-empty string default value, there are three distinct
 // states:
@@ -158,7 +158,7 @@ static_assert(std::is_trivial<TaggedPtr<std::string>>::value,
 //   free()/destructor-call list) as appropriate.
 //
 // - Pointer set to 'DonatedString' tag (LSB is 1): points to a std::string
-//   instance with a buffer on the arena (arena != NULL, always, in this case).
+//   instance with a buffer on the arena (arena is never nullptr in this case).
 //
 // Generated code and reflection code both ensure that ptr_ is never null for
 // fields with an empty default.
@@ -240,8 +240,8 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   std::string* Mutable(const LazyString& default_value, ::google::protobuf::Arena* arena);
 
   // Release returns a std::string* instance that is heap-allocated and is not
-  // Own()'d by any arena. If the field is not set, this returns NULL. The
-  // caller retains ownership. Clears this field back to NULL state. Used to
+  // Own()'d by any arena. If the field is not set, this returns nullptr. The
+  // caller retains ownership. Clears this field back to nullptr state. Used to
   // implement release_<field>() methods on generated classes.
   PROTOBUF_MUST_USE_RESULT std::string* Release(
       const std::string* default_value, ::google::protobuf::Arena* arena);
@@ -276,9 +276,9 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // string default.
   void ClearNonDefaultToEmpty();
 
-  // Clears content, but keeps allocated std::string if arena != NULL, to avoid
-  // the overhead of heap operations. After this returns, the content (as seen
-  // by the user) will always be equal to |default_value|.
+  // Clears content, but keeps allocated std::string if arena != nullptr, to
+  // avoid the overhead of heap operations. After this returns, the content
+  // (as seen by the user) will always be equal to |default_value|.
   void ClearToDefault(const LazyString& default_value, ::google::protobuf::Arena* arena);
 
   // Called from generated code / reflection runtime only. Resets value to point

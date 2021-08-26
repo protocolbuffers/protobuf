@@ -82,11 +82,14 @@ class PROTOBUF_EXPORT AnyMetadata {
   // URL: "type.googleapis.com/<message_full_name>".
   // Returns false if serializing the message failed.
   template <typename T>
-  bool PackFrom(Arena* arena, const T& message, StringPiece type_url_prefix) {
-    return InternalPackFrom(arena, message, type_url_prefix, T::FullMessageName());
+  bool PackFrom(Arena* arena, const T& message,
+                StringPiece type_url_prefix) {
+    return InternalPackFrom(arena, message, type_url_prefix,
+                            T::FullMessageName());
   }
 
-  bool PackFrom(Arena* arena, const Message& message, StringPiece type_url_prefix);
+  bool PackFrom(Arena* arena, const Message& message,
+                StringPiece type_url_prefix);
 
   // Unpacks the payload into the given message. Returns false if the message's
   // type doesn't match the type specified in the type URL (i.e., the full
@@ -108,8 +111,7 @@ class PROTOBUF_EXPORT AnyMetadata {
   }
 
  private:
-  bool InternalPackFrom(Arena* arena,
-                        const MessageLite& message,
+  bool InternalPackFrom(Arena* arena, const MessageLite& message,
                         StringPiece type_url_prefix,
                         StringPiece type_name);
   bool InternalUnpackTo(StringPiece type_name,

@@ -199,8 +199,8 @@ class PROTOBUF_EXPORT InlinedStringField {
                        uint32_t* donating_states, uint32_t mask);
 
   // Release returns a std::string* instance that is heap-allocated and is not
-  // Own()'d by any arena. If the field is not set, this returns NULL. The
-  // caller retains ownership. Clears this field back to NULL state. Used to
+  // Own()'d by any arena. If the field is not set, this returns nullptr. The
+  // caller retains ownership. Clears this field back to nullptr state. Used to
   // implement release_<field>() methods on generated classes.
   PROTOBUF_MUST_USE_RESULT std::string* Release(
       const std::string* default_value, Arena* arena, bool donated);
@@ -248,9 +248,9 @@ class PROTOBUF_EXPORT InlinedStringField {
     get_mutable()->clear();
   }
 
-  // Clears content, but keeps allocated std::string if arena != NULL, to avoid
-  // the overhead of heap operations. After this returns, the content (as seen
-  // by the user) will always be equal to |default_value|.
+  // Clears content, but keeps allocated std::string if arena != nullptr, to
+  // avoid the overhead of heap operations. After this returns, the content (as
+  // seen by the user) will always be equal to |default_value|.
   void ClearToDefault(const LazyString& default_value, Arena* arena,
                       bool donated);
 

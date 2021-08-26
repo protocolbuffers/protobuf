@@ -59,7 +59,8 @@ class PrimitiveFieldGenerator : public FieldGenerator {
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateCopyConstructorCode(io::Printer* printer) const override;
-  void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
   void GenerateConstinitInitializer(io::Printer* printer) const override;
 
@@ -98,7 +99,8 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateCopyConstructorCode(io::Printer* printer) const override;
-  void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
   void GenerateConstinitInitializer(io::Printer* printer) const override;
 

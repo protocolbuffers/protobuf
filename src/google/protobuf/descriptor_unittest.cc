@@ -299,7 +299,7 @@ class MockErrorCollector : public DescriptorPool::ErrorCollector {
 // Test simple files.
 class FileDescriptorTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Build descriptors for the following definitions:
     //
     //   // in "foo.proto"
@@ -614,7 +614,7 @@ TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
 // Test simple flat messages and fields.
 class DescriptorTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Build descriptors for the following definitions:
     //
     //   // in "foo.proto"
@@ -1101,7 +1101,7 @@ TEST_F(DescriptorTest, FieldEnumType) {
 // Test simple flat messages and fields.
 class OneofDescriptorTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Build descriptors for the following definitions:
     //
     //   package garply;
@@ -1361,7 +1361,7 @@ TEST_F(StylizedFieldNamesTest, FindByCamelcaseName) {
 // Test enum descriptors.
 class EnumDescriptorTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Build descriptors for the following definitions:
     //
     //   // in "foo.proto"
@@ -1512,7 +1512,7 @@ TEST_F(EnumDescriptorTest, ValueType) {
 // Test service descriptors.
 class ServiceDescriptorTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Build descriptors for the following messages and service:
     //    // in "foo.proto"
     //    message FooRequest  {}
@@ -1673,7 +1673,7 @@ TEST_F(ServiceDescriptorTest, MethodOutputType) {
 // Test nested types.
 class NestedDescriptorTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Build descriptors for the following definitions:
     //
     //   // in "foo.proto"
@@ -1887,7 +1887,7 @@ TEST_F(NestedDescriptorTest, FindEnumValueByName) {
 // Test extensions.
 class ExtensionDescriptorTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Build descriptors for the following definitions:
     //
     //   enum Baz {}
@@ -2210,7 +2210,7 @@ TEST(OverlappingExtensionRangeTest, ExtensionRangeBefore) {
 // Test reserved fields.
 class ReservedDescriptorTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Build descriptors for the following definitions:
     //
     //   message Foo {
@@ -2288,7 +2288,7 @@ TEST_F(ReservedDescriptorTest, IsReservedName) {
 // Test reserved enum fields.
 class ReservedEnumDescriptorTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Build descriptors for the following definitions:
     //
     //   enum Foo {
@@ -2814,7 +2814,7 @@ class AllowUnknownDependenciesTest
   DescriptorPoolMode mode() { return std::get<0>(GetParam()); }
   const char* syntax() { return std::get<1>(GetParam()); }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     FileDescriptorProto foo_proto, bar_proto;
 
     switch (mode()) {
@@ -3172,6 +3172,13 @@ TEST(CustomOptions, OptionLocations) {
 
 TEST(CustomOptions, OptionTypes) {
   const MessageOptions* options = nullptr;
+
+  constexpr int32_t kint32min = std::numeric_limits<int32_t>::min();
+  constexpr int32_t kint32max = std::numeric_limits<int32_t>::max();
+  constexpr uint32_t kuint32max = std::numeric_limits<uint32_t>::max();
+  constexpr int64_t kint64min = std::numeric_limits<int64_t>::min();
+  constexpr int64_t kint64max = std::numeric_limits<int64_t>::max();
+  constexpr uint64_t kuint64max = std::numeric_limits<uint64_t>::max();
 
   options =
       &protobuf_unittest::CustomOptionMinIntegerValues::descriptor()->options();
@@ -6792,7 +6799,7 @@ class DatabaseBackedPoolTest : public testing::Test {
 
   SimpleDescriptorDatabase database_;
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AddToDatabase(
         &database_,
         "name: 'foo.proto' "
@@ -7289,10 +7296,9 @@ class AbortingErrorCollector : public DescriptorPool::ErrorCollector {
  public:
   AbortingErrorCollector() {}
 
-  virtual void AddError(const std::string& filename,
-                        const std::string& element_name, const Message* message,
-                        ErrorLocation location,
-                        const std::string& error_message) override {
+  void AddError(const std::string& filename, const std::string& element_name,
+                const Message* message, ErrorLocation location,
+                const std::string& error_message) override {
     GOOGLE_LOG(FATAL) << "AddError() called unexpectedly: " << filename << " ["
                << element_name << "]: " << error_message;
   }
@@ -7307,7 +7313,7 @@ class SingletonSourceTree : public compiler::SourceTree {
   SingletonSourceTree(const std::string& filename, const std::string& contents)
       : filename_(filename), contents_(contents) {}
 
-  virtual io::ZeroCopyInputStream* Open(const std::string& filename) override {
+  io::ZeroCopyInputStream* Open(const std::string& filename) override {
     return filename == filename_
                ? new io::ArrayInputStream(contents_.data(), contents_.size())
                : nullptr;

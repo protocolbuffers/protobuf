@@ -20,6 +20,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Fix repeated enum extension size in field listener
   * Enable Any Text Expansion for Descriptors::DebugString()
   * Switch from int{8,16,32,64} to int{8,16,32,64}_t
+  * Reduce memory usage of the DescriptorPool type.
 
   Java
   * Optimized FieldDescriptor.valueOf() to avoid array copying.
@@ -31,6 +32,9 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Optimize binary parsing of repeated float64
   * Fix for optimization when reading doubles from binary wire format
   * Replace toArray implementation with toJSON.
+
+  Kotlin
+  * Suppress NOTHING_TO_INLINE in Kotlin generated inline functions.
 
 2021-06-04 version 3.17.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Python

@@ -145,55 +145,50 @@ function getClosureCompilerCommand(exportsFile, outputFile) {
   return [
     'node_modules/.bin/google-closure-compiler',
     `--js=${closureLib}/closure/goog/**.js`,
-    `--js=${closureLib}/third_party/closure/goog/**.js`,
-    '--js=map.js',
-    '--js=message.js',
-    '--js=binary/arith.js',
-    '--js=binary/constants.js',
-    '--js=binary/decoder.js',
-    '--js=binary/encoder.js',
-    '--js=binary/reader.js',
-    '--js=binary/utils.js',
-    '--js=binary/writer.js',
-    `--js=${exportsFile}`,
-    `--entry_point=${exportsFile}`,
-    `> ${outputFile}`
+    `--js=${closureLib}/third_party/closure/goog/**.js`, '--js=map.js',
+    '--js=message.js', '--js=binary/arith.js', '--js=binary/constants.js',
+    '--js=binary/decoder.js', '--js=binary/encoder.js', '--js=binary/reader.js',
+    '--js=binary/utils.js', '--js=binary/writer.js', `--js=${exportsFile}`,
+    `--entry_point=${exportsFile}`, `> ${outputFile}`
   ].join(' ');
 }
 
 gulp.task('dist', gulp.series(['genproto_wellknowntypes'], function(cb) {
   // TODO(haberman): minify this more aggressively.
   // Will require proper externs/exports.
-  exec(getClosureCompilerCommand('commonjs/export.js', 'google-protobuf.js'),
-       function (err, stdout, stderr) {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  });
+  exec(
+      getClosureCompilerCommand('commonjs/export.js', 'google-protobuf.js'),
+      function(err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        cb(err);
+      });
 }));
 
-gulp.task('commonjs_asserts', function (cb) {
-  exec('mkdir -p commonjs_out/test_node_modules && ' +
-       getClosureCompilerCommand(
-           'commonjs/export_asserts.js',
-           'commonjs_out/test_node_modules/closure_asserts_commonjs.js'),
-       function (err, stdout, stderr) {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  });
+gulp.task('commonjs_asserts', function(cb) {
+  exec(
+      'mkdir -p commonjs_out/test_node_modules && ' +
+          getClosureCompilerCommand(
+              'commonjs/export_asserts.js',
+              'commonjs_out/test_node_modules/closure_asserts_commonjs.js'),
+      function(err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        cb(err);
+      });
 });
 
-gulp.task('commonjs_testdeps', function (cb) {
-  exec('mkdir -p commonjs_out/test_node_modules && ' +
-       getClosureCompilerCommand(
-           'commonjs/export_testdeps.js',
-           'commonjs_out/test_node_modules/testdeps_commonjs.js'),
-       function (err, stdout, stderr) {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  });
+gulp.task('commonjs_testdeps', function(cb) {
+  exec(
+      'mkdir -p commonjs_out/test_node_modules && ' +
+          getClosureCompilerCommand(
+              'commonjs/export_testdeps.js',
+              'commonjs_out/test_node_modules/testdeps_commonjs.js'),
+      function(err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        cb(err);
+      });
 });
 
 gulp.task(

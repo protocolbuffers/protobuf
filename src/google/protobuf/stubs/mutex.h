@@ -144,10 +144,11 @@ using Mutex = WrappedMutex;
 // MutexLock(mu) acquires mu when constructed and releases it when destroyed.
 class GOOGLE_PROTOBUF_SCOPED_CAPABILITY PROTOBUF_EXPORT MutexLock {
  public:
-  explicit MutexLock(Mutex *mu) GOOGLE_PROTOBUF_ACQUIRE(mu) : mu_(mu) {
+  explicit MutexLock(Mutex* mu) GOOGLE_PROTOBUF_ACQUIRE(mu) : mu_(mu) {
     this->mu_->Lock();
   }
   ~MutexLock() GOOGLE_PROTOBUF_RELEASE() { this->mu_->Unlock(); }
+
  private:
   Mutex *const mu_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MutexLock);

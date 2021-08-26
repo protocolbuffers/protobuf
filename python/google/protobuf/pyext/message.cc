@@ -110,9 +110,10 @@ class MessageReflectionFriend {
       const std::vector<const FieldDescriptor*>& fields) {
     lhs->GetReflection()->UnsafeShallowSwapFields(lhs, rhs, fields);
   }
-  static bool IsLazyField(const Reflection* reflection,
+  static bool IsLazyField(const Reflection* reflection, const Message& message,
                           const FieldDescriptor* field) {
-    return reflection->IsLazyField(field);
+    return reflection->IsLazyField(field) ||
+           reflection->IsLazyExtension(message, field);
   }
 };
 
@@ -2305,7 +2306,8 @@ CMessage* InternalGetSubMessage(
   cmsg->parent_field_descriptor = field_descriptor;
   if (reflection->HasField(*self->message, field_descriptor)) {
     // Force triggering MutableMessage to set the lazy message 'Dirty'
-    if (MessageReflectionFriend::IsLazyField(reflection, field_descriptor)) {
+    if (MessageReflectionFriend::IsLazyField(reflection, *self->message,
+                                             field_descriptor)) {
       Message* sub_message = reflection->MutableMessage(
           self->message, field_descriptor, factory->message_factory);
       cmsg->read_only = false;
