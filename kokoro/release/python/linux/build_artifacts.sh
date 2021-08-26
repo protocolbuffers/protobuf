@@ -51,7 +51,7 @@ build_artifact_version() {
 
 build_x86_64_artifact_version() {
   # Stick to a working version
-  DOCKER_IMAGE=quay.io/pypa/manylinux2014_x86_64:2021-05-01-28d233a
+  DOCKER_IMAGE=dockcross/manylinux-x64
   build_artifact_version $@
 }
 
