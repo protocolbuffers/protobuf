@@ -49,6 +49,12 @@ build_artifact_version() {
   sudo rm -rf $REPO_DIR
 }
 
+build_x86_64_artifact_version() {
+  # Stick to a working version
+  DOCKER_IMAGE=quay.io/pypa/manylinux2014_x86_64:2021-05-01-28d233a
+  build_artifact_version $@
+}
+
 build_crosscompiled_aarch64_artifact_version() {
   # crosscompilation is only supported with the dockcross manylinux2014 image
   DOCKER_IMAGE=dockcross/manylinux2014-aarch64
@@ -59,10 +65,10 @@ build_crosscompiled_aarch64_artifact_version() {
   build_artifact_version $@
 }
 
-build_artifact_version 3.6
-build_artifact_version 3.7
-build_artifact_version 3.8
-build_artifact_version 3.9
+build_x86_64_artifact_version 3.6
+build_x86_64_artifact_version 3.7
+build_x86_64_artifact_version 3.8
+build_x86_64_artifact_version 3.9
 
 build_crosscompiled_aarch64_artifact_version 3.7
 build_crosscompiled_aarch64_artifact_version 3.8
