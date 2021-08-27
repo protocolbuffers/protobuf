@@ -9,8 +9,6 @@ function pre_build {
     if [ "$PLAT" == "aarch64" ]
     then
       local configure_host_flag="--host=aarch64"
-    else
-      yum install -y devtoolset-2-libatomic-devel
     fi
 
     # Build protoc and libprotobuf
