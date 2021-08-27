@@ -51,7 +51,7 @@ build_artifact_version() {
 
 build_crosscompiled_aarch64_artifact_version() {
   # crosscompilation is only supported with the dockcross manylinux2014 image
-  DOCKER_IMAGE=dockcross/manylinux2014-aarch64
+  DOCKER_IMAGE=dockcross/manylinux2014-aarch64:20210706-65bf2dd
   PLAT=aarch64
 
   # TODO(jtatermusch): currently when crosscompiling, "auditwheel repair" will be disabled
@@ -59,8 +59,6 @@ build_crosscompiled_aarch64_artifact_version() {
   build_artifact_version $@
 }
 
-build_artifact_version 2.7
-build_artifact_version 3.5
 build_artifact_version 3.6
 build_artifact_version 3.7
 build_artifact_version 3.8
