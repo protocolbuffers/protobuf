@@ -355,15 +355,14 @@
 // Ignoring return value of this methods is very common and hard detectable error
 // This macro add standertized attribute for functions, that lead to 'ignoring return value' warning
 // Very useful with -Werror
-// If it is hard to upgrade to new release of protocolbufers during vendoring
-//    just change this file or add -Wno-unused-result to your c++ compiling flags
-#ifdef PROTOBUF_ERROR_CODE_CHECK_WARNING
-#error PROTOBUF_ERROR_CODE_CHECK_WARNING was previously defined
-#endif
-#if __cplusplus >= 201703L
-#define PROTOBUF_ERROR_CODE_CHECK_WARNING [[nodiscard]]
-#else
+#ifndef PROTOBUF_ERROR_CODE_CHECK_WARNING
+// For backward compability reasons the check is disabled for now. To enable it do one of:
+//   - delete the next line and uncomment 3 lines below
+//   - or add 'PROTOBUF_ERROR_CODE_CHECK_WARNING=[[nodiscard]]' to you build commands
 #define PROTOBUF_ERROR_CODE_CHECK_WARNING
+// #if __has_cpp_attribute(nodiscard)
+// #define PROTOBUF_ERROR_CODE_CHECK_WARNING [[nodiscard]]
+// #else
 #endif
 
 // The minimum library version which works with the current version of the
