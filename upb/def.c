@@ -298,7 +298,7 @@ const upb_enumvaldef *upb_enumdef_lookupnum(const upb_enumdef *def, int32_t num)
 }
 
 const upb_enumvaldef *upb_enumdef_value(const upb_enumdef *e, int i) {
-  UPB_ASSERT(i >= 0 && i < e->value_count);
+  UPB_ASSERT(0 <= i && i < e->value_count);
   return &e->values[i];
 }
 
@@ -1773,7 +1773,7 @@ static void create_enumdef(
 
   e->file = ctx->file;
   e->defaultval = 0;
-  e->value_count = 0;
+  e->value_count = n;
   e->values = symtab_alloc(ctx, sizeof(*e->values) * n);
 
   if (n == 0) {
@@ -1783,7 +1783,7 @@ static void create_enumdef(
 
   for (i = 0; i < n; i++) {
     const google_protobuf_EnumValueDescriptorProto *val_proto = values[i];
-    upb_enumvaldef *val = (upb_enumvaldef*)&e->values[e->value_count++];
+    upb_enumvaldef *val = (upb_enumvaldef*)&e->values[i];
     upb_strview name = google_protobuf_EnumValueDescriptorProto_name(val_proto);
     upb_value v = upb_value_constptr(val);
 

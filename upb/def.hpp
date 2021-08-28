@@ -348,14 +348,14 @@ class EnumDefPtr {
   int value_count() const { return upb_enumdef_numvals(ptr_); }
 
   // Lookups from name to integer, returning true if found.
-  const EnumValDefPtr FindValueByName(const char* name) const {
+  EnumValDefPtr FindValueByName(const char* name) const {
     return EnumValDefPtr(upb_enumdef_lookupnamez(ptr_, name));
   }
 
   // Finds the name corresponding to the given number, or NULL if none was
   // found.  If more than one name corresponds to this number, returns the
   // first one that was added.
-  const EnumValDefPtr FindValueByNumber(int32_t num) const {
+  EnumValDefPtr FindValueByNumber(int32_t num) const {
     return EnumValDefPtr(upb_enumdef_lookupnum(ptr_, num));
   }
 
