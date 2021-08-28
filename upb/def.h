@@ -54,6 +54,8 @@ extern "C" {
 
 struct upb_enumdef;
 typedef struct upb_enumdef upb_enumdef;
+struct upb_enumvaldef;
+typedef struct upb_enumvaldef upb_enumvaldef;
 struct upb_fielddef;
 typedef struct upb_fielddef upb_fielddef;
 struct upb_filedef;
@@ -264,26 +266,34 @@ const char *upb_enumdef_fullname(const upb_enumdef *e);
 const char *upb_enumdef_name(const upb_enumdef *e);
 const upb_filedef *upb_enumdef_file(const upb_enumdef *e);
 int32_t upb_enumdef_default(const upb_enumdef *e);
+int upb_enumdef_valuecount(const upb_enumdef *e);
+const upb_enumvaldef *upb_enumdef_value(const upb_enumdef *e, int i);
+
+const upb_enumvaldef *upb_enumdef_lookupname(const upb_enumdef *e,
+                                             const char *name, size_t len);
+const upb_enumvaldef *upb_enumdef_lookupnum(const upb_enumdef *e, int32_t num);
+
+/* DEPRECATED, slated for removal */
 int upb_enumdef_numvals(const upb_enumdef *e);
-
-/* Enum lookups:
- * - ntoi:  look up a name with specified length.
- * - ntoiz: look up a name provided as a null-terminated string.
- * - iton:  look up an integer, returning the name as a null-terminated
- *          string. */
-bool upb_enumdef_ntoi(const upb_enumdef *e, const char *name, size_t len,
-                      int32_t *num);
-UPB_INLINE bool upb_enumdef_ntoiz(const upb_enumdef *e,
-                                  const char *name, int32_t *num) {
-  return upb_enumdef_ntoi(e, name, strlen(name), num);
-}
-const char *upb_enumdef_iton(const upb_enumdef *e, int32_t num);
-
 void upb_enum_begin(upb_enum_iter *iter, const upb_enumdef *e);
 void upb_enum_next(upb_enum_iter *iter);
 bool upb_enum_done(upb_enum_iter *iter);
 const char *upb_enum_iter_name(upb_enum_iter *iter);
 int32_t upb_enum_iter_number(upb_enum_iter *iter);
+/* END DEPRECATED */
+
+// Convenience wrapper.
+UPB_INLINE const upb_enumvaldef *upb_enumdef_lookupnamez(const upb_enumdef *e,
+                                                         const char *name) {
+  return upb_enumdef_lookupname(e, name, strlen(name));
+}
+
+/* upb_enumvaldef *************************************************************/
+
+const char *upb_enumvaldef_fullname(const upb_enumvaldef *e);
+const char *upb_enumvaldef_name(const upb_enumvaldef *e);
+int32_t upb_enumvaldef_number(const upb_enumvaldef *e);
+const upb_enumdef *upb_enumvaldef_enum(const upb_enumvaldef *e);
 
 /* upb_filedef ****************************************************************/
 
@@ -308,6 +318,8 @@ const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
 const upb_msgdef *upb_symtab_lookupmsg2(
     const upb_symtab *s, const char *sym, size_t len);
 const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
+const upb_enumvaldef *upb_symtab_lookupenumval(const upb_symtab *s,
+                                               const char *sym);
 const upb_fielddef *upb_symtab_lookupext(const upb_symtab *s, const char *sym);
 const upb_filedef *upb_symtab_lookupfile(const upb_symtab *s, const char *name);
 const upb_filedef *upb_symtab_lookupfile2(

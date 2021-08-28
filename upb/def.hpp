@@ -312,6 +312,19 @@ class MessageDefPtr {
   const upb_msgdef* ptr_;
 };
 
+class EnumValDefPtr {
+ public:
+  EnumValDefPtr() : ptr_(nullptr) {}
+  explicit EnumValDefPtr(const upb_enumvaldef* ptr) : ptr_(ptr) {}
+
+  int32_t number() const { return upb_enumvaldef_number(ptr_); }
+  const char *full_name() const { return upb_enumvaldef_fullname(ptr_); }
+  const char *name() const { return upb_enumvaldef_name(ptr_); }
+
+ private:
+  const upb_enumvaldef* ptr_;
+};
+
 class EnumDefPtr {
  public:
   EnumDefPtr() : ptr_(nullptr) {}
@@ -335,15 +348,15 @@ class EnumDefPtr {
   int value_count() const { return upb_enumdef_numvals(ptr_); }
 
   // Lookups from name to integer, returning true if found.
-  bool FindValueByName(const char* name, int32_t* num) const {
-    return upb_enumdef_ntoiz(ptr_, name, num);
+  EnumValDefPtr FindValueByName(const char* name) const {
+    return EnumValDefPtr(upb_enumdef_lookupnamez(ptr_, name));
   }
 
   // Finds the name corresponding to the given number, or NULL if none was
   // found.  If more than one name corresponds to this number, returns the
   // first one that was added.
-  const char* FindValueByNumber(int32_t num) const {
-    return upb_enumdef_iton(ptr_, num);
+  EnumValDefPtr FindValueByNumber(int32_t num) const {
+    return EnumValDefPtr(upb_enumdef_lookupnum(ptr_, num));
   }
 
   // Iteration over name/value pairs.  The order is undefined.
