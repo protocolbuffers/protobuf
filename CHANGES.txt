@@ -1,4 +1,4 @@
-2021-08-18 version 3.18.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2021-08-27 version 3.18.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
   * Fix warnings raised by clang 11 (#8664)
@@ -44,6 +44,9 @@
   * Optimize binary parsing of repeated float64
   * Fix for optimization when reading doubles from binary wire format
   * Replace toArray implementation with toJSON.
+
+  Python
+  * Drops support for 2.7 and 3.5.
 
   PHP
   * Migrate PHP & Ruby to ABSL wyhash (#8854)
