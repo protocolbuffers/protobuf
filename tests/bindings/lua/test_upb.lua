@@ -91,7 +91,7 @@ function test_def_readers()
   -- enum
   local e = test_messages_proto3['TestAllTypesProto3.NestedEnum']
   assert_true(#e > 3 and #e < 10)
-  assert_equal(2, e:value("BAZ"))
+  assert_equal(2, e:value("BAZ"):number())
 end
 
 function test_msg_map()
@@ -715,6 +715,30 @@ function test_descriptor_error()
   }
   assert_error(function () symtab:add_file(upb.encode(file)) end)
   assert_nil(symtab:lookup_msg("ABC"))
+end
+
+function test_duplicate_enumval()
+  local symtab = upb.SymbolTable()
+  local file_proto = descriptor.FileDescriptorProto {
+    name = "test.proto",
+    message_type = upb.Array(descriptor.DescriptorProto, {
+      descriptor.DescriptorProto{
+        name = "ABC",
+      },
+    }),
+    enum_type = upb.Array(descriptor.EnumDescriptorProto, {
+      descriptor.EnumDescriptorProto{
+        name = "MyEnum",
+        value = upb.Array(descriptor.EnumValueDescriptorProto, {
+          descriptor.EnumValueDescriptorProto{
+            name = "ABC",
+            number = 1,
+          }
+        }),
+      },
+    })
+  }
+  assert_error(function () symtab:add_file(upb.encode(file_proto)) end)
 end
 
 function test_duplicate_filename_error()

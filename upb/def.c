@@ -101,7 +101,15 @@ struct upb_enumdef {
   const char *full_name;
   upb_strtable ntoi;
   upb_inttable iton;
+  const upb_enumvaldef *values;
+  int value_count;
   int32_t defaultval;
+};
+
+struct upb_enumvaldef {
+  const upb_enumdef *enum_;
+  const char *full_name;
+  int32_t number;
 };
 
 struct upb_oneofdef {
@@ -147,6 +155,7 @@ typedef enum {
   /* Only inside symtab table. */
   UPB_DEFTYPE_MSG = 1,
   UPB_DEFTYPE_ENUM = 2,
+  UPB_DEFTYPE_ENUMVAL = 3,
 
   /* Only inside message table. */
   UPB_DEFTYPE_ONEOF = 1,
@@ -270,9 +279,30 @@ const upb_filedef *upb_enumdef_file(const upb_enumdef *e) {
 }
 
 int32_t upb_enumdef_default(const upb_enumdef *e) {
-  UPB_ASSERT(upb_enumdef_iton(e, e->defaultval));
+  UPB_ASSERT(upb_enumdef_lookupnum(e, e->defaultval));
   return e->defaultval;
 }
+
+const upb_enumvaldef *upb_enumdef_lookupname(const upb_enumdef *def,
+                                             const char *name, size_t len) {
+  upb_value v;
+  return upb_strtable_lookup2(&def->ntoi, name, len, &v)
+             ? upb_value_getconstptr(v)
+             : NULL;
+}
+
+const upb_enumvaldef *upb_enumdef_lookupnum(const upb_enumdef *def, int32_t num) {
+  upb_value v;
+  return upb_inttable_lookup(&def->iton, num, &v) ? upb_value_getconstptr(v)
+                                                  : NULL;
+}
+
+const upb_enumvaldef *upb_enumdef_value(const upb_enumdef *e, int i) {
+  UPB_ASSERT(i >= 0 && i < e->value_count);
+  return &e->values[i];
+}
+
+// Deprecated functions.
 
 int upb_enumdef_numvals(const upb_enumdef *e) {
   return (int)upb_strtable_count(&e->ntoi);
@@ -286,27 +316,31 @@ void upb_enum_begin(upb_enum_iter *i, const upb_enumdef *e) {
 void upb_enum_next(upb_enum_iter *iter) { upb_strtable_next(iter); }
 bool upb_enum_done(upb_enum_iter *iter) { return upb_strtable_done(iter); }
 
-bool upb_enumdef_ntoi(const upb_enumdef *def, const char *name,
-                      size_t len, int32_t *num) {
-  upb_value v;
-  if (!upb_strtable_lookup2(&def->ntoi, name, len, &v)) {
-    return false;
-  }
-  if (num) *num = upb_value_getint32(v);
-  return true;
-}
-
-const char *upb_enumdef_iton(const upb_enumdef *def, int32_t num) {
-  upb_value v;
-  return upb_inttable_lookup(&def->iton, num, &v) ? upb_value_getcstr(v) : NULL;
-}
-
 const char *upb_enum_iter_name(upb_enum_iter *iter) {
   return upb_strtable_iter_key(iter).data;
 }
 
 int32_t upb_enum_iter_number(upb_enum_iter *iter) {
   return upb_value_getint32(upb_strtable_iter_value(iter));
+}
+
+
+/* upb_enumvaldef *************************************************************/
+
+const upb_enumdef *upb_enumvaldef_enum(const upb_enumvaldef *ev) {
+  return ev->enum_;
+}
+
+const char *upb_enumvaldef_fullname(const upb_enumvaldef *ev) {
+  return ev->full_name;
+}
+
+const char *upb_enumvaldef_name(const upb_enumvaldef *ev) {
+  return shortdefname(ev->full_name);
+}
+
+int32_t upb_enumvaldef_number(const upb_enumvaldef *ev) {
+  return ev->number;
 }
 
 
@@ -877,6 +911,14 @@ const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym) {
       unpack_def(v, UPB_DEFTYPE_ENUM) : NULL;
 }
 
+const upb_enumvaldef *upb_symtab_lookupenumval(const upb_symtab *s,
+                                               const char *sym) {
+  upb_value v;
+  return upb_strtable_lookup(&s->syms, sym, &v)
+             ? unpack_def(v, UPB_DEFTYPE_ENUMVAL)
+             : NULL;
+}
+
 const upb_filedef *upb_symtab_lookupfile(const upb_symtab *s, const char *name) {
   upb_value v;
   return upb_strtable_lookup(&s->files, name, &v) ? upb_value_getconstptr(v)
@@ -1217,7 +1259,9 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
 }
 
 static char *strviewdup(symtab_addctx *ctx, upb_strview view) {
-  return upb_strdup2(view.data, view.size, ctx->arena);
+  char *ret = upb_strdup2(view.data, view.size, ctx->arena);
+  CHK_OOM(ret);
+  return ret;
 }
 
 static bool streql2(const char *a, size_t n, const char *b) {
@@ -1325,6 +1369,8 @@ static char* makejsonname(symtab_addctx *ctx, const char* name) {
 }
 
 static void symtab_add(symtab_addctx *ctx, const char *name, upb_value v) {
+  // TODO: table should support an operation "tryinsert" to avoid the double
+  // lookup.
   if (upb_strtable_lookup(&ctx->symtab->syms, name, NULL)) {
     symtab_errf(ctx, "duplicate symbol '%s'", name);
   }
@@ -1433,11 +1479,11 @@ static void parse_default(symtab_addctx *ctx, const char *str, size_t len,
     }
     case UPB_TYPE_ENUM: {
       const upb_enumdef *e = f->sub.enumdef;
-      int32_t val;
-      if (!upb_enumdef_ntoi(e, str, len, &val)) {
+      const upb_enumvaldef *ev = upb_enumdef_lookupname(e, str, len);
+      if (!ev) {
         goto invalid;
       }
-      f->defaultval.sint = val;
+      f->defaultval.sint = ev->number;
       break;
     }
     case UPB_TYPE_INT64: {
@@ -1721,6 +1767,8 @@ static void create_enumdef(
 
   e->file = ctx->file;
   e->defaultval = 0;
+  e->value_count = 0;
+  e->values = symtab_alloc(ctx, sizeof(*e->values) * n);
 
   if (n == 0) {
     symtab_errf(ctx, "enums must contain at least one value (%s)",
@@ -1728,27 +1776,26 @@ static void create_enumdef(
   }
 
   for (i = 0; i < n; i++) {
-    const google_protobuf_EnumValueDescriptorProto *value = values[i];
-    upb_strview name = google_protobuf_EnumValueDescriptorProto_name(value);
-    char *name2 = strviewdup(ctx, name);
-    int32_t num = google_protobuf_EnumValueDescriptorProto_number(value);
-    upb_value v = upb_value_int32(num);
+    const google_protobuf_EnumValueDescriptorProto *val_proto = values[i];
+    upb_enumvaldef *val = (upb_enumvaldef*)&e->values[e->value_count++];
+    upb_strview name = google_protobuf_EnumValueDescriptorProto_name(val_proto);
+    upb_value v = upb_value_constptr(val);
 
-    if (i == 0 && e->file->syntax == UPB_SYNTAX_PROTO3 && num != 0) {
+    val->enum_ = e;
+    val->full_name = makefullname(ctx, prefix, name);
+    val->number = google_protobuf_EnumValueDescriptorProto_number(val_proto);
+    symtab_add(ctx, val->full_name, pack_def(val, UPB_DEFTYPE_ENUMVAL));
+
+    if (i == 0 && e->file->syntax == UPB_SYNTAX_PROTO3 && val->number != 0) {
       symtab_errf(ctx, "for proto3, the first enum value must be zero (%s)",
                   e->full_name);
     }
 
-    if (upb_strtable_lookup(&e->ntoi, name2, NULL)) {
-      symtab_errf(ctx, "duplicate enum label '%s'", name2);
-    }
+    CHK_OOM(upb_strtable_insert(&e->ntoi, name.data, name.size, v, ctx->arena));
 
-    CHK_OOM(name2)
-    CHK_OOM(upb_strtable_insert(&e->ntoi, name2, strlen(name2), v, ctx->arena));
-
-    if (!upb_inttable_lookup(&e->iton, num, NULL)) {
-      upb_value v = upb_value_cstr(name2);
-      CHK_OOM(upb_inttable_insert(&e->iton, num, v, ctx->arena));
+    // Multiple enumerators can have the same number, first one wins.
+    if (!upb_inttable_lookup(&e->iton, val->number, NULL)) {
+      CHK_OOM(upb_inttable_insert(&e->iton, val->number, v, ctx->arena));
     }
   }
 

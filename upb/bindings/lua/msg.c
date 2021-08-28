@@ -390,6 +390,7 @@ static int lupb_array_checkindex(lua_State *L, int narg, uint32_t max) {
  *   Array(message_type)
  */
 static int lupb_array_new(lua_State *L) {
+  int arg_count = lua_gettop(L);
   lupb_array *larray;
   upb_arena *arena;
 
@@ -410,6 +411,17 @@ static int lupb_array_new(lua_State *L) {
 
   larray->arr = upb_array_new(arena, larray->type);
   lupb_cacheset(L, larray->arr);
+
+  if (arg_count > 1) {
+    /* Set initial fields from table. */
+    int msg = arg_count + 1;
+    lua_pushnil(L);
+    while (lua_next(L, 2) != 0) {
+      lua_pushvalue(L, -2);  /* now stack is key, val, key */
+      lua_insert(L, -3);  /* now stack is key, key, val */
+      lua_settable(L, msg);
+    }
+  }
 
   return 1;
 }

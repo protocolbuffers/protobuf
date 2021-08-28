@@ -203,10 +203,10 @@ static void jsonenc_enum(int32_t val, const upb_fielddef *f, jsonenc *e) {
   if (strcmp(upb_enumdef_fullname(e_def), "google.protobuf.NullValue") == 0) {
     jsonenc_putstr(e, "null");
   } else {
-    const char *name = upb_enumdef_iton(e_def, val);
+    const upb_enumvaldef *ev = upb_enumdef_lookupnum(e_def, val);
 
-    if (name) {
-      jsonenc_printf(e, "\"%s\"", name);
+    if (ev) {
+      jsonenc_printf(e, "\"%s\"", upb_enumvaldef_name(ev));
     } else {
       jsonenc_printf(e, "%" PRId32, val);
     }
