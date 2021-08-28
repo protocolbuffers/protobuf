@@ -220,6 +220,9 @@ class WorkspaceFileFunctions(object):
   def rules_fuzzing_init(self):
     pass
 
+  def system_python(self, **kwargs):
+    pass
+
 
 class Converter(object):
   def __init__(self):

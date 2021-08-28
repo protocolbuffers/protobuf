@@ -320,6 +320,7 @@ const upb_msgdef *upb_symtab_lookupmsg2(
 const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
 const upb_enumvaldef *upb_symtab_lookupenumval(const upb_symtab *s,
                                                const char *sym);
+const upb_fielddef *upb_symtab_lookupext(const upb_symtab *s, const char *sym);
 const upb_filedef *upb_symtab_lookupfile(const upb_symtab *s, const char *name);
 const upb_filedef *upb_symtab_lookupfile2(
     const upb_symtab *s, const char *name, size_t len);
