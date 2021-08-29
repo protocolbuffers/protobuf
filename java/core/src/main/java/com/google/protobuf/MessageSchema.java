@@ -80,6 +80,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** Schema used for standard messages. */
 final class MessageSchema<T> implements Schema<T> {
@@ -1176,9 +1177,7 @@ final class MessageSchema<T> implements Schema<T> {
 
   @Override
   public void mergeFrom(T message, T other) {
-    if (other == null) {
-      throw new NullPointerException();
-    }
+    Objects.requireNonNull(other);
     for (int i = 0; i < buffer.length; i += INTS_PER_FIELD) {
       // A separate method allows for better JIT optimizations
       mergeSingleField(message, other, i);
@@ -3850,9 +3849,7 @@ final class MessageSchema<T> implements Schema<T> {
   @Override
   public void mergeFrom(T message, Reader reader, ExtensionRegistryLite extensionRegistry)
       throws IOException {
-    if (extensionRegistry == null) {
-      throw new NullPointerException();
-    }
+    Objects.requireNonNull(extensionRegistry);
     mergeFromHelper(unknownFieldSchema, extensionSchema, message, reader, extensionRegistry);
   }
 

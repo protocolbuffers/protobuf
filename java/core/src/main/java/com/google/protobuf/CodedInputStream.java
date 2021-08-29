@@ -33,7 +33,6 @@ package com.google.protobuf;
 import static com.google.protobuf.Internal.EMPTY_BYTE_ARRAY;
 import static com.google.protobuf.Internal.EMPTY_BYTE_BUFFER;
 import static com.google.protobuf.Internal.UTF_8;
-import static com.google.protobuf.Internal.checkNotNull;
 import static com.google.protobuf.WireFormat.FIXED32_SIZE;
 import static com.google.protobuf.WireFormat.FIXED64_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
@@ -47,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Reads and decodes protocol message fields.
@@ -2056,8 +2056,7 @@ public abstract class CodedInputStream {
     private int currentLimit = Integer.MAX_VALUE;
 
     private StreamDecoder(final InputStream input, int bufferSize) {
-      checkNotNull(input, "input");
-      this.input = input;
+      this.input = Objects.requireNonNull(input, "input");
       this.buffer = new byte[bufferSize];
       this.bufferSize = 0;
       pos = 0;

@@ -30,8 +30,6 @@
 
 package com.google.protobuf;
 
-import static com.google.protobuf.Internal.checkNotNull;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidObjectException;
@@ -44,13 +42,14 @@ import java.nio.InvalidMarkException;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /** A {@link ByteString} that wraps around a {@link ByteBuffer}. */
 final class NioByteString extends ByteString.LeafByteString {
   private final ByteBuffer buffer;
 
   NioByteString(ByteBuffer buffer) {
-    checkNotNull(buffer, "buffer");
+    Objects.requireNonNull(buffer, "buffer");
 
     // Use native byte order for fast fixed32/64 operations.
     this.buffer = buffer.slice().order(ByteOrder.nativeOrder());

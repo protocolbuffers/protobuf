@@ -30,13 +30,13 @@
 
 package com.google.protobuf;
 
-import static com.google.protobuf.Internal.checkNotNull;
 import static com.google.protobuf.WireFormat.WIRETYPE_LENGTH_DELIMITED;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** An adapter between the {@link Writer} interface and {@link CodedOutputStream}. */
 @ExperimentalApi
@@ -51,7 +51,7 @@ final class CodedOutputStreamWriter implements Writer {
   }
 
   private CodedOutputStreamWriter(CodedOutputStream output) {
-    this.output = checkNotNull(output, "output");
+    this.output = Objects.requireNonNull(output, "output");
     this.output.wrapper = this;
   }
 

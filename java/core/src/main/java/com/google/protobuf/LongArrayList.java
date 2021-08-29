@@ -30,11 +30,10 @@
 
 package com.google.protobuf;
 
-import static com.google.protobuf.Internal.checkNotNull;
-
 import com.google.protobuf.Internal.LongList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.RandomAccess;
 
 /**
@@ -237,7 +236,7 @@ final class LongArrayList extends AbstractProtobufList<Long>
   public boolean addAll(Collection<? extends Long> collection) {
     ensureIsMutable();
 
-    checkNotNull(collection);
+    Objects.requireNonNull(collection);
 
     // We specialize when adding another LongArrayList to avoid boxing elements.
     if (!(collection instanceof LongArrayList)) {

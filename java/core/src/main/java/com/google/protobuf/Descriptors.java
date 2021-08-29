@@ -30,8 +30,6 @@
 
 package com.google.protobuf;
 
-import static com.google.protobuf.Internal.checkNotNull;
-
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.DescriptorProtos.EnumOptions;
@@ -57,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
@@ -744,7 +743,7 @@ public final class Descriptors {
 
     /** Determines if the given field name is reserved. */
     public boolean isReservedName(final String name) {
-      checkNotNull(name);
+      Objects.requireNonNull(name);
       for (final String reservedName : proto.getReservedNameList()) {
         if (reservedName.equals(name)) {
           return true;
