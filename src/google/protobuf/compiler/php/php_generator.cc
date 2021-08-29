@@ -1119,9 +1119,9 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
       file, &nodes_without_dependency, &deps, &dependency_count);
 
   while (!nodes_without_dependency.empty()) {
-    auto file = *nodes_without_dependency.begin();
-    nodes_without_dependency.erase(file);
-    for (auto dependent : deps[file]) {
+    auto file_node = *nodes_without_dependency.begin();
+    nodes_without_dependency.erase(file_node);
+    for (auto dependent : deps[file_node]) {
       if (dependency_count[dependent] == 1) {
         dependency_count.erase(dependent);
         nodes_without_dependency.insert(dependent);
@@ -1130,11 +1130,11 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
       }
     }
 
-    bool needs_aggregate = NeedsUnwrapping(file, options);
+    bool needs_aggregate = NeedsUnwrapping(file_node, options);
 
     if (needs_aggregate) {
       auto file_proto = sorted_file_set.add_file();
-      file->CopyTo(file_proto);
+      file_node->CopyTo(file_proto);
 
       // Filter out descriptor.proto as it cannot be depended on for now.
       RepeatedPtrField<std::string>* dependency =
@@ -1156,7 +1156,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
         it->clear_extension();
       }
     } else {
-      std::string dependency_filename = GeneratedMetadataFileName(file, false);
+      std::string dependency_filename = GeneratedMetadataFileName(file_node, false);
       printer->Print(
           "\\^name^::initOnce();\n",
           "name", FilenameToClassname(dependency_filename));
