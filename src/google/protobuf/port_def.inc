@@ -766,6 +766,8 @@
 #pragma warning(disable : 4073)
 // To silence the fact that we will pop this push from another file
 #pragma warning(disable : 5031)
+// Conditional expression is constant
+#pragma warning(disable: 4127)
 #endif
 
 // We don't want code outside port_def doing complex testing, so
