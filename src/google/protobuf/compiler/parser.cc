@@ -1549,7 +1549,7 @@ bool Parser::ParseOption(Message* options,
           value_location.AddPath(
               UninterpretedOption::kNegativeIntValueFieldNumber);
           uninterpreted_option->set_negative_int_value(
-              static_cast<int64_t>(-value));
+              static_cast<int64_t>(0 - value));
         } else {
           value_location.AddPath(
               UninterpretedOption::kPositiveIntValueFieldNumber);
