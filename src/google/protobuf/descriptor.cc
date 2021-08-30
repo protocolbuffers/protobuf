@@ -1720,7 +1720,7 @@ DescriptorPool::Tables::AllocateFieldNames(const std::string& name,
   const int total_count = 2 + (lower_eq_name ? 0 : 1) +
                           (camel_eq_name ? 0 : 1) +
                           (json_eq_name || json_eq_camel ? 0 : 1);
-  FieldNamesResult result{};
+  FieldNamesResult result{nullptr, 0, 0, 0};
   // We use std::array to allow handling of the destruction of the strings.
   switch (total_count) {
     case 2:
