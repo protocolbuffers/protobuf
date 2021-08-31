@@ -353,10 +353,10 @@
 // A lot of methods in the library (for example: Message interface) return bool to identify
 //   existing of errors during method processing
 // Ignoring return value of this methods is very common and hard detectable error
-// This macro add standertized attribute for functions, that lead to 'ignoring return value' warning
+// This macro add standardized attribute for functions, that lead to 'ignoring return value' warning
 // Very useful with -Werror
 #ifndef PROTOBUF_ERROR_CODE_CHECK_WARNING
-// For backward compability reasons the check is disabled for now. To enable it do one of:
+// For backward compatibility reasons the check is disabled for now. To enable it do one of:
 //   - delete the next line and uncomment 3 lines below
 //   - or add 'PROTOBUF_ERROR_CODE_CHECK_WARNING=[[nodiscard]]' to you build commands
 #define PROTOBUF_ERROR_CODE_CHECK_WARNING
