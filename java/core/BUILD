@@ -197,7 +197,6 @@ proto_library(
     strip_import_prefix = "src/test/proto",
     deps = [
         "//:any_proto",
-        "//:api_proto",
         "//:descriptor_proto",
         "//:generic_test_protos",
         "//:wrappers_proto",
