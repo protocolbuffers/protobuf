@@ -17,6 +17,19 @@ proto_lang_toolchain(
     command_line = "--java_out=lite:$(OUT)",
     runtime = ":lite",
     visibility = ["//visibility:public"],
+    # keep this in sync w/ LITE_WELL_KNOWN_PROTO_MAP in //:BUILD
+    blacklisted_protos = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
 )
 
 test_suite(

@@ -174,6 +174,21 @@ proto_lang_toolchain(
     command_line = "--java_out=$(OUT)",
     runtime = ":core",
     visibility = ["//visibility:public"],
+    # keep this in sync w/ WELL_KNOWN_PROTO_MAP in //:BUILD
+    blacklisted_protos = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:compiler_plugin_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
 )
 
 proto_library(
@@ -182,6 +197,7 @@ proto_library(
     strip_import_prefix = "src/test/proto",
     deps = [
         "//:any_proto",
+        "//:api_proto",
         "//:descriptor_proto",
         "//:generic_test_protos",
         "//:wrappers_proto",
