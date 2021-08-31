@@ -98,16 +98,22 @@ LITE_SRCS = [
 ]
 
 # Should be used as `//java/lite`.
-java_export(
+java_library(
     name = "lite",
-    maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % PROTOBUF_VERSION,
-    pom_template = "//java/lite:pom_template.xml",
     srcs = LITE_SRCS + [
         "//:gen_well_known_protos_javalite"
     ],
     visibility = [
         "//java/lite:__pkg__",
     ],
+)
+
+# Bazel users, don't depend on this target, use //java/lite.
+java_export(
+    name = "lite_mvn",
+    maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % PROTOBUF_VERSION,
+    pom_template = "//java/lite:pom_template.xml",
+    runtime_deps = [":lite"],
     resources = [
         "//:lite_well_known_protos",
     ],
@@ -118,10 +124,8 @@ java_library(
     srcs = LITE_SRCS,
 )
 
-java_export(
+java_library(
     name = "core",
-    maven_coordinates = "com.google.protobuf:protobuf-java:%s" % PROTOBUF_VERSION,
-    pom_template = "pom_template.xml",
     srcs = glob(
         [
             "src/main/java/com/google/protobuf/*.java",
@@ -137,6 +141,14 @@ java_export(
     deps = [
         ":lite_runtime_only",
     ],
+)
+
+# Bazel users, don't depend on this target, use :core.
+java_export(
+    name = "core_mvn",
+    maven_coordinates = "com.google.protobuf:protobuf-java:%s" % PROTOBUF_VERSION,
+    pom_template = "pom_template.xml",
+    runtime_deps = [":core"],
     resources = [
         "//:well_known_protos",
     ],
@@ -146,14 +158,14 @@ filegroup(
     name = "release",
     visibility = ["//java:__pkg__"],
     srcs = [
-        ":core-pom",
-        ":core-maven-source",
-        ":core-docs",
-        ":core-project",
-        ":lite-pom",
-        ":lite-maven-source",
-        ":lite-docs",
-        ":lite-project",
+        ":core_mvn-pom",
+        ":core_mvn-maven-source",
+        ":core_mvn-docs",
+        ":core_mvn-project",
+        ":lite_mvn-pom",
+        ":lite_mvn-maven-source",
+        ":lite_mvn-docs",
+        ":lite_mvn-project",
     ]
 )
 
