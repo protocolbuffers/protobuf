@@ -208,3 +208,8 @@ message MyStruct {
   string string = 1;
   google.protobuf.Struct struct = 2;
 }
+
+message WithJsonName {
+  optional int32 foo_bar = 1 [json_name="jsonFooBar"];
+  repeated WithJsonName baz = 2 [json_name="jsonBaz"];
+}
