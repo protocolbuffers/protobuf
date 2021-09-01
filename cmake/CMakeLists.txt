@@ -184,7 +184,7 @@ else (protobuf_BUILD_SHARED_LIBS)
   # Prior to CMake 3.15, the MSVC runtime library was pushed into the same flags
   # making programmatic control difficult.  Prefer the functionality in newer
   # CMake versions when available.
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
+  if(CMAKE_VERSION VERSION_GREATER 3.15 OR CMAKE_VERSION VERSION_EQUAL 3.15)
     set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
   else()
     # In case we are building static libraries, link also the runtime library statically
