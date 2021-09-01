@@ -2596,6 +2596,43 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
         "};\n"
         "\n"
         "\n");
+
+    printer->Print(
+        "/**\n"
+        " * @param {!Object<$keytype$,$valuetype$>} value\n"
+        " * @return {$class$}\n"
+        " */\n",
+        "class", GetMessagePath(options, field->containing_type()),
+        "keytype", key_type,
+        "valuetype", value_type);
+    printer->Print(
+        "$class$.prototype.$settername$ = function(value) {\n"
+        "  var map = jspb.Message.getMapField(this, $index$, false",
+        "class", GetMessagePath(options, field->containing_type()),
+        "settername", "set" + JSGetterName(options, field), "oneoftag",
+        (InRealOneof(field) ? "Oneof" : ""), "index", JSFieldIndex(field));
+
+    if (value_field->type() == FieldDescriptor::TYPE_MESSAGE) {
+      printer->Print(
+          ",\n"
+          "      $messageType$",
+          "messageType", GetMessagePath(options, value_field->message_type()));
+    } else {
+      printer->Print(
+          ",\n"
+          "      null");
+    }
+
+    printer->Print(");\n");
+
+    printer->Print(
+        "  Object.keys(value).forEach((key) => {\n"
+        "      map.set(key, value[key])\n"
+        "  })\n"
+        "  return this;\n"
+        "};\n"
+        "\n"
+        "\n");
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     // Message field: special handling in order to wrap the underlying data
     // array with a message object.

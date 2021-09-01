@@ -34,6 +34,7 @@ var group1Protos = [
   'test13.proto',
   'test14.proto',
   'test15.proto',
+  'test16.proto',
   'testbinary.proto',
   'testempty.proto',
   'test.proto',

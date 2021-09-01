@@ -42,6 +42,11 @@ goog.require('jspb.Message');
 // CommonJS-LoadFromFile: test15_pb proto.jspb.filenametest.package1
 goog.require('proto.jspb.filenametest.package1.b');
 
+// CommonJS-LoadFromFile: test16_pb proto.jspb.mapfunctiontest
+goog.require('proto.jspb.mapfunctiontest.TestStringMap');
+goog.require('proto.jspb.mapfunctiontest.TestMapItem');
+goog.require('proto.jspb.mapfunctiontest.TestMessageMap');
+
 // CommonJS-LoadFromFile: test14_pb proto.jspb.filenametest.package2
 goog.require('proto.jspb.filenametest.package2.TestMessage');
 
@@ -1107,5 +1112,32 @@ describe('Message test suite', function() {
 
     message.setAInt(42);
     assertEquals(42, message.getAInt());
+  });
+
+  it('testStringMapSetter', function() {
+    var message1 = new proto.jspb.mapfunctiontest.TestStringMap;
+
+    var map1 = {
+      0: 'test',
+      1: 'test2',
+    }
+    message1.setTestMapMap(map1);
+    assertEquals('test', message1.getTestMapMap().get(0));
+    assertEquals('test2', message1.getTestMapMap().get(1));
+  });
+
+  it('testMessageMapSetter', function() {
+    var message2 = new proto.jspb.mapfunctiontest.TestMessageMap;
+    var item1 = new proto.jspb.mapfunctiontest.TestMapItem;
+    item1.setId(111)
+    var item2 = new proto.jspb.mapfunctiontest.TestMapItem;
+    item2.setId(222)
+    var map2 = {
+      11: item1,
+      22: item2,
+    }
+    message2.setTestMapMap(map2);
+    assertObjectEquals(item1, message2.getTestMapMap().get(11));
+    assertObjectEquals(item2, message2.getTestMapMap().get(22));
   });
 });
