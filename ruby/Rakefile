@@ -101,8 +101,9 @@ else
     sh "rm Gemfile.lock"
     require 'rake_compiler_dock'
     RakeCompilerDock.sh <<-"EOT", platform: 'jruby', rubyvm: :jruby
+      sudo apt-get install maven -y && \
       bundle && \
-      IN_DOCKER=true rake gem
+      IN_DOCKER=true rake compile gem
     EOT
   end
 
