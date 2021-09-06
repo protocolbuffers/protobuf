@@ -130,6 +130,16 @@ gulp.task('genproto_wellknowntypes', function (cb) {
     cb(err);
   });
 });
+
+gulp.task('genproto_wellknowntypes_commonjs_strict', function (cb) {
+  exec('mkdir -p commonjs_strict && ' + protoc + ' --js_out=import_style=commonjs_strict,binary:./commonjs_strict -I ../src ' + wellKnownTypes.join(' '),
+       function (err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+});
+
 gulp.task('genproto_group3_commonjs_strict', function (cb) {
   exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs_strict,binary:commonjs_out -I ../src -I commonjs -I . ' + group3Protos.join(' '),
        function (err, stdout, stderr) {
@@ -153,7 +163,7 @@ function getClosureCompilerCommand(exportsFile, outputFile) {
   ].join(' ');
 }
 
-gulp.task('dist', gulp.series(['genproto_wellknowntypes'], function(cb) {
+gulp.task('dist', gulp.series(['genproto_wellknowntypes', 'genproto_wellknowntypes_commonjs_strict'], function(cb) {
   // TODO(haberman): minify this more aggressively.
   // Will require proper externs/exports.
   exec(

@@ -166,6 +166,7 @@ vendor/
 
 # JavaScript artifacts
 js/commonjs_out/
+js/commonjs_strict/
 js/compatibility_tests/v3.0.0/commonjs_out*
 js/compatibility_tests/v3.0.0/protoc
 js/compatibility_tests/v3.0.0/testproto_libs1.js
