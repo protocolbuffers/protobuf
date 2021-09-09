@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-#
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
@@ -37,12 +35,8 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 import json
 import math
 import struct
-import sys
 
-try:
-  import unittest2 as unittest  #PY26
-except ImportError:
-  import unittest
+import unittest
 
 from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
@@ -296,11 +290,8 @@ class JsonFormatTest(JsonFormatBase):
 
   def testJsonEscapeString(self):
     message = json_format_proto3_pb2.TestMessage()
-    if sys.version_info[0] < 3:
-      message.string_value = '&\n<\"\r>\b\t\f\\\001/\xe2\x80\xa8\xe2\x80\xa9'
-    else:
-      message.string_value = '&\n<\"\r>\b\t\f\\\001/'
-      message.string_value += (b'\xe2\x80\xa8\xe2\x80\xa9').decode('utf-8')
+    message.string_value = '&\n<\"\r>\b\t\f\\\001/'
+    message.string_value += (b'\xe2\x80\xa8\xe2\x80\xa9').decode('utf-8')
     self.assertEqual(
         json_format.MessageToJson(message),
         '{\n  "stringValue": '
@@ -1039,8 +1030,6 @@ class JsonFormatTest(JsonFormatBase):
         json_format.ParseError,
         'Failed to parse boolMap field: Expected "true" or "false", not null.',
         json_format.Parse, text, message)
-    if sys.version_info < (2, 7):
-      return
     text = r'{"stringMap": {"a": 3, "\u0061": 2}}'
     self.assertRaisesRegexp(
         json_format.ParseError,

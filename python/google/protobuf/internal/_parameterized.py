@@ -154,8 +154,6 @@ except ImportError:
   import unittest
 import uuid
 
-import six
-
 try:
   # Since python 3
   import collections.abc as collections_abc
@@ -181,7 +179,7 @@ def _StrClass(cls):
 
 def _NonStringIterable(obj):
   return (isinstance(obj, collections_abc.Iterable) and not
-          isinstance(obj, six.string_types))
+          isinstance(obj, str))
 
 
 def _FormatParameterList(testcase_params):

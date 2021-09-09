@@ -22,9 +22,11 @@ cd $(dirname $0)/../../..
 
 git submodule update --init --recursive
 
+#  Disabled for now, re-enable if appropriate.
+#  //:build_files_updated_unittest \
+
 trap print_test_logs EXIT
 bazel test -k --copt=-Werror --host_copt=-Werror \
-  //:build_files_updated_unittest \
   //java:tests \
   //:protoc \
   //:protobuf \

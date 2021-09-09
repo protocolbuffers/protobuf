@@ -414,6 +414,16 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
           p, std::is_convertible<T*, MessageLite*>());
     }
 
+    // Creates message-owned arena.
+    static Arena* CreateMessageOwnedArena() {
+      return new Arena(internal::MessageOwned{});
+    }
+
+    // Checks whether the given arena is message-owned.
+    static bool IsMessageOwnedArena(Arena* arena) {
+      return arena->IsMessageOwned();
+    }
+
    private:
     static Arena* GetArenaForAllocationInternal(
         const T* p, std::true_type /*is_derived_from<MessageLite>*/) {
@@ -520,6 +530,14 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   template <typename T>
   struct has_get_arena : InternalHelper<T>::has_get_arena {};
+
+  // Constructor solely used by message-owned arena.
+  inline Arena(internal::MessageOwned) : impl_(internal::MessageOwned{}) {}
+
+  // Checks whether this arena is message-owned.
+  PROTOBUF_ALWAYS_INLINE bool IsMessageOwned() const {
+    return impl_.IsMessageOwned();
+  }
 
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE static T* CreateMessageInternal(Arena* arena,

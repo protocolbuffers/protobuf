@@ -58,6 +58,7 @@
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/hash.h>
 
+// Must be last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -170,11 +171,7 @@ static std::unordered_set<std::string>* MakeKeywordsMap() {
 static std::unordered_set<std::string>& kKeywords = *MakeKeywordsMap();
 
 std::string IntTypeName(const Options& options, const std::string& type) {
-  if (options.opensource_runtime) {
-    return "::PROTOBUF_NAMESPACE_ID::" + type;
-  } else {
-    return "::" + type;
-  }
+  return type + "_t";
 }
 
 void SetIntVar(const Options& options, const std::string& type,
@@ -456,6 +453,19 @@ std::string FieldName(const FieldDescriptor* field) {
   return result;
 }
 
+std::string OneofCaseConstantName(const FieldDescriptor* field) {
+  GOOGLE_DCHECK(field->containing_oneof());
+  std::string field_name = UnderscoresToCamelCase(field->name(), true);
+  return "k" + field_name;
+}
+
+std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field) {
+  GOOGLE_DCHECK(field->containing_oneof());
+  const std::string qualification =
+      QualifiedClassName(field->containing_type());
+  return StrCat(qualification, "::", OneofCaseConstantName(field));
+}
+
 std::string EnumValueName(const EnumValueDescriptor* enum_value) {
   std::string result = enum_value->name();
   if (kKeywords.count(result) > 0) {
@@ -522,13 +532,13 @@ std::string StripProto(const std::string& filename) {
 const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
   switch (type) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return "::google::protobuf::int32";
+      return "int32_t";
     case FieldDescriptor::CPPTYPE_INT64:
-      return "::google::protobuf::int64";
+      return "int64_t";
     case FieldDescriptor::CPPTYPE_UINT32:
-      return "::google::protobuf::uint32";
+      return "uint32_t";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return "::google::protobuf::uint64";
+      return "uint64_t";
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return "double";
     case FieldDescriptor::CPPTYPE_FLOAT:

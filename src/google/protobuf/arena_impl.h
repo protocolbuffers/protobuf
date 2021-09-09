@@ -255,6 +255,13 @@ class PROTOBUF_EXPORT SerialArena {
   static constexpr size_t kCleanupSize = AlignUpTo8(sizeof(CleanupNode));
 };
 
+// Tag type used to invoke the constructor of message-owned arena.
+// Only message-owned arenas use this constructor for creation.
+// Such constructors are internal implementation details of the library.
+struct MessageOwned {
+  explicit MessageOwned() = default;
+};
+
 // This class provides the core Arena memory allocation library. Different
 // implementations only need to implement the public interface below.
 // Arena is not a template type as that would only be useful if all protos
@@ -264,6 +271,11 @@ class PROTOBUF_EXPORT SerialArena {
 class PROTOBUF_EXPORT ThreadSafeArena {
  public:
   ThreadSafeArena() { Init(false); }
+
+  // Constructor solely used by message-owned arena.
+  ThreadSafeArena(internal::MessageOwned) : alloc_policy_(kMessageOwnedArena) {
+    Init(false);
+  }
 
   ThreadSafeArena(char* mem, size_t size) { InitializeFrom(mem, size); }
 
@@ -320,6 +332,11 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
 
+  // Checks whether this arena is message-owned.
+  PROTOBUF_ALWAYS_INLINE bool IsMessageOwned() const {
+    return alloc_policy_ & kMessageOwnedArena;
+  }
+
  private:
   // Unique for each arena. Changes on Reset().
   uint64_t tag_and_id_;
@@ -328,7 +345,11 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   intptr_t alloc_policy_ = 0;  // Tagged pointer to AllocPolicy.
   // The LSB of alloc_policy_ indicates if the user owns the initial block.
-  enum { kUserOwnedInitialBlock = 1 };
+  // The second LSB of alloc_policy_ indicates if the arena is message-owned.
+  enum {
+    kUserOwnedInitialBlock = 1,
+    kMessageOwnedArena = 2,
+  };
 
   // Pointer to a linked list of SerialArena.
   std::atomic<SerialArena*> threads_;

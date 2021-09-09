@@ -1,4 +1,22 @@
 Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Python
+  * Removed Python 2.x support.
+  * Pure python descriptor_pool.AddSerializedFile() will always build the
+    file and return FileDescriptor which is same with python c++ extension
+  * type errors thrown by MergeFrom now report fully qualified class names
+  * Protobuf python generated code are simplified. Some platforms that uses
+    "is"("is not") to compare the enum or descriptor's label/type may fail,
+    should use "=="("!=") instead.
+
+  C++
+  * Generated code now uses the c++11 standard integer types int{32,64}_t and
+    uint{32,64}_t
+
+  Java
+  * Add @deprecated javadoc for set/get/has methods
+  * correctly decode \? escape sequence in text protos
+
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   C++
   * Better Smaller ByteSizeLong
   * Introduce event filters for inject_field_listener_events

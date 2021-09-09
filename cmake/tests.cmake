@@ -111,20 +111,20 @@ foreach(proto_file ${tests_protos})
       ${protobuf_source_dir}/src/${pb_file})
 endforeach(proto_file)
 
-set(common_test_files
-  ${protobuf_source_dir}/src/google/protobuf/arena_test_util.cc
-  ${protobuf_source_dir}/src/google/protobuf/map_test_util.inc
-  ${protobuf_source_dir}/src/google/protobuf/reflection_tester.cc
-  ${protobuf_source_dir}/src/google/protobuf/test_util.cc
-  ${protobuf_source_dir}/src/google/protobuf/test_util.inc
-  ${protobuf_source_dir}/src/google/protobuf/testing/file.cc
-  ${protobuf_source_dir}/src/google/protobuf/testing/googletest.cc
-)
-
 set(common_lite_test_files
   ${protobuf_source_dir}/src/google/protobuf/arena_test_util.cc
   ${protobuf_source_dir}/src/google/protobuf/map_lite_test_util.cc
   ${protobuf_source_dir}/src/google/protobuf/test_util_lite.cc
+)
+
+set(common_test_files
+  ${common_lite_test_files}
+  ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/map_test_util.inc
+  ${protobuf_source_dir}/src/google/protobuf/reflection_tester.cc
+  ${protobuf_source_dir}/src/google/protobuf/test_util.cc
+  ${protobuf_source_dir}/src/google/protobuf/testing/file.cc
+  ${protobuf_source_dir}/src/google/protobuf/testing/googletest.cc
 )
 
 set(tests_files
@@ -132,6 +132,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/arena_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/arenastring_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/annotation_test_util.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/annotation_test_util.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/command_line_interface_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_move_unittest.cc
@@ -144,7 +145,6 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/importer_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_doc_comment_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_plugin_unittest.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/parser_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_plugin_unittest.cc

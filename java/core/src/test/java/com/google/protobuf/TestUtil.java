@@ -3815,8 +3815,7 @@ public final class TestUtil {
 
   private static ByteString readBytesFromResource(String name) {
     try {
-      return ByteString.copyFrom(
-          com.google.common.io.ByteStreams.toByteArray(TestUtil.class.getResourceAsStream(name)));
+      return ByteString.readFrom(TestUtil.class.getResourceAsStream(name));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

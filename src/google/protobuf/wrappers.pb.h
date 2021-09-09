@@ -50,7 +50,7 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fwrappers_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
-  static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
+  static const uint32_t offsets[];
 };
 PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fwrappers_2eproto;
 PROTOBUF_NAMESPACE_OPEN
@@ -190,8 +190,8 @@ class PROTOBUF_EXPORT DoubleValue final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -338,8 +338,8 @@ class PROTOBUF_EXPORT FloatValue final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -486,8 +486,8 @@ class PROTOBUF_EXPORT Int64Value final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -521,11 +521,11 @@ class PROTOBUF_EXPORT Int64Value final :
   };
   // int64 value = 1;
   void clear_value();
-  ::PROTOBUF_NAMESPACE_ID::int64 value() const;
-  void set_value(::PROTOBUF_NAMESPACE_ID::int64 value);
+  int64_t value() const;
+  void set_value(int64_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_value() const;
-  void _internal_set_value(::PROTOBUF_NAMESPACE_ID::int64 value);
+  int64_t _internal_value() const;
+  void _internal_set_value(int64_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Int64Value)
@@ -535,7 +535,7 @@ class PROTOBUF_EXPORT Int64Value final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::int64 value_;
+  int64_t value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
@@ -634,8 +634,8 @@ class PROTOBUF_EXPORT UInt64Value final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -669,11 +669,11 @@ class PROTOBUF_EXPORT UInt64Value final :
   };
   // uint64 value = 1;
   void clear_value();
-  ::PROTOBUF_NAMESPACE_ID::uint64 value() const;
-  void set_value(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  uint64_t value() const;
+  void set_value(uint64_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_value() const;
-  void _internal_set_value(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  uint64_t _internal_value() const;
+  void _internal_set_value(uint64_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt64Value)
@@ -683,7 +683,7 @@ class PROTOBUF_EXPORT UInt64Value final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 value_;
+  uint64_t value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
@@ -782,8 +782,8 @@ class PROTOBUF_EXPORT Int32Value final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -817,11 +817,11 @@ class PROTOBUF_EXPORT Int32Value final :
   };
   // int32 value = 1;
   void clear_value();
-  ::PROTOBUF_NAMESPACE_ID::int32 value() const;
-  void set_value(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t value() const;
+  void set_value(int32_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_value() const;
-  void _internal_set_value(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t _internal_value() const;
+  void _internal_set_value(int32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Int32Value)
@@ -831,7 +831,7 @@ class PROTOBUF_EXPORT Int32Value final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::int32 value_;
+  int32_t value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
@@ -930,8 +930,8 @@ class PROTOBUF_EXPORT UInt32Value final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -965,11 +965,11 @@ class PROTOBUF_EXPORT UInt32Value final :
   };
   // uint32 value = 1;
   void clear_value();
-  ::PROTOBUF_NAMESPACE_ID::uint32 value() const;
-  void set_value(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  uint32_t value() const;
+  void set_value(uint32_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_value() const;
-  void _internal_set_value(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  uint32_t _internal_value() const;
+  void _internal_set_value(uint32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt32Value)
@@ -979,7 +979,7 @@ class PROTOBUF_EXPORT UInt32Value final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::uint32 value_;
+  uint32_t value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
@@ -1078,8 +1078,8 @@ class PROTOBUF_EXPORT BoolValue final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -1226,8 +1226,8 @@ class PROTOBUF_EXPORT StringValue final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -1379,8 +1379,8 @@ class PROTOBUF_EXPORT BytesValue final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -1500,18 +1500,18 @@ inline void FloatValue::set_value(float value) {
 inline void Int64Value::clear_value() {
   value_ = int64_t{0};
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 Int64Value::_internal_value() const {
+inline int64_t Int64Value::_internal_value() const {
   return value_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 Int64Value::value() const {
+inline int64_t Int64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int64Value.value)
   return _internal_value();
 }
-inline void Int64Value::_internal_set_value(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void Int64Value::_internal_set_value(int64_t value) {
   
   value_ = value;
 }
-inline void Int64Value::set_value(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void Int64Value::set_value(int64_t value) {
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Int64Value.value)
 }
@@ -1524,18 +1524,18 @@ inline void Int64Value::set_value(::PROTOBUF_NAMESPACE_ID::int64 value) {
 inline void UInt64Value::clear_value() {
   value_ = uint64_t{0u};
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 UInt64Value::_internal_value() const {
+inline uint64_t UInt64Value::_internal_value() const {
   return value_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 UInt64Value::value() const {
+inline uint64_t UInt64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt64Value.value)
   return _internal_value();
 }
-inline void UInt64Value::_internal_set_value(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void UInt64Value::_internal_set_value(uint64_t value) {
   
   value_ = value;
 }
-inline void UInt64Value::set_value(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void UInt64Value::set_value(uint64_t value) {
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.UInt64Value.value)
 }
@@ -1548,18 +1548,18 @@ inline void UInt64Value::set_value(::PROTOBUF_NAMESPACE_ID::uint64 value) {
 inline void Int32Value::clear_value() {
   value_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Int32Value::_internal_value() const {
+inline int32_t Int32Value::_internal_value() const {
   return value_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Int32Value::value() const {
+inline int32_t Int32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int32Value.value)
   return _internal_value();
 }
-inline void Int32Value::_internal_set_value(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Int32Value::_internal_set_value(int32_t value) {
   
   value_ = value;
 }
-inline void Int32Value::set_value(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Int32Value::set_value(int32_t value) {
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Int32Value.value)
 }
@@ -1572,18 +1572,18 @@ inline void Int32Value::set_value(::PROTOBUF_NAMESPACE_ID::int32 value) {
 inline void UInt32Value::clear_value() {
   value_ = 0u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 UInt32Value::_internal_value() const {
+inline uint32_t UInt32Value::_internal_value() const {
   return value_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint32 UInt32Value::value() const {
+inline uint32_t UInt32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt32Value.value)
   return _internal_value();
 }
-inline void UInt32Value::_internal_set_value(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void UInt32Value::_internal_set_value(uint32_t value) {
   
   value_ = value;
 }
-inline void UInt32Value::set_value(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+inline void UInt32Value::set_value(uint32_t value) {
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.UInt32Value.value)
 }
@@ -1659,6 +1659,11 @@ inline void StringValue::set_allocated_value(std::string* value) {
   }
   value_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (value_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.StringValue.value)
 }
 
@@ -1709,6 +1714,11 @@ inline void BytesValue::set_allocated_value(std::string* value) {
   }
   value_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (value_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.BytesValue.value)
 }
 

@@ -312,9 +312,9 @@ build_python() {
   internal_build_cpp
   cd python
   if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{27,33,34,35,36\}-python
+    envlist=py\{35,36\}-python
   else
-    envlist=py\{27,36\}-python
+    envlist=py\{36\}-python
   fi
   python -m tox -e $envlist
   cd ..
@@ -326,10 +326,6 @@ build_python_version() {
   envlist=$1
   python -m tox -e $envlist
   cd ..
-}
-
-build_python27() {
-  build_python_version py27-python
 }
 
 build_python33() {
@@ -366,9 +362,9 @@ build_python_cpp() {
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
   if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{27,33,34,35,36\}-cpp
+    envlist=py\{35,36\}-cpp
   else
-    envlist=py\{27,36\}-cpp
+    envlist=py\{36\}-cpp
   fi
   tox -e $envlist
   cd ..
@@ -382,10 +378,6 @@ build_python_cpp_version() {
   envlist=$1
   tox -e $envlist
   cd ..
-}
-
-build_python27_cpp() {
-  build_python_cpp_version py27-cpp
 }
 
 build_python33_cpp() {

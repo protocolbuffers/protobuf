@@ -292,6 +292,14 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
       format(
           "  return $name$_.ReleaseNonDefault($init_value$, "
           "GetArenaForAllocation());\n");
+      if (descriptor_->default_value_string().empty()) {
+        format(
+            "#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING\n"
+            "  if ($name$_.IsDefault($init_value$)) {\n"
+            "    $name$_.Set($init_value$, \"\", GetArenaForAllocation());\n"
+            "  }\n"
+            "#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING\n");
+      }
     } else {
       format(
           "  return $name$_.Release(nullptr, GetArenaForAllocation(), "
@@ -314,6 +322,14 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
     format(
         "  $name$_.SetAllocated($init_value$, $name$,\n"
         "      GetArenaForAllocation());\n");
+    if (descriptor_->default_value_string().empty()) {
+      format(
+          "#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING\n"
+          "  if ($name$_.IsDefault($init_value$)) {\n"
+          "    $name$_.Set($init_value$, \"\", GetArenaForAllocation());\n"
+          "  }\n"
+          "#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING\n");
+    }
   } else {
     // Currently, string fields with default value can't be inlined.
     format(
@@ -422,6 +438,13 @@ void StringFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   }
   GOOGLE_DCHECK(!inlined_);
   format("$name$_.UnsafeSetDefault($init_value$);\n");
+  if (IsString(descriptor_, options_) &&
+      descriptor_->default_value_string().empty()) {
+    format(
+        "#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING\n"
+        "  $name$_.Set($init_value$, \"\", GetArenaForAllocation());\n"
+        "#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING\n");
+  }
 }
 
 void StringFieldGenerator::GenerateCopyConstructorCode(
