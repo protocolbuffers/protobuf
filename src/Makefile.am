@@ -700,6 +700,7 @@ COMMON_TEST_SOURCES =                                          \
   $(COMMON_LITE_TEST_SOURCES)                                  \
   google/protobuf/compiler/cpp/cpp_unittest.h                  \
   google/protobuf/map_test_util.h                              \
+  google/protobuf/map_test_util.inc                            \
   google/protobuf/reflection_tester.cc                         \
   google/protobuf/reflection_tester.h                          \
   google/protobuf/test_util.cc                                 \
