@@ -73,6 +73,9 @@ public interface MessageLite extends MessageLiteOrBuilder {
   /**
    * Get the number of bytes required to encode this message. The result is only computed on the
    * first call and memoized after that.
+   *
+   * If this message requires more than Integer.MAX_VALUE bytes to encode, the return value will
+   * be smaller than the actual number of bytes required and might be negative.
    */
   int getSerializedSize();
 
@@ -85,12 +88,18 @@ public interface MessageLite extends MessageLiteOrBuilder {
   /**
    * Serializes the message to a {@code ByteString} and returns it. This is just a trivial wrapper
    * around {@link #writeTo(CodedOutputStream)}.
+   *
+   * If this message requires more than Integer.MAX_VALUE bytes to encode, the behavior is
+   * unpredictable. It may throw a runtime exception or truncate or slice the data.
    */
   ByteString toByteString();
 
   /**
    * Serializes the message to a {@code byte} array and returns it. This is just a trivial wrapper
    * around {@link #writeTo(CodedOutputStream)}.
+   *
+   * If this message requires more than Integer.MAX_VALUE bytes to encode, the behavior is
+   * unpredictable. It may throw a runtime exception or truncate or slice the data.
    */
   byte[] toByteArray();
 

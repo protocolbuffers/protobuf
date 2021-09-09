@@ -445,9 +445,12 @@ public final class TextFormat {
     }
 
     /**
-     * An adapter class that can take a MapEntry or a MutableMapEntry and returns its key and entry.
-     * This class is created solely for the purpose of sorting map entries by its key and prevent
-     * duplicated logic by having a separate comparator for MapEntry and MutableMapEntry.
+     * An adapter class that can take a {@link MapEntry} and returns its key and entry.
+     * BEGIN GOOGLE-INTERNAL
+     * This class is created solely for the purpose of sorting map entries by its
+     * key and prevent duplicated logic by having a separate comparator for {@link MapEntry} and
+     * {@link MutableMapEntry}.
+     * END GOOGLE-INTERNAL
      */
     private static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
       private Object entry;
@@ -2359,6 +2362,9 @@ public final class TextFormat {
                 break;
               case '"':
                 result[pos++] = '\"';
+                break;
+              case '?':
+                result[pos++] = '?';
                 break;
 
               case 'x':

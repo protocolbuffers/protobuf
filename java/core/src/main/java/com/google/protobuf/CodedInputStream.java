@@ -2013,20 +2013,20 @@ public abstract class CodedInputStream {
     private ByteBuffer slice(long begin, long end) throws IOException {
       int prevPos = buffer.position();
       int prevLimit = buffer.limit();
+      // View ByteBuffer as Buffer to avoid cross-Java version issues.
+      // See https://issues.apache.org/jira/browse/MRESOLVER-85
+      Buffer asBuffer = buffer;
       try {
-        // Casts to Buffer here are required for Java 8 compatibility
-        // no matter what tricorder tells you. see
-        // https://issues.apache.org/jira/browse/MRESOLVER-85
-        ((Buffer) buffer).position(bufferPos(begin));
-        ((Buffer) buffer).limit(bufferPos(end));
+        asBuffer.position(bufferPos(begin));
+        asBuffer.limit(bufferPos(end));
         return buffer.slice();
       } catch (IllegalArgumentException e) {
         InvalidProtocolBufferException ex = InvalidProtocolBufferException.truncatedMessage();
         ex.initCause(e);
         throw ex;
       } finally {
-        ((Buffer) buffer).position(prevPos);
-        ((Buffer) buffer).limit(prevLimit);
+        asBuffer.position(prevPos);
+        asBuffer.limit(prevLimit);
       }
     }
   }
@@ -3963,18 +3963,18 @@ public abstract class CodedInputStream {
     private ByteBuffer slice(int begin, int end) throws IOException {
       int prevPos = currentByteBuffer.position();
       int prevLimit = currentByteBuffer.limit();
+      // View ByteBuffer as Buffer to avoid cross-Java version issues.
+      // See https://issues.apache.org/jira/browse/MRESOLVER-85
+      Buffer asBuffer = currentByteBuffer;
       try {
-        // casts to Buffer here are required for Java 8 compatibility
-        // no matter what tricorder tells you. see
-        // https://issues.apache.org/jira/browse/MRESOLVER-85
-        ((Buffer) currentByteBuffer).position(begin);
-        ((Buffer) currentByteBuffer).limit(end);
+        asBuffer.position(begin);
+        asBuffer.limit(end);
         return currentByteBuffer.slice();
       } catch (IllegalArgumentException e) {
         throw InvalidProtocolBufferException.truncatedMessage();
       } finally {
-        ((Buffer) currentByteBuffer).position(prevPos);
-        ((Buffer) currentByteBuffer).limit(prevLimit);
+        asBuffer.position(prevPos);
+        asBuffer.limit(prevLimit);
       }
     }
   }

@@ -101,22 +101,22 @@ typedef bool EnumValidityFuncWithArg(const void* arg, int number);
 
 // Information about a registered extension.
 struct ExtensionInfo {
-  inline ExtensionInfo() {}
-  inline ExtensionInfo(const MessageLite* extendee, int param_number,
-                       FieldType type_param, bool isrepeated, bool ispacked)
+  constexpr ExtensionInfo() : enum_validity_check() {}
+  constexpr ExtensionInfo(const MessageLite* extendee, int param_number,
+                          FieldType type_param, bool isrepeated, bool ispacked)
       : message(extendee),
         number(param_number),
         type(type_param),
         is_repeated(isrepeated),
         is_packed(ispacked),
-        descriptor(nullptr) {}
+        enum_validity_check() {}
 
-  const MessageLite* message;
-  int number;
+  const MessageLite* message = nullptr;
+  int number = 0;
 
-  FieldType type;
-  bool is_repeated;
-  bool is_packed;
+  FieldType type = 0;
+  bool is_repeated = false;
+  bool is_packed = false;
 
   struct EnumValidityCheck {
     EnumValidityFuncWithArg* func;
@@ -135,7 +135,7 @@ struct ExtensionInfo {
   // The descriptor for this extension, if one exists and is known.  May be
   // nullptr.  Must not be nullptr if the descriptor for the extension does not
   // live in the same pool as the descriptor for the containing type.
-  const FieldDescriptor* descriptor;
+  const FieldDescriptor* descriptor = nullptr;
 };
 
 // Abstract interface for an object which looks up extension definitions.  Used

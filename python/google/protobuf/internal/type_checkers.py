@@ -45,16 +45,8 @@ TYPE_TO_DESERIALIZE_METHOD: A dictionary with field types and deserialization
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-try:
-  import ctypes
-except Exception:  # pylint: disable=broad-except
-  ctypes = None
-  import struct
+import ctypes
 import numbers
-import six
-
-if six.PY3:
-  long = int
 
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import decoder
@@ -66,10 +58,7 @@ _FieldDescriptor = descriptor.FieldDescriptor
 
 
 def TruncateToFourByteFloat(original):
-  if ctypes:
-    return ctypes.c_float(original).value
-  else:
-    return struct.unpack('<f', struct.pack('<f', original))[0]
+  return ctypes.c_float(original).value
 
 
 def ToShortestFloat(original):
@@ -162,14 +151,13 @@ class IntValueChecker(object):
   def CheckValue(self, proposed_value):
     if not isinstance(proposed_value, numbers.Integral):
       message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), six.integer_types))
+                 (proposed_value, type(proposed_value), (int,)))
       raise TypeError(message)
     if not self._MIN <= int(proposed_value) <= self._MAX:
       raise ValueError('Value out of range: %d' % proposed_value)
-    # We force 32-bit values to int and 64-bit values to long to make
-    # alternate implementations where the distinction is more significant
-    # (e.g. the C++ implementation) simpler.
-    proposed_value = self._TYPE(proposed_value)
+    # We force all values to int to make alternate implementations where the
+    # distinction is more significant (e.g. the C++ implementation) simpler.
+    proposed_value = int(proposed_value)
     return proposed_value
 
   def DefaultValue(self):
@@ -186,7 +174,7 @@ class EnumValueChecker(object):
   def CheckValue(self, proposed_value):
     if not isinstance(proposed_value, numbers.Integral):
       message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), six.integer_types))
+                 (proposed_value, type(proposed_value), (int,)))
       raise TypeError(message)
     if int(proposed_value) not in self._enum_type.values_by_number:
       raise ValueError('Unknown enum value: %d' % proposed_value)
@@ -204,9 +192,9 @@ class UnicodeValueChecker(object):
   """
 
   def CheckValue(self, proposed_value):
-    if not isinstance(proposed_value, (bytes, six.text_type)):
+    if not isinstance(proposed_value, (bytes, str)):
       message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), (bytes, six.text_type)))
+                 (proposed_value, type(proposed_value), (bytes, str)))
       raise TypeError(message)
 
     # If the value is of type 'bytes' make sure that it is valid UTF-8 data.
@@ -237,25 +225,21 @@ class Int32ValueChecker(IntValueChecker):
   # efficient.
   _MIN = -2147483648
   _MAX = 2147483647
-  _TYPE = int
 
 
 class Uint32ValueChecker(IntValueChecker):
   _MIN = 0
   _MAX = (1 << 32) - 1
-  _TYPE = int
 
 
 class Int64ValueChecker(IntValueChecker):
   _MIN = -(1 << 63)
   _MAX = (1 << 63) - 1
-  _TYPE = long
 
 
 class Uint64ValueChecker(IntValueChecker):
   _MIN = 0
   _MAX = (1 << 64) - 1
-  _TYPE = long
 
 
 # The max 4 bytes float is about 3.4028234663852886e+38
