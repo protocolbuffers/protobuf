@@ -37,8 +37,6 @@ on proto classes.  For usage, see:
 
 __author__ = 'rabsatt@google.com (Kevin Rabsatt)'
 
-import six
-
 
 class EnumTypeWrapper(object):
   """A utility for finding the names of enum values."""
@@ -57,7 +55,7 @@ class EnumTypeWrapper(object):
     except KeyError:
       pass  # fall out to break exception chaining
 
-    if not isinstance(number, six.integer_types):
+    if not isinstance(number, int):
       raise TypeError(
           'Enum value for {} must be an int, but got {} {!r}.'.format(
               self._enum_type.name, type(number), number))

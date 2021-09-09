@@ -12,11 +12,14 @@ else
   DOCKER_TTY_ARGS=
 fi
 
+# Pin the dockcross image since newer versions of the image break the build
+PINNED_DOCKCROSS_IMAGE_VERSION=dockcross/linux-arm64:20210625-795dd4d
+
 # running dockcross image without any arguments generates a wrapper
 # scripts that can be used to run commands under the dockcross image
 # easily.
 # See https://github.com/dockcross/dockcross#usage for details
-docker run $DOCKER_TTY_ARGS --rm dockcross/linux-arm64 >dockcross-linux-arm64.sh
+docker run $DOCKER_TTY_ARGS --rm $PINNED_DOCKCROSS_IMAGE_VERSION >dockcross-linux-arm64.sh
 chmod +x dockcross-linux-arm64.sh
 
 # the wrapper script has CRLF line endings and bash doesn't like that
@@ -30,4 +33,4 @@ sed -i 's/\r//g' dockcross-linux-arm64.sh
 # * the processes in the container run under the same UID and GID as the host process so unlike
 #   vanilla "docker run" invocations, the workspace doesn't get polluted with files
 #   owned by root.
-./dockcross-linux-arm64.sh "$@"
+./dockcross-linux-arm64.sh --image $PINNED_DOCKCROSS_IMAGE_VERSION -- "$@"

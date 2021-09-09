@@ -692,7 +692,7 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an lazily parsed MessageSet
+   * Compute the number of bytes that would be needed to encode a lazily parsed MessageSet
    * extension field to the stream. For historical reasons, the wire format differs from normal
    * fields.
    */

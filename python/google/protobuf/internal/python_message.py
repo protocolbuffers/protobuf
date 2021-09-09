@@ -55,9 +55,6 @@ import struct
 import sys
 import weakref
 
-import six
-from six.moves import range
-
 # We use "as" to avoid name collisions with variables.
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import containers
@@ -284,13 +281,6 @@ def _IsMessageMapField(field):
   return value_type.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE
 
 
-def _IsStrictUtf8Check(field):
-  if field.containing_type.syntax != 'proto3':
-    return False
-  enforce_utf8 = True
-  return enforce_utf8
-
-
 def _AttachFieldHelpers(cls, field_descriptor):
   is_repeated = (field_descriptor.label == _FieldDescriptor.LABEL_REPEATED)
   is_packable = (is_repeated and
@@ -348,11 +338,10 @@ def _AttachFieldHelpers(cls, field_descriptor):
           field_descriptor, _GetInitializeDefaultForMap(field_descriptor),
           is_message_map)
     elif decode_type == _FieldDescriptor.TYPE_STRING:
-      is_strict_utf8_check = _IsStrictUtf8Check(field_descriptor)
       field_decoder = decoder.StringDecoder(
           field_descriptor.number, is_repeated, is_packed,
           field_descriptor, field_descriptor._default_constructor,
-          is_strict_utf8_check, clear_if_default)
+          clear_if_default)
     elif field_descriptor.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
       field_decoder = type_checkers.TYPE_TO_DECODER[decode_type](
           field_descriptor.number, is_repeated, is_packed,
@@ -485,7 +474,7 @@ def _ReraiseTypeErrorWithFieldName(message_name, field_name):
     exc = TypeError('%s for field %s.%s' % (str(exc), message_name, field_name))
 
   # re-raise possibly-amended exception with original traceback:
-  six.reraise(type(exc), exc, sys.exc_info()[2])
+  raise exc.with_traceback(sys.exc_info()[2])
 
 
 def _AddInitMethod(message_descriptor, cls):
@@ -498,7 +487,7 @@ def _AddInitMethod(message_descriptor, cls):
     enum_type with the same name.  If the value is not a string, it's
     returned as-is.  (No conversion or bounds-checking is done.)
     """
-    if isinstance(value, six.string_types):
+    if isinstance(value, str):
       try:
         return enum_type.values_by_name[value].number
       except KeyError:
@@ -1305,6 +1294,14 @@ def _AddIsInitializedMethod(message_descriptor, cls):
   cls.FindInitializationErrors = FindInitializationErrors
 
 
+def _FullyQualifiedClassName(klass):
+  module = klass.__module__
+  name = getattr(klass, '__qualname__', klass.__name__)
+  if module in (None, 'builtins', '__builtin__'):
+    return name
+  return module + '.' + name
+
+
 def _AddMergeFromMethod(cls):
   LABEL_REPEATED = _FieldDescriptor.LABEL_REPEATED
   CPPTYPE_MESSAGE = _FieldDescriptor.CPPTYPE_MESSAGE
@@ -1313,7 +1310,8 @@ def _AddMergeFromMethod(cls):
     if not isinstance(msg, cls):
       raise TypeError(
           'Parameter to MergeFrom() must be instance of same class: '
-          'expected %s got %s.' % (cls.__name__, msg.__class__.__name__))
+          'expected %s got %s.' % (_FullyQualifiedClassName(cls),
+                                   _FullyQualifiedClassName(msg.__class__)))
 
     assert msg is not self
     self._Modified()

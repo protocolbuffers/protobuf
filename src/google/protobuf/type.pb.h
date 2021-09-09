@@ -53,7 +53,7 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2ftype_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
-  static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
+  static const uint32_t offsets[];
 };
 PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ftype_2eproto;
 PROTOBUF_NAMESPACE_OPEN
@@ -102,8 +102,8 @@ enum Field_Kind : int {
   Field_Kind_TYPE_SFIXED64 = 16,
   Field_Kind_TYPE_SINT32 = 17,
   Field_Kind_TYPE_SINT64 = 18,
-  Field_Kind_Field_Kind_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
-  Field_Kind_Field_Kind_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+  Field_Kind_Field_Kind_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  Field_Kind_Field_Kind_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
 };
 PROTOBUF_EXPORT bool Field_Kind_IsValid(int value);
 constexpr Field_Kind Field_Kind_Kind_MIN = Field_Kind_TYPE_UNKNOWN;
@@ -129,8 +129,8 @@ enum Field_Cardinality : int {
   Field_Cardinality_CARDINALITY_OPTIONAL = 1,
   Field_Cardinality_CARDINALITY_REQUIRED = 2,
   Field_Cardinality_CARDINALITY_REPEATED = 3,
-  Field_Cardinality_Field_Cardinality_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
-  Field_Cardinality_Field_Cardinality_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+  Field_Cardinality_Field_Cardinality_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  Field_Cardinality_Field_Cardinality_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
 };
 PROTOBUF_EXPORT bool Field_Cardinality_IsValid(int value);
 constexpr Field_Cardinality Field_Cardinality_Cardinality_MIN = Field_Cardinality_CARDINALITY_UNKNOWN;
@@ -154,8 +154,8 @@ inline bool Field_Cardinality_Parse(
 enum Syntax : int {
   SYNTAX_PROTO2 = 0,
   SYNTAX_PROTO3 = 1,
-  Syntax_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
-  Syntax_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+  Syntax_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  Syntax_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
 };
 PROTOBUF_EXPORT bool Syntax_IsValid(int value);
 constexpr Syntax Syntax_MIN = SYNTAX_PROTO2;
@@ -271,8 +271,8 @@ class PROTOBUF_EXPORT Type final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -521,8 +521,8 @@ class PROTOBUF_EXPORT Field final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -755,20 +755,20 @@ class PROTOBUF_EXPORT Field final :
 
   // int32 number = 3;
   void clear_number();
-  ::PROTOBUF_NAMESPACE_ID::int32 number() const;
-  void set_number(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t number() const;
+  void set_number(int32_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_number() const;
-  void _internal_set_number(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t _internal_number() const;
+  void _internal_set_number(int32_t value);
   public:
 
   // int32 oneof_index = 7;
   void clear_oneof_index();
-  ::PROTOBUF_NAMESPACE_ID::int32 oneof_index() const;
-  void set_oneof_index(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t oneof_index() const;
+  void set_oneof_index(int32_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_oneof_index() const;
-  void _internal_set_oneof_index(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t _internal_oneof_index() const;
+  void _internal_set_oneof_index(int32_t value);
   public:
 
   // bool packed = 8;
@@ -794,8 +794,8 @@ class PROTOBUF_EXPORT Field final :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr default_value_;
   int kind_;
   int cardinality_;
-  ::PROTOBUF_NAMESPACE_ID::int32 number_;
-  ::PROTOBUF_NAMESPACE_ID::int32 oneof_index_;
+  int32_t number_;
+  int32_t oneof_index_;
   bool packed_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
@@ -895,8 +895,8 @@ class PROTOBUF_EXPORT Enum final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -1119,8 +1119,8 @@ class PROTOBUF_EXPORT EnumValue final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -1188,11 +1188,11 @@ class PROTOBUF_EXPORT EnumValue final :
 
   // int32 number = 2;
   void clear_number();
-  ::PROTOBUF_NAMESPACE_ID::int32 number() const;
-  void set_number(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t number() const;
+  void set_number(int32_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_number() const;
-  void _internal_set_number(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t _internal_number() const;
+  void _internal_set_number(int32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValue)
@@ -1204,7 +1204,7 @@ class PROTOBUF_EXPORT EnumValue final :
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option > options_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
-  ::PROTOBUF_NAMESPACE_ID::int32 number_;
+  int32_t number_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
@@ -1303,8 +1303,8 @@ class PROTOBUF_EXPORT Option final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -1435,6 +1435,11 @@ inline void Type::set_allocated_name(std::string* name) {
   }
   name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Type.name)
 }
 
@@ -1747,18 +1752,18 @@ inline void Field::set_cardinality(::PROTOBUF_NAMESPACE_ID::Field_Cardinality va
 inline void Field::clear_number() {
   number_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Field::_internal_number() const {
+inline int32_t Field::_internal_number() const {
   return number_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Field::number() const {
+inline int32_t Field::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.number)
   return _internal_number();
 }
-inline void Field::_internal_set_number(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Field::_internal_set_number(int32_t value) {
   
   number_ = value;
 }
-inline void Field::set_number(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Field::set_number(int32_t value) {
   _internal_set_number(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.number)
 }
@@ -1806,6 +1811,11 @@ inline void Field::set_allocated_name(std::string* name) {
   }
   name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.name)
 }
 
@@ -1852,6 +1862,11 @@ inline void Field::set_allocated_type_url(std::string* type_url) {
   }
   type_url_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), type_url,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (type_url_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    type_url_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.type_url)
 }
 
@@ -1859,18 +1874,18 @@ inline void Field::set_allocated_type_url(std::string* type_url) {
 inline void Field::clear_oneof_index() {
   oneof_index_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Field::_internal_oneof_index() const {
+inline int32_t Field::_internal_oneof_index() const {
   return oneof_index_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Field::oneof_index() const {
+inline int32_t Field::oneof_index() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.oneof_index)
   return _internal_oneof_index();
 }
-inline void Field::_internal_set_oneof_index(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Field::_internal_set_oneof_index(int32_t value) {
   
   oneof_index_ = value;
 }
-inline void Field::set_oneof_index(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Field::set_oneof_index(int32_t value) {
   _internal_set_oneof_index(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.oneof_index)
 }
@@ -1978,6 +1993,11 @@ inline void Field::set_allocated_json_name(std::string* json_name) {
   }
   json_name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), json_name,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (json_name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    json_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.json_name)
 }
 
@@ -2024,6 +2044,11 @@ inline void Field::set_allocated_default_value(std::string* default_value) {
   }
   default_value_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), default_value,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (default_value_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    default_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.default_value)
 }
 
@@ -2074,6 +2099,11 @@ inline void Enum::set_allocated_name(std::string* name) {
   }
   name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Enum.name)
 }
 
@@ -2310,6 +2340,11 @@ inline void EnumValue::set_allocated_name(std::string* name) {
   }
   name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValue.name)
 }
 
@@ -2317,18 +2352,18 @@ inline void EnumValue::set_allocated_name(std::string* name) {
 inline void EnumValue::clear_number() {
   number_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 EnumValue::_internal_number() const {
+inline int32_t EnumValue::_internal_number() const {
   return number_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 EnumValue::number() const {
+inline int32_t EnumValue::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.number)
   return _internal_number();
 }
-inline void EnumValue::_internal_set_number(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void EnumValue::_internal_set_number(int32_t value) {
   
   number_ = value;
 }
-inline void EnumValue::set_number(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void EnumValue::set_number(int32_t value) {
   _internal_set_number(value);
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValue.number)
 }
@@ -2420,6 +2455,11 @@ inline void Option::set_allocated_name(std::string* name) {
   }
   name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Option.name)
 }
 

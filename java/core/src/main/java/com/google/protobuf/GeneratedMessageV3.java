@@ -43,14 +43,14 @@ import com.google.protobuf.Internal.DoubleList;
 import com.google.protobuf.Internal.FloatList;
 import com.google.protobuf.Internal.IntList;
 import com.google.protobuf.Internal.LongList;
-// In opensource protobuf, we have versioned this GeneratedMessageV3 class to GeneratedMessageV3V3 and
-// in the future may have GeneratedMessageV3V4 etc. This allows us to change some aspects of this
+// In opensource protobuf, we have versioned this GeneratedMessageV3 class to GeneratedMessageV3 and
+// in the future may have GeneratedMessageV4 etc. This allows us to change some aspects of this
 // class without breaking binary compatibility with old generated code that still subclasses
-// the old GeneratedMessageV3 class. To allow these different GeneratedMessageV3V? classes to
-// interoperate (e.g., a GeneratedMessageV3V3 object has a message extension field whose class
-// type is GeneratedMessageV3V4), these classes still share a common parent class AbstractMessage
+// the old GeneratedMessageV3 class. To allow these different GeneratedMessageV? classes to
+// interoperate (e.g., a GeneratedMessageV3 object has a message extension field whose class
+// type is GeneratedMessageV4), these classes still share a common parent class AbstractMessage
 // and are using the same GeneratedMessage.GeneratedExtension class for extension definitions.
-// Since this class becomes GeneratedMessageV3V? in opensource, we have to add an import here
+// Since this class becomes GeneratedMessageV? in opensource, we have to add an import here
 // to be able to use GeneratedMessage.GeneratedExtension. The GeneratedExtension definition in
 // this file is also excluded from opensource to avoid conflict.
 import com.google.protobuf.GeneratedMessage.GeneratedExtension;

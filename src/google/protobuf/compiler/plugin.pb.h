@@ -58,7 +58,7 @@ struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
-  static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
+  static const uint32_t offsets[];
 };
 PROTOC_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 PROTOBUF_NAMESPACE_OPEN
@@ -211,8 +211,8 @@ class PROTOC_EXPORT Version final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -271,11 +271,11 @@ class PROTOC_EXPORT Version final :
   bool _internal_has_major() const;
   public:
   void clear_major();
-  ::PROTOBUF_NAMESPACE_ID::int32 major() const;
-  void set_major(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t major() const;
+  void set_major(int32_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_major() const;
-  void _internal_set_major(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t _internal_major() const;
+  void _internal_set_major(int32_t value);
   public:
 
   // optional int32 minor = 2;
@@ -284,11 +284,11 @@ class PROTOC_EXPORT Version final :
   bool _internal_has_minor() const;
   public:
   void clear_minor();
-  ::PROTOBUF_NAMESPACE_ID::int32 minor() const;
-  void set_minor(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t minor() const;
+  void set_minor(int32_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_minor() const;
-  void _internal_set_minor(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t _internal_minor() const;
+  void _internal_set_minor(int32_t value);
   public:
 
   // optional int32 patch = 3;
@@ -297,11 +297,11 @@ class PROTOC_EXPORT Version final :
   bool _internal_has_patch() const;
   public:
   void clear_patch();
-  ::PROTOBUF_NAMESPACE_ID::int32 patch() const;
-  void set_patch(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t patch() const;
+  void set_patch(int32_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_patch() const;
-  void _internal_set_patch(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t _internal_patch() const;
+  void _internal_set_patch(int32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.Version)
@@ -314,9 +314,9 @@ class PROTOC_EXPORT Version final :
   ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr suffix_;
-  ::PROTOBUF_NAMESPACE_ID::int32 major_;
-  ::PROTOBUF_NAMESPACE_ID::int32 minor_;
-  ::PROTOBUF_NAMESPACE_ID::int32 patch_;
+  int32_t major_;
+  int32_t minor_;
+  int32_t patch_;
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
 // -------------------------------------------------------------------
@@ -421,8 +421,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -652,8 +652,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -877,8 +877,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -986,11 +986,11 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   bool _internal_has_supported_features() const;
   public:
   void clear_supported_features();
-  ::PROTOBUF_NAMESPACE_ID::uint64 supported_features() const;
-  void set_supported_features(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  uint64_t supported_features() const;
+  void set_supported_features(uint64_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_supported_features() const;
-  void _internal_set_supported_features(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  uint64_t _internal_supported_features() const;
+  void _internal_set_supported_features(uint64_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
@@ -1004,7 +1004,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File > file_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr error_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 supported_features_;
+  uint64_t supported_features_;
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
 // ===================================================================
@@ -1030,18 +1030,18 @@ inline void Version::clear_major() {
   major_ = 0;
   _has_bits_[0] &= ~0x00000002u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Version::_internal_major() const {
+inline int32_t Version::_internal_major() const {
   return major_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Version::major() const {
+inline int32_t Version::major() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.major)
   return _internal_major();
 }
-inline void Version::_internal_set_major(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Version::_internal_set_major(int32_t value) {
   _has_bits_[0] |= 0x00000002u;
   major_ = value;
 }
-inline void Version::set_major(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Version::set_major(int32_t value) {
   _internal_set_major(value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.major)
 }
@@ -1058,18 +1058,18 @@ inline void Version::clear_minor() {
   minor_ = 0;
   _has_bits_[0] &= ~0x00000004u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Version::_internal_minor() const {
+inline int32_t Version::_internal_minor() const {
   return minor_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Version::minor() const {
+inline int32_t Version::minor() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.minor)
   return _internal_minor();
 }
-inline void Version::_internal_set_minor(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Version::_internal_set_minor(int32_t value) {
   _has_bits_[0] |= 0x00000004u;
   minor_ = value;
 }
-inline void Version::set_minor(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Version::set_minor(int32_t value) {
   _internal_set_minor(value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.minor)
 }
@@ -1086,18 +1086,18 @@ inline void Version::clear_patch() {
   patch_ = 0;
   _has_bits_[0] &= ~0x00000008u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Version::_internal_patch() const {
+inline int32_t Version::_internal_patch() const {
   return patch_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Version::patch() const {
+inline int32_t Version::patch() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.patch)
   return _internal_patch();
 }
-inline void Version::_internal_set_patch(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Version::_internal_set_patch(int32_t value) {
   _has_bits_[0] |= 0x00000008u;
   patch_ = value;
 }
-inline void Version::set_patch(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Version::set_patch(int32_t value) {
   _internal_set_patch(value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.patch)
 }
@@ -1148,6 +1148,11 @@ inline std::string* Version::release_suffix() {
   }
   _has_bits_[0] &= ~0x00000001u;
   return suffix_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (suffix_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    suffix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 inline void Version::set_allocated_suffix(std::string* suffix) {
   if (suffix != nullptr) {
@@ -1157,6 +1162,11 @@ inline void Version::set_allocated_suffix(std::string* suffix) {
   }
   suffix_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), suffix,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (suffix_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    suffix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.Version.suffix)
 }
 
@@ -1285,6 +1295,11 @@ inline std::string* CodeGeneratorRequest::release_parameter() {
   }
   _has_bits_[0] &= ~0x00000001u;
   return parameter_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (parameter_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    parameter_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 inline void CodeGeneratorRequest::set_allocated_parameter(std::string* parameter) {
   if (parameter != nullptr) {
@@ -1294,6 +1309,11 @@ inline void CodeGeneratorRequest::set_allocated_parameter(std::string* parameter
   }
   parameter_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), parameter,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (parameter_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    parameter_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 
@@ -1474,6 +1494,11 @@ inline std::string* CodeGeneratorResponse_File::release_name() {
   }
   _has_bits_[0] &= ~0x00000001u;
   return name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 inline void CodeGeneratorResponse_File::set_allocated_name(std::string* name) {
   if (name != nullptr) {
@@ -1483,6 +1508,11 @@ inline void CodeGeneratorResponse_File::set_allocated_name(std::string* name) {
   }
   name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
 
@@ -1532,6 +1562,11 @@ inline std::string* CodeGeneratorResponse_File::release_insertion_point() {
   }
   _has_bits_[0] &= ~0x00000002u;
   return insertion_point_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (insertion_point_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    insertion_point_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 inline void CodeGeneratorResponse_File::set_allocated_insertion_point(std::string* insertion_point) {
   if (insertion_point != nullptr) {
@@ -1541,6 +1576,11 @@ inline void CodeGeneratorResponse_File::set_allocated_insertion_point(std::strin
   }
   insertion_point_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), insertion_point,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (insertion_point_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    insertion_point_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
 
@@ -1590,6 +1630,11 @@ inline std::string* CodeGeneratorResponse_File::release_content() {
   }
   _has_bits_[0] &= ~0x00000004u;
   return content_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (content_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    content_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 inline void CodeGeneratorResponse_File::set_allocated_content(std::string* content) {
   if (content != nullptr) {
@@ -1599,6 +1644,11 @@ inline void CodeGeneratorResponse_File::set_allocated_content(std::string* conte
   }
   content_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), content,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (content_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    content_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 
@@ -1740,6 +1790,11 @@ inline std::string* CodeGeneratorResponse::release_error() {
   }
   _has_bits_[0] &= ~0x00000001u;
   return error_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (error_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    error_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 inline void CodeGeneratorResponse::set_allocated_error(std::string* error) {
   if (error != nullptr) {
@@ -1749,6 +1804,11 @@ inline void CodeGeneratorResponse::set_allocated_error(std::string* error) {
   }
   error_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), error,
       GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (error_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
+    error_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 
@@ -1764,18 +1824,18 @@ inline void CodeGeneratorResponse::clear_supported_features() {
   supported_features_ = uint64_t{0u};
   _has_bits_[0] &= ~0x00000002u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 CodeGeneratorResponse::_internal_supported_features() const {
+inline uint64_t CodeGeneratorResponse::_internal_supported_features() const {
   return supported_features_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::uint64 CodeGeneratorResponse::supported_features() const {
+inline uint64_t CodeGeneratorResponse::supported_features() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
   return _internal_supported_features();
 }
-inline void CodeGeneratorResponse::_internal_set_supported_features(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void CodeGeneratorResponse::_internal_set_supported_features(uint64_t value) {
   _has_bits_[0] |= 0x00000002u;
   supported_features_ = value;
 }
-inline void CodeGeneratorResponse::set_supported_features(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+inline void CodeGeneratorResponse::set_supported_features(uint64_t value) {
   _internal_set_supported_features(value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
 }

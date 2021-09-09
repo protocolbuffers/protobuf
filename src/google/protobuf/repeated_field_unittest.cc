@@ -1140,6 +1140,7 @@ TEST(RepeatedPtrField, ClearedElements) {
 
   field.Clear();
   EXPECT_EQ(field.ClearedCount(), 2);
+#ifndef PROTOBUF_FUTURE_BREAKING_CHANGES
   EXPECT_EQ(field.ReleaseCleared(), original);  // Take ownership again.
   EXPECT_EQ(field.ClearedCount(), 1);
   EXPECT_NE(field.Add(), original);
@@ -1151,6 +1152,7 @@ TEST(RepeatedPtrField, ClearedElements) {
   EXPECT_EQ(field.ClearedCount(), 1);
   EXPECT_EQ(field.Add(), original);
   EXPECT_EQ(field.ClearedCount(), 0);
+#endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
 }
 
 // Test all code paths in AddAllocated().

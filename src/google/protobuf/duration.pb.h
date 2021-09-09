@@ -50,7 +50,7 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fduration_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
-  static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
+  static const uint32_t offsets[];
 };
 PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fduration_2eproto;
 PROTOBUF_NAMESPACE_OPEN
@@ -158,8 +158,8 @@ class PROTOBUF_EXPORT Duration final :
 
   size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -194,20 +194,20 @@ class PROTOBUF_EXPORT Duration final :
   };
   // int64 seconds = 1;
   void clear_seconds();
-  ::PROTOBUF_NAMESPACE_ID::int64 seconds() const;
-  void set_seconds(::PROTOBUF_NAMESPACE_ID::int64 value);
+  int64_t seconds() const;
+  void set_seconds(int64_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_seconds() const;
-  void _internal_set_seconds(::PROTOBUF_NAMESPACE_ID::int64 value);
+  int64_t _internal_seconds() const;
+  void _internal_set_seconds(int64_t value);
   public:
 
   // int32 nanos = 2;
   void clear_nanos();
-  ::PROTOBUF_NAMESPACE_ID::int32 nanos() const;
-  void set_nanos(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t nanos() const;
+  void set_nanos(int32_t value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_nanos() const;
-  void _internal_set_nanos(::PROTOBUF_NAMESPACE_ID::int32 value);
+  int32_t _internal_nanos() const;
+  void _internal_set_nanos(int32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Duration)
@@ -217,8 +217,8 @@ class PROTOBUF_EXPORT Duration final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::int64 seconds_;
-  ::PROTOBUF_NAMESPACE_ID::int32 nanos_;
+  int64_t seconds_;
+  int32_t nanos_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_google_2fprotobuf_2fduration_2eproto;
 };
@@ -237,18 +237,18 @@ class PROTOBUF_EXPORT Duration final :
 inline void Duration::clear_seconds() {
   seconds_ = int64_t{0};
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 Duration::_internal_seconds() const {
+inline int64_t Duration::_internal_seconds() const {
   return seconds_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 Duration::seconds() const {
+inline int64_t Duration::seconds() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Duration.seconds)
   return _internal_seconds();
 }
-inline void Duration::_internal_set_seconds(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void Duration::_internal_set_seconds(int64_t value) {
   
   seconds_ = value;
 }
-inline void Duration::set_seconds(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void Duration::set_seconds(int64_t value) {
   _internal_set_seconds(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Duration.seconds)
 }
@@ -257,18 +257,18 @@ inline void Duration::set_seconds(::PROTOBUF_NAMESPACE_ID::int64 value) {
 inline void Duration::clear_nanos() {
   nanos_ = 0;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Duration::_internal_nanos() const {
+inline int32_t Duration::_internal_nanos() const {
   return nanos_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Duration::nanos() const {
+inline int32_t Duration::nanos() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Duration.nanos)
   return _internal_nanos();
 }
-inline void Duration::_internal_set_nanos(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Duration::_internal_set_nanos(int32_t value) {
   
   nanos_ = value;
 }
-inline void Duration::set_nanos(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Duration::set_nanos(int32_t value) {
   _internal_set_nanos(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Duration.nanos)
 }

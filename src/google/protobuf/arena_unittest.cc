@@ -759,6 +759,7 @@ TEST(ArenaTest, AddAllocatedWithReflection) {
 }
 
 TEST(ArenaTest, RepeatedPtrFieldAddClearedTest) {
+#ifndef PROTOBUF_FUTURE_BREAKING_CHANGES
   {
     RepeatedPtrField<TestAllTypes> repeated_field;
     EXPECT_TRUE(repeated_field.empty());
@@ -769,6 +770,7 @@ TEST(ArenaTest, RepeatedPtrFieldAddClearedTest) {
     EXPECT_TRUE(repeated_field.empty());
     EXPECT_EQ(0, repeated_field.size());
   }
+#endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
   {
     RepeatedPtrField<TestAllTypes> repeated_field;
     EXPECT_TRUE(repeated_field.empty());

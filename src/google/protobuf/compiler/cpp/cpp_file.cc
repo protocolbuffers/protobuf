@@ -1178,7 +1178,8 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
   IncludeFile("net/proto2/io/public/coded_stream.h", printer);
   IncludeFile("net/proto2/public/arena.h", printer);
   IncludeFile("net/proto2/public/arenastring.h", printer);
-  if (options_.force_inline_string || options_.profile_driven_inline_string) {
+  if ((options_.force_inline_string || options_.profile_driven_inline_string) &&
+      !options_.opensource_runtime) {
     IncludeFile("net/proto2/public/inlined_string_field.h", printer);
   }
   if (HasSimpleBaseClasses(file_, options_)) {
