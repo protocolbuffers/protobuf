@@ -359,10 +359,10 @@ test_php_c: protoc_middleman conformance-test-runner conformance-php-c $(other_l
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.
 test_python: protoc_middleman conformance-test-runner
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt --text_format_failure_list text_format_failure_list_python.txt ./conformance_python.py; \
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt --text_format_failure_list text_format_failure_list_python.txt ./conformance_python.py
 
 test_python_cpp: protoc_middleman conformance-test-runner
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp.txt ./conformance_python.py; \
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp.txt ./conformance_python.py
 
 test_nodejs: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
 	NODE_PATH=../js:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_js.txt ./conformance_nodejs.js
