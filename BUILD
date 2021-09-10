@@ -1203,22 +1203,24 @@ cc_binary(
     ],
 )
 
-sh_test(
-    name = "build_files_updated_unittest",
-    srcs = [
-        "build_files_updated_unittest.sh",
-    ],
-    data = [
-        "BUILD",
-        "cmake/extract_includes.bat.in",
-        "cmake/libprotobuf.cmake",
-        "cmake/libprotobuf-lite.cmake",
-        "cmake/libprotoc.cmake",
-        "cmake/tests.cmake",
-        "src/Makefile.am",
-        "update_file_lists.sh",
-    ],
-)
+# TODO: re-enable this test if appropriate, or replace with something that
+# uses the new setup.
+# sh_test(
+#     name = "build_files_updated_unittest",
+#     srcs = [
+#         "build_files_updated_unittest.sh",
+#     ],
+#     data = [
+#         "BUILD",
+#         "cmake/extract_includes.bat.in",
+#         "cmake/libprotobuf.cmake",
+#         "cmake/libprotobuf-lite.cmake",
+#         "cmake/libprotoc.cmake",
+#         "cmake/tests.cmake",
+#         "src/Makefile.am",
+#         "update_file_lists.sh",
+#     ],
+# )
 
 java_proto_library(
     name = "test_messages_proto2_java_proto",

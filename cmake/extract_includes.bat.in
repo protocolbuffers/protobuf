@@ -50,6 +50,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\field_access_listener
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\field_mask.pb.h" include\google\protobuf\field_mask.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_enum_reflection.h" include\google\protobuf\generated_enum_reflection.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_enum_util.h" include\google\protobuf\generated_enum_util.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_bases.h" include\google\protobuf\generated_message_bases.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_reflection.h" include\google\protobuf\generated_message_reflection.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_table_driven.h" include\google\protobuf\generated_message_table_driven.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_tctable_decl.h" include\google\protobuf\generated_message_tctable_decl.h

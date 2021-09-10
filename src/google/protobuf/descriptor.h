@@ -184,29 +184,6 @@ struct DebugStringOptions {
 // Must be instantiated as mutable in a descriptor.
 namespace internal {
 
-// Data required to do lazy initialization.
-struct PROTOBUF_EXPORT LazyInitData {
-#ifndef SWIG
-  internal::once_flag once;
-#endif
-  struct Field {
-    const std::string* type_name;
-    const std::string* default_value_enum_name;
-  };
-  struct Descriptor {
-    const std::string* name;
-    const FileDescriptor* file;
-  };
-  struct File {
-    const std::string** dependencies_names;
-  };
-  union {
-    Field field;
-    Descriptor descriptor;
-    File file;
-  };
-};
-
 class PROTOBUF_EXPORT LazyDescriptor {
  public:
   // Init function to be called at init time of a descriptor containing
@@ -232,18 +209,19 @@ class PROTOBUF_EXPORT LazyDescriptor {
   // Returns the current value of the descriptor, thread-safe. If SetLazy(...)
   // has been called, will do a one-time cross link of the type specified,
   // building the descriptor file that contains the type if necessary.
-  inline const Descriptor* Get() {
-    Once();
+  inline const Descriptor* Get(const ServiceDescriptor* service) {
+    Once(service);
     return descriptor_;
   }
 
  private:
-  static void OnceStatic(LazyDescriptor* lazy);
-  void OnceInternal();
-  void Once();
+  void Once(const ServiceDescriptor* service);
 
-  const Descriptor* descriptor_;
-  LazyInitData* once_;
+  union {
+    const Descriptor* descriptor_;
+    const char* lazy_name_;
+  };
+  internal::once_flag* once_;
 };
 
 class PROTOBUF_EXPORT SymbolBase {
@@ -935,7 +913,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   const std::string* all_names_;
   const FileDescriptor* file_;
 
-  internal::LazyInitData* type_once_;
+  internal::once_flag* type_once_;
   static void TypeOnceInit(const FieldDescriptor* to_init);
   void InternalTypeOnceInit() const;
   const Descriptor* containing_type_;
@@ -946,6 +924,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   union {
     mutable const Descriptor* message_type;
     mutable const EnumDescriptor* enum_type;
+    const char* lazy_type_name;
   } type_descriptor_;
   const FieldOptions* options_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
@@ -962,6 +941,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
     bool default_value_bool_;
 
     mutable const EnumValueDescriptor* default_value_enum_;
+    const char* lazy_default_value_enum_name_;
     const std::string* default_value_string_;
     mutable std::atomic<const Message*> default_generated_instance_;
   };
@@ -1616,7 +1596,16 @@ class PROTOBUF_EXPORT FileDescriptor {
   const std::string* name_;
   const std::string* package_;
   const DescriptorPool* pool_;
-  internal::LazyInitData* dependencies_once_;
+
+  // Data required to do lazy initialization.
+  struct PROTOBUF_EXPORT LazyInitData {
+#ifndef SWIG
+    internal::once_flag once;
+#endif
+    const char** dependencies_names;
+  };
+
+  LazyInitData* dependencies_once_;
   static void DependenciesOnceInit(const FileDescriptor* to_init);
   void InternalDependenciesOnceInit() const;
 
@@ -2250,7 +2239,7 @@ inline FieldDescriptor::Label FieldDescriptor::label() const {
 
 inline FieldDescriptor::Type FieldDescriptor::type() const {
   if (type_once_) {
-    internal::call_once(type_once_->once, &FieldDescriptor::TypeOnceInit, this);
+    internal::call_once(*type_once_, &FieldDescriptor::TypeOnceInit, this);
   }
   return static_cast<Type>(type_);
 }

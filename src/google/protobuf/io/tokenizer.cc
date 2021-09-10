@@ -816,8 +816,9 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
   if (current_.type == TYPE_START) {
     // Ignore unicode byte order mark(BOM) if it appears at the file
     // beginning. Only UTF-8 BOM (0xEF 0xBB 0xBF) is accepted.
-    if (TryConsume((char)0xEF)) {
-      if (!TryConsume((char)0xBB) || !TryConsume((char)0xBF)) {
+    if (TryConsume(static_cast<char>(0xEF))) {
+      if (!TryConsume(static_cast<char>(0xBB)) ||
+          !TryConsume(static_cast<char>(0xBF))) {
         AddError(
             "Proto file starts with 0xEF but not UTF-8 BOM. "
             "Only UTF-8 is accepted for proto file.");

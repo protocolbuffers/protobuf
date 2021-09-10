@@ -219,21 +219,21 @@ string GetNonDefaultValue(FieldDescriptor::Type type) {
 #define UNKNOWN_FIELD 666
 
 enum class Packed {
-  UNSPECIFIED = 0,
-  TRUE = 1,
-  FALSE = 2,
+  kUnspecified = 0,
+  kTrue = 1,
+  kFalse = 2,
 };
 
 const FieldDescriptor* GetFieldForType(FieldDescriptor::Type type,
                                        bool repeated, bool is_proto3,
-                                       Packed packed = Packed::UNSPECIFIED) {
+                                       Packed packed = Packed::kUnspecified) {
   const Descriptor* d = is_proto3 ?
       TestAllTypesProto3().GetDescriptor() : TestAllTypesProto2().GetDescriptor();
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
     if (f->type() == type && f->is_repeated() == repeated) {
-      if ((packed == Packed::TRUE && !f->is_packed()) ||
-          (packed == Packed::FALSE && f->is_packed())) {
+      if ((packed == Packed::kTrue && !f->is_packed()) ||
+          (packed == Packed::kFalse && f->is_packed())) {
         continue;
       }
       return f;
@@ -243,10 +243,10 @@ const FieldDescriptor* GetFieldForType(FieldDescriptor::Type type,
   string packed_string = "";
   const string repeated_string = repeated ? "Repeated " : "Singular ";
   const string proto_string = is_proto3 ? "Proto3" : "Proto2";
-  if (packed == Packed::TRUE) {
+  if (packed == Packed::kTrue) {
     packed_string = "Packed ";
   }
-  if (packed == Packed::FALSE) {
+  if (packed == Packed::kFalse) {
     packed_string = "Unpacked ";
   }
   GOOGLE_LOG(FATAL) << "Couldn't find field with type: " << repeated_string.c_str()
@@ -796,9 +796,9 @@ void BinaryAndJsonConformanceSuite::TestValidDataForType(
     // Test repeated fields.
     if (FieldDescriptor::IsTypePackable(type)) {
       const FieldDescriptor* packed_field =
-          GetFieldForType(type, true, is_proto3, Packed::TRUE);
+          GetFieldForType(type, true, is_proto3, Packed::kTrue);
       const FieldDescriptor* unpacked_field =
-          GetFieldForType(type, true, is_proto3, Packed::FALSE);
+          GetFieldForType(type, true, is_proto3, Packed::kFalse);
 
       string default_proto_packed;
       string default_proto_unpacked;

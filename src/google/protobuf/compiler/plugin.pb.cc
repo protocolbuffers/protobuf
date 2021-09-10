@@ -324,7 +324,7 @@ const char* Version::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
           _Internal::set_has_major(&has_bits);
-          major_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          major_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -333,7 +333,7 @@ const char* Version::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
           _Internal::set_has_minor(&has_bits);
-          minor_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          minor_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -342,7 +342,7 @@ const char* Version::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
           _Internal::set_has_patch(&has_bits);
-          patch_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          patch_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;

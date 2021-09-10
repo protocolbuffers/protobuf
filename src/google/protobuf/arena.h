@@ -497,7 +497,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       return new (ptr) T(static_cast<Args&&>(args)...);
     }
 
-    static T* New() {
+    static inline PROTOBUF_ALWAYS_INLINE T* New() {
       return new T(nullptr);
     }
 

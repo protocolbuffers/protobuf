@@ -404,9 +404,9 @@ public abstract class CodedInputStream {
    *
    * <p>Set the maximum message size. In order to prevent malicious messages from exhausting memory
    * or causing integer overflows, {@code CodedInputStream} limits how large a message may be. The
-   * default limit is {@code Integer.MAX_INT}. You should set this limit as small as you can without
-   * harming your app's functionality. Note that size limits only apply when reading from an {@code
-   * InputStream}, not when constructed around a raw byte array.
+   * default limit is {@code Integer.MAX_VALUE}. You should set this limit as small as you can
+   * without harming your app's functionality. Note that size limits only apply when reading from an
+   * {@code InputStream}, not when constructed around a raw byte array.
    *
    * <p>If you want to read several messages from a single CodedInputStream, you could call {@link
    * #resetSizeCounter()} after each one to avoid hitting the size limit.

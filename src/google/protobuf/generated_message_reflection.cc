@@ -53,7 +53,9 @@
 #include <google/protobuf/stubs/strutil.h>
 
 
+// clang-format off
 #include <google/protobuf/port_def.inc>
+// clang-format on
 
 #define GOOGLE_PROTOBUF_HAS_ONEOF
 
