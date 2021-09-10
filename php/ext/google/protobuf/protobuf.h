@@ -52,7 +52,7 @@ const zval *get_generated_pool();
 #define PROTO_RETURN_VAL zval*
 #endif
 
-// Sine php 8.0, the Object Handlers API was changed to receive zend_object*
+// Since php 8.0, the Object Handlers API was changed to receive zend_object*
 // instead of zval* and zend_string* instead of zval* for property names.
 // https://github.com/php/php-src/blob/php-8.0.0beta1/UPGRADING.INTERNALS#L37-L39
 #if PHP_VERSION_ID < 80000
@@ -72,6 +72,16 @@ const zval *get_generated_pool();
 #define PROTO_VAL_P(obj) (void*)(obj)
 #define PROTO_STRVAL_P(obj) ZSTR_VAL(obj)
 #define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
+#endif
+
+// In PHP 8.1, several old interfaces are removed:
+// https://github.com/php/php-src/blob/14f599ea7def7c7a59c40aff763ce8b105573e7a/UPGRADING.INTERNALS#L27-L31
+//
+// We now use the new interfaces (zend_ce_arrayaccess and zend_ce_countable).
+// However we have to polyfill zend_ce_countable, which was only introduced in
+// PHP 7.2.0.
+#if PHP_VERSION_ID < 70200
+#define zend_ce_countable spl_ce_Countable
 #endif
 
 ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
