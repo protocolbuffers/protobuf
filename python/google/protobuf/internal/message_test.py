@@ -44,31 +44,17 @@ abstract interface.
 
 __author__ = 'gps@google.com (Gregory P. Smith)'
 
-
+import collections
 import copy
 import math
 import operator
 import pickle
 import pydoc
-import six
 import sys
+import unittest
 import warnings
 
-try:
-  # Since python 3
-  import collections.abc as collections_abc
-except ImportError:
-  # Won't work after python 3.8
-  import collections as collections_abc
-
-try:
-  import unittest2 as unittest  # PY26
-except ImportError:
-  import unittest
-try:
-  cmp                                   # Python 2
-except NameError:
-  cmp = lambda x, y: (x > y) - (x < y)  # Python 3
+cmp = lambda x, y: (x > y) - (x < y)
 
 from google.protobuf import map_proto2_unittest_pb2
 from google.protobuf import map_unittest_pb2
@@ -89,22 +75,6 @@ from google.protobuf import message
 from google.protobuf.internal import _parameterized
 
 UCS2_MAXUNICODE = 65535
-if six.PY3:
-  long = int
-
-
-# Python pre-2.6 does not have isinf() or isnan() functions, so we have
-# to provide our own.
-def isnan(val):
-  # NaN is never equal to itself.
-  return val != val
-def isinf(val):
-  # Infinity times zero equals NaN.
-  return not isnan(val) and isnan(val * 0)
-def IsPosInf(val):
-  return isinf(val) and (val > 0)
-def IsNegInf(val):
-  return isinf(val) and (val < 0)
 
 
 warnings.simplefilter('error', DeprecationWarning)
@@ -243,10 +213,10 @@ class MessageTest(unittest.TestCase):
 
     golden_message = message_module.TestAllTypes()
     golden_message.ParseFromString(golden_data)
-    self.assertTrue(IsPosInf(golden_message.optional_float))
-    self.assertTrue(IsPosInf(golden_message.optional_double))
-    self.assertTrue(IsPosInf(golden_message.repeated_float[0]))
-    self.assertTrue(IsPosInf(golden_message.repeated_double[0]))
+    self.assertEqual(golden_message.optional_float, math.inf)
+    self.assertEqual(golden_message.optional_double, math.inf)
+    self.assertEqual(golden_message.repeated_float[0], math.inf)
+    self.assertEqual(golden_message.repeated_double[0], math.inf)
     self.assertEqual(golden_data, golden_message.SerializeToString())
 
   def testNegativeInfinity(self, message_module):
@@ -263,10 +233,10 @@ class MessageTest(unittest.TestCase):
 
     golden_message = message_module.TestAllTypes()
     golden_message.ParseFromString(golden_data)
-    self.assertTrue(IsNegInf(golden_message.optional_float))
-    self.assertTrue(IsNegInf(golden_message.optional_double))
-    self.assertTrue(IsNegInf(golden_message.repeated_float[0]))
-    self.assertTrue(IsNegInf(golden_message.repeated_double[0]))
+    self.assertEqual(golden_message.optional_float, -math.inf)
+    self.assertEqual(golden_message.optional_double, -math.inf)
+    self.assertEqual(golden_message.repeated_float[0], -math.inf)
+    self.assertEqual(golden_message.repeated_double[0], -math.inf)
     self.assertEqual(golden_data, golden_message.SerializeToString())
 
   def testNotANumber(self, message_module):
@@ -276,10 +246,10 @@ class MessageTest(unittest.TestCase):
                    b'\xD1\x02\x00\x00\x00\x00\x00\x00\xF8\x7F')
     golden_message = message_module.TestAllTypes()
     golden_message.ParseFromString(golden_data)
-    self.assertTrue(isnan(golden_message.optional_float))
-    self.assertTrue(isnan(golden_message.optional_double))
-    self.assertTrue(isnan(golden_message.repeated_float[0]))
-    self.assertTrue(isnan(golden_message.repeated_double[0]))
+    self.assertTrue(math.isnan(golden_message.optional_float))
+    self.assertTrue(math.isnan(golden_message.optional_double))
+    self.assertTrue(math.isnan(golden_message.repeated_float[0]))
+    self.assertTrue(math.isnan(golden_message.repeated_double[0]))
 
     # The protocol buffer may serialize to any one of multiple different
     # representations of a NaN.  Rather than verify a specific representation,
@@ -288,18 +258,18 @@ class MessageTest(unittest.TestCase):
     serialized = golden_message.SerializeToString()
     message = message_module.TestAllTypes()
     message.ParseFromString(serialized)
-    self.assertTrue(isnan(message.optional_float))
-    self.assertTrue(isnan(message.optional_double))
-    self.assertTrue(isnan(message.repeated_float[0]))
-    self.assertTrue(isnan(message.repeated_double[0]))
+    self.assertTrue(math.isnan(message.optional_float))
+    self.assertTrue(math.isnan(message.optional_double))
+    self.assertTrue(math.isnan(message.repeated_float[0]))
+    self.assertTrue(math.isnan(message.repeated_double[0]))
 
   def testPositiveInfinityPacked(self, message_module):
     golden_data = (b'\xA2\x06\x04\x00\x00\x80\x7F'
                    b'\xAA\x06\x08\x00\x00\x00\x00\x00\x00\xF0\x7F')
     golden_message = message_module.TestPackedTypes()
     golden_message.ParseFromString(golden_data)
-    self.assertTrue(IsPosInf(golden_message.packed_float[0]))
-    self.assertTrue(IsPosInf(golden_message.packed_double[0]))
+    self.assertEqual(golden_message.packed_float[0], math.inf)
+    self.assertEqual(golden_message.packed_double[0], math.inf)
     self.assertEqual(golden_data, golden_message.SerializeToString())
 
   def testNegativeInfinityPacked(self, message_module):
@@ -307,8 +277,8 @@ class MessageTest(unittest.TestCase):
                    b'\xAA\x06\x08\x00\x00\x00\x00\x00\x00\xF0\xFF')
     golden_message = message_module.TestPackedTypes()
     golden_message.ParseFromString(golden_data)
-    self.assertTrue(IsNegInf(golden_message.packed_float[0]))
-    self.assertTrue(IsNegInf(golden_message.packed_double[0]))
+    self.assertEqual(golden_message.packed_float[0], -math.inf)
+    self.assertEqual(golden_message.packed_double[0], -math.inf)
     self.assertEqual(golden_data, golden_message.SerializeToString())
 
   def testNotANumberPacked(self, message_module):
@@ -316,14 +286,14 @@ class MessageTest(unittest.TestCase):
                    b'\xAA\x06\x08\x00\x00\x00\x00\x00\x00\xF8\x7F')
     golden_message = message_module.TestPackedTypes()
     golden_message.ParseFromString(golden_data)
-    self.assertTrue(isnan(golden_message.packed_float[0]))
-    self.assertTrue(isnan(golden_message.packed_double[0]))
+    self.assertTrue(math.isnan(golden_message.packed_float[0]))
+    self.assertTrue(math.isnan(golden_message.packed_double[0]))
 
     serialized = golden_message.SerializeToString()
     message = message_module.TestPackedTypes()
     message.ParseFromString(serialized)
-    self.assertTrue(isnan(message.packed_float[0]))
-    self.assertTrue(isnan(message.packed_double[0]))
+    self.assertTrue(math.isnan(message.packed_float[0]))
+    self.assertTrue(math.isnan(message.packed_double[0]))
 
   def testExtremeFloatValues(self, message_module):
     message = message_module.TestAllTypes()
@@ -451,10 +421,7 @@ class MessageTest(unittest.TestCase):
   def testHighPrecisionDoublePrinting(self, message_module):
     msg = message_module.TestAllTypes()
     msg.optional_double = 0.12345678912345678
-    if sys.version_info >= (3,):
-      self.assertEqual(str(msg), 'optional_double: 0.12345678912345678\n')
-    else:
-      self.assertEqual(str(msg), 'optional_double: 0.123456789123\n')
+    self.assertEqual(str(msg), 'optional_double: 0.12345678912345678\n')
 
   def testUnknownFieldPrinting(self, message_module):
     populated = message_module.TestAllTypes()
@@ -694,7 +661,6 @@ class MessageTest(unittest.TestCase):
     message = message_module.TestAllTypes()
 
     get_bb = operator.attrgetter('bb')
-    cmp_bb = lambda a, b: cmp(a.bb, b.bb)
     message.repeated_nested_message.add().bb = 1
     message.repeated_nested_message.add().bb = 3
     message.repeated_nested_message.add().bb = 2
@@ -705,13 +671,6 @@ class MessageTest(unittest.TestCase):
     self.assertEqual([k.bb for k in message.repeated_nested_message],
                      [1, 2, 3, 4, 5, 6])
     message.repeated_nested_message.sort(key=get_bb, reverse=True)
-    self.assertEqual([k.bb for k in message.repeated_nested_message],
-                     [6, 5, 4, 3, 2, 1])
-    if sys.version_info >= (3,): return  # No cmp sorting in PY3.
-    message.repeated_nested_message.sort(sort_function=cmp_bb)
-    self.assertEqual([k.bb for k in message.repeated_nested_message],
-                     [1, 2, 3, 4, 5, 6])
-    message.repeated_nested_message.sort(cmp=cmp_bb, reverse=True)
     self.assertEqual([k.bb for k in message.repeated_nested_message],
                      [6, 5, 4, 3, 2, 1])
 
@@ -726,12 +685,6 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(list(message.repeated_int32), [-1, -2, -3])
     message.repeated_int32.sort(key=abs, reverse=True)
     self.assertEqual(list(message.repeated_int32), [-3, -2, -1])
-    if sys.version_info < (3,):  # No cmp sorting in PY3.
-      abs_cmp = lambda a, b: cmp(abs(a), abs(b))
-      message.repeated_int32.sort(sort_function=abs_cmp)
-      self.assertEqual(list(message.repeated_int32), [-1, -2, -3])
-      message.repeated_int32.sort(cmp=abs_cmp, reverse=True)
-      self.assertEqual(list(message.repeated_int32), [-3, -2, -1])
 
     message.repeated_string.append('aaa')
     message.repeated_string.append('bb')
@@ -740,12 +693,6 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(list(message.repeated_string), ['c', 'bb', 'aaa'])
     message.repeated_string.sort(key=len, reverse=True)
     self.assertEqual(list(message.repeated_string), ['aaa', 'bb', 'c'])
-    if sys.version_info < (3,):  # No cmp sorting in PY3.
-      len_cmp = lambda a, b: cmp(len(a), len(b))
-      message.repeated_string.sort(sort_function=len_cmp)
-      self.assertEqual(list(message.repeated_string), ['c', 'bb', 'aaa'])
-      message.repeated_string.sort(cmp=len_cmp, reverse=True)
-      self.assertEqual(list(message.repeated_string), ['aaa', 'bb', 'c'])
 
   def testRepeatedFieldsComparable(self, message_module):
     m1 = message_module.TestAllTypes()
@@ -763,30 +710,11 @@ class MessageTest(unittest.TestCase):
     m2.repeated_nested_message.add().bb = 2
     m2.repeated_nested_message.add().bb = 3
 
-    if sys.version_info >= (3,): return  # No cmp() in PY3.
-
-    # These comparisons should not raise errors.
-    _ = m1 < m2
-    _ = m1.repeated_nested_message < m2.repeated_nested_message
-
-    # Make sure cmp always works. If it wasn't defined, these would be
-    # id() comparisons and would all fail.
-    self.assertEqual(cmp(m1, m2), 0)
-    self.assertEqual(cmp(m1.repeated_int32, m2.repeated_int32), 0)
-    self.assertEqual(cmp(m1.repeated_int32, [0, 1, 2]), 0)
-    self.assertEqual(cmp(m1.repeated_nested_message,
-                         m2.repeated_nested_message), 0)
-    with self.assertRaises(TypeError):
-      # Can't compare repeated composite containers to lists.
-      cmp(m1.repeated_nested_message, m2.repeated_nested_message[:])
-
-    # TODO(anuraag): Implement extensiondict comparison in C++ and then add test
-
   def testRepeatedFieldsAreSequences(self, message_module):
     m = message_module.TestAllTypes()
-    self.assertIsInstance(m.repeated_int32, collections_abc.MutableSequence)
+    self.assertIsInstance(m.repeated_int32, collections.abc.MutableSequence)
     self.assertIsInstance(m.repeated_nested_message,
-                          collections_abc.MutableSequence)
+                          collections.abc.MutableSequence)
 
   def testRepeatedFieldsNotHashable(self, message_module):
     m = message_module.TestAllTypes()
@@ -860,8 +788,8 @@ class MessageTest(unittest.TestCase):
     # that a sub-sliced memoryview is not being used.
     self.assertIsInstance(m1.optional_bytes, bytes)
     self.assertIsInstance(m1.repeated_bytes[0], bytes)
-    self.assertIsInstance(m1.optional_string, six.text_type)
-    self.assertIsInstance(m1.repeated_string[0], six.text_type)
+    self.assertIsInstance(m1.optional_string, str)
+    self.assertIsInstance(m1.repeated_string[0], str)
 
   def testMergeFromEmpty(self, message_module):
     m1 = message_module.TestAllTypes()
@@ -1049,10 +977,10 @@ class MessageTest(unittest.TestCase):
     in the value being converted to a Unicode string."""
     m = message_module.TestAllTypes()
     m.optional_string = str('')
-    self.assertIsInstance(m.optional_string, six.text_type)
+    self.assertIsInstance(m.optional_string, str)
 
   def testLongValuedSlice(self, message_module):
-    """It should be possible to use long-valued indices in slices.
+    """It should be possible to use int-valued indices in slices.
 
     This didn't used to work in the v2 C++ implementation.
     """
@@ -1060,12 +988,12 @@ class MessageTest(unittest.TestCase):
 
     # Repeated scalar
     m.repeated_int32.append(1)
-    sl = m.repeated_int32[long(0):long(len(m.repeated_int32))]
+    sl = m.repeated_int32[int(0):int(len(m.repeated_int32))]
     self.assertEqual(len(m.repeated_int32), len(sl))
 
     # Repeated composite
     m.repeated_nested_message.add().bb = 3
-    sl = m.repeated_nested_message[long(0):long(len(m.repeated_nested_message))]
+    sl = m.repeated_nested_message[int(0):int(len(m.repeated_nested_message))]
     self.assertEqual(len(m.repeated_nested_message), len(sl))
 
   def testExtendShouldNotSwallowExceptions(self, message_module):
@@ -1794,7 +1722,7 @@ class Proto3Test(unittest.TestCase):
     self.assertTrue(111 in msg.map_int32_bytes)
     self.assertTrue(888 in msg.map_int32_enum)
 
-    self.assertIsInstance(msg.map_string_string['abc'], six.text_type)
+    self.assertIsInstance(msg.map_string_string['abc'], str)
 
     # Accessing an unset key still throws TypeError if the type of the key
     # is incorrect.
@@ -1909,8 +1837,8 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(key, unicode_obj)
     self.assertEqual(value, unicode_obj)
 
-    self.assertIsInstance(key, six.text_type)
-    self.assertIsInstance(value, six.text_type)
+    self.assertIsInstance(key, str)
+    self.assertIsInstance(value, str)
 
   def testMessageMap(self):
     msg = map_unittest_pb2.TestMap()
@@ -2110,7 +2038,7 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaisesRegexp(
         TypeError,
         r'Parameter to MergeFrom\(\) must be instance of same class: expected '
-        r'.*TestMap got int\.'):
+        r'.+TestMap got int\.'):
       msg.MergeFrom(1)
 
   def testCopyFromBadType(self):
@@ -2118,15 +2046,15 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaisesRegexp(
         TypeError,
         r'Parameter to [A-Za-z]*From\(\) must be instance of same class: '
-        r'expected .*TestMap got int\.'):
+        r'expected .+TestMap got int\.'):
       msg.CopyFrom(1)
 
   def testIntegerMapWithLongs(self):
     msg = map_unittest_pb2.TestMap()
-    msg.map_int32_int32[long(-123)] = long(-456)
-    msg.map_int64_int64[long(-2**33)] = long(-2**34)
-    msg.map_uint32_uint32[long(123)] = long(456)
-    msg.map_uint64_uint64[long(2**33)] = long(2**34)
+    msg.map_int32_int32[int(-123)] = int(-456)
+    msg.map_int64_int64[int(-2**33)] = int(-2**34)
+    msg.map_uint32_uint32[int(123)] = int(456)
+    msg.map_uint64_uint64[int(2**33)] = int(2**34)
 
     serialized = msg.SerializeToString()
     msg2 = map_unittest_pb2.TestMap()
@@ -2237,54 +2165,6 @@ class Proto3Test(unittest.TestCase):
 
     matching_dict = {2: 4, 3: 6, 4: 8}
     self.assertMapIterEquals(msg.map_int32_int32.items(), matching_dict)
-
-  def testPython2Map(self):
-    if sys.version_info < (3,):
-      msg = map_unittest_pb2.TestMap()
-      msg.map_int32_int32[2] = 4
-      msg.map_int32_int32[3] = 6
-      msg.map_int32_int32[4] = 8
-      msg.map_int32_int32[5] = 10
-      map_int32 = msg.map_int32_int32
-      self.assertEqual(4, len(map_int32))
-      msg2 = map_unittest_pb2.TestMap()
-      msg2.ParseFromString(msg.SerializeToString())
-
-      def CheckItems(seq, iterator):
-        self.assertEqual(next(iterator), seq[0])
-        self.assertEqual(list(iterator), seq[1:])
-
-      CheckItems(map_int32.items(), map_int32.iteritems())
-      CheckItems(map_int32.keys(), map_int32.iterkeys())
-      CheckItems(map_int32.values(), map_int32.itervalues())
-
-      self.assertEqual(6, map_int32.get(3))
-      self.assertEqual(None, map_int32.get(999))
-      self.assertEqual(6, map_int32.pop(3))
-      self.assertEqual(0, map_int32.pop(3))
-      self.assertEqual(3, len(map_int32))
-      key, value = map_int32.popitem()
-      self.assertEqual(2 * key, value)
-      self.assertEqual(2, len(map_int32))
-      map_int32.clear()
-      self.assertEqual(0, len(map_int32))
-
-      with self.assertRaises(KeyError):
-        map_int32.popitem()
-
-      self.assertEqual(0, map_int32.setdefault(2))
-      self.assertEqual(1, len(map_int32))
-
-      map_int32.update(msg2.map_int32_int32)
-      self.assertEqual(4, len(map_int32))
-
-      with self.assertRaises(TypeError):
-        map_int32.update(msg2.map_int32_int32,
-                         msg2.map_int32_int32)
-      with self.assertRaises(TypeError):
-        map_int32.update(0)
-      with self.assertRaises(TypeError):
-        map_int32.update(value=12)
 
   def testMapItems(self):
     # Map items used to have strange behaviors when use c extension. Because
@@ -2457,11 +2337,12 @@ class Proto3Test(unittest.TestCase):
 
   def testMapsAreMapping(self):
     msg = map_unittest_pb2.TestMap()
-    self.assertIsInstance(msg.map_int32_int32, collections_abc.Mapping)
-    self.assertIsInstance(msg.map_int32_int32, collections_abc.MutableMapping)
-    self.assertIsInstance(msg.map_int32_foreign_message, collections_abc.Mapping)
+    self.assertIsInstance(msg.map_int32_int32, collections.abc.Mapping)
+    self.assertIsInstance(msg.map_int32_int32, collections.abc.MutableMapping)
     self.assertIsInstance(msg.map_int32_foreign_message,
-                          collections_abc.MutableMapping)
+                          collections.abc.Mapping)
+    self.assertIsInstance(msg.map_int32_foreign_message,
+                          collections.abc.MutableMapping)
 
   def testMapsCompare(self):
     msg = map_unittest_pb2.TestMap()
@@ -2501,19 +2382,7 @@ class Proto3Test(unittest.TestCase):
         optional_string=u'\ud001')
     self.assertEqual(msg.optional_string, u'\ud001')
 
-  @unittest.skipIf(six.PY2, 'Surrogates are acceptable in python2')
   def testSurrogatesInPython3(self):
-    # Surrogates like U+D83D is an invalid unicode character, it is
-    # supported by Python2 only because in some builds, unicode strings
-    # use 2-bytes code units. Since Python 3.3, we don't have this problem.
-    #
-    # Surrogates are utf16 code units, in a unicode string they are invalid
-    # characters even when they appear in pairs like u'\ud801\udc01'. Protobuf
-    # Python3 reject such cases at setters and parsers. Python2 accpect it
-    # to keep same features with the language itself. 'Unpaired pairs'
-    # like u'\ud801' are rejected at parsers when strict utf8 check is enabled
-    # in proto3 to keep same behavior with c extension.
-
     # Surrogates are rejected at setters in Python3.
     with self.assertRaises(ValueError):
       unittest_proto3_arena_pb2.TestAllTypes(
@@ -2527,33 +2396,6 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaises(ValueError):
       unittest_proto3_arena_pb2.TestAllTypes(
           optional_string=u'\ud801\ud801')
-
-  @unittest.skipIf(six.PY3 or sys.maxunicode == UCS2_MAXUNICODE,
-                   'Surrogates are rejected at setters in Python3')
-  def testSurrogatesInPython2(self):
-    # Test optional_string=u'\ud801\udc01'.
-    # surrogate pair is acceptable in python2.
-    msg = unittest_proto3_arena_pb2.TestAllTypes(
-        optional_string=u'\ud801\udc01')
-    # TODO(jieluo): Change pure python to have same behavior with c extension.
-    # Some build in python2 consider u'\ud801\udc01' and u'\U00010401' are
-    # equal, some are not equal.
-    if api_implementation.Type() == 'python':
-      self.assertEqual(msg.optional_string, u'\ud801\udc01')
-    else:
-      self.assertEqual(msg.optional_string, u'\U00010401')
-    serialized = msg.SerializeToString()
-    msg2 = unittest_proto3_arena_pb2.TestAllTypes()
-    msg2.MergeFromString(serialized)
-    self.assertEqual(msg2.optional_string, u'\U00010401')
-
-    # Python2 does not reject surrogates at setters.
-    msg = unittest_proto3_arena_pb2.TestAllTypes(
-        optional_string=b'\xed\xa0\x81')
-    unittest_proto3_arena_pb2.TestAllTypes(
-        optional_string=u'\ud801')
-    unittest_proto3_arena_pb2.TestAllTypes(
-        optional_string=u'\ud801\ud801')
 
 
 @testing_refleaks.TestCase
@@ -2636,9 +2478,8 @@ class PackedFieldTest(unittest.TestCase):
     self.assertEqual(golden_data, message.SerializeToString())
 
 
-@unittest.skipIf(api_implementation.Type() != 'cpp' or
-                 sys.version_info < (2, 7),
-                 'explicit tests of the C++ implementation for PY27 and above')
+@unittest.skipIf(api_implementation.Type() != 'cpp',
+                 'explicit tests of the C++ implementation')
 @testing_refleaks.TestCase
 class OversizeProtosTest(unittest.TestCase):
 

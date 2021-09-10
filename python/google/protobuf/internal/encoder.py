@@ -68,8 +68,6 @@ __author__ = 'kenton@google.com (Kenton Varda)'
 
 import struct
 
-import six
-
 from google.protobuf.internal import wire_format
 
 
@@ -372,7 +370,8 @@ def MapSizer(field_descriptor, is_message_map):
 def _VarintEncoder():
   """Return an encoder for a basic varint value (does not include tag)."""
 
-  local_int2byte = six.int2byte
+  local_int2byte = struct.Struct('>B').pack
+
   def EncodeVarint(write, value, unused_deterministic=None):
     bits = value & 0x7f
     value >>= 7
@@ -389,7 +388,8 @@ def _SignedVarintEncoder():
   """Return an encoder for a basic signed varint value (does not include
   tag)."""
 
-  local_int2byte = six.int2byte
+  local_int2byte = struct.Struct('>B').pack
+
   def EncodeSignedVarint(write, value, unused_deterministic=None):
     if value < 0:
       value += (1 << 64)
@@ -420,8 +420,7 @@ def _VarintBytes(value):
 def TagBytes(field_number, wire_type):
   """Encode the given tag and return the bytes.  Only called at startup."""
 
-  return six.binary_type(
-      _VarintBytes(wire_format.PackTag(field_number, wire_type)))
+  return bytes(_VarintBytes(wire_format.PackTag(field_number, wire_type)))
 
 # --------------------------------------------------------------------
 # As with sizers (see above), we have a number of common encoder

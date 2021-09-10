@@ -98,8 +98,6 @@ class MessageFactory(object):
       A class describing the passed in descriptor.
     """
     descriptor_name = descriptor.name
-    if str is bytes:  # PY2
-      descriptor_name = descriptor.name.encode('ascii', 'ignore')
     result_class = _GENERATED_PROTOCOL_MESSAGE_TYPE(
         descriptor_name,
         (message.Message,),
