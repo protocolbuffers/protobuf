@@ -33,6 +33,7 @@ package com.google.protobuf;
 import static com.google.protobuf.Internal.EMPTY_BYTE_ARRAY;
 import static com.google.protobuf.Internal.EMPTY_BYTE_BUFFER;
 import static com.google.protobuf.Internal.UTF_8;
+import static com.google.protobuf.Internal.checkNotNull;
 import static com.google.protobuf.WireFormat.FIXED32_SIZE;
 import static com.google.protobuf.WireFormat.FIXED64_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
@@ -46,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Reads and decodes protocol message fields.
@@ -404,9 +404,9 @@ public abstract class CodedInputStream {
    *
    * <p>Set the maximum message size. In order to prevent malicious messages from exhausting memory
    * or causing integer overflows, {@code CodedInputStream} limits how large a message may be. The
-   * default limit is {@code Integer.MAX_INT}. You should set this limit as small as you can without
-   * harming your app's functionality. Note that size limits only apply when reading from an {@code
-   * InputStream}, not when constructed around a raw byte array.
+   * default limit is {@code Integer.MAX_VALUE}. You should set this limit as small as you can
+   * without harming your app's functionality. Note that size limits only apply when reading from an
+   * {@code InputStream}, not when constructed around a raw byte array.
    *
    * <p>If you want to read several messages from a single CodedInputStream, you could call {@link
    * #resetSizeCounter()} after each one to avoid hitting the size limit.
@@ -2056,7 +2056,8 @@ public abstract class CodedInputStream {
     private int currentLimit = Integer.MAX_VALUE;
 
     private StreamDecoder(final InputStream input, int bufferSize) {
-      this.input = Objects.requireNonNull(input, "input");
+      checkNotNull(input, "input");
+      this.input = input;
       this.buffer = new byte[bufferSize];
       this.bufferSize = 0;
       pos = 0;

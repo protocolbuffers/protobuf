@@ -30,8 +30,9 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import java.io.IOException;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -82,7 +83,7 @@ final class Protobuf {
 
   /** Gets the schema for the given message type. */
   public <T> Schema<T> schemaFor(Class<T> messageType) {
-    Objects.requireNonNull(messageType, "messageType");
+    checkNotNull(messageType, "messageType");
     @SuppressWarnings("unchecked")
     Schema<T> schema = (Schema<T>) schemaCache.get(messageType);
     if (schema == null) {
@@ -112,8 +113,8 @@ final class Protobuf {
    *     registered.
    */
   public Schema<?> registerSchema(Class<?> messageType, Schema<?> schema) {
-    Objects.requireNonNull(messageType, "messageType");
-    Objects.requireNonNull(schema, "schema");
+    checkNotNull(messageType, "messageType");
+    checkNotNull(schema, "schema");
     return schemaCache.putIfAbsent(messageType, schema);
   }
 
@@ -127,8 +128,8 @@ final class Protobuf {
    *     previously.
    */
   public Schema<?> registerSchemaOverride(Class<?> messageType, Schema<?> schema) {
-    Objects.requireNonNull(messageType, "messageType");
-    Objects.requireNonNull(schema, "schema");
+    checkNotNull(messageType, "messageType");
+    checkNotNull(schema, "schema");
     return schemaCache.put(messageType, schema);
   }
 

@@ -695,7 +695,7 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
   } else {
     GOOGLE_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
-      extension->lazymessage_value->SetAllocatedMessage(message);
+      extension->lazymessage_value->SetAllocatedMessage(message, arena_);
     } else {
       if (arena_ == nullptr) {
         delete extension->message_value;
@@ -731,7 +731,8 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
   } else {
     GOOGLE_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
-      extension->lazymessage_value->UnsafeArenaSetAllocatedMessage(message);
+      extension->lazymessage_value->UnsafeArenaSetAllocatedMessage(message,
+                                                                   arena_);
     } else {
       if (arena_ == nullptr) {
         delete extension->message_value;

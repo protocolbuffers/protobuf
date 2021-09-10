@@ -476,9 +476,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   };
   static CacheAlignedLifecycleIdGenerator lifecycle_id_generator_;
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
-  // Android ndk does not support __thread keyword so we use a custom thread
-  // local storage class we implemented.
-  // iOS also does not support the __thread keyword.
+  // iOS does not support __thread keyword so we use a custom thread local
+  // storage class we implemented.
   static ThreadCache& thread_cache();
 #elif defined(PROTOBUF_USE_DLLS)
   // Thread local variables cannot be exposed through DLL interface but we can

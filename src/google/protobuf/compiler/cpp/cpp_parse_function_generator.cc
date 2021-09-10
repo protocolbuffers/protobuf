@@ -859,7 +859,7 @@ void ParseFunctionGenerator::GenerateFieldBody(
               field->number());
         }
       } else {
-        std::string size = (field->type() == FieldDescriptor::TYPE_INT32  ||
+        std::string size = (field->type() == FieldDescriptor::TYPE_INT32 ||
                             field->type() == FieldDescriptor::TYPE_SINT32 ||
                             field->type() == FieldDescriptor::TYPE_UINT32)
                                ? "32"

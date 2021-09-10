@@ -52,6 +52,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/any.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -1148,6 +1149,10 @@ class DescriptorPool::Tables {
   // The string is initialized to the given value for convenience.
   const std::string* AllocateString(StringPiece value);
 
+  // Copy the input into a NUL terminated string whose lifetime is managed by
+  // the pool.
+  const char* Strdup(StringPiece value);
+
   // Allocates an array of strings which will be destroyed when the pool is
   // destroyed. The array is initialized with the input values.
   template <typename... In>
@@ -1168,9 +1173,11 @@ class DescriptorPool::Tables {
                                       const std::string& scope,
                                       const std::string* opt_json_name);
 
-  // Allocate a LazyInitData which will be destroyed when the pool is
-  // destroyed.
-  internal::LazyInitData* AllocateLazyInit();
+  // Create an object that will be deleted when the pool is destroyed.
+  // The object is value initialized, and its destructor will be called if
+  // non-trivial.
+  template <typename Type>
+  Type* Create();
 
   // Allocate a protocol message object.  Some older versions of GCC have
   // trouble understanding explicit template instantiations in some cases, so
@@ -1690,6 +1697,13 @@ const std::string* DescriptorPool::Tables::AllocateString(
   return arena_.Create<std::string>(value);
 }
 
+const char* DescriptorPool::Tables::Strdup(StringPiece value) {
+  char* p = AllocateArray<char>(static_cast<int>(value.size() + 1));
+  memcpy(p, value.data(), value.size());
+  p[value.size()] = 0;
+  return p;
+}
+
 template <typename... In>
 const std::string* DescriptorPool::Tables::AllocateStringArray(In&&... values) {
   auto& array = *arena_.Create<std::array<std::string, sizeof...(In)>>();
@@ -1770,8 +1784,9 @@ DescriptorPool::Tables::AllocateFieldNames(const std::string& name,
   return result;
 }
 
-internal::LazyInitData* DescriptorPool::Tables::AllocateLazyInit() {
-  return arena_.Create<internal::LazyInitData>();
+template <typename Type>
+Type* DescriptorPool::Tables::Create() {
+  return arena_.Create<Type>();
 }
 
 template <typename Type>
@@ -4959,17 +4974,18 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     result->dependencies_[i] = dependency;
     if (pool_->lazily_build_dependencies_ && !dependency) {
       if (result->dependencies_once_ == nullptr) {
-        result->dependencies_once_ = tables_->AllocateLazyInit();
-        result->dependencies_once_->file.dependencies_names =
-            tables_->AllocateArray<const std::string*>(proto.dependency_size());
+        result->dependencies_once_ =
+            tables_->Create<FileDescriptor::LazyInitData>();
+        result->dependencies_once_->dependencies_names =
+            tables_->AllocateArray<const char*>(proto.dependency_size());
         if (proto.dependency_size() > 0) {
-          std::fill_n(result->dependencies_once_->file.dependencies_names,
+          std::fill_n(result->dependencies_once_->dependencies_names,
                       proto.dependency_size(), nullptr);
         }
       }
 
-      result->dependencies_once_->file.dependencies_names[i] =
-          tables_->AllocateString(proto.dependency(i));
+      result->dependencies_once_->dependencies_names[i] =
+          tables_->Strdup(proto.dependency(i));
     }
   }
 
@@ -6108,12 +6124,12 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
         // Save the symbol names for later for lookup, and allocate the once
         // object needed for the accessors.
         std::string name = proto.type_name();
-        field->type_once_ = tables_->AllocateLazyInit();
-        field->type_once_->field.type_name = tables_->AllocateString(name);
-        if (proto.has_default_value()) {
-          field->type_once_->field.default_value_enum_name =
-              tables_->AllocateString(proto.default_value());
-        }
+        field->type_once_ = tables_->Create<internal::once_flag>();
+        field->type_descriptor_.lazy_type_name = tables_->Strdup(name);
+        field->lazy_default_value_enum_name_ =
+            proto.has_default_value() ? tables_->Strdup(proto.default_value())
+                                      : nullptr;
+
         // AddFieldByNumber and AddExtension are done later in this function,
         // and can/must be done if the field type was not found. The related
         // error checking is not necessary when in lazily_build_dependencies_
@@ -7769,32 +7785,32 @@ Symbol DescriptorPool::CrossLinkOnDemandHelper(StringPiece name,
 void FieldDescriptor::InternalTypeOnceInit() const {
   GOOGLE_CHECK(file()->finished_building_ == true);
   const EnumDescriptor* enum_type = nullptr;
-  if (type_once_->field.type_name) {
-    Symbol result = file()->pool()->CrossLinkOnDemandHelper(
-        *type_once_->field.type_name, type_ == FieldDescriptor::TYPE_ENUM);
-    if (result.type() == Symbol::MESSAGE) {
-      type_ = FieldDescriptor::TYPE_MESSAGE;
-      type_descriptor_.message_type = result.descriptor();
-    } else if (result.type() == Symbol::ENUM) {
-      type_ = FieldDescriptor::TYPE_ENUM;
-      enum_type = type_descriptor_.enum_type = result.enum_descriptor();
-    }
+  Symbol result = file()->pool()->CrossLinkOnDemandHelper(
+      type_descriptor_.lazy_type_name, type_ == FieldDescriptor::TYPE_ENUM);
+  if (result.type() == Symbol::MESSAGE) {
+    type_ = FieldDescriptor::TYPE_MESSAGE;
+    type_descriptor_.message_type = result.descriptor();
+  } else if (result.type() == Symbol::ENUM) {
+    type_ = FieldDescriptor::TYPE_ENUM;
+    enum_type = type_descriptor_.enum_type = result.enum_descriptor();
   }
-  if (enum_type && !default_value_enum_) {
-    if (type_once_->field.default_value_enum_name) {
+
+  if (enum_type) {
+    if (lazy_default_value_enum_name_) {
       // Have to build the full name now instead of at CrossLink time,
       // because enum_type may not be known at the time.
       std::string name = enum_type->full_name();
       // Enum values reside in the same scope as the enum type.
       std::string::size_type last_dot = name.find_last_of('.');
       if (last_dot != std::string::npos) {
-        name = name.substr(0, last_dot) + "." +
-               *type_once_->field.default_value_enum_name;
+        name = name.substr(0, last_dot) + "." + lazy_default_value_enum_name_;
       } else {
-        name = *type_once_->field.default_value_enum_name;
+        name = lazy_default_value_enum_name_;
       }
       Symbol result = file()->pool()->CrossLinkOnDemandHelper(name, true);
       default_value_enum_ = result.enum_value_descriptor();
+    } else {
+      default_value_enum_ = nullptr;
     }
     if (!default_value_enum_) {
       // We use the first defined value as the default
@@ -7814,7 +7830,7 @@ void FieldDescriptor::TypeOnceInit(const FieldDescriptor* to_init) {
 // import building and cross linking of a field of a message.
 const Descriptor* FieldDescriptor::message_type() const {
   if (type_once_) {
-    internal::call_once(type_once_->once, FieldDescriptor::TypeOnceInit, this);
+    internal::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
   }
   return type_ == TYPE_MESSAGE || type_ == TYPE_GROUP
              ? type_descriptor_.message_type
@@ -7823,14 +7839,14 @@ const Descriptor* FieldDescriptor::message_type() const {
 
 const EnumDescriptor* FieldDescriptor::enum_type() const {
   if (type_once_) {
-    internal::call_once(type_once_->once, FieldDescriptor::TypeOnceInit, this);
+    internal::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
   }
   return type_ == TYPE_ENUM ? type_descriptor_.enum_type : nullptr;
 }
 
 const EnumValueDescriptor* FieldDescriptor::default_value_enum() const {
   if (type_once_) {
-    internal::call_once(type_once_->once, FieldDescriptor::TypeOnceInit, this);
+    internal::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
   }
   return default_value_enum_;
 }
@@ -7846,10 +7862,10 @@ const std::string& FieldDescriptor::PrintableNameForExtension() const {
 
 void FileDescriptor::InternalDependenciesOnceInit() const {
   GOOGLE_CHECK(finished_building_ == true);
-  auto* names = dependencies_once_->file.dependencies_names;
+  auto* names = dependencies_once_->dependencies_names;
   for (int i = 0; i < dependency_count(); i++) {
     if (names[i]) {
-      dependencies_[i] = pool_->FindFileByName(*names[i]);
+      dependencies_[i] = pool_->FindFileByName(names[i]);
     }
   }
 }
@@ -7869,11 +7885,11 @@ const FileDescriptor* FileDescriptor::dependency(int index) const {
 }
 
 const Descriptor* MethodDescriptor::input_type() const {
-  return input_type_.Get();
+  return input_type_.Get(service());
 }
 
 const Descriptor* MethodDescriptor::output_type() const {
-  return output_type_.Get();
+  return output_type_.Get(service());
 }
 
 
@@ -7891,31 +7907,21 @@ void LazyDescriptor::SetLazy(StringPiece name,
   GOOGLE_CHECK(file && file->pool_);
   GOOGLE_CHECK(file->pool_->lazily_build_dependencies_);
   GOOGLE_CHECK(!file->finished_building_);
-  once_ = file->pool_->tables_->AllocateLazyInit();
-  once_->descriptor.file = file;
-  once_->descriptor.name = file->pool_->tables_->AllocateString(name);
+  once_ = file->pool_->tables_->Create<internal::once_flag>();
+  lazy_name_ = file->pool_->tables_->Strdup(name);
 }
 
-void LazyDescriptor::Once() {
+void LazyDescriptor::Once(const ServiceDescriptor* service) {
   if (once_) {
-    internal::call_once(once_->once, LazyDescriptor::OnceStatic, this);
+    internal::call_once(*once_, [&] {
+      auto* file = service->file();
+      GOOGLE_CHECK(file->finished_building_);
+      descriptor_ =
+          file->pool_->CrossLinkOnDemandHelper(lazy_name_, false).descriptor();
+    });
   }
 }
 
-void LazyDescriptor::OnceStatic(LazyDescriptor* lazy) { lazy->OnceInternal(); }
-
-void LazyDescriptor::OnceInternal() {
-  auto* file = once_->descriptor.file;
-  auto* name = once_->descriptor.name;
-  GOOGLE_CHECK(file->finished_building_);
-  if (!descriptor_ && name) {
-    auto* descriptor =
-        file->pool_->CrossLinkOnDemandHelper(*name, false).descriptor();
-    if (descriptor != nullptr) {
-      descriptor_ = descriptor;
-    }
-  }
-}
 }  // namespace internal
 
 }  // namespace protobuf

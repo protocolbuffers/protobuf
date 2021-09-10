@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
 import static com.google.protobuf.WireFormat.FIXED32_SIZE;
 import static com.google.protobuf.WireFormat.FIXED64_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT32_SIZE;
@@ -50,7 +51,6 @@ import java.nio.ByteOrder;
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Queue;
 
 /**
@@ -146,7 +146,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     if (chunkSize <= 0) {
       throw new IllegalArgumentException("chunkSize must be > 0");
     }
-    this.alloc = Objects.requireNonNull(alloc, "alloc");
+    this.alloc = checkNotNull(alloc, "alloc");
     this.chunkSize = chunkSize;
   }
 

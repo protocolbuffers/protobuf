@@ -178,8 +178,8 @@ def _StrClass(cls):
 
 
 def _NonStringIterable(obj):
-  return (isinstance(obj, collections_abc.Iterable) and not
-          isinstance(obj, str))
+  return (isinstance(obj, collections_abc.Iterable) and
+          not isinstance(obj, str))
 
 
 def _FormatParameterList(testcase_params):

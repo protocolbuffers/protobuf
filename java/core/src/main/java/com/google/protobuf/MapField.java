@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,7 +39,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -319,8 +320,8 @@ public class MapField<K, V> implements MutabilityOracle {
     @Override
     public V put(K key, V value) {
       mutabilityOracle.ensureMutable();
-      Objects.requireNonNull(key);
-      Objects.requireNonNull(value);
+      checkNotNull(key);
+      checkNotNull(value);
       return delegate.put(key, value);
     }
 
@@ -334,8 +335,8 @@ public class MapField<K, V> implements MutabilityOracle {
     public void putAll(Map<? extends K, ? extends V> m) {
       mutabilityOracle.ensureMutable();
       for (K key : m.keySet()) {
-        Objects.requireNonNull(key);
-        Objects.requireNonNull(m.get(key));
+        checkNotNull(key);
+        checkNotNull(m.get(key));
       }
       delegate.putAll(m);
     }
