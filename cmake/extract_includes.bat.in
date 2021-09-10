@@ -21,15 +21,19 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\arena_impl.h" include
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\arenastring.h" include\google\protobuf\arenastring.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\code_generator.h" include\google\protobuf\compiler\code_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\command_line_interface.h" include\google\protobuf\compiler\command_line_interface.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\cpp_file.h" include\google\protobuf\compiler\cpp\cpp_file.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\cpp_generator.h" include\google\protobuf\compiler\cpp\cpp_generator.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\cpp_helpers.h" include\google\protobuf\compiler\cpp\cpp_helpers.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\cpp_names.h" include\google\protobuf\compiler\cpp\cpp_names.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_doc_comment.h" include\google\protobuf\compiler\csharp\csharp_doc_comment.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_generator.h" include\google\protobuf\compiler\csharp\csharp_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_names.h" include\google\protobuf\compiler\csharp\csharp_names.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_options.h" include\google\protobuf\compiler\csharp\csharp_options.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\importer.h" include\google\protobuf\compiler\importer.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_generator.h" include\google\protobuf\compiler\java\java_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_kotlin_generator.h" include\google\protobuf\compiler\java\java_kotlin_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_names.h" include\google\protobuf\compiler\java\java_names.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\js\js_generator.h" include\google\protobuf\compiler\js\js_generator.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\js\well_known_types_embed.h" include\google\protobuf\compiler\js\well_known_types_embed.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\objectivec\objectivec_generator.h" include\google\protobuf\compiler\objectivec\objectivec_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\objectivec\objectivec_helpers.h" include\google\protobuf\compiler\objectivec\objectivec_helpers.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\parser.h" include\google\protobuf\compiler\parser.h
@@ -53,6 +57,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_enum_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_bases.h" include\google\protobuf\generated_message_bases.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_reflection.h" include\google\protobuf\generated_message_reflection.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_table_driven.h" include\google\protobuf\generated_message_table_driven.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_table_driven_lite.h" include\google\protobuf\generated_message_table_driven_lite.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_tctable_decl.h" include\google\protobuf\generated_message_tctable_decl.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_tctable_impl.h" include\google\protobuf\generated_message_tctable_impl.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_tctable_impl.inc" include\google\protobuf\generated_message_tctable_impl.inc
@@ -89,7 +94,6 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\reflection_ops.h" inc
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\repeated_field.h" include\google\protobuf\repeated_field.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\service.h" include\google\protobuf\service.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\source_context.pb.h" include\google\protobuf\source_context.pb.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\string_member_robber.h" include\google\protobuf\string_member_robber.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\struct.pb.h" include\google\protobuf\struct.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\bytestream.h" include\google\protobuf\stubs\bytestream.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\callback.h" include\google\protobuf\stubs\callback.h
