@@ -36,12 +36,8 @@ __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import copy
 import os
+import unittest
 import warnings
-
-try:
-  import unittest2 as unittest  #PY26
-except ImportError:
-  import unittest
 
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_import_public_pb2

@@ -34,10 +34,7 @@
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
-try:
-  import unittest2 as unittest  #PY26
-except ImportError:
-  import unittest
+import unittest
 
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
