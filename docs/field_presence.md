@@ -198,7 +198,7 @@ If client A depends on _explicit presence_ for `foo`, then a "round trip" throug
 
 ## How to enable _explicit presence_ in proto3
 
-These are the general steps to u field tracking support for proto3:
+These are the general steps to use field tracking support for proto3:
 
 1.  Add an `optional` field to a `.proto` file.
 1.  Run `protoc` (at least v3.15, or v3.12 using `--experimental_allow_proto3_optional` flag).
