@@ -32,7 +32,7 @@ run_test() {
 
   export ZEND_DONT_UNLOAD_MODULES=1
   export USE_ZEND_ALLOC=0
-  rm nohup.out
+  rm -f nohup.out
   nohup $RUN_UNDER php $ARGS $EXTRA_ARGS -S localhost:$PORT multirequest.php >nohup.out 2>&1 &
   PID=$!
 
