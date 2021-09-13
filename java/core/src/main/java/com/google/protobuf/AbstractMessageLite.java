@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +39,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * A partial implementation of the {@link MessageLite} interface which implements as many methods of
@@ -401,7 +402,7 @@ public abstract class AbstractMessageLite<
      *     null.
      */
     protected static <T> void addAll(final Iterable<T> values, final List<? super T> list) {
-      Objects.requireNonNull(values);
+      checkNotNull(values);
       if (values instanceof LazyStringList) {
         // For StringOrByteStringLists, check the underlying elements to avoid
         // forcing conversions of ByteStrings to Strings.

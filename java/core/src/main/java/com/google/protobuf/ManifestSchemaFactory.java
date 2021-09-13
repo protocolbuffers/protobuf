@@ -30,7 +30,7 @@
 
 package com.google.protobuf;
 
-import java.util.Objects;
+import static com.google.protobuf.Internal.checkNotNull;
 
 /**
  * Dynamically generates a manifest-based (i.e. table-based) schema for a given protobuf message.
@@ -45,7 +45,7 @@ final class ManifestSchemaFactory implements SchemaFactory {
   }
 
   private ManifestSchemaFactory(MessageInfoFactory messageInfoFactory) {
-    this.messageInfoFactory = Objects.requireNonNull(messageInfoFactory, "messageInfoFactory");
+    this.messageInfoFactory = checkNotNull(messageInfoFactory, "messageInfoFactory");
   }
 
   @Override

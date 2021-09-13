@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;

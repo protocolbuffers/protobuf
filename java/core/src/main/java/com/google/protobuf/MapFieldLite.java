@@ -30,12 +30,13 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import com.google.protobuf.Internal.EnumLite;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -91,9 +92,9 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
   @Override
   public V put(K key, V value) {
     ensureMutable();
-    Objects.requireNonNull(key);
+    checkNotNull(key);
 
-    Objects.requireNonNull(value);
+    checkNotNull(value);
     return super.put(key, value);
   }
 
@@ -116,8 +117,8 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
 
   private static void checkForNullKeysAndValues(Map<?, ?> m) {
     for (Object key : m.keySet()) {
-      Objects.requireNonNull(key);
-      Objects.requireNonNull(m.get(key));
+      checkNotNull(key);
+      checkNotNull(m.get(key));
     }
   }
 

@@ -44,7 +44,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 /**
  * Class to represent {@code ByteStrings} formed by concatenation of other ByteStrings, without
@@ -845,8 +844,9 @@ final class RopeByteString extends ByteString {
      */
     @Override
     public int read(byte[] b, int offset, int length) {
-      Objects.requireNonNull(b);
-      if (offset < 0 || length < 0 || length > b.length - offset) {
+      if (b == null) {
+        throw new NullPointerException();
+      } else if (offset < 0 || length < 0 || length > b.length - offset) {
         throw new IndexOutOfBoundsException();
       }
       int bytesRead = readSkipInternal(b, offset, length);

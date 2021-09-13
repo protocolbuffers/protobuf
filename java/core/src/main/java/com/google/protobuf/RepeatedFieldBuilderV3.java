@@ -30,12 +30,13 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * {@code RepeatedFieldBuilderV3} implements a structure that a protocol message uses to hold a
@@ -276,7 +277,7 @@ public class RepeatedFieldBuilderV3<
    * @return the builder
    */
   public RepeatedFieldBuilderV3<MType, BType, IType> setMessage(int index, MType message) {
-    Objects.requireNonNull(message);
+    checkNotNull(message);
     ensureMutableMessageList();
     messages.set(index, message);
     if (builders != null) {
@@ -297,7 +298,7 @@ public class RepeatedFieldBuilderV3<
    * @return the builder
    */
   public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(MType message) {
-    Objects.requireNonNull(message);
+    checkNotNull(message);
     ensureMutableMessageList();
     messages.add(message);
     if (builders != null) {
@@ -318,7 +319,7 @@ public class RepeatedFieldBuilderV3<
    * @return the builder
    */
   public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(int index, MType message) {
-    Objects.requireNonNull(message);
+    checkNotNull(message);
     ensureMutableMessageList();
     messages.add(index, message);
     if (builders != null) {
@@ -339,7 +340,7 @@ public class RepeatedFieldBuilderV3<
   public RepeatedFieldBuilderV3<MType, BType, IType> addAllMessages(
       Iterable<? extends MType> values) {
     for (final MType value : values) {
-      Objects.requireNonNull(value);
+      checkNotNull(value);
     }
 
     // If we can inspect the size, we can more efficiently add messages.
