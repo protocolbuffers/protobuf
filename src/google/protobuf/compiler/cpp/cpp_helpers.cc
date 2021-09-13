@@ -1168,8 +1168,8 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
     if (descriptor->extension_range_count() > 0) {
       result.contains_extension = true;
     }
-    for (int i = 0; i < descriptor->field_count(); i++) {
-      const FieldDescriptor* field = descriptor->field(i);
+    for (int j = 0; j < descriptor->field_count(); j++) {
+      const FieldDescriptor* field = descriptor->field(j);
       if (field->is_required()) {
         result.contains_required = true;
       }

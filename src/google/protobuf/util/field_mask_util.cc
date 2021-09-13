@@ -385,8 +385,8 @@ void FieldMaskTree::RemovePath(const std::string& path,
       if (new_branch_node == nullptr) {
         new_branch_node = node;
       }
-      for (int i = 0; i < current_descriptor->field_count(); ++i) {
-        node->children[current_descriptor->field(i)->name()] = new Node();
+      for (int j = 0; j < current_descriptor->field_count(); ++j) {
+        node->children[current_descriptor->field(j)->name()] = new Node();
       }
     }
     if (ContainsKey(node->children, parts[i])) {

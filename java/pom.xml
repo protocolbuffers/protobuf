@@ -166,6 +166,27 @@
           <artifactId>maven-antrun-plugin</artifactId>
           <version>1.8</version>
         </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <version>1.20</version>
+          <configuration>
+            <signature>
+              <groupId>net.sf.androidscents.signature</groupId>
+              <artifactId>android-api-level-14</artifactId>
+              <version>4.0_r4</version>
+            </signature>
+          </configuration>
+          <executions>
+            <execution>
+              <id>android</id>
+              <phase>test</phase>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>

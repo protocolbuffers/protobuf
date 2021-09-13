@@ -2423,8 +2423,8 @@ bool CommandLineInterface::WriteDescriptorSet(
     to_output.insert(parsed_files.begin(), parsed_files.end());
     for (int i = 0; i < parsed_files.size(); i++) {
       const FileDescriptor* file = parsed_files[i];
-      for (int i = 0; i < file->dependency_count(); i++) {
-        const FileDescriptor* dependency = file->dependency(i);
+      for (int j = 0; j < file->dependency_count(); j++) {
+        const FileDescriptor* dependency = file->dependency(j);
         // if the dependency isn't in parsed files, mark it as already seen
         if (to_output.find(dependency) == to_output.end()) {
           already_seen.insert(dependency);
