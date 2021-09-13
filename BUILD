@@ -133,6 +133,7 @@ cc_library(
         "src/google/protobuf/extension_set.cc",
         "src/google/protobuf/generated_enum_util.cc",
         "src/google/protobuf/generated_message_table_driven_lite.cc",
+        "src/google/protobuf/generated_message_tctable_lite.cc",
         "src/google/protobuf/generated_message_util.cc",
         "src/google/protobuf/implicit_weak_message.cc",
         "src/google/protobuf/inlined_string_field.cc",
@@ -193,6 +194,7 @@ cc_library(
         "src/google/protobuf/generated_message_bases.cc",
         "src/google/protobuf/generated_message_reflection.cc",
         "src/google/protobuf/generated_message_table_driven.cc",
+        "src/google/protobuf/generated_message_tctable_full.cc",
         "src/google/protobuf/io/gzip_stream.cc",
         "src/google/protobuf/io/printer.cc",
         "src/google/protobuf/io/tokenizer.cc",
@@ -222,7 +224,6 @@ cc_library(
         "src/google/protobuf/util/internal/protostream_objectsource.cc",
         "src/google/protobuf/util/internal/protostream_objectwriter.cc",
         "src/google/protobuf/util/internal/type_info.cc",
-        "src/google/protobuf/util/internal/type_info_test_helper.cc",
         "src/google/protobuf/util/internal/utility.cc",
         "src/google/protobuf/util/json_util.cc",
         "src/google/protobuf/util/message_differencer.cc",
@@ -621,6 +622,8 @@ cc_proto_library(
 COMMON_TEST_SRCS = [
     # AUTOGEN(common_test_srcs)
     "src/google/protobuf/arena_test_util.cc",
+    "src/google/protobuf/map_lite_test_util.cc",
+    "src/google/protobuf/test_util_lite.cc",
     "src/google/protobuf/map_test_util.inc",
     "src/google/protobuf/reflection_tester.cc",
     "src/google/protobuf/test_util.cc",

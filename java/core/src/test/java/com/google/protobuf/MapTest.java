@@ -32,6 +32,8 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
@@ -50,6 +52,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -462,6 +465,37 @@ public class MapTest {
     TestMap.Builder destination = TestMap.newBuilder();
     copyMapValues(source, destination);
     assertMapValuesSet(destination.build());
+  }
+
+  @Test
+  public void testPutAllWithNullStringValue() throws Exception {
+    TestMap.Builder sourceBuilder = TestMap.newBuilder();
+
+    // order preserving map used here to help test rollback
+    Map<Integer, String> data = new TreeMap<>();
+    data.put(7, "foo");
+    data.put(8, "bar");
+    data.put(9, null);
+    try {
+      sourceBuilder.putAllInt32ToStringField(data);
+      fail("allowed null string value");
+    } catch (NullPointerException expected) {
+      // Verify rollback of previously added values.
+      // They all go in or none do.
+      assertThat(sourceBuilder.getInt32ToStringFieldMap()).isEmpty();
+    }
+  }
+
+  @Test
+  public void testPutNullStringValue() throws Exception {
+    TestMap.Builder sourceBuilder = TestMap.newBuilder();
+
+    try {
+      sourceBuilder.putInt32ToStringField(8, null);
+      fail("allowed null string value");
+    } catch (NullPointerException expected) {
+      assertNotNull(expected.getMessage());
+    }
   }
 
   @Test

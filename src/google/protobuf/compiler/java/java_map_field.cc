@@ -111,11 +111,13 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   (*variables)["key_default_value"] = DefaultValue(key, true, name_resolver);
   (*variables)["key_null_check"] =
       IsReferenceType(keyJavaType)
-          ? "if (key == null) { throw new java.lang.NullPointerException(); }"
+          ? "if (key == null) { throw new NullPointerException(\"map key\"); }"
           : "";
   (*variables)["value_null_check"] =
-      IsReferenceType(valueJavaType)
-          ? "if (value == null) { throw new java.lang.NullPointerException(); }"
+      valueJavaType != JAVATYPE_ENUM && IsReferenceType(valueJavaType)
+          ? "if (value == null) {\n"
+            "  throw new NullPointerException(\"map value\");\n"
+            "}\n"
           : "";
   if (valueJavaType == JAVATYPE_ENUM) {
     // We store enums as Integers internally.
@@ -435,6 +437,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
           "    $key_type$ key,\n"
           "    $value_type$ value) {\n"
           "  $key_null_check$\n"
+          "  $value_null_check$\n"
           "  internalGetMutable$capitalized_name$().getMutableMap()\n"
           "      .put(key, value);\n"
           "  return this;\n"
