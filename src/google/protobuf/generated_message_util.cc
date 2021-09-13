@@ -701,13 +701,13 @@ uint8_t* SerializeInternalToArray(const uint8_t* base,
       // Special cases
       case FieldMetadata::kSpecial: {
         io::ArrayOutputStream array_stream(array_output.ptr, INT_MAX);
-        io::CodedOutputStream output(&array_stream);
-        output.SetSerializationDeterministic(is_deterministic);
+        io::CodedOutputStream output_stream(&array_stream);
+        output_stream.SetSerializationDeterministic(is_deterministic);
         func = reinterpret_cast<SpecialSerializer>(
             const_cast<void*>(field_metadata.ptr));
         func(base, field_metadata.offset, field_metadata.tag,
-             field_metadata.has_offset, &output);
-        array_output.ptr += output.ByteCount();
+             field_metadata.has_offset, &output_stream);
+        array_output.ptr += output_stream.ByteCount();
       } break;
       default:
         // __builtin_unreachable()
