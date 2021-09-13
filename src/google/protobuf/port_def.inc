@@ -774,6 +774,8 @@
 #pragma warning(disable : 5031)
 // Conditional expression is constant
 #pragma warning(disable: 4127)
+// decimal digit terminates octal escape sequence
+#pragma warning(disable: 4125)
 #endif
 
 // We don't want code outside port_def doing complex testing, so
