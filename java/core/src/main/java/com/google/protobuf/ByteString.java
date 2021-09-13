@@ -55,7 +55,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 /**
  * Immutable sequence of bytes. Provides conversions to and from {@code byte[]}, {@link
@@ -1329,7 +1328,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
      * @param bytes array to wrap
      */
     LiteralByteString(byte[] bytes) {
-      this.bytes = Objects.requireNonNull(bytes);
+      if (bytes == null) {
+        throw new NullPointerException();
+      }
+      this.bytes = bytes;
     }
 
     @Override

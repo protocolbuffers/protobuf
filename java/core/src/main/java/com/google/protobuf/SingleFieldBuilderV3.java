@@ -30,7 +30,7 @@
 
 package com.google.protobuf;
 
-import java.util.Objects;
+import static com.google.protobuf.Internal.checkNotNull;
 
 /**
  * {@code SingleFieldBuilderV3} implements a structure that a protocol message uses to hold a single
@@ -77,7 +77,7 @@ public class SingleFieldBuilderV3<
   private boolean isClean;
 
   public SingleFieldBuilderV3(MType message, AbstractMessage.BuilderParent parent, boolean isClean) {
-    this.message = Objects.requireNonNull(message);
+    this.message = checkNotNull(message);
     this.parent = parent;
     this.isClean = isClean;
   }
@@ -157,7 +157,7 @@ public class SingleFieldBuilderV3<
    * @return the builder
    */
   public SingleFieldBuilderV3<MType, BType, IType> setMessage(MType message) {
-    this.message = Objects.requireNonNull(message);
+    this.message = checkNotNull(message);
     if (builder != null) {
       builder.dispose();
       builder = null;

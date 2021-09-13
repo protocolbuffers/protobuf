@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -39,7 +41,6 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * An implementation of {@link Message} that can represent arbitrary types, given a {@link
@@ -623,7 +624,7 @@ public final class DynamicMessage extends AbstractMessage {
 
     /** Verifies that the value is EnumValueDescriptor and matches Enum Type. */
     private void ensureSingularEnumValueDescriptor(FieldDescriptor field, Object value) {
-      Objects.requireNonNull(value);
+      checkNotNull(value);
       if (!(value instanceof EnumValueDescriptor)) {
         throw new IllegalArgumentException(
             "DynamicMessage should use EnumValueDescriptor to set Enum Value.");

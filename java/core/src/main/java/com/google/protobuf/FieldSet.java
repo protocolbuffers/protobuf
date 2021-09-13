@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import com.google.protobuf.LazyField.LazyIterator;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,7 +39,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * A class which represents an arbitrary set of fields of some message type. This is used to
@@ -409,7 +410,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
 
   private static boolean isValidType(final WireFormat.FieldType type, final Object value) {
-    Objects.requireNonNull(value);
+    checkNotNull(value);
     switch (type.getJavaType()) {
       case INT:
         return value instanceof Integer;

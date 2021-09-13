@@ -30,8 +30,9 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 /**
  * A buffer that was allocated by a {@link BufferAllocator}. For every buffer, it is guaranteed that
@@ -150,7 +151,7 @@ abstract class AllocatedBuffer {
    * returned buffer will have {@link #hasNioBuffer} == {@code true}.
    */
   public static AllocatedBuffer wrap(final ByteBuffer buffer) {
-    Objects.requireNonNull(buffer, "buffer");
+    checkNotNull(buffer, "buffer");
 
     return new AllocatedBuffer() {
 

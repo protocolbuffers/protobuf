@@ -42,7 +42,6 @@ import java.io.OutputStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1155,7 +1154,9 @@ public abstract class CodedOutputStream extends ByteOutput {
     private int position;
 
     ArrayEncoder(byte[] buffer, int offset, int length) {
-      Objects.requireNonNull(buffer, "buffer");
+      if (buffer == null) {
+        throw new NullPointerException("buffer");
+      }
       if ((offset | length | (buffer.length - (offset + length))) < 0) {
         throw new IllegalArgumentException(
             String.format(
@@ -2119,11 +2120,14 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void write(byte[] value, int offset, int length) throws IOException {
-      Objects.requireNonNull(value, "value");
-      if (offset < 0
+      if (value == null
+          || offset < 0
           || length < 0
           || (value.length - length) < offset
           || (limit - length) < position) {
+        if (value == null) {
+          throw new NullPointerException("value");
+        }
         throw new OutOfSpaceException(
             String.format("Pos: %d, limit: %d, len: %d", position, limit, length));
       }
@@ -2392,7 +2396,10 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     ByteOutputEncoder(ByteOutput out, int bufferSize) {
       super(bufferSize);
-      this.out = Objects.requireNonNull(out, "out");
+      if (out == null) {
+        throw new NullPointerException("out");
+      }
+      this.out = out;
     }
 
     @Override
@@ -2703,7 +2710,10 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     OutputStreamEncoder(OutputStream out, int bufferSize) {
       super(bufferSize);
-      this.out = Objects.requireNonNull(out, "out");
+      if (out == null) {
+        throw new NullPointerException("out");
+      }
+      this.out = out;
     }
 
     @Override
