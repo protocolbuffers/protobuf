@@ -8,7 +8,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protoc</artifactId>
-  <version>3.18.0-rc-2</version>
+  <version>3.18.0</version>
   <packaging>pom</packaging>
   <name>Protobuf Compiler</name>
   <description>
