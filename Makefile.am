@@ -967,6 +967,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/GeneratedServiceTest.php                                  \
   php/tests/MapFieldTest.php                                          \
   php/tests/memory_leak_test.php                                      \
+  php/tests/memory_leak_test.sh                                       \
   php/tests/multirequest.php                                          \
   php/tests/multirequest.sh                                           \
   php/tests/PhpImplementationTest.php                                 \
