@@ -20,6 +20,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Add @deprecated javadoc for set/get/has methods
   * correctly decode \? escape sequence in text protos
   * Avoid depending on Objects.requireNonNull() until we can verify that no users are depending on older Android versions.
+  * disallow null string map values in put and putAll
 
   Kotlin
   * Generated Kotlin code is Explicit API mode compatible
