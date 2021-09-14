@@ -1,4 +1,4 @@
-2021-08-27 version 3.18.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2021-09-13 version 3.18.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
   * Fix warnings raised by clang 11 (#8664)
@@ -50,9 +50,12 @@
 
   PHP
   * Migrate PHP & Ruby to ABSL wyhash (#8854)
+  * Added support for PHP 8.1 (currently in RC1) to the C extension (#8964)
+  * Fixed PHP SEGV when constructing messages from a destructor. (#8969)
 
   Ruby
   * Move DSL implementation from C to pure Ruby (#8850)
+  * Fixed a memory bug with RepeatedField#+. (#8970)
 
   Other
   * [csharp] ByteString.CreateCodedInput should use ArraySegment offset and count (#8740)
