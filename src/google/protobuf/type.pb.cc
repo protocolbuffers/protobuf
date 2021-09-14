@@ -272,7 +272,7 @@ bool Field_Kind_IsValid(int value) {
   }
 }
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr Field_Kind Field::TYPE_UNKNOWN;
 constexpr Field_Kind Field::TYPE_DOUBLE;
 constexpr Field_Kind Field::TYPE_FLOAT;
@@ -295,7 +295,7 @@ constexpr Field_Kind Field::TYPE_SINT64;
 constexpr Field_Kind Field::Kind_MIN;
 constexpr Field_Kind Field::Kind_MAX;
 constexpr int Field::Kind_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Field_Cardinality_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[1];
@@ -312,7 +312,7 @@ bool Field_Cardinality_IsValid(int value) {
   }
 }
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr Field_Cardinality Field::CARDINALITY_UNKNOWN;
 constexpr Field_Cardinality Field::CARDINALITY_OPTIONAL;
 constexpr Field_Cardinality Field::CARDINALITY_REQUIRED;
@@ -320,7 +320,7 @@ constexpr Field_Cardinality Field::CARDINALITY_REPEATED;
 constexpr Field_Cardinality Field::Cardinality_MIN;
 constexpr Field_Cardinality Field::Cardinality_MAX;
 constexpr int Field::Cardinality_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Syntax_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[2];
