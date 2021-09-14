@@ -1,4 +1,7 @@
 Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Protocol Compiler
+  * Make proto2::Message::DiscardUnknownFields() non-virtual
+
   Python
   * Removed Python 2.x support.
   * Pure python descriptor_pool.AddSerializedFile() will always build the
@@ -11,10 +14,16 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   C++
   * Generated code now uses the c++11 standard integer types int{32,64}_t and
     uint{32,64}_t
+  * Reduce memory usage of the DescriptorPool type.
 
   Java
   * Add @deprecated javadoc for set/get/has methods
   * correctly decode \? escape sequence in text protos
+  * Avoid depending on Objects.requireNonNull() until we can verify that no users are depending on older Android versions.
+  * disallow null string map values in put and putAll
+
+  Kotlin
+  * Generated Kotlin code is Explicit API mode compatible
 
 Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   C++

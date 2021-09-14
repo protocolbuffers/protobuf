@@ -580,8 +580,9 @@ class PROTOBUF_EXPORT ExtensionSet {
                                           Arena* arena) const = 0;
     virtual MessageLite* MutableMessage(const MessageLite& prototype,
                                         Arena* arena) = 0;
-    virtual void SetAllocatedMessage(MessageLite* message) = 0;
-    virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message) = 0;
+    virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;
+    virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message,
+                                                Arena* arena) = 0;
     virtual PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseMessage(
         const MessageLite& prototype, Arena* arena) = 0;
     virtual MessageLite* UnsafeArenaReleaseMessage(const MessageLite& prototype,
