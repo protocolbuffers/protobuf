@@ -776,7 +776,7 @@ inline bool VerifyUTF8(const std::string* s, const char* field_name) {
 }
 
 // All the string parsers with or without UTF checking and for all CTypes.
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* InlineGreedyStringParser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* InlineGreedyStringParser(
     std::string* s, const char* ptr, ParseContext* ctx);
 
 
@@ -861,19 +861,19 @@ PROTOBUF_MUST_USE_RESULT const char* WireFormatParser(T& field_parser,
 // corresponding field
 
 // These are packed varints
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedInt32Parser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedInt32Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedUInt32Parser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedUInt32Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedInt64Parser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedInt64Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedUInt64Parser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedUInt64Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedSInt32Parser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedSInt32Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedSInt64Parser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedSInt64Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedEnumParser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedEnumParser(
     void* object, const char* ptr, ParseContext* ctx);
 
 template <typename T>
@@ -905,28 +905,28 @@ PROTOBUF_MUST_USE_RESULT const char* PackedEnumParserArg(
       });
 }
 
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedBoolParser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedBoolParser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedFixed32Parser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedFixed32Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedSFixed32Parser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedSFixed32Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedFixed64Parser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedFixed64Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedSFixed64Parser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedSFixed64Parser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedFloatParser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedFloatParser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedDoubleParser(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* PackedDoubleParser(
     void* object, const char* ptr, ParseContext* ctx);
 
 // This is the only recursive parser.
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* UnknownGroupLiteParse(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* UnknownGroupLiteParse(
     std::string* unknown, const char* ptr, ParseContext* ctx);
 // This is a helper to for the UnknownGroupLiteParse but is actually also
 // useful in the generated code. It uses overload on std::string* vs
 // UnknownFieldSet* to make the generated code isomorphic between full and lite.
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* UnknownFieldParse(
+PROTOBUF_MUST_USE_RESULT PROTOBUF_EXPORT const char* UnknownFieldParse(
     uint32_t tag, std::string* unknown, const char* ptr, ParseContext* ctx);
 
 }  // namespace internal

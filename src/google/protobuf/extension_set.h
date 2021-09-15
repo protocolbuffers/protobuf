@@ -583,7 +583,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;
     virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message,
                                                 Arena* arena) = 0;
-    virtual PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseMessage(
+    PROTOBUF_MUST_USE_RESULT virtual MessageLite* ReleaseMessage(
         const MessageLite& prototype, Arena* arena) = 0;
     virtual MessageLite* UnsafeArenaReleaseMessage(const MessageLite& prototype,
                                                    Arena* arena) = 0;
@@ -1374,7 +1374,7 @@ class MessageTypeTraits {
                                              ExtensionSet* set) {
     set->UnsafeArenaSetAllocatedMessage(number, field_type, nullptr, message);
   }
-  static inline PROTOBUF_MUST_USE_RESULT MutableType
+  PROTOBUF_MUST_USE_RESULT static inline MutableType
   Release(int number, FieldType /* field_type */, ExtensionSet* set) {
     return static_cast<Type*>(
         set->ReleaseMessage(number, Type::default_instance()));

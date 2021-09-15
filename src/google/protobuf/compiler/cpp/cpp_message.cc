@@ -974,7 +974,7 @@ $annotate_extension_set$
 template <typename _proto_TypeTraits,
           ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
           bool _is_packed>
-inline PROTOBUF_MUST_USE_RESULT
+PROTOBUF_MUST_USE_RESULT inline
     typename _proto_TypeTraits::Singular::MutableType
     ReleaseExtension(
         const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<

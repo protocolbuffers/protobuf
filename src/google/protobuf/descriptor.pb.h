@@ -1856,7 +1856,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_MUST_USE_RESULT inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -4281,7 +4281,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_MUST_USE_RESULT inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -4714,7 +4714,7 @@ class PROTOBUF_EXPORT MessageOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_MUST_USE_RESULT inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -5223,7 +5223,7 @@ class PROTOBUF_EXPORT FieldOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_MUST_USE_RESULT inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -5586,7 +5586,7 @@ class PROTOBUF_EXPORT OneofOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_MUST_USE_RESULT inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -5970,7 +5970,7 @@ class PROTOBUF_EXPORT EnumOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_MUST_USE_RESULT inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -6343,7 +6343,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_MUST_USE_RESULT inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -6715,7 +6715,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_MUST_USE_RESULT inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -7133,7 +7133,7 @@ class PROTOBUF_EXPORT MethodOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_MUST_USE_RESULT inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
