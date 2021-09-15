@@ -80,9 +80,6 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       "  if (value == null) {\n"
       "    throw new NullPointerException();\n"
       "  }\n";
-  (*variables)["isStringEmpty"] = "com.google.protobuf.GeneratedMessage" +
-                                  GeneratedCodeVersionSuffix() +
-                                  ".isStringEmpty";
   (*variables)["writeString"] = "com.google.protobuf.GeneratedMessage" +
                                 GeneratedCodeVersionSuffix() + ".writeString";
   (*variables)["computeStringSize"] = "com.google.protobuf.GeneratedMessage" +
@@ -120,7 +117,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
     (*variables)["clear_has_field_bit_builder"] = "";
 
     (*variables)["is_field_present_message"] =
-        "!" + (*variables)["isStringEmpty"] + "(" + (*variables)["name"] + "_)";
+        "!get" + (*variables)["capitalized_name"] + "Bytes().isEmpty()";
   }
 
   // For repeated builders, one bit is used for whether the array is immutable.
