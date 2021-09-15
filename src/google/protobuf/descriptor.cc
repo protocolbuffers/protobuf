@@ -41,6 +41,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -3674,6 +3675,11 @@ class DescriptorBuilder {
   FileDescriptorTables* file_tables_;
   std::set<const FileDescriptor*> dependencies_;
 
+  struct MessageHints {
+    int fields_to_suggest = 0;
+  };
+  std::unordered_map<const Descriptor*, MessageHints> message_hints_;
+
   // unused_dependency_ is used to record the unused imported files.
   // Note: public import is not considered.
   std::set<const FileDescriptor*> unused_dependency_;
@@ -3880,6 +3886,8 @@ class DescriptorBuilder {
                         const ServiceDescriptorProto& proto);
   void CrossLinkMethod(MethodDescriptor* method,
                        const MethodDescriptorProto& proto);
+  void SuggestFieldNumbers(FileDescriptor* file,
+                           const FileDescriptorProto& proto);
 
   // Must be run only after cross-linking.
   void InterpretOptions();
@@ -5055,6 +5063,10 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   // Cross-link.
   CrossLinkFile(result, proto);
 
+  if (!message_hints_.empty()) {
+    SuggestFieldNumbers(result, proto);
+  }
+
   // Interpret any remaining uninterpreted options gathered into
   // options_to_interpret_ during descriptor building.  Cross-linking has made
   // extension options known, so all interpretations should now succeed.
@@ -5193,6 +5205,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     for (int j = 0; j < result->extension_range_count(); j++) {
       const Descriptor::ExtensionRange* range = result->extension_range(j);
       if (range->start <= field->number() && field->number() < range->end) {
+        message_hints_[result].fields_to_suggest++;
         AddError(
             field->full_name(), proto.extension_range(j),
             DescriptorPool::ErrorCollector::NUMBER,
@@ -5204,6 +5217,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     for (int j = 0; j < result->reserved_range_count(); j++) {
       const Descriptor::ReservedRange* range = result->reserved_range(j);
       if (range->start <= field->number() && field->number() < range->end) {
+        message_hints_[result].fields_to_suggest++;
         AddError(field->full_name(), proto.reserved_range(j),
                  DescriptorPool::ErrorCollector::NUMBER,
                  strings::Substitute("Field \"$0\" uses reserved number $1.",
@@ -5449,6 +5463,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   }
 
   if (result->number() <= 0) {
+    message_hints_[parent].fields_to_suggest++;
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Field numbers must be positive integers.");
   } else if (!is_extension && result->number() > FieldDescriptor::kMaxNumber) {
@@ -5460,11 +5475,13 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
     // This avoids cross-linking issues that arise when attempting to check if
     // the extendee is a message_set_wire_format message, which has a higher max
     // on extension numbers.
+    message_hints_[parent].fields_to_suggest++;
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              strings::Substitute("Field numbers cannot be greater than $0.",
                               FieldDescriptor::kMaxNumber));
   } else if (result->number() >= FieldDescriptor::kFirstReservedNumber &&
              result->number() <= FieldDescriptor::kLastReservedNumber) {
+    message_hints_[parent].fields_to_suggest++;
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              strings::Substitute(
                  "Field numbers $0 through $1 are reserved for the protocol "
@@ -5530,6 +5547,8 @@ void DescriptorBuilder::BuildExtensionRange(
   result->start = proto.start();
   result->end = proto.end();
   if (result->start <= 0) {
+    message_hints_[parent].fields_to_suggest += std::min(
+        1, result->end - result->start);
     AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Extension numbers must be positive integers.");
   }
@@ -5567,6 +5586,8 @@ void DescriptorBuilder::BuildReservedRange(
   result->start = proto.start();
   result->end = proto.end();
   if (result->start <= 0) {
+    message_hints_[parent].fields_to_suggest += std::min(
+        1, result->end - result->start);
     AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Reserved numbers must be positive integers.");
   }
@@ -6259,6 +6280,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
         field->containing_type() == nullptr
             ? "unknown"
             : field->containing_type()->full_name();
+    message_hints_[field->containing_type()].fields_to_suggest++;
     if (field->is_extension()) {
       AddError(field->full_name(), proto,
                DescriptorPool::ErrorCollector::NUMBER,
@@ -6283,6 +6305,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
             field->containing_type() == nullptr
                 ? "unknown"
                 : field->containing_type()->full_name();
+        message_hints_[field->containing_type()].fields_to_suggest++;
         std::string error_msg = strings::Substitute(
             "Extension number $0 has already been used in \"$1\" by extension "
             "\"$2\" defined in $3.",
@@ -6373,6 +6396,80 @@ void DescriptorBuilder::CrossLinkMethod(MethodDescriptor* method,
              "\"" + proto.output_type() + "\" is not a message type.");
   } else {
     method->output_type_.Set(output_type.descriptor());
+  }
+}
+
+void DescriptorBuilder::SuggestFieldNumbers(
+    FileDescriptor* file,
+    const FileDescriptorProto& proto) {
+  for (int message_index = 0; message_index < file->message_type_count();
+      message_index++) {
+    const Descriptor* message = &file->message_types_[message_index];
+    const auto it = message_hints_.find(message);
+    if (it == message_hints_.end()) {
+      continue;
+    }
+    constexpr int kMaxSuggestions = 42;
+    int fields_to_suggest = std::min(
+        it->second.fields_to_suggest, kMaxSuggestions);
+    if (fields_to_suggest <= 0) {
+      continue;
+    }
+    message_hints_.erase(it);
+    struct OrderedRange {
+      int from;
+      int to;
+      bool operator< (const OrderedRange& rhs) { return from > rhs.from; }
+    };
+    std::vector<OrderedRange> used_ordinals;
+    auto add_ordinal = [&](int ordinal) {
+      if (!used_ordinals.empty() && ordinal == used_ordinals.back().to + 1) {
+        used_ordinals.back().to = ordinal;
+      } else {
+        used_ordinals.push_back({ ordinal, ordinal });
+      }
+    };
+    for (int i = 0; i < message->field_count(); i++) {
+      add_ordinal(message->field(i)->number());
+    }
+    for (int i = 0; i < message->extension_count(); i++) {
+      add_ordinal(message->extension(i)->number());
+    }
+    for (int i = 0; i < message->reserved_range_count(); i++) {
+      auto range = message->reserved_range(i);
+      used_ordinals.push_back({ range->start, range->end - 1 });
+    }
+    for (int i = 0; i < message->extension_range_count(); i++) {
+      auto range = message->extension_range(i);
+      used_ordinals.push_back({ range->start, range->end - 1 });
+    }
+    used_ordinals.push_back({
+      FieldDescriptor::kMaxNumber, std::numeric_limits<int>::max() });
+    used_ordinals.push_back({
+      FieldDescriptor::kFirstReservedNumber,
+      FieldDescriptor::kLastReservedNumber });
+    std::make_heap(used_ordinals.begin(), used_ordinals.end());
+    int current_ordinal = 1;
+    std::stringstream id_list;
+    id_list << "Suggested field numbers for " << message->full_name() << ": ";
+    bool is_first_item = true;
+    while (!used_ordinals.empty() && fields_to_suggest > 0) {
+      while (current_ordinal < used_ordinals.front().from &&
+        fields_to_suggest > 0) {
+        if (is_first_item) {
+          is_first_item = false;
+        } else {
+          id_list << ", ";
+        }
+        id_list << current_ordinal++;
+        fields_to_suggest--;
+      }
+      current_ordinal = std::max(current_ordinal, used_ordinals.front().to + 1);
+      std::pop_heap(used_ordinals.begin(), used_ordinals.end());
+      used_ordinals.pop_back();
+    }
+    AddError(message->full_name(), proto.message_type(message_index),
+      DescriptorPool::ErrorCollector::NUMBER, id_list.str());
   }
 }
 
