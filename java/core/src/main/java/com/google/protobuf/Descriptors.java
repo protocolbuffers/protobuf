@@ -1191,7 +1191,7 @@ public final class Descriptors {
      * <p>For fields where hasPresence() == true, the return value of msg.hasField() is semantically
      * meaningful.
      */
-    boolean hasPresence() {
+    public boolean hasPresence() {
       if (isRepeated()) {
         return false;
       }

@@ -96,8 +96,10 @@ public class RubyMessage extends RubyObject {
             hash.visitAll(new RubyHash.Visitor() {
                 @Override
                 public void visit(IRubyObject key, IRubyObject value) {
-                    if (!(key instanceof RubySymbol) && !(key instanceof RubyString))
-                        throw runtime.newTypeError("Expected string or symbols as hash keys in initialization map.");
+                    if (!(key instanceof RubySymbol) && !(key instanceof RubyString)) {
+                        throw Utils.createTypeError(context,
+                            "Expected string or symbols as hash keys in initialization map.");
+                    }
                     final FieldDescriptor fieldDescriptor = findField(context, key, ignoreUnknownFieldsOnInit);
 
                     if (value == null || value.isNil()) return;
@@ -181,6 +183,9 @@ public class RubyMessage extends RubyObject {
         sb.append(cname).append(colon);
 
         for (FieldDescriptor fd : descriptor.getFields()) {
+            if (fd.hasPresence() && !fields.containsKey(fd)) {
+                continue;
+            }
             if (addComma) {
                 sb.append(comma);
             } else {
@@ -347,7 +352,7 @@ public class RubyMessage extends RubyObject {
 
                 if (fieldDescriptor != null &&
                         (!proto3 || fieldDescriptor.getContainingOneof() == null) && // This seems like a bug but its needed to pass the tests...
-                        fieldHasPresence(fieldDescriptor)) {
+                    fieldDescriptor.hasPresence()) {
                     return fields.containsKey(fieldDescriptor) ? runtime.getTrue() : runtime.getFalse();
                 }
 
@@ -433,7 +438,7 @@ public class RubyMessage extends RubyObject {
             if (fieldDescriptor.isRepeated()) {
                 dup.fields.put(fieldDescriptor, this.getRepeatedField(context, fieldDescriptor));
             } else if (fields.containsKey(fieldDescriptor)) {
-                dup.fields.put(fieldDescriptor, fields.get(fieldDescriptor));
+                dup.setFieldInternal(context, fieldDescriptor, fields.get(fieldDescriptor));
             } else if (this.builder.hasField(fieldDescriptor)) {
                 dup.fields.put(fieldDescriptor, wrapField(context, fieldDescriptor, this.builder.getField(fieldDescriptor)));
             }
@@ -667,7 +672,7 @@ public class RubyMessage extends RubyObject {
             if (fdef.isRepeated()) {
                 copy.fields.put(fdef, this.getRepeatedField(context, fdef).deepCopy(context));
             } else if (fields.containsKey(fdef)) {
-                copy.fields.put(fdef, fields.get(fdef));
+                copy.setFieldInternal(context, fdef, fields.get(fdef));
             } else if (builder.hasField(fdef)) {
                 copy.fields.put(fdef, wrapField(context, fdef, builder.getField(fdef)));
             }
@@ -691,7 +696,9 @@ public class RubyMessage extends RubyObject {
 
     protected IRubyObject hasField(ThreadContext context, FieldDescriptor fieldDescriptor) {
         validateMessageType(context, fieldDescriptor, "has?");
-        if (!fieldHasPresence(fieldDescriptor)) throw context.runtime.newArgumentError("does not track presence");
+        if (!fieldDescriptor.hasPresence()) {
+            throw context.runtime.newArgumentError("does not track presence");
+        }
         return fields.containsKey(fieldDescriptor) ? context.runtime.getTrue() : context.runtime.getFalse();
     }
 
@@ -980,7 +987,9 @@ public class RubyMessage extends RubyObject {
                 // Keep track of what Oneofs are set
                 if (value.isNil()) {
                     oneofCases.remove(oneofDescriptor);
-                    addValue = false;
+                    if (!oneofDescriptor.isSynthetic()) {
+                        addValue = false;
+                    }
                 } else {
                     oneofCases.put(oneofDescriptor, fieldDescriptor);
                 }
@@ -1017,13 +1026,6 @@ public class RubyMessage extends RubyObject {
         }
 
         return context.runtime.newSymbol("UNKNOWN");
-    }
-
-    private boolean fieldHasPresence(FieldDescriptor fieldDescriptor) {
-      return !fieldDescriptor.isRepeated() &&
-              (fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE ||
-                fieldDescriptor.getContainingOneof() != null ||
-                !proto3);
     }
 
     private RubyRepeatedField rubyToRepeatedField(ThreadContext context,
@@ -1118,7 +1120,7 @@ public class RubyMessage extends RubyObject {
 
     private void validateMessageType(ThreadContext context, FieldDescriptor fieldDescriptor, String methodName) {
         if (descriptor != fieldDescriptor.getContainingType()) {
-            throw context.runtime.newTypeError(methodName + " method called on wrong message type");
+            throw Utils.createTypeError(context, methodName + " method called on wrong message type");
         }
     }
 
