@@ -160,43 +160,42 @@ together.
 together, their lifetimes are irreversibly joined, such that none of the arena
 blocks in either arena will be freed until *both* arenas are freed with
 `upb_arena_free()`.  This is useful when joining two messages from separate
-arenas, making one a sub-message of the other.  Fuse is an a very cheap
+arenas (making one a sub-message of the other).  Fuse is an a very cheap
 operation, and an unlimited number of arenas can be fused together efficiently.
 
-## Binary Parsing and Serialzation
+## Reflection and Descriptors
 
-For binary format parsing and serializing, we use tables of fields known as
-*mini-tables*.  (The "mini" distinguishes them from "fast tables", which are
-a larger and more optimized table format used by the fast parser in
-`upb/decode_fast.c`.)
+upb offers a fully-featured reflection library.  There are two main ways of
+using reflection:
 
-The format of mini-tables is defined in `upb/msg_internal.h`.  As the name
-suggests, the format of these mini-tables is internal-only, consumed by the
-parser and serializer, but not available for general use by users.  The format
-of these tables is strongly aimed at making the parser and serializer as fast
-as possible, and this sometimes involves changing them in backward-incompatible
-ways.
+1. You can load descriptors from strings using `upb_symtab_addfile()`.
+  The upb runtime will dynamically create mini-tables like what the upb compiler
+  would have created if you had compiled this type into a `.upb.c` file.
+2. You can load descriptors using generated `.upbdefs.h` interfaces.
+  This will load reflection that references the corresponding `.upb.c`
+  mini-tables instead of building a new mini-table on the fly.  This lets
+  you reflect on generated types that are linked into your program.
 
-These tables define field numbers, field types, and offsets for every field.
-It is important that these offsets match the offsets used in the generated
-accessors, for obvious reasons.
+upb's design for descriptors is similar to protobuf C++ in many ways, with
+the following correspondences:
 
-The generated `.upb.h` interface exposes wrappers for parsing and serialization
-that automatically pass the appropriate mini-tables to the parser and serializer:
+| C++ Type | upb type |
+| ---------| ---------|
+| `google::protobuf::DescriptorPool` | `upb_symtab`
+| `google::protobuf::Descriptor` | `upb_msgdef`
+| `google::protobuf::FieldDescriptor` | `upb_fielddef`
+| `google::protobuf::OneofDescriptor` | `upb_oneofdef`
+| `google::protobuf::EnumDescriptor` | `upb_enumdef`
+| `google::protobuf::FileDescriptor` | `upb_filedef`
+| `google::protobuf::ServiceDescriptor` | `upb_servicedef`
+| `google::protobuf::MethodDescriptor` | `upb_methoddef`
 
-```c
-#include "google/protobuf/descriptor.upb.h"
+Like in C++ descriptors (defs) are created by loading a
+`google_protobuf_FileDescriptorProto` into a `upb_symtab`.  This creates and
+links all of the def objects corresponding to that `.proto` file, and inserts
+the names into a symbol table so they can be looked up by name.
 
-bool ParseDescriptor(const char *pb_data, size_t pb_size) {
-   // Arena where all messages, arrays, maps, etc. will be allocated.
-   upb_arena *arena = upb_arena_new();
-
-   // This will pass the mini-table to upb_decode().
-   google_protobuf_DescriptorProto* descriptor =
-       google_protobuf_DescriptorProto_parse(pb_data, pb_size, arena);
-
-   bool ok = descriptor != NULL;
-   upb_arena_free(arena);
-   return ok;
-}
-```
+Once you have loaded some descriptors into a `upb_symtab`, you can create and
+manipulate messages using the interfaces defined in `upb/reflection.h`.  If your
+descriptors are linked to your generated layouts using option (2) above, you can
+safely access the same messages using both reflection and generated interfaces.

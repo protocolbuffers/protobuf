@@ -6,3 +6,8 @@ package upb_test;
 message MapTest {
   map<string, double> map_string_double = 1;
 }
+
+message MessageName {
+  optional int32 field1 = 1;
+  optional int32 field2 = 2;
+}
