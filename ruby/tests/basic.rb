@@ -66,7 +66,8 @@ module BasicTest
     def test_issue_8559_crash
       msg = TestMessage.new
       msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
-      GC.start(full_mark: true, immediate_sweep: true)
+      # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
+      GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
       TestMessage.encode(msg)
     end
 

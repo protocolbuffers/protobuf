@@ -260,58 +260,6 @@ public class Utils {
                 fieldDescriptor.getMessageType().getOptions().getMapEntry();
     }
 
-    /*
-     * call-seq:
-     *     Utils.createFieldBuilder(context, label, name, type, number, typeClass = nil, options = nil)
-     *
-     * Most places calling this are already dealing with an optional number of
-     * arguments so dealing with them here. This helper is a standard way to
-     * create a FieldDescriptor builder that handles some of the options that
-     * are used in different places.
-     */
-    public static FieldDescriptorProto.Builder createFieldBuilder(ThreadContext context,
-            String label, IRubyObject[] args) {
-
-        Ruby runtime = context.runtime;
-        IRubyObject options = context.nil;
-        IRubyObject typeClass = context.nil;
-
-        if (args.length > 4) {
-            options = args[4];
-            typeClass = args[3];
-        } else if (args.length > 3) {
-            if (args[3] instanceof RubyHash) {
-                options = args[3];
-            } else {
-                typeClass = args[3];
-            }
-        }
-
-        FieldDescriptorProto.Builder builder = FieldDescriptorProto.newBuilder();
-
-        builder.setLabel(FieldDescriptorProto.Label.valueOf("LABEL_" + label.toUpperCase()))
-            .setName(args[0].asJavaString())
-            .setNumber(RubyNumeric.num2int(args[2]))
-            .setType(FieldDescriptorProto.Type.valueOf("TYPE_" + args[1].asJavaString().toUpperCase()));
-
-        if (!typeClass.isNil()) {
-            if (!(typeClass instanceof RubyString)) {
-                throw runtime.newArgumentError("expected string for type class");
-            }
-            builder.setTypeName("." + typeClass.asJavaString());
-        }
-
-        if (options instanceof RubyHash) {
-            IRubyObject defaultValue = ((RubyHash) options).fastARef(runtime.newSymbol("default"));
-            if (defaultValue != null) {
-                builder.setDefaultValue(defaultValue.toString());
-            }
-        }
-
-        return builder;
-    }
-
-
     public static RaiseException createTypeError(ThreadContext context, String message) {
         if (cTypeError == null) {
             cTypeError = (RubyClass) context.runtime.getClassFromPath("Google::Protobuf::TypeError");

@@ -154,7 +154,7 @@ public class RubyMap extends RubyObject {
          * other types for keys, so deal with them specifically first
          */
         if (keyTypeIsString && !(key instanceof RubySymbol || key instanceof RubyString)) {
-            throw context.runtime.newTypeError("Expected string for map key");
+            throw Utils.createTypeError(context, "Expected string for map key");
         }
         key = Utils.checkType(context, keyType, "key", key, (RubyModule) valueTypeClass);
         value = Utils.checkType(context, valueType, "value", value, (RubyModule) valueTypeClass);
@@ -414,7 +414,7 @@ public class RubyMap extends RubyObject {
                 throw Utils.createTypeError(context, "Attempt to merge Map with mismatching types");
             }
         } else {
-            throw context.runtime.newTypeError("Unknown type merging into Map");
+            throw Utils.createTypeError(context, "Unknown type merging into Map");
         }
         return this;
     }
