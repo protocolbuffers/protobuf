@@ -6419,7 +6419,7 @@ void DescriptorBuilder::SuggestFieldNumbers(
     struct OrderedRange {
       int from;
       int to;
-      bool operator< (const OrderedRange& rhs) { return from > rhs.from; }
+      bool operator< (const OrderedRange& rhs) const { return from > rhs.from; }
     };
     std::vector<OrderedRange> used_ordinals;
     auto add_ordinal = [&](int ordinal) {
