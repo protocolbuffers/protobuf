@@ -798,7 +798,7 @@ public class RubyMessage extends RubyObject {
                 val = ByteString.copyFrom(((RubyString) value).getBytes());
                 break;
             case STRING:
-                val = ((RubyString) value).asJavaString();
+                val = ((RubyString)value).getByteList().toString();
                 break;
             case MESSAGE:
                 val = ((RubyMessage) value).build(context, depth + 1);
@@ -1047,6 +1047,9 @@ public class RubyMessage extends RubyObject {
 
         for (int i = 0; i < arr.size(); i++) {
             IRubyObject item = arr.eltInternal(i);
+            if (item.isNil()) {
+                throw Utils.createTypeError(context, "nil message not allowed here.");
+            }
             if (item instanceof RubyHash && typeClass != null) {
                 values[i] = (IRubyObject) ((RubyClass) typeClass).newInstance(context, item, Block.NULL_BLOCK);
             } else {
