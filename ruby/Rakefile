@@ -100,8 +100,12 @@ else
   task 'gem:java' do
     sh "rm Gemfile.lock"
     require 'rake_compiler_dock'
-    RakeCompilerDock.sh <<-"EOT", platform: 'jruby', rubyvm: :jruby
+    # Specify the repo root as the working and mount directory to provide access
+    # to the java directory
+    repo_root = File.realdirpath File.join(Dir.pwd, '..')
+    RakeCompilerDock.sh <<-"EOT", platform: 'jruby', rubyvm: :jruby, mountdir: repo_root, workdir: repo_root
       sudo apt-get install maven -y && \
+      cd java && mvn install -Dmaven.test.skip=true && cd ../ruby && \
       bundle && \
       IN_DOCKER=true rake compile gem
     EOT
