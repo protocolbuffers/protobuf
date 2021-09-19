@@ -288,3 +288,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Container Object Storage Interface (COSI)
    * Website: https://github.com/kubernetes-sigs/container-object-storage-interface-spec
    * Extension: 1115-1124
+
+1. Protoc-gen-jsonschema
+   * Website: https://github.com/chrusty/protoc-gen-jsonschema
+   * Extension: 1125
