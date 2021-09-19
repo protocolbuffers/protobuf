@@ -528,7 +528,7 @@ void WireFormatLite::WriteMessage(int field_number, const MessageLite& value,
 }
 
 void WireFormatLite::WriteSubMessageMaybeToArray(
-    int size, const MessageLite& value, io::CodedOutputStream* output) {
+    int /*size*/, const MessageLite& value, io::CodedOutputStream* output) {
   output->SetCur(value._InternalSerialize(output->Cur(), output->EpsCopy()));
 }
 
@@ -571,7 +571,7 @@ bool WireFormatLite::ReadBytes(io::CodedInputStream* input, std::string** p) {
 }
 
 void PrintUTF8ErrorLog(const char* field_name, const char* operation_str,
-                       bool emit_stacktrace) {
+                       bool /*emit_stacktrace*/) {
   std::string stacktrace;
   std::string quoted_field_name = "";
   if (field_name != nullptr) {

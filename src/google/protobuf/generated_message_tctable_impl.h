@@ -187,12 +187,17 @@ class TcParserBase {
  protected:
   static inline PROTOBUF_ALWAYS_INLINE const char* Return(
       PROTOBUF_TC_PARAM_DECL) {
+    (void)data;
+    (void)ctx;
     SyncHasbits(msg, hasbits, table);
     return ptr;
   }
 
   static inline PROTOBUF_ALWAYS_INLINE const char* Error(
       PROTOBUF_TC_PARAM_DECL) {
+    (void)data;
+    (void)ctx;
+    (void)ptr;
     SyncHasbits(msg, hasbits, table);
     return nullptr;
   }
@@ -224,6 +229,7 @@ class TcParserBase {
       ctx->SetLastTag(tag);
       return ptr;
     }
+    (void)data;
     uint32_t num = tag >> 3;
     if (table->extension_range_low <= num &&
         num <= table->extension_range_high) {

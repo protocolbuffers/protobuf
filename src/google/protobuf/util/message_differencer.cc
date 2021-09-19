@@ -78,25 +78,25 @@ class NumDiffsReporter : public google::protobuf::util::MessageDifferencer::Repo
 
   // Report that a field has been added into Message2.
   void ReportAdded(
-      const google::protobuf::Message& message1, const google::protobuf::Message& message2,
+      const google::protobuf::Message& /*message1*/, const google::protobuf::Message& /*message2*/,
       const std::vector<google::protobuf::util::MessageDifferencer::SpecificField>&
-          field_path) override {
+          /*field_path*/) override {
     ++num_diffs_;
   }
 
   // Report that a field has been deleted from Message1.
   void ReportDeleted(
-      const google::protobuf::Message& message1, const google::protobuf::Message& message2,
+      const google::protobuf::Message& /*message1*/, const google::protobuf::Message& /*message2*/,
       const std::vector<google::protobuf::util::MessageDifferencer::SpecificField>&
-          field_path) override {
+          /*field_path*/) override {
     ++num_diffs_;
   }
 
   // Report that the value of a field has been modified.
   void ReportModified(
-      const google::protobuf::Message& message1, const google::protobuf::Message& message2,
+      const google::protobuf::Message& /*message1*/, const google::protobuf::Message& /*message2*/,
       const std::vector<google::protobuf::util::MessageDifferencer::SpecificField>&
-          field_path) override {
+          /*field_path*/) override {
     ++num_diffs_;
   }
 
@@ -2104,7 +2104,7 @@ void MessageDifferencer::StreamReporter::PrintMapKey(
 }
 
 void MessageDifferencer::StreamReporter::ReportAdded(
-    const Message& message1, const Message& message2,
+    const Message& /*message1*/, const Message& message2,
     const std::vector<SpecificField>& field_path) {
   printer_->Print("added: ");
   PrintPath(field_path, false);
@@ -2114,7 +2114,7 @@ void MessageDifferencer::StreamReporter::ReportAdded(
 }
 
 void MessageDifferencer::StreamReporter::ReportDeleted(
-    const Message& message1, const Message& message2,
+    const Message& message1, const Message& /*message2*/,
     const std::vector<SpecificField>& field_path) {
   printer_->Print("deleted: ");
   PrintPath(field_path, true);
@@ -2153,7 +2153,7 @@ void MessageDifferencer::StreamReporter::ReportModified(
 }
 
 void MessageDifferencer::StreamReporter::ReportMoved(
-    const Message& message1, const Message& message2,
+    const Message& message1, const Message& /*message2*/,
     const std::vector<SpecificField>& field_path) {
   printer_->Print("moved: ");
   PrintPath(field_path, true);
@@ -2165,7 +2165,7 @@ void MessageDifferencer::StreamReporter::ReportMoved(
 }
 
 void MessageDifferencer::StreamReporter::ReportMatched(
-    const Message& message1, const Message& message2,
+    const Message& message1, const Message& /*message2*/,
     const std::vector<SpecificField>& field_path) {
   printer_->Print("matched: ");
   PrintPath(field_path, true);
@@ -2179,7 +2179,7 @@ void MessageDifferencer::StreamReporter::ReportMatched(
 }
 
 void MessageDifferencer::StreamReporter::ReportIgnored(
-    const Message& message1, const Message& message2,
+    const Message& /*message1*/, const Message& /*message2*/,
     const std::vector<SpecificField>& field_path) {
   printer_->Print("ignored: ");
   PrintPath(field_path, true);
@@ -2197,7 +2197,7 @@ void MessageDifferencer::StreamReporter::SetMessages(const Message& message1,
 }
 
 void MessageDifferencer::StreamReporter::ReportUnknownFieldIgnored(
-    const Message& message1, const Message& message2,
+    const Message& /*message1*/, const Message& /*message2*/,
     const std::vector<SpecificField>& field_path) {
   printer_->Print("ignored: ");
   PrintPath(field_path, true);
