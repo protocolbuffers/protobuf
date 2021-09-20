@@ -158,7 +158,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
   // Likewise, class members need to declare the field constant variable.
   if (IsScoped()) {
     format(
-        "#if !defined(_MSC_VER) || _MSC_VER >= 1900\n"
+        "#if !defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912)\n"
         "const int $scope$$constant_name$;\n"
         "#endif\n");
   }

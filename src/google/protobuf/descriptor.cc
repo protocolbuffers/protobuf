@@ -344,7 +344,7 @@ const char* FileDescriptor::SyntaxName(FileDescriptor::Syntax syntax) {
 
 static const char* const kNonLinkedWeakMessageReplacementName = "google.protobuf.Empty";
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
+#if !defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912)
 const int FieldDescriptor::kMaxNumber;
 const int FieldDescriptor::kFirstReservedNumber;
 const int FieldDescriptor::kLastReservedNumber;
