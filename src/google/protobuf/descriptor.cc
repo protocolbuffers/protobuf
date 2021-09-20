@@ -5547,8 +5547,8 @@ void DescriptorBuilder::BuildExtensionRange(
   result->start = proto.start();
   result->end = proto.end();
   if (result->start <= 0) {
-    message_hints_[parent].fields_to_suggest += std::min(
-        1, result->end - result->start);
+    message_hints_[parent].fields_to_suggest += std::max(
+        0, result->end - result->start);
     AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Extension numbers must be positive integers.");
   }
@@ -5586,8 +5586,8 @@ void DescriptorBuilder::BuildReservedRange(
   result->start = proto.start();
   result->end = proto.end();
   if (result->start <= 0) {
-    message_hints_[parent].fields_to_suggest += std::min(
-        1, result->end - result->start);
+    message_hints_[parent].fields_to_suggest += std::max(
+        0, result->end - result->start);
     AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Reserved numbers must be positive integers.");
   }
