@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package A.B.C;
 
-import "google/protobuf/compiler/ruby/ruby_generated_code_proto2_import.proto";
+import "ruby_generated_code_proto2_import.proto";
 
 message TestMessage {
   int32 optional_int32 = 1;
