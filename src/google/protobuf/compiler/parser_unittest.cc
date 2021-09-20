@@ -3672,6 +3672,35 @@ TEST_F(SourceInfoTest, DocCommentsOneof) {
   EXPECT_TRUE(HasSpan(bar_int, "number"));
 }
 
+TEST_F(ParseErrorTest, SuggestFieldNumbers) {
+  ExpectHasValidationErrors(
+      "syntax = \"proto2\";\n"
+      "package aaa.bbb;\n"
+      "message Config{\n"
+      "  reserved 1, 4, 5, 32, 145, 147, 166, 194, 7 to 31, 36 to 144;\n"
+      "  optional bool normal = 2 [default = false];\n"
+      "  optional bool also_normal = 3 [default = false];\n"
+      "  optional bool zero = 0 [default = false];\n"
+      "  optional bool conflicts_with_reserved = 4 [default = false];\n"
+      "  optional bool conflicts_with_one_of = 33 [default = false];\n"
+      "  optional bool conflicts_with_another_field = 3 [default = false];\n"
+      "  oneof test_oneof{\n"
+      "    string name = 33;\n"
+      "    string one_of_conflicts_with_field = 3;\n"
+      "  }\n"
+      "}",
+      "6:23: Field numbers must be positive integers.\n"
+      "-1:0: Field \"conflicts_with_reserved\" uses reserved number 4.\n"
+      "9:47: Field number 3 has already been used in \"aaa.bbb.Config\" by "
+      "field \"also_normal\".\n"
+      "11:18: Field number 33 has already been used in \"aaa.bbb.Config\" by "
+      "field \"conflicts_with_one_of\".\n"
+      "12:41: Field number 3 has already been used in \"aaa.bbb.Config\" by "
+      "field \"also_normal\".\n"
+      "-1:0: Suggested field numbers for aaa.bbb.Config: 6, 34, 35, 146, "
+      "148\n");
+}
+
 // ===================================================================
 
 }  // anonymous namespace
