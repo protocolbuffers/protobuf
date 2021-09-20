@@ -79,16 +79,19 @@ void RubyTest(string proto_file) {
 
   // Invoke the proto compiler (we will be inside TestTempDir() at this point).
   std::string ruby_out = "--ruby_out=" + TestTempDir();
-  std::string proto_path = "--proto_path=" + TestTempDir();
+  std::string test_temp_dir_proto_path = "--proto_path=" + TestTempDir();
+  std::string src_dir_proto_path = "--proto_path=src/";
+
   std::string proto_target = TestTempDir() + proto_file + ".proto";
   const char* argv[] = {
     "protoc",
     ruby_out.c_str(),
-    proto_path.c_str(),
+    test_temp_dir_proto_path.c_str(),
+    src_dir_proto_path.c_str(),
     proto_target.c_str(),
   };
 
-  EXPECT_EQ(0, cli.Run(4, argv));
+  EXPECT_EQ(0, cli.Run(5, argv));
 
   // Load the generated output and compare to the expected result.
   std::string output;
