@@ -58,7 +58,7 @@ SimpleFieldComparator::~SimpleFieldComparator() {}
 FieldComparator::ComparisonResult SimpleFieldComparator::SimpleCompare(
     const Message& message_1, const Message& message_2,
     const FieldDescriptor* field, int index_1, int index_2,
-    const util::FieldContext* field_context) {
+    const util::FieldContext* /*field_context*/) {
   const Reflection* reflection_1 = message_1.GetReflection();
   const Reflection* reflection_2 = message_2.GetReflection();
 
@@ -155,7 +155,7 @@ bool SimpleFieldComparator::CompareDouble(const FieldDescriptor& field,
   return CompareDoubleOrFloat(field, value_1, value_2);
 }
 
-bool SimpleFieldComparator::CompareEnum(const FieldDescriptor& field,
+bool SimpleFieldComparator::CompareEnum(const FieldDescriptor& /*field*/,
                                         const EnumValueDescriptor* value_1,
                                         const EnumValueDescriptor* value_2) {
   return value_1->number() == value_2->number();

@@ -918,10 +918,12 @@ static void add_descriptor(DescriptorPool *pool,
 
   if (upb_symtab_lookupfile2(pool->symtab, name.data, name.size)) {
     // Already added.
-    zend_error(E_USER_WARNING,
-               "proto descriptor was previously loaded (included in multiple "
-               "metadata bundles?): " UPB_STRVIEW_FORMAT,
-               UPB_STRVIEW_ARGS(name));
+    // TODO(teboring): Re-enable this warning when aggregate metadata is
+    // deprecated.
+    // zend_error(E_USER_WARNING,
+    //            "proto descriptor was previously loaded (included in multiple "
+    //            "metadata bundles?): " UPB_STRVIEW_FORMAT,
+    //            UPB_STRVIEW_ARGS(name));
     return;
   }
 

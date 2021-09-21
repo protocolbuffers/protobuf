@@ -78,6 +78,18 @@ struct PyProto_API {
   // With the current implementation, only empty messages are in this case.
   virtual Message* GetMutableMessagePointer(PyObject* msg) const = 0;
 
+  // If the passed object is a Python Message Descriptor, returns its internal
+  // pointer.
+  // Otherwise, returns NULL with an exception set.
+  virtual const Descriptor* MessageDescriptor_AsDescriptor(
+      PyObject* desc) const = 0;
+
+  // If the passed object is a Python Enum Descriptor, returns its internal
+  // pointer.
+  // Otherwise, returns NULL with an exception set.
+  virtual const EnumDescriptor* EnumDescriptor_AsDescriptor(
+      PyObject* enum_desc) const = 0;
+
   // Expose the underlying DescriptorPool and MessageFactory to enable C++ code
   // to create Python-compatible message.
   virtual const DescriptorPool* GetDefaultDescriptorPool() const = 0;
@@ -108,6 +120,15 @@ struct PyProto_API {
   // python objects referencing the same C++ object.
   virtual PyObject* NewMessageOwnedExternally(
       Message* msg, PyObject* py_message_factory) const = 0;
+
+  // Returns a new reference for the given DescriptorPool.
+  // The returned object does not manage the C++ DescriptorPool: it is the
+  // responsibility of the caller to keep it alive.
+  // As long as the returned Python DescriptorPool object is kept alive,
+  // functions that process C++ descriptors or messages created from this pool
+  // can work and return their Python counterparts.
+  virtual PyObject* DescriptorPool_FromPool(
+      const google::protobuf::DescriptorPool* pool) const = 0;
 };
 
 inline const char* PyProtoAPICapsuleName() {

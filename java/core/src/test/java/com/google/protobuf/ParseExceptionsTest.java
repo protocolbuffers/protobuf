@@ -30,9 +30,7 @@
 
 package com.google.protobuf;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
@@ -250,9 +248,8 @@ public class ParseExceptionsTest {
   private void verifyExceptions(ParseTester parseTester) {
     // No exception
     try {
-      assertEquals(
-          DescriptorProto.getDescriptor().toProto(),
-          parseTester.parse(new ByteArrayInputStream(serializedProto)));
+      assertThat(parseTester.parse(new ByteArrayInputStream(serializedProto)))
+          .isEqualTo(DescriptorProto.getDescriptor().toProto());
     } catch (IOException e) {
       fail("No exception expected: " + e);
     }
@@ -263,7 +260,7 @@ public class ParseExceptionsTest {
       parseTester.parse(broken(new ByteArrayInputStream(serializedProto)));
       fail("IOException expected but not thrown");
     } catch (IOException e) {
-      assertFalse(e instanceof InvalidProtocolBufferException);
+      assertThat(e).isNotInstanceOf(InvalidProtocolBufferException.class);
     }
 
     // InvalidProtocolBufferException
@@ -275,7 +272,7 @@ public class ParseExceptionsTest {
       parseTester.parse(new ByteArrayInputStream(serializedProto));
       fail("InvalidProtocolBufferException expected but not thrown");
     } catch (IOException e) {
-      assertTrue(e instanceof InvalidProtocolBufferException);
+      assertThat(e).isInstanceOf(InvalidProtocolBufferException.class);
     }
   }
 

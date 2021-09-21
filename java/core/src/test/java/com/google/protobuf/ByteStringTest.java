@@ -30,6 +30,9 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import com.google.protobuf.ByteString.Output;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,15 +49,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /**
  * Test methods with implementations in {@link ByteString}, plus do some top-level "integration"
  * tests.
- *
- * @author carlanton@google.com (Carl Haverl)
  */
-public class ByteStringTest extends TestCase {
+@RunWith(JUnit4.class)
+public class ByteStringTest {
 
   private static final Charset UTF_16 = Charset.forName("UTF-16");
 
@@ -87,17 +91,18 @@ public class ByteStringTest extends TestCase {
     return left.length == right.length && isArrayRange(left, right, 0, left.length);
   }
 
+  @Test
   public void testCompare_equalByteStrings_compareEqual() throws Exception {
     byte[] referenceBytes = getTestBytes();
     ByteString string1 = ByteString.copyFrom(referenceBytes);
     ByteString string2 = ByteString.copyFrom(referenceBytes);
 
-    assertEquals(
-        "ByteString instances containing the same data must compare equal.",
-        0,
-        ByteString.unsignedLexicographicalComparator().compare(string1, string2));
+    assertWithMessage("ByteString instances containing the same data must compare equal.")
+        .that(ByteString.unsignedLexicographicalComparator().compare(string1, string2))
+        .isEqualTo(0);
   }
 
+  @Test
   public void testCompare_byteStringsSortLexicographically() throws Exception {
     ByteString app = ByteString.copyFromUtf8("app");
     ByteString apple = ByteString.copyFromUtf8("apple");
@@ -105,93 +110,109 @@ public class ByteStringTest extends TestCase {
 
     Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
 
-    assertTrue("ByteString(app) < ByteString(apple)", comparator.compare(app, apple) < 0);
-    assertTrue("ByteString(app) < ByteString(banana)", comparator.compare(app, banana) < 0);
-    assertTrue("ByteString(apple) < ByteString(banana)", comparator.compare(apple, banana) < 0);
+    assertWithMessage("ByteString(app) < ByteString(apple)")
+        .that(comparator.compare(app, apple) < 0)
+        .isTrue();
+    assertWithMessage("ByteString(app) < ByteString(banana)")
+        .that(comparator.compare(app, banana) < 0)
+        .isTrue();
+    assertWithMessage("ByteString(apple) < ByteString(banana)")
+        .that(comparator.compare(apple, banana) < 0)
+        .isTrue();
   }
 
+  @Test
   public void testCompare_interpretsByteValuesAsUnsigned() throws Exception {
     // Two's compliment of `-1` == 0b11111111 == 255
     ByteString twoHundredFiftyFive = ByteString.copyFrom(new byte[] {-1});
     // 0b00000001 == 1
     ByteString one = ByteString.copyFrom(new byte[] {1});
 
-    assertTrue(
-        "ByteString comparison treats bytes as unsigned values",
-        ByteString.unsignedLexicographicalComparator().compare(one, twoHundredFiftyFive) < 0);
+    assertWithMessage("ByteString comparison treats bytes as unsigned values")
+        .that(ByteString.unsignedLexicographicalComparator().compare(one, twoHundredFiftyFive) < 0)
+        .isTrue();
   }
 
+  @Test
   public void testSubstring_BeginIndex() {
     byte[] bytes = getTestBytes();
     ByteString substring = ByteString.copyFrom(bytes).substring(500);
-    assertTrue(
-        "substring must contain the tail of the string",
-        isArrayRange(substring.toByteArray(), bytes, 500, bytes.length - 500));
+    assertWithMessage("substring must contain the tail of the string")
+        .that(isArrayRange(substring.toByteArray(), bytes, 500, bytes.length - 500))
+        .isTrue();
   }
 
+  @Test
   public void testCopyFrom_BytesOffsetSize() {
     byte[] bytes = getTestBytes();
     ByteString byteString = ByteString.copyFrom(bytes, 500, 200);
-    assertTrue(
-        "copyFrom sub-range must contain the expected bytes",
-        isArrayRange(byteString.toByteArray(), bytes, 500, 200));
+    assertWithMessage("copyFrom sub-range must contain the expected bytes")
+        .that(isArrayRange(byteString.toByteArray(), bytes, 500, 200))
+        .isTrue();
   }
 
+  @Test
   public void testCopyFrom_Bytes() {
     byte[] bytes = getTestBytes();
     ByteString byteString = ByteString.copyFrom(bytes);
-    assertTrue(
-        "copyFrom must contain the expected bytes", isArray(byteString.toByteArray(), bytes));
+    assertWithMessage("copyFrom must contain the expected bytes")
+        .that(isArray(byteString.toByteArray(), bytes))
+        .isTrue();
   }
 
+  @Test
   public void testCopyFrom_ByteBufferSize() {
     byte[] bytes = getTestBytes();
     ByteBuffer byteBuffer = ByteBuffer.allocate(bytes.length);
     byteBuffer.put(bytes);
     byteBuffer.position(500);
     ByteString byteString = ByteString.copyFrom(byteBuffer, 200);
-    assertTrue(
-        "copyFrom byteBuffer sub-range must contain the expected bytes",
-        isArrayRange(byteString.toByteArray(), bytes, 500, 200));
+    assertWithMessage("copyFrom byteBuffer sub-range must contain the expected bytes")
+        .that(isArrayRange(byteString.toByteArray(), bytes, 500, 200))
+        .isTrue();
   }
 
+  @Test
   public void testCopyFrom_ByteBuffer() {
     byte[] bytes = getTestBytes();
     ByteBuffer byteBuffer = ByteBuffer.allocate(bytes.length);
     byteBuffer.put(bytes);
     byteBuffer.position(500);
     ByteString byteString = ByteString.copyFrom(byteBuffer);
-    assertTrue(
-        "copyFrom byteBuffer sub-range must contain the expected bytes",
-        isArrayRange(byteString.toByteArray(), bytes, 500, bytes.length - 500));
+    assertWithMessage("copyFrom byteBuffer sub-range must contain the expected bytes")
+        .that(isArrayRange(byteString.toByteArray(), bytes, 500, bytes.length - 500))
+        .isTrue();
   }
 
+  @Test
   public void testCopyFrom_StringEncoding() {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString byteString = ByteString.copyFrom(testString, UTF_16);
     byte[] testBytes = testString.getBytes(UTF_16);
-    assertTrue(
-        "copyFrom string must respect the charset",
-        isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
+    assertWithMessage("copyFrom string must respect the charset")
+        .that(isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length))
+        .isTrue();
   }
 
+  @Test
   public void testCopyFrom_Utf8() {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString byteString = ByteString.copyFromUtf8(testString);
     byte[] testBytes = testString.getBytes(Internal.UTF_8);
-    assertTrue(
-        "copyFromUtf8 string must respect the charset",
-        isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
+    assertWithMessage("copyFromUtf8 string must respect the charset")
+        .that(isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length))
+        .isTrue();
   }
 
+  @Test
   public void testCopyFrom_Iterable() {
     byte[] testBytes = getTestBytes(77777, 113344L);
     final List<ByteString> pieces = makeConcretePieces(testBytes);
     // Call copyFrom() on a Collection
     ByteString byteString = ByteString.copyFrom(pieces);
-    assertTrue(
-        "copyFrom a List must contain the expected bytes",
-        isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
+    assertWithMessage("copyFrom a List must contain the expected bytes")
+        .that(isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length))
+        .isTrue();
     // Call copyFrom on an iteration that's not a collection
     ByteString byteStringAlt =
         ByteString.copyFrom(
@@ -201,60 +222,65 @@ public class ByteStringTest extends TestCase {
                 return pieces.iterator();
               }
             });
-    assertEquals(
-        "copyFrom from an Iteration must contain the expected bytes", byteString, byteStringAlt);
+    assertWithMessage("copyFrom from an Iteration must contain the expected bytes")
+        .that(byteString)
+        .isEqualTo(byteStringAlt);
   }
 
+  @Test
   public void testCopyFrom_LengthTooBig() {
     byte[] testBytes = getTestBytes(100);
     try {
       ByteString.copyFrom(testBytes, 0, 200);
-      fail("Should throw");
+      assertWithMessage("Should throw").fail();
     } catch (IndexOutOfBoundsException expected) {
     }
 
     try {
       ByteString.copyFrom(testBytes, 99, 2);
-      fail();
+      assertWithMessage("Should throw").fail();
     } catch (IndexOutOfBoundsException expected) {
     }
 
     ByteBuffer buf = ByteBuffer.wrap(testBytes);
     try {
       ByteString.copyFrom(buf, 101);
-      fail();
+      assertWithMessage("Should throw").fail();
     } catch (IndexOutOfBoundsException expected) {
     }
 
     try {
       ByteString.copyFrom(testBytes, -1, 10);
-      fail("Should throw");
+      assertWithMessage("Should throw").fail();
     } catch (IndexOutOfBoundsException expected) {
     }
   }
 
+  @Test
   public void testCopyTo_TargetOffset() {
     byte[] bytes = getTestBytes();
     ByteString byteString = ByteString.copyFrom(bytes);
     byte[] target = new byte[bytes.length + 1000];
     byteString.copyTo(target, 400);
-    assertTrue(
-        "copyFrom byteBuffer sub-range must contain the expected bytes",
-        isArrayRange(bytes, target, 400, bytes.length));
+    assertWithMessage("copyFrom byteBuffer sub-range must contain the expected bytes")
+        .that(isArrayRange(bytes, target, 400, bytes.length))
+        .isTrue();
   }
 
+  @Test
   public void testReadFrom_emptyStream() throws IOException {
     ByteString byteString = ByteString.readFrom(new ByteArrayInputStream(new byte[0]));
-    assertSame(
-        "reading an empty stream must result in the EMPTY constant byte string",
-        ByteString.EMPTY,
-        byteString);
+    assertWithMessage("reading an empty stream must result in the EMPTY constant byte string")
+        .that(ByteString.EMPTY)
+        .isSameInstanceAs(byteString);
   }
 
+  @Test
   public void testReadFrom_smallStream() throws IOException {
     assertReadFrom(getTestBytes(10));
   }
 
+  @Test
   public void testReadFrom_mutating() throws IOException {
     EvilInputStream eis = new EvilInputStream();
     ByteString byteString = ByteString.readFrom(eis);
@@ -266,12 +292,13 @@ public class ByteStringTest extends TestCase {
     }
 
     byte[] newValue = byteString.toByteArray();
-    assertTrue(
-        "copyFrom byteBuffer must not grant access to underlying array",
-        Arrays.equals(originalValue, newValue));
+    assertWithMessage("copyFrom byteBuffer must not grant access to underlying array")
+        .that(Arrays.equals(originalValue, newValue))
+        .isTrue();
   }
 
   // Tests sizes that are near the rope copy-out threshold.
+  @Test
   public void testReadFrom_mediumStream() throws IOException {
     assertReadFrom(getTestBytes(ByteString.CONCATENATE_BY_COPY_SIZE - 1));
     assertReadFrom(getTestBytes(ByteString.CONCATENATE_BY_COPY_SIZE));
@@ -280,6 +307,7 @@ public class ByteStringTest extends TestCase {
   }
 
   // Tests sizes that are over multi-segment rope threshold.
+  @Test
   public void testReadFrom_largeStream() throws IOException {
     assertReadFrom(getTestBytes(0x100));
     assertReadFrom(getTestBytes(0x101));
@@ -293,6 +321,7 @@ public class ByteStringTest extends TestCase {
   }
 
   // Tests sizes that are near the read buffer size.
+  @Test
   public void testReadFrom_byteBoundaries() throws IOException {
     final int min = ByteString.MIN_READ_FROM_CHUNK_SIZE;
     final int max = ByteString.MAX_READ_FROM_CHUNK_SIZE;
@@ -323,26 +352,30 @@ public class ByteStringTest extends TestCase {
   }
 
   // Tests that IOExceptions propagate through ByteString.readFrom().
+  @Test
   public void testReadFrom_IOExceptions() {
     try {
       ByteString.readFrom(new FailStream());
-      fail("readFrom must throw the underlying IOException");
+      assertWithMessage("readFrom must throw the underlying IOException").fail();
 
     } catch (IOException e) {
-      assertEquals(
-          "readFrom must throw the expected exception", "synthetic failure", e.getMessage());
+      assertWithMessage("readFrom must throw the expected exception")
+          .that(e)
+          .hasMessageThat()
+          .isEqualTo("synthetic failure");
     }
   }
 
   // Tests that ByteString.readFrom works with streams that don't
   // always fill their buffers.
+  @Test
   public void testReadFrom_reluctantStream() throws IOException {
     final byte[] data = getTestBytes(0x1000);
 
     ByteString byteString = ByteString.readFrom(new ReluctantStream(data));
-    assertTrue(
-        "readFrom byte stream must contain the expected bytes",
-        isArray(byteString.toByteArray(), data));
+    assertWithMessage("readFrom byte stream must contain the expected bytes")
+        .that(isArray(byteString.toByteArray(), data))
+        .isTrue();
 
     // Same test as above, but with some specific chunk sizes.
     assertReadFromReluctantStream(data, 100);
@@ -358,27 +391,29 @@ public class ByteStringTest extends TestCase {
   // reluctant stream with the given chunkSize parameter.
   private void assertReadFromReluctantStream(byte[] bytes, int chunkSize) throws IOException {
     ByteString b = ByteString.readFrom(new ReluctantStream(bytes), chunkSize);
-    assertTrue(
-        "readFrom byte stream must contain the expected bytes", isArray(b.toByteArray(), bytes));
+    assertWithMessage("readFrom byte stream must contain the expected bytes")
+        .that(isArray(b.toByteArray(), bytes))
+        .isTrue();
   }
 
   // Tests that ByteString.readFrom works with streams that implement
   // available().
+  @Test
   public void testReadFrom_available() throws IOException {
     final byte[] data = getTestBytes(0x1001);
 
     ByteString byteString = ByteString.readFrom(new AvailableStream(data));
-    assertTrue(
-        "readFrom byte stream must contain the expected bytes",
-        isArray(byteString.toByteArray(), data));
+    assertWithMessage("readFrom byte stream must contain the expected bytes")
+        .that(isArray(byteString.toByteArray(), data))
+        .isTrue();
   }
 
   // Fails unless ByteString.readFrom reads the bytes correctly.
   private void assertReadFrom(byte[] bytes) throws IOException {
     ByteString byteString = ByteString.readFrom(new ByteArrayInputStream(bytes));
-    assertTrue(
-        "readFrom byte stream must contain the expected bytes",
-        isArray(byteString.toByteArray(), bytes));
+    assertWithMessage("readFrom byte stream must contain the expected bytes")
+        .that(isArray(byteString.toByteArray(), bytes))
+        .isTrue();
   }
 
   // A stream that fails when read.
@@ -478,45 +513,53 @@ public class ByteStringTest extends TestCase {
     }
   }
 
+  @Test
   public void testToStringUtf8() {
     String testString = "I love unicode \u1234\u5678 characters";
     byte[] testBytes = testString.getBytes(Internal.UTF_8);
     ByteString byteString = ByteString.copyFrom(testBytes);
-    assertEquals(
-        "copyToStringUtf8 must respect the charset", testString, byteString.toStringUtf8());
+    assertWithMessage("copyToStringUtf8 must respect the charset")
+        .that(testString)
+        .isEqualTo(byteString.toStringUtf8());
   }
 
+  @Test
   public void testToString() {
     String toString =
         ByteString.copyFrom("Here are some bytes: \t\u00a1".getBytes(Internal.UTF_8)).toString();
-    assertTrue(toString, toString.contains("size=24"));
-    assertTrue(toString, toString.contains("contents=\"Here are some bytes: \\t\\302\\241\""));
+    assertWithMessage(toString).that(toString.contains("size=24")).isTrue();
+    assertWithMessage(toString)
+        .that(toString.contains("contents=\"Here are some bytes: \\t\\302\\241\""))
+        .isTrue();
   }
 
+  @Test
   public void testToString_long() {
     String toString =
         ByteString.copyFrom(
                 "123456789012345678901234567890123456789012345678901234567890"
                     .getBytes(Internal.UTF_8))
             .toString();
-    assertTrue(toString, toString.contains("size=60"));
-    assertTrue(
-        toString,
-        toString.contains("contents=\"12345678901234567890123456789012345678901234567...\""));
+    assertWithMessage(toString).that(toString.contains("size=60")).isTrue();
+    assertWithMessage(toString)
+        .that(toString.contains("contents=\"12345678901234567890123456789012345678901234567...\""))
+        .isTrue();
   }
 
+  @Test
   public void testNewOutput_InitialCapacity() throws IOException {
     byte[] bytes = getTestBytes();
     ByteString.Output output = ByteString.newOutput(bytes.length + 100);
     output.write(bytes);
     ByteString byteString = output.toByteString();
-    assertTrue(
-        "String built from newOutput(int) must contain the expected bytes",
-        isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
+    assertWithMessage("String built from newOutput(int) must contain the expected bytes")
+        .that(isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length))
+        .isTrue();
   }
 
   // Test newOutput() using a variety of buffer sizes and a variety of (fixed)
   // write sizes
+  @Test
   public void testNewOutput_ArrayWrite() {
     byte[] bytes = getTestBytes();
     int length = bytes.length;
@@ -533,15 +576,16 @@ public class ByteStringTest extends TestCase {
           output.write(bytes, i, Math.min(writeSize, length - i));
         }
         ByteString byteString = output.toByteString();
-        assertTrue(
-            "String built from newOutput() must contain the expected bytes",
-            isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
+        assertWithMessage("String built from newOutput() must contain the expected bytes")
+            .that(isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length))
+            .isTrue();
       }
     }
   }
 
   // Test newOutput() using a variety of buffer sizes, but writing all the
   // characters using write(byte);
+  @Test
   public void testNewOutput_WriteChar() {
     byte[] bytes = getTestBytes();
     int length = bytes.length;
@@ -554,14 +598,15 @@ public class ByteStringTest extends TestCase {
         output.write(byteValue);
       }
       ByteString byteString = output.toByteString();
-      assertTrue(
-          "String built from newOutput() must contain the expected bytes",
-          isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
+      assertWithMessage("String built from newOutput() must contain the expected bytes")
+          .that(isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length))
+          .isTrue();
     }
   }
 
   // Test newOutput() in which we write the bytes using a variety of methods
   // and sizes, and in which we repeatedly call toByteString() in the middle.
+  @Test
   public void testNewOutput_Mixed() {
     Random rng = new Random(1);
     byte[] bytes = getTestBytes();
@@ -584,24 +629,26 @@ public class ByteStringTest extends TestCase {
           output.write(bytes[position]);
           position++;
         }
-        assertEquals("size() returns the right value", position, output.size());
-        assertTrue(
-            "newOutput() substring must have correct bytes",
-            isArrayRange(output.toByteString().toByteArray(), bytes, 0, position));
+        assertWithMessage("size() returns the right value").that(position).isEqualTo(output.size());
+        assertWithMessage("newOutput() substring must have correct bytes")
+            .that(isArrayRange(output.toByteString().toByteArray(), bytes, 0, position))
+            .isTrue();
       }
       ByteString byteString = output.toByteString();
-      assertTrue(
-          "String built from newOutput() must contain the expected bytes",
-          isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
+      assertWithMessage("String built from newOutput() must contain the expected bytes")
+          .that(isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length))
+          .isTrue();
     }
   }
 
+  @Test
   public void testNewOutputEmpty() {
     // Make sure newOutput() correctly builds empty byte strings
     ByteString byteString = ByteString.newOutput().toByteString();
-    assertEquals(ByteString.EMPTY, byteString);
+    assertThat(ByteString.EMPTY).isEqualTo(byteString);
   }
 
+  @Test
   public void testNewOutput_Mutating() throws IOException {
     Output os = ByteString.newOutput(5);
     os.write(new byte[] {1, 2, 3, 4, 5});
@@ -612,21 +659,23 @@ public class ByteStringTest extends TestCase {
     byte[] oldValue = byteString.toByteArray();
     Arrays.fill(capturedArray, (byte) 0);
     byte[] newValue = byteString.toByteArray();
-    assertTrue(
-        "Output must not provide access to the underlying byte array",
-        Arrays.equals(oldValue, newValue));
+    assertWithMessage("Output must not provide access to the underlying byte array")
+        .that(Arrays.equals(oldValue, newValue))
+        .isTrue();
   }
 
+  @Test
   public void testNewCodedBuilder() throws IOException {
     byte[] bytes = getTestBytes();
     ByteString.CodedBuilder builder = ByteString.newCodedBuilder(bytes.length);
     builder.getCodedOutput().writeRawBytes(bytes);
     ByteString byteString = builder.build();
-    assertTrue(
-        "String built from newCodedBuilder() must contain the expected bytes",
-        isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
+    assertWithMessage("String built from newCodedBuilder() must contain the expected bytes")
+        .that(isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length))
+        .isTrue();
   }
 
+  @Test
   public void testSubstringParity() {
     byte[] bigBytes = getTestBytes(2048 * 1024, 113344L);
     int start = 512 * 1024 - 3333;
@@ -636,16 +685,18 @@ public class ByteStringTest extends TestCase {
     for (int i = start; ok && i < end; ++i) {
       ok = (bigBytes[i] == concreteSubstring.byteAt(i - start));
     }
-    assertTrue("Concrete substring didn't capture the right bytes", ok);
+    assertWithMessage("Concrete substring didn't capture the right bytes").that(ok).isTrue();
 
     ByteString literalString = ByteString.copyFrom(bigBytes, start, end - start);
-    assertEquals("Substring must be equal to literal string", literalString, concreteSubstring);
-    assertEquals(
-        "Substring must have same hashcode as literal string",
-        literalString.hashCode(),
-        concreteSubstring.hashCode());
+    assertWithMessage("Substring must be equal to literal string")
+        .that(literalString)
+        .isEqualTo(concreteSubstring);
+    assertWithMessage("Substring must have same hashcode as literal string")
+        .that(literalString.hashCode())
+        .isEqualTo(concreteSubstring.hashCode());
   }
 
+  @Test
   public void testCompositeSubstring() {
     byte[] referenceBytes = getTestBytes(77748, 113344L);
 
@@ -660,34 +711,32 @@ public class ByteStringTest extends TestCase {
     for (int i = 0; stillEqual && i < to - from; ++i) {
       stillEqual = referenceBytes[from + i] == substringBytes[i];
     }
-    assertTrue("Substring must return correct bytes", stillEqual);
+    assertWithMessage("Substring must return correct bytes").that(stillEqual).isTrue();
 
     stillEqual = true;
     for (int i = 0; stillEqual && i < to - from; ++i) {
       stillEqual = referenceBytes[from + i] == compositeSubstring.byteAt(i);
     }
-    assertTrue("Substring must support byteAt() correctly", stillEqual);
+    assertWithMessage("Substring must support byteAt() correctly").that(stillEqual).isTrue();
 
     ByteString literalSubstring = ByteString.copyFrom(referenceBytes, from, to - from);
-    assertEquals(
-        "Composite substring must equal a literal substring over the same bytes",
-        literalSubstring,
-        compositeSubstring);
-    assertEquals(
-        "Literal substring must equal a composite substring over the same bytes",
-        compositeSubstring,
-        literalSubstring);
+    assertWithMessage("Composite substring must equal a literal substring over the same bytes")
+        .that(literalSubstring)
+        .isEqualTo(compositeSubstring);
+    assertWithMessage("Literal substring must equal a composite substring over the same bytes")
+        .that(compositeSubstring)
+        .isEqualTo(literalSubstring);
 
-    assertEquals(
-        "We must get the same hashcodes for composite and literal substrings",
-        literalSubstring.hashCode(),
-        compositeSubstring.hashCode());
+    assertWithMessage("We must get the same hashcodes for composite and literal substrings")
+        .that(literalSubstring.hashCode())
+        .isEqualTo(compositeSubstring.hashCode());
 
-    assertFalse(
-        "We can't be equal to a proper substring",
-        compositeSubstring.equals(literalSubstring.substring(0, literalSubstring.size() - 1)));
+    assertWithMessage("We can't be equal to a proper substring")
+        .that(compositeSubstring.equals(literalSubstring.substring(0, literalSubstring.size() - 1)))
+        .isFalse();
   }
 
+  @Test
   public void testCopyFromList() {
     byte[] referenceBytes = getTestBytes(77748, 113344L);
     ByteString literalString = ByteString.copyFrom(referenceBytes);
@@ -695,13 +744,15 @@ public class ByteStringTest extends TestCase {
     List<ByteString> pieces = makeConcretePieces(referenceBytes);
     ByteString listString = ByteString.copyFrom(pieces);
 
-    assertEquals("Composite string must be equal to literal string", literalString, listString);
-    assertEquals(
-        "Composite string must have same hashcode as literal string",
-        literalString.hashCode(),
-        listString.hashCode());
+    assertWithMessage("Composite string must be equal to literal string")
+        .that(literalString)
+        .isEqualTo(listString);
+    assertWithMessage("Composite string must have same hashcode as literal string")
+        .that(literalString.hashCode())
+        .isEqualTo(listString.hashCode());
   }
 
+  @Test
   public void testConcat() {
     byte[] referenceBytes = getTestBytes(77748, 113344L);
     ByteString literalString = ByteString.copyFrom(referenceBytes);
@@ -714,18 +765,19 @@ public class ByteStringTest extends TestCase {
       concatenatedString = concatenatedString.concat(iter.next());
     }
 
-    assertEquals(
-        "Concatenated string must be equal to literal string", literalString, concatenatedString);
-    assertEquals(
-        "Concatenated string must have same hashcode as literal string",
-        literalString.hashCode(),
-        concatenatedString.hashCode());
+    assertWithMessage("Concatenated string must be equal to literal string")
+        .that(literalString)
+        .isEqualTo(concatenatedString);
+    assertWithMessage("Concatenated string must have same hashcode as literal string")
+        .that(literalString.hashCode())
+        .isEqualTo(concatenatedString.hashCode());
   }
 
   /**
    * Test the Rope implementation can deal with Empty nodes, even though we guard against them. See
    * also {@link LiteralByteStringTest#testConcat_empty()}.
    */
+  @Test
   public void testConcat_empty() {
     byte[] referenceBytes = getTestBytes(7748, 113344L);
     ByteString literalString = ByteString.copyFrom(referenceBytes);
@@ -737,11 +789,12 @@ public class ByteStringTest extends TestCase {
             RopeByteString.newInstanceForTest(ByteString.EMPTY, literalString));
     ByteString quintet = RopeByteString.newInstanceForTest(temp, ByteString.EMPTY);
 
-    assertEquals("String with concatenated nulls must equal simple concatenate", quintet, duo);
-    assertEquals(
-        "String with concatenated nulls have same hashcode as simple concatenate",
-        duo.hashCode(),
-        quintet.hashCode());
+    assertWithMessage("String with concatenated nulls must equal simple concatenate")
+        .that(quintet)
+        .isEqualTo(duo);
+    assertWithMessage("String with concatenated nulls have same hashcode as simple concatenate")
+        .that(duo.hashCode())
+        .isEqualTo(quintet.hashCode());
 
     ByteString.ByteIterator duoIter = duo.iterator();
     ByteString.ByteIterator quintetIter = quintet.iterator();
@@ -749,17 +802,17 @@ public class ByteStringTest extends TestCase {
     while (stillEqual && quintetIter.hasNext()) {
       stillEqual = (duoIter.nextByte() == quintetIter.nextByte());
     }
-    assertTrue("We must get the same characters by iterating", stillEqual);
-    assertFalse("Iterator must be exhausted", duoIter.hasNext());
+    assertWithMessage("We must get the same characters by iterating").that(stillEqual).isTrue();
+    assertWithMessage("Iterator must be exhausted").that(duoIter.hasNext()).isFalse();
     try {
       duoIter.nextByte();
-      fail("Should have thrown an exception.");
+      assertWithMessage("Should have thrown an exception.").fail();
     } catch (NoSuchElementException e) {
       // This is success
     }
     try {
       quintetIter.nextByte();
-      fail("Should have thrown an exception.");
+      assertWithMessage("Should have thrown an exception.").fail();
     } catch (NoSuchElementException e) {
       // This is success
     }
@@ -771,45 +824,47 @@ public class ByteStringTest extends TestCase {
     // It is possible, using the testing factory method to create deeply nested
     // trees of empty leaves, to make a string that will fail this test.
     for (int i = 1; i < duo.size(); ++i) {
-      assertTrue(
-          "Substrings of size() < 2 must not be RopeByteStrings",
-          duo.substring(i - 1, i) instanceof ByteString.LeafByteString);
+      assertWithMessage("Substrings of size() < 2 must not be RopeByteStrings")
+          .that(duo.substring(i - 1, i) instanceof ByteString.LeafByteString)
+          .isTrue();
     }
     for (int i = 1; i < quintet.size(); ++i) {
-      assertTrue(
-          "Substrings of size() < 2 must not be RopeByteStrings",
-          quintet.substring(i - 1, i) instanceof ByteString.LeafByteString);
+      assertWithMessage("Substrings of size() < 2 must not be RopeByteStrings")
+          .that(quintet.substring(i - 1, i) instanceof ByteString.LeafByteString)
+          .isTrue();
     }
   }
 
+  @Test
   public void testStartsWith() {
     byte[] bytes = getTestBytes(1000, 1234L);
     ByteString string = ByteString.copyFrom(bytes);
     ByteString prefix = ByteString.copyFrom(bytes, 0, 500);
     ByteString suffix = ByteString.copyFrom(bytes, 400, 600);
-    assertTrue(string.startsWith(ByteString.EMPTY));
-    assertTrue(string.startsWith(string));
-    assertTrue(string.startsWith(prefix));
-    assertFalse(string.startsWith(suffix));
-    assertFalse(prefix.startsWith(suffix));
-    assertFalse(suffix.startsWith(prefix));
-    assertFalse(ByteString.EMPTY.startsWith(prefix));
-    assertTrue(ByteString.EMPTY.startsWith(ByteString.EMPTY));
+    assertThat(string.startsWith(ByteString.EMPTY)).isTrue();
+    assertThat(string.startsWith(string)).isTrue();
+    assertThat(string.startsWith(prefix)).isTrue();
+    assertThat(string.startsWith(suffix)).isFalse();
+    assertThat(prefix.startsWith(suffix)).isFalse();
+    assertThat(suffix.startsWith(prefix)).isFalse();
+    assertThat(ByteString.EMPTY.startsWith(prefix)).isFalse();
+    assertThat(ByteString.EMPTY.startsWith(ByteString.EMPTY)).isTrue();
   }
 
+  @Test
   public void testEndsWith() {
     byte[] bytes = getTestBytes(1000, 1234L);
     ByteString string = ByteString.copyFrom(bytes);
     ByteString prefix = ByteString.copyFrom(bytes, 0, 500);
     ByteString suffix = ByteString.copyFrom(bytes, 400, 600);
-    assertTrue(string.endsWith(ByteString.EMPTY));
-    assertTrue(string.endsWith(string));
-    assertTrue(string.endsWith(suffix));
-    assertFalse(string.endsWith(prefix));
-    assertFalse(suffix.endsWith(prefix));
-    assertFalse(prefix.endsWith(suffix));
-    assertFalse(ByteString.EMPTY.endsWith(suffix));
-    assertTrue(ByteString.EMPTY.endsWith(ByteString.EMPTY));
+    assertThat(string.endsWith(ByteString.EMPTY)).isTrue();
+    assertThat(string.endsWith(string)).isTrue();
+    assertThat(string.endsWith(suffix)).isTrue();
+    assertThat(string.endsWith(prefix)).isFalse();
+    assertThat(suffix.endsWith(prefix)).isFalse();
+    assertThat(prefix.endsWith(suffix)).isFalse();
+    assertThat(ByteString.EMPTY.endsWith(suffix)).isFalse();
+    assertThat(ByteString.EMPTY.endsWith(ByteString.EMPTY)).isTrue();
   }
 
   static List<ByteString> makeConcretePieces(byte[] referenceBytes) {
@@ -832,6 +887,7 @@ public class ByteStringTest extends TestCase {
     return output.toByteArray();
   }
 
+  @Test
   public void testWriteToOutputStream() throws Exception {
     // Choose a size large enough so when two ByteStrings are concatenated they
     // won't be merged into one byte array due to some optimizations.
@@ -842,8 +898,8 @@ public class ByteStringTest extends TestCase {
     // Test LiteralByteString.writeTo(OutputStream,int,int)
     ByteString left = ByteString.wrap(data1);
     byte[] result = substringUsingWriteTo(left, 1, 1);
-    assertEquals(1, result.length);
-    assertEquals((byte) 11, result[0]);
+    assertThat(result).hasLength(1);
+    assertThat(result[0]).isEqualTo((byte) 11);
 
     byte[] data2 = new byte[dataSize];
     Arrays.fill(data2, 0, data1.length, (byte) 2);
@@ -852,27 +908,28 @@ public class ByteStringTest extends TestCase {
     ByteString root = left.concat(right);
     // Make sure we are actually testing a RopeByteString with a simple tree
     // structure.
-    assertEquals(1, root.getTreeDepth());
+    assertThat(root.getTreeDepth()).isEqualTo(1);
     // Write parts of the left node.
     result = substringUsingWriteTo(root, 0, dataSize);
-    assertEquals(dataSize, result.length);
-    assertEquals((byte) 1, result[0]);
-    assertEquals((byte) 1, result[dataSize - 1]);
+    assertThat(result).hasLength(dataSize);
+    assertThat(result[0]).isEqualTo((byte) 1);
+    assertThat(result[dataSize - 1]).isEqualTo((byte) 1);
     // Write parts of the right node.
     result = substringUsingWriteTo(root, dataSize, dataSize);
-    assertEquals(dataSize, result.length);
-    assertEquals((byte) 2, result[0]);
-    assertEquals((byte) 2, result[dataSize - 1]);
+    assertThat(result).hasLength(dataSize);
+    assertThat(result[0]).isEqualTo((byte) 2);
+    assertThat(result[dataSize - 1]).isEqualTo((byte) 2);
     // Write a segment of bytes that runs across both nodes.
     result = substringUsingWriteTo(root, dataSize / 2, dataSize);
-    assertEquals(dataSize, result.length);
-    assertEquals((byte) 1, result[0]);
-    assertEquals((byte) 1, result[dataSize - dataSize / 2 - 1]);
-    assertEquals((byte) 2, result[dataSize - dataSize / 2]);
-    assertEquals((byte) 2, result[dataSize - 1]);
+    assertThat(result).hasLength(dataSize);
+    assertThat(result[0]).isEqualTo((byte) 1);
+    assertThat(result[dataSize - dataSize / 2 - 1]).isEqualTo((byte) 1);
+    assertThat(result[dataSize - dataSize / 2]).isEqualTo((byte) 2);
+    assertThat(result[dataSize - 1]).isEqualTo((byte) 2);
   }
 
   /** Tests ByteString uses Arrays based byte copier when running under Hotstop VM. */
+  @Test
   public void testByteArrayCopier() throws Exception {
     if (Android.isOnAndroidDevice()) {
       return;
@@ -880,9 +937,9 @@ public class ByteStringTest extends TestCase {
     Field field = ByteString.class.getDeclaredField("byteArrayCopier");
     field.setAccessible(true);
     Object byteArrayCopier = field.get(null);
-    assertNotNull(byteArrayCopier);
-    assertTrue(
-        byteArrayCopier.toString(),
-        byteArrayCopier.getClass().getSimpleName().endsWith("ArraysByteArrayCopier"));
+    assertThat(byteArrayCopier).isNotNull();
+    assertWithMessage(byteArrayCopier.toString())
+        .that(byteArrayCopier.getClass().getSimpleName().endsWith("ArraysByteArrayCopier"))
+        .isTrue();
   }
 }

@@ -509,7 +509,7 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinterRegisterSameFieldTwice) {
 TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
   protobuf_unittest::TestAllTypes message;
   TextFormat::Printer printer;
-  // NULL printer.
+  // nullptr printer.
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(
       message.GetDescriptor()->FindFieldByName("optional_int32"),
       static_cast<const TextFormat::FieldValuePrinter*>(nullptr)));
@@ -518,7 +518,7 @@ TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
       static_cast<const TextFormat::FastFieldValuePrinter*>(nullptr)));
   // Because registration fails, the ownership of this printer is never taken.
   TextFormat::FieldValuePrinter my_field_printer;
-  // NULL field
+  // nullptr field
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(nullptr, &my_field_printer));
 }
 
@@ -1086,7 +1086,7 @@ TEST_F(TextFormatTest, PrintExotic) {
   //   seemed to trigger an odd case on MinGW/GCC 3.4.5 where GCC's parsing of
   //   the value differed from strtod()'s parsing.  That is to say, the
   //   following assertion fails on MinGW:
-  //     assert(1.23e22 == strtod("1.23e22", NULL));
+  //     assert(1.23e22 == strtod("1.23e22", nullptr));
   //   As a result, SimpleDtoa() would print the value as
   //   "1.2300000000000001e+22" to make sure strtod() produce the exact same
   //   result.  Our goal is to test runtime parsing, not compile-time parsing,
@@ -1407,12 +1407,18 @@ class TextFormatParserTest : public testing::Test {
   }
 
   void ExpectLocation(TextFormat::ParseInfoTree* tree, const Descriptor* d,
-                      const std::string& field_name, int index, int line,
-                      int column) {
-    TextFormat::ParseLocation location =
+                      const std::string& field_name, int index, int start_line,
+                      int start_column, int end_line, int end_column) {
+    TextFormat::ParseLocationRange range =
+        tree->GetLocationRange(d->FindFieldByName(field_name), index);
+    EXPECT_EQ(start_line, range.start.line);
+    EXPECT_EQ(start_column, range.start.column);
+    EXPECT_EQ(end_line, range.end.line);
+    EXPECT_EQ(end_column, range.end.column);
+    TextFormat::ParseLocation start_location =
         tree->GetLocation(d->FindFieldByName(field_name), index);
-    EXPECT_EQ(line, location.line);
-    EXPECT_EQ(column, location.column);
+    EXPECT_EQ(start_line, start_location.line);
+    EXPECT_EQ(start_column, start_location.column);
   }
 
   // An error collector which simply concatenates all its errors into a big
@@ -1462,22 +1468,22 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
   ExpectSuccessAndTree(stringData, message.get(), &tree);
 
   // Verify that the tree has the correct positions.
-  ExpectLocation(&tree, d, "optional_int32", -1, 0, 0);
-  ExpectLocation(&tree, d, "optional_int64", -1, 1, 0);
-  ExpectLocation(&tree, d, "optional_double", -1, 2, 2);
+  ExpectLocation(&tree, d, "optional_int32", -1, 0, 0, 0, 17);
+  ExpectLocation(&tree, d, "optional_int64", -1, 1, 0, 1, 17);
+  ExpectLocation(&tree, d, "optional_double", -1, 2, 2, 2, 22);
 
-  ExpectLocation(&tree, d, "repeated_int32", 0, 3, 0);
-  ExpectLocation(&tree, d, "repeated_int32", 1, 4, 0);
+  ExpectLocation(&tree, d, "repeated_int32", 0, 3, 0, 3, 17);
+  ExpectLocation(&tree, d, "repeated_int32", 1, 4, 0, 4, 18);
 
-  ExpectLocation(&tree, d, "optional_nested_message", -1, 5, 0);
-  ExpectLocation(&tree, d, "repeated_nested_message", 0, 8, 0);
-  ExpectLocation(&tree, d, "repeated_nested_message", 1, 11, 0);
+  ExpectLocation(&tree, d, "optional_nested_message", -1, 5, 0, 7, 1);
+  ExpectLocation(&tree, d, "repeated_nested_message", 0, 8, 0, 10, 1);
+  ExpectLocation(&tree, d, "repeated_nested_message", 1, 11, 0, 13, 1);
 
-  // Check for fields not set. For an invalid field, the location returned
-  // should be -1, -1.
-  ExpectLocation(&tree, d, "repeated_int64", 0, -1, -1);
-  ExpectLocation(&tree, d, "repeated_int32", 6, -1, -1);
-  ExpectLocation(&tree, d, "some_unknown_field", -1, -1, -1);
+  // Check for fields not set. For an invalid field, the start and end locations
+  // returned should be -1, -1.
+  ExpectLocation(&tree, d, "repeated_int64", 0, -1, -1, -1, -1);
+  ExpectLocation(&tree, d, "repeated_int32", 6, -1, -1, -1, -1);
+  ExpectLocation(&tree, d, "some_unknown_field", -1, -1, -1, -1, -1);
 
   // Verify inside the nested message.
   const FieldDescriptor* nested_field =
@@ -1485,21 +1491,24 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
 
   TextFormat::ParseInfoTree* nested_tree =
       tree.GetTreeForNested(nested_field, -1);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 6, 2);
+  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 6, 2, 6,
+                 8);
 
   // Verify inside another nested message.
   nested_field = d->FindFieldByName("repeated_nested_message");
   nested_tree = tree.GetTreeForNested(nested_field, 0);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 9, 2);
+  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 9, 2, 9,
+                 8);
 
   nested_tree = tree.GetTreeForNested(nested_field, 1);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 12, 2);
+  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 12, 2, 12,
+                 8);
 
-  // Verify a NULL tree for an unknown nested field.
+  // Verify a nullptr tree for an unknown nested field.
   TextFormat::ParseInfoTree* unknown_nested_tree =
       tree.GetTreeForNested(nested_field, 2);
 
-  EXPECT_EQ(NULL, unknown_nested_tree);
+  EXPECT_EQ(nullptr, unknown_nested_tree);
 }
 
 TEST_F(TextFormatParserTest, ParseFieldValueFromString) {

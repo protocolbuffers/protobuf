@@ -30,13 +30,18 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.protobuf.PackedFieldTestProto.TestAllTypes;
 import com.google.protobuf.PackedFieldTestProto.TestAllTypes.NestedEnum;
 import com.google.protobuf.PackedFieldTestProto.TestUnpackedTypes;
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Tests primitive repeated fields in proto3 are packed in wire format. */
-public class PackedFieldTest extends TestCase {
+@RunWith(JUnit4.class)
+public class PackedFieldTest {
   static final ByteString expectedPackedRawBytes =
       ByteString.copyFrom(
           new byte[] {
@@ -191,29 +196,34 @@ public class PackedFieldTest extends TestCase {
             0x01, // repeated nested enum
           });
 
+  @Test
   public void testPackedGeneratedMessage() throws Exception {
     TestAllTypes message = TestAllTypes.parseFrom(expectedPackedRawBytes);
-    assertEquals(expectedPackedRawBytes, message.toByteString());
+    assertThat(message.toByteString()).isEqualTo(expectedPackedRawBytes);
   }
 
+  @Test
   public void testPackedDynamicMessageSerialize() throws Exception {
     DynamicMessage message =
         DynamicMessage.parseFrom(TestAllTypes.getDescriptor(), expectedPackedRawBytes);
-    assertEquals(expectedPackedRawBytes, message.toByteString());
+    assertThat(message.toByteString()).isEqualTo(expectedPackedRawBytes);
   }
 
+  @Test
   public void testUnpackedGeneratedMessage() throws Exception {
     TestUnpackedTypes message = TestUnpackedTypes.parseFrom(expectedUnpackedRawBytes);
-    assertEquals(expectedUnpackedRawBytes, message.toByteString());
+    assertThat(message.toByteString()).isEqualTo(expectedUnpackedRawBytes);
   }
 
+  @Test
   public void testUnPackedDynamicMessageSerialize() throws Exception {
     DynamicMessage message =
         DynamicMessage.parseFrom(TestUnpackedTypes.getDescriptor(), expectedUnpackedRawBytes);
-    assertEquals(expectedUnpackedRawBytes, message.toByteString());
+    assertThat(message.toByteString()).isEqualTo(expectedUnpackedRawBytes);
   }
 
   // Make sure we haven't screwed up the code generation for packing fields by default.
+  @Test
   public void testPackedSerialization() throws Exception {
     TestAllTypes message =
         TestAllTypes.newBuilder()
@@ -225,7 +235,7 @@ public class PackedFieldTest extends TestCase {
 
     while (!in.isAtEnd()) {
       int tag = in.readTag();
-      assertEquals(WireFormat.WIRETYPE_LENGTH_DELIMITED, WireFormat.getTagWireType(tag));
+      assertThat(WireFormat.getTagWireType(tag)).isEqualTo(WireFormat.WIRETYPE_LENGTH_DELIMITED);
       in.skipField(tag);
     }
   }

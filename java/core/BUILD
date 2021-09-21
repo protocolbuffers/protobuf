@@ -1,7 +1,9 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_java//java:defs.bzl", "java_library", "java_proto_library", "java_lite_proto_library")
+load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("//:internal.bzl", "conformance_test")
+load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
 load("//java/internal:testing.bzl", "junit_tests")
 
 LITE_SRCS = [
@@ -106,6 +108,17 @@ java_library(
     ],
 )
 
+# Bazel users, don't depend on this target, use //java/lite.
+java_export(
+    name = "lite_mvn",
+    maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % PROTOBUF_VERSION,
+    pom_template = "//java/lite:pom_template.xml",
+    runtime_deps = [":lite"],
+    resources = [
+        "//:lite_well_known_protos",
+    ],
+)
+
 java_library(
     name = "lite_runtime_only",
     srcs = LITE_SRCS,
@@ -128,6 +141,32 @@ java_library(
     deps = [
         ":lite_runtime_only",
     ],
+)
+
+# Bazel users, don't depend on this target, use :core.
+java_export(
+    name = "core_mvn",
+    maven_coordinates = "com.google.protobuf:protobuf-java:%s" % PROTOBUF_VERSION,
+    pom_template = "pom_template.xml",
+    runtime_deps = [":core"],
+    resources = [
+        "//:well_known_protos",
+    ],
+)
+
+filegroup(
+    name = "release",
+    visibility = ["//java:__pkg__"],
+    srcs = [
+        ":core_mvn-pom",
+        ":core_mvn-maven-source",
+        ":core_mvn-docs",
+        ":core_mvn-project",
+        ":lite_mvn-pom",
+        ":lite_mvn-maven-source",
+        ":lite_mvn-docs",
+        ":lite_mvn-project",
+    ]
 )
 
 proto_lang_toolchain(
@@ -215,6 +254,7 @@ junit_tests(
         ":test_util",
         "//external:easymock",
         "//external:easymock_classextension",
+        "//external:guava",
         "//external:junit",
         "//external:truth",
     ]
@@ -324,3 +364,4 @@ junit_tests(
         "//external:truth",
     ]
 )
+

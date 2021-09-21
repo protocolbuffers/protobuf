@@ -103,6 +103,20 @@ namespace google {
 namespace protobuf {
 namespace python {
 
+class MessageReflectionFriend {
+ public:
+  static void UnsafeShallowSwapFields(
+      Message* lhs, Message* rhs,
+      const std::vector<const FieldDescriptor*>& fields) {
+    lhs->GetReflection()->UnsafeShallowSwapFields(lhs, rhs, fields);
+  }
+  static bool IsLazyField(const Reflection* reflection, const Message& message,
+                          const FieldDescriptor* field) {
+    return reflection->IsLazyField(field) ||
+           reflection->IsLazyExtension(message, field);
+  }
+};
+
 static PyObject* kDESCRIPTOR;
 PyObject* EnumTypeWrapper_class;
 static PyObject* PythonMessage_class;
@@ -472,6 +486,18 @@ static PyObject* GetAttr(CMessageClass* self, PyObject* name) {
 }
 
 }  // namespace message_meta
+
+// Protobuf has a 64MB limit built in, this variable will override this. Please
+// do not enable this unless you fully understand the implications: protobufs
+// must all be kept in memory at the same time, so if they grow too big you may
+// get OOM errors. The protobuf APIs do not provide any tools for processing
+// protobufs in chunks.  If you have protos this big you should break them up if
+// it is at all convenient to do so.
+#ifdef PROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS
+static bool allow_oversize_protos = true;
+#else
+static bool allow_oversize_protos = false;
+#endif
 
 static PyTypeObject _CMessageClass_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
@@ -868,6 +894,7 @@ int FixupMessageAfterMerge(CMessage* self) {
   if (!self->composite_fields) {
     return 0;
   }
+  PyMessageFactory* factory = GetFactoryForMessage(self);
   for (const auto& item : *self->composite_fields) {
     const FieldDescriptor* descriptor = item.first;
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
@@ -881,8 +908,8 @@ int FixupMessageAfterMerge(CMessage* self) {
       if (reflection->HasField(*message, descriptor)) {
         // Message used to be read_only, but is no longer. Get the new pointer
         // and record it.
-        Message* mutable_message =
-            reflection->MutableMessage(message, descriptor, nullptr);
+        Message* mutable_message = reflection->MutableMessage(
+            message, descriptor, factory->message_factory);
         cmsg->message = mutable_message;
         cmsg->read_only = false;
         if (FixupMessageAfterMerge(cmsg) < 0) {
@@ -1043,6 +1070,9 @@ int DeleteRepeatedField(
     }
   }
 
+  Arena* arena = Arena::InternalHelper<Message>::GetArenaForAllocation(message);
+  GOOGLE_DCHECK_EQ(arena, nullptr)
+      << "python protobuf is expected to be allocated from heap";
   // Remove items, starting from the end.
   for (; length > to; length--) {
     if (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -1051,7 +1081,18 @@ int DeleteRepeatedField(
     }
     // It seems that RemoveLast() is less efficient for sub-messages, and
     // the memory is not completely released. Prefer ReleaseLast().
-    Message* sub_message = reflection->ReleaseLast(message, field_descriptor);
+    //
+    // To work around a debug hardening (PROTOBUF_FORCE_COPY_IN_RELEASE),
+    // explicitly use UnsafeArenaReleaseLast. To not break rare use cases where
+    // arena is used, we fallback to ReleaseLast (but GOOGLE_DCHECK to find/fix it).
+    //
+    // Note that arena is likely null and GOOGLE_DCHECK and ReleaesLast might be
+    // redundant. The current approach takes extra cautious path not to disrupt
+    // production.
+    Message* sub_message =
+        (arena == nullptr)
+            ? reflection->UnsafeArenaReleaseLast(message, field_descriptor)
+            : reflection->ReleaseLast(message, field_descriptor);
     // If there is a live weak reference to an item being removed, we "Release"
     // it, and it takes ownership of the message.
     if (CMessage* released = self->MaybeReleaseSubMessage(sub_message)) {
@@ -1280,7 +1321,7 @@ static CMessage* NewCMessage(CMessageClass* type) {
   if (self == nullptr) {
     return nullptr;
   }
-  self->message = prototype->New();
+  self->message = prototype->New(nullptr);  // Ensures no arena is used.
   self->parent = nullptr;  // This message owns its data.
   return self;
 }
@@ -1525,7 +1566,7 @@ static int InternalReparentFields(
   if (new_message == nullptr) {
     return -1;
   }
-  new_message->message = self->message->New();
+  new_message->message = self->message->New(nullptr);
   ScopedPyObjectPtr holder(reinterpret_cast<PyObject*>(new_message));
   new_message->child_submessages = new CMessage::SubMessagesMap();
   new_message->composite_fields = new CMessage::CompositeFieldsMap();
@@ -1555,10 +1596,17 @@ static int InternalReparentFields(
                                            to_release);
   }
 
-  self->message->GetReflection()->SwapFields(
-      self->message, new_message->message,
-      std::vector<const FieldDescriptor*>(fields_to_swap.begin(),
-                                          fields_to_swap.end()));
+  if (self->message->GetArena() == new_message->message->GetArena()) {
+    MessageReflectionFriend::UnsafeShallowSwapFields(
+        self->message, new_message->message,
+        std::vector<const FieldDescriptor*>(fields_to_swap.begin(),
+                                            fields_to_swap.end()));
+  } else {
+    self->message->GetReflection()->SwapFields(
+        self->message, new_message->message,
+        std::vector<const FieldDescriptor*>(fields_to_swap.begin(),
+                                            fields_to_swap.end()));
+  }
 
   // This might delete the Python message completely if all children were moved.
   Py_DECREF(self);
@@ -1897,18 +1945,6 @@ static PyObject* CopyFrom(CMessage* self, PyObject* arg) {
 
   Py_RETURN_NONE;
 }
-
-// Protobuf has a 64MB limit built in, this variable will override this. Please
-// do not enable this unless you fully understand the implications: protobufs
-// must all be kept in memory at the same time, so if they grow too big you may
-// get OOM errors. The protobuf APIs do not provide any tools for processing
-// protobufs in chunks.  If you have protos this big you should break them up if
-// it is at all convenient to do so.
-#ifdef PROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS
-static bool allow_oversize_protos = true;
-#else
-static bool allow_oversize_protos = false;
-#endif
 
 // Provide a method in the module to set allow_oversize_protos to a boolean
 // value. This method returns the newly value of allow_oversize_protos.
@@ -2251,8 +2287,6 @@ CMessage* InternalGetSubMessage(
     CMessage* self, const FieldDescriptor* field_descriptor) {
   const Reflection* reflection = self->message->GetReflection();
   PyMessageFactory* factory = GetFactoryForMessage(self);
-  const Message& sub_message = reflection->GetMessage(
-      *self->message, field_descriptor, factory->message_factory);
 
   CMessageClass* message_class = message_factory::GetOrCreateMessageClass(
       factory, field_descriptor->message_type());
@@ -2270,7 +2304,21 @@ CMessage* InternalGetSubMessage(
   Py_INCREF(self);
   cmsg->parent = self;
   cmsg->parent_field_descriptor = field_descriptor;
-  cmsg->read_only = !reflection->HasField(*self->message, field_descriptor);
+  if (reflection->HasField(*self->message, field_descriptor)) {
+    // Force triggering MutableMessage to set the lazy message 'Dirty'
+    if (MessageReflectionFriend::IsLazyField(reflection, *self->message,
+                                             field_descriptor)) {
+      Message* sub_message = reflection->MutableMessage(
+          self->message, field_descriptor, factory->message_factory);
+      cmsg->read_only = false;
+      cmsg->message = sub_message;
+      return cmsg;
+    }
+  } else {
+    cmsg->read_only = true;
+  }
+  const Message& sub_message = reflection->GetMessage(
+      *self->message, field_descriptor, factory->message_factory);
   cmsg->message = const_cast<Message*>(&sub_message);
   return cmsg;
 }
@@ -2689,7 +2737,7 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
 PyObject* ContainerBase::DeepCopy() {
   CMessage* new_parent =
       cmessage::NewEmptyMessage(this->parent->GetMessageClass());
-  new_parent->message = this->parent->message->New();
+  new_parent->message = this->parent->message->New(nullptr);
 
   // Copy the map field into the new message.
   this->parent->message->GetReflection()->SwapFields(
@@ -2853,20 +2901,36 @@ Message* PyMessage_GetMutableMessagePointer(PyObject* msg) {
   return cmsg->message;
 }
 
-PyObject* PyMessage_New(const Descriptor* descriptor,
-                        PyObject* py_message_factory) {
+// Returns a new reference to the MessageClass to use for message creation.
+// - if a PyMessageFactory is passed, use it.
+// - Otherwise, if a PyDescriptorPool was created, use its factory.
+static CMessageClass* GetMessageClassFromDescriptor(
+    const Descriptor* descriptor, PyObject* py_message_factory) {
   PyMessageFactory* factory = nullptr;
   if (py_message_factory == nullptr) {
-    factory = GetDescriptorPool_FromPool(descriptor->file()->pool())
-                  ->py_message_factory;
+    PyDescriptorPool* pool =
+        GetDescriptorPool_FromPool(descriptor->file()->pool());
+    if (pool == nullptr) {
+      PyErr_SetString(PyExc_TypeError,
+                      "Unknown descriptor pool; C++ users should call "
+                      "DescriptorPool_FromPool and keep it alive");
+      return nullptr;
+    }
+    factory = pool->py_message_factory;
   } else if (PyObject_TypeCheck(py_message_factory, &PyMessageFactory_Type)) {
     factory = reinterpret_cast<PyMessageFactory*>(py_message_factory);
   } else {
     PyErr_SetString(PyExc_TypeError, "Expected a MessageFactory");
     return nullptr;
   }
-  auto* message_class =
-      message_factory::GetOrCreateMessageClass(factory, descriptor);
+
+  return message_factory::GetOrCreateMessageClass(factory, descriptor);
+}
+
+PyObject* PyMessage_New(const Descriptor* descriptor,
+                        PyObject* py_message_factory) {
+  CMessageClass* message_class =
+      GetMessageClassFromDescriptor(descriptor, py_message_factory);
   if (message_class == nullptr) {
     return nullptr;
   }
@@ -2881,20 +2945,8 @@ PyObject* PyMessage_New(const Descriptor* descriptor,
 
 PyObject* PyMessage_NewMessageOwnedExternally(Message* message,
                                               PyObject* py_message_factory) {
-  if (py_message_factory) {
-    PyErr_SetString(PyExc_NotImplementedError,
-                    "Default message_factory=NULL is the only supported value");
-    return nullptr;
-  }
-  if (message->GetReflection()->GetMessageFactory() !=
-      MessageFactory::generated_factory()) {
-    PyErr_SetString(PyExc_TypeError,
-                    "Message pointer was not created from the default factory");
-    return nullptr;
-  }
-
-  CMessageClass* message_class = message_factory::GetOrCreateMessageClass(
-      GetDefaultDescriptorPool()->py_message_factory, message->GetDescriptor());
+  CMessageClass* message_class = GetMessageClassFromDescriptor(
+      message->GetDescriptor(), py_message_factory);
   if (message_class == nullptr) {
     return nullptr;
   }

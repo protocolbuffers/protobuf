@@ -52,10 +52,10 @@ class PrimitiveFieldGenerator : public SingleFieldGenerator {
   PrimitiveFieldGenerator(const PrimitiveFieldGenerator&) = delete;
   PrimitiveFieldGenerator& operator=(const PrimitiveFieldGenerator&) = delete;
 
-  virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const;
+  virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const override;
 
-  virtual int ExtraRuntimeHasBitsNeeded(void) const;
-  virtual void SetExtraRuntimeHasBitsBase(int index_base);
+  virtual int ExtraRuntimeHasBitsNeeded(void) const override;
+  virtual void SetExtraRuntimeHasBitsBase(int index_base) override;
 };
 
 class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {

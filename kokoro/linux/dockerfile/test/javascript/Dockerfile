@@ -27,7 +27,11 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
 
 ##################
 # Javascript dependencies.
-RUN apt-get install -y \
+# We need to set these environment variables so that the Docker build does not
+# have to ask for this information while it is installing the tzdata package.
+RUN DEBIAN_FRONTEND="noninteractive" TZ="America/Los_Angeles" \
+  apt-get install -y \
   # -- For javascript and closure compiler -- \
   npm \
-  default-jre
+  default-jre \
+  python

@@ -266,7 +266,7 @@ int open(const char* path, int flags, int mode) {
 #endif
 }
 
-int mkdir(const char* path, int _mode) {
+int mkdir(const char* path, int /*_mode*/) {
 #ifdef SUPPORT_LONGPATHS
   wstring wpath;
   if (!as_windows_path(path, &wpath)) {

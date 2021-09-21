@@ -8,7 +8,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protoc</artifactId>
-  <version>3.17.0</version>
+  <version>3.17.3</version>
   <packaging>pom</packaging>
   <name>Protobuf Compiler</name>
   <description>
@@ -68,6 +68,15 @@
                 <artifact>
                   <file>${basedir}/target/osx/x86_64/protoc.exe</file>
                   <classifier>osx-x86_64</classifier>
+                  <type>exe</type>
+                </artifact>
+                <artifact>
+                  <!-- Reuse a compatible osx-x86_64 version until binary
+                       support for osx-aarch_64 is added. TODO: use
+                       <file>${basedir}/target/osx/aarch_64/protoc.exe</file>
+                       -->
+                  <file>${basedir}/target/osx/x86_64/protoc.exe</file>
+                  <classifier>osx-aarch_64</classifier>
                   <type>exe</type>
                 </artifact>
                 <artifact>

@@ -63,7 +63,7 @@ final class SchemaUtil {
         && GENERATED_MESSAGE_CLASS != null
         && !GENERATED_MESSAGE_CLASS.isAssignableFrom(messageType)) {
       throw new IllegalArgumentException(
-          "Message classes must extend GeneratedMessage or GeneratedMessageLite");
+          "Message classes must extend GeneratedMessageV3 or GeneratedMessageLite");
     }
   }
 

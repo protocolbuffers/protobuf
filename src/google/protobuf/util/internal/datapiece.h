@@ -97,7 +97,7 @@ class PROTOBUF_EXPORT DataPiece {
         str_(value),
         use_strict_base64_decoding_(use_strict_base64_decoding) {}
   // Constructor for bytes. The second parameter is not used.
-  DataPiece(StringPiece value, bool dummy, bool use_strict_base64_decoding)
+  DataPiece(StringPiece value, bool /*dummy*/, bool use_strict_base64_decoding)
       : type_(TYPE_BYTES),
         str_(value),
         use_strict_base64_decoding_(use_strict_base64_decoding) {}

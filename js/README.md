@@ -1,8 +1,6 @@
 Protocol Buffers - Google's data interchange format
 ===================================================
 
-[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-javascript.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fjavascript%2Fcontinuous) [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-javascript.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fjavascript%2Fcontinuous)
-
 Copyright 2008 Google Inc.
 
 This directory contains the JavaScript Protocol Buffers runtime library.
@@ -94,11 +92,8 @@ statements like:
 
     var message = proto.my.package.MyMessage();
 
-If unfamiliar with Closure or its compiler, consider reviewing Closure documentation
-https://developers.google.com/closure/library/docs/tutorial
-https://developers.google.com/closure/library/docs/closurebuilder
-https://developers.google.com/closure/library/docs/depswriter
-At a high level, closurebuilder.py can walk dependencies, and compile your code, and all dependencies for Protobuf into a single .js file.  Using depsbuilder.py to generate a dependency file can also be considered for non-production dev environments.
+If unfamiliar with Closure or its compiler, consider reviewing
+[Closure documentation](https://developers.google.com/closure/library).
 
 CommonJS imports
 ----------------

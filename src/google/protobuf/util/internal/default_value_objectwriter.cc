@@ -220,8 +220,7 @@ DefaultValueObjectWriter::Node* DefaultValueObjectWriter::Node::FindChild(
   if (name.empty() || kind_ != OBJECT) {
     return nullptr;
   }
-  for (int i = 0; i < children_.size(); ++i) {
-    Node* child = children_[i];
+  for (Node* child : children_) {
     if (child->name() == name) {
       return child;
     }
@@ -265,8 +264,7 @@ void DefaultValueObjectWriter::Node::WriteTo(ObjectWriter* ow) {
 }
 
 void DefaultValueObjectWriter::Node::WriteChildren(ObjectWriter* ow) {
-  for (int i = 0; i < children_.size(); ++i) {
-    Node* child = children_[i];
+  for (Node* child : children_) {
     child->WriteTo(ow);
   }
 }
@@ -413,15 +411,28 @@ void DefaultValueObjectWriter::MaybePopulateChildrenOfAny(Node* node) {
 DataPiece DefaultValueObjectWriter::FindEnumDefault(
     const google::protobuf::Field& field, const TypeInfo* typeinfo,
     bool use_ints_for_enums) {
-  if (!field.default_value().empty())
-    return DataPiece(field.default_value(), true);
-
   const google::protobuf::Enum* enum_type =
       typeinfo->GetEnumByTypeUrl(field.type_url());
   if (!enum_type) {
     GOOGLE_LOG(WARNING) << "Could not find enum with type '" << field.type_url()
                  << "'";
     return DataPiece::NullData();
+  }
+  if (!field.default_value().empty()) {
+    if (!use_ints_for_enums) {
+      return DataPiece(field.default_value(), true);
+    } else {
+      const std::string& enum_default_value_name = field.default_value();
+      for (int enum_index = 0; enum_index < enum_type->enumvalue_size();
+           ++enum_index) {
+        auto& enum_value = enum_type->enumvalue(enum_index);
+        if (enum_value.name() == enum_default_value_name)
+          return DataPiece(enum_value.number());
+      }
+      GOOGLE_LOG(WARNING) << "Could not find enum value '" << enum_default_value_name
+                   << "' with type '" << field.type_url() << "'";
+      return DataPiece::NullData();
+    }
   }
   // We treat the first value as the default if none is specified.
   return enum_type->enumvalue_size() > 0

@@ -58,6 +58,7 @@
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/hash.h>
 
+// Must be last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -169,44 +170,27 @@ static std::unordered_set<std::string>* MakeKeywordsMap() {
 
 static std::unordered_set<std::string>& kKeywords = *MakeKeywordsMap();
 
-// Encode [0..63] as 'A'-'Z', 'a'-'z', '0'-'9', '_'
-char Base63Char(int value) {
-  GOOGLE_CHECK_GE(value, 0);
-  if (value < 26) return 'A' + value;
-  value -= 26;
-  if (value < 26) return 'a' + value;
-  value -= 26;
-  if (value < 10) return '0' + value;
-  GOOGLE_CHECK_EQ(value, 10);
-  return '_';
-}
-
-// Given a c identifier has 63 legal characters we can't implement base64
-// encoding. So we return the k least significant "digits" in base 63.
-template <typename I>
-std::string Base63(I n, int k) {
-  std::string res;
-  while (k-- > 0) {
-    res += Base63Char(static_cast<int>(n % 63));
-    n /= 63;
-  }
-  return res;
-}
-
 std::string IntTypeName(const Options& options, const std::string& type) {
-  if (options.opensource_runtime) {
-    return "::PROTOBUF_NAMESPACE_ID::" + type;
-  } else {
-    return "::" + type;
-  }
+  return type + "_t";
 }
 
 void SetIntVar(const Options& options, const std::string& type,
                std::map<std::string, std::string>* variables) {
   (*variables)[type] = IntTypeName(options, type);
 }
+bool IsEagerlyVerifiedLazyImpl(const FieldDescriptor* field,
+                               const Options& options,
+                               MessageSCCAnalyzer* scc_analyzer) {
+  return false;
+}
 
 }  // namespace
+
+bool IsLazy(const FieldDescriptor* field, const Options& options,
+            MessageSCCAnalyzer* scc_analyzer) {
+  return IsLazilyVerifiedLazy(field, options) ||
+         IsEagerlyVerifiedLazyImpl(field, options, scc_analyzer);
+}
 
 void SetCommonVars(const Options& options,
                    std::map<std::string, std::string>* variables) {
@@ -245,9 +229,9 @@ void SetCommonVars(const Options& options,
   (*variables)["string"] = "std::string";
 }
 
-void SetUnknkownFieldsVariable(const Descriptor* descriptor,
-                               const Options& options,
-                               std::map<std::string, std::string>* variables) {
+void SetUnknownFieldsVariable(const Descriptor* descriptor,
+                              const Options& options,
+                              std::map<std::string, std::string>* variables) {
   std::string proto_ns = ProtobufNamespace(options);
   std::string unknown_fields_type;
   if (UseUnknownFieldSet(descriptor->file(), options)) {
@@ -389,7 +373,7 @@ std::string Namespace(const FileDescriptor* d, const Options& options) {
     ret = StringReplace(ret,
                         "::google::"
                         "protobuf",
-                        "PROTOBUF_NAMESPACE_ID", false);
+                        "::PROTOBUF_NAMESPACE_ID", false);
   }
   return ret;
 }
@@ -443,9 +427,14 @@ std::string FileDllExport(const FileDescriptor* file, const Options& options) {
 
 std::string SuperClassName(const Descriptor* descriptor,
                            const Options& options) {
-  return "::" + ProtobufNamespace(options) +
-         (HasDescriptorMethods(descriptor->file(), options) ? "::Message"
-                                                            : "::MessageLite");
+  if (!HasDescriptorMethods(descriptor->file(), options)) {
+    return "::" + ProtobufNamespace(options) + "::MessageLite";
+  }
+  auto simple_base = SimpleBaseClass(descriptor, options);
+  if (simple_base.empty()) {
+    return "::" + ProtobufNamespace(options) + "::Message";
+  }
+  return "::" + ProtobufNamespace(options) + "::internal::" + simple_base;
 }
 
 std::string ResolveKeyword(const std::string& name) {
@@ -462,6 +451,19 @@ std::string FieldName(const FieldDescriptor* field) {
     result.append("_");
   }
   return result;
+}
+
+std::string OneofCaseConstantName(const FieldDescriptor* field) {
+  GOOGLE_DCHECK(field->containing_oneof());
+  std::string field_name = UnderscoresToCamelCase(field->name(), true);
+  return "k" + field_name;
+}
+
+std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field) {
+  GOOGLE_DCHECK(field->containing_oneof());
+  const std::string qualification =
+      QualifiedClassName(field->containing_type());
+  return StrCat(qualification, "::", OneofCaseConstantName(field));
 }
 
 std::string EnumValueName(const EnumValueDescriptor* enum_value) {
@@ -530,13 +532,13 @@ std::string StripProto(const std::string& filename) {
 const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
   switch (type) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return "::google::protobuf::int32";
+      return "int32_t";
     case FieldDescriptor::CPPTYPE_INT64:
-      return "::google::protobuf::int64";
+      return "int64_t";
     case FieldDescriptor::CPPTYPE_UINT32:
-      return "::google::protobuf::uint32";
+      return "uint32_t";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return "::google::protobuf::uint64";
+      return "uint64_t";
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return "double";
     case FieldDescriptor::CPPTYPE_FLOAT:
@@ -785,20 +787,27 @@ std::string SafeFunctionName(const Descriptor* descriptor,
   return function_name;
 }
 
-static bool HasLazyFields(const Descriptor* descriptor,
-                          const Options& options) {
+bool IsStringInlined(const FieldDescriptor* descriptor,
+                     const Options& options) {
+  (void)descriptor;
+  (void)options;
+  return false;
+}
+
+static bool HasLazyFields(const Descriptor* descriptor, const Options& options,
+                          MessageSCCAnalyzer* scc_analyzer) {
   for (int field_idx = 0; field_idx < descriptor->field_count(); field_idx++) {
-    if (IsLazy(descriptor->field(field_idx), options)) {
+    if (IsLazy(descriptor->field(field_idx), options, scc_analyzer)) {
       return true;
     }
   }
   for (int idx = 0; idx < descriptor->extension_count(); idx++) {
-    if (IsLazy(descriptor->extension(idx), options)) {
+    if (IsLazy(descriptor->extension(idx), options, scc_analyzer)) {
       return true;
     }
   }
   for (int idx = 0; idx < descriptor->nested_type_count(); idx++) {
-    if (HasLazyFields(descriptor->nested_type(idx), options)) {
+    if (HasLazyFields(descriptor->nested_type(idx), options, scc_analyzer)) {
       return true;
     }
   }
@@ -806,15 +815,16 @@ static bool HasLazyFields(const Descriptor* descriptor,
 }
 
 // Does the given FileDescriptor use lazy fields?
-bool HasLazyFields(const FileDescriptor* file, const Options& options) {
+bool HasLazyFields(const FileDescriptor* file, const Options& options,
+                   MessageSCCAnalyzer* scc_analyzer) {
   for (int i = 0; i < file->message_type_count(); i++) {
     const Descriptor* descriptor(file->message_type(i));
-    if (HasLazyFields(descriptor, options)) {
+    if (HasLazyFields(descriptor, options, scc_analyzer)) {
       return true;
     }
   }
   for (int field_idx = 0; field_idx < file->extension_count(); field_idx++) {
-    if (IsLazy(file->extension(field_idx), options)) {
+    if (IsLazy(file->extension(field_idx), options, scc_analyzer)) {
       return true;
     }
   }
@@ -938,6 +948,22 @@ bool HasEnumDefinitions(const FileDescriptor* file) {
   for (int i = 0; i < file->message_type_count(); ++i) {
     if (HasEnumDefinitions(file->message_type(i))) return true;
   }
+  return false;
+}
+
+bool ShouldVerify(const Descriptor* descriptor, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer) {
+  (void)descriptor;
+  (void)options;
+  (void)scc_analyzer;
+  return false;
+}
+
+bool ShouldVerify(const FileDescriptor* file, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer) {
+  (void)file;
+  (void)options;
+  (void)scc_analyzer;
   return false;
 }
 
@@ -1087,21 +1113,12 @@ void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
                         "VerifyUTF8CordNamedField", format);
 }
 
-namespace {
-
-void Flatten(const Descriptor* descriptor,
-             std::vector<const Descriptor*>* flatten) {
-  for (int i = 0; i < descriptor->nested_type_count(); i++)
-    Flatten(descriptor->nested_type(i), flatten);
-  flatten->push_back(descriptor);
-}
-
-}  // namespace
-
 void FlattenMessagesInFile(const FileDescriptor* file,
                            std::vector<const Descriptor*>* result) {
   for (int i = 0; i < file->message_type_count(); i++) {
-    Flatten(file->message_type(i), result);
+    ForEachMessage(file->message_type(i), [&](const Descriptor* descriptor) {
+      result->push_back(descriptor);
+    });
   }
 }
 
@@ -1142,16 +1159,22 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
 
 MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
   if (analysis_cache_.count(scc)) return analysis_cache_[scc];
-  MessageAnalysis result{};
+  MessageAnalysis result;
+  if (UsingImplicitWeakFields(scc->GetFile(), options_)) {
+    result.contains_weak = true;
+  }
   for (int i = 0; i < scc->descriptors.size(); i++) {
     const Descriptor* descriptor = scc->descriptors[i];
     if (descriptor->extension_range_count() > 0) {
       result.contains_extension = true;
     }
-    for (int i = 0; i < descriptor->field_count(); i++) {
-      const FieldDescriptor* field = descriptor->field(i);
+    for (int j = 0; j < descriptor->field_count(); j++) {
+      const FieldDescriptor* field = descriptor->field(j);
       if (field->is_required()) {
         result.contains_required = true;
+      }
+      if (field->options().weak()) {
+        result.contains_weak = true;
       }
       switch (field->type()) {
         case FieldDescriptor::TYPE_STRING:
@@ -1171,6 +1194,7 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
             if (!ShouldIgnoreRequiredFieldCheck(field, options_)) {
               result.contains_required |= analysis.contains_required;
             }
+            result.contains_weak |= analysis.contains_weak;
           } else {
             // This field points back into the same SCC hence the messages
             // in the SCC are recursive. Note if SCC contains more than two
@@ -1460,6 +1484,11 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
   GOOGLE_LOG(FATAL) << "Unknown optimization enforcement requested.";
   // The phony return below serves to silence a warning from GCC 8.
   return FileOptions::SPEED;
+}
+
+bool EnableMessageOwnedArena(const Descriptor* desc) {
+  (void)desc;
+  return false;
 }
 
 }  // namespace cpp

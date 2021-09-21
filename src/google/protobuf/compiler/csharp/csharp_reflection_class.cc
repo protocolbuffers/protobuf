@@ -53,7 +53,7 @@ namespace csharp {
 
 ReflectionClassGenerator::ReflectionClassGenerator(const FileDescriptor* file,
                                                    const Options* options)
-    : SourceGeneratorBase(file, options),
+    : SourceGeneratorBase(options),
       file_(file) {
   namespace_ = GetFileNamespace(file);
   reflectionClassname_ = GetReflectionClassUnqualifiedName(file);

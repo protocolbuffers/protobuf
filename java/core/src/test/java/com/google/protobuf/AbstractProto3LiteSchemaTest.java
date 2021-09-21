@@ -30,7 +30,7 @@
 
 package com.google.protobuf;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.protobuf.testing.Proto3TestingLite.Proto3EmptyLite;
 import com.google.protobuf.testing.Proto3TestingLite.Proto3MessageLite;
@@ -94,8 +94,8 @@ public abstract class AbstractProto3LiteSchemaTest extends AbstractSchemaTest<Pr
 
     Proto3MessageLite merged =
         ExperimentalSerializationUtil.fromByteArray(data, Proto3MessageLite.class);
-    assertEquals(789, merged.getFieldMessage10().getFieldInt643());
-    assertEquals(456, merged.getFieldMessage10().getFieldInt325());
+    assertThat(merged.getFieldMessage10().getFieldInt643()).isEqualTo(789);
+    assertThat(merged.getFieldMessage10().getFieldInt325()).isEqualTo(456);
   }
 
   @Test
@@ -126,7 +126,7 @@ public abstract class AbstractProto3LiteSchemaTest extends AbstractSchemaTest<Pr
     Proto3EmptyLite empty =
         ExperimentalSerializationUtil.fromByteArray(
             expectedMessage.toByteArray(), Proto3EmptyLite.class);
-    assertEquals(expectedMessage.getSerializedSize(), empty.getSerializedSize());
+    assertThat(empty.getSerializedSize()).isEqualTo(expectedMessage.getSerializedSize());
   }
 
   @Test

@@ -1,12 +1,12 @@
 # Application note: Field presence
 
-This application note explains the various presence tracking disciplines for protobuf fields. It also explains how to enable experimental support for explicit presence tracking for singular proto3 fields with basic types.
+This application note explains the various presence tracking disciplines for protobuf fields. It also explains the behaviour of explicit presence tracking for singular proto3 fields with basic types.
 
 ## Background
 
 _Field presence_ is the notion of whether a protobuf field has a value. There are two different manifestations of presence for protobufs: _no presence_, where the generated message API stores field values (only), and _explicit presence_, where the API also stores whether or not a field has been set.
 
-Historically, proto2 has mostly followed _explicit presence_, while proto3 exposes only _no presence_ semantics. Singular proto3 fields of basic types (numeric, string, bytes, and enums) which are defined with the `optional` label have _explicit presence_, like proto2 (this is an experimental feature added as of release 3.12, and must be enabled by passing a flag to `protoc`).
+Historically, proto2 has mostly followed _explicit presence_, while proto3 exposes only _no presence_ semantics. Singular proto3 fields of basic types (numeric, string, bytes, and enums) which are defined with the `optional` label have _explicit presence_, like proto2 (this feature is enabled by default as release 3.15).
 
 ### Presence disciplines
 
@@ -66,7 +66,7 @@ Singular fields (of all types) track presence explicitly in the generated API. T
 
 Similar to singular fields, `oneof` fields explicitly track which one of the members, if any, contains a value. For example, consider this example `oneof`:
 
-```
+```protobuf
 oneof foo {
   int32 a = 1;
   float b = 2;
@@ -100,7 +100,7 @@ Repeated                                     | N/A        |
 Oneofs                                       | N/A        | ✔️
 Maps                                         | N/A        |
 
-Similar to proto2 APIs, proto3 does not track presence explicitly for repeated fields. Without the `optional` label, proto3 APIs do not track presence for basic types (numeric, string, bytes, and enums), either. (Note that `optional` for proto3 fields is only experimentally available as of release 3.12.) Oneof fields affirmatively expose presence, although the same set of hazzer methods may not generated as in proto2 APIs.
+Similar to proto2 APIs, proto3 does not track presence explicitly for repeated fields. Without the `optional` label, proto3 APIs do not track presence for basic types (numeric, string, bytes, and enums), either. Oneof fields affirmatively expose presence, although the same set of hazzer methods may not generated as in proto2 APIs.
 
 Under the _no presence_ discipline, the default value is synonymous with "not present" for purposes of serialization. To notionally "clear" a field (so it won't be serialized), an API user would set it to the default value.
 
@@ -144,7 +144,7 @@ This change may or may not be safe, depending on the application's semantics. Fo
 
 Client A uses this definition of the message, which follows the _explicit presence_ serialization discipline for field `foo`:
 
-```
+```protobuf
 syntax = "proto3";
 message Msg {
   optional int32 foo = 1;
@@ -153,7 +153,7 @@ message Msg {
 
 Client B uses a definition of the same message, except that it follows the _no presence_ discipline:
 
-```
+```protobuf
 syntax = "proto3";
 message Msg {
   int32 foo = 1;
@@ -162,7 +162,7 @@ message Msg {
 
 Now, consider a scenario where client A observes `foo`'s presence as the clients repeatedly exchange the "same" message by deserializing and reserializing:
 
-```
+```protobuf
 // Client A:
 Msg m_a;
 m_a.set_foo(1);                  // non-default value
@@ -198,17 +198,17 @@ If client A depends on _explicit presence_ for `foo`, then a "round trip" throug
 
 ## How to enable _explicit presence_ in proto3
 
-These are the general steps to use the experimental field tracking support for proto3:
+These are the general steps to use field tracking support for proto3:
 
 1.  Add an `optional` field to a `.proto` file.
-1.  Run `protoc` (from release 3.12 or later) with an extra flag to recognize `optional` (i.e,. explicit presence) in proto3 files.
+1.  Run `protoc` (at least v3.15, or v3.12 using `--experimental_allow_proto3_optional` flag).
 1.  Use the generated "hazzer" methods and "clear" methods in application code, instead of comparing or setting default values.
 
 ### `.proto` file changes
 
 This is an example of a proto3 message with fields which follow both _no presence_ and _explicit presence_ semantics:
 
-```
+```protobuf
 syntax = "proto3";
 package example;
 
@@ -223,7 +223,7 @@ message MyMessage {
 
 ### `protoc` invocation
 
-To enable presence tracking for proto3 messages, pass the `--experimental_allow_proto3_optional` flag to protoc. Without this flag, the `optional` label is an error in files using proto3 syntax. This flag is available in protobuf release 3.12 or later (or at HEAD, if you are reading this application note from Git).
+Presence tracking for proto3 messages is enabled by default [since v3.15.0](https://github.com/protocolbuffers/protobuf/releases/tag/v3.15.0) release, formerly up until [v3.12.0](https://github.com/protocolbuffers/protobuf/releases/tag/v3.12.0) the `--experimental_allow_proto3_optional` flag was required when using presence tracking with protoc.
 
 ### Using the generated code
 
@@ -231,7 +231,7 @@ The generated code for proto3 fields with _explicit presence_ (the `optional` la
 
 This is the definition used in the "no presence" examples below:
 
-```
+```protobuf
 syntax = "proto3";
 package example;
 message Msg {  
@@ -241,7 +241,7 @@ message Msg {
 
 This is the definition used in the "explicit presence" examples below:
 
-```
+```protobuf
 syntax = "proto3";
 package example;
 message Msg {
@@ -255,7 +255,7 @@ In the examples, a function `GetProto` constructs and returns a message of type 
 
 No presence:
 
-```
+```C++
 Msg m = GetProto();
 if (m.foo() != 0) {
   // "Clear" the field:
@@ -268,7 +268,7 @@ if (m.foo() != 0) {
 
 Explicit presence:
 
-```
+```C++
 Msg m = GetProto();
 if (m.has_foo()) {
   // Clear the field:
@@ -283,7 +283,7 @@ if (m.has_foo()) {
 
 No presence:
 
-```
+```C#
 var m = GetProto();
 if (m.Foo != 0) {
   // "Clear" the field:
@@ -296,7 +296,7 @@ if (m.Foo != 0) {
 
 Explicit presence:
 
-```
+```C#
 var m = GetProto();
 if (m.HasFoo) {
   // Clear the field:
@@ -311,27 +311,27 @@ if (m.HasFoo) {
 
 No presence:
 
-```
+```go
 m := GetProto()
-if (m.GetFoo() != 0) {
+if m.Foo != 0 {
   // "Clear" the field:
-  m.Foo = 0;
+  m.Foo = 0
 } else {
   // Default value: field may not have been present.
-  m.Foo = 1;
+  m.Foo = 1
 }
 ```
 
 Explicit presence:
 
-```
+```go
 m := GetProto()
-if (m.HasFoo()) {
+if m.Foo != nil {
   // Clear the field:
   m.Foo = nil
 } else {
   // Field is not present, so set it.
-  m.Foo = proto.Int32(1);
+  m.Foo = proto.Int32(1)
 }
 ```
 
@@ -341,7 +341,7 @@ These examples use a `Builder` to demonstrate clearing. Simply checking presence
 
 No presence:
 
-```
+```java
 Msg.Builder m = GetProto().toBuilder();
 if (m.getFoo() != 0) {
   // "Clear" the field:
@@ -354,7 +354,7 @@ if (m.getFoo() != 0) {
 
 Explicit presence:
 
-```
+```java
 Msg.Builder m = GetProto().toBuilder();
 if (m.hasFoo()) {
   // Clear the field:
@@ -369,25 +369,25 @@ if (m.hasFoo()) {
 
 No presence:
 
-```
+```python
 m = example.Msg()
 if m.foo != 0:
-  // "Clear" the field:
+  # "Clear" the field:
   m.foo = 0
 else:
-  // Default value: field may not have been present.
+  # Default value: field may not have been present.
   m.foo = 1
 ```
 
 Explicit presence:
 
-```
+```python
 m = example.Msg()
 if m.HasField('foo'):
-  // Clear the field:
+  # Clear the field:
   m.ClearField('foo')
 else:
-  // Field is not present, so set it.
+  # Field is not present, so set it.
   m.foo = 1
 ```
 
@@ -395,26 +395,26 @@ else:
 
 No presence:
 
-```
+```ruby
 m = Msg.new
 if m.foo != 0
-  // "Clear" the field:
+  # "Clear" the field:
   m.foo = 0
 else
-  // Default value: field may not have been present.
+  # Default value: field may not have been present.
   m.foo = 1
 end
 ```
 
 Explicit presence:
 
-```
+```ruby
 m = Msg.new
 if m.has_foo?
-  // Clear the field:
+  # Clear the field:
   m.clear_foo
 else
-  // Field is not present, so set it.
+  # Field is not present, so set it.
   m.foo = 1
 end
 ```
@@ -423,7 +423,7 @@ end
 
 No presence:
 
-```
+```js
 var m = new Msg();
 if (m.getFoo() != 0) {
   // "Clear" the field:
@@ -436,7 +436,7 @@ if (m.getFoo() != 0) {
 
 Explicit presence:
 
-```
+```js
 var m = new Msg();
 if (m.hasFoo()) {
   // Clear the field:
@@ -451,7 +451,7 @@ if (m.hasFoo()) {
 
 No presence:
 
-```
+```Objective-C
 Msg *m = [[Msg alloc] init];
 if (m.foo != 0) {
   // "Clear" the field:
@@ -464,7 +464,7 @@ if (m.foo != 0) {
 
 Explicit presence:
 
-```
+```Objective-C
 Msg *m = [[Msg alloc] init];
 if (m.hasFoo()) {
   // Clear the field:

@@ -752,6 +752,10 @@ message TestOneof2 {
     string bar_string_piece = 15 [ctype=STRING_PIECE, default = "SPIECE"];
     bytes bar_bytes = 16 [default = "BYTES"];
     NestedEnum bar_enum = 17 [default = BAR];
+    string bar_string_with_empty_default = 20 [default = ""];
+    string bar_cord_with_empty_default = 21 [ctype=CORD, default = ""];
+    string bar_string_piece_with_empty_default = 22 [ctype=STRING_PIECE, default = ""];
+    bytes bar_bytes_with_empty_default = 23 [default = ""];
   }
 
   optional int32 baz_int = 18;
@@ -968,6 +972,7 @@ message TestJsonName {
   optional int32 _field_name4 = 4;
   optional int32 FIELD_NAME5 = 5;
   optional int32 field_name6 = 6 [json_name = "@type"];
+  optional int32 fieldname7 = 7;
 }
 
 message TestHugeFieldNumbers {

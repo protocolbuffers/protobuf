@@ -226,8 +226,13 @@ build_java_with_conformance_tests() {
   # This local installation avoids the problem caused by a new version not yet in Maven Central
   cd java/bom && $MVN install
   cd ../..
-  cd java && $MVN test && $MVN install
-  cd util && $MVN package assembly:single
+  cd java/core && $MVN test && $MVN install
+  cd ../lite && $MVN test && $MVN install
+  cd ../util && $MVN test && $MVN install && $MVN package assembly:single
+  if [ "$version" == "jdk8" ]; then
+    cd ../kotlin && $MVN test && $MVN install
+    cd ../kotlin-lite && $MVN test && $MVN install
+  fi
   cd ../..
   cd conformance && make test_java && cd ..
 }
@@ -307,9 +312,9 @@ build_python() {
   internal_build_cpp
   cd python
   if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{27,33,34,35,36\}-python
+    envlist=py\{35,36\}-python
   else
-    envlist=py\{27,36\}-python
+    envlist=py\{36\}-python
   fi
   python -m tox -e $envlist
   cd ..
@@ -321,10 +326,6 @@ build_python_version() {
   envlist=$1
   python -m tox -e $envlist
   cd ..
-}
-
-build_python27() {
-  build_python_version py27-python
 }
 
 build_python33() {
@@ -361,9 +362,9 @@ build_python_cpp() {
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
   if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{27,33,34,35,36\}-cpp
+    envlist=py\{35,36\}-cpp
   else
-    envlist=py\{27,36\}-cpp
+    envlist=py\{36\}-cpp
   fi
   tox -e $envlist
   cd ..
@@ -377,10 +378,6 @@ build_python_cpp_version() {
   envlist=$1
   tox -e $envlist
   cd ..
-}
-
-build_python27_cpp() {
-  build_python_cpp_version py27-cpp
 }
 
 build_python33_cpp() {
@@ -433,7 +430,7 @@ build_ruby27() {
 }
 build_ruby30() {
   internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh ruby-3.0.0 && cd ..
+  cd ruby && bash travis-test.sh ruby-3.0.2 && cd ..
 }
 
 build_jruby() {

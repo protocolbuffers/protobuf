@@ -207,13 +207,18 @@ class DescriptorPool(object):
     Args:
       serialized_file_desc_proto (bytes): A bytes string, serialization of the
         :class:`FileDescriptorProto` to add.
+
+    Returns:
+      FileDescriptor: Descriptor for the added file.
     """
 
     # pylint: disable=g-import-not-at-top
     from google.protobuf import descriptor_pb2
     file_desc_proto = descriptor_pb2.FileDescriptorProto.FromString(
         serialized_file_desc_proto)
-    self.Add(file_desc_proto)
+    file_desc = self._ConvertFileProtoToFileDescriptor(file_desc_proto)
+    file_desc.serialized_pb = serialized_file_desc_proto
+    return file_desc
 
   # Add Descriptor to descriptor pool is dreprecated. Please use Add()
   # or AddSerializedFile() to add a FileDescriptorProto instead.
@@ -808,7 +813,6 @@ class DescriptorPool(object):
             self._MakeServiceDescriptor(service_proto, index, scope,
                                         file_proto.package, file_descriptor))
 
-      self.Add(file_proto)
       self._file_descriptors[file_proto.name] = file_descriptor
 
     # Add extensions to the pool
@@ -865,11 +869,17 @@ class DescriptorPool(object):
         for index, extension in enumerate(desc_proto.extension)]
     oneofs = [
         # pylint: disable=g-complex-comprehension
-        descriptor.OneofDescriptor(desc.name, '.'.join((desc_name, desc.name)),
-                                   index, None, [], desc.options,
-                                   # pylint: disable=protected-access
-                                   create_key=descriptor._internal_create_key)
-        for index, desc in enumerate(desc_proto.oneof_decl)]
+        descriptor.OneofDescriptor(
+            desc.name,
+            '.'.join((desc_name, desc.name)),
+            index,
+            None,
+            [],
+            _OptionsOrNone(desc),
+            # pylint: disable=protected-access
+            create_key=descriptor._internal_create_key)
+        for index, desc in enumerate(desc_proto.oneof_decl)
+    ]
     extension_ranges = [(r.start, r.end) for r in desc_proto.extension_range]
     if extension_ranges:
       is_extendable = True
@@ -987,6 +997,11 @@ class DescriptorPool(object):
     else:
       full_name = field_proto.name
 
+    if field_proto.json_name:
+      json_name = field_proto.json_name
+    else:
+      json_name = None
+
     return descriptor.FieldDescriptor(
         name=field_proto.name,
         full_name=full_name,
@@ -1003,6 +1018,7 @@ class DescriptorPool(object):
         is_extension=is_extension,
         extension_scope=None,
         options=_OptionsOrNone(field_proto),
+        json_name=json_name,
         file=file_desc,
         # pylint: disable=protected-access
         create_key=descriptor._internal_create_key)
@@ -1106,6 +1122,8 @@ class DescriptorPool(object):
       elif field_proto.type == descriptor.FieldDescriptor.TYPE_BYTES:
         field_desc.default_value = b''
       elif field_proto.type == descriptor.FieldDescriptor.TYPE_MESSAGE:
+        field_desc.default_value = None
+      elif field_proto.type == descriptor.FieldDescriptor.TYPE_GROUP:
         field_desc.default_value = None
       else:
         # All other types are of the "int" type.

@@ -311,7 +311,7 @@ class PROTOBUF_EXPORT ConcatenatingInputStream : public ZeroCopyInputStream {
   // decremented.
   ZeroCopyInputStream* const* streams_;
   int stream_count_;
-  int64 bytes_retired_;  // Bytes read from previous streams.
+  int64_t bytes_retired_;  // Bytes read from previous streams.
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ConcatenatingInputStream);
 };

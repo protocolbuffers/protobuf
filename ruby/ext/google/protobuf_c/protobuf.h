@@ -55,6 +55,10 @@ const upb_fielddef* map_field_value(const upb_fielddef* field);
 VALUE Arena_new();
 upb_arena *Arena_get(VALUE arena);
 
+// Fuses this arena to another, throwing a Ruby exception if this is not
+// possible.
+void Arena_fuse(VALUE arena, upb_arena *other);
+
 // Pins this Ruby object to the lifetime of this arena, so that as long as the
 // arena is alive this object will not be collected.
 //

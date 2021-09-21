@@ -35,7 +35,6 @@
 #include "map.h"
 #include "protobuf.h"
 #include "repeated_field.h"
-#include "third_party/wyhash/wyhash.h"
 
 static VALUE cParseError = Qnil;
 static ID descriptor_instancevar_interned;
@@ -277,9 +276,9 @@ static void Message_setfield(upb_msg* msg, const upb_fielddef* f, VALUE val,
                              upb_arena* arena) {
   upb_msgval msgval;
   if (upb_fielddef_ismap(f)) {
-    msgval.map_val = Map_GetUpbMap(val, f);
+    msgval.map_val = Map_GetUpbMap(val, f, arena);
   } else if (upb_fielddef_isseq(f)) {
-    msgval.array_val = RepeatedField_GetUpbArray(val, f);
+    msgval.array_val = RepeatedField_GetUpbArray(val, f, arena);
   } else {
     if (val == Qnil &&
         (upb_fielddef_issubmsg(f) || upb_fielddef_realcontainingoneof(f))) {
@@ -660,7 +659,7 @@ static VALUE Message_dup(VALUE _self) {
   // TODO(copy unknown fields?)
   // TODO(use official upb msg copy function)
   memcpy((upb_msg*)new_msg_self->msg, self->msg, size);
-  upb_arena_fuse(Arena_get(new_msg_self->arena), Arena_get(self->arena));
+  Arena_fuse(self->arena, Arena_get(new_msg_self->arena));
   return new_msg;
 }
 
@@ -717,7 +716,7 @@ uint64_t Message_Hash(const upb_msg* msg, const upb_msgdef* m, uint64_t seed) {
                        &size);
 
   if (data) {
-    uint64_t ret = wyhash(data, size, seed, _wyp);
+    uint64_t ret = Wyhash(data, size, seed, kWyhashSalt);
     upb_arena_free(arena);
     return ret;
   } else {
@@ -1314,7 +1313,7 @@ const upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
   }
 
   Message* self = ruby_to_Message(value);
-  upb_arena_fuse(arena, Arena_get(self->arena));
+  Arena_fuse(self->arena, arena);
 
   return self->msg;
 }

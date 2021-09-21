@@ -41,7 +41,7 @@ syntax = "proto2";
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default
-option cc_generic_services = true; // auto-added
+option cc_generic_services = true;  // auto-added
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
@@ -158,11 +158,11 @@ message TestConflictingEnumNames {  // NO_PROTO3
   optional while conflicting_enum = 1;  // NO_PROTO3
 }  // NO_PROTO3
 
-enum bool {             // NO_PROTO3
-  default = 0;          // NO_PROTO3
-  NOT_EQ = 1;           // NO_PROTO3
-  volatile = 2;         // NO_PROTO3
-  return = 3;           // NO_PROTO3
+enum bool {      // NO_PROTO3
+  default = 0;   // NO_PROTO3
+  NOT_EQ = 1;    // NO_PROTO3
+  volatile = 2;  // NO_PROTO3
+  return = 3;    // NO_PROTO3
 }  // NO_PROTO3
 
 message DummyMessage {}
@@ -173,7 +173,7 @@ message NULL {
 
 extend TestConflictingSymbolNames {  // NO_PROTO3
   optional int32 void = 314253;      // NO_PROTO3
-}                                    // NO_PROTO3
+}  // NO_PROTO3
 
 // Message names that could conflict.
 message Shutdown {}

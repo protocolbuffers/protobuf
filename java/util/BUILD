@@ -1,5 +1,7 @@
-load("@rules_java//java:defs.bzl", "java_library", "java_proto_library")
+load("@rules_java//java:defs.bzl", "java_proto_library")
+load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
 load("//java/internal:testing.bzl", "junit_tests")
 
 java_library(
@@ -15,6 +17,25 @@ java_library(
         "//java/core",
         "//java/lite",
     ],
+)
+# Bazel users, don't depend on this target, use :util.
+java_export(
+    name = "util_mvn",
+    maven_coordinates = "com.google.protobuf:protobuf-java-util:%s" % PROTOBUF_VERSION,
+    pom_template = "pom_template.xml",
+    runtime_deps = [":util"],
+    visibility = ["//java:__pkg__"],
+)
+
+filegroup(
+    name = "release",
+    visibility = ["//java:__pkg__"],
+    srcs = [
+        ":util_mvn-pom",
+        ":util_mvn-maven-source",
+        ":util_mvn-docs",
+        ":util_mvn-project",
+    ]
 )
 
 proto_library(

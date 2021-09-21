@@ -72,13 +72,13 @@ class UnknownFieldSetTest : public testing::Test {
 
   const UnknownField* GetField(const std::string& name) {
     const FieldDescriptor* field = descriptor_->FindFieldByName(name);
-    if (field == NULL) return NULL;
+    if (field == nullptr) return nullptr;
     for (int i = 0; i < unknown_fields_->field_count(); i++) {
       if (unknown_fields_->field(i).number() == field->number()) {
         return &unknown_fields_->field(i);
       }
     }
-    return NULL;
+    return nullptr;
   }
 
   // Constructs a protocol buffer which contains fields with all the same
@@ -145,7 +145,7 @@ TEST_F(UnknownFieldSetTest, AllFieldsPresent) {
 
 TEST_F(UnknownFieldSetTest, Varint) {
   const UnknownField* field = GetField("optional_int32");
-  ASSERT_TRUE(field != NULL);
+  ASSERT_TRUE(field != nullptr);
 
   ASSERT_EQ(UnknownField::TYPE_VARINT, field->type());
   EXPECT_EQ(all_fields_.optional_int32(), field->varint());
@@ -153,7 +153,7 @@ TEST_F(UnknownFieldSetTest, Varint) {
 
 TEST_F(UnknownFieldSetTest, Fixed32) {
   const UnknownField* field = GetField("optional_fixed32");
-  ASSERT_TRUE(field != NULL);
+  ASSERT_TRUE(field != nullptr);
 
   ASSERT_EQ(UnknownField::TYPE_FIXED32, field->type());
   EXPECT_EQ(all_fields_.optional_fixed32(), field->fixed32());
@@ -161,7 +161,7 @@ TEST_F(UnknownFieldSetTest, Fixed32) {
 
 TEST_F(UnknownFieldSetTest, Fixed64) {
   const UnknownField* field = GetField("optional_fixed64");
-  ASSERT_TRUE(field != NULL);
+  ASSERT_TRUE(field != nullptr);
 
   ASSERT_EQ(UnknownField::TYPE_FIXED64, field->type());
   EXPECT_EQ(all_fields_.optional_fixed64(), field->fixed64());
@@ -169,7 +169,7 @@ TEST_F(UnknownFieldSetTest, Fixed64) {
 
 TEST_F(UnknownFieldSetTest, LengthDelimited) {
   const UnknownField* field = GetField("optional_string");
-  ASSERT_TRUE(field != NULL);
+  ASSERT_TRUE(field != nullptr);
 
   ASSERT_EQ(UnknownField::TYPE_LENGTH_DELIMITED, field->type());
   EXPECT_EQ(all_fields_.optional_string(), field->length_delimited());
@@ -177,7 +177,7 @@ TEST_F(UnknownFieldSetTest, LengthDelimited) {
 
 TEST_F(UnknownFieldSetTest, Group) {
   const UnknownField* field = GetField("optionalgroup");
-  ASSERT_TRUE(field != NULL);
+  ASSERT_TRUE(field != nullptr);
 
   ASSERT_EQ(UnknownField::TYPE_GROUP, field->type());
   ASSERT_EQ(1, field->group().field_count());
@@ -185,7 +185,7 @@ TEST_F(UnknownFieldSetTest, Group) {
   const UnknownField& nested_field = field->group().field(0);
   const FieldDescriptor* nested_field_descriptor =
       unittest::TestAllTypes::OptionalGroup::descriptor()->FindFieldByName("a");
-  ASSERT_TRUE(nested_field_descriptor != NULL);
+  ASSERT_TRUE(nested_field_descriptor != nullptr);
 
   EXPECT_EQ(nested_field_descriptor->number(), nested_field.number());
   ASSERT_EQ(UnknownField::TYPE_VARINT, nested_field.type());
@@ -456,8 +456,8 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
       TestAllTypes::descriptor()->FindFieldByName("optional_nested_enum");
   const FieldDescriptor* repeated_field =
       TestAllTypes::descriptor()->FindFieldByName("repeated_nested_enum");
-  ASSERT_TRUE(singular_field != NULL);
-  ASSERT_TRUE(repeated_field != NULL);
+  ASSERT_TRUE(singular_field != nullptr);
+  ASSERT_TRUE(repeated_field != nullptr);
 
   std::string data;
 

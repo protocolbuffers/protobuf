@@ -194,6 +194,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
     // has not moved, "new_index" will have the same value as "index".
     int new_index = -1;
 
+    // If "field" is a map field, point to the map entry.
+    const Message* map_entry1 = nullptr;
+    const Message* map_entry2 = nullptr;
+
     // For unknown fields, these are the pointers to the UnknownFieldSet
     // containing the unknown fields. In certain cases (e.g. proto1's
     // MessageSet, or nested groups of unknown fields), these may differ from
@@ -695,12 +699,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
     // Just print a string
     void Print(const std::string& str);
 
-    // helper function for PrintPath that contains logic for printing maps
-    void PrintMapKey(const std::vector<SpecificField>& field_path,
-                     bool left_side, const SpecificField& specific_field,
-                     size_t target_field_index);
-
    private:
+    // helper function for PrintPath that contains logic for printing maps
+    void PrintMapKey(bool left_side, const SpecificField& specific_field);
+
     io::Printer* printer_;
     bool delete_printer_;
     bool report_modified_aggregates_;

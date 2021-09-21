@@ -44,14 +44,11 @@ namespace google {
 namespace protobuf {
 
 #ifdef _MSC_VER
-enum { IS_COMPILER_MSVC = 1 };
 #ifndef va_copy
 // Define va_copy for MSVC. This is a hack, assuming va_list is simply a
 // pointer into the stack and is safe to copy.
 #define va_copy(dest, src) ((dest) = (src))
 #endif
-#else
-enum { IS_COMPILER_MSVC = 0 };
 #endif
 
 void StringAppendV(std::string* dst, const char* format, va_list ap) {
@@ -74,13 +71,15 @@ void StringAppendV(std::string* dst, const char* format, va_list ap) {
       return;
     }
 
-    if (IS_COMPILER_MSVC) {
+#ifdef _MSC_VER
+    {
       // Error or MSVC running out of space.  MSVC 8.0 and higher
       // can be asked about space needed with the special idiom below:
       va_copy(backup_ap, ap);
       result = vsnprintf(nullptr, 0, format, backup_ap);
       va_end(backup_ap);
     }
+#endif
 
     if (result < 0) {
       // Just an error.
