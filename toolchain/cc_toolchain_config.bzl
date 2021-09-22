@@ -93,13 +93,10 @@ def _impl(ctx):
               ),
           ],
       ),
-  ]
-
-  features.append(feature(
-      name = "default_compile_flags",
-      enabled = True,
-      flag_sets = [
-          flag_set(
+      feature(
+          name = "default_compile_flags",
+          enabled = True,
+          flag_sets = [
               actions = all_compile_actions,
               flag_groups = [
                   flag_group(
@@ -113,10 +110,10 @@ def _impl(ctx):
                           ctx.attr.include_flag,
                       ],
                   ),
-              ],
-          ),
-      ],
-  ))
+              [,
+          ],
+      ),
+  ]
 
   return cc_common.create_cc_toolchain_config_info(
       abi_libc_version = ctx.attr.target_cpu,

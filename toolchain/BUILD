@@ -1,4 +1,5 @@
 load(":cc_toolchain_config.bzl", "cc_toolchain_config")
+
 package(default_visibility = ["//visibility:public"])
 
 filegroup(name = "empty")
