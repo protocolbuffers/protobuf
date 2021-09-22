@@ -3,29 +3,22 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(name = "empty")
 
+LINUX_TOOLCHAINS = {
+    "linux-aarch64": "cc-compiler-linux-aarch64",
+    "linux-ppcle": "cc-compiler-linux-ppcle",
+    "linux-s390x": "cc-compiler-linux-s390x",
+    "linux-x86_32": "cc-compiler-linux-x86_32",
+    "linux-x86_64": "cc-compiler-linux-x86_64",
+}
 
 cc_toolchain_suite(
     name = "clang_suite",
-    toolchains = {
-        "aarch64": ":cc-compiler-aarch64",
-        "ppcle": "cc-compiler-ppcle",
-        "s390x": ":cc-compiler-s390x",
-        "x86_32": ":cc-compiler-x86_32",
-        "x86_64": ":cc-compiler-x86_64",
-    },
+    toolchains = LINUX_TOOLCHAINS
 )
-
-CC_TOOLCHAIN_CPUS = [
-    "aarch64",
-    "ppcle",
-    "s390x",
-    "x86_32",
-    "x86_64",
-]
 
 [
     cc_toolchain(
-        name = "cc-compiler-" + cpu,
+        name = toolchain,
         all_files = ":empty",
         compiler_files = ":empty",
         dwp_files = ":empty",
@@ -36,13 +29,13 @@ CC_TOOLCHAIN_CPUS = [
         static_runtime_lib = ":empty",
         strip_files = ":empty",
         toolchain_config = ":" + cpu + "-config",
-        toolchain_identifier = "linux_" + cpu,
+        toolchain_identifier = toolchain,
     )
-    for cpu in CC_TOOLCHAIN_CPUS
+    for cpu, toolchain in LINUX_TOOLCHAINS.items()
 ]
 
 cc_toolchain_config(
-    name = "aarch64-config",
+    name = "linux-aarch64-config",
     bit_flag = "-m64",
     include_flag = "-I/usr/aarch64-linux-gnu/include/c++/10/aarch64-linux-gnu/",
     target_cpu = "aarch64",
@@ -52,7 +45,7 @@ cc_toolchain_config(
 )
 
 cc_toolchain_config(
-    name = "ppcle-config",
+    name = "linux-ppcle-config",
     bit_flag = "-m64",
     include_flag = "-I/usr/powerpc64le-linux-gnu/include/c++/10/powerpc64le-linux-gnu/",
     target_cpu = "ppc64",
@@ -62,7 +55,7 @@ cc_toolchain_config(
 )
 
 cc_toolchain_config(
-    name = "s390x-config",
+    name = "linux-s390x-config",
     bit_flag = "-m64",
     include_flag = "-I/usr/s390x-linux-gnu/include/c++/10/s390x-linux-gnu/",
     target_cpu = "systemz",
@@ -72,7 +65,7 @@ cc_toolchain_config(
 )
 
 cc_toolchain_config(
-    name = "x86_32-config",
+    name = "linux-x86_32-config",
     bit_flag = "-m32",
     target_cpu = "x86_32",
     target_full_name = "i386-linux-gnu",
@@ -81,7 +74,7 @@ cc_toolchain_config(
 )
 
 cc_toolchain_config(
-    name = "x86_64-config",
+    name = "linux-x86_64-config",
     bit_flag = "-m64",
     target_cpu = "x86_64",
     target_full_name = "x86_64-linux-gnu",

@@ -126,7 +126,7 @@ def _impl(ctx):
       cxx_builtin_include_directories = [
           ctx.attr.toolchain_dir,
           "/usr/include",
-          "/usr/lib/clang/11.0.1/include",
+          "/usr/lib/clang",
       ],
       features = features,
       host_system_name = "local",
