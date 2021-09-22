@@ -43,8 +43,6 @@ else
   protoc_command = 'protoc' 
 end
 
-protoc_command = '../bazel-bin/protoc' 
-
 genproto_output = []
 
 # We won't have access to .. from within docker, but the proto files
@@ -63,7 +61,7 @@ unless ENV['IN_DOCKER'] == 'true'
     output_file = proto_file.sub(/\.proto$/, "_pb.rb")
     genproto_output << output_file
     file output_file => proto_file do |file_task|
-      sh "#{protoc_command} -I../src -I./tests/ --ruby_out=. #{proto_file}"
+      sh "#{protoc_command} -I../src -I. -I./tests --ruby_out=.  #{proto_file}"
     end
   end
 end

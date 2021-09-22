@@ -7,7 +7,6 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 import "test_import_proto2.proto";
-// import "google/protobuf/compiler/ruby/ruby_generated_code_proto2_import.proto";
 
 message Foo {
   Bar bar = 1;

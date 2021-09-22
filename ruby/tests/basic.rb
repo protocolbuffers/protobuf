@@ -168,16 +168,16 @@ module BasicTest
       assert_equal nil, m.singular_msg
     end
 
-    # def test_import_proto2
-    #   m = TestMessage.new
-    #   assert !m.has_optional_proto2_submessage?
-    #   m.optional_proto2_submessage = TestImportedMessage.new
-    #   assert m.has_optional_proto2_submessage?
-    #   assert TestMessage.descriptor.lookup('has_optional_proto2_submessage').has?(m)
+    def test_import_proto2
+      m = TestMessage.new
+      assert !m.has_optional_proto2_submessage?
+      m.optional_proto2_submessage = ::FooBar::Proto2::TestImportedMessage.new
+      assert m.has_optional_proto2_submessage?
+      assert TestMessage.descriptor.lookup('optional_proto2_submessage').has?(m)
 
-    #   m.clear_singular_optional_proto2_submessage
-    #   assert !m.has_optional_proto2_submessage?
-    # end
+      m.clear_optional_proto2_submessage
+      assert !m.has_optional_proto2_submessage?
+    end
 
     def test_clear_repeated_fields
       m = TestMessage.new
@@ -498,6 +498,7 @@ module BasicTest
         :optional_int64=>0,
         :optional_msg=>nil,
         :optional_msg2=>nil,
+        :optional_proto2_submessage=>nil,
         :optional_string=>"foo",
         :optional_uint32=>0,
         :optional_uint64=>0,
