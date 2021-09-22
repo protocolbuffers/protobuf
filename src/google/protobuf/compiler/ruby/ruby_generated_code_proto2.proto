@@ -16,7 +16,7 @@ message TestMessage {
   optional bytes optional_bytes = 9 [default = "\0\1\2\100fubar"];
   optional TestEnum optional_enum = 10 [default = A];
   optional TestMessage optional_msg = 11;
-  optional Proto2TestMessage optional_proto2_submessage = 12;
+  optional TestImportedMessage optional_proto2_submessage = 12;
 
   repeated int32 repeated_int32 = 21;
   repeated int64 repeated_int64 = 22;

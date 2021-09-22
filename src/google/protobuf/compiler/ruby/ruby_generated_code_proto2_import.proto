@@ -2,4 +2,4 @@ syntax = "proto2";
 
 package A.B.C;
 
-message Proto2TestMessage {}
+message TestImportedMessage {}
