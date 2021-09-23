@@ -649,35 +649,44 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   std::string deprecation_trigger = (field->options().deprecated()) ? "@trigger_error('" +
       field->name() + " is deprecated.', E_USER_DEPRECATED);\n        " : "";
 
+  bool can_return_null = field->has_presence() &&
+                         field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
+
   // Emit getter.
   if (oneof != NULL) {
     printer->Print(
-        "public function get^camel_name^()\n"
+        "public function get^camel_name^(): ^maybe_null^^php_type^\n"
         "{\n"
         "    ^deprecation_trigger^return $this->readOneof(^number^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "number", IntToString(field->number()),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger,
+        "php_type", PhpGetterTypeName(field, options),
+        "maybe_null", can_return_null ? "?" : "");
   } else if (field->has_presence() && !field->message_type()) {
     printer->Print(
-        "public function get^camel_name^()\n"
+        "public function get^camel_name^(): ^maybe_null^^php_type^\n"
         "{\n"
         "    ^deprecation_trigger^return isset($this->^name^) ? $this->^name^ : ^default_value^;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
         "default_value", DefaultForField(field),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger,
+        "php_type", PhpGetterTypeName(field, options),
+        "maybe_null", can_return_null ? "?" : "");
   } else {
     printer->Print(
-        "public function get^camel_name^()\n"
+        "public function get^camel_name^(): ^maybe_null^^php_type^\n"
         "{\n"
         "    ^deprecation_trigger^return $this->^name^;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger,
+        "php_type", PhpGetterTypeName(field, options),
+        "maybe_null", can_return_null ? "?" : "");
   }
 
   // Emit hazzers/clear.

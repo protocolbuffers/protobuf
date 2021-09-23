@@ -147,6 +147,7 @@ php/tests/multirequest.result
 php/tests/nohup.out
 php/tests/.phpunit.result.cache
 php/tests/phpunit-*
+php/tmp
 php/ext/google/protobuf/.libs/
 php/ext/google/protobuf/Makefile.fragments
 php/ext/google/protobuf/Makefile.global
