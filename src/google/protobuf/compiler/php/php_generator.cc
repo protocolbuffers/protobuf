@@ -639,7 +639,7 @@ void GenerateOneofField(const OneofDescriptor* oneof, io::Printer* printer) {
 }
 
 void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
-                           io::Printer* printer) {
+                           const std::string className, io::Printer* printer) {
   const OneofDescriptor* oneof = field->real_containing_oneof();
 
   // Generate getter.
@@ -737,9 +737,11 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   // Generate setter.
   GenerateFieldDocComment(printer, field, options, kFieldSetter);
   printer->Print(
-      "public function set^camel_name^($var)\n"
+      "public function set^camel_name^(^php_type^ $var): ^class_name^\n"
       "{\n",
-      "camel_name", UnderscoresToCamelCase(field->name(), true));
+      "camel_name", UnderscoresToCamelCase(field->name(), true),
+      "php_type", PhpGetterTypeName(field, options),
+      "class_name", className);
 
   Indent(printer);
 
@@ -1502,7 +1504,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   // Field and oneof accessors.
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
-    GenerateFieldAccessor(field, options, &printer);
+    GenerateFieldAccessor(field, options, fullname, &printer);
   }
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);
