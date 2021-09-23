@@ -25,6 +25,6 @@ RUN apt-get update && apt-get install -y \
   openjdk-8-jdk \
   # Python dependencies
   python3-setuptools \
-  python-pip \
+  python3-pip \
   virtualenv \
   && apt-get clean

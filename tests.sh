@@ -113,7 +113,7 @@ build_dist_install() {
   source venv/bin/activate
   pushd python
   python3 setup.py clean build sdist
-  pip install dist/protobuf-*.tar.gz
+  pip3 install dist/protobuf-*.tar.gz
   popd
   deactivate
   rm -rf python/venv
