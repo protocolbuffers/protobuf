@@ -67,6 +67,8 @@ struct Options {
   std::string generate_for_named_framework;
   std::string named_framework_to_proto_path_mappings_path;
   std::string runtime_import_prefix;
+  bool prefixes_must_be_registered;
+  bool require_prefixes;
 };
 
 // Escape C++ trigraphs by escaping question marks to "\?".

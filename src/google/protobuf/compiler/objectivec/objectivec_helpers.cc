@@ -178,6 +178,8 @@ Options::Options() {
     expected_prefixes_suppressions =
         Split(suppressions, ";", true);
   }
+  prefixes_must_be_registered = false;
+  require_prefixes = false;
 }
 
 namespace {
@@ -1227,6 +1229,7 @@ bool LoadExpectedPackagePrefixes(const Options& generation_options,
 bool ValidateObjCClassPrefix(
     const FileDescriptor* file, const std::string& expected_prefixes_path,
     const std::map<std::string, std::string>& expected_package_prefixes,
+    bool prefixes_must_be_registered, bool require_prefixes,
     std::string* out_error) {
   // Reminder: An explicit prefix option of "" is valid in case the default
   // prefixing is set to use the proto package and a file needs to be generated
@@ -1265,6 +1268,12 @@ bool ValidateObjCClassPrefix(
 
   // If there was no prefix option, we're done at this point.
   if (!has_prefix) {
+    if (require_prefixes) {
+      *out_error =
+        "error: '" + file->name() + "' does not have a required 'option" +
+        " objc_class_prefix'.";
+      return false;
+    }
     return true;
   }
 
@@ -1344,9 +1353,18 @@ bool ValidateObjCClassPrefix(
     std::cerr.flush();
   }
 
-  // Check: Warning - If the given package/prefix pair wasn't expected, issue a
-  // warning suggesting it gets added to the file.
+  // Check: Error/Warning - If the given package/prefix pair wasn't expected,
+  // issue a error/warning to added to the file.
   if (have_expected_prefix_file) {
+    if (prefixes_must_be_registered) {
+      *out_error =
+        "error: '" + file->name() + "' has 'option objc_class_prefix = \"" +
+        prefix + "\";', but it is not registered; add it to the expected" +
+        " prefixes file (" + expected_prefixes_path + ") for the package" +
+        "'" + package + "'.";
+      return false;
+    }
+
     std::cerr
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
@@ -1391,6 +1409,8 @@ bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
         ValidateObjCClassPrefix(files[i],
                                 generation_options.expected_prefixes_path,
                                 expected_package_prefixes,
+                                generation_options.prefixes_must_be_registered,
+                                generation_options.require_prefixes,
                                 out_error);
     if (!is_valid) {
       return false;
