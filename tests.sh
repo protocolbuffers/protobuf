@@ -112,8 +112,8 @@ build_dist_install() {
   virtualenv --no-site-packages venv
   source venv/bin/activate
   pushd python
-  python setup.py clean build sdist
-  pip install dist/protobuf-*.tar.gz
+  python3 setup.py clean build sdist
+  pip3 install dist/protobuf-*.tar.gz
   popd
   deactivate
   rm -rf python/venv
