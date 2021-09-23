@@ -720,15 +720,18 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
       !field->is_repeated() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       IsWrapperType(field)) {
+    const FieldDescriptor* primitiveField = field->message_type()->FindFieldByName("value");
     GenerateWrapperFieldGetterDocComment(printer, field);
     printer->Print(
-        "public function get^camel_name^Unwrapped()\n"
+        "public function get^camel_name^Unwrapped(): ^maybe_null^^php_type^\n"
         "{\n"
         "    ^deprecation_trigger^return $this->readWrapperValue(\"^field_name^\");\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "field_name", field->name(),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger,
+        "php_type", PhpGetterTypeName(primitiveField, options),
+        "maybe_null", can_return_null ? "?" : "");
   }
 
   // Generate setter.
