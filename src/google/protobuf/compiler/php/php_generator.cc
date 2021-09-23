@@ -692,7 +692,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   // Emit hazzers/clear.
   if (oneof) {
     printer->Print(
-        "public function has^camel_name^()\n"
+        "public function has^camel_name^(): bool\n"
         "{\n"
         "    ^deprecation_trigger^return $this->hasOneof(^number^);\n"
         "}\n\n",
@@ -701,11 +701,11 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "deprecation_trigger", deprecation_trigger);
   } else if (field->has_presence()) {
     printer->Print(
-        "public function has^camel_name^()\n"
+        "public function has^camel_name^(): bool\n"
         "{\n"
         "    ^deprecation_trigger^return isset($this->^name^);\n"
         "}\n\n"
-        "public function clear^camel_name^()\n"
+        "public function clear^camel_name^(): void\n"
         "{\n"
         "    ^deprecation_trigger^unset($this->^name^);\n"
         "}\n\n",
