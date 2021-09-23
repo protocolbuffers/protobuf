@@ -101,6 +101,41 @@ bool ObjectiveCGenerator::GenerateAll(
         generation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));
       }
+    } else if (options[i].first == "prefixes_must_be_registered") {
+      // If objc prefix file option value must be registered to be used. This
+      // option has no meaning if an "expected_prefixes_path" isn't set. The
+      // available options are:
+      //   "no": They don't have to be registered.
+      //   "yes": They must be registered and an error will be raised if a files
+      //     tried to use a prefix that isn't registered.
+      // Default is "no".
+      std::string upper_value(options[i].second);
+      UpperString(&upper_value);
+      if (upper_value == "NO") {
+        generation_options.prefixes_must_be_registered = false;
+      } else if (upper_value == "YES") {
+        generation_options.prefixes_must_be_registered = true;
+      } else {
+        *error = "error: Unknown value for prefixes_must_be_registered: " + options[i].second;
+        return false;
+      }
+    } else if (options[i].first == "require_prefixes") {
+      // If every file must have an objc prefix file option to be used. The
+      // available options are:
+      //   "no": Files can be generated without the prefix option.
+      //   "yes": Files must have the objc prefix option, and an error will be
+      //     raised if a files doesn't have one.
+      // Default is "no".
+      std::string upper_value(options[i].second);
+      UpperString(&upper_value);
+      if (upper_value == "NO") {
+        generation_options.require_prefixes = false;
+      } else if (upper_value == "YES") {
+        generation_options.require_prefixes = true;
+      } else {
+        *error = "error: Unknown value for require_prefixes: " + options[i].second;
+        return false;
+      }
     } else if (options[i].first == "generate_for_named_framework") {
       // The name of the framework that protos are being generated for. This
       // will cause the #import statements to be framework based using this
