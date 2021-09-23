@@ -969,7 +969,7 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
                            io::Printer* printer) {
   printer->Print(
       "public static $is_initialized = false;\n\n"
-      "public static function initOnce() {\n");
+      "public static function initOnce(): void {\n");
   Indent(printer);
 
   if (options.aggregate_metadata) {
@@ -1372,7 +1372,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   printer.Print("];\n");
 
   printer.Print(
-      "\npublic static function name($value)\n"
+      "\npublic static function name(int $value): string\n"
       "{\n");
   Indent(&printer);
   printer.Print("if (!isset(self::$valueToName[$value])) {\n");
@@ -1390,7 +1390,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   printer.Print("}\n\n");
 
   printer.Print(
-      "\npublic static function value($name)\n"
+      "\npublic static function value(string $name): int\n"
       "{\n");
   Indent(&printer);
   printer.Print("$const = __CLASS__ . '::' . strtoupper($name);\n"
