@@ -839,15 +839,18 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
       !field->is_repeated() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       IsWrapperType(field)) {
+    const FieldDescriptor* primitiveField = field->message_type()->FindFieldByName("value");
     GenerateWrapperFieldSetterDocComment(printer, field);
     printer->Print(
-        "public function set^camel_name^Unwrapped($var)\n"
+        "public function set^camel_name^Unwrapped(^php_type^^maybe_null^ $var)\n"
         "{\n"
         "    $this->writeWrapperValue(\"^field_name^\", $var);\n"
         "    return $this;"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "field_name", field->name());
+        "field_name", field->name(),
+        "php_type", PhpGetterTypeName(primitiveField, options),
+        "maybe_null", can_return_null ? "|null" : "");
   }
 }
 
