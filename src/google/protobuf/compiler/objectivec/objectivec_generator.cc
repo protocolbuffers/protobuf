@@ -44,6 +44,28 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+namespace {
+
+// Convert a string with "yes"/"no" (case insensitive) to a boolean, returning
+// true/false for if the input string was a valid value. If the input string is
+// invalid, `result` is unchanged.
+bool StringToBool(const std::string& value, bool* result) {
+  std::string upper_value(value);
+  UpperString(&upper_value);
+  if (upper_value == "NO") {
+    *result = false;
+    return true;
+  }
+  if (upper_value == "YES") {
+    *result = true;
+    return true;
+  }
+
+  return false;
+}
+
+}  // namespace
+
 ObjectiveCGenerator::ObjectiveCGenerator() {}
 
 ObjectiveCGenerator::~ObjectiveCGenerator() {}
@@ -109,13 +131,8 @@ bool ObjectiveCGenerator::GenerateAll(
       //   "yes": They must be registered and an error will be raised if a files
       //     tried to use a prefix that isn't registered.
       // Default is "no".
-      std::string upper_value(options[i].second);
-      UpperString(&upper_value);
-      if (upper_value == "NO") {
-        generation_options.prefixes_must_be_registered = false;
-      } else if (upper_value == "YES") {
-        generation_options.prefixes_must_be_registered = true;
-      } else {
+      if (!StringToBool(options[i].second,
+                        &generation_options.prefixes_must_be_registered)) {
         *error = "error: Unknown value for prefixes_must_be_registered: " + options[i].second;
         return false;
       }
@@ -126,13 +143,8 @@ bool ObjectiveCGenerator::GenerateAll(
       //   "yes": Files must have the objc prefix option, and an error will be
       //     raised if a files doesn't have one.
       // Default is "no".
-      std::string upper_value(options[i].second);
-      UpperString(&upper_value);
-      if (upper_value == "NO") {
-        generation_options.require_prefixes = false;
-      } else if (upper_value == "YES") {
-        generation_options.require_prefixes = true;
-      } else {
+      if (!StringToBool(options[i].second,
+                        &generation_options.require_prefixes)) {
         *error = "error: Unknown value for require_prefixes: " + options[i].second;
         return false;
       }
@@ -181,12 +193,9 @@ bool ObjectiveCGenerator::GenerateAll(
       // is just what to do if that isn't set. The available options are:
       //   "no": Not prefixed (the existing mode).
       //   "yes": Make a prefix out of the proto package.
-      std::string upper_value(options[i].second);
-      UpperString(&upper_value);
-      if (upper_value == "NO") {
-        SetUseProtoPackageAsDefaultPrefix(false);
-      } else if (upper_value == "YES") {
-        SetUseProtoPackageAsDefaultPrefix(true);
+      bool value = false;
+      if (StringToBool(options[i].second, &value)) {
+        SetUseProtoPackageAsDefaultPrefix(value);
       } else {
         *error = "error: Unknown use_package_as_prefix: " + options[i].second;
         return false;
