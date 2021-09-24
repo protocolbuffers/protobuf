@@ -994,7 +994,7 @@ std::string DefaultValue(const FieldDescriptor* field) {
 
         // Must convert to a standard byte order for packing length into
         // a cstring.
-        uint32 length = ghtonl(default_string.length());
+        uint32_t length = ghtonl(default_string.length());
         std::string bytes((const char*)&length, sizeof(length));
         bytes.append(default_string);
         return "(NSData*)\"" + EscapeTrigraphs(CEscape(bytes)) + "\"";
@@ -1423,7 +1423,7 @@ TextFormatDecodeData::TextFormatDecodeData() { }
 
 TextFormatDecodeData::~TextFormatDecodeData() { }
 
-void TextFormatDecodeData::AddString(int32 key,
+void TextFormatDecodeData::AddString(int32_t key,
                                      const std::string& input_for_decode,
                                      const std::string& desired_output) {
   for (std::vector<DataEntry>::const_iterator i = entries_.begin();
@@ -1479,12 +1479,12 @@ class DecodeDataBuilder {
   }
 
  private:
-  static constexpr uint8 kAddUnderscore = 0x80;
+  static constexpr uint8_t kAddUnderscore = 0x80;
 
-  static constexpr uint8 kOpAsIs = 0x00;
-  static constexpr uint8 kOpFirstUpper = 0x40;
-  static constexpr uint8 kOpFirstLower = 0x20;
-  static constexpr uint8 kOpAllUpper = 0x60;
+  static constexpr uint8_t kOpAsIs = 0x00;
+  static constexpr uint8_t kOpFirstUpper = 0x40;
+  static constexpr uint8_t kOpFirstLower = 0x20;
+  static constexpr uint8_t kOpAllUpper = 0x60;
 
   static constexpr int kMaxSegmentLen = 0x1f;
 
@@ -1494,7 +1494,7 @@ class DecodeDataBuilder {
   }
 
   void Push() {
-    uint8 op = (op_ | segment_len_);
+    uint8_t op = (op_ | segment_len_);
     if (need_underscore_) op |= kAddUnderscore;
     if (op != 0) {
       decode_data_ += (char)op;
@@ -1526,7 +1526,7 @@ class DecodeDataBuilder {
 
   bool need_underscore_;
   bool is_all_upper_;
-  uint8 op_;
+  uint8_t op_;
   int segment_len_;
 
   std::string decode_data_;
