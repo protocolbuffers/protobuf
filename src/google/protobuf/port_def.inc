@@ -614,6 +614,18 @@
 #define PROTOBUF_ATTRIBUTE_INIT_PRIORITY
 #endif
 
+// Some embedded systems get a segmentation fault if extension attributes are
+// initialized with higher or equal priority as other attributes. This gives
+// extension attributes high priority, but lower than other attributes.
+#ifdef PROTOBUF_EXTENSION_ATTRIBUTE_INIT_PRIORITY
+#error PROTOBUF_EXTENSION_ATTRIBUTE_INIT_PRIORITY was previously defined
+#endif
+#if PROTOBUF_GNUC_MIN(3, 0) && (!defined(__APPLE__) || defined(__clang__)) && !((defined(sun) || defined(__sun)) && (defined(__SVR4) || defined(__svr4__)))
+#define PROTOBUF_EXTENSION_ATTRIBUTE_INIT_PRIORITY __attribute__((init_priority((103))))
+#else
+#define PROTOBUF_EXTENSION_ATTRIBUTE_INIT_PRIORITY
+#endif
+
 #ifdef PROTOBUF_PRAGMA_INIT_SEG
 #error PROTOBUF_PRAGMA_INIT_SEG was previously defined
 #endif

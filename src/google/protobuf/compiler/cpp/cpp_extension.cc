@@ -164,7 +164,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
   }
 
   format(
-      "PROTOBUF_ATTRIBUTE_INIT_PRIORITY "
+      "PROTOBUF_EXTENSION_ATTRIBUTE_INIT_PRIORITY "
       "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
       "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
       "  $scoped_name$($constant_name$, $1$);\n",
