@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Exit on any error.
-set -e
+set -ex
 
 test_version() {
   version=$1
