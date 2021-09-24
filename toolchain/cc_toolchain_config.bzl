@@ -75,28 +75,28 @@ def _impl(ctx):
       ),
   ]
 
-  features = [
-      feature(
-          name = "default_linker_flags",
-          enabled = True,
-          flag_sets = [
-              flag_set(
-                  actions = all_link_actions,
-                  flag_groups = ([
-                      flag_group(
-                          flags = [
-                              "-lstdc++",
-                              "--target=" + ctx.attr.target_full_name,
-                          ],
-                      ),
-                  ]),
-              ),
-          ],
-      ),
-      feature(
-          name = "default_compile_flags",
-          enabled = True,
-          flag_sets = [
+  linker_flags = feature(
+      name = "default_linker_flags",
+      enabled = True,
+      flag_sets = [
+          flag_set(
+              actions = all_link_actions,
+              flag_groups = [
+                  flag_group(
+                      flags = [
+                          "-lstdc++",
+                          "--target=" + ctx.attr.target_full_name,
+                      ],
+                  ),
+              ],
+          ),
+      ],
+  )
+  compiler_flags = feature(
+      name = "default_compile_flags",
+      enabled = True,
+      flag_sets = [
+          flag_set(
               actions = all_compile_actions,
               flag_groups = [
                   flag_group(
@@ -110,10 +110,10 @@ def _impl(ctx):
                           ctx.attr.include_flag,
                       ],
                   ),
-              [,
-          ],
-      ),
-  ]
+              ],
+          ),
+      ],
+  )
 
   return cc_common.create_cc_toolchain_config_info(
       abi_libc_version = ctx.attr.target_cpu,
@@ -125,7 +125,7 @@ def _impl(ctx):
           "/usr/include",
           "/usr/lib/clang",
       ],
-      features = features,
+      features = [linker_flags, compiler_flags],
       host_system_name = "local",
       target_cpu = ctx.attr.target_cpu,
       target_libc = ctx.attr.target_cpu,
