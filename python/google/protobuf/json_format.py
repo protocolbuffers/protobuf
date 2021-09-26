@@ -740,13 +740,13 @@ def _ConvertScalarFieldValue(value, field, require_str=False):
       try:
         number = int(value)
         enum_value = field.enum_type.values_by_number.get(number, None)
+        if enum_value is None and field.file.syntax == 'proto3':
+          # Proto3 accepts unknown enums.
+          return number
       except ValueError:
         raise ParseError('Invalid enum value {0} for enum type {1}.'.format(
             value, field.enum_type.full_name))
       if enum_value is None:
-        if field.file.syntax == 'proto3':
-          # Proto3 accepts unknown enums.
-          return number
         raise ParseError('Invalid enum value {0} for enum type {1}.'.format(
             value, field.enum_type.full_name))
     return enum_value.number
