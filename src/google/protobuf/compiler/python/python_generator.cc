@@ -799,12 +799,11 @@ void Generator::PrintCreateDescriptor(
   printer_->Indent();
   for (int i = 0; i < message_descriptor.oneof_decl_count(); ++i) {
     const OneofDescriptor* desc = message_descriptor.oneof_decl(i);
-    std::map<std::string, std::string> m;
+    m.clear();
     m["name"] = desc->name();
     m["full_name"] = desc->full_name();
     m["index"] = StrCat(desc->index());
-    std::string options_string =
-        OptionsValue(desc->options().SerializeAsString());
+    options_string = OptionsValue(desc->options().SerializeAsString());
     if (options_string == "None") {
       m["serialized_options"] = "";
     } else {

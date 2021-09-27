@@ -246,7 +246,6 @@ class DynamicMessage : public Message {
 
   // implements Message ----------------------------------------------
 
-  Message* New() const override;
   Message* New(Arena* arena) const override;
 
   int GetCachedSize() const override;
@@ -645,8 +644,6 @@ void DynamicMessage::CrossLinkPrototypes() {
   }
 }
 
-Message* DynamicMessage::New() const { return New(nullptr); }
-
 Message* DynamicMessage::New(Arena* arena) const {
   if (arena != nullptr) {
     void* new_base = Arena::CreateArray<char>(arena, type_info_->size);
@@ -747,9 +744,9 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
         // hasbits.
         type_info->has_bits_offset = size;
         uint32_t* has_bits_indices = new uint32_t[type->field_count()];
-        for (int i = 0; i < type->field_count(); i++) {
+        for (int j = 0; j < type->field_count(); j++) {
           // Initialize to -1, fields that need a hasbit will overwrite.
-          has_bits_indices[i] = static_cast<uint32_t>(-1);
+          has_bits_indices[j] = static_cast<uint32_t>(-1);
         }
         type_info->has_bits_indices.reset(has_bits_indices);
       }

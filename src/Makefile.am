@@ -100,6 +100,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/duration.pb.h                                  \
   google/protobuf/dynamic_message.h                              \
   google/protobuf/empty.pb.h                                     \
+  google/protobuf/explicitly_constructed.h                       \
   google/protobuf/extension_set.h                                \
   google/protobuf/extension_set_inl.h                            \
   google/protobuf/field_access_listener.h                        \

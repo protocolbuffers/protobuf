@@ -241,12 +241,12 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    Formatter format(printer, vars_);
-    InitMethodVariables(method, options_, &format);
+    Formatter format_method(printer, vars_);
+    InitMethodVariables(method, options_, &format_method);
 
     // Note:  down_cast does not work here because it only works on pointers,
     //   not references.
-    format(
+    format_method(
         "    case $1$:\n"
         "      $name$(controller,\n"
         "             ::$proto_ns$::internal::DownCast<const $input_type$*>(\n"

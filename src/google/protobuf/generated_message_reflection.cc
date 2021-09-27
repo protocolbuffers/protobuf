@@ -995,6 +995,8 @@ void Reflection::SwapFieldsImpl(
   GOOGLE_DCHECK(!unsafe_shallow_swap || message1->GetArenaForAllocation() ==
                                      message2->GetArenaForAllocation());
 
+  const Message* prototype =
+      message_factory_->GetPrototype(message1->GetDescriptor());
   for (const auto* field : fields) {
     CheckInvalidAccess(schema_, field);
     if (field->is_extension()) {
@@ -1003,7 +1005,7 @@ void Reflection::SwapFieldsImpl(
             MutableExtensionSet(message2), field->number());
       } else {
         MutableExtensionSet(message1)->SwapExtension(
-            MutableExtensionSet(message2), field->number());
+            prototype, MutableExtensionSet(message2), field->number());
       }
     } else {
       if (schema_.InRealOneof(field)) {

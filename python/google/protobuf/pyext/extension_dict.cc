@@ -49,17 +49,12 @@
 #include <google/protobuf/pyext/repeated_scalar_container.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
-#if PY_MAJOR_VERSION >= 3
-  #if PY_VERSION_HEX < 0x03030000
-    #error "Python 3.0 - 3.2 are not supported."
-  #endif
 #define PyString_AsStringAndSize(ob, charpp, sizep)                           \
   (PyUnicode_Check(ob) ? ((*(charpp) = const_cast<char*>(                     \
                                PyUnicode_AsUTF8AndSize(ob, (sizep)))) == NULL \
                               ? -1                                            \
                               : 0)                                            \
                        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
-#endif
 
 namespace google {
 namespace protobuf {

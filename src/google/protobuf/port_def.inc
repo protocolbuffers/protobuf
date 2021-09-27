@@ -293,7 +293,12 @@
 #ifdef PROTOBUF_SECTION_VARIABLE
 #error PROTOBUF_SECTION_VARIABLE was previously defined
 #endif
-#define PROTOBUF_SECTION_VARIABLE(x)
+#if (__has_attribute(section) || defined(__GNUC__)) && defined(__ELF__)
+// Place a variable in the given ELF section.
+# define PROTOBUF_SECTION_VARIABLE(x) __attribute__((section(#x)))
+#else
+# define PROTOBUF_SECTION_VARIABLE(x)
+#endif
 
 #if defined(PROTOBUF_DEPRECATED)
 #error PROTOBUF_DEPRECATED was previously defined
@@ -451,10 +456,16 @@
 # define PROTOBUF_PREDICT_FALSE(x) (x)
 #endif
 
-#ifdef PROTOBUF_MUST_USE_RESULT
-#error PROTOBUF_MUST_USE_RESULT was previously defined
+#ifdef PROTOBUF_NODISCARD
+#error PROTOBUF_NODISCARD was previously defined
 #endif
-# define PROTOBUF_MUST_USE_RESULT
+#if __has_cpp_attribute(nodiscard)
+#define PROTOBUF_NODISCARD [[nodiscard]]
+#elif __has_attribute(warn_unused_result) || PROTOBUF_GNUC_MIN(4, 8)
+#define PROTOBUF_NODISCARD __attribute__((warn_unused_result))
+#else
+#define PROTOBUF_NODISCARD
+#endif
 
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
 #error PROTOBUF_FORCE_COPY_IN_RELEASE was previously defined
@@ -646,8 +657,17 @@
 #    define PROTOBUF_MSAN 1
 #  endif
 #elif PROTOBUF_GNUC_MIN(3, 0)
-#  define PROTOBUF_ASAN __SANITIZE_ADDRESS__
-#  define PROTOBUF_TSAN __SANITIZE_THREAD__
+// Double-guard is needed for -Wundef:
+#  ifdef __SANITIZE_ADDRESS__
+#  if    __SANITIZE_ADDRESS__
+#    define PROTOBUF_ASAN 1
+#  endif
+#  endif
+#  ifdef __SANITIZE_THREAD__
+#  if    __SANITIZE_THREAD__
+#    define PROTOBUF_TSAN 1
+#  endif
+#  endif
 #endif
 
 // Tail call table-driven parsing can be enabled by defining
@@ -773,7 +793,9 @@
 // To silence the fact that we will pop this push from another file
 #pragma warning(disable : 5031)
 // Conditional expression is constant
-#pragma warning(disable : 4127)
+#pragma warning(disable: 4127)
+// decimal digit terminates octal escape sequence
+#pragma warning(disable: 4125)
 #endif
 
 // We don't want code outside port_def doing complex testing, so

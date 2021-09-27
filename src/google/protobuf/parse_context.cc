@@ -460,7 +460,6 @@ const char* PackedBoolParser(void* object, const char* ptr, ParseContext* ctx) {
 template <typename T>
 const char* FixedParser(void* object, const char* ptr, ParseContext* ctx) {
   int size = ReadSize(&ptr);
-  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   return ctx->ReadPackedFixed(ptr, size,
                               static_cast<RepeatedField<T>*>(object));
 }

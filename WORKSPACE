@@ -40,6 +40,7 @@ maven_install(
     artifacts = [
         "com.google.code.gson:gson:2.8.6",
         "com.google.errorprone:error_prone_annotations:2.3.2",
+        "com.google.j2objc:j2obj_annotations:1.3",
         "com.google.guava:guava:30.1.1-jre",
         "com.google.truth:truth:1.1.2",
         "junit:junit:4.12",
@@ -71,6 +72,11 @@ bind(
 bind(
     name = "error_prone_annotations",
     actual = "@maven//:com_google_errorprone_error_prone_annotations",
+)
+
+bind(
+    name = "j2objc_annotations",
+    actual = "@maven//:com_google_j2objc_j2objc_annotations",
 )
 
 bind(

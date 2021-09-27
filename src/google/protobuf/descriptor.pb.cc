@@ -3226,7 +3226,7 @@ ExtensionRangeOptions::ExtensionRangeOptions(const ExtensionRangeOptions& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions)
 }
 
@@ -3378,7 +3378,7 @@ void ExtensionRangeOptions::MergeFrom(const ExtensionRangeOptions& from) {
   (void) cached_has_bits;
 
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -6135,7 +6135,7 @@ FileOptions::FileOptions(const FileOptions& from)
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   java_package_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     java_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
@@ -7049,7 +7049,7 @@ void FileOptions::MergeFrom(const FileOptions& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -7178,7 +7178,7 @@ MessageOptions::MessageOptions(const MessageOptions& from)
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   ::memcpy(&message_set_wire_format_, &from.message_set_wire_format_,
     static_cast<size_t>(reinterpret_cast<char*>(&map_entry_) -
     reinterpret_cast<char*>(&message_set_wire_format_)) + sizeof(map_entry_));
@@ -7443,7 +7443,7 @@ void MessageOptions::MergeFrom(const MessageOptions& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -7524,7 +7524,7 @@ FieldOptions::FieldOptions(const FieldOptions& from)
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   ::memcpy(&ctype_, &from.ctype_,
     static_cast<size_t>(reinterpret_cast<char*>(&jstype_) -
     reinterpret_cast<char*>(&ctype_)) + sizeof(jstype_));
@@ -7850,7 +7850,7 @@ void FieldOptions::MergeFrom(const FieldOptions& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -7911,7 +7911,7 @@ OneofOptions::OneofOptions(const OneofOptions& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofOptions)
 }
 
@@ -8063,7 +8063,7 @@ void OneofOptions::MergeFrom(const OneofOptions& from) {
   (void) cached_has_bits;
 
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -8125,7 +8125,7 @@ EnumOptions::EnumOptions(const EnumOptions& from)
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   ::memcpy(&allow_alias_, &from.allow_alias_,
     static_cast<size_t>(reinterpret_cast<char*>(&deprecated_) -
     reinterpret_cast<char*>(&allow_alias_)) + sizeof(deprecated_));
@@ -8344,7 +8344,7 @@ void EnumOptions::MergeFrom(const EnumOptions& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -8410,7 +8410,7 @@ EnumValueOptions::EnumValueOptions(const EnumValueOptions& from)
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   deprecated_ = from.deprecated_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueOptions)
 }
@@ -8593,7 +8593,7 @@ void EnumValueOptions::MergeFrom(const EnumValueOptions& from) {
   if (from._internal_has_deprecated()) {
     _internal_set_deprecated(from._internal_deprecated());
   }
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -8654,7 +8654,7 @@ ServiceOptions::ServiceOptions(const ServiceOptions& from)
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   deprecated_ = from.deprecated_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceOptions)
 }
@@ -8837,7 +8837,7 @@ void ServiceOptions::MergeFrom(const ServiceOptions& from) {
   if (from._internal_has_deprecated()) {
     _internal_set_deprecated(from._internal_deprecated());
   }
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -8901,7 +8901,7 @@ MethodOptions::MethodOptions(const MethodOptions& from)
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   ::memcpy(&deprecated_, &from.deprecated_,
     static_cast<size_t>(reinterpret_cast<char*>(&idempotency_level_) -
     reinterpret_cast<char*>(&deprecated_)) + sizeof(idempotency_level_));
@@ -9129,7 +9129,7 @@ void MethodOptions::MergeFrom(const MethodOptions& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  _extensions_.MergeFrom(from._extensions_);
+  _extensions_.MergeFrom(internal_default_instance(), from._extensions_);
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 

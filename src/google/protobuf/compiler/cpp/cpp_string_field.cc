@@ -170,7 +170,7 @@ void StringFieldGenerator::GenerateAccessorDeclarations(
       descriptor_);
   format(
       "$deprecated_attr$std::string* ${1$mutable_$name$$}$();\n"
-      "PROTOBUF_MUST_USE_RESULT $deprecated_attr$std::string* "
+      "PROTOBUF_NODISCARD $deprecated_attr$std::string* "
       "${1$$release_name$$}$();\n"
       "$deprecated_attr$void ${1$set_allocated_$name$$}$(std::string* "
       "$name$);\n",
@@ -290,7 +290,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
         "  $clear_hasbit$\n");
     if (!inlined_) {
       format(
-          "  return $name$_.ReleaseNonDefault($init_value$, "
+          "  auto* p = $name$_.ReleaseNonDefault($init_value$, "
           "GetArenaForAllocation());\n");
       if (descriptor_->default_value_string().empty()) {
         format(
@@ -300,6 +300,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
             "  }\n"
             "#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING\n");
       }
+      format("  return p;\n");
     } else {
       format(
           "  return $name$_.Release(nullptr, GetArenaForAllocation(), "

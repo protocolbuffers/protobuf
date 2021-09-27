@@ -51,6 +51,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -484,7 +485,7 @@ public class MapForProto2Test {
   }
 
   @Test
-  public void testPutChecksNullKeysAndValues() throws Exception {
+  public void testPutChecksNullValues() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
 
     try {
@@ -513,6 +514,17 @@ public class MapForProto2Test {
       assertWithMessage("expected exception").fail();
     } catch (NullPointerException e) {
       // expected.
+    }
+  }
+
+  @Test
+  public void testPutChecksNullKey() throws Exception {
+    TestMap.Builder builder = TestMap.newBuilder();
+
+    try {
+      builder.putStringToInt32Field(null, 1);
+      assertWithMessage("expected exception").fail();
+    } catch (NullPointerException expected) {
     }
   }
 
@@ -1227,6 +1239,25 @@ public class MapForProto2Test {
     try {
       sourceBuilder.putAllInt32ToStringField(data);
       fail("allowed null string value");
+    } catch (NullPointerException expected) {
+      // Verify rollback of previously added values.
+      // They all go in or none do.
+      assertThat(sourceBuilder.getInt32ToStringFieldMap()).isEmpty();
+    }
+  }
+
+  @Test
+  public void testPutAllWithNullStringKey() throws Exception {
+    TestMap.Builder sourceBuilder = TestMap.newBuilder();
+
+    // order preserving map used here to help test rollback
+    Map<Integer, String> data = new LinkedHashMap<>();
+    data.put(7, "foo");
+    data.put(null, "bar");
+    data.put(9, "baz");
+    try {
+      sourceBuilder.putAllInt32ToStringField(data);
+      fail("allowed null string key");
     } catch (NullPointerException expected) {
       // Verify rollback of previously added values.
       // They all go in or none do.

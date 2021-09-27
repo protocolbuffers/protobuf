@@ -139,11 +139,7 @@ class PROTOBUF_EXPORT Timestamp final :
 
   // implements Message ----------------------------------------------
 
-  inline Timestamp* New() const final {
-    return new Timestamp();
-  }
-
-  Timestamp* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Timestamp* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Timestamp>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -167,6 +163,8 @@ class PROTOBUF_EXPORT Timestamp final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Timestamp* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Timestamp";

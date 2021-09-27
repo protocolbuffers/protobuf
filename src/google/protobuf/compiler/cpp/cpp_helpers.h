@@ -63,8 +63,8 @@ inline std::string ProtobufNamespace(const Options& /* options */) {
   return "PROTOBUF_NAMESPACE_ID";
 }
 
-inline std::string MacroPrefix(const Options& options) {
-  return options.opensource_runtime ? "GOOGLE_PROTOBUF" : "GOOGLE_PROTOBUF";
+inline std::string MacroPrefix(const Options& /* options */) {
+  return "GOOGLE_PROTOBUF";
 }
 
 inline std::string DeprecatedAttribute(const Options& /* options */,

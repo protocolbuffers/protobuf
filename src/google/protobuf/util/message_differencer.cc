@@ -2076,9 +2076,9 @@ void MessageDifferencer::StreamReporter::Print(const std::string& str) {
 void MessageDifferencer::StreamReporter::PrintMapKey(
     bool left_side, const SpecificField& specific_field) {
   if (message1_ == nullptr || message2_ == nullptr) {
-    GOOGLE_LOG(WARNING) << "PrintPath cannot log map keys; "
-                    "use SetMessages to provide the messages "
-                    "being compared prior to any processing.";
+    GOOGLE_LOG(INFO) << "PrintPath cannot log map keys; "
+                 "use SetMessages to provide the messages "
+                 "being compared prior to any processing.";
     return;
   }
 

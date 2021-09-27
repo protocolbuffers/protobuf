@@ -202,9 +202,9 @@ class PROTOBUF_EXPORT InlinedStringField {
   // Own()'d by any arena. If the field is not set, this returns nullptr. The
   // caller retains ownership. Clears this field back to nullptr state. Used to
   // implement release_<field>() methods on generated classes.
-  PROTOBUF_MUST_USE_RESULT std::string* Release(
-      const std::string* default_value, Arena* arena, bool donated);
-  PROTOBUF_MUST_USE_RESULT std::string* ReleaseNonDefault(
+  PROTOBUF_NODISCARD std::string* Release(const std::string* default_value,
+                                          Arena* arena, bool donated);
+  PROTOBUF_NODISCARD std::string* ReleaseNonDefault(
       const std::string* default_value, Arena* arena);
   std::string* ReleaseNonDefaultNoArena(const std::string* default_value);
 

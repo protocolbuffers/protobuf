@@ -195,14 +195,6 @@ template bool MergeFromImpl<true>(BoundedZCIS input, MessageLite* msg,
 
 }  // namespace internal
 
-MessageLite* MessageLite::New(Arena* arena) const {
-  MessageLite* message = New();
-  if (arena != nullptr) {
-    arena->Own(message);
-  }
-  return message;
-}
-
 class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
  public:
   ZeroCopyCodedInputStream(io::CodedInputStream* cis) : cis_(cis) {}
