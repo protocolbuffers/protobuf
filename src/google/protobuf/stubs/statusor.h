@@ -166,7 +166,7 @@ class PROTOBUF_EXPORT StatusOrHelper {
 template<typename T>
 struct StatusOrHelper::Specialize {
   // For non-pointer T, a reference can never be nullptr.
-  static inline bool IsValueNull(const T& t) { return false; }
+  static inline bool IsValueNull(const T& /*t*/) { return false; }
 };
 
 template<typename T>

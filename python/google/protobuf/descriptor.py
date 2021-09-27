@@ -951,7 +951,7 @@ class FileDescriptor(DescriptorBase):
     public_dependencies (list[FileDescriptor]): A subset of
       :attr:`dependencies`, which were declared as "public".
     message_types_by_name (dict(str, Descriptor)): Mapping from message names
-      to their :class:`Desctiptor`.
+      to their :class:`Descriptor`.
     enum_types_by_name (dict(str, EnumDescriptor)): Mapping from enum names to
       their :class:`EnumDescriptor`.
     extensions_by_name (dict(str, FieldDescriptor)): Mapping from extension

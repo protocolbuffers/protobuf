@@ -863,7 +863,7 @@ bool JsonStreamParser::IsEmptyNullAllowed(TokenType type) {
 }
 
 util::Status JsonStreamParser::ReportFailure(StringPiece message,
-                                             ParseErrorType parse_code) {
+                                             ParseErrorType /*parse_code*/) {
   static const int kContextLength = 20;
   const char* p_start = p_.data();
   const char* json_start = json_.data();

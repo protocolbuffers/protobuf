@@ -308,4 +308,5 @@ if __name__ == '__main__':
       },
       install_requires=install_requires,
       ext_modules=ext_module_list,
+      python_requires='>=3.5',
   )

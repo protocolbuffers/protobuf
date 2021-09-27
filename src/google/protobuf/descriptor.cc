@@ -345,7 +345,7 @@ const char* FileDescriptor::SyntaxName(FileDescriptor::Syntax syntax) {
 
 static const char* const kNonLinkedWeakMessageReplacementName = "google.protobuf.Empty";
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
+#if !defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912)
 const int FieldDescriptor::kMaxNumber;
 const int FieldDescriptor::kFirstReservedNumber;
 const int FieldDescriptor::kLastReservedNumber;
@@ -6054,7 +6054,7 @@ void DescriptorBuilder::CrossLinkMessage(Descriptor* message,
 
 void DescriptorBuilder::CrossLinkExtensionRange(
     Descriptor::ExtensionRange* range,
-    const DescriptorProto::ExtensionRange& proto) {
+    const DescriptorProto::ExtensionRange& /*proto*/) {
   if (range->options_ == nullptr) {
     range->options_ = &ExtensionRangeOptions::default_instance();
   }
@@ -6772,8 +6772,8 @@ void DescriptorBuilder::ValidateEnumValueOptions(
 }
 
 void DescriptorBuilder::ValidateExtensionRangeOptions(
-    const std::string& full_name, Descriptor::ExtensionRange* extension_range,
-    const DescriptorProto_ExtensionRange& proto) {
+    const std::string& /*full_name*/, Descriptor::ExtensionRange* /*extension_range*/,
+    const DescriptorProto_ExtensionRange& /*proto*/) {
 }
 
 void DescriptorBuilder::ValidateServiceOptions(
@@ -7651,7 +7651,7 @@ class DescriptorBuilder::OptionInterpreter::AggregateOptionFinder
  public:
   DescriptorBuilder* builder_;
 
-  const Descriptor* FindAnyType(const Message& message,
+  const Descriptor* FindAnyType(const Message& /*message*/,
                                 const std::string& prefix,
                                 const std::string& name) const override {
     if (prefix != internal::kTypeGoogleApisComPrefix &&
@@ -7844,7 +7844,7 @@ void DescriptorBuilder::OptionInterpreter::SetUInt64(
 }
 
 void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
-                                            const FileDescriptor* result) {
+                                            const FileDescriptor* /*result*/) {
 
   if (!unused_dependency_.empty()) {
     auto itr = pool_->unused_import_track_files_.find(proto.name());
@@ -7866,7 +7866,7 @@ void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
 }
 
 Symbol DescriptorPool::CrossLinkOnDemandHelper(StringPiece name,
-                                               bool expecting_enum) const {
+                                               bool /*expecting_enum*/) const {
   auto lookup_name = std::string(name);
   if (!lookup_name.empty() && lookup_name[0] == '.') {
     lookup_name = lookup_name.substr(1);

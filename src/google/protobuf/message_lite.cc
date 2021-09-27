@@ -118,7 +118,7 @@ inline StringPiece as_string_view(const void* data, int size) {
 }
 
 // Returns true of all required fields are present / have values.
-inline bool CheckFieldPresence(const internal::ParseContext& ctx,
+inline bool CheckFieldPresence(const internal::ParseContext& /*ctx*/,
                                const MessageLite& msg,
                                MessageLite::ParseFlags parse_flags) {
   if (PROTOBUF_PREDICT_FALSE((parse_flags & MessageLite::kMergePartial) != 0)) {

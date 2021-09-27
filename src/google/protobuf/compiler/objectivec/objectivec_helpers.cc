@@ -178,6 +178,8 @@ Options::Options() {
     expected_prefixes_suppressions =
         Split(suppressions, ";", true);
   }
+  prefixes_must_be_registered = false;
+  require_prefixes = false;
 }
 
 namespace {
@@ -992,7 +994,7 @@ std::string DefaultValue(const FieldDescriptor* field) {
 
         // Must convert to a standard byte order for packing length into
         // a cstring.
-        uint32 length = ghtonl(default_string.length());
+        uint32_t length = ghtonl(default_string.length());
         std::string bytes((const char*)&length, sizeof(length));
         bytes.append(default_string);
         return "(NSData*)\"" + EscapeTrigraphs(CEscape(bytes)) + "\"";
@@ -1227,6 +1229,7 @@ bool LoadExpectedPackagePrefixes(const Options& generation_options,
 bool ValidateObjCClassPrefix(
     const FileDescriptor* file, const std::string& expected_prefixes_path,
     const std::map<std::string, std::string>& expected_package_prefixes,
+    bool prefixes_must_be_registered, bool require_prefixes,
     std::string* out_error) {
   // Reminder: An explicit prefix option of "" is valid in case the default
   // prefixing is set to use the proto package and a file needs to be generated
@@ -1265,6 +1268,12 @@ bool ValidateObjCClassPrefix(
 
   // If there was no prefix option, we're done at this point.
   if (!has_prefix) {
+    if (require_prefixes) {
+      *out_error =
+        "error: '" + file->name() + "' does not have a required 'option" +
+        " objc_class_prefix'.";
+      return false;
+    }
     return true;
   }
 
@@ -1344,9 +1353,18 @@ bool ValidateObjCClassPrefix(
     std::cerr.flush();
   }
 
-  // Check: Warning - If the given package/prefix pair wasn't expected, issue a
-  // warning suggesting it gets added to the file.
+  // Check: Error/Warning - If the given package/prefix pair wasn't expected,
+  // issue a error/warning to added to the file.
   if (have_expected_prefix_file) {
+    if (prefixes_must_be_registered) {
+      *out_error =
+        "error: '" + file->name() + "' has 'option objc_class_prefix = \"" +
+        prefix + "\";', but it is not registered; add it to the expected" +
+        " prefixes file (" + expected_prefixes_path + ") for the package" +
+        "'" + package + "'.";
+      return false;
+    }
+
     std::cerr
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
@@ -1391,6 +1409,8 @@ bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
         ValidateObjCClassPrefix(files[i],
                                 generation_options.expected_prefixes_path,
                                 expected_package_prefixes,
+                                generation_options.prefixes_must_be_registered,
+                                generation_options.require_prefixes,
                                 out_error);
     if (!is_valid) {
       return false;
@@ -1403,7 +1423,7 @@ TextFormatDecodeData::TextFormatDecodeData() { }
 
 TextFormatDecodeData::~TextFormatDecodeData() { }
 
-void TextFormatDecodeData::AddString(int32 key,
+void TextFormatDecodeData::AddString(int32_t key,
                                      const std::string& input_for_decode,
                                      const std::string& desired_output) {
   for (std::vector<DataEntry>::const_iterator i = entries_.begin();
@@ -1459,12 +1479,12 @@ class DecodeDataBuilder {
   }
 
  private:
-  static constexpr uint8 kAddUnderscore = 0x80;
+  static constexpr uint8_t kAddUnderscore = 0x80;
 
-  static constexpr uint8 kOpAsIs = 0x00;
-  static constexpr uint8 kOpFirstUpper = 0x40;
-  static constexpr uint8 kOpFirstLower = 0x20;
-  static constexpr uint8 kOpAllUpper = 0x60;
+  static constexpr uint8_t kOpAsIs = 0x00;
+  static constexpr uint8_t kOpFirstUpper = 0x40;
+  static constexpr uint8_t kOpFirstLower = 0x20;
+  static constexpr uint8_t kOpAllUpper = 0x60;
 
   static constexpr int kMaxSegmentLen = 0x1f;
 
@@ -1474,7 +1494,7 @@ class DecodeDataBuilder {
   }
 
   void Push() {
-    uint8 op = (op_ | segment_len_);
+    uint8_t op = (op_ | segment_len_);
     if (need_underscore_) op |= kAddUnderscore;
     if (op != 0) {
       decode_data_ += (char)op;
@@ -1506,7 +1526,7 @@ class DecodeDataBuilder {
 
   bool need_underscore_;
   bool is_all_upper_;
-  uint8 op_;
+  uint8_t op_;
   int segment_len_;
 
   std::string decode_data_;

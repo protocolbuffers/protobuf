@@ -252,7 +252,7 @@ util::StatusOr<uint32_t> ProtoStreamObjectSource::RenderList(
 }
 
 util::StatusOr<uint32_t> ProtoStreamObjectSource::RenderMap(
-    const google::protobuf::Field* field, StringPiece name,
+    const google::protobuf::Field* field, StringPiece /*name*/,
     uint32_t list_tag, ObjectWriter* ow) const {
   const google::protobuf::Type* field_type =
       typeinfo_->GetTypeByTypeUrl(field->type_url());
@@ -375,7 +375,7 @@ util::Status ProtoStreamObjectSource::RenderDuration(
 }
 
 util::Status ProtoStreamObjectSource::RenderDouble(
-    const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
+    const ProtoStreamObjectSource* os, const google::protobuf::Type& /*type*/,
     StringPiece field_name, ObjectWriter* ow) {
   uint32_t tag = os->stream_->ReadTag();
   uint64_t buffer64 = 0;  // default value of Double wrapper value
@@ -388,7 +388,7 @@ util::Status ProtoStreamObjectSource::RenderDouble(
 }
 
 util::Status ProtoStreamObjectSource::RenderFloat(
-    const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
+    const ProtoStreamObjectSource* os, const google::protobuf::Type& /*type*/,
     StringPiece field_name, ObjectWriter* ow) {
   uint32_t tag = os->stream_->ReadTag();
   uint32_t buffer32 = 0;  // default value of Float wrapper value
@@ -401,7 +401,7 @@ util::Status ProtoStreamObjectSource::RenderFloat(
 }
 
 util::Status ProtoStreamObjectSource::RenderInt64(
-    const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
+    const ProtoStreamObjectSource* os, const google::protobuf::Type& /*type*/,
     StringPiece field_name, ObjectWriter* ow) {
   uint32_t tag = os->stream_->ReadTag();
   uint64_t buffer64 = 0;  // default value of Int64 wrapper value
@@ -414,7 +414,7 @@ util::Status ProtoStreamObjectSource::RenderInt64(
 }
 
 util::Status ProtoStreamObjectSource::RenderUInt64(
-    const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
+    const ProtoStreamObjectSource* os, const google::protobuf::Type& /*type*/,
     StringPiece field_name, ObjectWriter* ow) {
   uint32_t tag = os->stream_->ReadTag();
   uint64_t buffer64 = 0;  // default value of UInt64 wrapper value
@@ -427,7 +427,7 @@ util::Status ProtoStreamObjectSource::RenderUInt64(
 }
 
 util::Status ProtoStreamObjectSource::RenderInt32(
-    const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
+    const ProtoStreamObjectSource* os, const google::protobuf::Type& /*type*/,
     StringPiece field_name, ObjectWriter* ow) {
   uint32_t tag = os->stream_->ReadTag();
   uint32_t buffer32 = 0;  // default value of Int32 wrapper value
@@ -440,7 +440,7 @@ util::Status ProtoStreamObjectSource::RenderInt32(
 }
 
 util::Status ProtoStreamObjectSource::RenderUInt32(
-    const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
+    const ProtoStreamObjectSource* os, const google::protobuf::Type& /*type*/,
     StringPiece field_name, ObjectWriter* ow) {
   uint32_t tag = os->stream_->ReadTag();
   uint32_t buffer32 = 0;  // default value of UInt32 wrapper value
@@ -453,7 +453,7 @@ util::Status ProtoStreamObjectSource::RenderUInt32(
 }
 
 util::Status ProtoStreamObjectSource::RenderBool(
-    const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
+    const ProtoStreamObjectSource* os, const google::protobuf::Type& /*type*/,
     StringPiece field_name, ObjectWriter* ow) {
   uint32_t tag = os->stream_->ReadTag();
   uint64_t buffer64 = 0;  // results in 'false' value as default, which is the
@@ -467,7 +467,7 @@ util::Status ProtoStreamObjectSource::RenderBool(
 }
 
 util::Status ProtoStreamObjectSource::RenderString(
-    const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
+    const ProtoStreamObjectSource* os, const google::protobuf::Type& /*type*/,
     StringPiece field_name, ObjectWriter* ow) {
   uint32_t tag = os->stream_->ReadTag();
   uint32_t buffer32;
@@ -482,7 +482,7 @@ util::Status ProtoStreamObjectSource::RenderString(
 }
 
 util::Status ProtoStreamObjectSource::RenderBytes(
-    const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
+    const ProtoStreamObjectSource* os, const google::protobuf::Type& /*type*/,
     StringPiece field_name, ObjectWriter* ow) {
   uint32_t tag = os->stream_->ReadTag();
   uint32_t buffer32;
