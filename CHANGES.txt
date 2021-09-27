@@ -1,4 +1,4 @@
-2021-09-13 version 3.18.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Protocol Compiler
   * Make proto2::Message::DiscardUnknownFields() non-virtual
 
@@ -25,7 +25,7 @@
   Kotlin
   * Generated Kotlin code is Explicit API mode compatible
 
-Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2021-09-13 version 3.18.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   C++
   * Fix warnings raised by clang 11 (#8664)
   * Make StringPiece constructible from std::string_view (#8707)
