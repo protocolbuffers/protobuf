@@ -1,4 +1,4 @@
-Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2021-09-13 version 3.18.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Protocol Compiler
   * Make proto2::Message::DiscardUnknownFields() non-virtual
 
@@ -27,6 +27,16 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
 Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   C++
+  * Fix warnings raised by clang 11 (#8664)
+  * Make StringPiece constructible from std::string_view (#8707)
+  * Add missing capability attributes for LLVM 12 (#8714)
+  * Stop using std::iterator (deprecated in C++17). (#8741)
+  * Move field_access_listener from libprotobuf-lite to libprotobuf (#8775)
+  * Fix #7047 Safely handle setlocale (#8735)
+  * Remove deprecated version of SetTotalBytesLimit() (#8794)
+  * Support arena allocation of google::protobuf::AnyMetadata (#8758)
+  * Fix undefined symbol error around SharedCtor() (#8827)
+  * Fix default value of enum(int) in json_util with proto2 (#8835)
   * Better Smaller ByteSizeLong
   * Introduce event filters for inject_field_listener_events
   * Reduce memory usage of DescriptorPool
@@ -50,6 +60,8 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Reduce memory usage of the DescriptorPool type.
 
   Java
+  * Fix errorprone conflict (#8723)
+  * Removing deprecated TimeUtil class. (#8749)
   * Optimized FieldDescriptor.valueOf() to avoid array copying.
   * Removing deprecated TimeUtil class.
   * Add Durations.parseUnchecked(String) and Timestamps.parseUnchecked(String)
@@ -59,6 +71,24 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Optimize binary parsing of repeated float64
   * Fix for optimization when reading doubles from binary wire format
   * Replace toArray implementation with toJSON.
+
+  Python
+  * Drops support for 2.7 and 3.5.
+
+  PHP
+  * Migrate PHP & Ruby to ABSL wyhash (#8854)
+  * Added support for PHP 8.1 (currently in RC1) to the C extension (#8964)
+  * Fixed PHP SEGV when constructing messages from a destructor. (#8969)
+
+  Ruby
+  * Move DSL implementation from C to pure Ruby (#8850)
+  * Fixed a memory bug with RepeatedField#+. (#8970)
+
+  Other
+  * [csharp] ByteString.CreateCodedInput should use ArraySegment offset and count (#8740)
+  * [ObjC] Add support for using the proto package to prefix symbols. (#8760)
+  * field_presence.md: fix Go example (#8788)
+
 
   Kotlin
   * Suppress NOTHING_TO_INLINE in Kotlin generated inline functions.

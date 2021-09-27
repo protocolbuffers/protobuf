@@ -38,14 +38,9 @@
 // Initializes the Def module, which defines all of the descriptor classes.
 void Def_ModuleInit();
 
-// Creates a new DescriptorPool to wrap the given symtab. The DescriptorPool
-// takes ownership of the given symtab. If symtab is NULL, the DescriptorPool
-// will create an empty symtab instead.
+// Creates a new DescriptorPool to wrap the given symtab, which must not be
+// NULL.
 void DescriptorPool_CreateWithSymbolTable(zval *zv, upb_symtab *symtab);
-
-// Given a zval representing a DescriptorPool, steals and returns its symtab,
-// which is now owned by the caller.
-upb_symtab *DescriptorPool_Steal(zval *zv);
 
 upb_symtab *DescriptorPool_GetSymbolTable();
 

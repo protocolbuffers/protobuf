@@ -52,7 +52,7 @@ const zval *get_generated_pool();
 #define PROTO_RETURN_VAL zval*
 #endif
 
-// Sine php 8.0, the Object Handlers API was changed to receive zend_object*
+// Since php 8.0, the Object Handlers API was changed to receive zend_object*
 // instead of zval* and zend_string* instead of zval* for property names.
 // https://github.com/php/php-src/blob/php-8.0.0beta1/UPGRADING.INTERNALS#L37-L39
 #if PHP_VERSION_ID < 80000
@@ -74,6 +74,16 @@ const zval *get_generated_pool();
 #define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
 #endif
 
+// In PHP 8.1, several old interfaces are removed:
+// https://github.com/php/php-src/blob/14f599ea7def7c7a59c40aff763ce8b105573e7a/UPGRADING.INTERNALS#L27-L31
+//
+// We now use the new interfaces (zend_ce_arrayaccess and zend_ce_countable).
+// However we have to polyfill zend_ce_countable, which was only introduced in
+// PHP 7.2.0.
+#if PHP_VERSION_ID < 70200
+#define zend_ce_countable spl_ce_Countable
+#endif
+
 ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
 ZEND_END_ARG_INFO()
 
@@ -81,7 +91,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_setter, 0, 0, 1)
   ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-#define PHP_PROTOBUF_VERSION "3.17.3"
+#define PHP_PROTOBUF_VERSION "3.18.0"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:

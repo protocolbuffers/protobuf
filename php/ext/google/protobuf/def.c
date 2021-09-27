@@ -731,44 +731,25 @@ static DescriptorPool *GetPool(const zval* this_ptr) {
 }
 
 /**
- * Object handler to create an DescriptorPool.
- */
-static zend_object* DescriptorPool_create(zend_class_entry *class_type) {
-  DescriptorPool *intern = emalloc(sizeof(DescriptorPool));
-  zend_object_std_init(&intern->std, class_type);
-  intern->std.handlers = &DescriptorPool_object_handlers;
-  intern->symtab = upb_symtab_new();
-  // Skip object_properties_init(), we don't allow derived classes.
-  return &intern->std;
-}
-
-/**
  * Object handler to free an DescriptorPool.
  */
 static void DescriptorPool_destructor(zend_object* obj) {
   DescriptorPool* intern = (DescriptorPool*)obj;
-  if (intern->symtab) {
-    upb_symtab_free(intern->symtab);
-  }
-  intern->symtab = NULL;
+
+  // We can't free our underlying symtab here, because user code may create
+  // messages from destructors that will refer to it. The symtab will be freed
+  // by our RSHUTDOWN() handler in protobuf.c
+
   zend_object_std_dtor(&intern->std);
 }
 
 void DescriptorPool_CreateWithSymbolTable(zval *zv, upb_symtab *symtab) {
-  ZVAL_OBJ(zv, DescriptorPool_create(DescriptorPool_class_entry));
+  DescriptorPool *intern = emalloc(sizeof(DescriptorPool));
+  zend_object_std_init(&intern->std, DescriptorPool_class_entry);
+  intern->std.handlers = &DescriptorPool_object_handlers;
+  intern->symtab = symtab;
 
-  if (symtab) {
-    DescriptorPool *intern = GetPool(zv);
-    upb_symtab_free(intern->symtab);
-    intern->symtab = symtab;
-  }
-}
-
-upb_symtab *DescriptorPool_Steal(zval *zv) {
-  DescriptorPool *intern = GetPool(zv);
-  upb_symtab *ret = intern->symtab;
-  intern->symtab = NULL;
-  return ret;
+  ZVAL_OBJ(zv, &intern->std);
 }
 
 upb_symtab *DescriptorPool_GetSymbolTable() {
@@ -1120,7 +1101,7 @@ void Def_ModuleInit() {
                    DescriptorPool_methods);
   DescriptorPool_class_entry = zend_register_internal_class(&tmp_ce);
   DescriptorPool_class_entry->ce_flags |= ZEND_ACC_FINAL;
-  DescriptorPool_class_entry->create_object = DescriptorPool_create;
+  DescriptorPool_class_entry->create_object = CreateHandler_ReturnNull;
   h = &DescriptorPool_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = DescriptorPool_destructor;
