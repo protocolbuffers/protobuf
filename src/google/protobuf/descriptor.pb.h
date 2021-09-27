@@ -410,11 +410,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
 
   // implements Message ----------------------------------------------
 
-  inline FileDescriptorSet* New() const final {
-    return new FileDescriptorSet();
-  }
-
-  FileDescriptorSet* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FileDescriptorSet* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FileDescriptorSet>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -438,6 +434,8 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FileDescriptorSet* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.FileDescriptorSet";
@@ -574,11 +572,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  inline FileDescriptorProto* New() const final {
-    return new FileDescriptorProto();
-  }
-
-  FileDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FileDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FileDescriptorProto>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -602,6 +596,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FileDescriptorProto* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.FileDescriptorProto";
@@ -787,7 +783,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -805,7 +801,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_package(ArgT0&& arg0, ArgT... args);
   std::string* mutable_package();
-  PROTOBUF_MUST_USE_RESULT std::string* release_package();
+  PROTOBUF_NODISCARD std::string* release_package();
   void set_allocated_package(std::string* package);
   private:
   const std::string& _internal_package() const;
@@ -823,7 +819,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_syntax(ArgT0&& arg0, ArgT... args);
   std::string* mutable_syntax();
-  PROTOBUF_MUST_USE_RESULT std::string* release_syntax();
+  PROTOBUF_NODISCARD std::string* release_syntax();
   void set_allocated_syntax(std::string* syntax);
   private:
   const std::string& _internal_syntax() const;
@@ -838,7 +834,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   public:
   void clear_options();
   const ::PROTOBUF_NAMESPACE_ID::FileOptions& options() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::FileOptions* release_options();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::FileOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::FileOptions* mutable_options();
   void set_allocated_options(::PROTOBUF_NAMESPACE_ID::FileOptions* options);
   private:
@@ -856,7 +852,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   public:
   void clear_source_code_info();
   const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo& source_code_info() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* release_source_code_info();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* release_source_code_info();
   ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* mutable_source_code_info();
   void set_allocated_source_code_info(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* source_code_info);
   private:
@@ -973,11 +969,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
 
   // implements Message ----------------------------------------------
 
-  inline DescriptorProto_ExtensionRange* New() const final {
-    return new DescriptorProto_ExtensionRange();
-  }
-
-  DescriptorProto_ExtensionRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  DescriptorProto_ExtensionRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<DescriptorProto_ExtensionRange>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -1001,6 +993,8 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(DescriptorProto_ExtensionRange* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.DescriptorProto.ExtensionRange";
@@ -1034,7 +1028,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   public:
   void clear_options();
   const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions& options() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* release_options();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* mutable_options();
   void set_allocated_options(::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* options);
   private:
@@ -1168,11 +1162,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
 
   // implements Message ----------------------------------------------
 
-  inline DescriptorProto_ReservedRange* New() const final {
-    return new DescriptorProto_ReservedRange();
-  }
-
-  DescriptorProto_ReservedRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  DescriptorProto_ReservedRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<DescriptorProto_ReservedRange>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -1196,6 +1186,8 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(DescriptorProto_ReservedRange* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.DescriptorProto.ReservedRange";
@@ -1343,11 +1335,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  inline DescriptorProto* New() const final {
-    return new DescriptorProto();
-  }
-
-  DescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  DescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<DescriptorProto>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -1371,6 +1359,8 @@ class PROTOBUF_EXPORT DescriptorProto final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(DescriptorProto* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.DescriptorProto";
@@ -1567,7 +1557,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -1582,7 +1572,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
   public:
   void clear_options();
   const ::PROTOBUF_NAMESPACE_ID::MessageOptions& options() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::MessageOptions* release_options();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::MessageOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::MessageOptions* mutable_options();
   void set_allocated_options(::PROTOBUF_NAMESPACE_ID::MessageOptions* options);
   private:
@@ -1697,11 +1687,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
 
   // implements Message ----------------------------------------------
 
-  inline ExtensionRangeOptions* New() const final {
-    return new ExtensionRangeOptions();
-  }
-
-  ExtensionRangeOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  ExtensionRangeOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<ExtensionRangeOptions>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -1725,6 +1711,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ExtensionRangeOptions* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.ExtensionRangeOptions";
@@ -1856,7 +1844,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -2053,11 +2041,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  inline FieldDescriptorProto* New() const final {
-    return new FieldDescriptorProto();
-  }
-
-  FieldDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FieldDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FieldDescriptorProto>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -2081,6 +2065,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FieldDescriptorProto* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.FieldDescriptorProto";
@@ -2219,7 +2205,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -2237,7 +2223,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_extendee(ArgT0&& arg0, ArgT... args);
   std::string* mutable_extendee();
-  PROTOBUF_MUST_USE_RESULT std::string* release_extendee();
+  PROTOBUF_NODISCARD std::string* release_extendee();
   void set_allocated_extendee(std::string* extendee);
   private:
   const std::string& _internal_extendee() const;
@@ -2255,7 +2241,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_type_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_type_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_type_name();
+  PROTOBUF_NODISCARD std::string* release_type_name();
   void set_allocated_type_name(std::string* type_name);
   private:
   const std::string& _internal_type_name() const;
@@ -2273,7 +2259,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_default_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_default_value();
-  PROTOBUF_MUST_USE_RESULT std::string* release_default_value();
+  PROTOBUF_NODISCARD std::string* release_default_value();
   void set_allocated_default_value(std::string* default_value);
   private:
   const std::string& _internal_default_value() const;
@@ -2291,7 +2277,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_json_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_json_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_json_name();
+  PROTOBUF_NODISCARD std::string* release_json_name();
   void set_allocated_json_name(std::string* json_name);
   private:
   const std::string& _internal_json_name() const;
@@ -2306,7 +2292,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   public:
   void clear_options();
   const ::PROTOBUF_NAMESPACE_ID::FieldOptions& options() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::FieldOptions* release_options();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::FieldOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::FieldOptions* mutable_options();
   void set_allocated_options(::PROTOBUF_NAMESPACE_ID::FieldOptions* options);
   private:
@@ -2487,11 +2473,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  inline OneofDescriptorProto* New() const final {
-    return new OneofDescriptorProto();
-  }
-
-  OneofDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  OneofDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<OneofDescriptorProto>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -2515,6 +2497,8 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(OneofDescriptorProto* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.OneofDescriptorProto";
@@ -2550,7 +2534,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -2565,7 +2549,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   public:
   void clear_options();
   const ::PROTOBUF_NAMESPACE_ID::OneofOptions& options() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::OneofOptions* release_options();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::OneofOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::OneofOptions* mutable_options();
   void set_allocated_options(::PROTOBUF_NAMESPACE_ID::OneofOptions* options);
   private:
@@ -2672,11 +2656,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
 
   // implements Message ----------------------------------------------
 
-  inline EnumDescriptorProto_EnumReservedRange* New() const final {
-    return new EnumDescriptorProto_EnumReservedRange();
-  }
-
-  EnumDescriptorProto_EnumReservedRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  EnumDescriptorProto_EnumReservedRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumDescriptorProto_EnumReservedRange>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -2700,6 +2680,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumDescriptorProto_EnumReservedRange* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.EnumDescriptorProto.EnumReservedRange";
@@ -2847,11 +2829,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  inline EnumDescriptorProto* New() const final {
-    return new EnumDescriptorProto();
-  }
-
-  EnumDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  EnumDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumDescriptorProto>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -2875,6 +2853,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumDescriptorProto* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.EnumDescriptorProto";
@@ -2975,7 +2955,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -2990,7 +2970,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   public:
   void clear_options();
   const ::PROTOBUF_NAMESPACE_ID::EnumOptions& options() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::EnumOptions* release_options();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::EnumOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::EnumOptions* mutable_options();
   void set_allocated_options(::PROTOBUF_NAMESPACE_ID::EnumOptions* options);
   private:
@@ -3100,11 +3080,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  inline EnumValueDescriptorProto* New() const final {
-    return new EnumValueDescriptorProto();
-  }
-
-  EnumValueDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  EnumValueDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumValueDescriptorProto>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -3128,6 +3104,8 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumValueDescriptorProto* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.EnumValueDescriptorProto";
@@ -3164,7 +3142,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -3179,7 +3157,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   public:
   void clear_options();
   const ::PROTOBUF_NAMESPACE_ID::EnumValueOptions& options() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::EnumValueOptions* release_options();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::EnumValueOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::EnumValueOptions* mutable_options();
   void set_allocated_options(::PROTOBUF_NAMESPACE_ID::EnumValueOptions* options);
   private:
@@ -3300,11 +3278,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  inline ServiceDescriptorProto* New() const final {
-    return new ServiceDescriptorProto();
-  }
-
-  ServiceDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  ServiceDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<ServiceDescriptorProto>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -3328,6 +3302,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ServiceDescriptorProto* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.ServiceDescriptorProto";
@@ -3382,7 +3358,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -3397,7 +3373,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   public:
   void clear_options();
   const ::PROTOBUF_NAMESPACE_ID::ServiceOptions& options() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::ServiceOptions* release_options();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::ServiceOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::ServiceOptions* mutable_options();
   void set_allocated_options(::PROTOBUF_NAMESPACE_ID::ServiceOptions* options);
   private:
@@ -3505,11 +3481,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
 
   // implements Message ----------------------------------------------
 
-  inline MethodDescriptorProto* New() const final {
-    return new MethodDescriptorProto();
-  }
-
-  MethodDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  MethodDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<MethodDescriptorProto>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -3533,6 +3505,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(MethodDescriptorProto* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.MethodDescriptorProto";
@@ -3572,7 +3546,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -3590,7 +3564,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_input_type(ArgT0&& arg0, ArgT... args);
   std::string* mutable_input_type();
-  PROTOBUF_MUST_USE_RESULT std::string* release_input_type();
+  PROTOBUF_NODISCARD std::string* release_input_type();
   void set_allocated_input_type(std::string* input_type);
   private:
   const std::string& _internal_input_type() const;
@@ -3608,7 +3582,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_output_type(ArgT0&& arg0, ArgT... args);
   std::string* mutable_output_type();
-  PROTOBUF_MUST_USE_RESULT std::string* release_output_type();
+  PROTOBUF_NODISCARD std::string* release_output_type();
   void set_allocated_output_type(std::string* output_type);
   private:
   const std::string& _internal_output_type() const;
@@ -3623,7 +3597,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   public:
   void clear_options();
   const ::PROTOBUF_NAMESPACE_ID::MethodOptions& options() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::MethodOptions* release_options();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::MethodOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::MethodOptions* mutable_options();
   void set_allocated_options(::PROTOBUF_NAMESPACE_ID::MethodOptions* options);
   private:
@@ -3760,11 +3734,7 @@ class PROTOBUF_EXPORT FileOptions final :
 
   // implements Message ----------------------------------------------
 
-  inline FileOptions* New() const final {
-    return new FileOptions();
-  }
-
-  FileOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FileOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FileOptions>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -3788,6 +3758,8 @@ class PROTOBUF_EXPORT FileOptions final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FileOptions* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.FileOptions";
@@ -3892,7 +3864,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_java_package(ArgT0&& arg0, ArgT... args);
   std::string* mutable_java_package();
-  PROTOBUF_MUST_USE_RESULT std::string* release_java_package();
+  PROTOBUF_NODISCARD std::string* release_java_package();
   void set_allocated_java_package(std::string* java_package);
   private:
   const std::string& _internal_java_package() const;
@@ -3910,7 +3882,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_java_outer_classname(ArgT0&& arg0, ArgT... args);
   std::string* mutable_java_outer_classname();
-  PROTOBUF_MUST_USE_RESULT std::string* release_java_outer_classname();
+  PROTOBUF_NODISCARD std::string* release_java_outer_classname();
   void set_allocated_java_outer_classname(std::string* java_outer_classname);
   private:
   const std::string& _internal_java_outer_classname() const;
@@ -3928,7 +3900,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_go_package(ArgT0&& arg0, ArgT... args);
   std::string* mutable_go_package();
-  PROTOBUF_MUST_USE_RESULT std::string* release_go_package();
+  PROTOBUF_NODISCARD std::string* release_go_package();
   void set_allocated_go_package(std::string* go_package);
   private:
   const std::string& _internal_go_package() const;
@@ -3946,7 +3918,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_objc_class_prefix(ArgT0&& arg0, ArgT... args);
   std::string* mutable_objc_class_prefix();
-  PROTOBUF_MUST_USE_RESULT std::string* release_objc_class_prefix();
+  PROTOBUF_NODISCARD std::string* release_objc_class_prefix();
   void set_allocated_objc_class_prefix(std::string* objc_class_prefix);
   private:
   const std::string& _internal_objc_class_prefix() const;
@@ -3964,7 +3936,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_csharp_namespace(ArgT0&& arg0, ArgT... args);
   std::string* mutable_csharp_namespace();
-  PROTOBUF_MUST_USE_RESULT std::string* release_csharp_namespace();
+  PROTOBUF_NODISCARD std::string* release_csharp_namespace();
   void set_allocated_csharp_namespace(std::string* csharp_namespace);
   private:
   const std::string& _internal_csharp_namespace() const;
@@ -3982,7 +3954,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_swift_prefix(ArgT0&& arg0, ArgT... args);
   std::string* mutable_swift_prefix();
-  PROTOBUF_MUST_USE_RESULT std::string* release_swift_prefix();
+  PROTOBUF_NODISCARD std::string* release_swift_prefix();
   void set_allocated_swift_prefix(std::string* swift_prefix);
   private:
   const std::string& _internal_swift_prefix() const;
@@ -4000,7 +3972,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_php_class_prefix(ArgT0&& arg0, ArgT... args);
   std::string* mutable_php_class_prefix();
-  PROTOBUF_MUST_USE_RESULT std::string* release_php_class_prefix();
+  PROTOBUF_NODISCARD std::string* release_php_class_prefix();
   void set_allocated_php_class_prefix(std::string* php_class_prefix);
   private:
   const std::string& _internal_php_class_prefix() const;
@@ -4018,7 +3990,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_php_namespace(ArgT0&& arg0, ArgT... args);
   std::string* mutable_php_namespace();
-  PROTOBUF_MUST_USE_RESULT std::string* release_php_namespace();
+  PROTOBUF_NODISCARD std::string* release_php_namespace();
   void set_allocated_php_namespace(std::string* php_namespace);
   private:
   const std::string& _internal_php_namespace() const;
@@ -4036,7 +4008,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_php_metadata_namespace(ArgT0&& arg0, ArgT... args);
   std::string* mutable_php_metadata_namespace();
-  PROTOBUF_MUST_USE_RESULT std::string* release_php_metadata_namespace();
+  PROTOBUF_NODISCARD std::string* release_php_metadata_namespace();
   void set_allocated_php_metadata_namespace(std::string* php_metadata_namespace);
   private:
   const std::string& _internal_php_metadata_namespace() const;
@@ -4054,7 +4026,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_ruby_package(ArgT0&& arg0, ArgT... args);
   std::string* mutable_ruby_package();
-  PROTOBUF_MUST_USE_RESULT std::string* release_ruby_package();
+  PROTOBUF_NODISCARD std::string* release_ruby_package();
   void set_allocated_ruby_package(std::string* ruby_package);
   private:
   const std::string& _internal_ruby_package() const;
@@ -4281,7 +4253,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -4499,11 +4471,7 @@ class PROTOBUF_EXPORT MessageOptions final :
 
   // implements Message ----------------------------------------------
 
-  inline MessageOptions* New() const final {
-    return new MessageOptions();
-  }
-
-  MessageOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  MessageOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<MessageOptions>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -4527,6 +4495,8 @@ class PROTOBUF_EXPORT MessageOptions final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(MessageOptions* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.MessageOptions";
@@ -4714,7 +4684,7 @@ class PROTOBUF_EXPORT MessageOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -4916,11 +4886,7 @@ class PROTOBUF_EXPORT FieldOptions final :
 
   // implements Message ----------------------------------------------
 
-  inline FieldOptions* New() const final {
-    return new FieldOptions();
-  }
-
-  FieldOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FieldOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FieldOptions>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -4944,6 +4910,8 @@ class PROTOBUF_EXPORT FieldOptions final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FieldOptions* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.FieldOptions";
@@ -5223,7 +5191,7 @@ class PROTOBUF_EXPORT FieldOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -5427,11 +5395,7 @@ class PROTOBUF_EXPORT OneofOptions final :
 
   // implements Message ----------------------------------------------
 
-  inline OneofOptions* New() const final {
-    return new OneofOptions();
-  }
-
-  OneofOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  OneofOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<OneofOptions>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -5455,6 +5419,8 @@ class PROTOBUF_EXPORT OneofOptions final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(OneofOptions* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.OneofOptions";
@@ -5586,7 +5552,7 @@ class PROTOBUF_EXPORT OneofOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -5783,11 +5749,7 @@ class PROTOBUF_EXPORT EnumOptions final :
 
   // implements Message ----------------------------------------------
 
-  inline EnumOptions* New() const final {
-    return new EnumOptions();
-  }
-
-  EnumOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  EnumOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumOptions>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -5811,6 +5773,8 @@ class PROTOBUF_EXPORT EnumOptions final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumOptions* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.EnumOptions";
@@ -5970,7 +5934,7 @@ class PROTOBUF_EXPORT EnumOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -6170,11 +6134,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
 
   // implements Message ----------------------------------------------
 
-  inline EnumValueOptions* New() const final {
-    return new EnumValueOptions();
-  }
-
-  EnumValueOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  EnumValueOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumValueOptions>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -6198,6 +6158,8 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumValueOptions* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.EnumValueOptions";
@@ -6343,7 +6305,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -6542,11 +6504,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
 
   // implements Message ----------------------------------------------
 
-  inline ServiceOptions* New() const final {
-    return new ServiceOptions();
-  }
-
-  ServiceOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  ServiceOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<ServiceOptions>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -6570,6 +6528,8 @@ class PROTOBUF_EXPORT ServiceOptions final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ServiceOptions* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.ServiceOptions";
@@ -6715,7 +6675,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -6914,11 +6874,7 @@ class PROTOBUF_EXPORT MethodOptions final :
 
   // implements Message ----------------------------------------------
 
-  inline MethodOptions* New() const final {
-    return new MethodOptions();
-  }
-
-  MethodOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  MethodOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<MethodOptions>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -6942,6 +6898,8 @@ class PROTOBUF_EXPORT MethodOptions final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(MethodOptions* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.MethodOptions";
@@ -7133,7 +7091,7 @@ class PROTOBUF_EXPORT MethodOptions final :
   template <typename _proto_TypeTraits,
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
-  inline PROTOBUF_MUST_USE_RESULT
+  PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -7333,11 +7291,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
 
   // implements Message ----------------------------------------------
 
-  inline UninterpretedOption_NamePart* New() const final {
-    return new UninterpretedOption_NamePart();
-  }
-
-  UninterpretedOption_NamePart* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  UninterpretedOption_NamePart* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<UninterpretedOption_NamePart>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -7361,6 +7315,8 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(UninterpretedOption_NamePart* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.UninterpretedOption.NamePart";
@@ -7396,7 +7352,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name_part(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name_part();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name_part();
+  PROTOBUF_NODISCARD std::string* release_name_part();
   void set_allocated_name_part(std::string* name_part);
   private:
   const std::string& _internal_name_part() const;
@@ -7516,11 +7472,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
 
   // implements Message ----------------------------------------------
 
-  inline UninterpretedOption* New() const final {
-    return new UninterpretedOption();
-  }
-
-  UninterpretedOption* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  UninterpretedOption* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<UninterpretedOption>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -7544,6 +7496,8 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(UninterpretedOption* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.UninterpretedOption";
@@ -7604,7 +7558,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_identifier_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_identifier_value();
-  PROTOBUF_MUST_USE_RESULT std::string* release_identifier_value();
+  PROTOBUF_NODISCARD std::string* release_identifier_value();
   void set_allocated_identifier_value(std::string* identifier_value);
   private:
   const std::string& _internal_identifier_value() const;
@@ -7622,7 +7576,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_string_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_string_value();
-  PROTOBUF_MUST_USE_RESULT std::string* release_string_value();
+  PROTOBUF_NODISCARD std::string* release_string_value();
   void set_allocated_string_value(std::string* string_value);
   private:
   const std::string& _internal_string_value() const;
@@ -7640,7 +7594,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_aggregate_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_aggregate_value();
-  PROTOBUF_MUST_USE_RESULT std::string* release_aggregate_value();
+  PROTOBUF_NODISCARD std::string* release_aggregate_value();
   void set_allocated_aggregate_value(std::string* aggregate_value);
   private:
   const std::string& _internal_aggregate_value() const;
@@ -7788,11 +7742,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
 
   // implements Message ----------------------------------------------
 
-  inline SourceCodeInfo_Location* New() const final {
-    return new SourceCodeInfo_Location();
-  }
-
-  SourceCodeInfo_Location* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  SourceCodeInfo_Location* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<SourceCodeInfo_Location>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -7816,6 +7766,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(SourceCodeInfo_Location* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.SourceCodeInfo.Location";
@@ -7922,7 +7874,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_leading_comments(ArgT0&& arg0, ArgT... args);
   std::string* mutable_leading_comments();
-  PROTOBUF_MUST_USE_RESULT std::string* release_leading_comments();
+  PROTOBUF_NODISCARD std::string* release_leading_comments();
   void set_allocated_leading_comments(std::string* leading_comments);
   private:
   const std::string& _internal_leading_comments() const;
@@ -7940,7 +7892,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_trailing_comments(ArgT0&& arg0, ArgT... args);
   std::string* mutable_trailing_comments();
-  PROTOBUF_MUST_USE_RESULT std::string* release_trailing_comments();
+  PROTOBUF_NODISCARD std::string* release_trailing_comments();
   void set_allocated_trailing_comments(std::string* trailing_comments);
   private:
   const std::string& _internal_trailing_comments() const;
@@ -8049,11 +8001,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
 
   // implements Message ----------------------------------------------
 
-  inline SourceCodeInfo* New() const final {
-    return new SourceCodeInfo();
-  }
-
-  SourceCodeInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  SourceCodeInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<SourceCodeInfo>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -8077,6 +8025,8 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(SourceCodeInfo* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.SourceCodeInfo";
@@ -8215,11 +8165,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
 
   // implements Message ----------------------------------------------
 
-  inline GeneratedCodeInfo_Annotation* New() const final {
-    return new GeneratedCodeInfo_Annotation();
-  }
-
-  GeneratedCodeInfo_Annotation* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  GeneratedCodeInfo_Annotation* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<GeneratedCodeInfo_Annotation>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -8243,6 +8189,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(GeneratedCodeInfo_Annotation* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.GeneratedCodeInfo.Annotation";
@@ -8302,7 +8250,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_source_file(ArgT0&& arg0, ArgT... args);
   std::string* mutable_source_file();
-  PROTOBUF_MUST_USE_RESULT std::string* release_source_file();
+  PROTOBUF_NODISCARD std::string* release_source_file();
   void set_allocated_source_file(std::string* source_file);
   private:
   const std::string& _internal_source_file() const;
@@ -8435,11 +8383,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
 
   // implements Message ----------------------------------------------
 
-  inline GeneratedCodeInfo* New() const final {
-    return new GeneratedCodeInfo();
-  }
-
-  GeneratedCodeInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  GeneratedCodeInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<GeneratedCodeInfo>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -8463,6 +8407,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(GeneratedCodeInfo* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.GeneratedCodeInfo";
@@ -8618,12 +8564,13 @@ inline std::string* FileDescriptorProto::release_name() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileDescriptorProto::set_allocated_name(std::string* name) {
   if (name != nullptr) {
@@ -8686,12 +8633,13 @@ inline std::string* FileDescriptorProto::release_package() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
-  return package_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = package_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (package_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileDescriptorProto::set_allocated_package(std::string* package) {
   if (package != nullptr) {
@@ -9263,12 +9211,13 @@ inline std::string* FileDescriptorProto::release_syntax() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
-  return syntax_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = syntax_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (syntax_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     syntax_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileDescriptorProto::set_allocated_syntax(std::string* syntax) {
   if (syntax != nullptr) {
@@ -9545,12 +9494,13 @@ inline std::string* DescriptorProto::release_name() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void DescriptorProto::set_allocated_name(std::string* name) {
   if (name != nullptr) {
@@ -10106,12 +10056,13 @@ inline std::string* FieldDescriptorProto::release_name() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FieldDescriptorProto::set_allocated_name(std::string* name) {
   if (name != nullptr) {
@@ -10260,12 +10211,13 @@ inline std::string* FieldDescriptorProto::release_type_name() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
-  return type_name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = type_name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (type_name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     type_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FieldDescriptorProto::set_allocated_type_name(std::string* type_name) {
   if (type_name != nullptr) {
@@ -10328,12 +10280,13 @@ inline std::string* FieldDescriptorProto::release_extendee() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
-  return extendee_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = extendee_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (extendee_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     extendee_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FieldDescriptorProto::set_allocated_extendee(std::string* extendee) {
   if (extendee != nullptr) {
@@ -10396,12 +10349,13 @@ inline std::string* FieldDescriptorProto::release_default_value() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000008u;
-  return default_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = default_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (default_value_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     default_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FieldDescriptorProto::set_allocated_default_value(std::string* default_value) {
   if (default_value != nullptr) {
@@ -10492,12 +10446,13 @@ inline std::string* FieldDescriptorProto::release_json_name() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000010u;
-  return json_name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = json_name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (json_name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     json_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FieldDescriptorProto::set_allocated_json_name(std::string* json_name) {
   if (json_name != nullptr) {
@@ -10682,12 +10637,13 @@ inline std::string* OneofDescriptorProto::release_name() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void OneofDescriptorProto::set_allocated_name(std::string* name) {
   if (name != nullptr) {
@@ -10904,12 +10860,13 @@ inline std::string* EnumDescriptorProto::release_name() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void EnumDescriptorProto::set_allocated_name(std::string* name) {
   if (name != nullptr) {
@@ -11221,12 +11178,13 @@ inline std::string* EnumValueDescriptorProto::release_name() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void EnumValueDescriptorProto::set_allocated_name(std::string* name) {
   if (name != nullptr) {
@@ -11411,12 +11369,13 @@ inline std::string* ServiceDescriptorProto::release_name() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void ServiceDescriptorProto::set_allocated_name(std::string* name) {
   if (name != nullptr) {
@@ -11613,12 +11572,13 @@ inline std::string* MethodDescriptorProto::release_name() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void MethodDescriptorProto::set_allocated_name(std::string* name) {
   if (name != nullptr) {
@@ -11681,12 +11641,13 @@ inline std::string* MethodDescriptorProto::release_input_type() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
-  return input_type_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = input_type_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (input_type_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     input_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void MethodDescriptorProto::set_allocated_input_type(std::string* input_type) {
   if (input_type != nullptr) {
@@ -11749,12 +11710,13 @@ inline std::string* MethodDescriptorProto::release_output_type() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
-  return output_type_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = output_type_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (output_type_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     output_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void MethodDescriptorProto::set_allocated_output_type(std::string* output_type) {
   if (output_type != nullptr) {
@@ -11967,12 +11929,13 @@ inline std::string* FileOptions::release_java_package() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return java_package_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = java_package_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (java_package_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     java_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileOptions::set_allocated_java_package(std::string* java_package) {
   if (java_package != nullptr) {
@@ -12035,12 +11998,13 @@ inline std::string* FileOptions::release_java_outer_classname() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
-  return java_outer_classname_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = java_outer_classname_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (java_outer_classname_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     java_outer_classname_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileOptions::set_allocated_java_outer_classname(std::string* java_outer_classname) {
   if (java_outer_classname != nullptr) {
@@ -12216,12 +12180,13 @@ inline std::string* FileOptions::release_go_package() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
-  return go_package_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = go_package_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (go_package_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     go_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileOptions::set_allocated_go_package(std::string* go_package) {
   if (go_package != nullptr) {
@@ -12452,12 +12417,13 @@ inline std::string* FileOptions::release_objc_class_prefix() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000008u;
-  return objc_class_prefix_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = objc_class_prefix_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (objc_class_prefix_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     objc_class_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileOptions::set_allocated_objc_class_prefix(std::string* objc_class_prefix) {
   if (objc_class_prefix != nullptr) {
@@ -12520,12 +12486,13 @@ inline std::string* FileOptions::release_csharp_namespace() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000010u;
-  return csharp_namespace_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = csharp_namespace_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (csharp_namespace_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     csharp_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileOptions::set_allocated_csharp_namespace(std::string* csharp_namespace) {
   if (csharp_namespace != nullptr) {
@@ -12588,12 +12555,13 @@ inline std::string* FileOptions::release_swift_prefix() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000020u;
-  return swift_prefix_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = swift_prefix_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (swift_prefix_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     swift_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileOptions::set_allocated_swift_prefix(std::string* swift_prefix) {
   if (swift_prefix != nullptr) {
@@ -12656,12 +12624,13 @@ inline std::string* FileOptions::release_php_class_prefix() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000040u;
-  return php_class_prefix_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = php_class_prefix_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (php_class_prefix_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     php_class_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileOptions::set_allocated_php_class_prefix(std::string* php_class_prefix) {
   if (php_class_prefix != nullptr) {
@@ -12724,12 +12693,13 @@ inline std::string* FileOptions::release_php_namespace() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000080u;
-  return php_namespace_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = php_namespace_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (php_namespace_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     php_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileOptions::set_allocated_php_namespace(std::string* php_namespace) {
   if (php_namespace != nullptr) {
@@ -12792,12 +12762,13 @@ inline std::string* FileOptions::release_php_metadata_namespace() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000100u;
-  return php_metadata_namespace_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = php_metadata_namespace_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (php_metadata_namespace_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     php_metadata_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileOptions::set_allocated_php_metadata_namespace(std::string* php_metadata_namespace) {
   if (php_metadata_namespace != nullptr) {
@@ -12860,12 +12831,13 @@ inline std::string* FileOptions::release_ruby_package() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000200u;
-  return ruby_package_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = ruby_package_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (ruby_package_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     ruby_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void FileOptions::set_allocated_ruby_package(std::string* ruby_package) {
   if (ruby_package != nullptr) {
@@ -13731,12 +13703,13 @@ inline std::string* UninterpretedOption_NamePart::release_name_part() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return name_part_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = name_part_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (name_part_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     name_part_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void UninterpretedOption_NamePart::set_allocated_name_part(std::string* name_part) {
   if (name_part != nullptr) {
@@ -13871,12 +13844,13 @@ inline std::string* UninterpretedOption::release_identifier_value() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return identifier_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = identifier_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (identifier_value_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     identifier_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void UninterpretedOption::set_allocated_identifier_value(std::string* identifier_value) {
   if (identifier_value != nullptr) {
@@ -14023,12 +13997,13 @@ inline std::string* UninterpretedOption::release_string_value() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
-  return string_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = string_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (string_value_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     string_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void UninterpretedOption::set_allocated_string_value(std::string* string_value) {
   if (string_value != nullptr) {
@@ -14091,12 +14066,13 @@ inline std::string* UninterpretedOption::release_aggregate_value() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
-  return aggregate_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = aggregate_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (aggregate_value_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     aggregate_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void UninterpretedOption::set_allocated_aggregate_value(std::string* aggregate_value) {
   if (aggregate_value != nullptr) {
@@ -14257,12 +14233,13 @@ inline std::string* SourceCodeInfo_Location::release_leading_comments() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return leading_comments_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = leading_comments_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (leading_comments_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     leading_comments_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void SourceCodeInfo_Location::set_allocated_leading_comments(std::string* leading_comments) {
   if (leading_comments != nullptr) {
@@ -14325,12 +14302,13 @@ inline std::string* SourceCodeInfo_Location::release_trailing_comments() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
-  return trailing_comments_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = trailing_comments_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (trailing_comments_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     trailing_comments_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void SourceCodeInfo_Location::set_allocated_trailing_comments(std::string* trailing_comments) {
   if (trailing_comments != nullptr) {
@@ -14563,12 +14541,13 @@ inline std::string* GeneratedCodeInfo_Annotation::release_source_file() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return source_file_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = source_file_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (source_file_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     source_file_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(std::string* source_file) {
   if (source_file != nullptr) {

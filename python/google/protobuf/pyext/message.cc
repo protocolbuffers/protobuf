@@ -77,27 +77,14 @@
 #include <google/protobuf/port_def.inc>
 // clang-format on
 
-#if PY_MAJOR_VERSION >= 3
-  #define PyInt_AsLong PyLong_AsLong
-  #define PyInt_FromLong PyLong_FromLong
-  #define PyInt_FromSize_t PyLong_FromSize_t
-  #define PyString_Check PyUnicode_Check
-  #define PyString_FromString PyUnicode_FromString
-  #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
-  #define PyString_FromFormat PyUnicode_FromFormat
-  #if PY_VERSION_HEX < 0x03030000
-    #error "Python 3.0 - 3.2 are not supported."
-  #else
-  #define PyString_AsString(ob) \
-    (PyUnicode_Check(ob)? PyUnicode_AsUTF8(ob): PyBytes_AsString(ob))
+#define PyString_AsString(ob) \
+  (PyUnicode_Check(ob) ? PyUnicode_AsUTF8(ob) : PyBytes_AsString(ob))
 #define PyString_AsStringAndSize(ob, charpp, sizep)                           \
   (PyUnicode_Check(ob) ? ((*(charpp) = const_cast<char*>(                     \
                                PyUnicode_AsUTF8AndSize(ob, (sizep)))) == NULL \
                               ? -1                                            \
                               : 0)                                            \
                        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
-#endif
-#endif
 
 namespace google {
 namespace protobuf {
@@ -124,8 +111,6 @@ static PyObject* kEmptyWeakref;
 static PyObject* WKT_classes = NULL;
 
 namespace message_meta {
-
-static int InsertEmptyWeakref(PyTypeObject* base);
 
 namespace {
 // Copied over from internal 'google/protobuf/stubs/strutil.h'.
@@ -176,8 +161,8 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
     for (int j = 0; j < enum_descriptor->value_count(); ++j) {
       const EnumValueDescriptor* enum_value_descriptor =
           enum_descriptor->value(j);
-      ScopedPyObjectPtr value_number(PyInt_FromLong(
-          enum_value_descriptor->number()));
+      ScopedPyObjectPtr value_number(
+          PyLong_FromLong(enum_value_descriptor->number()));
       if (value_number == NULL) {
         return -1;
       }
@@ -287,13 +272,6 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   }
   CMessageClass* newtype = reinterpret_cast<CMessageClass*>(result.get());
 
-  // Insert the empty weakref into the base classes.
-  if (InsertEmptyWeakref(
-          reinterpret_cast<PyTypeObject*>(PythonMessage_class)) < 0 ||
-      InsertEmptyWeakref(CMessage_Type) < 0) {
-    return NULL;
-  }
-
   // Cache the descriptor, both as Python object and as C++ pointer.
   const Descriptor* descriptor =
       PyMessageDescriptor_AsDescriptor(py_descriptor);
@@ -348,32 +326,6 @@ static int GcClear(PyObject* pself) {
   return PyType_Type.tp_clear(pself);
 }
 
-// This function inserts and empty weakref at the end of the list of
-// subclasses for the main protocol buffer Message class.
-//
-// This eliminates a O(n^2) behaviour in the internal add_subclass
-// routine.
-static int InsertEmptyWeakref(PyTypeObject *base_type) {
-#if PY_MAJOR_VERSION >= 3
-  // Python 3.4 has already included the fix for the issue that this
-  // hack addresses. For further background and the fix please see
-  // https://bugs.python.org/issue17936.
-  return 0;
-#else
-#ifdef Py_DEBUG
-  // The code below causes all new subclasses to append an entry, which is never
-  // cleared. This is a small memory leak, which we disable in Py_DEBUG mode
-  // to have stable refcounting checks.
-#else
-  PyObject *subclasses = base_type->tp_subclasses;
-  if (subclasses && PyList_CheckExact(subclasses)) {
-    return PyList_Append(subclasses, kEmptyWeakref);
-  }
-#endif  // !Py_DEBUG
-  return 0;
-#endif  // PY_MAJOR_VERSION >= 3
-}
-
 // The _extensions_by_name dictionary is built on every access.
 // TODO(amauryfa): Migrate all users to pool.FindAllExtensions()
 static PyObject* GetExtensionsByName(CMessageClass *self, void *closure) {
@@ -426,7 +378,7 @@ static PyObject* GetExtensionsByNumber(CMessageClass *self, void *closure) {
     if (extension == NULL) {
       return NULL;
     }
-    ScopedPyObjectPtr number(PyInt_FromLong(extensions[i]->number()));
+    ScopedPyObjectPtr number(PyLong_FromLong(extensions[i]->number()));
     if (number == NULL) {
       return NULL;
     }
@@ -464,7 +416,7 @@ static PyObject* GetClassAttribute(CMessageClass *self, PyObject* name) {
           self->message_descriptor->FindExtensionByLowercaseName(field_name);
     }
     if (field) {
-      return PyInt_FromLong(field->number());
+      return PyLong_FromLong(field->number());
     }
   }
   PyErr_SetObject(PyExc_AttributeError, name);
@@ -617,20 +569,6 @@ bool VerifyIntegerCastAndRange(PyObject* arg, ValueType value) {
 
 template <class T>
 bool CheckAndGetInteger(PyObject* arg, T* value) {
-  // The fast path.
-#if PY_MAJOR_VERSION < 3
-  // For the typical case, offer a fast path.
-  if (PROTOBUF_PREDICT_TRUE(PyInt_Check(arg))) {
-    long int_result = PyInt_AsLong(arg);
-    if (PROTOBUF_PREDICT_TRUE(IsValidNumericCast<T>(int_result))) {
-      *value = static_cast<T>(int_result);
-      return true;
-    } else {
-      OutOfRangeError(arg);
-      return false;
-    }
-  }
-#endif
   // This effectively defines an integer as "an object that can be cast as
   // an integer and can be used as an ordinal number".
   // This definition includes everything that implements numbers.Integral
@@ -720,7 +658,7 @@ bool CheckAndGetFloat(PyObject* arg, float* value) {
 }
 
 bool CheckAndGetBool(PyObject* arg, bool* value) {
-  long long_value = PyInt_AsLong(arg);
+  long long_value = PyLong_AsLong(arg);  // NOLINT
   if (long_value == -1 && PyErr_Occurred()) {
     FormatTypeError(arg, "int, long, bool");
     return false;
@@ -977,7 +915,7 @@ const FieldDescriptor* GetExtensionDescriptor(PyObject* extension) {
 // descriptor, otherwise simply return value.  Always returns a new reference.
 static PyObject* GetIntegerEnumValue(const FieldDescriptor& descriptor,
                                      PyObject* value) {
-  if (PyString_Check(value) || PyUnicode_Check(value)) {
+  if (PyUnicode_Check(value)) {
     const EnumDescriptor* enum_descriptor = descriptor.enum_type();
     if (enum_descriptor == NULL) {
       PyErr_SetString(PyExc_TypeError, "not an enum field");
@@ -994,7 +932,7 @@ static PyObject* GetIntegerEnumValue(const FieldDescriptor& descriptor,
       PyErr_Format(PyExc_ValueError, "unknown enum label \"%s\"", enum_label);
       return NULL;
     }
-    return PyInt_FromLong(enum_value_descriptor->number());
+    return PyLong_FromLong(enum_value_descriptor->number());
   }
   Py_INCREF(value);
   return value;
@@ -1016,15 +954,7 @@ int DeleteRepeatedField(
 
   if (PySlice_Check(slice)) {
     from = to = step = slice_length = 0;
-#if PY_MAJOR_VERSION < 3
-    PySlice_GetIndicesEx(
-        reinterpret_cast<PySliceObject*>(slice),
-        length, &from, &to, &step, &slice_length);
-#else
-    PySlice_GetIndicesEx(
-        slice,
-        length, &from, &to, &step, &slice_length);
-#endif
+    PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slice_length);
     if (from < to) {
       min = from;
       max = to - 1;
@@ -1121,7 +1051,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
   PyObject* name;
   PyObject* value;
   while (PyDict_Next(kwargs, &pos, &name, &value)) {
-    if (!(PyString_Check(name) || PyUnicode_Check(name))) {
+    if (!(PyUnicode_Check(name))) {
       PyErr_SetString(PyExc_ValueError, "Field name must be a string");
       return -1;
     }
@@ -1396,7 +1326,7 @@ PyObject* IsInitialized(CMessage* self, PyObject* args) {
     if (initialization_errors == NULL) {
       return NULL;
     }
-    ScopedPyObjectPtr extend_name(PyString_FromString("extend"));
+    ScopedPyObjectPtr extend_name(PyUnicode_FromString("extend"));
     if (extend_name == NULL) {
       return NULL;
     }
@@ -1469,16 +1399,10 @@ bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
 PyObject* HasField(CMessage* self, PyObject* arg) {
   char* field_name;
   Py_ssize_t size;
-#if PY_MAJOR_VERSION < 3
-  if (PyString_AsStringAndSize(arg, &field_name, &size) < 0) {
-    return NULL;
-  }
-#else
   field_name = const_cast<char*>(PyUnicode_AsUTF8AndSize(arg, &size));
   if (!field_name) {
     return NULL;
   }
-#endif
 
   Message* message = self->message;
   bool is_in_oneof;
@@ -1746,7 +1670,7 @@ static PyObject* InternalSerializeToString(
     if (errors == NULL) {
       return NULL;
     }
-    ScopedPyObjectPtr comma(PyString_FromString(","));
+    ScopedPyObjectPtr comma(PyUnicode_FromString(","));
     if (comma == NULL) {
       return NULL;
     }
@@ -1872,7 +1796,7 @@ static PyObject* ToStr(CMessage* self) {
     PyErr_SetString(PyExc_ValueError, "Unable to convert message to str");
     return NULL;
   }
-  return PyString_FromString(output.c_str());
+  return PyUnicode_FromString(output.c_str());
 }
 
 PyObject* MergeFrom(CMessage* self, PyObject* arg) {
@@ -2004,9 +1928,9 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
     // TODO(jieluo): Raise error and return NULL instead.
     // b/27494216
     PyErr_Warn(nullptr, "Unexpected end-group tag: Not all data was converted");
-    return PyInt_FromLong(data.len - ctx.BytesUntilLimit(ptr));
+    return PyLong_FromLong(data.len - ctx.BytesUntilLimit(ptr));
   }
-  return PyInt_FromLong(data.len);
+  return PyLong_FromLong(data.len);
 }
 
 static PyObject* ParseFromString(CMessage* self, PyObject* arg) {
@@ -2071,7 +1995,7 @@ static PyObject* WhichOneof(CMessage* self, PyObject* arg) {
     Py_RETURN_NONE;
   } else {
     const std::string& name = field_in_oneof->name();
-    return PyString_FromStringAndSize(name.c_str(), name.size());
+    return PyUnicode_FromStringAndSize(name.c_str(), name.size());
   }
 }
 
@@ -2171,8 +2095,8 @@ PyObject* FindInitializationErrors(CMessage* self) {
   }
   for (size_t i = 0; i < errors.size(); ++i) {
     const std::string& error = errors[i];
-    PyObject* error_string = PyString_FromStringAndSize(
-        error.c_str(), error.length());
+    PyObject* error_string =
+        PyUnicode_FromStringAndSize(error.c_str(), error.length());
     if (error_string == NULL) {
       Py_DECREF(error_list);
       return NULL;
@@ -2228,7 +2152,7 @@ PyObject* InternalGetScalar(const Message* message,
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       int32_t value = reflection->GetInt32(*message, field_descriptor);
-      result = PyInt_FromLong(value);
+      result = PyLong_FromLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
@@ -2238,7 +2162,7 @@ PyObject* InternalGetScalar(const Message* message,
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
       uint32_t value = reflection->GetUInt32(*message, field_descriptor);
-      result = PyInt_FromSize_t(value);
+      result = PyLong_FromSsize_t(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
@@ -2271,7 +2195,7 @@ PyObject* InternalGetScalar(const Message* message,
     case FieldDescriptor::CPPTYPE_ENUM: {
       const EnumValueDescriptor* enum_value =
           message->GetReflection()->GetEnum(*message, field_descriptor);
-      result = PyInt_FromLong(enum_value->number());
+      result = PyLong_FromLong(enum_value->number());
       break;
     }
     default:
@@ -2461,7 +2385,7 @@ PyObject* ToUnicode(CMessage* self) {
   if (text_format == NULL) {
     return NULL;
   }
-  ScopedPyObjectPtr method_name(PyString_FromString("MessageToString"));
+  ScopedPyObjectPtr method_name(PyUnicode_FromString("MessageToString"));
   if (method_name == NULL) {
     return NULL;
   }
@@ -2472,11 +2396,7 @@ PyObject* ToUnicode(CMessage* self) {
   if (encoded == NULL) {
     return NULL;
   }
-#if PY_MAJOR_VERSION < 3
-  PyObject* decoded = PyString_AsDecodedObject(encoded.get(), "utf-8", NULL);
-#else
   PyObject* decoded = PyUnicode_FromEncodedObject(encoded.get(), "utf-8", NULL);
-#endif
   if (decoded == NULL) {
     return NULL;
   }
@@ -2966,7 +2886,7 @@ void InitGlobals() {
   // TODO(gps): Check all return values in this function for NULL and propagate
   // the error (MemoryError) on up to result in an import failure.  These should
   // also be freed and reset to NULL during finalization.
-  kDESCRIPTOR = PyString_FromString("DESCRIPTOR");
+  kDESCRIPTOR = PyUnicode_FromString("DESCRIPTOR");
 
   PyObject *dummy_obj = PySet_New(NULL);
   kEmptyWeakref = PyWeakref_NewRef(dummy_obj, NULL);
@@ -3035,11 +2955,7 @@ bool InitProto2MessageModule(PyObject *m) {
         reinterpret_cast<PyObject*>(&RepeatedCompositeContainer_Type));
 
     // Register them as MutableSequence.
-#if PY_MAJOR_VERSION >= 3
     ScopedPyObjectPtr collections(PyImport_ImportModule("collections.abc"));
-#else
-    ScopedPyObjectPtr collections(PyImport_ImportModule("collections"));
-#endif
     if (collections == NULL) {
       return false;
     }

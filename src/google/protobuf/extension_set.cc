@@ -969,7 +969,8 @@ size_t SizeOfUnion(ItX it_xs, ItX end_xs, ItY it_ys, ItY end_ys) {
 }
 }  // namespace
 
-void ExtensionSet::MergeFrom(const ExtensionSet& other) {
+void ExtensionSet::MergeFrom(const MessageLite* extendee,
+                             const ExtensionSet& other) {
   if (PROTOBUF_PREDICT_TRUE(!is_large())) {
     if (PROTOBUF_PREDICT_TRUE(!other.is_large())) {
       GrowCapacity(SizeOfUnion(flat_begin(), flat_end(), other.flat_begin(),
@@ -980,12 +981,13 @@ void ExtensionSet::MergeFrom(const ExtensionSet& other) {
                                other.map_.large->end()));
     }
   }
-  other.ForEach([this, &other](int number, const Extension& ext) {
-    this->InternalExtensionMergeFrom(number, ext, other.arena_);
+  other.ForEach([extendee, this, &other](int number, const Extension& ext) {
+    this->InternalExtensionMergeFrom(extendee, number, ext, other.arena_);
   });
 }
 
-void ExtensionSet::InternalExtensionMergeFrom(int number,
+void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
+                                              int number,
                                               const Extension& other_extension,
                                               Arena* other_arena) {
   if (other_extension.is_repeated) {
@@ -1084,6 +1086,7 @@ void ExtensionSet::InternalExtensionMergeFrom(int number,
               extension->lazymessage_value =
                   other_extension.lazymessage_value->New(arena_);
               extension->lazymessage_value->MergeFrom(
+                  GetPrototypeForLazyMessage(extendee, number),
                   *other_extension.lazymessage_value, arena_);
             } else {
               extension->is_lazy = false;
@@ -1099,6 +1102,7 @@ void ExtensionSet::InternalExtensionMergeFrom(int number,
             if (other_extension.is_lazy) {
               if (extension->is_lazy) {
                 extension->lazymessage_value->MergeFrom(
+                    GetPrototypeForLazyMessage(extendee, number),
                     *other_extension.lazymessage_value, arena_);
               } else {
                 extension->message_value->CheckTypeAndMergeFrom(
@@ -1124,23 +1128,23 @@ void ExtensionSet::InternalExtensionMergeFrom(int number,
   }
 }
 
-void ExtensionSet::Swap(ExtensionSet* x) {
+void ExtensionSet::Swap(const MessageLite* extendee, ExtensionSet* other) {
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  if (GetArena() != nullptr && GetArena() == x->GetArena()) {
+  if (GetArena() != nullptr && GetArena() == other->GetArena()) {
 #else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  if (GetArena() == x->GetArena()) {
+  if (GetArena() == other->GetArena()) {
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
-    InternalSwap(x);
+    InternalSwap(other);
   } else {
     // TODO(cfallin, rohananil): We maybe able to optimize a case where we are
     // swapping from heap to arena-allocated extension set, by just Own()'ing
     // the extensions.
     ExtensionSet extension_set;
-    extension_set.MergeFrom(*x);
-    x->Clear();
-    x->MergeFrom(*this);
+    extension_set.MergeFrom(extendee, *other);
+    other->Clear();
+    other->MergeFrom(extendee, *this);
     Clear();
-    MergeFrom(extension_set);
+    MergeFrom(extendee, extension_set);
   }
 }
 
@@ -1152,7 +1156,8 @@ void ExtensionSet::InternalSwap(ExtensionSet* other) {
   swap(map_, other->map_);
 }
 
-void ExtensionSet::SwapExtension(ExtensionSet* other, int number) {
+void ExtensionSet::SwapExtension(const MessageLite* extendee,
+                                 ExtensionSet* other, int number) {
   if (this == other) return;
 
   if (GetArena() == other->GetArena()) {
@@ -1172,19 +1177,22 @@ void ExtensionSet::SwapExtension(ExtensionSet* other, int number) {
     // We do it this way to reuse the copy-across-arenas logic already
     // implemented in ExtensionSet's MergeFrom.
     ExtensionSet temp;
-    temp.InternalExtensionMergeFrom(number, *other_ext, other->GetArena());
+    temp.InternalExtensionMergeFrom(extendee, number, *other_ext,
+                                    other->GetArena());
     Extension* temp_ext = temp.FindOrNull(number);
 
     other_ext->Clear();
-    other->InternalExtensionMergeFrom(number, *this_ext, this->GetArena());
+    other->InternalExtensionMergeFrom(extendee, number, *this_ext,
+                                      this->GetArena());
     this_ext->Clear();
-    InternalExtensionMergeFrom(number, *temp_ext, temp.GetArena());
+    InternalExtensionMergeFrom(extendee, number, *temp_ext, temp.GetArena());
   } else if (this_ext == nullptr) {
-    InternalExtensionMergeFrom(number, *other_ext, other->GetArena());
+    InternalExtensionMergeFrom(extendee, number, *other_ext, other->GetArena());
     if (other->GetArena() == nullptr) other_ext->Free();
     other->Erase(number);
   } else {
-    other->InternalExtensionMergeFrom(number, *this_ext, this->GetArena());
+    other->InternalExtensionMergeFrom(extendee, number, *this_ext,
+                                      this->GetArena());
     if (GetArena() == nullptr) this_ext->Free();
     Erase(number);
   }

@@ -343,9 +343,6 @@ class RepeatedMessageTypeHandler {
   typedef MessageLite Type;
   typedef MessageLite WeakType;
   static Arena* GetArena(Type* t) { return t->GetArena(); }
-  static void* GetMaybeArenaPointer(Type* t) {
-    return t->GetMaybeArenaPointer();
-  }
   static inline Type* NewFromPrototype(const Type* prototype,
                                        Arena* arena = nullptr) {
     return prototype->New(arena);

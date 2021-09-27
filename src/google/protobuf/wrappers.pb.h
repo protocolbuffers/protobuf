@@ -171,11 +171,7 @@ class PROTOBUF_EXPORT DoubleValue final :
 
   // implements Message ----------------------------------------------
 
-  inline DoubleValue* New() const final {
-    return new DoubleValue();
-  }
-
-  DoubleValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  DoubleValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<DoubleValue>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -199,6 +195,8 @@ class PROTOBUF_EXPORT DoubleValue final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(DoubleValue* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.DoubleValue";
@@ -319,11 +317,7 @@ class PROTOBUF_EXPORT FloatValue final :
 
   // implements Message ----------------------------------------------
 
-  inline FloatValue* New() const final {
-    return new FloatValue();
-  }
-
-  FloatValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FloatValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FloatValue>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -347,6 +341,8 @@ class PROTOBUF_EXPORT FloatValue final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FloatValue* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.FloatValue";
@@ -467,11 +463,7 @@ class PROTOBUF_EXPORT Int64Value final :
 
   // implements Message ----------------------------------------------
 
-  inline Int64Value* New() const final {
-    return new Int64Value();
-  }
-
-  Int64Value* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Int64Value* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Int64Value>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -495,6 +487,8 @@ class PROTOBUF_EXPORT Int64Value final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Int64Value* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Int64Value";
@@ -615,11 +609,7 @@ class PROTOBUF_EXPORT UInt64Value final :
 
   // implements Message ----------------------------------------------
 
-  inline UInt64Value* New() const final {
-    return new UInt64Value();
-  }
-
-  UInt64Value* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  UInt64Value* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<UInt64Value>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -643,6 +633,8 @@ class PROTOBUF_EXPORT UInt64Value final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(UInt64Value* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.UInt64Value";
@@ -763,11 +755,7 @@ class PROTOBUF_EXPORT Int32Value final :
 
   // implements Message ----------------------------------------------
 
-  inline Int32Value* New() const final {
-    return new Int32Value();
-  }
-
-  Int32Value* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Int32Value* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Int32Value>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -791,6 +779,8 @@ class PROTOBUF_EXPORT Int32Value final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Int32Value* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Int32Value";
@@ -911,11 +901,7 @@ class PROTOBUF_EXPORT UInt32Value final :
 
   // implements Message ----------------------------------------------
 
-  inline UInt32Value* New() const final {
-    return new UInt32Value();
-  }
-
-  UInt32Value* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  UInt32Value* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<UInt32Value>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -939,6 +925,8 @@ class PROTOBUF_EXPORT UInt32Value final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(UInt32Value* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.UInt32Value";
@@ -1059,11 +1047,7 @@ class PROTOBUF_EXPORT BoolValue final :
 
   // implements Message ----------------------------------------------
 
-  inline BoolValue* New() const final {
-    return new BoolValue();
-  }
-
-  BoolValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  BoolValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<BoolValue>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -1087,6 +1071,8 @@ class PROTOBUF_EXPORT BoolValue final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(BoolValue* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.BoolValue";
@@ -1207,11 +1193,7 @@ class PROTOBUF_EXPORT StringValue final :
 
   // implements Message ----------------------------------------------
 
-  inline StringValue* New() const final {
-    return new StringValue();
-  }
-
-  StringValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  StringValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<StringValue>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -1235,6 +1217,8 @@ class PROTOBUF_EXPORT StringValue final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(StringValue* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.StringValue";
@@ -1265,7 +1249,7 @@ class PROTOBUF_EXPORT StringValue final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_value();
-  PROTOBUF_MUST_USE_RESULT std::string* release_value();
+  PROTOBUF_NODISCARD std::string* release_value();
   void set_allocated_value(std::string* value);
   private:
   const std::string& _internal_value() const;
@@ -1360,11 +1344,7 @@ class PROTOBUF_EXPORT BytesValue final :
 
   // implements Message ----------------------------------------------
 
-  inline BytesValue* New() const final {
-    return new BytesValue();
-  }
-
-  BytesValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  BytesValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<BytesValue>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -1388,6 +1368,8 @@ class PROTOBUF_EXPORT BytesValue final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(BytesValue* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.BytesValue";
@@ -1418,7 +1400,7 @@ class PROTOBUF_EXPORT BytesValue final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_value();
-  PROTOBUF_MUST_USE_RESULT std::string* release_value();
+  PROTOBUF_NODISCARD std::string* release_value();
   void set_allocated_value(std::string* value);
   private:
   const std::string& _internal_value() const;

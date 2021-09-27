@@ -192,11 +192,7 @@ class PROTOC_EXPORT Version final :
 
   // implements Message ----------------------------------------------
 
-  inline Version* New() const final {
-    return new Version();
-  }
-
-  Version* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Version* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Version>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -220,6 +216,8 @@ class PROTOC_EXPORT Version final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Version* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.compiler.Version";
@@ -257,7 +255,7 @@ class PROTOC_EXPORT Version final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_suffix(ArgT0&& arg0, ArgT... args);
   std::string* mutable_suffix();
-  PROTOBUF_MUST_USE_RESULT std::string* release_suffix();
+  PROTOBUF_NODISCARD std::string* release_suffix();
   void set_allocated_suffix(std::string* suffix);
   private:
   const std::string& _internal_suffix() const;
@@ -402,11 +400,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
 
   // implements Message ----------------------------------------------
 
-  inline CodeGeneratorRequest* New() const final {
-    return new CodeGeneratorRequest();
-  }
-
-  CodeGeneratorRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  CodeGeneratorRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<CodeGeneratorRequest>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -430,6 +424,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorRequest* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.compiler.CodeGeneratorRequest";
@@ -509,7 +505,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_parameter(ArgT0&& arg0, ArgT... args);
   std::string* mutable_parameter();
-  PROTOBUF_MUST_USE_RESULT std::string* release_parameter();
+  PROTOBUF_NODISCARD std::string* release_parameter();
   void set_allocated_parameter(std::string* parameter);
   private:
   const std::string& _internal_parameter() const;
@@ -524,7 +520,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   public:
   void clear_compiler_version();
   const ::PROTOBUF_NAMESPACE_ID::compiler::Version& compiler_version() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::compiler::Version* release_compiler_version();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::compiler::Version* release_compiler_version();
   ::PROTOBUF_NAMESPACE_ID::compiler::Version* mutable_compiler_version();
   void set_allocated_compiler_version(::PROTOBUF_NAMESPACE_ID::compiler::Version* compiler_version);
   private:
@@ -633,11 +629,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
 
   // implements Message ----------------------------------------------
 
-  inline CodeGeneratorResponse_File* New() const final {
-    return new CodeGeneratorResponse_File();
-  }
-
-  CodeGeneratorResponse_File* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  CodeGeneratorResponse_File* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<CodeGeneratorResponse_File>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -661,6 +653,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorResponse_File* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.compiler.CodeGeneratorResponse.File";
@@ -698,7 +692,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -716,7 +710,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_insertion_point(ArgT0&& arg0, ArgT... args);
   std::string* mutable_insertion_point();
-  PROTOBUF_MUST_USE_RESULT std::string* release_insertion_point();
+  PROTOBUF_NODISCARD std::string* release_insertion_point();
   void set_allocated_insertion_point(std::string* insertion_point);
   private:
   const std::string& _internal_insertion_point() const;
@@ -734,7 +728,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_content(ArgT0&& arg0, ArgT... args);
   std::string* mutable_content();
-  PROTOBUF_MUST_USE_RESULT std::string* release_content();
+  PROTOBUF_NODISCARD std::string* release_content();
   void set_allocated_content(std::string* content);
   private:
   const std::string& _internal_content() const;
@@ -749,7 +743,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   public:
   void clear_generated_code_info();
   const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& generated_code_info() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* release_generated_code_info();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* release_generated_code_info();
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* mutable_generated_code_info();
   void set_allocated_generated_code_info(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* generated_code_info);
   private:
@@ -858,11 +852,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
 
   // implements Message ----------------------------------------------
 
-  inline CodeGeneratorResponse* New() const final {
-    return new CodeGeneratorResponse();
-  }
-
-  CodeGeneratorResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  CodeGeneratorResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<CodeGeneratorResponse>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -886,6 +876,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorResponse* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.compiler.CodeGeneratorResponse";
@@ -972,7 +964,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_error(ArgT0&& arg0, ArgT... args);
   std::string* mutable_error();
-  PROTOBUF_MUST_USE_RESULT std::string* release_error();
+  PROTOBUF_NODISCARD std::string* release_error();
   void set_allocated_error(std::string* error);
   private:
   const std::string& _internal_error() const;
@@ -1147,12 +1139,13 @@ inline std::string* Version::release_suffix() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return suffix_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = suffix_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (suffix_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     suffix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void Version::set_allocated_suffix(std::string* suffix) {
   if (suffix != nullptr) {
@@ -1294,12 +1287,13 @@ inline std::string* CodeGeneratorRequest::release_parameter() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return parameter_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = parameter_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (parameter_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     parameter_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void CodeGeneratorRequest::set_allocated_parameter(std::string* parameter) {
   if (parameter != nullptr) {
@@ -1493,12 +1487,13 @@ inline std::string* CodeGeneratorResponse_File::release_name() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (name_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void CodeGeneratorResponse_File::set_allocated_name(std::string* name) {
   if (name != nullptr) {
@@ -1561,12 +1556,13 @@ inline std::string* CodeGeneratorResponse_File::release_insertion_point() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
-  return insertion_point_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = insertion_point_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (insertion_point_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     insertion_point_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void CodeGeneratorResponse_File::set_allocated_insertion_point(std::string* insertion_point) {
   if (insertion_point != nullptr) {
@@ -1629,12 +1625,13 @@ inline std::string* CodeGeneratorResponse_File::release_content() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
-  return content_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = content_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (content_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     content_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void CodeGeneratorResponse_File::set_allocated_content(std::string* content) {
   if (content != nullptr) {
@@ -1789,12 +1786,13 @@ inline std::string* CodeGeneratorResponse::release_error() {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
-  return error_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  auto* p = error_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (error_.IsDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited())) {
     error_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void CodeGeneratorResponse::set_allocated_error(std::string* error) {
   if (error != nullptr) {

@@ -38,6 +38,7 @@ import static com.google.common.math.LongMath.checkedSubtract;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CompileTimeConstant;
+import com.google.j2objc.annotations.J2ObjCIncompatible;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
 import java.io.Serializable;
@@ -326,6 +327,27 @@ public final class Timestamps {
     return normalizedTimestamp(
         milliseconds / MILLIS_PER_SECOND,
         (int) (milliseconds % MILLIS_PER_SECOND * NANOS_PER_MILLISECOND));
+  }
+
+  /**
+   * Create a Timestamp from a java.util.Date. If the java.util.Date is a java.sql.Timestamp,
+   * full nanonsecond precision is retained.
+   *
+   * @throws IllegalArgumentException if the year is before 1 CE or after 9999 CE
+   */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
+  @J2ObjCIncompatible
+  public static Timestamp fromDate(Date date) {
+    if (date instanceof java.sql.Timestamp) {
+      java.sql.Timestamp sqlTimestamp = (java.sql.Timestamp) date;
+      long integralSeconds = sqlTimestamp.getTime() / 1000L; // truncate the fractional seconds
+      return Timestamp.newBuilder()
+          .setSeconds(integralSeconds)
+          .setNanos(sqlTimestamp.getNanos())
+          .build();
+    } else {
+      return fromMillis(date.getTime());
+    }
   }
 
   /**

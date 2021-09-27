@@ -289,12 +289,12 @@ class PROTOBUF_EXPORT ExtensionSet {
   void UnsafeArenaSetAllocatedMessage(int number, FieldType type,
                                       const FieldDescriptor* descriptor,
                                       MessageLite* message);
-  PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseMessage(
-      int number, const MessageLite& prototype);
+  PROTOBUF_NODISCARD MessageLite* ReleaseMessage(int number,
+                                                 const MessageLite& prototype);
   MessageLite* UnsafeArenaReleaseMessage(int number,
                                          const MessageLite& prototype);
 
-  PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseMessage(
+  PROTOBUF_NODISCARD MessageLite* ReleaseMessage(
       const FieldDescriptor* descriptor, MessageFactory* factory);
   MessageLite* UnsafeArenaReleaseMessage(const FieldDescriptor* descriptor,
                                          MessageFactory* factory);
@@ -364,7 +364,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 #undef desc
 
   void RemoveLast(int number);
-  PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseLast(int number);
+  PROTOBUF_NODISCARD MessageLite* ReleaseLast(int number);
   MessageLite* UnsafeArenaReleaseLast(int number);
   void SwapElements(int number, int index1, int index2);
 
@@ -378,10 +378,11 @@ class PROTOBUF_EXPORT ExtensionSet {
   // class, but providing them here helps keep the generated code size down.
 
   void Clear();
-  void MergeFrom(const ExtensionSet& other);
-  void Swap(ExtensionSet* other);
+  void MergeFrom(const MessageLite* extendee, const ExtensionSet& other);
+  void Swap(const MessageLite* extendee, ExtensionSet* other);
   void InternalSwap(ExtensionSet* other);
-  void SwapExtension(ExtensionSet* other, int number);
+  void SwapExtension(const MessageLite* extendee, ExtensionSet* other,
+                     int number);
   void UnsafeShallowSwapExtension(ExtensionSet* other, int number);
   bool IsInitialized() const;
 
@@ -583,7 +584,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;
     virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message,
                                                 Arena* arena) = 0;
-    virtual PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseMessage(
+    PROTOBUF_NODISCARD virtual MessageLite* ReleaseMessage(
         const MessageLite& prototype, Arena* arena) = 0;
     virtual MessageLite* UnsafeArenaReleaseMessage(const MessageLite& prototype,
                                                    Arena* arena) = 0;
@@ -595,13 +596,15 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual size_t ByteSizeLong() const = 0;
     virtual size_t SpaceUsedLong() const = 0;
 
-    virtual void MergeFrom(const LazyMessageExtension& other, Arena* arena) = 0;
+    virtual void MergeFrom(const MessageLite* prototype,
+                           const LazyMessageExtension& other, Arena* arena) = 0;
     virtual void MergeFromMessage(const MessageLite& msg, Arena* arena) = 0;
     virtual void Clear() = 0;
 
     virtual bool ReadMessage(const MessageLite& prototype,
                              io::CodedInputStream* input) = 0;
-    virtual const char* _InternalParse(const char* ptr, ParseContext* ctx) = 0;
+    virtual const char* _InternalParse(const Message& prototype, Arena* arena,
+                                       const char* ptr, ParseContext* ctx) = 0;
     virtual uint8_t* WriteMessageToArray(
         const MessageLite* prototype, int number, uint8_t* target,
         io::EpsCopyOutputStream* stream) const = 0;
@@ -770,7 +773,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   }
 
   // Merges existing Extension from other_extension
-  void InternalExtensionMergeFrom(int number, const Extension& other_extension,
+  void InternalExtensionMergeFrom(const MessageLite* extendee, int number,
+                                  const Extension& other_extension,
                                   Arena* other_arena);
 
   // Returns true and fills field_number and extension if extension is found.
@@ -1374,8 +1378,8 @@ class MessageTypeTraits {
                                              ExtensionSet* set) {
     set->UnsafeArenaSetAllocatedMessage(number, field_type, nullptr, message);
   }
-  static inline PROTOBUF_MUST_USE_RESULT MutableType
-  Release(int number, FieldType /* field_type */, ExtensionSet* set) {
+  PROTOBUF_NODISCARD static inline MutableType Release(
+      int number, FieldType /* field_type */, ExtensionSet* set) {
     return static_cast<Type*>(
         set->ReleaseMessage(number, Type::default_instance()));
   }

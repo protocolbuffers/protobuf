@@ -28,21 +28,28 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
+package com.google.protobuf;
 
-#include <google/protobuf/unittest.pb.h>
+import static java.lang.annotation.ElementType.CONSTRUCTOR;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PACKAGE;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-#define MESSAGE_TEST_NAME MessageTest
-#define MESSAGE_FACTORY_TEST_NAME MessageFactoryTest
-#define UNITTEST_PACKAGE_NAME "protobuf_unittest"
-#define UNITTEST ::protobuf_unittest
-#define UNITTEST_IMPORT ::protobuf_unittest_import
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-// Must include after the above macros.
-// clang-format off
-#include <google/protobuf/test_util.inc>
-#include <google/protobuf/message_unittest.inc>
-#include <google/protobuf/arena.h>
-// clang-format on
+/**
+ * Indicates that the return value of the annotated method must be checked. An error is triggered
+ * when one of these methods is called but the result is not used.
+ *
+ * <p>{@code @CheckReturnValue} may be applied to a class or package to indicate that all methods in
+ * that class or package must have their return values checked. For convenience, we provide an
+ * annotation, {@link CanIgnoreReturnValue}, to exempt specific methods or classes from this
+ * behavior.
+ */
+@Documented
+@Target({METHOD, CONSTRUCTOR, TYPE, PACKAGE})
+@Retention(RUNTIME)
+@interface CheckReturnValue {}
