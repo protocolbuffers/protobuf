@@ -18,7 +18,7 @@ else
 PTHREAD_DEF =
 endif
 
-PROTOBUF_VERSION = 28:3:0
+PROTOBUF_VERSION = 29:0:0
 
 if GCC
 # Turn on all warnings except for sign comparison (we ignore sign comparison
@@ -541,6 +541,7 @@ EXTRA_DIST =                                                   \
   google/protobuf/compiler/package_info.h                      \
   google/protobuf/compiler/ruby/ruby_generated_code.proto      \
   google/protobuf/compiler/ruby/ruby_generated_code_pb.rb      \
+  google/protobuf/compiler/ruby/ruby_generated_code_proto2_import.proto         \
   google/protobuf/compiler/ruby/ruby_generated_code_proto2.proto \
   google/protobuf/compiler/ruby/ruby_generated_code_proto2_pb.rb \
   google/protobuf/compiler/ruby/ruby_generated_pkg_explicit.proto \

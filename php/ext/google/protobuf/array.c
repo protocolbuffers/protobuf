@@ -640,8 +640,8 @@ void Array_ModuleInit() {
                    repeated_field_methods);
 
   RepeatedField_class_entry = zend_register_internal_class(&tmp_ce);
-  zend_class_implements(RepeatedField_class_entry, 3, spl_ce_ArrayAccess,
-                        zend_ce_aggregate, spl_ce_Countable);
+  zend_class_implements(RepeatedField_class_entry, 3, zend_ce_arrayaccess,
+                        zend_ce_aggregate, zend_ce_countable);
   RepeatedField_class_entry->ce_flags |= ZEND_ACC_FINAL;
   RepeatedField_class_entry->create_object = RepeatedField_create;
 

@@ -551,6 +551,7 @@ VALUE RepeatedField_plus(VALUE _self, VALUE list) {
     RepeatedField* dupped = ruby_to_RepeatedField(dupped_);
     upb_array *dupped_array = RepeatedField_GetMutable(dupped_);
     upb_arena* arena = Arena_get(dupped->arena);
+    Arena_fuse(list_rptfield->arena, arena);
     int size = upb_array_size(list_rptfield->array);
     int i;
 

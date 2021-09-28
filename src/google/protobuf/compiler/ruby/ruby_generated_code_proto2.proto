@@ -2,6 +2,8 @@ syntax = "proto2";
 
 package A.B.C;
 
+import "ruby_generated_code_proto2_import.proto";
+
 message TestMessage {
   optional int32 optional_int32 = 1 [default = 1];
   optional int64 optional_int64 = 2 [default = 2];
@@ -14,6 +16,7 @@ message TestMessage {
   optional bytes optional_bytes = 9 [default = "\0\1\2\100fubar"];
   optional TestEnum optional_enum = 10 [default = A];
   optional TestMessage optional_msg = 11;
+  optional TestImportedMessage optional_proto2_submessage = 12;
 
   repeated int32 repeated_int32 = 21;
   repeated int64 repeated_int64 = 22;

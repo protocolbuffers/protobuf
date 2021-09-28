@@ -2,8 +2,21 @@
 
 # phpunit has memory leak by itself. Thus, it cannot be used to test memory leak.
 
+class HasDestructor
+{
+  function __construct() {
+    $this->foo = $this;
+  }
+
+  function __destruct() {
+    new Foo\TestMessage();
+  }
+}
+
 require_once('../vendor/autoload.php');
 require_once('test_util.php');
+
+$has_destructor = new HasDestructor();
 
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBType;
