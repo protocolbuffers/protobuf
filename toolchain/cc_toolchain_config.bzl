@@ -39,7 +39,7 @@ def _impl(ctx):
       ),
       tool_path(
           name = "ar",
-          path = "/usr/bin/llvm-ar-11",
+          path = "/usr/bin/ar",
       ),
       tool_path(
           name = "compat-ld",
@@ -47,31 +47,31 @@ def _impl(ctx):
       ),
       tool_path(
           name = "cpp",
-          path = "/usr/local/bin/clang-cpp",
+          path = "/bin/false",
       ),
       tool_path(
           name = "dwp",
-          path = "/usr/bin/llvm-dwp",
+          path = "/bin/false",
       ),
       tool_path(
           name = "gcov",
-          path = "/usr/bin/llvm-profdata",
+          path = "/bin/false",
       ),
       tool_path(
           name = "nm",
-          path = "/usr/bin/llvm-nm",
+          path = "/bin/false",
       ),
       tool_path(
           name = "objcopy",
-          path = "/usr/bin/llvm-objcopy",
+          path = "/bin/false",
       ),
       tool_path(
           name = "objdump",
-          path = "/usr/bin/llvm-objdump",
+          path = "/bin/false",
       ),
       tool_path(
           name = "strip",
-          path = "/usr/bin/llvm-strip",
+          path = "/bin/false",
       ),
   ]
 
