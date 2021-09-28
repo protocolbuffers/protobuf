@@ -73,6 +73,9 @@ else
   sed -i -r "s/__version__ = '.*'/__version__ = '${VERSION}.${DEV}'/" python/google/protobuf/__init__.py
 fi
 
+# Copy LICENSE
+cp LICENSE python/LICENSE
+
 cd python
 
 # Run tests locally.

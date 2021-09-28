@@ -565,7 +565,7 @@ class GeneratedClassTest extends TestBase
         $m->setMapInt32Int32($dict);
         $this->assertSame(0, count($m->getMapInt32Int32()));
 
-        $dict = array(5 => 5, 6.1 => 6.1, "7" => "7");
+        $dict = array(5 => 5, 6 => 6.1, "7" => "7");
         $m->setMapInt32Int32($dict);
         $this->assertTrue($m->getMapInt32Int32() instanceof MapField);
         $this->assertSame(3, count($m->getMapInt32Int32()));
