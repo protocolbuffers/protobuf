@@ -297,6 +297,8 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/ByteBufferWriter.java                \
   java/core/src/main/java/com/google/protobuf/ByteOutput.java                      \
   java/core/src/main/java/com/google/protobuf/ByteString.java                      \
+  java/core/src/main/java/com/google/protobuf/CanIgnoreReturnValue.java            \
+  java/core/src/main/java/com/google/protobuf/CheckReturnValue.java                \
   java/core/src/main/java/com/google/protobuf/CodedInputStream.java                \
   java/core/src/main/java/com/google/protobuf/CodedInputStreamReader.java          \
   java/core/src/main/java/com/google/protobuf/CodedOutputStream.java               \
