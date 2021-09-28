@@ -47,7 +47,7 @@ def _impl(ctx):
       ),
       tool_path(
           name = "cpp",
-          path = "/usr/bin/clang-cpp",
+          path = "/usr/local/bin/clang-cpp",
       ),
       tool_path(
           name = "dwp",
@@ -123,7 +123,7 @@ def _impl(ctx):
       cxx_builtin_include_directories = [
           ctx.attr.toolchain_dir,
           "/usr/include",
-          "/usr/lib/clang",
+          "/usr/local/lib/clang",
       ],
       features = [linker_flags, compiler_flags],
       host_system_name = "local",
