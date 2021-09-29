@@ -246,7 +246,6 @@ class DynamicMessage : public Message {
 
   // implements Message ----------------------------------------------
 
-  Message* New() const override;
   Message* New(Arena* arena) const override;
 
   int GetCachedSize() const override;
@@ -644,8 +643,6 @@ void DynamicMessage::CrossLinkPrototypes() {
     }
   }
 }
-
-Message* DynamicMessage::New() const { return New(nullptr); }
 
 Message* DynamicMessage::New(Arena* arena) const {
   if (arena != nullptr) {

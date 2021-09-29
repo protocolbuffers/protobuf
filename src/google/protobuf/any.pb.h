@@ -172,11 +172,7 @@ class PROTOBUF_EXPORT Any final :
 
   // implements Message ----------------------------------------------
 
-  inline Any* New() const final {
-    return new Any();
-  }
-
-  Any* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Any* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Any>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -200,6 +196,8 @@ class PROTOBUF_EXPORT Any final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Any* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Any";
@@ -231,7 +229,7 @@ class PROTOBUF_EXPORT Any final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_type_url(ArgT0&& arg0, ArgT... args);
   std::string* mutable_type_url();
-  PROTOBUF_MUST_USE_RESULT std::string* release_type_url();
+  PROTOBUF_NODISCARD std::string* release_type_url();
   void set_allocated_type_url(std::string* type_url);
   private:
   const std::string& _internal_type_url() const;
@@ -245,7 +243,7 @@ class PROTOBUF_EXPORT Any final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_value();
-  PROTOBUF_MUST_USE_RESULT std::string* release_value();
+  PROTOBUF_NODISCARD std::string* release_value();
   void set_allocated_value(std::string* value);
   private:
   const std::string& _internal_value() const;

@@ -139,11 +139,7 @@ class PROTOBUF_EXPORT FieldMask final :
 
   // implements Message ----------------------------------------------
 
-  inline FieldMask* New() const final {
-    return new FieldMask();
-  }
-
-  FieldMask* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FieldMask* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<FieldMask>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -167,6 +163,8 @@ class PROTOBUF_EXPORT FieldMask final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FieldMask* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.FieldMask";

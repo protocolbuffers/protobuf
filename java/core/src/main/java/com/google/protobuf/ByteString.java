@@ -73,6 +73,7 @@ import java.util.NoSuchElementException;
  * @author carlanton@google.com Carl Haverl
  * @author martinrb@google.com Martin Buchholz
  */
+@CheckReturnValue
 public abstract class ByteString implements Iterable<Byte>, Serializable {
 
   /**
@@ -1275,6 +1276,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return the length of the range.
    * @throws IndexOutOfBoundsException some or all of the range falls outside of the array.
    */
+  @CanIgnoreReturnValue
   static int checkRange(int startIndex, int endIndex, int size) {
     final int length = endIndex - startIndex;
     if ((startIndex | endIndex | length | (size - endIndex)) < 0) {

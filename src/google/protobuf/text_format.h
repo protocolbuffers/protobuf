@@ -365,6 +365,13 @@ class PROTOBUF_EXPORT TextFormat {
                                 const MessagePrinter* printer);
 
    private:
+    friend std::string Message::DebugString() const;
+    friend std::string Message::ShortDebugString() const;
+    friend std::string Message::Utf8DebugString() const;
+
+    // Sets whether *DebugString should insert a silent marker.
+    void SetInsertSilentMarker(bool v) { insert_silent_marker_ = v; }
+
     // Forward declaration of an internal class used to print the text
     // output to the OutputStream (see text_format.cc for implementation).
     class TextGenerator;

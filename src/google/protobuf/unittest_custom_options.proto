@@ -108,6 +108,8 @@ message TestMessageWithCustomOptions {
     int32 oneof_field = 2;
   }
 
+  map<string, string> map_field = 3 [(field_opt1) = 12345];
+
   enum AnEnum {
     option (enum_opt1) = -789;
 

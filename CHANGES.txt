@@ -15,12 +15,28 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Generated code now uses the c++11 standard integer types int{32,64}_t and
     uint{32,64}_t
   * Reduce memory usage of the DescriptorPool type.
+  * Moved the zero-argument New() method on messages to the base class (internal
+    optimization).
+  * Unused return values marked with `PROTOBUF_MUST_USE_RESULT` are now
+    correctly attributed.
+  * Demotes PrintPath log for maps in MessageDifferencer down from WARNING to
+    INFO.
+  * Make sure FullMessageName() is always private.
+  * Fix race condition in EnumDescriptor.
+  * Remove MessageLite::GetMaybeArenaPointer.
 
   Java
   * Add @deprecated javadoc for set/get/has methods
   * correctly decode \? escape sequence in text protos
-  * Avoid depending on Objects.requireNonNull() until we can verify that no users are depending on older Android versions.
+  * Avoid depending on Objects.requireNonNull() until we can verify that no
+    users are depending on older Android versions.
   * disallow null string map values in put and putAll
+  * Add `@CheckReturnValue` to `ByteString` API.
+  * Make the `hasPresence` method public in `FieldDescriptor`.
+  * Report more detailed messages in Duration and Timestamp proto parsing
+    errors.
+  * New Timestamps.fromDate utility method that converts a java.util.Date to a
+    Timestamp proto object.
 
   Kotlin
   * Generated Kotlin code is Explicit API mode compatible

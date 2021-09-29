@@ -40,10 +40,6 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite.h>
 
-#if PY_MAJOR_VERSION >= 3
-  #define PyInt_FromLong PyLong_FromLong
-#endif
-
 namespace google {
 namespace protobuf {
 namespace python {
@@ -237,7 +233,7 @@ static PyObject* GetFieldNumber(PyUnknownFieldRef* self, void *closure) {
   if (unknown_field == NULL) {
     return NULL;
   }
-  return PyInt_FromLong(unknown_field->number());
+  return PyLong_FromLong(unknown_field->number());
 }
 
 using internal::WireFormatLite;
@@ -267,7 +263,7 @@ static PyObject* GetWireType(PyUnknownFieldRef* self, void *closure) {
       wire_type = WireFormatLite::WIRETYPE_START_GROUP;
       break;
   }
-  return PyInt_FromLong(wire_type);
+  return PyLong_FromLong(wire_type);
 }
 
 static PyObject* GetData(PyUnknownFieldRef* self, void *closure) {
@@ -278,13 +274,13 @@ static PyObject* GetData(PyUnknownFieldRef* self, void *closure) {
   PyObject* data = NULL;
   switch (field->type()) {
     case UnknownField::TYPE_VARINT:
-      data = PyInt_FromLong(field->varint());
+      data = PyLong_FromLong(field->varint());
       break;
     case UnknownField::TYPE_FIXED32:
-      data = PyInt_FromLong(field->fixed32());
+      data = PyLong_FromLong(field->fixed32());
       break;
     case UnknownField::TYPE_FIXED64:
-      data = PyInt_FromLong(field->fixed64());
+      data = PyLong_FromLong(field->fixed64());
       break;
     case UnknownField::TYPE_LENGTH_DELIMITED:
       data = PyBytes_FromStringAndSize(field->length_delimited().data(),

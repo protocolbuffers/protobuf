@@ -542,8 +542,18 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   bool is_placeholder_ : 1;
   // True if this is a placeholder and the type name wasn't fully-qualified.
   bool is_unqualified_placeholder_ : 1;
-  // Well known type.  Stored as char to conserve space.
-  char well_known_type_;
+  // Well known type.  Stored like this to conserve space.
+  uint8_t well_known_type_ : 5;
+
+  // This points to the last field _number_ that is part of the sequence
+  // starting at 1, where
+  //     `desc->field(i)->number() == i + 1`
+  // A value of `0` means no field matches. That is, there are no fields or the
+  // first field is not field `1`.
+  // Uses 16-bit to avoid extra padding. Unlikely to have more than 2^16
+  // sequentially numbered fields in a message.
+  uint16_t sequential_field_limit_;
+
   int field_count_;
 
   // all_names_ = [name, full_name]
@@ -581,6 +591,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   friend class DescriptorPool;
   friend class EnumDescriptor;
   friend class FieldDescriptor;
+  friend class FileDescriptorTables;
   friend class OneofDescriptor;
   friend class MethodDescriptor;
   friend class FileDescriptor;
@@ -1145,6 +1156,9 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
 
+  // Allow access to FindValueByNumberCreatingIfUnknown.
+  friend class descriptor_unittest::DescriptorTest;
+
   // Looks up a value by number.  If the value does not exist, dynamically
   // creates a new EnumValueDescriptor for that value, assuming that it was
   // unknown. If a new descriptor is created, this is done in a thread-safe way,
@@ -1165,9 +1179,18 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   void GetLocationPath(std::vector<int>* output) const;
 
   // True if this is a placeholder for an unknown type.
-  bool is_placeholder_;
+  bool is_placeholder_ : 1;
   // True if this is a placeholder and the type name wasn't fully-qualified.
-  bool is_unqualified_placeholder_;
+  bool is_unqualified_placeholder_ : 1;
+
+  // This points to the last value _index_ that is part of the sequence starting
+  // with the first label, where
+  //   `enum->value(i)->number() == enum->value(0)->number() + i`
+  // We measure relative to the first label to adapt to enum labels starting at
+  // 0 or 1.
+  // Uses 16-bit to avoid extra padding. Unlikely to have more than 2^15
+  // sequentially numbered labels in an enum.
+  int16_t sequential_value_limit_;
 
   int value_count_;
 
@@ -1192,6 +1215,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   friend class DescriptorBuilder;
   friend class Descriptor;
   friend class FieldDescriptor;
+  friend class FileDescriptorTables;
   friend class EnumValueDescriptor;
   friend class FileDescriptor;
   friend class DescriptorPool;

@@ -252,11 +252,7 @@ class PROTOBUF_EXPORT Type final :
 
   // implements Message ----------------------------------------------
 
-  inline Type* New() const final {
-    return new Type();
-  }
-
-  Type* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Type* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Type>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -280,6 +276,8 @@ class PROTOBUF_EXPORT Type final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Type* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Type";
@@ -375,7 +373,7 @@ class PROTOBUF_EXPORT Type final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -390,7 +388,7 @@ class PROTOBUF_EXPORT Type final :
   public:
   void clear_source_context();
   const ::PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   ::PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
   void set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceContext* source_context);
   private:
@@ -502,11 +500,7 @@ class PROTOBUF_EXPORT Field final :
 
   // implements Message ----------------------------------------------
 
-  inline Field* New() const final {
-    return new Field();
-  }
-
-  Field* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Field* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Field>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -530,6 +524,8 @@ class PROTOBUF_EXPORT Field final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Field* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Field";
@@ -685,7 +681,7 @@ class PROTOBUF_EXPORT Field final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -699,7 +695,7 @@ class PROTOBUF_EXPORT Field final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_type_url(ArgT0&& arg0, ArgT... args);
   std::string* mutable_type_url();
-  PROTOBUF_MUST_USE_RESULT std::string* release_type_url();
+  PROTOBUF_NODISCARD std::string* release_type_url();
   void set_allocated_type_url(std::string* type_url);
   private:
   const std::string& _internal_type_url() const;
@@ -713,7 +709,7 @@ class PROTOBUF_EXPORT Field final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_json_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_json_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_json_name();
+  PROTOBUF_NODISCARD std::string* release_json_name();
   void set_allocated_json_name(std::string* json_name);
   private:
   const std::string& _internal_json_name() const;
@@ -727,7 +723,7 @@ class PROTOBUF_EXPORT Field final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_default_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_default_value();
-  PROTOBUF_MUST_USE_RESULT std::string* release_default_value();
+  PROTOBUF_NODISCARD std::string* release_default_value();
   void set_allocated_default_value(std::string* default_value);
   private:
   const std::string& _internal_default_value() const;
@@ -876,11 +872,7 @@ class PROTOBUF_EXPORT Enum final :
 
   // implements Message ----------------------------------------------
 
-  inline Enum* New() const final {
-    return new Enum();
-  }
-
-  Enum* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Enum* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Enum>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -904,6 +896,8 @@ class PROTOBUF_EXPORT Enum final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Enum* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Enum";
@@ -974,7 +968,7 @@ class PROTOBUF_EXPORT Enum final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -989,7 +983,7 @@ class PROTOBUF_EXPORT Enum final :
   public:
   void clear_source_context();
   const ::PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   ::PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
   void set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceContext* source_context);
   private:
@@ -1100,11 +1094,7 @@ class PROTOBUF_EXPORT EnumValue final :
 
   // implements Message ----------------------------------------------
 
-  inline EnumValue* New() const final {
-    return new EnumValue();
-  }
-
-  EnumValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  EnumValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EnumValue>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -1128,6 +1118,8 @@ class PROTOBUF_EXPORT EnumValue final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(EnumValue* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.EnumValue";
@@ -1178,7 +1170,7 @@ class PROTOBUF_EXPORT EnumValue final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -1284,11 +1276,7 @@ class PROTOBUF_EXPORT Option final :
 
   // implements Message ----------------------------------------------
 
-  inline Option* New() const final {
-    return new Option();
-  }
-
-  Option* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Option* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Option>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -1312,6 +1300,8 @@ class PROTOBUF_EXPORT Option final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Option* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Option";
@@ -1343,7 +1333,7 @@ class PROTOBUF_EXPORT Option final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -1358,7 +1348,7 @@ class PROTOBUF_EXPORT Option final :
   public:
   void clear_value();
   const ::PROTOBUF_NAMESPACE_ID::Any& value() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::Any* release_value();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::Any* release_value();
   ::PROTOBUF_NAMESPACE_ID::Any* mutable_value();
   void set_allocated_value(::PROTOBUF_NAMESPACE_ID::Any* value);
   private:

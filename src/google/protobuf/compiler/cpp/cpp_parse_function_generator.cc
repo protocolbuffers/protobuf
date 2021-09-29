@@ -766,15 +766,22 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
                 "$msg$GetArenaForAllocation());\n"
                 "  $msg$set_has_$name$();\n"
                 "}\n"
-                "ptr = ctx->ParseMessage($msg$$1$_.$name$_, ptr);\n",
+                "auto* lazy_field = $msg$$1$_.$name$_;\n",
                 field->containing_oneof()->name());
           } else if (HasHasbit(field)) {
             format(
                 "_Internal::set_has_$name$(&$has_bits$);\n"
-                "ptr = ctx->ParseMessage(&$msg$$name$_, ptr);\n");
+                "auto* lazy_field = &$msg$$name$_;\n");
           } else {
-            format("ptr = ctx->ParseMessage(&$msg$$name$_, ptr);\n");
+            format("auto* lazy_field = &$msg$$name$_;\n");
           }
+          format(
+              "::$proto_ns$::internal::LazyFieldParseHelper<\n"
+              "  ::$proto_ns$::internal::LazyField> parse_helper(\n"
+              "    $1$::default_instance(),\n"
+              "    $msg$GetArenaForAllocation(), lazy_field);\n"
+              "ptr = ctx->ParseMessage(&parse_helper, ptr);\n",
+              FieldMessageTypeName(field, options_));
         } else if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
           if (!field->is_repeated()) {
             format(

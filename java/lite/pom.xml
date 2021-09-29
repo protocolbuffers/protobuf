@@ -104,6 +104,8 @@
                     <include>ByteBufferWriter.java</include>
                     <include>ByteOutput.java</include>
                     <include>ByteString.java</include>
+                    <include>CanIgnoreReturnValue.java</include>
+                    <include>CheckReturnValue.java</include>
                     <include>CodedInputStream.java</include>
                     <include>CodedInputStreamReader.java</include>
                     <include>CodedOutputStream.java</include>

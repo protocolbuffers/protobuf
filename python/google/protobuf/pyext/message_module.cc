@@ -95,7 +95,6 @@ static PyMethodDef ModuleMethods[] = {
     // DO NOT USE: For migration and testing only.
     {NULL, NULL}};
 
-#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                      "_message",
                                      module_docstring,
@@ -105,27 +104,17 @@ static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                      NULL,
                                      NULL,
                                      NULL};
-#define INITFUNC PyInit__message
-#define INITFUNC_ERRORVAL NULL
-#else  // Python 2
-#define INITFUNC init_message
-#define INITFUNC_ERRORVAL
-#endif
 
-PyMODINIT_FUNC INITFUNC() {
+PyMODINIT_FUNC PyInit__message() {
   PyObject* m;
-#if PY_MAJOR_VERSION >= 3
   m = PyModule_Create(&_module);
-#else
-  m = Py_InitModule3("_message", ModuleMethods, module_docstring);
-#endif
   if (m == NULL) {
-    return INITFUNC_ERRORVAL;
+    return NULL;
   }
 
   if (!google::protobuf::python::InitProto2MessageModule(m)) {
     Py_DECREF(m);
-    return INITFUNC_ERRORVAL;
+    return NULL;
   }
 
   // Adds the C++ API
@@ -137,10 +126,8 @@ PyMODINIT_FUNC INITFUNC() {
           })) {
     PyModule_AddObject(m, "proto_API", api);
   } else {
-    return INITFUNC_ERRORVAL;
+    return NULL;
   }
 
-#if PY_MAJOR_VERSION >= 3
   return m;
-#endif
 }

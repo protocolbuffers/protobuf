@@ -149,11 +149,7 @@ class PROTOBUF_EXPORT Api final :
 
   // implements Message ----------------------------------------------
 
-  inline Api* New() const final {
-    return new Api();
-  }
-
-  Api* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Api* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Api>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -177,6 +173,8 @@ class PROTOBUF_EXPORT Api final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Api* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Api";
@@ -267,7 +265,7 @@ class PROTOBUF_EXPORT Api final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -281,7 +279,7 @@ class PROTOBUF_EXPORT Api final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_version(ArgT0&& arg0, ArgT... args);
   std::string* mutable_version();
-  PROTOBUF_MUST_USE_RESULT std::string* release_version();
+  PROTOBUF_NODISCARD std::string* release_version();
   void set_allocated_version(std::string* version);
   private:
   const std::string& _internal_version() const;
@@ -296,7 +294,7 @@ class PROTOBUF_EXPORT Api final :
   public:
   void clear_source_context();
   const ::PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
-  PROTOBUF_MUST_USE_RESULT ::PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
+  PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   ::PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
   void set_allocated_source_context(::PROTOBUF_NAMESPACE_ID::SourceContext* source_context);
   private:
@@ -409,11 +407,7 @@ class PROTOBUF_EXPORT Method final :
 
   // implements Message ----------------------------------------------
 
-  inline Method* New() const final {
-    return new Method();
-  }
-
-  Method* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Method* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Method>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -437,6 +431,8 @@ class PROTOBUF_EXPORT Method final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Method* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Method";
@@ -491,7 +487,7 @@ class PROTOBUF_EXPORT Method final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -505,7 +501,7 @@ class PROTOBUF_EXPORT Method final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_request_type_url(ArgT0&& arg0, ArgT... args);
   std::string* mutable_request_type_url();
-  PROTOBUF_MUST_USE_RESULT std::string* release_request_type_url();
+  PROTOBUF_NODISCARD std::string* release_request_type_url();
   void set_allocated_request_type_url(std::string* request_type_url);
   private:
   const std::string& _internal_request_type_url() const;
@@ -519,7 +515,7 @@ class PROTOBUF_EXPORT Method final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_response_type_url(ArgT0&& arg0, ArgT... args);
   std::string* mutable_response_type_url();
-  PROTOBUF_MUST_USE_RESULT std::string* release_response_type_url();
+  PROTOBUF_NODISCARD std::string* release_response_type_url();
   void set_allocated_response_type_url(std::string* response_type_url);
   private:
   const std::string& _internal_response_type_url() const;
@@ -647,11 +643,7 @@ class PROTOBUF_EXPORT Mixin final :
 
   // implements Message ----------------------------------------------
 
-  inline Mixin* New() const final {
-    return new Mixin();
-  }
-
-  Mixin* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  Mixin* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<Mixin>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
@@ -675,6 +667,8 @@ class PROTOBUF_EXPORT Mixin final :
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Mixin* other);
+
+  private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Mixin";
@@ -706,7 +700,7 @@ class PROTOBUF_EXPORT Mixin final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_NODISCARD std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -720,7 +714,7 @@ class PROTOBUF_EXPORT Mixin final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_root(ArgT0&& arg0, ArgT... args);
   std::string* mutable_root();
-  PROTOBUF_MUST_USE_RESULT std::string* release_root();
+  PROTOBUF_NODISCARD std::string* release_root();
   void set_allocated_root(std::string* root);
   private:
   const std::string& _internal_root() const;
