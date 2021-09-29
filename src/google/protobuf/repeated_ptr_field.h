@@ -826,7 +826,8 @@ class GenericTypeHandler {
 // NewFromPrototypeHelper() is not defined inline here, as we will need to do a
 // virtual function dispatch anyways to go from Message* to call New/Merge. (The
 // additional helper is needed as a workaround for MSVC.)
-MessageLite* NewFromPrototypeHelper(const MessageLite* prototype, Arena* arena);
+PROTOBUF_EXPORT MessageLite* NewFromPrototypeHelper(
+    const MessageLite* prototype, Arena* arena);
 
 template <>
 inline MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
@@ -845,8 +846,8 @@ PROTOBUF_NOINLINE inline void GenericTypeHandler<GenericType>::Merge(
   to->MergeFrom(from);
 }
 template <>
-void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
-                                            MessageLite* to);
+PROTOBUF_EXPORT void GenericTypeHandler<MessageLite>::Merge(
+    const MessageLite& from, MessageLite* to);
 
 template <>
 inline void GenericTypeHandler<std::string>::Clear(std::string* value) {
@@ -1458,7 +1459,10 @@ inline void RepeatedPtrField<Element>::Clear() {
 template <typename Element>
 inline void RepeatedPtrField<Element>::MergeFrom(
     const RepeatedPtrField& other) {
-  RepeatedPtrFieldBase::MergeFrom<TypeHandler>(other);
+  constexpr bool is_proto = std::is_base_of<MessageLite, Element>::value;
+  using SimpleBase = typename std::conditional<
+      is_proto, internal::GenericTypeHandler<MessageLite>, TypeHandler>::type;
+  RepeatedPtrFieldBase::MergeFrom<SimpleBase>(other);
 }
 
 template <typename Element>
