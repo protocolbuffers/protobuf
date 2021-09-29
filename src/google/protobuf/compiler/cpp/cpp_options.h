@@ -33,6 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
 
+#include <set>
 #include <string>
 
 namespace google {
@@ -47,6 +48,11 @@ enum class EnforceOptimizeMode {
   kSpeed,          // Full runtime with a generated code implementation.
   kCodeSize,       // Full runtime with a reflective implementation.
   kLiteRuntime,
+};
+
+struct FieldListenerOptions {
+  bool inject_field_listener_events = false;
+  std::set<std::string> forbidden_field_listener_events;
 };
 
 // Generator options (see generator.cc for a description of each):
@@ -64,11 +70,21 @@ struct Options {
   bool opensource_runtime = false;
   bool annotate_accessor = false;
   bool unused_field_stripping = false;
+  bool profile_driven_inline_string = false;
+  bool force_inline_string = false;
   std::string runtime_include_base;
   int num_cc_files = 0;
   std::string annotation_pragma_name;
   std::string annotation_guard_name;
   const AccessInfoMap* access_info_map = nullptr;
+  enum {
+    kTCTableNever,
+    kTCTableGuarded,
+    kTCTableAlways
+  } tctable_mode = kTCTableNever;
+  FieldListenerOptions field_listener_options;
+  bool eagerly_verified_lazy = false;
+  bool force_eagerly_verified_lazy = false;
 };
 
 }  // namespace cpp

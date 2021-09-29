@@ -343,7 +343,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
   std::vector<char> seen_oneofs(oneof_generators_.size(), 0);
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    const OneofDescriptor *oneof = field->real_containing_oneof();
+    const OneofDescriptor* oneof = field->real_containing_oneof();
     if (oneof) {
       const int oneof_index = oneof->index();
       if (!seen_oneofs[oneof_index]) {

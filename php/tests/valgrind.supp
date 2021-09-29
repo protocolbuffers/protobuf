@@ -10,3 +10,24 @@
    obj:/usr/bin/php7.3
    fun:__scandir64_tail
 }
+
+{
+   PHP_ModuleLoadingLeaks
+   Memcheck:Leak
+   ...
+   fun:php_module_startup
+}
+
+{
+   PHP_ModuleLoadingLeaks
+   Memcheck:Leak
+   ...
+   fun:php_module_startup
+}
+
+{
+   PHP_ModuleLoadingLeaks2
+   Memcheck:Leak
+   ...
+   fun:php_load_shlib
+}

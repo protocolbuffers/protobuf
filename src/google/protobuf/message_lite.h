@@ -64,6 +64,10 @@ namespace protobuf {
 template <typename T>
 class RepeatedPtrField;
 
+class FastReflectionMessageMutator;
+class FastReflectionStringSetter;
+class Reflection;
+
 namespace io {
 
 class CodedInputStream;
@@ -74,6 +78,8 @@ class ZeroCopyOutputStream;
 }  // namespace io
 namespace internal {
 
+class SwapFieldHelper;
+
 // Tag type used to invoke the constinit constructor overload of some classes.
 // Such constructors are internal implementation details of the library.
 struct ConstantInitialized {
@@ -83,9 +89,15 @@ struct ConstantInitialized {
 // See parse_context.h for explanation
 class ParseContext;
 
+class ExtensionSet;
+class LazyField;
 class RepeatedPtrFieldBase;
+class TcParserBase;
 class WireFormatLite;
 class WeakFieldMap;
+
+template <typename Type>
+class GenericTypeHandler;  // defined in repeated_field.h
 
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization
@@ -145,31 +157,20 @@ class ExplicitlyConstructed {
  private:
   // Prefer c++14 aligned_storage, but for compatibility this will do.
   union AlignedUnion {
-    char space[sizeof(T)];
-    int64 align_to_int64;
+    alignas(T) char space[sizeof(T)];
+    int64_t align_to_int64;
     void* align_to_ptr;
   } union_;
 };
 
-// We need a publicly accessible `value` object to allow constexpr
-// support in C++11.
-// A constexpr accessor does not work portably.
-union EmptyString {
-  constexpr EmptyString() : dummy{} {}
-  ~EmptyString() {}
-
-  // We need a dummy object for constant initialization.
-  std::false_type dummy;
-  std::string value;
-};
-
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference.
-PROTOBUF_EXPORT extern EmptyString fixed_address_empty_string;
+PROTOBUF_EXPORT extern ExplicitlyConstructed<std::string>
+    fixed_address_empty_string;
 
 
 PROTOBUF_EXPORT constexpr const std::string& GetEmptyStringAlreadyInited() {
-  return fixed_address_empty_string.value;
+  return fixed_address_empty_string.get();
 }
 
 PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
@@ -204,7 +205,7 @@ PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT MessageLite {
  public:
-  constexpr MessageLite() = default;
+  constexpr MessageLite() {}
   virtual ~MessageLite() = default;
 
   // Basic Operations ------------------------------------------------
@@ -217,15 +218,11 @@ class PROTOBUF_EXPORT MessageLite {
   virtual MessageLite* New() const = 0;
 
   // Construct a new instance on the arena. Ownership is passed to the caller
-  // if arena is a NULL. Default implementation for backwards compatibility.
+  // if arena is a nullptr. Default implementation for backwards compatibility.
   virtual MessageLite* New(Arena* arena) const;
 
-  // Get the arena, if any, associated with this message. Virtual method
-  // required for generic operations but most arena-related operations should
-  // use the GetArena() generated-code method. Default implementation
-  // to reduce code size by avoiding the need for per-type implementations
-  // when types do not implement arena support.
-  Arena* GetArena() const { return _internal_metadata_.arena(); }
+  // Same as GetOwningArena.
+  Arena* GetArena() const { return GetOwningArena(); }
 
   // Get a pointer that may be equal to this message's arena, or may not be.
   // If the value returned by this method is equal to some arena pointer, then
@@ -452,7 +449,7 @@ class PROTOBUF_EXPORT MessageLite {
   // must point at a byte array of at least ByteSize() bytes.  Whether to use
   // deterministic serialization, e.g., maps in sorted order, is determined by
   // CodedOutputStream::IsDefaultSerializationDeterministic().
-  uint8* SerializeWithCachedSizesToArray(uint8* target) const;
+  uint8_t* SerializeWithCachedSizesToArray(uint8_t* target) const;
 
   // Returns the result of the last call to ByteSize().  An embedded message's
   // size is needed both to serialize it (because embedded messages are
@@ -478,7 +475,19 @@ class PROTOBUF_EXPORT MessageLite {
     return Arena::CreateMaybeMessage<T>(arena);
   }
 
-  inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
+  inline explicit MessageLite(Arena* arena, bool is_message_owned = false)
+      : _internal_metadata_(arena, is_message_owned) {}
+
+  // Returns the arena, if any, that directly owns this message and its internal
+  // memory (Arena::Own is different in that the arena doesn't directly own the
+  // internal memory). This method is used in proto's implementation for
+  // swapping, moving and setting allocated, for deciding whether the ownership
+  // of this message or its internal memory could be changed.
+  Arena* GetOwningArena() const { return _internal_metadata_.owning_arena(); }
+
+  // Returns the arena, used for allocating internal objects(e.g., child
+  // messages, etc), or owning incoming objects (e.g., set allocated).
+  Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
 
   internal::InternalMetadata _internal_metadata_;
 
@@ -498,9 +507,9 @@ class PROTOBUF_EXPORT MessageLite {
   bool ParseFrom(const T& input);
 
   // Fast path when conditions match (ie. non-deterministic)
-  //  uint8* _InternalSerialize(uint8* ptr) const;
-  virtual uint8* _InternalSerialize(uint8* ptr,
-                                    io::EpsCopyOutputStream* stream) const = 0;
+  //  uint8_t* _InternalSerialize(uint8_t* ptr) const;
+  virtual uint8_t* _InternalSerialize(
+      uint8_t* ptr, io::EpsCopyOutputStream* stream) const = 0;
 
   // Identical to IsInitialized() except that it logs an error message.
   bool IsInitializedWithErrors() const {
@@ -511,11 +520,23 @@ class PROTOBUF_EXPORT MessageLite {
 
  private:
   // TODO(gerbens) make this a pure abstract function
-  virtual const void* InternalGetTable() const { return NULL; }
+  virtual const void* InternalGetTable() const { return nullptr; }
 
-  friend class internal::WireFormatLite;
+  friend class FastReflectionMessageMutator;
+  friend class FastReflectionStringSetter;
   friend class Message;
+  friend class Reflection;
+  friend class internal::ExtensionSet;
+  friend class internal::LazyField;
+  friend class internal::SwapFieldHelper;
+  friend class internal::TcParserBase;
   friend class internal::WeakFieldMap;
+  friend class internal::WireFormatLite;
+
+  template <typename Type>
+  friend class Arena::InternalHelper;
+  template <typename Type>
+  friend class internal::GenericTypeHandler;
 
   void LogInitializationErrorMessage() const;
 

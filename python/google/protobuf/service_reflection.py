@@ -38,12 +38,6 @@ compiler at compile-time.
 
 __author__ = 'petar@google.com (Petar Petrov)'
 
-from google.protobuf.internal import api_implementation
-
-if api_implementation.Type() == 'cpp':
-  # pylint: disable=g-import-not-at-top
-  from google.protobuf.pyext import _message
-
 
 class GeneratedServiceType(type):
 
@@ -84,10 +78,6 @@ class GeneratedServiceType(type):
       return
 
     descriptor = dictionary[GeneratedServiceType._DESCRIPTOR_KEY]
-    if isinstance(descriptor, str):
-      descriptor = _message.default_pool.FindServiceByName(descriptor)
-      dictionary[GeneratedServiceType._DESCRIPTOR_KEY] = descriptor
-
     service_builder = _ServiceBuilder(descriptor)
     service_builder.BuildService(cls)
     cls.DESCRIPTOR = descriptor
@@ -113,16 +103,13 @@ class GeneratedServiceStubType(GeneratedServiceType):
         dictionary[_DESCRIPTOR_KEY] must contain a ServiceDescriptor object
         describing this protocol service type.
     """
-    descriptor = dictionary.get(cls._DESCRIPTOR_KEY)
-    if isinstance(descriptor, str):
-      descriptor = _message.default_pool.FindServiceByName(descriptor)
-      dictionary[GeneratedServiceStubType._DESCRIPTOR_KEY] = descriptor
     super(GeneratedServiceStubType, cls).__init__(name, bases, dictionary)
     # Don't do anything if this class doesn't have a descriptor. This happens
     # when a service stub is subclassed.
     if GeneratedServiceStubType._DESCRIPTOR_KEY not in dictionary:
       return
 
+    descriptor = dictionary[GeneratedServiceStubType._DESCRIPTOR_KEY]
     service_stub_builder = _ServiceStubBuilder(descriptor)
     service_stub_builder.BuildServiceStub(cls)
 

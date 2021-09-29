@@ -4,11 +4,11 @@
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
-    <VersionPrefix>3.14.0</VersionPrefix>
+    <VersionPrefix>3.18.0</VersionPrefix>
     <!-- C# 7.2 is required for Span/BufferWriter/ReadOnlySequence -->
     <LangVersion>7.2</LangVersion>
     <Authors>Google Inc.</Authors>
-    <TargetFrameworks>netstandard1.1;netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard1.1;netstandard2.0;net45;net50</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
@@ -27,15 +27,23 @@
     <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net50' ">
+    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING;GOOGLE_PROTOBUF_SIMD</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="System.Memory" Version="4.5.3"/>
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="1.0.0"/>
     <!-- Needed for the net45 build to work on Unix. See https://github.com/dotnet/designs/pull/33 -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0"/>
   </ItemGroup>
 
-  <!-- Needed for netcoreapp2.1 to work correctly. .NET is not able to load the assembly without this -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'netstandard1.1' ">
+    <PackageReference Include="System.Memory" Version="4.5.3"/>
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Memory" Version="4.5.3"/>
+    <!-- Needed for netcoreapp2.1 to work correctly. .NET is not able to load the assembly without this -->
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2"/>
   </ItemGroup>
 

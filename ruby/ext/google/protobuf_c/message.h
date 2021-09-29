@@ -63,6 +63,9 @@ const upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
 // object will reference |arena| and ensure that it outlives this object.
 VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena);
 
+// Gets the given field from this message.
+VALUE Message_getfield(VALUE _self, const upb_fielddef* f);
+
 // Implements #inspect for this message, printing the text to |b|.
 void Message_PrintMessage(StringBuilder* b, const upb_msg* msg,
                           const upb_msgdef* m);

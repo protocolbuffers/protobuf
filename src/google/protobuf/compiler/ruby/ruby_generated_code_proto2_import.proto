@@ -1,0 +1,5 @@
+syntax = "proto2";
+
+package A.B.C;
+
+message TestImportedMessage {}

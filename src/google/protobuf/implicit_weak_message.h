@@ -80,8 +80,8 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   size_t ByteSizeLong() const override { return data_.size(); }
 
-  uint8* _InternalSerialize(uint8* target,
-                            io::EpsCopyOutputStream* stream) const final {
+  uint8_t* _InternalSerialize(uint8_t* target,
+                              io::EpsCopyOutputStream* stream) const final {
     return stream->WriteRaw(data_.data(), static_cast<int>(data_.size()),
                             target);
   }
@@ -103,12 +103,12 @@ class ImplicitWeakTypeHandler {
   static constexpr bool Moveable = false;
 
   static inline MessageLite* NewFromPrototype(const MessageLite* prototype,
-                                              Arena* arena = NULL) {
+                                              Arena* arena = nullptr) {
     return prototype->New(arena);
   }
 
   static inline void Delete(MessageLite* value, Arena* arena) {
-    if (arena == NULL) {
+    if (arena == nullptr) {
       delete value;
     }
   }

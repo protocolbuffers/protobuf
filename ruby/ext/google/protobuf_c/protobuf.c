@@ -37,7 +37,7 @@
 #include "message.h"
 #include "repeated_field.h"
 
-VALUE cError;
+VALUE cParseError;
 VALUE cTypeError;
 
 const upb_fielddef* map_field_key(const upb_fielddef* field) {
@@ -167,28 +167,64 @@ void StringBuilder_PrintMsgval(StringBuilder* b, upb_msgval val,
 // Arena
 // -----------------------------------------------------------------------------
 
-void Arena_free(void* data) { upb_arena_free(data); }
+typedef struct {
+  upb_arena *arena;
+  VALUE pinned_objs;
+} Arena;
+
+static void Arena_mark(void *data) {
+  Arena *arena = data;
+  rb_gc_mark(arena->pinned_objs);
+}
+
+static void Arena_free(void *data) {
+  Arena *arena = data;
+  upb_arena_free(arena->arena);
+  xfree(arena);
+}
 
 static VALUE cArena;
 
 const rb_data_type_t Arena_type = {
   "Google::Protobuf::Internal::Arena",
-  { NULL, Arena_free, NULL },
+  { Arena_mark, Arena_free, NULL },
+  .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
 static VALUE Arena_alloc(VALUE klass) {
-  upb_arena *arena = upb_arena_new();
+  Arena *arena = ALLOC(Arena);
+  arena->arena = upb_arena_new();
+  arena->pinned_objs = Qnil;
   return TypedData_Wrap_Struct(klass, &Arena_type, arena);
 }
 
 upb_arena *Arena_get(VALUE _arena) {
-  upb_arena *arena;
-  TypedData_Get_Struct(_arena, upb_arena, &Arena_type, arena);
-  return arena;
+  Arena *arena;
+  TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
+  return arena->arena;
+}
+
+void Arena_fuse(VALUE _arena, upb_arena *other) {
+  Arena *arena;
+  TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
+  if (!upb_arena_fuse(arena->arena, other)) {
+    rb_raise(rb_eRuntimeError,
+             "Unable to fuse arenas. This should never happen since Ruby does "
+             "not use initial blocks");
+  }
 }
 
 VALUE Arena_new() {
   return Arena_alloc(cArena);
+}
+
+void Arena_Pin(VALUE _arena, VALUE obj) {
+  Arena *arena;
+  TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
+  if (arena->pinned_objs == Qnil) {
+    arena->pinned_objs = rb_ary_new();
+  }
+  rb_ary_push(arena->pinned_objs, obj);
 }
 
 void Arena_register(VALUE module) {
@@ -209,122 +245,158 @@ void Arena_register(VALUE module) {
 // different wrapper objects for the same C object, which saves memory and
 // preserves object identity.
 //
-// We use Hash and/or WeakMap for the cache. WeakMap is faster overall
-// (probably due to removal being integrated with GC) but doesn't work for Ruby
-// <2.7 (see note below). We need Hash for Ruby <2.7 and for cases where we
-// need to GC-root the object (notably when the object has been frozen).
+// We use WeakMap for the cache. For Ruby <2.7 we also need a secondary Hash
+// to store WeakMap keys because Ruby <2.7 WeakMap doesn't allow non-finalizable
+// keys.
+//
+// We also need the secondary Hash if sizeof(long) < sizeof(VALUE), because this
+// means it may not be possible to fit a pointer into a Fixnum. Keys are
+// pointers, and if they fit into a Fixnum, Ruby doesn't collect them, but if
+// they overflow and require allocating a Bignum, they could get collected
+// prematurely, thus removing the cache entry. This happens on 64-bit Windows,
+// on which pointers are 64 bits but longs are 32 bits. In this case, we enable
+// the secondary Hash to hold the keys and prevent them from being collected.
 
-#if RUBY_API_VERSION_CODE >= 20700
-#define USE_WEAK_MAP 1
+#if RUBY_API_VERSION_CODE >= 20700 && SIZEOF_LONG >= SIZEOF_VALUE
+#define USE_SECONDARY_MAP 0
 #else
-#define USE_WEAK_MAP 0
+#define USE_SECONDARY_MAP 1
 #endif
 
-static VALUE ObjectCache_GetKey(const void* key) {
-  char buf[sizeof(key)];
-  memcpy(&buf, &key, sizeof(key));
-  intptr_t key_int = (intptr_t)key;
-  PBRUBY_ASSERT((key_int & 3) == 0);
-  return LL2NUM(key_int >> 2);
+#if USE_SECONDARY_MAP
+
+// Maps Numeric -> Object. The object is then used as a key into the WeakMap.
+// This is needed for Ruby <2.7 where a number cannot be a key to WeakMap.
+// The object is used only for its identity; it does not contain any data.
+VALUE secondary_map = Qnil;
+
+// Mutations to the map are under a mutex, because SeconaryMap_MaybeGC()
+// iterates over the map which cannot happen in parallel with insertions, or
+// Ruby will throw:
+//   can't add a new key into hash during iteration (RuntimeError)
+VALUE secondary_map_mutex = Qnil;
+
+// Lambda that will GC entries from the secondary map that are no longer present
+// in the primary map.
+VALUE gc_secondary_map_lambda = Qnil;
+ID length;
+
+extern VALUE weak_obj_cache;
+
+static void SecondaryMap_Init() {
+  rb_gc_register_address(&secondary_map);
+  rb_gc_register_address(&gc_secondary_map_lambda);
+  rb_gc_register_address(&secondary_map_mutex);
+  secondary_map = rb_hash_new();
+  gc_secondary_map_lambda = rb_eval_string(
+      "->(secondary, weak) {\n"
+      "  secondary.delete_if { |k, v| !weak.key?(v) }\n"
+      "}\n");
+  secondary_map_mutex = rb_mutex_new();
+  length = rb_intern("length");
 }
 
-// Strong object cache, uses regular Hash and GC-roots objects.
-// - For Ruby <2.7, used for all objects.
-// - For Ruby >=2.7, used only for frozen objects, so we preserve the "frozen"
-//   bit (since this information is not preserved at the upb level).
-
-VALUE strong_obj_cache = Qnil;
-
-static void StrongObjectCache_Init() {
-  rb_gc_register_address(&strong_obj_cache);
-  strong_obj_cache = rb_hash_new();
+// The secondary map is a regular Hash, and will never shrink on its own.
+// The main object cache is a WeakMap that will automatically remove entries
+// when the target object is no longer reachable, but unless we manually
+// remove the corresponding entries from the secondary map, it will grow
+// without bound.
+//
+// To avoid this unbounded growth we periodically remove entries from the
+// secondary map that are no longer present in the WeakMap. The logic of
+// how often to perform this GC is an artbirary tuning parameter that
+// represents a straightforward CPU/memory tradeoff.
+//
+// Requires: secondary_map_mutex is held.
+static void SecondaryMap_MaybeGC() {
+  PBRUBY_ASSERT(rb_mutex_locked_p(secondary_map_mutex) == Qtrue);
+  size_t weak_len = NUM2ULL(rb_funcall(weak_obj_cache, length, 0));
+  size_t secondary_len = RHASH_SIZE(secondary_map);
+  if (secondary_len < weak_len) {
+    // Logically this case should not be possible: a valid entry cannot exist in
+    // the weak table unless there is a corresponding entry in the secondary
+    // table. It should *always* be the case that secondary_len >= weak_len.
+    //
+    // However ObjectSpace::WeakMap#length (and therefore weak_len) is
+    // unreliable: it overreports its true length by including non-live objects.
+    // However these non-live objects are not yielded in iteration, so we may
+    // have previously deleted them from the secondary map in a previous
+    // invocation of SecondaryMap_MaybeGC().
+    //
+    // In this case, we can't measure any waste, so we just return.
+    return;
+  }
+  size_t waste = secondary_len - weak_len;
+  // GC if we could remove at least 2000 entries or 20% of the table size
+  // (whichever is greater).  Since the cost of the GC pass is O(N), we
+  // want to make sure that we condition this on overall table size, to
+  // avoid O(N^2) CPU costs.
+  size_t threshold = PBRUBY_MAX(secondary_len * 0.2, 2000);
+  if (waste > threshold) {
+    rb_funcall(gc_secondary_map_lambda, rb_intern("call"), 2,
+               secondary_map, weak_obj_cache);
+  }
 }
 
-static void StrongObjectCache_Remove(void* key) {
-  VALUE key_rb = ObjectCache_GetKey(key);
-  PBRUBY_ASSERT(rb_hash_lookup(strong_obj_cache, key_rb) != Qnil);
-  rb_hash_delete(strong_obj_cache, key_rb);
-}
-
-static VALUE StrongObjectCache_Get(const void* key) {
-  VALUE key_rb = ObjectCache_GetKey(key);
-  return rb_hash_lookup(strong_obj_cache, key_rb);
-}
-
-static void StrongObjectCache_Add(const void* key, VALUE val,
-                                  upb_arena* arena) {
-  PBRUBY_ASSERT(StrongObjectCache_Get(key) == Qnil);
-  VALUE key_rb = ObjectCache_GetKey(key);
-  rb_hash_aset(strong_obj_cache, key_rb, val);
-  upb_arena_addcleanup(arena, (void*)key, StrongObjectCache_Remove);
-}
-
-// Weak object cache. This speeds up the test suite significantly, so we
-// presume it speeds up real code also. However we can only use it in Ruby
-// >=2.7 due to:
-//   https://bugs.ruby-lang.org/issues/16035
-
-#if USE_WEAK_MAP
-
-VALUE weak_obj_cache = Qnil;
-
-static void WeakObjectCache_Init() {
-  rb_gc_register_address(&weak_obj_cache);
-  VALUE klass = rb_eval_string("ObjectSpace::WeakMap");
-  weak_obj_cache = rb_class_new_instance(0, NULL, klass);
-}
-
-static VALUE WeakObjectCache_Get(const void* key) {
-  VALUE key_rb = ObjectCache_GetKey(key);
-  VALUE ret = rb_funcall(weak_obj_cache, rb_intern("[]"), 1, key_rb);
+// Requires: secondary_map_mutex is held by this thread iff create == true.
+static VALUE SecondaryMap_Get(VALUE key, bool create) {
+  PBRUBY_ASSERT(!create || rb_mutex_locked_p(secondary_map_mutex) == Qtrue);
+  VALUE ret = rb_hash_lookup(secondary_map, key);
+  if (ret == Qnil && create) {
+    SecondaryMap_MaybeGC();
+    ret = rb_class_new_instance(0, NULL, rb_cObject);
+    rb_hash_aset(secondary_map, key, ret);
+  }
   return ret;
 }
 
-static void WeakObjectCache_Add(const void* key, VALUE val) {
-  PBRUBY_ASSERT(WeakObjectCache_Get(key) == Qnil);
-  VALUE key_rb = ObjectCache_GetKey(key);
-  rb_funcall(weak_obj_cache, rb_intern("[]="), 2, key_rb, val);
-  PBRUBY_ASSERT(WeakObjectCache_Get(key) == val);
-}
-
 #endif
+
+// Requires: secondary_map_mutex is held by this thread iff create == true.
+static VALUE ObjectCache_GetKey(const void* key, bool create) {
+  VALUE key_val = (VALUE)key;
+  PBRUBY_ASSERT((key_val & 3) == 0);
+  VALUE ret = LL2NUM(key_val >> 2);
+#if USE_SECONDARY_MAP
+  ret = SecondaryMap_Get(ret, create);
+#endif
+  return ret;
+}
 
 // Public ObjectCache API.
 
+VALUE weak_obj_cache = Qnil;
+ID item_get;
+ID item_set;
+
 static void ObjectCache_Init() {
-  StrongObjectCache_Init();
-#if USE_WEAK_MAP
-  WeakObjectCache_Init();
+  rb_gc_register_address(&weak_obj_cache);
+  VALUE klass = rb_eval_string("ObjectSpace::WeakMap");
+  weak_obj_cache = rb_class_new_instance(0, NULL, klass);
+  item_get = rb_intern("[]");
+  item_set = rb_intern("[]=");
+#if USE_SECONDARY_MAP
+  SecondaryMap_Init();
 #endif
 }
 
-void ObjectCache_Add(const void* key, VALUE val, upb_arena *arena) {
-#if USE_WEAK_MAP
-  (void)arena;
-  WeakObjectCache_Add(key, val);
-#else
-  StrongObjectCache_Add(key, val, arena);
+void ObjectCache_Add(const void* key, VALUE val) {
+  PBRUBY_ASSERT(ObjectCache_Get(key) == Qnil);
+#if USE_SECONDARY_MAP
+  rb_mutex_lock(secondary_map_mutex);
 #endif
+  VALUE key_rb = ObjectCache_GetKey(key, true);
+  rb_funcall(weak_obj_cache, item_set, 2, key_rb, val);
+#if USE_SECONDARY_MAP
+  rb_mutex_unlock(secondary_map_mutex);
+#endif
+  PBRUBY_ASSERT(ObjectCache_Get(key) == val);
 }
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key) {
-#if USE_WEAK_MAP
-  return WeakObjectCache_Get(key);
-#else
-  return StrongObjectCache_Get(key);
-#endif
-}
-
-void ObjectCache_Pin(const void* key, VALUE val, upb_arena *arena) {
-#if USE_WEAK_MAP
-  PBRUBY_ASSERT(WeakObjectCache_Get(key) == val);
-  // This will GC-root the object, but we'll still use the weak map for
-  // actual lookup.
-  StrongObjectCache_Add(key, val, arena);
-#else
-  // Value is already pinned, nothing to do.
-#endif
+  VALUE key_rb = ObjectCache_GetKey(key, false);
+  return rb_funcall(weak_obj_cache, item_get, 1, key_rb);
 }
 
 /*
@@ -386,8 +458,10 @@ void Init_protobuf_c() {
   Map_register(protobuf);
   Message_register(protobuf);
 
-  cError = rb_const_get(protobuf, rb_intern("Error"));
+  cParseError = rb_const_get(protobuf, rb_intern("ParseError"));
+  rb_gc_register_mark_object(cParseError);
   cTypeError = rb_const_get(protobuf, rb_intern("TypeError"));
+  rb_gc_register_mark_object(cTypeError);
 
   rb_define_singleton_method(protobuf, "discard_unknown",
                              Google_Protobuf_discard_unknown, 1);

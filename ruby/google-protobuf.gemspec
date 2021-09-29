@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "google-protobuf"
-  s.version     = "3.14.0"
+  s.version     = "3.18.0"
   git_tag       = "v#{s.version.to_s.sub('.rc.', '-rc')}" # Converts X.Y.Z.rc.N to vX.Y.Z-rcN, used for the git tag
   s.licenses    = ["BSD-3-Clause"]
   s.summary     = "Protocol Buffers"

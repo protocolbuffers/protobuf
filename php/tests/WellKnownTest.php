@@ -270,6 +270,8 @@ class WellKnownTest extends TestBase {
 
         $m = new Value();
 
+        $this->assertNull($m->getStructValue());
+
         $m->setNullValue(NullValue::NULL_VALUE);
         $this->assertSame(NullValue::NULL_VALUE, $m->getNullValue());
         $this->assertSame("null_value", $m->getKind());

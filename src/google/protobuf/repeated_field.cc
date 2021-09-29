@@ -50,7 +50,7 @@ namespace internal {
 void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   int new_size = current_size_ + extend_amount;
   if (total_size_ >= new_size) {
-    // N.B.: rep_ is non-NULL because extend_amount is always > 0, hence
+    // N.B.: rep_ is non-nullptr because extend_amount is always > 0, hence
     // total_size must be non-zero since it is lower-bounded by new_size.
     return &rep_->elements[current_size_];
   }
@@ -58,13 +58,13 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   Arena* arena = GetArena();
   new_size = std::max(internal::kRepeatedFieldLowerClampLimit,
                       std::max(total_size_ * 2, new_size));
-  GOOGLE_CHECK_LE(
-      static_cast<int64>(new_size),
-      static_cast<int64>((std::numeric_limits<size_t>::max() - kRepHeaderSize) /
-                         sizeof(old_rep->elements[0])))
+  GOOGLE_CHECK_LE(static_cast<int64_t>(new_size),
+           static_cast<int64_t>(
+               (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
+               sizeof(old_rep->elements[0])))
       << "Requested size is too large to fit into size_t.";
   size_t bytes = kRepHeaderSize + sizeof(old_rep->elements[0]) * new_size;
-  if (arena == NULL) {
+  if (arena == nullptr) {
     rep_ = reinterpret_cast<Rep*>(::operator new(bytes));
   } else {
     rep_ = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
@@ -80,7 +80,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   } else {
     rep_->allocated_size = 0;
   }
-  if (arena == NULL) {
+  if (arena == nullptr) {
 #if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
     const size_t old_size =
         old_total_size * sizeof(rep_->elements[0]) + kRepHeaderSize;
@@ -98,8 +98,35 @@ void RepeatedPtrFieldBase::Reserve(int new_size) {
   }
 }
 
+void RepeatedPtrFieldBase::DestroyProtos() {
+  GOOGLE_DCHECK(rep_);
+  GOOGLE_DCHECK(arena_ == nullptr);
+  int n = rep_->allocated_size;
+  void* const* elements = rep_->elements;
+  for (int i = 0; i < n; i++) {
+    delete static_cast<MessageLite*>(elements[i]);
+  }
+#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
+  const size_t size = total_size_ * sizeof(elements[0]) + kRepHeaderSize;
+  ::operator delete(static_cast<void*>(rep_), size);
+  rep_ = nullptr;
+#else
+  ::operator delete(static_cast<void*>(rep_));
+  rep_ = nullptr;
+#endif
+}
+
+void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
+  if (!rep_ || rep_->allocated_size == total_size_) {
+    InternalExtend(1);  // Equivalent to "Reserve(total_size_ + 1)"
+  }
+  ++rep_->allocated_size;
+  rep_->elements[current_size_++] = obj;
+  return obj;
+}
+
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
-  if (rep_ == NULL) return;
+  if (rep_ == nullptr) return;
   // Close up a gap of "num" elements starting at offset "start".
   for (int i = start + num; i < rep_->allocated_size; ++i)
     rep_->elements[i - num] = rep_->elements[i];
@@ -108,7 +135,7 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
 }
 
 MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
-  if (rep_ != NULL && current_size_ < rep_->allocated_size) {
+  if (rep_ != nullptr && current_size_ < rep_->allocated_size) {
     return reinterpret_cast<MessageLite*>(rep_->elements[current_size_++]);
   }
   if (!rep_ || rep_->allocated_size == total_size_) {
@@ -126,10 +153,10 @@ MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
 
 
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<bool>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int32>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint32>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int64>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint64>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int32_t>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint32_t>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int64_t>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint64_t>;
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<float>;
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<double>;
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedPtrField<std::string>;

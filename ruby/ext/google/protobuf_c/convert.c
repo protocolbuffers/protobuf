@@ -41,7 +41,6 @@
 
 #include "message.h"
 #include "protobuf.h"
-#include "third_party/wyhash/wyhash.h"
 
 static upb_strview Convert_StringData(VALUE str, upb_arena *arena) {
   upb_strview ret;
@@ -315,7 +314,7 @@ bool Msgval_IsEqual(upb_msgval val1, upb_msgval val2, TypeInfo type_info) {
       return memcmp(&val1, &val2, 8) == 0;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
-      return val1.str_val.size != val2.str_val.size ||
+      return val1.str_val.size == val2.str_val.size &&
              memcmp(val1.str_val.data, val2.str_val.data,
                     val1.str_val.size) == 0;
     case UPB_TYPE_MESSAGE:
@@ -328,19 +327,19 @@ bool Msgval_IsEqual(upb_msgval val1, upb_msgval val2, TypeInfo type_info) {
 uint64_t Msgval_GetHash(upb_msgval val, TypeInfo type_info, uint64_t seed) {
   switch (type_info.type) {
     case UPB_TYPE_BOOL:
-      return wyhash(&val, 1, seed, _wyp);
+      return Wyhash(&val, 1, seed, kWyhashSalt);
     case UPB_TYPE_FLOAT:
     case UPB_TYPE_INT32:
     case UPB_TYPE_UINT32:
     case UPB_TYPE_ENUM:
-      return wyhash(&val, 4, seed, _wyp);
+      return Wyhash(&val, 4, seed, kWyhashSalt);
     case UPB_TYPE_DOUBLE:
     case UPB_TYPE_INT64:
     case UPB_TYPE_UINT64:
-      return wyhash(&val, 8, seed, _wyp);
+      return Wyhash(&val, 8, seed, kWyhashSalt);
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
-      return wyhash(val.str_val.data, val.str_val.size, seed, _wyp);
+      return Wyhash(val.str_val.data, val.str_val.size, seed, kWyhashSalt);
     case UPB_TYPE_MESSAGE:
       return Message_Hash(val.msg_val, type_info.def.msgdef, seed);
     default:

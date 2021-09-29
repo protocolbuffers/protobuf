@@ -36,6 +36,7 @@
 
 #include <vector>
 
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -186,6 +187,21 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
   printer->Print(" */\n");
 }
 
+void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
+                            const FieldAccessorType type) {
+  if (!field->options().deprecated()) {
+    return;
+  }
+
+  // Lite codegen does not annotate set & clear methods with @Deprecated.
+  if (field->file()->options().optimize_for() == FileOptions::LITE_RUNTIME &&
+      (type == SETTER || type == CLEARER)) {
+    return;
+  }
+
+  printer->Print(" * @deprecated\n");
+}
+
 void WriteFieldAccessorDocComment(io::Printer* printer,
                                   const FieldDescriptor* field,
                                   const FieldAccessorType type,
@@ -194,6 +210,7 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
   WriteDocCommentBody(printer, field);
   printer->Print(" * <code>$def$</code>\n", "def",
                  EscapeJavadoc(FirstLineOf(field->DebugString())));
+  WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:
       printer->Print(" * @return Whether the $name$ field is set.\n", "name",
@@ -252,6 +269,7 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
   WriteDocCommentBody(printer, field);
   printer->Print(" * <code>$def$</code>\n", "def",
                  EscapeJavadoc(FirstLineOf(field->DebugString())));
+  WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:
       // Should never happen
@@ -321,6 +339,7 @@ void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
   WriteDocCommentBody(printer, field);
   printer->Print(" * <code>$def$</code>\n", "def",
                  EscapeJavadoc(FirstLineOf(field->DebugString())));
+  WriteDeprecatedJavadoc(printer, field, type);
   switch (type) {
     case HAZZER:
       // Should never happen

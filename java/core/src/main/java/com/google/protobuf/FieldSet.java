@@ -282,7 +282,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
       // Wrap the contents in a new list so that the caller cannot change
       // the list's contents after setting it.
-      final List newList = new ArrayList();
+      final List newList = new ArrayList<>();
       newList.addAll((List) value);
       for (final Object element : newList) {
         verifyType(descriptor, element);
@@ -832,8 +832,6 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
    */
   static int computeElementSizeNoTag(final WireFormat.FieldType type, final Object value) {
     switch (type) {
-        // Note:  Minor violation of 80-char limit rule here because this would
-        //   actually be harder to read if we wrapped the lines.
       case DOUBLE:
         return CodedOutputStream.computeDoubleSizeNoTag((Double) value);
       case FLOAT:

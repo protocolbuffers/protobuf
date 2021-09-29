@@ -30,12 +30,12 @@
 
 #include <Python.h>
 
+#include <google/protobuf/message_lite.h>
+#include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/proto_api.h>
-
-#include <google/protobuf/message_lite.h>
 
 namespace {
 
@@ -47,6 +47,15 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   google::protobuf::Message* GetMutableMessagePointer(PyObject* msg) const override {
     return google::protobuf::python::PyMessage_GetMutableMessagePointer(msg);
   }
+  const google::protobuf::Descriptor* MessageDescriptor_AsDescriptor(
+      PyObject* desc) const override {
+    return google::protobuf::python::PyMessageDescriptor_AsDescriptor(desc);
+  }
+  const google::protobuf::EnumDescriptor* EnumDescriptor_AsDescriptor(
+      PyObject* enum_desc) const override {
+    return google::protobuf::python::PyEnumDescriptor_AsDescriptor(enum_desc);
+  }
+
   const google::protobuf::DescriptorPool* GetDefaultDescriptorPool() const override {
     return google::protobuf::python::GetDefaultDescriptorPool()->pool;
   }
@@ -54,6 +63,19 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   google::protobuf::MessageFactory* GetDefaultMessageFactory() const override {
     return google::protobuf::python::GetDefaultDescriptorPool()
         ->py_message_factory->message_factory;
+  }
+  PyObject* NewMessage(const google::protobuf::Descriptor* descriptor,
+                       PyObject* py_message_factory) const override {
+    return google::protobuf::python::PyMessage_New(descriptor, py_message_factory);
+  }
+  PyObject* NewMessageOwnedExternally(
+      google::protobuf::Message* msg, PyObject* py_message_factory) const override {
+    return google::protobuf::python::PyMessage_NewMessageOwnedExternally(
+        msg, py_message_factory);
+  }
+  PyObject* DescriptorPool_FromPool(
+      const google::protobuf::DescriptorPool* pool) const override {
+    return google::protobuf::python::PyDescriptorPool_FromPool(pool);
   }
 };
 

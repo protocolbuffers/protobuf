@@ -71,8 +71,9 @@ class TypeInfoTestHelper {
   // Returns the TypeInfo created after ResetTypeInfo.
   TypeInfo* GetTypeInfo();
 
-  ProtoStreamObjectSource* NewProtoSource(io::CodedInputStream* coded_input,
-                                          const std::string& type_url);
+  ProtoStreamObjectSource* NewProtoSource(
+      io::CodedInputStream* coded_input, const std::string& type_url,
+      ProtoStreamObjectSource::RenderOptions render_options = {});
 
   ProtoStreamObjectWriter* NewProtoWriter(
       const std::string& type_url, strings::ByteSink* output,

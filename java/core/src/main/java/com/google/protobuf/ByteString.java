@@ -479,7 +479,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param streamToDrain The source stream, which is read completely but not closed.
    * @return A new {@code ByteString} which is made up of chunks of various sizes, depending on the
    *     behavior of the underlying stream.
-   * @throws IOException IOException is thrown if there is a problem reading the underlying stream.
+   * @throws IOException if there is a problem reading the underlying stream
+   * @throws IllegalArgumentException if the stream supplies more than Integer.MAX_VALUE bytes
    */
   public static ByteString readFrom(InputStream streamToDrain) throws IOException {
     return readFrom(streamToDrain, MIN_READ_FROM_CHUNK_SIZE, MAX_READ_FROM_CHUNK_SIZE);
@@ -499,13 +500,23 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param streamToDrain The source stream, which is read completely but not closed.
    * @param chunkSize The size of the chunks in which to read the stream.
    * @return A new {@code ByteString} which is made up of chunks of the given size.
-   * @throws IOException IOException is thrown if there is a problem reading the underlying stream.
+   * @throws IOException if there is a problem reading the underlying stream
+   * @throws IllegalArgumentException if the stream supplies more than Integer.MAX_VALUE bytes
    */
   public static ByteString readFrom(InputStream streamToDrain, int chunkSize) throws IOException {
     return readFrom(streamToDrain, chunkSize, chunkSize);
   }
 
-  // Helper method that takes the chunk size range as a parameter.
+  /**
+   * Helper method that takes the chunk size range as a parameter.
+   *
+   * @param streamToDrain the source stream, which is read completely but not closed
+   * @param minChunkSize the minimum size of the chunks in which to read the stream
+   * @param maxChunkSize the maximum size of the chunks in which to read the stream
+   * @return a new {@code ByteString} which is made up of chunks within the given size range
+   * @throws IOException if there is a problem reading the underlying stream
+   * @throws IllegalArgumentException if the stream supplies more than Integer.MAX_VALUE bytes
+   */
   public static ByteString readFrom(InputStream streamToDrain, int minChunkSize, int maxChunkSize)
       throws IOException {
     Collection<ByteString> results = new ArrayList<ByteString>();
@@ -564,6 +575,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * @param other string to concatenate
    * @return a new {@code ByteString} instance
+   * @throws IllegalArgumentException if the combined size of the two byte strings exceeds
+   *     Integer.MAX_VALUE
    */
   public final ByteString concat(ByteString other) {
     if (Integer.MAX_VALUE - size() < other.size()) {
@@ -584,6 +597,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * @param byteStrings strings to be concatenated
    * @return new {@code ByteString}
+   * @throws IllegalArgumentException if the combined size of the byte strings exceeds
+   *     Integer.MAX_VALUE
    */
   public static ByteString copyFrom(Iterable<ByteString> byteStrings) {
     // Determine the size;
@@ -1043,8 +1058,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
 
     /**
-     * Creates a byte string. Its size is the current size of this output stream and its output has
-     * been copied to it.
+     * Creates a byte string with the size and contents of this output stream. This does not create
+     * a new copy of the underlying bytes. If the stream size grows dynamically, the runtime is
+     * O(log n) in respect to the number of bytes written to the {@link Output}. If the stream size
+     * stays within the initial capacity, the runtime is O(1).
      *
      * @return the current contents of this output stream, as a byte string.
      */

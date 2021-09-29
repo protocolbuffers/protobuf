@@ -30,39 +30,44 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static java.util.Arrays.asList;
 
 import com.google.protobuf.Internal.LongList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-/**
- * Tests for {@link LongArrayList}.
- *
- * @author dweis@google.com (Daniel Weis)
- */
-public class LongArrayListTest extends TestCase {
+/** Tests for {@link LongArrayList}. */
+@RunWith(JUnit4.class)
+public class LongArrayListTest {
 
   private static final LongArrayList UNARY_LIST = newImmutableLongArrayList(1);
   private static final LongArrayList TERTIARY_LIST = newImmutableLongArrayList(1, 2, 3);
 
   private LongArrayList list;
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     list = new LongArrayList();
   }
 
+  @Test
   public void testEmptyListReturnsSameInstance() {
-    assertSame(LongArrayList.emptyList(), LongArrayList.emptyList());
+    assertThat(LongArrayList.emptyList()).isSameInstanceAs(LongArrayList.emptyList());
   }
 
+  @Test
   public void testEmptyListIsImmutable() {
     assertImmutable(LongArrayList.emptyList());
   }
 
+  @Test
   public void testMakeImmutable() {
     list.addLong(3);
     list.addLong(4);
@@ -72,19 +77,20 @@ public class LongArrayListTest extends TestCase {
     assertImmutable(list);
   }
 
+  @Test
   public void testModificationWithIteration() {
     list.addAll(asList(1L, 2L, 3L, 4L));
     Iterator<Long> iterator = list.iterator();
-    assertEquals(4, list.size());
-    assertEquals(1L, (long) list.get(0));
-    assertEquals(1L, (long) iterator.next());
+    assertThat(list).hasSize(4);
+    assertThat((long) list.get(0)).isEqualTo(1L);
+    assertThat((long) iterator.next()).isEqualTo(1L);
     list.set(0, 1L);
-    assertEquals(2L, (long) iterator.next());
+    assertThat((long) iterator.next()).isEqualTo(2L);
 
     list.remove(0);
     try {
       iterator.next();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (ConcurrentModificationException e) {
       // expected
     }
@@ -93,191 +99,211 @@ public class LongArrayListTest extends TestCase {
     list.add(0, 0L);
     try {
       iterator.next();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (ConcurrentModificationException e) {
       // expected
     }
   }
 
+  @Test
   public void testGet() {
-    assertEquals(1L, (long) TERTIARY_LIST.get(0));
-    assertEquals(2L, (long) TERTIARY_LIST.get(1));
-    assertEquals(3L, (long) TERTIARY_LIST.get(2));
+    assertThat((long) TERTIARY_LIST.get(0)).isEqualTo(1L);
+    assertThat((long) TERTIARY_LIST.get(1)).isEqualTo(2L);
+    assertThat((long) TERTIARY_LIST.get(2)).isEqualTo(3L);
 
     try {
       TERTIARY_LIST.get(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       TERTIARY_LIST.get(3);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testGetLong() {
-    assertEquals(1L, TERTIARY_LIST.getLong(0));
-    assertEquals(2L, TERTIARY_LIST.getLong(1));
-    assertEquals(3L, TERTIARY_LIST.getLong(2));
+    assertThat(TERTIARY_LIST.getLong(0)).isEqualTo(1L);
+    assertThat(TERTIARY_LIST.getLong(1)).isEqualTo(2L);
+    assertThat(TERTIARY_LIST.getLong(2)).isEqualTo(3L);
 
     try {
       TERTIARY_LIST.get(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       TERTIARY_LIST.get(3);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testIndexOf_nullElement() {
-    assertEquals(-1, TERTIARY_LIST.indexOf(null));
+    assertThat(TERTIARY_LIST.indexOf(null)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_incompatibleElementType() {
-    assertEquals(-1, TERTIARY_LIST.indexOf(new Object()));
+    assertThat(TERTIARY_LIST.indexOf(new Object())).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_notInList() {
-    assertEquals(-1, UNARY_LIST.indexOf(2L));
+    assertThat(UNARY_LIST.indexOf(2L)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_notInListWithDuplicates() {
     LongArrayList listWithDupes = newImmutableLongArrayList(1L, 1L);
-    assertEquals(-1, listWithDupes.indexOf(2L));
+    assertThat(listWithDupes.indexOf(2L)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_inList() {
-    assertEquals(1, TERTIARY_LIST.indexOf(2L));
+    assertThat(TERTIARY_LIST.indexOf(2L)).isEqualTo(1);
   }
 
+  @Test
   public void testIndexOf_inListWithDuplicates_matchAtHead() {
     LongArrayList listWithDupes = newImmutableLongArrayList(1L, 1L, 2L);
-    assertEquals(0, listWithDupes.indexOf(1L));
+    assertThat(listWithDupes.indexOf(1L)).isEqualTo(0);
   }
 
+  @Test
   public void testIndexOf_inListWithDuplicates_matchMidList() {
     LongArrayList listWithDupes = newImmutableLongArrayList(2L, 1L, 1L, 2L);
-    assertEquals(1, listWithDupes.indexOf(1L));
+    assertThat(listWithDupes.indexOf(1L)).isEqualTo(1);
   }
 
+  @Test
   public void testContains_nullElement() {
-    assertEquals(false, TERTIARY_LIST.contains(null));
+    assertThat(TERTIARY_LIST).doesNotContain(null);
   }
 
+  @Test
   public void testContains_incompatibleElementType() {
-    assertEquals(false, TERTIARY_LIST.contains(new Object()));
+    assertThat(TERTIARY_LIST).doesNotContain(new Object());
   }
 
+  @Test
   public void testContains_notInList() {
-    assertEquals(false, UNARY_LIST.contains(2L));
+    assertThat(UNARY_LIST).doesNotContain(2L);
   }
 
+  @Test
   public void testContains_notInListWithDuplicates() {
     LongArrayList listWithDupes = newImmutableLongArrayList(1L, 1L);
-    assertEquals(false, listWithDupes.contains(2L));
+    assertThat(listWithDupes).doesNotContain(2L);
   }
 
+  @Test
   public void testContains_inList() {
-    assertEquals(true, TERTIARY_LIST.contains(2L));
+    assertThat(TERTIARY_LIST).contains(2L);
   }
 
+  @Test
   public void testContains_inListWithDuplicates_matchAtHead() {
     LongArrayList listWithDupes = newImmutableLongArrayList(1L, 1L, 2L);
-    assertEquals(true, listWithDupes.contains(1L));
+    assertThat(listWithDupes).contains(1L);
   }
 
+  @Test
   public void testContains_inListWithDuplicates_matchMidList() {
     LongArrayList listWithDupes = newImmutableLongArrayList(2L, 1L, 1L, 2L);
-    assertEquals(true, listWithDupes.contains(1L));
+    assertThat(listWithDupes).contains(1L);
   }
 
+  @Test
   public void testSize() {
-    assertEquals(0, LongArrayList.emptyList().size());
-    assertEquals(1, UNARY_LIST.size());
-    assertEquals(3, TERTIARY_LIST.size());
+    assertThat(LongArrayList.emptyList()).isEmpty();
+    assertThat(UNARY_LIST).hasSize(1);
+    assertThat(TERTIARY_LIST).hasSize(3);
 
     list.addLong(3);
     list.addLong(4);
     list.addLong(6);
     list.addLong(8);
-    assertEquals(4, list.size());
+    assertThat(list).hasSize(4);
 
     list.remove(0);
-    assertEquals(3, list.size());
+    assertThat(list).hasSize(3);
 
     list.add(17L);
-    assertEquals(4, list.size());
+    assertThat(list).hasSize(4);
   }
 
+  @Test
   public void testSet() {
     list.addLong(2);
     list.addLong(4);
 
-    assertEquals(2L, (long) list.set(0, 3L));
-    assertEquals(3L, list.getLong(0));
+    assertThat((long) list.set(0, 3L)).isEqualTo(2L);
+    assertThat(list.getLong(0)).isEqualTo(3L);
 
-    assertEquals(4L, (long) list.set(1, 0L));
-    assertEquals(0L, list.getLong(1));
+    assertThat((long) list.set(1, 0L)).isEqualTo(4L);
+    assertThat(list.getLong(1)).isEqualTo(0L);
 
     try {
       list.set(-1, 0L);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.set(2, 0L);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testSetLong() {
     list.addLong(1);
     list.addLong(3);
 
-    assertEquals(1L, list.setLong(0, 0));
-    assertEquals(0L, list.getLong(0));
+    assertThat(list.setLong(0, 0)).isEqualTo(1L);
+    assertThat(list.getLong(0)).isEqualTo(0L);
 
-    assertEquals(3L, list.setLong(1, 0));
-    assertEquals(0L, list.getLong(1));
+    assertThat(list.setLong(1, 0)).isEqualTo(3L);
+    assertThat(list.getLong(1)).isEqualTo(0L);
 
     try {
       list.setLong(-1, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.setLong(2, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testAdd() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
-    assertTrue(list.add(2L));
-    assertEquals(asList(2L), list);
+    assertThat(list.add(2L)).isTrue();
+    assertThat(list).containsExactly(2L);
 
-    assertTrue(list.add(3L));
+    assertThat(list.add(3L)).isTrue();
     list.add(0, 4L);
-    assertEquals(asList(4L, 2L, 3L), list);
+    assertThat(list).containsExactly(4L, 2L, 3L).inOrder();
 
     list.add(0, 1L);
     list.add(0, 0L);
@@ -285,7 +311,7 @@ public class LongArrayListTest extends TestCase {
     for (int i = 0; i < 6; i++) {
       list.add(Long.valueOf(5 + i));
     }
-    assertEquals(asList(0L, 1L, 4L, 2L, 3L, 5L, 6L, 7L, 8L, 9L, 10L), list);
+    assertThat(list).containsExactly(0L, 1L, 4L, 2L, 3L, 5L, 6L, 7L, 8L, 9L, 10L).inOrder();
 
     try {
       list.add(-1, 5L);
@@ -300,90 +326,98 @@ public class LongArrayListTest extends TestCase {
     }
   }
 
+  @Test
   public void testAddLong() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
     list.addLong(2);
-    assertEquals(asList(2L), list);
+    assertThat(list).containsExactly(2L);
 
     list.addLong(3);
-    assertEquals(asList(2L, 3L), list);
+    assertThat(list).containsExactly(2L, 3L).inOrder();
   }
 
+  @Test
   public void testAddAll() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
-    assertTrue(list.addAll(Collections.singleton(1L)));
-    assertEquals(1, list.size());
-    assertEquals(1L, (long) list.get(0));
-    assertEquals(1L, list.getLong(0));
+    assertThat(list.addAll(Collections.singleton(1L))).isTrue();
+    assertThat(list).hasSize(1);
+    assertThat((long) list.get(0)).isEqualTo(1L);
+    assertThat(list.getLong(0)).isEqualTo(1L);
 
-    assertTrue(list.addAll(asList(2L, 3L, 4L, 5L, 6L)));
-    assertEquals(asList(1L, 2L, 3L, 4L, 5L, 6L), list);
+    assertThat(list.addAll(asList(2L, 3L, 4L, 5L, 6L))).isTrue();
+    assertThat(list).containsExactly(1L, 2L, 3L, 4L, 5L, 6L).inOrder();
 
-    assertTrue(list.addAll(TERTIARY_LIST));
-    assertEquals(asList(1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L), list);
+    assertThat(list.addAll(TERTIARY_LIST)).isTrue();
+    assertThat(list).containsExactly(1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L).inOrder();
 
-    assertFalse(list.addAll(Collections.<Long>emptyList()));
-    assertFalse(list.addAll(LongArrayList.emptyList()));
+    assertThat(list.addAll(Collections.<Long>emptyList())).isFalse();
+    assertThat(list.addAll(LongArrayList.emptyList())).isFalse();
   }
 
+  @Test
   public void testEquals() {
     LongArrayList list1 = new LongArrayList();
     LongArrayList list2 = new LongArrayList();
 
-    assertEquals(list1, list2);
+    assertThat(list1).isEqualTo(list2);
   }
 
+  @Test
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
-    assertEquals(1L, (long) list.remove(0));
-    assertEquals(asList(2L, 3L), list);
+    assertThat((long) list.remove(0)).isEqualTo(1L);
+    assertThat(list).containsExactly(2L, 3L).inOrder();
 
-    assertTrue(list.remove(Long.valueOf(3)));
-    assertEquals(asList(2L), list);
+    assertThat(list.remove(Long.valueOf(3))).isTrue();
+    assertThat(list).containsExactly(2L);
 
-    assertFalse(list.remove(Long.valueOf(3)));
-    assertEquals(asList(2L), list);
+    assertThat(list.remove(Long.valueOf(3))).isFalse();
+    assertThat(list).containsExactly(2L);
 
-    assertEquals(2L, (long) list.remove(0));
-    assertEquals(asList(), list);
+    assertThat((long) list.remove(0)).isEqualTo(2L);
+    assertThat(list).isEmpty();
 
     try {
       list.remove(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.remove(0);
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testRemoveEnd_listAtCapacity() {
     LongList toRemove = LongArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addLong(3);
     toRemove.remove(0);
-    assertEquals(0, toRemove.size());
+    assertThat(toRemove).isEmpty();
   }
 
+  @Test
   public void testRemove_listAtCapacity() {
     LongList toRemove = LongArrayList.emptyList().mutableCopyWithCapacity(2);
     toRemove.addLong(3);
     toRemove.addLong(4);
     toRemove.remove(0);
-    assertEquals(1, toRemove.size());
-    assertEquals(4L, (long) toRemove.get(0));
+    assertThat(toRemove).hasSize(1);
+    assertThat((long) toRemove.get(0)).isEqualTo(4L);
   }
 
+  @Test
   public void testSublistRemoveEndOfCapacity() {
     LongList toRemove = LongArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addLong(3);
     toRemove.subList(0, 1).clear();
-    assertEquals(0, toRemove.size());
+    assertThat(toRemove).isEmpty();
   }
 
   private void assertImmutable(LongList list) {
@@ -393,147 +427,147 @@ public class LongArrayListTest extends TestCase {
 
     try {
       list.add(1L);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.add(0, 1L);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(Collections.<Long>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(Collections.singletonList(1L));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(new LongArrayList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, Collections.singleton(1L));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, Collections.<Long>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addLong(0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.clear();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.remove(1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.remove(new Object());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(Collections.<Long>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(Collections.singleton(1L));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(Collections.<Long>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(Collections.singleton(1L));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.set(0, 0L);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.setLong(0, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }

@@ -30,39 +30,44 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static java.util.Arrays.asList;
 
 import com.google.protobuf.Internal.IntList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-/**
- * Tests for {@link IntArrayList}.
- *
- * @author dweis@google.com (Daniel Weis)
- */
-public class IntArrayListTest extends TestCase {
+/** Tests for {@link IntArrayList}. */
+@RunWith(JUnit4.class)
+public class IntArrayListTest {
 
   private static final IntArrayList UNARY_LIST = newImmutableIntArrayList(1);
   private static final IntArrayList TERTIARY_LIST = newImmutableIntArrayList(1, 2, 3);
 
   private IntArrayList list;
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     list = new IntArrayList();
   }
 
+  @Test
   public void testEmptyListReturnsSameInstance() {
-    assertSame(IntArrayList.emptyList(), IntArrayList.emptyList());
+    assertThat(IntArrayList.emptyList()).isSameInstanceAs(IntArrayList.emptyList());
   }
 
+  @Test
   public void testEmptyListIsImmutable() {
     assertImmutable(IntArrayList.emptyList());
   }
 
+  @Test
   public void testMakeImmutable() {
     list.addInt(3);
     list.addInt(4);
@@ -72,19 +77,20 @@ public class IntArrayListTest extends TestCase {
     assertImmutable(list);
   }
 
+  @Test
   public void testModificationWithIteration() {
     list.addAll(asList(1, 2, 3, 4));
     Iterator<Integer> iterator = list.iterator();
-    assertEquals(4, list.size());
-    assertEquals(1, (int) list.get(0));
-    assertEquals(1, (int) iterator.next());
+    assertThat(list).hasSize(4);
+    assertThat((int) list.get(0)).isEqualTo(1);
+    assertThat((int) iterator.next()).isEqualTo(1);
     list.set(0, 1);
-    assertEquals(2, (int) iterator.next());
+    assertThat((int) iterator.next()).isEqualTo(2);
 
     list.remove(0);
     try {
       iterator.next();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (ConcurrentModificationException e) {
       // expected
     }
@@ -93,191 +99,211 @@ public class IntArrayListTest extends TestCase {
     list.add(0, 0);
     try {
       iterator.next();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (ConcurrentModificationException e) {
       // expected
     }
   }
 
+  @Test
   public void testGet() {
-    assertEquals(1, (int) TERTIARY_LIST.get(0));
-    assertEquals(2, (int) TERTIARY_LIST.get(1));
-    assertEquals(3, (int) TERTIARY_LIST.get(2));
+    assertThat((int) TERTIARY_LIST.get(0)).isEqualTo(1);
+    assertThat((int) TERTIARY_LIST.get(1)).isEqualTo(2);
+    assertThat((int) TERTIARY_LIST.get(2)).isEqualTo(3);
 
     try {
       TERTIARY_LIST.get(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       TERTIARY_LIST.get(3);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testGetInt() {
-    assertEquals(1, TERTIARY_LIST.getInt(0));
-    assertEquals(2, TERTIARY_LIST.getInt(1));
-    assertEquals(3, TERTIARY_LIST.getInt(2));
+    assertThat(TERTIARY_LIST.getInt(0)).isEqualTo(1);
+    assertThat(TERTIARY_LIST.getInt(1)).isEqualTo(2);
+    assertThat(TERTIARY_LIST.getInt(2)).isEqualTo(3);
 
     try {
       TERTIARY_LIST.get(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       TERTIARY_LIST.get(3);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testIndexOf_nullElement() {
-    assertEquals(-1, TERTIARY_LIST.indexOf(null));
+    assertThat(TERTIARY_LIST.indexOf(null)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_incompatibleElementType() {
-    assertEquals(-1, TERTIARY_LIST.indexOf(new Object()));
+    assertThat(TERTIARY_LIST.indexOf(new Object())).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_notInList() {
-    assertEquals(-1, UNARY_LIST.indexOf(2));
+    assertThat(UNARY_LIST.indexOf(2)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_notInListWithDuplicates() {
     IntArrayList listWithDupes = newImmutableIntArrayList(1, 1);
-    assertEquals(-1, listWithDupes.indexOf(2));
+    assertThat(listWithDupes.indexOf(2)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_inList() {
-    assertEquals(1, TERTIARY_LIST.indexOf(2));
+    assertThat(TERTIARY_LIST.indexOf(2)).isEqualTo(1);
   }
 
+  @Test
   public void testIndexOf_inListWithDuplicates_matchAtHead() {
     IntArrayList listWithDupes = newImmutableIntArrayList(1, 1, 2);
-    assertEquals(0, listWithDupes.indexOf(1));
+    assertThat(listWithDupes.indexOf(1)).isEqualTo(0);
   }
 
+  @Test
   public void testIndexOf_inListWithDuplicates_matchMidList() {
     IntArrayList listWithDupes = newImmutableIntArrayList(2, 1, 1, 2);
-    assertEquals(1, listWithDupes.indexOf(1));
+    assertThat(listWithDupes.indexOf(1)).isEqualTo(1);
   }
 
+  @Test
   public void testContains_nullElement() {
-    assertEquals(false, TERTIARY_LIST.contains(null));
+    assertThat(TERTIARY_LIST).doesNotContain(null);
   }
 
+  @Test
   public void testContains_incompatibleElementType() {
-    assertEquals(false, TERTIARY_LIST.contains(new Object()));
+    assertThat(TERTIARY_LIST).doesNotContain(new Object());
   }
 
+  @Test
   public void testContains_notInList() {
-    assertEquals(false, UNARY_LIST.contains(2));
+    assertThat(UNARY_LIST).doesNotContain(2);
   }
 
+  @Test
   public void testContains_notInListWithDuplicates() {
     IntArrayList listWithDupes = newImmutableIntArrayList(1, 1);
-    assertEquals(false, listWithDupes.contains(2));
+    assertThat(listWithDupes).doesNotContain(2);
   }
 
+  @Test
   public void testContains_inList() {
-    assertEquals(true, TERTIARY_LIST.contains(2));
+    assertThat(TERTIARY_LIST).contains(2);
   }
 
+  @Test
   public void testContains_inListWithDuplicates_matchAtHead() {
     IntArrayList listWithDupes = newImmutableIntArrayList(1, 1, 2);
-    assertEquals(true, listWithDupes.contains(1));
+    assertThat(listWithDupes).contains(1);
   }
 
+  @Test
   public void testContains_inListWithDuplicates_matchMidList() {
     IntArrayList listWithDupes = newImmutableIntArrayList(2, 1, 1, 2);
-    assertEquals(true, listWithDupes.contains(1));
+    assertThat(listWithDupes).contains(1);
   }
 
+  @Test
   public void testSize() {
-    assertEquals(0, IntArrayList.emptyList().size());
-    assertEquals(1, UNARY_LIST.size());
-    assertEquals(3, TERTIARY_LIST.size());
+    assertThat(IntArrayList.emptyList()).isEmpty();
+    assertThat(UNARY_LIST).hasSize(1);
+    assertThat(TERTIARY_LIST).hasSize(3);
 
     list.addInt(3);
     list.addInt(4);
     list.addInt(6);
     list.addInt(8);
-    assertEquals(4, list.size());
+    assertThat(list).hasSize(4);
 
     list.remove(0);
-    assertEquals(3, list.size());
+    assertThat(list).hasSize(3);
 
     list.add(17);
-    assertEquals(4, list.size());
+    assertThat(list).hasSize(4);
   }
 
+  @Test
   public void testSet() {
     list.addInt(2);
     list.addInt(4);
 
-    assertEquals(2, (int) list.set(0, 3));
-    assertEquals(3, list.getInt(0));
+    assertThat((int) list.set(0, 3)).isEqualTo(2);
+    assertThat(list.getInt(0)).isEqualTo(3);
 
-    assertEquals(4, (int) list.set(1, 0));
-    assertEquals(0, list.getInt(1));
+    assertThat((int) list.set(1, 0)).isEqualTo(4);
+    assertThat(list.getInt(1)).isEqualTo(0);
 
     try {
       list.set(-1, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.set(2, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testSetInt() {
     list.addInt(1);
     list.addInt(3);
 
-    assertEquals(1, list.setInt(0, 0));
-    assertEquals(0, list.getInt(0));
+    assertThat(list.setInt(0, 0)).isEqualTo(1);
+    assertThat(list.getInt(0)).isEqualTo(0);
 
-    assertEquals(3, list.setInt(1, 0));
-    assertEquals(0, list.getInt(1));
+    assertThat(list.setInt(1, 0)).isEqualTo(3);
+    assertThat(list.getInt(1)).isEqualTo(0);
 
     try {
       list.setInt(-1, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.setInt(2, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testAdd() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
-    assertTrue(list.add(2));
-    assertEquals(asList(2), list);
+    assertThat(list.add(2)).isTrue();
+    assertThat(list).containsExactly(2);
 
-    assertTrue(list.add(3));
+    assertThat(list.add(3)).isTrue();
     list.add(0, 4);
-    assertEquals(asList(4, 2, 3), list);
+    assertThat(list).containsExactly(4, 2, 3).inOrder();
 
     list.add(0, 1);
     list.add(0, 0);
@@ -285,7 +311,7 @@ public class IntArrayListTest extends TestCase {
     for (int i = 0; i < 6; i++) {
       list.add(Integer.valueOf(5 + i));
     }
-    assertEquals(asList(0, 1, 4, 2, 3, 5, 6, 7, 8, 9, 10), list);
+    assertThat(list).containsExactly(0, 1, 4, 2, 3, 5, 6, 7, 8, 9, 10).inOrder();
 
     try {
       list.add(-1, 5);
@@ -300,90 +326,98 @@ public class IntArrayListTest extends TestCase {
     }
   }
 
+  @Test
   public void testAddInt() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
     list.addInt(2);
-    assertEquals(asList(2), list);
+    assertThat(list).containsExactly(2);
 
     list.addInt(3);
-    assertEquals(asList(2, 3), list);
+    assertThat(list).containsExactly(2, 3).inOrder();
   }
 
+  @Test
   public void testAddAll() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
-    assertTrue(list.addAll(Collections.singleton(1)));
-    assertEquals(1, list.size());
-    assertEquals(1, (int) list.get(0));
-    assertEquals(1, list.getInt(0));
+    assertThat(list.addAll(Collections.singleton(1))).isTrue();
+    assertThat(list).hasSize(1);
+    assertThat((int) list.get(0)).isEqualTo(1);
+    assertThat(list.getInt(0)).isEqualTo(1);
 
-    assertTrue(list.addAll(asList(2, 3, 4, 5, 6)));
-    assertEquals(asList(1, 2, 3, 4, 5, 6), list);
+    assertThat(list.addAll(asList(2, 3, 4, 5, 6))).isTrue();
+    assertThat(list).containsExactly(1, 2, 3, 4, 5, 6).inOrder();
 
-    assertTrue(list.addAll(TERTIARY_LIST));
-    assertEquals(asList(1, 2, 3, 4, 5, 6, 1, 2, 3), list);
+    assertThat(list.addAll(TERTIARY_LIST)).isTrue();
+    assertThat(list).containsExactly(1, 2, 3, 4, 5, 6, 1, 2, 3).inOrder();
 
-    assertFalse(list.addAll(Collections.<Integer>emptyList()));
-    assertFalse(list.addAll(IntArrayList.emptyList()));
+    assertThat(list.addAll(Collections.<Integer>emptyList())).isFalse();
+    assertThat(list.addAll(IntArrayList.emptyList())).isFalse();
   }
 
+  @Test
   public void testEquals() {
     IntArrayList list1 = new IntArrayList();
     IntArrayList list2 = new IntArrayList();
 
-    assertEquals(list1, list2);
+    assertThat(list1).isEqualTo(list2);
   }
 
+  @Test
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
-    assertEquals(1, (int) list.remove(0));
-    assertEquals(asList(2, 3), list);
+    assertThat((int) list.remove(0)).isEqualTo(1);
+    assertThat(list).containsExactly(2, 3).inOrder();
 
-    assertTrue(list.remove(Integer.valueOf(3)));
-    assertEquals(asList(2), list);
+    assertThat(list.remove(Integer.valueOf(3))).isTrue();
+    assertThat(list).containsExactly(2);
 
-    assertFalse(list.remove(Integer.valueOf(3)));
-    assertEquals(asList(2), list);
+    assertThat(list.remove(Integer.valueOf(3))).isFalse();
+    assertThat(list).containsExactly(2);
 
-    assertEquals(2, (int) list.remove(0));
-    assertEquals(asList(), list);
+    assertThat((int) list.remove(0)).isEqualTo(2);
+    assertThat(list).isEmpty();
 
     try {
       list.remove(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.remove(0);
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testRemoveEnd_listAtCapacity() {
     IntList toRemove = IntArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addInt(3);
     toRemove.remove(0);
-    assertEquals(0, toRemove.size());
+    assertThat(toRemove).isEmpty();
   }
 
+  @Test
   public void testRemove_listAtCapacity() {
     IntList toRemove = IntArrayList.emptyList().mutableCopyWithCapacity(2);
     toRemove.addInt(3);
     toRemove.addInt(4);
     toRemove.remove(0);
-    assertEquals(1, toRemove.size());
-    assertEquals(4, (int) toRemove.get(0));
+    assertThat(toRemove).hasSize(1);
+    assertThat((int) toRemove.get(0)).isEqualTo(4);
   }
 
+  @Test
   public void testSublistRemoveEndOfCapacity() {
     IntList toRemove = IntArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addInt(3);
     toRemove.subList(0, 1).clear();
-    assertEquals(0, toRemove.size());
+    assertThat(toRemove).isEmpty();
   }
 
   private void assertImmutable(IntList list) {
@@ -393,147 +427,147 @@ public class IntArrayListTest extends TestCase {
 
     try {
       list.add(1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.add(0, 1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(Collections.<Integer>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(Collections.singletonList(1));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(new IntArrayList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, Collections.singleton(1));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, Collections.<Integer>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addInt(0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.clear();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.remove(1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.remove(new Object());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(Collections.<Integer>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(Collections.singleton(1));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(Collections.<Integer>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(Collections.singleton(1));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.set(0, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.setInt(0, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }

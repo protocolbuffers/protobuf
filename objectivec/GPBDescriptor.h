@@ -182,7 +182,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 @property(nonatomic, readonly, getter=isOptional) BOOL optional;
 /** Type of field (single, repeated, map). */
 @property(nonatomic, readonly) GPBFieldType fieldType;
-/** Type of the key if the field is a map. The value's type is -fieldType. */
+/** Type of the key if the field is a map. The value's type is -dataType. */
 @property(nonatomic, readonly) GPBDataType mapKeyDataType;
 /** Whether the field is packable. */
 @property(nonatomic, readonly, getter=isPackable) BOOL packable;

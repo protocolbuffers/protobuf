@@ -398,4 +398,14 @@ public final class FieldMaskUtil {
   public static void merge(FieldMask mask, Message source, Message.Builder destination) {
     merge(mask, source, destination, new MergeOptions());
   }
+
+  /**
+   * Returns the result of keeping only the masked fields of the given proto.
+   */
+  @SuppressWarnings("unchecked")
+  public static <P extends Message> P trim(FieldMask mask, P source) {
+   Message.Builder destination = source.newBuilderForType();
+    merge(mask, source, destination);
+    return (P) destination.build();
+  }
 }

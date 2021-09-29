@@ -132,27 +132,28 @@ bool AllAreInitializedWeak(const RepeatedPtrField<T>& t) {
   return true;
 }
 
-inline bool IsPresent(const void* base, uint32 hasbit) {
-  const uint32* has_bits_array = static_cast<const uint32*>(base);
+inline bool IsPresent(const void* base, uint32_t hasbit) {
+  const uint32_t* has_bits_array = static_cast<const uint32_t*>(base);
   return (has_bits_array[hasbit / 32] & (1u << (hasbit & 31))) != 0;
 }
 
-inline bool IsOneofPresent(const void* base, uint32 offset, uint32 tag) {
-  const uint32* oneof =
-      reinterpret_cast<const uint32*>(static_cast<const uint8*>(base) + offset);
+inline bool IsOneofPresent(const void* base, uint32_t offset, uint32_t tag) {
+  const uint32_t* oneof = reinterpret_cast<const uint32_t*>(
+      static_cast<const uint8_t*>(base) + offset);
   return *oneof == tag >> 3;
 }
 
-typedef void (*SpecialSerializer)(const uint8* base, uint32 offset, uint32 tag,
-                                  uint32 has_offset,
+typedef void (*SpecialSerializer)(const uint8_t* base, uint32_t offset,
+                                  uint32_t tag, uint32_t has_offset,
                                   io::CodedOutputStream* output);
 
-PROTOBUF_EXPORT void ExtensionSerializer(const uint8* base, uint32 offset,
-                                         uint32 tag, uint32 has_offset,
+PROTOBUF_EXPORT void ExtensionSerializer(const MessageLite* extendee,
+                                         const uint8_t* ptr, uint32_t offset,
+                                         uint32_t tag, uint32_t has_offset,
                                          io::CodedOutputStream* output);
-PROTOBUF_EXPORT void UnknownFieldSerializerLite(const uint8* base,
-                                                uint32 offset, uint32 tag,
-                                                uint32 has_offset,
+PROTOBUF_EXPORT void UnknownFieldSerializerLite(const uint8_t* base,
+                                                uint32_t offset, uint32_t tag,
+                                                uint32_t has_offset,
                                                 io::CodedOutputStream* output);
 
 PROTOBUF_EXPORT MessageLite* DuplicateIfNonNullInternal(MessageLite* message);
@@ -191,64 +192,6 @@ class PROTOBUF_EXPORT CachedSize {
  private:
   std::atomic<int> size_{0};
 };
-
-// SCCInfo represents information of a strongly connected component of
-// mutual dependent messages.
-struct PROTOBUF_EXPORT SCCInfoBase {
-  // We use 0 for the Initialized state, because test eax,eax, jnz is smaller
-  // and is subject to macro fusion.
-  enum {
-    kInitialized = 0,  // final state
-    kRunning = 1,
-    kUninitialized = -1,  // initial state
-  };
-#if defined(_MSC_VER) && !defined(__clang__)
-  // MSVC doesn't make std::atomic constant initialized. This union trick
-  // makes it so.
-  union {
-    int visit_status_to_make_linker_init;
-    std::atomic<int> visit_status;
-  };
-#else
-  std::atomic<int> visit_status;
-#endif
-  int num_deps;
-  int num_implicit_weak_deps;
-  void (*init_func)();
-  // This is followed by an array  of num_deps
-  // const SCCInfoBase* deps[];
-};
-
-// Zero-length arrays are a language extension available in GCC and Clang but
-// not MSVC.
-#ifdef __GNUC__
-#define PROTOBUF_ARRAY_SIZE(n) (n)
-#else
-#define PROTOBUF_ARRAY_SIZE(n) ((n) ? (n) : 1)
-#endif
-
-template <int N>
-struct SCCInfo {
-  SCCInfoBase base;
-  // Semantically this is const SCCInfo<T>* which is is a templated type.
-  // The obvious inheriting from SCCInfoBase mucks with struct initialization.
-  // Attempts showed the compiler was generating dynamic initialization code.
-  // This deps array consists of base.num_deps pointers to SCCInfoBase followed
-  // by base.num_implicit_weak_deps pointers to SCCInfoBase*. We need the extra
-  // pointer indirection for implicit weak fields. We cannot use a union type
-  // here, since that would prevent the array from being linker-initialized.
-  void* deps[PROTOBUF_ARRAY_SIZE(N)];
-};
-
-#undef PROTOBUF_ARRAY_SIZE
-
-PROTOBUF_EXPORT void InitSCCImpl(SCCInfoBase* scc);
-
-inline void InitSCC(SCCInfoBase* scc) {
-  auto status = scc->visit_status.load(std::memory_order_acquire);
-  if (PROTOBUF_PREDICT_FALSE(status != SCCInfoBase::kInitialized))
-    InitSCCImpl(scc);
-}
 
 PROTOBUF_EXPORT void DestroyMessage(const void* message);
 PROTOBUF_EXPORT void DestroyString(const void* s);

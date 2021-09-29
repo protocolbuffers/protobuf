@@ -141,7 +141,7 @@ namespace Google.Protobuf
             };
             var exception = Assert.Throws<InvalidProtocolBufferException>(() =>
             {
-                WriteContext.Initialize(new ArrayBufferWriter<byte>(), out WriteContext writeCtx);
+                WriteContext.Initialize(new TestArrayBufferWriter<byte>(), out WriteContext writeCtx);
                 ((IBufferMessage)message).InternalWriteTo(ref writeCtx);
             });
             Assert.AreEqual($"Message {typeof(LegacyGeneratedCodeMessageA).Name} doesn't provide the generated method that enables WriteContext-based serialization. You might need to regenerate the generated protobuf code.", exception.Message);

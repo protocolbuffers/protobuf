@@ -86,12 +86,13 @@ void TypeInfoTestHelper::ResetTypeInfo(const Descriptor* descriptor1,
 TypeInfo* TypeInfoTestHelper::GetTypeInfo() { return typeinfo_.get(); }
 
 ProtoStreamObjectSource* TypeInfoTestHelper::NewProtoSource(
-    io::CodedInputStream* coded_input, const std::string& type_url) {
+    io::CodedInputStream* coded_input, const std::string& type_url,
+    ProtoStreamObjectSource::RenderOptions render_options) {
   const google::protobuf::Type* type = typeinfo_->GetTypeByTypeUrl(type_url);
   switch (type_) {
     case USE_TYPE_RESOLVER: {
       return new ProtoStreamObjectSource(coded_input, type_resolver_.get(),
-                                         *type);
+                                         *type, render_options);
     }
   }
   GOOGLE_LOG(FATAL) << "Can not reach here.";

@@ -48,17 +48,17 @@ namespace util {
 FieldComparator::FieldComparator() {}
 FieldComparator::~FieldComparator() {}
 
-DefaultFieldComparator::DefaultFieldComparator()
+SimpleFieldComparator::SimpleFieldComparator()
     : float_comparison_(EXACT),
       treat_nan_as_equal_(false),
       has_default_tolerance_(false) {}
 
-DefaultFieldComparator::~DefaultFieldComparator() {}
+SimpleFieldComparator::~SimpleFieldComparator() {}
 
-FieldComparator::ComparisonResult DefaultFieldComparator::Compare(
+FieldComparator::ComparisonResult SimpleFieldComparator::SimpleCompare(
     const Message& message_1, const Message& message_2,
     const FieldDescriptor* field, int index_1, int index_2,
-    const util::FieldContext* field_context) {
+    const util::FieldContext* /*field_context*/) {
   const Reflection* reflection_1 = message_1.GetReflection();
   const Reflection* reflection_2 = message_2.GetReflection();
 
@@ -127,23 +127,22 @@ FieldComparator::ComparisonResult DefaultFieldComparator::Compare(
   }
 }
 
-bool DefaultFieldComparator::Compare(MessageDifferencer* differencer,
-                                     const Message& message1,
-                                     const Message& message2,
-                                     const util::FieldContext* field_context) {
+bool SimpleFieldComparator::CompareWithDifferencer(
+    MessageDifferencer* differencer, const Message& message1,
+    const Message& message2, const util::FieldContext* field_context) {
   return differencer->Compare(message1, message2,
                               field_context->parent_fields());
 }
 
-void DefaultFieldComparator::SetDefaultFractionAndMargin(double fraction,
-                                                         double margin) {
+void SimpleFieldComparator::SetDefaultFractionAndMargin(double fraction,
+                                                        double margin) {
   default_tolerance_ = Tolerance(fraction, margin);
   has_default_tolerance_ = true;
 }
 
-void DefaultFieldComparator::SetFractionAndMargin(const FieldDescriptor* field,
-                                                  double fraction,
-                                                  double margin) {
+void SimpleFieldComparator::SetFractionAndMargin(const FieldDescriptor* field,
+                                                 double fraction,
+                                                 double margin) {
   GOOGLE_CHECK(FieldDescriptor::CPPTYPE_FLOAT == field->cpp_type() ||
         FieldDescriptor::CPPTYPE_DOUBLE == field->cpp_type())
       << "Field has to be float or double type. Field name is: "
@@ -151,25 +150,25 @@ void DefaultFieldComparator::SetFractionAndMargin(const FieldDescriptor* field,
   map_tolerance_[field] = Tolerance(fraction, margin);
 }
 
-bool DefaultFieldComparator::CompareDouble(const FieldDescriptor& field,
-                                           double value_1, double value_2) {
+bool SimpleFieldComparator::CompareDouble(const FieldDescriptor& field,
+                                          double value_1, double value_2) {
   return CompareDoubleOrFloat(field, value_1, value_2);
 }
 
-bool DefaultFieldComparator::CompareEnum(const FieldDescriptor& field,
-                                         const EnumValueDescriptor* value_1,
-                                         const EnumValueDescriptor* value_2) {
+bool SimpleFieldComparator::CompareEnum(const FieldDescriptor& /*field*/,
+                                        const EnumValueDescriptor* value_1,
+                                        const EnumValueDescriptor* value_2) {
   return value_1->number() == value_2->number();
 }
 
-bool DefaultFieldComparator::CompareFloat(const FieldDescriptor& field,
-                                          float value_1, float value_2) {
+bool SimpleFieldComparator::CompareFloat(const FieldDescriptor& field,
+                                         float value_1, float value_2) {
   return CompareDoubleOrFloat(field, value_1, value_2);
 }
 
 template <typename T>
-bool DefaultFieldComparator::CompareDoubleOrFloat(const FieldDescriptor& field,
-                                                  T value_1, T value_2) {
+bool SimpleFieldComparator::CompareDoubleOrFloat(const FieldDescriptor& field,
+                                                 T value_1, T value_2) {
   if (value_1 == value_2) {
     // Covers +inf and -inf (which are not within margin or fraction of
     // themselves), and is a shortcut for finite values.
@@ -201,7 +200,7 @@ bool DefaultFieldComparator::CompareDoubleOrFloat(const FieldDescriptor& field,
   }
 }
 
-FieldComparator::ComparisonResult DefaultFieldComparator::ResultFromBoolean(
+FieldComparator::ComparisonResult SimpleFieldComparator::ResultFromBoolean(
     bool boolean_result) const {
   return boolean_result ? FieldComparator::SAME : FieldComparator::DIFFERENT;
 }

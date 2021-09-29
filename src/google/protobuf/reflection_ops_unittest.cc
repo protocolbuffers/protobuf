@@ -535,8 +535,8 @@ TEST(ReflectionOpsTest, GenericSwap) {
 
     TestUtil::ExpectAllFieldsSet(message);
     TestUtil::ExpectClear(*arena_message);
-    // The temp shouldn't be allocated on the arena in this case.
-    EXPECT_EQ(arena.SpaceUsed(), initial_arena_size);
+    // The temp should be allocated on the arena in this case.
+    EXPECT_GT(arena.SpaceUsed(), initial_arena_size);
   }
 }
 

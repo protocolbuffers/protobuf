@@ -52,21 +52,36 @@ const zval *get_generated_pool();
 #define PROTO_RETURN_VAL zval*
 #endif
 
-// Sine php 8.0, the Object Handlers API was changed to receive zend_object*
+// Since php 8.0, the Object Handlers API was changed to receive zend_object*
 // instead of zval* and zend_string* instead of zval* for property names.
 // https://github.com/php/php-src/blob/php-8.0.0beta1/UPGRADING.INTERNALS#L37-L39
 #if PHP_VERSION_ID < 80000
 #define PROTO_VAL zval
 #define PROTO_STR zval
-#define PROTO_MSG_P(obj) (Message*)Z_OBJ_P(obj)
+#define PROTO_VAL_P(obj) (void*)Z_OBJ_P(obj)
 #define PROTO_STRVAL_P(obj) Z_STRVAL_P(obj)
 #define PROTO_STRLEN_P(obj) Z_STRLEN_P(obj)
+#define ZVAL_OBJ_COPY(z, o) do { ZVAL_OBJ(z, o); GC_ADDREF(o); } while (0)
+#define RETVAL_OBJ_COPY(r) ZVAL_OBJ_COPY(return_value, r)
+#define RETURN_OBJ_COPY(r) do { RETVAL_OBJ_COPY(r); return; } while (0)
+#define RETURN_COPY(zv) do { ZVAL_COPY(return_value, zv); return; } while (0)
+#define RETURN_COPY_VALUE(zv) do { ZVAL_COPY_VALUE(return_value, zv); return; } while (0)
 #else
 #define PROTO_VAL zend_object
 #define PROTO_STR zend_string
-#define PROTO_MSG_P(obj) (Message*)(obj)
+#define PROTO_VAL_P(obj) (void*)(obj)
 #define PROTO_STRVAL_P(obj) ZSTR_VAL(obj)
 #define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
+#endif
+
+// In PHP 8.1, several old interfaces are removed:
+// https://github.com/php/php-src/blob/14f599ea7def7c7a59c40aff763ce8b105573e7a/UPGRADING.INTERNALS#L27-L31
+//
+// We now use the new interfaces (zend_ce_arrayaccess and zend_ce_countable).
+// However we have to polyfill zend_ce_countable, which was only introduced in
+// PHP 7.2.0.
+#if PHP_VERSION_ID < 70200
+#define zend_ce_countable spl_ce_Countable
 #endif
 
 ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
@@ -76,7 +91,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_setter, 0, 0, 1)
   ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-#define PHP_PROTOBUF_VERSION "3.14.0"
+#define PHP_PROTOBUF_VERSION "3.18.0"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
@@ -85,7 +100,7 @@ ZEND_END_ARG_INFO()
 //  * upb_map*, -> MapField
 //  * upb_msgdef* -> Descriptor
 //  * upb_enumdef* -> EnumDescriptor
-//  * zend_class_entry* -> Descriptor
+//  * upb_msgdef* -> Descriptor
 //
 // Each wrapped object should add itself to the map when it is constructed, and
 // remove itself from the map when it is destroyed. This is how we ensure that
@@ -104,6 +119,11 @@ void NameMap_AddMessage(const upb_msgdef *m);
 void NameMap_AddEnum(const upb_enumdef *m);
 const upb_msgdef *NameMap_GetMessage(zend_class_entry *ce);
 const upb_enumdef *NameMap_GetEnum(zend_class_entry *ce);
+
+// Add this descriptor object to the global list of descriptors that will be
+// kept alive for the duration of the request but destroyed when the request
+// is ending.
+void Descriptors_Add(zend_object *desc);
 
 // We need our own assert() because PHP takes control of NDEBUG in its headers.
 #ifdef PBPHP_ENABLE_ASSERTS
