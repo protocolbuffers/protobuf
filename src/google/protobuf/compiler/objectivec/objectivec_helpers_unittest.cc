@@ -246,13 +246,16 @@ TEST(ObjCHelperDeathTest, TextFormatDecodeData_Failures) {
 class TestLineCollector : public LineConsumer {
  public:
   TestLineCollector(std::vector<std::string>* inout_lines,
-                    const std::string* reject_line = nullptr)
-    : lines_(inout_lines), reject_(reject_line) {}
+                    const std::string* reject_line = nullptr,
+                    bool skip_msg = false)
+    : lines_(inout_lines), reject_(reject_line), skip_msg_(skip_msg) {}
 
   bool ConsumeLine(const StringPiece& line, std::string* out_error) override {
     if (reject_) {
       if (*reject_ == line) {
-        *out_error = std::string("Rejected '") + *reject_ + "'";
+        if (!skip_msg_) {
+          *out_error = std::string("Rejected '") + *reject_ + "'";
+        }
         return false;
       }
     }
@@ -265,6 +268,7 @@ class TestLineCollector : public LineConsumer {
  private:
   std::vector<std::string>* lines_;
   const std::string* reject_;
+  bool skip_msg_;
 };
 
 const int kBlockSizes[] = {-1, 1, 2, 5, 64};
@@ -325,10 +329,10 @@ TEST(ObjCHelper, ParseSimple_DropsComments) {
 
 TEST(ObjCHelper, ParseSimple_RejectLines) {
   const std::vector<std::tuple<std::string, std::string, int>> tests = {
-    {"a\nb\nc", "a", 1},
-    {"a\nb\nc", "b", 2},
-    {"a\nb\nc", "c", 3},
-    {"a\nb\nc\n", "c", 3},
+    std::make_tuple("a\nb\nc", "a", 1),
+    std::make_tuple("a\nb\nc", "b", 2),
+    std::make_tuple("a\nb\nc", "c", 3),
+    std::make_tuple("a\nb\nc\n", "c", 3),
   };
 
   for (const auto& test : tests) {
@@ -338,7 +342,31 @@ TEST(ObjCHelper, ParseSimple_RejectLines) {
       std::string err_str;
       TestLineCollector collector(nullptr, &std::get<1>(test));
       EXPECT_FALSE(ParseSimpleStream(input, "dummy", &collector, &err_str));
-      std::string expected_err = StrCat("error: dummy Line ", std::get<2>(test), ", Rejected '", std::get<1>(test), "'");
+      std::string expected_err =
+        StrCat("error: dummy Line ", std::get<2>(test), ", Rejected '", std::get<1>(test), "'");
+      EXPECT_EQ(err_str, expected_err);
+    }
+  }
+}
+
+TEST(ObjCHelper, ParseSimple_RejectLinesNoMessage) {
+  const std::vector<std::tuple<std::string, std::string, int>> tests = {
+    std::make_tuple("a\nb\nc", "a", 1),
+    std::make_tuple("a\nb\nc", "b", 2),
+    std::make_tuple("a\nb\nc", "c", 3),
+    std::make_tuple("a\nb\nc\n", "c", 3),
+  };
+
+  for (const auto& test : tests) {
+    for (int i = 0; i < kBlockSizeCount; i++) {
+      io::ArrayInputStream input(std::get<0>(test).data(), std::get<0>(test).size(),
+                                 kBlockSizes[i]);
+      std::string err_str;
+      TestLineCollector collector(nullptr, &std::get<1>(test), true /* skip msg */);
+      EXPECT_FALSE(ParseSimpleStream(input, "dummy", &collector, &err_str));
+      std::string expected_err =
+        StrCat("error: dummy Line ", std::get<2>(test),
+               ", ConsumeLine failed without setting an error.");
       EXPECT_EQ(err_str, expected_err);
     }
   }

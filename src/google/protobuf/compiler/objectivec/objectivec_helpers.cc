@@ -1638,70 +1638,69 @@ class Parser {
   Parser(LineConsumer* line_consumer)
       : line_consumer_(line_consumer), line_(0) {}
 
-  // Parses a check of input, returning success/failure.
-  bool ParseChunk(StringPiece chunk);
+  // Feeds in some input, prase what it can, returning success/failure. Calling
+  // again after an error is undefined.
+  bool ParseChunk(StringPiece chunk, std::string* out_error);
 
   // Should be called to finish parsing (after all input has been provided via
-  // ParseChunk()).  Returns success/failure.
-  bool Finish();
+  // successful calls to ParseChunk(), calling after a ParseChunk() failure is
+  // undefined). Returns success/failure.
+  bool Finish(std::string* out_error);
 
   int last_line() const { return line_; }
-  std::string error_str() const { return error_str_; }
 
  private:
-  bool ParseLoop();
-
   LineConsumer* line_consumer_;
   int line_;
-  std::string error_str_;
-  StringPiece p_;
   std::string leftover_;
 };
 
-bool Parser::ParseChunk(StringPiece chunk) {
+bool Parser::ParseChunk(StringPiece chunk, std::string* out_error) {
+  StringPiece full_chunk;
   if (!leftover_.empty()) {
     leftover_ += std::string(chunk);
-    p_ = StringPiece(leftover_);
+    full_chunk = StringPiece(leftover_);
   } else {
-    p_ = chunk;
+    full_chunk = chunk;
   }
-  bool result = ParseLoop();
-  if (p_.empty()) {
-    leftover_.clear();
-  } else {
-    leftover_ = std::string(p_);
-  }
-  return result;
-}
 
-bool Parser::Finish() {
-  // If there is still something to go, flush it with a newline.
-  if (!leftover_.empty() && !ParseChunk("\n")) {
-    return false;
-  }
-  // This really should never fail if ParseChunk succeeded, but check to be sure.
-  return leftover_.empty();
-}
-
-bool Parser::ParseLoop() {
   StringPiece line;
-  while (ReadLine(&p_, &line)) {
+  while (ReadLine(&full_chunk, &line)) {
     ++line_;
     RemoveComment(&line);
     TrimWhitespace(&line);
-    if (line.empty()) {
-      continue;  // Blank line.
-    }
-    if (!line_consumer_->ConsumeLine(line, &error_str_)) {
+    if (!line.empty() && !line_consumer_->ConsumeLine(line, out_error)) {
+      if (out_error->empty()) {
+        *out_error = "ConsumeLine failed without setting an error.";
+      }
+      leftover_.clear();
       return false;
     }
+  }
+
+  if (full_chunk.empty()) {
+    leftover_.clear();
+  } else {
+    leftover_ = std::string(full_chunk);
   }
   return true;
 }
 
-std::string ParserErrorString(const Parser& parser, const std::string& name) {
-  return std::string("error: ") + name + " Line " +
-    StrCat(parser.last_line()) + ", " + parser.error_str();
+bool Parser::Finish(std::string* out_error) {
+  // If there is still something to go, flush it with a newline.
+  if (!leftover_.empty() && !ParseChunk("\n", out_error)) {
+    return false;
+  }
+  // This really should never fail if ParseChunk succeeded, but check to be sure.
+  if (!leftover_.empty()) {
+    *out_error = "ParseSimple Internal error: finished with pending data.";
+    return false;
+  }
+  return true;
+}
+
+std::string FullErrorString(const std::string& name, int line_num, const std::string& msg) {
+  return std::string("error: ") + name + " Line " + StrCat(line_num) + ", " + msg;
 }
 
 }  // namespace
@@ -1731,6 +1730,7 @@ bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
                        const std::string& stream_name,
                        LineConsumer* line_consumer,
                        std::string* out_error) {
+  std::string local_error;
   Parser parser(line_consumer);
   const void* buf;
   int buf_len;
@@ -1739,13 +1739,14 @@ bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
       continue;
     }
 
-    if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len))) {
-      *out_error = ParserErrorString(parser, stream_name);
+    if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len),
+                           &local_error)) {
+      *out_error = FullErrorString(stream_name, parser.last_line(), local_error);
       return false;
     }
   }
-  if (!parser.Finish()) {
-    *out_error = ParserErrorString(parser, stream_name);
+  if (!parser.Finish(&local_error)) {
+    *out_error = FullErrorString(stream_name, parser.last_line(), local_error);
     return false;
   }
   return true;
