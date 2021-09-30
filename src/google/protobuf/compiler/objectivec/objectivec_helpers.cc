@@ -1675,16 +1675,12 @@ bool Parser::ParseChunk(StringPiece chunk) {
 }
 
 bool Parser::Finish() {
-  if (leftover_.empty()) {
-    return true;
-  }
-  // Force a newline onto the end to finish parsing.
-  leftover_ += "\n";
-  p_ = StringPiece(leftover_);
-  if (!ParseLoop()) {
+  // If there is still something to go, flush it with a newline.
+  if (!leftover_.empty() && !ParseChunk("\n")) {
     return false;
   }
-  return p_.empty();  // Everything used?
+  // This really should never fail if ParseChunk succeeded, but check to be sure.
+  return leftover_.empty();
 }
 
 bool Parser::ParseLoop() {
@@ -1701,6 +1697,11 @@ bool Parser::ParseLoop() {
     }
   }
   return true;
+}
+
+std::string ParserErrorString(const Parser& parser, const std::string& name) {
+  return std::string("error: ") + name + " Line " +
+    StrCat(parser.last_line()) + ", " + parser.error_str();
 }
 
 }  // namespace
@@ -1723,22 +1724,31 @@ bool ParseSimpleFile(const std::string& path, LineConsumer* line_consumer,
   io::FileInputStream file_stream(fd);
   file_stream.SetCloseOnDelete(true);
 
+  return ParseSimpleStream(file_stream, path, line_consumer, out_error);
+}
+
+bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
+                       const std::string& stream_name,
+                       LineConsumer* line_consumer,
+                       std::string* out_error) {
   Parser parser(line_consumer);
   const void* buf;
   int buf_len;
-  while (file_stream.Next(&buf, &buf_len)) {
+  while (input_stream.Next(&buf, &buf_len)) {
     if (buf_len == 0) {
       continue;
     }
 
     if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len))) {
-      *out_error =
-          std::string("error: ") + path +
-          " Line " + StrCat(parser.last_line()) + ", " + parser.error_str();
+      *out_error = ParserErrorString(parser, stream_name);
       return false;
     }
   }
-  return parser.Finish();
+  if (!parser.Finish()) {
+    *out_error = ParserErrorString(parser, stream_name);
+    return false;
+  }
+  return true;
 }
 
 ImportWriter::ImportWriter(
