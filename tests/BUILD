@@ -139,12 +139,6 @@ cc_test(
     ],
 )
 
-# OSS-Fuzz test
-config_setting(
-    name = "is_clang",
-    flag_values = {"@bazel_tools//tools/cpp:compiler": "clang"},
-)
-
 cc_fuzz_test(
     name = "file_descriptor_parsenew_fuzzer",
     srcs = ["file_descriptor_parsenew_fuzzer.cc"],
@@ -152,10 +146,6 @@ cc_fuzz_test(
         "//:descriptor_upb_proto",
         "//:upb",
     ],
-    target_compatible_with = select({
-        ":is_clang": [],
-        "//conditions:default": ["@platforms//:incompatible"]
-    }),
 )
 
 upb_proto_library(
