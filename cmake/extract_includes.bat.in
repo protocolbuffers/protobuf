@@ -48,6 +48,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\descriptor_database.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\duration.pb.h" include\google\protobuf\duration.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\dynamic_message.h" include\google\protobuf\dynamic_message.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\empty.pb.h" include\google\protobuf\empty.pb.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\explicitly_constructed.h" include\google\protobuf\explicitly_constructed.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\extension_set.h" include\google\protobuf\extension_set.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\extension_set_inl.h" include\google\protobuf\extension_set_inl.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\field_access_listener.h" include\google\protobuf\field_access_listener.h
