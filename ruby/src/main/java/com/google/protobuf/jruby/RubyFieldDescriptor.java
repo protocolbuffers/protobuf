@@ -32,7 +32,6 @@
 
 package com.google.protobuf.jruby;
 
-import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import org.jruby.*;

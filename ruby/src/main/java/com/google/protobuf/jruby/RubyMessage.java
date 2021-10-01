@@ -93,7 +93,7 @@ public class RubyMessage extends RubyObject {
                 throw runtime.newArgumentError("expected Hash arguments.");
             }
             RubyHash hash = args[0].convertToHash();
-            hash.visitAll(new RubyHash.Visitor() {
+            hash.visitAll(context, new RubyHash.Visitor() {
                 @Override
                 public void visit(IRubyObject key, IRubyObject value) {
                     if (!(key instanceof RubySymbol) && !(key instanceof RubyString)) {
@@ -104,7 +104,7 @@ public class RubyMessage extends RubyObject {
 
                     if (value == null || value.isNil()) return;
 
-                    if (Utils.isMapEntry(fieldDescriptor)) {
+                    if (fieldDescriptor.isMapField()) {
                         if (!(value instanceof RubyHash))
                             throw runtime.newArgumentError("Expected Hash object as initializer value for map field '" +  key.asJavaString() + "' (given " + value.getMetaClass() + ").");
 
@@ -132,7 +132,7 @@ public class RubyMessage extends RubyObject {
 
                     }
                 }
-            });
+            }, null);
         }
         return this;
     }
@@ -433,7 +433,6 @@ public class RubyMessage extends RubyObject {
     @JRubyMethod
     public IRubyObject dup(ThreadContext context) {
         RubyMessage dup = (RubyMessage) metaClass.newInstance(context, Block.NULL_BLOCK);
-        IRubyObject value;
         for (FieldDescriptor fieldDescriptor : this.descriptor.getFields()) {
             if (fieldDescriptor.isRepeated()) {
                 dup.fields.put(fieldDescriptor, this.getRepeatedField(context, fieldDescriptor));
@@ -479,7 +478,7 @@ public class RubyMessage extends RubyObject {
      *     MessageClass.decode(data) => message
      *
      * Decodes the given data (as a string containing bytes in protocol buffers wire
-     * format) under the interpretration given by this message class's definition
+     * format) under the interpretation given by this message class's definition
      * and returns a message object with the corresponding field values.
      */
     @JRubyMethod(meta = true)
@@ -537,11 +536,14 @@ public class RubyMessage extends RubyObject {
                 printer = printer.preservingProtoFieldNames();
             }
         }
+        printer = printer.usingTypeRegistry(JsonFormat.TypeRegistry.newBuilder().add(message.descriptor).build());
 
         try {
             result = printer.print(message.build(context));
-        } catch(InvalidProtocolBufferException e) {
+        } catch (InvalidProtocolBufferException e) {
             throw runtime.newRuntimeError(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw createParseError(context, e.getMessage());
         }
 
         return runtime.newString(result);
@@ -552,7 +554,7 @@ public class RubyMessage extends RubyObject {
      *     MessageClass.decode_json(data, options = {}) => message
      *
      * Decodes the given data (as a string containing bytes in protocol buffers wire
-     * format) under the interpretration given by this message class's definition
+     * format) under the interpretation given by this message class's definition
      * and returns a message object with the corresponding field values.
      *
      *  @param options [Hash] options for the decoder
@@ -582,6 +584,7 @@ public class RubyMessage extends RubyObject {
         }
 
         RubyMessage ret = (RubyMessage) ((RubyClass) recv).newInstance(context, Block.NULL_BLOCK);
+        parser = parser.usingTypeRegistry(JsonFormat.TypeRegistry.newBuilder().add(ret.descriptor).build());
 
         try {
             parser.merge(data.asJavaString(), ret.builder);
@@ -638,6 +641,8 @@ public class RubyMessage extends RubyObject {
         if (depth > SINK_MAXIMUM_NESTING) {
             throw context.runtime.newRuntimeError("Maximum recursion depth exceeded during encoding.");
         }
+
+        // Handle the typical case where the fields.keySet contain the fieldDescriptors
         for (FieldDescriptor fieldDescriptor : fields.keySet()) {
             IRubyObject value = fields.get(fieldDescriptor);
 
@@ -653,15 +658,53 @@ public class RubyMessage extends RubyObject {
 
                 builder.clearField(fieldDescriptor);
                 for (int i = 0; i < repeatedField.size(); i++) {
-                    Object item = convert(context, fieldDescriptor, repeatedField.get(i), depth);
+                    Object item = convert(context, fieldDescriptor, repeatedField.get(i), depth,
+                        /*isDefaultValueForBytes*/ false);
                     builder.addRepeatedField(fieldDescriptor, item);
                 }
 
-            } else {
-                builder.setField(fieldDescriptor, convert(context, fieldDescriptor, value, depth));
+            } else if (!value.isNil()) {
+                /**
+                 * Detect the special case where default_value strings are provided for byte fields.
+                 * If so, disable normal string encoding behavior within convert.
+                 * For a more detailed explanation of other possible workarounds, see the comments
+                 * above {@code com.google.protobuf.Internal#stringDefaultValue()
+                 * stringDefaultValue}.
+                 */
+                boolean isDefaultStringForBytes = false;
+                FieldDescriptor enumFieldDescriptorForType =
+                    this.builder.getDescriptorForType().findFieldByName("type");
+                EnumValueDescriptor type = enumFieldDescriptorForType == null ?
+                    null : ((EnumValueDescriptor)this.builder.getField(enumFieldDescriptorForType));
+                if (type != null && type.getName().equals("TYPE_BYTES") &&
+                    fieldDescriptor.getFullName().equals("google.protobuf.FieldDescriptorProto.default_value")) {
+                    isDefaultStringForBytes = true;
+                }
+                builder.setField(fieldDescriptor, convert(context, fieldDescriptor, value, depth, isDefaultStringForBytes));
             }
         }
 
+        // Handle cases where {@code fields} doesn't contain the value until after getFieldInternal
+        // is called - typical of a deserialized message. Skip non-maps and descriptors that already
+        // have an entry in {@code fields}.
+        for (FieldDescriptor fieldDescriptor : descriptor.getFields()) {
+            if (!fieldDescriptor.isMapField()) {
+                continue;
+            }
+            IRubyObject value = fields.get(fieldDescriptor);
+            if (value!=null) {
+                continue;
+            }
+            value = getFieldInternal(context, fieldDescriptor);
+            if (value instanceof RubyMap) {
+                builder.clearField(fieldDescriptor);
+                RubyDescriptor mapDescriptor = (RubyDescriptor) getDescriptorForField(context,
+                    fieldDescriptor);
+                for (DynamicMessage kv : ((RubyMap) value).build(context, mapDescriptor, depth)) {
+                    builder.addRepeatedField(fieldDescriptor, kv);
+                }
+            }
+        }
         return builder.build();
     }
 
@@ -769,19 +812,24 @@ public class RubyMessage extends RubyObject {
     // convert a ruby object to protobuf type, skip type check since it is checked on the way in
     private Object convert(ThreadContext context,
                            FieldDescriptor fieldDescriptor,
-                           IRubyObject value, int depth) {
-        Ruby runtime = context.runtime;
+                           IRubyObject value, int depth, boolean isDefaultStringForBytes) {
         Object val = null;
         switch (fieldDescriptor.getType()) {
             case INT32:
+            case SFIXED32:
+            case SINT32:
                 val = RubyNumeric.num2int(value);
                 break;
             case INT64:
+            case SFIXED64:
+            case SINT64:
                 val = RubyNumeric.num2long(value);
                 break;
+            case FIXED32:
             case UINT32:
                 val = Utils.num2uint(value);
                 break;
+            case FIXED64:
             case UINT64:
                 val = Utils.num2ulong(context.runtime, value);
                 break;
@@ -798,7 +846,11 @@ public class RubyMessage extends RubyObject {
                 val = ByteString.copyFrom(((RubyString) value).getBytes());
                 break;
             case STRING:
-                val = ((RubyString)value).getByteList().toString();
+                if (isDefaultStringForBytes) {
+                    val = ((RubyString) value).getByteList().toString();
+                } else {
+                    val = value.asJavaString();
+                }
                 break;
             case MESSAGE:
                 val = ((RubyMessage) value).build(context, depth + 1);
@@ -806,7 +858,8 @@ public class RubyMessage extends RubyObject {
             case ENUM:
                 EnumDescriptor enumDescriptor = fieldDescriptor.getEnumType();
                 if (Utils.isRubyNum(value)) {
-                    val = enumDescriptor.findValueByNumberCreatingIfUnknown(RubyNumeric.num2int(value));
+                    val = enumDescriptor
+                        .findValueByNumberCreatingIfUnknown(RubyNumeric.num2int(value));
                 } else {
                     val = enumDescriptor.findValueByName(value.asJavaString());
                 }
@@ -826,6 +879,10 @@ public class RubyMessage extends RubyObject {
     }
 
     private IRubyObject wrapField(ThreadContext context, FieldDescriptor fieldDescriptor, Object value) {
+        return wrapField(context, fieldDescriptor, value, false);
+    }
+
+    private IRubyObject wrapField(ThreadContext context, FieldDescriptor fieldDescriptor, Object value, boolean encodeBytes) {
         if (value == null) {
             return context.runtime.getNil();
         }
@@ -834,6 +891,12 @@ public class RubyMessage extends RubyObject {
         switch (fieldDescriptor.getType()) {
             case INT32:
             case INT64:
+            case FIXED32:
+            case SINT32:
+            case FIXED64:
+            case SINT64:
+            case SFIXED64:
+            case SFIXED32:
             case UINT32:
             case UINT64:
             case FLOAT:
@@ -841,7 +904,7 @@ public class RubyMessage extends RubyObject {
             case BOOL:
             case BYTES:
             case STRING:
-                return Utils.wrapPrimaryValue(context, fieldDescriptor.getType(), value);
+                return Utils.wrapPrimaryValue(context, fieldDescriptor.getType(), value, encodeBytes);
             case MESSAGE:
                 RubyClass typeClass = (RubyClass) ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
                 RubyMessage msg = (RubyMessage) typeClass.newInstance(context, Block.NULL_BLOCK);
@@ -879,22 +942,44 @@ public class RubyMessage extends RubyObject {
         return getFieldInternal(context, fieldDescriptor, true);
     }
 
-    private IRubyObject getFieldInternal(ThreadContext context, FieldDescriptor fieldDescriptor, boolean returnDefaults) {
+    private IRubyObject getFieldInternal(ThreadContext context, FieldDescriptor fieldDescriptor,
+        boolean returnDefaults) {
         OneofDescriptor oneofDescriptor = fieldDescriptor.getContainingOneof();
         if (oneofDescriptor != null) {
             if (oneofCases.get(oneofDescriptor) == fieldDescriptor) {
-                return fields.get(fieldDescriptor);
+                IRubyObject value = fields.get(fieldDescriptor);
+                if (value == null) {
+                    FieldDescriptor oneofCase = builder.getOneofFieldDescriptor(oneofDescriptor);
+                    if (oneofCase != null) {
+                        Object builderValue = builder.getField(oneofCase);
+                        if (builderValue != null) {
+                            boolean encodeBytes = oneofCase.hasDefaultValue() && builderValue.equals(oneofCase.getDefaultValue());
+                            value = wrapField(context, oneofCase, builderValue, encodeBytes);
+                        }
+                    }
+                    if (value == null) {
+                        return context.nil;
+                    } else {
+                        return value;
+                    }
+                } else {
+                    return value;
+                }
             } else {
                 FieldDescriptor oneofCase = builder.getOneofFieldDescriptor(oneofDescriptor);
                 if (oneofCase != fieldDescriptor) {
-                  if (fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE || !returnDefaults) {
-                    return context.nil;
-                  } else {
-                    return wrapField(context, fieldDescriptor, fieldDescriptor.getDefaultValue());
-                  }
+                    if (fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE
+                        || !returnDefaults) {
+                        return context.nil;
+                    } else {
+                        return wrapField(context, fieldDescriptor,
+                            fieldDescriptor.getDefaultValue(), true);
+                    }
                 }
                 if (returnDefaults || builder.hasField(fieldDescriptor)) {
-                    IRubyObject value = wrapField(context, oneofCase, builder.getField(oneofCase));
+                    Object rawValue = builder.getField(oneofCase);
+                    boolean encodeBytes = oneofCase.hasDefaultValue() && rawValue.equals(oneofCase.getDefaultValue());
+                    IRubyObject value = wrapField(context, oneofCase, rawValue, encodeBytes);
                     fields.put(fieldDescriptor, value);
                     return value;
                 } else {
@@ -903,7 +988,7 @@ public class RubyMessage extends RubyObject {
             }
         }
 
-        if (Utils.isMapEntry(fieldDescriptor)) {
+        if (fieldDescriptor.isMapField()) {
             RubyMap map = (RubyMap) fields.get(fieldDescriptor);
             if (map == null) {
                 map = newMapForField(context, fieldDescriptor);
@@ -932,7 +1017,9 @@ public class RubyMessage extends RubyObject {
             if (fields.containsKey(fieldDescriptor)) {
                 return fields.get(fieldDescriptor);
             } else if (returnDefaults || builder.hasField(fieldDescriptor)) {
-                IRubyObject value = wrapField(context, fieldDescriptor, builder.getField(fieldDescriptor));
+                Object rawValue = builder.getField(fieldDescriptor);
+                boolean encodeBytes = fieldDescriptor.hasDefaultValue() && rawValue.equals(fieldDescriptor.getDefaultValue());
+                IRubyObject value = wrapField(context, fieldDescriptor, rawValue, encodeBytes);
                 if (builder.hasField(fieldDescriptor)) {
                     fields.put(fieldDescriptor, value);
                 }
@@ -945,7 +1032,7 @@ public class RubyMessage extends RubyObject {
     private IRubyObject setFieldInternal(ThreadContext context, FieldDescriptor fieldDescriptor, IRubyObject value) {
         testFrozen("can't modify frozen " + getMetaClass());
 
-        if (Utils.isMapEntry(fieldDescriptor)) {
+        if (fieldDescriptor.isMapField()) {
             if (!(value instanceof RubyMap)) {
                 throw Utils.createTypeError(context, "Expected Map instance");
             }
@@ -1034,7 +1121,6 @@ public class RubyMessage extends RubyObject {
         RubyRepeatedField repeatedField = repeatedFieldForFieldDescriptor(context, fieldDescriptor);
         IRubyObject[] values = new IRubyObject[arr.size()];
         FieldDescriptor.Type fieldType = fieldDescriptor.getType();
-        String fieldName = fieldDescriptor.getName();
 
         RubyModule typeClass = null;
         if (fieldType == FieldDescriptor.Type.MESSAGE) {
@@ -1051,7 +1137,7 @@ public class RubyMessage extends RubyObject {
                 throw Utils.createTypeError(context, "nil message not allowed here.");
             }
             if (item instanceof RubyHash && typeClass != null) {
-                values[i] = (IRubyObject) ((RubyClass) typeClass).newInstance(context, item, Block.NULL_BLOCK);
+                values[i] = ((RubyClass) typeClass).newInstance(context, item, Block.NULL_BLOCK);
             } else {
                 if (fieldType == FieldDescriptor.Type.ENUM) {
                     item = enumToSymbol(context, fieldDescriptor.getEnumType(), item);
@@ -1089,13 +1175,6 @@ public class RubyMessage extends RubyObject {
         } else {
             return (RubyMap) cMap.newInstance(context, keyType, valueType, Block.NULL_BLOCK);
         }
-    }
-
-    private FieldDescriptor getOneofCase(OneofDescriptor oneof) {
-        if (oneofCases.containsKey(oneof)) {
-            return oneofCases.get(oneof);
-        }
-        return builder.getOneofFieldDescriptor(oneof);
     }
 
     private boolean isWrappable(FieldDescriptor fieldDescriptor) {
@@ -1144,6 +1223,4 @@ public class RubyMessage extends RubyObject {
     private RubyClass cMap;
     private boolean ignoreUnknownFieldsOnInit = false;
     private boolean proto3;
-
-
 }
