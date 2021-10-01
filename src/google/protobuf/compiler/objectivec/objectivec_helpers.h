@@ -38,6 +38,7 @@
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -286,6 +287,11 @@ class PROTOC_EXPORT LineConsumer {
 bool PROTOC_EXPORT ParseSimpleFile(const std::string& path,
                                    LineConsumer* line_consumer,
                                    std::string* out_error);
+
+bool PROTOC_EXPORT ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
+                                     const std::string& stream_name,
+                                     LineConsumer* line_consumer,
+                                     std::string* out_error);
 
 // Helper class for parsing framework import mappings and generating
 // import statements.
