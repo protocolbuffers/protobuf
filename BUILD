@@ -215,6 +215,27 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "msg_test",
+    srcs = ["upb/msg_test.cc"],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+        ":msg_test_upb_proto_reflection",
+        ":json",
+    ],
+)
+
+proto_library(
+    name = "msg_test_proto",
+    srcs = ["upb/msg_test.proto"],
+    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "msg_test_upb_proto_reflection",
+    deps = [":msg_test_proto"],
+)
+
 # Internal C/C++ libraries #####################################################
 
 cc_library(

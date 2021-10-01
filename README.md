@@ -25,7 +25,8 @@ Like the main protobuf implementation in C++, it supports:
 - reflection
 - binary & JSON wire formats
 - text format serialization
-- all standard features of protobufs (oneofs, maps, unknown fields, etc.)
+- all standard features of protobufs (oneofs, maps, unknown fields, extensions,
+  etc.)
 - full conformance with the protobuf conformance tests
 
 upb also supports some features that C++ does not:
@@ -36,9 +37,8 @@ upb also supports some features that C++ does not:
 - **fast reflection-based parsing:** messages loaded at runtime parse
   just as fast as compiled-in messages.
 
-However there are some features it does not support:
+However there are a few features it does not support:
 
-- proto2 extensions (coming soon!)
 - text format parsing
 - deep descriptor verification: upb's descriptor validation is not as exhaustive
   as `protoc`.

@@ -670,14 +670,18 @@ static void jsonenc_fieldval(jsonenc *e, const upb_fielddef *f,
                              upb_msgval val, bool *first) {
   const char *name;
 
-  if (e->options & UPB_JSONENC_PROTONAMES) {
-    name = upb_fielddef_name(f);
-  } else {
-    name = upb_fielddef_jsonname(f);
-  }
-
   jsonenc_putsep(e, ",", first);
-  jsonenc_printf(e, "\"%s\":", name);
+
+  if (upb_fielddef_isextension(f)) {
+    jsonenc_printf(e, "\"[%s]\":", upb_fielddef_fullname(f));
+  } else {
+    if (e->options & UPB_JSONENC_PROTONAMES) {
+      name = upb_fielddef_name(f);
+    } else {
+      name = upb_fielddef_jsonname(f);
+    }
+    jsonenc_printf(e, "\"%s\":", name);
+  }
 
   if (upb_fielddef_ismap(f)) {
     jsonenc_map(e, val.map_val, f);

@@ -1,4 +1,31 @@
 /*
+ * Copyright (c) 2009-2021, Google LLC
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Google LLC nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
 ** Our memory representation for parsing tables and messages themselves.
 ** Functions in this file are used by generated code and possibly reflection.
 **
@@ -42,7 +69,7 @@ typedef struct {
   int16_t presence;       /* If >0, hasbit_index.  If <0, ~oneof_index. */
   uint16_t submsg_index;  /* undefined if descriptortype != MESSAGE or GROUP. */
   uint8_t descriptortype;
-  int8_t mode;            /* upb_fieldmode, with flags from upb_labelflags */
+  uint8_t mode;            /* upb_fieldmode | upb_labelflags | (upb_rep << 6) */
 } upb_msglayout_field;
 
 typedef enum {
@@ -54,6 +81,22 @@ typedef enum {
 /* Extra flags on the mode field. */
 enum upb_labelflags {
   _UPB_MODE_IS_PACKED = 4,
+  _UPB_MODE_IS_EXTENSION = 8,
+};
+
+/* Representation in the message.  Derivable from descriptortype and mode, but
+ * fast access helps the serializer. */
+enum upb_rep {
+  _UPB_REP_1BYTE = 0,
+  _UPB_REP_4BYTE = 1,
+  _UPB_REP_8BYTE = 2,
+  _UPB_REP_STRVIEW = 3,
+
+#if UINTPTR_MAX == 0xffffffff
+  _UPB_REP_PTR = _UPB_REP_4BYTE,
+#else
+  _UPB_REP_PTR = _UPB_REP_8BYTE,
+#endif
 };
 
 UPB_INLINE upb_fieldmode _upb_getmode(const upb_msglayout_field *field) {
@@ -82,14 +125,25 @@ typedef struct {
   _upb_field_parser *field_parser;
 } _upb_fasttable_entry;
 
+typedef union {
+  const struct upb_msglayout *submsg;
+  // TODO: const upb_enumlayout *subenum;
+} upb_msglayout_sub;
+
+typedef enum {
+  _UPB_MSGEXT_NONE = 0,        // Non-extendable message.
+  _UPB_MSGEXT_EXTENDABLE = 1,  // Normal extendable message.
+  // TODO: MessageSet
+} upb_msgext_mode;
+
 struct upb_msglayout {
-  const struct upb_msglayout *const* submsgs;
+  const upb_msglayout_sub *subs;
   const upb_msglayout_field *fields;
   /* Must be aligned to sizeof(void*).  Doesn't include internal members like
    * unknown fields, extension dict, pointer to msglayout, etc. */
   uint16_t size;
   uint16_t field_count;
-  bool extendable;
+  uint8_t ext;  // upb_msgext_mode, declared as uint8_t so sizeof(ext) == 1
   uint8_t dense_below;
   uint8_t table_mask;
   /* To constant-initialize the tables of variable length, we need a flexible
@@ -100,22 +154,28 @@ struct upb_msglayout {
 typedef struct {
   upb_msglayout_field field;
   const upb_msglayout *extendee;
-  const upb_msglayout *submsg;   /* NULL for non-submessage fields. */
+  upb_msglayout_sub sub;   /* NULL unless submessage or proto2 enum */
 } upb_msglayout_ext;
+
+typedef struct {
+  const upb_msglayout **msgs;
+  const upb_msglayout_ext **exts;
+  int msg_count;
+  int ext_count;
+} upb_msglayout_file;
 
 /** upb_extreg ****************************************************************/
 
 /* Adds the given extension info for message type |l| and field number |num|
  * into the registry. Returns false if this message type and field number were
  * already in the map, or if memory allocation fails. */
-bool _upb_extreg_add(upb_extreg *r, const upb_msglayout_ext *e, size_t count);
+bool _upb_extreg_add(upb_extreg *r, const upb_msglayout_ext **e, size_t count);
 
 /* Looks up the extension (if any) defined for message type |l| and field
  * number |num|.  If an extension was found, copies the field info into |*ext|
  * and returns true. Otherwise returns false. */
-const upb_msglayout_field *_upb_extreg_get(const upb_extreg *r,
-                                           const upb_msglayout *l,
-                                           uint32_t num);
+const upb_msglayout_ext *_upb_extreg_get(const upb_extreg *r,
+                                         const upb_msglayout *l, uint32_t num);
 
 /** upb_msg *******************************************************************/
 
@@ -215,6 +275,8 @@ const upb_msg_ext *_upb_msg_getexts(const upb_msg *msg, size_t *count);
  * exists for this field number. */
 const upb_msg_ext *_upb_msg_getext(const upb_msg *msg,
                                    const upb_msglayout_ext *ext);
+
+void _upb_msg_clearext(upb_msg *msg, const upb_msglayout_ext *ext);
 
 /** Hasbit access *************************************************************/
 

@@ -39,7 +39,7 @@ enum {
 };
 
 bool upb_json_decode(const char *buf, size_t size, upb_msg *msg,
-                     const upb_msgdef *m, const upb_symtab *any_pool,
+                     const upb_msgdef *m, const upb_symtab *symtab,
                      int options, upb_arena *arena, upb_status *status);
 
 #ifdef __cplusplus
