@@ -1359,9 +1359,9 @@ bool ValidateObjCClassPrefix(
     if (prefixes_must_be_registered) {
       *out_error =
         "error: '" + file->name() + "' has 'option objc_class_prefix = \"" +
-        prefix + "\";', but it is not registered; add it to the expected" +
-        " prefixes file (" + expected_prefixes_path + ") for the package" +
-        "'" + package + "'.";
+        prefix + "\";', but it is not registered; add it to the expected " +
+        "prefixes file (" + expected_prefixes_path + ") for the package '" +
+        package + "'.";
       return false;
     }
 
