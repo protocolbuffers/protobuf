@@ -156,6 +156,7 @@ class Symbol {
   struct QueryKey : internal::SymbolBase {
     StringPiece name;
     const void* parent;
+    int field_number;
   };
   DEFINE_MEMBERS(QueryKey, QUERY_KEY, query_key);
 #undef DEFINE_MEMBERS
@@ -220,7 +221,7 @@ class Symbol {
     return "";
   }
 
-  std::pair<const void*, StringPiece> parent_key() const {
+  std::pair<const void*, StringPiece> parent_name_key() const {
     const auto or_file = [&](const void* p) { return p ? p : GetFile(); };
     switch (type()) {
       case MESSAGE:
@@ -249,6 +250,22 @@ class Symbol {
         return {method_descriptor()->service(), method_descriptor()->name()};
       case QUERY_KEY:
         return {query_key()->parent, query_key()->name};
+      default:
+        GOOGLE_CHECK(false);
+    }
+    return {};
+  }
+
+  std::pair<const void*, int> parent_number_key() const {
+    switch (type()) {
+      case FIELD:
+        return {field_descriptor()->containing_type(),
+                field_descriptor()->number()};
+      case ENUM_VALUE:
+        return {enum_value_descriptor()->type(),
+                enum_value_descriptor()->number()};
+      case QUERY_KEY:
+        return {query_key()->parent, query_key()->field_number};
       default:
         GOOGLE_CHECK(false);
     }
@@ -499,7 +516,6 @@ class PrefixRemover {
 typedef std::pair<const void*, StringPiece> PointerStringPair;
 
 typedef std::pair<const Descriptor*, int> DescriptorIntPair;
-typedef std::pair<const EnumDescriptor*, int> EnumIntPair;
 
 #define HASH_MAP std::unordered_map
 #define HASH_SET std::unordered_set
@@ -561,12 +577,12 @@ using SymbolsByNameSet =
 
 struct SymbolByParentHash {
   size_t operator()(Symbol s) const {
-    return PointerStringPairHash{}(s.parent_key());
+    return PointerStringPairHash{}(s.parent_name_key());
   }
 };
 struct SymbolByParentEq {
   bool operator()(Symbol a, Symbol b) const {
-    return a.parent_key() == b.parent_key();
+    return a.parent_name_key() == b.parent_name_key();
   }
 };
 using SymbolsByParentSet =
@@ -580,15 +596,21 @@ typedef HASH_MAP<PointerStringPair, const FieldDescriptor*,
                  PointerStringPairHash>
     FieldsByNameMap;
 
-typedef HASH_MAP<DescriptorIntPair, const FieldDescriptor*,
-                 PointerIntegerPairHash<DescriptorIntPair>,
-                 std::equal_to<DescriptorIntPair>>
-    FieldsByNumberMap;
+struct FieldsByNumberHash {
+  size_t operator()(Symbol s) const {
+    return PointerIntegerPairHash<std::pair<const void*, int>>{}(
+        s.parent_number_key());
+  }
+};
+struct FieldsByNumberEq {
+  bool operator()(Symbol a, Symbol b) const {
+    return a.parent_number_key() == b.parent_number_key();
+  }
+};
+using FieldsByNumberSet =
+    HASH_SET<Symbol, FieldsByNumberHash, FieldsByNumberEq>;
+using EnumValuesByNumberSet = FieldsByNumberSet;
 
-typedef HASH_MAP<EnumIntPair, const EnumValueDescriptor*,
-                 PointerIntegerPairHash<EnumIntPair>,
-                 std::equal_to<EnumIntPair>>
-    EnumValuesByNumberMap;
 // This is a map rather than a hash-map, since we use it to iterate
 // through all the extensions that extend a given Descriptor, and an
 // ordered data structure that implements lower_bound is convenient
@@ -1268,8 +1290,8 @@ class FileDescriptorTables {
   // as it will be used as a key in the symbols_by_parent_ map without copying.
   bool AddAliasUnderParent(const void* parent, const std::string& name,
                            Symbol symbol);
-  bool AddFieldByNumber(const FieldDescriptor* field);
-  bool AddEnumValueByNumber(const EnumValueDescriptor* value);
+  bool AddFieldByNumber(FieldDescriptor* field);
+  bool AddEnumValueByNumber(EnumValueDescriptor* value);
 
   // Adds the field to the lowercase_name and camelcase_name maps.  Never
   // fails because we allow duplicates; the first field by the name wins.
@@ -1307,9 +1329,9 @@ class FileDescriptorTables {
   mutable FieldsByNameMap fields_by_camelcase_name_;
   std::unique_ptr<FieldsByNameMap> fields_by_camelcase_name_tmp_;
   mutable internal::once_flag fields_by_camelcase_name_once_;
-  FieldsByNumberMap fields_by_number_;  // Not including extensions.
-  EnumValuesByNumberMap enum_values_by_number_;
-  mutable EnumValuesByNumberMap unknown_enum_values_by_number_
+  FieldsByNumberSet fields_by_number_;  // Not including extensions.
+  EnumValuesByNumberSet enum_values_by_number_;
+  mutable EnumValuesByNumberSet unknown_enum_values_by_number_
       PROTOBUF_GUARDED_BY(unknown_enum_values_mu_);
 
   // Populated on first request to save space, hence constness games.
@@ -1459,7 +1481,19 @@ inline const FileDescriptor* DescriptorPool::Tables::FindFile(
 
 inline const FieldDescriptor* FileDescriptorTables::FindFieldByNumber(
     const Descriptor* parent, int number) const {
-  return FindPtrOrNull(fields_by_number_, std::make_pair(parent, number));
+  // If `number` is within the sequential range, just index into the parent
+  // without doing a table lookup.
+  if (parent != nullptr &&  //
+      1 <= number && number <= parent->sequential_field_limit_) {
+    return parent->field(number - 1);
+  }
+
+  Symbol::QueryKey query;
+  query.parent = parent;
+  query.field_number = number;
+
+  auto it = fields_by_number_.find(Symbol(&query));
+  return it == fields_by_number_.end() ? nullptr : it->field_descriptor();
 }
 
 const void* FileDescriptorTables::FindParentForFieldsByMap(
@@ -1481,12 +1515,12 @@ void FileDescriptorTables::FieldsByLowercaseNamesLazyInitStatic(
 }
 
 void FileDescriptorTables::FieldsByLowercaseNamesLazyInitInternal() const {
-  for (FieldsByNumberMap::const_iterator it = fields_by_number_.begin();
-       it != fields_by_number_.end(); it++) {
-    PointerStringPair lowercase_key(FindParentForFieldsByMap(it->second),
-                                    it->second->lowercase_name().c_str());
-    InsertIfNotPresent(&fields_by_lowercase_name_, lowercase_key,
-                            it->second);
+  for (Symbol symbol : symbols_by_parent_) {
+    const FieldDescriptor* field = symbol.field_descriptor();
+    if (!field) continue;
+    PointerStringPair lowercase_key(FindParentForFieldsByMap(field),
+                                    field->lowercase_name().c_str());
+    InsertIfNotPresent(&fields_by_lowercase_name_, lowercase_key, field);
   }
 }
 
@@ -1505,12 +1539,12 @@ void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
 }
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitInternal() const {
-  for (FieldsByNumberMap::const_iterator it = fields_by_number_.begin();
-       it != fields_by_number_.end(); it++) {
-    PointerStringPair camelcase_key(FindParentForFieldsByMap(it->second),
-                                    it->second->camelcase_name().c_str());
-    InsertIfNotPresent(&fields_by_camelcase_name_, camelcase_key,
-                            it->second);
+  for (Symbol symbol : symbols_by_parent_) {
+    const FieldDescriptor* field = symbol.field_descriptor();
+    if (!field) continue;
+    PointerStringPair camelcase_key(FindParentForFieldsByMap(field),
+                                    field->camelcase_name().c_str());
+    InsertIfNotPresent(&fields_by_camelcase_name_, camelcase_key, field);
   }
 }
 
@@ -1525,8 +1559,21 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByCamelcaseName(
 
 inline const EnumValueDescriptor* FileDescriptorTables::FindEnumValueByNumber(
     const EnumDescriptor* parent, int number) const {
-  return FindPtrOrNull(enum_values_by_number_,
-                            std::make_pair(parent, number));
+  // If `number` is within the sequential range, just index into the parent
+  // without doing a table lookup.
+  const int base = parent->value(0)->number();
+  if (base <= number &&
+      number <= static_cast<int64_t>(base) + parent->sequential_value_limit_) {
+    return parent->value(number - base);
+  }
+
+  Symbol::QueryKey query;
+  query.parent = parent;
+  query.field_number = number;
+
+  auto it = enum_values_by_number_.find(Symbol(&query));
+  return it == enum_values_by_number_.end() ? nullptr
+                                            : it->enum_value_descriptor();
 }
 
 inline const EnumValueDescriptor*
@@ -1534,29 +1581,33 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     const EnumDescriptor* parent, int number) const {
   // First try, with map of compiled-in values.
   {
-    const EnumValueDescriptor* desc = FindPtrOrNull(
-        enum_values_by_number_, std::make_pair(parent, number));
-    if (desc != nullptr) {
-      return desc;
+    const auto* value = FindEnumValueByNumber(parent, number);
+    if (value != nullptr) {
+      return value;
     }
   }
+
+  Symbol::QueryKey query;
+  query.parent = parent;
+  query.field_number = number;
+
   // Second try, with reader lock held on unknown enum values: common case.
   {
     ReaderMutexLock l(&unknown_enum_values_mu_);
-    const EnumValueDescriptor* desc = FindPtrOrNull(
-        unknown_enum_values_by_number_, std::make_pair(parent, number));
-    if (desc != nullptr) {
-      return desc;
+    auto it = unknown_enum_values_by_number_.find(Symbol(&query));
+    if (it != unknown_enum_values_by_number_.end() &&
+        it->enum_value_descriptor() != nullptr) {
+      return it->enum_value_descriptor();
     }
   }
   // If not found, try again with writer lock held, and create new descriptor if
   // necessary.
   {
     WriterMutexLock l(&unknown_enum_values_mu_);
-    const EnumValueDescriptor* desc = FindPtrOrNull(
-        unknown_enum_values_by_number_, std::make_pair(parent, number));
-    if (desc != nullptr) {
-      return desc;
+    auto it = unknown_enum_values_by_number_.find(Symbol(&query));
+    if (it != unknown_enum_values_by_number_.end() &&
+        it->enum_value_descriptor() != nullptr) {
+      return it->enum_value_descriptor();
     }
 
     // Create an EnumValueDescriptor dynamically. We don't insert it into the
@@ -1565,17 +1616,21 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     // later.
     std::string enum_value_name = StringPrintf("UNKNOWN_ENUM_VALUE_%s_%d",
                                                parent->name().c_str(), number);
-    DescriptorPool::Tables* tables = const_cast<DescriptorPool::Tables*>(
-        DescriptorPool::generated_pool()->tables_.get());
-    EnumValueDescriptor* result = tables->Allocate<EnumValueDescriptor>();
-    result->all_names_ = tables->AllocateStringArray(
-        enum_value_name,
-        StrCat(parent->full_name(), ".", enum_value_name));
+    auto* pool = DescriptorPool::generated_pool();
+    auto* tables = const_cast<DescriptorPool::Tables*>(pool->tables_.get());
+    EnumValueDescriptor* result;
+    {
+      // Must lock the pool because we will do allocations in the shared arena.
+      MutexLockMaybe l2(pool->mutex_);
+      result = tables->Allocate<EnumValueDescriptor>();
+      result->all_names_ = tables->AllocateStringArray(
+          enum_value_name,
+          StrCat(parent->full_name(), ".", enum_value_name));
+    }
     result->number_ = number;
     result->type_ = parent;
     result->options_ = &EnumValueOptions::default_instance();
-    InsertIfNotPresent(&unknown_enum_values_by_number_,
-                            std::make_pair(parent, number), result);
+    unknown_enum_values_by_number_.insert(Symbol::EnumValue(result, 0));
     return result;
   }
 }
@@ -1611,8 +1666,8 @@ bool DescriptorPool::Tables::AddSymbol(const std::string& full_name,
 bool FileDescriptorTables::AddAliasUnderParent(const void* parent,
                                                const std::string& name,
                                                Symbol symbol) {
-  GOOGLE_DCHECK_EQ(name, symbol.parent_key().second);
-  GOOGLE_DCHECK_EQ(parent, symbol.parent_key().first);
+  GOOGLE_DCHECK_EQ(name, symbol.parent_name_key().second);
+  GOOGLE_DCHECK_EQ(parent, symbol.parent_name_key().first);
   return symbols_by_parent_.insert(symbol).second;
 }
 
@@ -1659,15 +1714,30 @@ void FileDescriptorTables::AddFieldByStylizedNames(
   }
 }
 
-bool FileDescriptorTables::AddFieldByNumber(const FieldDescriptor* field) {
-  DescriptorIntPair key(field->containing_type(), field->number());
-  return InsertIfNotPresent(&fields_by_number_, key, field);
+bool FileDescriptorTables::AddFieldByNumber(FieldDescriptor* field) {
+  // Skip fields that are at the start of the sequence.
+  if (field->containing_type() != nullptr && field->number() >= 1 &&
+      field->number() <= field->containing_type()->sequential_field_limit_) {
+    if (field->is_extension()) {
+      // Conflicts with the field that already exists in the sequential range.
+      return false;
+    }
+    // Only return true if the field at that index matches. Otherwise it
+    // conflicts with the existing field in the sequential range.
+    return field->containing_type()->field(field->number() - 1) == field;
+  }
+
+  return fields_by_number_.insert(Symbol(field)).second;
 }
 
-bool FileDescriptorTables::AddEnumValueByNumber(
-    const EnumValueDescriptor* value) {
-  EnumIntPair key(value->type(), value->number());
-  return InsertIfNotPresent(&enum_values_by_number_, key, value);
+bool FileDescriptorTables::AddEnumValueByNumber(EnumValueDescriptor* value) {
+  // Skip values that are at the start of the sequence.
+  const int base = value->type()->value(0)->number();
+  if (base <= value->number() &&
+      value->number() <=
+          static_cast<int64_t>(base) + value->type()->sequential_value_limit_)
+    return true;
+  return enum_values_by_number_.insert(Symbol::EnumValue(value, 0)).second;
 }
 
 bool DescriptorPool::Tables::AddExtension(const FieldDescriptor* field) {
@@ -2489,25 +2559,18 @@ std::string FieldDescriptor::DefaultValueAsString(
   switch (cpp_type()) {
     case CPPTYPE_INT32:
       return StrCat(default_value_int32_t());
-      break;
     case CPPTYPE_INT64:
       return StrCat(default_value_int64_t());
-      break;
     case CPPTYPE_UINT32:
       return StrCat(default_value_uint32_t());
-      break;
     case CPPTYPE_UINT64:
       return StrCat(default_value_uint64_t());
-      break;
     case CPPTYPE_FLOAT:
       return SimpleFtoa(default_value_float());
-      break;
     case CPPTYPE_DOUBLE:
       return SimpleDtoa(default_value_double());
-      break;
     case CPPTYPE_BOOL:
       return default_value_bool() ? "true" : "false";
-      break;
     case CPPTYPE_STRING:
       if (quote_string_type) {
         return "\"" + CEscape(default_value_string()) + "\"";
@@ -2518,10 +2581,8 @@ std::string FieldDescriptor::DefaultValueAsString(
           return default_value_string();
         }
       }
-      break;
     case CPPTYPE_ENUM:
       return default_value_enum()->name();
-      break;
     case CPPTYPE_MESSAGE:
       GOOGLE_LOG(DFATAL) << "Messages can't have default values!";
       break;
@@ -4457,6 +4518,8 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     // Enums must have at least one value.
     placeholder_enum->value_count_ = 1;
     placeholder_enum->values_ = tables_->AllocateArray<EnumValueDescriptor>(1);
+    // Disable fast-path lookup for this enum.
+    placeholder_enum->sequential_value_limit_ = -1;
 
     EnumValueDescriptor* placeholder_value = &placeholder_enum->values_[0];
     memset(static_cast<void*>(placeholder_value), 0,
@@ -5131,6 +5194,19 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     result->well_known_type_ = it->second;
   }
 
+  // Calculate the continuous sequence of fields.
+  // These can be fast-path'd during lookup and don't need to be added to the
+  // tables.
+  // We use uint16_t to save space for sequential_field_limit_, so stop before
+  // overflowing it. Worst case, we are not taking full advantage on huge
+  // messages, but it is unlikely.
+  result->sequential_field_limit_ = 0;
+  for (int i = 0; i < std::numeric_limits<uint16_t>::max() &&
+                  i < proto.field_size() && proto.field(i).number() == i + 1;
+       ++i) {
+    result->sequential_field_limit_ = i + 1;
+  }
+
   // Build oneofs first so that fields and extension ranges can refer to them.
   BUILD_ARRAY(proto, result, oneof_decl, BuildOneof, result);
   BUILD_ARRAY(proto, result, field, BuildField, result);
@@ -5691,6 +5767,21 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
     // would be no valid default value for fields of this type.
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "Enums must contain at least one value.");
+  }
+
+  // Calculate the continuous sequence of the labels.
+  // These can be fast-path'd during lookup and don't need to be added to the
+  // tables.
+  // We use uint16_t to save space for sequential_value_limit_, so stop before
+  // overflowing it. Worst case, we are not taking full advantage on huge
+  // enums, but it is unlikely.
+  for (int i = 0;
+       i < std::numeric_limits<uint16_t>::max() && i < proto.value_size() &&
+       // We do the math in int64_t to avoid overflows.
+       proto.value(i).number() ==
+           static_cast<int64_t>(i) + proto.value(0).number();
+       ++i) {
+    result->sequential_value_limit_ = i;
   }
 
   BUILD_ARRAY(proto, result, value, BuildEnumValue, result);

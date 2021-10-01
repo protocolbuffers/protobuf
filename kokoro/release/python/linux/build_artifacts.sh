@@ -37,8 +37,6 @@ build_artifact_version() {
   before_install
 
   clean_code $REPO_DIR $BUILD_COMMIT
-  sed -i '/Wno-sign-compare/a \ \ \ \ \ \ \ \ extra_compile_args.append("-std=c++11")' $REPO_DIR/python/setup.py
-  cat $REPO_DIR/python/setup.py
 
   build_wheel $REPO_DIR/python $PLAT
 

@@ -77,7 +77,6 @@ static const char kModuleDocstring[] =
     "constants defined in C, such that one can set defaults at compilation\n"
     "(e.g. with blaze flag --copt=-DPYTHON_PROTO2_CPP_IMPL_V2).";
 
-#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                      kModuleName,
                                      kModuleDocstring,
@@ -87,38 +86,22 @@ static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                      NULL,
                                      NULL,
                                      NULL};
-#define INITFUNC PyInit__api_implementation
-#define INITFUNC_ERRORVAL NULL
-#else
-#define INITFUNC init_api_implementation
-#define INITFUNC_ERRORVAL
-#endif
 
 extern "C" {
-PyMODINIT_FUNC INITFUNC() {
-#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit__api_implementation() {
   PyObject* module = PyModule_Create(&_module);
-#else
-  PyObject* module = Py_InitModule3(const_cast<char*>(kModuleName), NULL,
-                                    const_cast<char*>(kModuleDocstring));
-#endif
   if (module == NULL) {
-    return INITFUNC_ERRORVAL;
+    return NULL;
   }
 
   // Adds the module variable "api_version".
   if (PyModule_AddIntConstant(module, const_cast<char*>(kImplVersionName),
-                              kImplVersion))
-#if PY_MAJOR_VERSION < 3
-    return;
-#else
-  {
+                              kImplVersion)) {
     Py_DECREF(module);
     return NULL;
   }
 
   return module;
-#endif
 }
 }
 

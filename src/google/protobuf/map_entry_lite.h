@@ -286,11 +286,6 @@ class MapEntryImpl : public Base {
     return ValueTypeHandler::IsInitialized(value_);
   }
 
-  Base* New() const override {
-    Derived* entry = new Derived;
-    return entry;
-  }
-
   Base* New(Arena* arena) const override {
     Derived* entry = Arena::CreateMessage<Derived>(arena);
     return entry;

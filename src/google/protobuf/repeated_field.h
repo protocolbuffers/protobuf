@@ -698,7 +698,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void UnsafeArenaAddAllocated(typename TypeHandler::Type* value);
 
   template <typename TypeHandler>
-  PROTOBUF_MUST_USE_RESULT typename TypeHandler::Type* ReleaseLast() {
+  PROTOBUF_NODISCARD typename TypeHandler::Type* ReleaseLast() {
     typename TypeImplementsMergeBehavior<typename TypeHandler::Type>::type t;
     return ReleaseLastInternal<TypeHandler>(t);
   }
@@ -712,7 +712,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   void AddCleared(typename TypeHandler::Type* value);
   template <typename TypeHandler>
-  PROTOBUF_MUST_USE_RESULT typename TypeHandler::Type* ReleaseCleared();
+  PROTOBUF_NODISCARD typename TypeHandler::Type* ReleaseCleared();
 
   template <typename TypeHandler>
   void AddAllocatedInternal(typename TypeHandler::Type* value, std::true_type);
@@ -1084,7 +1084,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // If this RepeatedPtrField is on an arena, an object copy is required to pass
   // ownership back to the user (for compatible semantics). Use
   // UnsafeArenaReleaseLast() if this behavior is undesired.
-  PROTOBUF_MUST_USE_RESULT Element* ReleaseLast();
+  PROTOBUF_NODISCARD Element* ReleaseLast();
 
   // Add an already-allocated object, skipping arena-ownership checks. The user
   // must guarantee that the given object is in the same arena as this
@@ -1155,7 +1155,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   //
   // This method cannot be called when the repeated field is on an arena; doing
   // so will trigger a GOOGLE_DCHECK-failure.
-  PROTOBUF_MUST_USE_RESULT Element* ReleaseCleared();
+  PROTOBUF_NODISCARD Element* ReleaseCleared();
 #endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
 
   // Removes the element referenced by position.

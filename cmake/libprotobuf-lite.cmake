@@ -37,6 +37,7 @@ set(libprotobuf_lite_includes
   ${protobuf_source_dir}/src/google/protobuf/arena.h
   ${protobuf_source_dir}/src/google/protobuf/arena_impl.h
   ${protobuf_source_dir}/src/google/protobuf/arenastring.h
+  ${protobuf_source_dir}/src/google/protobuf/explicitly_constructed.h
   ${protobuf_source_dir}/src/google/protobuf/extension_set.h
   ${protobuf_source_dir}/src/google/protobuf/extension_set_inl.h
   ${protobuf_source_dir}/src/google/protobuf/generated_enum_util.h

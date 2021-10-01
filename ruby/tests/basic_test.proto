@@ -6,6 +6,7 @@ import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
+import "test_import_proto2.proto";
 
 message Foo {
   Bar bar = 1;
@@ -32,6 +33,7 @@ message TestMessage {
   optional bytes optional_bytes = 9;
   optional TestMessage2 optional_msg = 10;
   optional TestEnum optional_enum = 11;
+  optional foo_bar.proto2.TestImportedMessage optional_proto2_submessage = 24;
 
   repeated int32 repeated_int32 = 12;
   repeated int64 repeated_int64 = 13;
@@ -207,4 +209,9 @@ message MyRepeatedStruct {
 message MyStruct {
   string string = 1;
   google.protobuf.Struct struct = 2;
+}
+
+message WithJsonName {
+  optional int32 foo_bar = 1 [json_name="jsonFooBar"];
+  repeated WithJsonName baz = 2 [json_name="jsonBaz"];
 }

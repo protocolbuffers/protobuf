@@ -49,22 +49,12 @@
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 #include <google/protobuf/stubs/hash.h>
 
-#if PY_MAJOR_VERSION >= 3
-  #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
-  #define PyString_Check PyUnicode_Check
-  #define PyString_InternFromString PyUnicode_InternFromString
-  #define PyInt_FromLong PyLong_FromLong
-  #define PyInt_FromSize_t PyLong_FromSize_t
-  #if PY_VERSION_HEX < 0x03030000
-    #error "Python 3.0 - 3.2 are not supported."
-  #endif
 #define PyString_AsStringAndSize(ob, charpp, sizep)                           \
   (PyUnicode_Check(ob) ? ((*(charpp) = const_cast<char*>(                     \
                                PyUnicode_AsUTF8AndSize(ob, (sizep)))) == NULL \
                               ? -1                                            \
                               : 0)                                            \
                        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
-#endif
 
 namespace google {
 namespace protobuf {
@@ -79,7 +69,7 @@ namespace python {
 std::unordered_map<const void*, PyObject*>* interned_descriptors;
 
 PyObject* PyString_FromCppString(const std::string& str) {
-  return PyString_FromStringAndSize(str.c_str(), str.size());
+  return PyUnicode_FromStringAndSize(str.c_str(), str.size());
 }
 
 // Check that the calling Python code is the global scope of a _pb2.py module.
@@ -565,8 +555,8 @@ static PyObject* GetExtensionRanges(PyBaseDescriptor *self, void *closure) {
 
   for (int i = 0; i < descriptor->extension_range_count(); i++) {
     const Descriptor::ExtensionRange* range = descriptor->extension_range(i);
-    PyObject* start = PyInt_FromLong(range->start);
-    PyObject* end = PyInt_FromLong(range->end);
+    PyObject* start = PyLong_FromLong(range->start);
+    PyObject* end = PyLong_FromLong(range->end);
     PyList_SetItem(range_list, i, PyTuple_Pack(2, start, end));
   }
 
@@ -640,7 +630,7 @@ static PyObject* EnumValueName(PyBaseDescriptor *self, PyObject *args) {
 }
 
 static PyObject* GetSyntax(PyBaseDescriptor *self, void *closure) {
-  return PyString_InternFromString(
+  return PyUnicode_InternFromString(
       FileDescriptor::SyntaxName(_GetDescriptor(self)->file()->syntax()));
 }
 
@@ -767,23 +757,23 @@ static PyObject* GetFile(PyBaseDescriptor *self, void *closure) {
 }
 
 static PyObject* GetType(PyBaseDescriptor *self, void *closure) {
-  return PyInt_FromLong(_GetDescriptor(self)->type());
+  return PyLong_FromLong(_GetDescriptor(self)->type());
 }
 
 static PyObject* GetCppType(PyBaseDescriptor *self, void *closure) {
-  return PyInt_FromLong(_GetDescriptor(self)->cpp_type());
+  return PyLong_FromLong(_GetDescriptor(self)->cpp_type());
 }
 
 static PyObject* GetLabel(PyBaseDescriptor *self, void *closure) {
-  return PyInt_FromLong(_GetDescriptor(self)->label());
+  return PyLong_FromLong(_GetDescriptor(self)->label());
 }
 
 static PyObject* GetNumber(PyBaseDescriptor *self, void *closure) {
-  return PyInt_FromLong(_GetDescriptor(self)->number());
+  return PyLong_FromLong(_GetDescriptor(self)->number());
 }
 
 static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
-  return PyInt_FromLong(_GetDescriptor(self)->index());
+  return PyLong_FromLong(_GetDescriptor(self)->index());
 }
 
 static PyObject* GetID(PyBaseDescriptor *self, void *closure) {
@@ -809,7 +799,7 @@ static PyObject* GetDefaultValue(PyBaseDescriptor *self, void *closure) {
   switch (_GetDescriptor(self)->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       int32_t value = _GetDescriptor(self)->default_value_int32();
-      result = PyInt_FromLong(value);
+      result = PyLong_FromLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
@@ -819,7 +809,7 @@ static PyObject* GetDefaultValue(PyBaseDescriptor *self, void *closure) {
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
       uint32_t value = _GetDescriptor(self)->default_value_uint32();
-      result = PyInt_FromSize_t(value);
+      result = PyLong_FromSsize_t(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
@@ -850,7 +840,7 @@ static PyObject* GetDefaultValue(PyBaseDescriptor *self, void *closure) {
     case FieldDescriptor::CPPTYPE_ENUM: {
       const EnumValueDescriptor* value =
           _GetDescriptor(self)->default_value_enum();
-      result = PyInt_FromLong(value->number());
+      result = PyLong_FromLong(value->number());
       break;
     }
     case FieldDescriptor::CPPTYPE_MESSAGE: {
@@ -1222,11 +1212,11 @@ static PyObject* GetName(PyBaseDescriptor *self, void *closure) {
 }
 
 static PyObject* GetNumber(PyBaseDescriptor *self, void *closure) {
-  return PyInt_FromLong(_GetDescriptor(self)->number());
+  return PyLong_FromLong(_GetDescriptor(self)->number());
 }
 
 static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
-  return PyInt_FromLong(_GetDescriptor(self)->index());
+  return PyLong_FromLong(_GetDescriptor(self)->index());
 }
 
 static PyObject* GetType(PyBaseDescriptor *self, void *closure) {
@@ -1418,7 +1408,7 @@ static int SetSerializedOptions(PyFileDescriptor *self, PyObject *value,
 }
 
 static PyObject* GetSyntax(PyFileDescriptor *self, void *closure) {
-  return PyString_InternFromString(
+  return PyUnicode_InternFromString(
       FileDescriptor::SyntaxName(_GetDescriptor(self)->syntax()));
 }
 
@@ -1550,7 +1540,7 @@ static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
 }
 
 static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
-  return PyInt_FromLong(_GetDescriptor(self)->index());
+  return PyLong_FromLong(_GetDescriptor(self)->index());
 }
 
 static PyObject* GetFields(PyBaseDescriptor* self, void *closure) {
@@ -1676,7 +1666,7 @@ static PyObject* GetFile(PyBaseDescriptor *self, void *closure) {
 }
 
 static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
-  return PyInt_FromLong(_GetDescriptor(self)->index());
+  return PyLong_FromLong(_GetDescriptor(self)->index());
 }
 
 static PyObject* GetMethods(PyBaseDescriptor* self, void *closure) {
@@ -1799,7 +1789,7 @@ static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
 }
 
 static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
-  return PyInt_FromLong(_GetDescriptor(self)->index());
+  return PyLong_FromLong(_GetDescriptor(self)->index());
 }
 
 static PyObject* GetContainingService(PyBaseDescriptor *self, void *closure) {
@@ -1890,7 +1880,7 @@ static bool AddEnumValues(PyTypeObject *type,
                           const EnumDescriptor* enum_descriptor) {
   for (int i = 0; i < enum_descriptor->value_count(); ++i) {
     const EnumValueDescriptor* value = enum_descriptor->value(i);
-    ScopedPyObjectPtr obj(PyInt_FromLong(value->number()));
+    ScopedPyObjectPtr obj(PyLong_FromLong(value->number()));
     if (obj == NULL) {
       return false;
     }
@@ -1903,7 +1893,7 @@ static bool AddEnumValues(PyTypeObject *type,
 }
 
 static bool AddIntConstant(PyTypeObject *type, const char* name, int value) {
-  ScopedPyObjectPtr obj(PyInt_FromLong(value));
+  ScopedPyObjectPtr obj(PyLong_FromLong(value));
   if (PyDict_SetItemString(type->tp_dict, name, obj.get()) < 0) {
     return false;
   }

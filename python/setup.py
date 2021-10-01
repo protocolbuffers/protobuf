@@ -157,6 +157,7 @@ class build_py(_build_py):
     return [(pkg, mod, fil) for (pkg, mod, fil) in modules
             if not any(fnmatch.fnmatchcase(fil, pat=pat) for pat in exclude)]
 
+
 class build_ext(_build_ext):
 
   def get_ext_filename(self, ext_name):
@@ -308,4 +309,5 @@ if __name__ == '__main__':
       },
       install_requires=install_requires,
       ext_modules=ext_module_list,
+      python_requires='>=3.5',
   )
