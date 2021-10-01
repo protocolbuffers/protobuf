@@ -251,13 +251,11 @@ class TestLineCollector : public LineConsumer {
     : lines_(inout_lines), reject_(reject_line), skip_msg_(skip_msg) {}
 
   bool ConsumeLine(const StringPiece& line, std::string* out_error) override {
-    if (reject_) {
-      if (*reject_ == line) {
-        if (!skip_msg_) {
-          *out_error = std::string("Rejected '") + *reject_ + "'";
-        }
-        return false;
+    if (reject_ && *reject_ == line) {
+      if (!skip_msg_) {
+        *out_error = std::string("Rejected '") + *reject_ + "'";
       }
+      return false;
     }
     if (lines_) {
       lines_->emplace_back(line);

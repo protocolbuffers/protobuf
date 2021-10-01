@@ -1638,7 +1638,7 @@ class Parser {
   Parser(LineConsumer* line_consumer)
       : line_consumer_(line_consumer), line_(0) {}
 
-  // Feeds in some input, prase what it can, returning success/failure. Calling
+  // Feeds in some input, parse what it can, returning success/failure. Calling
   // again after an error is undefined.
   bool ParseChunk(StringPiece chunk, std::string* out_error);
 
