@@ -969,7 +969,7 @@ static const char *fastdecode_tosubmsg(upb_decstate *d, const char *ptr,
   upb_msg **dst;                                                          \
   uint32_t submsg_idx = (data >> 16) & 0xff;                              \
   const upb_msglayout *tablep = decode_totablep(table);                   \
-  const upb_msglayout *subtablep = tablep->submsgs[submsg_idx];           \
+  const upb_msglayout *subtablep = tablep->subs[submsg_idx].submsg;       \
   fastdecode_submsgdata submsg = {decode_totable(subtablep)};             \
   fastdecode_arr farr;                                                    \
                                                                           \
