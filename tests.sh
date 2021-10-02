@@ -88,6 +88,18 @@ build_cpp_distcheck() {
 }
 
 build_dist_install() {
+  # Create a symlink pointing to python2 and put it at the beginning of $PATH.
+  # This is necessary because the googletest build system involves a Python
+  # script that is not compatible with Python 3. More recent googletest
+  # versions have fixed this, but they have also removed the autotools build
+  # system support that we rely on. This is a temporary workaround to keep the
+  # googletest build working when the default python binary is Python 3.
+  mkdir tmp || true
+  pushd tmp
+  ln -s /usr/bin/python2 ./python
+  popd
+  PATH=$PWD/tmp:$PATH
+
   # Initialize any submodules.
   git submodule update --init --recursive
   ./autogen.sh
