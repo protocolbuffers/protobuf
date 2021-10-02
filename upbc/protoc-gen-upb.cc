@@ -1008,8 +1008,8 @@ void WriteField(const protobuf::FieldDescriptor* field,
     absl::StrAppend(&mode, " | _UPB_MODE_IS_EXTENSION");
   }
 
-  output("{$0, $1, $2, $3, $4, $5 | ($6 << 6)}", field->number(), offset,
-         presence, submsg_index, TableDescriptorType(field), mode, rep);
+  output("{$0, $1, $2, $3, $4, $5 | ($6 << _UPB_REP_SHIFT)}", field->number(),
+         offset, presence, submsg_index, TableDescriptorType(field), mode, rep);
 }
 
 // Writes a single field into a .upb.c source file.
@@ -1170,19 +1170,25 @@ int WriteExtensions(const protobuf::FileDescriptor* file, Output& output) {
 
   if (exts.empty()) return 0;
 
+  // Order by full name for consistent ordering.
+  std::map<std::string, const protobuf::Descriptor*> forward_messages;
+  auto add_forward_decl = [&](const protobuf::Descriptor* d) {
+    forward_messages[d->full_name()] = d;
+  };
+
   for (auto ext : exts) {
-    forward_decls.insert(ext->containing_type());
+    add_forward_decl(ext->containing_type());
     if (ext->message_type()) {
-      forward_decls.insert(ext->message_type());
+      add_forward_decl(ext->message_type());
     }
+  }
+
+  for (auto decl : forward_messages) {
+    output("extern const upb_msglayout $0;\n", MessageInit(decl.second));
   }
 
   for (auto ext : exts) {
     WriteExtension(ext, output);
-  }
-
-  for (auto decl : forward_decls) {
-    output("extern const upb_msglayout $0;\n", MessageInit(decl));
   }
 
   output(

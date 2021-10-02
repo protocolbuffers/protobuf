@@ -142,7 +142,7 @@ void _upb_msg_clearext(upb_msg *msg, const upb_msglayout_ext *ext_l) {
   if (!in->internal) return;
   const upb_msg_ext *base =
       UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
-  upb_msg_ext *ext = (void*)_upb_msg_getext(msg, ext_l);
+  upb_msg_ext *ext = (upb_msg_ext*)_upb_msg_getext(msg, ext_l);
   if (ext) {
     *ext = *base;
     in->internal->ext_begin += sizeof(upb_msg_ext);

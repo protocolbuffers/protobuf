@@ -427,7 +427,7 @@ static bool encode_shouldencode(upb_encstate *e, const upb_msg *msg,
   if (f->presence == 0) {
     /* Proto3 presence or map/array. */
     const void *mem = UPB_PTR_AT(msg, f->offset, void);
-    switch (f->mode >> 6) {
+    switch (f->mode >> _UPB_REP_SHIFT) {
       case _UPB_REP_1BYTE: {
         char ch;
         memcpy(&ch, mem, 1);

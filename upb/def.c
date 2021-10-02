@@ -1139,9 +1139,9 @@ static void fill_fieldlayout(upb_msglayout_field *field, const upb_fielddef *f) 
   }
 
   if (upb_fielddef_ismap(f)) {
-    field->mode = _UPB_MODE_MAP | (_UPB_REP_PTR << 6);
+    field->mode = _UPB_MODE_MAP | (_UPB_REP_PTR << _UPB_REP_SHIFT);
   } else if (upb_fielddef_isseq(f)) {
-    field->mode = _UPB_MODE_ARRAY | (_UPB_REP_PTR << 6);
+    field->mode = _UPB_MODE_ARRAY | (_UPB_REP_PTR << _UPB_REP_SHIFT);
   } else {
     /* Maps descriptor type -> elem_size_lg2.  */
     static const uint8_t sizes[] = {
@@ -1165,7 +1165,8 @@ static void fill_fieldlayout(upb_msglayout_field *field, const upb_fielddef *f) 
         _UPB_REP_4BYTE,   /* SINT32 */
         _UPB_REP_8BYTE,   /* SINT64 */
     };
-    field->mode = _UPB_MODE_SCALAR | (sizes[field->descriptortype] << 6);
+    field->mode =
+        _UPB_MODE_SCALAR | (sizes[field->descriptortype] << _UPB_REP_SHIFT);
   }
 
   if (upb_fielddef_packed(f)) {

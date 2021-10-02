@@ -81,7 +81,10 @@ const upb_fielddef *upb_msg_whichoneof(const upb_msg *msg,
                                        const upb_oneofdef *o);
 
 /* Sets the given field to the given value.  For a msg/array/map/string, the
- * value must be in the same arena.  */
+ * caller must ensure that the target data outlives |msg| (by living either in
+ * the same arena or a different arena that outlives it).
+ *
+ * Returns false if allocation fails. */
 bool upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
                  upb_arena *a);
 

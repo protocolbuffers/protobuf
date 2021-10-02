@@ -158,7 +158,7 @@ upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
 
 upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f,
                               upb_arena *a) {
-  assert(upb_fielddef_issubmsg(f) || upb_fielddef_isseq(f));
+  UPB_ASSERT(upb_fielddef_issubmsg(f) || upb_fielddef_isseq(f));
   if (upb_fielddef_haspresence(f) && !upb_msg_has(msg, f)) {
     // We need to skip the upb_msg_get() call in this case.
     goto make;

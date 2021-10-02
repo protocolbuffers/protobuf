@@ -69,13 +69,16 @@ typedef struct {
   int16_t presence;       /* If >0, hasbit_index.  If <0, ~oneof_index. */
   uint16_t submsg_index;  /* undefined if descriptortype != MESSAGE or GROUP. */
   uint8_t descriptortype;
-  uint8_t mode;            /* upb_fieldmode | upb_labelflags | (upb_rep << 6) */
+  uint8_t mode; /* upb_fieldmode | upb_labelflags |
+                   (upb_rep << _UPB_REP_SHIFT) */
 } upb_msglayout_field;
 
 typedef enum {
   _UPB_MODE_MAP = 0,
   _UPB_MODE_ARRAY = 1,
   _UPB_MODE_SCALAR = 2,
+
+  _UPB_MODE_MASK = 3,  /* Mask to isolate the mode from upb_rep. */
 } upb_fieldmode;
 
 /* Extra flags on the mode field. */
@@ -97,6 +100,8 @@ enum upb_rep {
 #else
   _UPB_REP_PTR = _UPB_REP_8BYTE,
 #endif
+
+  _UPB_REP_SHIFT = 6,  /* Bit offset of the rep in upb_msglayout_field.mode */
 };
 
 UPB_INLINE upb_fieldmode _upb_getmode(const upb_msglayout_field *field) {

@@ -688,7 +688,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
       }
 
       /* Parse, using op for dispatch. */
-      switch (mode & 3) {
+      switch (mode & _UPB_MODE_MASK) {
         case _UPB_MODE_ARRAY:
           ptr = decode_toarray(d, ptr, field_msg, subs, field, &val, op);
           break;
