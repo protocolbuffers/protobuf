@@ -1172,18 +1172,16 @@ int WriteExtensions(const protobuf::FileDescriptor* file, Output& output) {
 
   // Order by full name for consistent ordering.
   std::map<std::string, const protobuf::Descriptor*> forward_messages;
-  auto add_forward_decl = [&](const protobuf::Descriptor* d) {
-    forward_messages[d->full_name()] = d;
-  };
 
   for (auto ext : exts) {
-    add_forward_decl(ext->containing_type());
+    forward_messages[ext->containing_type()->full_name()] =
+        ext->containing_type();
     if (ext->message_type()) {
-      add_forward_decl(ext->message_type());
+      forward_messages[ext->message_type()->full_name()] = ext->message_type();
     }
   }
 
-  for (auto decl : forward_messages) {
+  for (const auto& decl : forward_messages) {
     output("extern const upb_msglayout $0;\n", MessageInit(decl.second));
   }
 

@@ -60,13 +60,13 @@ TEST(MessageTest, Extensions) {
   upb::MessageDefPtr m(upb_test_TestExtensions_getmsgdef(symtab.ptr()));
   EXPECT_TRUE(m.ptr() != nullptr);
 
-  std::string json = R"(
+  std::string json = R"json(
   {
       "[upb_test.TestExtensions.optional_int32_ext]": 123,
       "[upb_test.TestExtensions.Nested.repeated_int32_ext]": [2, 4, 6],
       "[upb_test.optional_msg_ext]": {"optional_int32": 456}
   }
-  )";
+  )json";
   upb::Status status;
   EXPECT_TRUE(upb_json_decode(json.data(), json.size(), ext_msg, m.ptr(),
                               symtab.ptr(), 0, arena.ptr(), status.ptr()))
@@ -98,4 +98,3 @@ TEST(MessageTest, Extensions) {
       << status.error_message();
   VerifyMessage(ext_msg3);
 }
-
