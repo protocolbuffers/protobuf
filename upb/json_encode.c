@@ -673,6 +673,9 @@ static void jsonenc_fieldval(jsonenc *e, const upb_fielddef *f,
   jsonenc_putsep(e, ",", first);
 
   if (upb_fielddef_isextension(f)) {
+    // TODO: For MessageSet, I would have expected this to print the message
+    // name here, but Python doesn't appear to do this. We should do more
+    // research here about what various implementations do.
     jsonenc_printf(e, "\"[%s]\":", upb_fielddef_fullname(f));
   } else {
     if (e->options & UPB_JSONENC_PROTONAMES) {

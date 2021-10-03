@@ -92,6 +92,7 @@ static const unsigned fixed64_ok = (1 << UPB_DTYPE_DOUBLE) |
                                    (1 << UPB_DTYPE_SFIXED64);
 
 /* Op: an action to be performed for a wire-type/field-type combination. */
+#define OP_UNKNOWN -1             /* Unknown field. */
 #define OP_SCALAR_LG2(n) (n)      /* n in [0, 2, 3] => op in [0, 2, 3] */
 #define OP_STRING 4
 #define OP_BYTES 5
@@ -101,48 +102,48 @@ static const unsigned fixed64_ok = (1 << UPB_DTYPE_DOUBLE) |
 #define OP_VARPCK_LG2(n) (n + 9)  /* n in [0, 2, 3] => op in [9, 11, 12] */
 
 static const int8_t varint_ops[19] = {
-    -1,               /* field not found */
-    -1,               /* DOUBLE */
-    -1,               /* FLOAT */
+    OP_UNKNOWN,       /* field not found */
+    OP_UNKNOWN,       /* DOUBLE */
+    OP_UNKNOWN,       /* FLOAT */
     OP_SCALAR_LG2(3), /* INT64 */
     OP_SCALAR_LG2(3), /* UINT64 */
     OP_SCALAR_LG2(2), /* INT32 */
-    -1,               /* FIXED64 */
-    -1,               /* FIXED32 */
+    OP_UNKNOWN,       /* FIXED64 */
+    OP_UNKNOWN,       /* FIXED32 */
     OP_SCALAR_LG2(0), /* BOOL */
-    -1,               /* STRING */
-    -1,               /* GROUP */
-    -1,               /* MESSAGE */
-    -1,               /* BYTES */
+    OP_UNKNOWN,       /* STRING */
+    OP_UNKNOWN,       /* GROUP */
+    OP_UNKNOWN,       /* MESSAGE */
+    OP_UNKNOWN,       /* BYTES */
     OP_SCALAR_LG2(2), /* UINT32 */
     OP_SCALAR_LG2(2), /* ENUM */
-    -1,               /* SFIXED32 */
-    -1,               /* SFIXED64 */
+    OP_UNKNOWN,       /* SFIXED32 */
+    OP_UNKNOWN,       /* SFIXED64 */
     OP_SCALAR_LG2(2), /* SINT32 */
     OP_SCALAR_LG2(3), /* SINT64 */
 };
 
 static const int8_t delim_ops[37] = {
     /* For non-repeated field type. */
-    -1,        /* field not found */
-    -1,        /* DOUBLE */
-    -1,        /* FLOAT */
-    -1,        /* INT64 */
-    -1,        /* UINT64 */
-    -1,        /* INT32 */
-    -1,        /* FIXED64 */
-    -1,        /* FIXED32 */
-    -1,        /* BOOL */
-    OP_STRING, /* STRING */
-    -1,        /* GROUP */
-    OP_SUBMSG, /* MESSAGE */
-    OP_BYTES,  /* BYTES */
-    -1,        /* UINT32 */
-    -1,        /* ENUM */
-    -1,        /* SFIXED32 */
-    -1,        /* SFIXED64 */
-    -1,        /* SINT32 */
-    -1,        /* SINT64 */
+    OP_UNKNOWN, /* field not found */
+    OP_UNKNOWN, /* DOUBLE */
+    OP_UNKNOWN, /* FLOAT */
+    OP_UNKNOWN, /* INT64 */
+    OP_UNKNOWN, /* UINT64 */
+    OP_UNKNOWN, /* INT32 */
+    OP_UNKNOWN, /* FIXED64 */
+    OP_UNKNOWN, /* FIXED32 */
+    OP_UNKNOWN, /* BOOL */
+    OP_STRING,  /* STRING */
+    OP_UNKNOWN, /* GROUP */
+    OP_SUBMSG,  /* MESSAGE */
+    OP_BYTES,   /* BYTES */
+    OP_UNKNOWN, /* UINT32 */
+    OP_UNKNOWN, /* ENUM */
+    OP_UNKNOWN, /* SFIXED32 */
+    OP_UNKNOWN, /* SFIXED64 */
+    OP_UNKNOWN, /* SINT32 */
+    OP_UNKNOWN, /* SINT64 */
     /* For repeated field type. */
     OP_FIXPCK_LG2(3), /* REPEATED DOUBLE */
     OP_FIXPCK_LG2(2), /* REPEATED FLOAT */
@@ -608,6 +609,25 @@ static bool decode_tryfastdispatch(upb_decstate *d, const char **ptr,
   return false;
 }
 
+static const char *decode_mset_item(upb_decstate *d, const char *ptr,
+                                    upb_msg *msg, const upb_msglayout *layout) {
+  // We create a temporary upb_msglayout here and abuse its fields as temporary
+  // storage, to avoid creating lots of MessageSet-specific parsing code-paths:
+  //   1. We store 'layout' in item_layout.subs.  We will need this later as
+  //      a key to look up extensions for this MessageSet.
+  //   2. We use item_layout.fields as temporary storage to store the extension we
+  //      found when parsing the type id.
+  upb_msglayout item_layout = {
+      .subs = (const upb_msglayout_sub[]){{.submsg = layout}},
+      .fields = NULL,
+      .size = 0,
+      .field_count = 0,
+      .ext = _UPB_MSGEXT_MSET_ITEM,
+      .dense_below = 0,
+      .table_mask = -1};
+  return decode_group(d, ptr, msg, &item_layout, 1);
+}
+
 UPB_NOINLINE
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
@@ -663,8 +683,16 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
       }
       case UPB_WIRE_TYPE_START_GROUP:
         val.uint32_val = field_number;
-        op = OP_SUBMSG;
-        if (field->descriptortype != UPB_DTYPE_GROUP) goto unknown;
+        if (field->descriptortype == UPB_DTYPE_GROUP) {
+          op = OP_SUBMSG;
+        } else {
+          if (layout->ext == _UPB_MSGEXT_MSET &&
+              field_number == _UPB_MSET_ITEM && d->extreg) {
+            ptr = decode_mset_item(d, ptr, msg, layout);
+            goto success;
+          }
+          op = OP_UNKNOWN;
+        }
         break;
       case UPB_WIRE_TYPE_END_GROUP:
         d->end_group = field_number;
@@ -673,6 +701,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
         decode_err(d);
     }
 
+   have_field:
     if (op >= 0) {
       /* Known field, possibly an extension. */
       upb_msg *field_msg = msg;
@@ -705,6 +734,36 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     unknown:
       /* Skip unknown field. */
       if (field_number == 0) decode_err(d);
+
+      if (layout && UPB_UNLIKELY(layout->ext == _UPB_MSGEXT_MSET_ITEM)) {
+        /* MessageSet handling. */
+        switch (field_number) {
+          case _UPB_MSET_TYPEID: {
+            if (wire_type != UPB_WIRE_TYPE_VARINT) break;
+            const upb_msglayout_ext *ext = _upb_extreg_get(
+                d->extreg, layout->subs[0].submsg, val.uint64_val);
+            if (!ext) break;
+            ((upb_msglayout*)layout)->fields = &ext->field;
+            goto success;
+          }
+          case _UPB_MSET_MESSAGE:
+            if (wire_type != UPB_WIRE_TYPE_DELIMITED) break;
+            if (layout->fields) {
+              // We saw type_id previously and succeeded in looking up msg.
+              field = layout->fields;
+              op = OP_SUBMSG;
+              goto have_field;
+            } else {
+              // TODO: out of order MessageSet.
+              // This is a very rare case: all serializers will emit in-order
+              // MessageSets.  To hit this case there has to be some kind of
+              // re-ordering proxy.  We should eventually handle this case, but
+              // not today.
+            }
+            break;
+        }
+      }
+
       if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
       if (msg) {
         if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
@@ -723,6 +782,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
       }
     }
 
+   success:
     if (decode_isdone(d, &ptr)) return ptr;
     if (decode_tryfastdispatch(d, &ptr, msg, layout)) return ptr;
   }

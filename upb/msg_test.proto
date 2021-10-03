@@ -46,3 +46,15 @@ message TestExtensions {
 extend TestExtensions {
   optional protobuf_test_messages.proto3.TestAllTypesProto3 optional_msg_ext = 1002;
 }
+
+message TestMessageSet {
+  extensions 4 to max;
+  option message_set_wire_format = true;
+}
+
+message MessageSetMember {
+  optional int32 optional_int32 = 1;
+  extend TestMessageSet {
+    optional MessageSetMember message_set_extension = 4;
+  }
+}

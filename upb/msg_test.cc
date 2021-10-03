@@ -98,3 +98,59 @@ TEST(MessageTest, Extensions) {
       << status.error_message();
   VerifyMessage(ext_msg3);
 }
+
+void VerifyMessageSet(const upb_test_TestMessageSet *mset_msg) {
+  EXPECT_TRUE(upb_test_MessageSetMember_has_message_set_extension(mset_msg));
+  const upb_test_MessageSetMember *member =
+      upb_test_MessageSetMember_message_set_extension(mset_msg);
+  EXPECT_TRUE(member != nullptr);
+  EXPECT_TRUE(upb_test_MessageSetMember_has_optional_int32(member));
+  EXPECT_EQ(234, upb_test_MessageSetMember_optional_int32(member));
+}
+
+TEST(MessageTest, MessageSet) {
+  upb::Arena arena;
+  upb_test_TestMessageSet *ext_msg = upb_test_TestMessageSet_new(arena.ptr());
+
+  EXPECT_FALSE(upb_test_MessageSetMember_has_message_set_extension(ext_msg));
+
+  upb::SymbolTable symtab;
+  upb::MessageDefPtr m(upb_test_TestMessageSet_getmsgdef(symtab.ptr()));
+  EXPECT_TRUE(m.ptr() != nullptr);
+
+  std::string json = R"json(
+  {
+      "[upb_test.MessageSetMember]": {"optional_int32": 234}
+  }
+  )json";
+  upb::Status status;
+  EXPECT_TRUE(upb_json_decode(json.data(), json.size(), ext_msg, m.ptr(),
+                              symtab.ptr(), 0, arena.ptr(), status.ptr()))
+      << status.error_message();
+
+  VerifyMessageSet(ext_msg);
+
+  // Test round-trip through binary format.
+  size_t size;
+  char *serialized = upb_test_TestMessageSet_serialize(ext_msg, arena.ptr(), &size);
+  ASSERT_TRUE(serialized != nullptr);
+  ASSERT_GE(size, 0);
+
+  upb_test_TestMessageSet *ext_msg2 = upb_test_TestMessageSet_parse_ex(
+      serialized, size, upb_symtab_extreg(symtab.ptr()), 0, arena.ptr());
+  VerifyMessageSet(ext_msg2);
+
+  // Test round-trip through JSON format.
+  size_t json_size =
+      upb_json_encode(ext_msg, m.ptr(), symtab.ptr(), 0, NULL, 0, status.ptr());
+  char *json_buf =
+      static_cast<char *>(upb_arena_malloc(arena.ptr(), json_size + 1));
+  upb_json_encode(ext_msg, m.ptr(), symtab.ptr(), 0, json_buf, json_size + 1,
+                  status.ptr());
+  upb_test_TestMessageSet *ext_msg3 = upb_test_TestMessageSet_new(arena.ptr());
+  fprintf(stderr, "%.*s\n", (int)json_size, json_buf);
+  EXPECT_TRUE(upb_json_decode(json_buf, json_size, ext_msg3, m.ptr(),
+                              symtab.ptr(), 0, arena.ptr(), status.ptr()))
+      << status.error_message();
+  VerifyMessageSet(ext_msg3);
+}

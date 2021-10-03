@@ -138,8 +138,23 @@ typedef union {
 typedef enum {
   _UPB_MSGEXT_NONE = 0,        // Non-extendable message.
   _UPB_MSGEXT_EXTENDABLE = 1,  // Normal extendable message.
-  // TODO: MessageSet
+  _UPB_MSGEXT_MSET = 2,        // MessageSet message.
+  _UPB_MSGEXT_MSET_ITEM = 3,   // MessageSet item (temporary only, see decode.c)
 } upb_msgext_mode;
+
+/* MessageSet wire format is:
+ *   message MessageSet {
+ *     repeated group Item = 1 {
+ *       required int32 type_id = 2;
+ *       required string message = 3;
+ *     }
+ *   }
+ */
+typedef enum {
+  _UPB_MSET_ITEM = 1,
+  _UPB_MSET_TYPEID = 2,
+  _UPB_MSET_MESSAGE = 3,
+} upb_msgext_fieldnum;
 
 struct upb_msglayout {
   const upb_msglayout_sub *subs;

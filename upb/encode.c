@@ -477,6 +477,23 @@ static void encode_field(upb_encstate *e, const upb_msg *msg,
   }
 }
 
+/* message MessageSet {
+ *   repeated group Item = 1 {
+ *     required int32 type_id = 2;
+ *     required string message = 3;
+ *   }
+ * } */
+static void encode_mset_item(upb_encstate *e, const upb_msg_ext *ext) {
+  size_t size;
+  encode_tag(e, 1, UPB_WIRE_TYPE_END_GROUP);
+  encode_message(e, ext->data.ptr, ext->ext->sub.submsg, &size);
+  encode_varint(e, size);
+  encode_tag(e, 3, UPB_WIRE_TYPE_DELIMITED);
+  encode_varint(e, ext->ext->field.number);
+  encode_tag(e, 2, UPB_WIRE_TYPE_VARINT);
+  encode_tag(e, 1, UPB_WIRE_TYPE_START_GROUP);
+}
+
 static void encode_message(upb_encstate *e, const upb_msg *msg,
                            const upb_msglayout *m, size_t *size) {
   size_t pre_len = e->limit - e->ptr;
@@ -499,7 +516,11 @@ static void encode_message(upb_encstate *e, const upb_msg *msg,
     const upb_msg_ext *end = ext + ext_count;
     if (ext_count) {
       for (; ext != end; ext++) {
-        encode_field(e, &ext->data, &ext->ext->sub, &ext->ext->field);
+        if (UPB_UNLIKELY(m->ext == _UPB_MSGEXT_MSET)) {
+          encode_mset_item(e, ext);
+        } else {
+          encode_field(e, &ext->data, &ext->ext->sub, &ext->ext->field);
+        }
       }
     }
   }
