@@ -13,7 +13,7 @@ test_version() {
       "rvm install $version && rvm use $version && rvm get head && \
        which ruby && \
        git clean -f && \
-       gem install bundler && bundle && \
+       gem install --no-document bundler && bundle && \
        rake test &&
        rake gc_test &&
        cd ../conformance && make test_jruby &&
@@ -23,7 +23,7 @@ test_version() {
       "rvm install $version && rvm use $version && \
        which ruby && \
        git clean -f && \
-       gem install bundler -v 1.17.3 && bundle && \
+       gem install --no-document bundler -v 1.17.3 && bundle && \
        rake test &&
        rake gc_test &&
        cd ../conformance && make ${RUBY_CONFORMANCE} &&

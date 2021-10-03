@@ -1781,21 +1781,24 @@ module CommonTests
   def test_object_gc
     m = proto_module::TestMessage.new(optional_msg: proto_module::TestMessage2.new)
     m.optional_msg
-    GC.start(full_mark: true, immediate_sweep: true)
+    # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
+    GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
     m.optional_msg.inspect
   end
 
   def test_object_gc_freeze
     m = proto_module::TestMessage.new
     m.repeated_float.freeze
-    GC.start(full_mark: true)
+    # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
+    GC.start(full_mark: true) unless RUBY_PLATFORM == "java"
 
     # Make sure we remember that the object is frozen.
     # The wrapper object contains this information, so we need to ensure that
     # the previous GC did not collect it.
     assert m.repeated_float.frozen?
 
-    GC.start(full_mark: true, immediate_sweep: true)
+    # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
+    GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
     assert m.repeated_float.frozen?
   end
 end

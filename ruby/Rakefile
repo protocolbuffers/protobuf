@@ -67,16 +67,18 @@ unless ENV['IN_DOCKER'] == 'true'
 end
 
 if RUBY_PLATFORM == "java"
-  if `which mvn` == ''
-    raise ArgumentError, "maven needs to be installed"
-  end
-  task :clean do
+  task :clean => :require_mvn do
     system("mvn --batch-mode clean")
   end
 
-  task :compile do
+  task :compile => :require_mvn do
     system("mvn --batch-mode package")
   end
+
+  task :require_mvn do
+    raise ArgumentError, "maven needs to be installed" if `which mvn` == ''
+  end
+
 else
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
     unless RUBY_PLATFORM =~ /darwin/
@@ -95,7 +97,22 @@ else
     ]
   end
 
+  task 'gem:java' do
+    sh "rm Gemfile.lock"
+    require 'rake_compiler_dock'
+    # Specify the repo root as the working and mount directory to provide access
+    # to the java directory
+    repo_root = File.realdirpath File.join(Dir.pwd, '..')
+    RakeCompilerDock.sh <<-"EOT", platform: 'jruby', rubyvm: :jruby, mountdir: repo_root, workdir: repo_root
+      sudo apt-get install maven -y && \
+      cd java && mvn install -Dmaven.test.skip=true && cd ../ruby && \
+      bundle && \
+      IN_DOCKER=true rake compile gem
+    EOT
+  end
+
   task 'gem:windows' do
+    sh "rm Gemfile.lock"
     require 'rake_compiler_dock'
     ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux'].each do |plat|
       RakeCompilerDock.sh <<-"EOT", platform: plat
@@ -111,7 +128,7 @@ else
       system "rake cross native gem RUBY_CC_VERSION=3.0.0:2.7.0:2.6.0:2.5.1:2.4.0:2.3.0"
     end
   else
-    task 'gem:native' => [:genproto, 'gem:windows']
+    task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']
   end
 end
 
