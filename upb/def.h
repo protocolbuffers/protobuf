@@ -56,6 +56,8 @@ struct upb_enumdef;
 typedef struct upb_enumdef upb_enumdef;
 struct upb_enumvaldef;
 typedef struct upb_enumvaldef upb_enumvaldef;
+struct upb_extrange;
+typedef struct upb_extrange upb_extrange;
 struct upb_fielddef;
 typedef struct upb_fielddef upb_fielddef;
 struct upb_filedef;
@@ -137,6 +139,7 @@ bool upb_fielddef_haspresence(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f);
 const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f);
 const upb_msglayout_field *upb_fielddef_layout(const upb_fielddef *f);
+const upb_msglayout_ext *_upb_fielddef_extlayout(const upb_fielddef *f);
 
 /* upb_oneofdef ***************************************************************/
 
@@ -201,8 +204,10 @@ bool upb_msgdef_mapentry(const upb_msgdef *m);
 upb_wellknowntype_t upb_msgdef_wellknowntype(const upb_msgdef *m);
 bool upb_msgdef_iswrapper(const upb_msgdef *m);
 bool upb_msgdef_isnumberwrapper(const upb_msgdef *m);
+int upb_msgdef_extrangecount(const upb_msgdef *m);
 int upb_msgdef_fieldcount(const upb_msgdef *m);
 int upb_msgdef_oneofcount(const upb_msgdef *m);
+const upb_extrange *upb_msgdef_extrange(const upb_msgdef *m, int i);
 const upb_fielddef *upb_msgdef_field(const upb_msgdef *m, int i);
 const upb_oneofdef *upb_msgdef_oneof(const upb_msgdef *m, int i);
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i);
@@ -257,6 +262,14 @@ void upb_msg_oneof_iter_setdone(upb_msg_oneof_iter * iter);
 bool upb_msg_oneof_iter_isequal(const upb_msg_oneof_iter *iter1,
                                 const upb_msg_oneof_iter *iter2);
 /* END DEPRECATED */
+
+/* upb_extrange ***************************************************************/
+
+const google_protobuf_ExtensionRangeOptions *upb_extrange_options(
+    const upb_extrange *r);
+bool upb_extrange_hasoptions(const upb_extrange *r);
+int32_t upb_extrange_start(const upb_extrange *r);
+int32_t upb_extrange_end(const upb_extrange *r);
 
 /* upb_enumdef ****************************************************************/
 
@@ -321,6 +334,8 @@ const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
 const upb_enumvaldef *upb_symtab_lookupenumval(const upb_symtab *s,
                                                const char *sym);
 const upb_fielddef *upb_symtab_lookupext(const upb_symtab *s, const char *sym);
+const upb_fielddef *upb_symtab_lookupext2(const upb_symtab *s, const char *sym,
+                                         size_t len);
 const upb_filedef *upb_symtab_lookupfile(const upb_symtab *s, const char *name);
 const upb_filedef *upb_symtab_lookupfile2(
     const upb_symtab *s, const char *name, size_t len);
@@ -330,11 +345,14 @@ const upb_filedef *upb_symtab_addfile(
     upb_status *status);
 size_t _upb_symtab_bytesloaded(const upb_symtab *s);
 upb_arena *_upb_symtab_arena(const upb_symtab *s);
+const upb_fielddef *_upb_symtab_lookupextfield(const upb_symtab *s,
+                                               const upb_msglayout_ext *ext);
+const upb_extreg *upb_symtab_extreg(const upb_symtab *s);
 
 /* For generated code only: loads a generated descriptor. */
 typedef struct upb_def_init {
   struct upb_def_init **deps;     /* Dependencies of this file. */
-  const upb_msglayout **layouts;  /* Pre-order layouts of all messages. */
+  const upb_msglayout_file *layout;
   const char *filename;
   upb_strview descriptor;         /* Serialized descriptor. */
 } upb_def_init;

@@ -104,27 +104,11 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
 
   output("#include \"upb/def.h\"\n");
   output("#include \"$0\"\n", DefHeaderFilename(file->name()));
+  output("#include \"$0\"\n", HeaderFilename(file));
   output("\n");
 
   for (int i = 0; i < file->dependency_count(); i++) {
     output("extern upb_def_init $0;\n", DefInitSymbol(file->dependency(i)));
-  }
-
-  std::vector<const protobuf::Descriptor*> file_messages =
-      SortedMessages(file);
-
-  for (auto message : file_messages) {
-    output("extern const upb_msglayout $0;\n", MessageInit(message));
-  }
-  output("\n");
-
-  if (!file_messages.empty()) {
-    output("static const upb_msglayout *layouts[$0] = {\n", file_messages.size());
-    for (auto message : file_messages) {
-      output("  &$0,\n", MessageInit(message));
-    }
-    output("};\n");
-    output("\n");
   }
 
   protobuf::FileDescriptorProto file_proto;
@@ -156,11 +140,7 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
 
   output("upb_def_init $0 = {\n", DefInitSymbol(file));
   output("  deps,\n");
-  if (file_messages.empty()) {
-    output("  NULL,\n");
-  } else {
-    output("  layouts,\n");
-  }
+  output("  &$0,\n", FileLayoutName(file));
   output("  \"$0\",\n", file->name());
   output("  UPB_STRVIEW_INIT(descriptor, $0)\n", file_data.size());
   output("};\n");

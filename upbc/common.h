@@ -82,10 +82,9 @@ std::string ToCIdent(absl::string_view str);
 std::string ToPreproc(absl::string_view str);
 void EmitFileWarning(const google::protobuf::FileDescriptor* file,
                      Output& output);
-std::vector<const google::protobuf::Descriptor*> SortedMessages(
-    const google::protobuf::FileDescriptor* file);
-std::string MessageInit(const google::protobuf::Descriptor* descriptor);
 std::string MessageName(const google::protobuf::Descriptor* descriptor);
+std::string FileLayoutName(const google::protobuf::FileDescriptor* file);
+std::string HeaderFilename(const google::protobuf::FileDescriptor* file);
 
 }  // namespace upbc
 

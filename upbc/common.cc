@@ -31,14 +31,6 @@ namespace {
 
 namespace protobuf = ::google::protobuf;
 
-void AddMessages(const protobuf::Descriptor* message,
-                 std::vector<const protobuf::Descriptor*>* messages) {
-  messages->push_back(message);
-  for (int i = 0; i < message->nested_type_count(); i++) {
-    AddMessages(message->nested_type(i), messages);
-  }
-}
-
 }  // namespace
 
 std::string StripExtension(absl::string_view fname) {
@@ -69,21 +61,16 @@ void EmitFileWarning(const protobuf::FileDescriptor* file, Output& output) {
       file->name());
 }
 
-std::vector<const protobuf::Descriptor*> SortedMessages(
-    const protobuf::FileDescriptor* file) {
-  std::vector<const protobuf::Descriptor*> messages;
-  for (int i = 0; i < file->message_type_count(); i++) {
-    AddMessages(file->message_type(i), &messages);
-  }
-  return messages;
-}
-
 std::string MessageName(const protobuf::Descriptor* descriptor) {
   return ToCIdent(descriptor->full_name());
 }
 
-std::string MessageInit(const protobuf::Descriptor* descriptor) {
-  return MessageName(descriptor) + "_msginit";
+std::string FileLayoutName(const google::protobuf::FileDescriptor* file) {
+  return ToCIdent(file->name()) + "_upb_file_layout";
+}
+
+std::string HeaderFilename(const google::protobuf::FileDescriptor* file) {
+  return StripExtension(file->name()) + ".upb.h";
 }
 
 }  // namespace upbc

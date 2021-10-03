@@ -137,6 +137,18 @@ const upb_msg_ext *_upb_msg_getext(const upb_msg *msg,
   return NULL;
 }
 
+void _upb_msg_clearext(upb_msg *msg, const upb_msglayout_ext *ext_l) {
+  upb_msg_internal *in = upb_msg_getinternal(msg);
+  if (!in->internal) return;
+  const upb_msg_ext *base =
+      UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
+  upb_msg_ext *ext = (upb_msg_ext*)_upb_msg_getext(msg, ext_l);
+  if (ext) {
+    *ext = *base;
+    in->internal->ext_begin += sizeof(upb_msg_ext);
+  }
+}
+
 upb_msg_ext *_upb_msg_getorcreateext(upb_msg *msg, const upb_msglayout_ext *e,
                                      upb_arena *arena) {
   upb_msg_ext *ext = (upb_msg_ext*)_upb_msg_getext(msg, e);
@@ -361,14 +373,15 @@ upb_extreg *upb_extreg_new(upb_arena *arena) {
   return r;
 }
 
-bool _upb_extreg_add(upb_extreg *r, const upb_msglayout_ext *e, size_t count) {
+bool _upb_extreg_add(upb_extreg *r, const upb_msglayout_ext **e, size_t count) {
   char buf[EXTREG_KEY_SIZE];
-  const upb_msglayout_ext *start = e;
-  const upb_msglayout_ext *end = e + count;
+  const upb_msglayout_ext **start = e;
+  const upb_msglayout_ext **end = e + count;
   for (; e < end; e++) {
-    extreg_key(buf, e->extendee, e->field.number);
+    const upb_msglayout_ext *ext = *e;
+    extreg_key(buf, ext->extendee, ext->field.number);
     if (!upb_strtable_insert(&r->exts, buf, EXTREG_KEY_SIZE,
-                             upb_value_constptr(e), r->arena)) {
+                             upb_value_constptr(ext), r->arena)) {
       goto failure;
     }
   }
@@ -377,15 +390,15 @@ bool _upb_extreg_add(upb_extreg *r, const upb_msglayout_ext *e, size_t count) {
 failure:
   /* Back out the entries previously added. */
   for (end = e, e = start; e < end; e++) {
-    extreg_key(buf, e->extendee, e->field.number);
+    const upb_msglayout_ext *ext = *e;
+    extreg_key(buf, ext->extendee, ext->field.number);
     upb_strtable_remove(&r->exts, buf, EXTREG_KEY_SIZE, NULL);
   }
   return false;
 }
 
-const upb_msglayout_field *_upb_extreg_get(const upb_extreg *r,
-                                           const upb_msglayout *l,
-                                           uint32_t num) {
+const upb_msglayout_ext *_upb_extreg_get(const upb_extreg *r,
+                                         const upb_msglayout *l, uint32_t num) {
   char buf[EXTREG_KEY_SIZE];
   upb_value v;
   extreg_key(buf, l, num);

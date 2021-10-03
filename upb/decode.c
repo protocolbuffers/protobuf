@@ -298,7 +298,8 @@ static void decode_munge(int type, wireval *val) {
   }
 }
 
-static const upb_msglayout_field *upb_find_field(const upb_msglayout *l,
+static const upb_msglayout_field *upb_find_field(upb_decstate *d,
+                                                 const upb_msglayout *l,
                                                  uint32_t field_number,
                                                  int *last_field_index) {
   static upb_msglayout_field none = {0, 0, 0, 0, 0, 0};
@@ -307,21 +308,30 @@ static const upb_msglayout_field *upb_find_field(const upb_msglayout *l,
 
   size_t idx = ((size_t)field_number) - 1;  // 0 wraps to SIZE_MAX
   if (idx < l->dense_below) {
+    /* Fastest case: index into dense fields. */
     goto found;
   }
 
-  /* Resume scanning from last_field_index since fields are usually in order. */
-  int last = *last_field_index;
-  for (idx = last; idx < l->field_count; idx++) {
-    if (l->fields[idx].number == field_number) {
-      goto found;
+  if (l->dense_below < l->field_count) {
+    /* Linear search non-dense fields. Resume scanning from last_field_index
+     * since fields are usually in order. */
+    int last = *last_field_index;
+    for (idx = last; idx < l->field_count; idx++) {
+      if (l->fields[idx].number == field_number) {
+        goto found;
+      }
+    }
+
+    for (idx = 0; idx < last; idx++) {
+      if (l->fields[idx].number == field_number) {
+        goto found;
+      }
     }
   }
 
-  for (idx = 0; idx < last; idx++) {
-    if (l->fields[idx].number == field_number) {
-      goto found;
-    }
+  if (l->ext == _UPB_MSGEXT_EXTENDABLE && d->extreg) {
+    const upb_msglayout_ext *ext = _upb_extreg_get(d->extreg, l, field_number);
+    if (ext) return &ext->field;
   }
 
   return &none; /* Unknown field. */
@@ -332,10 +342,9 @@ static const upb_msglayout_field *upb_find_field(const upb_msglayout *l,
   return &l->fields[idx];
 }
 
-static upb_msg *decode_newsubmsg(upb_decstate *d,
-                                 upb_msglayout const *const *submsgs,
+static upb_msg *decode_newsubmsg(upb_decstate *d, const upb_msglayout_sub *subs,
                                  const upb_msglayout_field *field) {
-  const upb_msglayout *subl = submsgs[field->submsg_index];
+  const upb_msglayout *subl = subs[field->submsg_index].submsg;
   return _upb_msg_new_inl(subl, &d->arena);
 }
 
@@ -365,10 +374,10 @@ static const char *decode_readstr(upb_decstate *d, const char *ptr, int size,
 
 UPB_FORCEINLINE
 static const char *decode_tosubmsg(upb_decstate *d, const char *ptr,
-                                   upb_msg *submsg, 
-                                   upb_msglayout const *const *submsgs,
+                                   upb_msg *submsg,
+                                   const upb_msglayout_sub *subs,
                                    const upb_msglayout_field *field, int size) {
-  const upb_msglayout *subl = submsgs[field->submsg_index];
+  const upb_msglayout *subl = subs[field->submsg_index].submsg;
   int saved_delta = decode_pushlimit(d, ptr, size);
   if (--d->depth < 0) decode_err(d);
   if (!decode_isdone(d, &ptr)) {
@@ -398,15 +407,15 @@ static const char *decode_group(upb_decstate *d, const char *ptr,
 UPB_FORCEINLINE
 static const char *decode_togroup(upb_decstate *d, const char *ptr,
                                   upb_msg *submsg,
-                                  upb_msglayout const *const *submsgs,
+                                  const upb_msglayout_sub *subs,
                                   const upb_msglayout_field *field) {
-  const upb_msglayout *subl = submsgs[field->submsg_index];
+  const upb_msglayout *subl = subs[field->submsg_index].submsg;
   return decode_group(d, ptr, submsg, subl, field->number);
 }
 
 static const char *decode_toarray(upb_decstate *d, const char *ptr,
                                   upb_msg *msg,
-                                  upb_msglayout const *const *submsgs,
+                                  const upb_msglayout_sub *subs,
                                   const upb_msglayout_field *field, wireval *val,
                                   int op) {
   upb_array **arrp = UPB_PTR_AT(msg, field->offset, void);
@@ -442,14 +451,14 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
     }
     case OP_SUBMSG: {
       /* Append submessage / group. */
-      upb_msg *submsg = decode_newsubmsg(d, submsgs, field);
+      upb_msg *submsg = decode_newsubmsg(d, subs, field);
       *UPB_PTR_AT(_upb_array_ptr(arr), arr->len * sizeof(void *), upb_msg *) =
           submsg;
       arr->len++;
       if (UPB_UNLIKELY(field->descriptortype == UPB_DTYPE_GROUP)) {
-        return decode_togroup(d, ptr, submsg, submsgs, field);
+        return decode_togroup(d, ptr, submsg, subs, field);
       } else {
-        return decode_tosubmsg(d, ptr, submsg, submsgs, field, val->size);
+        return decode_tosubmsg(d, ptr, submsg, subs, field, val->size);
       }
     }
     case OP_FIXPCK_LG2(2):
@@ -495,12 +504,13 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
 }
 
 static const char *decode_tomap(upb_decstate *d, const char *ptr, upb_msg *msg,
-                                upb_msglayout const *const *submsgs,
-                                const upb_msglayout_field *field, wireval *val) {
+                                const upb_msglayout_sub *subs,
+                                const upb_msglayout_field *field,
+                                wireval *val) {
   upb_map **map_p = UPB_PTR_AT(msg, field->offset, upb_map *);
   upb_map *map = *map_p;
   upb_map_entry ent;
-  const upb_msglayout *entry = submsgs[field->submsg_index];
+  const upb_msglayout *entry = subs[field->submsg_index].submsg;
 
   if (!map) {
     /* Lazily create map. */
@@ -520,16 +530,16 @@ static const char *decode_tomap(upb_decstate *d, const char *ptr, upb_msg *msg,
   if (entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_MESSAGE ||
       entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_GROUP) {
     /* Create proactively to handle the case where it doesn't appear. */
-    ent.v.val = upb_value_ptr(_upb_msg_new(entry->submsgs[0], &d->arena));
+    ent.v.val = upb_value_ptr(_upb_msg_new(entry->subs[0].submsg, &d->arena));
   }
 
-  ptr = decode_tosubmsg(d, ptr, &ent.k, submsgs, field, val->size);
+  ptr = decode_tosubmsg(d, ptr, &ent.k, subs, field, val->size);
   _upb_map_set(map, &ent.k, map->key_size, &ent.v, map->val_size, &d->arena);
   return ptr;
 }
 
 static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
-                                upb_msglayout const *const *submsgs,
+                                const upb_msglayout_sub *subs,
                                 const upb_msglayout_field *field, wireval *val,
                                 int op) {
   void *mem = UPB_PTR_AT(msg, field->offset, void);
@@ -553,13 +563,13 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
       upb_msg **submsgp = mem;
       upb_msg *submsg = *submsgp;
       if (!submsg) {
-        submsg = decode_newsubmsg(d, submsgs, field);
+        submsg = decode_newsubmsg(d, subs, field);
         *submsgp = submsg;
       }
       if (UPB_UNLIKELY(type == UPB_DTYPE_GROUP)) {
-        ptr = decode_togroup(d, ptr, submsg, submsgs, field);
+        ptr = decode_togroup(d, ptr, submsg, subs, field);
       } else {
-        ptr = decode_tosubmsg(d, ptr, submsg, submsgs, field, val->size);
+        ptr = decode_tosubmsg(d, ptr, submsg, subs, field, val->size);
       }
       break;
     }
@@ -616,7 +626,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     field_number = tag >> 3;
     wire_type = tag & 7;
 
-    field = upb_find_field(layout, field_number, &last_field_index);
+    field = upb_find_field(d, layout, field_number, &last_field_index);
 
     switch (wire_type) {
       case UPB_WIRE_TYPE_VARINT:
@@ -664,16 +674,29 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     }
 
     if (op >= 0) {
+      /* Known field, possibly an extension. */
+      upb_msg *field_msg = msg;
+      const upb_msglayout_sub *subs = layout->subs;
+      uint8_t mode = field->mode;
+
+      if (UPB_UNLIKELY(mode & _UPB_MODE_IS_EXTENSION)) {
+        const upb_msglayout_ext *ext_layout = (const upb_msglayout_ext*)field;
+        upb_msg_ext *ext = _upb_msg_getorcreateext(msg, ext_layout, &d->arena);
+        if (UPB_UNLIKELY(!ext)) decode_err(d);
+        field_msg = &ext->data;
+        subs = &ext->ext->sub;
+      }
+
       /* Parse, using op for dispatch. */
-      switch (_upb_getmode(field)) {
+      switch (mode & _UPB_MODE_MASK) {
         case _UPB_MODE_ARRAY:
-          ptr = decode_toarray(d, ptr, msg, layout->submsgs, field, &val, op);
+          ptr = decode_toarray(d, ptr, field_msg, subs, field, &val, op);
           break;
         case _UPB_MODE_MAP:
-          ptr = decode_tomap(d, ptr, msg, layout->submsgs, field, &val);
+          ptr = decode_tomap(d, ptr, field_msg, subs, field, &val);
           break;
         case _UPB_MODE_SCALAR:
-          ptr = decode_tomsg(d, ptr, msg, layout->submsgs, field, &val, op);
+          ptr = decode_tomsg(d, ptr, field_msg, subs, field, &val, op);
           break;
         default:
           UPB_UNREACHABLE();
@@ -743,6 +766,7 @@ bool _upb_decode(const char *buf, size_t size, void *msg,
     state.alias = options & UPB_DECODE_ALIAS;
   }
 
+  state.extreg = extreg;
   state.limit_ptr = state.end;
   state.unknown_msg = NULL;
   state.depth = depth ? depth : 64;

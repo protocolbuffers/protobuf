@@ -48,6 +48,7 @@ typedef struct upb_decstate {
   const char *limit_ptr;   /* = end + UPB_MIN(limit, 0) */
   upb_msg *unknown_msg;    /* If non-NULL, add unknown data at buffer flip. */
   const char *unknown;     /* Start of unknown data. */
+  const upb_extreg *extreg;  /* For looking up extensions during the parse. */
   int limit;               /* Submessage limit relative to end. */
   int depth;
   uint32_t end_group;   /* field number of END_GROUP tag, else DECODE_NOGROUP */

@@ -25,25 +25,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_JSONDECODE_H_
-#define UPB_JSONDECODE_H_
+syntax = "proto2";
 
-#include "upb/def.h"
+import "src/google/protobuf/test_messages_proto3.proto";
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+package upb_test;
 
-enum {
-  UPB_JSONDEC_IGNOREUNKNOWN = 1
-};
+message TestExtensions {
+  extensions 1000 to max;
+  extend TestExtensions {
+    optional int32 optional_int32_ext = 1000;
+  }
+  message Nested {
+    extend TestExtensions {
+      repeated int32 repeated_int32_ext = 1001;
+    }
+  }
+}
 
-bool upb_json_decode(const char *buf, size_t size, upb_msg *msg,
-                     const upb_msgdef *m, const upb_symtab *symtab,
-                     int options, upb_arena *arena, upb_status *status);
-
-#ifdef __cplusplus
-}  /* extern "C" */
-#endif
-
-#endif  /* UPB_JSONDECODE_H_ */
+extend TestExtensions {
+  optional protobuf_test_messages.proto3.TestAllTypesProto3 optional_msg_ext = 1002;
+}
