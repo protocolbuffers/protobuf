@@ -674,9 +674,9 @@ public class RubyMessage extends RubyObject {
                 boolean isDefaultStringForBytes = false;
                 FieldDescriptor enumFieldDescriptorForType =
                     this.builder.getDescriptorForType().findFieldByName("type");
-                EnumValueDescriptor type = enumFieldDescriptorForType == null ?
-                    null : ((EnumValueDescriptor)this.builder.getField(enumFieldDescriptorForType));
-                if (type != null && type.getName().equals("TYPE_BYTES") &&
+                String type = enumFieldDescriptorForType == null ?
+                    null : fields.get(enumFieldDescriptorForType).toString();
+                if (type != null && type.equals("TYPE_BYTES") &&
                     fieldDescriptor.getFullName().equals("google.protobuf.FieldDescriptorProto.default_value")) {
                     isDefaultStringForBytes = true;
                 }
