@@ -7,6 +7,7 @@ def upb_deps():
         name = "com_google_absl",
         url = "https://github.com/abseil/abseil-cpp/archive/refs/heads/master.zip",
         strip_prefix = "abseil-cpp-master",
+        sha256 = "9da85425cda33e13c619c35473c9653944d0dd9aab1a69ee9b3543cdaed277e5",
     )
 
     maybe(
