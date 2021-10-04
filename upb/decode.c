@@ -636,8 +636,7 @@ static const char *decode_wireval(upb_decstate *d, const char *ptr,
       uint64_t size;
       if (_upb_getmode(field) == _UPB_MODE_ARRAY) ndx += 18;
       ptr = decode_varint64(d, ptr, &size);
-      if (size >= INT32_MAX ||
-          ptr - d->end + (int32_t)size > d->limit) {
+      if (size >= INT32_MAX || ptr - d->end + (int32_t)size > d->limit) {
         decode_err(d); /* Length overflow. */
       }
       *op = delim_ops[ndx];
@@ -698,7 +697,7 @@ static const char *decode_unknown(upb_decstate *d, const char *ptr,
       *field_start = d->unknown;
     }
     if (!_upb_msg_addunknown(msg, *field_start, ptr - *field_start,
-                              &d->arena)) {
+                             &d->arena)) {
       decode_err(d);
     }
   } else if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
