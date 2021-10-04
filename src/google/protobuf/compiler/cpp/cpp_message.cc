@@ -974,7 +974,7 @@ $annotate_extension_set$
 template <typename _proto_TypeTraits,
           ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
           bool _is_packed>
-inline PROTOBUF_MUST_USE_RESULT
+PROTOBUF_NODISCARD inline
     typename _proto_TypeTraits::Singular::MutableType
     ReleaseExtension(
         const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
@@ -1649,11 +1649,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "\n"
       "// implements Message ----------------------------------------------\n"
       "\n"
-      "inline $classname$* New() const final {\n"
-      "  return new $classname$();\n"
-      "}\n"
-      "\n"
-      "$classname$* New(::$proto_ns$::Arena* arena) const final {\n"
+      "$classname$* New(::$proto_ns$::Arena* arena = nullptr) const final {\n"
       "  return CreateMaybeMessage<$classname$>(arena);\n"
       "}\n");
 
@@ -1736,6 +1732,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
 
   format(
       // Friend AnyMetadata so that it can call this FullMessageName() method.
+      "\nprivate:\n"
       "friend class ::$proto_ns$::internal::AnyMetadata;\n"
       "static $1$ FullMessageName() {\n"
       "  return \"$full_name$\";\n"
@@ -3115,7 +3112,9 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
         "metadata_);\n");
 
     if (descriptor_->extension_range_count() > 0) {
-      format("_extensions_.MergeFrom(from._extensions_);\n");
+      format(
+          "_extensions_.MergeFrom(internal_default_instance(), "
+          "from._extensions_);\n");
     }
 
     GenerateConstructorBody(printer, processed, true);
@@ -3710,7 +3709,9 @@ void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
   // Merging of extensions and unknown fields is done last, to maximize
   // the opportunity for tail calls.
   if (descriptor_->extension_range_count() > 0) {
-    format("_extensions_.MergeFrom(from._extensions_);\n");
+    format(
+        "_extensions_.MergeFrom(internal_default_instance(), "
+        "from._extensions_);\n");
   }
 
   format(

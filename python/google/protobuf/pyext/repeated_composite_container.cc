@@ -48,12 +48,6 @@
 #include <google/protobuf/reflection.h>
 #include <google/protobuf/stubs/map_util.h>
 
-#if PY_MAJOR_VERSION >= 3
-  #define PyInt_Check PyLong_Check
-  #define PyInt_AsLong PyLong_AsLong
-  #define PyInt_FromLong PyLong_FromLong
-#endif
-
 namespace google {
 namespace protobuf {
 namespace python {
@@ -246,13 +240,8 @@ PyObject* Subscript(RepeatedCompositeContainer* self, PyObject* item) {
     Py_ssize_t from, to, step, slicelength, cur, i;
     PyObject* result;
 
-#if PY_MAJOR_VERSION >= 3
-    if (PySlice_GetIndicesEx(item,
-                             length, &from, &to, &step, &slicelength) == -1) {
-#else
-    if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(item),
-                             length, &from, &to, &step, &slicelength) == -1) {
-#endif
+    if (PySlice_GetIndicesEx(item, length, &from, &to, &step, &slicelength) ==
+        -1) {
       return nullptr;
     }
 

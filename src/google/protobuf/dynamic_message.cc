@@ -246,7 +246,6 @@ class DynamicMessage : public Message {
 
   // implements Message ----------------------------------------------
 
-  Message* New() const override;
   Message* New(Arena* arena) const override;
 
   int GetCachedSize() const override;
@@ -355,7 +354,7 @@ DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
   SharedCtor(lock_factory);
 }
 
-void* DynamicMessage::MutableRaw(int i) {
+inline void* DynamicMessage::MutableRaw(int i) {
   return OffsetToPointer(
       OffsetValue(type_info_->offsets[i], type_info_->type->field(i)->type()));
 }
@@ -644,8 +643,6 @@ void DynamicMessage::CrossLinkPrototypes() {
     }
   }
 }
-
-Message* DynamicMessage::New() const { return New(nullptr); }
 
 Message* DynamicMessage::New(Arena* arena) const {
   if (arena != nullptr) {

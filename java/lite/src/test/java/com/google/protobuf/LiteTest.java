@@ -55,6 +55,7 @@ import map_lite_test.MapTestProto.TestMap;
 import map_lite_test.MapTestProto.TestMap.MessageValue;
 import protobuf_unittest.NestedExtensionLite;
 import protobuf_unittest.NonNestedExtensionLite;
+import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
@@ -1427,6 +1428,41 @@ public class LiteTest {
             .build();
 
     assertToStringEquals("oneof_nested_message {\n  bb: 2\n  cc: 4\n}", result);
+  }
+
+  @Test
+  public void testMergeFrom_failureWhenReadingValue_propagatesOriginalException() {
+    final byte[] bytes = TestOneof2.newBuilder().setFooInt(123).build().toByteArray();
+    final IOException injectedException = new IOException("oh no");
+    CodedInputStream failingInputStream =
+        CodedInputStream.newInstance(
+            new InputStream() {
+              boolean first = true;
+
+              @Override
+              public int read(byte[] b, int off, int len) throws IOException {
+                if (!first) {
+                  throw injectedException;
+                }
+                first = false;
+                System.arraycopy(bytes, 0, b, off, len);
+                return len;
+              }
+
+              @Override
+              public int read() {
+                throw new UnsupportedOperationException();
+              }
+            },
+            bytes.length - 1);
+    TestOneof2.Builder builder = TestOneof2.newBuilder();
+
+    try {
+      builder.mergeFrom(failingInputStream, ExtensionRegistryLite.getEmptyRegistry());
+      assertWithMessage("Expected mergeFrom to fail").fail();
+    } catch (IOException e) {
+      assertThat(e).isSameInstanceAs(injectedException);
+    }
   }
 
   @Test

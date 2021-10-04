@@ -216,31 +216,54 @@ PROTOBUF_THREAD_LOCAL ThreadSafeArena::ThreadCache
 
 void ThreadSafeArena::InitializeFrom(void* mem, size_t size) {
   GOOGLE_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) & 7, 0u);
-  Init(false);
+  GOOGLE_DCHECK(!AllocPolicy());  // Reset should call InitializeWithPolicy instead.
+  Init();
 
   // Ignore initial block if it is too small.
   if (mem != nullptr && size >= kBlockHeaderSize + kSerialArenaSize) {
-    alloc_policy_ |= kUserOwnedInitialBlock;
+    alloc_policy_.set_is_user_owned_initial_block(true);
     SetInitialBlock(mem, size);
   }
 }
 
 void ThreadSafeArena::InitializeWithPolicy(void* mem, size_t size,
-                                           bool record_allocs,
                                            AllocationPolicy policy) {
-  GOOGLE_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) & 7, 0u);
+#ifndef NDEBUG
+  const uint64_t old_alloc_policy = alloc_policy_.get_raw();
+  // If there was a policy (e.g., in Reset()), make sure flags were preserved.
+#define GOOGLE_DCHECK_POLICY_FLAGS_() \
+  if (old_alloc_policy > 3)    \
+    GOOGLE_CHECK_EQ(old_alloc_policy & 3, alloc_policy_.get_raw() & 3)
+#else
+#define GOOGLE_DCHECK_POLICY_FLAGS_()
+#endif  // NDEBUG
 
-  Init(record_allocs);
+  if (policy.IsDefault()) {
+    // Legacy code doesn't use the API above, but provides the initial block
+    // through ArenaOptions. I suspect most do not touch the allocation
+    // policy parameters.
+    InitializeFrom(mem, size);
+    GOOGLE_DCHECK_POLICY_FLAGS_();
+    return;
+  }
+  GOOGLE_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) & 7, 0u);
+  Init();
 
   // Ignore initial block if it is too small. We include an optional
   // AllocationPolicy in this check, so that this can be allocated on the
   // first block.
   constexpr size_t kAPSize = internal::AlignUpTo8(sizeof(AllocationPolicy));
   constexpr size_t kMinimumSize = kBlockHeaderSize + kSerialArenaSize + kAPSize;
+
+  // The value for alloc_policy_ stores whether or not allocations should be
+  // recorded.
+  alloc_policy_.set_should_record_allocs(
+      policy.metrics_collector != nullptr &&
+      policy.metrics_collector->RecordAllocs());
+  // Make sure we have an initial block to store the AllocationPolicy.
   if (mem != nullptr && size >= kMinimumSize) {
-    alloc_policy_ = kUserOwnedInitialBlock;
+    alloc_policy_.set_is_user_owned_initial_block(true);
   } else {
-    alloc_policy_ = 0;
     auto tmp = AllocateMemory(&policy, 0, kMinimumSize);
     mem = tmp.ptr;
     size = tmp.size;
@@ -255,10 +278,18 @@ void ThreadSafeArena::InitializeWithPolicy(void* mem, size_t size,
     return;
   }
   new (p) AllocationPolicy{policy};
-  alloc_policy_ |= reinterpret_cast<intptr_t>(p);
+  // Low bits store flags, so they mustn't be overwritten.
+  GOOGLE_DCHECK_EQ(0, reinterpret_cast<uintptr_t>(p) & 3);
+  alloc_policy_.set_policy(reinterpret_cast<AllocationPolicy*>(p));
+  GOOGLE_DCHECK_POLICY_FLAGS_();
+
+#undef GOOGLE_DCHECK_POLICY_FLAGS_
 }
 
-void ThreadSafeArena::Init(bool record_allocs) {
+void ThreadSafeArena::Init() {
+#ifndef NDEBUG
+  const bool was_message_owned = IsMessageOwned();
+#endif  // NDEBUG
   ThreadCache& tc = thread_cache();
   auto id = tc.next_lifecycle_id;
   // We increment lifecycle_id's by multiples of two so we can use bit 0 as
@@ -273,9 +304,14 @@ void ThreadSafeArena::Init(bool record_allocs) {
     id = lifecycle_id_generator_.id.fetch_add(1, relaxed) * kInc;
   }
   tc.next_lifecycle_id = id + kDelta;
-  tag_and_id_ = id | (record_allocs ? kRecordAllocs : 0);
+  // Message ownership is stored in tag_and_id_, and is set in the constructor.
+  // This flag bit must be preserved, even across calls to Reset().
+  tag_and_id_ = id | (tag_and_id_ & kMessageOwnedArena);
   hint_.store(nullptr, std::memory_order_relaxed);
   threads_.store(nullptr, std::memory_order_relaxed);
+#ifndef NDEBUG
+  GOOGLE_CHECK_EQ(was_message_owned, IsMessageOwned());
+#endif  // NDEBUG
 }
 
 void ThreadSafeArena::SetInitialBlock(void* mem, size_t size) {
@@ -294,13 +330,13 @@ ThreadSafeArena::~ThreadSafeArena() {
   auto mem = Free(&space_allocated);
 
   // Policy is about to get deleted.
-  auto p = AllocPolicy();
+  auto* p = alloc_policy_.get();
   ArenaMetricsCollector* collector = p ? p->metrics_collector : nullptr;
 
-  if (alloc_policy_ & kUserOwnedInitialBlock) {
+  if (alloc_policy_.is_user_owned_initial_block()) {
     space_allocated += mem.size;
   } else {
-    GetDeallocator(AllocPolicy(), &space_allocated)(mem);
+    GetDeallocator(alloc_policy_.get(), &space_allocated)(mem);
   }
 
   if (collector) collector->OnDestroy(space_allocated);
@@ -308,7 +344,7 @@ ThreadSafeArena::~ThreadSafeArena() {
 
 SerialArena::Memory ThreadSafeArena::Free(size_t* space_allocated) {
   SerialArena::Memory mem = {nullptr, 0};
-  auto deallocator = GetDeallocator(AllocPolicy(), space_allocated);
+  auto deallocator = GetDeallocator(alloc_policy_.get(), space_allocated);
   PerSerialArena([deallocator, &mem](SerialArena* a) {
     if (mem.ptr) deallocator(mem);
     mem = a->Free(deallocator);
@@ -325,26 +361,28 @@ uint64_t ThreadSafeArena::Reset() {
   size_t space_allocated = 0;
   auto mem = Free(&space_allocated);
 
-  if (AllocPolicy()) {
-    auto saved_policy = *AllocPolicy();
-    if (alloc_policy_ & kUserOwnedInitialBlock) {
+  AllocationPolicy* policy = alloc_policy_.get();
+  if (policy) {
+    auto saved_policy = *policy;
+    if (alloc_policy_.is_user_owned_initial_block()) {
       space_allocated += mem.size;
     } else {
-      GetDeallocator(AllocPolicy(), &space_allocated)(mem);
+      GetDeallocator(alloc_policy_.get(), &space_allocated)(mem);
       mem.ptr = nullptr;
       mem.size = 0;
     }
     ArenaMetricsCollector* collector = saved_policy.metrics_collector;
     if (collector) collector->OnReset(space_allocated);
-    InitializeWithPolicy(mem.ptr, mem.size, ShouldRecordAlloc(), saved_policy);
+    InitializeWithPolicy(mem.ptr, mem.size, saved_policy);
   } else {
+    GOOGLE_DCHECK(!alloc_policy_.should_record_allocs());
     // Nullptr policy
-    if (alloc_policy_ & kUserOwnedInitialBlock) {
+    if (alloc_policy_.is_user_owned_initial_block()) {
       space_allocated += mem.size;
       InitializeFrom(mem.ptr, mem.size);
     } else {
-      GetDeallocator(AllocPolicy(), &space_allocated)(mem);
-      Init(false);
+      GetDeallocator(alloc_policy_.get(), &space_allocated)(mem);
+      Init();
     }
   }
 
@@ -355,8 +393,9 @@ std::pair<void*, SerialArena::CleanupNode*>
 ThreadSafeArena::AllocateAlignedWithCleanup(size_t n,
                                             const std::type_info* type) {
   SerialArena* arena;
-  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(tag_and_id_, &arena))) {
-    return arena->AllocateAlignedWithCleanup(n, AllocPolicy());
+  if (PROTOBUF_PREDICT_TRUE(!alloc_policy_.should_record_allocs() &&
+                            GetSerialArenaFast(&arena))) {
+    return arena->AllocateAlignedWithCleanup(n, alloc_policy_.get());
   } else {
     return AllocateAlignedWithCleanupFallback(n, type);
   }
@@ -364,46 +403,39 @@ ThreadSafeArena::AllocateAlignedWithCleanup(size_t n,
 
 void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
   SerialArena* arena;
-  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(LifeCycleId(), &arena))) {
-    arena->AddCleanup(elem, cleanup, AllocPolicy());
-  } else {
-    return AddCleanupFallback(elem, cleanup);
+  if (PROTOBUF_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
+    arena = GetSerialArenaFallback(&thread_cache());
   }
+  arena->AddCleanup(elem, cleanup, AllocPolicy());
 }
 
 PROTOBUF_NOINLINE
 void* ThreadSafeArena::AllocateAlignedFallback(size_t n,
                                                const std::type_info* type) {
-  if (ShouldRecordAlloc()) {
-    RecordAlloc(type, n);
+  if (alloc_policy_.should_record_allocs()) {
+    alloc_policy_.RecordAlloc(type, n);
     SerialArena* arena;
-    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(LifeCycleId(), &arena))) {
-      return arena->AllocateAligned(n, AllocPolicy());
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->AllocateAligned(n, alloc_policy_.get());
     }
   }
   return GetSerialArenaFallback(&thread_cache())
-      ->AllocateAligned(n, AllocPolicy());
+      ->AllocateAligned(n, alloc_policy_.get());
 }
 
 PROTOBUF_NOINLINE
 std::pair<void*, SerialArena::CleanupNode*>
 ThreadSafeArena::AllocateAlignedWithCleanupFallback(
     size_t n, const std::type_info* type) {
-  if (ShouldRecordAlloc()) {
-    RecordAlloc(type, n);
+  if (alloc_policy_.should_record_allocs()) {
+    alloc_policy_.RecordAlloc(type, n);
     SerialArena* arena;
-    if (GetSerialArenaFast(LifeCycleId(), &arena)) {
-      return arena->AllocateAlignedWithCleanup(n, AllocPolicy());
+    if (GetSerialArenaFast(&arena)) {
+      return arena->AllocateAlignedWithCleanup(n, alloc_policy_.get());
     }
   }
   return GetSerialArenaFallback(&thread_cache())
-      ->AllocateAlignedWithCleanup(n, AllocPolicy());
-}
-
-PROTOBUF_NOINLINE
-void ThreadSafeArena::AddCleanupFallback(void* elem, void (*cleanup)(void*)) {
-  GetSerialArenaFallback(&thread_cache())
-      ->AddCleanup(elem, cleanup, AllocPolicy());
+      ->AllocateAlignedWithCleanup(n, alloc_policy_.get());
 }
 
 uint64_t ThreadSafeArena::SpaceAllocated() const {
@@ -421,7 +453,7 @@ uint64_t ThreadSafeArena::SpaceUsed() const {
   for (; serial; serial = serial->next()) {
     space_used += serial->SpaceUsed();
   }
-  return space_used - (AllocPolicy() ? sizeof(AllocationPolicy) : 0);
+  return space_used - (alloc_policy_.get() ? sizeof(AllocationPolicy) : 0);
 }
 
 void ThreadSafeArena::CleanupList() {
@@ -442,7 +474,7 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(void* me) {
     // This thread doesn't have any SerialArena, which also means it doesn't
     // have any blocks yet.  So we'll allocate its first block now.
     serial = SerialArena::New(
-        AllocateMemory(AllocPolicy(), 0, kSerialArenaSize), me);
+        AllocateMemory(alloc_policy_.get(), 0, kSerialArenaSize), me);
 
     SerialArena* head = threads_.load(std::memory_order_relaxed);
     do {

@@ -297,6 +297,8 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/ByteBufferWriter.java                \
   java/core/src/main/java/com/google/protobuf/ByteOutput.java                      \
   java/core/src/main/java/com/google/protobuf/ByteString.java                      \
+  java/core/src/main/java/com/google/protobuf/CanIgnoreReturnValue.java            \
+  java/core/src/main/java/com/google/protobuf/CheckReturnValue.java                \
   java/core/src/main/java/com/google/protobuf/CodedInputStream.java                \
   java/core/src/main/java/com/google/protobuf/CodedInputStreamReader.java          \
   java/core/src/main/java/com/google/protobuf/CodedOutputStream.java               \
@@ -967,6 +969,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/GeneratedServiceTest.php                                  \
   php/tests/MapFieldTest.php                                          \
   php/tests/memory_leak_test.php                                      \
+  php/tests/memory_leak_test.sh                                       \
   php/tests/multirequest.php                                          \
   php/tests/multirequest.sh                                           \
   php/tests/PhpImplementationTest.php                                 \

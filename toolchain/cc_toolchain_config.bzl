@@ -31,7 +31,7 @@ def _impl(ctx):
   tool_paths = [
       tool_path(
           name = "gcc",
-          path = "/usr/bin/clang",
+          path = "/usr/local/bin/clang",
       ),
       tool_path(
           name = "ld",
@@ -39,7 +39,7 @@ def _impl(ctx):
       ),
       tool_path(
           name = "ar",
-          path = "/usr/bin/llvm-ar-11",
+          path = "/usr/bin/ar",
       ),
       tool_path(
           name = "compat-ld",
@@ -47,56 +47,56 @@ def _impl(ctx):
       ),
       tool_path(
           name = "cpp",
-          path = "/usr/bin/clang-cpp",
+          path = "/bin/false",
       ),
       tool_path(
           name = "dwp",
-          path = "/usr/bin/llvm-dwp",
+          path = "/bin/false",
       ),
       tool_path(
           name = "gcov",
-          path = "/usr/bin/llvm-profdata",
+          path = "/bin/false",
       ),
       tool_path(
           name = "nm",
-          path = "/usr/bin/llvm-nm",
+          path = "/bin/false",
       ),
       tool_path(
           name = "objcopy",
-          path = "/usr/bin/llvm-objcopy",
+          path = "/bin/false",
       ),
       tool_path(
           name = "objdump",
-          path = "/usr/bin/llvm-objdump",
+          path = "/bin/false",
       ),
       tool_path(
           name = "strip",
-          path = "/usr/bin/llvm-strip",
+          path = "/bin/false",
       ),
   ]
 
-  features = [
-      feature(
-          name = "default_linker_flags",
-          enabled = True,
-          flag_sets = [
-              flag_set(
-                  actions = all_link_actions,
-                  flag_groups = ([
-                      flag_group(
-                          flags = [
-                              "-lstdc++",
-                              "--target=" + ctx.attr.target_full_name,
-                          ],
-                      ),
-                  ]),
-              ),
-          ],
-      ),
-      feature(
-          name = "default_compile_flags",
-          enabled = True,
-          flag_sets = [
+  linker_flags = feature(
+      name = "default_linker_flags",
+      enabled = True,
+      flag_sets = [
+          flag_set(
+              actions = all_link_actions,
+              flag_groups = [
+                  flag_group(
+                      flags = [
+                          "-lstdc++",
+                          "--target=" + ctx.attr.target_full_name,
+                      ],
+                  ),
+              ],
+          ),
+      ],
+  )
+  compiler_flags = feature(
+      name = "default_compile_flags",
+      enabled = True,
+      flag_sets = [
+          flag_set(
               actions = all_compile_actions,
               flag_groups = [
                   flag_group(
@@ -110,10 +110,10 @@ def _impl(ctx):
                           ctx.attr.include_flag,
                       ],
                   ),
-              [,
-          ],
-      ),
-  ]
+              ],
+          ),
+      ],
+  )
 
   return cc_common.create_cc_toolchain_config_info(
       abi_libc_version = ctx.attr.target_cpu,
@@ -123,9 +123,9 @@ def _impl(ctx):
       cxx_builtin_include_directories = [
           ctx.attr.toolchain_dir,
           "/usr/include",
-          "/usr/lib/clang",
+          "/usr/local/lib/clang",
       ],
-      features = features,
+      features = [linker_flags, compiler_flags],
       host_system_name = "local",
       target_cpu = ctx.attr.target_cpu,
       target_libc = ctx.attr.target_cpu,

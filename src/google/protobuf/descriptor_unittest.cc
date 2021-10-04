@@ -776,6 +776,11 @@ class DescriptorTest : public testing::Test {
     message->CopyJsonNameTo(proto);
   }
 
+  const EnumValueDescriptor* FindValueByNumberCreatingIfUnknown(
+      const EnumDescriptor* desc, int number) {
+    return desc->FindValueByNumberCreatingIfUnknown(number);
+  }
+
   DescriptorPool pool_;
 
   const FileDescriptor* foo_file_;
@@ -2942,6 +2947,8 @@ TEST_P(AllowUnknownDependenciesTest, PlaceholderTypes) {
   EXPECT_EQ("Qux", qux_type->name());
   EXPECT_EQ("corge.Qux", qux_type->full_name());
   EXPECT_TRUE(qux_type->is_placeholder());
+  // Placeholder enum values should not be findable.
+  EXPECT_EQ(qux_type->FindValueByNumber(0), nullptr);
 
   // Placeholder types should not be findable.
   EXPECT_EQ(bar_type_, pool_->FindMessageTypeByName(bar_type_->full_name()));
@@ -3142,6 +3149,7 @@ TEST(CustomOptions, OptionLocations) {
   const FileDescriptor* file = message->file();
   const FieldDescriptor* field = message->FindFieldByName("field1");
   const OneofDescriptor* oneof = message->FindOneofByName("AnOneof");
+  const FieldDescriptor* map_field = message->FindFieldByName("map_field");
   const EnumDescriptor* enm = message->FindEnumTypeByName("AnEnum");
   // TODO(benjy): Support EnumValue options, once the compiler does.
   const ServiceDescriptor* service =
@@ -3157,6 +3165,8 @@ TEST(CustomOptions, OptionLocations) {
   EXPECT_EQ(42,  // Check that we get the default for an option we don't set.
             field->options().GetExtension(protobuf_unittest::field_opt2));
   EXPECT_EQ(-99, oneof->options().GetExtension(protobuf_unittest::oneof_opt1));
+  EXPECT_EQ(int64_t{12345},
+            map_field->options().GetExtension(protobuf_unittest::field_opt1));
   EXPECT_EQ(-789, enm->options().GetExtension(protobuf_unittest::enum_opt1));
   EXPECT_EQ(123, enm->value(1)->options().GetExtension(
                      protobuf_unittest::enum_value_opt1));
