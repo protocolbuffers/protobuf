@@ -592,7 +592,7 @@ static const char *decode_msgset(upb_decstate *d, const char *ptr, upb_msg *msg,
       .fields = NULL,
       .size = 0,
       .field_count = 0,
-      .ext = _UPB_MSGEXT_MSET_ITEM,
+      .ext = _UPB_MSGEXT_MSGSET_ITEM,
       .dense_below = 0,
       .table_mask = -1};
   return decode_group(d, ptr, msg, &item_layout, 1);
@@ -636,20 +636,20 @@ static const upb_msglayout_field *decode_findfield(upb_decstate *d,
         if (ext) return &ext->field;
         break;
       }
-      case _UPB_MSGEXT_MSET:
-        if (field_number == _UPB_MSET_ITEM) {
+      case _UPB_MSGEXT_MSGSET:
+        if (field_number == _UPB_MSGSET_ITEM) {
           static upb_msglayout_field item = {0, 0, 0, 0, TYPE_MSGSET_ITEM, 0};
           return &item;
         }
         break;
-      case _UPB_MSGEXT_MSET_ITEM:
+      case _UPB_MSGEXT_MSGSET_ITEM:
         switch (field_number) {
-          case _UPB_MSET_TYPEID: {
+          case _UPB_MSGSET_TYPEID: {
             static upb_msglayout_field type_id = {
                 0, 0, 0, 0, TYPE_MSGSET_TYPE_ID, 0};
             return &type_id;
           }
-          case _UPB_MSET_MESSAGE:
+          case _UPB_MSGSET_MESSAGE:
             if (l->fields) {
               // We saw type_id previously and succeeded in looking up msg.
               return l->fields;

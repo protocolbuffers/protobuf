@@ -1228,7 +1228,7 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
 
   if (upb_msgdef_extrangecount(m) > 0) {
     if (m->is_message_set) {
-      l->ext = _UPB_MSGEXT_MSET;
+      l->ext = _UPB_MSGEXT_MSGSET;
     } else {
       l->ext = _UPB_MSGEXT_EXTENDABLE;
     }

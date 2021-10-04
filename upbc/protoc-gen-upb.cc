@@ -1107,7 +1107,7 @@ void WriteMessage(const protobuf::Descriptor* message, Output& output,
 
   if (message->extension_range_count()) {
     if (message->options().message_set_wire_format()) {
-      msgext = "_UPB_MSGEXT_MSET";
+      msgext = "_UPB_MSGEXT_MSGSET";
     } else {
       msgext = "_UPB_MSGEXT_EXTENDABLE";
     }
