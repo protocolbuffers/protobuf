@@ -38,7 +38,7 @@ cc_toolchain_suite(
 cc_toolchain_config(
     name = "linux-aarch64-config",
     bit_flag = "-m64",
-    include_flag = "-I/usr/aarch64-linux-gnu/include/c++/10/aarch64-linux-gnu/",
+    include_flag = "-I/usr/aarch64-linux-gnu/include/c++/8/aarch64-linux-gnu/",
     target_cpu = "aarch64",
     target_full_name = "aarch64-linux-gnu",
     toolchain_dir = "/usr/aarch64-linux-gnu/include",
@@ -48,7 +48,7 @@ cc_toolchain_config(
 cc_toolchain_config(
     name = "linux-ppcle-config",
     bit_flag = "-m64",
-    include_flag = "-I/usr/powerpc64le-linux-gnu/include/c++/10/powerpc64le-linux-gnu/",
+    include_flag = "-I/usr/powerpc64le-linux-gnu/include/c++/8/powerpc64le-linux-gnu/",
     target_cpu = "ppc64",
     target_full_name = "powerpc64le-linux-gnu",
     toolchain_dir = "/usr/powerpc64le-linux-gnu/include",
@@ -58,7 +58,7 @@ cc_toolchain_config(
 cc_toolchain_config(
     name = "linux-s390x-config",
     bit_flag = "-m64",
-    include_flag = "-I/usr/s390x-linux-gnu/include/c++/10/s390x-linux-gnu/",
+    include_flag = "-I/usr/s390x-linux-gnu/include/c++/8/s390x-linux-gnu/",
     target_cpu = "systemz",
     target_full_name = "s390x-linux-gnu",
     toolchain_dir = "/usr/s390x-linux-gnu/include",
