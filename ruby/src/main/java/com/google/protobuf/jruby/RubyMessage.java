@@ -351,9 +351,11 @@ public class RubyMessage extends RubyObject {
                 fieldDescriptor = descriptor.findFieldByName(methodName);
 
                 if (fieldDescriptor != null &&
-                        (!proto3 || fieldDescriptor.getContainingOneof() == null) && // This seems like a bug but its needed to pass the tests...
+                    (!proto3 || fieldDescriptor.getContainingOneof() == null || fieldDescriptor
+                        .getContainingOneof().isSynthetic()) &&
                     fieldDescriptor.hasPresence()) {
-                    return fields.containsKey(fieldDescriptor) ? runtime.getTrue() : runtime.getFalse();
+                    return fields.containsKey(fieldDescriptor) ? runtime.getTrue()
+                        : runtime.getFalse();
                 }
 
             } else if (methodName.endsWith(AS_VALUE_SUFFIX)) {
