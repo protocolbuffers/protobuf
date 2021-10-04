@@ -299,50 +299,6 @@ static void decode_munge(int type, wireval *val) {
   }
 }
 
-static const upb_msglayout_field *upb_find_field(upb_decstate *d,
-                                                 const upb_msglayout *l,
-                                                 uint32_t field_number,
-                                                 int *last_field_index) {
-  static upb_msglayout_field none = {0, 0, 0, 0, 0, 0};
-
-  if (l == NULL) return &none;
-
-  size_t idx = ((size_t)field_number) - 1;  // 0 wraps to SIZE_MAX
-  if (idx < l->dense_below) {
-    /* Fastest case: index into dense fields. */
-    goto found;
-  }
-
-  if (l->dense_below < l->field_count) {
-    /* Linear search non-dense fields. Resume scanning from last_field_index
-     * since fields are usually in order. */
-    int last = *last_field_index;
-    for (idx = last; idx < l->field_count; idx++) {
-      if (l->fields[idx].number == field_number) {
-        goto found;
-      }
-    }
-
-    for (idx = 0; idx < last; idx++) {
-      if (l->fields[idx].number == field_number) {
-        goto found;
-      }
-    }
-  }
-
-  if (l->ext == _UPB_MSGEXT_EXTENDABLE && d->extreg) {
-    const upb_msglayout_ext *ext = _upb_extreg_get(d->extreg, l, field_number);
-    if (ext) return &ext->field;
-  }
-
-  return &none; /* Unknown field. */
-
- found:
-  UPB_ASSERT(l->fields[idx].number == field_number);
-  *last_field_index = idx;
-  return &l->fields[idx];
-}
-
 static upb_msg *decode_newsubmsg(upb_decstate *d, const upb_msglayout_sub *subs,
                                  const upb_msglayout_field *field) {
   const upb_msglayout *subl = subs[field->submsg_index].submsg;
@@ -609,6 +565,50 @@ static bool decode_tryfastdispatch(upb_decstate *d, const char **ptr,
   return false;
 }
 
+static const upb_msglayout_field *decode_findfield(upb_decstate *d,
+                                                   const upb_msglayout *l,
+                                                   uint32_t field_number,
+                                                   int *last_field_index) {
+  static upb_msglayout_field none = {0, 0, 0, 0, 0, 0};
+
+  if (l == NULL) return &none;
+
+  size_t idx = ((size_t)field_number) - 1;  // 0 wraps to SIZE_MAX
+  if (idx < l->dense_below) {
+    /* Fastest case: index into dense fields. */
+    goto found;
+  }
+
+  if (l->dense_below < l->field_count) {
+    /* Linear search non-dense fields. Resume scanning from last_field_index
+     * since fields are usually in order. */
+    int last = *last_field_index;
+    for (idx = last; idx < l->field_count; idx++) {
+      if (l->fields[idx].number == field_number) {
+        goto found;
+      }
+    }
+
+    for (idx = 0; idx < last; idx++) {
+      if (l->fields[idx].number == field_number) {
+        goto found;
+      }
+    }
+  }
+
+  if (l->ext == _UPB_MSGEXT_EXTENDABLE && d->extreg) {
+    const upb_msglayout_ext *ext = _upb_extreg_get(d->extreg, l, field_number);
+    if (ext) return &ext->field;
+  }
+
+  return &none; /* Unknown field. */
+
+ found:
+  UPB_ASSERT(l->fields[idx].number == field_number);
+  *last_field_index = idx;
+  return &l->fields[idx];
+ }
+
 UPB_FORCEINLINE
 static const char *decode_wireval(upb_decstate *d, const char *ptr,
                                   const upb_msglayout_field *field,
@@ -669,7 +669,6 @@ static const char *decode_known(upb_decstate *d, const char *ptr, upb_msg *msg,
     subs = &ext->ext->sub;
   }
 
-  /* Parse, using op for dispatch. */
   switch (mode & _UPB_MODE_MASK) {
     case _UPB_MODE_ARRAY:
       return decode_toarray(d, ptr, msg, subs, field, val, op);
@@ -724,7 +723,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     field_number = tag >> 3;
     wire_type = tag & 7;
 
-    field = upb_find_field(d, layout, field_number, &last_field_index);
+    field = decode_findfield(d, layout, field_number, &last_field_index);
 
     if (wire_type == UPB_WIRE_TYPE_END_GROUP) {
       d->end_group = field_number;
