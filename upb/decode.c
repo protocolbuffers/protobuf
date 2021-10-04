@@ -655,10 +655,38 @@ static const char *decode_wireval(upb_decstate *d, const char *ptr,
 }
 
 UPB_FORCEINLINE
-static const char *decode_skipunknown(upb_decstate *d, const char *ptr,
-                                      upb_msg *msg, int field_number,
-                                      int wire_type, wireval val,
-                                      const char **field_start) {
+static const char *decode_known(upb_decstate *d, const char *ptr, upb_msg *msg,
+                                const upb_msglayout *layout,
+                                const upb_msglayout_field *field, int op,
+                                wireval *val) {
+  const upb_msglayout_sub *subs = layout->subs;
+  uint8_t mode = field->mode;
+
+  if (UPB_UNLIKELY(mode & _UPB_MODE_IS_EXTENSION)) {
+    const upb_msglayout_ext *ext_layout = (const upb_msglayout_ext*)field;
+    upb_msg_ext *ext = _upb_msg_getorcreateext(msg, ext_layout, &d->arena);
+    if (UPB_UNLIKELY(!ext)) decode_err(d);
+    msg = &ext->data;
+    subs = &ext->ext->sub;
+  }
+
+  /* Parse, using op for dispatch. */
+  switch (mode & _UPB_MODE_MASK) {
+    case _UPB_MODE_ARRAY:
+      return decode_toarray(d, ptr, msg, subs, field, val, op);
+    case _UPB_MODE_MAP:
+      return decode_tomap(d, ptr, msg, subs, field, val);
+    case _UPB_MODE_SCALAR:
+      return decode_tomsg(d, ptr, msg, subs, field, val, op);
+    default:
+      UPB_UNREACHABLE();
+  }
+}
+
+UPB_FORCEINLINE
+static const char *decode_unknown(upb_decstate *d, const char *ptr,
+                                  upb_msg *msg, int field_number, int wire_type,
+                                  wireval val, const char **field_start) {
   if (field_number == 0) decode_err(d);
   if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
   if (msg) {
@@ -707,36 +735,10 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     ptr = decode_wireval(d, ptr, field, wire_type, &val, &op);
 
     if (op >= 0) {
-      /* Known field, possibly an extension. */
-      upb_msg *field_msg = msg;
-      const upb_msglayout_sub *subs = layout->subs;
-      uint8_t mode = field->mode;
-
-      if (UPB_UNLIKELY(mode & _UPB_MODE_IS_EXTENSION)) {
-        const upb_msglayout_ext *ext_layout = (const upb_msglayout_ext*)field;
-        upb_msg_ext *ext = _upb_msg_getorcreateext(msg, ext_layout, &d->arena);
-        if (UPB_UNLIKELY(!ext)) decode_err(d);
-        field_msg = &ext->data;
-        subs = &ext->ext->sub;
-      }
-
-      /* Parse, using op for dispatch. */
-      switch (mode & _UPB_MODE_MASK) {
-        case _UPB_MODE_ARRAY:
-          ptr = decode_toarray(d, ptr, field_msg, subs, field, &val, op);
-          break;
-        case _UPB_MODE_MAP:
-          ptr = decode_tomap(d, ptr, field_msg, subs, field, &val);
-          break;
-        case _UPB_MODE_SCALAR:
-          ptr = decode_tomsg(d, ptr, field_msg, subs, field, &val, op);
-          break;
-        default:
-          UPB_UNREACHABLE();
-      }
+      ptr = decode_known(d, ptr, msg, layout, field, op, &val);
     } else {
-      ptr = decode_skipunknown(d, ptr, msg, field_number, wire_type, val,
-                               &field_start);
+      ptr = decode_unknown(d, ptr, msg, field_number, wire_type, val,
+                           &field_start);
     }
 
     if (decode_isdone(d, &ptr)) return ptr;
