@@ -805,6 +805,100 @@ void upb_inttable_next(upb_inttable_iter *iter) {
   }
 }
 
+bool upb_inttable_next2(const upb_inttable *t, uintptr_t *key, upb_value *val,
+                        intptr_t *iter) {
+  intptr_t i = *iter;
+  if (i < t->array_size) {
+    while (++i < t->array_size) {
+      upb_tabval ent = t->array[i];
+      if (upb_arrhas(ent)) {
+        *key = i;
+        *val = _upb_value_val(ent.val);
+        *iter = i;
+        return true;
+      }
+    }
+  }
+
+  size_t tab_idx = next(&t->t, i == -1 ? -1 : i - t->array_size);
+  if (tab_idx < upb_table_size(&t->t)) {
+    upb_tabent *ent = &t->t.entries[tab_idx];
+    *key = ent->key;
+    *val = _upb_value_val(ent->val.val);
+    *iter = tab_idx + t->array_size;
+    return true;
+  }
+
+  return false;
+}
+
+void upb_inttable_removeiter(upb_inttable *t, intptr_t *iter) {
+  intptr_t i = *iter;
+  if (i < t->array_size) {
+    t->array_count--;
+    mutable_array(t)[i].val = -1;
+  } else {
+    upb_tabent *ent = &t->t.entries[i - t->array_size];
+    upb_tabent *prev = NULL;
+
+    // Linear search, not great.
+    upb_tabent *end = &t->t.entries[upb_table_size(&t->t)];
+    for (upb_tabent *e = t->t.entries; e != end; e++) {
+      if (e->next == ent) {
+        prev = e;
+        break;
+      }
+    }
+
+    if (prev) {
+      prev->next = ent->next;
+    }
+
+    t->t.count--;
+    ent->key = 0;
+    ent->next = NULL;
+  }
+}
+
+bool upb_strtable_next2(const upb_strtable *t, upb_strview *key, upb_value *val,
+                        intptr_t *iter) {
+  size_t tab_idx = next(&t->t, *iter);
+  if (tab_idx < upb_table_size(&t->t)) {
+    upb_tabent *ent = &t->t.entries[tab_idx];
+    uint32_t len;
+    key->data = upb_tabstr(ent->key, &len);
+    key->size = len;
+    *val = _upb_value_val(ent->val.val);
+    *iter = tab_idx;
+    return true;
+  }
+
+  return false;
+}
+
+void upb_strtable_removeiter(upb_strtable *t, intptr_t *iter) {
+  intptr_t i = *iter;
+  upb_tabent *ent = &t->t.entries[i];
+  upb_tabent *prev = NULL;
+
+  // Linear search, not great.
+  upb_tabent *end = &t->t.entries[upb_table_size(&t->t)];
+  for (upb_tabent *e = t->t.entries; e != end; e++) {
+    if (e->next == ent) {
+      prev = e;
+      break;
+    }
+  }
+
+  if (prev) {
+    prev->next = ent->next;
+  }
+
+  t->t.count--;
+  ent->key = 0;
+  ent->next = NULL;
+}
+
 bool upb_inttable_done(const upb_inttable_iter *i) {
   if (!i->t) return true;
   if (i->array_part) {
