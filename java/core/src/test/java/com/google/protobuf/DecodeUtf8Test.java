@@ -55,29 +55,24 @@ public class DecodeUtf8Test extends TestCase {
   }
 
   public void testThreeBytes() throws Exception {
-    // Travis' OOM killer doesn't like this test
-    if (System.getenv("TRAVIS") == null) {
-      int count = 0;
-      int valid = 0;
-      for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
-        for (int j = Byte.MIN_VALUE; j <= Byte.MAX_VALUE; j++) {
-          for (int k = Byte.MIN_VALUE; k <= Byte.MAX_VALUE; k++) {
-            byte[] bytes = new byte[]{(byte) i, (byte) j, (byte) k};
-            ByteString bs = ByteString.copyFrom(bytes);
-            if (!bs.isValidUtf8()) {
-              assertInvalid(bytes);
-            } else {
-              valid++;
-            }
-            count++;
-            if (count % 1000000L == 0) {
-              logger.info("Processed " + (count / 1000000L) + " million characters");
-            }
+    int count = 0;
+    int valid = 0;
+    for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
+      for (int j = Byte.MIN_VALUE; j <= Byte.MAX_VALUE; j++) {
+        for (int k = Byte.MIN_VALUE; k <= Byte.MAX_VALUE; k++) {
+          byte[] bytes = new byte[]{(byte) i, (byte) j, (byte) k};
+          ByteString bs = ByteString.copyFrom(bytes);
+          if (bs.isValidUtf8()) {
+            valid++;
+          }
+          count++;
+          if (count % 1000000L == 0) {
+            logger.info("Processed " + (count / 1000000L) + " million characters");
           }
         }
       }
-      assertEquals(IsValidUtf8TestUtil.EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT, valid);
     }
+    assertEquals(IsValidUtf8TestUtil.EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT, valid);
   }
 
   /**

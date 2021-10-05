@@ -74,12 +74,8 @@ public class IsValidUtf8Test {
   /** Tests that round tripping of all three byte permutations work. */
   @Test
   public void testIsValidUtf8_3Bytes() {
-    // Travis' OOM killer doesn't like this test
-    if (System.getenv("TRAVIS") == null) {
-      testBytes(LITERAL_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
-      testBytes(HEAP_NIO_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
-      testBytes(DIRECT_NIO_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
-    }
+    // This test is slow, so we test just one factory instead of all three.
+    testBytes(DIRECT_NIO_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
   }
 
   /**
