@@ -92,7 +92,6 @@ TEST(MessageTest, Extensions) {
   upb_json_encode(ext_msg, m.ptr(), symtab.ptr(), 0, json_buf, json_size + 1,
                   status.ptr());
   upb_test_TestExtensions *ext_msg3 = upb_test_TestExtensions_new(arena.ptr());
-  fprintf(stderr, "%.*s\n", (int)json_size, json_buf);
   EXPECT_TRUE(upb_json_decode(json_buf, json_size, ext_msg3, m.ptr(),
                               symtab.ptr(), 0, arena.ptr(), status.ptr()))
       << status.error_message();
@@ -148,7 +147,6 @@ TEST(MessageTest, MessageSet) {
   upb_json_encode(ext_msg, m.ptr(), symtab.ptr(), 0, json_buf, json_size + 1,
                   status.ptr());
   upb_test_TestMessageSet *ext_msg3 = upb_test_TestMessageSet_new(arena.ptr());
-  fprintf(stderr, "%.*s\n", (int)json_size, json_buf);
   EXPECT_TRUE(upb_json_decode(json_buf, json_size, ext_msg3, m.ptr(),
                               symtab.ptr(), 0, arena.ptr(), status.ptr()))
       << status.error_message();

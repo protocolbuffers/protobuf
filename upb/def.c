@@ -99,8 +99,8 @@ struct upb_msgdef {
 
   /* Is this a map-entry message? */
   bool map_entry;
-  upb_wellknowntype_t well_known_type;
   bool is_message_set;
+  upb_wellknowntype_t well_known_type;
   const upb_fielddef *message_set_ext;
 };
 
@@ -161,6 +161,8 @@ struct upb_symtab {
 
 /* Inside a symtab we store tagged pointers to specific def types. */
 typedef enum {
+  UPB_DEFTYPE_MASK = 7,
+
   UPB_DEFTYPE_FIELD = 0,
 
   /* Only inside symtab table. */
@@ -175,16 +177,20 @@ typedef enum {
 
 static upb_deftype_t deftype(upb_value v) {
   uintptr_t num = (uintptr_t)upb_value_getconstptr(v);
-  return num & 7;
+  return num & UPB_DEFTYPE_MASK;
 }
 
 static const void *unpack_def(upb_value v, upb_deftype_t type) {
   uintptr_t num = (uintptr_t)upb_value_getconstptr(v);
-  return (num & 3) == type ? (const void*)(num & ~3) : NULL;
+  return (num & UPB_DEFTYPE_MASK) == type
+             ? (const void *)(num & ~UPB_DEFTYPE_MASK)
+             : NULL;
 }
 
 static upb_value pack_def(const void *ptr, upb_deftype_t type) {
-  uintptr_t num = (uintptr_t)ptr | type;
+  uintptr_t num = (uintptr_t)ptr;
+  UPB_ASSERT((num & UPB_DEFTYPE_MASK) == 0);
+  num |= type;
   return upb_value_constptr((const void*)num);
 }
 
