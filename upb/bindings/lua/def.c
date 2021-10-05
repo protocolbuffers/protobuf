@@ -171,12 +171,6 @@ static int lupb_fielddef_label(lua_State *L) {
   return 1;
 }
 
-static int lupb_fielddef_lazy(lua_State *L) {
-  const upb_fielddef *f = lupb_fielddef_check(L, 1);
-  lua_pushboolean(L, upb_fielddef_lazy(f));
-  return 1;
-}
-
 static int lupb_fielddef_name(lua_State *L) {
   const upb_fielddef *f = lupb_fielddef_check(L, 1);
   lua_pushstring(L, upb_fielddef_name(f));
@@ -229,7 +223,6 @@ static const struct luaL_Reg lupb_fielddef_m[] = {
   {"index", lupb_fielddef_index},
   {"is_extension", lupb_fielddef_isextension},
   {"label", lupb_fielddef_label},
-  {"lazy", lupb_fielddef_lazy},
   {"name", lupb_fielddef_name},
   {"number", lupb_fielddef_number},
   {"packed", lupb_fielddef_packed},
@@ -689,28 +682,28 @@ static int lupb_filedef_depcount(lua_State *L) {
 static int lupb_filedef_enum(lua_State *L) {
   const upb_filedef *f = lupb_filedef_check(L, 1);
   int index = luaL_checkint(L, 2);
-  const upb_enumdef *e = upb_filedef_enum(f, index);
+  const upb_enumdef *e = upb_filedef_toplvlenum(f, index);
   lupb_wrapper_pushwrapper(L, 1, e, LUPB_ENUMDEF);
   return 1;
 }
 
 static int lupb_filedef_enumcount(lua_State *L) {
   const upb_filedef *f = lupb_filedef_check(L, 1);
-  lua_pushnumber(L, upb_filedef_enumcount(f));
+  lua_pushnumber(L, upb_filedef_toplvlenumcount(f));
   return 1;
 }
 
 static int lupb_filedef_msg(lua_State *L) {
   const upb_filedef *f = lupb_filedef_check(L, 1);
   int index = luaL_checkint(L, 2);
-  const upb_msgdef *m = upb_filedef_msg(f, index);
+  const upb_msgdef *m = upb_filedef_toplvlmsg(f, index);
   lupb_wrapper_pushwrapper(L, 1, m, LUPB_MSGDEF);
   return 1;
 }
 
 static int lupb_filedef_msgcount(lua_State *L) {
   const upb_filedef *f = lupb_filedef_check(L, 1);
-  lua_pushnumber(L, upb_filedef_msgcount(f));
+  lua_pushnumber(L, upb_filedef_toplvlmsgcount(f));
   return 1;
 }
 
@@ -916,8 +909,7 @@ static int lupb_symtab_lookupenumval(lua_State *L) {
 
 static int lupb_symtab_tostring(lua_State *L) {
   const upb_symtab *s = lupb_symtab_check(L, 1);
-  lua_pushfstring(L, "<upb.SymbolTable file_count=%d>",
-                  (int)upb_symtab_filecount(s));
+  lua_pushfstring(L, "<upb.SymbolTable>");
   return 1;
 }
 
