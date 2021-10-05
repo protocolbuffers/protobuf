@@ -64,26 +64,28 @@ def Benchmark(outbase, bench_cpu=True, runs=12, fasttable=False):
 
   if bench_cpu:
     Run("CC=clang bazel build -c opt --copt=-march=native benchmarks:benchmark" + extra_args)
-    Run("./bazel-bin/benchmarks/benchmark --benchmark_out_format=json --benchmark_out={} --benchmark_repetitions={}".format(tmpfile, runs))
+    Run("./bazel-bin/benchmarks/benchmark --benchmark_out_format=json --benchmark_out={} --benchmark_repetitions={} --benchmark_min_time=0.05 --benchmark_enable_random_interleaving=true".format(tmpfile, runs))
     with open(tmpfile) as f:
       bench_json = json.load(f)
 
     # Translate into the format expected by benchstat.
-    with open(outbase + ".txt", "w") as f:
+    txt_filename = outbase + ".txt"
+    with open(txt_filename, "w") as f:
       for run in bench_json["benchmarks"]:
+        if run["run_type"] == "aggregate":
+          continue
         name = run["name"]
         name = name.replace(" ", "")
         name = re.sub(r'^BM_', 'Benchmark', name)
-        if name.endswith("_mean") or name.endswith("_median") or name.endswith("_stddev"):
-          continue
         values = (name, run["iterations"], run["cpu_time"])
         print("{} {} {} ns/op".format(*values), file=f)
+    Run("sort {} -o {} ".format(txt_filename, txt_filename))
 
   Run("CC=clang bazel build -c opt --copt=-g tests:conformance_upb" + extra_args)
   Run("cp -f bazel-bin/tests/conformance_upb {}.bin".format(outbase))
 
 
-baseline = "master"
+baseline = "bm-interleave"
 bench_cpu = True
 fasttable = False
 
