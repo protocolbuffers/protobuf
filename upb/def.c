@@ -99,7 +99,9 @@ struct upb_msgdef {
 
   /* Is this a map-entry message? */
   bool map_entry;
+  bool is_message_set;
   upb_wellknowntype_t well_known_type;
+  const upb_fielddef *message_set_ext;
 };
 
 struct upb_enumdef {
@@ -159,6 +161,8 @@ struct upb_symtab {
 
 /* Inside a symtab we store tagged pointers to specific def types. */
 typedef enum {
+  UPB_DEFTYPE_MASK = 7,
+
   UPB_DEFTYPE_FIELD = 0,
 
   /* Only inside symtab table. */
@@ -171,13 +175,22 @@ typedef enum {
   UPB_DEFTYPE_FIELD_JSONNAME = 2
 } upb_deftype_t;
 
+static upb_deftype_t deftype(upb_value v) {
+  uintptr_t num = (uintptr_t)upb_value_getconstptr(v);
+  return num & UPB_DEFTYPE_MASK;
+}
+
 static const void *unpack_def(upb_value v, upb_deftype_t type) {
   uintptr_t num = (uintptr_t)upb_value_getconstptr(v);
-  return (num & 3) == type ? (const void*)(num & ~3) : NULL;
+  return (num & UPB_DEFTYPE_MASK) == type
+             ? (const void *)(num & ~UPB_DEFTYPE_MASK)
+             : NULL;
 }
 
 static upb_value pack_def(const void *ptr, upb_deftype_t type) {
-  uintptr_t num = (uintptr_t)ptr | type;
+  uintptr_t num = (uintptr_t)ptr;
+  UPB_ASSERT((num & UPB_DEFTYPE_MASK) == 0);
+  num |= type;
   return upb_value_constptr((const void*)num);
 }
 
@@ -955,15 +968,27 @@ const upb_enumvaldef *upb_symtab_lookupenumval(const upb_symtab *s,
              : NULL;
 }
 
-const upb_fielddef *upb_symtab_lookupext(const upb_symtab *s, const char *sym) {
+const upb_fielddef *upb_symtab_lookupext2(const upb_symtab *s, const char *name,
+                                          size_t size) {
   upb_value v;
-  return upb_strtable_lookup(&s->syms, sym, &v) ?
-      unpack_def(v, UPB_DEFTYPE_FIELD) : NULL;
+  if (!upb_strtable_lookup2(&s->syms, name, size, &v)) return NULL;
+
+  switch (deftype(v)) {
+    case UPB_DEFTYPE_FIELD:
+      return unpack_def(v, UPB_DEFTYPE_FIELD);
+    case UPB_DEFTYPE_MSG: {
+      const upb_msgdef *m = unpack_def(v, UPB_DEFTYPE_MSG);
+      return m->message_set_ext;  /* May be NULL if not in MessageeSet. */
+    }
+    default:
+      break;
+  }
+
+  return NULL;
 }
 
-const upb_fielddef *upb_symtab_lookupext2(const upb_symtab *s, const char *sym,
-                                          size_t size) {
-  return symtab_lookup2(s, sym, size, UPB_DEFTYPE_FIELD);
+const upb_fielddef *upb_symtab_lookupext(const upb_symtab *s, const char *sym) {
+  return upb_symtab_lookupext2(s, sym, strlen(sym));
 }
 
 const upb_filedef *upb_symtab_lookupfile(const upb_symtab *s, const char *name) {
@@ -1208,7 +1233,11 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
   l->table_mask = 0;
 
   if (upb_msgdef_extrangecount(m) > 0) {
-    l->ext = _UPB_MSGEXT_EXTENDABLE;
+    if (m->is_message_set) {
+      l->ext = _UPB_MSGEXT_MSGSET;
+    } else {
+      l->ext = _UPB_MSGEXT_EXTENDABLE;
+    }
   } else {
     l->ext = _UPB_MSGEXT_NONE;
   }
@@ -1921,11 +1950,15 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
 
   m->file = ctx->file;
   m->map_entry = false;
+  m->is_message_set = false;
+  m->message_set_ext = NULL;
 
   options = google_protobuf_DescriptorProto_options(msg_proto);
 
   if (options) {
     m->map_entry = google_protobuf_MessageOptions_map_entry(options);
+    m->is_message_set =
+        google_protobuf_MessageOptions_message_set_wire_format(options);
   }
 
   if (ctx->layout) {
@@ -2058,6 +2091,13 @@ static void resolve_fielddef(symtab_addctx *ctx, const char *prefix,
 
   if (upb_fielddef_issubmsg(f)) {
     f->sub.msgdef = symtab_resolve(ctx, f, prefix, name, UPB_DEFTYPE_MSG);
+    if (f->is_extension_ && f->msgdef->is_message_set &&
+        f->file == f->msgdef->file) {
+      // TODO: When defs are restructured to follow message nesting, we can make
+      // this check more robust.  The actual rules for what make something
+      // qualify as a MessageSet item are more strict.
+      ((upb_msgdef*)f->sub.msgdef)->message_set_ext = f;
+    }
   } else if (f->type_ == UPB_DESCRIPTOR_TYPE_ENUM) {
     f->sub.enumdef = symtab_resolve(ctx, f, prefix, name, UPB_DEFTYPE_ENUM);
   }

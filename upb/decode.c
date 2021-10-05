@@ -91,8 +91,15 @@ static const unsigned FIXED64_OK_MASK = (1 << UPB_DTYPE_DOUBLE) |
                                         (1 << UPB_DTYPE_FIXED64) |
                                         (1 << UPB_DTYPE_SFIXED64);
 
+/* Three fake field types for MessageSet. */
+#define TYPE_MSGSET_ITEM 19
+#define TYPE_MSGSET_TYPE_ID 20
+#define TYPE_COUNT 20
+
 /* Op: an action to be performed for a wire-type/field-type combination. */
-#define OP_UNKNOWN -1
+#define OP_UNKNOWN -1             /* Unknown field. */
+#define OP_MSGSET_ITEM -2
+#define OP_MSGSET_TYPEID -3
 #define OP_SCALAR_LG2(n) (n)      /* n in [0, 2, 3] => op in [0, 2, 3] */
 #define OP_STRING 4
 #define OP_BYTES 5
@@ -101,7 +108,7 @@ static const unsigned FIXED64_OK_MASK = (1 << UPB_DTYPE_DOUBLE) |
 #define OP_FIXPCK_LG2(n) (n + 5)  /* n in [2, 3] => op in [7, 8] */
 #define OP_VARPCK_LG2(n) (n + 9)  /* n in [0, 2, 3] => op in [9, 11, 12] */
 
-static const int8_t varint_ops[19] = {
+static const int8_t varint_ops[] = {
     OP_UNKNOWN,       /* field not found */
     OP_UNKNOWN,       /* DOUBLE */
     OP_UNKNOWN,       /* FLOAT */
@@ -121,9 +128,11 @@ static const int8_t varint_ops[19] = {
     OP_UNKNOWN,       /* SFIXED64 */
     OP_SCALAR_LG2(2), /* SINT32 */
     OP_SCALAR_LG2(3), /* SINT64 */
+    OP_UNKNOWN,       /* MSGSET_ITEM */
+    OP_MSGSET_TYPEID, /* MSGSET TYPEID */
 };
 
-static const int8_t delim_ops[37] = {
+static const int8_t delim_ops[] = {
     /* For non-repeated field type. */
     OP_UNKNOWN,       /* field not found */
     OP_UNKNOWN,       /* DOUBLE */
@@ -144,6 +153,8 @@ static const int8_t delim_ops[37] = {
     OP_UNKNOWN,       /* SFIXED64 */
     OP_UNKNOWN,       /* SINT32 */
     OP_UNKNOWN,       /* SINT64 */
+    OP_UNKNOWN,       /* MSGSET_ITEM */
+    OP_UNKNOWN,       /* MSGSET TYPEID */
     /* For repeated field type. */
     OP_FIXPCK_LG2(3), /* REPEATED DOUBLE */
     OP_FIXPCK_LG2(2), /* REPEATED FLOAT */
@@ -163,6 +174,7 @@ static const int8_t delim_ops[37] = {
     OP_FIXPCK_LG2(3), /* REPEATED SFIXED64 */
     OP_VARPCK_LG2(2), /* REPEATED SINT32 */
     OP_VARPCK_LG2(3), /* REPEATED SINT64 */
+    /* Omitting MSGSET_*, because we never emit a repeated msgset type */
 };
 
 typedef union {
@@ -567,12 +579,30 @@ static bool decode_tryfastdispatch(upb_decstate *d, const char **ptr,
   return false;
 }
 
+static const char *decode_msgset(upb_decstate *d, const char *ptr, upb_msg *msg,
+                                 const upb_msglayout *layout) {
+  // We create a temporary upb_msglayout here and abuse its fields as temporary
+  // storage, to avoid creating lots of MessageSet-specific parsing code-paths:
+  //   1. We store 'layout' in item_layout.subs.  We will need this later as
+  //      a key to look up extensions for this MessageSet.
+  //   2. We use item_layout.fields as temporary storage to store the extension we
+  //      found when parsing the type id.
+  upb_msglayout item_layout = {
+      .subs = (const upb_msglayout_sub[]){{.submsg = layout}},
+      .fields = NULL,
+      .size = 0,
+      .field_count = 0,
+      .ext = _UPB_MSGEXT_MSGSET_ITEM,
+      .dense_below = 0,
+      .table_mask = -1};
+  return decode_group(d, ptr, msg, &item_layout, 1);
+}
+
 static const upb_msglayout_field *decode_findfield(upb_decstate *d,
                                                    const upb_msglayout *l,
                                                    uint32_t field_number,
                                                    int *last_field_index) {
   static upb_msglayout_field none = {0, 0, 0, 0, 0, 0};
-
   if (l == NULL) return &none;
 
   size_t idx = ((size_t)field_number) - 1;  // 0 wraps to SIZE_MAX
@@ -598,9 +628,41 @@ static const upb_msglayout_field *decode_findfield(upb_decstate *d,
     }
   }
 
-  if (l->ext == _UPB_MSGEXT_EXTENDABLE && d->extreg) {
-    const upb_msglayout_ext *ext = _upb_extreg_get(d->extreg, l, field_number);
-    if (ext) return &ext->field;
+  if (d->extreg) {
+    switch (l->ext) {
+      case _UPB_MSGEXT_EXTENDABLE: {
+        const upb_msglayout_ext *ext =
+            _upb_extreg_get(d->extreg, l, field_number);
+        if (ext) return &ext->field;
+        break;
+      }
+      case _UPB_MSGEXT_MSGSET:
+        if (field_number == _UPB_MSGSET_ITEM) {
+          static upb_msglayout_field item = {0, 0, 0, 0, TYPE_MSGSET_ITEM, 0};
+          return &item;
+        }
+        break;
+      case _UPB_MSGEXT_MSGSET_ITEM:
+        switch (field_number) {
+          case _UPB_MSGSET_TYPEID: {
+            static upb_msglayout_field type_id = {
+                0, 0, 0, 0, TYPE_MSGSET_TYPE_ID, 0};
+            return &type_id;
+          }
+          case _UPB_MSGSET_MESSAGE:
+            if (l->fields) {
+              // We saw type_id previously and succeeded in looking up msg.
+              return l->fields;
+            } else {
+              // TODO: out of order MessageSet.
+              // This is a very rare case: all serializers will emit in-order
+              // MessageSets.  To hit this case there has to be some kind of
+              // re-ordering proxy.  We should eventually handle this case, but
+              // not today.
+            }
+            break;
+        }
+    }
   }
 
   return &none; /* Unknown field. */
@@ -640,7 +702,7 @@ static const char *decode_wireval(upb_decstate *d, const char *ptr,
     case UPB_WIRE_TYPE_DELIMITED: {
       int ndx = field->descriptortype;
       uint64_t size;
-      if (_upb_getmode(field) == _UPB_MODE_ARRAY) ndx += 18;
+      if (_upb_getmode(field) == _UPB_MODE_ARRAY) ndx += TYPE_COUNT;
       ptr = decode_varint64(d, ptr, &size);
       if (size >= INT32_MAX || ptr - d->end + (int32_t)size > d->limit) {
         break; /* Length overflow. */
@@ -651,8 +713,13 @@ static const char *decode_wireval(upb_decstate *d, const char *ptr,
     }
     case UPB_WIRE_TYPE_START_GROUP:
       val->uint32_val = field->number;
-      *op = OP_SUBMSG;
-      if (field->descriptortype != UPB_DTYPE_GROUP) *op = OP_UNKNOWN;
+      if (field->descriptortype == UPB_DTYPE_GROUP) {
+        *op = OP_SUBMSG;
+      } else if (field->descriptortype == TYPE_MSGSET_ITEM) {
+        *op = OP_MSGSET_ITEM;
+      } else {
+        *op = OP_UNKNOWN;
+      }
       return ptr;
     default:
       break;
@@ -693,6 +760,7 @@ static const char *decode_unknown(upb_decstate *d, const char *ptr,
                                   upb_msg *msg, int field_number, int wire_type,
                                   wireval val, const char **field_start) {
   if (field_number == 0) return decode_err(d);
+
   if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
   if (msg) {
     if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
@@ -742,8 +810,21 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     if (op >= 0) {
       ptr = decode_known(d, ptr, msg, layout, field, op, &val);
     } else {
-      ptr = decode_unknown(d, ptr, msg, field_number, wire_type, val,
-                           &field_start);
+      switch (op) {
+        case OP_UNKNOWN:
+          ptr = decode_unknown(d, ptr, msg, field_number, wire_type, val,
+                               &field_start);
+          break;
+        case OP_MSGSET_ITEM:
+          ptr = decode_msgset(d, ptr, msg, layout);
+          break;
+        case OP_MSGSET_TYPEID: {
+          const upb_msglayout_ext *ext = _upb_extreg_get(
+              d->extreg, layout->subs[0].submsg, val.uint64_val);
+          if (ext) ((upb_msglayout *)layout)->fields = &ext->field;
+          break;
+        }
+      }
     }
 
     if (decode_isdone(d, &ptr)) return ptr;
@@ -811,8 +892,11 @@ bool _upb_decode(const char *buf, size_t size, void *msg,
   return ok;
 }
 
+#undef OP_UNKNOWN
+#undef OP_SKIP
 #undef OP_SCALAR_LG2
 #undef OP_FIXPCK_LG2
 #undef OP_VARPCK_LG2
 #undef OP_STRING
+#undef OP_BYTES
 #undef OP_SUBMSG
