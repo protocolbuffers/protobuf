@@ -2,6 +2,17 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Protocol Compiler
   * Make proto2::Message::DiscardUnknownFields() non-virtual
 
+2021-10-04 version 3.18.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Python
+  * Update setup.py to reflect that we now require at least Python 3.5 (#8989)
+  * Performance fix for DynamicMessage: force GetRaw() to be inlined (#9023)
+
+  Ruby
+  * Update ruby_generator.cc to allow proto2 imports in proto3 (#9003)
+
+2021-09-13 version 3.18.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
   Python
   * Removed Python 2.x support.
   * Pure python descriptor_pool.AddSerializedFile() will always build the
