@@ -38,6 +38,7 @@
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -67,6 +68,8 @@ struct Options {
   std::string generate_for_named_framework;
   std::string named_framework_to_proto_path_mappings_path;
   std::string runtime_import_prefix;
+  bool prefixes_must_be_registered;
+  bool require_prefixes;
 };
 
 // Escape C++ trigraphs by escaping question marks to "\?".
@@ -284,6 +287,11 @@ class PROTOC_EXPORT LineConsumer {
 bool PROTOC_EXPORT ParseSimpleFile(const std::string& path,
                                    LineConsumer* line_consumer,
                                    std::string* out_error);
+
+bool PROTOC_EXPORT ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
+                                     const std::string& stream_name,
+                                     LineConsumer* line_consumer,
+                                     std::string* out_error);
 
 // Helper class for parsing framework import mappings and generating
 // import statements.

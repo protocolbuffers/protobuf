@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.17.3</version>
+    <version>3.18.0</version>
   </parent>
 
   <artifactId>protobuf-javalite</artifactId>
@@ -104,6 +104,8 @@
                     <include>ByteBufferWriter.java</include>
                     <include>ByteOutput.java</include>
                     <include>ByteString.java</include>
+                    <include>CanIgnoreReturnValue.java</include>
+                    <include>CheckReturnValue.java</include>
                     <include>CodedInputStream.java</include>
                     <include>CodedInputStreamReader.java</include>
                     <include>CodedOutputStream.java</include>

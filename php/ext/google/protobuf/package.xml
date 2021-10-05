@@ -10,11 +10,11 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2021-06-04</date>
- <time>21:17:28</time>
+ <date>2021-09-13</date>
+ <time>11:30:58</time>
  <version>
-  <release>3.17.3</release>
-  <api>3.17.3</api>
+  <release>3.18.0</release>
+  <api>3.18.0</api>
  </version>
  <stability>
   <release>stable</release>
@@ -22,7 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- * No new changes in 3.17.2
+ * No new changes in 3.18.0
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -1034,6 +1034,51 @@ G  A release.
    </stability>
    <date>2021-06-04</date>
    <time>21:17:28</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.18.0RC1</release>
+    <api>3.18.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2021-08-18</date>
+   <time>15:23:47</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.18.0RC2</release>
+    <api>3.18.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2021-08-27</date>
+   <time>14:37:43</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.18.0</release>
+    <api>3.18.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2021-09-13</date>
+   <time>11:30:58</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
    </notes>

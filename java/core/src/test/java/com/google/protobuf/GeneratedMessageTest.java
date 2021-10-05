@@ -65,6 +65,8 @@ import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
@@ -1745,6 +1747,41 @@ public class GeneratedMessageTest {
     NestedTestAllTypes message = parentBuilder.build();
     assertThat(message.hasPayload()).isTrue();
     assertThat(message.getPayload().hasOneofNestedMessage()).isTrue();
+  }
+
+  @Test
+  public void testOneofParseFailurePropagatesUnderlyingException() {
+    final byte[] bytes = TestOneof2.newBuilder().setFooInt(123).build().toByteArray();
+    final IOException injectedException = new IOException("oh no");
+    CodedInputStream failingInputStream =
+        CodedInputStream.newInstance(
+            new InputStream() {
+              boolean first = true;
+
+              @Override
+              public int read(byte[] b, int off, int len) throws IOException {
+                if (!first) {
+                  throw injectedException;
+                }
+                first = false;
+                System.arraycopy(bytes, 0, b, off, len);
+                return len;
+              }
+
+              @Override
+              public int read() {
+                throw new UnsupportedOperationException();
+              }
+            },
+            bytes.length - 1);
+    TestOneof2.Builder builder = TestOneof2.newBuilder();
+
+    try {
+      builder.mergeFrom(failingInputStream, ExtensionRegistry.getEmptyRegistry());
+      assertWithMessage("Expected mergeFrom to fail").fail();
+    } catch (IOException e) {
+      assertThat(e).isSameInstanceAs(injectedException);
+    }
   }
 
   @Test

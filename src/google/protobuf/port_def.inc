@@ -153,17 +153,17 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3017003
+#define PROTOBUF_VERSION 3018000
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
 #endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3017000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3018000
 
 #ifdef PROTOBUF_MIN_PROTOC_VERSION
 #error PROTOBUF_MIN_PROTOC_VERSION was previously defined
 #endif
-#define PROTOBUF_MIN_PROTOC_VERSION 3017000
+#define PROTOBUF_MIN_PROTOC_VERSION 3018000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
@@ -293,7 +293,12 @@
 #ifdef PROTOBUF_SECTION_VARIABLE
 #error PROTOBUF_SECTION_VARIABLE was previously defined
 #endif
-#define PROTOBUF_SECTION_VARIABLE(x)
+#if (__has_attribute(section) || defined(__GNUC__)) && defined(__ELF__)
+// Place a variable in the given ELF section.
+# define PROTOBUF_SECTION_VARIABLE(x) __attribute__((section(#x)))
+#else
+# define PROTOBUF_SECTION_VARIABLE(x)
+#endif
 
 #if defined(PROTOBUF_DEPRECATED)
 #error PROTOBUF_DEPRECATED was previously defined
@@ -351,7 +356,7 @@
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3017000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3018000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
@@ -451,10 +456,16 @@
 # define PROTOBUF_PREDICT_FALSE(x) (x)
 #endif
 
-#ifdef PROTOBUF_MUST_USE_RESULT
-#error PROTOBUF_MUST_USE_RESULT was previously defined
+#ifdef PROTOBUF_NODISCARD
+#error PROTOBUF_NODISCARD was previously defined
 #endif
-# define PROTOBUF_MUST_USE_RESULT
+#if __has_cpp_attribute(nodiscard)
+#define PROTOBUF_NODISCARD [[nodiscard]]
+#elif __has_attribute(warn_unused_result) || PROTOBUF_GNUC_MIN(4, 8)
+#define PROTOBUF_NODISCARD __attribute__((warn_unused_result))
+#else
+#define PROTOBUF_NODISCARD
+#endif
 
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
 #error PROTOBUF_FORCE_COPY_IN_RELEASE was previously defined
@@ -568,7 +579,7 @@
 // https://github.com/protocolbuffers/protobuf/issues/8310
 // Does not work yet with Visual Studio 2019 Update 16.10
 #define PROTOBUF_CONSTINIT constinit
-#elif __has_cpp_attribute(clang::require_constant_initialization)
+#elif !defined(_MSC_VER) && __has_cpp_attribute(clang::require_constant_initialization)
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #else
 #define PROTOBUF_CONSTINIT
@@ -646,8 +657,17 @@
 #    define PROTOBUF_MSAN 1
 #  endif
 #elif PROTOBUF_GNUC_MIN(3, 0)
-#  define PROTOBUF_ASAN __SANITIZE_ADDRESS__
-#  define PROTOBUF_TSAN __SANITIZE_THREAD__
+// Double-guard is needed for -Wundef:
+#  ifdef __SANITIZE_ADDRESS__
+#  if    __SANITIZE_ADDRESS__
+#    define PROTOBUF_ASAN 1
+#  endif
+#  endif
+#  ifdef __SANITIZE_THREAD__
+#  if    __SANITIZE_THREAD__
+#    define PROTOBUF_TSAN 1
+#  endif
+#  endif
 #endif
 
 // Tail call table-driven parsing can be enabled by defining

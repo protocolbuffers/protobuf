@@ -618,8 +618,8 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateMergingCode(
 void ImmutablePrimitiveOneofFieldGenerator::GenerateParsingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "$set_oneof_case_message$;\n"
-                 "$oneof_name$_ = input.read$capitalized_type$();\n");
+                 "$oneof_name$_ = input.read$capitalized_type$();\n"
+                 "$set_oneof_case_message$;\n");
 }
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateSerializationCode(

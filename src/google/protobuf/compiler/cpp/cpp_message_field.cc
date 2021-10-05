@@ -109,7 +109,7 @@ void MessageFieldGenerator::GenerateAccessorDeclarations(
     format(
         "$deprecated_attr$const $type$& ${1$$name$$}$() const { "
         "__builtin_trap(); }\n"
-        "PROTOBUF_MUST_USE_RESULT $deprecated_attr$$type$* "
+        "PROTOBUF_NODISCARD $deprecated_attr$$type$* "
         "${1$$release_name$$}$() { "
         "__builtin_trap(); }\n"
         "$deprecated_attr$$type$* ${1$mutable_$name$$}$() { "
@@ -126,7 +126,7 @@ void MessageFieldGenerator::GenerateAccessorDeclarations(
   }
   format(
       "$deprecated_attr$const $type$& ${1$$name$$}$() const;\n"
-      "PROTOBUF_MUST_USE_RESULT $deprecated_attr$$type$* "
+      "PROTOBUF_NODISCARD $deprecated_attr$$type$* "
       "${1$$release_name$$}$();\n"
       "$deprecated_attr$$type$* ${1$mutable_$name$$}$();\n"
       "$deprecated_attr$void ${1$set_allocated_$name$$}$"

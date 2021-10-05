@@ -242,10 +242,10 @@ class PROTOBUF_EXPORT CodedInputStream {
   // responsible for ensuring that the buffer has sufficient space.
   // Read a 32-bit little-endian integer.
   static const uint8_t* ReadLittleEndian32FromArray(const uint8_t* buffer,
-                                                  uint32_t* value);
+                                                    uint32_t* value);
   // Read a 64-bit little-endian integer.
   static const uint8_t* ReadLittleEndian64FromArray(const uint8_t* buffer,
-                                                  uint64_t* value);
+                                                    uint64_t* value);
 
   // Read an unsigned integer with Varint encoding, truncating to 32 bits.
   // Reading a 32-bit value is equivalent to reading a 64-bit one and casting
@@ -315,7 +315,7 @@ class PROTOBUF_EXPORT CodedInputStream {
   // was not.
   PROTOBUF_ALWAYS_INLINE
   static const uint8_t* ExpectTagFromArray(const uint8_t* buffer,
-                                         uint32_t expected);
+                                           uint32_t expected);
 
   // Usually returns true if no more bytes can be read.  Always returns false
   // if more bytes can be read.  If ExpectAtEnd() returns true, a subsequent
@@ -688,7 +688,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // After this it's guaranteed you can safely write kSlopBytes to ptr. This
   // will never fail! The underlying stream can produce an error. Use HadError
   // to check for errors.
-  PROTOBUF_MUST_USE_RESULT uint8_t* EnsureSpace(uint8_t* ptr) {
+  PROTOBUF_NODISCARD uint8_t* EnsureSpace(uint8_t* ptr) {
     if (PROTOBUF_PREDICT_FALSE(ptr >= end_)) {
       return EnsureSpaceFallback(ptr);
     }
@@ -715,7 +715,8 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   }
 
 
-  uint8_t* WriteStringMaybeAliased(uint32_t num, const std::string& s, uint8_t* ptr) {
+  uint8_t* WriteStringMaybeAliased(uint32_t num, const std::string& s,
+                                   uint8_t* ptr) {
     std::ptrdiff_t size = s.size();
     if (PROTOBUF_PREDICT_FALSE(
             size >= 128 || end_ - ptr + 16 - TagSize(num << 3) - 1 < size)) {
@@ -726,13 +727,14 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     std::memcpy(ptr, s.data(), size);
     return ptr + size;
   }
-  uint8_t* WriteBytesMaybeAliased(uint32_t num, const std::string& s, uint8_t* ptr) {
+  uint8_t* WriteBytesMaybeAliased(uint32_t num, const std::string& s,
+                                  uint8_t* ptr) {
     return WriteStringMaybeAliased(num, s, ptr);
   }
 
   template <typename T>
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteString(uint32_t num, const T& s,
-                                            uint8_t* ptr) {
+                                              uint8_t* ptr) {
     std::ptrdiff_t size = s.size();
     if (PROTOBUF_PREDICT_FALSE(
             size >= 128 || end_ - ptr + 16 - TagSize(num << 3) - 1 < size)) {
@@ -749,44 +751,44 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   }
 
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteInt32Packed(int num, const T& r, int size,
-                                                 uint8_t* ptr) {
+  PROTOBUF_ALWAYS_INLINE uint8_t* WriteInt32Packed(int num, const T& r,
+                                                   int size, uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, Encode64);
   }
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteUInt32Packed(int num, const T& r, int size,
-                                                  uint8_t* ptr) {
+  PROTOBUF_ALWAYS_INLINE uint8_t* WriteUInt32Packed(int num, const T& r,
+                                                    int size, uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, Encode32);
   }
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteSInt32Packed(int num, const T& r, int size,
-                                                  uint8_t* ptr) {
+  PROTOBUF_ALWAYS_INLINE uint8_t* WriteSInt32Packed(int num, const T& r,
+                                                    int size, uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, ZigZagEncode32);
   }
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteInt64Packed(int num, const T& r, int size,
-                                                 uint8_t* ptr) {
+  PROTOBUF_ALWAYS_INLINE uint8_t* WriteInt64Packed(int num, const T& r,
+                                                   int size, uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, Encode64);
   }
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteUInt64Packed(int num, const T& r, int size,
-                                                  uint8_t* ptr) {
+  PROTOBUF_ALWAYS_INLINE uint8_t* WriteUInt64Packed(int num, const T& r,
+                                                    int size, uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, Encode64);
   }
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteSInt64Packed(int num, const T& r, int size,
-                                                  uint8_t* ptr) {
+  PROTOBUF_ALWAYS_INLINE uint8_t* WriteSInt64Packed(int num, const T& r,
+                                                    int size, uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, ZigZagEncode64);
   }
   template <typename T>
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteEnumPacked(int num, const T& r, int size,
-                                                uint8_t* ptr) {
+                                                  uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, Encode64);
   }
 
   template <typename T>
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteFixedPacked(int num, const T& r,
-                                                 uint8_t* ptr) {
+                                                   uint8_t* ptr) {
     ptr = EnsureSpace(ptr);
     constexpr auto element_size = sizeof(typename T::value_type);
     auto size = r.size() * element_size;
@@ -857,13 +859,14 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
                                : 5;
   }
 
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteTag(uint32_t num, uint32_t wt, uint8_t* ptr) {
+  PROTOBUF_ALWAYS_INLINE uint8_t* WriteTag(uint32_t num, uint32_t wt,
+                                           uint8_t* ptr) {
     GOOGLE_DCHECK(ptr < end_);  // NOLINT
     return UnsafeVarint((num << 3) | wt, ptr);
   }
 
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteLengthDelim(int num, uint32_t size,
-                                                 uint8_t* ptr) {
+                                                   uint8_t* ptr) {
     ptr = WriteTag(num, 2, ptr);
     return UnsafeWriteSize(size, ptr);
   }
@@ -873,12 +876,13 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   uint8_t* WriteAliasedRaw(const void* data, int size, uint8_t* ptr);
 
   uint8_t* WriteStringMaybeAliasedOutline(uint32_t num, const std::string& s,
-                                        uint8_t* ptr);
+                                          uint8_t* ptr);
   uint8_t* WriteStringOutline(uint32_t num, const std::string& s, uint8_t* ptr);
 
   template <typename T, typename E>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteVarintPacked(int num, const T& r, int size,
-                                                  uint8_t* ptr, const E& encode) {
+  PROTOBUF_ALWAYS_INLINE uint8_t* WriteVarintPacked(int num, const T& r,
+                                                    int size, uint8_t* ptr,
+                                                    const E& encode) {
     ptr = EnsureSpace(ptr);
     ptr = WriteLengthDelim(num, size, ptr);
     auto it = r.data();
@@ -926,7 +930,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   }
 
   PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeWriteSize(uint32_t value,
-                                                       uint8_t* ptr) {
+                                                         uint8_t* ptr) {
     while (PROTOBUF_PREDICT_FALSE(value >= 0x80)) {
       *ptr = static_cast<uint8_t>(value | 0x80);
       value >>= 7;
@@ -977,14 +981,14 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 
 template <>
 inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<1>(const void* data,
-                                                           int size,
-                                                           uint8_t* ptr) {
+                                                             int size,
+                                                             uint8_t* ptr) {
   return WriteRaw(data, size, ptr);
 }
 template <>
 inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<4>(const void* data,
-                                                           int size,
-                                                           uint8_t* ptr) {
+                                                             int size,
+                                                             uint8_t* ptr) {
 #ifdef PROTOBUF_LITTLE_ENDIAN
   return WriteRaw(data, size, ptr);
 #else
@@ -993,8 +997,8 @@ inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<4>(const void* data,
 }
 template <>
 inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<8>(const void* data,
-                                                           int size,
-                                                           uint8_t* ptr) {
+                                                             int size,
+                                                             uint8_t* ptr) {
 #ifdef PROTOBUF_LITTLE_ENDIAN
   return WriteRaw(data, size, ptr);
 #else
@@ -1118,7 +1122,8 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // copy loops. Since this gets called by every field with string or bytes
   // type, inlining may lead to a significant amount of code bloat, with only a
   // minor performance gain.
-  static uint8_t* WriteRawToArray(const void* buffer, int size, uint8_t* target);
+  static uint8_t* WriteRawToArray(const void* buffer, int size,
+                                  uint8_t* target);
 
   // Equivalent to WriteRaw(str.data(), str.size()).
   void WriteString(const std::string& str);
@@ -1126,7 +1131,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   static uint8_t* WriteStringToArray(const std::string& str, uint8_t* target);
   // Write the varint-encoded size of str followed by str.
   static uint8_t* WriteStringWithSizeToArray(const std::string& str,
-                                           uint8_t* target);
+                                             uint8_t* target);
 
 
   // Write a 32-bit little-endian integer.
@@ -1150,9 +1155,10 @@ class PROTOBUF_EXPORT CodedOutputStream {
   void WriteVarint32(uint32_t value);
   // Like WriteVarint32()  but writing directly to the target array.
   static uint8_t* WriteVarint32ToArray(uint32_t value, uint8_t* target);
-  // Like WriteVarint32()  but writing directly to the target array, and with the
-  // less common-case paths being out of line rather than inlined.
-  static uint8_t* WriteVarint32ToArrayOutOfLine(uint32_t value, uint8_t* target);
+  // Like WriteVarint32()  but writing directly to the target array, and with
+  // the less common-case paths being out of line rather than inlined.
+  static uint8_t* WriteVarint32ToArrayOutOfLine(uint32_t value,
+                                                uint8_t* target);
   // Write an unsigned integer with Varint encoding.
   void WriteVarint64(uint64_t value);
   // Like WriteVarint64()  but writing directly to the target array.
@@ -1162,7 +1168,8 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // in which case it must be sign-extended to a full 10 bytes.
   void WriteVarint32SignExtended(int32_t value);
   // Like WriteVarint32SignExtended()  but writing directly to the target array.
-  static uint8_t* WriteVarint32SignExtendedToArray(int32_t value, uint8_t* target);
+  static uint8_t* WriteVarint32SignExtendedToArray(int32_t value,
+                                                   uint8_t* target);
 
   // This is identical to WriteVarint32(), but optimized for writing tags.
   // In particular, if the input is a compile-time constant, this method
@@ -1273,7 +1280,8 @@ class PROTOBUF_EXPORT CodedOutputStream {
     default_serialization_deterministic_.store(true, std::memory_order_relaxed);
   }
   // REQUIRES: value >= 0x80, and that (value & 7f) has been written to *target.
-  static uint8_t* WriteVarint32ToArrayOutOfLineHelper(uint32_t value, uint8_t* target);
+  static uint8_t* WriteVarint32ToArrayOutOfLineHelper(uint32_t value,
+                                                      uint8_t* target);
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedOutputStream);
 };
 
@@ -1342,13 +1350,13 @@ inline const uint8_t* CodedInputStream::ReadLittleEndian64FromArray(
   return buffer + sizeof(*value);
 #else
   uint32_t part0 = (static_cast<uint32_t>(buffer[0])) |
-                 (static_cast<uint32_t>(buffer[1]) << 8) |
-                 (static_cast<uint32_t>(buffer[2]) << 16) |
-                 (static_cast<uint32_t>(buffer[3]) << 24);
+                   (static_cast<uint32_t>(buffer[1]) << 8) |
+                   (static_cast<uint32_t>(buffer[2]) << 16) |
+                   (static_cast<uint32_t>(buffer[3]) << 24);
   uint32_t part1 = (static_cast<uint32_t>(buffer[4])) |
-                 (static_cast<uint32_t>(buffer[5]) << 8) |
-                 (static_cast<uint32_t>(buffer[6]) << 16) |
-                 (static_cast<uint32_t>(buffer[7]) << 24);
+                   (static_cast<uint32_t>(buffer[5]) << 8) |
+                   (static_cast<uint32_t>(buffer[6]) << 16) |
+                   (static_cast<uint32_t>(buffer[7]) << 24);
   *value = static_cast<uint64_t>(part0) | (static_cast<uint64_t>(part1) << 32);
   return buffer + sizeof(*value);
 #endif
@@ -1465,8 +1473,8 @@ inline bool CodedInputStream::ExpectTag(uint32_t expected) {
   }
 }
 
-inline const uint8_t* CodedInputStream::ExpectTagFromArray(const uint8_t* buffer,
-                                                         uint32_t expected) {
+inline const uint8_t* CodedInputStream::ExpectTagFromArray(
+    const uint8_t* buffer, uint32_t expected) {
   if (expected < (1 << 7)) {
     if (buffer[0] == expected) {
       return buffer + 1;
@@ -1600,7 +1608,7 @@ inline bool CodedInputStream::Skip(int count) {
 }
 
 inline uint8_t* CodedOutputStream::WriteVarint32ToArray(uint32_t value,
-                                                      uint8_t* target) {
+                                                        uint8_t* target) {
   return EpsCopyOutputStream::UnsafeVarint(value, target);
 }
 
@@ -1615,7 +1623,7 @@ inline uint8_t* CodedOutputStream::WriteVarint32ToArrayOutOfLine(
 }
 
 inline uint8_t* CodedOutputStream::WriteVarint64ToArray(uint64_t value,
-                                                      uint8_t* target) {
+                                                        uint8_t* target) {
   return EpsCopyOutputStream::UnsafeVarint(value, target);
 }
 
@@ -1629,7 +1637,7 @@ inline uint8_t* CodedOutputStream::WriteVarint32SignExtendedToArray(
 }
 
 inline uint8_t* CodedOutputStream::WriteLittleEndian32ToArray(uint32_t value,
-                                                            uint8_t* target) {
+                                                              uint8_t* target) {
 #if defined(PROTOBUF_LITTLE_ENDIAN)
   memcpy(target, &value, sizeof(value));
 #else
@@ -1642,7 +1650,7 @@ inline uint8_t* CodedOutputStream::WriteLittleEndian32ToArray(uint32_t value,
 }
 
 inline uint8_t* CodedOutputStream::WriteLittleEndian64ToArray(uint64_t value,
-                                                            uint8_t* target) {
+                                                              uint8_t* target) {
 #if defined(PROTOBUF_LITTLE_ENDIAN)
   memcpy(target, &value, sizeof(value));
 #else
@@ -1716,7 +1724,8 @@ inline size_t CodedOutputStream::VarintSize32SignExtended(int32_t value) {
   return VarintSize64(static_cast<uint64_t>(int64_t{value}));
 }
 
-inline size_t CodedOutputStream::VarintSize32SignExtendedPlusOne(int32_t value) {
+inline size_t CodedOutputStream::VarintSize32SignExtendedPlusOne(
+    int32_t value) {
   return VarintSize64PlusOne(static_cast<uint64_t>(int64_t{value}));
 }
 
@@ -1730,13 +1739,13 @@ inline void CodedOutputStream::WriteRawMaybeAliased(const void* data,
 }
 
 inline uint8_t* CodedOutputStream::WriteRawToArray(const void* data, int size,
-                                                 uint8_t* target) {
+                                                   uint8_t* target) {
   memcpy(target, data, size);
   return target + size;
 }
 
 inline uint8_t* CodedOutputStream::WriteStringToArray(const std::string& str,
-                                                    uint8_t* target) {
+                                                      uint8_t* target) {
   return WriteRawToArray(str.data(), static_cast<int>(str.size()), target);
 }
 
