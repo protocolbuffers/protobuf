@@ -358,6 +358,13 @@ def UpdatePython():
       line))
 
 def UpdateRuby():
+  RewriteXml('ruby/pom.xml',
+             lambda document : ReplaceText(
+                 Find(document.documentElement, 'version'), GetFullVersion()))
+  RewriteXml('ruby/pom.xml',
+             lambda document : ReplaceText(
+                 Find(Find(Find(document.documentElement, 'dependencies'), 'dependency'), 'version'),
+                 GetFullVersion()))
   RewriteTextFile('ruby/google-protobuf.gemspec',
     lambda line : re.sub(
       r'^  s.version     = ".*"$',

@@ -1150,19 +1150,14 @@ ruby_EXTRA_DIST=                                                             \
   ruby/lib/google/protobuf/well_known_types.rb                               \
   ruby/lib/google/protobuf.rb                                                \
   ruby/pom.xml                                                               \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyBuilder.java              \
   ruby/src/main/java/com/google/protobuf/jruby/RubyDescriptor.java           \
   ruby/src/main/java/com/google/protobuf/jruby/RubyDescriptorPool.java       \
   ruby/src/main/java/com/google/protobuf/jruby/RubyEnum.java                 \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyEnumBuilderContext.java   \
   ruby/src/main/java/com/google/protobuf/jruby/RubyEnumDescriptor.java       \
   ruby/src/main/java/com/google/protobuf/jruby/RubyFieldDescriptor.java      \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyFileBuilderContext.java   \
   ruby/src/main/java/com/google/protobuf/jruby/RubyFileDescriptor.java       \
   ruby/src/main/java/com/google/protobuf/jruby/RubyMap.java                  \
   ruby/src/main/java/com/google/protobuf/jruby/RubyMessage.java              \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyMessageBuilderContext.java \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyOneofBuilderContext.java  \
   ruby/src/main/java/com/google/protobuf/jruby/RubyOneofDescriptor.java      \
   ruby/src/main/java/com/google/protobuf/jruby/RubyProtobuf.java             \
   ruby/src/main/java/com/google/protobuf/jruby/RubyRepeatedField.java        \

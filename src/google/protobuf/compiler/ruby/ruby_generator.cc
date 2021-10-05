@@ -465,31 +465,6 @@ void EndPackageModules(int levels, io::Printer* printer) {
   }
 }
 
-bool UsesTypeFromFile(const Descriptor* message, const FileDescriptor* file,
-                      std::string* error) {
-  for (int i = 0; i < message->field_count(); i++) {
-    const FieldDescriptor* field = message->field(i);
-    if ((field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-         field->message_type()->file() == file) ||
-        (field->type() == FieldDescriptor::TYPE_ENUM &&
-         field->enum_type()->file() == file)) {
-      *error = "proto3 message field " + field->full_name() + " in file " +
-               file->name() + " has a dependency on a type from proto2 file " +
-               file->name() +
-               ".  Ruby doesn't support proto2 yet, so we must fail.";
-      return true;
-    }
-  }
-
-  for (int i = 0; i < message->nested_type_count(); i++) {
-    if (UsesTypeFromFile(message->nested_type(i), file, error)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 bool GenerateDslDescriptor(const FileDescriptor* file, io::Printer* printer,
                            std::string* error) {
   printer->Print(
