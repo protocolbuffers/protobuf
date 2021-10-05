@@ -5,9 +5,9 @@ package(default_visibility = ["//visibility:public"])
 filegroup(name = "empty")
 
 LINUX_TOOLCHAINS = {
-    "linux-aarch64": "cc-compiler-linux-aarch64",
-    "linux-ppcle": "cc-compiler-linux-ppcle",
-    "linux-s390x": "cc-compiler-linux-s390x",
+    "linux-aarch_64": "cc-compiler-linux-aarch_64",
+    "linux-ppcle_64": "cc-compiler-linux-ppcle_64",
+    "linux-s390_64": "cc-compiler-linux-s390_64",
     "linux-x86_32": "cc-compiler-linux-x86_32",
     "linux-x86_64": "cc-compiler-linux-x86_64",
 }
@@ -36,33 +36,33 @@ cc_toolchain_suite(
 ]
 
 cc_toolchain_config(
-    name = "linux-aarch64-config",
+    name = "linux-aarch_64-config",
     bit_flag = "-m64",
     include_flag = "-I/usr/aarch64-linux-gnu/include/c++/8/aarch64-linux-gnu/",
     target_cpu = "aarch64",
     target_full_name = "aarch64-linux-gnu",
     toolchain_dir = "/usr/aarch64-linux-gnu/include",
-    toolchain_name = "linux_aarch64",
+    toolchain_name = "linux_aarch_64",
 )
 
 cc_toolchain_config(
-    name = "linux-ppcle-config",
+    name = "linux-ppcle_64-config",
     bit_flag = "-m64",
     include_flag = "-I/usr/powerpc64le-linux-gnu/include/c++/8/powerpc64le-linux-gnu/",
     target_cpu = "ppc64",
     target_full_name = "powerpc64le-linux-gnu",
     toolchain_dir = "/usr/powerpc64le-linux-gnu/include",
-    toolchain_name = "linux_ppcle",
+    toolchain_name = "linux_ppcle_64",
 )
 
 cc_toolchain_config(
-    name = "linux-s390x-config",
+    name = "linux-s390_64-config",
     bit_flag = "-m64",
     include_flag = "-I/usr/s390x-linux-gnu/include/c++/8/s390x-linux-gnu/",
     target_cpu = "systemz",
     target_full_name = "s390x-linux-gnu",
     toolchain_dir = "/usr/s390x-linux-gnu/include",
-    toolchain_name = "linux_s390x",
+    toolchain_name = "linux_s390_64",
 )
 
 cc_toolchain_config(
@@ -70,7 +70,7 @@ cc_toolchain_config(
     bit_flag = "-m32",
     target_cpu = "x86_32",
     target_full_name = "i386-linux-gnu",
-    toolchain_dir = "/usr/include/x86_32-linux-gnu",
+    toolchain_dir = "/usr/include/i386-linux-gnu",
     toolchain_name = "linux_x86_32",
 )
 
