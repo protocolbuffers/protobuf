@@ -80,7 +80,7 @@ public class ServiceTest {
     BarRequest barRequest = BarRequest.newBuilder().build();
     MockCallback<Message> fooCallback = new MockCallback<Message>();
     MockCallback<Message> barCallback = new MockCallback<Message>();
-    TestService mockService = control.createMock(TestService.class);
+    TestService mockService = EasyMock.createMock(TestService.class);
 
     mockService.foo(
         EasyMock.same(mockController),
@@ -104,7 +104,7 @@ public class ServiceTest {
   /** Tests Service.get{Request,Response}Prototype(). */
   @Test
   public void testGetPrototype() throws Exception {
-    TestService mockService = control.createMock(TestService.class);
+    TestService mockService = EasyMock.createMock(TestService.class);
 
     assertThat(mockService.getRequestPrototype(fooDescriptor))
         .isSameInstanceAs(FooRequest.getDefaultInstance());
