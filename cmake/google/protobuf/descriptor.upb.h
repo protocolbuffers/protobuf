@@ -154,6 +154,13 @@ typedef enum {
 } google_protobuf_MethodOptions_IdempotencyLevel;
 
 
+extern const upb_enumlayout google_protobuf_FieldDescriptorProto_Label_enuminit;
+extern const upb_enumlayout google_protobuf_FieldDescriptorProto_Type_enuminit;
+extern const upb_enumlayout google_protobuf_FieldOptions_CType_enuminit;
+extern const upb_enumlayout google_protobuf_FieldOptions_JSType_enuminit;
+extern const upb_enumlayout google_protobuf_FileOptions_OptimizeMode_enuminit;
+extern const upb_enumlayout google_protobuf_MethodOptions_IdempotencyLevel_enuminit;
+
 /* google.protobuf.FileDescriptorSet */
 
 UPB_INLINE google_protobuf_FileDescriptorSet *google_protobuf_FileDescriptorSet_new(upb_arena *arena) {

@@ -51,6 +51,10 @@ std::string MessageInit(const protobuf::Descriptor* descriptor) {
   return MessageName(descriptor) + "_msginit";
 }
 
+std::string EnumInit(const protobuf::EnumDescriptor* descriptor) {
+  return ToCIdent(descriptor->full_name()) + "_enuminit";
+}
+
 std::string ExtensionIdentBase(const protobuf::FieldDescriptor* ext) {
   assert(ext->is_extension());
   std::string ext_scope;
@@ -65,8 +69,9 @@ std::string ExtensionLayout(const google::protobuf::FieldDescriptor* ext) {
   return absl::StrCat(ExtensionIdentBase(ext), "_", ext->name(), "_ext");
 }
 
-const char *kMessagesInit = "messages_layout";
+const char *kEnumsInit = "enums_layout";
 const char *kExtensionsInit = "extensions_layout";
+const char *kMessagesInit = "messages_layout";
 
 void AddEnums(const protobuf::Descriptor* message,
               std::vector<const protobuf::EnumDescriptor*>* enums) {
@@ -175,6 +180,24 @@ std::vector<const protobuf::FieldDescriptor*> SortedSubmessages(
                const protobuf::FieldDescriptor* b) {
               return a->message_type()->full_name() <
                      b->message_type()->full_name();
+            });
+  return ret;
+}
+
+std::vector<const protobuf::FieldDescriptor*> SortedSubEnums(
+    const protobuf::Descriptor* message) {
+  std::vector<const protobuf::FieldDescriptor*> ret;
+  for (int i = 0; i < message->field_count(); i++) {
+    if (message->field(i)->cpp_type() ==
+        protobuf::FieldDescriptor::CPPTYPE_ENUM) {
+      ret.push_back(message->field(i));
+    }
+  }
+  std::sort(ret.begin(), ret.end(),
+            [](const protobuf::FieldDescriptor* a,
+               const protobuf::FieldDescriptor* b) {
+              return a->enum_type()->full_name() <
+                     b->enum_type()->full_name();
             });
   return ret;
 }
@@ -721,6 +744,14 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
 
   output("\n");
 
+  if (file->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2) {
+    for (auto enumdesc : this_file_enums) {
+      output("extern const upb_enumlayout $0;\n", EnumInit(enumdesc));
+    }
+  }
+
+  output("\n");
+
   for (auto message : this_file_messages) {
     GenerateMessageInHeader(message, output);
   }
@@ -787,44 +818,69 @@ int TableDescriptorType(const protobuf::FieldDescriptor* field) {
     // embedding field names on the side) we will have to revisit this, because
     // string vs. bytes behavior is not affected by proto2 vs proto3.
     return protobuf::FieldDescriptor::TYPE_BYTES;
+  } else if (field->enum_type() &&
+             field->enum_type()->file()->syntax() ==
+                 protobuf::FileDescriptor::SYNTAX_PROTO3) {
+    // From the perspective of the binary decoder, proto3 enums are identical to
+    // int32 fields.  Only in proto2 do we check enum values to make sure they
+    // are defined in the enum.
+    return protobuf::FieldDescriptor::TYPE_INT32;
   } else {
     return field->type();
   }
 }
 
-struct SubmsgArray {
+struct SubLayoutArray {
  public:
-  SubmsgArray(const protobuf::Descriptor* message) : message_(message) {
-    MessageLayout layout(message);
-    std::vector<const protobuf::FieldDescriptor*> sorted_submsgs =
-        SortedSubmessages(message);
-    int i = 0;
-    for (auto submsg : sorted_submsgs) {
-      if (indexes_.find(submsg->message_type()) != indexes_.end()) {
-        continue;
-      }
-      submsgs_.push_back(submsg->message_type());
-      indexes_[submsg->message_type()] = i++;
-    }
-  }
+  SubLayoutArray(const protobuf::Descriptor* message);
 
   const std::vector<const protobuf::Descriptor*>& submsgs() const {
     return submsgs_;
   }
 
-  int GetIndex(const protobuf::FieldDescriptor* field) {
-    (void)message_;
-    assert(field->containing_type() == message_);
-    auto it = indexes_.find(field->message_type());
+  const std::vector<const protobuf::EnumDescriptor*>& subenums() const {
+    return subenums_;
+  }
+
+  int total_count() const { return submsgs_.size() + subenums_.size(); }
+
+  int GetIndex(const void *sub) {
+    auto it = indexes_.find(sub);
     assert(it != indexes_.end());
     return it->second;
   }
 
  private:
-  const protobuf::Descriptor* message_;
   std::vector<const protobuf::Descriptor*> submsgs_;
-  absl::flat_hash_map<const protobuf::Descriptor*, int> indexes_;
+  std::vector<const protobuf::EnumDescriptor*> subenums_;
+  absl::flat_hash_map<const void*, int> indexes_;
 };
+
+SubLayoutArray::SubLayoutArray(const protobuf::Descriptor* message) {
+  MessageLayout layout(message);
+  std::vector<const protobuf::FieldDescriptor*> sorted_submsgs =
+      SortedSubmessages(message);
+  int i = 0;
+  for (auto submsg : sorted_submsgs) {
+    if (indexes_.find(submsg->message_type()) != indexes_.end()) {
+      continue;
+    }
+    submsgs_.push_back(submsg->message_type());
+    indexes_[submsg->message_type()] = i++;
+  }
+
+  std::vector<const protobuf::FieldDescriptor*> sorted_subenums =
+      SortedSubEnums(message);
+  for (auto field : sorted_subenums) {
+    if (field->file()->syntax() !=
+            protobuf::FileDescriptor::SYNTAX_PROTO2 ||
+        indexes_.find(field->enum_type()) != indexes_.end()) {
+      continue;
+    }
+    subenums_.push_back(field->enum_type());
+    indexes_[field->enum_type()] = i++;
+  }
+}
 
 typedef std::pair<std::string, uint64_t> TableEntry;
 
@@ -957,8 +1013,8 @@ bool TryFillTableEntry(const protobuf::Descriptor* message,
   }
 
   if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-    SubmsgArray submsg_array(message);
-    uint64_t idx = submsg_array.GetIndex(field);
+    SubLayoutArray sublayout_array(message);
+    uint64_t idx = sublayout_array.GetIndex(field->message_type());
     if (idx > 255) return false;
     data |= idx << 16;
 
@@ -1083,18 +1139,21 @@ void WriteMessage(const protobuf::Descriptor* message, Output& output,
   uint8_t dense_below = 0;
   const int dense_below_max = std::numeric_limits<decltype(dense_below)>::max();
   MessageLayout layout(message);
-  SubmsgArray submsg_array(message);
+  SubLayoutArray sublayout_array(message);
 
-  if (!submsg_array.submsgs().empty()) {
+  if (sublayout_array.total_count()) {
     // TODO(haberman): could save a little bit of space by only generating a
     // "submsgs" array for every strongly-connected component.
     std::string submsgs_array_name = msg_name + "_submsgs";
     submsgs_array_ref = "&" + submsgs_array_name + "[0]";
     output("static const upb_msglayout_sub $0[$1] = {\n",
-           submsgs_array_name, submsg_array.submsgs().size());
+           submsgs_array_name, sublayout_array.total_count());
 
-    for (auto submsg : submsg_array.submsgs()) {
+    for (const auto* submsg : sublayout_array.submsgs()) {
       output("  {.submsg = &$0},\n", MessageInit(submsg));
+    }
+    for (const auto* subenum : sublayout_array.subenums()) {
+      output("  {.subenum = &$0},\n", EnumInit(subenum));
     }
 
     output("};\n\n");
@@ -1109,7 +1168,7 @@ void WriteMessage(const protobuf::Descriptor* message, Output& output,
            fields_array_name, field_number_order.size());
     for (int i = 0; i < static_cast<int>(field_number_order.size()); i++) {
       auto field = field_number_order[i];
-      int submsg_index = 0;
+      int sublayout_index = 0;
 
       if (i < dense_below_max && field->number() == i + 1 &&
           (i == 0 || field_number_order[i - 1]->number() == i)) {
@@ -1117,10 +1176,14 @@ void WriteMessage(const protobuf::Descriptor* message, Output& output,
       }
 
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-        submsg_index = submsg_array.GetIndex(field);
+        sublayout_index = sublayout_array.GetIndex(field->message_type());
+      } else if (field->enum_type() &&
+                 field->enum_type()->file()->syntax() ==
+                     protobuf::FileDescriptor::SYNTAX_PROTO2) {
+        sublayout_index = sublayout_array.GetIndex(field->enum_type());
       }
 
-      WriteMessageField(field, layout, submsg_index, output);
+      WriteMessageField(field, layout, sublayout_index, output);
     }
     output("};\n\n");
   }
@@ -1166,6 +1229,61 @@ void WriteMessage(const protobuf::Descriptor* message, Output& output,
     output("  }),\n");
   }
   output("};\n\n");
+}
+
+int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
+  if (file->syntax() != protobuf::FileDescriptor::SYNTAX_PROTO2) {
+    return 0;
+  }
+
+  std::vector<const protobuf::EnumDescriptor*> this_file_enums =
+      SortedEnums(file);
+
+  std::string values_init = "NULL";
+
+  for (auto e : this_file_enums) {
+    uint64_t mask = 0;
+    absl::flat_hash_set<int32_t> values;
+    for (int i = 0; i < e->value_count(); i++) {
+      int32_t number = e->value(i)->number();
+      if (static_cast<uint32_t>(number) < 64) {
+        mask |= 1 << number;
+      } else {
+        values.insert(number);
+      }
+    }
+    std::vector<int32_t> values_vec(values.begin(), values.end());
+    std::sort(values_vec.begin(), values_vec.end());
+
+    if (!values_vec.empty()) {
+      values_init = EnumInit(e) + "_values";
+      output("static const int32_t $0[$1] = {\n", values_init,
+             values_vec.size());
+      for (auto value : values_vec) {
+        output("  $0,\n", value);
+      }
+      output("};\n\n");
+    }
+
+    output("const upb_enumlayout $0 = {\n", EnumInit(e));
+    output("  $0,\n", values_init);
+    output("  0x$0ULL,\n", absl::Hex(mask));
+    output("  $0,\n", values_vec.size());
+
+    output("};\n\n");
+  }
+
+  if (!this_file_enums.empty()) {
+    output("static const upb_enumlayout *$0[$1] = {\n", kEnumsInit,
+          this_file_enums.size());
+    for (auto e : this_file_enums) {
+      output("  &$0,\n", EnumInit(e));
+    }
+    output("};\n");
+    output("\n");
+  }
+
+  return this_file_enums.size();
 }
 
 void WriteExtension(const protobuf::FieldDescriptor* ext, Output& output) {
@@ -1264,11 +1382,14 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
 
   int msg_count = WriteMessages(file, output, fasttable_enabled);
   int ext_count = WriteExtensions(file, output);
+  int enum_count = WriteEnums(file, output);
 
   output("const upb_msglayout_file $0 = {\n", FileLayoutName(file));
   output("  $0,\n", msg_count ? kMessagesInit : "NULL");
+  output("  $0,\n", enum_count ? kEnumsInit : "NULL");
   output("  $0,\n", ext_count ? kExtensionsInit : "NULL");
   output("  $0,\n", msg_count);
+  output("  $0,\n", enum_count);
   output("  $0,\n", ext_count);
   output("};\n\n");
 

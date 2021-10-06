@@ -26,6 +26,7 @@
  */
 
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 #include "src/google/protobuf/test_messages_proto3.upb.h"
 #include "upb/def.hpp"
 #include "upb/json_decode.h"
@@ -151,4 +152,53 @@ TEST(MessageTest, MessageSet) {
                               symtab.ptr(), 0, arena.ptr(), status.ptr()))
       << status.error_message();
   VerifyMessageSet(ext_msg3);
+}
+
+TEST(MessageTest, Proto2Enum) {
+  upb::Arena arena;
+  upb_test_Proto2FakeEnumMessage *fake_msg = upb_test_Proto2FakeEnumMessage_new(arena.ptr());
+
+  upb_test_Proto2FakeEnumMessage_set_optional_enum(fake_msg, 999);
+  int32_t *vals = upb_test_Proto2FakeEnumMessage_resize_repeated_enum(
+      fake_msg, 6, arena.ptr());
+  vals[0] = upb_test_Proto2EnumMessage_ZERO;
+  vals[1] = 7;  // Unknown small.
+  vals[2] = upb_test_Proto2EnumMessage_SMALL;
+  vals[3] = 888;  // Unknown large.
+  vals[4] = upb_test_Proto2EnumMessage_LARGE;
+  vals[5] = upb_test_Proto2EnumMessage_NEGATIVE;
+  upb_test_Proto2FakeEnumMessage_int32_enum_map_set(fake_msg, 5, 777,
+                                                    arena.ptr());
+
+  size_t size;
+  char *pb =
+      upb_test_Proto2FakeEnumMessage_serialize(fake_msg, arena.ptr(), &size);
+
+  upb_test_Proto2EnumMessage *enum_msg =
+      upb_test_Proto2EnumMessage_parse(pb, size, arena.ptr());
+  ASSERT_TRUE(enum_msg != nullptr);
+
+  EXPECT_EQ(false, upb_test_Proto2EnumMessage_has_optional_enum(enum_msg));
+  const int32_t *vals_const =
+      upb_test_Proto2EnumMessage_repeated_enum(enum_msg, &size);
+  EXPECT_EQ(4, size);  // Two unknown values moved to the unknown field set.
+
+  pb = upb_test_Proto2EnumMessage_serialize(enum_msg, arena.ptr(), &size);
+  upb_test_Proto2FakeEnumMessage *fake_msg2 =
+      upb_test_Proto2FakeEnumMessage_parse(pb, size, arena.ptr());
+
+  EXPECT_EQ(true, upb_test_Proto2FakeEnumMessage_has_optional_enum(fake_msg2));
+  vals_const =
+      upb_test_Proto2FakeEnumMessage_repeated_enum(fake_msg2, &size);
+  EXPECT_EQ(6, size);
+  int32_t expected[] = {
+      upb_test_Proto2EnumMessage_ZERO,
+      upb_test_Proto2EnumMessage_SMALL,
+      upb_test_Proto2EnumMessage_LARGE,
+      upb_test_Proto2EnumMessage_NEGATIVE,
+      7,
+      888,
+  };
+  EXPECT_THAT(std::vector<int32_t>(vals_const, vals_const + size),
+              ::testing::ElementsAreArray(expected));
 }

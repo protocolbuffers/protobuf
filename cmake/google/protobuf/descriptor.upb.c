@@ -126,16 +126,18 @@ const upb_msglayout google_protobuf_ExtensionRangeOptions_msginit = {
   UPB_SIZE(8, 8), 1, _UPB_MSGEXT_EXTENDABLE, 0, 255,
 };
 
-static const upb_msglayout_sub google_protobuf_FieldDescriptorProto_submsgs[1] = {
+static const upb_msglayout_sub google_protobuf_FieldDescriptorProto_submsgs[3] = {
   {.submsg = &google_protobuf_FieldOptions_msginit},
+  {.subenum = &google_protobuf_FieldDescriptorProto_Label_enuminit},
+  {.subenum = &google_protobuf_FieldDescriptorProto_Type_enuminit},
 };
 
 static const upb_msglayout_field google_protobuf_FieldDescriptorProto__fields[11] = {
   {1, UPB_SIZE(24, 24), 1, 0, 12, _UPB_MODE_SCALAR | (_UPB_REP_STRVIEW << _UPB_REP_SHIFT)},
   {2, UPB_SIZE(32, 40), 2, 0, 12, _UPB_MODE_SCALAR | (_UPB_REP_STRVIEW << _UPB_REP_SHIFT)},
   {3, UPB_SIZE(12, 12), 3, 0, 5, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
-  {4, UPB_SIZE(4, 4), 4, 0, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
-  {5, UPB_SIZE(8, 8), 5, 0, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
+  {4, UPB_SIZE(4, 4), 4, 1, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
+  {5, UPB_SIZE(8, 8), 5, 2, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
   {6, UPB_SIZE(40, 56), 6, 0, 12, _UPB_MODE_SCALAR | (_UPB_REP_STRVIEW << _UPB_REP_SHIFT)},
   {7, UPB_SIZE(48, 72), 7, 0, 12, _UPB_MODE_SCALAR | (_UPB_REP_STRVIEW << _UPB_REP_SHIFT)},
   {8, UPB_SIZE(64, 104), 8, 0, 11, _UPB_MODE_SCALAR | (_UPB_REP_PTR << _UPB_REP_SHIFT)},
@@ -248,14 +250,15 @@ const upb_msglayout google_protobuf_MethodDescriptorProto_msginit = {
   UPB_SIZE(32, 64), 6, _UPB_MSGEXT_NONE, 6, 255,
 };
 
-static const upb_msglayout_sub google_protobuf_FileOptions_submsgs[1] = {
+static const upb_msglayout_sub google_protobuf_FileOptions_submsgs[2] = {
   {.submsg = &google_protobuf_UninterpretedOption_msginit},
+  {.subenum = &google_protobuf_FileOptions_OptimizeMode_enuminit},
 };
 
 static const upb_msglayout_field google_protobuf_FileOptions__fields[21] = {
   {1, UPB_SIZE(20, 24), 1, 0, 12, _UPB_MODE_SCALAR | (_UPB_REP_STRVIEW << _UPB_REP_SHIFT)},
   {8, UPB_SIZE(28, 40), 2, 0, 12, _UPB_MODE_SCALAR | (_UPB_REP_STRVIEW << _UPB_REP_SHIFT)},
-  {9, UPB_SIZE(4, 4), 3, 0, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
+  {9, UPB_SIZE(4, 4), 3, 1, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
   {10, UPB_SIZE(8, 8), 4, 0, 8, _UPB_MODE_SCALAR | (_UPB_REP_1BYTE << _UPB_REP_SHIFT)},
   {11, UPB_SIZE(36, 56), 5, 0, 12, _UPB_MODE_SCALAR | (_UPB_REP_STRVIEW << _UPB_REP_SHIFT)},
   {16, UPB_SIZE(9, 9), 6, 0, 8, _UPB_MODE_SCALAR | (_UPB_REP_1BYTE << _UPB_REP_SHIFT)},
@@ -300,16 +303,18 @@ const upb_msglayout google_protobuf_MessageOptions_msginit = {
   UPB_SIZE(16, 16), 5, _UPB_MSGEXT_EXTENDABLE, 3, 255,
 };
 
-static const upb_msglayout_sub google_protobuf_FieldOptions_submsgs[1] = {
+static const upb_msglayout_sub google_protobuf_FieldOptions_submsgs[3] = {
   {.submsg = &google_protobuf_UninterpretedOption_msginit},
+  {.subenum = &google_protobuf_FieldOptions_CType_enuminit},
+  {.subenum = &google_protobuf_FieldOptions_JSType_enuminit},
 };
 
 static const upb_msglayout_field google_protobuf_FieldOptions__fields[7] = {
-  {1, UPB_SIZE(4, 4), 1, 0, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
+  {1, UPB_SIZE(4, 4), 1, 1, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
   {2, UPB_SIZE(12, 12), 2, 0, 8, _UPB_MODE_SCALAR | (_UPB_REP_1BYTE << _UPB_REP_SHIFT)},
   {3, UPB_SIZE(13, 13), 3, 0, 8, _UPB_MODE_SCALAR | (_UPB_REP_1BYTE << _UPB_REP_SHIFT)},
   {5, UPB_SIZE(14, 14), 4, 0, 8, _UPB_MODE_SCALAR | (_UPB_REP_1BYTE << _UPB_REP_SHIFT)},
-  {6, UPB_SIZE(8, 8), 5, 0, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
+  {6, UPB_SIZE(8, 8), 5, 2, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
   {10, UPB_SIZE(15, 15), 6, 0, 8, _UPB_MODE_SCALAR | (_UPB_REP_1BYTE << _UPB_REP_SHIFT)},
   {999, UPB_SIZE(16, 16), 0, 0, 11, _UPB_MODE_ARRAY | (_UPB_REP_PTR << _UPB_REP_SHIFT)},
 };
@@ -380,13 +385,14 @@ const upb_msglayout google_protobuf_ServiceOptions_msginit = {
   UPB_SIZE(8, 16), 2, _UPB_MSGEXT_EXTENDABLE, 0, 255,
 };
 
-static const upb_msglayout_sub google_protobuf_MethodOptions_submsgs[1] = {
+static const upb_msglayout_sub google_protobuf_MethodOptions_submsgs[2] = {
   {.submsg = &google_protobuf_UninterpretedOption_msginit},
+  {.subenum = &google_protobuf_MethodOptions_IdempotencyLevel_enuminit},
 };
 
 static const upb_msglayout_field google_protobuf_MethodOptions__fields[3] = {
   {33, UPB_SIZE(8, 8), 1, 0, 8, _UPB_MODE_SCALAR | (_UPB_REP_1BYTE << _UPB_REP_SHIFT)},
-  {34, UPB_SIZE(4, 4), 2, 0, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
+  {34, UPB_SIZE(4, 4), 2, 1, 14, _UPB_MODE_SCALAR | (_UPB_REP_4BYTE << _UPB_REP_SHIFT)},
   {999, UPB_SIZE(12, 16), 0, 0, 11, _UPB_MODE_ARRAY | (_UPB_REP_PTR << _UPB_REP_SHIFT)},
 };
 
@@ -512,10 +518,57 @@ static const upb_msglayout *messages_layout[27] = {
   &google_protobuf_GeneratedCodeInfo_Annotation_msginit,
 };
 
+const upb_enumlayout google_protobuf_FieldDescriptorProto_Label_enuminit = {
+  NULL,
+  0xeULL,
+  0,
+};
+
+const upb_enumlayout google_protobuf_FieldDescriptorProto_Type_enuminit = {
+  NULL,
+  0x7fffeULL,
+  0,
+};
+
+const upb_enumlayout google_protobuf_FieldOptions_CType_enuminit = {
+  NULL,
+  0x7ULL,
+  0,
+};
+
+const upb_enumlayout google_protobuf_FieldOptions_JSType_enuminit = {
+  NULL,
+  0x7ULL,
+  0,
+};
+
+const upb_enumlayout google_protobuf_FileOptions_OptimizeMode_enuminit = {
+  NULL,
+  0xeULL,
+  0,
+};
+
+const upb_enumlayout google_protobuf_MethodOptions_IdempotencyLevel_enuminit = {
+  NULL,
+  0x7ULL,
+  0,
+};
+
+static const upb_enumlayout *enums_layout[6] = {
+  &google_protobuf_FieldDescriptorProto_Label_enuminit,
+  &google_protobuf_FieldDescriptorProto_Type_enuminit,
+  &google_protobuf_FieldOptions_CType_enuminit,
+  &google_protobuf_FieldOptions_JSType_enuminit,
+  &google_protobuf_FileOptions_OptimizeMode_enuminit,
+  &google_protobuf_MethodOptions_IdempotencyLevel_enuminit,
+};
+
 const upb_msglayout_file google_protobuf_descriptor_proto_upb_file_layout = {
   messages_layout,
+  enums_layout,
   NULL,
   27,
+  6,
   0,
 };
 
