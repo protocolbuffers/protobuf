@@ -2040,6 +2040,10 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_end(google_prot
 
 extern const upb_msglayout_file google_protobuf_descriptor_proto_upb_file_layout;
 
+/* Max size 32 is google.protobuf.FileOptions */
+/* Max size 64 is google.protobuf.FileOptions */
+#define _UPB_MAXOPT_SIZE UPB_SIZE(104, 192)
+
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif

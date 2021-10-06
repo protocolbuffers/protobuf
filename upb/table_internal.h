@@ -263,7 +263,7 @@ bool upb_strtable_resize(upb_strtable *t, size_t size_lg2, upb_arena *a);
 
 /* Iterators ******************************************************************/
 
-/* New-style iterators.  Much simpler, iterator state is held in size_t.
+/* Iteration over inttable.
  *
  *   intptr_t iter = UPB_INTTABLE_BEGIN;
  *   uintptr_t key;
@@ -279,7 +279,7 @@ bool upb_inttable_next2(const upb_inttable *t, uintptr_t *key, upb_value *val,
                         intptr_t *iter);
 void upb_inttable_removeiter(upb_inttable *t, intptr_t *iter);
 
-/* New-style iterators.  Much simpler, iterator state is held in size_t.
+/* Iteration over strtable.
  *
  *   intptr_t iter = UPB_INTTABLE_BEGIN;
  *   upb_strview key;
@@ -295,7 +295,9 @@ bool upb_strtable_next2(const upb_strtable *t, upb_strview *key, upb_value *val,
                         intptr_t *iter);
 void upb_strtable_removeiter(upb_strtable *t, intptr_t *iter);
 
-/* Iterators for int and string tables.  We are subject to some kind of unusual
+/* DEPRECATED iterators, slated for removal.
+ *
+ * Iterators for int and string tables.  We are subject to some kind of unusual
  * design constraints:
  *
  * For high-level languages:

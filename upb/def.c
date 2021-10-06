@@ -227,6 +227,8 @@ typedef enum {
   UPB_DEFTYPE_LAYOUT = 1
 } upb_deftype_t;
 
+#define FIELD_TYPE_UNSPECIFIED 0
+
 static upb_deftype_t deftype(upb_value v) {
   uintptr_t num = (uintptr_t)upb_value_getconstptr(v);
   return num & UPB_DEFTYPE_MASK;
@@ -252,7 +254,8 @@ static bool upb_isbetween(uint8_t c, uint8_t low, uint8_t high) {
 }
 
 static bool upb_isletter(char c) {
-  return upb_isbetween(c | 0x20, 'a', 'z') || c == '_';
+  char lower = c | 0x20;  // Per ASCII this will lowercase a letter.
+  return upb_isbetween(lower, 'a', 'z') || c == '_';
 }
 
 static bool upb_isalphanum(char c) {
@@ -835,32 +838,32 @@ const upb_msglayout *upb_msgdef_layout(const upb_msgdef *m) {
 }
 
 const upb_extrange *upb_msgdef_extrange(const upb_msgdef *m, int i) {
-  UPB_ASSERT(i >= 0 && i < m->ext_range_count);
+  UPB_ASSERT(0 <= i && i < m->ext_range_count);
   return &m->ext_ranges[i];
 }
 
 const upb_fielddef *upb_msgdef_field(const upb_msgdef *m, int i) {
-  UPB_ASSERT(i >= 0 && i < m->field_count);
+  UPB_ASSERT(0 <= i && i < m->field_count);
   return &m->fields[i];
 }
 
 const upb_oneofdef *upb_msgdef_oneof(const upb_msgdef *m, int i) {
-  UPB_ASSERT(i >= 0 && i < m->oneof_count);
+  UPB_ASSERT(0 <= i && i < m->oneof_count);
   return &m->oneofs[i];
 }
 
 const upb_msgdef *upb_msgdef_nestedmsg(const upb_msgdef *m, int i) {
-  UPB_ASSERT(i >= 0 && i < m->nested_msg_count);
+  UPB_ASSERT(0 <= i && i < m->nested_msg_count);
   return &m->nested_msgs[i];
 }
 
 const upb_enumdef *upb_msgdef_nestedenum(const upb_msgdef *m, int i) {
-  UPB_ASSERT(i >= 0 && i < m->nested_enum_count);
+  UPB_ASSERT(0 <= i && i < m->nested_enum_count);
   return &m->nested_enums[i];
 }
 
 const upb_fielddef *upb_msgdef_nestedext(const upb_msgdef *m, int i) {
-  UPB_ASSERT(i >= 0 && i < m->nested_ext_count);
+  UPB_ASSERT(0 <= i && i < m->nested_ext_count);
   return &m->nested_exts[i];
 }
 
@@ -1842,9 +1845,9 @@ static char* makejsonname(symtab_addctx *ctx, const char* name) {
   return json_name;
 }
 
-/* Adds a symbol to the symtab.  The def's pointer to upb_filedef* must be set
- * before adding, so we know which entries to remove if building this file
- * fails. */
+/* Adds a symbol |v| to the symtab, which must be a def pointer previously packed
+ * with pack_def().  The def's pointer to upb_filedef* must be set before adding,
+ * so we know which entries to remove if building this file fails. */
 static void symtab_add(symtab_addctx *ctx, const char *name, upb_value v) {
   // TODO: table should support an operation "tryinsert" to avoid the double
   // lookup.
@@ -2170,7 +2173,7 @@ static void create_fielddef(
         }
     }
   } else if (has_type_name) {
-    f->type_ = 0;  // We'll fill this in in resolve_fielddef().
+    f->type_ = FIELD_TYPE_UNSPECIFIED;  // We'll fill this in in resolve_fielddef().
   }
 
   if (m) {
@@ -2523,7 +2526,7 @@ static void resolve_fielddef(symtab_addctx *ctx, const char *prefix,
 
   // Resolve subdef by type name, if necessary.
   switch ((int)f->type_) {
-    case 0: {
+    case FIELD_TYPE_UNSPECIFIED: {
       // Type was not specified and must be inferred.
       UPB_ASSERT(has_name);
       upb_deftype_t type;
@@ -2865,7 +2868,7 @@ static const upb_filedef *_upb_symtab_addfile(
   ctx.arena = upb_arena_new();
   ctx.tmp_arena = upb_arena_new();
 
-  if (!ctx.arena && !ctx.tmp_arena) {
+  if (!ctx.arena || !ctx.tmp_arena) {
     if (ctx.arena) upb_arena_free(ctx.arena);
     if (ctx.tmp_arena) upb_arena_free(ctx.tmp_arena);
     upb_status_setoom(status);

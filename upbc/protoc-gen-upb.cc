@@ -738,7 +738,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
     // proto (descriptor.proto) so we don't worry about it.
     const protobuf::Descriptor* max32 = nullptr;
     const protobuf::Descriptor* max64 = nullptr;
-    for (auto message : this_file_messages) {
+    for (const auto* message : this_file_messages) {
       if (absl::EndsWith(message->name(), "Options")) {
         MessageLayout layout(message);
         if (max32 == nullptr) {
