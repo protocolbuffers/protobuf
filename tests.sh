@@ -226,7 +226,8 @@ internal_build_java() {
 }
 
 build_java() {
-  internal_build_java $1
+  version=$1
+  internal_build_java $version
   # Skip the Kotlin tests on Oracle 7
   if [ "$version" == "oracle7" ]; then
     $MVN test -pl bom,lite,core,util
