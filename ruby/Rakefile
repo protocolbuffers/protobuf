@@ -68,11 +68,15 @@ end
 
 if RUBY_PLATFORM == "java"
   task :clean => :require_mvn do
-    system("mvn --batch-mode clean")
+    Dir.chdir('../java') do
+      system("mvn --batch-mode clean")
+    end
   end
 
   task :compile => :require_mvn do
-    system("mvn --batch-mode package")
+    Dir.chdir('../java') do
+      system("mvn --batch-mode package -pl core,../ruby -Dmaven.test.skip=true")
+    end
   end
 
   task :require_mvn do
@@ -105,7 +109,7 @@ else
     repo_root = File.realdirpath File.join(Dir.pwd, '..')
     RakeCompilerDock.sh <<-"EOT", platform: 'jruby', rubyvm: :jruby, mountdir: repo_root, workdir: repo_root
       sudo apt-get install maven -y && \
-      cd java && mvn install -Dmaven.test.skip=true && cd ../ruby && \
+      cd ruby && \
       bundle && \
       IN_DOCKER=true rake compile gem
     EOT
