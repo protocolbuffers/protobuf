@@ -607,7 +607,7 @@
 #ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY
 #error PROTOBUF_ATTRIBUTE_INIT_PRIORITY was previously defined
 #endif
-#if PROTOBUF_GNUC_MIN(3, 0) && (!defined(__APPLE__) || defined(__clang__))
+#if PROTOBUF_GNUC_MIN(3, 0) && (!defined(__APPLE__) || defined(__clang__)) && !((defined(sun) || defined(__sun)) && (defined(__SVR4) || defined(__svr4__)))
 #define PROTOBUF_ATTRIBUTE_INIT_PRIORITY __attribute__((init_priority((102))))
 #else
 #define PROTOBUF_ATTRIBUTE_INIT_PRIORITY
