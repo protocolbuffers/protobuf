@@ -37,7 +37,6 @@ http_archive(
     build_file = "//benchmarks:BUILD.googleapis",
     strip_prefix = "googleapis-master",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
-    sha256 = "a3353ef2cea09074eac8a99b6ad8e1c802c9bfac6a6192401287de8d6991b6bc",
 )
 
 system_python(

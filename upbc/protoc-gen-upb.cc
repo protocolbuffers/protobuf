@@ -138,11 +138,11 @@ void AddExtensionsFromMessage(
 std::vector<const protobuf::FieldDescriptor*> SortedExtensions(
     const protobuf::FileDescriptor* file) {
   std::vector<const protobuf::FieldDescriptor*> ret;
-  for (int i = 0; i < file->message_type_count(); i++) {
-    AddExtensionsFromMessage(file->message_type(i), &ret);
-  }
   for (int i = 0; i < file->extension_count(); i++) {
     ret.push_back(file->extension(i));
+  }
+  for (int i = 0; i < file->message_type_count(); i++) {
+    AddExtensionsFromMessage(file->message_type(i), &ret);
   }
   return ret;
 }
@@ -729,7 +729,41 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
     GenerateExtensionInHeader(ext, output);
   }
 
+
   output("extern const upb_msglayout_file $0;\n\n", FileLayoutName(file));
+
+  if (file->name() == protobuf::FileDescriptorProto::descriptor()->file()->name()) {
+    // This is gratuitously inefficient with how many times it rebuilds
+    // MessageLayout objects for the same message. But we only do this for one
+    // proto (descriptor.proto) so we don't worry about it.
+    const protobuf::Descriptor* max32 = nullptr;
+    const protobuf::Descriptor* max64 = nullptr;
+    for (const auto* message : this_file_messages) {
+      if (absl::EndsWith(message->name(), "Options")) {
+        MessageLayout layout(message);
+        if (max32 == nullptr) {
+          max32 = message;
+          max64 = message;
+        } else {
+          if (layout.message_size().size32 >
+              MessageLayout(max32).message_size().size32) {
+            max32 = message;
+          }
+          if (layout.message_size().size64 >
+              MessageLayout(max64).message_size().size64) {
+            max64 = message;
+          }
+        }
+      }
+    }
+
+    output("/* Max size 32 is $0 */\n", max32->full_name());
+    output("/* Max size 64 is $0 */\n", max64->full_name());
+    MessageLayout::Size size;
+    size.size32 = MessageLayout(max32).message_size().size32;
+    size.size64 = MessageLayout(max32).message_size().size64;
+    output("#define _UPB_MAXOPT_SIZE $0\n\n", GetSizeInit(size));
+  }
 
   output(
       "#ifdef __cplusplus\n"

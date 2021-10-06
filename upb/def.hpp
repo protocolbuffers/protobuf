@@ -67,20 +67,11 @@ class FieldDefPtr {
   uint32_t number() const { return upb_fielddef_number(ptr_); }
   bool is_extension() const { return upb_fielddef_isextension(ptr_); }
 
-  // For UPB_TYPE_MESSAGE fields only where is_tag_delimited() == false,
-  // indicates whether this field should have lazy parsing handlers that yield
-  // the unparsed string for the submessage.
-  //
-  // TODO(haberman): I think we want to move this into a FieldOptions container
-  // when we add support for custom options (the FieldOptions struct will
-  // contain both regular FieldOptions like "lazy" *and* custom options).
-  bool lazy() const { return upb_fielddef_lazy(ptr_); }
-
   // For non-string, non-submessage fields, this indicates whether binary
   // protobufs are encoded in packed or non-packed format.
   //
-  // TODO(haberman): see note above about putting options like this into a
-  // FieldOptions container.
+  // Note: this accessor reflects the fact that "packed" has different defaults
+  // depending on whether the proto is proto2 or proto3.
   bool packed() const { return upb_fielddef_packed(ptr_); }
 
   // An integer that can be used as an index into an array of fields for

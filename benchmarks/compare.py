@@ -85,7 +85,7 @@ def Benchmark(outbase, bench_cpu=True, runs=12, fasttable=False):
   Run("cp -f bazel-bin/tests/conformance_upb {}.bin".format(outbase))
 
 
-baseline = "bm-interleave"
+baseline = "master"
 bench_cpu = True
 fasttable = False
 
