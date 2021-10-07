@@ -745,7 +745,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
   output("\n");
 
   if (file->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2) {
-    for (auto enumdesc : this_file_enums) {
+    for (const auto* enumdesc : this_file_enums) {
       output("extern const upb_enumlayout $0;\n", EnumInit(enumdesc));
     }
   }

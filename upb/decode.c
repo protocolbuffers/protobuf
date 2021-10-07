@@ -461,7 +461,9 @@ static const char *decode_fixed_packed(upb_decstate *d, const char *ptr,
   decode_reserve(d, arr, count);
   void *mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
   arr->len += count;
-  memcpy(mem, ptr, val->size);  /* XXX: ptr boundary. */
+  // Note: if/when the decoder supports multi-buffer input, we will need to
+  // handle buffer seams here.
+  memcpy(mem, ptr, val->size);
   return ptr + val->size;
 }
 
