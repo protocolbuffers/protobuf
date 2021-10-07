@@ -193,7 +193,7 @@
 ;;;###autoload (add-to-list 'auto-mode-alist '("\\.proto\\'" . protobuf-mode))
 
 ;;;###autoload
-(defun protobuf-mode ()
+(define-derived-mode protobuf-mode prog-mode "Protobuf"
   "Major mode for editing Protocol Buffers description language.
 
 The hook `c-mode-common-hook' is run with no argument at mode
