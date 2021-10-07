@@ -2363,6 +2363,16 @@ static void create_service(
   }
 }
 
+static int popcount(uint64_t x) {
+  // For assertions only, speed does not matter.
+  int n = 0;
+  while (x) {
+    if (x & 1) n++;
+    x >>= 1;
+  }
+  return n;
+}
+
 upb_enumlayout *create_enumlayout(symtab_addctx *ctx, const upb_enumdef *e) {
   int n = 0;
   uint64_t mask = 0;
@@ -2387,7 +2397,7 @@ upb_enumlayout *create_enumlayout(symtab_addctx *ctx, const upb_enumdef *e) {
   }
 
   UPB_ASSERT(p == values + n);
-  UPB_ASSERT(upb_inttable_count(&e->iton) == n + __builtin_popcountll(mask));
+  UPB_ASSERT(upb_inttable_count(&e->iton) == n + popcount(mask));
 
   upb_enumlayout *layout = symtab_alloc(ctx, sizeof(*layout));
   layout->value_count = n;
@@ -2463,7 +2473,7 @@ static void create_enumdef(
     if (ctx->layout) {
       UPB_ASSERT(ctx->enum_count < ctx->layout->enum_count);
       e->layout = ctx->layout->enums[ctx->enum_count++];
-      UPB_ASSERT(n == e->layout->value_count + __builtin_popcountll(e->layout->mask));
+      UPB_ASSERT(n == e->layout->value_count + popcount(e->layout->mask));
     } else {
       e->layout = create_enumlayout(ctx, e);
     }
