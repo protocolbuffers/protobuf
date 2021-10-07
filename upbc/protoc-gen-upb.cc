@@ -862,23 +862,26 @@ SubLayoutArray::SubLayoutArray(const protobuf::Descriptor* message) {
       SortedSubmessages(message);
   int i = 0;
   for (auto submsg : sorted_submsgs) {
-    if (indexes_.find(submsg->message_type()) != indexes_.end()) {
+    if (!indexes_.insert(std::make_pair(submsg->message_type(), i)).second) {
+      // Already present.
       continue;
     }
     submsgs_.push_back(submsg->message_type());
-    indexes_[submsg->message_type()] = i++;
+    i++;
   }
 
   std::vector<const protobuf::FieldDescriptor*> sorted_subenums =
       SortedSubEnums(message);
   for (auto field : sorted_subenums) {
-    if (field->file()->syntax() !=
-            protobuf::FileDescriptor::SYNTAX_PROTO2 ||
-        indexes_.find(field->enum_type()) != indexes_.end()) {
+    if (field->file()->syntax() != protobuf::FileDescriptor::SYNTAX_PROTO2) {
+      continue;
+    }
+    if (!indexes_.insert(std::make_pair(field->enum_type(), i)).second) {
+      // Already present.
       continue;
     }
     subenums_.push_back(field->enum_type());
-    indexes_[field->enum_type()] = i++;
+    i++;
   }
 }
 
