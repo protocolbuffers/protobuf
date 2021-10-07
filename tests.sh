@@ -214,13 +214,20 @@ use_java() {
 # --batch-mode suppresses download progress output that spams the logs.
 MVN="mvn --batch-mode"
 
-build_java() {
+internal_build_java() {
   version=$1
   dir=java_$version
   # Java build needs `protoc`.
   internal_build_cpp
   cp -r java $dir
   cd $dir && $MVN clean
+  # Skip tests here - callers will decide what tests they want to run
+  $MVN install -pl util -Dmaven.test.skip=true
+}
+
+build_java() {
+  version=$1
+  internal_build_java $version
   # Skip the Kotlin tests on Oracle 7
   if [ "$version" == "oracle7" ]; then
     $MVN test -pl bom,lite,core,util
@@ -446,7 +453,8 @@ build_ruby30() {
 }
 
 build_jruby() {
-  internal_build_cpp  # For conformance tests.
+  internal_build_cpp                # For conformance tests.
+  internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
   cd ruby && bash travis-test.sh jruby-9.2.11.1 && cd ..
 }
 
