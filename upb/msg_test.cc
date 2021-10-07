@@ -100,7 +100,9 @@ TEST(MessageTest, Extensions) {
 }
 
 void VerifyMessageSet(const upb_test_TestMessageSet *mset_msg) {
-  EXPECT_TRUE(upb_test_MessageSetMember_has_message_set_extension(mset_msg));
+  bool has = upb_test_MessageSetMember_has_message_set_extension(mset_msg);
+  EXPECT_TRUE(has);
+  if (!has) return;
   const upb_test_MessageSetMember *member =
       upb_test_MessageSetMember_message_set_extension(mset_msg);
   EXPECT_TRUE(member != nullptr);
@@ -159,6 +161,7 @@ TEST(MessageTest, Proto2Enum) {
   upb_test_Proto2FakeEnumMessage *fake_msg = upb_test_Proto2FakeEnumMessage_new(arena.ptr());
 
   upb_test_Proto2FakeEnumMessage_set_optional_enum(fake_msg, 999);
+
   int32_t *vals = upb_test_Proto2FakeEnumMessage_resize_repeated_enum(
       fake_msg, 6, arena.ptr());
   vals[0] = upb_test_Proto2EnumMessage_ZERO;
@@ -167,13 +170,21 @@ TEST(MessageTest, Proto2Enum) {
   vals[3] = 888;  // Unknown large.
   vals[4] = upb_test_Proto2EnumMessage_LARGE;
   vals[5] = upb_test_Proto2EnumMessage_NEGATIVE;
-  upb_test_Proto2FakeEnumMessage_int32_enum_map_set(fake_msg, 5, 777,
-                                                    arena.ptr());
+
+  vals = upb_test_Proto2FakeEnumMessage_resize_packed_enum(
+      fake_msg, 6, arena.ptr());
+  vals[0] = upb_test_Proto2EnumMessage_ZERO;
+  vals[1] = 7;  // Unknown small.
+  vals[2] = upb_test_Proto2EnumMessage_SMALL;
+  vals[3] = 888;  // Unknown large.
+  vals[4] = upb_test_Proto2EnumMessage_LARGE;
+  vals[5] = upb_test_Proto2EnumMessage_NEGATIVE;
 
   size_t size;
   char *pb =
       upb_test_Proto2FakeEnumMessage_serialize(fake_msg, arena.ptr(), &size);
 
+  // Parsing as enums puts unknown values into unknown fields.
   upb_test_Proto2EnumMessage *enum_msg =
       upb_test_Proto2EnumMessage_parse(pb, size, arena.ptr());
   ASSERT_TRUE(enum_msg != nullptr);
@@ -183,14 +194,15 @@ TEST(MessageTest, Proto2Enum) {
       upb_test_Proto2EnumMessage_repeated_enum(enum_msg, &size);
   EXPECT_EQ(4, size);  // Two unknown values moved to the unknown field set.
 
+  // Parsing back into the fake message shows the original data, except the
+  // repeated enum is rearranged.
   pb = upb_test_Proto2EnumMessage_serialize(enum_msg, arena.ptr(), &size);
   upb_test_Proto2FakeEnumMessage *fake_msg2 =
       upb_test_Proto2FakeEnumMessage_parse(pb, size, arena.ptr());
 
   EXPECT_EQ(true, upb_test_Proto2FakeEnumMessage_has_optional_enum(fake_msg2));
-  vals_const =
-      upb_test_Proto2FakeEnumMessage_repeated_enum(fake_msg2, &size);
-  EXPECT_EQ(6, size);
+  EXPECT_EQ(999, upb_test_Proto2FakeEnumMessage_optional_enum(fake_msg2));
+
   int32_t expected[] = {
       upb_test_Proto2EnumMessage_ZERO,
       upb_test_Proto2EnumMessage_SMALL,
@@ -199,6 +211,16 @@ TEST(MessageTest, Proto2Enum) {
       7,
       888,
   };
+
+  vals_const =
+      upb_test_Proto2FakeEnumMessage_repeated_enum(fake_msg2, &size);
+  EXPECT_EQ(6, size);
+  EXPECT_THAT(std::vector<int32_t>(vals_const, vals_const + size),
+              ::testing::ElementsAreArray(expected));
+
+  vals_const =
+      upb_test_Proto2FakeEnumMessage_packed_enum(fake_msg2, &size);
+  EXPECT_EQ(6, size);
   EXPECT_THAT(std::vector<int32_t>(vals_const, vals_const + size),
               ::testing::ElementsAreArray(expected));
 }

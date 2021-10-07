@@ -120,6 +120,7 @@ struct upb_msgdef {
 
 struct upb_enumdef {
   const google_protobuf_EnumOptions *opts;
+  const upb_enumlayout *layout;  // Only for proto2.
   const upb_filedef *file;
   const upb_msgdef *containing_type;  // Could be merged with "file".
   const char *full_name;
@@ -1664,6 +1665,11 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
     if (upb_fielddef_issubmsg(f)) {
       field->submsg_index = sublayout_count++;
       subs[field->submsg_index].submsg = upb_fielddef_msgsubdef(f)->layout;
+    } else if (upb_fielddef_type(f) == UPB_TYPE_ENUM &&
+               f->file->syntax == UPB_SYNTAX_PROTO2) {
+      field->submsg_index = sublayout_count++;
+      subs[field->submsg_index].subenum = upb_fielddef_enumsubdef(f)->layout;
+      UPB_ASSERT(subs[field->submsg_index].subenum);
     }
 
     if (upb_fielddef_label(f) == UPB_LABEL_REQUIRED) {
@@ -2357,6 +2363,40 @@ static void create_service(
   }
 }
 
+upb_enumlayout *create_enumlayout(symtab_addctx *ctx, const upb_enumdef *e) {
+  int n = 0;
+  uint64_t mask = 0;
+
+  for (int i = 0; i < e->value_count; i++) {
+    uint32_t val = (uint32_t)e->values[i].number;
+    if (val < 64) {
+      mask |= 1 << val;
+    } else {
+      n++;
+    }
+  }
+
+  int32_t *values = symtab_alloc(ctx, sizeof(*values) * n);
+  int32_t *p = values;
+
+  for (int i = 0; i < e->value_count; i++) {
+    int32_t val = e->values[i].number;
+    if ((uint32_t)val >= 64) {
+      *p++ = val;
+    }
+  }
+
+  UPB_ASSERT(p == values + n);
+  UPB_ASSERT(upb_inttable_count(&e->iton) == n + __builtin_popcountll(mask));
+
+  upb_enumlayout *layout = symtab_alloc(ctx, sizeof(*layout));
+  layout->value_count = n;
+  layout->mask = mask;
+  layout->values = values;
+
+  return layout;
+}
+
 static void create_enumdef(
     symtab_addctx *ctx, const char *prefix,
     const google_protobuf_EnumDescriptorProto *enum_proto,
@@ -2418,6 +2458,18 @@ static void create_enumdef(
   }
 
   upb_inttable_compact(&e->iton, ctx->arena);
+
+  if (e->file->syntax == UPB_SYNTAX_PROTO2) {
+    if (ctx->layout) {
+      UPB_ASSERT(ctx->enum_count < ctx->layout->enum_count);
+      e->layout = ctx->layout->enums[ctx->enum_count++];
+      UPB_ASSERT(n == e->layout->value_count + __builtin_popcountll(e->layout->mask));
+    } else {
+      e->layout = create_enumlayout(ctx, e);
+    }
+  } else {
+    e->layout = NULL;
+  }
 }
 
 static void create_msgdef(symtab_addctx *ctx, const char *prefix,

@@ -69,7 +69,7 @@ message Proto2EnumMessage {
 
   optional Proto2TestEnum optional_enum = 1;
   repeated Proto2TestEnum repeated_enum = 2;
-  map<int32, Proto2TestEnum> int32_enum_map = 3;
+  repeated Proto2TestEnum packed_enum = 3 [packed = true];
 }
 
 // The same fields as Proto2EnumMessage, but with int32 fields so we can fake
@@ -77,5 +77,5 @@ message Proto2EnumMessage {
 message Proto2FakeEnumMessage {
   optional int32 optional_enum = 1;
   repeated int32 repeated_enum = 2;
-  map<int32, int32> int32_enum_map = 3;
+  repeated int32 packed_enum = 3 [packed = true];
 }
