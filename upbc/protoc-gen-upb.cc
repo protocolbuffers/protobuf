@@ -861,8 +861,8 @@ SubLayoutArray::SubLayoutArray(const protobuf::Descriptor* message) {
   std::vector<const protobuf::FieldDescriptor*> sorted_submsgs =
       SortedSubmessages(message);
   int i = 0;
-  for (auto submsg : sorted_submsgs) {
-    if (!indexes_.insert(std::make_pair(submsg->message_type(), i)).second) {
+  for (const auto* submsg : sorted_submsgs) {
+    if (!indexes_.try_emplace(submsg->message_type(), i).second) {
       // Already present.
       continue;
     }
@@ -872,11 +872,11 @@ SubLayoutArray::SubLayoutArray(const protobuf::Descriptor* message) {
 
   std::vector<const protobuf::FieldDescriptor*> sorted_subenums =
       SortedSubEnums(message);
-  for (auto field : sorted_subenums) {
+  for (const auto* field : sorted_subenums) {
     if (field->file()->syntax() != protobuf::FileDescriptor::SYNTAX_PROTO2) {
       continue;
     }
-    if (!indexes_.insert(std::make_pair(field->enum_type(), i)).second) {
+    if (!indexes_.try_emplace(field->enum_type(), i).second) {
       // Already present.
       continue;
     }
@@ -1244,7 +1244,7 @@ int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
 
   std::string values_init = "NULL";
 
-  for (auto e : this_file_enums) {
+  for (const auto* e : this_file_enums) {
     uint64_t mask = 0;
     absl::flat_hash_set<int32_t> values;
     for (int i = 0; i < e->value_count(); i++) {
@@ -1279,7 +1279,7 @@ int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
   if (!this_file_enums.empty()) {
     output("static const upb_enumlayout *$0[$1] = {\n", kEnumsInit,
           this_file_enums.size());
-    for (auto e : this_file_enums) {
+    for (const auto* e : this_file_enums) {
       output("  &$0,\n", EnumInit(e));
     }
     output("};\n");

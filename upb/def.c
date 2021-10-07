@@ -2391,6 +2391,8 @@ upb_enumlayout *create_enumlayout(symtab_addctx *ctx, const upb_enumdef *e) {
   if (n) {
     int32_t *p = values;
 
+    // Add values outside the bitmask range to the list, as described in the
+    // comments for upb_enumlayout.
     for (int i = 0; i < e->value_count; i++) {
       int32_t val = e->values[i].number;
       if ((uint32_t)val >= 64) {
