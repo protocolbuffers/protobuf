@@ -252,6 +252,7 @@ void UnknownField::Delete() {
 }
 
 void UnknownField::DeepCopy(const UnknownField& other) {
+  (void)other;  // Parameter is used by Google-internal code.
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
       data_.length_delimited_.string_value =

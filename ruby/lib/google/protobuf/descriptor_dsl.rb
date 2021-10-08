@@ -301,8 +301,8 @@ module Google
           internal_add_field(:LABEL_REQUIRED, name, type, number, type_class, options)
         end
 
-        def repeated(name, type, number, type_class = nil)
-          internal_add_field(:LABEL_REPEATED, name, type, number, type_class, nil)
+        def repeated(name, type, number, type_class = nil, options=nil)
+          internal_add_field(:LABEL_REPEATED, name, type, number, type_class, options)
         end
 
         def oneof(name, &block)

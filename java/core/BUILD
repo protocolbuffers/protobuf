@@ -21,6 +21,8 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/ByteBufferWriter.java",
     "src/main/java/com/google/protobuf/ByteOutput.java",
     "src/main/java/com/google/protobuf/ByteString.java",
+    "src/main/java/com/google/protobuf/CanIgnoreReturnValue.java",
+    "src/main/java/com/google/protobuf/CheckReturnValue.java",
     "src/main/java/com/google/protobuf/CodedInputStream.java",
     "src/main/java/com/google/protobuf/CodedInputStreamReader.java",
     "src/main/java/com/google/protobuf/CodedOutputStream.java",
@@ -359,7 +361,6 @@ junit_tests(
         ":java_test_protos_java_proto_lite",
         ":test_util_lite",
         "//external:easymock",
-        "//external:easymock_classextension",
         "//external:junit",
         "//external:truth",
     ]

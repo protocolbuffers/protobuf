@@ -1815,4 +1815,15 @@ public class TextFormatTest {
             + "}\n";
     assertThat(TextFormat.printer().printToString(message)).isEqualTo(text);
   }
+
+  @Test
+  public void testPreservesFloatingPointNegative0() throws Exception {
+    proto3_unittest.UnittestProto3.TestAllTypes message =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(-0.0f)
+            .setOptionalDouble(-0.0)
+            .build();
+    assertThat(TextFormat.printer().printToString(message))
+        .isEqualTo("optional_float: -0.0\noptional_double: -0.0\n");
+  }
 }

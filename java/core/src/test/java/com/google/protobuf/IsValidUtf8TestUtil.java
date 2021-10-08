@@ -35,16 +35,10 @@ import static com.google.common.truth.Truth.assertWithMessage;
 
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
-import java.nio.charset.CodingErrorAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
 
 /**
  * Shared testing code for {@link IsValidUtf8Test} and {@link IsValidUtf8FourByteTest}.
@@ -53,8 +47,6 @@ import java.util.logging.Logger;
  * @author martinrb@google.com (Martin Buchholz)
  */
 final class IsValidUtf8TestUtil {
-  private static final Logger logger = Logger.getLogger(IsValidUtf8TestUtil.class.getName());
-
   private IsValidUtf8TestUtil() {}
 
   static interface ByteStringFactory {
@@ -99,6 +91,29 @@ final class IsValidUtf8TestUtil {
           buffer.put(bytes);
           buffer.flip();
           return new NioByteString(buffer);
+        }
+      };
+
+  static final ByteStringFactory ROPE_FACTORY =
+      new ByteStringFactory() {
+        // Seed the random number generator with 0 so that the tests are deterministic.
+        private final Random random = new Random(0);
+
+        @Override
+        public ByteString newByteString(byte[] bytes) {
+          // We split the byte array into three pieces (some possibly empty) by choosing two random
+          // cut points i and j.
+          int i = random.nextInt(bytes.length);
+          int j = random.nextInt(bytes.length);
+          if (j < i) {
+            int tmp = i;
+            i = j;
+            j = tmp;
+          }
+          return RopeByteString.newInstanceForTest(
+              ByteString.wrap(bytes, 0, i),
+              RopeByteString.newInstanceForTest(
+                  ByteString.wrap(bytes, i, j - i), ByteString.wrap(bytes, j, bytes.length - j)));
         }
       };
 
@@ -247,13 +262,11 @@ final class IsValidUtf8TestUtil {
    */
   static void testBytes(
       ByteStringFactory factory, int numBytes, long expectedCount, long start, long lim) {
-    Random rnd = new Random();
     byte[] bytes = new byte[numBytes];
 
     if (lim == -1) {
       lim = 1L << (numBytes * 8);
     }
-    long count = 0;
     long countRoundTripped = 0;
     for (long byteChar = start; byteChar < lim; byteChar++) {
       long tmpByteChar = byteChar;
@@ -271,166 +284,13 @@ final class IsValidUtf8TestUtil {
         outputFailure(byteChar, bytes, bytesReencoded);
       }
 
-      // Check agreement with static Utf8 methods.
+      // Check agreement with Utf8.isValidUtf8.
       assertThat(Utf8.isValidUtf8(bytes)).isEqualTo(isRoundTrippable);
-      assertThat(Utf8.isValidUtf8(bytes, 0, numBytes)).isEqualTo(isRoundTrippable);
-
-      try {
-        assertThat(Utf8.decodeUtf8(bytes, 0, numBytes)).isEqualTo(s);
-      } catch (InvalidProtocolBufferException e) {
-        if (isRoundTrippable) {
-          System.out.println("Could not decode utf-8");
-          outputFailure(byteChar, bytes, bytesReencoded);
-        }
-      }
-
-      // Test partial sequences.
-      // Partition numBytes into three segments (not necessarily non-empty).
-      int i = rnd.nextInt(numBytes);
-      int j = rnd.nextInt(numBytes);
-      if (j < i) {
-        int tmp = i;
-        i = j;
-        j = tmp;
-      }
-      int state1 = Utf8.partialIsValidUtf8(Utf8.COMPLETE, bytes, 0, i);
-      int state2 = Utf8.partialIsValidUtf8(state1, bytes, i, j);
-      int state3 = Utf8.partialIsValidUtf8(state2, bytes, j, numBytes);
-      if (isRoundTrippable != (state3 == Utf8.COMPLETE)) {
-        System.out.printf("state=%04x %04x %04x i=%d j=%d%n", state1, state2, state3, i, j);
-        outputFailure(byteChar, bytes, bytesReencoded);
-      }
-      assertThat((state3 == Utf8.COMPLETE)).isEqualTo(isRoundTrippable);
-
-      // Test ropes built out of small partial sequences
-      ByteString rope =
-          RopeByteString.newInstanceForTest(
-              bs.substring(0, i),
-              RopeByteString.newInstanceForTest(bs.substring(i, j), bs.substring(j, numBytes)));
-      assertThat(rope.getClass()).isSameInstanceAs(RopeByteString.class);
-
-      ByteString[] byteStrings = {bs, bs.substring(0, numBytes), rope};
-      for (ByteString x : byteStrings) {
-        assertThat(x.isValidUtf8()).isEqualTo(isRoundTrippable);
-        assertThat(x.partialIsValidUtf8(Utf8.COMPLETE, 0, numBytes)).isEqualTo(state3);
-
-        assertThat(x.partialIsValidUtf8(Utf8.COMPLETE, 0, i)).isEqualTo(state1);
-        assertThat(x.substring(0, i).partialIsValidUtf8(Utf8.COMPLETE, 0, i)).isEqualTo(state1);
-        assertThat(x.partialIsValidUtf8(state1, i, j - i)).isEqualTo(state2);
-        assertThat(x.substring(i, j).partialIsValidUtf8(state1, 0, j - i)).isEqualTo(state2);
-        assertThat(x.partialIsValidUtf8(state2, j, numBytes - j)).isEqualTo(state3);
-        assertThat(x.substring(j, numBytes).partialIsValidUtf8(state2, 0, numBytes - j))
-            .isEqualTo(state3);
-      }
-
-      // ByteString reduplication should not affect its UTF-8 validity.
-      ByteString ropeADope = RopeByteString.newInstanceForTest(bs, bs.substring(0, numBytes));
-      assertThat(ropeADope.isValidUtf8()).isEqualTo(isRoundTrippable);
 
       if (isRoundTrippable) {
         countRoundTripped++;
       }
-      count++;
-      if (byteChar != 0 && byteChar % 1000000L == 0) {
-        logger.info("Processed " + (byteChar / 1000000L) + " million characters");
-      }
     }
-    logger.info("Round tripped " + countRoundTripped + " of " + count);
-    assertThat(countRoundTripped).isEqualTo(expectedCount);
-  }
-
-  /**
-   * Variation of {@link #testBytes} that does less allocation using the low-level encoders/decoders
-   * directly. Checked in because it's useful for debugging when trying to process bytes faster, but
-   * since it doesn't use the actual String class, it's possible for incompatibilities to develop
-   * (although unlikely).
-   *
-   * @param factory the factory for {@link ByteString} instances.
-   * @param numBytes the number of bytes in the byte array
-   * @param expectedCount the expected number of roundtrippable permutations
-   * @param start the starting bytes encoded as a long as big-endian
-   * @param lim the limit of bytes to process encoded as a long as big-endian, or -1 to mean the max
-   *     limit for numBytes
-   */
-  static void testBytesUsingByteBuffers(
-      ByteStringFactory factory, int numBytes, long expectedCount, long start, long lim) {
-    CharsetDecoder decoder =
-        Internal.UTF_8
-            .newDecoder()
-            .onMalformedInput(CodingErrorAction.REPLACE)
-            .onUnmappableCharacter(CodingErrorAction.REPLACE);
-    CharsetEncoder encoder =
-        Internal.UTF_8
-            .newEncoder()
-            .onMalformedInput(CodingErrorAction.REPLACE)
-            .onUnmappableCharacter(CodingErrorAction.REPLACE);
-    byte[] bytes = new byte[numBytes];
-    int maxChars = (int) (decoder.maxCharsPerByte() * numBytes) + 1;
-    char[] charsDecoded = new char[(int) (decoder.maxCharsPerByte() * numBytes) + 1];
-    int maxBytes = (int) (encoder.maxBytesPerChar() * maxChars) + 1;
-    byte[] bytesReencoded = new byte[maxBytes];
-
-    ByteBuffer bb = ByteBuffer.wrap(bytes);
-    CharBuffer cb = CharBuffer.wrap(charsDecoded);
-    ByteBuffer bbReencoded = ByteBuffer.wrap(bytesReencoded);
-    if (lim == -1) {
-      lim = 1L << (numBytes * 8);
-    }
-    long count = 0;
-    long countRoundTripped = 0;
-    for (long byteChar = start; byteChar < lim; byteChar++) {
-      bb.rewind();
-      bb.limit(bytes.length);
-      cb.rewind();
-      cb.limit(charsDecoded.length);
-      bbReencoded.rewind();
-      bbReencoded.limit(bytesReencoded.length);
-      encoder.reset();
-      decoder.reset();
-      long tmpByteChar = byteChar;
-      for (int i = 0; i < bytes.length; i++) {
-        bytes[bytes.length - i - 1] = (byte) tmpByteChar;
-        tmpByteChar = tmpByteChar >> 8;
-      }
-      boolean isRoundTrippable = factory.newByteString(bytes).isValidUtf8();
-      CoderResult result = decoder.decode(bb, cb, true);
-      assertThat(result.isError()).isFalse();
-      result = decoder.flush(cb);
-      assertThat(result.isError()).isFalse();
-
-      int charLen = cb.position();
-      cb.rewind();
-      cb.limit(charLen);
-      result = encoder.encode(cb, bbReencoded, true);
-      assertThat(result.isError()).isFalse();
-      result = encoder.flush(bbReencoded);
-      assertThat(result.isError()).isFalse();
-
-      boolean bytesEqual = true;
-      int bytesLen = bbReencoded.position();
-      if (bytesLen != numBytes) {
-        bytesEqual = false;
-      } else {
-        for (int i = 0; i < numBytes; i++) {
-          if (bytes[i] != bytesReencoded[i]) {
-            bytesEqual = false;
-            break;
-          }
-        }
-      }
-      if (bytesEqual != isRoundTrippable) {
-        outputFailure(byteChar, bytes, bytesReencoded, bytesLen);
-      }
-
-      count++;
-      if (isRoundTrippable) {
-        countRoundTripped++;
-      }
-      if (byteChar != 0 && byteChar % 1000000 == 0) {
-        logger.info("Processed " + (byteChar / 1000000) + " million characters");
-      }
-    }
-    logger.info("Round tripped " + countRoundTripped + " of " + count);
     assertThat(countRoundTripped).isEqualTo(expectedCount);
   }
 

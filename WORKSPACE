@@ -45,7 +45,6 @@ maven_install(
         "com.google.truth:truth:1.1.2",
         "junit:junit:4.12",
         "org.easymock:easymock:3.2",
-        "org.easymock:easymockclassextension:3.2",
     ],
     repositories = [
         "https://repo1.maven.org/maven2",

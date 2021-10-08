@@ -212,20 +212,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
     int unknown_field_index2 = -1;
   };
 
-  // Class for processing Any deserialization.  This logic is used by both the
-  // MessageDifferencer and StreamReporter classes.
-  class UnpackAnyField {
-   private:
-    std::unique_ptr<DynamicMessageFactory> dynamic_message_factory_;
-
-   public:
-    UnpackAnyField() = default;
-    ~UnpackAnyField() = default;
-    // If "any" is of type google.protobuf.Any, extract its payload using
-    // DynamicMessageFactory and store in "data".
-    bool UnpackAny(const Message& any, std::unique_ptr<Message>* data);
-  };
-
   // Abstract base class from which all MessageDifferencer
   // reporters derive. The five Report* methods below will be called when
   // a field has been added, deleted, modified, moved, or matched. The third
@@ -628,6 +614,22 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // differences to any previously set reporters or output strings.
   void ReportDifferencesTo(Reporter* reporter);
 
+ private:
+  // Class for processing Any deserialization.  This logic is used by both the
+  // MessageDifferencer and StreamReporter classes.
+  class UnpackAnyField {
+   private:
+    std::unique_ptr<DynamicMessageFactory> dynamic_message_factory_;
+
+   public:
+    UnpackAnyField() = default;
+    ~UnpackAnyField() = default;
+    // If "any" is of type google.protobuf.Any, extract its payload using
+    // DynamicMessageFactory and store in "data".
+    bool UnpackAny(const Message& any, std::unique_ptr<Message>* data);
+  };
+
+ public:
   // An implementation of the MessageDifferencer Reporter that outputs
   // any differences found in human-readable form to the supplied
   // ZeroCopyOutputStream or Printer. If a printer is used, the delimiter

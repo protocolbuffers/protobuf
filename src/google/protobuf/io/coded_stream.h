@@ -706,6 +706,9 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // aliasing the buffer (ie. not copying the data). The caller is responsible
   // to make sure the buffer is alive for the duration of the
   // ZeroCopyOutputStream.
+#ifndef NDEBUG
+  PROTOBUF_NOINLINE
+#endif
   uint8_t* WriteRawMaybeAliased(const void* data, int size, uint8_t* ptr) {
     if (aliasing_enabled_) {
       return WriteAliasedRaw(data, size, ptr);
@@ -715,6 +718,9 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   }
 
 
+#ifndef NDEBUG
+  PROTOBUF_NOINLINE
+#endif
   uint8_t* WriteStringMaybeAliased(uint32_t num, const std::string& s,
                                    uint8_t* ptr) {
     std::ptrdiff_t size = s.size();
@@ -746,6 +752,9 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     return ptr + size;
   }
   template <typename T>
+#ifndef NDEBUG
+  PROTOBUF_NOINLINE
+#endif
   uint8_t* WriteBytes(uint32_t num, const T& s, uint8_t* ptr) {
     return WriteString(num, s, ptr);
   }

@@ -316,7 +316,7 @@ void SerializeMessageNoTable(const MessageLite* msg, ArrayOutput* output) {
 // Helper to branch to fast path if possible
 void SerializeMessageDispatch(const MessageLite& msg,
                               const FieldMetadata* field_table, int num_fields,
-                              int32_t cached_size,
+                              int32_t /*cached_size*/,
                               io::CodedOutputStream* output) {
   const uint8_t* base = reinterpret_cast<const uint8_t*>(&msg);
   SerializeInternal(base, field_table, num_fields, output);
@@ -325,7 +325,7 @@ void SerializeMessageDispatch(const MessageLite& msg,
 // Helper to branch to fast path if possible
 void SerializeMessageDispatch(const MessageLite& msg,
                               const FieldMetadata* field_table, int num_fields,
-                              int32_t cached_size, ArrayOutput* output) {
+                              int32_t /*cached_size*/, ArrayOutput* output) {
   const uint8_t* base = reinterpret_cast<const uint8_t*>(&msg);
   output->ptr = SerializeInternalToArray(base, field_table, num_fields,
                                          output->is_deterministic, output->ptr);
@@ -523,7 +523,8 @@ struct PackedFieldHelper {
 template <>
 struct PackedFieldHelper<WireFormatLite::TYPE_STRING> {
   template <typename O>
-  static void Serialize(const void* field, const FieldMetadata& md, O* output) {
+  static void Serialize(const void* /*field*/, const FieldMetadata& md,
+                        O* /*output*/) {
     GOOGLE_LOG(FATAL) << "Not implemented field number " << md.tag << " with type "
                << md.type;
   }
@@ -726,7 +727,7 @@ void ExtensionSerializer(const MessageLite* extendee, const uint8_t* ptr,
 }
 
 void UnknownFieldSerializerLite(const uint8_t* ptr, uint32_t offset,
-                                uint32_t tag, uint32_t has_offset,
+                                uint32_t /*tag*/, uint32_t /*has_offset*/,
                                 io::CodedOutputStream* output) {
   output->WriteString(
       reinterpret_cast<const InternalMetadata*>(ptr + offset)

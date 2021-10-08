@@ -66,7 +66,8 @@ module BasicTest
     def test_issue_8559_crash
       msg = TestMessage.new
       msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
-      GC.start(full_mark: true, immediate_sweep: true)
+      # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
+      GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
       TestMessage.encode(msg)
     end
 
@@ -166,6 +167,17 @@ module BasicTest
       assert_equal TestMessage2.new(:foo => 42), m.singular_msg
       TestSingularFields.descriptor.lookup('singular_msg').clear(m)
       assert_equal nil, m.singular_msg
+    end
+
+    def test_import_proto2
+      m = TestMessage.new
+      assert !m.has_optional_proto2_submessage?
+      m.optional_proto2_submessage = ::FooBar::Proto2::TestImportedMessage.new
+      assert m.has_optional_proto2_submessage?
+      assert TestMessage.descriptor.lookup('optional_proto2_submessage').has?(m)
+
+      m.clear_optional_proto2_submessage
+      assert !m.has_optional_proto2_submessage?
     end
 
     def test_clear_repeated_fields
@@ -487,6 +499,7 @@ module BasicTest
         :optional_int64=>0,
         :optional_msg=>nil,
         :optional_msg2=>nil,
+        :optional_proto2_submessage=>nil,
         :optional_string=>"foo",
         :optional_uint32=>0,
         :optional_uint64=>0,

@@ -864,6 +864,7 @@ bool JsonStreamParser::IsEmptyNullAllowed(TokenType type) {
 
 util::Status JsonStreamParser::ReportFailure(StringPiece message,
                                              ParseErrorType parse_code) {
+  (void)parse_code;  // Parameter is used in Google-internal code.
   static const int kContextLength = 20;
   const char* p_start = p_.data();
   const char* json_start = json_.data();

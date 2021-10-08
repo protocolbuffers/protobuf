@@ -51,7 +51,7 @@ using MakeUnsignedT =
 // types.
 template <typename T,
           typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
-bool IsNan(T val) {
+bool IsNan(T /*val*/) {
   return false;
 }
 

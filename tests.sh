@@ -88,6 +88,18 @@ build_cpp_distcheck() {
 }
 
 build_dist_install() {
+  # Create a symlink pointing to python2 and put it at the beginning of $PATH.
+  # This is necessary because the googletest build system involves a Python
+  # script that is not compatible with Python 3. More recent googletest
+  # versions have fixed this, but they have also removed the autotools build
+  # system support that we rely on. This is a temporary workaround to keep the
+  # googletest build working when the default python binary is Python 3.
+  mkdir tmp || true
+  pushd tmp
+  ln -s /usr/bin/python2 ./python
+  popd
+  PATH=$PWD/tmp:$PATH
+
   # Initialize any submodules.
   git submodule update --init --recursive
   ./autogen.sh
@@ -202,13 +214,20 @@ use_java() {
 # --batch-mode suppresses download progress output that spams the logs.
 MVN="mvn --batch-mode"
 
-build_java() {
+internal_build_java() {
   version=$1
   dir=java_$version
   # Java build needs `protoc`.
   internal_build_cpp
   cp -r java $dir
   cd $dir && $MVN clean
+  # Skip tests here - callers will decide what tests they want to run
+  $MVN install -pl util -Dmaven.test.skip=true
+}
+
+build_java() {
+  version=$1
+  internal_build_java $version
   # Skip the Kotlin tests on Oracle 7
   if [ "$version" == "oracle7" ]; then
     $MVN test -pl bom,lite,core,util
@@ -433,9 +452,16 @@ build_ruby30() {
   cd ruby && bash travis-test.sh ruby-3.0.2 && cd ..
 }
 
-build_jruby() {
-  internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh jruby-9.2.11.1 && cd ..
+build_jruby92() {
+  internal_build_cpp                # For conformance tests.
+  internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
+  cd ruby && bash travis-test.sh jruby-9.2.19.0 && cd ..
+}
+
+build_jruby93() {
+  internal_build_cpp                # For conformance tests.
+  internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
+  cd ruby && bash travis-test.sh jruby-9.3.0.0 && cd ..
 }
 
 build_javascript() {
@@ -590,7 +616,8 @@ Usage: $0 { cpp |
             ruby26 |
             ruby27 |
             ruby30 |
-            jruby |
+            jruby92 |
+            jruby93 |
             ruby_all |
             php_all |
             php_all_32 |

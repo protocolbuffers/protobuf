@@ -205,7 +205,7 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
 }
 
 const char* EpsCopyInputStream::SkipFallback(const char* ptr, int size) {
-  return AppendSize(ptr, size, [](const char* p, int s) {});
+  return AppendSize(ptr, size, [](const char* /*p*/, int /*s*/) {});
 }
 
 const char* EpsCopyInputStream::ReadStringFallback(const char* ptr, int size,
@@ -237,7 +237,7 @@ const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
 template <int>
 void byteswap(void* p);
 template <>
-void byteswap<1>(void* p) {}
+void byteswap<1>(void* /*p*/) {}
 template <>
 void byteswap<4>(void* p) {
   *static_cast<uint32_t*>(p) = bswap_32(*static_cast<uint32_t*>(p));

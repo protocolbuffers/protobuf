@@ -46,9 +46,9 @@ import protobuf_unittest.UnittestProto.TestService;
 import protobuf_unittest.no_generic_services_test.UnittestNoGenericServices;
 import java.util.HashSet;
 import java.util.Set;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
-import org.easymock.classextension.IMocksControl;
+import org.easymock.IMocksControl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,7 +80,7 @@ public class ServiceTest {
     BarRequest barRequest = BarRequest.newBuilder().build();
     MockCallback<Message> fooCallback = new MockCallback<Message>();
     MockCallback<Message> barCallback = new MockCallback<Message>();
-    TestService mockService = control.createMock(TestService.class);
+    TestService mockService = EasyMock.createMock(TestService.class);
 
     mockService.foo(
         EasyMock.same(mockController),
@@ -104,7 +104,7 @@ public class ServiceTest {
   /** Tests Service.get{Request,Response}Prototype(). */
   @Test
   public void testGetPrototype() throws Exception {
-    TestService mockService = control.createMock(TestService.class);
+    TestService mockService = EasyMock.createMock(TestService.class);
 
     assertThat(mockService.getRequestPrototype(fooDescriptor))
         .isSameInstanceAs(FooRequest.getDefaultInstance());
@@ -316,7 +316,6 @@ public class ServiceTest {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public boolean matches(Object actual) {
       if (!(actual instanceof RpcCallback)) {
         return false;

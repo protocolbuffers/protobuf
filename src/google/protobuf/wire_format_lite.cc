@@ -53,7 +53,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
+#if !defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912)
 // Old version of MSVC doesn't like definitions of inline constants, GCC
 // requires them.
 const int WireFormatLite::kMessageSetItemStartTag;
@@ -528,7 +528,7 @@ void WireFormatLite::WriteMessage(int field_number, const MessageLite& value,
 }
 
 void WireFormatLite::WriteSubMessageMaybeToArray(
-    int size, const MessageLite& value, io::CodedOutputStream* output) {
+    int /*size*/, const MessageLite& value, io::CodedOutputStream* output) {
   output->SetCur(value._InternalSerialize(output->Cur(), output->EpsCopy()));
 }
 
@@ -573,6 +573,7 @@ bool WireFormatLite::ReadBytes(io::CodedInputStream* input, std::string** p) {
 void PrintUTF8ErrorLog(const char* field_name, const char* operation_str,
                        bool emit_stacktrace) {
   std::string stacktrace;
+  (void)emit_stacktrace;  // Parameter is used by Google-internal code.
   std::string quoted_field_name = "";
   if (field_name != nullptr) {
     quoted_field_name = StringPrintf(" '%s'", field_name);

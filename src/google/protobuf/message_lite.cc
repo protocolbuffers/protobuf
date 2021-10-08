@@ -121,6 +121,7 @@ inline StringPiece as_string_view(const void* data, int size) {
 inline bool CheckFieldPresence(const internal::ParseContext& ctx,
                                const MessageLite& msg,
                                MessageLite::ParseFlags parse_flags) {
+  (void)ctx;  // Parameter is used by Google-internal code.
   if (PROTOBUF_PREDICT_FALSE((parse_flags & MessageLite::kMergePartial) != 0)) {
     return true;
   }

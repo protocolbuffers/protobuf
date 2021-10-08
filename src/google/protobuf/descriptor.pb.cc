@@ -1120,7 +1120,7 @@ bool FieldDescriptorProto_Type_IsValid(int value) {
   }
 }
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_DOUBLE;
 constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_FLOAT;
 constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_INT64;
@@ -1142,7 +1142,7 @@ constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_SINT64;
 constexpr FieldDescriptorProto_Type FieldDescriptorProto::Type_MIN;
 constexpr FieldDescriptorProto_Type FieldDescriptorProto::Type_MAX;
 constexpr int FieldDescriptorProto::Type_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldDescriptorProto_Label_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[1];
@@ -1158,14 +1158,14 @@ bool FieldDescriptorProto_Label_IsValid(int value) {
   }
 }
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_OPTIONAL;
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_REQUIRED;
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_REPEATED;
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::Label_MIN;
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::Label_MAX;
 constexpr int FieldDescriptorProto::Label_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FileOptions_OptimizeMode_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[2];
@@ -1181,14 +1181,14 @@ bool FileOptions_OptimizeMode_IsValid(int value) {
   }
 }
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr FileOptions_OptimizeMode FileOptions::SPEED;
 constexpr FileOptions_OptimizeMode FileOptions::CODE_SIZE;
 constexpr FileOptions_OptimizeMode FileOptions::LITE_RUNTIME;
 constexpr FileOptions_OptimizeMode FileOptions::OptimizeMode_MIN;
 constexpr FileOptions_OptimizeMode FileOptions::OptimizeMode_MAX;
 constexpr int FileOptions::OptimizeMode_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldOptions_CType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[3];
@@ -1204,14 +1204,14 @@ bool FieldOptions_CType_IsValid(int value) {
   }
 }
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr FieldOptions_CType FieldOptions::STRING;
 constexpr FieldOptions_CType FieldOptions::CORD;
 constexpr FieldOptions_CType FieldOptions::STRING_PIECE;
 constexpr FieldOptions_CType FieldOptions::CType_MIN;
 constexpr FieldOptions_CType FieldOptions::CType_MAX;
 constexpr int FieldOptions::CType_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldOptions_JSType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[4];
@@ -1227,14 +1227,14 @@ bool FieldOptions_JSType_IsValid(int value) {
   }
 }
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr FieldOptions_JSType FieldOptions::JS_NORMAL;
 constexpr FieldOptions_JSType FieldOptions::JS_STRING;
 constexpr FieldOptions_JSType FieldOptions::JS_NUMBER;
 constexpr FieldOptions_JSType FieldOptions::JSType_MIN;
 constexpr FieldOptions_JSType FieldOptions::JSType_MAX;
 constexpr int FieldOptions::JSType_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MethodOptions_IdempotencyLevel_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[5];
@@ -1250,14 +1250,14 @@ bool MethodOptions_IdempotencyLevel_IsValid(int value) {
   }
 }
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr MethodOptions_IdempotencyLevel MethodOptions::IDEMPOTENCY_UNKNOWN;
 constexpr MethodOptions_IdempotencyLevel MethodOptions::NO_SIDE_EFFECTS;
 constexpr MethodOptions_IdempotencyLevel MethodOptions::IDEMPOTENT;
 constexpr MethodOptions_IdempotencyLevel MethodOptions::IdempotencyLevel_MIN;
 constexpr MethodOptions_IdempotencyLevel MethodOptions::IdempotencyLevel_MAX;
 constexpr int MethodOptions::IdempotencyLevel_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
 // ===================================================================
 
@@ -1429,7 +1429,8 @@ void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
 }
 
 bool FileDescriptorSet::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(file_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(file_))
+    return false;
   return true;
 }
 
@@ -2080,10 +2081,14 @@ void FileDescriptorProto::CopyFrom(const FileDescriptorProto& from) {
 }
 
 bool FileDescriptorProto::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(message_type_)) return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(enum_type_)) return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(service_)) return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(extension_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(message_type_))
+    return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(enum_type_))
+    return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(service_))
+    return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(extension_))
+    return false;
   if (_internal_has_options()) {
     if (!options_->IsInitialized()) return false;
   }
@@ -3165,12 +3170,18 @@ void DescriptorProto::CopyFrom(const DescriptorProto& from) {
 }
 
 bool DescriptorProto::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(field_)) return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(nested_type_)) return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(enum_type_)) return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(extension_range_)) return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(extension_)) return false;
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(oneof_decl_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(field_))
+    return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(nested_type_))
+    return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(enum_type_))
+    return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(extension_range_))
+    return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(extension_))
+    return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(oneof_decl_))
+    return false;
   if (_internal_has_options()) {
     if (!options_->IsInitialized()) return false;
   }
@@ -3394,7 +3405,8 @@ bool ExtensionRangeOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_))
+    return false;
   return true;
 }
 
@@ -4947,7 +4959,8 @@ void EnumDescriptorProto::CopyFrom(const EnumDescriptorProto& from) {
 }
 
 bool EnumDescriptorProto::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(value_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(value_))
+    return false;
   if (_internal_has_options()) {
     if (!options_->IsInitialized()) return false;
   }
@@ -5570,7 +5583,8 @@ void ServiceDescriptorProto::CopyFrom(const ServiceDescriptorProto& from) {
 }
 
 bool ServiceDescriptorProto::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(method_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(method_))
+    return false;
   if (_internal_has_options()) {
     if (!options_->IsInitialized()) return false;
   }
@@ -7065,7 +7079,8 @@ bool FileOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_))
+    return false;
   return true;
 }
 
@@ -7459,7 +7474,8 @@ bool MessageOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_))
+    return false;
   return true;
 }
 
@@ -7866,7 +7882,8 @@ bool FieldOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_))
+    return false;
   return true;
 }
 
@@ -8079,7 +8096,8 @@ bool OneofOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_))
+    return false;
   return true;
 }
 
@@ -8360,7 +8378,8 @@ bool EnumOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_))
+    return false;
   return true;
 }
 
@@ -8609,7 +8628,8 @@ bool EnumValueOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_))
+    return false;
   return true;
 }
 
@@ -8853,7 +8873,8 @@ bool ServiceOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_))
+    return false;
   return true;
 }
 
@@ -9145,7 +9166,8 @@ bool MethodOptions::IsInitialized() const {
     return false;
   }
 
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(uninterpreted_option_))
+    return false;
   return true;
 }
 
@@ -9865,7 +9887,8 @@ void UninterpretedOption::CopyFrom(const UninterpretedOption& from) {
 }
 
 bool UninterpretedOption::IsInitialized() const {
-  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(name_)) return false;
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(name_))
+    return false;
   return true;
 }
 

@@ -69,28 +69,28 @@ namespace internal {
 #define PROTOBUF_TC_PARSE_SINGULAR1(MESSAGE) MESSAGE::Tct_ParseS1
 #else
 #define PROTOBUF_TC_PARSE_SINGULAR1(MESSAGE) \
-  ::google::protobuf::internal::TcParserBase::SingularParseMessage<MESSAGE, uint8_t>
+  ::google::protobuf::internal::TcParser::SingularParseMessage<MESSAGE, uint8_t>
 #endif  // PROTOBUF_TC_STATIC_PARSE_SINGULAR1
 
 #if PROTOBUF_TC_STATIC_PARSE_SINGULAR2
 #define PROTOBUF_TC_PARSE_SINGULAR2(MESSAGE) MESSAGE::Tct_ParseS2
 #else
 #define PROTOBUF_TC_PARSE_SINGULAR2(MESSAGE) \
-  ::google::protobuf::internal::TcParserBase::SingularParseMessage<MESSAGE, uint16_t>
+  ::google::protobuf::internal::TcParser::SingularParseMessage<MESSAGE, uint16_t>
 #endif  // PROTOBUF_TC_STATIC_PARSE_SINGULAR2
 
 #if PROTOBUF_TC_STATIC_PARSE_REPEATED1
 #define PROTOBUF_TC_PARSE_REPEATED1(MESSAGE) MESSAGE::Tct_ParseR1
 #else
 #define PROTOBUF_TC_PARSE_REPEATED1(MESSAGE) \
-  ::google::protobuf::internal::TcParserBase::RepeatedParseMessage<MESSAGE, uint8_t>
+  ::google::protobuf::internal::TcParser::RepeatedParseMessage<MESSAGE, uint8_t>
 #endif  // PROTOBUF_TC_STATIC_PARSE_REPEATED1
 
 #if PROTOBUF_TC_STATIC_PARSE_REPEATED2
 #define PROTOBUF_TC_PARSE_REPEATED2(MESSAGE) MESSAGE::Tct_ParseR2
 #else
 #define PROTOBUF_TC_PARSE_REPEATED2(MESSAGE) \
-  ::google::protobuf::internal::TcParserBase::RepeatedParseMessage<MESSAGE, uint16_t>
+  ::google::protobuf::internal::TcParser::RepeatedParseMessage<MESSAGE, uint16_t>
 #endif  // PROTOBUF_TC_STATIC_PARSE_REPEATED2
 
 #ifndef NDEBUG
@@ -106,10 +106,51 @@ extern template void AlignFail<4>(uintptr_t);
 extern template void AlignFail<8>(uintptr_t);
 #endif
 
-class TcParserBase {
+// TcParser implements most of the parsing logic for tailcall tables.
+class TcParser final {
  public:
   static const char* GenericFallback(PROTOBUF_TC_PARAM_DECL);
   static const char* GenericFallbackLite(PROTOBUF_TC_PARAM_DECL);
+
+  // Dispatch to the designated parse function
+  inline PROTOBUF_ALWAYS_INLINE static const char* TagDispatch(
+      PROTOBUF_TC_PARAM_DECL) {
+    const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
+    const size_t idx = coded_tag & table->fast_idx_mask;
+    PROTOBUF_ASSUME((idx & 7) == 0);
+    auto* fast_entry = table->fast_entry(idx >> 3);
+    data = fast_entry->bits;
+    data.data ^= coded_tag;
+    PROTOBUF_MUSTTAIL return fast_entry->target(PROTOBUF_TC_PARAM_PASS);
+  }
+
+  // We can only safely call from field to next field if the call is optimized
+  // to a proper tail call. Otherwise we blow through stack. Clang and gcc
+  // reliably do this optimization in opt mode, but do not perform this in debug
+  // mode. Luckily the structure of the algorithm is such that it's always
+  // possible to just return and use the enclosing parse loop as a trampoline.
+  static const char* ToTagDispatch(PROTOBUF_TC_PARAM_DECL) {
+    constexpr bool always_return = !PROTOBUF_TAILCALL;
+    if (always_return || !ctx->DataAvailable(ptr)) {
+      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
+    }
+    PROTOBUF_MUSTTAIL return TagDispatch(PROTOBUF_TC_PARAM_PASS);
+  }
+
+  static const char* ParseLoop(MessageLite* msg, const char* ptr,
+                               ParseContext* ctx,
+                               const TcParseTableBase* table) {
+    ScopedArenaSwap saved(msg, ctx);
+    const uint32_t has_bits_offset = table->has_bits_offset;
+    while (!ctx->Done(&ptr)) {
+      uint64_t hasbits = 0;
+      if (has_bits_offset) hasbits = RefAt<uint32_t>(msg, has_bits_offset);
+      ptr = TagDispatch(msg, ptr, ctx, table, hasbits, {});
+      if (ptr == nullptr) break;
+      if (ctx->LastTag() != 1) break;  // Ended on terminating tag
+    }
+    return ptr;
+  }
 
   template <typename FieldType, typename TagType>
   PROTOBUF_NOINLINE static const char* SingularParseMessage(
@@ -146,11 +187,15 @@ class TcParserBase {
   }
 
   template <typename LayoutType, typename TagType>
+  static const char* SingularFixed(PROTOBUF_TC_PARAM_DECL);
+  template <typename LayoutType, typename TagType>
   static const char* RepeatedFixed(PROTOBUF_TC_PARAM_DECL);
   template <typename LayoutType, typename TagType>
   static const char* PackedFixed(PROTOBUF_TC_PARAM_DECL);
 
   enum VarintDecode { kNoConversion = 0, kZigZag = 1 };
+  template <typename FieldType, typename TagType, VarintDecode zigzag>
+  static const char* SingularVarint(PROTOBUF_TC_PARAM_DECL);
   template <typename FieldType, typename TagType, VarintDecode zigzag>
   static const char* RepeatedVarint(PROTOBUF_TC_PARAM_DECL);
   template <typename FieldType, typename TagType, VarintDecode zigzag>
@@ -175,7 +220,7 @@ class TcParserBase {
   }
 
   static inline PROTOBUF_ALWAYS_INLINE void SyncHasbits(
-      MessageLite* msg, uint64_t hasbits, const TailCallParseTableBase* table) {
+      MessageLite* msg, uint64_t hasbits, const TcParseTableBase* table) {
     const uint32_t has_bits_offset = table->has_bits_offset;
     if (has_bits_offset) {
       // Only the first 32 has-bits are updated. Nothing above those is stored,
@@ -185,14 +230,19 @@ class TcParserBase {
   }
 
  protected:
-  static inline PROTOBUF_ALWAYS_INLINE const char* Return(
+  static inline PROTOBUF_ALWAYS_INLINE const char* ToParseLoop(
       PROTOBUF_TC_PARAM_DECL) {
+    (void)data;
+    (void)ctx;
     SyncHasbits(msg, hasbits, table);
     return ptr;
   }
 
   static inline PROTOBUF_ALWAYS_INLINE const char* Error(
       PROTOBUF_TC_PARAM_DECL) {
+    (void)data;
+    (void)ctx;
+    (void)ptr;
     SyncHasbits(msg, hasbits, table);
     return nullptr;
   }
@@ -224,6 +274,7 @@ class TcParserBase {
       ctx->SetLastTag(tag);
       return ptr;
     }
+    (void)data;
     uint32_t num = tag >> 3;
     if (table->extension_range_low <= num &&
         num <= table->extension_range_high) {
@@ -237,59 +288,6 @@ class TcParserBase {
         ptr, ctx);
 #undef CHK_
   }
-};
-
-// TcParser implements most of the parsing logic for tailcall tables.
-//
-// This is templated on lg2(table size), since dispatching depends upon the size
-// of the table. The template parameter avoids runtime overhead for computing
-// the table entry index.
-template <uint32_t kPowerOf2>
-struct TcParser final : TcParserBase {
-  // Dispatch to the designated parse function
-  inline PROTOBUF_ALWAYS_INLINE static const char* TagDispatch(
-      PROTOBUF_TC_PARAM_DECL) {
-    const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
-    constexpr size_t kIdxMask = ((1 << (kPowerOf2)) - 1);
-    const size_t idx = (coded_tag >> 3) & kIdxMask;
-    data = table->table()[idx].bits;
-    data.data ^= coded_tag;
-    PROTOBUF_MUSTTAIL return table->table()[idx].target(PROTOBUF_TC_PARAM_PASS);
-  }
-
-  // We can only safely call from field to next field if the call is optimized
-  // to a proper tail call. Otherwise we blow through stack. Clang and gcc
-  // reliably do this optimization in opt mode, but do not perform this in debug
-  // mode. Luckily the structure of the algorithm is such that it's always
-  // possible to just return and use the enclosing parse loop as a trampoline.
-  static const char* TailCall(PROTOBUF_TC_PARAM_DECL) {
-    constexpr bool always_return = !PROTOBUF_TAILCALL;
-    if (always_return || !ctx->DataAvailable(ptr)) {
-      PROTOBUF_MUSTTAIL return Return(PROTOBUF_TC_PARAM_PASS);
-    }
-    PROTOBUF_MUSTTAIL return TagDispatch(PROTOBUF_TC_PARAM_PASS);
-  }
-
-  static const char* ParseLoop(MessageLite* msg, const char* ptr,
-                               ParseContext* ctx,
-                               const TailCallParseTableBase* table) {
-    ScopedArenaSwap saved(msg, ctx);
-    const uint32_t has_bits_offset = table->has_bits_offset;
-    while (!ctx->Done(&ptr)) {
-      uint64_t hasbits = 0;
-      if (has_bits_offset) hasbits = RefAt<uint32_t>(msg, has_bits_offset);
-      ptr = TagDispatch(msg, ptr, ctx, table, hasbits, {});
-      if (ptr == nullptr) break;
-      if (ctx->LastTag() != 1) break;  // Ended on terminating tag
-    }
-    return ptr;
-  }
-
-  template <typename LayoutType, typename TagType>
-  static const char* SingularFixed(PROTOBUF_TC_PARAM_DECL);
-
-  template <typename FieldType, typename TagType, VarintDecode zigzag>
-  static const char* SingularVarint(PROTOBUF_TC_PARAM_DECL);
 };
 
 // Declare helper functions:

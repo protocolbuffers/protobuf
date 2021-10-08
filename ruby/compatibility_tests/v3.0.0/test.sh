@@ -14,4 +14,4 @@ wget https://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0/${PROTOC_BI
 chmod +x protoc
 
 # Run tests
-rake test
+RUBYLIB=../../lib:. rake test

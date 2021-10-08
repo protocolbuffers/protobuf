@@ -153,17 +153,17 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3017003
+#define PROTOBUF_VERSION 3018001
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
 #endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3017000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3018000
 
 #ifdef PROTOBUF_MIN_PROTOC_VERSION
 #error PROTOBUF_MIN_PROTOC_VERSION was previously defined
 #endif
-#define PROTOBUF_MIN_PROTOC_VERSION 3017000
+#define PROTOBUF_MIN_PROTOC_VERSION 3018000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
@@ -356,7 +356,7 @@
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3017000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3018000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
@@ -579,7 +579,8 @@
 // https://github.com/protocolbuffers/protobuf/issues/8310
 // Does not work yet with Visual Studio 2019 Update 16.10
 #define PROTOBUF_CONSTINIT constinit
-#elif __has_cpp_attribute(clang::require_constant_initialization)
+#elif !defined(_MSC_VER) && \
+    __has_cpp_attribute(clang::require_constant_initialization)
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #else
 #define PROTOBUF_CONSTINIT
@@ -696,7 +697,7 @@
 #define PROTOBUF_TC_PARAM_DECL                                 \
   ::google::protobuf::MessageLite *msg, const char *ptr,                 \
       ::google::protobuf::internal::ParseContext *ctx,                   \
-      const ::google::protobuf::internal::TailCallParseTableBase *table, \
+      const ::google::protobuf::internal::TcParseTableBase *table,       \
       uint64_t hasbits, ::google::protobuf::internal::TcFieldData data
 
 #ifdef PROTOBUF_UNUSED
