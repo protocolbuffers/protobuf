@@ -8,7 +8,7 @@ test_version() {
 
   RUBY_CONFORMANCE=test_ruby
 
-  if [ "$version" == "jruby-9.2.11.1" ] ; then
+  if [[ $version == jruby-9* ]] ; then
     bash --login -c \
       "rvm install $version && rvm use $version && rvm get head && \
        which ruby && \

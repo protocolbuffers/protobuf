@@ -81,7 +81,7 @@
         <dependency>
             <groupId>org.jruby</groupId>
             <artifactId>jruby-complete</artifactId>
-            <version>9.2.11.1</version>
+            <version>9.2.19.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
