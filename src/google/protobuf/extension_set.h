@@ -1359,8 +1359,8 @@ class MessageTypeTraits {
                               ConstType default_value) {
     return static_cast<const Type&>(set.GetMessage(number, default_value));
   }
-  static inline std::nullptr_t GetPtr(int number, const ExtensionSet& set,
-                                      ConstType default_value) {
+  static inline std::nullptr_t GetPtr(int /* number */, const ExtensionSet& /* set */,
+                                      ConstType /* default_value */) {
     // Cannot be implemented because of forward declared messages?
     return nullptr;
   }
@@ -1412,13 +1412,13 @@ class RepeatedMessageTypeTraits {
   static inline ConstType Get(int number, const ExtensionSet& set, int index) {
     return static_cast<const Type&>(set.GetRepeatedMessage(number, index));
   }
-  static inline std::nullptr_t GetPtr(int number, const ExtensionSet& set,
-                                      int index) {
+  static inline std::nullptr_t GetPtr(int /* number */, const ExtensionSet& /* set */,
+                                      int /* index */) {
     // Cannot be implemented because of forward declared messages?
     return nullptr;
   }
-  static inline std::nullptr_t GetRepeatedPtr(int number,
-                                              const ExtensionSet& set) {
+  static inline std::nullptr_t GetRepeatedPtr(int /* number */,
+                                              const ExtensionSet& /* set */) {
     // Cannot be implemented because of forward declared messages?
     return nullptr;
   }
