@@ -222,7 +222,7 @@ internal_build_java() {
   cp -r java $dir
   cd $dir && $MVN clean
   # Skip tests here - callers will decide what tests they want to run
-  $MVN install -pl util -Dmaven.test.skip=true
+  $MVN install -pl core -Dmaven.test.skip=true
 }
 
 build_java() {
