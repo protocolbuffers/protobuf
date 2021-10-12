@@ -920,8 +920,12 @@ bool TryFillTableEntry(const protobuf::Descriptor* message,
     case protobuf::FieldDescriptor::TYPE_BOOL:
       type = "b1";
       break;
-    case protobuf::FieldDescriptor::TYPE_INT32:
     case protobuf::FieldDescriptor::TYPE_ENUM:
+      if (field->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2) {
+        // We don't have the means to test proto2 enum fields for valid values.
+        return false;
+      }
+    case protobuf::FieldDescriptor::TYPE_INT32:
     case protobuf::FieldDescriptor::TYPE_UINT32:
       type = "v4";
       break;
