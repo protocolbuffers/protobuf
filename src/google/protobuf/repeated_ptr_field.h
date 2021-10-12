@@ -1631,7 +1631,7 @@ class RepeatedPtrIterator {
       : it_(other.it_) {
     // Force a compiler error if the other type is not convertible to ours.
     if (false) {
-      (void)[](OtherElement* from) -> Element* { return from; };
+      static_cast<void>([](OtherElement* from) -> Element* { return from; });
     }
   }
 
