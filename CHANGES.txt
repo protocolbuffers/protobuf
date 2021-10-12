@@ -1,6 +1,19 @@
 Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
-  Protocol Compiler
+
+  Python
+  * Proto2 DecodeError now includes message name in error message
+
+  C++
   * Make proto2::Message::DiscardUnknownFields() non-virtual
+  * Separate RepeatedPtrField into its own header file
+  * For default floating point values of 0, consider all bits significant
+
+  Java
+  * For default floating point values of 0, consider all bits significant
+  * Annotate `//java/com/google/protobuf/util/...` with nullness annotations
+
+  Kotlin
+  * Switch Kotlin proto DSLs to be implemented with inline value classes
 
 2021-10-04 version 3.18.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
