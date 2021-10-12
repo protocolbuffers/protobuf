@@ -925,6 +925,7 @@ bool TryFillTableEntry(const protobuf::Descriptor* message,
         // We don't have the means to test proto2 enum fields for valid values.
         return false;
       }
+      ABSL_FALLTHROUGH_INTENDED;
     case protobuf::FieldDescriptor::TYPE_INT32:
     case protobuf::FieldDescriptor::TYPE_UINT32:
       type = "v4";
