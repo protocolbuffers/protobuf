@@ -119,7 +119,8 @@ public class MessageTest {
 
   @Test
   public void testEmptyMessage() throws Exception {
-    TestAllTypes result = TestAllTypes.newBuilder()
+    TestAllTypes result =
+        TestAllTypes.newBuilder()
             .setOptionalInt32(0)
             .setOptionalInt64(0)
             .setOptionalFloat(0f)
