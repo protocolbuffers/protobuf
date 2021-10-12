@@ -66,8 +66,8 @@ enum {
 typedef struct {
   uint32_t number;
   uint16_t offset;
-  int16_t presence;       /* If >0, hasbit_index.  If <0, ~oneof_index. */
-  uint16_t submsg_index;  /* undefined if descriptortype != MESSAGE or GROUP. */
+  int16_t presence;       // If >0, hasbit_index.  If <0, ~oneof_index
+  uint16_t submsg_index;  // undefined if descriptortype != MESSAGE/GROUP/ENUM
   uint8_t descriptortype;
   uint8_t mode; /* upb_fieldmode | upb_labelflags |
                    (upb_rep << _UPB_REP_SHIFT) */
@@ -130,9 +130,15 @@ typedef struct {
   _upb_field_parser *field_parser;
 } _upb_fasttable_entry;
 
+typedef struct {
+  const int32_t *values;  // List of values <0 or >63
+  uint64_t mask;          // Bits are set for acceptable value 0 <= x < 64
+  int value_count;
+} upb_enumlayout;
+
 typedef union {
   const struct upb_msglayout *submsg;
-  // TODO: const upb_enumlayout *subenum;
+  const upb_enumlayout *subenum;
 } upb_msglayout_sub;
 
 typedef enum {
@@ -179,8 +185,10 @@ typedef struct {
 
 typedef struct {
   const upb_msglayout **msgs;
+  const upb_enumlayout **enums;
   const upb_msglayout_ext **exts;
   int msg_count;
+  int enum_count;
   int ext_count;
 } upb_msglayout_file;
 

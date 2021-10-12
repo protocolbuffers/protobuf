@@ -101,12 +101,14 @@ static const unsigned FIXED64_OK_MASK = (1 << UPB_DTYPE_DOUBLE) |
 #define OP_MSGSET_ITEM -2
 #define OP_MSGSET_TYPEID -3
 #define OP_SCALAR_LG2(n) (n)      /* n in [0, 2, 3] => op in [0, 2, 3] */
+#define OP_ENUM 1
 #define OP_STRING 4
 #define OP_BYTES 5
 #define OP_SUBMSG 6
-/* Ops above are scalar-only. Repeated fields can use any op.  */
+/* Scalar fields use only ops above. Repeated fields can use any op.  */
 #define OP_FIXPCK_LG2(n) (n + 5)  /* n in [2, 3] => op in [7, 8] */
 #define OP_VARPCK_LG2(n) (n + 9)  /* n in [0, 2, 3] => op in [9, 11, 12] */
+#define OP_PACKED_ENUM 13
 
 static const int8_t varint_ops[] = {
     OP_UNKNOWN,       /* field not found */
@@ -123,7 +125,7 @@ static const int8_t varint_ops[] = {
     OP_UNKNOWN,       /* MESSAGE */
     OP_UNKNOWN,       /* BYTES */
     OP_SCALAR_LG2(2), /* UINT32 */
-    OP_SCALAR_LG2(2), /* ENUM */
+    OP_ENUM,          /* ENUM */
     OP_UNKNOWN,       /* SFIXED32 */
     OP_UNKNOWN,       /* SFIXED64 */
     OP_SCALAR_LG2(2), /* SINT32 */
@@ -169,7 +171,7 @@ static const int8_t delim_ops[] = {
     OP_SUBMSG,        /* REPEATED MESSAGE */
     OP_BYTES,         /* REPEATED BYTES */
     OP_VARPCK_LG2(2), /* REPEATED UINT32 */
-    OP_VARPCK_LG2(2), /* REPEATED ENUM */
+    OP_PACKED_ENUM,   /* REPEATED ENUM */
     OP_FIXPCK_LG2(2), /* REPEATED SFIXED32 */
     OP_FIXPCK_LG2(3), /* REPEATED SFIXED64 */
     OP_VARPCK_LG2(2), /* REPEATED SINT32 */
@@ -384,6 +386,136 @@ static const char *decode_togroup(upb_decstate *d, const char *ptr,
   return decode_group(d, ptr, submsg, subl, field->number);
 }
 
+static char *encode_varint32(uint32_t val, char *ptr) {
+  do {
+    uint8_t byte = val & 0x7fU;
+    val >>= 7;
+    if (val) byte |= 0x80U;
+    *(ptr++) = byte;
+  } while (val);
+  return ptr;
+}
+
+UPB_NOINLINE
+static bool decode_checkenum_slow(upb_decstate *d, const char *ptr, upb_msg *msg,
+                             const upb_enumlayout *e,
+                             const upb_msglayout_field *field, uint32_t v) {
+  // OPT: binary search long lists?
+  int n = e->value_count;
+  for (int i = 0; i < n; i++) {
+    if ((uint32_t)e->values[i] == v) return true;
+  }
+
+  // Unrecognized enum goes into unknown fields.
+  // For packed fields the tag could be arbitrarily far in the past, so we
+  // just re-encode the tag here.
+  char buf[20];
+  char *end = buf;
+  uint32_t tag = ((uint32_t)field->number << 3) | UPB_WIRE_TYPE_VARINT;
+  end = encode_varint32(tag, end);
+  end = encode_varint32(v, end);
+
+  if (!_upb_msg_addunknown(msg, buf, end - buf, &d->arena)) {
+    decode_err(d);
+  }
+
+  return false;
+}
+
+UPB_FORCEINLINE
+static bool decode_checkenum(upb_decstate *d, const char *ptr, upb_msg *msg,
+                             const upb_enumlayout *e,
+                             const upb_msglayout_field *field, wireval *val) {
+  uint32_t v = val->uint32_val;
+
+  if (UPB_LIKELY(v < 64) && UPB_LIKELY(((1ULL << v) & e->mask))) return true;
+
+  return decode_checkenum_slow(d, ptr, msg, e, field, v);
+}
+
+UPB_NOINLINE
+static const char *decode_enum_toarray(upb_decstate *d, const char *ptr,
+                                       upb_msg *msg, upb_array *arr,
+                                       const upb_msglayout_sub *subs,
+                                       const upb_msglayout_field *field,
+                                       wireval *val) {
+  const upb_enumlayout *e = subs[field->submsg_index].subenum;
+  if (!decode_checkenum(d, ptr, msg, e, field, val)) return ptr;
+  void *mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->len * 4, void);
+  arr->len++;
+  memcpy(mem, val, 4);
+  return ptr;
+}
+
+#include <stdio.h>
+UPB_FORCEINLINE
+static const char *decode_fixed_packed(upb_decstate *d, const char *ptr,
+                                       upb_array *arr, wireval *val,
+                                       const upb_msglayout_field *field,
+                                       int lg2) {
+  int mask = (1 << lg2) - 1;
+  size_t count = val->size >> lg2;
+  if ((val->size & mask) != 0) {
+    return decode_err(d); /* Length isn't a round multiple of elem size. */
+  }
+  decode_reserve(d, arr, count);
+  void *mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
+  arr->len += count;
+  // Note: if/when the decoder supports multi-buffer input, we will need to
+  // handle buffer seams here.
+  memcpy(mem, ptr, val->size);
+  return ptr + val->size;
+}
+
+UPB_FORCEINLINE
+static const char *decode_varint_packed(upb_decstate *d, const char *ptr,
+                                        upb_array *arr, wireval *val,
+                                        const upb_msglayout_field *field,
+                                        int lg2) {
+  int scale = 1 << lg2;
+  int saved_limit = decode_pushlimit(d, ptr, val->size);
+  char *out = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
+  while (!decode_isdone(d, &ptr)) {
+    wireval elem;
+    ptr = decode_varint64(d, ptr, &elem.uint64_val);
+    decode_munge(field->descriptortype, &elem);
+    if (decode_reserve(d, arr, 1)) {
+      out = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
+    }
+    arr->len++;
+    memcpy(out, &elem, scale);
+    out += scale;
+  }
+  decode_poplimit(d, ptr, saved_limit);
+  return ptr;
+}
+
+UPB_NOINLINE
+static const char *decode_enum_packed(upb_decstate *d, const char *ptr,
+                                      upb_msg *msg, upb_array *arr,
+                                      const upb_msglayout_sub *subs,
+                                      const upb_msglayout_field *field,
+                                      wireval *val) {
+  const upb_enumlayout *e = subs[field->submsg_index].subenum;
+  int saved_limit = decode_pushlimit(d, ptr, val->size);
+  char *out = UPB_PTR_AT(_upb_array_ptr(arr), arr->len * 4, void);
+  while (!decode_isdone(d, &ptr)) {
+    wireval elem;
+    ptr = decode_varint64(d, ptr, &elem.uint64_val);
+    if (!decode_checkenum(d, ptr, msg, e, field, &elem)) {
+      continue;
+    }
+    if (decode_reserve(d, arr, 1)) {
+      out = UPB_PTR_AT(_upb_array_ptr(arr), arr->len * 4, void);
+    }
+    arr->len++;
+    memcpy(out, &elem, 4);
+    out += 4;
+  }
+  decode_poplimit(d, ptr, saved_limit);
+  return ptr;
+}
+
 static const char *decode_toarray(upb_decstate *d, const char *ptr,
                                   upb_msg *msg,
                                   const upb_msglayout_sub *subs,
@@ -433,42 +565,18 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
       }
     }
     case OP_FIXPCK_LG2(2):
-    case OP_FIXPCK_LG2(3): {
-      /* Fixed packed. */
-      int lg2 = op - OP_FIXPCK_LG2(0);
-      int mask = (1 << lg2) - 1;
-      size_t count = val->size >> lg2;
-      if ((val->size & mask) != 0) {
-        return decode_err(d); /* Length isn't a round multiple of elem size. */
-      }
-      decode_reserve(d, arr, count);
-      mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
-      arr->len += count;
-      memcpy(mem, ptr, val->size);  /* XXX: ptr boundary. */
-      return ptr + val->size;
-    }
+    case OP_FIXPCK_LG2(3):
+      return decode_fixed_packed(d, ptr, arr, val, field,
+                                 op - OP_FIXPCK_LG2(0));
     case OP_VARPCK_LG2(0):
     case OP_VARPCK_LG2(2):
-    case OP_VARPCK_LG2(3): {
-      /* Varint packed. */
-      int lg2 = op - OP_VARPCK_LG2(0);
-      int scale = 1 << lg2;
-      int saved_limit = decode_pushlimit(d, ptr, val->size);
-      char *out = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
-      while (!decode_isdone(d, &ptr)) {
-        wireval elem;
-        ptr = decode_varint64(d, ptr, &elem.uint64_val);
-        decode_munge(field->descriptortype, &elem);
-        if (decode_reserve(d, arr, 1)) {
-          out = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
-        }
-        arr->len++;
-        memcpy(out, &elem, scale);
-        out += scale;
-      }
-      decode_poplimit(d, ptr, saved_limit);
-      return ptr;
-    }
+    case OP_VARPCK_LG2(3):
+      return decode_varint_packed(d, ptr, arr, val, field,
+                                  op - OP_VARPCK_LG2(0));
+    case OP_ENUM:
+      return decode_enum_toarray(d, ptr, msg, arr, subs, field, val);
+    case OP_PACKED_ENUM:
+      return decode_enum_packed(d, ptr, msg, arr, subs, field, val);
     default:
       UPB_UNREACHABLE();
   }
@@ -516,6 +624,12 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   void *mem = UPB_PTR_AT(msg, field->offset, void);
   int type = field->descriptortype;
 
+  if (UPB_UNLIKELY(op == OP_ENUM) &&
+      !decode_checkenum(d, ptr, msg, subs[field->submsg_index].subenum, field,
+                        val)) {
+    return ptr;
+  }
+
   /* Set presence if necessary. */
   if (field->presence > 0) {
     _upb_sethas_field(msg, field);
@@ -552,6 +666,7 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
     case OP_SCALAR_LG2(3):
       memcpy(mem, val, 8);
       break;
+    case OP_ENUM:
     case OP_SCALAR_LG2(2):
       memcpy(mem, val, 4);
       break;
@@ -798,13 +913,12 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     field_number = tag >> 3;
     wire_type = tag & 7;
 
-    field = decode_findfield(d, layout, field_number, &last_field_index);
-
     if (wire_type == UPB_WIRE_TYPE_END_GROUP) {
       d->end_group = field_number;
       return ptr;
     }
 
+    field = decode_findfield(d, layout, field_number, &last_field_index);
     ptr = decode_wireval(d, ptr, field, wire_type, &val, &op);
 
     if (op >= 0) {

@@ -120,6 +120,7 @@ struct upb_msgdef {
 
 struct upb_enumdef {
   const google_protobuf_EnumOptions *opts;
+  const upb_enumlayout *layout;  // Only for proto2.
   const upb_filedef *file;
   const upb_msgdef *containing_type;  // Could be merged with "file".
   const char *full_name;
@@ -1664,6 +1665,11 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
     if (upb_fielddef_issubmsg(f)) {
       field->submsg_index = sublayout_count++;
       subs[field->submsg_index].submsg = upb_fielddef_msgsubdef(f)->layout;
+    } else if (upb_fielddef_type(f) == UPB_TYPE_ENUM &&
+               f->file->syntax == UPB_SYNTAX_PROTO2) {
+      field->submsg_index = sublayout_count++;
+      subs[field->submsg_index].subenum = upb_fielddef_enumsubdef(f)->layout;
+      UPB_ASSERT(subs[field->submsg_index].subenum);
     }
 
     if (upb_fielddef_label(f) == UPB_LABEL_REQUIRED) {
@@ -2357,6 +2363,83 @@ static void create_service(
   }
 }
 
+static int count_bits_debug(uint64_t x) {
+  // For assertions only, speed does not matter.
+  int n = 0;
+  while (x) {
+    if (x & 1) n++;
+    x >>= 1;
+  }
+  return n;
+}
+
+upb_enumlayout *create_enumlayout(symtab_addctx *ctx, const upb_enumdef *e) {
+  int n = 0;
+  uint64_t mask = 0;
+
+  for (int i = 0; i < e->value_count; i++) {
+    uint32_t val = (uint32_t)e->values[i].number;
+    if (val < 64) {
+      mask |= 1 << val;
+    } else {
+      n++;
+    }
+  }
+
+  int32_t *values = symtab_alloc(ctx, sizeof(*values) * n);
+
+  if (n) {
+    int32_t *p = values;
+
+    // Add values outside the bitmask range to the list, as described in the
+    // comments for upb_enumlayout.
+    for (int i = 0; i < e->value_count; i++) {
+      int32_t val = e->values[i].number;
+      if ((uint32_t)val >= 64) {
+        *p++ = val;
+      }
+    }
+    UPB_ASSERT(p == values + n);
+  }
+
+  UPB_ASSERT(upb_inttable_count(&e->iton) == n + count_bits_debug(mask));
+
+  upb_enumlayout *layout = symtab_alloc(ctx, sizeof(*layout));
+  layout->value_count = n;
+  layout->mask = mask;
+  layout->values = values;
+
+  return layout;
+}
+
+static void create_enumvaldef(
+    symtab_addctx *ctx, const char *prefix,
+    const google_protobuf_EnumValueDescriptorProto *val_proto, upb_enumdef *e,
+    int i) {
+  upb_enumvaldef *val = (upb_enumvaldef *)&e->values[i];
+  upb_strview name = google_protobuf_EnumValueDescriptorProto_name(val_proto);
+  upb_value v = upb_value_constptr(val);
+
+  val->enum_ = e;  /* Must happen prior to symtab_add(). */
+  val->full_name = makefullname(ctx, prefix, name);
+  val->number = google_protobuf_EnumValueDescriptorProto_number(val_proto);
+  symtab_add(ctx, val->full_name, pack_def(val, UPB_DEFTYPE_ENUMVAL));
+
+  SET_OPTIONS(val->opts, EnumValueDescriptorProto, EnumValueOptions, val_proto);
+
+  if (i == 0 && e->file->syntax == UPB_SYNTAX_PROTO3 && val->number != 0) {
+    symtab_errf(ctx, "for proto3, the first enum value must be zero (%s)",
+                e->full_name);
+  }
+
+  CHK_OOM(upb_strtable_insert(&e->ntoi, name.data, name.size, v, ctx->arena));
+
+  // Multiple enumerators can have the same number, first one wins.
+  if (!upb_inttable_lookup(&e->iton, val->number, NULL)) {
+    CHK_OOM(upb_inttable_insert(&e->iton, val->number, v, ctx->arena));
+  }
+}
+
 static void create_enumdef(
     symtab_addctx *ctx, const char *prefix,
     const google_protobuf_EnumDescriptorProto *enum_proto,
@@ -2392,32 +2475,22 @@ static void create_enumdef(
   SET_OPTIONS(e->opts, EnumDescriptorProto, EnumOptions, enum_proto);
 
   for (i = 0; i < n; i++) {
-    const google_protobuf_EnumValueDescriptorProto *val_proto = values[i];
-    upb_enumvaldef *val = (upb_enumvaldef*)&e->values[i];
-    upb_strview name = google_protobuf_EnumValueDescriptorProto_name(val_proto);
-    upb_value v = upb_value_constptr(val);
-
-    val->enum_ = e;  /* Must happen prior to symtab_add(). */
-    val->full_name = makefullname(ctx, prefix, name);
-    val->number = google_protobuf_EnumValueDescriptorProto_number(val_proto);
-    symtab_add(ctx, val->full_name, pack_def(val, UPB_DEFTYPE_ENUMVAL));
-
-    SET_OPTIONS(val->opts, EnumValueDescriptorProto, EnumValueOptions, val_proto);
-
-    if (i == 0 && e->file->syntax == UPB_SYNTAX_PROTO3 && val->number != 0) {
-      symtab_errf(ctx, "for proto3, the first enum value must be zero (%s)",
-                  e->full_name);
-    }
-
-    CHK_OOM(upb_strtable_insert(&e->ntoi, name.data, name.size, v, ctx->arena));
-
-    // Multiple enumerators can have the same number, first one wins.
-    if (!upb_inttable_lookup(&e->iton, val->number, NULL)) {
-      CHK_OOM(upb_inttable_insert(&e->iton, val->number, v, ctx->arena));
-    }
+    create_enumvaldef(ctx, prefix, values[i], e, i);
   }
 
   upb_inttable_compact(&e->iton, ctx->arena);
+
+  if (e->file->syntax == UPB_SYNTAX_PROTO2) {
+    if (ctx->layout) {
+      UPB_ASSERT(ctx->enum_count < ctx->layout->enum_count);
+      e->layout = ctx->layout->enums[ctx->enum_count++];
+      UPB_ASSERT(n == e->layout->value_count + count_bits_debug(e->layout->mask));
+    } else {
+      e->layout = create_enumlayout(ctx, e);
+    }
+  } else {
+    e->layout = NULL;
+  }
 }
 
 static void create_msgdef(symtab_addctx *ctx, const char *prefix,

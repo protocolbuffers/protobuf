@@ -58,3 +58,24 @@ message MessageSetMember {
     optional MessageSetMember message_set_extension = 4;
   }
 }
+
+message Proto2EnumMessage {
+  enum Proto2TestEnum {
+    ZERO = 0;
+    NEGATIVE = -1;
+    SMALL = 15;
+    LARGE = 12345;
+  }
+
+  optional Proto2TestEnum optional_enum = 1;
+  repeated Proto2TestEnum repeated_enum = 2;
+  repeated Proto2TestEnum packed_enum = 3 [packed = true];
+}
+
+// The same fields as Proto2EnumMessage, but with int32 fields so we can fake
+// wire format.
+message Proto2FakeEnumMessage {
+  optional int32 optional_enum = 1;
+  repeated int32 repeated_enum = 2;
+  repeated int32 packed_enum = 3 [packed = true];
+}
