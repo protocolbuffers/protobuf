@@ -1965,6 +1965,102 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
   ExpectSuccessAndTree(input, &message, nullptr);
 }
 
+TEST_F(TextFormatParserTest, ParseAnyFieldWithAdditionalWhiteSpaces) {
+  Any any;
+  std::string parse_string =
+      "[type.googleapis.com/protobuf_unittest.TestAllTypes] \t :  \t {\n"
+      "  optional_int32: 321\n"
+      "  optional_string: \"teststr0\"\n"
+      "}\n";
+
+  ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &any));
+
+  TextFormat::Printer printer;
+  printer.SetExpandAny(true);
+  std::string text;
+  ASSERT_TRUE(printer.PrintToString(any, &text));
+  EXPECT_EQ(text,
+            "[type.googleapis.com/protobuf_unittest.TestAllTypes] {\n"
+            "  optional_int32: 321\n"
+            "  optional_string: \"teststr0\"\n"
+            "}\n");
+}
+
+TEST_F(TextFormatParserTest, ParseExtensionFieldWithAdditionalWhiteSpaces) {
+  unittest::TestAllExtensions proto;
+  std::string parse_string =
+      "[protobuf_unittest.optional_int32_extension]   : \t 101\n"
+      "[protobuf_unittest.optional_int64_extension] \t : 102\n";
+
+  ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
+
+  TextFormat::Printer printer;
+  std::string text;
+  ASSERT_TRUE(printer.PrintToString(proto, &text));
+  EXPECT_EQ(text,
+            "[protobuf_unittest.optional_int32_extension]: 101\n"
+            "[protobuf_unittest.optional_int64_extension]: 102\n");
+}
+
+TEST_F(TextFormatParserTest, ParseNormalFieldWithAdditionalWhiteSpaces) {
+  unittest::TestAllTypes proto;
+  std::string parse_string =
+      "repeated_int32  : \t 1\n"
+      "repeated_int32: 2\n"
+      "repeated_nested_message: {\n"
+      "  bb: 3\n"
+      "}\n"
+      "repeated_nested_message  : \t {\n"
+      "  bb: 4\n"
+      "}\n"
+      "repeated_nested_message     {\n"
+      "  bb: 5\n"
+      "}\n";
+
+  ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
+
+  TextFormat::Printer printer;
+  std::string text;
+  ASSERT_TRUE(printer.PrintToString(proto, &text));
+  EXPECT_EQ(text,
+            "repeated_int32: 1\n"
+            "repeated_int32: 2\n"
+            "repeated_nested_message {\n"
+            "  bb: 3\n"
+            "}\n"
+            "repeated_nested_message {\n"
+            "  bb: 4\n"
+            "}\n"
+            "repeated_nested_message {\n"
+            "  bb: 5\n"
+            "}\n");
+}
+
+TEST_F(TextFormatParserTest, ParseSkippedFieldWithAdditionalWhiteSpaces) {
+  protobuf_unittest::TestAllTypes proto;
+  TextFormat::Parser parser;
+  parser.AllowUnknownField(true);
+  EXPECT_TRUE(
+      parser.ParseFromString("optional_int32: 321\n"
+                             "unknown_field1   : \t 12345\n"
+                             "[somewhere.unknown_extension1]   {\n"
+                             "  unknown_field2 \t :   12345\n"
+                             "}\n"
+                             "[somewhere.unknown_extension2]    : \t {\n"
+                             "  unknown_field3     \t :   12345\n"
+                             "  [somewhere.unknown_extension3]    \t :   {\n"
+                             "    unknown_field4:   10\n"
+                             "  }\n"
+                             "  [somewhere.unknown_extension4] \t {\n"
+                             "  }\n"
+                             "}\n",
+                             &proto));
+  std::string text;
+  TextFormat::Printer printer;
+  ASSERT_TRUE(printer.PrintToString(proto, &text));
+  EXPECT_EQ(text, "optional_int32: 321\n");
+}
+
 class TextFormatMessageSetTest : public testing::Test {
  protected:
   static const char proto_debug_string_[];
@@ -2278,6 +2374,24 @@ TEST_F(TextFormatSilentMarkerTest, MapFieldAsFirstField) {
       proto.DebugString());
 }
 
+
+TEST(TextFormatFloatingPointTest, PreservesNegative0) {
+  proto3_unittest::TestAllTypes in_message;
+  in_message.set_optional_float(-0.0f);
+  in_message.set_optional_double(-0.0);
+  TextFormat::Printer printer;
+  std::string serialized;
+  EXPECT_TRUE(printer.PrintToString(in_message, &serialized));
+  proto3_unittest::TestAllTypes out_message;
+  TextFormat::Parser parser;
+  EXPECT_TRUE(parser.ParseFromString(serialized, &out_message));
+  EXPECT_EQ(in_message.optional_float(), out_message.optional_float());
+  EXPECT_EQ(std::signbit(in_message.optional_float()),
+            std::signbit(out_message.optional_float()));
+  EXPECT_EQ(in_message.optional_double(), out_message.optional_double());
+  EXPECT_EQ(std::signbit(in_message.optional_double()),
+            std::signbit(out_message.optional_double()));
+}
 
 }  // namespace text_format_unittest
 }  // namespace protobuf

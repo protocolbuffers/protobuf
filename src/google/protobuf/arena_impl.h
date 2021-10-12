@@ -202,13 +202,6 @@ class PROTOBUF_EXPORT SerialArena {
     void (*cleanup)(void*);  // Function pointer to the destructor or deleter.
   };
 
-  // Creates a new SerialArena inside mem using the remaining memory as for
-  // future allocations.
-  static SerialArena* New(SerialArena::Memory mem, void* owner);
-  // Free SerialArena returning the memory passed in to New
-  template <typename Deallocator>
-  Memory Free(Deallocator deallocator);
-
   void CleanupList();
   uint64_t SpaceAllocated() const {
     return space_allocated_.load(std::memory_order_relaxed);
@@ -281,6 +274,16 @@ class PROTOBUF_EXPORT SerialArena {
   void set_next(SerialArena* next) { next_ = next; }
 
  private:
+  friend class ThreadSafeArena;
+  friend class ArenaBenchmark;
+
+  // Creates a new SerialArena inside mem using the remaining memory as for
+  // future allocations.
+  static SerialArena* New(SerialArena::Memory mem, void* owner);
+  // Free SerialArena returning the memory passed in to New
+  template <typename Deallocator>
+  Memory Free(Deallocator deallocator);
+
   // Blocks are variable length malloc-ed objects.  The following structure
   // describes the common header for all blocks.
   struct Block {

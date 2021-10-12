@@ -1919,7 +1919,9 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   // explicit in our correctness checks.
   if (ptr == nullptr || ctx.BytesUntilLimit(ptr) < 0) {
     // Parse error or the parser overshoot the limit.
-    PyErr_Format(DecodeError_class, "Error parsing message");
+    PyErr_Format(
+        DecodeError_class, "Error parsing message with type '%s'",
+        self->GetMessageClass()->message_descriptor->full_name().c_str());
     return NULL;
   }
   // ctx has an explicit limit set (length of string_view), so we have to

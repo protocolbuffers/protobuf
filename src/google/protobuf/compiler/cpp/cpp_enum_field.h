@@ -98,8 +98,6 @@ class RepeatedEnumFieldGenerator : public FieldGenerator {
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateCopyConstructorCode(io::Printer* printer) const override {}
-  void GenerateMergeFromCodedStream(io::Printer* printer) const;
-  void GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;

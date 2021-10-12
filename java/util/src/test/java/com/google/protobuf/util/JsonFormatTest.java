@@ -1887,4 +1887,12 @@ public class JsonFormatTest {
                 .print(message))
         .isEqualTo("{\n" + "  \"optionalBool\": false\n" + "}");
   }
+
+  @Test
+  public void testPreservesFloatingPointNegative0() throws Exception {
+    TestAllTypes message =
+        TestAllTypes.newBuilder().setOptionalFloat(-0.0f).setOptionalDouble(-0.0).build();
+    assertThat(JsonFormat.printer().print(message))
+        .isEqualTo("{\n  \"optionalFloat\": -0.0,\n  \"optionalDouble\": -0.0\n}");
+  }
 }

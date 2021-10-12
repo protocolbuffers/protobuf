@@ -252,7 +252,7 @@ util::StatusOr<uint32_t> ProtoStreamObjectSource::RenderList(
 }
 
 util::StatusOr<uint32_t> ProtoStreamObjectSource::RenderMap(
-    const google::protobuf::Field* field, StringPiece /*name*/,
+    const google::protobuf::Field* field, StringPiece /* name */,
     uint32_t list_tag, ObjectWriter* ow) const {
   const google::protobuf::Type* field_type =
       typeinfo_->GetTypeByTypeUrl(field->type_url());

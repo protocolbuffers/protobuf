@@ -743,6 +743,27 @@ class PROTOC_EXPORT Formatter {
   void Outdent() const { printer_->Outdent(); }
   io::Printer* printer() const { return printer_; }
 
+  class PROTOC_EXPORT ScopedIndenter {
+   public:
+    explicit ScopedIndenter(Formatter* format) : format_(format) {
+      format_->Indent();
+    }
+    ~ScopedIndenter() { format_->Outdent(); }
+
+   private:
+    Formatter* format_;
+  };
+
+  PROTOBUF_NODISCARD ScopedIndenter ScopedIndent() {
+    return ScopedIndenter(this);
+  }
+  template <typename... Args>
+  PROTOBUF_NODISCARD ScopedIndenter ScopedIndent(const char* format,
+                                                 const Args&&... args) {
+    (*this)(format, static_cast<Args&&>(args)...);
+    return ScopedIndenter(this);
+  }
+
   class PROTOC_EXPORT SaveState {
    public:
     explicit SaveState(Formatter* format)

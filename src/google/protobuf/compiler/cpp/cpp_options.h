@@ -70,7 +70,7 @@ struct Options {
   bool opensource_runtime = false;
   bool annotate_accessor = false;
   bool unused_field_stripping = false;
-  bool profile_driven_inline_string = false;
+  bool profile_driven_inline_string = true;
   bool force_inline_string = false;
   std::string runtime_include_base;
   int num_cc_files = 0;
