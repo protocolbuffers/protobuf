@@ -78,18 +78,20 @@ bool decode_verifyutf8_inl(const char *ptr, int len) {
   while (end - ptr >= 8) {
     uint64_t data;
     memcpy(&data, ptr, 8);
-    if (data & 0x8080808080808080) break;
+    if (data & 0x8080808080808080) goto non_ascii;
     ptr += 8;
   }
 
   // Check one byte at a time for non-ASCII.
   while (ptr < end) {
-    if (*ptr & 0x80) break;
+    if (*ptr & 0x80) goto non_ascii;
     ptr++;
   }
 
-  return ptr == end ? true
-                    : utf8_range2((const unsigned char *)ptr, end - ptr) == 0;
+  return true;
+
+ non_ascii:
+  return utf8_range2((const unsigned char *)ptr, end - ptr) == 0;
 }
 
 /* x86-64 pointers always have the high 16 bits matching. So we can shift
