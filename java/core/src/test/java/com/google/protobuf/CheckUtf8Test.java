@@ -49,7 +49,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class CheckUtf8Test {
 
-  private static final String UTF8_BYTE_STRING_TEXT = "some text";
+  private static final String UTF8_BYTE_STRING_TEXT = "some text π \uD83D\uDE00";
   private static final ByteString UTF8_BYTE_STRING = ByteString.copyFromUtf8(UTF8_BYTE_STRING_TEXT);
   private static final ByteString NON_UTF8_BYTE_STRING =
       ByteString.copyFrom(new byte[] {(byte) 0x80}); // A lone continuation byte.

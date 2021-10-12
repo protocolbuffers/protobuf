@@ -14,6 +14,7 @@ java_library(
         "//external:error_prone_annotations",
         "//external:j2objc_annotations",
         "//external:gson",
+        "//external:jsr305",
         "//external:guava",
         "//java/core",
         "//java/lite",

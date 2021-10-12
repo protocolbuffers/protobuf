@@ -39,6 +39,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cmath>
 #include <limits>
 
 #include <google/protobuf/message.h>
@@ -874,6 +875,22 @@ TEST(MESSAGE_TEST_NAME, CheckSerializationWhenInterleavedExtensions) {
   EXPECT_EQ(3, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_three));
   EXPECT_EQ(4, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_four));
   EXPECT_EQ(5, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_five));
+}
+
+TEST(MESSAGE_TEST_NAME, PreservesFloatingPointNegative0) {
+  UNITTEST::TestAllTypes in_message;
+  in_message.set_optional_float(-0.0f);
+  in_message.set_optional_double(-0.0);
+  std::string serialized;
+  EXPECT_TRUE(in_message.SerializeToString(&serialized));
+  UNITTEST::TestAllTypes out_message;
+  EXPECT_TRUE(out_message.ParseFromString(serialized));
+  EXPECT_EQ(in_message.optional_float(), out_message.optional_float());
+  EXPECT_EQ(std::signbit(in_message.optional_float()),
+            std::signbit(out_message.optional_float()));
+  EXPECT_EQ(in_message.optional_double(), out_message.optional_double());
+  EXPECT_EQ(std::signbit(in_message.optional_double()),
+            std::signbit(out_message.optional_double()));
 }
 
 }  // namespace protobuf

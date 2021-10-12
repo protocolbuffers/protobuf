@@ -579,7 +579,8 @@
 // https://github.com/protocolbuffers/protobuf/issues/8310
 // Does not work yet with Visual Studio 2019 Update 16.10
 #define PROTOBUF_CONSTINIT constinit
-#elif !defined(_MSC_VER) && __has_cpp_attribute(clang::require_constant_initialization)
+#elif !defined(_MSC_VER) && \
+    __has_cpp_attribute(clang::require_constant_initialization)
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #else
 #define PROTOBUF_CONSTINIT
@@ -696,7 +697,7 @@
 #define PROTOBUF_TC_PARAM_DECL                                 \
   ::google::protobuf::MessageLite *msg, const char *ptr,                 \
       ::google::protobuf::internal::ParseContext *ctx,                   \
-      const ::google::protobuf::internal::TailCallParseTableBase *table, \
+      const ::google::protobuf::internal::TcParseTableBase *table,       \
       uint64_t hasbits, ::google::protobuf::internal::TcFieldData data
 
 #ifdef PROTOBUF_UNUSED

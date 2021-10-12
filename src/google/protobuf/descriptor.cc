@@ -6766,8 +6766,10 @@ void DescriptorBuilder::ValidateEnumValueOptions(
 }
 
 void DescriptorBuilder::ValidateExtensionRangeOptions(
-    const std::string& /*full_name*/, Descriptor::ExtensionRange* /*extension_range*/,
-    const DescriptorProto_ExtensionRange& /*proto*/) {
+    const std::string& full_name, Descriptor::ExtensionRange* extension_range,
+    const DescriptorProto_ExtensionRange& proto) {
+  (void)full_name;        // Parameter is used by Google-internal code.
+  (void)extension_range;  // Parameter is used by Google-internal code.
 }
 
 void DescriptorBuilder::ValidateServiceOptions(
@@ -7838,7 +7840,8 @@ void DescriptorBuilder::OptionInterpreter::SetUInt64(
 }
 
 void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
-                                            const FileDescriptor* /*result*/) {
+                                            const FileDescriptor* result) {
+  (void)result;  // Parameter is used by Google-internal code.
 
   if (!unused_dependency_.empty()) {
     auto itr = pool_->unused_import_track_files_.find(proto.name());
@@ -7860,7 +7863,8 @@ void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
 }
 
 Symbol DescriptorPool::CrossLinkOnDemandHelper(StringPiece name,
-                                               bool /*expecting_enum*/) const {
+                                               bool expecting_enum) const {
+  (void)expecting_enum;  // Parameter is used by Google-internal code.
   auto lookup_name = std::string(name);
   if (!lookup_name.empty() && lookup_name[0] == '.') {
     lookup_name = lookup_name.substr(1);
