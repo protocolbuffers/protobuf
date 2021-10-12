@@ -643,6 +643,8 @@ void ParseFunctionGenerator::GenerateArenaString(Formatter& format,
         ", ~0x$2$u",
         inlined_string_index / 32,
         strings::Hex(1u << (inlined_string_index % 32), strings::ZERO_PAD_8));
+  } else {
+    GOOGLE_DCHECK(field->default_value_string().empty());
   }
   format(
       ");\n"
