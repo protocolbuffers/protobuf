@@ -117,6 +117,20 @@ public class MessageTest {
     assertThat(result.toString()).isEqualTo(MERGE_RESULT_TEXT);
   }
 
+  @Test
+  public void testEmptyMessage() throws Exception {
+    TestAllTypes result = TestAllTypes.newBuilder()
+            .setOptionalInt32(0)
+            .setOptionalInt64(0)
+            .setOptionalFloat(0f)
+            .setOptionalDouble(0.0)
+            .setOptionalString("")
+            .setOptionalBoolean(false)
+            .build();
+
+    assertThat(result.toString()).isEqualTo("");
+  }
+
   // =================================================================
   // Required-field-related tests.
 

@@ -46,6 +46,7 @@ final class MessageLiteToString {
   private static final String BUILDER_LIST_SUFFIX = "OrBuilderList";
   private static final String MAP_SUFFIX = "Map";
   private static final String BYTES_SUFFIX = "Bytes";
+  private static final byte numberZero = 0;
 
   /**
    * Returns a {@link String} representation of the {@link MessageLite} object. The first line of
@@ -183,14 +184,8 @@ final class MessageLiteToString {
     if (o instanceof Boolean) {
       return !((Boolean) o);
     }
-    if (o instanceof Integer) {
-      return ((Integer) o) == 0;
-    }
-    if (o instanceof Float) {
-      return ((Float) o) == 0f;
-    }
-    if (o instanceof Double) {
-      return ((Double) o) == 0d;
+    if (o instanceof Number) {
+      return ((byte) o) == numberZero;
     }
     if (o instanceof String) {
       return o.equals("");
@@ -218,7 +213,7 @@ final class MessageLiteToString {
    * @param name the field name (in lower underscore case)
    * @param object the object value of the field
    */
-  static final void printField(StringBuilder buffer, int indent, String name, Object object) {
+  static void printField(StringBuilder buffer, int indent, String name, Object object) {
     if (object instanceof List<?>) {
       List<?> list = (List<?>) object;
       for (Object entry : list) {
@@ -267,7 +262,7 @@ final class MessageLiteToString {
     }
   }
 
-  private static final String camelCaseToSnakeCase(String camelCase) {
+  private static String camelCaseToSnakeCase(String camelCase) {
     StringBuilder builder = new StringBuilder();
     for (int i = 0; i < camelCase.length(); i++) {
       char ch = camelCase.charAt(i);
