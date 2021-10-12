@@ -96,11 +96,6 @@ bind(
 )
 
 bind(
-    name = "easymock_classextension",
-    actual = "@maven//:org_easymock_easymockclassextension",
-)
-
-bind(
     name = "truth",
     actual = "@maven//:com_google_truth_truth",
 )
