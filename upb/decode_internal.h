@@ -89,7 +89,7 @@ bool decode_verifyutf8_inl(const char *ptr, int len) {
   }
 
   return ptr == end ? true
-                    : utf8_range((const unsigned char *)ptr, end - ptr) == 0;
+                    : utf8_range2((const unsigned char *)ptr, end - ptr) == 0;
 }
 
 /* x86-64 pointers always have the high 16 bits matching. So we can shift
