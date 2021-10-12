@@ -46,7 +46,6 @@ final class MessageLiteToString {
   private static final String BUILDER_LIST_SUFFIX = "OrBuilderList";
   private static final String MAP_SUFFIX = "Map";
   private static final String BYTES_SUFFIX = "Bytes";
-  private static final byte BYTES_ZERO = (byte) 0;
 
   /**
    * Returns a {@link String} representation of the {@link MessageLite} object. The first line of
@@ -185,7 +184,7 @@ final class MessageLiteToString {
       return !((Boolean) o);
     }
     if (o instanceof Number) {
-      return ((byte) o) == BYTES_ZERO;
+      return ((byte) o) == (byte) 0;
     }
     if (o instanceof String) {
       return o.equals("");
