@@ -1558,11 +1558,19 @@ public class JsonFormat {
     }
 
     private void mergeTimestamp(JsonElement json, Message.Builder builder)
-        throws InvalidProtocolBufferException {
-      try {
-        Timestamp value = Timestamps.parse(json.getAsString());
-        builder.mergeFrom(value.toByteString());
-      } catch (ParseException | UnsupportedOperationException e) {
+            throws InvalidProtocolBufferException {
+        try {
+          Timestamp value = Timestamps.parse(json.getAsString());
+          Timestamp value;
+          if (json.isJsonObject()) {
+            long seconds = json.getAsJsonObject().get("seconds").getAsLong();
+            int nanos = json.getAsJsonObject().get("nanos").getAsInt();
+            value = Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
+          } else {
+            value = Timestamps.parse(json.getAsString());
+          }
+          builder.mergeFrom(value.toByteString());
+        } catch (ParseException | UnsupportedOperationException e) {
         throw new InvalidProtocolBufferException("Failed to parse timestamp: " + json);
       }
     }
