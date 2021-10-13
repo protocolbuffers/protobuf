@@ -2033,7 +2033,7 @@ class Proto3Test(unittest.TestCase):
 
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         TypeError,
         r'Parameter to MergeFrom\(\) must be instance of same class: expected '
         r'.+TestMap got int\.'):
@@ -2041,7 +2041,7 @@ class Proto3Test(unittest.TestCase):
 
   def testCopyFromBadType(self):
     msg = map_unittest_pb2.TestMap()
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         TypeError,
         r'Parameter to [A-Za-z]*From\(\) must be instance of same class: '
         r'expected .+TestMap got int\.'):

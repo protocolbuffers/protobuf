@@ -427,7 +427,7 @@ class ReflectionTest(unittest.TestCase):
       pb.optional_uint64 = '2'
 
     # The exact error should propagate with a poorly written custom integer.
-    with self.assertRaisesRegexp(RuntimeError, 'my_error'):
+    with self.assertRaisesRegex(RuntimeError, 'my_error'):
       pb.optional_uint64 = test_util.NonStandardInteger(5, 'my_error')
 
   def assetIntegerBoundsChecking(self, integer_fn, message_module):
