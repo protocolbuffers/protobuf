@@ -103,6 +103,12 @@ extern const upb_msglayout google_protobuf_GeneratedCodeInfo_msginit;
 extern const upb_msglayout google_protobuf_GeneratedCodeInfo_Annotation_msginit;
 
 typedef enum {
+  google_protobuf_FieldDescriptorProto_LABEL_OPTIONAL = 1,
+  google_protobuf_FieldDescriptorProto_LABEL_REQUIRED = 2,
+  google_protobuf_FieldDescriptorProto_LABEL_REPEATED = 3
+} google_protobuf_FieldDescriptorProto_Label;
+
+typedef enum {
   google_protobuf_FieldDescriptorProto_TYPE_DOUBLE = 1,
   google_protobuf_FieldDescriptorProto_TYPE_FLOAT = 2,
   google_protobuf_FieldDescriptorProto_TYPE_INT64 = 3,
@@ -124,18 +130,6 @@ typedef enum {
 } google_protobuf_FieldDescriptorProto_Type;
 
 typedef enum {
-  google_protobuf_FieldDescriptorProto_LABEL_OPTIONAL = 1,
-  google_protobuf_FieldDescriptorProto_LABEL_REQUIRED = 2,
-  google_protobuf_FieldDescriptorProto_LABEL_REPEATED = 3
-} google_protobuf_FieldDescriptorProto_Label;
-
-typedef enum {
-  google_protobuf_FileOptions_SPEED = 1,
-  google_protobuf_FileOptions_CODE_SIZE = 2,
-  google_protobuf_FileOptions_LITE_RUNTIME = 3
-} google_protobuf_FileOptions_OptimizeMode;
-
-typedef enum {
   google_protobuf_FieldOptions_STRING = 0,
   google_protobuf_FieldOptions_CORD = 1,
   google_protobuf_FieldOptions_STRING_PIECE = 2
@@ -148,17 +142,23 @@ typedef enum {
 } google_protobuf_FieldOptions_JSType;
 
 typedef enum {
+  google_protobuf_FileOptions_SPEED = 1,
+  google_protobuf_FileOptions_CODE_SIZE = 2,
+  google_protobuf_FileOptions_LITE_RUNTIME = 3
+} google_protobuf_FileOptions_OptimizeMode;
+
+typedef enum {
   google_protobuf_MethodOptions_IDEMPOTENCY_UNKNOWN = 0,
   google_protobuf_MethodOptions_NO_SIDE_EFFECTS = 1,
   google_protobuf_MethodOptions_IDEMPOTENT = 2
 } google_protobuf_MethodOptions_IdempotencyLevel;
 
 
-extern const upb_enumlayout google_protobuf_FieldDescriptorProto_Type_enuminit;
 extern const upb_enumlayout google_protobuf_FieldDescriptorProto_Label_enuminit;
-extern const upb_enumlayout google_protobuf_FileOptions_OptimizeMode_enuminit;
+extern const upb_enumlayout google_protobuf_FieldDescriptorProto_Type_enuminit;
 extern const upb_enumlayout google_protobuf_FieldOptions_CType_enuminit;
 extern const upb_enumlayout google_protobuf_FieldOptions_JSType_enuminit;
+extern const upb_enumlayout google_protobuf_FileOptions_OptimizeMode_enuminit;
 extern const upb_enumlayout google_protobuf_MethodOptions_IdempotencyLevel_enuminit;
 
 /* google.protobuf.FileDescriptorSet */

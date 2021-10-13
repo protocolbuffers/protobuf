@@ -189,7 +189,7 @@ typedef union {
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout);
 
-UPB_NORETURN static void *decode_err(upb_decstate *d, upb_decodestatus status) {
+UPB_NORETURN static void *decode_err(upb_decstate *d, upb_DecodeStatus status) {
   UPB_LONGJMP(d->err, status);
 }
 
@@ -198,13 +198,13 @@ const char *fastdecode_err(upb_decstate *d, int status) {
   return NULL;
 }
 static void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
-  if (!decode_verifyutf8_inl(buf, len)) decode_err(d, UPB_DECODE_BAD_UTF8);
+  if (!decode_verifyutf8_inl(buf, len)) decode_err(d, kUpb_DecodeStatus_BadUtf8);
 }
 
 static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
   bool need_realloc = arr->size - arr->len < elem;
   if (need_realloc && !_upb_array_realloc(arr, arr->len + elem, &d->arena)) {
-    decode_err(d, UPB_DECODE_OOM);
+    decode_err(d, kUpb_DecodeStatus_OutOfMemory);
   }
   return need_realloc;
 }
@@ -240,7 +240,7 @@ static const char *decode_varint64(upb_decstate *d, const char *ptr,
     return ptr + 1;
   } else {
     decode_vret res = decode_longvarint64(ptr, byte);
-    if (!res.ptr) return decode_err(d, UPB_DECODE_MALFORMED);
+    if (!res.ptr) return decode_err(d, kUpb_DecodeStatus_Malformed);
     *val = res.val;
     return res.ptr;
   }
@@ -258,7 +258,7 @@ static const char *decode_tag(upb_decstate *d, const char *ptr, uint32_t *val) {
     ptr = res.ptr;
     *val = res.val;
     if (!ptr || *val > UINT32_MAX || ptr - start > 5) {
-      return decode_err(d, UPB_DECODE_MALFORMED);
+      return decode_err(d, kUpb_DecodeStatus_Malformed);
     }
     return ptr;
   }
@@ -308,11 +308,11 @@ const char *decode_isdonefallback(upb_decstate *d, const char *ptr,
 
 static const char *decode_readstr(upb_decstate *d, const char *ptr, int size,
                                   upb_strview *str) {
-  if (d->options & UPB_DECODE_ALIAS) {
+  if (d->options & kUpb_DecodeOption_AliasString) {
     str->data = ptr;
   } else {
     char *data =  upb_arena_malloc(&d->arena, size);
-    if (!data) return decode_err(d, UPB_DECODE_OOM);
+    if (!data) return decode_err(d, kUpb_DecodeStatus_OutOfMemory);
     memcpy(data, ptr, size);
     str->data = data;
   }
@@ -325,11 +325,11 @@ static const char *decode_tosubmsg2(upb_decstate *d, const char *ptr,
                                     upb_msg *submsg, const upb_msglayout *subl,
                                     int size) {
   int saved_delta = decode_pushlimit(d, ptr, size);
-  if (--d->depth < 0) return decode_err(d, UPB_DECODE_MAXDEPTH_EXCEEDED);
+  if (--d->depth < 0) return decode_err(d, kUpb_DecodeStatus_MaxDepthExceeded);
   if (!decode_isdone(d, &ptr)) {
     ptr = decode_msg(d, ptr, submsg, subl);
   }
-  if (d->end_group != DECODE_NOGROUP) return decode_err(d, UPB_DECODE_MALFORMED);
+  if (d->end_group != DECODE_NOGROUP) return decode_err(d, kUpb_DecodeStatus_Malformed);
   decode_poplimit(d, ptr, saved_delta);
   d->depth++;
   return ptr;
@@ -348,12 +348,12 @@ UPB_FORCEINLINE
 static const char *decode_group(upb_decstate *d, const char *ptr,
                                 upb_msg *submsg, const upb_msglayout *subl,
                                 uint32_t number) {
-  if (--d->depth < 0) return decode_err(d, UPB_DECODE_MAXDEPTH_EXCEEDED);
+  if (--d->depth < 0) return decode_err(d, kUpb_DecodeStatus_MaxDepthExceeded);
   if (decode_isdone(d, &ptr)) {
-    return decode_err(d, UPB_DECODE_MALFORMED);
+    return decode_err(d, kUpb_DecodeStatus_Malformed);
   }
   ptr = decode_msg(d, ptr, submsg, subl);
-  if (d->end_group != number) return decode_err(d, UPB_DECODE_MALFORMED);
+  if (d->end_group != number) return decode_err(d, kUpb_DecodeStatus_Malformed);
   d->end_group = DECODE_NOGROUP;
   d->depth++;
   return ptr;
@@ -398,7 +398,7 @@ static bool decode_checkenum_slow(upb_decstate *d, const char *ptr, upb_msg *msg
   end = encode_varint32(v, end);
 
   if (!_upb_msg_addunknown(msg, buf, end - buf, &d->arena)) {
-    decode_err(d, UPB_DECODE_OOM);
+    decode_err(d, kUpb_DecodeStatus_OutOfMemory);
   }
 
   return false;
@@ -429,7 +429,6 @@ static const char *decode_enum_toarray(upb_decstate *d, const char *ptr,
   return ptr;
 }
 
-#include <stdio.h>
 UPB_FORCEINLINE
 static const char *decode_fixed_packed(upb_decstate *d, const char *ptr,
                                        upb_array *arr, wireval *val,
@@ -439,7 +438,7 @@ static const char *decode_fixed_packed(upb_decstate *d, const char *ptr,
   size_t count = val->size >> lg2;
   if ((val->size & mask) != 0) {
     // Length isn't a round multiple of elem size.
-    return decode_err(d, UPB_DECODE_MALFORMED);
+    return decode_err(d, kUpb_DecodeStatus_Malformed);
   }
   decode_reserve(d, arr, count);
   void *mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
@@ -513,7 +512,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
   } else {
     size_t lg2 = desctype_to_elem_size_lg2[field->descriptortype];
     arr = _upb_array_new(&d->arena, 4, lg2);
-    if (!arr) return decode_err(d, UPB_DECODE_OOM);
+    if (!arr) return decode_err(d, kUpb_DecodeStatus_OutOfMemory);
     *arrp = arr;
   }
 
@@ -551,7 +550,6 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
     case OP_FIXPCK_LG2(3):
       return decode_fixed_packed(d, ptr, arr, val, field,
                                  op - OP_FIXPCK_LG2(0));
-        return decode_err(d, UPB_DECODE_MALFORMED); 
     case OP_VARPCK_LG2(0):
     case OP_VARPCK_LG2(2):
     case OP_VARPCK_LG2(3):
@@ -662,7 +660,7 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   }
 
   return ptr;
-} 
+}
 
 UPB_FORCEINLINE
 static bool decode_checkrequired(upb_decstate *d, const upb_msg *msg,
@@ -834,7 +832,7 @@ static const char *decode_wireval(upb_decstate *d, const char *ptr,
     default:
       break;
   }
-  return decode_err(d, UPB_DECODE_MALFORMED);
+  return decode_err(d, kUpb_DecodeStatus_Malformed);
 }
 
 UPB_FORCEINLINE
@@ -848,7 +846,7 @@ static const char *decode_known(upb_decstate *d, const char *ptr, upb_msg *msg,
   if (UPB_UNLIKELY(mode & _UPB_MODE_IS_EXTENSION)) {
     const upb_msglayout_ext *ext_layout = (const upb_msglayout_ext*)field;
     upb_msg_ext *ext = _upb_msg_getorcreateext(msg, ext_layout, &d->arena);
-        if (UPB_UNLIKELY(!ext)) return decode_err(d, UPB_DECODE_OOM);
+        if (UPB_UNLIKELY(!ext)) return decode_err(d, kUpb_DecodeStatus_OutOfMemory);
     msg = &ext->data;
     subs = &ext->ext->sub;
   }
@@ -865,26 +863,54 @@ static const char *decode_known(upb_decstate *d, const char *ptr, upb_msg *msg,
   }
 }
 
-UPB_FORCEINLINE
+static const char *decode_reverse_skip_varint(const char *ptr, uint64_t val) {
+  uint64_t seen = 0;
+  do {
+    ptr--;
+    seen <<= 7;
+    seen |= *ptr & 0x7f;
+  } while (seen != val);
+  return ptr;
+}
+
 static const char *decode_unknown(upb_decstate *d, const char *ptr,
                                   upb_msg *msg, int field_number, int wire_type,
-                                  wireval val, const char **field_start) {
-  if (field_number == 0) return decode_err(d, UPB_DECODE_MALFORMED);
+                                  wireval val) {
+  if (field_number == 0) return decode_err(d, kUpb_DecodeStatus_Malformed);
 
+  const char *start = ptr;
   if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
   if (msg) {
+    switch (wire_type) {
+      case UPB_WIRE_TYPE_VARINT:
+      case UPB_WIRE_TYPE_DELIMITED:
+        start--;
+        while (start[-1] & 0x80) start--;
+        break;
+      case UPB_WIRE_TYPE_32BIT:
+        start -= 4;
+        break;
+      case UPB_WIRE_TYPE_64BIT:
+        start -= 8;
+        break;
+      default:
+        break;
+    }
+
+    assert(start == d->debug_valstart);
+    start = decode_reverse_skip_varint(start, (field_number << 3) | wire_type);
+    assert(start == d->debug_tagstart);
+
     if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
-      d->unknown = *field_start;
+      d->unknown = start;
       d->unknown_msg = msg;
       ptr = decode_group(d, ptr, NULL, NULL, field_number);
+      start = d->unknown;
       d->unknown_msg = NULL;
-      *field_start = d->unknown;
-      // XXX: pointer could have flipped during decoding the group,
-      // ptr - d->unknown below will be borked.
+      d->unknown = NULL;
     }
-    if (!_upb_msg_addunknown(msg, *field_start, ptr - *field_start,
-                             &d->arena)) {
-      return decode_err(d, UPB_DECODE_OOM);
+    if (!_upb_msg_addunknown(msg, start, ptr - start, &d->arena)) {
+      return decode_err(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
     ptr = decode_group(d, ptr, NULL, NULL, field_number);
@@ -897,7 +923,6 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
   int last_field_index = 0;
   while (true) {
-    const char *field_start = ptr;
     uint32_t tag;
     const upb_msglayout_field *field;
     int field_number;
@@ -905,10 +930,18 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     wireval val;
     int op;
 
+#ifndef NDEBUG
+    d->debug_tagstart = ptr;
+#endif
+
     UPB_ASSERT(ptr < d->limit_ptr);
     ptr = decode_tag(d, ptr, &tag);
     field_number = tag >> 3;
     wire_type = tag & 7;
+
+#ifndef NDEBUG
+    d->debug_valstart = ptr;
+#endif
 
     if (wire_type == UPB_WIRE_TYPE_END_GROUP) {
       d->end_group = field_number;
@@ -923,8 +956,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     } else {
       switch (op) {
         case OP_UNKNOWN:
-          ptr = decode_unknown(d, ptr, msg, field_number, wire_type, val,
-                               &field_start);
+          ptr = decode_unknown(d, ptr, msg, field_number, wire_type, val);
           break;
         case OP_MSGSET_ITEM:
           ptr = decode_msgset(d, ptr, msg, layout);
@@ -942,7 +974,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     if (decode_tryfastdispatch(d, &ptr, msg, layout)) break;
   }
 
-  if (false && UPB_UNLIKELY(d->options & UPB_CHECK_REQUIRED) &&
+  if (UPB_UNLIKELY(d->options & kUpb_DecodeOption_CheckRequired) &&
       !decode_checkrequired(d, msg, layout)) {
     d->missing_required = true;
   }
@@ -958,31 +990,31 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
   return decode_msg(d, ptr, msg, decode_totablep(table));
 }
 
-static upb_decodestatus decode_top(struct upb_decstate *d, const char *buf,
+static upb_DecodeStatus decode_top(struct upb_decstate *d, const char *buf,
                                    void *msg, const upb_msglayout *l) {
   if (!decode_tryfastdispatch(d, &buf, msg, l)) {
     decode_msg(d, buf, msg, l);
   }
-  if (d->end_group != DECODE_NOGROUP) return UPB_DECODE_MALFORMED;
-  if (d->missing_required) return UPB_DECODE_MISSING_REQUIRED;
-  return UPB_DECODE_OK;
+  if (d->end_group != DECODE_NOGROUP) return kUpb_DecodeStatus_Malformed;
+  if (d->missing_required) return kUpb_DecodeStatus_MissingRequired;
+  return kUpb_DecodeStatus_Ok;
 }
 
-upb_decodestatus _upb_decode(const char *buf, size_t size, void *msg,
+upb_DecodeStatus _upb_decode(const char *buf, size_t size, void *msg,
                              const upb_msglayout *l, const upb_extreg *extreg,
                              int options, upb_arena *arena) {
   upb_decstate state;
   unsigned depth = (unsigned)options >> 16;
 
   if (size == 0) {
-    return UPB_DECODE_OK;
+    return kUpb_DecodeStatus_Ok;
   } else if (size <= 16) {
     memset(&state.patch, 0, 32);
     memcpy(&state.patch, buf, size);
     buf = state.patch;
     state.end = buf + size;
     state.limit = 0;
-    options &= ~UPB_DECODE_ALIAS;  // Can't alias patch buf.
+    options &= ~kUpb_DecodeOption_AliasString;  // Can't alias patch buf.
   } else {
     state.end = buf + size - 16;
     state.limit = 16;
@@ -1000,7 +1032,7 @@ upb_decodestatus _upb_decode(const char *buf, size_t size, void *msg,
   state.arena.cleanup_metadata = arena->cleanup_metadata;
   state.arena.parent = arena;
 
-  upb_decodestatus status = UPB_SETJMP(state.err);
+  upb_DecodeStatus status = UPB_SETJMP(state.err);
   if (UPB_LIKELY(!status)) {
     status = decode_top(&state, buf, msg, l);
   }

@@ -59,6 +59,11 @@ typedef struct upb_decstate {
   char patch[32];
   upb_arena arena;
   jmp_buf err;
+
+#ifndef NDEBUG
+  const char *debug_tagstart;
+  const char *debug_valstart;
+#endif
 } upb_decstate;
 
 /* Error function that will abort decoding with longjmp(). We can't declare this
@@ -115,7 +120,7 @@ const char *decode_isdonefallback_inl(upb_decstate *d, const char *ptr,
     if (d->unknown_msg) {
       if (!_upb_msg_addunknown(d->unknown_msg, d->unknown, ptr - d->unknown,
                                &d->arena)) {
-        *status = UPB_DECODE_OOM;
+        *status = kUpb_DecodeStatus_OutOfMemory;
         return NULL;
       }
       d->unknown = &d->patch[0] + overrun;
@@ -126,11 +131,11 @@ const char *decode_isdonefallback_inl(upb_decstate *d, const char *ptr,
     d->end = &d->patch[16];
     d->limit -= 16;
     d->limit_ptr = d->end + d->limit;
-    d->options &= ~UPB_DECODE_ALIAS;
+    d->options &= ~kUpb_DecodeOption_AliasString;
     UPB_ASSERT(ptr < d->limit_ptr);
     return ptr;
   } else {
-    *status = UPB_DECODE_MALFORMED;
+    *status = kUpb_DecodeStatus_Malformed;
     return NULL;
   }
 }

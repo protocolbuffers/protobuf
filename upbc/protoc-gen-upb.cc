@@ -83,6 +83,12 @@ void AddEnums(const protobuf::Descriptor* message,
   }
 }
 
+template <class T>
+void SortDefs(std::vector<T>* defs) {
+  std::sort(defs->begin(), defs->end(),
+            [](T a, T b) { return a->full_name() < b->full_name(); });
+}
+
 std::vector<const protobuf::EnumDescriptor*> SortedEnums(
     const protobuf::FileDescriptor* file) {
   std::vector<const protobuf::EnumDescriptor*> enums;
@@ -92,6 +98,7 @@ std::vector<const protobuf::EnumDescriptor*> SortedEnums(
   for (int i = 0; i < file->message_type_count(); i++) {
     AddEnums(file->message_type(i), &enums);
   }
+  SortDefs(&enums);
   return enums;
 }
 
@@ -1354,7 +1361,8 @@ void WriteExtension(const protobuf::FieldDescriptor* ext, Output& output) {
   output("    &$0,\n", MessageInit(ext->containing_type()));
   if (ext->message_type()) {
     output("    {.submsg = &$0},\n", MessageInit(ext->message_type()));
-  } else if (ext->enum_type() && ext->enum_type()->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2) {
+  } else if (ext->enum_type() && ext->enum_type()->file()->syntax() ==
+                                     protobuf::FileDescriptor::SYNTAX_PROTO2) {
     output("    {.subenum = &$0},\n", EnumInit(ext->enum_type()));
   } else {
     output("    {.submsg = NULL},\n");
