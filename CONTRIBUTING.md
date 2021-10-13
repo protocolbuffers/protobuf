@@ -18,7 +18,7 @@ expect contributors to follow.
   and get agreement from maintainers on the value of a new feature before
   working on a PR.
 * Performance optimizations may be accepted if they have convincing benchmarks that demonstrate 
-  an improvement and they do not signficantly increase complexity.  
+  an improvement and they do not significantly increase complexity.  
 * Changes to existing APIs are almost never accepted. Stability and
   backwards compatibility are paramount. In the unlikely event a breaking change 
   is required, it must usually be implemented in google3 first. 
