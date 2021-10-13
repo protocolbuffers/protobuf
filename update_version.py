@@ -254,6 +254,12 @@ def UpdateJava():
       'implementation \'com.google.protobuf:protobuf:%s\'' % GetFullVersion(),
       line))
 
+  RewriteTextFile('java/lite.md',
+    lambda line : re.sub(
+      r'<version>.*</version>',
+      '<version>%s</version>' % GetFullVersion(),
+      line))
+
 
 def UpdateJavaScript():
   RewriteTextFile('js/package.json',
