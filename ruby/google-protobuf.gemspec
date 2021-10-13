@@ -25,5 +25,4 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 2.3'
   s.add_development_dependency "rake-compiler", "~> 1.1.0"
   s.add_development_dependency "test-unit", '~> 3.0', '>= 3.0.9'
-  s.add_development_dependency "rubygems-tasks", "~> 0.2.4"
 end
