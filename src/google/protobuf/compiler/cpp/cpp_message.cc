@@ -230,12 +230,22 @@ bool EmitFieldNonDefaultCondition(io::Printer* printer,
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // Message fields still have has_$name$() methods.
       format("if ($prefix$_internal_has_$name$()) {\n");
-    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE ||
-               field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
-      // Handle float comparison to prevent -Wfloat-equal warnings
+    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
       format(
-          "if (!($prefix$_internal_$name$() <= 0 && $prefix$_internal_$name$() "
-          ">= 0)) {\n");
+          "static_assert(sizeof(uint32_t) == sizeof(float), \"Code assumes "
+          "uint32_t and float are the same size.\");\n"
+          "float tmp_$name$ = $prefix$_internal_$name$();\n"
+          "uint32_t raw_$name$;\n"
+          "memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));\n"
+          "if (raw_$name$ != 0) {\n");
+    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE) {
+      format(
+          "static_assert(sizeof(uint64_t) == sizeof(double), \"Code assumes "
+          "uint64_t and double are the same size.\");\n"
+          "double tmp_$name$ = $prefix$_internal_$name$();\n"
+          "uint64_t raw_$name$;\n"
+          "memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));\n"
+          "if (raw_$name$ != 0) {\n");
     } else {
       format("if ($prefix$_internal_$name$() != 0) {\n");
     }
@@ -2737,19 +2747,22 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
 
     // Some information about a field is in the pdproto profile. The profile is
     // only available at compile time. So we embed such information in the
-    // offset of the field, so that the information is available when reflective
-    // accessing the field at run time.
+    // offset of the field, so that the information is available when
+    // reflectively accessing the field at run time.
     //
     // Embed whether the field is used to the MSB of the offset.
     if (!IsFieldUsed(field, options_)) {
-      format(" | 0x80000000u, // unused\n");
-    } else if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
-      format(" | 0x1u, // eagerly verified lazy\n");
-    } else if (IsStringInlined(field, options_)) {
-      format(" | 0x1u, // inlined\n");
-    } else {
-      format(",\n");
+      format(" | 0x80000000u  // unused\n");
     }
+
+    // Embed whether the field is eagerly verified lazy or inlined string to the
+    // LSB of the offset.
+    if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
+      format(" | 0x1u  // eagerly verified lazy\n");
+    } else if (IsStringInlined(field, options_)) {
+      format(" | 0x1u  // inlined\n");
+    }
+    format(",\n");
   }
 
   int count = 0;
@@ -4513,42 +4526,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
 
   // Now check that all non-oneof embedded messages are initialized.
   for (auto field : optimized_order_) {
-    // TODO(ckennelly): Push this down into a generator?
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        !ShouldIgnoreRequiredFieldCheck(field, options_) &&
-        scc_analyzer_->HasRequiredFields(field->message_type())) {
-      if (field->is_repeated()) {
-        if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
-          format(
-              "if "
-              "(!::$proto_ns$::internal::AllAreInitializedWeak($1$_.weak)"
-              ")"
-              " return false;\n",
-              FieldName(field));
-        } else {
-          format(
-              "if (!::$proto_ns$::internal::AllAreInitialized($1$_))"
-              " return false;\n",
-              FieldName(field));
-        }
-      } else if (field->options().weak()) {
-        continue;
-      } else if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
-        GOOGLE_CHECK(!field->real_containing_oneof());
-        format(
-            "if (_internal_has_$1$()) {\n"
-            "  if (!$1$().IsInitialized()) return false;\n"
-            "}\n",
-            FieldName(field));
-      } else {
-        GOOGLE_CHECK(!field->real_containing_oneof());
-        format(
-            "if (_internal_has_$1$()) {\n"
-            "  if (!$1$_->IsInitialized()) return false;\n"
-            "}\n",
-            FieldName(field));
-      }
-    }
+    field_generators_.get(field).GenerateIsInitialized(printer);
   }
   if (num_weak_fields_) {
     // For Weak fields.
@@ -4576,23 +4554,9 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
     for (auto field : FieldRange(oneof)) {
       format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
       format.Indent();
-
-      if (!IsFieldStripped(field, options_) &&
-          field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-          !ShouldIgnoreRequiredFieldCheck(field, options_) &&
-          scc_analyzer_->HasRequiredFields(field->message_type())) {
-        GOOGLE_CHECK(!(field->options().weak() || !field->real_containing_oneof()));
-        if (field->options().weak()) {
-          // Just skip.
-        } else {
-          format(
-              "if (has_$1$()) {\n"
-              "  if (!this->$1$().IsInitialized()) return false;\n"
-              "}\n",
-              FieldName(field));
-        }
+      if (!IsFieldStripped(field, options_)) {
+        field_generators_.get(field).GenerateIsInitialized(printer);
       }
-
       format("break;\n");
       format.Outdent();
       format("}\n");

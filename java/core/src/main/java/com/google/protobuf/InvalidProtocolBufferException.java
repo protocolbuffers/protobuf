@@ -134,7 +134,7 @@ public class InvalidProtocolBufferException extends IOException {
     return new InvalidWireTypeException("Protocol message tag had invalid wire type.");
   }
 
-  /** Exception indicating that and unexpected wire type was encountered for a field. */
+  /** Exception indicating that an unexpected wire type was encountered for a field. */
   @ExperimentalApi
   public static class InvalidWireTypeException extends InvalidProtocolBufferException {
     private static final long serialVersionUID = 3283890091615336259L;

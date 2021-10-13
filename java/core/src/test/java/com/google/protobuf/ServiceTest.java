@@ -316,7 +316,6 @@ public class ServiceTest {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public boolean matches(Object actual) {
       if (!(actual instanceof RpcCallback)) {
         return false;

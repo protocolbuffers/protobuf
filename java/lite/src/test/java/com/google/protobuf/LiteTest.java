@@ -2752,6 +2752,36 @@ public class LiteTest {
         .isTrue();
   }
 
+  @Test
+  public void testPreservesFloatingPointNegative0() throws Exception {
+    proto3_unittest.UnittestProto3.TestAllTypes message =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(-0.0f)
+            .setOptionalDouble(-0.0)
+            .build();
+    assertThat(
+            proto3_unittest.UnittestProto3.TestAllTypes.parseFrom(
+                message.toByteString(), ExtensionRegistryLite.getEmptyRegistry()))
+        .isEqualTo(message);
+  }
+
+  @Test
+  public void testNegative0FloatingPointEquality() throws Exception {
+    // Like Double#equals and Float#equals, we treat -0.0 as not being equal to +0.0 even though
+    // IEEE 754 mandates that they are equivalent. This test asserts that behavior.
+    proto3_unittest.UnittestProto3.TestAllTypes message1 =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(-0.0f)
+            .setOptionalDouble(-0.0)
+            .build();
+    proto3_unittest.UnittestProto3.TestAllTypes message2 =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(0.0f)
+            .setOptionalDouble(0.0)
+            .build();
+    assertThat(message1).isNotEqualTo(message2);
+  }
+
   private String encodeHex(ByteString bytes) {
     String hexDigits = "0123456789abcdef";
     StringBuilder stringBuilder = new StringBuilder(bytes.size() * 2);

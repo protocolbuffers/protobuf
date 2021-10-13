@@ -61,7 +61,8 @@ class RandomAccessRepeatedFieldAccessor : public RepeatedFieldAccessor {
                       const Iterator* b) const override {
     return a == b;
   }
-  void DeleteIterator(const Field* /*data*/, Iterator* /*iterator*/) const override {}
+  void DeleteIterator(const Field* /*data*/,
+                      Iterator* /*iterator*/) const override {}
   const Value* GetIteratorValue(const Field* data, const Iterator* iterator,
                                 Value* scratch_space) const override {
     return Get(data, static_cast<int>(IteratorToPosition(iterator)),

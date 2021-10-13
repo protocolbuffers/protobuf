@@ -211,11 +211,11 @@ if __name__ == '__main__':
     extra_compile_args = []
 
     if sys.platform != 'win32':
-        extra_compile_args.append('-Wno-write-strings')
-        extra_compile_args.append('-Wno-invalid-offsetof')
-        extra_compile_args.append('-Wno-sign-compare')
-        extra_compile_args.append('-Wno-unused-variable')
-        extra_compile_args.append('-std=c++11')
+      extra_compile_args.append('-Wno-write-strings')
+      extra_compile_args.append('-Wno-invalid-offsetof')
+      extra_compile_args.append('-Wno-sign-compare')
+      extra_compile_args.append('-Wno-unused-variable')
+      extra_compile_args.append('-std=c++11')
 
     if sys.platform == 'darwin':
       extra_compile_args.append("-Wno-shorten-64-to-32");
@@ -285,21 +285,20 @@ if __name__ == '__main__':
       maintainer_email='protobuf@googlegroups.com',
       license='3-Clause BSD License',
       classifiers=[
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        ],
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.3",
+          "Programming Language :: Python :: 3.4",
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+      ],
       namespace_packages=['google'],
       packages=find_packages(
           exclude=[
               'import_test_package',
               'protobuf_distutils',
-          ],
-      ),
+          ],),
       test_suite='google.protobuf.internal',
       cmdclass={
           'clean': clean,
@@ -309,5 +308,5 @@ if __name__ == '__main__':
       },
       install_requires=install_requires,
       ext_modules=ext_module_list,
-      python_requires='>=3.5',
+      python_requires=">=3.5",
   )

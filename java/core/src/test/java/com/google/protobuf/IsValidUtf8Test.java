@@ -36,6 +36,7 @@ import static com.google.protobuf.IsValidUtf8TestUtil.EXPECTED_ONE_BYTE_ROUNDTRI
 import static com.google.protobuf.IsValidUtf8TestUtil.EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT;
 import static com.google.protobuf.IsValidUtf8TestUtil.HEAP_NIO_FACTORY;
 import static com.google.protobuf.IsValidUtf8TestUtil.LITERAL_FACTORY;
+import static com.google.protobuf.IsValidUtf8TestUtil.ROPE_FACTORY;
 import static com.google.protobuf.IsValidUtf8TestUtil.testBytes;
 
 import com.google.protobuf.IsValidUtf8TestUtil.ByteStringFactory;
@@ -61,6 +62,7 @@ public class IsValidUtf8Test {
     testBytes(LITERAL_FACTORY, 1, EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT);
     testBytes(HEAP_NIO_FACTORY, 1, EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT);
     testBytes(DIRECT_NIO_FACTORY, 1, EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT);
+    testBytes(ROPE_FACTORY, 1, EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT);
   }
 
   /** Tests that round tripping of all two byte permutations work. */
@@ -69,17 +71,16 @@ public class IsValidUtf8Test {
     testBytes(LITERAL_FACTORY, 2, IsValidUtf8TestUtil.EXPECTED_TWO_BYTE_ROUNDTRIPPABLE_COUNT);
     testBytes(HEAP_NIO_FACTORY, 2, IsValidUtf8TestUtil.EXPECTED_TWO_BYTE_ROUNDTRIPPABLE_COUNT);
     testBytes(DIRECT_NIO_FACTORY, 2, IsValidUtf8TestUtil.EXPECTED_TWO_BYTE_ROUNDTRIPPABLE_COUNT);
+    testBytes(ROPE_FACTORY, 2, IsValidUtf8TestUtil.EXPECTED_TWO_BYTE_ROUNDTRIPPABLE_COUNT);
   }
 
   /** Tests that round tripping of all three byte permutations work. */
   @Test
   public void testIsValidUtf8_3Bytes() {
-    // Travis' OOM killer doesn't like this test
-    if (System.getenv("TRAVIS") == null) {
-      testBytes(LITERAL_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
-      testBytes(HEAP_NIO_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
-      testBytes(DIRECT_NIO_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
-    }
+    testBytes(LITERAL_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
+    testBytes(HEAP_NIO_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
+    testBytes(DIRECT_NIO_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
+    testBytes(ROPE_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
   }
 
   /**
@@ -168,12 +169,14 @@ public class IsValidUtf8Test {
     assertValidUtf8(LITERAL_FACTORY, bytes, false);
     assertValidUtf8(HEAP_NIO_FACTORY, bytes, false);
     assertValidUtf8(DIRECT_NIO_FACTORY, bytes, false);
+    assertValidUtf8(ROPE_FACTORY, bytes, false);
   }
 
   private void assertInvalidUtf8(int... bytes) {
     assertValidUtf8(LITERAL_FACTORY, bytes, true);
     assertValidUtf8(HEAP_NIO_FACTORY, bytes, true);
     assertValidUtf8(DIRECT_NIO_FACTORY, bytes, true);
+    assertValidUtf8(ROPE_FACTORY, bytes, true);
   }
 
   private static ByteString asBytes(String s) {
