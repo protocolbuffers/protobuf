@@ -244,8 +244,8 @@ def UpdateJava():
   
   RewriteTextFile('java/README.md',
     lambda line : re.sub(
-      r'<version>.*$</version>',
-      '<version>%s</version>' % protobuf_version_info,
+      r'<version>.*</version>',
+      '<version>%s</version>' % GetFullVersion(),
       line))
 
 
