@@ -30,14 +30,13 @@
 
 #include <memory>
 
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 #include <google/protobuf/compiler/annotation_test_util.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/descriptor.pb.h>
-
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -132,7 +131,7 @@ TEST_F(CppMetadataTest, AddsPragma) {
   atu::AddFile("test.proto", kSmallTestFile);
   EXPECT_TRUE(
       CaptureMetadata("test.proto", &file, &pb_h, &info, NULL, NULL, NULL));
-  EXPECT_TRUE(pb_h.find("#ifdef guard_name") != string::npos);
+  EXPECT_TRUE(pb_h.find("#ifdef guard_name") != std::string::npos);
   EXPECT_TRUE(pb_h.find("#pragma pragma_name \"test.pb.h.meta\"") !=
               std::string::npos);
 }

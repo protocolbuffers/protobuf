@@ -32,9 +32,7 @@
 
 package com.google.protobuf.jruby;
 
-import com.google.protobuf.Descriptors;
 import org.jruby.RubyModule;
-import org.jruby.RubyNumeric;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -49,11 +47,8 @@ public class RubyEnum {
      */
     @JRubyMethod(meta = true)
     public static IRubyObject lookup(ThreadContext context, IRubyObject recv, IRubyObject number) {
-        RubyEnumDescriptor rubyEnumDescriptorescriptor = (RubyEnumDescriptor) getDescriptor(context, recv);
-        Descriptors.EnumDescriptor descriptor = rubyEnumDescriptorescriptor.getDescriptor();
-        Descriptors.EnumValueDescriptor value = descriptor.findValueByNumber(RubyNumeric.num2int(number));
-        if (value == null) return context.runtime.getNil();
-        return context.runtime.newSymbol(value.getName());
+        RubyEnumDescriptor rubyEnumDescriptor = (RubyEnumDescriptor) getDescriptor(context, recv);
+        return rubyEnumDescriptor.numberToName(context, number);
     }
 
     /*
@@ -65,11 +60,8 @@ public class RubyEnum {
      */
     @JRubyMethod(meta = true)
     public static IRubyObject resolve(ThreadContext context, IRubyObject recv, IRubyObject name) {
-        RubyEnumDescriptor rubyEnumDescriptorescriptor = (RubyEnumDescriptor) getDescriptor(context, recv);
-        Descriptors.EnumDescriptor descriptor = rubyEnumDescriptorescriptor.getDescriptor();
-        Descriptors.EnumValueDescriptor value = descriptor.findValueByName(name.asJavaString());
-        if (value == null) return context.runtime.getNil();
-        return context.runtime.newFixnum(value.getNumber());
+        RubyEnumDescriptor rubyEnumDescriptor = (RubyEnumDescriptor) getDescriptor(context, recv);
+        return rubyEnumDescriptor.nameToNumber(context, name);
     }
 
     /*

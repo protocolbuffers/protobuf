@@ -80,8 +80,8 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
         msgClass = [TestAllTypesProto2 class];
       } else {
         response.runtimeError =
-            [NSString stringWithFormat:
-                @"Protobuf request had an unknown message_type: %@", request.messageType];
+            [NSString stringWithFormat:@"Protobuf request had an unknown message_type: %@",
+                                       request.messageType];
         break;
       }
       NSError *error = nil;

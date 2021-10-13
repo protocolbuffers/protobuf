@@ -62,7 +62,7 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
 
     // Use the open-source runtime with google3 #include paths.  We make these
     // absolute to avoid ambiguity, so the runtime will be #included like:
-    //   #include "third_party/protobuf/<...>/google/protobuf/message.h"
+    //   #include "third_party/protobuf/.../google/protobuf/message.h"
     kOpensourceGoogle3
   };
 
@@ -81,7 +81,14 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
 
   // implements CodeGenerator ----------------------------------------
   bool Generate(const FileDescriptor* file, const std::string& parameter,
-                GeneratorContext* generator_context, std::string* error) const;
+                GeneratorContext* generator_context,
+                std::string* error) const override;
+
+  uint64_t GetSupportedFeatures() const override {
+    // We don't fully support this yet, but this is needed to unblock the tests,
+    // and we will have full support before the experimental flag is removed.
+    return FEATURE_PROTO3_OPTIONAL;
+  }
 
  private:
   bool opensource_runtime_ = true;

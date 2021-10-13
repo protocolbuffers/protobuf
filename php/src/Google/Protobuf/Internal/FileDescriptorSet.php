@@ -16,13 +16,12 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.FileDescriptorSet</code>
  */
-final class FileDescriptorSet extends \Google\Protobuf\Internal\Message
+class FileDescriptorSet extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
      */
     private $file;
-    private $has_file = false;
 
     /**
      * Constructor.
@@ -56,14 +55,8 @@ final class FileDescriptorSet extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FileDescriptorProto::class);
         $this->file = $arr;
-        $this->has_file = true;
 
         return $this;
-    }
-
-    public function hasFile()
-    {
-        return $this->has_file;
     }
 
 }

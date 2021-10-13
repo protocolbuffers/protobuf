@@ -274,7 +274,7 @@ public class LazyFieldLite {
 
     // At least one is parsed and both contain data. We won't drop any extensions here directly, but
     // in the case that the extension registries are not the same then we might in the future if we
-    // need to serialze and parse a message again.
+    // need to serialize and parse a message again.
     if (this.value == null && other.value != null) {
       setValue(mergeValueAndBytes(other.value, this.delayedBytes, this.extensionRegistry));
       return;

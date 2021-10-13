@@ -33,6 +33,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -594,6 +595,95 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(((SampleEnum)(-5)), values[5]);
         }
 
+        [Test]
+        public void TestPackedRepeatedFieldCollectionNonDivisibleLength()
+        {
+            uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
+            var codec = FieldCodec.ForFixed32(tag);
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(tag);
+            output.WriteString("A long string");
+            output.WriteTag(codec.Tag);
+            output.WriteRawVarint32((uint)codec.FixedSize - 1); // Length not divisible by FixedSize
+            output.WriteFixed32(uint.MaxValue);
+            output.Flush();
+            stream.Position = 0;
+
+            var input = new CodedInputStream(stream);
+            input.ReadTag();
+            input.ReadString();
+            input.ReadTag();
+            var field = new RepeatedField<uint>();
+            Assert.Throws<InvalidProtocolBufferException>(() => field.AddEntriesFrom(input, codec));
+
+            // Collection was not pre-initialized
+            Assert.AreEqual(0, field.Count);
+        }
+
+        [Test]
+        public void TestPackedRepeatedFieldCollectionNotAllocatedWhenLengthExceedsBuffer()
+        {
+            uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
+            var codec = FieldCodec.ForFixed32(tag);
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(tag);
+            output.WriteString("A long string");
+            output.WriteTag(codec.Tag);
+            output.WriteRawVarint32((uint)codec.FixedSize);
+            // Note that there is no content for the packed field.
+            // The field length exceeds the remaining length of content.
+            output.Flush();
+            stream.Position = 0;
+
+            var input = new CodedInputStream(stream);
+            input.ReadTag();
+            input.ReadString();
+            input.ReadTag();
+            var field = new RepeatedField<uint>();
+            Assert.Throws<InvalidProtocolBufferException>(() => field.AddEntriesFrom(input, codec));
+
+            // Collection was not pre-initialized
+            Assert.AreEqual(0, field.Count);
+        }
+
+        [Test]
+        public void TestPackedRepeatedFieldCollectionNotAllocatedWhenLengthExceedsRemainingData()
+        {
+            uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
+            var codec = FieldCodec.ForFixed32(tag);
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(tag);
+            output.WriteString("A long string");
+            output.WriteTag(codec.Tag);
+            output.WriteRawVarint32((uint)codec.FixedSize);
+            // Note that there is no content for the packed field.
+            // The field length exceeds the remaining length of the buffer.
+            output.Flush();
+            stream.Position = 0;
+
+            var sequence = ReadOnlySequenceFactory.CreateWithContent(stream.ToArray());
+            ParseContext.Initialize(sequence, out ParseContext ctx);
+
+            ctx.ReadTag();
+            ctx.ReadString();
+            ctx.ReadTag();
+            var field = new RepeatedField<uint>();
+            try
+            {
+                field.AddEntriesFrom(ref ctx, codec);
+                Assert.Fail();
+            }
+            catch (InvalidProtocolBufferException)
+            {
+            }
+
+            // Collection was not pre-initialized
+            Assert.AreEqual(0, field.Count);
+        }
+
         // Fairly perfunctory tests for the non-generic IList implementation
         [Test]
         public void IList_Indexer()
@@ -755,6 +845,53 @@ namespace Google.Protobuf.Collections
             EqualityTester.AssertEquality(list1, list3);
             Assert.True(list1.Contains(SampleNaNs.SignallingFlipped));
             Assert.False(list2.Contains(SampleNaNs.SignallingFlipped));
+        }
+
+        [Test]
+        public void Capacity_Increase()
+        {
+            // Unfortunately this case tests implementation details of RepeatedField.  This is necessary
+
+            var list = new RepeatedField<int>() { 1, 2, 3 };
+
+            Assert.AreEqual(8, list.Capacity);
+            Assert.AreEqual(3, list.Count);
+
+            list.Capacity = 10; // Set capacity to a larger value to trigger growth
+            Assert.AreEqual(10, list.Capacity, "Capacity increased");
+            Assert.AreEqual(3, list.Count);
+
+            CollectionAssert.AreEqual(new int[] {1, 2, 3}, list.ToArray(), "We didn't lose our data in the resize");
+        }
+
+        [Test]
+        public void Capacity_Decrease()
+        {
+            var list = new RepeatedField<int>() { 1, 2, 3 };
+
+            Assert.AreEqual(8, list.Capacity);
+            Assert.DoesNotThrow(() => list.Capacity = 5, "Can decrease capacity if new capacity is greater than list.Count");
+            Assert.AreEqual(5, list.Capacity);
+
+            Assert.DoesNotThrow(() => list.Capacity = 3, "Can set capacity exactly to list.Count" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = 2, "Can't set the capacity smaller than list.Count" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = 0, "Can't set the capacity to zero" );
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Capacity = -1, "Can't set the capacity to negative" );
+        }
+
+        [Test]
+        public void Capacity_Zero()
+        {
+            var list = new RepeatedField<int>() { 1 };
+            list.RemoveAt(0);
+            Assert.AreEqual(0, list.Count);
+            Assert.AreEqual(8, list.Capacity);
+
+            Assert.DoesNotThrow(() => list.Capacity = 0, "Can set Capacity to 0");
+            Assert.AreEqual(0, list.Capacity);
         }
     }
 }

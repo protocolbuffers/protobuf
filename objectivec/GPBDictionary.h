@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 //%PDDM-EXPAND DECLARE_DICTIONARIES()
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - UInt32 -> UInt32
 
@@ -5478,6 +5479,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND-END DECLARE_DICTIONARIES()
 
 NS_ASSUME_NONNULL_END

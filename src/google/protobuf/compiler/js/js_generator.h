@@ -83,7 +83,6 @@ struct GeneratorOptions {
         add_require_for_enums(false),
         testonly(false),
         library(""),
-        error_on_name_conflict(false),
         extension(".js"),
         one_output_file_per_input_file(false),
         annotate_code(false) {}
@@ -119,16 +118,14 @@ struct GeneratorOptions {
   // Create a library with name <name>_lib.js rather than a separate .js file
   // per type?
   std::string library;
-  // Error if there are two types that would generate the same output file?
-  bool error_on_name_conflict;
   // The extension to use for output file names.
   std::string extension;
   // Create a separate output file for each input file?
   bool one_output_file_per_input_file;
-  // If true, we should append annotations as commen on the last line for
+  // If true, we should append annotations as comments on the last line for
   // generated .js file. Annotations used by tools like https://kythe.io
   // to provide cross-references between .js and .proto files. Annotations
-  // are enced as base64 proto of GeneratedCodeInfo message (see
+  // are encoded as base64 proto of GeneratedCodeInfo message (see
   // descriptor.proto).
   bool annotate_code;
 };
@@ -142,18 +139,21 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   Generator() {}
   virtual ~Generator() {}
 
-  virtual bool Generate(const FileDescriptor* file,
-                        const std::string& parameter, GeneratorContext* context,
-                        std::string* error) const {
+  bool Generate(const FileDescriptor* file, const std::string& parameter,
+                GeneratorContext* context, std::string* error) const override {
     *error = "Unimplemented Generate() method. Call GenerateAll() instead.";
     return false;
   }
 
-  virtual bool HasGenerateAll() const { return true; }
+  bool HasGenerateAll() const override { return true; }
 
-  virtual bool GenerateAll(const std::vector<const FileDescriptor*>& files,
-                           const std::string& parameter,
-                           GeneratorContext* context, std::string* error) const;
+  bool GenerateAll(const std::vector<const FileDescriptor*>& files,
+                   const std::string& parameter, GeneratorContext* context,
+                   std::string* error) const override;
+
+  uint64 GetSupportedFeatures() const override {
+    return FEATURE_PROTO3_OPTIONAL;
+  }
 
  private:
   void GenerateHeader(const GeneratorOptions& options,

@@ -65,11 +65,11 @@ class MockErrorCollector : public MultiFileErrorCollector {
   MockErrorCollector() {}
   ~MockErrorCollector() {}
 
-  string text_;
+  std::string text_;
 
   // implements ErrorCollector ---------------------------------------
-  void AddError(const string& filename, int line, int column,
-                const string& message) {
+  void AddError(const std::string& filename, int line, int column,
+                const std::string& message) {
     strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n",
                                  filename, line, column, message);
   }
@@ -77,14 +77,14 @@ class MockErrorCollector : public MultiFileErrorCollector {
 
 class MockGeneratorContext : public GeneratorContext {
  public:
-  void ExpectFileMatches(const string& virtual_filename,
-                         const string& physical_filename) {
+  void ExpectFileMatches(const std::string& virtual_filename,
+                         const std::string& physical_filename) {
     auto it = files_.find(virtual_filename);
     ASSERT_TRUE(it != files_.end())
       << "Generator failed to generate file: " << virtual_filename;
-    string expected_contents = *it->second;
+    std::string expected_contents = *it->second;
 
-    string actual_contents;
+    std::string actual_contents;
     GOOGLE_CHECK_OK(
         File::GetContentsAsText(TestSourceDir() + "/" + physical_filename,
                           &actual_contents, true))
@@ -97,7 +97,7 @@ class MockGeneratorContext : public GeneratorContext {
 
   // implements GeneratorContext --------------------------------------
 
-  virtual io::ZeroCopyOutputStream* Open(const string& filename) {
+  virtual io::ZeroCopyOutputStream* Open(const std::string& filename) {
     auto& map_slot = files_[filename];
     map_slot.reset(new std::string);
     return new io::StringOutputStream(map_slot.get());
@@ -110,7 +110,7 @@ class MockGeneratorContext : public GeneratorContext {
 class GenerateAndTest {
  public:
   GenerateAndTest() {}
-  void Run(const FileDescriptor* proto_file, string file1, string file2) {
+  void Run(const FileDescriptor* proto_file, std::string file1, std::string file2) {
     ASSERT_TRUE(proto_file != NULL) << TestSourceDir();
     ASSERT_TRUE(generator_.Generate(proto_file, parameter_,
                                     &context_, &error_));
@@ -123,14 +123,14 @@ class GenerateAndTest {
  private:
   Generator generator_;
   MockGeneratorContext context_;
-  string error_;
-  string parameter_;
+  std::string error_;
+  std::string parameter_;
 };
 
 TEST(CsharpBootstrapTest, GeneratedCsharpDescriptorMatches) {
   // Skip this whole test if the csharp directory doesn't exist (i.e., a C++11
   // only distribution).
-  string descriptor_file_name =
+  std::string descriptor_file_name =
       "../csharp/src/Google.Protobuf/Reflection/Descriptor.cs";
   if (!File::Exists(TestSourceDir() + "/" + descriptor_file_name)) {
     return;

@@ -83,7 +83,7 @@ class PROTOBUF_EXPORT ByteSink {
   // Appends the "n" bytes starting at "bytes".
   virtual void Append(const char* bytes, size_t n) = 0;
 
-  // Flushes internal buffers. The default implemenation does nothing. ByteSink
+  // Flushes internal buffers. The default implementation does nothing. ByteSink
   // subclasses may use internal buffers that require calling Flush() at the end
   // of the stream.
   virtual void Flush();
@@ -256,11 +256,11 @@ class PROTOBUF_EXPORT GrowingArrayByteSink : public strings::ByteSink {
 //
 class PROTOBUF_EXPORT StringByteSink : public ByteSink {
  public:
-  explicit StringByteSink(string* dest) : dest_(dest) {}
+  explicit StringByteSink(std::string* dest) : dest_(dest) {}
   virtual void Append(const char* data, size_t n) override;
 
  private:
-  string* dest_;
+  std::string* dest_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringByteSink);
 };
 
@@ -274,7 +274,7 @@ class PROTOBUF_EXPORT StringByteSink : public ByteSink {
 class PROTOBUF_EXPORT NullByteSink : public ByteSink {
  public:
   NullByteSink() {}
-  virtual void Append(const char *data, size_t n) override {}
+  void Append(const char* /*data*/, size_t /*n*/) override {}
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(NullByteSink);

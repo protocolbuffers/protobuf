@@ -34,7 +34,7 @@ SymbolDatabase is the MessageFactory for messages generated at compile time,
 and makes it easy to create new instances of a registered type, given only the
 type's protocol buffer symbol name.
 
-Example usage:
+Example usage::
 
   db = symbol_database.SymbolDatabase()
 
@@ -58,6 +58,7 @@ Example usage:
 """
 
 
+from google.protobuf.internal import api_implementation
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 
@@ -71,7 +72,8 @@ class SymbolDatabase(message_factory.MessageFactory):
     Calls to GetSymbol() and GetMessages() will return messages registered here.
 
     Args:
-      message: a message.Message, to be registered.
+      message: A :class:`google.protobuf.message.Message` subclass (or
+        instance); its descriptor will be registered.
 
     Returns:
       The provided message.
@@ -86,43 +88,46 @@ class SymbolDatabase(message_factory.MessageFactory):
     """Registers the given message descriptor in the local database.
 
     Args:
-      message_descriptor: a descriptor.MessageDescriptor.
+      message_descriptor (Descriptor): the message descriptor to add.
     """
-    self.pool.AddDescriptor(message_descriptor)
+    if api_implementation.Type() == 'python':
+      # pylint: disable=protected-access
+      self.pool._AddDescriptor(message_descriptor)
 
   def RegisterEnumDescriptor(self, enum_descriptor):
     """Registers the given enum descriptor in the local database.
 
     Args:
-      enum_descriptor: a descriptor.EnumDescriptor.
+      enum_descriptor (EnumDescriptor): The enum descriptor to register.
 
     Returns:
-      The provided descriptor.
+      EnumDescriptor: The provided descriptor.
     """
-    self.pool.AddEnumDescriptor(enum_descriptor)
+    if api_implementation.Type() == 'python':
+      # pylint: disable=protected-access
+      self.pool._AddEnumDescriptor(enum_descriptor)
     return enum_descriptor
 
   def RegisterServiceDescriptor(self, service_descriptor):
     """Registers the given service descriptor in the local database.
 
     Args:
-      service_descriptor: a descriptor.ServiceDescriptor.
-
-    Returns:
-      The provided descriptor.
+      service_descriptor (ServiceDescriptor): the service descriptor to
+        register.
     """
-    self.pool.AddServiceDescriptor(service_descriptor)
+    if api_implementation.Type() == 'python':
+      # pylint: disable=protected-access
+      self.pool._AddServiceDescriptor(service_descriptor)
 
   def RegisterFileDescriptor(self, file_descriptor):
     """Registers the given file descriptor in the local database.
 
     Args:
-      file_descriptor: a descriptor.FileDescriptor.
-
-    Returns:
-      The provided descriptor.
+      file_descriptor (FileDescriptor): The file descriptor to register.
     """
-    self.pool.AddFileDescriptor(file_descriptor)
+    if api_implementation.Type() == 'python':
+      # pylint: disable=protected-access
+      self.pool._InternalAddFileDescriptor(file_descriptor)
 
   def GetSymbol(self, symbol):
     """Tries to find a symbol in the local database.
@@ -131,7 +136,7 @@ class SymbolDatabase(message_factory.MessageFactory):
     may be extended in future to support other symbol types.
 
     Args:
-      symbol: A str, a protocol buffer symbol.
+      symbol (str): a protocol buffer symbol.
 
     Returns:
       A Python class corresponding to the symbol.
@@ -152,7 +157,7 @@ class SymbolDatabase(message_factory.MessageFactory):
     messages, but does not register any message extensions.
 
     Args:
-      files: The file names to extract messages from.
+      files (list[str]): The file names to extract messages from.
 
     Returns:
       A dictionary mapping proto names to the message classes.

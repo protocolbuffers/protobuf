@@ -39,7 +39,7 @@ namespace Google.Protobuf.Reflection
     /// <summary>
     /// A collection to simplify retrieving the descriptors of extensions in a descriptor for a message
     /// </summary>
-    public class ExtensionCollection
+    public sealed class ExtensionCollection
     {
         private IDictionary<MessageDescriptor, IList<FieldDescriptor>> extensionsByTypeInDeclarationOrder;
         private IDictionary<MessageDescriptor, IList<FieldDescriptor>> extensionsByTypeInNumberOrder;
@@ -48,14 +48,32 @@ namespace Google.Protobuf.Reflection
         {
             UnorderedExtensions = DescriptorUtil.ConvertAndMakeReadOnly(
                 file.Proto.Extension,
-                (extension, i) => new FieldDescriptor(extension, file, null, i, null, extensions?[i]));
+                (extension, i) => {
+                    if (extensions?.Length != 0)
+                    {
+                        return new FieldDescriptor(extension, file, null, i, null, extensions?[i]);
+                    }
+                    else
+                    {
+                        return new FieldDescriptor(extension, file, null, i, null, null); // return null if there's no extensions in this array for old code-gen
+                    }
+                });
         }
 
         internal ExtensionCollection(MessageDescriptor message, Extension[] extensions)
         {
             UnorderedExtensions = DescriptorUtil.ConvertAndMakeReadOnly(
                 message.Proto.Extension,
-                (extension, i) => new FieldDescriptor(extension, message.File, message, i, null, extensions?[i]));
+                (extension, i) => {
+                    if (extensions?.Length != 0)
+                    {
+                        return new FieldDescriptor(extension, message.File, message, i, null, extensions?[i]);
+                    }
+                    else
+                    {
+                        return new FieldDescriptor(extension, message.File, message, i, null, null);
+                    }
+                });
         }
 
         /// <summary>
@@ -89,11 +107,14 @@ namespace Google.Protobuf.Reflection
             {
                 descriptor.CrossLink();
 
-                IList<FieldDescriptor> _;
-                if (!declarationOrder.TryGetValue(descriptor.ExtendeeType, out _))
-                    declarationOrder.Add(descriptor.ExtendeeType, new List<FieldDescriptor>());
+                IList<FieldDescriptor> list;
+                if (!declarationOrder.TryGetValue(descriptor.ExtendeeType, out list))
+                {
+                    list = new List<FieldDescriptor>();
+                    declarationOrder.Add(descriptor.ExtendeeType, list);
+                }
 
-                declarationOrder[descriptor.ExtendeeType].Add(descriptor);
+                list.Add(descriptor);
             }
 
             extensionsByTypeInDeclarationOrder = declarationOrder

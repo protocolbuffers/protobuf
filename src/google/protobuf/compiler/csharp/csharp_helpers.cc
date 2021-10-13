@@ -143,7 +143,7 @@ std::string GetExtensionClassUnqualifiedName(const FileDescriptor* descriptor) {
 std::string UnderscoresToCamelCase(const std::string& input,
                                    bool cap_next_letter,
                                    bool preserve_period) {
-  string result;
+  std::string result;
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {
     if ('a' <= input[i] && input[i] <= 'z') {
@@ -195,7 +195,7 @@ std::string UnderscoresToPascalCase(const std::string& input) {
 // Lower letter                  Alphanumeric              Same as current
 // Upper letter                  Alphanumeric              Lower
 std::string ShoutyToPascalCase(const std::string& input) {
-  string result;
+  std::string result;
   // Simple way of implementing "always start with upper"
   char previous = '_';
   for (int i = 0; i < input.size(); i++) {
@@ -284,23 +284,48 @@ std::string GetEnumValueName(const std::string& enum_name, const std::string& en
 
 uint GetGroupEndTag(const Descriptor* descriptor) {
   const Descriptor* containing_type = descriptor->containing_type();
-  if (containing_type == NULL) {
-    return 0;
-  }
-  const FieldDescriptor* field = containing_type->FindFieldByName(descriptor->name());
-  if (field != NULL && field->type() == FieldDescriptor::Type::TYPE_GROUP) {
-    return internal::WireFormatLite::MakeTag(field->number(), internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  if (containing_type != NULL) {
+    const FieldDescriptor* field;
+    for (int i = 0; i < containing_type->field_count(); i++) {
+      field = containing_type->field(i);
+      if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
+          field->message_type() == descriptor) {
+        return internal::WireFormatLite::MakeTag(
+            field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
+      }
+    }
+    for (int i = 0; i < containing_type->extension_count(); i++) {
+      field = containing_type->extension(i);
+      if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
+          field->message_type() == descriptor) {
+        return internal::WireFormatLite::MakeTag(
+            field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
+      }
+    }
   } else {
-    return 0;
+    const FileDescriptor* containing_file = descriptor->file();
+    if (containing_file != NULL) {
+      const FieldDescriptor* field;
+      for (int i = 0; i < containing_file->extension_count(); i++) {
+        field = containing_file->extension(i);
+        if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
+            field->message_type() == descriptor) {
+          return internal::WireFormatLite::MakeTag(
+              field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
+        }
+      }
+    }
   }
+
+  return 0;
 }
 
 std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
   std::string result = GetFileNamespace(file);
-  if (result != "") {
+  if (!result.empty()) {
     result += '.';
   }
-  string classname;
+  std::string classname;
   if (file->package().empty()) {
     classname = name;
   } else {
@@ -371,19 +396,20 @@ std::string GetPropertyName(const FieldDescriptor* descriptor) {
 std::string GetOutputFile(const FileDescriptor* descriptor,
                           const std::string file_extension,
                           const bool generate_directories,
-                          const std::string base_namespace, string* error) {
-  string relative_filename = GetFileNameBase(descriptor) + file_extension;
+                          const std::string base_namespace,
+                          std::string* error) {
+  std::string relative_filename = GetFileNameBase(descriptor) + file_extension;
   if (!generate_directories) {
     return relative_filename;
   }
-  string ns = GetFileNamespace(descriptor);
-  string namespace_suffix = ns;
+  std::string ns = GetFileNamespace(descriptor);
+  std::string namespace_suffix = ns;
   if (!base_namespace.empty()) {
     // Check that the base_namespace is either equal to or a leading part of
     // the file namespace. This isn't just a simple prefix; "Foo.B" shouldn't
     // be regarded as a prefix of "Foo.Bar". The simplest option is to add "."
     // to both.
-    string extended_ns = ns + ".";
+    std::string extended_ns = ns + ".";
     if (extended_ns.find(base_namespace + ".") != 0) {
       *error = "Namespace " + ns + " is not a prefix namespace of base namespace " + base_namespace;
       return ""; // This will be ignored, because we've set an error.
@@ -394,7 +420,7 @@ std::string GetOutputFile(const FileDescriptor* descriptor,
     }
   }
 
-  string namespace_dir = StringReplace(namespace_suffix, ".", "/", true);
+  std::string namespace_dir = StringReplace(namespace_suffix, ".", "/", true);
   if (!namespace_dir.empty()) {
     namespace_dir += "/";
   }
@@ -490,13 +516,13 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
         }
       } else {
         if (IsWrapperType(descriptor)) {
-          if (descriptor->containing_oneof()) {
+          if (descriptor->real_containing_oneof()) {
             return new WrapperOneofFieldGenerator(descriptor, presenceIndex, options);
           } else {
             return new WrapperFieldGenerator(descriptor, presenceIndex, options);
           }
         } else {
-          if (descriptor->containing_oneof()) {
+          if (descriptor->real_containing_oneof()) {
             return new MessageOneofFieldGenerator(descriptor, presenceIndex, options);
           } else {
             return new MessageFieldGenerator(descriptor, presenceIndex, options);
@@ -507,7 +533,7 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
       if (descriptor->is_repeated()) {
         return new RepeatedEnumFieldGenerator(descriptor, presenceIndex, options);
       } else {
-        if (descriptor->containing_oneof()) {
+        if (descriptor->real_containing_oneof()) {
           return new EnumOneofFieldGenerator(descriptor, presenceIndex, options);
         } else {
           return new EnumFieldGenerator(descriptor, presenceIndex, options);
@@ -517,7 +543,7 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
       if (descriptor->is_repeated()) {
         return new RepeatedPrimitiveFieldGenerator(descriptor, presenceIndex, options);
       } else {
-        if (descriptor->containing_oneof()) {
+        if (descriptor->real_containing_oneof()) {
           return new PrimitiveOneofFieldGenerator(descriptor, presenceIndex, options);
         } else {
           return new PrimitiveFieldGenerator(descriptor, presenceIndex, options);

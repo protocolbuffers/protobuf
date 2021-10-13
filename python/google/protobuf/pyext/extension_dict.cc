@@ -32,14 +32,16 @@
 // Author: tibell@google.com (Johan Tibell)
 
 #include <google/protobuf/pyext/extension_dict.h>
+
+#include <cstdint>
 #include <memory>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/message.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/message_factory.h>
@@ -47,17 +49,12 @@
 #include <google/protobuf/pyext/repeated_scalar_container.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
-#if PY_MAJOR_VERSION >= 3
-  #if PY_VERSION_HEX < 0x03030000
-    #error "Python 3.0 - 3.2 are not supported."
-  #endif
 #define PyString_AsStringAndSize(ob, charpp, sizep)                           \
   (PyUnicode_Check(ob) ? ((*(charpp) = const_cast<char*>(                     \
                                PyUnicode_AsUTF8AndSize(ob, (sizep)))) == NULL \
                               ? -1                                            \
                               : 0)                                            \
                        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
-#endif
 
 namespace google {
 namespace protobuf {
@@ -214,6 +211,10 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
     return -1;
   }
 
+  if (value == nullptr) {
+    return cmessage::ClearFieldByDescriptor(self->parent, descriptor);
+  }
+
   if (descriptor->label() != FieldDescriptor::LABEL_OPTIONAL ||
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     PyErr_SetString(PyExc_TypeError, "Extension is repeated and/or composite "
@@ -236,11 +237,11 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
   const FieldDescriptor* message_extension =
-      pool->pool->FindExtensionByName(string(name, name_size));
+      pool->pool->FindExtensionByName(StringParam(name, name_size));
   if (message_extension == NULL) {
     // Is is the name of a message set extension?
-    const Descriptor* message_descriptor = pool->pool->FindMessageTypeByName(
-        string(name, name_size));
+    const Descriptor* message_descriptor =
+        pool->pool->FindMessageTypeByName(StringParam(name, name_size));
     if (message_descriptor && message_descriptor->extension_count() > 0) {
       const FieldDescriptor* extension = message_descriptor->extension(0);
       if (extension->is_extension() &&
@@ -259,7 +260,7 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
 }
 
 PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* arg) {
-  int64 number = PyLong_AsLong(arg);
+  int64_t number = PyLong_AsLong(arg);
   if (number == -1 && PyErr_Occurred()) {
     return NULL;
   }

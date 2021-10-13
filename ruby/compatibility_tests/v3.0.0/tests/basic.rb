@@ -67,7 +67,6 @@ module BasicTest
     add_message "BadFieldNames" do
       optional :dup, :int32, 1
       optional :class, :int32, 2
-      optional :"a.b", :int32, 3
     end
 
     add_message "MapMessage" do
@@ -1067,8 +1066,6 @@ module BasicTest
       assert m['class'] == 2
       m['dup'] = 3
       assert m['dup'] == 3
-      m['a.b'] = 4
-      assert m['a.b'] == 4
     end
 
     def test_int_ranges
@@ -1267,10 +1264,10 @@ module BasicTest
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
       expected = '{"mapStringInt32":{"a":1},"mapStringMsg":{}}'
       expected_preserve = '{"map_string_int32":{"a":1},"map_string_msg":{}}'
-      assert MapMessage.encode_json(m) == expected
+      assert_equal expected, MapMessage.encode_json(m, :emit_defaults => true)
 
-      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true)
-      assert json == expected_preserve
+      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true, :emit_defaults => true)
+      assert_equal expected_preserve, json
 
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
       assert m == m2

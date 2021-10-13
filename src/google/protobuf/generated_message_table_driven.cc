@@ -35,7 +35,6 @@
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/generated_message_table_driven_lite.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/metadata.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -46,9 +45,9 @@ namespace internal {
 
 namespace {
 
-UnknownFieldSet* MutableUnknownFields(MessageLite* msg, int64 arena_offset) {
-  return Raw<InternalMetadataWithArena>(msg, arena_offset)
-      ->mutable_unknown_fields();
+UnknownFieldSet* MutableUnknownFields(MessageLite* msg, int64_t arena_offset) {
+  return Raw<InternalMetadata>(msg, arena_offset)
+      ->mutable_unknown_fields<UnknownFieldSet>();
 }
 
 struct UnknownFieldHandler {
@@ -75,14 +74,14 @@ struct UnknownFieldHandler {
   static bool ParseExtension(MessageLite* msg, const ParseTable& table,
                              io::CodedInputStream* input, int tag) {
     ExtensionSet* extensions = GetExtensionSet(msg, table.extension_offset);
-    if (extensions == NULL) {
+    if (extensions == nullptr) {
       return false;
     }
 
     const Message* prototype =
         down_cast<const Message*>(table.default_instance());
 
-    GOOGLE_DCHECK(prototype != NULL);
+    GOOGLE_DCHECK(prototype != nullptr);
     GOOGLE_DCHECK(table.unknown_field_set);
     UnknownFieldSet* unknown_fields =
         MutableUnknownFields(msg, table.arena_offset);
@@ -95,9 +94,8 @@ struct UnknownFieldHandler {
 
 bool MergePartialFromCodedStream(MessageLite* msg, const ParseTable& table,
                                  io::CodedInputStream* input) {
-  return MergePartialFromCodedStreamImpl<UnknownFieldHandler,
-                                         InternalMetadataWithArena>(msg, table,
-                                                                    input);
+  return MergePartialFromCodedStreamImpl<UnknownFieldHandler>(msg, table,
+                                                              input);
 }
 
 }  // namespace internal

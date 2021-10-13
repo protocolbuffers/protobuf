@@ -193,7 +193,7 @@ public abstract class AbstractMessage
     if (list.isEmpty()) {
       return Collections.emptyMap();
     }
-    Map result = new HashMap();
+    Map result = new HashMap<>();
     Iterator iterator = list.iterator();
     Message entry = (Message) iterator.next();
     Descriptors.Descriptor descriptor = entry.getDescriptorForType();

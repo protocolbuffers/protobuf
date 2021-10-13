@@ -51,7 +51,7 @@ like a normal test method, with its own setUp/tearDown cycle. In the
 example above, there are three separate testcases, one of which will
 fail due to an assertion error (1 + 1 != 3).
 
-Parameters for invididual test cases can be tuples (with positional parameters)
+Parameters for individual test cases can be tuples (with positional parameters)
 or dictionaries (with named parameters):
 
   class AdditionExample(parameterized.TestCase):
@@ -154,8 +154,6 @@ except ImportError:
   import unittest
 import uuid
 
-import six
-
 try:
   # Since python 3
   import collections.abc as collections_abc
@@ -180,8 +178,8 @@ def _StrClass(cls):
 
 
 def _NonStringIterable(obj):
-  return (isinstance(obj, collections_abc.Iterable) and not
-          isinstance(obj, six.string_types))
+  return (isinstance(obj, collections_abc.Iterable) and
+          not isinstance(obj, str))
 
 
 def _FormatParameterList(testcase_params):

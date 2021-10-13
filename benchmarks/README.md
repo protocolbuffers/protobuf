@@ -16,19 +16,17 @@ build your language's protobuf, then:
 You need to install [cmake](https://cmake.org/) before building the benchmark.
 
 We are using [google/benchmark](https://github.com/google/benchmark) as the
-benchmark tool for testing cpp. This will be automaticly made during build the
+benchmark tool for testing cpp. This will be automatically made during build the
 cpp benchmark.
 
-The cpp protobuf performance can be improved by linking with [tcmalloc library](
-https://gperftools.github.io/gperftools/tcmalloc.html). For using tcmalloc, you
-need to build [gpertools](https://github.com/gperftools/gperftools) to generate
-libtcmallc.so library.
+The cpp protobuf performance can be improved by linking with
+[TCMalloc](https://google.github.io/tcmalloc).
 
 ### Java
 We're using maven to build the java benchmarks, which is the same as to build
 the Java protobuf. There're no other tools need to install. We're using
 [google/caliper](https://github.com/google/caliper) as benchmark tool, which
-can be automaticly included by maven.
+can be automatically included by maven.
 
 ### Python
 We're using python C++ API for testing the generated
@@ -59,7 +57,7 @@ The first command installs `protoc-gen-go` into the `bin` directory in your loca
 The second command adds the `bin` directory to your `PATH` so that `protoc` can locate the plugin later.
 
 ### PHP
-PHP benchmark's requirement is the same as PHP protobuf's requirements. The benchmark will automaticly
+PHP benchmark's requirement is the same as PHP protobuf's requirements. The benchmark will automatically
 include PHP protobuf's src and build the c extension if required.
 
 ### Node.js
@@ -135,7 +133,7 @@ $ make go
 
 
 ### PHP
-We have two version of php protobuf implemention: pure php, php with c extension. To run these version benchmark, you need to:
+We have two version of php protobuf implementation: pure php, php with c extension. To run these version benchmark, you need to:
 #### Pure PHP
 ```
 $ make php
@@ -168,7 +166,7 @@ $ ./cpp-benchmark $(specific generated dataset file name) [$(benchmark options)]
 
 ### Python:
 
-For Python benchmark we have `--json` for outputing the json result
+For Python benchmark we have `--json` for outputting the json result
 
 #### Pure Python:
 

@@ -14,16 +14,15 @@ class Duration
         if (static::$is_initialized == true) {
           return;
         }
-        $pool->internalAddGeneratedFile(hex2bin(
-            "0ae3010a1e676f6f676c652f70726f746f6275662f6475726174696f6e2e" .
-            "70726f746f120f676f6f676c652e70726f746f627566222a0a0844757261" .
-            "74696f6e120f0a077365636f6e6473180120012803120d0a056e616e6f73" .
-            "180220012805427c0a13636f6d2e676f6f676c652e70726f746f62756642" .
-            "0d4475726174696f6e50726f746f50015a2a6769746875622e636f6d2f67" .
-            "6f6c616e672f70726f746f6275662f7074797065732f6475726174696f6e" .
-            "f80101a20203475042aa021e476f6f676c652e50726f746f6275662e5765" .
-            "6c6c4b6e6f776e5479706573620670726f746f33"
-        ));
+        $pool->internalAddGeneratedFile(
+            '
+ë
+google/protobuf/duration.protogoogle.protobuf"*
+Duration
+seconds (
+nanos (Bƒ
+com.google.protobufBDurationProtoPZ1google.golang.org/protobuf/types/known/durationpbø¢GPBªGoogle.Protobuf.WellKnownTypesbproto3'
+        , true);
 
         static::$is_initialized = true;
     }

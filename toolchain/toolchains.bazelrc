@@ -1,0 +1,8 @@
+build:cross_config --crosstool_top=//toolchain:clang_suite
+build:cross_config --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+
+build:linux-aarch_64 --config=cross_config --cpu=linux-aarch_64
+build:linux-ppcle_64 --config=cross_config --cpu=linux-ppcle_64
+build:linux-s390_64 --config=cross_config --cpu=linux-s390_64
+build:linux-x86_32 --config=cross_config --cpu=linux-x86_32
+build:linux-x86_64 --config=cross_config --cpu=linux-x86_64

@@ -30,6 +30,10 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.TextFormatEscaper.escapeBytes;
+import static java.lang.Integer.toHexString;
+import static java.lang.System.identityHashCode;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,21 +53,27 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 
 /**
- * Immutable sequence of bytes. Substring is supported by sharing the reference to the immutable
- * underlying bytes. Concatenation is likewise supported without copying (long strings) by building
- * a tree of pieces in {@link RopeByteString}.
+ * Immutable sequence of bytes. Provides conversions to and from {@code byte[]}, {@link
+ * java.lang.String}, {@link ByteBuffer}, {@link InputStream}, {@link OutputStream}. Also provides a
+ * conversion to {@link CodedInputStream}.
  *
  * <p>Like {@link String}, the contents of a {@link ByteString} can never be observed to change, not
  * even in the presence of a data race or incorrect API usage in the client code.
+ *
+ * <p>Substring is supported by sharing the reference to the immutable underlying bytes.
+ * Concatenation is likewise supported without copying (long strings) by building a tree of pieces
+ * in {@link RopeByteString}.
  *
  * @author crazybob@google.com Bob Lee
  * @author kenton@google.com Kenton Varda
  * @author carlanton@google.com Carl Haverl
  * @author martinrb@google.com Martin Buchholz
  */
+@CheckReturnValue
 public abstract class ByteString implements Iterable<Byte>, Serializable {
 
   /**
@@ -470,7 +480,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param streamToDrain The source stream, which is read completely but not closed.
    * @return A new {@code ByteString} which is made up of chunks of various sizes, depending on the
    *     behavior of the underlying stream.
-   * @throws IOException IOException is thrown if there is a problem reading the underlying stream.
+   * @throws IOException if there is a problem reading the underlying stream
+   * @throws IllegalArgumentException if the stream supplies more than Integer.MAX_VALUE bytes
    */
   public static ByteString readFrom(InputStream streamToDrain) throws IOException {
     return readFrom(streamToDrain, MIN_READ_FROM_CHUNK_SIZE, MAX_READ_FROM_CHUNK_SIZE);
@@ -490,13 +501,23 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param streamToDrain The source stream, which is read completely but not closed.
    * @param chunkSize The size of the chunks in which to read the stream.
    * @return A new {@code ByteString} which is made up of chunks of the given size.
-   * @throws IOException IOException is thrown if there is a problem reading the underlying stream.
+   * @throws IOException if there is a problem reading the underlying stream
+   * @throws IllegalArgumentException if the stream supplies more than Integer.MAX_VALUE bytes
    */
   public static ByteString readFrom(InputStream streamToDrain, int chunkSize) throws IOException {
     return readFrom(streamToDrain, chunkSize, chunkSize);
   }
 
-  // Helper method that takes the chunk size range as a parameter.
+  /**
+   * Helper method that takes the chunk size range as a parameter.
+   *
+   * @param streamToDrain the source stream, which is read completely but not closed
+   * @param minChunkSize the minimum size of the chunks in which to read the stream
+   * @param maxChunkSize the maximum size of the chunks in which to read the stream
+   * @return a new {@code ByteString} which is made up of chunks within the given size range
+   * @throws IOException if there is a problem reading the underlying stream
+   * @throws IllegalArgumentException if the stream supplies more than Integer.MAX_VALUE bytes
+   */
   public static ByteString readFrom(InputStream streamToDrain, int minChunkSize, int maxChunkSize)
       throws IOException {
     Collection<ByteString> results = new ArrayList<ByteString>();
@@ -555,6 +576,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * @param other string to concatenate
    * @return a new {@code ByteString} instance
+   * @throws IllegalArgumentException if the combined size of the two byte strings exceeds
+   *     Integer.MAX_VALUE
    */
   public final ByteString concat(ByteString other) {
     if (Integer.MAX_VALUE - size() < other.size()) {
@@ -575,6 +598,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * @param byteStrings strings to be concatenated
    * @return new {@code ByteString}
+   * @throws IllegalArgumentException if the combined size of the byte strings exceeds
+   *     Integer.MAX_VALUE
    */
   public static ByteString copyFrom(Iterable<ByteString> byteStrings) {
     // Determine the size;
@@ -1034,8 +1059,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
 
     /**
-     * Creates a byte string. Its size is the current size of this output stream and its output has
-     * been copied to it.
+     * Creates a byte string with the size and contents of this output stream. This does not create
+     * a new copy of the underlying bytes. If the stream size grows dynamically, the runtime is
+     * O(log n) in respect to the number of bytes written to the {@link Output}. If the stream size
+     * stays within the initial capacity, the runtime is O(1).
      *
      * @return the current contents of this output stream, as a byte string.
      */
@@ -1249,6 +1276,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return the length of the range.
    * @throws IndexOutOfBoundsException some or all of the range falls outside of the array.
    */
+  @CanIgnoreReturnValue
   static int checkRange(int startIndex, int endIndex, int size) {
     final int length = endIndex - startIndex;
     if ((startIndex | endIndex | length | (size - endIndex)) < 0) {
@@ -1268,7 +1296,17 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   @Override
   public final String toString() {
     return String.format(
-        "<ByteString@%s size=%d>", Integer.toHexString(System.identityHashCode(this)), size());
+        Locale.ROOT,
+        "<ByteString@%s size=%d contents=\"%s\">",
+        toHexString(identityHashCode(this)),
+        size(),
+        truncateAndEscapeForDisplay());
+  }
+
+  private String truncateAndEscapeForDisplay() {
+    final int limit = 50;
+
+    return size() <= limit ? escapeBytes(this) : escapeBytes(substring(0, limit - 3)) + "...";
   }
 
   /**

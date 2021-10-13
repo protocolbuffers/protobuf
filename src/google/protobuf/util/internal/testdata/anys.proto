@@ -34,6 +34,7 @@ package proto_util_converter.testing;
 
 import "google/protobuf/any.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
@@ -59,6 +60,8 @@ message AnyTestCases {
   AnyWrapper recursive_any_with_type_field_at_end = 15;
   AnyWrapper repeated_any = 16;
   AnyWrapper empty_any_with_null_type_url = 17;
+  AnyWrapper any_with_empty = 18;
+  AnyWrapper any_with_default_timestamp = 19;
 
   google.protobuf.Any top_level_any = 50;
   google.protobuf.Any top_level_any_with_type_field_at_end = 51;
@@ -79,6 +82,7 @@ message Imports {
   google.protobuf.Timestamp timestamp = 3;
   google.protobuf.Duration duration = 4;
   google.protobuf.Int32Value i32 = 5;
+  google.protobuf.Empty empty = 6;
   Data data = 100;
 }
 

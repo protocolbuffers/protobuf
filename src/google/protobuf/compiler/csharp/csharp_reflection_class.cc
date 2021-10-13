@@ -53,7 +53,7 @@ namespace csharp {
 
 ReflectionClassGenerator::ReflectionClassGenerator(const FileDescriptor* file,
                                                    const Options* options)
-    : SourceGeneratorBase(file, options),
+    : SourceGeneratorBase(options),
       file_(file) {
   namespace_ = GetFileNamespace(file);
   reflectionClassname_ = GetReflectionClassUnqualifiedName(file);
@@ -73,10 +73,10 @@ void ReflectionClassGenerator::Generate(io::Printer* printer) {
 
   if (file_->extension_count() > 0) {
     printer->Print(
-        "/// <summary>Holder for extension identifiers generated from the top level of $file_name$</summary>\n"
-        "internal static partial class $class_name$ {\n",
-        "access_level", class_access_level(),
-        "class_name", extensionClassname_,
+        "/// <summary>Holder for extension identifiers generated from the top "
+        "level of $file_name$</summary>\n"
+        "$access_level$ static partial class $class_name$ {\n",
+        "access_level", class_access_level(), "class_name", extensionClassname_,
         "file_name", file_->name());
     printer->Indent();
     for (int i = 0; i < file_->extension_count(); i++) {
@@ -261,6 +261,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   // Fields
   if (descriptor->field_count() > 0) {
       std::vector<std::string> fields;
+      fields.reserve(descriptor->field_count());
       for (int i = 0; i < descriptor->field_count(); i++) {
           fields.push_back(GetPropertyName(descriptor->field(i)));
       }
@@ -273,6 +274,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   // Oneofs
   if (descriptor->oneof_decl_count() > 0) {
       std::vector<std::string> oneofs;
+      oneofs.reserve(descriptor->oneof_decl_count());
       for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
           oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
       }
@@ -285,6 +287,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   // Nested enums
   if (descriptor->enum_type_count() > 0) {
       std::vector<std::string> enums;
+      enums.reserve(descriptor->enum_type_count());
       for (int i = 0; i < descriptor->enum_type_count(); i++) {
           enums.push_back(GetClassName(descriptor->enum_type(i)));
       }

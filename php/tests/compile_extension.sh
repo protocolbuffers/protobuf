@@ -1,10 +1,28 @@
 #!/bin/bash
 
-EXTENSION_PATH=$1
-
-pushd $EXTENSION_PATH
-make clean || true
 set -e
-# Add following in configure for debug: --enable-debug CFLAGS='-g -O0'
-phpize && ./configure CFLAGS='-g -O0' && make
-popd
+
+cd $(dirname $0)
+
+pushd  ../ext/google/protobuf > /dev/null
+
+CONFIGURE_OPTIONS=("./configure" "--with-php-config=$(which php-config)")
+
+if [ "$1" != "--release" ]; then
+  CONFIGURE_OPTIONS+=("CFLAGS=-g -O0 -Wall -DPBPHP_ENABLE_ASSERTS")
+fi
+
+FINGERPRINT="$(sha256sum $(which php)) ${CONFIGURE_OPTIONS[@]}"
+
+# If the PHP interpreter we are building against or the arguments
+# have changed, we must regenerated the Makefile.
+if [[ ! -f BUILD_STAMP ]] || [[ "$(cat BUILD_STAMP)" != "$FINGERPRINT" ]]; then
+  phpize --clean
+  rm -f configure.in configure.ac
+  phpize
+  "${CONFIGURE_OPTIONS[@]}"
+  echo "$FINGERPRINT" > BUILD_STAMP
+fi
+
+make
+popd > /dev/null

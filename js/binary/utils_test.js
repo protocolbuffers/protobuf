@@ -341,6 +341,8 @@ describe('binaryUtilsTest', function() {
     var f32_eps = jspb.BinaryConstants.FLOAT32_EPS;
     var f32_min = jspb.BinaryConstants.FLOAT32_MIN;
     var f32_max = jspb.BinaryConstants.FLOAT32_MAX;
+    var f32_max_safe_int = jspb.utils.joinFloat32(0x4b7fffff, 0);
+    var f32_pi = Math.fround(Math.PI);
 
     // NaN.
     jspb.utils.splitFloat32(NaN);
@@ -354,7 +356,7 @@ describe('binaryUtilsTest', function() {
      */
     function test(x, opt_bits) {
       jspb.utils.splitFloat32(x);
-      if (goog.isDef(opt_bits)) {
+      if (opt_bits !== undefined) {
         if (opt_bits != jspb.utils.split64Low) throw 'fail!';
       }
       expect(truncate(x))
@@ -381,6 +383,18 @@ describe('binaryUtilsTest', function() {
     // Positive and negative max.
     test(f32_max, 0x7F7FFFFF);
     test(-f32_max, 0xFF7FFFFF);
+
+    // Positive and negative max_safe_int.
+    test(f32_max_safe_int, 0x4B7FFFFF);
+    test(-f32_max_safe_int, 0xCB7FFFFF);
+
+    // Pi.
+    test(f32_pi, 0x40490fdb);
+
+    // corner cases
+    test(0.9999999762949594, 0x3f800000);
+    test(7.99999999999999, 0x41000000);
+    test(Math.sin(30 * Math.PI / 180), 0x3f000000);  // sin(30 degrees)
 
     // Various positive values.
     var cursor = f32_eps * 10;
@@ -419,11 +433,13 @@ describe('binaryUtilsTest', function() {
      */
     function test(x, opt_highBits, opt_lowBits) {
       jspb.utils.splitFloat64(x);
-      if (goog.isDef(opt_highBits)) {
-        if (opt_highBits != jspb.utils.split64High) throw 'fail!';
+      if (opt_highBits !== undefined) {
+        var split64High = jspb.utils.split64High;
+        expect(opt_highBits.toString(16)).toEqual(split64High.toString(16));
       }
-      if (goog.isDef(opt_lowBits)) {
-        if (opt_lowBits != jspb.utils.split64Low) throw 'fail!';
+      if (opt_lowBits !== undefined) {
+        var split64Low = jspb.utils.split64Low;
+        expect(opt_lowBits.toString(16)).toEqual(split64Low.toString(16));
       }
       expect(
           jspb.utils.joinFloat64(jspb.utils.split64Low, jspb.utils.split64High))
@@ -438,6 +454,9 @@ describe('binaryUtilsTest', function() {
     test(0, 0x00000000, 0x00000000);
     test(-0, 0x80000000, 0x00000000);
 
+    test(1, 0x3FF00000, 0x00000000);
+    test(2, 0x40000000, 0x00000000);
+
     // Positive and negative epsilon.
     test(f64_eps, 0x00000000, 0x00000001);
     test(-f64_eps, 0x80000000, 0x00000001);
@@ -449,6 +468,19 @@ describe('binaryUtilsTest', function() {
     // Positive and negative max.
     test(f64_max, 0x7FEFFFFF, 0xFFFFFFFF);
     test(-f64_max, 0xFFEFFFFF, 0xFFFFFFFF);
+
+    test(Number.MAX_SAFE_INTEGER, 0x433FFFFF, 0xFFFFFFFF);
+    test(Number.MIN_SAFE_INTEGER, 0xC33FFFFF, 0xFFFFFFFF);
+
+    // Test various edge cases with mantissa of all 1, all 0, or just the
+    // highest or lowest significant bit.
+    test(4503599627370497, 0x43300000, 0x00000001);
+    test(6755399441055744, 0x43380000, 0x00000000);
+    test(1.348269851146737e+308, 0x7FE80000, 0x00000000);
+    test(1.9999999999999998, 0x3FFFFFFF, 0xFFFFFFFF);
+    test(2.225073858507201e-308, 0x000FFFFF, 0xFFFFFFFF);
+    test(Math.PI, 0x400921fb, 0x54442d18);
+    test(jspb.BinaryConstants.FLOAT32_MIN, 0x38100000, 0x00000000);
 
     // Various positive values.
     var cursor = f64_eps * 10;
@@ -462,6 +494,53 @@ describe('binaryUtilsTest', function() {
     while (cursor != -Infinity) {
       test(cursor);
       cursor *= 1.1;
+    }
+  });
+
+  /**
+   * Tests zigzag conversions.
+   */
+  it('can encode and decode zigzag 64', function() {
+    function stringToHiLoPair(str) {
+      jspb.utils.splitDecimalString(str);
+      return {
+        lo: jspb.utils.split64Low >>> 0,
+        hi: jspb.utils.split64High >>> 0
+      };
+    }
+    function makeHiLoPair(lo, hi) {
+      return {lo: lo >>> 0, hi: hi >>> 0};
+    }
+    // Test cases directly from the protobuf dev guide.
+    // https://engdoc.corp.google.com/eng/howto/protocolbuffers/developerguide/encoding.shtml?cl=head#types
+    var testCases = [
+      {original: stringToHiLoPair('0'), zigzag: stringToHiLoPair('0')},
+      {original: stringToHiLoPair('-1'), zigzag: stringToHiLoPair('1')},
+      {original: stringToHiLoPair('1'), zigzag: stringToHiLoPair('2')},
+      {original: stringToHiLoPair('-2'), zigzag: stringToHiLoPair('3')},
+      {
+        original: stringToHiLoPair('2147483647'),
+        zigzag: stringToHiLoPair('4294967294')
+      },
+      {
+        original: stringToHiLoPair('-2147483648'),
+        zigzag: stringToHiLoPair('4294967295')
+      },
+      // 64-bit extremes
+      {
+        original: stringToHiLoPair('9223372036854775807'),
+        zigzag: stringToHiLoPair('18446744073709551614')
+      },
+      {
+        original: stringToHiLoPair('-9223372036854775808'),
+        zigzag: stringToHiLoPair('18446744073709551615')
+      },
+    ];
+    for (const c of testCases) {
+      expect(jspb.utils.toZigzag64(c.original.lo, c.original.hi, makeHiLoPair))
+          .toEqual(c.zigzag);
+      expect(jspb.utils.fromZigzag64(c.zigzag.lo, c.zigzag.hi, makeHiLoPair))
+          .toEqual(c.original);
     }
   });
 

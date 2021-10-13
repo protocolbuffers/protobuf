@@ -5,29 +5,39 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 def protobuf_deps():
     """Loads common dependencies needed to compile the protobuf library."""
 
+    if not native.existing_rule("bazel_skylib"):
+        http_archive(
+            name = "bazel_skylib",
+            sha256 = "97e70364e9249702246c0e9444bccdc4b847bed1eb03c5a3ece4f83dfe6abc44",
+            urls = [
+                "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.0.2/bazel-skylib-1.0.2.tar.gz",
+                "https://github.com/bazelbuild/bazel-skylib/releases/download/1.0.2/bazel-skylib-1.0.2.tar.gz",
+            ],
+        )
+
     if not native.existing_rule("zlib"):
         http_archive(
             name = "zlib",
             build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
-            sha256 = "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1",
+            sha256 = "629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff",
             strip_prefix = "zlib-1.2.11",
-            urls = ["https://zlib.net/zlib-1.2.11.tar.gz"],
+            urls = ["https://github.com/madler/zlib/archive/v1.2.11.tar.gz"],
         )
 
     if not native.existing_rule("six"):
         http_archive(
             name = "six",
-            build_file = "@//:six.BUILD",
-            sha256 = "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a",
-            urls = ["https://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz#md5=34eed507548117b2ab523ab14b2f8b55"],
+            build_file = "@com_google_protobuf//:third_party/six.BUILD",
+            sha256 = "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73",
+            urls = ["https://pypi.python.org/packages/source/s/six/six-1.12.0.tar.gz"],
         )
 
     if not native.existing_rule("rules_cc"):
         http_archive(
             name = "rules_cc",
-            sha256 = "29daf0159f0cf552fcff60b49d8bcd4f08f08506d2da6e41b07058ec50cfeaec",
-            strip_prefix = "rules_cc-b7fe9697c0c76ab2fd431a891dbb9a6a32ed7c3e",
-            urls = ["https://github.com/bazelbuild/rules_cc/archive/b7fe9697c0c76ab2fd431a891dbb9a6a32ed7c3e.tar.gz"],
+            sha256 = "9d48151ea71b3e225adfb6867e6d2c7d0dce46cbdc8710d9a9a628574dfd40a0",
+            strip_prefix = "rules_cc-818289e5613731ae410efb54218a4077fb9dbb03",
+            urls = ["https://github.com/bazelbuild/rules_cc/archive/818289e5613731ae410efb54218a4077fb9dbb03.tar.gz"],
         )
 
     if not native.existing_rule("rules_java"):
@@ -41,7 +51,23 @@ def protobuf_deps():
     if not native.existing_rule("rules_proto"):
         http_archive(
             name = "rules_proto",
-            sha256 = "88b0a90433866b44bb4450d4c30bc5738b8c4f9c9ba14e9661deb123f56a833d",
-            strip_prefix = "rules_proto-b0cc14be5da05168b01db282fe93bdf17aa2b9f4",
-            urls = ["https://github.com/bazelbuild/rules_proto/archive/b0cc14be5da05168b01db282fe93bdf17aa2b9f4.tar.gz"],
+            sha256 = "a4382f78723af788f0bc19fd4c8411f44ffe0a72723670a34692ffad56ada3ac",
+            strip_prefix = "rules_proto-f7a30f6f80006b591fa7c437fe5a951eb10bcbcf",
+            urls = ["https://github.com/bazelbuild/rules_proto/archive/f7a30f6f80006b591fa7c437fe5a951eb10bcbcf.zip"],
+        )
+
+    if not native.existing_rule("rules_python"):
+        http_archive(
+            name = "rules_python",
+            sha256 = "e5470e92a18aa51830db99a4d9c492cc613761d5bdb7131c04bd92b9834380f6",
+            strip_prefix = "rules_python-4b84ad270387a7c439ebdccfd530e2339601ef27",
+            urls = ["https://github.com/bazelbuild/rules_python/archive/4b84ad270387a7c439ebdccfd530e2339601ef27.tar.gz"],
+        )
+
+    if not native.existing_rule("rules_jvm_external"):
+       http_archive(
+            name = "rules_jvm_external",
+            sha256 = "f36441aa876c4f6427bfb2d1f2d723b48e9d930b62662bf723ddfb8fc80f0140",
+            strip_prefix = "rules_jvm_external-4.1",
+            urls = ["https://github.com/bazelbuild/rules_jvm_external/archive/4.1.zip"],
         )

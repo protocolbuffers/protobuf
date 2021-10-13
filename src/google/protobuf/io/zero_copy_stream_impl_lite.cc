@@ -56,7 +56,7 @@ static const int kDefaultBlockSize = 8192;
 // ===================================================================
 
 ArrayInputStream::ArrayInputStream(const void* data, int size, int block_size)
-    : data_(reinterpret_cast<const uint8*>(data)),
+    : data_(reinterpret_cast<const uint8_t*>(data)),
       size_(size),
       block_size_(block_size > 0 ? block_size : size),
       position_(0),
@@ -97,13 +97,13 @@ bool ArrayInputStream::Skip(int count) {
   }
 }
 
-int64 ArrayInputStream::ByteCount() const { return position_; }
+int64_t ArrayInputStream::ByteCount() const { return position_; }
 
 
 // ===================================================================
 
 ArrayOutputStream::ArrayOutputStream(void* data, int size, int block_size)
-    : data_(reinterpret_cast<uint8*>(data)),
+    : data_(reinterpret_cast<uint8_t*>(data)),
       size_(size),
       block_size_(block_size > 0 ? block_size : size),
       position_(0),
@@ -132,7 +132,7 @@ void ArrayOutputStream::BackUp(int count) {
   last_returned_size_ = 0;  // Don't let caller back up further.
 }
 
-int64 ArrayOutputStream::ByteCount() const { return position_; }
+int64_t ArrayOutputStream::ByteCount() const { return position_; }
 
 // ===================================================================
 
@@ -140,29 +140,25 @@ StringOutputStream::StringOutputStream(std::string* target) : target_(target) {}
 
 bool StringOutputStream::Next(void** data, int* size) {
   GOOGLE_CHECK(target_ != NULL);
-  int old_size = target_->size();
+  size_t old_size = target_->size();
 
   // Grow the string.
+  size_t new_size;
   if (old_size < target_->capacity()) {
     // Resize the string to match its capacity, since we can get away
     // without a memory allocation this way.
-    STLStringResizeUninitialized(target_, target_->capacity());
+    new_size = target_->capacity();
   } else {
-    // Size has reached capacity, try to double the size.
-    if (old_size > std::numeric_limits<int>::max() / 2) {
-      // Can not double the size otherwise it is going to cause integer
-      // overflow in the expression below: old_size * 2 ";
-      GOOGLE_LOG(ERROR) << "Cannot allocate buffer larger than kint32max for "
-                 << "StringOutputStream.";
-      return false;
-    }
-    // Double the size, also make sure that the new size is at least
-    // kMinimumSize.
-    STLStringResizeUninitialized(
-        target_,
-        std::max(old_size * 2,
-                 kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.
+    // Size has reached capacity, try to double it.
+    new_size = old_size * 2;
   }
+  // Avoid integer overflow in returned '*size'.
+  new_size = std::min(new_size, old_size + std::numeric_limits<int>::max());
+  // Increase the size, also make sure that it is at least kMinimumSize.
+  STLStringResizeUninitialized(
+      target_,
+      std::max(new_size,
+               kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.
 
   *data = mutable_string_data(target_) + old_size;
   *size = target_->size() - old_size;
@@ -172,11 +168,11 @@ bool StringOutputStream::Next(void** data, int* size) {
 void StringOutputStream::BackUp(int count) {
   GOOGLE_CHECK_GE(count, 0);
   GOOGLE_CHECK(target_ != NULL);
-  GOOGLE_CHECK_LE(count, target_->size());
+  GOOGLE_CHECK_LE(static_cast<size_t>(count), target_->size());
   target_->resize(target_->size() - count);
 }
 
-int64 StringOutputStream::ByteCount() const {
+int64_t StringOutputStream::ByteCount() const {
   GOOGLE_CHECK(target_ != NULL);
   return target_->size();
 }
@@ -282,13 +278,13 @@ bool CopyingInputStreamAdaptor::Skip(int count) {
   return skipped == count;
 }
 
-int64 CopyingInputStreamAdaptor::ByteCount() const {
+int64_t CopyingInputStreamAdaptor::ByteCount() const {
   return position_ - backup_bytes_;
 }
 
 void CopyingInputStreamAdaptor::AllocateBufferIfNeeded() {
   if (buffer_.get() == NULL) {
-    buffer_.reset(new uint8[buffer_size_]);
+    buffer_.reset(new uint8_t[buffer_size_]);
   }
 }
 
@@ -342,9 +338,40 @@ void CopyingOutputStreamAdaptor::BackUp(int count) {
   buffer_used_ -= count;
 }
 
-int64 CopyingOutputStreamAdaptor::ByteCount() const {
+int64_t CopyingOutputStreamAdaptor::ByteCount() const {
   return position_ + buffer_used_;
 }
+
+bool CopyingOutputStreamAdaptor::WriteAliasedRaw(const void* data, int size) {
+  if (size >= buffer_size_) {
+    if (!Flush() || !copying_stream_->Write(data, size)) {
+      return false;
+    }
+    GOOGLE_DCHECK_EQ(buffer_used_, 0);
+    position_ += size;
+    return true;
+  }
+
+  void* out;
+  int out_size;
+  while (true) {
+    if (!Next(&out, &out_size)) {
+      return false;
+    }
+
+    if (size <= out_size) {
+      std::memcpy(out, data, size);
+      BackUp(out_size - size);
+      return true;
+    }
+
+    std::memcpy(out, data, out_size);
+    data = static_cast<const char*>(data) + out_size;
+    size -= out_size;
+  }
+  return true;
+}
+
 
 bool CopyingOutputStreamAdaptor::WriteBuffer() {
   if (failed_) {
@@ -367,7 +394,7 @@ bool CopyingOutputStreamAdaptor::WriteBuffer() {
 
 void CopyingOutputStreamAdaptor::AllocateBufferIfNeeded() {
   if (buffer_ == NULL) {
-    buffer_.reset(new uint8[buffer_size_]);
+    buffer_.reset(new uint8_t[buffer_size_]);
   }
 }
 
@@ -379,7 +406,7 @@ void CopyingOutputStreamAdaptor::FreeBuffer() {
 // ===================================================================
 
 LimitingInputStream::LimitingInputStream(ZeroCopyInputStream* input,
-                                         int64 limit)
+                                         int64_t limit)
     : input_(input), limit_(limit) {
   prior_bytes_read_ = input_->ByteCount();
 }
@@ -424,7 +451,7 @@ bool LimitingInputStream::Skip(int count) {
   }
 }
 
-int64 LimitingInputStream::ByteCount() const {
+int64_t LimitingInputStream::ByteCount() const {
   if (limit_ < 0) {
     return input_->ByteCount() + limit_ - prior_bytes_read_;
   } else {

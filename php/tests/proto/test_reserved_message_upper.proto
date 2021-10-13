@@ -32,6 +32,8 @@ message EVAL {}
 message EXIT {}
 message EXTENDS {}
 message FINAL {}
+message FINALLY {}
+message FN {}
 message FOR {}
 message FOREACH {}
 message FUNCTION {}
@@ -46,6 +48,7 @@ message INSTEADOF {}
 message INTERFACE {}
 message ISSET {}
 message LIST {}
+message MATCH {}
 message NAMESPACE {}
 message NEW {}
 message OR {}
@@ -66,6 +69,7 @@ message USE {}
 message VAR {}
 message WHILE {}
 message XOR {}
+message YIELD {}
 message INT {}
 message FLOAT {}
 message BOOL {}

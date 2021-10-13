@@ -34,7 +34,7 @@ package protobuf_unittest;
 import "unittest_extension_chain_g.proto";
 
 // The Root for this file should just be merging in the extensions from C's
-// Root (because G doens't define anything itself).
+// Root (because G doesn't define anything itself).
 
 // The generated source will also have to directly import C's .h file so it can
 // compile the reference to C's Root class.

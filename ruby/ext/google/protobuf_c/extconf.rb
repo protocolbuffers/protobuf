@@ -3,11 +3,9 @@
 require 'mkmf'
 
 if RUBY_PLATFORM =~ /darwin/ || RUBY_PLATFORM =~ /linux/
-  # XOPEN_SOURCE needed for strptime:
-  # https://stackoverflow.com/questions/35234152/strptime-giving-implicit-declaration-and-undefined-reference
-  $CFLAGS += " -std=c99 -O3 -DNDEBUG -D_XOPEN_SOURCE=700"
+  $CFLAGS += " -std=gnu99 -O3 -DNDEBUG -fvisibility=hidden -Wall -Wsign-compare -Wno-declaration-after-statement"
 else
-  $CFLAGS += " -std=c99 -O3 -DNDEBUG"
+  $CFLAGS += " -std=gnu99 -O3 -DNDEBUG"
 end
 
 
@@ -16,8 +14,7 @@ if RUBY_PLATFORM =~ /linux/
   $LDFLAGS += " -Wl,-wrap,memcpy"
 end
 
-$objs = ["protobuf.o", "defs.o", "storage.o", "message.o",
-         "repeated_field.o", "map.o", "encode_decode.o", "upb.o",
-         "wrap_memcpy.o"]
+$objs = ["protobuf.o", "convert.o", "defs.o", "message.o",
+         "repeated_field.o", "map.o", "ruby-upb.o", "wrap_memcpy.o"]
 
 create_makefile("google/protobuf_c")

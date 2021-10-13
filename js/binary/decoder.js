@@ -40,173 +40,15 @@
  * intact, you _must_ read them using one of the Hash64 methods, which return
  * an 8-character string.
  *
+ * @suppress {missingRequire} TODO(b/152540451): this shouldn't be needed
  * @author aappleby@google.com (Austin Appleby)
  */
 
 goog.provide('jspb.BinaryDecoder');
-goog.provide('jspb.BinaryIterator');
 
 goog.require('goog.asserts');
 goog.require('goog.crypt');
 goog.require('jspb.utils');
-
-
-
-/**
- * Simple helper class for traversing the contents of repeated scalar fields.
- * that may or may not have been packed into a wire-format blob.
- * @param {?jspb.BinaryDecoder=} opt_decoder
- * @param {?function(this:jspb.BinaryDecoder):(number|boolean|string)=}
- *     opt_next The decoder method to use for next().
- * @param {?Array<number|boolean|string>=} opt_elements
- * @constructor
- * @struct
- */
-jspb.BinaryIterator = function(opt_decoder, opt_next, opt_elements) {
-  /** @private {?jspb.BinaryDecoder} */
-  this.decoder_ = null;
-
-  /**
-   * The BinaryDecoder member function used when iterating over packed data.
-   * @private {?function(this:jspb.BinaryDecoder):(number|boolean|string)}
-   */
-  this.nextMethod_ = null;
-
-  /** @private {?Array<number|boolean|string>} */
-  this.elements_ = null;
-
-  /** @private {number} */
-  this.cursor_ = 0;
-
-  /** @private {number|boolean|string|null} */
-  this.nextValue_ = null;
-
-  /** @private {boolean} */
-  this.atEnd_ = true;
-
-  this.init_(opt_decoder, opt_next, opt_elements);
-};
-
-
-/**
- * @param {?jspb.BinaryDecoder=} opt_decoder
- * @param {?function(this:jspb.BinaryDecoder):(number|boolean|string)=}
- *     opt_next The decoder method to use for next().
- * @param {?Array<number|boolean|string>=} opt_elements
- * @private
- */
-jspb.BinaryIterator.prototype.init_ =
-    function(opt_decoder, opt_next, opt_elements) {
-  if (opt_decoder && opt_next) {
-    this.decoder_ = opt_decoder;
-    this.nextMethod_ = opt_next;
-  }
-  this.elements_ = opt_elements || null;
-  this.cursor_ = 0;
-  this.nextValue_ = null;
-  this.atEnd_ = !this.decoder_ && !this.elements_;
-
-  this.next();
-};
-
-
-/**
- * Global pool of BinaryIterator instances.
- * @private {!Array<!jspb.BinaryIterator>}
- */
-jspb.BinaryIterator.instanceCache_ = [];
-
-
-/**
- * Allocates a BinaryIterator from the cache, creating a new one if the cache
- * is empty.
- * @param {?jspb.BinaryDecoder=} opt_decoder
- * @param {?function(this:jspb.BinaryDecoder):(number|boolean|string)=}
- *     opt_next The decoder method to use for next().
- * @param {?Array<number|boolean|string>=} opt_elements
- * @return {!jspb.BinaryIterator}
- */
-jspb.BinaryIterator.alloc = function(opt_decoder, opt_next, opt_elements) {
-  if (jspb.BinaryIterator.instanceCache_.length) {
-    var iterator = jspb.BinaryIterator.instanceCache_.pop();
-    iterator.init_(opt_decoder, opt_next, opt_elements);
-    return iterator;
-  } else {
-    return new jspb.BinaryIterator(opt_decoder, opt_next, opt_elements);
-  }
-};
-
-
-/**
- * Puts this instance back in the instance cache.
- */
-jspb.BinaryIterator.prototype.free = function() {
-  this.clear();
-  if (jspb.BinaryIterator.instanceCache_.length < 100) {
-    jspb.BinaryIterator.instanceCache_.push(this);
-  }
-};
-
-
-/**
- * Clears the iterator.
- */
-jspb.BinaryIterator.prototype.clear = function() {
-  if (this.decoder_) {
-    this.decoder_.free();
-  }
-  this.decoder_ = null;
-  this.nextMethod_ = null;
-  this.elements_ = null;
-  this.cursor_ = 0;
-  this.nextValue_ = null;
-  this.atEnd_ = true;
-};
-
-
-/**
- * Returns the element at the iterator, or null if the iterator is invalid or
- * past the end of the decoder/array.
- * @return {number|boolean|string|null}
- */
-jspb.BinaryIterator.prototype.get = function() {
-  return this.nextValue_;
-};
-
-
-/**
- * Returns true if the iterator is at the end of the decoder/array.
- * @return {boolean}
- */
-jspb.BinaryIterator.prototype.atEnd = function() {
-  return this.atEnd_;
-};
-
-
-/**
- * Returns the element at the iterator and steps to the next element,
- * equivalent to '*pointer++' in C.
- * @return {number|boolean|string|null}
- */
-jspb.BinaryIterator.prototype.next = function() {
-  var lastValue = this.nextValue_;
-  if (this.decoder_) {
-    if (this.decoder_.atEnd()) {
-      this.nextValue_ = null;
-      this.atEnd_ = true;
-    } else {
-      this.nextValue_ = this.nextMethod_.call(this.decoder_);
-    }
-  } else if (this.elements_) {
-    if (this.cursor_ == this.elements_.length) {
-      this.nextValue_ = null;
-      this.atEnd_ = true;
-    } else {
-      this.nextValue_ = this.elements_[this.cursor_++];
-    }
-  }
-  return lastValue;
-};
 
 
 
@@ -339,9 +181,9 @@ jspb.BinaryDecoder.prototype.getBuffer = function() {
 jspb.BinaryDecoder.prototype.setBlock =
     function(data, opt_start, opt_length) {
   this.bytes_ = jspb.utils.byteSourceToUint8Array(data);
-  this.start_ = goog.isDef(opt_start) ? opt_start : 0;
-  this.end_ =
-      goog.isDef(opt_length) ? this.start_ + opt_length : this.bytes_.length;
+  this.start_ = (opt_start !== undefined) ? opt_start : 0;
+  this.end_ = (opt_length !== undefined) ? this.start_ + opt_length :
+                                           this.bytes_.length;
   this.cursor_ = this.start_;
 };
 
@@ -479,6 +321,32 @@ jspb.BinaryDecoder.prototype.readSplitVarint64 = function(convert) {
   // If we did not see the terminator, the encoding was invalid.
   goog.asserts.fail('Failed to read varint, encoding is invalid.');
   this.error_ = true;
+};
+
+
+/**
+ * Reads a signed zigzag encoded varint from the binary stream and invokes
+ * the conversion function with the value in two signed 32 bit integers to
+ * produce the result. Since this does not convert the value to a number, no
+ * precision is lost.
+ *
+ * It's possible for an unsigned varint to be incorrectly encoded - more than
+ * 64 bits' worth of data could be present. If this happens, this method will
+ * throw an error.
+ *
+ * Zigzag encoding is a modification of varint encoding that reduces the
+ * storage overhead for small negative integers - for more details on the
+ * format, see https://developers.google.com/protocol-buffers/docs/encoding
+ *
+ * @param {function(number, number): T} convert Conversion function to produce
+ *     the result value, takes parameters (lowBits, highBits).
+ * @return {T}
+ * @template T
+ */
+jspb.BinaryDecoder.prototype.readSplitZigzagVarint64 = function(convert) {
+  return this.readSplitVarint64(function(low, high) {
+    return jspb.utils.fromZigzag64(low, high, convert);
+  });
 };
 
 
@@ -732,8 +600,24 @@ jspb.BinaryDecoder.prototype.readZigzagVarint64 = function() {
 
 
 /**
+ * Reads a signed, zigzag-encoded 64-bit varint from the binary stream
+ * losslessly and returns it as an 8-character Unicode string for use as a hash
+ * table key.
+ *
+ * Zigzag encoding is a modification of varint encoding that reduces the
+ * storage overhead for small negative integers - for more details on the
+ * format, see https://developers.google.com/protocol-buffers/docs/encoding
+ *
+ * @return {string} The decoded zigzag varint in hash64 format.
+ */
+jspb.BinaryDecoder.prototype.readZigzagVarintHash64 = function() {
+  return this.readSplitZigzagVarint64(jspb.utils.joinHash64);
+};
+
+
+/**
  * Reads a signed, zigzag-encoded 64-bit varint from the binary stream and
- * returns its valud as a string.
+ * returns its value as a string.
  *
  * Zigzag encoding is a modification of varint encoding that reduces the
  * storage overhead for small negative integers - for more details on the
@@ -743,9 +627,7 @@ jspb.BinaryDecoder.prototype.readZigzagVarint64 = function() {
  * string.
  */
 jspb.BinaryDecoder.prototype.readZigzagVarint64String = function() {
-  // TODO(haberman): write lossless 64-bit zig-zag math.
-  var value = this.readZigzagVarint64();
-  return value.toString();
+  return this.readSplitZigzagVarint64(jspb.utils.joinSignedDecimalString);
 };
 
 
@@ -867,7 +749,7 @@ jspb.BinaryDecoder.prototype.readInt32 = function() {
 /**
  * Reads a raw signed 64-bit integer from the binary stream. Note that since
  * Javascript represents all numbers as double-precision floats, there will be
- * precision lost if the absolute vlaue of the integer is larger than 2^53.
+ * precision lost if the absolute value of the integer is larger than 2^53.
  *
  * @return {number} The signed 64-bit integer read from the binary stream.
  *     Precision will be lost if the integer exceeds 2^53.

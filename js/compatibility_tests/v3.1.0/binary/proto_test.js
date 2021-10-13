@@ -172,7 +172,7 @@ function fillAllFields(msg) {
  * @return {boolean}
  */
 function bytesCompare(arr, expected) {
-  if (goog.isString(arr)) {
+  if (typeof arr === 'string') {
     arr = goog.crypt.base64.decodeStringToUint8Array(arr);
   }
   if (arr.length != expected.length) {
@@ -477,8 +477,8 @@ describe('protoBinaryTest', function() {
     var msg = new proto.jspb.test.TestAllTypes();
 
     function assertGetters() {
-      assertTrue(goog.isString(msg.getRepeatedBytesList_asB64()[0]));
-      assertTrue(goog.isString(msg.getRepeatedBytesList_asB64()[1]));
+      assertTrue(typeof msg.getRepeatedBytesList_asB64()[0] === 'string');
+      assertTrue(typeof msg.getRepeatedBytesList_asB64()[1] === 'string');
       assertTrue(msg.getRepeatedBytesList_asU8()[0] instanceof Uint8Array);
       assertTrue(msg.getRepeatedBytesList_asU8()[1] instanceof Uint8Array);
 

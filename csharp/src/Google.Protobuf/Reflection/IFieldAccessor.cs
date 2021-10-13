@@ -52,16 +52,17 @@ namespace Google.Protobuf.Reflection
         void Clear(IMessage message);
 
         /// <summary>
-        /// Indicates whether the field in the specified message is set. For proto3 fields, this throws an <see cref="InvalidOperationException"/>
-        /// </summary>
-        bool HasValue(IMessage message);
-
-        /// <summary>
         /// Fetches the field value. For repeated values, this will be an
         /// <see cref="IList"/> implementation. For map values, this will be an
         /// <see cref="IDictionary"/> implementation.
         /// </summary>
         object GetValue(IMessage message);
+
+        /// <summary>
+        /// Indicates whether the field in the specified message is set.
+        /// For proto3 fields that aren't explicitly optional, this throws an <see cref="InvalidOperationException"/>
+        /// </summary>
+        bool HasValue(IMessage message);
 
         /// <summary>
         /// Mutator for single "simple" fields only.

@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 #if NET35
 // Needed for ReadOnlyDictionary, which does not exist in .NET 3.5
 using Google.Protobuf.Collections;
@@ -63,6 +64,7 @@ namespace Google.Protobuf.Reflection
         private readonly IList<FieldDescriptor> fieldsInDeclarationOrder;
         private readonly IList<FieldDescriptor> fieldsInNumberOrder;
         private readonly IDictionary<string, FieldDescriptor> jsonFieldMap;
+        private Func<IMessage, bool> extensionSetIsInitialized;
 
         internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedClrTypeInfo generatedCodeInfo)
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
@@ -77,6 +79,20 @@ namespace Google.Protobuf.Reflection
                 proto.OneofDecl,
                 (oneof, index) =>
                 new OneofDescriptor(oneof, file, this, index, generatedCodeInfo?.OneofNames[index]));
+
+            int syntheticOneofCount = 0;
+            foreach (var oneof in Oneofs)
+            {
+                if (oneof.IsSynthetic)
+                {
+                    syntheticOneofCount++;
+                }
+                else if (syntheticOneofCount != 0)
+                {
+                    throw new ArgumentException("All synthetic oneofs should come after real oneofs");
+                }
+            }
+            RealOneofCount = Oneofs.Count - syntheticOneofCount;
 
             NestedTypes = DescriptorUtil.ConvertAndMakeReadOnly(
                 proto.NestedType,
@@ -133,6 +149,21 @@ namespace Google.Protobuf.Reflection
         }
 
         internal DescriptorProto Proto { get; }
+
+        internal bool IsExtensionsInitialized(IMessage message)
+        {
+            if (Proto.ExtensionRange.Count == 0)
+            {
+                return true;
+            }
+
+            if (extensionSetIsInitialized == null)
+            {
+                extensionSetIsInitialized = ReflectionUtil.CreateIsInitializedCaller(ClrType);
+            }
+
+            return extensionSetIsInitialized(message);
+        }
 
         /// <summary>
         /// The CLR type used to represent message instances from this descriptor.
@@ -198,7 +229,10 @@ namespace Google.Protobuf.Reflection
         public FieldCollection Fields { get; }
 
         /// <summary>
-        /// An unmodifiable list of extensions defined in this message's scrope
+        /// An unmodifiable list of extensions defined in this message's scope.
+        /// Note that some extensions may be incomplete (FieldDescriptor.Extension may be null)
+        /// if they are declared in a file generated using a version of protoc that did not fully
+        /// support extensions in C#.
         /// </summary>
         public ExtensionCollection Extensions { get; }
 
@@ -214,8 +248,18 @@ namespace Google.Protobuf.Reflection
 
         /// <value>
         /// An unmodifiable list of the "oneof" field collections in this message type.
+        /// All "real" oneofs (where <see cref="OneofDescriptor.IsSynthetic"/> returns false)
+        /// come before synthetic ones.
         /// </value>
         public IList<OneofDescriptor> Oneofs { get; }
+
+        /// <summary>
+        /// The number of real "oneof" descriptors in this message type. Every element in <see cref="Oneofs"/>
+        /// with an index less than this will have a <see cref="OneofDescriptor.IsSynthetic"/> property value
+        /// of <c>false</c>; every element with an index greater than or equal to this will have a
+        /// <see cref="OneofDescriptor.IsSynthetic"/> property value of <c>true</c>.
+        /// </summary>
+        public int RealOneofCount { get; }
 
         /// <summary>
         /// Finds a field by field name.
@@ -243,27 +287,35 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this message.
         /// </summary>
-        //[Obsolete("CustomOptions are obsolete. Use GetOption")]
-        public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
+        [Obsolete("CustomOptions are obsolete. Use the GetOptions() method.")]
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
 
-        /* // uncomment this in the full proto2 support PR
         /// <summary>
-        /// Gets a single value enum option for this descriptor
+        /// The <c>MessageOptions</c>, defined in <c>descriptor.proto</c>.
+        /// If the options message is not present (i.e. there are no options), <c>null</c> is returned.
+        /// Custom options can be retrieved as extensions of the returned message.
+        /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
+        public MessageOptions GetOptions() => Proto.Options?.Clone();
+
+        /// <summary>
+        /// Gets a single value message option for this descriptor
+        /// </summary>
+        [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public T GetOption<T>(Extension<MessageOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> clonable ? clonable.Clone() : value;
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
         }
 
         /// <summary>
-        /// Gets a repeated value enum option for this descriptor
+        /// Gets a repeated value message option for this descriptor
         /// </summary>
+        [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public Collections.RepeatedField<T> GetOption<T>(RepeatedExtension<MessageOptions, T> extension)
         {
             return Proto.Options.GetExtension(extension).Clone();
         }
-        */
 
         /// <summary>
         /// Looks up and cross-links all fields and nested types.

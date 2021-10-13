@@ -395,7 +395,7 @@ int UTF8GenericScan(const UTF8ScanObj* st,
   const uint8* isrc = reinterpret_cast<const uint8*>(str);
   const uint8* src = isrc;
   const uint8* srclimit = isrc + str_length;
-  const uint8* srclimit8 = srclimit - 7;
+  const uint8* srclimit8 = str_length < 7 ? isrc : srclimit - 7;
   const uint8* Tbl_0 = &st->state_table[st->state0];
 
  DoAgain:
@@ -456,8 +456,7 @@ int UTF8GenericScan(const UTF8ScanObj* st,
   }
   //----------------------------
 
-
-  // Exit posibilities:
+  // Exit possibilities:
   //  Some exit code, !state0, back up over last char
   //  Some exit code, state0, back up one byte exactly
   //  source consumed, !state0, back up over partial char
@@ -504,7 +503,7 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
   const uint8* isrc =  reinterpret_cast<const uint8*>(str);
   const uint8* src = isrc;
   const uint8* srclimit = isrc + str_length;
-  const uint8* srclimit8 = srclimit - 7;
+  const uint8* srclimit8 = str_length < 7 ? isrc : srclimit - 7;
   int n;
   int rest_consumed;
   int exit_reason;
@@ -562,7 +561,7 @@ bool IsStructurallyValidUTF8(const char* buf, int len) {
   return (bytes_consumed == len);
 }
 
-int UTF8SpnStructurallyValid(const StringPiece& str) {
+int UTF8SpnStructurallyValid(StringPiece str) {
   if (!module_initialized_) return str.size();
 
   int bytes_consumed = 0;
@@ -583,8 +582,7 @@ int UTF8SpnStructurallyValid(const StringPiece& str) {
 //
 // Fast case: all is structurally valid and no byte copying is done.
 //
-char* UTF8CoerceToStructurallyValid(const StringPiece& src_str,
-                                    char* idst,
+char* UTF8CoerceToStructurallyValid(StringPiece src_str, char* idst,
                                     const char replace_char) {
   const char* isrc = src_str.data();
   const int len = src_str.length();

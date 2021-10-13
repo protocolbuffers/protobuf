@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_DEFAULT_VALUE_OBJECTWRITER_H__
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_DEFAULT_VALUE_OBJECTWRITER_H__
 
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <stack>
@@ -42,7 +43,7 @@
 #include <google/protobuf/util/internal/object_writer.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/stubs/stringpiece.h>
+#include <google/protobuf/stubs/strutil.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -95,16 +96,16 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
                                        bool value) override;
 
   DefaultValueObjectWriter* RenderInt32(StringPiece name,
-                                        int32 value) override;
+                                        int32_t value) override;
 
   DefaultValueObjectWriter* RenderUint32(StringPiece name,
-                                         uint32 value) override;
+                                         uint32_t value) override;
 
   DefaultValueObjectWriter* RenderInt64(StringPiece name,
-                                        int64 value) override;
+                                        int64_t value) override;
 
   DefaultValueObjectWriter* RenderUint64(StringPiece name,
-                                         uint64 value) override;
+                                         uint64_t value) override;
 
   DefaultValueObjectWriter* RenderDouble(StringPiece name,
                                          double value) override;
@@ -117,7 +118,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   DefaultValueObjectWriter* RenderBytes(StringPiece name,
                                         StringPiece value) override;
 
-  virtual DefaultValueObjectWriter* RenderNull(StringPiece name);
+  DefaultValueObjectWriter* RenderNull(StringPiece name) override;
 
   // Register the callback for scrubbing of fields.
   void RegisterFieldScrubCallBack(FieldScrubCallBack field_scrub_callback);
@@ -201,7 +202,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     // Returns the Value Type of a map given the Type of the map entry and a
     // TypeInfo instance.
     const google::protobuf::Type* GetMapValueType(
-        const google::protobuf::Type& entry_type, const TypeInfo* typeinfo);
+        const google::protobuf::Type& found_type, const TypeInfo* typeinfo);
 
     // Calls WriteTo() on every child in children_.
     void WriteChildren(ObjectWriter* ow);

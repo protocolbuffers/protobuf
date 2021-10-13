@@ -34,7 +34,9 @@ using Google.Protobuf.Reflection;
 using Google.Protobuf.TestProtos;
 using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
+using ProtobufTestMessages.Proto2;
 using System;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf
 {
@@ -549,9 +551,13 @@ namespace Google.Protobuf
         }
 
         [Test]
+        // Skip these test cases in .NET 5 because floating point parsing supports bigger values.
+        // These big values won't throw an error in the test.
+#if !NET5_0
         [TestCase("1.7977e308")]
         [TestCase("-1.7977e308")]
         [TestCase("1e309")]
+#endif
         [TestCase("1,0")]
         [TestCase("1.0.0")]
         [TestCase("+1")]
@@ -950,6 +956,16 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Proto2_DefaultValuesPreserved()
+        {
+            string json = "{ \"FieldName13\": 0 }";
+            var parsed = TestAllTypesProto2.Parser.ParseJson(json);
+            Assert.False(parsed.HasFieldName10);
+            Assert.True(parsed.HasFieldName13);
+            Assert.AreEqual(0, parsed.FieldName13);
+        }
+
+        [Test]
         [TestCase("5")]
         [TestCase("\"text\"")]
         [TestCase("[0, 1, 2]")]
@@ -961,6 +977,43 @@ namespace Google.Protobuf
             var actual = parser.Parse<TestAllTypes>(json);
             var expected = new TestAllTypes { SingleString = "x" };
             Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void NullValueOutsideStruct_NullLiteral()
+        {
+            string json = "{ \"nullValue\": null }";
+            var message = NullValueOutsideStruct.Parser.ParseJson(json);
+            Assert.AreEqual(NullValueOutsideStruct.ValueOneofCase.NullValue, message.ValueCase);
+        }
+
+        [Test]
+        public void NullValueNotInOneof_NullLiteral()
+        {
+            // We'd only normally see this with FormatDefaultValues set to true.
+            string json = "{ \"nullValue\": null }";
+            var message = NullValueNotInOneof.Parser.ParseJson(json);
+            Assert.AreEqual(NullValue.NullValue, message.NullValue);
+        }
+
+        // NullValue used to only be converted to the null literal when part of a struct.
+        // Otherwise, it would end up as a string "NULL_VALUE" (the name of the enum value).
+        // We still parse that form, for compatibility.
+        [Test]
+        public void NullValueOutsideStruct_Compatibility()
+        {
+            string json = "{ \"nullValue\": \"NULL_VALUE\" }";
+            var message = NullValueOutsideStruct.Parser.ParseJson(json);
+            Assert.AreEqual(NullValueOutsideStruct.ValueOneofCase.NullValue, message.ValueCase);
+        }
+
+        [Test]
+        public void NullValueNotInOneof_Compatibility()
+        {
+            // We'd only normally see this with FormatDefaultValues set to true.
+            string json = "{ \"nullValue\": \"NULL_VALUE\" }";
+            var message = NullValueNotInOneof.Parser.ParseJson(json);
+            Assert.AreEqual(NullValue.NullValue, message.NullValue);
         }
 
         /// <summary>

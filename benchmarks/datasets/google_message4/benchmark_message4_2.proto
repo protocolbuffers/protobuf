@@ -1,7 +1,38 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 syntax = "proto2";
 
-import "datasets/google_message4/benchmark_message4_3.proto";
 package benchmarks.google_message4;
+
+import "datasets/google_message4/benchmark_message4_3.proto";
 
 option cc_enable_arenas = true;
 option java_package = "com.google.protobuf.benchmarks";
@@ -102,8 +133,7 @@ message Message5881 {
   optional .benchmarks.google_message4.Message5880 field5902 = 6;
 }
 
-message Message6110 {
-}
+message Message6110 {}
 
 message Message6107 {
   optional .benchmarks.google_message4.Message4016 field6134 = 1;
@@ -181,8 +211,7 @@ message Message3850 {
   optional bool field3929 = 14;
 }
 
-message Message7865 {
-}
+message Message7865 {}
 
 message Message7511 {
   optional bool field7523 = 1;
@@ -194,8 +223,7 @@ message Message7511 {
   optional int32 field7529 = 7;
 }
 
-message Message3920 {
-}
+message Message3920 {}
 
 message Message7928 {
   optional string field7940 = 1;
@@ -231,8 +259,7 @@ message Message6054 {
   optional string field6090 = 2;
 }
 
-message Message6127 {
-}
+message Message6127 {}
 
 message Message6052 {
   required string field6084 = 1;
@@ -272,8 +299,7 @@ message Message4016 {
   required int32 field4020 = 4;
 }
 
-message Message6108 {
-}
+message Message6108 {}
 
 message Message5907 {
   optional .benchmarks.google_message4.Message5903 field5967 = 1;
@@ -282,11 +308,9 @@ message Message5907 {
   optional .benchmarks.google_message4.Message5903 field5970 = 4;
 }
 
-message UnusedEmptyMessage {
-}
+message UnusedEmptyMessage {}
 
 message Message5903 {
   required int32 field5965 = 1;
   optional .benchmarks.google_message4.Enum5904 field5966 = 2;
 }
-

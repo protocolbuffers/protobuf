@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    This TestProtos project is kept separate from the original test project for many reasons.
+    It allows us to make sure code can compile on a separate compiler version, different frameworks,
+    and without the internal visibility from the test project (all of which have caused issues in the past).
+  -->
+  <PropertyGroup>
+    <TargetFrameworks>net45;netstandard1.1;netstandard2.0</TargetFrameworks>
+    <LangVersion>3.0</LangVersion>
+    <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <IsPackable>False</IsPackable>
+  </PropertyGroup>
+
+  <!-- Needed for the net45 build to work on Unix. See https://github.com/dotnet/designs/pull/33 -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0-preview.2" PrivateAssets="All" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Google.Protobuf\Google.Protobuf.csproj" />
+  </ItemGroup>
+
+</Project>

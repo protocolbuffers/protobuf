@@ -37,14 +37,17 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_PARSER_H__
 #define GOOGLE_PROTOBUF_COMPILER_PARSER_H__
 
+#include <cstdint>
 #include <map>
 #include <string>
 #include <utility>
+
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/repeated_field.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -172,7 +175,8 @@ class PROTOBUF_EXPORT Parser {
   bool ConsumeSignedInteger(int* output, const char* error);
   // Consume a 64-bit integer and store its value in "output".  If the value
   // is greater than max_value, an error will be reported.
-  bool ConsumeInteger64(uint64 max_value, uint64* output, const char* error);
+  bool ConsumeInteger64(uint64_t max_value, uint64_t* output,
+                        const char* error);
   // Consume a number and store its value in "output".  This will accept
   // tokens of either INTEGER or FLOAT type.
   bool ConsumeNumber(double* output, const char* error);
@@ -208,7 +212,7 @@ class PROTOBUF_EXPORT Parser {
 
   // Invokes error_collector_->AddWarning() with the line and column number
   // of the current token.
-  void AddWarning(const string& warning);
+  void AddWarning(const std::string& warning);
 
   // Records a location in the SourceCodeInfo.location table (see
   // descriptor.proto).  We use RAII to ensure that the start and end locations
@@ -262,7 +266,7 @@ class PROTOBUF_EXPORT Parser {
         const Message* descriptor,
         DescriptorPool::ErrorCollector::ErrorLocation location);
     void RecordLegacyImportLocation(const Message* descriptor,
-                                    const string& name);
+                                    const std::string& name);
 
     // Returns the number of path components in the recorder's current location.
     int CurrentPathSize() const;
@@ -323,8 +327,8 @@ class PROTOBUF_EXPORT Parser {
                     const LocationRecorder& root_location,
                     const FileDescriptorProto* containing_file);
   bool ParseImport(RepeatedPtrField<std::string>* dependency,
-                   RepeatedField<int32>* public_dependency,
-                   RepeatedField<int32>* weak_dependency,
+                   RepeatedField<int32_t>* public_dependency,
+                   RepeatedField<int32_t>* weak_dependency,
                    const LocationRecorder& root_location,
                    const FileDescriptorProto* containing_file);
 
@@ -519,7 +523,6 @@ class PROTOBUF_EXPORT Parser {
     return syntax_identifier_ == "proto3";
   }
 
-
   bool ValidateEnum(const EnumDescriptorProto* proto);
 
   // =================================================================
@@ -568,14 +571,14 @@ class PROTOBUF_EXPORT SourceLocationTable {
   bool Find(const Message* descriptor,
             DescriptorPool::ErrorCollector::ErrorLocation location, int* line,
             int* column) const;
-  bool FindImport(const Message* descriptor, const string& name, int* line,
+  bool FindImport(const Message* descriptor, const std::string& name, int* line,
                   int* column) const;
 
   // Adds a location to the table.
   void Add(const Message* descriptor,
            DescriptorPool::ErrorCollector::ErrorLocation location, int line,
            int column);
-  void AddImport(const Message* descriptor, const string& name, int line,
+  void AddImport(const Message* descriptor, const std::string& name, int line,
                  int column);
 
   // Clears the contents of the table.
@@ -587,7 +590,7 @@ class PROTOBUF_EXPORT SourceLocationTable {
       std::pair<int, int> >
       LocationMap;
   LocationMap location_map_;
-  std::map<std::pair<const Message*, string>, std::pair<int, int> >
+  std::map<std::pair<const Message*, std::string>, std::pair<int, int> >
       import_location_map_;
 };
 
