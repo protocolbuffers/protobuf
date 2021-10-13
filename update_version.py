@@ -241,6 +241,12 @@ def UpdateJava():
   RewriteXml('protoc-artifacts/pom.xml',
     lambda document : ReplaceText(
       Find(document.documentElement, 'version'), GetFullVersion()))
+  
+  RewriteTextFile('java/README.md',
+    lambda line : re.sub(
+      r'<version>.*$</version>',
+      '<version>%s</version>' % protobuf_version_info,
+      line))
 
 
 def UpdateJavaScript():
