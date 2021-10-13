@@ -25,20 +25,20 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     protected $java_package = null;
     /**
-     * If set, all the classes from the .proto file are wrapped in a single
-     * outer class with the given name.  This applies to both Proto1
-     * (equivalent to the old "--one_java_file" option) and Proto2 (where
-     * a .proto always translates to a single class, but you may want to
-     * explicitly choose the class name).
+     * Controls the name of the wrapper Java class generated for the .proto file.
+     * That class will always contain the .proto file's getDescriptor() method as
+     * well as any top-level extensions defined in the .proto file.
+     * If java_multiple_files is disabled, then all the other classes from the
+     * .proto file will be nested inside the single wrapper outer class.
      *
      * Generated from protobuf field <code>optional string java_outer_classname = 8;</code>
      */
     protected $java_outer_classname = null;
     /**
-     * If set true, then the Java code generator will generate a separate .java
+     * If enabled, then the Java code generator will generate a separate .java
      * file for each top-level message, enum, and service defined in the .proto
-     * file.  Thus, these types will *not* be nested inside the outer class
-     * named by java_outer_classname.  However, the outer class will still be
+     * file.  Thus, these types will *not* be nested inside the wrapper class
+     * named by java_outer_classname.  However, the wrapper class will still be
      * generated to contain the file's getDescriptor() method as well as any
      * top-level extensions defined in the file.
      *
@@ -49,6 +49,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * This option does nothing.
      *
      * Generated from protobuf field <code>optional bool java_generate_equals_and_hash = 20 [deprecated = true];</code>
+     * @deprecated
      */
     protected $java_generate_equals_and_hash = null;
     /**
@@ -191,16 +192,16 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *           inappropriate because proto packages do not normally start with backwards
      *           domain names.
      *     @type string $java_outer_classname
-     *           If set, all the classes from the .proto file are wrapped in a single
-     *           outer class with the given name.  This applies to both Proto1
-     *           (equivalent to the old "--one_java_file" option) and Proto2 (where
-     *           a .proto always translates to a single class, but you may want to
-     *           explicitly choose the class name).
+     *           Controls the name of the wrapper Java class generated for the .proto file.
+     *           That class will always contain the .proto file's getDescriptor() method as
+     *           well as any top-level extensions defined in the .proto file.
+     *           If java_multiple_files is disabled, then all the other classes from the
+     *           .proto file will be nested inside the single wrapper outer class.
      *     @type bool $java_multiple_files
-     *           If set true, then the Java code generator will generate a separate .java
+     *           If enabled, then the Java code generator will generate a separate .java
      *           file for each top-level message, enum, and service defined in the .proto
-     *           file.  Thus, these types will *not* be nested inside the outer class
-     *           named by java_outer_classname.  However, the outer class will still be
+     *           file.  Thus, these types will *not* be nested inside the wrapper class
+     *           named by java_outer_classname.  However, the wrapper class will still be
      *           generated to contain the file's getDescriptor() method as well as any
      *           top-level extensions defined in the file.
      *     @type bool $java_generate_equals_and_hash
@@ -318,11 +319,11 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * If set, all the classes from the .proto file are wrapped in a single
-     * outer class with the given name.  This applies to both Proto1
-     * (equivalent to the old "--one_java_file" option) and Proto2 (where
-     * a .proto always translates to a single class, but you may want to
-     * explicitly choose the class name).
+     * Controls the name of the wrapper Java class generated for the .proto file.
+     * That class will always contain the .proto file's getDescriptor() method as
+     * well as any top-level extensions defined in the .proto file.
+     * If java_multiple_files is disabled, then all the other classes from the
+     * .proto file will be nested inside the single wrapper outer class.
      *
      * Generated from protobuf field <code>optional string java_outer_classname = 8;</code>
      * @return string
@@ -343,11 +344,11 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * If set, all the classes from the .proto file are wrapped in a single
-     * outer class with the given name.  This applies to both Proto1
-     * (equivalent to the old "--one_java_file" option) and Proto2 (where
-     * a .proto always translates to a single class, but you may want to
-     * explicitly choose the class name).
+     * Controls the name of the wrapper Java class generated for the .proto file.
+     * That class will always contain the .proto file's getDescriptor() method as
+     * well as any top-level extensions defined in the .proto file.
+     * If java_multiple_files is disabled, then all the other classes from the
+     * .proto file will be nested inside the single wrapper outer class.
      *
      * Generated from protobuf field <code>optional string java_outer_classname = 8;</code>
      * @param string $var
@@ -362,10 +363,10 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * If set true, then the Java code generator will generate a separate .java
+     * If enabled, then the Java code generator will generate a separate .java
      * file for each top-level message, enum, and service defined in the .proto
-     * file.  Thus, these types will *not* be nested inside the outer class
-     * named by java_outer_classname.  However, the outer class will still be
+     * file.  Thus, these types will *not* be nested inside the wrapper class
+     * named by java_outer_classname.  However, the wrapper class will still be
      * generated to contain the file's getDescriptor() method as well as any
      * top-level extensions defined in the file.
      *
@@ -388,10 +389,10 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * If set true, then the Java code generator will generate a separate .java
+     * If enabled, then the Java code generator will generate a separate .java
      * file for each top-level message, enum, and service defined in the .proto
-     * file.  Thus, these types will *not* be nested inside the outer class
-     * named by java_outer_classname.  However, the outer class will still be
+     * file.  Thus, these types will *not* be nested inside the wrapper class
+     * named by java_outer_classname.  However, the wrapper class will still be
      * generated to contain the file's getDescriptor() method as well as any
      * top-level extensions defined in the file.
      *
@@ -412,19 +413,23 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool java_generate_equals_and_hash = 20 [deprecated = true];</code>
      * @return bool
+     * @deprecated
      */
     public function getJavaGenerateEqualsAndHash()
     {
+        @trigger_error('java_generate_equals_and_hash is deprecated.', E_USER_DEPRECATED);
         return isset($this->java_generate_equals_and_hash) ? $this->java_generate_equals_and_hash : false;
     }
 
     public function hasJavaGenerateEqualsAndHash()
     {
+        @trigger_error('java_generate_equals_and_hash is deprecated.', E_USER_DEPRECATED);
         return isset($this->java_generate_equals_and_hash);
     }
 
     public function clearJavaGenerateEqualsAndHash()
     {
+        @trigger_error('java_generate_equals_and_hash is deprecated.', E_USER_DEPRECATED);
         unset($this->java_generate_equals_and_hash);
     }
 
@@ -434,9 +439,11 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool java_generate_equals_and_hash = 20 [deprecated = true];</code>
      * @param bool $var
      * @return $this
+     * @deprecated
      */
     public function setJavaGenerateEqualsAndHash($var)
     {
+        @trigger_error('java_generate_equals_and_hash is deprecated.', E_USER_DEPRECATED);
         GPBUtil::checkBool($var);
         $this->java_generate_equals_and_hash = $var;
 

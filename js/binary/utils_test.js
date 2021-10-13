@@ -391,6 +391,11 @@ describe('binaryUtilsTest', function() {
     // Pi.
     test(f32_pi, 0x40490fdb);
 
+    // corner cases
+    test(0.9999999762949594, 0x3f800000);
+    test(7.99999999999999, 0x41000000);
+    test(Math.sin(30 * Math.PI / 180), 0x3f000000);  // sin(30 degrees)
+
     // Various positive values.
     var cursor = f32_eps * 10;
     while (cursor != Infinity) {

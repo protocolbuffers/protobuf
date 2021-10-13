@@ -40,6 +40,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
@@ -128,27 +129,12 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   const DescriptorPool* pool_;
   bool delegate_to_generated_factory_;
 
-  // This struct just contains a hash_map.  We can't #include <hash_map> from
-  // this header due to hacks needed for hash_map portability in the open source
-  // release.  Namely, stubs/hash.h, which defines hash_map portably, is not a
-  // public header (for good reason), but dynamic_message.h is, and public
-  // headers may only #include other public headers.
-  struct PrototypeMap;
-  std::unique_ptr<PrototypeMap> prototypes_;
+  struct TypeInfo;
+  std::unordered_map<const Descriptor*, const TypeInfo*> prototypes_;
   mutable internal::WrappedMutex prototypes_mutex_;
 
   friend class DynamicMessage;
   const Message* GetPrototypeNoLock(const Descriptor* type);
-
-  // Construct default oneof instance for reflection usage if oneof
-  // is defined.
-  static void ConstructDefaultOneofInstance(const Descriptor* type,
-                                            const uint32 offsets[],
-                                            void* default_oneof_instance);
-  // Delete default oneof instance. Called by ~DynamicMessageFactory.
-  static void DeleteDefaultOneofInstance(const Descriptor* type,
-                                         const uint32 offsets[],
-                                         const void* default_oneof_instance);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessageFactory);
 };
@@ -196,23 +182,23 @@ class PROTOBUF_EXPORT DynamicMapSorter {
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_INT32: {
-          int32 first = reflection->GetInt32(*a, field_);
-          int32 second = reflection->GetInt32(*b, field_);
+          int32_t first = reflection->GetInt32(*a, field_);
+          int32_t second = reflection->GetInt32(*b, field_);
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_INT64: {
-          int64 first = reflection->GetInt64(*a, field_);
-          int64 second = reflection->GetInt64(*b, field_);
+          int64_t first = reflection->GetInt64(*a, field_);
+          int64_t second = reflection->GetInt64(*b, field_);
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_UINT32: {
-          uint32 first = reflection->GetUInt32(*a, field_);
-          uint32 second = reflection->GetUInt32(*b, field_);
+          uint32_t first = reflection->GetUInt32(*a, field_);
+          uint32_t second = reflection->GetUInt32(*b, field_);
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_UINT64: {
-          uint64 first = reflection->GetUInt64(*a, field_);
-          uint64 second = reflection->GetUInt64(*b, field_);
+          uint64_t first = reflection->GetUInt64(*a, field_);
+          uint64_t second = reflection->GetUInt64(*b, field_);
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_STRING: {

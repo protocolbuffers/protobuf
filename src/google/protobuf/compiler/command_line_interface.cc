@@ -34,6 +34,8 @@
 
 #include <google/protobuf/compiler/command_line_interface.h>
 
+#include <cstdint>
+
 #include <google/protobuf/stubs/platform_macros.h>
 
 #include <stdio.h>
@@ -234,7 +236,7 @@ bool IsInstalledProtoPath(const std::string& path) {
 // Add the paths where google/protobuf/descriptor.proto and other well-known
 // type protos are installed.
 void AddDefaultProtoPaths(
-    std::vector<std::pair<std::string, std::string> >* paths) {
+    std::vector<std::pair<std::string, std::string>>* paths) {
   // TODO(xiaofeng): The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.
@@ -288,44 +290,50 @@ class CommandLineInterface::ErrorPrinter
       public DescriptorPool::ErrorCollector {
  public:
   ErrorPrinter(ErrorFormat format, DiskSourceTree* tree = NULL)
-      : format_(format), tree_(tree), found_errors_(false) {}
+      : format_(format),
+        tree_(tree),
+        found_errors_(false),
+        found_warnings_(false) {}
   ~ErrorPrinter() {}
 
   // implements MultiFileErrorCollector ------------------------------
   void AddError(const std::string& filename, int line, int column,
-                const std::string& message) {
+                const std::string& message) override {
     found_errors_ = true;
     AddErrorOrWarning(filename, line, column, message, "error", std::cerr);
   }
 
   void AddWarning(const std::string& filename, int line, int column,
-                  const std::string& message) {
+                  const std::string& message) override {
+    found_warnings_ = true;
     AddErrorOrWarning(filename, line, column, message, "warning", std::clog);
   }
 
   // implements io::ErrorCollector -----------------------------------
-  void AddError(int line, int column, const std::string& message) {
+  void AddError(int line, int column, const std::string& message) override {
     AddError("input", line, column, message);
   }
 
-  void AddWarning(int line, int column, const std::string& message) {
+  void AddWarning(int line, int column, const std::string& message) override {
     AddErrorOrWarning("input", line, column, message, "warning", std::clog);
   }
 
   // implements DescriptorPool::ErrorCollector-------------------------
   void AddError(const std::string& filename, const std::string& element_name,
                 const Message* descriptor, ErrorLocation location,
-                const std::string& message) {
+                const std::string& message) override {
     AddErrorOrWarning(filename, -1, -1, message, "error", std::cerr);
   }
 
   void AddWarning(const std::string& filename, const std::string& element_name,
                   const Message* descriptor, ErrorLocation location,
-                  const std::string& message) {
+                  const std::string& message) override {
     AddErrorOrWarning(filename, -1, -1, message, "warning", std::clog);
   }
 
   bool FoundErrors() const { return found_errors_; }
+
+  bool FoundWarnings() const { return found_warnings_; }
 
  private:
   void AddErrorOrWarning(const std::string& filename, int line, int column,
@@ -365,6 +373,7 @@ class CommandLineInterface::ErrorPrinter
   const ErrorFormat format_;
   DiskSourceTree* tree_;
   bool found_errors_;
+  bool found_warnings_;
 };
 
 // -------------------------------------------------------------------
@@ -391,14 +400,14 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   void GetOutputFilenames(std::vector<std::string>* output_filenames);
 
   // implements GeneratorContext --------------------------------------
-  io::ZeroCopyOutputStream* Open(const std::string& filename);
-  io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename);
-  io::ZeroCopyOutputStream* OpenForInsert(const std::string& filename,
-                                          const std::string& insertion_point);
+  io::ZeroCopyOutputStream* Open(const std::string& filename) override;
+  io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename) override;
+  io::ZeroCopyOutputStream* OpenForInsert(
+      const std::string& filename, const std::string& insertion_point) override;
   io::ZeroCopyOutputStream* OpenForInsertWithGeneratedCodeInfo(
       const std::string& filename, const std::string& insertion_point,
-      const google::protobuf::GeneratedCodeInfo& info);
-  void ListParsedFiles(std::vector<const FileDescriptor*>* output) {
+      const google::protobuf::GeneratedCodeInfo& info) override;
+  void ListParsedFiles(std::vector<const FileDescriptor*>* output) override {
     *output = parsed_files_;
   }
 
@@ -582,10 +591,12 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
 
   if (stream.GetErrno() != 0) {
     std::cerr << filename << ": " << strerror(stream.GetErrno()) << std::endl;
+    return false;
   }
 
   if (!stream.Close()) {
     std::cerr << filename << ": " << strerror(stream.GetErrno()) << std::endl;
+    return false;
   }
 
   return true;
@@ -1036,16 +1047,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
 
-  for (auto fd : parsed_files) {
-    if (!AllowProto3Optional(*fd) && ContainsProto3Optional(fd)) {
-      std::cerr << fd->name()
-                << ": This file contains proto3 optional fields, but "
-                   "--experimental_allow_proto3_optional was not set."
-                << std::endl;
-      return 1;
-    }
-  }
-
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
   // they should share a single GeneratorContext so that OpenForInsert() works.
@@ -1127,7 +1128,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
-  if (error_collector->FoundErrors()) {
+  if (error_collector->FoundErrors() ||
+      (fatal_warnings_ && error_collector->FoundWarnings())) {
     return 1;
   }
 
@@ -1213,25 +1215,6 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
 }
 
 }  // namespace
-
-bool CommandLineInterface::AllowProto3Optional(
-    const FileDescriptor& file) const {
-  // If the --experimental_allow_proto3_optional flag was set, we allow.
-  if (allow_proto3_optional_) return true;
-
-  // Whitelist all ads protos. Ads is an early adopter of this feature.
-  if (file.name().find("google/ads/googleads") != std::string::npos) {
-    return true;
-  }
-
-  // Whitelist all protos testing proto3 optional.
-  if (file.name().find("test_proto3_optional") != std::string::npos) {
-    return true;
-  }
-
-
-  return false;
-}
 
 
 bool CommandLineInterface::VerifyInputFilesInDescriptors(
@@ -1349,7 +1332,6 @@ void CommandLineInterface::Clear() {
   source_info_in_descriptor_set_ = false;
   disallow_services_ = false;
   direct_dependencies_explicitly_set_ = false;
-  allow_proto3_optional_ = false;
   deterministic_output_ = false;
 }
 
@@ -1660,7 +1642,7 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--version" || *name == "--decode_raw" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
-      *name == "--deterministic_output") {
+      *name == "--deterministic_output" || *name == "--fatal_warnings") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -1869,8 +1851,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
 
   } else if (name == "--experimental_allow_proto3_optional") {
-    allow_proto3_optional_ = true;
-
+    // Flag is no longer observed, but we allow it for backward compat.
   } else if (name == "--encode" || name == "--decode" ||
              name == "--decode_raw") {
     if (mode_ != MODE_COMPILE) {
@@ -1914,6 +1895,12 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
 
+  } else if (name == "--fatal_warnings") {
+    if (fatal_warnings_) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    fatal_warnings_ = true;
   } else if (name == "--plugin") {
     if (plugin_prefix_.empty()) {
       std::cerr << "This compiler does not support plugins." << std::endl;
@@ -2018,130 +2005,80 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
 void CommandLineInterface::PrintHelpText() {
   // Sorry for indentation here; line wrapping would be uglier.
-  std::cout
-      <<
-      "Usage: " << executable_name_
-      << " [OPTION] PROTO_FILES\n"
-         "Parse PROTO_FILES and generate output based on the options given:\n"
-         "  -IPATH, --proto_path=PATH   Specify the directory in which to "
-         "search for\n"
-         "                              imports.  May be specified multiple "
-         "times;\n"
-         "                              directories will be searched in order. "
-         " If not\n"
-         "                              given, the current working directory "
-         "is used.\n"
-         "                              If not found in any of the these "
-         "directories,\n"
-         "                              the --descriptor_set_in descriptors "
-         "will be\n"
-         "                              checked for required proto file.\n"
-         "  --version                   Show version info and exit.\n"
-         "  -h, --help                  Show this text and exit.\n"
-         "  --encode=MESSAGE_TYPE       Read a text-format message of the "
-         "given type\n"
-         "                              from standard input and write it in "
-         "binary\n"
-         "                              to standard output.  The message type "
-         "must\n"
-         "                              be defined in PROTO_FILES or their "
-         "imports.\n"
-         "  --deterministic_output      When using --encode, ensure map fields "
-         "are\n"
-         "                              deterministically ordered. Note that"
-         "this order is not\n"
-         "                              canonical, and changes across builds"
-         "or releases of protoc.\n"
-         "  --decode=MESSAGE_TYPE       Read a binary message of the given "
-         "type from\n"
-         "                              standard input and write it in text "
-         "format\n"
-         "                              to standard output.  The message type "
-         "must\n"
-         "                              be defined in PROTO_FILES or their "
-         "imports.\n"
-         "  --decode_raw                Read an arbitrary protocol message "
-         "from\n"
-         "                              standard input and write the raw "
-         "tag/value\n"
-         "                              pairs in text format to standard "
-         "output.  No\n"
-         "                              PROTO_FILES should be given when using "
-         "this\n"
-         "                              flag.\n"
-         "  --descriptor_set_in=FILES   Specifies a delimited list of FILES\n"
-         "                              each containing a FileDescriptorSet "
-         "(a\n"
-         "                              protocol buffer defined in "
-         "descriptor.proto).\n"
-         "                              The FileDescriptor for each of the "
-         "PROTO_FILES\n"
-         "                              provided will be loaded from these\n"
-         "                              FileDescriptorSets. If a "
-         "FileDescriptor\n"
-         "                              appears multiple times, the first "
-         "occurrence\n"
-         "                              will be used.\n"
-         "  -oFILE,                     Writes a FileDescriptorSet (a protocol "
-         "buffer,\n"
-         "    --descriptor_set_out=FILE defined in descriptor.proto) "
-         "containing all of\n"
-         "                              the input files to FILE.\n"
-         "  --include_imports           When using --descriptor_set_out, also "
-         "include\n"
-         "                              all dependencies of the input files in "
-         "the\n"
-         "                              set, so that the set is "
-         "self-contained.\n"
-         "  --include_source_info       When using --descriptor_set_out, do "
-         "not strip\n"
-         "                              SourceCodeInfo from the "
-         "FileDescriptorProto.\n"
-         "                              This results in vastly larger "
-         "descriptors that\n"
-         "                              include information about the "
-         "original\n"
-         "                              location of each decl in the source "
-         "file as\n"
-         "                              well as surrounding comments.\n"
-         "  --dependency_out=FILE       Write a dependency output file in the "
-         "format\n"
-         "                              expected by make. This writes the "
-         "transitive\n"
-         "                              set of input file paths to FILE\n"
-         "  --error_format=FORMAT       Set the format in which to print "
-         "errors.\n"
-         "                              FORMAT may be 'gcc' (the default) or "
-         "'msvs'\n"
-         "                              (Microsoft Visual Studio format).\n"
-         "  --print_free_field_numbers  Print the free field numbers of the "
-         "messages\n"
-         "                              defined in the given proto files. "
-         "Groups share\n"
-         "                              the same field number space with the "
-         "parent \n"
-         "                              message. Extension ranges are counted "
-         "as \n"
-         "                              occupied fields numbers.\n"
-      << std::endl;
+  std::cout << "Usage: " << executable_name_ << " [OPTION] PROTO_FILES";
+  std::cout << R"(
+Parse PROTO_FILES and generate output based on the options given:
+  -IPATH, --proto_path=PATH   Specify the directory in which to search for
+                              imports.  May be specified multiple times;
+                              directories will be searched in order.  If not
+                              given, the current working directory is used.
+                              If not found in any of the these directories,
+                              the --descriptor_set_in descriptors will be
+                              checked for required proto file.
+  --version                   Show version info and exit.
+  -h, --help                  Show this text and exit.
+  --encode=MESSAGE_TYPE       Read a text-format message of the given type
+                              from standard input and write it in binary
+                              to standard output.  The message type must
+                              be defined in PROTO_FILES or their imports.
+  --deterministic_output      When using --encode, ensure map fields are
+                              deterministically ordered. Note that this order
+                              is not canonical, and changes across builds or
+                              releases of protoc.
+  --decode=MESSAGE_TYPE       Read a binary message of the given type from
+                              standard input and write it in text format
+                              to standard output.  The message type must
+                              be defined in PROTO_FILES or their imports.
+  --decode_raw                Read an arbitrary protocol message from
+                              standard input and write the raw tag/value
+                              pairs in text format to standard output.  No
+                              PROTO_FILES should be given when using this
+                              flag.
+  --descriptor_set_in=FILES   Specifies a delimited list of FILES
+                              each containing a FileDescriptorSet (a
+                              protocol buffer defined in descriptor.proto).
+                              The FileDescriptor for each of the PROTO_FILES
+                              provided will be loaded from these
+                              FileDescriptorSets. If a FileDescriptor
+                              appears multiple times, the first occurrence
+                              will be used.
+  -oFILE,                     Writes a FileDescriptorSet (a protocol buffer,
+    --descriptor_set_out=FILE defined in descriptor.proto) containing all of
+                              the input files to FILE.
+  --include_imports           When using --descriptor_set_out, also include
+                              all dependencies of the input files in the
+                              set, so that the set is self-contained.
+  --include_source_info       When using --descriptor_set_out, do not strip
+                              SourceCodeInfo from the FileDescriptorProto.
+                              This results in vastly larger descriptors that
+                              include information about the original
+                              location of each decl in the source file as
+                              well as surrounding comments.
+  --dependency_out=FILE       Write a dependency output file in the format
+                              expected by make. This writes the transitive
+                              set of input file paths to FILE
+  --error_format=FORMAT       Set the format in which to print errors.
+                              FORMAT may be 'gcc' (the default) or 'msvs'
+                              (Microsoft Visual Studio format).
+  --fatal_warnings            Make warnings be fatal (similar to -Werr in
+                              gcc). This flag will make protoc return
+                              with a non-zero exit code if any warnings
+                              are generated.
+  --print_free_field_numbers  Print the free field numbers of the messages
+                              defined in the given proto files. Groups share
+                              the same field number space with the parent
+                              message. Extension ranges are counted as
+                              occupied fields numbers.)";
   if (!plugin_prefix_.empty()) {
-    std::cout
-        << "  --plugin=EXECUTABLE         Specifies a plugin executable to "
-           "use.\n"
-           "                              Normally, protoc searches the PATH "
-           "for\n"
-           "                              plugins, but you may specify "
-           "additional\n"
-           "                              executables not in the path using "
-           "this flag.\n"
-           "                              Additionally, EXECUTABLE may be of "
-           "the form\n"
-           "                              NAME=PATH, in which case the given "
-           "plugin name\n"
-           "                              is mapped to the given executable "
-           "even if\n"
-           "                              the executable's own name differs."
-        << std::endl;
+    std::cout << R"(
+  --plugin=EXECUTABLE         Specifies a plugin executable to use.
+                              Normally, protoc searches the PATH for
+                              plugins, but you may specify additional
+                              executables not in the path using this flag.
+                              Additionally, EXECUTABLE may be of the form
+                              NAME=PATH, in which case the given plugin name
+                              is mapped to the given executable even if
+                              the executable's own name differs.)";
   }
 
   for (GeneratorMap::iterator iter = generators_by_flag_name_.begin();
@@ -2149,39 +2086,30 @@ void CommandLineInterface::PrintHelpText() {
     // FIXME(kenton):  If the text is long enough it will wrap, which is ugly,
     //   but fixing this nicely (e.g. splitting on spaces) is probably more
     //   trouble than it's worth.
-    std::cout << "  " << iter->first << "=OUT_DIR "
+    std::cout << std::endl
+              << "  " << iter->first << "=OUT_DIR "
               << std::string(19 - iter->first.size(),
                              ' ')  // Spaces for alignment.
-              << iter->second.help_text << std::endl;
+              << iter->second.help_text;
   }
-  std::cout << "  @<filename>                 Read options and filenames from "
-               "file. If a\n"
-               "                              relative file path is specified, "
-               "the file\n"
-               "                              will be searched in the working "
-               "directory.\n"
-               "                              The --proto_path option will not "
-               "affect how\n"
-               "                              this argument file is searched. "
-               "Content of\n"
-               "                              the file will be expanded in the "
-               "position of\n"
-               "                              @<filename> as in the argument "
-               "list. Note\n"
-               "                              that shell expansion is not "
-               "applied to the\n"
-               "                              content of the file (i.e., you "
-               "cannot use\n"
-               "                              quotes, wildcards, escapes, "
-               "commands, etc.).\n"
-               "                              Each line corresponds to a "
-               "single argument,\n"
-               "                              even if it contains spaces."
-            << std::endl;
+  std::cout << R"(
+  @<filename>                 Read options and filenames from file. If a
+                              relative file path is specified, the file
+                              will be searched in the working directory.
+                              The --proto_path option will not affect how
+                              this argument file is searched. Content of
+                              the file will be expanded in the position of
+                              @<filename> as in the argument list. Note
+                              that shell expansion is not applied to the
+                              content of the file (i.e., you cannot use
+                              quotes, wildcards, escapes, commands, etc.).
+                              Each line corresponds to a single argument,
+                              even if it contains spaces.)";
+  std::cout << std::endl;
 }
 
 bool CommandLineInterface::EnforceProto3OptionalSupport(
-    const std::string& codegen_name, uint64 supported_features,
+    const std::string& codegen_name, uint64_t supported_features,
     const std::vector<const FileDescriptor*>& parsed_files) const {
   bool supports_proto3_optional =
       supported_features & CodeGenerator::FEATURE_PROTO3_OPTIONAL;
@@ -2495,8 +2423,8 @@ bool CommandLineInterface::WriteDescriptorSet(
     to_output.insert(parsed_files.begin(), parsed_files.end());
     for (int i = 0; i < parsed_files.size(); i++) {
       const FileDescriptor* file = parsed_files[i];
-      for (int i = 0; i < file->dependency_count(); i++) {
-        const FileDescriptor* dependency = file->dependency(i);
+      for (int j = 0; j < file->dependency_count(); j++) {
+        const FileDescriptor* dependency = file->dependency(j);
         // if the dependency isn't in parsed files, mark it as already seen
         if (to_output.find(dependency) == to_output.end()) {
           already_seen.insert(dependency);

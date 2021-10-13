@@ -359,6 +359,14 @@ class Message(object):
     """
     raise NotImplementedError
 
+  @classmethod
+  def FromString(cls, s):
+    raise NotImplementedError
+
+  @staticmethod
+  def RegisterExtension(extension_handle):
+    raise NotImplementedError
+
   def _SetListener(self, message_listener):
     """Internal method used by the protocol message implementation.
     Clients should not call this directly.

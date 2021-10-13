@@ -31,14 +31,21 @@
 package com.google.protobuf;
 
 final class Android {
+  private Android() {
+  }
+
+  // Set to true in lite_proguard_android.pgcfg.
+  @SuppressWarnings("ConstantField")
+  private static boolean ASSUME_ANDROID;
 
   private static final Class<?> MEMORY_CLASS = getClassForName("libcore.io.Memory");
+
   private static final boolean IS_ROBOLECTRIC =
-      getClassForName("org.robolectric.Robolectric") != null;
+      !ASSUME_ANDROID && getClassForName("org.robolectric.Robolectric") != null;
 
   /** Returns {@code true} if running on an Android device. */
   static boolean isOnAndroidDevice() {
-    return MEMORY_CLASS != null && !IS_ROBOLECTRIC;
+    return ASSUME_ANDROID || (MEMORY_CLASS != null && !IS_ROBOLECTRIC);
   }
 
   /** Returns the memory class or {@code null} if not on Android device. */

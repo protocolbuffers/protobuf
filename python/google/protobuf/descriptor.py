@@ -36,7 +36,6 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import threading
 import warnings
-import six
 
 from google.protobuf.internal import api_implementation
 
@@ -111,7 +110,7 @@ _Deprecated.count = 100
 _internal_create_key = object()
 
 
-class DescriptorBase(six.with_metaclass(DescriptorMetaclass)):
+class DescriptorBase(metaclass=DescriptorMetaclass):
 
   """Descriptors base class.
 
@@ -287,12 +286,26 @@ class Descriptor(_NestedDescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.Descriptor
 
-    def __new__(cls, name, full_name, filename, containing_type, fields,
-                nested_types, enum_types, extensions, options=None,
-                serialized_options=None,
-                is_extendable=True, extension_ranges=None, oneofs=None,
-                file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
-                syntax=None, create_key=None):
+    def __new__(
+        cls,
+        name=None,
+        full_name=None,
+        filename=None,
+        containing_type=None,
+        fields=None,
+        nested_types=None,
+        enum_types=None,
+        extensions=None,
+        options=None,
+        serialized_options=None,
+        is_extendable=True,
+        extension_ranges=None,
+        oneofs=None,
+        file=None,  # pylint: disable=redefined-builtin
+        serialized_start=None,
+        serialized_end=None,
+        syntax=None,
+        create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindMessageTypeByName(full_name)
 
@@ -799,9 +812,18 @@ class ServiceDescriptor(_NestedDescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.ServiceDescriptor
 
-    def __new__(cls, name, full_name, index, methods, options=None,
-                serialized_options=None, file=None,  # pylint: disable=redefined-builtin
-                serialized_start=None, serialized_end=None, create_key=None):
+    def __new__(
+        cls,
+        name=None,
+        full_name=None,
+        index=None,
+        methods=None,
+        options=None,
+        serialized_options=None,
+        file=None,  # pylint: disable=redefined-builtin
+        serialized_start=None,
+        serialized_end=None,
+        create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindServiceByName(full_name)
 
@@ -890,6 +912,24 @@ class MethodDescriptor(DescriptorBase):
     self.input_type = input_type
     self.output_type = output_type
 
+  def CopyToProto(self, proto):
+    """Copies this to a descriptor_pb2.MethodDescriptorProto.
+
+    Args:
+      proto (descriptor_pb2.MethodDescriptorProto): An empty descriptor proto.
+
+    Raises:
+      Error: If self couldn't be serialized, due to too few constructor
+        arguments.
+    """
+    if self.containing_service is not None:
+      from google.protobuf import descriptor_pb2
+      service_proto = descriptor_pb2.ServiceDescriptorProto()
+      self.containing_service.CopyToProto(service_proto)
+      proto.CopyFrom(service_proto.method[self.index])
+    else:
+      raise Error('Descriptor does not contain a service.')
+
 
 class FileDescriptor(DescriptorBase):
   """Descriptor for a file. Mimics the descriptor_pb2.FileDescriptorProto.
@@ -911,7 +951,7 @@ class FileDescriptor(DescriptorBase):
     public_dependencies (list[FileDescriptor]): A subset of
       :attr:`dependencies`, which were declared as "public".
     message_types_by_name (dict(str, Descriptor)): Mapping from message names
-      to their :class:`Desctiptor`.
+      to their :class:`Descriptor`.
     enum_types_by_name (dict(str, EnumDescriptor)): Mapping from enum names to
       their :class:`EnumDescriptor`.
     extensions_by_name (dict(str, FieldDescriptor)): Mapping from extension

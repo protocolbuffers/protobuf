@@ -83,7 +83,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
     switch (extension.type) {
 #define HANDLE_VARINT_TYPE(UPPERCASE, CPP_CAMELCASE)                        \
   case WireFormatLite::TYPE_##UPPERCASE: {                                  \
-    uint64 value;                                                           \
+    uint64_t value;                                                         \
     ptr = VarintParse(ptr, &value);                                         \
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                    \
     if (extension.is_repeated) {                                            \
@@ -103,7 +103,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
 #undef HANDLE_VARINT_TYPE
 #define HANDLE_SVARINT_TYPE(UPPERCASE, CPP_CAMELCASE, SIZE)                 \
   case WireFormatLite::TYPE_##UPPERCASE: {                                  \
-    uint64 val;                                                             \
+    uint64_t val;                                                           \
     ptr = VarintParse(ptr, &val);                                           \
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                    \
     auto value = WireFormatLite::ZigZagDecode##SIZE(val);                   \
@@ -132,16 +132,16 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
     }                                                                       \
   } break
 
-      HANDLE_FIXED_TYPE(FIXED32, UInt32, uint32);
-      HANDLE_FIXED_TYPE(FIXED64, UInt64, uint64);
-      HANDLE_FIXED_TYPE(SFIXED32, Int32, int32);
-      HANDLE_FIXED_TYPE(SFIXED64, Int64, int64);
+      HANDLE_FIXED_TYPE(FIXED32, UInt32, uint32_t);
+      HANDLE_FIXED_TYPE(FIXED64, UInt64, uint64_t);
+      HANDLE_FIXED_TYPE(SFIXED32, Int32, int32_t);
+      HANDLE_FIXED_TYPE(SFIXED64, Int64, int64_t);
       HANDLE_FIXED_TYPE(FLOAT, Float, float);
       HANDLE_FIXED_TYPE(DOUBLE, Double, double);
 #undef HANDLE_FIXED_TYPE
 
       case WireFormatLite::TYPE_ENUM: {
-        uint64 val;
+        uint64_t val;
         ptr = VarintParse(ptr, &val);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         int value = val;
@@ -181,7 +181,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
                 : MutableMessage(number, WireFormatLite::TYPE_GROUP,
                                  *extension.message_info.prototype,
                                  extension.descriptor);
-        uint32 tag = (number << 3) + WireFormatLite::WIRETYPE_START_GROUP;
+        uint32_t tag = (number << 3) + WireFormatLite::WIRETYPE_START_GROUP;
         return ctx->ParseGroup(value, ptr, tag);
       }
 
@@ -203,22 +203,22 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
 
 template <typename Msg, typename T>
 const char* ExtensionSet::ParseMessageSetItemTmpl(
-    const char* ptr, const Msg* containing_type,
-    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
+    const char* ptr, const Msg* extendee, internal::InternalMetadata* metadata,
+    internal::ParseContext* ctx) {
   std::string payload;
-  uint32 type_id = 0;
+  uint32_t type_id = 0;
   bool payload_read = false;
   while (!ctx->Done(&ptr)) {
-    uint32 tag = static_cast<uint8>(*ptr++);
+    uint32_t tag = static_cast<uint8_t>(*ptr++);
     if (tag == WireFormatLite::kMessageSetTypeIdTag) {
-      uint64 tmp;
+      uint64_t tmp;
       ptr = ParseBigVarint(ptr, &tmp);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       type_id = tmp;
       if (payload_read) {
         ExtensionInfo extension;
         bool was_packed_on_wire;
-        if (!FindExtension(2, type_id, containing_type, ctx, &extension,
+        if (!FindExtension(2, type_id, extendee, ctx, &extension,
                            &was_packed_on_wire)) {
           WriteLengthDelimited(type_id, payload,
                                metadata->mutable_unknown_fields<T>());
@@ -245,12 +245,12 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
       }
     } else if (tag == WireFormatLite::kMessageSetMessageTag) {
       if (type_id != 0) {
-        ptr = ParseFieldMaybeLazily(static_cast<uint64>(type_id) * 8 + 2, ptr,
-                                    containing_type, metadata, ctx);
+        ptr = ParseFieldMaybeLazily(static_cast<uint64_t>(type_id) * 8 + 2, ptr,
+                                    extendee, metadata, ctx);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
         type_id = 0;
       } else {
-        int32 size = ReadSize(&ptr);
+        int32_t size = ReadSize(&ptr);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ptr = ctx->ReadString(ptr, size, &payload);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
@@ -262,7 +262,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
         ctx->SetLastTag(tag);
         return ptr;
       }
-      ptr = ParseField(tag, ptr, containing_type, metadata, ctx);
+      ptr = ParseField(tag, ptr, extendee, metadata, ctx);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     }
   }

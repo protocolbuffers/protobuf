@@ -48,26 +48,27 @@ const std::string kDescriptorMetadataFile =
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {
-    "abstract",   "and",        "array",        "as",           "break",
-    "callable",   "case",       "catch",        "class",        "clone",
-    "const",      "continue",   "declare",      "default",      "die",
-    "do",         "echo",       "else",         "elseif",       "empty",
-    "enddeclare", "endfor",     "endforeach",   "endif",        "endswitch",
-    "endwhile",   "eval",       "exit",         "extends",      "final",
-    "for",        "foreach",    "function",     "global",       "goto",
-    "if",         "implements", "include",      "include_once", "instanceof",
-    "insteadof",  "interface",  "isset",        "list",         "namespace",
-    "new",        "or",         "print",        "private",      "protected",
-    "public",     "require",    "require_once", "return",       "static",
-    "switch",     "throw",      "trait",        "try",          "unset",
-    "use",        "var",        "while",        "xor",          "int",
-    "float",      "bool",       "string",       "true",         "false",
-    "null",       "void",       "iterable"};
+    "abstract",     "and",        "array",      "as",         "break",
+    "callable",     "case",       "catch",      "class",      "clone",
+    "const",        "continue",   "declare",    "default",    "die",
+    "do",           "echo",       "else",       "elseif",     "empty",
+    "enddeclare",   "endfor",     "endforeach", "endif",      "endswitch",
+    "endwhile",     "eval",       "exit",       "extends",    "final",
+    "finally",      "fn",         "for",        "foreach",    "function",
+    "global",       "goto",       "if",         "implements", "include",
+    "include_once", "instanceof", "insteadof",  "interface",  "isset",
+    "list",         "match",      "namespace",  "new",        "or",
+    "print",        "private",    "protected",  "public",     "require",
+    "require_once", "return",     "static",     "switch",     "throw",
+    "trait",        "try",        "unset",      "use",        "var",
+    "while",        "xor",        "yield",      "int",        "float",
+    "bool",         "string",     "true",       "false",      "null",
+    "void",         "iterable"};
 const char* const kValidConstantNames[] = {
     "int",   "float", "bool", "string",   "true",
     "false", "null",  "void", "iterable",
 };
-const int kReservedNamesSize = 73;
+const int kReservedNamesSize = 77;
 const int kValidConstantNamesSize = 9;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
@@ -95,7 +96,6 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options);
 std::string UnderscoresToCamelCase(const std::string& name,
                                    bool cap_first_letter);
-std::string BinaryToHex(const std::string& binary);
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
 void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
@@ -600,27 +600,6 @@ std::string UnderscoresToCamelCase(const std::string& name,
   return result;
 }
 
-std::string BinaryToHex(const std::string& binary) {
-  std::string dest;
-  size_t i;
-  unsigned char symbol[16] = {
-    '0', '1', '2', '3',
-    '4', '5', '6', '7',
-    '8', '9', 'a', 'b',
-    'c', 'd', 'e', 'f',
-  };
-
-  dest.resize(binary.size() * 2);
-  char* append_ptr = &dest[0];
-
-  for (i = 0; i < binary.size(); i++) {
-    *append_ptr++ = symbol[(binary[i] & 0xf0) >> 4];
-    *append_ptr++ = symbol[binary[i] & 0x0f];
-  }
-
-  return dest;
-}
-
 void Indent(io::Printer* printer) {
   printer->Indent();
   printer->Indent();
@@ -666,43 +645,65 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   // Generate getter.
   GenerateFieldDocComment(printer, field, options, kFieldGetter);
 
+  // deprecation
+  std::string deprecation_trigger = (field->options().deprecated()) ? "@trigger_error('" +
+      field->name() + " is deprecated.', E_USER_DEPRECATED);\n        " : "";
+
+  // Emit getter.
   if (oneof != NULL) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
-        "    return $this->readOneof(^number^);\n"
-        "}\n\n"
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    return $this->hasOneof(^number^);\n"
+        "    ^deprecation_trigger^return $this->readOneof(^number^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "number", IntToString(field->number()));
-  } else if (field->has_presence()) {
+        "number", IntToString(field->number()),
+        "deprecation_trigger", deprecation_trigger);
+  } else if (field->has_presence() && !field->message_type()) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
-        "    return isset($this->^name^) ? $this->^name^ : ^default_value^;\n"
-        "}\n\n"
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    return isset($this->^name^);\n"
-        "}\n\n"
-        "public function clear^camel_name^()\n"
-        "{\n"
-        "    unset($this->^name^);\n"
+        "    ^deprecation_trigger^return isset($this->^name^) ? $this->^name^ : ^default_value^;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
-        "default_value", DefaultForField(field));
+        "default_value", DefaultForField(field),
+        "deprecation_trigger", deprecation_trigger);
   } else {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
-        "    return $this->^name^;\n"
+        "    ^deprecation_trigger^return $this->^name^;\n"
         "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
-        field->name());
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "name", field->name(),
+        "deprecation_trigger", deprecation_trigger);
+  }
+
+  // Emit hazzers/clear.
+  if (oneof) {
+    printer->Print(
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^return $this->hasOneof(^number^);\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "number", IntToString(field->number()),
+        "deprecation_trigger", deprecation_trigger);
+  } else if (field->has_presence()) {
+    printer->Print(
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^return isset($this->^name^);\n"
+        "}\n\n"
+        "public function clear^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^unset($this->^name^);\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "name", field->name(),
+        "default_value", DefaultForField(field),
+        "deprecation_trigger", deprecation_trigger);
   }
 
   // For wrapper types, generate an additional getXXXUnwrapped getter
@@ -714,10 +715,11 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
     printer->Print(
         "public function get^camel_name^Unwrapped()\n"
         "{\n"
-        "    return $this->readWrapperValue(\"^field_name^\");\n"
+        "    ^deprecation_trigger^return $this->readWrapperValue(\"^field_name^\");\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "field_name", field->name());
+        "field_name", field->name(),
+        "deprecation_trigger", deprecation_trigger);
   }
 
   // Generate setter.
@@ -728,6 +730,13 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
       "camel_name", UnderscoresToCamelCase(field->name(), true));
 
   Indent(printer);
+
+  if (field->options().deprecated()) {
+      printer->Print(
+          "^deprecation_trigger^",
+          "deprecation_trigger", deprecation_trigger
+      );
+  }
 
   // Type check.
   if (field->is_map()) {
@@ -1010,16 +1019,28 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
       std::string files_data;
       files.SerializeToString(&files_data);
 
-      printer->Print("$pool->internalAddGeneratedFile(hex2bin(\n");
+      printer->Print("$pool->internalAddGeneratedFile(\n");
       Indent(printer);
+      printer->Print("'");
 
-      printer->Print(
-          "\"^data^\"\n",
-          "data", BinaryToHex(files_data));
+      for (auto ch : files_data) {
+        switch (ch) {
+          case '\\':
+            printer->Print(R"(\\)");
+            break;
+          case '\'':
+            printer->Print(R"(\')");
+            break;
+          default:
+            printer->Print("^char^", "char", std::string(1, ch));
+            break;
+        }
+      }
 
+      printer->Print("'\n");
       Outdent(printer);
       printer->Print(
-          "), true);\n\n");
+          ", true);\n\n");
     }
     printer->Print(
         "static::$is_initialized = true;\n");
@@ -1098,9 +1119,9 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
       file, &nodes_without_dependency, &deps, &dependency_count);
 
   while (!nodes_without_dependency.empty()) {
-    auto file = *nodes_without_dependency.begin();
-    nodes_without_dependency.erase(file);
-    for (auto dependent : deps[file]) {
+    auto file_node = *nodes_without_dependency.begin();
+    nodes_without_dependency.erase(file_node);
+    for (auto dependent : deps[file_node]) {
       if (dependency_count[dependent] == 1) {
         dependency_count.erase(dependent);
         nodes_without_dependency.insert(dependent);
@@ -1109,11 +1130,11 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
       }
     }
 
-    bool needs_aggregate = NeedsUnwrapping(file, options);
+    bool needs_aggregate = NeedsUnwrapping(file_node, options);
 
     if (needs_aggregate) {
       auto file_proto = sorted_file_set.add_file();
-      file->CopyTo(file_proto);
+      file_node->CopyTo(file_proto);
 
       // Filter out descriptor.proto as it cannot be depended on for now.
       RepeatedPtrField<std::string>* dependency =
@@ -1135,7 +1156,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
         it->clear_extension();
       }
     } else {
-      std::string dependency_filename = GeneratedMetadataFileName(file, false);
+      std::string dependency_filename = GeneratedMetadataFileName(file_node, false);
       printer->Print(
           "\\^name^::initOnce();\n",
           "name", FilenameToClassname(dependency_filename));
@@ -1145,16 +1166,28 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
   std::string files_data;
   sorted_file_set.SerializeToString(&files_data);
 
-  printer->Print("$pool->internalAddGeneratedFile(hex2bin(\n");
+  printer->Print("$pool->internalAddGeneratedFile(\n");
   Indent(printer);
+  printer->Print("'");
 
-  printer->Print(
-      "\"^data^\"\n",
-      "data", BinaryToHex(files_data));
+  for (auto ch : files_data) {
+    switch (ch) {
+      case '\\':
+        printer->Print(R"(\\)");
+        break;
+      case '\'':
+        printer->Print(R"(\')");
+        break;
+      default:
+        printer->Print("^char^", "char", std::string(1, ch));
+        break;
+    }
+  }
 
+  printer->Print("'\n");
   Outdent(printer);
   printer->Print(
-      "), true);\n");
+      ", true);\n");
 
   printer->Print(
       "static::$is_initialized = true;\n");
@@ -1733,8 +1766,14 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
       "php_type", PhpSetterTypeName(field, options));
     printer->Print(" * @return $this\n");
   } else if (function_type == kFieldGetter) {
-    printer->Print(" * @return ^php_type^\n",
-      "php_type", PhpGetterTypeName(field, options));
+    bool can_return_null = field->has_presence() &&
+                           field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
+    printer->Print(" * @return ^php_type^^maybe_null^\n",
+      "php_type", PhpGetterTypeName(field, options),
+      "maybe_null", can_return_null ? "|null" : "");
+  }
+  if (field->options().deprecated()) {
+    printer->Print(" * @deprecated\n");
   }
   printer->Print(" */\n");
 }
@@ -1834,7 +1873,7 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
       "  const upb_enumdef *e = upb_symtab_lookupenum(symtab, \"$name$\");\n"
       "  const char *name;\n"
       "  zend_long value;\n"
-      "  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, \"l\", &value) ==\n"
+      "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"l\", &value) ==\n"
       "      FAILURE) {\n"
       "    return;\n"
       "  }\n"
@@ -1856,7 +1895,7 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
       "  char *name = NULL;\n"
       "  size_t name_len;\n"
       "  int32_t num;\n"
-      "  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, \"s\", &name,\n"
+      "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"s\", &name,\n"
       "                            &name_len) == FAILURE) {\n"
       "    return;\n"
       "  }\n"
@@ -1871,8 +1910,8 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
       "}\n"
       "\n"
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
-      "  PHP_ME($c_name$, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
-      "  PHP_ME($c_name$, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  PHP_ME($c_name$, name, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  PHP_ME($c_name$, value, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
       "  ZEND_FE_END\n"
       "};\n"
       "\n"
@@ -1930,7 +1969,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "                                           \"$name$\");\n"
       "  zval ret;\n"
       "  Message_get(intern, f, &ret);\n"
-      "  RETURN_ZVAL(&ret, 1, 0);\n"
+      "  RETURN_COPY_VALUE(&ret);\n"
       "}\n"
       "\n"
       "static PHP_METHOD($c_name$, set$camel_name$) {\n"
@@ -1943,7 +1982,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "    return;\n"
       "  }\n"
       "  Message_set(intern, f, val);\n"
-      "  RETURN_ZVAL(getThis(), 1, 0);\n"
+      "  RETURN_COPY(getThis());\n"
       "}\n"
       "\n",
       "c_name", c_name,
@@ -1966,16 +2005,37 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "camel_name", UnderscoresToCamelCase(oneof->name(), true));
   }
 
+  switch (message->well_known_type()) {
+    case Descriptor::WELLKNOWNTYPE_ANY:
+      printer->Print(
+          "ZEND_BEGIN_ARG_INFO_EX(arginfo_is, 0, 0, 1)\n"
+          "  ZEND_ARG_INFO(0, proto)\n"
+          "ZEND_END_ARG_INFO()\n"
+          "\n"
+      );
+      break;
+    case Descriptor::WELLKNOWNTYPE_TIMESTAMP:
+      printer->Print(
+          "ZEND_BEGIN_ARG_INFO_EX(arginfo_timestamp_fromdatetime, 0, 0, 1)\n"
+          "  ZEND_ARG_INFO(0, datetime)\n"
+          "ZEND_END_ARG_INFO()\n"
+          "\n"
+      );
+      break;
+    default:
+      break;
+  }
+
   printer->Print(
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
-      "  PHP_ME($c_name$, __construct, NULL, ZEND_ACC_PUBLIC)\n",
+      "  PHP_ME($c_name$, __construct, arginfo_construct, ZEND_ACC_PUBLIC)\n",
       "c_name", c_name);
 
   for (int i = 0; i < message->field_count(); i++) {
     auto field = message->field(i);
     printer->Print(
-      "  PHP_ME($c_name$, get$camel_name$, NULL, ZEND_ACC_PUBLIC)\n"
-      "  PHP_ME($c_name$, set$camel_name$, NULL, ZEND_ACC_PUBLIC)\n",
+      "  PHP_ME($c_name$, get$camel_name$, arginfo_void, ZEND_ACC_PUBLIC)\n"
+      "  PHP_ME($c_name$, set$camel_name$, arginfo_setter, ZEND_ACC_PUBLIC)\n",
       "c_name", c_name,
       "camel_name", UnderscoresToCamelCase(field->name(), true));
   }
@@ -1983,7 +2043,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     auto oneof = message->oneof_decl(i);
     printer->Print(
-      "  PHP_ME($c_name$, get$camel_name$, NULL, ZEND_ACC_PUBLIC)\n",
+      "  PHP_ME($c_name$, get$camel_name$, arginfo_void, ZEND_ACC_PUBLIC)\n",
       "c_name", c_name,
       "camel_name", UnderscoresToCamelCase(oneof->name(), true));
   }
@@ -1992,15 +2052,15 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
   switch (message->well_known_type()) {
     case Descriptor::WELLKNOWNTYPE_ANY:
       printer->Print(
-        "  PHP_ME($c_name$, is, NULL, ZEND_ACC_PUBLIC)\n"
-        "  PHP_ME($c_name$, pack, NULL, ZEND_ACC_PUBLIC)\n"
-        "  PHP_ME($c_name$, unpack, NULL, ZEND_ACC_PUBLIC)\n",
+        "  PHP_ME($c_name$, is, arginfo_is, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, pack, arginfo_setter, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, unpack, arginfo_void, ZEND_ACC_PUBLIC)\n",
         "c_name", c_name);
       break;
     case Descriptor::WELLKNOWNTYPE_TIMESTAMP:
       printer->Print(
-        "  PHP_ME($c_name$, fromDateTime, NULL, ZEND_ACC_PUBLIC)\n"
-        "  PHP_ME($c_name$, toDateTime, NULL, ZEND_ACC_PUBLIC)\n",
+        "  PHP_ME($c_name$, fromDateTime, arginfo_timestamp_fromdatetime, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, toDateTime, arginfo_void, ZEND_ACC_PUBLIC)\n",
         "c_name", c_name);
       break;
     default:
@@ -2067,7 +2127,14 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
 
   printer.Print(
       "// This file is generated from the .proto files for the well-known\n"
-      "// types. Do not edit!\n");
+      "// types. Do not edit!\n\n");
+
+  printer.Print(
+      "ZEND_BEGIN_ARG_INFO_EX(arginfo_lookup, 0, 0, 1)\n"
+      "  ZEND_ARG_INFO(0, key)\n"
+      "ZEND_END_ARG_INFO()\n"
+      "\n"
+  );
 
   for (auto file : files) {
     printer.Print(
@@ -2130,7 +2197,7 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
         "}\n"
         "\n"
         "static zend_function_entry $metadata_c_name$_methods[] = {\n"
-        "  PHP_ME($metadata_c_name$, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+        "  PHP_ME($metadata_c_name$, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
         "  ZEND_FE_END\n"
         "};\n"
         "\n"
@@ -2180,6 +2247,18 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
 
 }  // namespace
 
+std::string GeneratedClassName(const Descriptor* desc) {
+  return GeneratedClassNameImpl(desc);
+}
+
+std::string GeneratedClassName(const EnumDescriptor* desc) {
+  return GeneratedClassNameImpl(desc);
+}
+
+std::string GeneratedClassName(const ServiceDescriptor* desc) {
+  return GeneratedClassNameImpl(desc);
+}
+
 bool Generator::Generate(const FileDescriptor* file,
                          const std::string& parameter,
                          GeneratorContext* generator_context,
@@ -2219,7 +2298,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
     if (HasPrefixString(option_pair[0], "aggregate_metadata")) {
       options.aggregate_metadata = true;
       for (const auto& prefix : Split(option_pair[1], "#", false)) {
-        options.aggregate_metadata_prefixes.insert(prefix);
+        options.aggregate_metadata_prefixes.emplace(prefix);
         GOOGLE_LOG(INFO) << prefix;
       }
     } else if (option_pair[0] == "internal") {

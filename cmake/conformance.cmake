@@ -19,23 +19,22 @@ add_custom_command(
 )
 
 add_executable(conformance_test_runner
-  ${protobuf_source_dir}/conformance/conformance.pb.cc
-  ${protobuf_source_dir}/conformance/conformance_test.cc
-  ${protobuf_source_dir}/conformance/binary_json_conformance_main.cc
   ${protobuf_source_dir}/conformance/binary_json_conformance_suite.cc
   ${protobuf_source_dir}/conformance/binary_json_conformance_suite.h
+  ${protobuf_source_dir}/conformance/conformance.pb.cc
+  ${protobuf_source_dir}/conformance/conformance_test.cc
   ${protobuf_source_dir}/conformance/conformance_test_runner.cc
   ${protobuf_source_dir}/conformance/third_party/jsoncpp/json.h
   ${protobuf_source_dir}/conformance/third_party/jsoncpp/jsoncpp.cpp
-  ${protobuf_source_dir}/src/google/protobuf/test_messages_proto3.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/test_messages_proto2.pb.cc
+  ${protobuf_source_dir}/src/google/protobuf/test_messages_proto3.pb.cc
 )
 
 add_executable(conformance_cpp
   ${protobuf_source_dir}/conformance/conformance.pb.cc
   ${protobuf_source_dir}/conformance/conformance_cpp.cc
-  ${protobuf_source_dir}/src/google/protobuf/test_messages_proto3.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/test_messages_proto2.pb.cc
+  ${protobuf_source_dir}/src/google/protobuf/test_messages_proto3.pb.cc
 )
 
 target_include_directories(

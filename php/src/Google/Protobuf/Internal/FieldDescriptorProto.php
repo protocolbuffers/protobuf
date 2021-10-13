@@ -511,11 +511,11 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions options = 8;</code>
-     * @return \Google\Protobuf\Internal\FieldOptions
+     * @return \Google\Protobuf\Internal\FieldOptions|null
      */
     public function getOptions()
     {
-        return isset($this->options) ? $this->options : null;
+        return $this->options;
     }
 
     public function hasOptions()

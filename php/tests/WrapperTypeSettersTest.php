@@ -148,10 +148,10 @@ class WrapperTypeSettersTest extends TestBase
 
     /**
      * @dataProvider invalidSettersDataProvider
-     * @expectedException \Exception
      */
     public function testInvalidSetters($class, $setter, $value)
     {
+        $this->expectException(Exception::class);
         (new $class())->$setter($value);
     }
 
@@ -243,6 +243,8 @@ class WrapperTypeSettersTest extends TestBase
             }
             $this->assertEquals($expectedInnerValue, $actualInnerValue);
         }
+
+        $this->assertTrue(true);
     }
 
     public function constructorWithRepeatedWrapperTypeDataProvider()
@@ -286,6 +288,8 @@ class WrapperTypeSettersTest extends TestBase
             }
             $this->assertEquals($expectedInnerValue, $actualInnerValue);
         }
+
+        $this->assertTrue(true);
     }
 
     public function constructorWithMapWrapperTypeDataProvider()

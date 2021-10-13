@@ -261,7 +261,7 @@ bool FieldHasPresence(const google::protobuf::FieldDescriptor* field) {
 Old:
 
 ```c++
-bool FieldIsInOneof(const google::protobuf::FielDescriptor* field) {
+bool FieldIsInOneof(const google::protobuf::FieldDescriptor* field) {
   return field->containing_oneof() != nullptr;
 }
 ```
@@ -269,7 +269,7 @@ bool FieldIsInOneof(const google::protobuf::FielDescriptor* field) {
 New:
 
 ```c++
-bool FieldIsInOneof(const google::protobuf::FielDescriptor* field) {
+bool FieldIsInOneof(const google::protobuf::FieldDescriptor* field) {
   // real_containing_oneof() returns nullptr for synthetic oneofs.
   return field->real_containing_oneof() != nullptr;
 }

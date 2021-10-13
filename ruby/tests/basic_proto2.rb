@@ -237,23 +237,6 @@ module BasicTestProto2
       assert_equal expected_result, m.to_h
     end
 
-    def test_map_keyword_disabled
-      pool = Google::Protobuf::DescriptorPool.new
-
-      e = assert_raise ArgumentError do
-        pool.build do
-          add_file 'test_file.proto', syntax: :proto2 do
-            add_message "MapMessage" do
-              map :map_string_int32, :string, :int32, 1
-              map :map_string_msg, :string, :message, 2, "TestMessage2"
-            end
-          end
-        end
-      end
-
-      assert_match(/Cannot add a native map/, e.message)
-    end
-
     def test_respond_to
       # This test fails with JRuby 1.7.23, likely because of an old JRuby bug.
       return if RUBY_PLATFORM == "java"

@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-#
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
@@ -34,13 +32,8 @@
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-import sys
+import unittest
 import warnings
-
-try:
-  import unittest2 as unittest  #PY26
-except ImportError:
-  import unittest
 
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
@@ -582,10 +575,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertEqual(mapping, mapping)
     self.assertGreater(len(mapping), 0)  # Sized
     self.assertEqual(len(mapping), len(excepted_dict))  # Iterable
-    if sys.version_info >= (3,):
-      key, item = next(iter(mapping.items()))
-    else:
-      key, item = mapping.items()[0]
+    key, item = next(iter(mapping.items()))
     self.assertIn(key, mapping)  # Container
     self.assertEqual(mapping.get(key), item)
     with self.assertRaises(TypeError):
@@ -598,13 +588,6 @@ class GeneratedDescriptorTest(unittest.TestCase):
     # keys(), iterkeys() &co
     item = (next(iter(mapping.keys())), next(iter(mapping.values())))
     self.assertEqual(item, next(iter(mapping.items())))
-    if sys.version_info < (3,):
-      def CheckItems(seq, iterator):
-        self.assertEqual(next(iterator), seq[0])
-        self.assertEqual(list(iterator), seq[1:])
-      CheckItems(mapping.keys(), mapping.iterkeys())
-      CheckItems(mapping.values(), mapping.itervalues())
-      CheckItems(mapping.items(), mapping.iteritems())
     excepted_dict[key] = 'change value'
     self.assertNotEqual(mapping, excepted_dict)
     del excepted_dict[key]
@@ -907,10 +890,6 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
         descriptor_pb2.ServiceDescriptorProto,
         TEST_SERVICE_ASCII)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python',
-      'It is not implemented in python.')
-  # TODO(jieluo): Add support for pure python or remove in c extension.
   def testCopyToProto_MethodDescriptor(self):
     expected_ascii = """
       name: 'Foo'

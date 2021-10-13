@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-#
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
@@ -37,12 +35,8 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 import json
 import math
 import struct
-import sys
 
-try:
-  import unittest2 as unittest  #PY26
-except ImportError:
-  import unittest
+import unittest
 
 from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
@@ -296,11 +290,8 @@ class JsonFormatTest(JsonFormatBase):
 
   def testJsonEscapeString(self):
     message = json_format_proto3_pb2.TestMessage()
-    if sys.version_info[0] < 3:
-      message.string_value = '&\n<\"\r>\b\t\f\\\001/\xe2\x80\xa8\xe2\x80\xa9'
-    else:
-      message.string_value = '&\n<\"\r>\b\t\f\\\001/'
-      message.string_value += (b'\xe2\x80\xa8\xe2\x80\xa9').decode('utf-8')
+    message.string_value = '&\n<\"\r>\b\t\f\\\001/'
+    message.string_value += (b'\xe2\x80\xa8\xe2\x80\xa9').decode('utf-8')
     self.assertEqual(
         json_format.MessageToJson(message),
         '{\n  "stringValue": '
@@ -1039,8 +1030,6 @@ class JsonFormatTest(JsonFormatBase):
         json_format.ParseError,
         'Failed to parse boolMap field: Expected "true" or "false", not null.',
         json_format.Parse, text, message)
-    if sys.version_info < (2, 7):
-      return
     text = r'{"stringMap": {"a": 3, "\u0061": 2}}'
     self.assertRaisesRegexp(
         json_format.ParseError,
@@ -1118,6 +1107,30 @@ class JsonFormatTest(JsonFormatBase):
         json_format.ParseError,
         'Failed to parse value field: Struct must be in a dict which is 1234',
         json_format.Parse, text, message)
+
+  def testTimestampInvalidStringValue(self):
+    message = json_format_proto3_pb2.TestTimestamp()
+    text = '{"value": {"foo": 123}}'
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        r"Timestamp JSON value not a string: {u?'foo': 123}", json_format.Parse,
+        text, message)
+
+  def testDurationInvalidStringValue(self):
+    message = json_format_proto3_pb2.TestDuration()
+    text = '{"value": {"foo": 123}}'
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        r"Duration JSON value not a string: {u?'foo': 123}", json_format.Parse,
+        text, message)
+
+  def testFieldMaskInvalidStringValue(self):
+    message = json_format_proto3_pb2.TestFieldMask()
+    text = '{"value": {"foo": 123}}'
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        r"FieldMask JSON value not a string: {u?'foo': 123}", json_format.Parse,
+        text, message)
 
   def testInvalidAny(self):
     message = any_pb2.Any()
@@ -1217,7 +1230,7 @@ class JsonFormatTest(JsonFormatBase):
   def testParseDictUnknownValueType(self):
     class UnknownClass(object):
 
-      def __str__(self):
+      def __repr__(self):
         return 'v'
     message = json_format_proto3_pb2.TestValue()
     self.assertRaisesRegexp(

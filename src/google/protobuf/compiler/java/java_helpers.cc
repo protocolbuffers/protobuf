@@ -35,12 +35,14 @@
 #include <google/protobuf/compiler/java/java_helpers.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 #include <unordered_set>
 #include <vector>
 
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
+#include <google/protobuf/compiler/java/java_names.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -191,6 +193,38 @@ std::string UnderscoresToCamelCase(const std::string& input,
   return result;
 }
 
+std::string ToCamelCase(const std::string& input, bool lower_first) {
+  bool capitalize_next = !lower_first;
+  std::string result;
+  result.reserve(input.size());
+
+  for (char i : input) {
+    if (i == '_') {
+      capitalize_next = true;
+    } else if (capitalize_next) {
+      result.push_back(ToUpperCh(i));
+      capitalize_next = false;
+    } else {
+      result.push_back(i);
+    }
+  }
+
+  // Lower-case the first letter.
+  if (lower_first && !result.empty()) {
+    result[0] = ToLowerCh(result[0]);
+  }
+
+  return result;
+}
+
+char ToUpperCh(char ch) {
+  return (ch >= 'a' && ch <= 'z') ? (ch - 'a' + 'A') : ch;
+}
+
+char ToLowerCh(char ch) {
+  return (ch >= 'A' && ch <= 'Z') ? (ch - 'A' + 'a') : ch;
+}
+
 std::string UnderscoresToCamelCase(const FieldDescriptor* field) {
   return UnderscoresToCamelCase(FieldName(field), false);
 }
@@ -215,6 +249,22 @@ std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
   return name;
 }
 
+bool IsForbiddenKotlin(const std::string& field_name) {
+  // Names that should be avoided as field names in Kotlin.
+  // All Kotlin hard keywords are in this list.
+  const std::unordered_set<std::string>* kKotlinForbiddenNames =
+      new std::unordered_set<std::string>({
+          "as",      "as?",       "break",  "class", "continue", "do",
+          "else",    "false",     "for",    "fun",   "if",       "in",
+          "!in",     "interface", "is",     "!is",   "null",     "object",
+          "package", "return",    "super",  "this",  "throw",    "true",
+          "try",     "typealias", "typeof", "val",   "var",      "when",
+          "while",
+      });
+  return kKotlinForbiddenNames->find(field_name) !=
+         kKotlinForbiddenNames->end();
+}
+
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
   return "static_" + StringReplace(descriptor->full_name(), ".", "_", true);
 }
@@ -225,14 +275,6 @@ std::string CamelCaseFieldName(const FieldDescriptor* field) {
     return '_' + fieldName;
   }
   return fieldName;
-}
-
-std::string StripProto(const std::string& filename) {
-  if (HasSuffixString(filename, ".protodevel")) {
-    return StripSuffixString(filename, ".protodevel");
-  } else {
-    return StripSuffixString(filename, ".proto");
-  }
 }
 
 std::string FileClassName(const FileDescriptor* file, bool immutable) {
@@ -428,6 +470,34 @@ const char* BoxedPrimitiveTypeName(const FieldDescriptor* descriptor) {
   return BoxedPrimitiveTypeName(GetJavaType(descriptor));
 }
 
+const char* KotlinTypeName(JavaType type) {
+  switch (type) {
+    case JAVATYPE_INT:
+      return "kotlin.Int";
+    case JAVATYPE_LONG:
+      return "kotlin.Long";
+    case JAVATYPE_FLOAT:
+      return "kotlin.Float";
+    case JAVATYPE_DOUBLE:
+      return "kotlin.Double";
+    case JAVATYPE_BOOLEAN:
+      return "kotlin.Boolean";
+    case JAVATYPE_STRING:
+      return "kotlin.String";
+    case JAVATYPE_BYTES:
+      return "com.google.protobuf.ByteString";
+    case JAVATYPE_ENUM:
+      return NULL;
+    case JAVATYPE_MESSAGE:
+      return NULL;
+
+      // No default because we want the compiler to complain if any new
+      // JavaTypes are added.
+  }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return NULL;
+}
 
 std::string GetOneofStoredType(const FieldDescriptor* field) {
   const JavaType javaType = GetJavaType(field);
@@ -506,11 +576,11 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
       return StrCat(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
       // Need to print as a signed int since Java has no unsigned.
-      return StrCat(static_cast<int32>(field->default_value_uint32()));
+      return StrCat(static_cast<int32_t>(field->default_value_uint32()));
     case FieldDescriptor::CPPTYPE_INT64:
       return StrCat(field->default_value_int64()) + "L";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return StrCat(static_cast<int64>(field->default_value_uint64())) +
+      return StrCat(static_cast<int64_t>(field->default_value_uint64())) +
              "L";
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
@@ -902,11 +972,11 @@ bool HasRepeatedFields(const Descriptor* descriptor) {
 //
 // Note that we only use code points in [0x0000, 0xD7FF] and [0xE000, 0xFFFF].
 // There will be no surrogate pairs in the encoded character sequence.
-void WriteUInt32ToUtf16CharSequence(uint32 number,
-                                    std::vector<uint16>* output) {
+void WriteUInt32ToUtf16CharSequence(uint32_t number,
+                                    std::vector<uint16_t>* output) {
   // For values in [0x0000, 0xD7FF], only use one char to encode it.
   if (number < 0xD800) {
-    output->push_back(static_cast<uint16>(number));
+    output->push_back(static_cast<uint16_t>(number));
     return;
   }
   // Encode into multiple chars. All except the last char will be in the range
@@ -916,10 +986,10 @@ void WriteUInt32ToUtf16CharSequence(uint32 number,
   // them.
   while (number >= 0xD800) {
     // [0xE000, 0xFFFF] can represent 13 bits of info.
-    output->push_back(static_cast<uint16>(0xE000 | (number & 0x1FFF)));
+    output->push_back(static_cast<uint16_t>(0xE000 | (number & 0x1FFF)));
     number >>= 13;
   }
-  output->push_back(static_cast<uint16>(number));
+  output->push_back(static_cast<uint16_t>(number));
 }
 
 int GetExperimentalJavaFieldTypeForSingular(const FieldDescriptor* field) {
@@ -1000,7 +1070,7 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
 }
 
 // Escape a UTF-16 character to be embedded in a Java string.
-void EscapeUtf16ToString(uint16 code, std::string* output) {
+void EscapeUtf16ToString(uint16_t code, std::string* output) {
   if (code == '\t') {
     output->append("\\t");
   } else if (code == '\b') {

@@ -34,6 +34,8 @@
 #include <string>
 
 #include <google/protobuf/compiler/java/java_helpers.h>
+#include <google/protobuf/compiler/java/java_names.h>
+#include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/stubs/substitute.h>
 
 namespace google {
@@ -65,6 +67,17 @@ std::string StripPackageName(const std::string& full_name,
 std::string ClassNameWithoutPackage(const Descriptor* descriptor,
                                     bool immutable) {
   return StripPackageName(descriptor->full_name(), descriptor->file());
+}
+
+std::string ClassNameWithoutPackageKotlin(const Descriptor* descriptor) {
+  std::string result = descriptor->name();
+  const Descriptor* temp = descriptor->containing_type();
+
+  while (temp) {
+    result = temp->name() + "Kt." + result;
+    temp = temp->containing_type();
+  }
+  return result;
 }
 
 // Get the name of an enum's Java class without package name prefix.
@@ -313,6 +326,12 @@ std::string ClassNameResolver::GetExtensionIdentifierName(
          descriptor->name();
 }
 
+std::string ClassNameResolver::GetKotlinFactoryName(
+    const Descriptor* descriptor) {
+  std::string name = ToCamelCase(descriptor->name(), /* lower_first = */ true);
+  return IsForbiddenKotlin(name) ? name + "_" : name;
+}
+
 std::string ClassNameResolver::GetJavaImmutableClassName(
     const Descriptor* descriptor) {
   return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, true),
@@ -325,6 +344,35 @@ std::string ClassNameResolver::GetJavaImmutableClassName(
                               descriptor->file(), true);
 }
 
+std::string ClassNameResolver::GetKotlinExtensionsClassName(
+    const Descriptor* descriptor) {
+  return GetClassFullName(ClassNameWithoutPackageKotlin(descriptor),
+                          descriptor->file(), true, true, true);
+}
+
+std::string ClassNameResolver::GetJavaMutableClassName(
+    const Descriptor* descriptor) {
+  return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, false),
+                              descriptor->file(), false);
+}
+
+std::string ClassNameResolver::GetJavaMutableClassName(
+    const EnumDescriptor* descriptor) {
+  return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, false),
+                              descriptor->file(), false);
+}
+
+std::string ClassNameResolver::GetDowngradedFileClassName(
+    const FileDescriptor* file) {
+  return "Downgraded" + GetFileClassName(file, false);
+}
+
+std::string ClassNameResolver::GetDowngradedClassName(
+    const Descriptor* descriptor) {
+  return FileJavaPackage(descriptor->file()) + "." +
+         GetDowngradedFileClassName(descriptor->file()) + "." +
+         ClassNameWithoutPackage(descriptor, false);
+}
 
 }  // namespace java
 }  // namespace compiler

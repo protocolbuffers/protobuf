@@ -41,7 +41,7 @@ class TextFormatConformanceTestSuite : public ConformanceTestSuite {
   TextFormatConformanceTestSuite();
 
  private:
-  void RunSuiteImpl();
+  void RunSuiteImpl() override;
   void RunValidTextFormatTest(const std::string& test_name,
                               ConformanceLevel level, const std::string& input);
   void RunValidTextFormatTestProto2(const std::string& test_name,

@@ -61,6 +61,7 @@ public final class TextFormat {
 
   private static final Logger logger = Logger.getLogger(TextFormat.class.getName());
 
+
   /**
    * Outputs a textual representation of the Protocol Message supplied into the parameter output.
    * (This representation is the new version of the classic "ProtocolPrinter" output from the
@@ -444,9 +445,7 @@ public final class TextFormat {
     }
 
     /**
-     * An adapter class that can take a MapEntry or a MutableMapEntry and returns its key and entry.
-     * This class is created solely for the purpose of sorting map entries by its key and prevent
-     * duplicated logic by having a separate comparator for MapEntry and MutableMapEntry.
+     * An adapter class that can take a {@link MapEntry} and returns its key and entry.
      */
     private static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
       private Object entry;
@@ -727,9 +726,9 @@ public final class TextFormat {
           // Groups must be serialized with their original capitalization.
           generator.print(field.getMessageType().getName());
         } else {
-          generator.print(field.getName());
+            generator.print(field.getName());
+          }
         }
-      }
 
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
         generator.print(" {");
@@ -1811,16 +1810,16 @@ public final class TextFormat {
         extension = target.findExtensionByName(extensionRegistry, name.toString());
 
         if (extension == null) {
-          String message =
-              (tokenizer.getPreviousLine() + 1)
-                  + ":"
-                  + (tokenizer.getPreviousColumn() + 1)
-                  + ":\t"
-                  + type.getFullName()
-                  + ".["
-                  + name
-                  + "]";
-          unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
+            String message =
+                (tokenizer.getPreviousLine() + 1)
+                    + ":"
+                    + (tokenizer.getPreviousColumn() + 1)
+                    + ":\t"
+                    + type.getFullName()
+                    + ".["
+                    + name
+                    + "]";
+            unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
         } else {
           if (extension.descriptor.getContainingType() != type) {
             throw tokenizer.parseExceptionPreviousToken(
@@ -2358,6 +2357,9 @@ public final class TextFormat {
                 break;
               case '"':
                 result[pos++] = '\"';
+                break;
+              case '?':
+                result[pos++] = '?';
                 break;
 
               case 'x':

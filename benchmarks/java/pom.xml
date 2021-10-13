@@ -22,7 +22,7 @@
     <dependency>
       <groupId>com.google.caliper</groupId>
       <artifactId>caliper</artifactId>
-      <version>1.0-beta-2</version>
+      <version>1.0-beta-3</version>
     </dependency>
   </dependencies>
 

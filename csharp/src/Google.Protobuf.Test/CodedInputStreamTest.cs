@@ -161,11 +161,20 @@ namespace Google.Protobuf
 
         private static void AssertReadFromParseContext(ReadOnlySequence<byte> input, ParseContextAssertAction assertAction, bool assertIsAtEnd)
         {
+            // Check as ReadOnlySequence<byte>
             ParseContext.Initialize(input, out ParseContext parseCtx);
             assertAction(ref parseCtx);
             if (assertIsAtEnd)
             {
                 Assert.IsTrue(SegmentedBufferHelper.IsAtEnd(ref parseCtx.buffer, ref parseCtx.state));
+            }
+
+            // Check as ReadOnlySpan<byte>
+            ParseContext.Initialize(input.ToArray().AsSpan(), out ParseContext spanParseContext);
+            assertAction(ref spanParseContext);
+            if (assertIsAtEnd)
+            {
+                Assert.IsTrue(SegmentedBufferHelper.IsAtEnd(ref spanParseContext.buffer, ref spanParseContext.state));
             }
         }
 
@@ -340,6 +349,25 @@ namespace Google.Protobuf
             {
                 message2 = TestAllTypes.Parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(rawBytes, blockSize));
                 Assert.AreEqual(message, message2);
+            }
+        }
+
+        [Test]
+        public void ReadInt32Wrapper_VariableBlockSizes()
+        {
+            byte[] rawBytes = new byte[] { 202, 1, 11, 8, 254, 255, 255, 255, 255, 255, 255, 255, 255, 1 };
+
+            for (int blockSize = 1; blockSize <= rawBytes.Length; blockSize++)
+            {
+                ReadOnlySequence<byte> data = ReadOnlySequenceFactory.CreateWithContent(rawBytes, blockSize);
+                AssertReadFromParseContext(data, (ref ParseContext ctx) =>
+                {
+                    ctx.ReadTag();
+
+                    var value = ParsingPrimitivesWrappers.ReadInt32Wrapper(ref ctx);
+
+                    Assert.AreEqual(-2, value);
+                }, true);
             }
         }
 

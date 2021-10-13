@@ -38,14 +38,9 @@
 // Initializes the Def module, which defines all of the descriptor classes.
 void Def_ModuleInit();
 
-// Creates a new DescriptorPool to wrap the given symtab. The DescriptorPool
-// takes ownership of the given symtab. If symtab is NULL, the DescriptorPool
-// will create an empty symtab instead.
+// Creates a new DescriptorPool to wrap the given symtab, which must not be
+// NULL.
 void DescriptorPool_CreateWithSymbolTable(zval *zv, upb_symtab *symtab);
-
-// Given a zval representing a DescriptorPool, steals and returns its symtab,
-// which is now owned by the caller.
-upb_symtab *DescriptorPool_Steal(zval *zv);
 
 upb_symtab *DescriptorPool_GetSymbolTable();
 
@@ -61,15 +56,35 @@ typedef struct Descriptor {
   zend_class_entry *class_entry;
 } Descriptor;
 
-// Gets or creates a PHP Descriptor object for a |ce| and stores it in |val|.
-// If this is not a protobuf generated class, |val| will be set to null.
-void Descriptor_FromClassEntry(zval *val, zend_class_entry *ce);
-
 // Gets or creates a Descriptor* for the given class entry, upb_msgdef, or
 // upb_fielddef. The returned Descriptor* will live for the entire request,
-// so no ref is necessary to keep it alive.
+// so no ref is necessary to keep it alive. The caller does *not* own a ref
+// on the returned object.
 Descriptor* Descriptor_GetFromClassEntry(zend_class_entry *ce);
 Descriptor* Descriptor_GetFromMessageDef(const upb_msgdef *m);
 Descriptor* Descriptor_GetFromFieldDef(const upb_fielddef *f);
+
+// Packages up a upb_fieldtype_t with a Descriptor, since many functions need
+// both.
+typedef struct {
+  upb_fieldtype_t type;
+  const Descriptor *desc;  // When type == UPB_TYPE_MESSAGE.
+} TypeInfo;
+
+static inline TypeInfo TypeInfo_Get(const upb_fielddef *f) {
+  TypeInfo ret = {upb_fielddef_type(f), Descriptor_GetFromFieldDef(f)};
+  return ret;
+}
+
+static inline TypeInfo TypeInfo_FromType(upb_fieldtype_t type) {
+  TypeInfo ret = {type};
+  return ret;
+}
+
+static inline bool TypeInfo_Eq(TypeInfo a, TypeInfo b) {
+  if (a.type != b.type) return false;
+  if (a.type == UPB_TYPE_MESSAGE && a.desc != b.desc) return false;
+  return true;
+}
 
 #endif  // PHP_PROTOBUF_DEF_H_

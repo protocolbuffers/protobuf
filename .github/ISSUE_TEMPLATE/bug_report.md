@@ -9,8 +9,10 @@ assignees: ''
 
 <!--
 
-NOTE: this form is for bug reports only. For questions or troubleshooting, please see the protobuf mailing list: https://groups.google.com/forum/#!forum/protobuf
-
+NOTE: this form is for bug reports only.
+For questions or troubleshooting, please post on the protobuf mailing list:
+https://groups.google.com/forum/#!forum/protobuf 
+Stack Overflow is also a useful if unofficial resource https://stackoverflow.com/questions/tagged/protocol-buffers
 -->
 
 **What version of protobuf and what language are you using?**

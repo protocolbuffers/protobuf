@@ -168,7 +168,7 @@ class GPBUtil
     public static function checkFloat(&$var)
     {
         if (is_float($var) || is_numeric($var)) {
-            $var = floatval($var);
+            $var = unpack("f", pack("f", $var))[1];
         } else {
             throw new \Exception("Expect float.");
         }
@@ -279,15 +279,16 @@ class GPBUtil
             "do"=>0, "echo"=>0, "else"=>0, "elseif"=>0, "empty"=>0,
             "enddeclare"=>0, "endfor"=>0, "endforeach"=>0, "endif"=>0,
             "endswitch"=>0, "endwhile"=>0, "eval"=>0, "exit"=>0, "extends"=>0,
-            "final"=>0, "for"=>0, "foreach"=>0, "function"=>0, "global"=>0,
-            "goto"=>0, "if"=>0, "implements"=>0, "include"=>0,
-            "include_once"=>0, "instanceof"=>0, "insteadof"=>0, "interface"=>0,
-            "isset"=>0, "list"=>0, "namespace"=>0, "new"=>0, "or"=>0,
-            "print"=>0, "private"=>0, "protected"=>0, "public"=>0, "require"=>0,
-            "require_once"=>0, "return"=>0, "static"=>0, "switch"=>0,
-            "throw"=>0, "trait"=>0, "try"=>0, "unset"=>0, "use"=>0, "var"=>0,
-            "while"=>0, "xor"=>0, "int"=>0, "float"=>0, "bool"=>0, "string"=>0,
-            "true"=>0, "false"=>0, "null"=>0, "void"=>0, "iterable"=>0
+            "final"=>0, "finally"=>0, "fn"=>0, "for"=>0, "foreach"=>0,
+            "function"=>0, "global"=>0, "goto"=>0, "if"=>0, "implements"=>0,
+            "include"=>0, "include_once"=>0, "instanceof"=>0, "insteadof"=>0,
+            "interface"=>0, "isset"=>0, "list"=>0, "match"=>0, "namespace"=>0,
+            "new"=>0, "or"=>0, "print"=>0, "private"=>0, "protected"=>0,
+            "public"=>0, "require"=>0, "require_once"=>0, "return"=>0,
+            "static"=>0, "switch"=>0, "throw"=>0, "trait"=>0, "try"=>0,
+            "unset"=>0, "use"=>0, "var"=>0, "while"=>0, "xor"=>0, "yield"=>0,
+            "int"=>0, "float"=>0, "bool"=>0, "string"=>0, "true"=>0, "false"=>0,
+            "null"=>0, "void"=>0, "iterable"=>0
         );
 
         if (array_key_exists(strtolower($classname), $reserved_words)) {

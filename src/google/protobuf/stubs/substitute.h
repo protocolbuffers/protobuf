@@ -31,9 +31,11 @@
 // Author: kenton@google.com (Kenton Varda)
 // from google3/strings/substitute.h
 
-#include <string>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/stringpiece.h>
 #include <google/protobuf/stubs/strutil.h>
+
+#include <string>
 
 #ifndef GOOGLE_PROTOBUF_STUBS_SUBSTITUTE_H_
 #define GOOGLE_PROTOBUF_STUBS_SUBSTITUTE_H_
@@ -92,6 +94,8 @@ class SubstituteArg {
     : text_(value), size_(strlen(text_)) {}
   inline SubstituteArg(const std::string& value)
       : text_(value.data()), size_(value.size()) {}
+  inline SubstituteArg(const StringPiece value)
+      : text_(value.data()), size_(value.size()) {}
 
   // Indicates that no argument was given.
   inline explicit SubstituteArg()
@@ -140,7 +144,7 @@ class SubstituteArg {
 }  // namespace internal
 
 PROTOBUF_EXPORT std::string Substitute(
-    const char* format,
+    const std::string& format,
     const internal::SubstituteArg& arg0 = internal::SubstituteArg(),
     const internal::SubstituteArg& arg1 = internal::SubstituteArg(),
     const internal::SubstituteArg& arg2 = internal::SubstituteArg(),

@@ -1,5 +1,10 @@
 // This file is generated from the .proto files for the well-known
 // types. Do not edit!
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_lookup, 0, 0, 1)
+  ZEND_ARG_INFO(0, key)
+ZEND_END_ARG_INFO()
+
 static void google_protobuf_any_proto_AddDescriptor();
 static void google_protobuf_api_proto_AddDescriptor();
 static void google_protobuf_duration_proto_AddDescriptor();
@@ -37,7 +42,7 @@ static PHP_METHOD(GPBMetadata_Google_Protobuf_Any, initOnce) {
 }
 
 static zend_function_entry GPBMetadata_Google_Protobuf_Any_methods[] = {
-  PHP_ME(GPBMetadata_Google_Protobuf_Any, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(GPBMetadata_Google_Protobuf_Any, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -65,7 +70,7 @@ static PHP_METHOD(google_protobuf_Any, getTypeUrl) {
                                            "type_url");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Any, setTypeUrl) {
@@ -78,7 +83,7 @@ static PHP_METHOD(google_protobuf_Any, setTypeUrl) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Any, getValue) {
@@ -87,7 +92,7 @@ static PHP_METHOD(google_protobuf_Any, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Any, setValue) {
@@ -100,18 +105,22 @@ static PHP_METHOD(google_protobuf_Any, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_is, 0, 0, 1)
+  ZEND_ARG_INFO(0, proto)
+ZEND_END_ARG_INFO()
+
 static zend_function_entry google_protobuf_Any_phpmethods[] = {
-  PHP_ME(google_protobuf_Any, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Any, getTypeUrl, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Any, setTypeUrl, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Any, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Any, setValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Any, is, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Any, pack, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Any, unpack, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Any, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Any, getTypeUrl, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Any, setTypeUrl, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Any, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Any, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Any, is, arginfo_is, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Any, pack, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Any, unpack, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -178,7 +187,7 @@ static PHP_METHOD(GPBMetadata_Google_Protobuf_Api, initOnce) {
 }
 
 static zend_function_entry GPBMetadata_Google_Protobuf_Api_methods[] = {
-  PHP_ME(GPBMetadata_Google_Protobuf_Api, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(GPBMetadata_Google_Protobuf_Api, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -206,7 +215,7 @@ static PHP_METHOD(google_protobuf_Api, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setName) {
@@ -219,7 +228,7 @@ static PHP_METHOD(google_protobuf_Api, setName) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Api, getMethods) {
@@ -228,7 +237,7 @@ static PHP_METHOD(google_protobuf_Api, getMethods) {
                                            "methods");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setMethods) {
@@ -241,7 +250,7 @@ static PHP_METHOD(google_protobuf_Api, setMethods) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Api, getOptions) {
@@ -250,7 +259,7 @@ static PHP_METHOD(google_protobuf_Api, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setOptions) {
@@ -263,7 +272,7 @@ static PHP_METHOD(google_protobuf_Api, setOptions) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Api, getVersion) {
@@ -272,7 +281,7 @@ static PHP_METHOD(google_protobuf_Api, getVersion) {
                                            "version");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setVersion) {
@@ -285,7 +294,7 @@ static PHP_METHOD(google_protobuf_Api, setVersion) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Api, getSourceContext) {
@@ -294,7 +303,7 @@ static PHP_METHOD(google_protobuf_Api, getSourceContext) {
                                            "source_context");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setSourceContext) {
@@ -307,7 +316,7 @@ static PHP_METHOD(google_protobuf_Api, setSourceContext) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Api, getMixins) {
@@ -316,7 +325,7 @@ static PHP_METHOD(google_protobuf_Api, getMixins) {
                                            "mixins");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setMixins) {
@@ -329,7 +338,7 @@ static PHP_METHOD(google_protobuf_Api, setMixins) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Api, getSyntax) {
@@ -338,7 +347,7 @@ static PHP_METHOD(google_protobuf_Api, getSyntax) {
                                            "syntax");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setSyntax) {
@@ -351,25 +360,25 @@ static PHP_METHOD(google_protobuf_Api, setSyntax) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Api_phpmethods[] = {
-  PHP_ME(google_protobuf_Api, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, getName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, setName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, getMethods, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, setMethods, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, getOptions, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, setOptions, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, getVersion, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, setVersion, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, getSourceContext, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, setSourceContext, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, getMixins, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, setMixins, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, getSyntax, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Api, setSyntax, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, getName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, setName, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, getMethods, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, setMethods, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, getOptions, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, setOptions, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, getVersion, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, setVersion, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, getSourceContext, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, setSourceContext, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, getMixins, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, setMixins, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, getSyntax, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Api, setSyntax, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -400,7 +409,7 @@ static PHP_METHOD(google_protobuf_Method, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setName) {
@@ -413,7 +422,7 @@ static PHP_METHOD(google_protobuf_Method, setName) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Method, getRequestTypeUrl) {
@@ -422,7 +431,7 @@ static PHP_METHOD(google_protobuf_Method, getRequestTypeUrl) {
                                            "request_type_url");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setRequestTypeUrl) {
@@ -435,7 +444,7 @@ static PHP_METHOD(google_protobuf_Method, setRequestTypeUrl) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Method, getRequestStreaming) {
@@ -444,7 +453,7 @@ static PHP_METHOD(google_protobuf_Method, getRequestStreaming) {
                                            "request_streaming");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setRequestStreaming) {
@@ -457,7 +466,7 @@ static PHP_METHOD(google_protobuf_Method, setRequestStreaming) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Method, getResponseTypeUrl) {
@@ -466,7 +475,7 @@ static PHP_METHOD(google_protobuf_Method, getResponseTypeUrl) {
                                            "response_type_url");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setResponseTypeUrl) {
@@ -479,7 +488,7 @@ static PHP_METHOD(google_protobuf_Method, setResponseTypeUrl) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Method, getResponseStreaming) {
@@ -488,7 +497,7 @@ static PHP_METHOD(google_protobuf_Method, getResponseStreaming) {
                                            "response_streaming");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setResponseStreaming) {
@@ -501,7 +510,7 @@ static PHP_METHOD(google_protobuf_Method, setResponseStreaming) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Method, getOptions) {
@@ -510,7 +519,7 @@ static PHP_METHOD(google_protobuf_Method, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setOptions) {
@@ -523,7 +532,7 @@ static PHP_METHOD(google_protobuf_Method, setOptions) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Method, getSyntax) {
@@ -532,7 +541,7 @@ static PHP_METHOD(google_protobuf_Method, getSyntax) {
                                            "syntax");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setSyntax) {
@@ -545,25 +554,25 @@ static PHP_METHOD(google_protobuf_Method, setSyntax) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Method_phpmethods[] = {
-  PHP_ME(google_protobuf_Method, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, getName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, setName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, getRequestTypeUrl, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, setRequestTypeUrl, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, getRequestStreaming, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, setRequestStreaming, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, getResponseTypeUrl, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, setResponseTypeUrl, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, getResponseStreaming, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, setResponseStreaming, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, getOptions, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, setOptions, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, getSyntax, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Method, setSyntax, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, getName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, setName, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, getRequestTypeUrl, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, setRequestTypeUrl, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, getRequestStreaming, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, setRequestStreaming, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, getResponseTypeUrl, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, setResponseTypeUrl, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, getResponseStreaming, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, setResponseStreaming, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, getOptions, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, setOptions, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, getSyntax, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Method, setSyntax, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -594,7 +603,7 @@ static PHP_METHOD(google_protobuf_Mixin, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Mixin, setName) {
@@ -607,7 +616,7 @@ static PHP_METHOD(google_protobuf_Mixin, setName) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Mixin, getRoot) {
@@ -616,7 +625,7 @@ static PHP_METHOD(google_protobuf_Mixin, getRoot) {
                                            "root");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Mixin, setRoot) {
@@ -629,15 +638,15 @@ static PHP_METHOD(google_protobuf_Mixin, setRoot) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Mixin_phpmethods[] = {
-  PHP_ME(google_protobuf_Mixin, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Mixin, getName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Mixin, setName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Mixin, getRoot, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Mixin, setRoot, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Mixin, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Mixin, getName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Mixin, setName, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Mixin, getRoot, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Mixin, setRoot, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -681,7 +690,7 @@ static PHP_METHOD(GPBMetadata_Google_Protobuf_Duration, initOnce) {
 }
 
 static zend_function_entry GPBMetadata_Google_Protobuf_Duration_methods[] = {
-  PHP_ME(GPBMetadata_Google_Protobuf_Duration, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(GPBMetadata_Google_Protobuf_Duration, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -709,7 +718,7 @@ static PHP_METHOD(google_protobuf_Duration, getSeconds) {
                                            "seconds");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Duration, setSeconds) {
@@ -722,7 +731,7 @@ static PHP_METHOD(google_protobuf_Duration, setSeconds) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Duration, getNanos) {
@@ -731,7 +740,7 @@ static PHP_METHOD(google_protobuf_Duration, getNanos) {
                                            "nanos");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Duration, setNanos) {
@@ -744,15 +753,15 @@ static PHP_METHOD(google_protobuf_Duration, setNanos) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Duration_phpmethods[] = {
-  PHP_ME(google_protobuf_Duration, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Duration, getSeconds, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Duration, setSeconds, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Duration, getNanos, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Duration, setNanos, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Duration, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Duration, getSeconds, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Duration, setSeconds, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Duration, getNanos, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Duration, setNanos, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -794,7 +803,7 @@ static PHP_METHOD(GPBMetadata_Google_Protobuf_GPBEmpty, initOnce) {
 }
 
 static zend_function_entry GPBMetadata_Google_Protobuf_GPBEmpty_methods[] = {
-  PHP_ME(GPBMetadata_Google_Protobuf_GPBEmpty, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(GPBMetadata_Google_Protobuf_GPBEmpty, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -817,7 +826,7 @@ static PHP_METHOD(google_protobuf_Empty, __construct) {
 }
 
 static zend_function_entry google_protobuf_Empty_phpmethods[] = {
-  PHP_ME(google_protobuf_Empty, __construct, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Empty, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -860,7 +869,7 @@ static PHP_METHOD(GPBMetadata_Google_Protobuf_FieldMask, initOnce) {
 }
 
 static zend_function_entry GPBMetadata_Google_Protobuf_FieldMask_methods[] = {
-  PHP_ME(GPBMetadata_Google_Protobuf_FieldMask, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(GPBMetadata_Google_Protobuf_FieldMask, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -888,7 +897,7 @@ static PHP_METHOD(google_protobuf_FieldMask, getPaths) {
                                            "paths");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_FieldMask, setPaths) {
@@ -901,13 +910,13 @@ static PHP_METHOD(google_protobuf_FieldMask, setPaths) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_FieldMask_phpmethods[] = {
-  PHP_ME(google_protobuf_FieldMask, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_FieldMask, getPaths, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_FieldMask, setPaths, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_FieldMask, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_FieldMask, getPaths, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_FieldMask, setPaths, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -951,7 +960,7 @@ static PHP_METHOD(GPBMetadata_Google_Protobuf_SourceContext, initOnce) {
 }
 
 static zend_function_entry GPBMetadata_Google_Protobuf_SourceContext_methods[] = {
-  PHP_ME(GPBMetadata_Google_Protobuf_SourceContext, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(GPBMetadata_Google_Protobuf_SourceContext, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -979,7 +988,7 @@ static PHP_METHOD(google_protobuf_SourceContext, getFileName) {
                                            "file_name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_SourceContext, setFileName) {
@@ -992,13 +1001,13 @@ static PHP_METHOD(google_protobuf_SourceContext, setFileName) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_SourceContext_phpmethods[] = {
-  PHP_ME(google_protobuf_SourceContext, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_SourceContext, getFileName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_SourceContext, setFileName, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_SourceContext, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_SourceContext, getFileName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_SourceContext, setFileName, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -1058,7 +1067,7 @@ static PHP_METHOD(GPBMetadata_Google_Protobuf_Struct, initOnce) {
 }
 
 static zend_function_entry GPBMetadata_Google_Protobuf_Struct_methods[] = {
-  PHP_ME(GPBMetadata_Google_Protobuf_Struct, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(GPBMetadata_Google_Protobuf_Struct, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -1086,7 +1095,7 @@ static PHP_METHOD(google_protobuf_Struct, getFields) {
                                            "fields");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Struct, setFields) {
@@ -1099,13 +1108,13 @@ static PHP_METHOD(google_protobuf_Struct, setFields) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Struct_phpmethods[] = {
-  PHP_ME(google_protobuf_Struct, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Struct, getFields, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Struct, setFields, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Struct, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Struct, getFields, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Struct, setFields, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -1136,7 +1145,7 @@ static PHP_METHOD(google_protobuf_Struct_FieldsEntry, getKey) {
                                            "key");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Struct_FieldsEntry, setKey) {
@@ -1149,7 +1158,7 @@ static PHP_METHOD(google_protobuf_Struct_FieldsEntry, setKey) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Struct_FieldsEntry, getValue) {
@@ -1158,7 +1167,7 @@ static PHP_METHOD(google_protobuf_Struct_FieldsEntry, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Struct_FieldsEntry, setValue) {
@@ -1171,15 +1180,15 @@ static PHP_METHOD(google_protobuf_Struct_FieldsEntry, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Struct_FieldsEntry_phpmethods[] = {
-  PHP_ME(google_protobuf_Struct_FieldsEntry, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Struct_FieldsEntry, getKey, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Struct_FieldsEntry, setKey, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Struct_FieldsEntry, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Struct_FieldsEntry, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Struct_FieldsEntry, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Struct_FieldsEntry, getKey, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Struct_FieldsEntry, setKey, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Struct_FieldsEntry, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Struct_FieldsEntry, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -1210,7 +1219,7 @@ static PHP_METHOD(google_protobuf_Value, getNullValue) {
                                            "null_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setNullValue) {
@@ -1223,7 +1232,7 @@ static PHP_METHOD(google_protobuf_Value, setNullValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Value, getNumberValue) {
@@ -1232,7 +1241,7 @@ static PHP_METHOD(google_protobuf_Value, getNumberValue) {
                                            "number_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setNumberValue) {
@@ -1245,7 +1254,7 @@ static PHP_METHOD(google_protobuf_Value, setNumberValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Value, getStringValue) {
@@ -1254,7 +1263,7 @@ static PHP_METHOD(google_protobuf_Value, getStringValue) {
                                            "string_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setStringValue) {
@@ -1267,7 +1276,7 @@ static PHP_METHOD(google_protobuf_Value, setStringValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Value, getBoolValue) {
@@ -1276,7 +1285,7 @@ static PHP_METHOD(google_protobuf_Value, getBoolValue) {
                                            "bool_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setBoolValue) {
@@ -1289,7 +1298,7 @@ static PHP_METHOD(google_protobuf_Value, setBoolValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Value, getStructValue) {
@@ -1298,7 +1307,7 @@ static PHP_METHOD(google_protobuf_Value, getStructValue) {
                                            "struct_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setStructValue) {
@@ -1311,7 +1320,7 @@ static PHP_METHOD(google_protobuf_Value, setStructValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Value, getListValue) {
@@ -1320,7 +1329,7 @@ static PHP_METHOD(google_protobuf_Value, getListValue) {
                                            "list_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setListValue) {
@@ -1333,7 +1342,7 @@ static PHP_METHOD(google_protobuf_Value, setListValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Value, getKind) {
@@ -1344,20 +1353,20 @@ static PHP_METHOD(google_protobuf_Value, getKind) {
   RETURN_STRING(field ? upb_fielddef_name(field) : "");
 }
 static zend_function_entry google_protobuf_Value_phpmethods[] = {
-  PHP_ME(google_protobuf_Value, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, getNullValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, setNullValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, getNumberValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, setNumberValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, getStringValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, setStringValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, getBoolValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, setBoolValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, getStructValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, setStructValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, getListValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, setListValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Value, getKind, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, getNullValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, setNullValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, getNumberValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, setNumberValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, getStringValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, setStringValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, getBoolValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, setBoolValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, getStructValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, setStructValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, getListValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, setListValue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, getKind, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -1388,7 +1397,7 @@ static PHP_METHOD(google_protobuf_ListValue, getValues) {
                                            "values");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_ListValue, setValues) {
@@ -1401,13 +1410,13 @@ static PHP_METHOD(google_protobuf_ListValue, setValues) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_ListValue_phpmethods[] = {
-  PHP_ME(google_protobuf_ListValue, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_ListValue, getValues, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_ListValue, setValues, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_ListValue, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_ListValue, getValues, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_ListValue, setValues, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -1433,7 +1442,7 @@ PHP_METHOD(google_protobuf_NullValue, name) {
   const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.NullValue");
   const char *name;
   zend_long value;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &value) ==
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &value) ==
       FAILURE) {
     return;
   }
@@ -1455,7 +1464,7 @@ PHP_METHOD(google_protobuf_NullValue, value) {
   char *name = NULL;
   size_t name_len;
   int32_t num;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name,
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &name,
                             &name_len) == FAILURE) {
     return;
   }
@@ -1470,8 +1479,8 @@ PHP_METHOD(google_protobuf_NullValue, value) {
 }
 
 static zend_function_entry google_protobuf_NullValue_phpmethods[] = {
-  PHP_ME(google_protobuf_NullValue, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-  PHP_ME(google_protobuf_NullValue, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_NullValue, name, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_NullValue, value, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -1570,7 +1579,7 @@ static PHP_METHOD(GPBMetadata_Google_Protobuf_Type, initOnce) {
 }
 
 static zend_function_entry GPBMetadata_Google_Protobuf_Type_methods[] = {
-  PHP_ME(GPBMetadata_Google_Protobuf_Type, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(GPBMetadata_Google_Protobuf_Type, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -1598,7 +1607,7 @@ static PHP_METHOD(google_protobuf_Type, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setName) {
@@ -1611,7 +1620,7 @@ static PHP_METHOD(google_protobuf_Type, setName) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Type, getFields) {
@@ -1620,7 +1629,7 @@ static PHP_METHOD(google_protobuf_Type, getFields) {
                                            "fields");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setFields) {
@@ -1633,7 +1642,7 @@ static PHP_METHOD(google_protobuf_Type, setFields) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Type, getOneofs) {
@@ -1642,7 +1651,7 @@ static PHP_METHOD(google_protobuf_Type, getOneofs) {
                                            "oneofs");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setOneofs) {
@@ -1655,7 +1664,7 @@ static PHP_METHOD(google_protobuf_Type, setOneofs) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Type, getOptions) {
@@ -1664,7 +1673,7 @@ static PHP_METHOD(google_protobuf_Type, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setOptions) {
@@ -1677,7 +1686,7 @@ static PHP_METHOD(google_protobuf_Type, setOptions) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Type, getSourceContext) {
@@ -1686,7 +1695,7 @@ static PHP_METHOD(google_protobuf_Type, getSourceContext) {
                                            "source_context");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setSourceContext) {
@@ -1699,7 +1708,7 @@ static PHP_METHOD(google_protobuf_Type, setSourceContext) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Type, getSyntax) {
@@ -1708,7 +1717,7 @@ static PHP_METHOD(google_protobuf_Type, getSyntax) {
                                            "syntax");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setSyntax) {
@@ -1721,23 +1730,23 @@ static PHP_METHOD(google_protobuf_Type, setSyntax) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Type_phpmethods[] = {
-  PHP_ME(google_protobuf_Type, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, getName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, setName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, getFields, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, setFields, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, getOneofs, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, setOneofs, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, getOptions, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, setOptions, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, getSourceContext, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, setSourceContext, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, getSyntax, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Type, setSyntax, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, getName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, setName, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, getFields, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, setFields, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, getOneofs, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, setOneofs, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, getOptions, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, setOptions, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, getSourceContext, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, setSourceContext, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, getSyntax, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Type, setSyntax, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -1768,7 +1777,7 @@ static PHP_METHOD(google_protobuf_Field, getKind) {
                                            "kind");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setKind) {
@@ -1781,7 +1790,7 @@ static PHP_METHOD(google_protobuf_Field, setKind) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Field, getCardinality) {
@@ -1790,7 +1799,7 @@ static PHP_METHOD(google_protobuf_Field, getCardinality) {
                                            "cardinality");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setCardinality) {
@@ -1803,7 +1812,7 @@ static PHP_METHOD(google_protobuf_Field, setCardinality) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Field, getNumber) {
@@ -1812,7 +1821,7 @@ static PHP_METHOD(google_protobuf_Field, getNumber) {
                                            "number");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setNumber) {
@@ -1825,7 +1834,7 @@ static PHP_METHOD(google_protobuf_Field, setNumber) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Field, getName) {
@@ -1834,7 +1843,7 @@ static PHP_METHOD(google_protobuf_Field, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setName) {
@@ -1847,7 +1856,7 @@ static PHP_METHOD(google_protobuf_Field, setName) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Field, getTypeUrl) {
@@ -1856,7 +1865,7 @@ static PHP_METHOD(google_protobuf_Field, getTypeUrl) {
                                            "type_url");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setTypeUrl) {
@@ -1869,7 +1878,7 @@ static PHP_METHOD(google_protobuf_Field, setTypeUrl) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Field, getOneofIndex) {
@@ -1878,7 +1887,7 @@ static PHP_METHOD(google_protobuf_Field, getOneofIndex) {
                                            "oneof_index");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setOneofIndex) {
@@ -1891,7 +1900,7 @@ static PHP_METHOD(google_protobuf_Field, setOneofIndex) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Field, getPacked) {
@@ -1900,7 +1909,7 @@ static PHP_METHOD(google_protobuf_Field, getPacked) {
                                            "packed");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setPacked) {
@@ -1913,7 +1922,7 @@ static PHP_METHOD(google_protobuf_Field, setPacked) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Field, getOptions) {
@@ -1922,7 +1931,7 @@ static PHP_METHOD(google_protobuf_Field, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setOptions) {
@@ -1935,7 +1944,7 @@ static PHP_METHOD(google_protobuf_Field, setOptions) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Field, getJsonName) {
@@ -1944,7 +1953,7 @@ static PHP_METHOD(google_protobuf_Field, getJsonName) {
                                            "json_name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setJsonName) {
@@ -1957,7 +1966,7 @@ static PHP_METHOD(google_protobuf_Field, setJsonName) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Field, getDefaultValue) {
@@ -1966,7 +1975,7 @@ static PHP_METHOD(google_protobuf_Field, getDefaultValue) {
                                            "default_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setDefaultValue) {
@@ -1979,31 +1988,31 @@ static PHP_METHOD(google_protobuf_Field, setDefaultValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Field_phpmethods[] = {
-  PHP_ME(google_protobuf_Field, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, getKind, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, setKind, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, getCardinality, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, setCardinality, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, getNumber, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, setNumber, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, getName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, setName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, getTypeUrl, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, setTypeUrl, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, getOneofIndex, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, setOneofIndex, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, getPacked, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, setPacked, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, getOptions, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, setOptions, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, getJsonName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, setJsonName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, getDefaultValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Field, setDefaultValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, getKind, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, setKind, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, getCardinality, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, setCardinality, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, getNumber, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, setNumber, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, getName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, setName, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, getTypeUrl, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, setTypeUrl, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, getOneofIndex, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, setOneofIndex, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, getPacked, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, setPacked, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, getOptions, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, setOptions, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, getJsonName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, setJsonName, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, getDefaultValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Field, setDefaultValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2029,7 +2038,7 @@ PHP_METHOD(google_protobuf_Field_Kind, name) {
   const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.Field.Kind");
   const char *name;
   zend_long value;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &value) ==
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &value) ==
       FAILURE) {
     return;
   }
@@ -2051,7 +2060,7 @@ PHP_METHOD(google_protobuf_Field_Kind, value) {
   char *name = NULL;
   size_t name_len;
   int32_t num;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name,
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &name,
                             &name_len) == FAILURE) {
     return;
   }
@@ -2066,8 +2075,8 @@ PHP_METHOD(google_protobuf_Field_Kind, value) {
 }
 
 static zend_function_entry google_protobuf_Field_Kind_phpmethods[] = {
-  PHP_ME(google_protobuf_Field_Kind, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-  PHP_ME(google_protobuf_Field_Kind, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_Field_Kind, name, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_Field_Kind, value, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -2128,7 +2137,7 @@ PHP_METHOD(google_protobuf_Field_Cardinality, name) {
   const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.Field.Cardinality");
   const char *name;
   zend_long value;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &value) ==
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &value) ==
       FAILURE) {
     return;
   }
@@ -2150,7 +2159,7 @@ PHP_METHOD(google_protobuf_Field_Cardinality, value) {
   char *name = NULL;
   size_t name_len;
   int32_t num;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name,
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &name,
                             &name_len) == FAILURE) {
     return;
   }
@@ -2165,8 +2174,8 @@ PHP_METHOD(google_protobuf_Field_Cardinality, value) {
 }
 
 static zend_function_entry google_protobuf_Field_Cardinality_phpmethods[] = {
-  PHP_ME(google_protobuf_Field_Cardinality, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-  PHP_ME(google_protobuf_Field_Cardinality, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_Field_Cardinality, name, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_Field_Cardinality, value, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -2202,7 +2211,7 @@ static PHP_METHOD(google_protobuf_Enum, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Enum, setName) {
@@ -2215,7 +2224,7 @@ static PHP_METHOD(google_protobuf_Enum, setName) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Enum, getEnumvalue) {
@@ -2224,7 +2233,7 @@ static PHP_METHOD(google_protobuf_Enum, getEnumvalue) {
                                            "enumvalue");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Enum, setEnumvalue) {
@@ -2237,7 +2246,7 @@ static PHP_METHOD(google_protobuf_Enum, setEnumvalue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Enum, getOptions) {
@@ -2246,7 +2255,7 @@ static PHP_METHOD(google_protobuf_Enum, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Enum, setOptions) {
@@ -2259,7 +2268,7 @@ static PHP_METHOD(google_protobuf_Enum, setOptions) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Enum, getSourceContext) {
@@ -2268,7 +2277,7 @@ static PHP_METHOD(google_protobuf_Enum, getSourceContext) {
                                            "source_context");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Enum, setSourceContext) {
@@ -2281,7 +2290,7 @@ static PHP_METHOD(google_protobuf_Enum, setSourceContext) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Enum, getSyntax) {
@@ -2290,7 +2299,7 @@ static PHP_METHOD(google_protobuf_Enum, getSyntax) {
                                            "syntax");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Enum, setSyntax) {
@@ -2303,21 +2312,21 @@ static PHP_METHOD(google_protobuf_Enum, setSyntax) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Enum_phpmethods[] = {
-  PHP_ME(google_protobuf_Enum, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Enum, getName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Enum, setName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Enum, getEnumvalue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Enum, setEnumvalue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Enum, getOptions, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Enum, setOptions, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Enum, getSourceContext, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Enum, setSourceContext, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Enum, getSyntax, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Enum, setSyntax, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, getName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, setName, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, getEnumvalue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, setEnumvalue, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, getOptions, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, setOptions, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, getSourceContext, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, setSourceContext, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, getSyntax, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Enum, setSyntax, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2348,7 +2357,7 @@ static PHP_METHOD(google_protobuf_EnumValue, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_EnumValue, setName) {
@@ -2361,7 +2370,7 @@ static PHP_METHOD(google_protobuf_EnumValue, setName) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_EnumValue, getNumber) {
@@ -2370,7 +2379,7 @@ static PHP_METHOD(google_protobuf_EnumValue, getNumber) {
                                            "number");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_EnumValue, setNumber) {
@@ -2383,7 +2392,7 @@ static PHP_METHOD(google_protobuf_EnumValue, setNumber) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_EnumValue, getOptions) {
@@ -2392,7 +2401,7 @@ static PHP_METHOD(google_protobuf_EnumValue, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_EnumValue, setOptions) {
@@ -2405,17 +2414,17 @@ static PHP_METHOD(google_protobuf_EnumValue, setOptions) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_EnumValue_phpmethods[] = {
-  PHP_ME(google_protobuf_EnumValue, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_EnumValue, getName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_EnumValue, setName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_EnumValue, getNumber, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_EnumValue, setNumber, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_EnumValue, getOptions, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_EnumValue, setOptions, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_EnumValue, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_EnumValue, getName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_EnumValue, setName, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_EnumValue, getNumber, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_EnumValue, setNumber, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_EnumValue, getOptions, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_EnumValue, setOptions, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2446,7 +2455,7 @@ static PHP_METHOD(google_protobuf_Option, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Option, setName) {
@@ -2459,7 +2468,7 @@ static PHP_METHOD(google_protobuf_Option, setName) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Option, getValue) {
@@ -2468,7 +2477,7 @@ static PHP_METHOD(google_protobuf_Option, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Option, setValue) {
@@ -2481,15 +2490,15 @@ static PHP_METHOD(google_protobuf_Option, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Option_phpmethods[] = {
-  PHP_ME(google_protobuf_Option, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Option, getName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Option, setName, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Option, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Option, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Option, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Option, getName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Option, setName, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Option, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Option, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2515,7 +2524,7 @@ PHP_METHOD(google_protobuf_Syntax, name) {
   const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.Syntax");
   const char *name;
   zend_long value;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &value) ==
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &value) ==
       FAILURE) {
     return;
   }
@@ -2537,7 +2546,7 @@ PHP_METHOD(google_protobuf_Syntax, value) {
   char *name = NULL;
   size_t name_len;
   int32_t num;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name,
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &name,
                             &name_len) == FAILURE) {
     return;
   }
@@ -2552,8 +2561,8 @@ PHP_METHOD(google_protobuf_Syntax, value) {
 }
 
 static zend_function_entry google_protobuf_Syntax_phpmethods[] = {
-  PHP_ME(google_protobuf_Syntax, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-  PHP_ME(google_protobuf_Syntax, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_Syntax, name, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_Syntax, value, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -2598,7 +2607,7 @@ static PHP_METHOD(GPBMetadata_Google_Protobuf_Timestamp, initOnce) {
 }
 
 static zend_function_entry GPBMetadata_Google_Protobuf_Timestamp_methods[] = {
-  PHP_ME(GPBMetadata_Google_Protobuf_Timestamp, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(GPBMetadata_Google_Protobuf_Timestamp, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -2626,7 +2635,7 @@ static PHP_METHOD(google_protobuf_Timestamp, getSeconds) {
                                            "seconds");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Timestamp, setSeconds) {
@@ -2639,7 +2648,7 @@ static PHP_METHOD(google_protobuf_Timestamp, setSeconds) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static PHP_METHOD(google_protobuf_Timestamp, getNanos) {
@@ -2648,7 +2657,7 @@ static PHP_METHOD(google_protobuf_Timestamp, getNanos) {
                                            "nanos");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Timestamp, setNanos) {
@@ -2661,17 +2670,21 @@ static PHP_METHOD(google_protobuf_Timestamp, setNanos) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_timestamp_fromdatetime, 0, 0, 1)
+  ZEND_ARG_INFO(0, datetime)
+ZEND_END_ARG_INFO()
+
 static zend_function_entry google_protobuf_Timestamp_phpmethods[] = {
-  PHP_ME(google_protobuf_Timestamp, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, getSeconds, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, setSeconds, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, getNanos, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, setNanos, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, fromDateTime, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Timestamp, toDateTime, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, getSeconds, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, setSeconds, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, getNanos, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, setNanos, arginfo_setter, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, fromDateTime, arginfo_timestamp_fromdatetime, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, toDateTime, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2724,7 +2737,7 @@ static PHP_METHOD(GPBMetadata_Google_Protobuf_Wrappers, initOnce) {
 }
 
 static zend_function_entry GPBMetadata_Google_Protobuf_Wrappers_methods[] = {
-  PHP_ME(GPBMetadata_Google_Protobuf_Wrappers, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(GPBMetadata_Google_Protobuf_Wrappers, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -2752,7 +2765,7 @@ static PHP_METHOD(google_protobuf_DoubleValue, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_DoubleValue, setValue) {
@@ -2765,13 +2778,13 @@ static PHP_METHOD(google_protobuf_DoubleValue, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_DoubleValue_phpmethods[] = {
-  PHP_ME(google_protobuf_DoubleValue, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_DoubleValue, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_DoubleValue, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_DoubleValue, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_DoubleValue, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_DoubleValue, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2802,7 +2815,7 @@ static PHP_METHOD(google_protobuf_FloatValue, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_FloatValue, setValue) {
@@ -2815,13 +2828,13 @@ static PHP_METHOD(google_protobuf_FloatValue, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_FloatValue_phpmethods[] = {
-  PHP_ME(google_protobuf_FloatValue, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_FloatValue, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_FloatValue, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_FloatValue, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_FloatValue, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_FloatValue, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2852,7 +2865,7 @@ static PHP_METHOD(google_protobuf_Int64Value, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Int64Value, setValue) {
@@ -2865,13 +2878,13 @@ static PHP_METHOD(google_protobuf_Int64Value, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Int64Value_phpmethods[] = {
-  PHP_ME(google_protobuf_Int64Value, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Int64Value, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Int64Value, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Int64Value, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Int64Value, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Int64Value, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2902,7 +2915,7 @@ static PHP_METHOD(google_protobuf_UInt64Value, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_UInt64Value, setValue) {
@@ -2915,13 +2928,13 @@ static PHP_METHOD(google_protobuf_UInt64Value, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_UInt64Value_phpmethods[] = {
-  PHP_ME(google_protobuf_UInt64Value, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_UInt64Value, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_UInt64Value, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_UInt64Value, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_UInt64Value, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_UInt64Value, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2952,7 +2965,7 @@ static PHP_METHOD(google_protobuf_Int32Value, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Int32Value, setValue) {
@@ -2965,13 +2978,13 @@ static PHP_METHOD(google_protobuf_Int32Value, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_Int32Value_phpmethods[] = {
-  PHP_ME(google_protobuf_Int32Value, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Int32Value, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_Int32Value, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Int32Value, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Int32Value, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Int32Value, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -3002,7 +3015,7 @@ static PHP_METHOD(google_protobuf_UInt32Value, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_UInt32Value, setValue) {
@@ -3015,13 +3028,13 @@ static PHP_METHOD(google_protobuf_UInt32Value, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_UInt32Value_phpmethods[] = {
-  PHP_ME(google_protobuf_UInt32Value, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_UInt32Value, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_UInt32Value, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_UInt32Value, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_UInt32Value, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_UInt32Value, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -3052,7 +3065,7 @@ static PHP_METHOD(google_protobuf_BoolValue, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_BoolValue, setValue) {
@@ -3065,13 +3078,13 @@ static PHP_METHOD(google_protobuf_BoolValue, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_BoolValue_phpmethods[] = {
-  PHP_ME(google_protobuf_BoolValue, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_BoolValue, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_BoolValue, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_BoolValue, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_BoolValue, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_BoolValue, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -3102,7 +3115,7 @@ static PHP_METHOD(google_protobuf_StringValue, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_StringValue, setValue) {
@@ -3115,13 +3128,13 @@ static PHP_METHOD(google_protobuf_StringValue, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_StringValue_phpmethods[] = {
-  PHP_ME(google_protobuf_StringValue, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_StringValue, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_StringValue, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_StringValue, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_StringValue, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_StringValue, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -3152,7 +3165,7 @@ static PHP_METHOD(google_protobuf_BytesValue, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_BytesValue, setValue) {
@@ -3165,13 +3178,13 @@ static PHP_METHOD(google_protobuf_BytesValue, setValue) {
     return;
   }
   Message_set(intern, f, val);
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry google_protobuf_BytesValue_phpmethods[] = {
-  PHP_ME(google_protobuf_BytesValue, __construct, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_BytesValue, getValue, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(google_protobuf_BytesValue, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_BytesValue, __construct, arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_BytesValue, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_BytesValue, setValue, arginfo_setter, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 

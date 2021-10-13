@@ -32,6 +32,8 @@ message eval {}
 message exit {}
 message extends {}
 message final {}
+message finally {}
+message fn {}
 message for {}
 message foreach {}
 message function {}
@@ -46,6 +48,7 @@ message insteadof {}
 message interface {}
 message isset {}
 message list {}
+message match {}
 message namespace {}
 message new {}
 message or {}
@@ -66,6 +69,7 @@ message use {}
 message var {}
 message while {}
 message xor {}
+message yield {}
 message int {}
 message float {}
 message bool {}

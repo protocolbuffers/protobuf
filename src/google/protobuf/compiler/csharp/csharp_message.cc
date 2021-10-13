@@ -60,7 +60,7 @@ bool CompareFieldNumbers(const FieldDescriptor* d1, const FieldDescriptor* d2) {
 
 MessageGenerator::MessageGenerator(const Descriptor* descriptor,
                                    const Options* options)
-    : SourceGeneratorBase(descriptor->file(), options),
+    : SourceGeneratorBase(options),
       descriptor_(descriptor),
       has_bit_field_count_(0),
       end_tag_(GetGroupEndTag(descriptor)),

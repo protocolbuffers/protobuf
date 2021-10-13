@@ -41,10 +41,8 @@
 namespace google {
 namespace protobuf {
 
-const uint128_pod kuint128max = {
-    static_cast<uint64>(PROTOBUF_LONGLONG(0xFFFFFFFFFFFFFFFF)),
-    static_cast<uint64>(PROTOBUF_LONGLONG(0xFFFFFFFFFFFFFFFF))
-};
+const uint128_pod kuint128max = {uint64_t{0xFFFFFFFFFFFFFFFFu},
+                                 uint64_t{0xFFFFFFFFFFFFFFFFu}};
 
 // Returns the 0-based position of the last set bit (i.e., most significant bit)
 // in the given uint64. The argument may not be 0.
@@ -67,7 +65,7 @@ static inline int Fls64(uint64 n) {
   STEP(uint32, n32, pos, 0x10);
   STEP(uint32, n32, pos, 0x08);
   STEP(uint32, n32, pos, 0x04);
-  return pos + ((PROTOBUF_ULONGLONG(0x3333333322221100) >> (n32 << 2)) & 0x3);
+  return pos + ((uint64_t{0x3333333322221100u} >> (n32 << 2)) & 0x3);
 }
 #undef STEP
 
@@ -134,17 +132,17 @@ std::ostream& operator<<(std::ostream& o, const uint128& b) {
   switch (flags & std::ios::basefield) {
     case std::ios::hex:
       div =
-          static_cast<uint64>(PROTOBUF_ULONGLONG(0x1000000000000000));  // 16^15
+          static_cast<uint64>(uint64_t{0x1000000000000000u});  // 16^15
       div_base_log = 15;
       break;
     case std::ios::oct:
       div = static_cast<uint64>(
-          PROTOBUF_ULONGLONG(01000000000000000000000));  // 8^21
+          uint64_t{01000000000000000000000u});  // 8^21
       div_base_log = 21;
       break;
     default:  // std::ios::dec
       div = static_cast<uint64>(
-          PROTOBUF_ULONGLONG(10000000000000000000));  // 10^19
+          uint64_t{10000000000000000000u});  // 10^19
       div_base_log = 19;
       break;
   }
@@ -190,3 +188,5 @@ std::ostream& operator<<(std::ostream& o, const uint128& b) {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>  // NOLINT
