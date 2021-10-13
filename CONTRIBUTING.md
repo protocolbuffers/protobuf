@@ -17,8 +17,8 @@ expect contributors to follow.
   conceptual burden and ongoing maintenance cost. It's best to file an issue 
   and get agreement from maintainers on the value of a new feature before
   working on a PR.
-* Performance improvements are rarely accepted. The ones that are accepted
-  must be heavily benchmarked in both open source and Google internal systems.  
+* Performance optimizations may be accepted if they have convincing benchmarks that demonstrate 
+  an improvement and they do not signficantly increase complexity.  
 * Changes to existing APIs are almost never accepted. Stability and
   backwards compatibility are paramount. In the unlikely event a breaking change 
   is required, it must usually be implemented in google3 first. 
