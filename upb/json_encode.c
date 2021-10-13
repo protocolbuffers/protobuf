@@ -374,7 +374,7 @@ static void jsonenc_any(jsonenc *e, const upb_msg *msg, const upb_msgdef *m) {
   upb_arena *arena = jsonenc_arena(e);
   upb_msg *any = upb_msg_new(any_m, arena);
 
-  if (!upb_decode(value.data, value.size, any, any_layout, arena)) {
+  if (upb_decode(value.data, value.size, any, any_layout, arena)) {
     jsonenc_err(e, "Error decoding message in Any");
   }
 

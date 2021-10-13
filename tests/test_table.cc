@@ -155,7 +155,7 @@ class StrTable {
   std::pair<bool, upb_value> Remove(const std::string& key) {
     std::pair<bool, upb_value> ret;
     ret.first =
-        upb_strtable_remove(&table_, key.c_str(), key.size(), &ret.second);
+        upb_strtable_remove2(&table_, key.c_str(), key.size(), &ret.second);
     return ret;
   }
 

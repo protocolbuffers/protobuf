@@ -166,18 +166,29 @@ void MessageLayout::PlaceNonOneofFields(
             });
 
   // Place/count hasbits.
-  int hasbit_count = 0;
+  hasbit_count_ = 0;
+  required_mask_ = 0;
   for (auto field : FieldHotnessOrder(descriptor)) {
     if (HasHasbit(field)) {
       // We don't use hasbit 0, so that 0 can indicate "no presence" in the
       // table. This wastes one hasbit, but we don't worry about it for now.
-      hasbit_indexes_[field] = ++hasbit_count;
+      int index = ++hasbit_count_;
+      hasbit_indexes_[field] = index;
+      if (field->is_required()) {
+        if (index > 63) {
+          std::cerr << "upb does not support messages with more than 64 "
+                       "required fields: "
+                    << field->full_name() << "\n";
+          exit(1);
+        }
+        required_mask_ |= 1 << index;
+      }
     }
   }
 
   // Place hasbits at the beginning.
-  int64_t hasbit_bytes = DivRoundUp(hasbit_count, 8);
-  Place(SizeAndAlign{{hasbit_bytes, hasbit_bytes}, {1, 1}});
+  hasbit_bytes_ = DivRoundUp(hasbit_count_, 8);
+  Place(SizeAndAlign{{hasbit_bytes_, hasbit_bytes_}, {1, 1}});
 
   // Place non-oneof fields.
   for (auto field : field_order) {

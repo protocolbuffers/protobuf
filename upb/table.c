@@ -516,8 +516,8 @@ bool upb_strtable_lookup2(const upb_strtable *t, const char *key, size_t len,
   return lookup(&t->t, strkey2(key, len), v, hash, &streql);
 }
 
-bool upb_strtable_remove(upb_strtable *t, const char *key, size_t len,
-                         upb_value *val) {
+bool upb_strtable_remove2(upb_strtable *t, const char *key, size_t len,
+                          upb_value *val) {
   uint32_t hash = table_hash(key, len);
   upb_tabkey tabkey;
   return rm(&t->t, strkey2(key, len), val, &tabkey, hash, &streql);
@@ -812,7 +812,7 @@ bool upb_inttable_next2(const upb_inttable *t, uintptr_t *key, upb_value *val,
     while (++i < t->array_size) {
       upb_tabval ent = t->array[i];
       if (upb_arrhas(ent)) {
-        *key = i;
+        *key = i; 
         *val = _upb_value_val(ent.val);
         *iter = i;
         return true;

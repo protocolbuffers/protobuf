@@ -83,12 +83,6 @@ void AddEnums(const protobuf::Descriptor* message,
   }
 }
 
-template <class T>
-void SortDefs(std::vector<T>* defs) {
-  std::sort(defs->begin(), defs->end(),
-            [](T a, T b) { return a->full_name() < b->full_name(); });
-}
-
 std::vector<const protobuf::EnumDescriptor*> SortedEnums(
     const protobuf::FileDescriptor* file) {
   std::vector<const protobuf::EnumDescriptor*> enums;
@@ -98,7 +92,6 @@ std::vector<const protobuf::EnumDescriptor*> SortedEnums(
   for (int i = 0; i < file->message_type_count(); i++) {
     AddEnums(file->message_type(i), &enums);
   }
-  SortDefs(&enums);
   return enums;
 }
 
@@ -294,6 +287,35 @@ std::string SizeRep(const protobuf::FieldDescriptor* field) {
   }
 }
 
+bool HasNonZeroDefault(const protobuf::FieldDescriptor* field) {
+  switch (field->cpp_type()) {
+    case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
+      return false;
+    case protobuf::FieldDescriptor::CPPTYPE_STRING:
+      return !field->default_value_string().empty();
+    case protobuf::FieldDescriptor::CPPTYPE_INT32:
+      return field->default_value_int32() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_INT64:
+      return field->default_value_int64() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_UINT32:
+      return field->default_value_uint32() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_UINT64:
+      return field->default_value_uint64() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
+      return field->default_value_float() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
+      return field->default_value_double() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool() != false;
+    case protobuf::FieldDescriptor::CPPTYPE_ENUM:
+      // Use a number instead of a symbolic name so that we don't require
+      // this enum's header to be included.
+      return field->default_value_enum()->number() != 0;
+  }
+  ABSL_ASSERT(false);
+  return "XXX";
+}
+
 std::string FieldDefault(const protobuf::FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
@@ -396,7 +418,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
         "                        upb_arena *arena) {\n"
         "  $0 *ret = $0_new(arena);\n"
         "  if (!ret) return NULL;\n"
-        "  if (!upb_decode(buf, size, ret, &$1, arena)) return NULL;\n"
+        "  if (upb_decode(buf, size, ret, &$1, arena)) return NULL;\n"
         "  return ret;\n"
         "}\n"
         "UPB_INLINE $0 *$0_parse_ex(const char *buf, size_t size,\n"
@@ -404,7 +426,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
         "                           upb_arena *arena) {\n"
         "  $0 *ret = $0_new(arena);\n"
         "  if (!ret) return NULL;\n"
-        "  if (!_upb_decode(buf, size, ret, &$1, extreg, options, arena)) {\n"
+        "  if (_upb_decode(buf, size, ret, &$1, extreg, options, arena)) {\n"
         "    return NULL;\n"
         "  }\n"
         "  return ret;\n"
@@ -512,11 +534,19 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
           GetSizeInit(layout.GetOneofCaseOffset(field->real_containing_oneof())),
           field->number(), FieldDefault(field));
     } else {
-      output(
-          "UPB_INLINE $0 $1_$2(const $1 *msg) { "
-          "return *UPB_PTR_AT(msg, $3, $0); }\n",
-          CTypeConst(field), msg_name, field->name(),
-          GetSizeInit(layout.GetFieldOffset(field)));
+      if (HasNonZeroDefault(field)) {
+        output(
+            "UPB_INLINE $0 $1_$2(const $1 *msg) { "
+            "return $1_has_$2(msg) ? *UPB_PTR_AT(msg, $3, $0) : $4; }\n",
+            CTypeConst(field), msg_name, field->name(),
+            GetSizeInit(layout.GetFieldOffset(field)), FieldDefault(field));
+      } else {
+        output(
+            "UPB_INLINE $0 $1_$2(const $1 *msg) { "
+            "return *UPB_PTR_AT(msg, $3, $0); }\n",
+            CTypeConst(field), msg_name, field->name(),
+            GetSizeInit(layout.GetFieldOffset(field)));
+      }
     }
   }
 
@@ -1144,6 +1174,7 @@ void WriteMessage(const protobuf::Descriptor* message, Output& output,
   std::string msg_name = ToCIdent(message->full_name());
   std::string fields_array_ref = "NULL";
   std::string submsgs_array_ref = "NULL";
+  std::string subenums_array_ref = "NULL";
   uint8_t dense_below = 0;
   const int dense_below_max = std::numeric_limits<decltype(dense_below)>::max();
   MessageLayout layout(message);
@@ -1221,7 +1252,8 @@ void WriteMessage(const protobuf::Descriptor* message, Output& output,
   output("const upb_msglayout $0 = {\n", MessageInit(message));
   output("  $0,\n", submsgs_array_ref);
   output("  $0,\n", fields_array_ref);
-  output("  $0, $1, $2, $3, $4,\n",
+  output("  $0, $1, $2, $3, $4, $5,\n",
+         layout.required_mask(),
          GetSizeInit(layout.message_size()),
          field_number_order.size(),
          msgext,
@@ -1294,19 +1326,6 @@ int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
   return this_file_enums.size();
 }
 
-void WriteExtension(const protobuf::FieldDescriptor* ext, Output& output) {
-  output("const upb_msglayout_ext $0 = {\n  ", ExtensionLayout(ext));
-  WriteField(ext, "0", "0", 0, output);
-  output(",\n");
-  output("  &$0,\n", MessageInit(ext->containing_type()));
-  if (ext->message_type()) {
-    output("  {.submsg = &$0},\n", MessageInit(ext->message_type()));
-  } else {
-    output("  {.submsg = NULL},\n");
-  }
-  output("\n};\n");
-}
-
 int WriteMessages(const protobuf::FileDescriptor* file, Output& output,
                    bool fasttable_enabled) {
   std::vector<const protobuf::Descriptor*> file_messages =
@@ -1326,6 +1345,21 @@ int WriteMessages(const protobuf::FileDescriptor* file, Output& output,
   output("};\n");
   output("\n");
   return file_messages.size();
+}
+
+void WriteExtension(const protobuf::FieldDescriptor* ext, Output& output) {
+  output("const upb_msglayout_ext $0 = {\n  ", ExtensionLayout(ext));
+  WriteField(ext, "0", "0", 0, output);
+  output(",\n");
+  output("    &$0,\n", MessageInit(ext->containing_type()));
+  if (ext->message_type()) {
+    output("    {.submsg = &$0},\n", MessageInit(ext->message_type()));
+  } else if (ext->enum_type() && ext->enum_type()->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2) {
+    output("    {.subenum = &$0},\n", EnumInit(ext->enum_type()));
+  } else {
+    output("    {.submsg = NULL},\n");
+  }
+  output("\n};\n");
 }
 
 int WriteExtensions(const protobuf::FileDescriptor* file, Output& output) {

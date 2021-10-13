@@ -2200,7 +2200,7 @@ static void create_fielddef(
       if (ctx->symtab->allow_name_conflicts &&
           deftype(existing_v) == UPB_DEFTYPE_FIELD_JSONNAME) {
         // Field name takes precedence over json name.
-        upb_strtable_remove(&m->ntof, shortname, strlen(shortname), NULL);
+        upb_strtable_remove2(&m->ntof, shortname, strlen(shortname), NULL);
       } else {
         symtab_errf(ctx, "duplicate field name (%s)", shortname);
       }

@@ -245,8 +245,13 @@ UPB_INLINE bool upb_strtable_lookup(const upb_strtable *t, const char *key,
 /* Removes an item from the table.  Returns true if the remove was successful,
  * and stores the removed item in *val if non-NULL. */
 bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val);
-bool upb_strtable_remove(upb_strtable *t, const char *key, size_t len,
+bool upb_strtable_remove2(upb_strtable *t, const char *key, size_t len,
                           upb_value *val);
+
+UPB_INLINE bool upb_strtable_remove(upb_strtable *t, const char *key,
+                                    upb_value *v) {
+  return upb_strtable_remove2(t, key, strlen(key), v);
+}
 
 /* Updates an existing entry in an inttable.  If the entry does not exist,
  * returns false and does nothing.  Unlike insert/remove, this does not
