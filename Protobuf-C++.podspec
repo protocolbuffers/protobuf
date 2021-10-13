@@ -35,9 +35,6 @@ Pod::Spec.new do |s|
     # Do not let src/google/protobuf/stubs/time.h override system API
     'USE_HEADERMAP' => 'NO',
     'ALWAYS_SEARCH_USER_PATHS' => 'NO',
-
-    # Configure tool is not being used for Xcode. When building, assume pthread is supported.
-    'GCC_PREPROCESSOR_DEFINITIONS' => '"$(inherited)" "HAVE_PTHREAD=1"',
   }
 
 end

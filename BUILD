@@ -26,7 +26,6 @@ ZLIB_DEPS = ["@zlib//:zlib"]
 ################################################################################
 
 MSVC_COPTS = [
-    "/DHAVE_PTHREAD",
     "/wd4018",  # -Wno-sign-compare
     "/wd4065",  # switch statement contains 'default' but no 'case' labels
     "/wd4146",  # unary minus operator applied to unsigned type, result still unsigned
@@ -46,7 +45,6 @@ MSVC_COPTS = [
 COPTS = select({
     ":msvc": MSVC_COPTS,
     "//conditions:default": [
-        "-DHAVE_PTHREAD",
         "-DHAVE_ZLIB",
         "-Wmissing-field-initializers",
         "-Woverloaded-virtual",
