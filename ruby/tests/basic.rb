@@ -620,5 +620,21 @@ module BasicTest
       assert_raise(FrozenErrorType) { m.map_string_int32.delete('a') }
       assert_raise(FrozenErrorType) { m.map_string_int32.clear }
     end
+
+    def test_map_length
+      m = proto_module::MapMessage.new
+      assert_equal 0, m.map_string_int32.length
+      assert_equal 0, m.map_string_msg.length
+      assert_equal 0, m.map_string_int32.size
+      assert_equal 0, m.map_string_msg.size
+
+      m.map_string_int32['a'] = 1
+      m.map_string_int32['b'] = 2
+      m.map_string_msg['a'] = proto_module::TestMessage2.new
+      assert_equal 2, m.map_string_int32.length
+      assert_equal 1, m.map_string_msg.length
+      assert_equal 2, m.map_string_int32.size
+      assert_equal 1, m.map_string_msg.size
+    end
   end
 end

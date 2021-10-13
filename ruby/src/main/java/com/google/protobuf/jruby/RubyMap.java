@@ -332,7 +332,7 @@ public class RubyMap extends RubyObject {
      *
      * Returns the number of entries (key-value pairs) in the map.
      */
-    @JRubyMethod
+    @JRubyMethod(name = {"length", "size"})
     public IRubyObject length(ThreadContext context) {
         return context.runtime.newFixnum(this.table.size());
     }
