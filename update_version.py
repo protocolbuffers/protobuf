@@ -251,7 +251,7 @@ def UpdateJava():
   RewriteTextFile('java/README.md',
     lambda line : re.sub(
       r'implementation \'com.google.protobuf:protobuf-java:.*\'',
-      'implementation \'com.google.protobuf:protobuf:%s\'' % GetFullVersion(),
+      'implementation \'com.google.protobuf:protobuf-java:%s\'' % GetFullVersion(),
       line))
 
   RewriteTextFile('java/lite.md',
