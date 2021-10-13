@@ -167,7 +167,7 @@ void MessageLayout::PlaceNonOneofFields(
 
   // Place/count hasbits.
   hasbit_count_ = 0;
-  required_mask_ = 0;
+  required_count_ = 0;
   for (auto field : FieldHotnessOrder(descriptor)) {
     if (HasHasbit(field)) {
       // We don't use hasbit 0, so that 0 can indicate "no presence" in the
@@ -175,13 +175,15 @@ void MessageLayout::PlaceNonOneofFields(
       int index = ++hasbit_count_;
       hasbit_indexes_[field] = index;
       if (field->is_required()) {
-        if (index > 63) {
-          std::cerr << "upb does not support messages with more than 64 "
+        if (index >= 63) {
+          // This could be fixed in the decoder without too much trouble.  But
+          // we expect this to be so rare that we don't worry about it for now.
+          std::cerr << "upb does not support messages with more than 63 "
                        "required fields: "
                     << field->full_name() << "\n";
           exit(1);
         }
-        required_mask_ |= 1 << index;
+        required_count_++;
       }
     }
   }

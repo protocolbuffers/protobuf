@@ -169,7 +169,6 @@ typedef enum {
 struct upb_msglayout {
   const upb_msglayout_sub *subs;
   const upb_msglayout_field *fields;
-  uint64_t required_mask;
   /* Must be aligned to sizeof(void*).  Doesn't include internal members like
    * unknown fields, extension dict, pointer to msglayout, etc. */
   uint16_t size;
@@ -177,8 +176,10 @@ struct upb_msglayout {
   uint8_t ext;  // upb_msgext_mode, declared as uint8_t so sizeof(ext) == 1
   uint8_t dense_below;
   uint8_t table_mask;
-  /* To constant-initialize the tables of variable length, we need a flexible
-   * array member, and we need to compile in C99 mode. */
+  uint8_t required_count;  // Required fields have the lowest hasbits.
+  /* To statically initialize the tables of variable length, we need a flexible
+   * array member, and we need to compile in gnu99 mode (constant initialization
+   * of flexible array members is a GNU extension, not in C99 unfortunately. */
   _upb_fasttable_entry fasttable[];
 };
 

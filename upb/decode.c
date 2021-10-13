@@ -325,7 +325,7 @@ static const char *decode_tosubmsg2(upb_decstate *d, const char *ptr,
                                     upb_msg *submsg, const upb_msglayout *subl,
                                     int size) {
   int saved_delta = decode_pushlimit(d, ptr, size);
-  if (--d->depth < 0) return decode_err(d, UPB_DECODE_MALFORMED);
+  if (--d->depth < 0) return decode_err(d, UPB_DECODE_MAXDEPTH_EXCEEDED);
   if (!decode_isdone(d, &ptr)) {
     ptr = decode_msg(d, ptr, submsg, subl);
   }
@@ -348,7 +348,7 @@ UPB_FORCEINLINE
 static const char *decode_group(upb_decstate *d, const char *ptr,
                                 upb_msg *submsg, const upb_msglayout *subl,
                                 uint32_t number) {
-  if (--d->depth < 0) return decode_err(d, UPB_DECODE_MALFORMED);
+  if (--d->depth < 0) return decode_err(d, UPB_DECODE_MAXDEPTH_EXCEEDED);
   if (decode_isdone(d, &ptr)) {
     return decode_err(d, UPB_DECODE_MALFORMED);
   }
@@ -667,14 +667,12 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
 UPB_FORCEINLINE
 static bool decode_checkrequired(upb_decstate *d, const upb_msg *msg,
                                  const upb_msglayout *l) {
-  if (UPB_LIKELY(!l->required_mask)) return false;
-  // if (UPB_UNLIKELY(l->required_mask & 1)) {
-  //   return decode_checkrequired_slow(d, msg, l);
-  // }
+  if (UPB_LIKELY(l->required_count == 0)) return true;
+  uint64_t required_mask = ((1 << l->required_count) - 1) << 1;
   uint64_t msg_head;
   memcpy(&msg_head, msg, 8);
   msg_head = _upb_be_swap64(msg_head);
-  return l->required_mask & ~msg_head;
+  return (required_mask & ~msg_head) == 0;
 }
 
 UPB_FORCEINLINE
@@ -870,21 +868,22 @@ static const char *decode_known(upb_decstate *d, const char *ptr, upb_msg *msg,
 UPB_FORCEINLINE
 static const char *decode_unknown(upb_decstate *d, const char *ptr,
                                   upb_msg *msg, int field_number, int wire_type,
-                                  wireval val) {
+                                  wireval val, const char **field_start) {
   if (field_number == 0) return decode_err(d, UPB_DECODE_MALFORMED);
 
   if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
   if (msg) {
     if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
-      const char *preserved_unknown = d->unknown;
+      d->unknown = *field_start;
       d->unknown_msg = msg;
       ptr = decode_group(d, ptr, NULL, NULL, field_number);
       d->unknown_msg = NULL;
-      d->unknown = preserved_unknown;
+      *field_start = d->unknown;
       // XXX: pointer could have flipped during decoding the group,
       // ptr - d->unknown below will be borked.
     }
-    if (!_upb_msg_addunknown(msg, d->unknown, ptr - d->unknown, &d->arena)) {
+    if (!_upb_msg_addunknown(msg, *field_start, ptr - *field_start,
+                             &d->arena)) {
       return decode_err(d, UPB_DECODE_OOM);
     }
   } else if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
@@ -898,6 +897,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
   int last_field_index = 0;
   while (true) {
+    const char *field_start = ptr;
     uint32_t tag;
     const upb_msglayout_field *field;
     int field_number;
@@ -906,7 +906,6 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     int op;
 
     UPB_ASSERT(ptr < d->limit_ptr);
-    d->unknown = ptr;
     ptr = decode_tag(d, ptr, &tag);
     field_number = tag >> 3;
     wire_type = tag & 7;
@@ -924,7 +923,8 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     } else {
       switch (op) {
         case OP_UNKNOWN:
-          ptr = decode_unknown(d, ptr, msg, field_number, wire_type, val);
+          ptr = decode_unknown(d, ptr, msg, field_number, wire_type, val,
+                               &field_start);
           break;
         case OP_MSGSET_ITEM:
           ptr = decode_msgset(d, ptr, msg, layout);
@@ -938,15 +938,16 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
       }
     }
 
-    if (decode_isdone(d, &ptr) ||
-        decode_tryfastdispatch(d, &ptr, msg, layout)) {
-      if (UPB_UNLIKELY(d->options & UPB_CHECK_REQUIRED) &&
-          decode_checkrequired(d, msg, layout)) {
-        d->missing_required = true;
-      }
-      return ptr;
-    }
+    if (decode_isdone(d, &ptr)) break;
+    if (decode_tryfastdispatch(d, &ptr, msg, layout)) break;
   }
+
+  if (false && UPB_UNLIKELY(d->options & UPB_CHECK_REQUIRED) &&
+      !decode_checkrequired(d, msg, layout)) {
+    d->missing_required = true;
+  }
+
+  return ptr;
 }
 
 const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,

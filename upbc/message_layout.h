@@ -87,7 +87,9 @@ class MessageLayout {
 
   int hasbit_count() const { return hasbit_count_; }
   int hasbit_bytes() const { return hasbit_bytes_; }
-  uint64_t required_mask() const { return required_mask_; }
+
+  // Required fields always have the lowest hasbits.
+  int required_count() const { return required_count_; }
 
   static bool HasHasbit(const google::protobuf::FieldDescriptor* field);
   static SizeAndAlign SizeOfUnwrapped(
@@ -132,7 +134,7 @@ class MessageLayout {
   Size size_;
   int hasbit_count_;
   int hasbit_bytes_;
-  uint64_t required_mask_;
+  int required_count_;
 };
 
 // Returns fields in order of "hotness", eg. how frequently they appear in

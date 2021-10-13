@@ -1253,12 +1253,12 @@ void WriteMessage(const protobuf::Descriptor* message, Output& output,
   output("  $0,\n", submsgs_array_ref);
   output("  $0,\n", fields_array_ref);
   output("  $0, $1, $2, $3, $4, $5,\n",
-         layout.required_mask(),
          GetSizeInit(layout.message_size()),
          field_number_order.size(),
          msgext,
          dense_below,
-         table_mask
+         table_mask,
+         layout.required_count()
   );
   if (!table.empty()) {
     output("  UPB_FASTTABLE_INIT({\n");
