@@ -101,6 +101,7 @@ sh_test(
     data = [
         ":cmake_files",
         "//:cmake_files",
+        "//third_party/utf8_range:cmake_files",
     ],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )

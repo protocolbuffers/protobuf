@@ -102,6 +102,7 @@ cc_library(
     deps = [
         ":fastdecode",
         ":port",
+        "//third_party/utf8_range",
     ],
 )
 
@@ -119,6 +120,7 @@ cc_library(
     deps = [
         ":port",
         ":table",
+        "//third_party/utf8_range",
     ],
 )
 
@@ -274,6 +276,7 @@ cc_library(
     srcs = ["upb.c"],
     hdrs = ["upb.h"],
     copts = UPB_DEFAULT_COPTS,
+    deps = ["//third_party/utf8_range"],
 )
 
 upb_amalgamation(
@@ -299,6 +302,7 @@ cc_library(
     srcs = ["php-upb.c"],
     hdrs = ["php-upb.h"],
     copts = UPB_DEFAULT_COPTS,
+    deps = ["//third_party/utf8_range"],
 )
 
 upb_amalgamation(
@@ -323,6 +327,7 @@ cc_library(
     srcs = ["ruby-upb.c"],
     hdrs = ["ruby-upb.h"],
     copts = UPB_DEFAULT_COPTS,
+    deps = ["//third_party/utf8_range"],
 )
 
 exports_files(

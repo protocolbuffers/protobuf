@@ -37,6 +37,7 @@
 
 #include "upb/msg_internal.h"
 #include "upb/upb_internal.h"
+#include "third_party/utf8_range/utf8_range.h"
 
 /* Must be last. */
 #include "upb/port_def.inc"
@@ -70,24 +71,27 @@ const char *fastdecode_err(upb_decstate *d);
 extern const uint8_t upb_utf8_offsets[];
 
 UPB_INLINE
-bool decode_verifyutf8_inl(const char *buf, int len) {
-  int i, j;
-  uint8_t offset;
+bool decode_verifyutf8_inl(const char *ptr, int len) {
+  const char *end = ptr + len;
 
-  i = 0;
-  while (i < len) {
-    offset = upb_utf8_offsets[(uint8_t)buf[i]];
-    if (offset == 0 || i + offset > len) {
-      return false;
-    }
-    for (j = i + 1; j < i + offset; j++) {
-      if ((buf[j] & 0xc0) != 0x80) {
-        return false;
-      }
-    }
-    i += offset;
+  // Check 8 bytes at a time for any non-ASCII char.
+  while (end - ptr >= 8) {
+    uint64_t data;
+    memcpy(&data, ptr, 8);
+    if (data & 0x8080808080808080) goto non_ascii;
+    ptr += 8;
   }
-  return i == len;
+
+  // Check one byte at a time for non-ASCII.
+  while (ptr < end) {
+    if (*ptr & 0x80) goto non_ascii;
+    ptr++;
+  }
+
+  return true;
+
+ non_ascii:
+  return utf8_range2((const unsigned char *)ptr, end - ptr) == 0;
 }
 
 /* x86-64 pointers always have the high 16 bits matching. So we can shift

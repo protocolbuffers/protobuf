@@ -224,3 +224,10 @@ TEST(MessageTest, Proto2Enum) {
   EXPECT_THAT(std::vector<int32_t>(vals_const, vals_const + size),
               ::testing::ElementsAreArray(expected));
 }
+
+TEST(MessageTest, TestBadUTF8) {
+  upb::Arena arena;
+  std::string serialized("r\x03\xed\xa0\x81");
+  EXPECT_EQ(nullptr, protobuf_test_messages_proto3_TestAllTypesProto3_parse(
+                         serialized.data(), serialized.size(), arena.ptr()));
+}

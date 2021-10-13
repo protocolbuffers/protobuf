@@ -79,7 +79,8 @@ add_library(upb
   ../upb/upb.hpp)
 target_link_libraries(upb
   fastdecode
-  port)
+  port
+  /third_party/utf8_range)
 add_library(fastdecode
   ../upb/decode_internal.h
   ../upb/decode_fast.c
@@ -89,7 +90,8 @@ add_library(fastdecode
   ../upb/upb_internal.h)
 target_link_libraries(fastdecode
   port
-  table)
+  table
+  /third_party/utf8_range)
 add_library(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE)
 target_link_libraries(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
   table
