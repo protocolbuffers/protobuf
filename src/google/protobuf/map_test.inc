@@ -1259,21 +1259,21 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
       desc->FindFieldByName("map_int32_foreign_message");
 
   const FieldDescriptor* fd_map_int32_in32_key =
-      fd_map_int32_int32->message_type()->FindFieldByName("key");
+      fd_map_int32_int32->message_type()->map_key();
   const FieldDescriptor* fd_map_int32_in32_value =
-      fd_map_int32_int32->message_type()->FindFieldByName("value");
+      fd_map_int32_int32->message_type()->map_value();
   const FieldDescriptor* fd_map_int32_double_key =
-      fd_map_int32_double->message_type()->FindFieldByName("key");
+      fd_map_int32_double->message_type()->map_key();
   const FieldDescriptor* fd_map_int32_double_value =
-      fd_map_int32_double->message_type()->FindFieldByName("value");
+      fd_map_int32_double->message_type()->map_value();
   const FieldDescriptor* fd_map_string_string_key =
-      fd_map_string_string->message_type()->FindFieldByName("key");
+      fd_map_string_string->message_type()->map_key();
   const FieldDescriptor* fd_map_string_string_value =
-      fd_map_string_string->message_type()->FindFieldByName("value");
+      fd_map_string_string->message_type()->map_value();
   const FieldDescriptor* fd_map_int32_foreign_message_key =
-      fd_map_int32_foreign_message->message_type()->FindFieldByName("key");
+      fd_map_int32_foreign_message->message_type()->map_key();
   const FieldDescriptor* fd_map_int32_foreign_message_value =
-      fd_map_int32_foreign_message->message_type()->FindFieldByName("value");
+      fd_map_int32_foreign_message->message_type()->map_value();
 
   // Get RepeatedPtrField objects for all fields of interest.
   const RepeatedPtrField<Message>& mf_int32_int32 =
@@ -1446,21 +1446,21 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       desc->FindFieldByName("map_int32_foreign_message");
 
   const FieldDescriptor* fd_map_int32_in32_key =
-      fd_map_int32_int32->message_type()->FindFieldByName("key");
+      fd_map_int32_int32->message_type()->map_key();
   const FieldDescriptor* fd_map_int32_in32_value =
-      fd_map_int32_int32->message_type()->FindFieldByName("value");
+      fd_map_int32_int32->message_type()->map_value();
   const FieldDescriptor* fd_map_int32_double_key =
-      fd_map_int32_double->message_type()->FindFieldByName("key");
+      fd_map_int32_double->message_type()->map_key();
   const FieldDescriptor* fd_map_int32_double_value =
-      fd_map_int32_double->message_type()->FindFieldByName("value");
+      fd_map_int32_double->message_type()->map_value();
   const FieldDescriptor* fd_map_string_string_key =
-      fd_map_string_string->message_type()->FindFieldByName("key");
+      fd_map_string_string->message_type()->map_key();
   const FieldDescriptor* fd_map_string_string_value =
-      fd_map_string_string->message_type()->FindFieldByName("value");
+      fd_map_string_string->message_type()->map_value();
   const FieldDescriptor* fd_map_int32_foreign_message_key =
-      fd_map_int32_foreign_message->message_type()->FindFieldByName("key");
+      fd_map_int32_foreign_message->message_type()->map_key();
   const FieldDescriptor* fd_map_int32_foreign_message_value =
-      fd_map_int32_foreign_message->message_type()->FindFieldByName("value");
+      fd_map_int32_foreign_message->message_type()->map_value();
 
   // Get RepeatedFieldRef objects for all fields of interest.
   const RepeatedFieldRef<Message> mf_int32_int32 =
@@ -2038,7 +2038,7 @@ TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
 
     const Reflection* entry_reflection = entry1->GetReflection();
     const FieldDescriptor* key_field =
-        entry1->GetDescriptor()->FindFieldByName("key");
+        entry1->GetDescriptor()->map_key();
     entry_reflection->SetInt32(entry1, key_field, 1);
     entry_reflection->SetInt32(entry2, key_field, 1);
 
@@ -2059,7 +2059,7 @@ TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
 
     const Reflection* entry_reflection = entry1->GetReflection();
     const FieldDescriptor* key_field =
-        entry1->GetDescriptor()->FindFieldByName("key");
+        entry1->GetDescriptor()->map_key();
     entry_reflection->SetInt32(entry1, key_field, 1);
     entry_reflection->SetInt32(entry2, key_field, 1);
 
@@ -2951,7 +2951,7 @@ TEST(GeneratedMapFieldReflectionTest, EmbedProto2Message) {
       UNITTEST::TestMessageMap::descriptor()->FindFieldByName(
           "map_int32_message");
   const FieldDescriptor* value =
-      map_field->message_type()->FindFieldByName("value");
+      map_field->message_type()->map_value();
 
   Message* entry_message =
       message.GetReflection()->AddMessage(&message, map_field);
@@ -2971,9 +2971,9 @@ TEST(GeneratedMapFieldReflectionTest, MergeFromClearMapEntry) {
   const FieldDescriptor* map_field =
       UNITTEST::TestMap::descriptor()->FindFieldByName("map_int32_int32");
   const FieldDescriptor* key =
-      map_field->message_type()->FindFieldByName("key");
+      map_field->message_type()->map_key();
   const FieldDescriptor* value =
-      map_field->message_type()->FindFieldByName("value");
+      map_field->message_type()->map_value();
 
   Message* entry_message1 =
       message.GetReflection()->AddMessage(&message, map_field);
@@ -3005,7 +3005,7 @@ TEST(GeneratedMapFieldReflectionTest, Proto2MapEntryClear) {
   const FieldDescriptor* field_descriptor =
       descriptor->FindFieldByName("known_map_field");
   const FieldDescriptor* value_descriptor =
-      field_descriptor->message_type()->FindFieldByName("value");
+      field_descriptor->message_type()->map_value();
   Message* sub_message =
       message.GetReflection()->AddMessage(&message, field_descriptor);
   EXPECT_EQ(0, sub_message->GetReflection()->GetEnumValue(*sub_message,
@@ -3133,7 +3133,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapEntryReferernceValidAfterSerialize) {
       message.get(), "map_int32_foreign_message", 0);
   const Reflection* map_entry_reflection = map_entry->GetReflection();
   const Descriptor* map_entry_desc = map_entry->GetDescriptor();
-  const FieldDescriptor* value_field = map_entry_desc->FindFieldByName("value");
+  const FieldDescriptor* value_field = map_entry_desc->map_value();
   Message* submsg =
       map_entry_reflection->MutableMessage(map_entry, value_field);
 
@@ -3696,7 +3696,7 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
   // Modify map via the iterator (invalidated in previous implementation.).
   const Reflection* map_entry_reflection = iter->GetReflection();
   const FieldDescriptor* value_field_desc =
-      iter->GetDescriptor()->FindFieldByName("value");
+      iter->GetDescriptor()->map_value();
   map_entry_reflection->SetInt32(&(*iter), value_field_desc, 2);
   GOOGLE_LOG(INFO) << iter->DebugString();
 

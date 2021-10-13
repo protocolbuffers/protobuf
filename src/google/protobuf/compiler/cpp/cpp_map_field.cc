@@ -54,9 +54,9 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   (*variables)["full_name"] = descriptor->full_name();
 
   const FieldDescriptor* key =
-      descriptor->message_type()->FindFieldByName("key");
+      descriptor->message_type()->map_key();
   const FieldDescriptor* val =
-      descriptor->message_type()->FindFieldByName("value");
+      descriptor->message_type()->map_value();
   (*variables)["key_cpp"] = PrimitiveTypeName(options, key->cpp_type());
   switch (val->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
@@ -207,9 +207,9 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   format("if (!this->_internal_$name$().empty()) {\n");
   format.Indent();
   const FieldDescriptor* key_field =
-      descriptor_->message_type()->FindFieldByName("key");
+      descriptor_->message_type()->map_key();
   const FieldDescriptor* value_field =
-      descriptor_->message_type()->FindFieldByName("value");
+      descriptor_->message_type()->map_value();
   const bool string_key = key_field->type() == FieldDescriptor::TYPE_STRING;
   const bool string_value = value_field->type() == FieldDescriptor::TYPE_STRING;
 

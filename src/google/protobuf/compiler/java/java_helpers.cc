@@ -1050,7 +1050,7 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
   if (field->is_map()) {
     if (!SupportUnknownEnumValue(field)) {
       const FieldDescriptor* value =
-          field->message_type()->FindFieldByName("value");
+          field->message_type()->map_value();
       if (GetJavaType(value) == JAVATYPE_ENUM) {
         extra_bits |= kMapWithProto2EnumValue;
       }

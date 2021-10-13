@@ -1074,7 +1074,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
     if (descriptor->is_map()) {
       ScopedPyObjectPtr map(GetFieldValue(self, descriptor));
       const FieldDescriptor* value_descriptor =
-          descriptor->message_type()->FindFieldByName("value");
+          descriptor->message_type()->map_value();
       if (value_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         ScopedPyObjectPtr iter(PyObject_GetIter(value));
         if (iter == NULL) {
@@ -2582,7 +2582,7 @@ PyObject* GetFieldValue(CMessage* self,
   ContainerBase* py_container = nullptr;
   if (field_descriptor->is_map()) {
     const Descriptor* entry_type = field_descriptor->message_type();
-    const FieldDescriptor* value_type = entry_type->FindFieldByName("value");
+    const FieldDescriptor* value_type = entry_type->map_value();
     if (value_type->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       CMessageClass* value_class = message_factory::GetMessageClass(
           GetFactoryForMessage(self), value_type->message_type());
