@@ -182,23 +182,23 @@ class PROTOBUF_EXPORT DynamicMapSorter {
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_INT32: {
-          int32 first = reflection->GetInt32(*a, field_);
-          int32 second = reflection->GetInt32(*b, field_);
+          int32_t first = reflection->GetInt32(*a, field_);
+          int32_t second = reflection->GetInt32(*b, field_);
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_INT64: {
-          int64 first = reflection->GetInt64(*a, field_);
-          int64 second = reflection->GetInt64(*b, field_);
+          int64_t first = reflection->GetInt64(*a, field_);
+          int64_t second = reflection->GetInt64(*b, field_);
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_UINT32: {
-          uint32 first = reflection->GetUInt32(*a, field_);
-          uint32 second = reflection->GetUInt32(*b, field_);
+          uint32_t first = reflection->GetUInt32(*a, field_);
+          uint32_t second = reflection->GetUInt32(*b, field_);
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_UINT64: {
-          uint64 first = reflection->GetUInt64(*a, field_);
-          uint64 second = reflection->GetUInt64(*b, field_);
+          uint64_t first = reflection->GetUInt64(*a, field_);
+          uint64_t second = reflection->GetUInt64(*b, field_);
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_STRING: {

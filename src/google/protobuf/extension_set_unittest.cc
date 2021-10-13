@@ -34,6 +34,8 @@
 
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
@@ -46,8 +48,6 @@
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -170,9 +170,9 @@ TEST(ExtensionSetTest, SetAllocatedExtension) {
   message.SetAllocatedExtension(unittest::optional_foreign_message_extension,
                                 new unittest::ForeignMessage());
 
-  // SetAllocatedExtension with a NULL parameter is equivalent to ClearExtenion.
+  // SetAllocatedExtension with nullptr is equivalent to ClearExtenion.
   message.SetAllocatedExtension(unittest::optional_foreign_message_extension,
-                                NULL);
+                                nullptr);
   EXPECT_FALSE(
       message.HasExtension(unittest::optional_foreign_message_extension));
 }
@@ -198,12 +198,13 @@ TEST(ExtensionSetTest, ReleaseExtension) {
   // ReleaseExtension will return the underlying object even after
   // ClearExtension is called.
   message.SetAllocatedExtension(
-      unittest::TestMessageSetExtension1::message_set_extension, extension);
+      unittest::TestMessageSetExtension1::message_set_extension,
+      released_extension);
   message.ClearExtension(
       unittest::TestMessageSetExtension1::message_set_extension);
   released_extension = message.ReleaseExtension(
       unittest::TestMessageSetExtension1::message_set_extension);
-  EXPECT_TRUE(released_extension != NULL);
+  EXPECT_TRUE(released_extension != nullptr);
   delete released_extension;
 }
 
@@ -456,7 +457,7 @@ TEST(ExtensionSetTest, SwapExtensionBothFullWithArena) {
   message2->SetExtension(unittest::optional_int32_extension, 101);
   TestUtil::ExpectAllExtensionsSet(*message1);
   TestUtil::ExpectAllExtensionsSet(*message2);
-  arena2.reset(NULL);
+  arena2.reset(nullptr);
   TestUtil::ExpectAllExtensionsSet(*message1);
   // Test corner cases, when one is empty and other is not.
   Arena arena3, arena4;
@@ -1204,7 +1205,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
   // Now build the file, using the generated pool as an underlay.
   DescriptorPool dynamic_pool(DescriptorPool::generated_pool());
   const FileDescriptor* file = dynamic_pool.BuildFile(dynamic_proto);
-  ASSERT_TRUE(file != NULL);
+  ASSERT_TRUE(file != nullptr);
   DynamicMessageFactory dynamic_factory(&dynamic_pool);
   dynamic_factory.SetDelegateToGeneratedFactory(true);
 
@@ -1291,7 +1292,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
   {
     const FieldDescriptor* message_extension =
         file->FindExtensionByName("message_extension");
-    ASSERT_TRUE(message_extension != NULL);
+    ASSERT_TRUE(message_extension != nullptr);
     const Message& sub_message =
         message.GetReflection()->GetMessage(message, message_extension);
     const unittest::ForeignMessage* typed_sub_message =
@@ -1300,7 +1301,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
 #else
         static_cast<const unittest::ForeignMessage*>(&sub_message);
 #endif
-    ASSERT_TRUE(typed_sub_message != NULL);
+    ASSERT_TRUE(typed_sub_message != nullptr);
     EXPECT_EQ(456, typed_sub_message->c());
   }
 
@@ -1309,7 +1310,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
   {
     const FieldDescriptor* dynamic_message_extension =
         file->FindExtensionByName("dynamic_message_extension");
-    ASSERT_TRUE(dynamic_message_extension != NULL);
+    ASSERT_TRUE(dynamic_message_extension != nullptr);
     const Message& parent = unittest::TestAllExtensions::default_instance();
     const Message& sub_message = parent.GetReflection()->GetMessage(
         parent, dynamic_message_extension, &dynamic_factory);
@@ -1335,5 +1336,3 @@ TEST(ExtensionSetTest, ConstInit) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
-
-#include <google/protobuf/port_undef.inc>

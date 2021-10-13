@@ -78,8 +78,8 @@ namespace internal {
 //                         field.
 //
 // cpp type | proto type  | in-memory type | MapEntry accessor type
-// int32      TYPE_INT32    int32            int32
-// int32      TYPE_FIXED32  int32            int32
+// int32_t    TYPE_INT32    int32_t          int32_t
+// int32_t    TYPE_FIXED32  int32_t          int32_t
 // string     TYPE_STRING   ArenaStringPtr   string
 // FooEnum    TYPE_ENUM     int              int
 // FooMessage TYPE_MESSAGE  FooMessage*      FooMessage
@@ -99,7 +99,7 @@ class MapEntry : public MapEntryImpl<Derived, Message, Key, Value,
                      kValueFieldType>(arena),
         _internal_metadata_(arena) {}
   ~MapEntry() {
-    Message::_internal_metadata_.Delete<UnknownFieldSet>();
+    Message::_internal_metadata_.template Delete<UnknownFieldSet>();
     _internal_metadata_.Delete<UnknownFieldSet>();
   }
   typedef void InternalArenaConstructable_;

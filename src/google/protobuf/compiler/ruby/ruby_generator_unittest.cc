@@ -57,7 +57,7 @@ std::string FindRubyTestDir() {
 // Some day, we may integrate build systems between protoc and the language
 // extensions to the point where we can do this test in a more automated way.
 
-void RubyTest(string proto_file) {
+void RubyTest(string proto_file, string import_proto_file = "") {
   std::string ruby_tests = FindRubyTestDir();
 
   google::protobuf::compiler::CommandLineInterface cli;
@@ -77,9 +77,23 @@ void RubyTest(string proto_file) {
       test_input,
       true));
 
+  // Copy generated_code_import.proto to the temporary test directory.
+  std::string test_import;
+  if (!import_proto_file.empty()) {
+    GOOGLE_CHECK_OK(File::GetContents(
+        ruby_tests + import_proto_file + ".proto",
+        &test_import,
+        true));
+    GOOGLE_CHECK_OK(File::SetContents(
+        TestTempDir() + import_proto_file + ".proto",
+        test_import,
+        true));
+  }
+
   // Invoke the proto compiler (we will be inside TestTempDir() at this point).
   std::string ruby_out = "--ruby_out=" + TestTempDir();
   std::string proto_path = "--proto_path=" + TestTempDir();
+
   std::string proto_target = TestTempDir() + proto_file + ".proto";
   const char* argv[] = {
     "protoc",
@@ -105,11 +119,11 @@ void RubyTest(string proto_file) {
 }
 
 TEST(RubyGeneratorTest, Proto3GeneratorTest) {
-  RubyTest("/ruby_generated_code");
+  RubyTest("/ruby_generated_code", "/ruby_generated_code_proto2_import");
 }
 
 TEST(RubyGeneratorTest, Proto2GeneratorTest) {
-    RubyTest("/ruby_generated_code_proto2");
+    RubyTest("/ruby_generated_code_proto2", "/ruby_generated_code_proto2_import");
 }
 
 TEST(RubyGeneratorTest, Proto3ImplicitPackageTest) {

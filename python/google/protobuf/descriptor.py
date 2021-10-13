@@ -36,7 +36,6 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import threading
 import warnings
-import six
 
 from google.protobuf.internal import api_implementation
 
@@ -111,7 +110,7 @@ _Deprecated.count = 100
 _internal_create_key = object()
 
 
-class DescriptorBase(six.with_metaclass(DescriptorMetaclass)):
+class DescriptorBase(metaclass=DescriptorMetaclass):
 
   """Descriptors base class.
 
@@ -913,6 +912,24 @@ class MethodDescriptor(DescriptorBase):
     self.input_type = input_type
     self.output_type = output_type
 
+  def CopyToProto(self, proto):
+    """Copies this to a descriptor_pb2.MethodDescriptorProto.
+
+    Args:
+      proto (descriptor_pb2.MethodDescriptorProto): An empty descriptor proto.
+
+    Raises:
+      Error: If self couldn't be serialized, due to too few constructor
+        arguments.
+    """
+    if self.containing_service is not None:
+      from google.protobuf import descriptor_pb2
+      service_proto = descriptor_pb2.ServiceDescriptorProto()
+      self.containing_service.CopyToProto(service_proto)
+      proto.CopyFrom(service_proto.method[self.index])
+    else:
+      raise Error('Descriptor does not contain a service.')
+
 
 class FileDescriptor(DescriptorBase):
   """Descriptor for a file. Mimics the descriptor_pb2.FileDescriptorProto.
@@ -934,7 +951,7 @@ class FileDescriptor(DescriptorBase):
     public_dependencies (list[FileDescriptor]): A subset of
       :attr:`dependencies`, which were declared as "public".
     message_types_by_name (dict(str, Descriptor)): Mapping from message names
-      to their :class:`Desctiptor`.
+      to their :class:`Descriptor`.
     enum_types_by_name (dict(str, EnumDescriptor)): Mapping from enum names to
       their :class:`EnumDescriptor`.
     extensions_by_name (dict(str, FieldDescriptor)): Mapping from extension

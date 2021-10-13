@@ -34,7 +34,6 @@
 #include "defs.h"
 #include "message.h"
 #include "protobuf.h"
-#include "third_party/wyhash/wyhash.h"
 
 // -----------------------------------------------------------------------------
 // Repeated field container type.
@@ -88,7 +87,7 @@ VALUE RepeatedField_GetRubyWrapper(upb_array* array, TypeInfo type_info,
   if (val == Qnil) {
     val = RepeatedField_alloc(cRepeatedField);
     RepeatedField* self;
-    ObjectCache_Add(array, val, Arena_get(arena));
+    ObjectCache_Add(array, val);
     TypedData_Get_Struct(val, RepeatedField, &RepeatedField_type, self);
     self->array = array;
     self->arena = arena;
@@ -149,7 +148,8 @@ VALUE RepeatedField_deep_copy(VALUE _self) {
   return new_rptfield;
 }
 
-const upb_array* RepeatedField_GetUpbArray(VALUE val, const upb_fielddef *field) {
+const upb_array* RepeatedField_GetUpbArray(VALUE val, const upb_fielddef* field,
+                                           upb_arena* arena) {
   RepeatedField* self;
   TypeInfo type_info = TypeInfo_get(field);
 
@@ -167,6 +167,7 @@ const upb_array* RepeatedField_GetUpbArray(VALUE val, const upb_fielddef *field)
     rb_raise(cTypeError, "Repeated field array has wrong message/enum class");
   }
 
+  Arena_fuse(self->arena, arena);
   return self->array;
 }
 
@@ -412,7 +413,7 @@ static VALUE RepeatedField_dup(VALUE _self) {
   int size = upb_array_size(self->array);
   int i;
 
-  upb_arena_fuse(arena, Arena_get(self->arena));
+  Arena_fuse(self->arena, arena);
 
   for (i = 0; i < size; i++) {
     upb_msgval msgval = upb_array_get(self->array, i);
@@ -500,9 +501,10 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
  */
 static VALUE RepeatedField_freeze(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-
-  ObjectCache_Pin(self->array, _self, Arena_get(self->arena));
-  RB_OBJ_FREEZE(_self);
+  if (!RB_OBJ_FROZEN(_self)) {
+    Arena_Pin(self->arena, _self);
+    RB_OBJ_FREEZE(_self);
+  }
   return _self;
 }
 
@@ -549,6 +551,7 @@ VALUE RepeatedField_plus(VALUE _self, VALUE list) {
     RepeatedField* dupped = ruby_to_RepeatedField(dupped_);
     upb_array *dupped_array = RepeatedField_GetMutable(dupped_);
     upb_arena* arena = Arena_get(dupped->arena);
+    Arena_fuse(list_rptfield->arena, arena);
     int size = upb_array_size(list_rptfield->array);
     int i;
 
@@ -610,7 +613,7 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
 
   self->type_info = TypeInfo_FromClass(argc, argv, 0, &self->type_class, &ary);
   self->array = upb_array_new(arena, self->type_info.type);
-  ObjectCache_Add(self->array, _self, arena);
+  ObjectCache_Add(self->array, _self);
 
   if (ary != Qnil) {
     if (!RB_TYPE_P(ary, T_ARRAY)) {

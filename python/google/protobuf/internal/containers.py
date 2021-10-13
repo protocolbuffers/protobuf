@@ -42,149 +42,7 @@ are:
 
 __author__ = 'petar@google.com (Petar Petrov)'
 
-import sys
-try:
-  # This fallback applies for all versions of Python before 3.3
-  import collections.abc as collections_abc
-except ImportError:
-  import collections as collections_abc
-
-if sys.version_info[0] < 3:
-  # We would use collections_abc.MutableMapping all the time, but in Python 2
-  # it doesn't define __slots__.  This causes two significant problems:
-  #
-  # 1. we can't disallow arbitrary attribute assignment, even if our derived
-  #    classes *do* define __slots__.
-  #
-  # 2. we can't safely derive a C type from it without __slots__ defined (the
-  #    interpreter expects to find a dict at tp_dictoffset, which we can't
-  #    robustly provide.  And we don't want an instance dict anyway.
-  #
-  # So this is the Python 2.7 definition of Mapping/MutableMapping functions
-  # verbatim, except that:
-  # 1. We declare __slots__.
-  # 2. We don't declare this as a virtual base class.  The classes defined
-  #    in collections_abc are the interesting base classes, not us.
-  #
-  # Note: deriving from object is critical.  It is the only thing that makes
-  # this a true type, allowing us to derive from it in C++ cleanly and making
-  # __slots__ properly disallow arbitrary element assignment.
-
-  class Mapping(object):
-    __slots__ = ()
-
-    def get(self, key, default=None):
-      try:
-        return self[key]
-      except KeyError:
-        return default
-
-    def __contains__(self, key):
-      try:
-        self[key]
-      except KeyError:
-        return False
-      else:
-        return True
-
-    def iterkeys(self):
-      return iter(self)
-
-    def itervalues(self):
-      for key in self:
-        yield self[key]
-
-    def iteritems(self):
-      for key in self:
-        yield (key, self[key])
-
-    def keys(self):
-      return list(self)
-
-    def items(self):
-      return [(key, self[key]) for key in self]
-
-    def values(self):
-      return [self[key] for key in self]
-
-    # Mappings are not hashable by default, but subclasses can change this
-    __hash__ = None
-
-    def __eq__(self, other):
-      if not isinstance(other, collections_abc.Mapping):
-        return NotImplemented
-      return dict(self.items()) == dict(other.items())
-
-    def __ne__(self, other):
-      return not (self == other)
-
-  class MutableMapping(Mapping):
-    __slots__ = ()
-
-    __marker = object()
-
-    def pop(self, key, default=__marker):
-      try:
-        value = self[key]
-      except KeyError:
-        if default is self.__marker:
-          raise
-        return default
-      else:
-        del self[key]
-        return value
-
-    def popitem(self):
-      try:
-        key = next(iter(self))
-      except StopIteration:
-        raise KeyError
-      value = self[key]
-      del self[key]
-      return key, value
-
-    def clear(self):
-      try:
-        while True:
-          self.popitem()
-      except KeyError:
-        pass
-
-    def update(*args, **kwds):
-      if len(args) > 2:
-        raise TypeError("update() takes at most 2 positional "
-                        "arguments ({} given)".format(len(args)))
-      elif not args:
-        raise TypeError("update() takes at least 1 argument (0 given)")
-      self = args[0]
-      other = args[1] if len(args) >= 2 else ()
-
-      if isinstance(other, Mapping):
-        for key in other:
-          self[key] = other[key]
-      elif hasattr(other, "keys"):
-        for key in other.keys():
-          self[key] = other[key]
-      else:
-        for key, value in other:
-          self[key] = value
-      for key, value in kwds.items():
-        self[key] = value
-
-    def setdefault(self, key, default=None):
-      try:
-        return self[key]
-      except KeyError:
-        self[key] = default
-      return default
-
-  collections_abc.Mapping.register(Mapping)
-  collections_abc.MutableMapping.register(MutableMapping)
-
-else:
-  # In Python 3 we can just use MutableMapping directly, because it defines
-  # __slots__.
-  MutableMapping = collections_abc.MutableMapping
+import collections.abc
 
 
 class BaseContainer(object):
@@ -235,7 +93,7 @@ class BaseContainer(object):
     self._values.reverse()
 
 
-collections_abc.MutableSequence.register(BaseContainer)
+collections.abc.MutableSequence.register(BaseContainer)
 
 
 class RepeatedScalarFieldContainer(BaseContainer):
@@ -458,7 +316,7 @@ class RepeatedCompositeFieldContainer(BaseContainer):
     return self._values == other._values
 
 
-class ScalarMap(MutableMapping):
+class ScalarMap(collections.abc.MutableMapping):
 
   """Simple, type-checked, dict-like container for holding repeated scalars."""
 
@@ -548,7 +406,7 @@ class ScalarMap(MutableMapping):
     return self._entry_descriptor._concrete_class
 
 
-class MessageMap(MutableMapping):
+class MessageMap(collections.abc.MutableMapping):
 
   """Simple, type-checked, dict-like container for with submessage values."""
 

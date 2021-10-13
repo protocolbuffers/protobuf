@@ -1204,7 +1204,6 @@ inline void TestUtil::ReflectionTester::ExpectMessagesReleasedViaReflection(
       "optional_import_message",
   };
   for (int i = 0; i < GOOGLE_ARRAYSIZE(fields); i++) {
-    const Message& sub_message = reflection->GetMessage(*message, F(fields[i]));
     Message* released = reflection->ReleaseMessage(message, F(fields[i]));
     switch (expected_release_state) {
       case IS_NULL:
@@ -1212,11 +1211,6 @@ inline void TestUtil::ReflectionTester::ExpectMessagesReleasedViaReflection(
         break;
       case NOT_NULL:
         EXPECT_TRUE(released != nullptr);
-        if (message->GetArena() == nullptr) {
-          // released message must be same as sub_message if source message is
-          // not on arena.
-          EXPECT_EQ(&sub_message, released);
-        }
         break;
       case CAN_BE_NULL:
         break;

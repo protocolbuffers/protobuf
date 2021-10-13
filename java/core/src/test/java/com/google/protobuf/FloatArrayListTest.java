@@ -30,39 +30,44 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static java.util.Arrays.asList;
 
 import com.google.protobuf.Internal.FloatList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-/**
- * Tests for {@link FloatArrayList}.
- *
- * @author dweis@google.com (Daniel Weis)
- */
-public class FloatArrayListTest extends TestCase {
+/** Tests for {@link FloatArrayList}. */
+@RunWith(JUnit4.class)
+public class FloatArrayListTest {
 
   private static final FloatArrayList UNARY_LIST = newImmutableFloatArrayList(1);
   private static final FloatArrayList TERTIARY_LIST = newImmutableFloatArrayList(1, 2, 3);
 
   private FloatArrayList list;
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     list = new FloatArrayList();
   }
 
+  @Test
   public void testEmptyListReturnsSameInstance() {
-    assertSame(FloatArrayList.emptyList(), FloatArrayList.emptyList());
+    assertThat(FloatArrayList.emptyList()).isSameInstanceAs(FloatArrayList.emptyList());
   }
 
+  @Test
   public void testEmptyListIsImmutable() {
     assertImmutable(FloatArrayList.emptyList());
   }
 
+  @Test
   public void testMakeImmutable() {
     list.addFloat(3);
     list.addFloat(4);
@@ -72,19 +77,20 @@ public class FloatArrayListTest extends TestCase {
     assertImmutable(list);
   }
 
+  @Test
   public void testModificationWithIteration() {
     list.addAll(asList(1F, 2F, 3F, 4F));
     Iterator<Float> iterator = list.iterator();
-    assertEquals(4, list.size());
-    assertEquals(1F, (float) list.get(0), 0.0f);
-    assertEquals(1F, (float) iterator.next(), 0.0f);
+    assertThat(list).hasSize(4);
+    assertThat((float) list.get(0)).isEqualTo(1F);
+    assertThat((float) iterator.next()).isEqualTo(1F);
     list.set(0, 1F);
-    assertEquals(2F, (float) iterator.next(), 0.0f);
+    assertThat((float) iterator.next()).isEqualTo(2F);
 
     list.remove(0);
     try {
       iterator.next();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (ConcurrentModificationException e) {
       // expected
     }
@@ -93,191 +99,211 @@ public class FloatArrayListTest extends TestCase {
     list.add(0, 0F);
     try {
       iterator.next();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (ConcurrentModificationException e) {
       // expected
     }
   }
 
+  @Test
   public void testGet() {
-    assertEquals(1F, (float) TERTIARY_LIST.get(0), 0.0f);
-    assertEquals(2F, (float) TERTIARY_LIST.get(1), 0.0f);
-    assertEquals(3F, (float) TERTIARY_LIST.get(2), 0.0f);
+    assertThat((float) TERTIARY_LIST.get(0)).isEqualTo(1F);
+    assertThat((float) TERTIARY_LIST.get(1)).isEqualTo(2F);
+    assertThat((float) TERTIARY_LIST.get(2)).isEqualTo(3F);
 
     try {
       TERTIARY_LIST.get(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       TERTIARY_LIST.get(3);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testGetFloat() {
-    assertEquals(1F, TERTIARY_LIST.getFloat(0), 0.0f);
-    assertEquals(2F, TERTIARY_LIST.getFloat(1), 0.0f);
-    assertEquals(3F, TERTIARY_LIST.getFloat(2), 0.0f);
+    assertThat(TERTIARY_LIST.getFloat(0)).isEqualTo(1F);
+    assertThat(TERTIARY_LIST.getFloat(1)).isEqualTo(2F);
+    assertThat(TERTIARY_LIST.getFloat(2)).isEqualTo(3F);
 
     try {
       TERTIARY_LIST.get(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       TERTIARY_LIST.get(3);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testIndexOf_nullElement() {
-    assertEquals(-1, TERTIARY_LIST.indexOf(null));
+    assertThat(TERTIARY_LIST.indexOf(null)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_incompatibleElementType() {
-    assertEquals(-1, TERTIARY_LIST.indexOf(new Object()));
+    assertThat(TERTIARY_LIST.indexOf(new Object())).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_notInList() {
-    assertEquals(-1, UNARY_LIST.indexOf(2F));
+    assertThat(UNARY_LIST.indexOf(2F)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_notInListWithDuplicates() {
     FloatArrayList listWithDupes = newImmutableFloatArrayList(1F, 1F);
-    assertEquals(-1, listWithDupes.indexOf(2F));
+    assertThat(listWithDupes.indexOf(2F)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_inList() {
-    assertEquals(1, TERTIARY_LIST.indexOf(2F));
+    assertThat(TERTIARY_LIST.indexOf(2F)).isEqualTo(1);
   }
 
+  @Test
   public void testIndexOf_inListWithDuplicates_matchAtHead() {
     FloatArrayList listWithDupes = newImmutableFloatArrayList(1F, 1F, 2F);
-    assertEquals(0, listWithDupes.indexOf(1F));
+    assertThat(listWithDupes.indexOf(1F)).isEqualTo(0);
   }
 
+  @Test
   public void testIndexOf_inListWithDuplicates_matchMidList() {
     FloatArrayList listWithDupes = newImmutableFloatArrayList(2F, 1F, 1F, 2F);
-    assertEquals(1, listWithDupes.indexOf(1F));
+    assertThat(listWithDupes.indexOf(1F)).isEqualTo(1);
   }
 
+  @Test
   public void testContains_nullElement() {
-    assertEquals(false, TERTIARY_LIST.contains(null));
+    assertThat(TERTIARY_LIST).doesNotContain(null);
   }
 
+  @Test
   public void testContains_incompatibleElementType() {
-    assertEquals(false, TERTIARY_LIST.contains(new Object()));
+    assertThat(TERTIARY_LIST).doesNotContain(new Object());
   }
 
+  @Test
   public void testContains_notInList() {
-    assertEquals(false, UNARY_LIST.contains(2F));
+    assertThat(UNARY_LIST).doesNotContain(2F);
   }
 
+  @Test
   public void testContains_notInListWithDuplicates() {
     FloatArrayList listWithDupes = newImmutableFloatArrayList(1F, 1F);
-    assertEquals(false, listWithDupes.contains(2F));
+    assertThat(listWithDupes).doesNotContain(2F);
   }
 
+  @Test
   public void testContains_inList() {
-    assertEquals(true, TERTIARY_LIST.contains(2F));
+    assertThat(TERTIARY_LIST).contains(2F);
   }
 
+  @Test
   public void testContains_inListWithDuplicates_matchAtHead() {
     FloatArrayList listWithDupes = newImmutableFloatArrayList(1F, 1F, 2F);
-    assertEquals(true, listWithDupes.contains(1F));
+    assertThat(listWithDupes).contains(1F);
   }
 
+  @Test
   public void testContains_inListWithDuplicates_matchMidList() {
     FloatArrayList listWithDupes = newImmutableFloatArrayList(2F, 1F, 1F, 2F);
-    assertEquals(true, listWithDupes.contains(1F));
+    assertThat(listWithDupes).contains(1F);
   }
 
+  @Test
   public void testSize() {
-    assertEquals(0, FloatArrayList.emptyList().size());
-    assertEquals(1, UNARY_LIST.size());
-    assertEquals(3, TERTIARY_LIST.size());
+    assertThat(FloatArrayList.emptyList()).isEmpty();
+    assertThat(UNARY_LIST).hasSize(1);
+    assertThat(TERTIARY_LIST).hasSize(3);
 
     list.addFloat(3);
     list.addFloat(4);
     list.addFloat(6);
     list.addFloat(8);
-    assertEquals(4, list.size());
+    assertThat(list).hasSize(4);
 
     list.remove(0);
-    assertEquals(3, list.size());
+    assertThat(list).hasSize(3);
 
     list.add(17F);
-    assertEquals(4, list.size());
+    assertThat(list).hasSize(4);
   }
 
+  @Test
   public void testSet() {
     list.addFloat(2);
     list.addFloat(4);
 
-    assertEquals(2F, (float) list.set(0, 3F), 0.0f);
-    assertEquals(3F, list.getFloat(0), 0.0f);
+    assertThat((float) list.set(0, 3F)).isEqualTo(2F);
+    assertThat(list.getFloat(0)).isEqualTo(3F);
 
-    assertEquals(4F, (float) list.set(1, 0F), 0.0f);
-    assertEquals(0F, list.getFloat(1), 0.0f);
+    assertThat((float) list.set(1, 0F)).isEqualTo(4F);
+    assertThat(list.getFloat(1)).isEqualTo(0F);
 
     try {
       list.set(-1, 0F);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.set(2, 0F);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testSetFloat() {
     list.addFloat(1);
     list.addFloat(3);
 
-    assertEquals(1F, list.setFloat(0, 0), 0.0f);
-    assertEquals(0F, list.getFloat(0), 0.0f);
+    assertThat(list.setFloat(0, 0)).isEqualTo(1F);
+    assertThat(list.getFloat(0)).isEqualTo(0F);
 
-    assertEquals(3F, list.setFloat(1, 0), 0.0f);
-    assertEquals(0F, list.getFloat(1), 0.0f);
+    assertThat(list.setFloat(1, 0)).isEqualTo(3F);
+    assertThat(list.getFloat(1)).isEqualTo(0F);
 
     try {
       list.setFloat(-1, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.setFloat(2, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testAdd() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
-    assertTrue(list.add(2F));
-    assertEquals(asList(2F), list);
+    assertThat(list.add(2F)).isTrue();
+    assertThat(list).containsExactly(2F);
 
-    assertTrue(list.add(3F));
+    assertThat(list.add(3F)).isTrue();
     list.add(0, 4F);
-    assertEquals(asList(4F, 2F, 3F), list);
+    assertThat(list).containsExactly(4F, 2F, 3F).inOrder();
 
     list.add(0, 1F);
     list.add(0, 0F);
@@ -285,7 +311,7 @@ public class FloatArrayListTest extends TestCase {
     for (int i = 0; i < 6; i++) {
       list.add(Float.valueOf(5 + i));
     }
-    assertEquals(asList(0F, 1F, 4F, 2F, 3F, 5F, 6F, 7F, 8F, 9F, 10F), list);
+    assertThat(list).containsExactly(0F, 1F, 4F, 2F, 3F, 5F, 6F, 7F, 8F, 9F, 10F).inOrder();
 
     try {
       list.add(-1, 5F);
@@ -300,92 +326,100 @@ public class FloatArrayListTest extends TestCase {
     }
   }
 
+  @Test
   public void testAddFloat() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
     list.addFloat(2);
-    assertEquals(asList(2F), list);
+    assertThat(list).containsExactly(2F);
 
     list.addFloat(3);
-    assertEquals(asList(2F, 3F), list);
+    assertThat(list).containsExactly(2F, 3F).inOrder();
   }
 
+  @Test
   public void testAddAll() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
-    assertTrue(list.addAll(Collections.singleton(1F)));
-    assertEquals(1, list.size());
-    assertEquals(1F, (float) list.get(0), 0.0f);
-    assertEquals(1F, list.getFloat(0), 0.0f);
+    assertThat(list.addAll(Collections.singleton(1F))).isTrue();
+    assertThat(list).hasSize(1);
+    assertThat((float) list.get(0)).isEqualTo(1F);
+    assertThat(list.getFloat(0)).isEqualTo(1F);
 
-    assertTrue(list.addAll(asList(2F, 3F, 4F, 5F, 6F)));
-    assertEquals(asList(1F, 2F, 3F, 4F, 5F, 6F), list);
+    assertThat(list.addAll(asList(2F, 3F, 4F, 5F, 6F))).isTrue();
+    assertThat(list).containsExactly(1F, 2F, 3F, 4F, 5F, 6F).inOrder();
 
-    assertTrue(list.addAll(TERTIARY_LIST));
-    assertEquals(asList(1F, 2F, 3F, 4F, 5F, 6F, 1F, 2F, 3F), list);
+    assertThat(list.addAll(TERTIARY_LIST)).isTrue();
+    assertThat(list).containsExactly(1F, 2F, 3F, 4F, 5F, 6F, 1F, 2F, 3F).inOrder();
 
-    assertFalse(list.addAll(Collections.<Float>emptyList()));
-    assertFalse(list.addAll(FloatArrayList.emptyList()));
+    assertThat(list.addAll(Collections.<Float>emptyList())).isFalse();
+    assertThat(list.addAll(FloatArrayList.emptyList())).isFalse();
   }
 
+  @Test
   public void testEquals() {
     FloatArrayList list1 = new FloatArrayList();
     FloatArrayList list2 = new FloatArrayList();
 
     list1.addFloat(Float.intBitsToFloat(0xff800001));
     list2.addFloat(Float.intBitsToFloat(0xff800002));
-    assertEquals(list1, list2);
+    assertThat(list1).isEqualTo(list2);
   }
 
+  @Test
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
-    assertEquals(1F, (float) list.remove(0), 0.0f);
-    assertEquals(asList(2F, 3F), list);
+    assertThat((float) list.remove(0)).isEqualTo(1F);
+    assertThat(list).containsExactly(2F, 3F).inOrder();
 
-    assertTrue(list.remove(Float.valueOf(3)));
-    assertEquals(asList(2F), list);
+    assertThat(list.remove(Float.valueOf(3))).isTrue();
+    assertThat(list).containsExactly(2F);
 
-    assertFalse(list.remove(Float.valueOf(3)));
-    assertEquals(asList(2F), list);
+    assertThat(list.remove(Float.valueOf(3))).isFalse();
+    assertThat(list).containsExactly(2F);
 
-    assertEquals(2F, (float) list.remove(0), 0.0f);
-    assertEquals(asList(), list);
+    assertThat((float) list.remove(0)).isEqualTo(2F);
+    assertThat(list).isEmpty();
 
     try {
       list.remove(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.remove(0);
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testRemoveEnd_listAtCapacity() {
     FloatList toRemove = FloatArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addFloat(3);
     toRemove.remove(0);
-    assertEquals(0, toRemove.size());
+    assertThat(toRemove).isEmpty();
   }
 
+  @Test
   public void testRemove_listAtCapacity() {
     FloatList toRemove = FloatArrayList.emptyList().mutableCopyWithCapacity(2);
     toRemove.addFloat(3);
     toRemove.addFloat(4);
     toRemove.remove(0);
-    assertEquals(1, toRemove.size());
-    assertEquals(4F, (float) toRemove.get(0));
+    assertThat(toRemove).hasSize(1);
+    assertThat((float) toRemove.get(0)).isEqualTo(4F);
   }
 
+  @Test
   public void testSublistRemoveEndOfCapacity() {
     FloatList toRemove = FloatArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addFloat(3);
     toRemove.subList(0, 1).clear();
-    assertEquals(0, toRemove.size());
+    assertThat(toRemove).isEmpty();
   }
 
   private void assertImmutable(FloatList list) {
@@ -395,147 +429,147 @@ public class FloatArrayListTest extends TestCase {
 
     try {
       list.add(1F);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.add(0, 1F);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(Collections.<Float>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(Collections.singletonList(1F));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(new FloatArrayList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, Collections.singleton(1F));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, Collections.<Float>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addFloat(0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.clear();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.remove(1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.remove(new Object());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(Collections.<Float>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(Collections.singleton(1F));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(Collections.<Float>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(Collections.singleton(1F));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.set(0, 0F);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.setFloat(0, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }

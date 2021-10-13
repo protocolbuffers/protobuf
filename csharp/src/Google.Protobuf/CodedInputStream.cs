@@ -435,8 +435,7 @@ namespace Google.Protobuf
             // we will need to switch back again to CodedInputStream-based parsing (which involves copying and storing the state) to be able to
             // invoke the legacy MergeFrom(CodedInputStream) method.
             // For now, this inefficiency is fine, considering this is only a backward-compatibility scenario (and regenerating the code fixes it).
-            var span = new ReadOnlySpan<byte>(buffer);
-            ParseContext.Initialize(ref span, ref state, out ParseContext ctx);
+            ParseContext.Initialize(buffer.AsSpan(), ref state, out ParseContext ctx);
             try
             {
                 ParsingPrimitivesMessages.ReadMessage(ref ctx, builder);

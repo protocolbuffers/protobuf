@@ -40,7 +40,7 @@ namespace protobuf {
 namespace internal {
 
 MapFieldBase::~MapFieldBase() {
-  if (repeated_field_ != NULL && arena_ == NULL) delete repeated_field_;
+  if (repeated_field_ != nullptr && arena_ == nullptr) delete repeated_field_;
 }
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
@@ -56,6 +56,57 @@ RepeatedPtrFieldBase* MapFieldBase::MutableRepeatedField() {
   return reinterpret_cast<RepeatedPtrFieldBase*>(repeated_field_);
 }
 
+void MapFieldBase::SwapState(MapFieldBase* other) {
+  // a relaxed swap of the atomic
+  auto other_state = other->state_.load(std::memory_order_relaxed);
+  auto this_state = state_.load(std::memory_order_relaxed);
+  other->state_.store(this_state, std::memory_order_relaxed);
+  state_.store(other_state, std::memory_order_relaxed);
+}
+
+void SwapRepeatedPtrToNull(RepeatedPtrField<Message>** from,
+                           RepeatedPtrField<Message>** to, Arena* from_arena,
+                           Arena* to_arena) {
+  GOOGLE_DCHECK(*from != nullptr);
+  GOOGLE_DCHECK(*to == nullptr);
+  *to = Arena::CreateMessage<RepeatedPtrField<Message> >(to_arena);
+  **to = std::move(**from);
+  if (from_arena == nullptr) {
+    delete *from;
+  }
+  *from = nullptr;
+}
+
+void MapFieldBase::Swap(MapFieldBase* other) {
+  if (arena_ == other->arena_) {
+    InternalSwap(other);
+    return;
+  }
+  if (repeated_field_ != nullptr || other->repeated_field_ != nullptr) {
+    if (repeated_field_ == nullptr) {
+      SwapRepeatedPtrToNull(&other->repeated_field_, &repeated_field_,
+                            other->arena_, arena_);
+    } else if (other->repeated_field_ == nullptr) {
+      SwapRepeatedPtrToNull(&repeated_field_, &other->repeated_field_, arena_,
+                            other->arena_);
+    } else {
+      repeated_field_->Swap(other->repeated_field_);
+    }
+  }
+  SwapState(other);
+}
+
+void MapFieldBase::UnsafeShallowSwap(MapFieldBase* other) {
+  GOOGLE_DCHECK_EQ(arena_, other->arena_);
+  InternalSwap(other);
+}
+
+void MapFieldBase::InternalSwap(MapFieldBase* other) {
+  std::swap(arena_, other->arena_);
+  std::swap(repeated_field_, other->repeated_field_);
+  SwapState(other);
+}
+
 size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
   ConstAccess();
   mutex_.Lock();
@@ -66,7 +117,7 @@ size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
 }
 
 size_t MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
-  if (repeated_field_ != NULL) {
+  if (repeated_field_ != nullptr) {
     return repeated_field_->SpaceUsedExcludingSelfLong();
   } else {
     return 0;
@@ -122,12 +173,8 @@ void MapFieldBase::SyncRepeatedFieldWithMap() const {
       // Double check state
       if (state_.load(std::memory_order_relaxed) == CLEAN) {
         if (repeated_field_ == nullptr) {
-          if (arena_ == nullptr) {
-            repeated_field_ = new RepeatedPtrField<Message>();
-          } else {
-            repeated_field_ =
-                Arena::CreateMessage<RepeatedPtrField<Message> >(arena_);
-          }
+          repeated_field_ =
+              Arena::CreateMessage<RepeatedPtrField<Message> >(arena_);
         }
         state_.store(CLEAN, std::memory_order_release);
       }
@@ -140,7 +187,7 @@ void MapFieldBase::SyncRepeatedFieldWithMap() const {
 }
 
 void MapFieldBase::SyncRepeatedFieldWithMapNoLock() const {
-  if (repeated_field_ == NULL) {
+  if (repeated_field_ == nullptr) {
     repeated_field_ = Arena::CreateMessage<RepeatedPtrField<Message> >(arena_);
   }
 }
@@ -172,11 +219,11 @@ DynamicMapField::DynamicMapField(const Message* default_entry, Arena* arena)
       default_entry_(default_entry) {}
 
 DynamicMapField::~DynamicMapField() {
-  // DynamicMapField owns map values. Need to delete them before clearing
-  // the map.
-  for (Map<MapKey, MapValueRef>::iterator iter = map_.begin();
-       iter != map_.end(); ++iter) {
-    iter->second.DeleteData();
+  if (arena_ != nullptr) return;
+  // DynamicMapField owns map values. Need to delete them before clearing the
+  // map.
+  for (auto& kv : map_) {
+    kv.second.DeleteData();
   }
   map_.clear();
 }
@@ -220,15 +267,15 @@ void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
     map_val->SetValue(value);                                \
     break;                                                   \
   }
-    HANDLE_TYPE(INT32, int32);
-    HANDLE_TYPE(INT64, int64);
-    HANDLE_TYPE(UINT32, uint32);
-    HANDLE_TYPE(UINT64, uint64);
+    HANDLE_TYPE(INT32, int32_t);
+    HANDLE_TYPE(INT64, int64_t);
+    HANDLE_TYPE(UINT32, uint32_t);
+    HANDLE_TYPE(UINT64, uint64_t);
     HANDLE_TYPE(DOUBLE, double);
     HANDLE_TYPE(FLOAT, float);
     HANDLE_TYPE(BOOL, bool);
     HANDLE_TYPE(STRING, std::string);
-    HANDLE_TYPE(ENUM, int32);
+    HANDLE_TYPE(ENUM, int32_t);
 #undef HANDLE_TYPE
     case FieldDescriptor::CPPTYPE_MESSAGE: {
       const Message& message =
@@ -387,14 +434,9 @@ void DynamicMapField::SyncRepeatedFieldWithMapNoLock() const {
   const Reflection* reflection = default_entry_->GetReflection();
   const FieldDescriptor* key_des = default_entry_->GetDescriptor()->map_key();
   const FieldDescriptor* val_des = default_entry_->GetDescriptor()->map_value();
-  if (MapFieldBase::repeated_field_ == NULL) {
-    if (MapFieldBase::arena_ == NULL) {
-      MapFieldBase::repeated_field_ = new RepeatedPtrField<Message>();
-    } else {
-      MapFieldBase::repeated_field_ =
-          Arena::CreateMessage<RepeatedPtrField<Message> >(
-              MapFieldBase::arena_);
-    }
+  if (MapFieldBase::repeated_field_ == nullptr) {
+    MapFieldBase::repeated_field_ =
+        Arena::CreateMessage<RepeatedPtrField<Message> >(MapFieldBase::arena_);
   }
 
   MapFieldBase::repeated_field_->Clear();
@@ -532,15 +574,15 @@ void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
     map_val.SetValue(value);                                 \
     break;                                                   \
   }
-      HANDLE_TYPE(INT32, int32, Int32);
-      HANDLE_TYPE(INT64, int64, Int64);
-      HANDLE_TYPE(UINT32, uint32, UInt32);
-      HANDLE_TYPE(UINT64, uint64, UInt64);
+      HANDLE_TYPE(INT32, int32_t, Int32);
+      HANDLE_TYPE(INT64, int64_t, Int64);
+      HANDLE_TYPE(UINT32, uint32_t, UInt32);
+      HANDLE_TYPE(UINT64, uint64_t, UInt64);
       HANDLE_TYPE(DOUBLE, double, Double);
       HANDLE_TYPE(FLOAT, float, Float);
       HANDLE_TYPE(BOOL, bool, Bool);
       HANDLE_TYPE(STRING, std::string, String);
-      HANDLE_TYPE(ENUM, int32, EnumValue);
+      HANDLE_TYPE(ENUM, int32_t, EnumValue);
 #undef HANDLE_TYPE
       case FieldDescriptor::CPPTYPE_MESSAGE: {
         const Message& message = reflection->GetMessage(*it, val_des);
@@ -555,7 +597,7 @@ void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
 
 size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
   size_t size = 0;
-  if (MapFieldBase::repeated_field_ != NULL) {
+  if (MapFieldBase::repeated_field_ != nullptr) {
     size += MapFieldBase::repeated_field_->SpaceUsedExcludingSelfLong();
   }
   size += sizeof(map_);
@@ -575,15 +617,15 @@ size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
     size += sizeof(TYPE) * map_size;         \
     break;                                   \
   }
-      HANDLE_TYPE(INT32, int32);
-      HANDLE_TYPE(INT64, int64);
-      HANDLE_TYPE(UINT32, uint32);
-      HANDLE_TYPE(UINT64, uint64);
+      HANDLE_TYPE(INT32, int32_t);
+      HANDLE_TYPE(INT64, int64_t);
+      HANDLE_TYPE(UINT32, uint32_t);
+      HANDLE_TYPE(UINT64, uint64_t);
       HANDLE_TYPE(DOUBLE, double);
       HANDLE_TYPE(FLOAT, float);
       HANDLE_TYPE(BOOL, bool);
       HANDLE_TYPE(STRING, std::string);
-      HANDLE_TYPE(ENUM, int32);
+      HANDLE_TYPE(ENUM, int32_t);
 #undef HANDLE_TYPE
       case FieldDescriptor::CPPTYPE_MESSAGE: {
         while (it != map_.end()) {

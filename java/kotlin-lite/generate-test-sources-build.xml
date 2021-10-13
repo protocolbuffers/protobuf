@@ -1,0 +1,34 @@
+<project name="generate-test-sources">
+    <mkdir dir="${generated.testsources.dir}"/>
+    <exec executable="${protoc}">
+        <arg value="--java_out=lite:${generated.testsources.dir}"/>
+        <arg value="--proto_path=${protobuf.source.dir}"/>
+        <arg value="--proto_path=${protobuf.basedir}/java/kotlin/${test.proto.dir}"/>
+        <arg value="--experimental_allow_proto3_optional"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/map_lite_unittest.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_import.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_lite.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_public.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_public_lite.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_lite.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
+        <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/evil_names_proto2.proto"/>
+        <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/evil_names_proto3.proto"/>
+        <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/example_extensible_message.proto"/>
+        <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/multiple_files_proto3.proto"/>
+    </exec>
+    <exec executable="${protoc}">
+      <arg value="--kotlin_out=lite:${generated.testsources.dir}"/>
+      <arg value="--proto_path=${protobuf.source.dir}"/>
+      <arg value="--proto_path=${protobuf.basedir}/java/kotlin/${test.proto.dir}"/>
+      <arg value="--experimental_allow_proto3_optional"/>
+      <arg value="${protobuf.source.dir}/google/protobuf/map_lite_unittest.proto"/>
+      <arg value="${protobuf.source.dir}/google/protobuf/unittest_lite.proto"/>
+      <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
+      <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/evil_names_proto2.proto"/>
+      <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/evil_names_proto3.proto"/>
+      <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/example_extensible_message.proto"/>
+      <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/multiple_files_proto3.proto"/>
+    </exec>
+</project>

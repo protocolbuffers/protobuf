@@ -6,8 +6,6 @@
  * closure_asserts_commonjs.js that is only used at testing time.
  */
 
-// Include a dummy provide statement so that closurebuilder.py does not skip over this
-// file.
 goog.provide('jspb.ExportAsserts');
 
 goog.require('goog.testing.asserts');

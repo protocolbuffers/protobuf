@@ -337,7 +337,7 @@ PHP_METHOD(RepeatedField, offsetGet) {
 
   msgval = upb_array_get(intern->array, index);
   Convert_UpbToPhp(msgval, &ret, intern->type, &intern->arena);
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /**
@@ -447,7 +447,7 @@ PHP_METHOD(RepeatedField, count) {
 PHP_METHOD(RepeatedField, getIterator) {
   zval ret;
   RepeatedFieldIter_make(&ret, getThis());
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_construct, 0, 0, 1)
@@ -579,7 +579,7 @@ PHP_METHOD(RepeatedFieldIter, current) {
   msgval = upb_array_get(array, index);
 
   Convert_UpbToPhp(msgval, &ret, field->type, &field->arena);
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /**
@@ -640,8 +640,8 @@ void Array_ModuleInit() {
                    repeated_field_methods);
 
   RepeatedField_class_entry = zend_register_internal_class(&tmp_ce);
-  zend_class_implements(RepeatedField_class_entry, 3, spl_ce_ArrayAccess,
-                        zend_ce_aggregate, spl_ce_Countable);
+  zend_class_implements(RepeatedField_class_entry, 3, zend_ce_arrayaccess,
+                        zend_ce_aggregate, zend_ce_countable);
   RepeatedField_class_entry->ce_flags |= ZEND_ACC_FINAL;
   RepeatedField_class_entry->create_object = RepeatedField_create;
 

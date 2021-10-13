@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-#
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/

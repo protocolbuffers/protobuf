@@ -545,7 +545,7 @@ static inline size_t CEscapedLength(StringPiece src) {
   };
 
   size_t escaped_len = 0;
-  for (int i = 0; i < src.size(); ++i) {
+  for (StringPiece::size_type i = 0; i < src.size(); ++i) {
     unsigned char c = static_cast<unsigned char>(src[i]);
     escaped_len += c_escaped_len[c];
   }
@@ -569,7 +569,7 @@ void CEscapeAndAppend(StringPiece src, std::string *dest) {
   dest->resize(cur_dest_len + escaped_len);
   char* append_ptr = &(*dest)[cur_dest_len];
 
-  for (int i = 0; i < src.size(); ++i) {
+  for (StringPiece::size_type i = 0; i < src.size(); ++i) {
     unsigned char c = static_cast<unsigned char>(src[i]);
     switch (c) {
       case '\n': *append_ptr++ = '\\'; *append_ptr++ = 'n'; break;
@@ -1244,7 +1244,7 @@ char* DoubleToBuffer(double value, char* buffer) {
   // platforms these days.  Just in case some system exists where DBL_DIG
   // is significantly larger -- and risks overflowing our buffer -- we have
   // this assert.
-  GOOGLE_COMPILE_ASSERT(DBL_DIG < 20, DBL_DIG_is_too_big);
+  static_assert(DBL_DIG < 20, "DBL_DIG_is_too_big");
 
   if (value == std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "inf");
@@ -1272,8 +1272,8 @@ char* DoubleToBuffer(double value, char* buffer) {
   // truncated to a double.
   volatile double parsed_value = internal::NoLocaleStrtod(buffer, nullptr);
   if (parsed_value != value) {
-    int snprintf_result =
-      snprintf(buffer, kDoubleToBufferSize, "%.*g", DBL_DIG+2, value);
+    snprintf_result =
+        snprintf(buffer, kDoubleToBufferSize, "%.*g", DBL_DIG + 2, value);
 
     // Should never overflow; see above.
     GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kDoubleToBufferSize);
@@ -1287,7 +1287,7 @@ static int memcasecmp(const char *s1, const char *s2, size_t len) {
   const unsigned char *us1 = reinterpret_cast<const unsigned char *>(s1);
   const unsigned char *us2 = reinterpret_cast<const unsigned char *>(s2);
 
-  for ( int i = 0; i < len; i++ ) {
+  for (size_t i = 0; i < len; i++) {
     const int diff =
       static_cast<int>(static_cast<unsigned char>(ascii_tolower(us1[i]))) -
       static_cast<int>(static_cast<unsigned char>(ascii_tolower(us2[i])));
@@ -1362,7 +1362,7 @@ char* FloatToBuffer(float value, char* buffer) {
   // platforms these days.  Just in case some system exists where FLT_DIG
   // is significantly larger -- and risks overflowing our buffer -- we have
   // this assert.
-  GOOGLE_COMPILE_ASSERT(FLT_DIG < 10, FLT_DIG_is_too_big);
+  static_assert(FLT_DIG < 10, "FLT_DIG_is_too_big");
 
   if (value == std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "inf");
@@ -1384,8 +1384,8 @@ char* FloatToBuffer(float value, char* buffer) {
 
   float parsed_value;
   if (!safe_strtof(buffer, &parsed_value) || parsed_value != value) {
-    int snprintf_result =
-      snprintf(buffer, kFloatToBufferSize, "%.*g", FLT_DIG+3, value);
+    snprintf_result =
+        snprintf(buffer, kFloatToBufferSize, "%.*g", FLT_DIG + 3, value);
 
     // Should never overflow; see above.
     GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
@@ -1619,9 +1619,11 @@ int GlobalReplaceSubstring(const std::string &substring,
   std::string tmp;
   int num_replacements = 0;
   int pos = 0;
-  for (int match_pos = s->find(substring.data(), pos, substring.length());
+  for (StringPiece::size_type match_pos =
+           s->find(substring.data(), pos, substring.length());
        match_pos != std::string::npos; pos = match_pos + substring.length(),
-           match_pos = s->find(substring.data(), pos, substring.length())) {
+                              match_pos = s->find(substring.data(), pos,
+                                                  substring.length())) {
     ++num_replacements;
     // Append the original content before the match.
     tmp.append(*s, pos, match_pos - pos);
@@ -2099,7 +2101,7 @@ int Base64EscapeInternal(const unsigned char *src, int szsrc,
   char *limit_dest = dest + szdest;
   const unsigned char *limit_src = src + szsrc;
 
-  // Three bytes of data encodes to four characters of cyphertext.
+  // Three bytes of data encodes to four characters of ciphertext.
   // So we can pump through three-byte chunks atomically.
   while (cur_src < limit_src - 3) {  // keep going as long as we have >= 32 bits
     uint32 in = BigEndian::Load32(cur_src) >> 8;
@@ -2126,7 +2128,7 @@ int Base64EscapeInternal(const unsigned char *src, int szsrc,
       break;
     case 1: {
       // One byte left: this encodes to two characters, and (optionally)
-      // two pad characters to round out the four-character cypherblock.
+      // two pad characters to round out the four-character cipherblock.
       if ((szdest -= 2) < 0) return 0;
       uint32 in = cur_src[0];
       cur_dest[0] = base64[in >> 2];
@@ -2143,7 +2145,7 @@ int Base64EscapeInternal(const unsigned char *src, int szsrc,
     }
     case 2: {
       // Two bytes left: this encodes to three characters, and (optionally)
-      // one pad character to round out the four-character cypherblock.
+      // one pad character to round out the four-character cipherblock.
       if ((szdest -= 3) < 0) return 0;
       uint32 in = BigEndian::Load16(cur_src);
       cur_dest[0] = base64[in >> 10];

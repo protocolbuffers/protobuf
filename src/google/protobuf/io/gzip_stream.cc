@@ -186,7 +186,7 @@ bool GzipInputStream::Skip(int count) {
   return ok;
 }
 int64_t GzipInputStream::ByteCount() const {
-  int64 ret = byte_count_ + zcontext_.total_out;
+  int64_t ret = byte_count_ + zcontext_.total_out;
   if (zcontext_.next_out != NULL && output_position_ != NULL) {
     ret += reinterpret_cast<uintptr_t>(zcontext_.next_out) -
            reinterpret_cast<uintptr_t>(output_position_);

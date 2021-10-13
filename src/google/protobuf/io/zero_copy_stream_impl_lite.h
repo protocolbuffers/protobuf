@@ -84,7 +84,7 @@ class PROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
 
 
  private:
-  const uint8* const data_;  // The byte array.
+  const uint8_t* const data_;  // The byte array.
   const int size_;           // Total size of the array.
   const int block_size_;     // How many bytes to return at a time.
 
@@ -116,7 +116,7 @@ class PROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
   int64_t ByteCount() const override;
 
  private:
-  uint8* const data_;     // The byte array.
+  uint8_t* const data_;     // The byte array.
   const int size_;        // Total size of the array.
   const int block_size_;  // How many bytes to return at a time.
 
@@ -236,11 +236,11 @@ class PROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream {
 
   // The current position of copying_stream_, relative to the point where
   // we started reading.
-  int64 position_;
+  int64_t position_;
 
   // Data is read into this buffer.  It may be NULL if no buffer is currently
   // in use.  Otherwise, it points to an array of size buffer_size_.
-  std::unique_ptr<uint8[]> buffer_;
+  std::unique_ptr<uint8_t[]> buffer_;
   const int buffer_size_;
 
   // Number of valid bytes currently in the buffer (i.e. the size last
@@ -327,11 +327,11 @@ class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
 
   // The current position of copying_stream_, relative to the point where
   // we started writing.
-  int64 position_;
+  int64_t position_;
 
   // Data is written from this buffer.  It may be NULL if no buffer is
   // currently in use.  Otherwise, it points to an array of size buffer_size_.
-  std::unique_ptr<uint8[]> buffer_;
+  std::unique_ptr<uint8_t[]> buffer_;
   const int buffer_size_;
 
   // Number of valid bytes currently in the buffer (i.e. the size last
@@ -348,7 +348,7 @@ class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
 // a particular byte count.
 class PROTOBUF_EXPORT LimitingInputStream : public ZeroCopyInputStream {
  public:
-  LimitingInputStream(ZeroCopyInputStream* input, int64 limit);
+  LimitingInputStream(ZeroCopyInputStream* input, int64_t limit);
   ~LimitingInputStream() override;
 
   // implements ZeroCopyInputStream ----------------------------------
@@ -360,8 +360,8 @@ class PROTOBUF_EXPORT LimitingInputStream : public ZeroCopyInputStream {
 
  private:
   ZeroCopyInputStream* input_;
-  int64 limit_;  // Decreases as we go, becomes negative if we overshoot.
-  int64 prior_bytes_read_;  // Bytes read on underlying stream at construction
+  int64_t limit_;  // Decreases as we go, becomes negative if we overshoot.
+  int64_t prior_bytes_read_;  // Bytes read on underlying stream at construction
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LimitingInputStream);
 };

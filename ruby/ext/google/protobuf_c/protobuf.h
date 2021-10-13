@@ -55,6 +55,17 @@ const upb_fielddef* map_field_value(const upb_fielddef* field);
 VALUE Arena_new();
 upb_arena *Arena_get(VALUE arena);
 
+// Fuses this arena to another, throwing a Ruby exception if this is not
+// possible.
+void Arena_fuse(VALUE arena, upb_arena *other);
+
+// Pins this Ruby object to the lifetime of this arena, so that as long as the
+// arena is alive this object will not be collected.
+//
+// We use this to guarantee that the "frozen" bit on the object will be
+// remembered, even if the user drops their reference to this precise object.
+void Arena_Pin(VALUE arena, VALUE obj);
+
 // -----------------------------------------------------------------------------
 // ObjectCache
 // -----------------------------------------------------------------------------
@@ -68,18 +79,10 @@ upb_arena *Arena_get(VALUE arena);
 // Adds an entry to the cache. The "arena" parameter must give the arena that
 // "key" was allocated from.  In Ruby <2.7.0, it will be used to remove the key
 // from the cache when the arena is destroyed.
-void ObjectCache_Add(const void* key, VALUE val, upb_arena *arena);
+void ObjectCache_Add(const void* key, VALUE val);
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key);
-
-// Pins the previously added object so it is GC-rooted. This turns the
-// reference to "val" from weak to strong.  We use this to guarantee that the
-// "frozen" bit on the object will be remembered, even if the user drops their
-// reference to this precise object.
-//
-// The "arena" parameter must give the arena that "key" was allocated from.
-void ObjectCache_Pin(const void* key, VALUE val, upb_arena *arena);
 
 // -----------------------------------------------------------------------------
 // StringBuilder, for inspect
@@ -106,6 +109,8 @@ extern VALUE cTypeError;
 #else
 #define PBRUBY_ASSERT(expr) assert(expr)
 #endif
+
+#define PBRUBY_MAX(x, y) (((x) > (y)) ? (x) : (y))
 
 #define UPB_UNUSED(var) (void)var
 

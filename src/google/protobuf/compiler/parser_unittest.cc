@@ -88,7 +88,7 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, const std::string& element_name,
                 const Message* descriptor, ErrorLocation location,
-                const std::string& message) {
+                const std::string& message) override {
     int line, column;
     if (location == DescriptorPool::ErrorCollector::IMPORT) {
       source_locations_.FindImport(descriptor, element_name, &line, &column);
@@ -2588,7 +2588,7 @@ class SourceInfoTest : public ParserTest {
     return true;
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     EXPECT_TRUE(spans_.empty()) << "Forgot to call HasSpan() for:\n"
                                 << spans_.begin()->second->DebugString();
   }
@@ -3132,6 +3132,43 @@ TEST_F(SourceInfoTest, EnumValues) {
   EXPECT_TRUE(HasSpan('f', 'j', baz));
   EXPECT_TRUE(HasSpan('f', 'g', baz, "name"));
   EXPECT_TRUE(HasSpan('h', 'i', baz, "number"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0)));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0), "name"));
+}
+
+TEST_F(SourceInfoTest, EnumReservedRange) {
+  EXPECT_TRUE(
+      Parse("enum TestEnum {\n"
+            "  $a$reserved $b$1$c$ to $d$10$e$;$f$\n"
+            "}"));
+
+  const EnumDescriptorProto::EnumReservedRange& bar =
+      file_.enum_type(0).reserved_range(0);
+
+  EXPECT_TRUE(HasSpan('a', 'f', file_.enum_type(0), "reserved_range"));
+  EXPECT_TRUE(HasSpan('b', 'e', bar));
+  EXPECT_TRUE(HasSpan('b', 'c', bar, "start"));
+  EXPECT_TRUE(HasSpan('d', 'e', bar, "end"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0)));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0), "name"));
+}
+
+TEST_F(SourceInfoTest, EnumReservedName) {
+  EXPECT_TRUE(
+      Parse("enum TestEnum {\n"
+            "  $a$reserved $b$'foo'$c$;$d$\n"
+            "}"));
+
+  const EnumDescriptorProto& bar = file_.enum_type(0);
+
+  EXPECT_TRUE(HasSpan('a', 'd', bar, "reserved_name"));
+  EXPECT_TRUE(HasSpan('b', 'c', bar, "reserved_name", 0));
 
   // Ignore these.
   EXPECT_TRUE(HasSpan(file_));

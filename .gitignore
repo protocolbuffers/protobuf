@@ -82,9 +82,7 @@ src/**/*.log
 src/**/*.trs
 
 # JavaBuild output.
-java/core/target
-java/util/target
-javanano/target
+java/**/target
 java/.idea
 java/**/*.iml
 
@@ -185,7 +183,6 @@ js/testproto_libs2.js
 /bazel-*
 
 # ruby test output
-ruby/lib/
 ruby/tests/basic_test_pb.rb
 ruby/tests/basic_test_proto2_pb.rb
 ruby/tests/generated_code_pb.rb
@@ -205,8 +202,8 @@ cmake/.idea
 cmake/cmake-build-debug/
 
 # Common build subdirectories.
-./.build/
-./_build/
+.build/
+_build/
 
 # Visual Studio 2017
 .vs

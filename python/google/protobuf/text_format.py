@@ -48,15 +48,11 @@ import encodings.unicode_escape  # pylint: disable=unused-import
 import io
 import math
 import re
-import six
 
 from google.protobuf.internal import decoder
 from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 from google.protobuf import text_encoding
-
-if six.PY3:
-  long = int  # pylint: disable=redefined-builtin,invalid-name
 
 # pylint: disable=g-import-not-at-top
 __all__ = ['MessageToString', 'Parse', 'PrintMessage', 'PrintField',
@@ -102,15 +98,9 @@ class ParseError(Error):
 class TextWriter(object):
 
   def __init__(self, as_utf8):
-    if six.PY2:
-      self._writer = io.BytesIO()
-    else:
-      self._writer = io.StringIO()
+    self._writer = io.StringIO()
 
   def write(self, val):
-    if six.PY2:
-      if isinstance(val, six.text_type):
-        val = val.encode('utf-8')
     return self._writer.write(val)
 
   def close(self):
@@ -562,13 +552,11 @@ class _Printer(object):
     # Note: this is called only when value has at least one element.
     self._PrintFieldName(field)
     self.out.write(' [')
-    for i in six.moves.range(len(value) - 1):
+    for i in range(len(value) - 1):
       self.PrintFieldValue(field, value[i])
       self.out.write(', ')
     self.PrintFieldValue(field, value[-1])
     self.out.write(']')
-    if self.force_colon:
-      self.out.write(':')
     self.out.write(' ' if self.as_one_line else '\n')
 
   def _PrintMessageFieldValue(self, value):
@@ -610,7 +598,7 @@ class _Printer(object):
         out.write(str(value))
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_STRING:
       out.write('\"')
-      if isinstance(value, six.text_type) and (six.PY2 or not self.as_utf8):
+      if isinstance(value, str) and not self.as_utf8:
         out_value = value.encode('utf-8')
       else:
         out_value = value
@@ -841,12 +829,9 @@ class _Parser(object):
       ParseError: On text parsing problems.
     """
     # Tokenize expects native str lines.
-    if six.PY2:
-      str_lines = (line if isinstance(line, str) else line.encode('utf-8')
-                   for line in lines)
-    else:
-      str_lines = (line if isinstance(line, str) else line.decode('utf-8')
-                   for line in lines)
+    str_lines = (
+        line if isinstance(line, str) else line.decode('utf-8')
+        for line in lines)
     tokenizer = Tokenizer(str_lines)
     while not tokenizer.AtEnd():
       self._MergeField(tokenizer, message)
@@ -1060,7 +1045,7 @@ class _Parser(object):
       value_cpptype = field.message_type.fields_by_name['value'].cpp_type
       if value_cpptype == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
         value = getattr(message, field.name)[sub_message.key]
-        value.MergeFrom(sub_message.value)
+        value.CopyFrom(sub_message.value)
       else:
         getattr(message, field.name)[sub_message.key] = sub_message.value
 
@@ -1397,17 +1382,14 @@ class Tokenizer(object):
 
   def TryConsumeInteger(self):
     try:
-      # Note: is_long only affects value type, not whether an error is raised.
       self.ConsumeInteger()
       return True
     except ParseError:
       return False
 
-  def ConsumeInteger(self, is_long=False):
+  def ConsumeInteger(self):
     """Consumes an integer number.
 
-    Args:
-      is_long: True if the value should be returned as a long integer.
     Returns:
       The integer parsed.
 
@@ -1415,7 +1397,7 @@ class Tokenizer(object):
       ParseError: If an integer couldn't be consumed.
     """
     try:
-      result = _ParseAbstractInteger(self.token, is_long=is_long)
+      result = _ParseAbstractInteger(self.token)
     except ValueError as e:
       raise self.ParseError(str(e))
     self.NextToken()
@@ -1478,7 +1460,7 @@ class Tokenizer(object):
     """
     the_bytes = self.ConsumeByteString()
     try:
-      return six.text_type(the_bytes, 'utf-8')
+      return str(the_bytes, 'utf-8')
     except UnicodeDecodeError as e:
       raise self._StringParseError(e)
 
@@ -1652,14 +1634,6 @@ def _ConsumeUint64(tokenizer):
   return _ConsumeInteger(tokenizer, is_signed=False, is_long=True)
 
 
-def _TryConsumeInteger(tokenizer, is_signed=False, is_long=False):
-  try:
-    _ConsumeInteger(tokenizer, is_signed=is_signed, is_long=is_long)
-    return True
-  except ParseError:
-    return False
-
-
 def _ConsumeInteger(tokenizer, is_signed=False, is_long=False):
   """Consumes an integer number from tokenizer.
 
@@ -1697,7 +1671,7 @@ def ParseInteger(text, is_signed=False, is_long=False):
     ValueError: Thrown Iff the text is not a valid integer.
   """
   # Do the actual parsing. Exception handling is propagated to caller.
-  result = _ParseAbstractInteger(text, is_long=is_long)
+  result = _ParseAbstractInteger(text)
 
   # Check if the integer is sane. Exceptions handled by callers.
   checker = _INTEGER_CHECKERS[2 * int(is_long) + int(is_signed)]
@@ -1705,12 +1679,11 @@ def ParseInteger(text, is_signed=False, is_long=False):
   return result
 
 
-def _ParseAbstractInteger(text, is_long=False):
+def _ParseAbstractInteger(text):
   """Parses an integer without checking size/signedness.
 
   Args:
     text: The text to parse.
-    is_long: True if the value should be returned as a long integer.
 
   Returns:
     The integer value.
@@ -1726,13 +1699,7 @@ def _ParseAbstractInteger(text, is_long=False):
     # we always use the '0o' prefix for multi-digit numbers starting with 0.
     text = c_octal_match.group(1) + '0o' + c_octal_match.group(2)
   try:
-    # We force 32-bit values to int and 64-bit values to long to make
-    # alternate implementations where the distinction is more significant
-    # (e.g. the C++ implementation) simpler.
-    if is_long:
-      return long(text, 0)
-    else:
-      return int(text, 0)
+    return int(text, 0)
   except ValueError:
     raise ValueError('Couldn\'t parse integer: %s' % orig_text)
 

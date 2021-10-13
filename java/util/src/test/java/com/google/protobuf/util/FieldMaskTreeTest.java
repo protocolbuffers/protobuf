@@ -40,9 +40,13 @@ import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestRequiredMessage;
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-public class FieldMaskTreeTest extends TestCase {
+@RunWith(JUnit4.class)
+public class FieldMaskTreeTest {
+  @Test
   public void testAddFieldPath() throws Exception {
     FieldMaskTree tree = new FieldMaskTree();
     assertThat(tree.toString()).isEmpty();
@@ -50,31 +54,33 @@ public class FieldMaskTreeTest extends TestCase {
     assertThat(tree.toString()).isEmpty();
     // New branch.
     tree.addFieldPath("foo");
-    assertEquals("foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("foo");
     // Redundant path.
     tree.addFieldPath("foo");
-    assertEquals("foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("foo");
     // New branch.
     tree.addFieldPath("bar.baz");
-    assertEquals("bar.baz,foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("bar.baz,foo");
     // Redundant sub-path.
     tree.addFieldPath("foo.bar");
-    assertEquals("bar.baz,foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("bar.baz,foo");
     // New branch from a non-root node.
     tree.addFieldPath("bar.quz");
-    assertEquals("bar.baz,bar.quz,foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("bar.baz,bar.quz,foo");
     // A path that matches several existing sub-paths.
     tree.addFieldPath("bar");
-    assertEquals("bar,foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("bar,foo");
   }
 
+  @Test
   public void testMergeFromFieldMask() throws Exception {
     FieldMaskTree tree = new FieldMaskTree(FieldMaskUtil.fromString("foo,bar.baz,bar.quz"));
-    assertEquals("bar.baz,bar.quz,foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("bar.baz,bar.quz,foo");
     tree.mergeFromFieldMask(FieldMaskUtil.fromString("foo.bar,bar"));
-    assertEquals("bar,foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("bar,foo");
   }
 
+  @Test
   public void testRemoveFieldPath() throws Exception {
     String initialTreeString = "bar.baz,bar.quz.bar,foo";
     FieldMaskTree tree;
@@ -82,41 +88,43 @@ public class FieldMaskTreeTest extends TestCase {
     // Empty path.
     tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("");
-    assertEquals(initialTreeString, tree.toString());
+    assertThat(tree.toString()).isEqualTo(initialTreeString);
 
     // Non-exist sub-path of an existing leaf.
     tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("foo.bar");
-    assertEquals(initialTreeString, tree.toString());
+    assertThat(tree.toString()).isEqualTo(initialTreeString);
 
     // Non-exist path.
     tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("bar.foo");
-    assertEquals(initialTreeString, tree.toString());
+    assertThat(tree.toString()).isEqualTo(initialTreeString);
 
     // Match an existing leaf node -> remove leaf node.
     tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("foo");
-    assertEquals("bar.baz,bar.quz.bar", tree.toString());
+    assertThat(tree.toString()).isEqualTo("bar.baz,bar.quz.bar");
 
     // Match sub-path of an existing leaf node -> recursive removal.
     tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("bar.quz.bar");
-    assertEquals("bar.baz,foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("bar.baz,foo");
 
     // Match a non-leaf node -> remove all children.
     tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("bar");
-    assertEquals("foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("foo");
   }
 
+  @Test
   public void testRemoveFromFieldMask() throws Exception {
     FieldMaskTree tree = new FieldMaskTree(FieldMaskUtil.fromString("foo,bar.baz,bar.quz"));
-    assertEquals("bar.baz,bar.quz,foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("bar.baz,bar.quz,foo");
     tree.removeFromFieldMask(FieldMaskUtil.fromString("foo.bar,bar"));
-    assertEquals("foo", tree.toString());
+    assertThat(tree.toString()).isEqualTo("foo");
   }
 
+  @Test
   public void testIntersectFieldPath() throws Exception {
     FieldMaskTree tree = new FieldMaskTree(FieldMaskUtil.fromString("foo,bar.baz,bar.quz"));
     FieldMaskTree result = new FieldMaskTree();
@@ -128,18 +136,19 @@ public class FieldMaskTreeTest extends TestCase {
     assertThat(result.toString()).isEmpty();
     // Sub-path of an existing leaf.
     tree.intersectFieldPath("foo.bar", result);
-    assertEquals("foo.bar", result.toString());
+    assertThat(result.toString()).isEqualTo("foo.bar");
     // Match an existing leaf node.
     tree.intersectFieldPath("foo", result);
-    assertEquals("foo", result.toString());
+    assertThat(result.toString()).isEqualTo("foo");
     // Non-exist path.
     tree.intersectFieldPath("bar.foo", result);
-    assertEquals("foo", result.toString());
+    assertThat(result.toString()).isEqualTo("foo");
     // Match a non-leaf node.
     tree.intersectFieldPath("bar", result);
-    assertEquals("bar.baz,bar.quz,foo", result.toString());
+    assertThat(result.toString()).isEqualTo("bar.baz,bar.quz,foo");
   }
 
+  @Test
   public void testMerge() throws Exception {
     testMergeImpl(true);
     testMergeImpl(false);
@@ -183,10 +192,10 @@ public class FieldMaskTreeTest extends TestCase {
         builder,
         options,
         useDynamicMessage);
-    assertTrue(builder.hasRequiredMessage());
-    assertTrue(builder.getRequiredMessage().hasA());
-    assertFalse(builder.getRequiredMessage().hasB());
-    assertFalse(builder.getRequiredMessage().hasC());
+    assertThat(builder.hasRequiredMessage()).isTrue();
+    assertThat(builder.getRequiredMessage().hasA()).isTrue();
+    assertThat(builder.getRequiredMessage().hasB()).isFalse();
+    assertThat(builder.getRequiredMessage().hasC()).isFalse();
     merge(
         new FieldMaskTree().addFieldPath("required_message.b").addFieldPath("required_message.c"),
         source,
@@ -194,7 +203,7 @@ public class FieldMaskTreeTest extends TestCase {
         options,
         useDynamicMessage);
     try {
-      assertEquals(builder.build(), source);
+      assertThat(source).isEqualTo(builder.build());
     } catch (UninitializedMessageException e) {
       throw new AssertionError("required field isn't set", e);
     }
@@ -232,7 +241,7 @@ public class FieldMaskTreeTest extends TestCase {
     merge(new FieldMaskTree(), source, builder, options, useDynamicMessage);
     NestedTestAllTypes.Builder expected = NestedTestAllTypes.newBuilder();
     expected.getPayloadBuilder().addRepeatedInt32(1000);
-    assertEquals(expected.build(), builder.build());
+    assertThat(builder.build()).isEqualTo(expected.build());
 
     // Test merging each individual field.
     builder = NestedTestAllTypes.newBuilder();
@@ -240,28 +249,28 @@ public class FieldMaskTreeTest extends TestCase {
         source, builder, options, useDynamicMessage);
     expected = NestedTestAllTypes.newBuilder();
     expected.getPayloadBuilder().setOptionalInt32(1234);
-    assertEquals(expected.build(), builder.build());
+    assertThat(builder.build()).isEqualTo(expected.build());
 
     builder = NestedTestAllTypes.newBuilder();
     merge(new FieldMaskTree().addFieldPath("payload.optional_nested_message"),
         source, builder, options, useDynamicMessage);
     expected = NestedTestAllTypes.newBuilder();
     expected.getPayloadBuilder().setOptionalNestedMessage(NestedMessage.newBuilder().setBb(5678));
-    assertEquals(expected.build(), builder.build());
+    assertThat(builder.build()).isEqualTo(expected.build());
 
     builder = NestedTestAllTypes.newBuilder();
     merge(new FieldMaskTree().addFieldPath("payload.repeated_int32"),
         source, builder, options, useDynamicMessage);
     expected = NestedTestAllTypes.newBuilder();
     expected.getPayloadBuilder().addRepeatedInt32(4321);
-    assertEquals(expected.build(), builder.build());
+    assertThat(builder.build()).isEqualTo(expected.build());
 
     builder = NestedTestAllTypes.newBuilder();
     merge(new FieldMaskTree().addFieldPath("payload.repeated_nested_message"),
         source, builder, options, useDynamicMessage);
     expected = NestedTestAllTypes.newBuilder();
     expected.getPayloadBuilder().addRepeatedNestedMessage(NestedMessage.newBuilder().setBb(8765));
-    assertEquals(expected.build(), builder.build());
+    assertThat(builder.build()).isEqualTo(expected.build());
 
     builder = NestedTestAllTypes.newBuilder();
     merge(
@@ -272,7 +281,7 @@ public class FieldMaskTreeTest extends TestCase {
         useDynamicMessage);
     expected = NestedTestAllTypes.newBuilder();
     expected.getChildBuilder().getPayloadBuilder().setOptionalInt32(1234);
-    assertEquals(expected.build(), builder.build());
+    assertThat(builder.build()).isEqualTo(expected.build());
 
     builder = NestedTestAllTypes.newBuilder();
     merge(
@@ -286,14 +295,14 @@ public class FieldMaskTreeTest extends TestCase {
         .getChildBuilder()
         .getPayloadBuilder()
         .setOptionalNestedMessage(NestedMessage.newBuilder().setBb(5678));
-    assertEquals(expected.build(), builder.build());
+    assertThat(builder.build()).isEqualTo(expected.build());
 
     builder = NestedTestAllTypes.newBuilder();
     merge(new FieldMaskTree().addFieldPath("child.payload.repeated_int32"),
         source, builder, options, useDynamicMessage);
     expected = NestedTestAllTypes.newBuilder();
     expected.getChildBuilder().getPayloadBuilder().addRepeatedInt32(4321);
-    assertEquals(expected.build(), builder.build());
+    assertThat(builder.build()).isEqualTo(expected.build());
 
     builder = NestedTestAllTypes.newBuilder();
     merge(new FieldMaskTree().addFieldPath("child.payload.repeated_nested_message"),
@@ -303,13 +312,13 @@ public class FieldMaskTreeTest extends TestCase {
         .getChildBuilder()
         .getPayloadBuilder()
         .addRepeatedNestedMessage(NestedMessage.newBuilder().setBb(8765));
-    assertEquals(expected.build(), builder.build());
+    assertThat(builder.build()).isEqualTo(expected.build());
 
     // Test merging all fields.
     builder = NestedTestAllTypes.newBuilder();
     merge(new FieldMaskTree().addFieldPath("child").addFieldPath("payload"),
         source, builder, options, useDynamicMessage);
-    assertEquals(source, builder.build());
+    assertThat(builder.build()).isEqualTo(source);
 
     // Test repeated options.
     builder = NestedTestAllTypes.newBuilder();
@@ -317,15 +326,15 @@ public class FieldMaskTreeTest extends TestCase {
     merge(new FieldMaskTree().addFieldPath("payload.repeated_int32"),
         source, builder, options, useDynamicMessage);
     // Default behavior is to append repeated fields.
-    assertEquals(2, builder.getPayload().getRepeatedInt32Count());
-    assertEquals(1000, builder.getPayload().getRepeatedInt32(0));
-    assertEquals(4321, builder.getPayload().getRepeatedInt32(1));
+    assertThat(builder.getPayload().getRepeatedInt32Count()).isEqualTo(2);
+    assertThat(builder.getPayload().getRepeatedInt32(0)).isEqualTo(1000);
+    assertThat(builder.getPayload().getRepeatedInt32(1)).isEqualTo(4321);
     // Change to replace repeated fields.
     options.setReplaceRepeatedFields(true);
     merge(new FieldMaskTree().addFieldPath("payload.repeated_int32"),
         source, builder, options, useDynamicMessage);
-    assertEquals(1, builder.getPayload().getRepeatedInt32Count());
-    assertEquals(4321, builder.getPayload().getRepeatedInt32(0));
+    assertThat(builder.getPayload().getRepeatedInt32Count()).isEqualTo(1);
+    assertThat(builder.getPayload().getRepeatedInt32(0)).isEqualTo(4321);
 
     // Test message options.
     builder = NestedTestAllTypes.newBuilder();
@@ -334,21 +343,21 @@ public class FieldMaskTreeTest extends TestCase {
     merge(new FieldMaskTree().addFieldPath("payload"),
         source, builder, options, useDynamicMessage);
     // Default behavior is to merge message fields.
-    assertEquals(1234, builder.getPayload().getOptionalInt32());
-    assertEquals(2000, builder.getPayload().getOptionalUint32());
+    assertThat(builder.getPayload().getOptionalInt32()).isEqualTo(1234);
+    assertThat(builder.getPayload().getOptionalUint32()).isEqualTo(2000);
 
     // Test merging unset message fields.
     NestedTestAllTypes clearedSource = source.toBuilder().clearPayload().build();
     builder = NestedTestAllTypes.newBuilder();
     merge(new FieldMaskTree().addFieldPath("payload"),
         clearedSource, builder, options, useDynamicMessage);
-    assertEquals(false, builder.hasPayload());
+    assertThat(builder.hasPayload()).isFalse();
 
     // Skip a message field if they are unset in both source and target.
     builder = NestedTestAllTypes.newBuilder();
     merge(new FieldMaskTree().addFieldPath("payload.optional_int32"),
         clearedSource, builder, options, useDynamicMessage);
-    assertEquals(false, builder.hasPayload());
+    assertThat(builder.hasPayload()).isFalse();
 
     // Change to replace message fields.
     options.setReplaceMessageFields(true);
@@ -357,8 +366,8 @@ public class FieldMaskTreeTest extends TestCase {
     builder.getPayloadBuilder().setOptionalUint32(2000);
     merge(new FieldMaskTree().addFieldPath("payload"),
         source, builder, options, useDynamicMessage);
-    assertEquals(1234, builder.getPayload().getOptionalInt32());
-    assertEquals(0, builder.getPayload().getOptionalUint32());
+    assertThat(builder.getPayload().getOptionalInt32()).isEqualTo(1234);
+    assertThat(builder.getPayload().getOptionalUint32()).isEqualTo(0);
 
     // Test merging unset message fields.
     builder = NestedTestAllTypes.newBuilder();
@@ -366,7 +375,7 @@ public class FieldMaskTreeTest extends TestCase {
     builder.getPayloadBuilder().setOptionalUint32(2000);
     merge(new FieldMaskTree().addFieldPath("payload"),
         clearedSource, builder, options, useDynamicMessage);
-    assertEquals(false, builder.hasPayload());
+    assertThat(builder.hasPayload()).isFalse();
 
     // Test merging unset primitive fields.
     builder = source.toBuilder();
@@ -375,15 +384,15 @@ public class FieldMaskTreeTest extends TestCase {
     builder = source.toBuilder();
     merge(new FieldMaskTree().addFieldPath("payload.optional_int32"),
         sourceWithPayloadInt32Unset, builder, options, useDynamicMessage);
-    assertEquals(true, builder.getPayload().hasOptionalInt32());
-    assertEquals(0, builder.getPayload().getOptionalInt32());
+    assertThat(builder.getPayload().hasOptionalInt32()).isTrue();
+    assertThat(builder.getPayload().getOptionalInt32()).isEqualTo(0);
 
     // Change to clear unset primitive fields.
     options.setReplacePrimitiveFields(true);
     builder = source.toBuilder();
     merge(new FieldMaskTree().addFieldPath("payload.optional_int32"),
         sourceWithPayloadInt32Unset, builder, options, useDynamicMessage);
-    assertEquals(true, builder.hasPayload());
-    assertEquals(false, builder.getPayload().hasOptionalInt32());
+    assertThat(builder.hasPayload()).isTrue();
+    assertThat(builder.getPayload().hasOptionalInt32()).isFalse();
   }
 }
