@@ -421,7 +421,6 @@ static const char *decode_enum_toarray(upb_decstate *d, const char *ptr,
   return ptr;
 }
 
-#include <stdio.h>
 UPB_FORCEINLINE
 static const char *decode_fixed_packed(upb_decstate *d, const char *ptr,
                                        upb_array *arr, wireval *val,
@@ -844,23 +843,51 @@ static const char *decode_known(upb_decstate *d, const char *ptr, upb_msg *msg,
   }
 }
 
-UPB_FORCEINLINE
+static const char *decode_reverse_skip_varint(const char *ptr, uint64_t val) {
+  uint64_t seen = 0;
+  do {
+    ptr--;
+    seen <<= 7;
+    seen |= *ptr & 0x7f;
+  } while (seen != val);
+  return ptr;
+}
+
 static const char *decode_unknown(upb_decstate *d, const char *ptr,
                                   upb_msg *msg, int field_number, int wire_type,
-                                  wireval val, const char **field_start) {
+                                  wireval val) {
   if (field_number == 0) return decode_err(d);
 
   if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
   if (msg) {
+    const char *start = ptr;
+
+    switch (wire_type) {
+      case UPB_WIRE_TYPE_VARINT:
+      case UPB_WIRE_TYPE_DELIMITED:
+        start--;
+        while (start[-1] & 0x80) start--;
+        break;
+      case UPB_WIRE_TYPE_32BIT:
+        start -= 4;
+        break;
+      case UPB_WIRE_TYPE_64BIT:
+        start -= 8;
+        break;
+      default:
+        break;
+    }
+
+    start = decode_reverse_skip_varint(start, (field_number << 3) | wire_type);
+
     if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
-      d->unknown = *field_start;
+      d->unknown = start;
       d->unknown_msg = msg;
       ptr = decode_group(d, ptr, NULL, NULL, field_number);
       d->unknown_msg = NULL;
-      *field_start = d->unknown;
+      d->unknown = NULL;
     }
-    if (!_upb_msg_addunknown(msg, *field_start, ptr - *field_start,
-                             &d->arena)) {
+    if (!_upb_msg_addunknown(msg, start, ptr - start, &d->arena)) {
       return decode_err(d);
     }
   } else if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
@@ -878,7 +905,6 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     const upb_msglayout_field *field;
     int field_number;
     int wire_type;
-    const char *field_start = ptr;
     wireval val;
     int op;
 
@@ -900,8 +926,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     } else {
       switch (op) {
         case OP_UNKNOWN:
-          ptr = decode_unknown(d, ptr, msg, field_number, wire_type, val,
-                               &field_start);
+          ptr = decode_unknown(d, ptr, msg, field_number, wire_type, val);
           break;
         case OP_MSGSET_ITEM:
           ptr = decode_msgset(d, ptr, msg, layout);
