@@ -326,9 +326,7 @@ static const char *decode_tosubmsg2(upb_decstate *d, const char *ptr,
                                     int size) {
   int saved_delta = decode_pushlimit(d, ptr, size);
   if (--d->depth < 0) return decode_err(d, kUpb_DecodeStatus_MaxDepthExceeded);
-  if (!decode_isdone(d, &ptr)) {
-    ptr = decode_msg(d, ptr, submsg, subl);
-  }
+  ptr = decode_msg(d, ptr, submsg, subl);
   if (d->end_group != DECODE_NOGROUP) return decode_err(d, kUpb_DecodeStatus_Malformed);
   decode_poplimit(d, ptr, saved_delta);
   d->depth++;
@@ -662,15 +660,21 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   return ptr;
 }
 
-UPB_FORCEINLINE
-static bool decode_checkrequired(upb_decstate *d, const upb_msg *msg,
-                                 const upb_msglayout *l) {
-  if (UPB_LIKELY(l->required_count == 0)) return true;
+UPB_NOINLINE
+const char *decode_checkrequired(upb_decstate *d, const char *ptr,
+                                 const upb_msg *msg, const upb_msglayout *l) {
+  assert(l->required_count);
+  if (UPB_LIKELY((d->options & kUpb_DecodeOption_CheckRequired) == 0)) {
+    return ptr;
+  }
   uint64_t required_mask = ((1 << l->required_count) - 1) << 1;
   uint64_t msg_head;
   memcpy(&msg_head, msg, 8);
   msg_head = _upb_be_swap64(msg_head);
-  return (required_mask & ~msg_head) == 0;
+  if (required_mask & ~msg_head) {
+    d->missing_required = true;
+  }
+  return ptr;
 }
 
 UPB_FORCEINLINE
@@ -878,7 +882,12 @@ static const char *decode_unknown(upb_decstate *d, const char *ptr,
                                   wireval val) {
   if (field_number == 0) return decode_err(d, kUpb_DecodeStatus_Malformed);
 
+  // Since unknown fields are the uncommon case, we do a little extra work here
+  // to walk backwards through the buffer to find the field start.  This frees
+  // up a register in the fast paths (when the field is known), which leads to
+  // significant speedups in benchmarks.
   const char *start = ptr;
+
   if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
   if (msg) {
     switch (wire_type) {
@@ -922,13 +931,26 @@ UPB_NOINLINE
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
   int last_field_index = 0;
-  while (true) {
+
+#if UPB_FASTTABLE
+  // The first time we want to skip fast dispatch, because we may have just been
+  // invoked by the fast parser to handle a case that it bailed on.
+  if (!decode_isdone(d, &ptr)) goto nofast;
+#endif
+
+  while (!decode_isdone(d, &ptr)) {
     uint32_t tag;
     const upb_msglayout_field *field;
     int field_number;
     int wire_type;
     wireval val;
     int op;
+
+    if (decode_tryfastdispatch(d, &ptr, msg, layout)) break;
+
+#if UPB_FASTTABLE
+  nofast:
+#endif
 
 #ifndef NDEBUG
     d->debug_tagstart = ptr;
@@ -969,17 +991,11 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
         }
       }
     }
-
-    if (decode_isdone(d, &ptr)) break;
-    if (decode_tryfastdispatch(d, &ptr, msg, layout)) break;
   }
 
-  if (UPB_UNLIKELY(d->options & kUpb_DecodeOption_CheckRequired) &&
-      !decode_checkrequired(d, msg, layout)) {
-    d->missing_required = true;
-  }
-
-  return ptr;
+  return UPB_UNLIKELY(layout->required_count)
+             ? decode_checkrequired(d, ptr, msg, layout)
+             : ptr;
 }
 
 const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
@@ -1006,9 +1022,7 @@ upb_DecodeStatus _upb_decode(const char *buf, size_t size, void *msg,
   upb_decstate state;
   unsigned depth = (unsigned)options >> 16;
 
-  if (size == 0) {
-    return kUpb_DecodeStatus_Ok;
-  } else if (size <= 16) {
+  if (size <= 16) {
     memset(&state.patch, 0, 32);
     memcpy(&state.patch, buf, size);
     buf = state.patch;
@@ -1033,7 +1047,7 @@ upb_DecodeStatus _upb_decode(const char *buf, size_t size, void *msg,
   state.arena.parent = arena;
 
   upb_DecodeStatus status = UPB_SETJMP(state.err);
-  if (UPB_LIKELY(!status)) {
+  if (UPB_LIKELY(status == 0)) {
     status = decode_top(&state, buf, msg, l);
   }
 

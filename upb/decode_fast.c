@@ -84,7 +84,10 @@ static const char *fastdecode_dispatch(UPB_PARSE_PARAMS) {
     if (UPB_LIKELY(overrun == d->limit)) {
       // Parse is finished.
       *(uint32_t*)msg |= hasbits;  // Sync hasbits.
-      return ptr;
+      const upb_msglayout *l = decode_totablep(table);
+      return UPB_UNLIKELY(l->required_count)
+                 ? decode_checkrequired(d, ptr, msg, l)
+                 : ptr;
     } else {
       data = overrun;
       UPB_MUSTTAIL return fastdecode_isdonefallback(UPB_PARSE_ARGS);
