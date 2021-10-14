@@ -308,7 +308,6 @@ TEST(MessageTest, RequiredFieldsSubMessage) {
   // No parse error when parsing normally.
   EXPECT_NE(nullptr, upb_test_SubMessageHasRequired_parse(serialized, size, arena.ptr()));
 
-  fprintf(stderr, "YO, here goes!\n");
   // Parse error when verifying required fields, due to incomplete sub-message.
   EXPECT_EQ(nullptr, upb_test_SubMessageHasRequired_parse_ex(
                          serialized, size, NULL,
@@ -317,4 +316,13 @@ TEST(MessageTest, RequiredFieldsSubMessage) {
   upb_test_TestRequiredFields_set_required_int32(test_msg, 1);
   upb_test_TestRequiredFields_set_required_int64(test_msg, 2);
   upb_test_TestRequiredFields_set_required_message(test_msg, empty_msg);
+
+  serialized =
+      upb_test_SubMessageHasRequired_serialize(sub_msg, arena.ptr(), &size);
+  EXPECT_NE(0, size);
+
+  // No parse error; sub-message now is complete.
+  EXPECT_NE(nullptr, upb_test_SubMessageHasRequired_parse_ex(
+                         serialized, size, NULL,
+                         kUpb_DecodeOption_CheckRequired, arena.ptr()));
 }
