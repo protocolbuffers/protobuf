@@ -46,3 +46,12 @@ build:msan-libfuzzer --action_env=CXX=clang++
 build:msan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:libfuzzer
 build:msan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_instrumentation=libfuzzer
 build:msan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_sanitizer=msan
+
+# --config=ubsan-libfuzzer
+build:ubsan-libfuzzer --action_env=CC=clang
+build:ubsan-libfuzzer --action_env=CXX=clang++
+build:ubsan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:libfuzzer
+build:ubsan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_instrumentation=libfuzzer
+build:ubsan-libfuzzer --copt=-fsanitize=undefined
+build:ubsan-libfuzzer --linkopt=-fsanitize=undefined
+build:ubsan-libfuzzer --linkopt=-fsanitize-link-c++-runtime

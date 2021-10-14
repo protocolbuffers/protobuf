@@ -918,7 +918,7 @@ static const char *decode_unknown(upb_decstate *d, const char *ptr,
     }
 
     assert(start == d->debug_valstart);
-    uint32_t tag = (field_number << 3) | wire_type;
+    uint32_t tag = ((uint32_t)field_number << 3) | wire_type;
     start = decode_reverse_skip_varint(start, tag);
     assert(start == d->debug_tagstart);
 
