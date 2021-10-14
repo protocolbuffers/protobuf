@@ -32,9 +32,12 @@
 
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
+using ProtobufUnittest;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf.Reflection
 {
@@ -67,6 +70,24 @@ namespace Google.Protobuf.Reflection
             var converted = FileDescriptor.BuildFromByteStrings(descriptorData);
             Assert.AreEqual(3, converted.Count);
             TestFileDescriptor(converted[2], converted[1], converted[0]);
+        }
+
+        [Test]
+        public void FileDescriptor_BuildFromByteStrings_WithExtensionRegistry()
+        {
+            var extension = UnittestCustomOptionsProto3Extensions.MessageOpt1;
+
+            var byteStrings = new[]
+            {
+                DescriptorReflection.Descriptor.Proto.ToByteString(),
+                UnittestCustomOptionsProto3Reflection.Descriptor.Proto.ToByteString()
+            };
+            var registry = new ExtensionRegistry { extension };
+
+            var descriptor = FileDescriptor.BuildFromByteStrings(byteStrings, registry).Last();
+            var message = descriptor.MessageTypes.Single(t => t.Name == nameof(TestMessageWithCustomOptions));
+            var extensionValue = message.GetOptions().GetExtension(extension);
+            Assert.AreEqual(-56, extensionValue);
         }
 
         private void TestFileDescriptor(FileDescriptor file, FileDescriptor importedFile, FileDescriptor importedPublicFile)
@@ -247,6 +268,7 @@ namespace Google.Protobuf.Reflection
             FieldDescriptor enumField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_nested_enum");
             FieldDescriptor foreignMessageField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_foreign_message");
             FieldDescriptor importMessageField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_import_message");
+            FieldDescriptor fieldInOneof = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("oneof_string");
 
             Assert.AreEqual("single_int32", primitiveField.Name);
             Assert.AreEqual("protobuf_unittest3.TestAllTypes.single_int32",
@@ -268,6 +290,10 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual("single_import_message", importMessageField.Name);
             Assert.AreEqual(FieldType.Message, importMessageField.FieldType);
             Assert.AreEqual(importMessageDescriptor, importMessageField.MessageType);
+
+            // For a field in a regular onoef, ContainingOneof and RealContainingOneof should be the same.
+            Assert.AreEqual("oneof_field", fieldInOneof.ContainingOneof.Name);
+            Assert.AreSame(fieldInOneof.ContainingOneof, fieldInOneof.RealContainingOneof);
         }
 
         [Test]
@@ -318,6 +344,7 @@ namespace Google.Protobuf.Reflection
         public void OneofDescriptor()
         {
             OneofDescriptor descriptor = TestAllTypes.Descriptor.FindDescriptor<OneofDescriptor>("oneof_field");
+            Assert.IsFalse(descriptor.IsSynthetic);
             Assert.AreEqual("oneof_field", descriptor.Name);
             Assert.AreEqual("protobuf_unittest3.TestAllTypes.oneof_field", descriptor.FullName);
 
@@ -382,6 +409,49 @@ namespace Google.Protobuf.Reflection
             // an execution-time failure.
             var importingDescriptor = TestProtos.OldGenerator.OldExtensions1Reflection.Descriptor;
             Assert.NotNull(importingDescriptor);
+        }
+
+        [Test]
+        public void Proto3OptionalDescriptors()
+        {
+            var descriptor = TestProto3Optional.Descriptor;
+            var field = descriptor.Fields[TestProto3Optional.OptionalInt32FieldNumber];
+            Assert.NotNull(field.ContainingOneof);
+            Assert.IsTrue(field.ContainingOneof.IsSynthetic);
+            Assert.Null(field.RealContainingOneof);
+        }
+
+
+        [Test]
+        public void SyntheticOneofReflection()
+        {
+            // Expect every oneof in TestProto3Optional to be synthetic
+            var proto3OptionalDescriptor = TestProto3Optional.Descriptor;
+            Assert.AreEqual(0, proto3OptionalDescriptor.RealOneofCount);
+            foreach (var oneof in proto3OptionalDescriptor.Oneofs)
+            {
+                Assert.True(oneof.IsSynthetic);
+            }
+
+            // Expect no oneof in the original proto3 unit test file to be synthetic.
+            foreach (var descriptor in ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.Descriptor.MessageTypes)
+            {
+                Assert.AreEqual(descriptor.Oneofs.Count, descriptor.RealOneofCount);
+                foreach (var oneof in descriptor.Oneofs)
+                {
+                    Assert.False(oneof.IsSynthetic);
+                }
+            }
+
+            // Expect no oneof in the original proto2 unit test file to be synthetic.
+            foreach (var descriptor in ProtobufTestMessages.Proto2.TestMessagesProto2Reflection.Descriptor.MessageTypes)
+            {
+                Assert.AreEqual(descriptor.Oneofs.Count, descriptor.RealOneofCount);
+                foreach (var oneof in descriptor.Oneofs)
+                {
+                    Assert.False(oneof.IsSynthetic);
+                }
+            }
         }
     }
 }

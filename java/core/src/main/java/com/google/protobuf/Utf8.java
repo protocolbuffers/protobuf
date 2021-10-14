@@ -1371,29 +1371,39 @@ final class Utf8 {
             String.format("buffer length=%d, index=%d, size=%d", bytes.length, index, size));
       }
 
-      int offset = index;
-      final int limit = offset + size;
+      int offset = index + unsafeEstimateConsecutiveAscii(bytes, index, size);
+      final int limit = index + size;
 
-      // The longest possible resulting String is the same as the number of input bytes, when it is
-      // all ASCII. For other cases, this over-allocates and we will truncate in the end.
-      char[] resultArr = new char[size];
-      int resultPos = 0;
-
-      // Optimize for 100% ASCII (Hotspot loves small simple top-level loops like this).
-      // This simple loop stops when we encounter a byte >= 0x80 (i.e. non-ASCII).
+      // get an "exact" consecutive ASCII
       while (offset < limit) {
         byte b = UnsafeUtil.getByte(bytes, offset);
-        if (!DecodeUtil.isOneByte(b)) {
+        if (b < 0) {
           break;
         }
         offset++;
-        DecodeUtil.handleOneByte(b, resultArr, resultPos++);
+      }
+
+      if (offset == limit) {
+        // The entire byte sequence is ASCII.  Don't bother copying to a char[], JVMs using
+        // compact strings will just turn it back into the same byte[].
+        return new String(bytes, index, size, Internal.US_ASCII);
+      }
+
+      // It's not all ASCII, at this point.  This may over-allocate, but we will truncate in the
+      // end.
+      char[] resultArr = new char[size];
+      int resultPos = 0;
+
+      // Copy over the initial run of ASCII.
+      for (int i = index; i < offset; i++) {
+        DecodeUtil.handleOneByte(UnsafeUtil.getByte(bytes, i), resultArr, resultPos++);
       }
 
       while (offset < limit) {
         byte byte1 = UnsafeUtil.getByte(bytes, offset++);
         if (DecodeUtil.isOneByte(byte1)) {
           DecodeUtil.handleOneByte(byte1, resultArr, resultPos++);
+
           // It's common for there to be multiple ASCII characters in a run mixed in, so add an
           // extra optimized loop to take care of these runs.
           while (offset < limit) {
@@ -1656,7 +1666,17 @@ final class Utf8 {
         return 0;
       }
 
-      for (int i = 0; i < maxChars; i++) {
+      int i;
+      for (i = 0; i + 8 <= maxChars; i += 8) {
+        if ((UnsafeUtil.getLong(bytes, UnsafeUtil.BYTE_ARRAY_BASE_OFFSET + offset)
+                & ASCII_MASK_LONG)
+            != 0L) {
+          break;
+        }
+        offset += 8;
+      }
+
+      for (; i < maxChars; i++) {
         if (UnsafeUtil.getByte(bytes, offset++) < 0) {
           return i;
         }
@@ -1676,9 +1696,9 @@ final class Utf8 {
       }
 
       // Read bytes until 8-byte aligned so that we can read longs in the loop below.
-      // We do this by ANDing the address with 7 to determine the number of bytes that need to
-      // be read before we're 8-byte aligned.
-      final int unaligned = 8 - ((int) address & 7);
+      // This is equivalent to (8-address) mod 8, the number of bytes we need to read before we're
+      // 8-byte aligned.
+      final int unaligned = (int) (-address & 7);
       for (int j = unaligned; j > 0; j--) {
         if (UnsafeUtil.getByte(address++) < 0) {
           return unaligned - j;

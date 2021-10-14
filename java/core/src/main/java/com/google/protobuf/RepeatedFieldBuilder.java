@@ -346,9 +346,8 @@ public class RepeatedFieldBuilder<
     // If we can inspect the size, we can more efficiently add messages.
     int size = -1;
     if (values instanceof Collection) {
-      @SuppressWarnings("unchecked")
-      final Collection<MType> collection = (Collection<MType>) values;
-      if (collection.size() == 0) {
+      final Collection<?> collection = (Collection<?>) values;
+      if (collection.isEmpty()) {
         return this;
       }
       size = collection.size();
@@ -408,8 +407,7 @@ public class RepeatedFieldBuilder<
 
   /**
    * Removes the element at the specified position in this list. Shifts any subsequent elements to
-   * the left (subtracts one from their indices). Returns the element that was removed from the
-   * list.
+   * the left (subtracts one from their indices).
    *
    * @param index the index at which to remove the message
    */

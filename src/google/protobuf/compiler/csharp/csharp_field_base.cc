@@ -51,7 +51,7 @@ namespace compiler {
 namespace csharp {
 
 void FieldGeneratorBase::SetCommonFieldVariables(
-    std::map<string, string>* variables) {
+    std::map<std::string, std::string>* variables) {
   // Note: this will be valid even though the tag emitted for packed and unpacked versions of
   // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
   // never effects the tag size.
@@ -63,7 +63,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   uint tag = internal::WireFormat::MakeTag(descriptor_);
   uint8 tag_array[5];
   io::CodedOutputStream::WriteTagToArray(tag, tag_array);
-  string tag_bytes = StrCat(tag_array[0]);
+  std::string tag_bytes = StrCat(tag_array[0]);
   for (int i = 1; i < part_tag_size; i++) {
     tag_bytes += ", " + StrCat(tag_array[i]);
   }
@@ -96,20 +96,20 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   (*variables)["default_value"] = default_value();
   (*variables)["capitalized_type_name"] = capitalized_type_name();
   (*variables)["number"] = number();
-  if (has_default_value() && !IsProto2(descriptor_->file())) {
+  if (has_default_value() && !SupportsPresenceApi(descriptor_)) {
     (*variables)["name_def_message"] =
       (*variables)["name"] + "_ = " + (*variables)["default_value"];
   } else {
     (*variables)["name_def_message"] = (*variables)["name"] + "_";
   }
-  if (IsProto2(descriptor_->file())) {
+  if (SupportsPresenceApi(descriptor_)) {
     (*variables)["has_property_check"] = "Has" + (*variables)["property_name"];
     (*variables)["other_has_property_check"] = "other.Has" + (*variables)["property_name"];
     (*variables)["has_not_property_check"] = "!" + (*variables)["has_property_check"];
     (*variables)["other_has_not_property_check"] = "!" + (*variables)["other_has_property_check"];
     if (presenceIndex_ != -1) {
-      string hasBitsNumber = StrCat(presenceIndex_ / 32);
-      string hasBitsMask = StrCat(1 << (presenceIndex_ % 32));
+      std::string hasBitsNumber = StrCat(presenceIndex_ / 32);
+      std::string hasBitsMask = StrCat(1 << (presenceIndex_ % 32));
       (*variables)["has_field_check"] = "(_hasBits" + hasBitsNumber + " & " + hasBitsMask + ") != 0";
       (*variables)["set_has_field"] = "_hasBits" + hasBitsNumber + " |= " + hasBitsMask;
       (*variables)["clear_has_field"] = "_hasBits" + hasBitsNumber + " &= ~" + hasBitsMask;
@@ -123,9 +123,9 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 }
 
 void FieldGeneratorBase::SetCommonOneofFieldVariables(
-    std::map<string, string>* variables) {
+    std::map<std::string, std::string>* variables) {
   (*variables)["oneof_name"] = oneof_name();
-  if (IsProto2(descriptor_->file())) {
+  if (SupportsPresenceApi(descriptor_)) {
     (*variables)["has_property_check"] = "Has" + property_name();
   } else {
     (*variables)["has_property_check"] =
@@ -137,7 +137,7 @@ void FieldGeneratorBase::SetCommonOneofFieldVariables(
 
 FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
                                        int presenceIndex, const Options* options)
-    : SourceGeneratorBase(descriptor->file(), options),
+    : SourceGeneratorBase(options),
       descriptor_(descriptor),
       presenceIndex_(presenceIndex) {
   SetCommonFieldVariables(&variables_);
@@ -159,6 +159,18 @@ void FieldGeneratorBase::GenerateCodecCode(io::Printer* printer) {
 void FieldGeneratorBase::GenerateExtensionCode(io::Printer* printer) {
   // No-op: only message fields, enum fields, primitives, 
   // and repeated fields need this default is to not generate any code
+}
+
+void FieldGeneratorBase::GenerateParsingCode(io::Printer* printer, bool use_parse_context) {
+  // for some field types the value of "use_parse_context" doesn't matter,
+  // so we fallback to the default implementation.
+  GenerateParsingCode(printer);
+}
+
+void FieldGeneratorBase::GenerateSerializationCode(io::Printer* printer, bool use_write_context) {
+  // for some field types the value of "use_write_context" doesn't matter,
+  // so we fallback to the default implementation.
+  GenerateSerializationCode(printer);
 }
 
 void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
@@ -204,7 +216,7 @@ std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
       if (IsWrapperType(descriptor)) {
         const FieldDescriptor* wrapped_field =
             descriptor->message_type()->field(0);
-        string wrapped_field_type_name = type_name(wrapped_field);
+        std::string wrapped_field_type_name = type_name(wrapped_field);
         // String and ByteString go to the same type; other wrapped types
         // go to the nullable equivalent.
         if (wrapped_field->type() == FieldDescriptor::TYPE_STRING ||

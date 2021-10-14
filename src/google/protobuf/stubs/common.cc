@@ -96,7 +96,7 @@ void VerifyVersion(int headerVersion,
   }
 }
 
-string VersionString(int version) {
+std::string VersionString(int version) {
   int major = version / 1000000;
   int minor = (version / 1000) % 1000;
   int micro = version % 1000;
@@ -127,7 +127,7 @@ namespace internal {
 
 #if defined(__ANDROID__)
 inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
-                              const string& message) {
+                              const std::string& message) {
   if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
     return;
   }
@@ -162,7 +162,7 @@ inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
 
 #else
 void DefaultLogHandler(LogLevel level, const char* filename, int line,
-                       const string& message) {
+                       const std::string& message) {
   if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
     return;
   }
@@ -177,14 +177,14 @@ void DefaultLogHandler(LogLevel level, const char* filename, int line,
 #endif
 
 void NullLogHandler(LogLevel /* level */, const char* /* filename */,
-                    int /* line */, const string& /* message */) {
+                    int /* line */, const std::string& /* message */) {
   // Nothing.
 }
 
 static LogHandler* log_handler_ = &DefaultLogHandler;
 static std::atomic<int> log_silencer_count_ = ATOMIC_VAR_INIT(0);
 
-LogMessage& LogMessage::operator<<(const string& value) {
+LogMessage& LogMessage::operator<<(const std::string& value) {
   message_ += value;
   return *this;
 }
@@ -211,32 +211,29 @@ LogMessage& LogMessage::operator<<(const uint128& value) {
   return *this;
 }
 
-// Since this is just for logging, we don't care if the current locale changes
-// the results -- in fact, we probably prefer that.  So we use snprintf()
-// instead of Simple*toa().
+LogMessage& LogMessage::operator<<(char value) {
+  return *this << StringPiece(&value, 1);
+}
+
+LogMessage& LogMessage::operator<<(void* value) {
+  StrAppend(&message_, strings::Hex(reinterpret_cast<uintptr_t>(value)));
+  return *this;
+}
+
 #undef DECLARE_STREAM_OPERATOR
-#define DECLARE_STREAM_OPERATOR(TYPE, FORMAT)                       \
-  LogMessage& LogMessage::operator<<(TYPE value) {                  \
-    /* 128 bytes should be big enough for any of the primitive */   \
-    /* values which we print with this, but well use snprintf() */  \
-    /* anyway to be extra safe. */                                  \
-    char buffer[128];                                               \
-    snprintf(buffer, sizeof(buffer), FORMAT, value);                \
-    /* Guard against broken MSVC snprintf(). */                     \
-    buffer[sizeof(buffer)-1] = '\0';                                \
-    message_ += buffer;                                             \
-    return *this;                                                   \
+#define DECLARE_STREAM_OPERATOR(TYPE)              \
+  LogMessage& LogMessage::operator<<(TYPE value) { \
+    StrAppend(&message_, value);                   \
+    return *this;                                  \
   }
 
-DECLARE_STREAM_OPERATOR(char         , "%c" )
-DECLARE_STREAM_OPERATOR(int          , "%d" )
-DECLARE_STREAM_OPERATOR(unsigned int , "%u" )
-DECLARE_STREAM_OPERATOR(long         , "%ld")
-DECLARE_STREAM_OPERATOR(unsigned long, "%lu")
-DECLARE_STREAM_OPERATOR(double       , "%g" )
-DECLARE_STREAM_OPERATOR(void*        , "%p" )
-DECLARE_STREAM_OPERATOR(long long         , "%" PROTOBUF_LL_FORMAT "d")
-DECLARE_STREAM_OPERATOR(unsigned long long, "%" PROTOBUF_LL_FORMAT "u")
+DECLARE_STREAM_OPERATOR(int)
+DECLARE_STREAM_OPERATOR(unsigned int)
+DECLARE_STREAM_OPERATOR(long)           // NOLINT(runtime/int)
+DECLARE_STREAM_OPERATOR(unsigned long)  // NOLINT(runtime/int)
+DECLARE_STREAM_OPERATOR(double)
+DECLARE_STREAM_OPERATOR(long long)           // NOLINT(runtime/int)
+DECLARE_STREAM_OPERATOR(unsigned long long)  // NOLINT(runtime/int)
 #undef DECLARE_STREAM_OPERATOR
 
 LogMessage::LogMessage(LogLevel level, const char* filename, int line)
@@ -304,7 +301,7 @@ void DoNothing() {}
 //
 // TODO(xiaofeng): PROTOBUF_LITTLE_ENDIAN is unfortunately defined in
 // google/protobuf/io/coded_stream.h and therefore can not be used here.
-// Maybe move that macro definition here in the furture.
+// Maybe move that macro definition here in the future.
 uint32 ghtonl(uint32 x) {
   union {
     uint32 result;
@@ -327,3 +324,5 @@ const char* FatalException::what() const throw() {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

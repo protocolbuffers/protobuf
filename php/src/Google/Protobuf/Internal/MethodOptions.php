@@ -23,20 +23,17 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 33 [default = false];</code>
      */
-    protected $deprecated = false;
-    private $has_deprecated = false;
+    protected $deprecated = null;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
      */
-    protected $idempotency_level = 0;
-    private $has_idempotency_level = false;
+    protected $idempotency_level = null;
     /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
-    private $has_uninterpreted_option = false;
 
     /**
      * Constructor.
@@ -70,7 +67,17 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      */
     public function getDeprecated()
     {
-        return $this->deprecated;
+        return isset($this->deprecated) ? $this->deprecated : false;
+    }
+
+    public function hasDeprecated()
+    {
+        return isset($this->deprecated);
+    }
+
+    public function clearDeprecated()
+    {
+        unset($this->deprecated);
     }
 
     /**
@@ -87,14 +94,8 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
-        $this->has_deprecated = true;
 
         return $this;
-    }
-
-    public function hasDeprecated()
-    {
-        return $this->has_deprecated;
     }
 
     /**
@@ -103,7 +104,17 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      */
     public function getIdempotencyLevel()
     {
-        return $this->idempotency_level;
+        return isset($this->idempotency_level) ? $this->idempotency_level : 0;
+    }
+
+    public function hasIdempotencyLevel()
+    {
+        return isset($this->idempotency_level);
+    }
+
+    public function clearIdempotencyLevel()
+    {
+        unset($this->idempotency_level);
     }
 
     /**
@@ -113,16 +124,10 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      */
     public function setIdempotencyLevel($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\MethodOptions_IdempotencyLevel::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\MethodOptions\IdempotencyLevel::class);
         $this->idempotency_level = $var;
-        $this->has_idempotency_level = true;
 
         return $this;
-    }
-
-    public function hasIdempotencyLevel()
-    {
-        return $this->has_idempotency_level;
     }
 
     /**
@@ -147,14 +152,8 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
-        $this->has_uninterpreted_option = true;
 
         return $this;
-    }
-
-    public function hasUninterpretedOption()
-    {
-        return $this->has_uninterpreted_option;
     }
 
 }

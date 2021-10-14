@@ -30,10 +30,8 @@
 
 package com.google.protobuf;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -80,7 +78,7 @@ public abstract class AbstractSchemaTest<T extends MessageLite> {
       T newMsg = schema.newInstance();
       try {
         schema.mergeFrom(newMsg, reader, ExtensionRegistryLite.getEmptyRegistry());
-        fail("should throw invalid ");
+        assertWithMessage("should throw invalid").fail();
       } catch (InvalidProtocolBufferException expected) {
       }
     }
@@ -106,13 +104,15 @@ public abstract class AbstractSchemaTest<T extends MessageLite> {
         exceptionCount += 1;
       }
     }
-    assertNotEquals(0, exceptionCount);
+    assertThat(exceptionCount).isNotEqualTo(0);
   }
 
   protected static final <M extends MessageLite> void roundtrip(
       String failureMessage, M msg, Schema<M> schema) throws IOException {
     byte[] serializedBytes = ExperimentalSerializationUtil.toByteArray(msg, schema);
-    assertEquals(failureMessage, msg.getSerializedSize(), serializedBytes.length);
+    assertWithMessage(failureMessage)
+        .that(serializedBytes.length)
+        .isEqualTo(msg.getSerializedSize());
 
     // Now read it back in and verify it matches the original.
     if (Android.isOnAndroidDevice()) {
@@ -121,14 +121,14 @@ public abstract class AbstractSchemaTest<T extends MessageLite> {
       schema.mergeFrom(
           newMsg, serializedBytes, 0, serializedBytes.length, new ArrayDecoders.Registers());
       schema.makeImmutable(newMsg);
-      assertEquals(failureMessage, msg, newMsg);
+      assertWithMessage(failureMessage).that(newMsg).isEqualTo(msg);
     }
     M newMsg = schema.newInstance();
     Reader reader = BinaryReader.newInstance(ByteBuffer.wrap(serializedBytes), true);
     schema.mergeFrom(newMsg, reader, ExtensionRegistryLite.getEmptyRegistry());
     schema.makeImmutable(newMsg);
 
-    assertEquals(failureMessage, msg, newMsg);
+    assertWithMessage(failureMessage).that(newMsg).isEqualTo(msg);
   }
 
   protected final void roundtrip(String failureMessage, T msg) throws IOException {
@@ -148,10 +148,10 @@ public abstract class AbstractSchemaTest<T extends MessageLite> {
   public void testRequiredFields() throws Exception {
     for (T msg : newMessagesMissingRequiredFields()) {
       if (schema.isInitialized(msg)) {
-        assertEquals("", msg.toString());
+        assertThat(msg.toString()).isEmpty();
         msg = (T) msg.toBuilder().build();
       }
-      assertFalse(schema.isInitialized(msg));
+      assertThat(schema.isInitialized(msg)).isFalse();
     }
   }
 }

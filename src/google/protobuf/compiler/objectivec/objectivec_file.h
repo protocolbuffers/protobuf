@@ -58,11 +58,9 @@ class FileGenerator {
   void GenerateSource(io::Printer* printer);
   void GenerateHeader(io::Printer* printer);
 
-  const string& RootClassName() const { return root_class_name_; }
-
  private:
   const FileDescriptor* file_;
-  string root_class_name_;
+  std::string root_class_name_;
   bool is_bundled_proto_;
 
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
@@ -72,7 +70,8 @@ class FileGenerator {
   const Options options_;
 
   void PrintFileRuntimePreamble(
-      io::Printer* printer, const std::set<string>& headers_to_import) const;
+      io::Printer* printer,
+      const std::vector<std::string>& headers_to_import) const;
 };
 
 }  // namespace objectivec

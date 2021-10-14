@@ -42,7 +42,7 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
   BinaryAndJsonConformanceSuite() {}
 
  private:
-  void RunSuiteImpl();
+  void RunSuiteImpl() override;
   void RunJsonTests();
   void RunJsonTestsForFieldNameConvention();
   void RunJsonTestsForNonRepeatedTypes();
@@ -53,35 +53,34 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
   void RunJsonTestsForStruct();
   void RunJsonTestsForValue();
   void RunJsonTestsForAny();
-  void RunValidJsonTest(const string& test_name,
-                        ConformanceLevel level,
-                        const string& input_json,
-                        const string& equivalent_text_format);
+  void RunValidJsonTest(const std::string& test_name, ConformanceLevel level,
+                        const std::string& input_json,
+                        const std::string& equivalent_text_format);
   void RunValidJsonTestWithProtobufInput(
-      const string& test_name,
-      ConformanceLevel level,
+      const std::string& test_name, ConformanceLevel level,
       const protobuf_test_messages::proto3::TestAllTypesProto3& input,
-      const string& equivalent_text_format);
-  void RunValidJsonIgnoreUnknownTest(
-      const string& test_name, ConformanceLevel level, const string& input_json,
-      const string& equivalent_text_format);
-  void RunValidProtobufTest(const string& test_name, ConformanceLevel level,
-                            const string& input_protobuf,
-                            const string& equivalent_text_format,
+      const std::string& equivalent_text_format);
+  void RunValidJsonIgnoreUnknownTest(const std::string& test_name,
+                                     ConformanceLevel level,
+                                     const std::string& input_json,
+                                     const std::string& equivalent_text_format);
+  void RunValidProtobufTest(const std::string& test_name,
+                            ConformanceLevel level,
+                            const std::string& input_protobuf,
+                            const std::string& equivalent_text_format,
                             bool is_proto3);
-  void RunValidBinaryProtobufTest(const string& test_name,
+  void RunValidBinaryProtobufTest(const std::string& test_name,
                                   ConformanceLevel level,
-                                  const string& input_protobuf,
+                                  const std::string& input_protobuf,
                                   bool is_proto3);
-  void RunValidBinaryProtobufTest(const string& test_name,
+  void RunValidBinaryProtobufTest(const std::string& test_name,
                                   ConformanceLevel level,
-                                  const string& input_protobuf,
-                                  const string& expected_protobuf,
+                                  const std::string& input_protobuf,
+                                  const std::string& expected_protobuf,
                                   bool is_proto3);
   void RunValidProtobufTestWithMessage(
-      const string& test_name, ConformanceLevel level,
-      const Message *input,
-      const string& equivalent_text_format,
+      const std::string& test_name, ConformanceLevel level,
+      const Message* input, const std::string& equivalent_text_format,
       bool is_proto3);
 
   bool ParseJsonResponse(
@@ -93,20 +92,21 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
       Message* test_message) override;
 
   typedef std::function<bool(const Json::Value&)> Validator;
-  void RunValidJsonTestWithValidator(const string& test_name,
+  void RunValidJsonTestWithValidator(const std::string& test_name,
                                      ConformanceLevel level,
-                                     const string& input_json,
-                                     const Validator& validator);
-  void ExpectParseFailureForJson(const string& test_name,
+                                     const std::string& input_json,
+                                     const Validator& validator,
+                                     bool is_proto3);
+  void ExpectParseFailureForJson(const std::string& test_name,
                                  ConformanceLevel level,
-                                 const string& input_json);
-  void ExpectSerializeFailureForJson(const string& test_name,
+                                 const std::string& input_json);
+  void ExpectSerializeFailureForJson(const std::string& test_name,
                                      ConformanceLevel level,
-                                     const string& text_format);
-  void ExpectParseFailureForProtoWithProtoVersion (const string& proto,
-                                                   const string& test_name,
-                                                   ConformanceLevel level,
-                                                   bool is_proto3);
+                                     const std::string& text_format);
+  void ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
+                                                  const std::string& test_name,
+                                                  ConformanceLevel level,
+                                                  bool is_proto3);
   void ExpectParseFailureForProto(const std::string& proto,
                                   const std::string& test_name,
                                   ConformanceLevel level);

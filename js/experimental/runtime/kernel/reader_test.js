@@ -219,14 +219,16 @@ describe('readUint32 does', () => {
   });
 
   for (const pair of getUint32Pairs()) {
-    it(`decode ${pair.name}`, () => {
-      if (pair.error && CHECK_CRITICAL_STATE) {
-        expect(() => reader.readUint32(pair.bufferDecoder, 0)).toThrow();
-      } else {
-        const d = reader.readUint32(pair.bufferDecoder, 0);
-        expect(d).toEqual(pair.intValue);
-      }
-    });
+    if (!pair.skip_reader) {
+      it(`decode ${pair.name}`, () => {
+        if (pair.error && CHECK_CRITICAL_STATE) {
+          expect(() => reader.readUint32(pair.bufferDecoder, 0)).toThrow();
+        } else {
+          const d = reader.readUint32(pair.bufferDecoder, 0);
+          expect(d).toEqual(pair.intValue);
+        }
+      });
+    }
   }
 });
 

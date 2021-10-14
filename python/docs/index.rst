@@ -3,6 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. ifconfig:: build_env == 'readthedocs'
+
+   .. warning::
+
+      You are reading the documentation for the `latest committed changes
+      <https://github.com/protocolbuffers/protobuf/tree/master/python>`_ of
+      the `Protocol Buffers package for Python
+      <https://developers.google.com/protocol-buffers/docs/pythontutorial>`_.
+      Some features may not yet be released. Read the documentation for the
+      latest released package at `googleapis.dev
+      <https://googleapis.dev/python/protobuf/latest/>`_.
+
 Protocol Buffers Python API Reference
 =====================================
 
@@ -26,6 +38,7 @@ Modules and Packages
    google/protobuf/duration_pb2
    google/protobuf/empty_pb2
    google/protobuf/field_mask_pb2
+   google/protobuf/internal/containers
    google/protobuf/json_format
    google/protobuf/message
    google/protobuf/message_factory

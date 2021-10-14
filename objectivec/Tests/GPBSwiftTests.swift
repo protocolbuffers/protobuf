@@ -355,7 +355,7 @@ class GPBBridgeTests: XCTestCase {
     msg.oneof = nil
     XCTAssertEqual(msg.oneof.optionalInt32, Int32(0))  // Default
     XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase.gpbUnsetOneOfCase)
-}
+  }
 
   func testProto3OneOfSupport() {
     let msg = Message3()

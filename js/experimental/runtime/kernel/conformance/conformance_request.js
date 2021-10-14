@@ -3,7 +3,7 @@
  */
 goog.module('proto.conformance.ConformanceRequest');
 
-const LazyAccessor = goog.require('protobuf.binary.LazyAccessor');
+const Kernel = goog.require('protobuf.runtime.Kernel');
 const WireFormat = goog.require('proto.conformance.WireFormat');
 
 /**
@@ -19,8 +19,8 @@ class ConformanceRequest {
    * @private
    */
   constructor(bytes) {
-    /** @private @const {!LazyAccessor} */
-    this.accessor_ = LazyAccessor.fromArrayBuffer(bytes);
+    /** @private @const {!Kernel} */
+    this.accessor_ = Kernel.fromArrayBuffer(bytes);
   }
 
   /**

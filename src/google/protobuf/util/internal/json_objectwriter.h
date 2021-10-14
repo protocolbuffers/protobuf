@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -118,10 +119,12 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   JsonObjectWriter* StartList(StringPiece name) override;
   JsonObjectWriter* EndList() override;
   JsonObjectWriter* RenderBool(StringPiece name, bool value) override;
-  JsonObjectWriter* RenderInt32(StringPiece name, int32 value) override;
-  JsonObjectWriter* RenderUint32(StringPiece name, uint32 value) override;
-  JsonObjectWriter* RenderInt64(StringPiece name, int64 value) override;
-  JsonObjectWriter* RenderUint64(StringPiece name, uint64 value) override;
+  JsonObjectWriter* RenderInt32(StringPiece name, int32_t value) override;
+  JsonObjectWriter* RenderUint32(StringPiece name,
+                                 uint32_t value) override;
+  JsonObjectWriter* RenderInt64(StringPiece name, int64_t value) override;
+  JsonObjectWriter* RenderUint64(StringPiece name,
+                                 uint64_t value) override;
   JsonObjectWriter* RenderDouble(StringPiece name, double value) override;
   JsonObjectWriter* RenderFloat(StringPiece name, float value) override;
   JsonObjectWriter* RenderString(StringPiece name,
@@ -152,7 +155,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
       return false;
     }
 
-    // Whether we are currently renderring inside a JSON object (i.e., between
+    // Whether we are currently rendering inside a JSON object (i.e., between
     // StartObject() and EndObject()).
     bool is_json_object() const { return is_json_object_; }
 
@@ -218,7 +221,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
       // Take the slow-path if we don't have sufficient characters remaining in
       // our buffer or we have a non-trivial indent string which would prevent
       // us from using memset.
-      uint8* out = nullptr;
+      uint8_t* out = nullptr;
       if (indent_count_ > 0) {
         out = stream_->GetDirectBufferForNBytesAndAdvance(len);
       }

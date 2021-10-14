@@ -41,9 +41,9 @@ process.argv.forEach(function(filename, index) {
     totalBytes += onePayload.length;
   });
 
-  var senarios = benchmarkSuite.newBenchmark(
+  var scenarios = benchmarkSuite.newBenchmark(
       benchmarkDataset.getMessageName(), filename, "js");
-  senarios.suite
+  scenarios.suite
   .add("js deserialize", function() {
     benchmarkDataset.getPayloadList().forEach(function(onePayload) {
       var protoType = getNewPrototype(benchmarkDataset.getMessageName());
@@ -61,15 +61,15 @@ process.argv.forEach(function(filename, index) {
   results.push({
     filename: filename,
     benchmarks: {
-      protobufjs_decoding: senarios.benches[0] * totalBytes / 1024 / 1024,
-      protobufjs_encoding: senarios.benches[1] * totalBytes / 1024 / 1024
+      protobufjs_decoding: scenarios.benches[0] * totalBytes / 1024 / 1024,
+      protobufjs_encoding: scenarios.benches[1] * totalBytes / 1024 / 1024
     }
   })
 
   console.log("Throughput for deserialize: "
-    + senarios.benches[0] * totalBytes / 1024 / 1024 + "MB/s" );
+    + scenarios.benches[0] * totalBytes / 1024 / 1024 + "MB/s" );
   console.log("Throughput for serialize: "
-    + senarios.benches[1] * totalBytes / 1024 / 1024 + "MB/s" );
+    + scenarios.benches[1] * totalBytes / 1024 / 1024 + "MB/s" );
   console.log("");
 });
 console.log("#####################################################");

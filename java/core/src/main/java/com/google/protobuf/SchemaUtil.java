@@ -63,18 +63,18 @@ final class SchemaUtil {
         && GENERATED_MESSAGE_CLASS != null
         && !GENERATED_MESSAGE_CLASS.isAssignableFrom(messageType)) {
       throw new IllegalArgumentException(
-          "Message classes must extend GeneratedMessage or GeneratedMessageLite");
+          "Message classes must extend GeneratedMessageV3 or GeneratedMessageLite");
     }
   }
 
   public static void writeDouble(int fieldNumber, double value, Writer writer) throws IOException {
-    if (Double.compare(value, 0.0) != 0) {
+    if (Double.doubleToRawLongBits(value) != 0) {
       writer.writeDouble(fieldNumber, value);
     }
   }
 
   public static void writeFloat(int fieldNumber, float value, Writer writer) throws IOException {
-    if (Float.compare(value, 0.0f) != 0) {
+    if (Float.floatToRawIntBits(value) != 0) {
       writer.writeFloat(fieldNumber, value);
     }
   }

@@ -174,19 +174,24 @@ public final class Proto2MessageLiteInfoFactory implements MessageInfoFactory {
           "fieldRequiredSint6487_",
           "fieldRequiredGroup88_",
         };
-    // To update this after a proto change, run protoc on proto2_message_lite.proto and copy over
-    // the content of the generated buildMessageInfo() method here.
+    // To update this after a proto change, run blaze build on proto2_message_lite.proto and copy
+    // over the String info from the proto2_message_lite_proto-lite-src.jar file in the
+    // blaze-genfiles directory.
     java.lang.String info =
-        "\u0001U\u0001\u0002\u0001XU\u0000 \u0015\u0001\u0000\u0000\u0002\u0001\u0001\u0003"
-            + "\u0002\u0002\u0004\u0003\u0003\u0005\u0004\u0004\u0006\u0005\u0005\u0007\u0006\u0006"
-            + "\b\u0007\u0007\t\b\b\n\u0409\t\u000b\n\n\f\u000b\u000b\r\f\f\u000e\r\r\u000f\u000e"
-            + "\u000e\u0010\u000f\u000f\u0011\u0010\u0010\u0012\u0012\u0013\u0013\u0014\u0014\u0015"
-            + "\u0015\u0016\u0016\u0017\u0017\u0018\u0018\u0019\u0019\u001a\u001a\u001b\u041b\u001c"
-            + "\u001c\u001d\u001d\u001e\u001e\u001f\u001f  !!\"\"##$$%%&&\'\'(())**++,,--..//00"
-            + "1\u0011\u00113153\u000064\u000075\u000086\u000097\u0000:8\u0000;9\u0000<:\u0000="
-            + ";\u0000>\u043c\u0000?=\u0000@>\u0000A@\u0000BA\u0000CB\u0000DC\u0000ED\u0000G\u0500"
-            + "#H\u0501$I\u0502%J\u0503&K\u0504\'L\u0505(M\u0506)N\u0507*O\u0508+P\u0509,Q\u050a"
-            + "-R\u050b.S\u050c/T\u050d0U\u050e1V\u050f2W\u05103X\u05114";
+        "\u0001U\u0001\u0002\u0001XU\u0000 \u0015\u0001\u1000\u0000\u0002\u1001\u0001\u0003"
+            + "\u1002\u0002\u0004\u1003\u0003\u0005\u1004\u0004\u0006\u1005\u0005\u0007\u1006\u0006\b\u1007\u0007"
+            + "\t\u1008\b\n"
+            + "\u1409\t\u000b\u100a\n"
+            + "\f\u100b\u000b\r"
+            + "\u100c\f\u000e\u100d\r"
+            + "\u000f\u100e\u000e\u0010\u100f\u000f\u0011\u1010\u0010\u0012\u0012\u0013\u0013"
+            + "\u0014\u0014\u0015\u0015\u0016\u0016\u0017\u0017\u0018\u0018\u0019\u0019\u001a\u001a\u001b\u041b\u001c\u001c\u001d\u001d\u001e\u001e\u001f\u001f"
+            + "  !!\"\"##$$%%&&\'\'"
+            + "(())**++,,--..//001\u1011\u0011315\u1033\u00006\u1034\u00007\u1035\u00008\u1036\u0000"
+            + "9\u1037\u0000:\u1038\u0000;\u1039\u0000<\u103a\u0000=\u103b\u0000>\u143c\u0000?\u103d"
+            + "\u0000@\u103e\u0000A\u1040\u0000B\u1041\u0000C\u1042\u0000D\u1043\u0000E\u1044\u0000"
+            + "G\u1500#H\u1501$I\u1502%J\u1503&K\u1504\'L\u1505(M\u1506)N\u1507*O\u1508+P\u1509"
+            + ",Q\u150a-R\u150b.S\u150c/T\u150d0U\u150e1V\u150f2W\u15103X\u15114";
     return new RawMessageInfo(Proto2MessageLite.getDefaultInstance(), info, objects);
   }
 

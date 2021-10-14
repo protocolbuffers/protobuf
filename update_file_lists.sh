@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -u
 
 # This script copies source file lists from src/Makefile.am to cmake files.
 
@@ -50,12 +50,12 @@ MAKEFILE=src/Makefile.am
 
 # Extract file lists from src/Makefile.am
 GZHEADERS=$(get_variable_value $MAKEFILE GZHEADERS)
-HEADERS=$(get_variable_value $MAKEFILE nobase_include_HEADERS)
-PUBLIC_HEADERS=$(sort_files $GZHEADERS $HEADERS)
+LIBPROTOBUF_HEADERS=$(get_variable_value $MAKEFILE nobase_include_HEADERS | grep -v /compiler/)
+LIBPROTOBUF_HEADERS=$(sort_files $GZHEADERS $LIBPROTOBUF_HEADERS)
 LIBPROTOBUF_LITE_SOURCES=$(get_source_files $MAKEFILE libprotobuf_lite_la_SOURCES)
 LIBPROTOBUF_SOURCES=$(get_source_files $MAKEFILE libprotobuf_la_SOURCES)
 LIBPROTOC_SOURCES=$(get_source_files $MAKEFILE libprotoc_la_SOURCES)
-LIBPROTOC_HEADERS=$(get_header_files $MAKEFILE libprotoc_la_SOURCES)
+LIBPROTOC_HEADERS=$(get_variable_value $MAKEFILE nobase_include_HEADERS | grep /compiler/)
 LITE_PROTOS=$(get_proto_files $MAKEFILE protoc_lite_outputs)
 PROTOS=$(get_proto_files $MAKEFILE protoc_outputs)
 PROTOS_BLACKLISTED=$(get_proto_files_blacklisted $MAKEFILE protoc_outputs)
@@ -98,7 +98,11 @@ set_cmake_value() {
       print \$0;
       len = split(values, vlist, \" \");
       for (i = 1; i <= len; ++i) {
-        printf(\"  %s%s\\n\", prefix, vlist[i]);
+        printf(\"  \");
+        if (vlist[i] !~ /^\\\$/) {
+          printf(\"%s\", prefix);
+        }
+        printf(\"%s\\n\", vlist[i]);
       }
       next;
     }
@@ -121,7 +125,7 @@ set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_files $CMAKE_PREFIX $LIBPRO
 set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_headers $CMAKE_PREFIX $LIBPROTOC_HEADERS
 set_cmake_value $CMAKE_DIR/tests.cmake lite_test_protos "" $LITE_PROTOS
 set_cmake_value $CMAKE_DIR/tests.cmake tests_protos "" $PROTOS_BLACKLISTED
-set_cmake_value $CMAKE_DIR/tests.cmake common_test_files $CMAKE_PREFIX $COMMON_TEST_SOURCES
+set_cmake_value $CMAKE_DIR/tests.cmake common_test_files $CMAKE_PREFIX '${common_lite_test_files}' $COMMON_TEST_SOURCES
 set_cmake_value $CMAKE_DIR/tests.cmake common_lite_test_files $CMAKE_PREFIX $COMMON_LITE_TEST_SOURCES
 set_cmake_value $CMAKE_DIR/tests.cmake tests_files $CMAKE_PREFIX $TEST_SOURCES
 set_cmake_value $CMAKE_DIR/tests.cmake non_msvc_tests_files $CMAKE_PREFIX $NON_MSVC_TEST_SOURCES
@@ -130,14 +134,14 @@ set_cmake_value $CMAKE_DIR/tests.cmake lite_arena_test_files $CMAKE_PREFIX $LITE
 
 # Generate extract_includes.bat
 echo "mkdir include" > $EXTRACT_INCLUDES_BAT
-for INCLUDE in $PUBLIC_HEADERS $WKT_PROTOS; do
+for INCLUDE in $LIBPROTOBUF_HEADERS $LIBPROTOC_HEADERS $WKT_PROTOS; do
   INCLUDE_DIR=$(dirname "$INCLUDE")
   while [ ! "$INCLUDE_DIR" = "." ]; do
     echo "mkdir include\\${INCLUDE_DIR//\//\\}"
     INCLUDE_DIR=$(dirname "$INCLUDE_DIR")
   done
 done | sort | uniq >> $EXTRACT_INCLUDES_BAT
-for INCLUDE in $PUBLIC_HEADERS $WKT_PROTOS; do
+for INCLUDE in $(sort_files $LIBPROTOBUF_HEADERS $LIBPROTOC_HEADERS) $WKT_PROTOS; do
   WINPATH=${INCLUDE//\//\\}
   echo "copy \"\${PROTOBUF_SOURCE_WIN32_PATH}\\..\\src\\$WINPATH\" include\\$WINPATH" >> $EXTRACT_INCLUDES_BAT
 done
@@ -186,7 +190,7 @@ if [ -f "$BAZEL_BUILD" ]; then
   set_bazel_value $BAZEL_BUILD lite_test_protos "" $LITE_PROTOS
   set_bazel_value $BAZEL_BUILD well_known_protos "" $WKT_PROTOS
   set_bazel_value $BAZEL_BUILD test_protos "" $PROTOS
-  set_bazel_value $BAZEL_BUILD common_test_srcs $BAZEL_PREFIX $COMMON_TEST_SOURCES
+  set_bazel_value $BAZEL_BUILD common_test_srcs $BAZEL_PREFIX $COMMON_LITE_TEST_SOURCES $COMMON_TEST_SOURCES
   set_bazel_value $BAZEL_BUILD test_srcs $BAZEL_PREFIX $TEST_SOURCES
   set_bazel_value $BAZEL_BUILD non_msvc_test_srcs $BAZEL_PREFIX $NON_MSVC_TEST_SOURCES
   set_bazel_value $BAZEL_BUILD test_plugin_srcs $BAZEL_PREFIX $TEST_PLUGIN_SOURCES

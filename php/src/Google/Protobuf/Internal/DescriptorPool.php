@@ -152,6 +152,9 @@ class DescriptorPool
             switch ($field->getType()) {
                 case GPBType::MESSAGE:
                     $proto = $field->getMessageType();
+                    if ($proto[0] == '.') {
+                      $proto = substr($proto, 1);
+                    }
                     $subdesc = $this->getDescriptorByProtoName($proto);
                     if (is_null($subdesc)) {
                         trigger_error(
@@ -162,6 +165,9 @@ class DescriptorPool
                     break;
                 case GPBType::ENUM:
                     $proto = $field->getEnumType();
+                    if ($proto[0] == '.') {
+                      $proto = substr($proto, 1);
+                    }
                     $field->setEnumType(
                         $this->getEnumDescriptorByProtoName($proto));
                     break;

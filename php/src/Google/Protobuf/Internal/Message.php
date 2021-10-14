@@ -93,8 +93,9 @@ class Message
         $pool = DescriptorPool::getGeneratedPool();
         $this->desc = $pool->getDescriptorByClassName(get_class($this));
         if (is_null($this->desc)) {
-            user_error(get_class($this) . " is not found in descriptor pool.");
-            return;
+          throw new \InvalidArgumentException(
+            get_class($this) ." is not found in descriptor pool. " .
+            'Only generated classes may derive from Message.');
         }
         foreach ($this->desc->getField() as $field) {
             $setter = $field->getSetter();
@@ -225,15 +226,28 @@ class Message
         }
     }
 
-    protected function writeOneof($number, $value)
+    protected function hasOneof($number)
     {
         $field = $this->desc->getFieldByNumber($number);
         $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
         $oneof_name = $oneof->getName();
         $oneof_field = $this->$oneof_name;
-        $oneof_field->setValue($value);
-        $oneof_field->setFieldName($field->getName());
-        $oneof_field->setNumber($number);
+        return $number === $oneof_field->getNumber();
+    }
+
+    protected function writeOneof($number, $value)
+    {
+        $field = $this->desc->getFieldByNumber($number);
+        $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
+        $oneof_name = $oneof->getName();
+        if ($value === null) {
+            $this->$oneof_name = new OneofField($oneof);
+        } else {
+            $oneof_field = $this->$oneof_name;
+            $oneof_field->setValue($value);
+            $oneof_field->setFieldName($field->getName());
+            $oneof_field->setNumber($number);
+        }
     }
 
     protected function whichOneof($oneof_name)
@@ -773,10 +787,10 @@ class Message
      * @return null.
      * @throws \Exception Invalid data.
      */
-    public function mergeFromJsonString($data)
+    public function mergeFromJsonString($data, $ignore_unknown = false)
     {
         $input = new RawInputStream($data);
-        $this->parseFromJsonStream($input);
+        $this->parseFromJsonStream($input, $ignore_unknown);
     }
 
     /**
@@ -801,6 +815,7 @@ class Message
     private function convertJsonValueToProtoValue(
         $value,
         $field,
+        $ignore_unknown,
         $is_map_key = false)
     {
         switch ($field->getType()) {
@@ -849,7 +864,7 @@ class Message
                     } elseif (!is_object($value) && !is_array($value)) {
                         throw new GPBDecodeException("Expect message.");
                     }
-                    $submsg->mergeFromJsonArray($value);
+                    $submsg->mergeFromJsonArray($value, $ignore_unknown);
                 }
                 return $submsg;
             case GPBType::ENUM:
@@ -862,9 +877,12 @@ class Message
                 $enum_value = $field->getEnumType()->getValueByName($value);
                 if (!is_null($enum_value)) {
                     return $enum_value->getNumber();
+                } else if ($ignore_unknown) {
+                    return $this->defaultValue($field);
+                } else {
+                  throw new GPBDecodeException(
+                          "Enum field only accepts integer or enum value name");
                 }
-                throw new GPBDecodeException(
-                        "Enum field only accepts integer or enum value name");
             case GPBType::STRING:
                 if (is_null($value)) {
                     return $this->defaultValue($field);
@@ -1125,17 +1143,17 @@ class Message
         }
     }
 
-    protected function mergeFromJsonArray($array)
+    protected function mergeFromJsonArray($array, $ignore_unknown)
     {
         if (is_a($this, "Google\Protobuf\Any")) {
             $this->clear();
             $this->setTypeUrl($array["@type"]);
             $msg = $this->unpack();
             if (GPBUtil::hasSpecialJsonMapping($msg)) {
-                $msg->mergeFromJsonArray($array["value"]);
+                $msg->mergeFromJsonArray($array["value"], $ignore_unknown);
             } else {
                 unset($array["@type"]);
-                $msg->mergeFromJsonArray($array);
+                $msg->mergeFromJsonArray($array, $ignore_unknown);
             }
             $this->setValue($msg->serializeToString());
             return;
@@ -1171,9 +1189,10 @@ class Message
             $fields = $this->getFields();
             foreach($array as $key => $value) {
                 $v = new Value();
-                $v->mergeFromJsonArray($value);
+                $v->mergeFromJsonArray($value, $ignore_unknown);
                 $fields[$key] = $v;
             }
+            return;
         }
         if (is_a($this, "Google\Protobuf\Value")) {
             if (is_bool($array)) {
@@ -1194,7 +1213,7 @@ class Message
                     }
                     foreach ($array as $key => $v) {
                         $value = new Value();
-                        $value->mergeFromJsonArray($v);
+                        $value->mergeFromJsonArray($v, $ignore_unknown);
                         $values = $struct_value->getFields();
                         $values[$key]= $value;
                     }
@@ -1207,7 +1226,7 @@ class Message
                     }
                     foreach ($array as $v) {
                         $value = new Value();
-                        $value->mergeFromJsonArray($v);
+                        $value->mergeFromJsonArray($v, $ignore_unknown);
                         $values = $list_value->getValues();
                         $values[]= $value;
                     }
@@ -1217,17 +1236,23 @@ class Message
             }
             return;
         }
-        $this->mergeFromArrayJsonImpl($array);
+        $this->mergeFromArrayJsonImpl($array, $ignore_unknown);
     }
 
-    private function mergeFromArrayJsonImpl($array)
+    private function mergeFromArrayJsonImpl($array, $ignore_unknown)
     {
         foreach ($array as $key => $value) {
             $field = $this->desc->getFieldByJsonName($key);
             if (is_null($field)) {
                 $field = $this->desc->getFieldByName($key);
                 if (is_null($field)) {
-                    continue;
+                    if ($ignore_unknown) {
+                        continue;
+                    } else {
+                        throw new GPBDecodeException(
+                            $key . ' is unknown.'
+                        );
+                    }
                 }
             }
             if ($field->isMap()) {
@@ -1244,10 +1269,12 @@ class Message
                     $proto_key = $this->convertJsonValueToProtoValue(
                         $tmp_key,
                         $key_field,
+                        $ignore_unknown,
                         true);
                     $proto_value = $this->convertJsonValueToProtoValue(
                         $tmp_value,
-                        $value_field);
+                        $value_field,
+                        $ignore_unknown);
                     self::kvUpdateHelper($field, $proto_key, $proto_value);
                 }
             } else if ($field->isRepeated()) {
@@ -1261,14 +1288,16 @@ class Message
                     }
                     $proto_value = $this->convertJsonValueToProtoValue(
                         $tmp,
-                        $field);
+                        $field,
+                        $ignore_unknown);
                     self::appendHelper($field, $proto_value);
                 }
             } else {
                 $setter = $field->getSetter();
                 $proto_value = $this->convertJsonValueToProtoValue(
                     $value,
-                    $field);
+                    $field,
+                    $ignore_unknown);
                 if ($field->getType() === GPBType::MESSAGE) {
                     if (is_null($proto_value)) {
                         continue;
@@ -1288,7 +1317,7 @@ class Message
     /**
      * @ignore
      */
-    public function parseFromJsonStream($input)
+    public function parseFromJsonStream($input, $ignore_unknown)
     {
         $array = json_decode($input->getData(), true, 512, JSON_BIGINT_AS_STRING);
         if ($this instanceof \Google\Protobuf\ListValue) {
@@ -1304,7 +1333,7 @@ class Message
             }
         }
         try {
-            $this->mergeFromJsonArray($array);
+            $this->mergeFromJsonArray($array, $ignore_unknown);
         } catch (\Exception $e) {
             throw new GPBDecodeException($e->getMessage());
         }
@@ -1551,14 +1580,19 @@ class Message
      */
     private function existField($field)
     {
-        $oneof_index = $field->getOneofIndex();
-        if ($oneof_index !== -1) {
-            $oneof = $this->desc->getOneofDecl()[$oneof_index];
-            $oneof_name = $oneof->getName();
-            return $this->$oneof_name->getNumber() === $field->getNumber();
+        $getter = $field->getGetter();
+        $hazzer = "has" . substr($getter, 3);
+
+        if (method_exists($this, $hazzer)) {
+          return $this->$hazzer();
+        } else if ($field->getOneofIndex() !== -1) {
+          // For old generated code, which does not have hazzers for oneof
+          // fields.
+          $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
+          $oneof_name = $oneof->getName();
+          return $this->$oneof_name->getNumber() === $field->getNumber();
         }
 
-        $getter = $field->getGetter();
         $values = $this->$getter();
         if ($field->isMap()) {
             return count($values) !== 0;

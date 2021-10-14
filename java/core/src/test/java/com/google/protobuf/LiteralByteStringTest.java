@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -45,16 +46,18 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /**
  * Test {@code LiteralByteString} by setting up a reference string in {@link #setUp()}. This class
  * is designed to be extended for testing extensions of {@code LiteralByteString} such as {@code
  * BoundedByteString}, see {@link BoundedByteStringTest}.
- *
- * @author carlanton@google.com (Carl Haverl)
  */
-public class LiteralByteStringTest extends TestCase {
+@RunWith(JUnit4.class)
+public class LiteralByteStringTest {
   protected static final String UTF_8 = "UTF-8";
 
   protected String classUnderTest;
@@ -62,48 +65,56 @@ public class LiteralByteStringTest extends TestCase {
   protected ByteString stringUnderTest;
   protected int expectedHashCode;
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     classUnderTest = "LiteralByteString";
     referenceBytes = ByteStringTest.getTestBytes(1234, 11337766L);
     stringUnderTest = ByteString.copyFrom(referenceBytes);
     expectedHashCode = 331161852;
   }
 
+  @Test
   public void testExpectedType() {
     String actualClassName = getActualClassName(stringUnderTest);
-    assertEquals(classUnderTest + " should match type exactly", classUnderTest, actualClassName);
+    assertWithMessage("%s should match type exactly", classUnderTest)
+        .that(classUnderTest)
+        .isEqualTo(actualClassName);
   }
 
   protected String getActualClassName(Object object) {
     return object.getClass().getSimpleName();
   }
 
+  @Test
   public void testByteAt() {
     boolean stillEqual = true;
     for (int i = 0; stillEqual && i < referenceBytes.length; ++i) {
       stillEqual = (referenceBytes[i] == stringUnderTest.byteAt(i));
     }
-    assertTrue(classUnderTest + " must capture the right bytes", stillEqual);
+    assertWithMessage("%s must capture the right bytes", classUnderTest).that(stillEqual).isTrue();
   }
 
+  @Test
   public void testByteIterator() {
     boolean stillEqual = true;
     ByteString.ByteIterator iter = stringUnderTest.iterator();
     for (int i = 0; stillEqual && i < referenceBytes.length; ++i) {
       stillEqual = (iter.hasNext() && referenceBytes[i] == iter.nextByte());
     }
-    assertTrue(classUnderTest + " must capture the right bytes", stillEqual);
-    assertFalse(classUnderTest + " must have exhausted the iterator", iter.hasNext());
+    assertWithMessage("%s must capture the right bytes", classUnderTest).that(stillEqual).isTrue();
+    assertWithMessage("%s must have exhausted the iterator", classUnderTest)
+        .that(iter.hasNext())
+        .isFalse();
 
     try {
       iter.nextByte();
-      fail("Should have thrown an exception.");
+      assertWithMessage("Should have thrown an exception.").fail();
     } catch (NoSuchElementException e) {
       // This is success
     }
   }
 
+  @Test
   public void testByteIterable() {
     boolean stillEqual = true;
     int j = 0;
@@ -111,25 +122,36 @@ public class LiteralByteStringTest extends TestCase {
       stillEqual = (referenceBytes[j] == quantum);
       ++j;
     }
-    assertTrue(classUnderTest + " must capture the right bytes as Bytes", stillEqual);
-    assertEquals(classUnderTest + " iterable character count", referenceBytes.length, j);
+    assertWithMessage("%s must capture the right bytes as Bytes", classUnderTest)
+        .that(stillEqual)
+        .isTrue();
+    assertWithMessage("%s iterable character count", classUnderTest)
+        .that(referenceBytes)
+        .hasLength(j);
   }
 
+  @Test
   public void testSize() {
-    assertEquals(
-        classUnderTest + " must have the expected size",
-        referenceBytes.length,
-        stringUnderTest.size());
+    assertWithMessage("%s must have the expected size", classUnderTest)
+        .that(referenceBytes.length)
+        .isEqualTo(stringUnderTest.size());
   }
 
+  @Test
   public void testGetTreeDepth() {
-    assertEquals(classUnderTest + " must have depth 0", 0, stringUnderTest.getTreeDepth());
+    assertWithMessage("%s must have depth 0", classUnderTest)
+        .that(stringUnderTest.getTreeDepth())
+        .isEqualTo(0);
   }
 
+  @Test
   public void testIsBalanced() {
-    assertTrue(classUnderTest + " is technically balanced", stringUnderTest.isBalanced());
+    assertWithMessage("%s is technically balanced", classUnderTest)
+        .that(stringUnderTest.isBalanced())
+        .isTrue();
   }
 
+  @Test
   public void testCopyTo_ByteArrayOffsetLength() {
     int destinationOffset = 50;
     int length = 100;
@@ -140,9 +162,12 @@ public class LiteralByteStringTest extends TestCase {
     for (int i = 0; stillEqual && i < length; ++i) {
       stillEqual = referenceBytes[i + sourceOffset] == destination[i + destinationOffset];
     }
-    assertTrue(classUnderTest + ".copyTo(4 arg) must give the expected bytes", stillEqual);
+    assertWithMessage("%s.copyTo(4 arg) must give the expected bytes", classUnderTest)
+        .that(stillEqual)
+        .isTrue();
   }
 
+  @Test
   public void testCopyTo_ByteArrayOffsetLengthErrors() {
     int destinationOffset = 50;
     int length = 100;
@@ -152,7 +177,9 @@ public class LiteralByteStringTest extends TestCase {
       // Copy one too many bytes
       stringUnderTest.copyTo(
           destination, stringUnderTest.size() + 1 - length, destinationOffset, length);
-      fail("Should have thrown an exception when copying too many bytes of a " + classUnderTest);
+      assertWithMessage(
+              "Should have thrown an exception when copying too many bytes of a %s", classUnderTest)
+          .fail();
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
@@ -160,9 +187,10 @@ public class LiteralByteStringTest extends TestCase {
     try {
       // Copy with illegal negative sourceOffset
       stringUnderTest.copyTo(destination, -1, destinationOffset, length);
-      fail(
-          "Should have thrown an exception when given a negative sourceOffset in "
-              + classUnderTest);
+      assertWithMessage(
+              "Should have thrown an exception when given a negative sourceOffset in %s",
+              classUnderTest)
+          .fail();
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
@@ -170,9 +198,10 @@ public class LiteralByteStringTest extends TestCase {
     try {
       // Copy with illegal negative destinationOffset
       stringUnderTest.copyTo(destination, 0, -1, length);
-      fail(
-          "Should have thrown an exception when given a negative destinationOffset in "
-              + classUnderTest);
+      assertWithMessage(
+              "Should have thrown an exception when given a negative destinationOffset in %s",
+              classUnderTest)
+          .fail();
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
@@ -180,7 +209,9 @@ public class LiteralByteStringTest extends TestCase {
     try {
       // Copy with illegal negative size
       stringUnderTest.copyTo(destination, 0, 0, -1);
-      fail("Should have thrown an exception when given a negative size in " + classUnderTest);
+      assertWithMessage(
+              "Should have thrown an exception when given a negative size in %s", classUnderTest)
+          .fail();
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
@@ -188,9 +219,10 @@ public class LiteralByteStringTest extends TestCase {
     try {
       // Copy with illegal too-large sourceOffset
       stringUnderTest.copyTo(destination, 2 * stringUnderTest.size(), 0, length);
-      fail(
-          "Should have thrown an exception when the destinationOffset is too large in "
-              + classUnderTest);
+      assertWithMessage(
+              "Should have thrown an exception when the destinationOffset is too large in %s",
+              classUnderTest)
+          .fail();
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
@@ -198,27 +230,33 @@ public class LiteralByteStringTest extends TestCase {
     try {
       // Copy with illegal too-large destinationOffset
       stringUnderTest.copyTo(destination, 0, 2 * destination.length, length);
-      fail(
-          "Should have thrown an exception when the destinationOffset is too large in "
-              + classUnderTest);
+      assertWithMessage(
+              "Should have thrown an exception when the destinationOffset is too large in %s",
+              classUnderTest)
+          .fail();
     } catch (IndexOutOfBoundsException expected) {
       // This is success
     }
   }
 
+  @Test
   public void testCopyTo_ByteBuffer() {
     ByteBuffer myBuffer = ByteBuffer.allocate(referenceBytes.length);
     stringUnderTest.copyTo(myBuffer);
-    assertTrue(
-        classUnderTest + ".copyTo(ByteBuffer) must give back the same bytes",
-        Arrays.equals(referenceBytes, myBuffer.array()));
+    assertWithMessage("%s.copyTo(ByteBuffer) must give back the same bytes", classUnderTest)
+        .that(Arrays.equals(referenceBytes, myBuffer.array()))
+        .isTrue();
   }
 
+  @Test
   public void testMarkSupported() {
     InputStream stream = stringUnderTest.newInput();
-    assertTrue(classUnderTest + ".newInput() must support marking", stream.markSupported());
+    assertWithMessage("%s.newInput() must support marking", classUnderTest)
+        .that(stream.markSupported())
+        .isTrue();
   }
 
+  @Test
   public void testMarkAndReset() throws IOException {
     int fraction = stringUnderTest.size() / 3;
 
@@ -227,16 +265,17 @@ public class LiteralByteStringTest extends TestCase {
 
     skipFully(stream, fraction); // Skip a large fraction, but not all.
     int available = stream.available();
-    assertTrue(
-        classUnderTest + ": after skipping to the 'middle', half the bytes are available",
-        (stringUnderTest.size() - fraction) == available);
+    assertWithMessage(
+            "%s: after skipping to the 'middle', half the bytes are available", classUnderTest)
+        .that((stringUnderTest.size() - fraction) == available)
+        .isTrue();
     stream.reset();
 
     skipFully(stream, stringUnderTest.size()); // Skip to the end.
     available = stream.available();
-    assertTrue(
-        classUnderTest + ": after skipping to the end, no more bytes are available",
-        0 == available);
+    assertWithMessage("%s: after skipping to the end, no more bytes are available", classUnderTest)
+        .that(0 == available)
+        .isTrue();
   }
 
   /**
@@ -272,50 +311,55 @@ public class LiteralByteStringTest extends TestCase {
     }
   }
 
+  @Test
   public void testAsReadOnlyByteBuffer() {
     ByteBuffer byteBuffer = stringUnderTest.asReadOnlyByteBuffer();
     byte[] roundTripBytes = new byte[referenceBytes.length];
-    assertTrue(byteBuffer.remaining() == referenceBytes.length);
-    assertTrue(byteBuffer.isReadOnly());
+    assertThat(byteBuffer.remaining() == referenceBytes.length).isTrue();
+    assertThat(byteBuffer.isReadOnly()).isTrue();
     byteBuffer.get(roundTripBytes);
-    assertTrue(
-        classUnderTest + ".asReadOnlyByteBuffer() must give back the same bytes",
-        Arrays.equals(referenceBytes, roundTripBytes));
+    assertWithMessage("%s.asReadOnlyByteBuffer() must give back the same bytes", classUnderTest)
+        .that(Arrays.equals(referenceBytes, roundTripBytes))
+        .isTrue();
   }
 
+  @Test
   public void testAsReadOnlyByteBufferList() {
     List<ByteBuffer> byteBuffers = stringUnderTest.asReadOnlyByteBufferList();
     int bytesSeen = 0;
     byte[] roundTripBytes = new byte[referenceBytes.length];
     for (ByteBuffer byteBuffer : byteBuffers) {
       int thisLength = byteBuffer.remaining();
-      assertTrue(byteBuffer.isReadOnly());
-      assertTrue(bytesSeen + thisLength <= referenceBytes.length);
+      assertThat(byteBuffer.isReadOnly()).isTrue();
+      assertThat(bytesSeen + thisLength <= referenceBytes.length).isTrue();
       byteBuffer.get(roundTripBytes, bytesSeen, thisLength);
       bytesSeen += thisLength;
     }
-    assertTrue(bytesSeen == referenceBytes.length);
-    assertTrue(
-        classUnderTest + ".asReadOnlyByteBufferTest() must give back the same bytes",
-        Arrays.equals(referenceBytes, roundTripBytes));
+    assertThat(bytesSeen == referenceBytes.length).isTrue();
+    assertWithMessage("%s.asReadOnlyByteBufferTest() must give back the same bytes", classUnderTest)
+        .that(Arrays.equals(referenceBytes, roundTripBytes))
+        .isTrue();
   }
 
+  @Test
   public void testToByteArray() {
     byte[] roundTripBytes = stringUnderTest.toByteArray();
-    assertTrue(
-        classUnderTest + ".toByteArray() must give back the same bytes",
-        Arrays.equals(referenceBytes, roundTripBytes));
+    assertWithMessage("%s.toByteArray() must give back the same bytes", classUnderTest)
+        .that(Arrays.equals(referenceBytes, roundTripBytes))
+        .isTrue();
   }
 
+  @Test
   public void testWriteTo() throws IOException {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     stringUnderTest.writeTo(bos);
     byte[] roundTripBytes = bos.toByteArray();
-    assertTrue(
-        classUnderTest + ".writeTo() must give back the same bytes",
-        Arrays.equals(referenceBytes, roundTripBytes));
+    assertWithMessage("%s.writeTo() must give back the same bytes", classUnderTest)
+        .that(Arrays.equals(referenceBytes, roundTripBytes))
+        .isTrue();
   }
 
+  @Test
   public void testWriteToShouldNotExposeInternalBufferToOutputStream() throws IOException {
     OutputStream os =
         new OutputStream() {
@@ -331,11 +375,12 @@ public class LiteralByteStringTest extends TestCase {
         };
 
     stringUnderTest.writeTo(os);
-    assertTrue(
-        classUnderTest + ".writeTo() must not grant access to underlying array",
-        Arrays.equals(referenceBytes, stringUnderTest.toByteArray()));
+    assertWithMessage("%s.writeTo() must not grant access to underlying array", classUnderTest)
+        .that(Arrays.equals(referenceBytes, stringUnderTest.toByteArray()))
+        .isTrue();
   }
 
+  @Test
   public void testWriteToInternalShouldExposeInternalBufferToOutputStream() throws IOException {
     OutputStream os =
         new OutputStream() {
@@ -352,11 +397,12 @@ public class LiteralByteStringTest extends TestCase {
 
     stringUnderTest.writeToInternal(os, 0, stringUnderTest.size());
     byte[] allZeros = new byte[stringUnderTest.size()];
-    assertTrue(
-        classUnderTest + ".writeToInternal() must grant access to underlying array",
-        Arrays.equals(allZeros, stringUnderTest.toByteArray()));
+    assertWithMessage("%s.writeToInternal() must grant access to underlying array", classUnderTest)
+        .that(Arrays.equals(allZeros, stringUnderTest.toByteArray()))
+        .isTrue();
   }
 
+  @Test
   public void testWriteToShouldExposeInternalBufferToByteOutput() throws IOException {
     ByteOutput out =
         new ByteOutput() {
@@ -388,183 +434,240 @@ public class LiteralByteStringTest extends TestCase {
 
     stringUnderTest.writeTo(out);
     byte[] allZeros = new byte[stringUnderTest.size()];
-    assertTrue(
-        classUnderTest + ".writeToInternal() must grant access to underlying array",
-        Arrays.equals(allZeros, stringUnderTest.toByteArray()));
+    assertWithMessage("%s.writeToInternal() must grant access to underlying array", classUnderTest)
+        .that(Arrays.equals(allZeros, stringUnderTest.toByteArray()))
+        .isTrue();
   }
 
+  @Test
   public void testNewOutput() throws IOException {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     ByteString.Output output = ByteString.newOutput();
     stringUnderTest.writeTo(output);
-    assertEquals("Output Size returns correct result", output.size(), stringUnderTest.size());
+    assertWithMessage("Output Size returns correct result")
+        .that(output.size())
+        .isEqualTo(stringUnderTest.size());
     output.writeTo(bos);
-    assertTrue(
-        "Output.writeTo() must give back the same bytes",
-        Arrays.equals(referenceBytes, bos.toByteArray()));
+    assertWithMessage("Output.writeTo() must give back the same bytes")
+        .that(Arrays.equals(referenceBytes, bos.toByteArray()))
+        .isTrue();
 
     // write the output stream to itself! This should cause it to double
     output.writeTo(output);
-    assertEquals(
-        "Writing an output stream to itself is successful",
-        stringUnderTest.concat(stringUnderTest),
-        output.toByteString());
+    assertWithMessage("Writing an output stream to itself is successful")
+        .that(stringUnderTest.concat(stringUnderTest))
+        .isEqualTo(output.toByteString());
 
     output.reset();
-    assertEquals("Output.reset() resets the output", 0, output.size());
-    assertEquals("Output.reset() resets the output", ByteString.EMPTY, output.toByteString());
+    assertWithMessage("Output.reset() resets the output").that(output.size()).isEqualTo(0);
+    assertWithMessage("Output.reset() resets the output")
+        .that(output.toByteString())
+        .isEqualTo(ByteString.EMPTY);
   }
 
+  @Test
   public void testToString() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
     String roundTripString = unicode.toString(UTF_8);
-    assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
+    assertWithMessage("%s unicode must match", classUnderTest)
+        .that(testString)
+        .isEqualTo(roundTripString);
   }
 
+  @Test
   public void testCharsetToString() {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
     String roundTripString = unicode.toString(Internal.UTF_8);
-    assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
+    assertWithMessage("%s unicode must match", classUnderTest)
+        .that(testString)
+        .isEqualTo(roundTripString);
   }
 
+  @Test
   public void testToString_returnsCanonicalEmptyString() {
-    assertSame(
-        classUnderTest + " must be the same string references",
-        ByteString.EMPTY.toString(Internal.UTF_8),
-        ByteString.wrap(new byte[] {}).toString(Internal.UTF_8));
+    assertWithMessage("%s must be the same string references", classUnderTest)
+        .that(ByteString.EMPTY.toString(Internal.UTF_8))
+        .isSameInstanceAs(ByteString.wrap(new byte[] {}).toString(Internal.UTF_8));
   }
 
+  @Test
   public void testToString_raisesException() {
     try {
       ByteString.EMPTY.toString("invalid");
-      fail("Should have thrown an exception.");
+      assertWithMessage("Should have thrown an exception.").fail();
     } catch (UnsupportedEncodingException expected) {
       // This is success
     }
 
     try {
       ByteString.wrap(referenceBytes).toString("invalid");
-      fail("Should have thrown an exception.");
+      assertWithMessage("Should have thrown an exception.").fail();
     } catch (UnsupportedEncodingException expected) {
       // This is success
     }
   }
 
+  @Test
+  @SuppressWarnings("SelfEquals")
   public void testEquals() {
-    assertEquals(classUnderTest + " must not equal null", false, stringUnderTest.equals(null));
-    assertEquals(classUnderTest + " must equal self", stringUnderTest, stringUnderTest);
-    assertFalse(
-        classUnderTest + " must not equal the empty string",
-        stringUnderTest.equals(ByteString.EMPTY));
-    assertEquals(
-        classUnderTest + " empty strings must be equal",
-        ByteString.wrap(new byte[] {}),
-        stringUnderTest.substring(55, 55));
-    assertEquals(
-        classUnderTest + " must equal another string with the same value",
-        stringUnderTest,
-        ByteString.wrap(referenceBytes));
+    assertWithMessage("%s must not equal null", classUnderTest)
+        .that(stringUnderTest)
+        .isNotEqualTo(null);
+    assertWithMessage("%s must equal self", classUnderTest)
+        .that(stringUnderTest.equals(stringUnderTest))
+        .isTrue();
+    assertWithMessage("%s must not equal the empty string", classUnderTest)
+        .that(stringUnderTest)
+        .isNotEqualTo(ByteString.EMPTY);
+    assertWithMessage("%s empty strings must be equal", classUnderTest)
+        .that(ByteString.wrap(new byte[] {}))
+        .isEqualTo(stringUnderTest.substring(55, 55));
+    assertWithMessage("%s must equal another string with the same value", classUnderTest)
+        .that(stringUnderTest)
+        .isEqualTo(ByteString.wrap(referenceBytes));
 
     byte[] mungedBytes = new byte[referenceBytes.length];
     System.arraycopy(referenceBytes, 0, mungedBytes, 0, referenceBytes.length);
     mungedBytes[mungedBytes.length - 5] = (byte) (mungedBytes[mungedBytes.length - 5] ^ 0xFF);
-    assertFalse(
-        classUnderTest + " must not equal every string with the same length",
-        stringUnderTest.equals(ByteString.wrap(mungedBytes)));
+    assertWithMessage("%s must not equal every string with the same length", classUnderTest)
+        .that(stringUnderTest)
+        .isNotEqualTo(ByteString.wrap(mungedBytes));
   }
 
+  @Test
   public void testHashCode() {
     int hash = stringUnderTest.hashCode();
-    assertEquals(classUnderTest + " must have expected hashCode", expectedHashCode, hash);
+    assertWithMessage("%s must have expected hashCode", classUnderTest)
+        .that(hash)
+        .isEqualTo(expectedHashCode);
   }
 
+  @Test
   public void testPeekCachedHashCode() {
-    assertEquals(
-        classUnderTest + ".peekCachedHashCode() should return zero at first",
-        0,
-        stringUnderTest.peekCachedHashCode());
-    stringUnderTest.hashCode();
-    assertEquals(
-        classUnderTest + ".peekCachedHashCode should return zero at first",
-        expectedHashCode,
-        stringUnderTest.peekCachedHashCode());
+    assertWithMessage("%s.peekCachedHashCode() should return zero at first", classUnderTest)
+        .that(stringUnderTest.peekCachedHashCode())
+        .isEqualTo(0);
+    int unused = stringUnderTest.hashCode();
+    assertWithMessage("%s.peekCachedHashCode should return zero at first", classUnderTest)
+        .that(stringUnderTest.peekCachedHashCode())
+        .isEqualTo(expectedHashCode);
   }
 
+  @Test
   public void testPartialHash() {
     // partialHash() is more strenuously tested elsewhere by testing hashes of substrings.
     // This test would fail if the expected hash were 1.  It's not.
     int hash = stringUnderTest.partialHash(stringUnderTest.size(), 0, stringUnderTest.size());
-    assertEquals(
-        classUnderTest + ".partialHash() must yield expected hashCode", expectedHashCode, hash);
+    assertWithMessage("%s.partialHash() must yield expected hashCode", classUnderTest)
+        .that(hash)
+        .isEqualTo(expectedHashCode);
   }
 
+  @Test
   public void testNewInput() throws IOException {
     InputStream input = stringUnderTest.newInput();
-    assertEquals(
-        "InputStream.available() returns correct value", stringUnderTest.size(), input.available());
+    assertWithMessage("InputStream.available() returns correct value")
+        .that(stringUnderTest.size())
+        .isEqualTo(input.available());
     boolean stillEqual = true;
     for (byte referenceByte : referenceBytes) {
       int expectedInt = (referenceByte & 0xFF);
       stillEqual = (expectedInt == input.read());
     }
-    assertEquals("InputStream.available() returns correct value", 0, input.available());
-    assertTrue(classUnderTest + " must give the same bytes from the InputStream", stillEqual);
-    assertEquals(classUnderTest + " InputStream must now be exhausted", -1, input.read());
+    assertWithMessage("InputStream.available() returns correct value")
+        .that(input.available())
+        .isEqualTo(0);
+    assertWithMessage("%s must give the same bytes from the InputStream", classUnderTest)
+        .that(stillEqual)
+        .isTrue();
+    assertWithMessage("%s InputStream must now be exhausted", classUnderTest)
+        .that(input.read())
+        .isEqualTo(-1);
   }
 
+  @Test
+  public void testNewInput_readZeroBytes() throws IOException {
+    InputStream input = stringUnderTest.newInput();
+    assertWithMessage(
+            "%s InputStream.read() returns 0 when told to read 0 bytes and not at EOF",
+            classUnderTest)
+        .that(input.read(new byte[0]))
+        .isEqualTo(0);
+
+    input.skip(input.available());
+    assertWithMessage(
+            "%s InputStream.read() returns -1 when told to read 0 bytes at EOF", classUnderTest)
+        .that(input.read(new byte[0]))
+        .isEqualTo(-1);
+  }
+
+  @Test
   public void testNewInput_skip() throws IOException {
     InputStream input = stringUnderTest.newInput();
     int stringSize = stringUnderTest.size();
     int nearEndIndex = stringSize * 2 / 3;
 
     long skipped1 = input.skip(nearEndIndex);
-    assertEquals("InputStream.skip()", skipped1, nearEndIndex);
-    assertEquals("InputStream.available()", stringSize - skipped1, input.available());
-    assertTrue("InputStream.mark() is available", input.markSupported());
+    assertWithMessage("InputStream.skip()").that(skipped1).isEqualTo(nearEndIndex);
+    assertWithMessage("InputStream.available()")
+        .that(input.available())
+        .isEqualTo(stringSize - skipped1);
+    assertWithMessage("InputStream.mark() is available").that(input.markSupported()).isTrue();
     input.mark(0);
-    assertEquals(
-        "InputStream.skip(), read()", stringUnderTest.byteAt(nearEndIndex) & 0xFF, input.read());
-    assertEquals("InputStream.available()", stringSize - skipped1 - 1, input.available());
+    assertWithMessage("InputStream.skip(), read()")
+        .that(stringUnderTest.byteAt(nearEndIndex) & 0xFF)
+        .isEqualTo(input.read());
+    assertWithMessage("InputStream.available()")
+        .that(input.available())
+        .isEqualTo(stringSize - skipped1 - 1);
 
     long skipped2 = input.skip(stringSize);
-    assertEquals("InputStream.skip() incomplete", skipped2, stringSize - skipped1 - 1);
-    assertEquals("InputStream.skip(), no more input", 0, input.available());
-    assertEquals("InputStream.skip(), no more input", -1, input.read());
+    assertWithMessage("InputStream.skip() incomplete")
+        .that(skipped2)
+        .isEqualTo(stringSize - skipped1 - 1);
+    assertWithMessage("InputStream.skip(), no more input").that(input.available()).isEqualTo(0);
+    assertWithMessage("InputStream.skip(), no more input").that(input.read()).isEqualTo(-1);
     assertThat(input.skip(1)).isEqualTo(0);
     assertThat(input.read(new byte[1], /* off= */ 0, /*len=*/ 0)).isEqualTo(-1);
 
     input.reset();
-    assertEquals("InputStream.reset() succeeded", stringSize - skipped1, input.available());
-    assertEquals(
-        "InputStream.reset(), read()", stringUnderTest.byteAt(nearEndIndex) & 0xFF, input.read());
+    assertWithMessage("InputStream.reset() succeeded")
+        .that(input.available())
+        .isEqualTo(stringSize - skipped1);
+    assertWithMessage("InputStream.reset(), read()")
+        .that(input.read())
+        .isEqualTo(stringUnderTest.byteAt(nearEndIndex) & 0xFF);
   }
 
+  @Test
   public void testNewCodedInput() throws IOException {
     CodedInputStream cis = stringUnderTest.newCodedInput();
     byte[] roundTripBytes = cis.readRawBytes(referenceBytes.length);
-    assertTrue(
-        classUnderTest + " must give the same bytes back from the CodedInputStream",
-        Arrays.equals(referenceBytes, roundTripBytes));
-    assertTrue(classUnderTest + " CodedInputStream must now be exhausted", cis.isAtEnd());
+    assertWithMessage("%s must give the same bytes back from the CodedInputStream", classUnderTest)
+        .that(Arrays.equals(referenceBytes, roundTripBytes))
+        .isTrue();
+    assertWithMessage(" %s CodedInputStream must now be exhausted", classUnderTest)
+        .that(cis.isAtEnd())
+        .isTrue();
   }
 
   /**
    * Make sure we keep things simple when concatenating with empty. See also {@link
    * ByteStringTest#testConcat_empty()}.
    */
+  @Test
   public void testConcat_empty() {
-    assertSame(
-        classUnderTest + " concatenated with empty must give " + classUnderTest,
-        stringUnderTest.concat(ByteString.EMPTY),
-        stringUnderTest);
-    assertSame(
-        "empty concatenated with " + classUnderTest + " must give " + classUnderTest,
-        ByteString.EMPTY.concat(stringUnderTest),
-        stringUnderTest);
+    assertWithMessage("%s concatenated with empty must give %s ", classUnderTest, classUnderTest)
+        .that(stringUnderTest.concat(ByteString.EMPTY))
+        .isSameInstanceAs(stringUnderTest);
+    assertWithMessage("empty concatenated with %s must give %s", classUnderTest, classUnderTest)
+        .that(ByteString.EMPTY.concat(stringUnderTest))
+        .isSameInstanceAs(stringUnderTest);
   }
 
+  @Test
   public void testJavaSerialization() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(out);
@@ -574,7 +677,7 @@ public class LiteralByteStringTest extends TestCase {
     InputStream in = new ByteArrayInputStream(pickled);
     ObjectInputStream ois = new ObjectInputStream(in);
     Object o = ois.readObject();
-    assertTrue("Didn't get a ByteString back", o instanceof ByteString);
-    assertEquals("Should get an equal ByteString back", stringUnderTest, o);
+    assertWithMessage("Didn't get a ByteString back").that(o).isInstanceOf(ByteString.class);
+    assertWithMessage("Should get an equal ByteString back").that(o).isEqualTo(stringUnderTest);
   }
 }

@@ -80,28 +80,13 @@ we repeatedly read a tag, look up the corresponding decoder, and invoke it.
 
 __author__ = 'kenton@google.com (Kenton Varda)'
 
+import math
 import struct
-import sys
-import six
-
-_UCS2_MAXUNICODE = 65535
-if six.PY3:
-  long = int
-else:
-  import re    # pylint: disable=g-import-not-at-top
-  _SURROGATE_PATTERN = re.compile(six.u(r'[\ud800-\udfff]'))
 
 from google.protobuf.internal import containers
 from google.protobuf.internal import encoder
 from google.protobuf.internal import wire_format
 from google.protobuf import message
-
-
-# This will overflow and thus become IEEE-754 "infinity".  We would use
-# "float('inf')" but it doesn't work on Windows pre-Python-2.6.
-_POS_INF = 1e10000
-_NEG_INF = -_POS_INF
-_NAN = _POS_INF * 0
 
 
 # This is not for optimization, but rather to avoid conflicts with local
@@ -123,7 +108,7 @@ def _VarintDecoder(mask, result_type):
     result = 0
     shift = 0
     while 1:
-      b = six.indexbytes(buffer, pos)
+      b = buffer[pos]
       result |= ((b & 0x7f) << shift)
       pos += 1
       if not (b & 0x80):
@@ -146,7 +131,7 @@ def _SignedVarintDecoder(bits, result_type):
     result = 0
     shift = 0
     while 1:
-      b = six.indexbytes(buffer, pos)
+      b = buffer[pos]
       result |= ((b & 0x7f) << shift)
       pos += 1
       if not (b & 0x80):
@@ -159,12 +144,9 @@ def _SignedVarintDecoder(bits, result_type):
         raise _DecodeError('Too many bytes when decoding varint.')
   return DecodeVarint
 
-# We force 32-bit values to int and 64-bit values to long to make
-# alternate implementations where the distinction is more significant
-# (e.g. the C++ implementation) simpler.
-
-_DecodeVarint = _VarintDecoder((1 << 64) - 1, long)
-_DecodeSignedVarint = _SignedVarintDecoder(64, long)
+# All 32-bit and 64-bit values are represented as int.
+_DecodeVarint = _VarintDecoder((1 << 64) - 1, int)
+_DecodeSignedVarint = _SignedVarintDecoder(64, int)
 
 # Use these versions for values which must be limited to 32 bits.
 _DecodeVarint32 = _VarintDecoder((1 << 32) - 1, int)
@@ -189,7 +171,7 @@ def ReadTag(buffer, pos):
     Tuple[bytes, int] of the tag data and new position.
   """
   start = pos
-  while six.indexbytes(buffer, pos) & 0x80:
+  while buffer[pos] & 0x80:
     pos += 1
   pos += 1
 
@@ -209,7 +191,8 @@ def _SimpleDecoder(wire_type, decode_value):
         _DecodeVarint()
   """
 
-  def SpecificDecoder(field_number, is_repeated, is_packed, key, new_default):
+  def SpecificDecoder(field_number, is_repeated, is_packed, key, new_default,
+                      clear_if_default=False):
     if is_packed:
       local_DecodeVarint = _DecodeVarint
       def DecodePackedField(buffer, pos, end, message, field_dict):
@@ -249,10 +232,13 @@ def _SimpleDecoder(wire_type, decode_value):
       return DecodeRepeatedField
     else:
       def DecodeField(buffer, pos, end, message, field_dict):
-        (field_dict[key], pos) = decode_value(buffer, pos)
+        (new_value, pos) = decode_value(buffer, pos)
         if pos > end:
-          del field_dict[key]  # Discard corrupt value.
           raise _DecodeError('Truncated message.')
+        if clear_if_default and not new_value:
+          field_dict.pop(key, None)
+        else:
+          field_dict[key] = new_value
         return pos
       return DecodeField
 
@@ -329,11 +315,11 @@ def _FloatDecoder():
     if (float_bytes[3:4] in b'\x7F\xFF' and float_bytes[2:3] >= b'\x80'):
       # If at least one significand bit is set...
       if float_bytes[0:3] != b'\x00\x00\x80':
-        return (_NAN, new_pos)
+        return (math.nan, new_pos)
       # If sign bit is set...
       if float_bytes[3:4] == b'\xFF':
-        return (_NEG_INF, new_pos)
-      return (_POS_INF, new_pos)
+        return (-math.inf, new_pos)
+      return (math.inf, new_pos)
 
     # Note that we expect someone up-stack to catch struct.error and convert
     # it to _DecodeError -- this way we don't have to set up exception-
@@ -373,7 +359,7 @@ def _DoubleDecoder():
     if ((double_bytes[7:8] in b'\x7F\xFF')
         and (double_bytes[6:7] >= b'\xF0')
         and (double_bytes[0:7] != b'\x00\x00\x00\x00\x00\x00\xF0')):
-      return (_NAN, new_pos)
+      return (math.nan, new_pos)
 
     # Note that we expect someone up-stack to catch struct.error and convert
     # it to _DecodeError -- this way we don't have to set up exception-
@@ -383,7 +369,9 @@ def _DoubleDecoder():
   return _SimpleDecoder(wire_format.WIRETYPE_FIXED64, InnerDecode)
 
 
-def EnumDecoder(field_number, is_repeated, is_packed, key, new_default):
+def EnumDecoder(field_number, is_repeated, is_packed, key, new_default,
+                clear_if_default=False):
+  """Returns a decoder for enum field."""
   enum_type = key.enum_type
   if is_packed:
     local_DecodeVarint = _DecodeVarint
@@ -498,6 +486,9 @@ def EnumDecoder(field_number, is_repeated, is_packed, key, new_default):
       (enum_value, pos) = _DecodeSignedVarint32(buffer, pos)
       if pos > end:
         raise _DecodeError('Truncated message.')
+      if clear_if_default and not enum_value:
+        field_dict.pop(key, None)
+        return pos
       # pylint: disable=protected-access
       if enum_value in enum_type.values_by_number:
         field_dict[key] = enum_value
@@ -550,30 +541,20 @@ BoolDecoder = _ModifiedDecoder(
 
 
 def StringDecoder(field_number, is_repeated, is_packed, key, new_default,
-                  is_strict_utf8=False):
+                  clear_if_default=False):
   """Returns a decoder for a string field."""
 
   local_DecodeVarint = _DecodeVarint
-  local_unicode = six.text_type
 
   def _ConvertToUnicode(memview):
     """Convert byte to unicode."""
     byte_str = memview.tobytes()
     try:
-      value = local_unicode(byte_str, 'utf-8')
+      value = str(byte_str, 'utf-8')
     except UnicodeDecodeError as e:
       # add more information to the error message and re-raise it.
       e.reason = '%s in field: %s' % (e, key.full_name)
       raise
-
-    if is_strict_utf8 and six.PY2 and sys.maxunicode > _UCS2_MAXUNICODE:
-      # Only do the check for python2 ucs4 when is_strict_utf8 enabled
-      if _SURROGATE_PATTERN.search(value):
-        reason = ('String field %s contains invalid UTF-8 data when parsing'
-                  'a protocol buffer: surrogates not allowed. Use'
-                  'the bytes type if you intend to send raw bytes.') % (
-                      key.full_name)
-        raise message.DecodeError(reason)
 
     return value
 
@@ -604,12 +585,16 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default,
       new_pos = pos + size
       if new_pos > end:
         raise _DecodeError('Truncated string.')
-      field_dict[key] = _ConvertToUnicode(buffer[pos:new_pos])
+      if clear_if_default and not size:
+        field_dict.pop(key, None)
+      else:
+        field_dict[key] = _ConvertToUnicode(buffer[pos:new_pos])
       return new_pos
     return DecodeField
 
 
-def BytesDecoder(field_number, is_repeated, is_packed, key, new_default):
+def BytesDecoder(field_number, is_repeated, is_packed, key, new_default,
+                 clear_if_default=False):
   """Returns a decoder for a bytes field."""
 
   local_DecodeVarint = _DecodeVarint
@@ -641,7 +626,10 @@ def BytesDecoder(field_number, is_repeated, is_packed, key, new_default):
       new_pos = pos + size
       if new_pos > end:
         raise _DecodeError('Truncated string.')
-      field_dict[key] = buffer[pos:new_pos].tobytes()
+      if clear_if_default and not size:
+        field_dict.pop(key, None)
+      else:
+        field_dict[key] = buffer[pos:new_pos].tobytes()
       return new_pos
     return DecodeField
 
@@ -816,8 +804,12 @@ def MessageSetItemDecoder(descriptor):
     if extension is not None:
       value = field_dict.get(extension)
       if value is None:
+        message_type = extension.message_type
+        if not hasattr(message_type, '_concrete_class'):
+          # pylint: disable=protected-access
+          message._FACTORY.GetPrototype(message_type)
         value = field_dict.setdefault(
-            extension, extension.message_type._concrete_class())
+            extension, message_type._concrete_class())
       if value._InternalParse(buffer, message_start,message_end) != message_end:
         # The only reason _InternalParse would return early is if it encountered
         # an end-group tag.

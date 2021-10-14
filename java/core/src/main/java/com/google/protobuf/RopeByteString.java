@@ -603,7 +603,12 @@ final class RopeByteString extends ByteString {
 
   @Override
   public CodedInputStream newCodedInput() {
-    return CodedInputStream.newInstance(new RopeInputStream());
+    // Passing along direct references to internal ByteBuffers can support more efficient parsing
+    // via aliasing in CodedInputStream for users who wish to use it.
+    //
+    // Otherwise we force data copies, both in copying as an input stream and in buffering in the
+    // CodedInputSteam.
+    return CodedInputStream.newInstance(asReadOnlyByteBufferList(), /* bufferIsImmutable= */ true);
   }
 
   @Override
@@ -845,7 +850,10 @@ final class RopeByteString extends ByteString {
         throw new IndexOutOfBoundsException();
       }
       int bytesRead = readSkipInternal(b, offset, length);
-      if (bytesRead == 0) {
+      if (bytesRead == 0 && (length > 0 || availableInternal() == 0)) {
+        // Modeling ByteArrayInputStream.read(byte[], int, int) behavior noted above:
+        // It's ok to read 0 bytes on purpose (length == 0) from a stream that isn't at EOF.
+        // It's not ok to try to read bytes (even 0 bytes) from a stream that is at EOF.
         return -1;
       } else {
         return bytesRead;
@@ -905,8 +913,7 @@ final class RopeByteString extends ByteString {
 
     @Override
     public int available() throws IOException {
-      int bytesRead = currentPieceOffsetInRope + currentPieceIndex;
-      return RopeByteString.this.size() - bytesRead;
+      return availableInternal();
     }
 
     @Override
@@ -954,6 +961,12 @@ final class RopeByteString extends ByteString {
           currentPieceSize = 0;
         }
       }
+    }
+
+    /** Computes the number of bytes still available to read. */
+    private int availableInternal() {
+      int bytesRead = currentPieceOffsetInRope + currentPieceIndex;
+      return RopeByteString.this.size() - bytesRead;
     }
   }
 }

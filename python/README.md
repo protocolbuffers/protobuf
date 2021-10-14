@@ -1,8 +1,6 @@
 Protocol Buffers - Google's data interchange format
 ===================================================
 
-[![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython%2Fcontinuous) [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python_compatibility.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython_compatibility%2Fcontinuous) [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/linux-python_cpp.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fubuntu%2Fpython_cpp%2Fcontinuous) [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-python.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fpython%2Fcontinuous) [![Build status](https://storage.googleapis.com/protobuf-kokoro-results/status-badge/macos-python_cpp.png)](https://fusion.corp.google.com/projectanalysis/current/KOKORO/prod:protobuf%2Fgithub%2Fmaster%2Fmacos%2Fpython_cpp%2Fcontinuous) [![Compat check PyPI](https://python-compatibility-tools.appspot.com/one_badge_image?package=protobuf)](https://python-compatibility-tools.appspot.com/one_badge_target?package=protobuf)
-
 Copyright 2008 Google Inc.
 
 This directory contains the Python Protocol Buffers runtime library.
@@ -22,15 +20,13 @@ package.
 Development Warning
 ===================
 
-The Python implementation of Protocol Buffers is not as mature as the C++
-and Java implementations.  It may be more buggy, and it is known to be
-pretty slow at this time.  If you would like to help fix these issues,
-join the Protocol Buffers discussion list and let us know!
+The pure python performance is slow. For better performance please
+use python c++ implementation.
 
 Installation
 ============
 
-1) Make sure you have Python 2.7 or newer.  If in doubt, run:
+1) Make sure you have Python 3.5 or newer.  If in doubt, run:
 
        $ python -V
 

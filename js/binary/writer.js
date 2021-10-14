@@ -52,6 +52,7 @@
  * Major caveat 3 - This class uses typed arrays and must not be used on older
  * browsers that do not support them.
  *
+ * @suppress {missingRequire} TODO(b/152540451): this shouldn't be needed
  * @author aappleby@google.com (Austin Appleby)
  */
 

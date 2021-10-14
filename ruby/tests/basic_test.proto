@@ -6,6 +6,7 @@ import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
+import "test_import_proto2.proto";
 
 message Foo {
   Bar bar = 1;
@@ -21,17 +22,18 @@ message Baz {
 }
 
 message TestMessage {
-  int32 optional_int32 = 1;
-  int64 optional_int64 = 2;
-  uint32 optional_uint32 = 3;
-  uint64 optional_uint64 = 4;
-  bool optional_bool = 5;
-  float optional_float = 6;
-  double optional_double = 7;
-  string optional_string = 8;
-  bytes optional_bytes = 9;
-  TestMessage2 optional_msg = 10;
-  TestEnum optional_enum = 11;
+  optional int32 optional_int32 = 1;
+  optional int64 optional_int64 = 2;
+  optional uint32 optional_uint32 = 3;
+  optional uint64 optional_uint64 = 4;
+  optional bool optional_bool = 5;
+  optional float optional_float = 6;
+  optional double optional_double = 7;
+  optional string optional_string = 8;
+  optional bytes optional_bytes = 9;
+  optional TestMessage2 optional_msg = 10;
+  optional TestEnum optional_enum = 11;
+  optional foo_bar.proto2.TestImportedMessage optional_proto2_submessage = 24;
 
   repeated int32 repeated_int32 = 12;
   repeated int64 repeated_int64 = 13;
@@ -44,10 +46,26 @@ message TestMessage {
   repeated bytes repeated_bytes = 20;
   repeated TestMessage2 repeated_msg = 21;
   repeated TestEnum repeated_enum = 22;
+
+  optional TestSingularFields optional_msg2 = 23;
+}
+
+message TestSingularFields {
+  int32 singular_int32 = 1;
+  int64 singular_int64 = 2;
+  uint32 singular_uint32 = 3;
+  uint64 singular_uint64 = 4;
+  bool singular_bool = 5;
+  float singular_float = 6;
+  double singular_double = 7;
+  string singular_string = 8;
+  bytes singular_bytes = 9;
+  TestMessage2 singular_msg = 10;
+  TestEnum singular_enum = 11;
 }
 
 message TestMessage2 {
-  int32 foo = 1;
+  optional int32 foo = 1;
 }
 
 enum TestEnum {
@@ -191,4 +209,9 @@ message MyRepeatedStruct {
 message MyStruct {
   string string = 1;
   google.protobuf.Struct struct = 2;
+}
+
+message WithJsonName {
+  optional int32 foo_bar = 1 [json_name="jsonFooBar"];
+  repeated WithJsonName baz = 2 [json_name="jsonBaz"];
 }

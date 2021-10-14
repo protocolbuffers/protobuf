@@ -30,22 +30,29 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Random;
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Tests for {@link ByteBufferWriter}. */
-public class ByteBufferWriterTest extends TestCase {
+@RunWith(JUnit4.class)
+public class ByteBufferWriterTest {
 
+  @Test
   public void testHeapBuffer() throws IOException {
     // Test a small and large buffer.
     testWrite(ByteBuffer.allocate(100));
     testWrite(ByteBuffer.allocate(1024 * 100));
   }
 
+  @Test
   public void testDirectBuffer() throws IOException {
     // Test a small and large buffer.
     testWrite(ByteBuffer.allocateDirect(100));
@@ -56,8 +63,8 @@ public class ByteBufferWriterTest extends TestCase {
     fillRandom(buffer);
     ByteArrayOutputStream os = new ByteArrayOutputStream(buffer.remaining());
     ByteBufferWriter.write(buffer, os);
-    assertEquals(0, buffer.position());
-    assertTrue(Arrays.equals(toArray(buffer), os.toByteArray()));
+    assertThat(buffer.position()).isEqualTo(0);
+    assertThat(Arrays.equals(toArray(buffer), os.toByteArray())).isTrue();
   }
 
   private void fillRandom(ByteBuffer buf) {
