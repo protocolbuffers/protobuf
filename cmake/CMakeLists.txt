@@ -209,10 +209,8 @@ if (MSVC)
     # Build with multiple processes
     add_definitions(/MP)
   endif()
-  # Set source file and execution character sets to UTF-8 when Visual Studio 2015 or later
-  if (NOT (MSVC_VERSION LESS 1900))
-    add_definitions(/utf-8)
-  endif (NOT (MSVC_VERSION LESS 1900))
+  # Set source file and execution character sets to UTF-8
+  add_definitions(/utf-8)
   # MSVC warning suppressions
   add_definitions(
     /wd4018 # 'expression' : signed/unsigned mismatch
