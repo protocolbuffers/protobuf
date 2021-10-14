@@ -257,12 +257,11 @@ static const char *decode_tag(upb_decstate *d, const char *ptr, uint32_t *val) {
   } else {
     const char *start = ptr;
     decode_vret res = decode_longvarint64(ptr, byte);
-    ptr = res.ptr;
-    *val = res.val;
-    if (!ptr || res.val > UINT32_MAX || ptr - start > 5) {
+    if (!res.ptr || res.ptr - start > 5 || res.val > UINT32_MAX) {
       return decode_err(d, kUpb_DecodeStatus_Malformed);
     }
-    return ptr;
+    *val = res.val;
+    return res.ptr;
   }
 }
 
