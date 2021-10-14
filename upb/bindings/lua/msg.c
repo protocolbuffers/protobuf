@@ -955,15 +955,15 @@ static int lupb_decode(lua_State *L) {
   upb_msg *msg = lupb_msg_pushnew(L, 1);
   upb_arena *arena = lupb_arenaget(L, -1);
   char *buf;
-  bool ok;
 
   /* Copy input data to arena, message will reference it. */
   buf = upb_arena_malloc(arena, len);
   memcpy(buf, pb, len);
 
-  ok = _upb_decode(buf, len, msg, layout, NULL, UPB_DECODE_ALIAS, arena);
+  upb_DecodeStatus status = _upb_decode(buf, len, msg, layout, NULL,
+                                        kUpb_DecodeOption_AliasString, arena);
 
-  if (!ok) {
+  if (status != kUpb_DecodeStatus_Ok) {
     lua_pushstring(L, "Error decoding protobuf.");
     return lua_error(L);
   }

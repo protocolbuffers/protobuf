@@ -294,6 +294,35 @@ std::string SizeRep(const protobuf::FieldDescriptor* field) {
   }
 }
 
+bool HasNonZeroDefault(const protobuf::FieldDescriptor* field) {
+  switch (field->cpp_type()) {
+    case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
+      return false;
+    case protobuf::FieldDescriptor::CPPTYPE_STRING:
+      return !field->default_value_string().empty();
+    case protobuf::FieldDescriptor::CPPTYPE_INT32:
+      return field->default_value_int32() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_INT64:
+      return field->default_value_int64() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_UINT32:
+      return field->default_value_uint32() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_UINT64:
+      return field->default_value_uint64() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
+      return field->default_value_float() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
+      return field->default_value_double() != 0;
+    case protobuf::FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool() != false;
+    case protobuf::FieldDescriptor::CPPTYPE_ENUM:
+      // Use a number instead of a symbolic name so that we don't require
+      // this enum's header to be included.
+      return field->default_value_enum()->number() != 0;
+  }
+  ABSL_ASSERT(false);
+  return "XXX";
+}
+
 std::string FieldDefault(const protobuf::FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
@@ -389,31 +418,33 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
 
   if (!message->options().map_entry()) {
     output(
-        "UPB_INLINE $0 *$0_new(upb_arena *arena) {\n"
-        "  return ($0 *)_upb_msg_new(&$1, arena);\n"
-        "}\n"
-        "UPB_INLINE $0 *$0_parse(const char *buf, size_t size,\n"
-        "                        upb_arena *arena) {\n"
-        "  $0 *ret = $0_new(arena);\n"
-        "  if (!ret) return NULL;\n"
-        "  if (!upb_decode(buf, size, ret, &$1, arena)) return NULL;\n"
-        "  return ret;\n"
-        "}\n"
-        "UPB_INLINE $0 *$0_parse_ex(const char *buf, size_t size,\n"
-        "                           const upb_extreg *extreg, int options,\n"
-        "                           upb_arena *arena) {\n"
-        "  $0 *ret = $0_new(arena);\n"
-        "  if (!ret) return NULL;\n"
-        "  if (!_upb_decode(buf, size, ret, &$1, extreg, options, arena)) {\n"
-        "    return NULL;\n"
-        "  }\n"
-        "  return ret;\n"
-        "}\n"
-        "UPB_INLINE char *$0_serialize(const $0 *msg, upb_arena *arena, size_t "
-        "*len) {\n"
-        "  return upb_encode(msg, &$1, arena, len);\n"
-        "}\n"
-        "\n",
+        R"cc(
+          UPB_INLINE $0 *$0_new(upb_arena *arena) {
+            return ($0 *)_upb_msg_new(&$1, arena);
+          }
+          UPB_INLINE $0 *$0_parse(const char *buf, size_t size, upb_arena *arena) {
+            $0 *ret = $0_new(arena);
+            if (!ret) return NULL;
+            if (upb_decode(buf, size, ret, &$1, arena) != kUpb_DecodeStatus_Ok) {
+              return NULL;
+            }
+            return ret;
+          }
+          UPB_INLINE $0 *$0_parse_ex(const char *buf, size_t size,
+                                     const upb_extreg *extreg, int options,
+                                     upb_arena *arena) {
+            $0 *ret = $0_new(arena);
+            if (!ret) return NULL;
+            if (_upb_decode(buf, size, ret, &$1, extreg, options, arena) !=
+                kUpb_DecodeStatus_Ok) {
+              return NULL;
+            }
+            return ret;
+          }
+          UPB_INLINE char *$0_serialize(const $0 *msg, upb_arena *arena, size_t *len) {
+            return upb_encode(msg, &$1, arena, len);
+          }
+        )cc",
         MessageName(message), MessageInit(message));
   }
 
@@ -512,11 +543,25 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
           GetSizeInit(layout.GetOneofCaseOffset(field->real_containing_oneof())),
           field->number(), FieldDefault(field));
     } else {
-      output(
-          "UPB_INLINE $0 $1_$2(const $1 *msg) { "
-          "return *UPB_PTR_AT(msg, $3, $0); }\n",
-          CTypeConst(field), msg_name, field->name(),
-          GetSizeInit(layout.GetFieldOffset(field)));
+      if (HasNonZeroDefault(field)) {
+        output(
+            R"cc(
+              UPB_INLINE $0 $1_$2(const $1 *msg) {
+                return $1_has_$2(msg) ? *UPB_PTR_AT(msg, $3, $0) : $4;
+              }
+            )cc",
+            CTypeConst(field), msg_name, field->name(),
+            GetSizeInit(layout.GetFieldOffset(field)), FieldDefault(field));
+      } else {
+        output(
+            R"cc(
+              UPB_INLINE $0 $1_$2(const $1 *msg) {
+                return *UPB_PTR_AT(msg, $3, $0);
+              }
+            )cc",
+            CTypeConst(field), msg_name, field->name(),
+            GetSizeInit(layout.GetFieldOffset(field)));
+      }
     }
   }
 
@@ -1144,6 +1189,7 @@ void WriteMessage(const protobuf::Descriptor* message, Output& output,
   std::string msg_name = ToCIdent(message->full_name());
   std::string fields_array_ref = "NULL";
   std::string submsgs_array_ref = "NULL";
+  std::string subenums_array_ref = "NULL";
   uint8_t dense_below = 0;
   const int dense_below_max = std::numeric_limits<decltype(dense_below)>::max();
   MessageLayout layout(message);
@@ -1221,12 +1267,13 @@ void WriteMessage(const protobuf::Descriptor* message, Output& output,
   output("const upb_msglayout $0 = {\n", MessageInit(message));
   output("  $0,\n", submsgs_array_ref);
   output("  $0,\n", fields_array_ref);
-  output("  $0, $1, $2, $3, $4,\n",
+  output("  $0, $1, $2, $3, $4, $5,\n",
          GetSizeInit(layout.message_size()),
          field_number_order.size(),
          msgext,
          dense_below,
-         table_mask
+         table_mask,
+         layout.required_count()
   );
   if (!table.empty()) {
     output("  UPB_FASTTABLE_INIT({\n");
@@ -1294,19 +1341,6 @@ int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
   return this_file_enums.size();
 }
 
-void WriteExtension(const protobuf::FieldDescriptor* ext, Output& output) {
-  output("const upb_msglayout_ext $0 = {\n  ", ExtensionLayout(ext));
-  WriteField(ext, "0", "0", 0, output);
-  output(",\n");
-  output("  &$0,\n", MessageInit(ext->containing_type()));
-  if (ext->message_type()) {
-    output("  {.submsg = &$0},\n", MessageInit(ext->message_type()));
-  } else {
-    output("  {.submsg = NULL},\n");
-  }
-  output("\n};\n");
-}
-
 int WriteMessages(const protobuf::FileDescriptor* file, Output& output,
                    bool fasttable_enabled) {
   std::vector<const protobuf::Descriptor*> file_messages =
@@ -1326,6 +1360,22 @@ int WriteMessages(const protobuf::FileDescriptor* file, Output& output,
   output("};\n");
   output("\n");
   return file_messages.size();
+}
+
+void WriteExtension(const protobuf::FieldDescriptor* ext, Output& output) {
+  output("const upb_msglayout_ext $0 = {\n  ", ExtensionLayout(ext));
+  WriteField(ext, "0", "0", 0, output);
+  output(",\n");
+  output("    &$0,\n", MessageInit(ext->containing_type()));
+  if (ext->message_type()) {
+    output("    {.submsg = &$0},\n", MessageInit(ext->message_type()));
+  } else if (ext->enum_type() && ext->enum_type()->file()->syntax() ==
+                                     protobuf::FileDescriptor::SYNTAX_PROTO2) {
+    output("    {.subenum = &$0},\n", EnumInit(ext->enum_type()));
+  } else {
+    output("    {.submsg = NULL},\n");
+  }
+  output("\n};\n");
 }
 
 int WriteExtensions(const protobuf::FileDescriptor* file, Output& output) {

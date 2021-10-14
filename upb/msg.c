@@ -392,7 +392,7 @@ failure:
   for (end = e, e = start; e < end; e++) {
     const upb_msglayout_ext *ext = *e;
     extreg_key(buf, ext->extendee, ext->field.number);
-    upb_strtable_remove(&r->exts, buf, EXTREG_KEY_SIZE, NULL);
+    upb_strtable_remove2(&r->exts, buf, EXTREG_KEY_SIZE, NULL);
   }
   return false;
 }

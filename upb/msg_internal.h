@@ -56,13 +56,6 @@ extern "C" {
  * members are public so generated code can initialize them, but users MUST NOT
  * read or write any of its members. */
 
-/* These aren't real labels according to descriptor.proto, but in the table we
- * use these for map/packed fields instead of UPB_LABEL_REPEATED. */
-enum {
-  _UPB_LABEL_MAP = 4,
-  _UPB_LABEL_PACKED = 7  /* Low 3 bits are common with UPB_LABEL_REPEATED. */
-};
-
 typedef struct {
   uint32_t number;
   uint16_t offset;
@@ -136,6 +129,17 @@ typedef struct {
   int value_count;
 } upb_enumlayout;
 
+UPB_INLINE bool _upb_enumlayout_checkval(const upb_enumlayout *e, int32_t val) {
+  uint32_t uval = (uint32_t)val;
+  if (uval < 64) return e->mask & (1 << uval);
+  // OPT: binary search long lists?
+  int n = e->value_count;
+  for (int i = 0; i < n; i++) {
+    if (e->values[i] == val) return true;
+  }
+  return false;
+}
+
 typedef union {
   const struct upb_msglayout *submsg;
   const upb_enumlayout *subenum;
@@ -172,8 +176,10 @@ struct upb_msglayout {
   uint8_t ext;  // upb_msgext_mode, declared as uint8_t so sizeof(ext) == 1
   uint8_t dense_below;
   uint8_t table_mask;
-  /* To constant-initialize the tables of variable length, we need a flexible
-   * array member, and we need to compile in C99 mode. */
+  uint8_t required_count;  // Required fields have the lowest hasbits.
+  /* To statically initialize the tables of variable length, we need a flexible
+   * array member, and we need to compile in gnu99 mode (constant initialization
+   * of flexible array members is a GNU extension, not in C99 unfortunately. */
   _upb_fasttable_entry fasttable[];
 };
 
@@ -237,6 +243,7 @@ typedef struct {
 
 typedef struct {
   upb_msg_internaldata *internal;
+  /* Message data follows. */
 } upb_msg_internal;
 
 /* Maps upb_fieldtype_t -> memory size. */
@@ -279,19 +286,24 @@ bool _upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
 
 /* The internal representation of an extension is self-describing: it contains
  * enough information that we can serialize it to binary format without needing
- * to look it up in a registry. */
+ * to look it up in a upb_extreg.
+ *
+ * This representation allocates 16 bytes to data on 64-bit platforms.  This is
+ * rather wasteful for scalars (in the extreme case of bool, it wastes 15
+ * bytes). We accept this because we expect messages to be the most common
+ * extension type. */
 typedef struct {
   const upb_msglayout_ext *ext;
   union {
     upb_strview str;
     void *ptr;
-    double dbl;
     char scalar_data[8];
   } data;
 } upb_msg_ext;
 
-/* Adds the given extension data to the given message. The returned extension will
- * have its "ext" member initialized according to |ext|. */
+/* Adds the given extension data to the given message. |ext| is copied into the
+ * message instance. This logically replaces any previously-added extension with
+ * this number */
 upb_msg_ext *_upb_msg_getorcreateext(upb_msg *msg, const upb_msglayout_ext *ext,
                                      upb_arena *arena);
 
@@ -303,6 +315,8 @@ const upb_msg_ext *_upb_msg_getexts(const upb_msg *msg, size_t *count);
  * exists for this field number. */
 const upb_msg_ext *_upb_msg_getext(const upb_msg *msg,
                                    const upb_msglayout_ext *ext);
+
+void _upb_msg_clearext(upb_msg *msg, const upb_msglayout_ext *ext);
 
 void _upb_msg_clearext(upb_msg *msg, const upb_msglayout_ext *ext);
 
@@ -634,13 +648,13 @@ UPB_INLINE bool _upb_map_set(upb_map *map, const void *key, size_t key_size,
   if (!_upb_map_tovalue(val, val_size, &tabval, a)) return false;
 
   /* TODO(haberman): add overwrite operation to minimize number of lookups. */
-  upb_strtable_remove(&map->table, strkey.data, strkey.size, NULL);
+  upb_strtable_remove2(&map->table, strkey.data, strkey.size, NULL);
   return upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a);
 }
 
 UPB_INLINE bool _upb_map_delete(upb_map *map, const void *key, size_t key_size) {
   upb_strview k = _upb_map_tokey(key, key_size);
-  return upb_strtable_remove(&map->table, k.data, k.size, NULL);
+  return upb_strtable_remove2(&map->table, k.data, k.size, NULL);
 }
 
 UPB_INLINE void _upb_map_clear(upb_map *map) {

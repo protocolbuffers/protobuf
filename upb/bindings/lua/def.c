@@ -908,7 +908,6 @@ static int lupb_symtab_lookupenumval(lua_State *L) {
 }
 
 static int lupb_symtab_tostring(lua_State *L) {
-  const upb_symtab *s = lupb_symtab_check(L, 1);
   lua_pushfstring(L, "<upb.SymbolTable>");
   return 1;
 }

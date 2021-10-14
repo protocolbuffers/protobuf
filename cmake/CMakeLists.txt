@@ -82,6 +82,7 @@ target_link_libraries(upb
   port
   /third_party/utf8_range)
 add_library(fastdecode
+  ../upb/decode.h
   ../upb/decode_internal.h
   ../upb/decode_fast.c
   ../upb/decode_fast.h

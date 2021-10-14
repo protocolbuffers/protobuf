@@ -44,18 +44,49 @@ extern "C" {
 enum {
   /* If set, strings will alias the input buffer instead of copying into the
    * arena. */
-  UPB_DECODE_ALIAS = 1,
+  kUpb_DecodeOption_AliasString = 1,
+
+  /* If set, the parse will return failure if any message is missing any required
+   * fields when the message data ends.  The parse will still continue, and the
+   * failure will only be reported at the end.
+   *
+   * IMPORTANT CAVEATS:
+   *
+   * 1. This can throw a false positive failure if an incomplete message is seen
+   *    on the wire but is later completed when the sub-message occurs again.
+   *    For this reason, a second pass is required to verify a failure, to be
+   *    truly robust.
+   *
+   * 2. This can return a false success if you are decoding into a message that
+   *    already has some sub-message fields present.  If the sub-message does
+   *    not occur in the binary payload, we will never visit it and discover the
+   *    incomplete sub-message.  For this reason, this check is only useful for
+   *    implemting ParseFromString() semantics.  For MergeFromString(), a
+   *    post-parse validation step will always be necessary. */
+  kUpb_DecodeOption_CheckRequired = 2,
 };
 
 #define UPB_DECODE_MAXDEPTH(depth) ((depth) << 16)
 
-bool _upb_decode(const char *buf, size_t size, upb_msg *msg,
-                 const upb_msglayout *l, const upb_extreg *extreg, int options,
-                 upb_arena *arena);
+typedef enum {
+  kUpb_DecodeStatus_Ok = 0,
+  kUpb_DecodeStatus_Malformed = 1,          // Wire format was corrupt
+  kUpb_DecodeStatus_OutOfMemory = 2,        // Arena alloc failed
+  kUpb_DecodeStatus_BadUtf8 = 3,            // String field had bad UTF-8
+  kUpb_DecodeStatus_MaxDepthExceeded = 4,   // Exceeded UPB_DECODE_MAXDEPTH
+
+  // kUpb_DecodeOption_CheckRequired failed (see above), but the parse otherwise
+  // succeeded.
+  kUpb_DecodeStatus_MissingRequired = 5,
+} upb_DecodeStatus;
+
+upb_DecodeStatus _upb_decode(const char *buf, size_t size, upb_msg *msg,
+                             const upb_msglayout *l, const upb_extreg *extreg,
+                             int options, upb_arena *arena);
 
 UPB_INLINE
-bool upb_decode(const char *buf, size_t size, upb_msg *msg,
-                const upb_msglayout *l, upb_arena *arena) {
+upb_DecodeStatus upb_decode(const char *buf, size_t size, upb_msg *msg,
+                            const upb_msglayout *l, upb_arena *arena) {
   return _upb_decode(buf, size, msg, l, NULL, 0, arena);
 }
 

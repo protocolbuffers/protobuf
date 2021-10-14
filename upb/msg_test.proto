@@ -79,3 +79,17 @@ message Proto2FakeEnumMessage {
   repeated int32 repeated_enum = 2;
   repeated int32 packed_enum = 3 [packed = true];
 }
+
+message EmptyMessage {}
+
+message TestRequiredFields {
+  required int32 required_int32 = 1;
+  optional int32 optional_int32 = 2;
+  required int64 required_int64 = 3;
+  optional TestRequiredFields optional_message = 4;
+  required EmptyMessage required_message = 5;
+}
+
+message SubMessageHasRequired {
+  optional TestRequiredFields optional_message = 1;
+}

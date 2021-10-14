@@ -158,7 +158,8 @@ TEST(MessageTest, MessageSet) {
 
 TEST(MessageTest, Proto2Enum) {
   upb::Arena arena;
-  upb_test_Proto2FakeEnumMessage *fake_msg = upb_test_Proto2FakeEnumMessage_new(arena.ptr());
+  upb_test_Proto2FakeEnumMessage *fake_msg =
+      upb_test_Proto2FakeEnumMessage_new(arena.ptr());
 
   upb_test_Proto2FakeEnumMessage_set_optional_enum(fake_msg, 999);
 
@@ -230,4 +231,98 @@ TEST(MessageTest, TestBadUTF8) {
   std::string serialized("r\x03\xed\xa0\x81");
   EXPECT_EQ(nullptr, protobuf_test_messages_proto3_TestAllTypesProto3_parse(
                          serialized.data(), serialized.size(), arena.ptr()));
+}
+
+TEST(MessageTest, RequiredFieldsTopLevelMessage) {
+  upb::Arena arena;
+  upb_test_TestRequiredFields *test_msg;
+  upb_test_EmptyMessage *empty_msg;
+
+  // Succeeds, because we did not request required field checks.
+  test_msg = upb_test_TestRequiredFields_parse(NULL, 0, arena.ptr());
+  EXPECT_NE(nullptr, test_msg);
+
+  // Fails, because required fields are missing.
+  EXPECT_EQ(kUpb_DecodeStatus_MissingRequired,
+            _upb_decode(NULL, 0, test_msg, &upb_test_TestRequiredFields_msginit,
+                        NULL, kUpb_DecodeOption_CheckRequired, arena.ptr()));
+
+  upb_test_TestRequiredFields_set_required_int32(test_msg, 1);
+  size_t size;
+  char *serialized =
+      upb_test_TestRequiredFields_serialize(test_msg, arena.ptr(), &size);
+  ASSERT_TRUE(serialized != nullptr);
+  EXPECT_NE(0, size);
+
+  // Fails, but the code path is slightly different because the serialized
+  // payload is not empty.
+  EXPECT_EQ(kUpb_DecodeStatus_MissingRequired,
+            _upb_decode(serialized, size, test_msg,
+                        &upb_test_TestRequiredFields_msginit, NULL,
+                        kUpb_DecodeOption_CheckRequired, arena.ptr()));
+
+  empty_msg = upb_test_EmptyMessage_new(arena.ptr());
+  upb_test_TestRequiredFields_set_required_int32(test_msg, 1);
+  upb_test_TestRequiredFields_set_required_int64(test_msg, 2);
+  upb_test_TestRequiredFields_set_required_message(test_msg, empty_msg);
+
+  // Succeeds, because required fields are present (though not in the input).
+  EXPECT_EQ(kUpb_DecodeStatus_Ok,
+            _upb_decode(NULL, 0, test_msg, &upb_test_TestRequiredFields_msginit,
+                        NULL, kUpb_DecodeOption_CheckRequired, arena.ptr()));
+
+  // Serialize a complete payload.
+  serialized =
+      upb_test_TestRequiredFields_serialize(test_msg, arena.ptr(), &size);
+  ASSERT_TRUE(serialized != nullptr);
+  EXPECT_NE(0, size);
+
+  upb_test_TestRequiredFields *test_msg2 = upb_test_TestRequiredFields_parse_ex(
+      serialized, size, NULL, kUpb_DecodeOption_CheckRequired, arena.ptr());
+  EXPECT_NE(nullptr, test_msg2);
+
+  // When we add an incomplete sub-message, this is not flagged by the parser.
+  // This makes parser checking unsuitable for MergeFrom().
+  upb_test_TestRequiredFields_set_optional_message(
+      test_msg2, upb_test_TestRequiredFields_new(arena.ptr()));
+  EXPECT_EQ(kUpb_DecodeStatus_Ok,
+            _upb_decode(serialized, size, test_msg2,
+                        &upb_test_TestRequiredFields_msginit, NULL,
+                        kUpb_DecodeOption_CheckRequired, arena.ptr()));
+}
+
+TEST(MessageTest, RequiredFieldsSubMessage) {
+  upb::Arena arena;
+  upb_test_TestRequiredFields *test_msg =
+      upb_test_TestRequiredFields_new(arena.ptr());
+  upb_test_SubMessageHasRequired *sub_msg =
+      upb_test_SubMessageHasRequired_new(arena.ptr());
+  upb_test_EmptyMessage *empty_msg = upb_test_EmptyMessage_new(arena.ptr());
+
+  upb_test_SubMessageHasRequired_set_optional_message(sub_msg, test_msg);
+  size_t size;
+  char *serialized =
+      upb_test_SubMessageHasRequired_serialize(sub_msg, arena.ptr(), &size);
+  EXPECT_NE(0, size);
+
+  // No parse error when parsing normally.
+  EXPECT_NE(nullptr, upb_test_SubMessageHasRequired_parse(serialized, size, arena.ptr()));
+
+  // Parse error when verifying required fields, due to incomplete sub-message.
+  EXPECT_EQ(nullptr, upb_test_SubMessageHasRequired_parse_ex(
+                         serialized, size, NULL,
+                         kUpb_DecodeOption_CheckRequired, arena.ptr()));
+
+  upb_test_TestRequiredFields_set_required_int32(test_msg, 1);
+  upb_test_TestRequiredFields_set_required_int64(test_msg, 2);
+  upb_test_TestRequiredFields_set_required_message(test_msg, empty_msg);
+
+  serialized =
+      upb_test_SubMessageHasRequired_serialize(sub_msg, arena.ptr(), &size);
+  EXPECT_NE(0, size);
+
+  // No parse error; sub-message now is complete.
+  EXPECT_NE(nullptr, upb_test_SubMessageHasRequired_parse_ex(
+                         serialized, size, NULL,
+                         kUpb_DecodeOption_CheckRequired, arena.ptr()));
 }

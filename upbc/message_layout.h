@@ -85,6 +85,12 @@ class MessageLayout {
 
   Size message_size() const { return size_; }
 
+  int hasbit_count() const { return hasbit_count_; }
+  int hasbit_bytes() const { return hasbit_bytes_; }
+
+  // Required fields always have the lowest hasbits.
+  int required_count() const { return required_count_; }
+
   static bool HasHasbit(const google::protobuf::FieldDescriptor* field);
   static SizeAndAlign SizeOfUnwrapped(
       const google::protobuf::FieldDescriptor* field);
@@ -126,6 +132,9 @@ class MessageLayout {
       oneof_case_offsets_;
   Size maxalign_;
   Size size_;
+  int hasbit_count_;
+  int hasbit_bytes_;
+  int required_count_;
 };
 
 // Returns fields in order of "hotness", eg. how frequently they appear in
@@ -140,7 +149,8 @@ inline std::vector<const google::protobuf::FieldDescriptor*> FieldHotnessOrder(
   std::sort(fields.begin(), fields.end(),
             [](const google::protobuf::FieldDescriptor* a,
                const google::protobuf::FieldDescriptor* b) {
-              return a->number() < b->number();
+              return std::make_pair(!a->is_required(), a->number()) <
+                     std::make_pair(!b->is_required(), b->number());
             });
   return fields;
 }

@@ -109,6 +109,7 @@ cc_library(
 cc_library(
     name = "fastdecode",
     srcs = [
+        "upb/decode.h",
         "upb/decode_internal.h",
         "upb/decode_fast.c",
         "upb/decode_fast.h",

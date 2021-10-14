@@ -189,23 +189,24 @@ typedef union {
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout);
 
-UPB_NORETURN static const char *decode_err(upb_decstate *d) {
-  UPB_LONGJMP(d->err, 1);
+UPB_NORETURN static void *decode_err(upb_decstate *d, upb_DecodeStatus status) {
+  assert(status != kUpb_DecodeStatus_Ok);
+  UPB_LONGJMP(d->err, status);
 }
 
-const char *fastdecode_err(upb_decstate *d) {
-  longjmp(d->err, 1);
+const char *fastdecode_err(upb_decstate *d, int status) {
+  assert(status != kUpb_DecodeStatus_Ok);
+  UPB_LONGJMP(d->err, status);
   return NULL;
 }
-
 static void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
-  if (!decode_verifyutf8_inl(buf, len)) decode_err(d);
+  if (!decode_verifyutf8_inl(buf, len)) decode_err(d, kUpb_DecodeStatus_BadUtf8);
 }
 
 static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
   bool need_realloc = arr->size - arr->len < elem;
   if (need_realloc && !_upb_array_realloc(arr, arr->len + elem, &d->arena)) {
-    decode_err(d);
+    decode_err(d, kUpb_DecodeStatus_OutOfMemory);
   }
   return need_realloc;
 }
@@ -241,15 +242,14 @@ static const char *decode_varint64(upb_decstate *d, const char *ptr,
     return ptr + 1;
   } else {
     decode_vret res = decode_longvarint64(ptr, byte);
-    if (!res.ptr) return decode_err(d);
+    if (!res.ptr) return decode_err(d, kUpb_DecodeStatus_Malformed);
     *val = res.val;
     return res.ptr;
   }
 }
 
 UPB_FORCEINLINE
-static const char *decode_tag(upb_decstate *d, const char *ptr,
-                                   uint32_t *val) {
+static const char *decode_tag(upb_decstate *d, const char *ptr, uint32_t *val) {
   uint64_t byte = (uint8_t)*ptr;
   if (UPB_LIKELY((byte & 0x80) == 0)) {
     *val = byte;
@@ -257,10 +257,11 @@ static const char *decode_tag(upb_decstate *d, const char *ptr,
   } else {
     const char *start = ptr;
     decode_vret res = decode_longvarint64(ptr, byte);
-    ptr = res.ptr;
+    if (!res.ptr || res.ptr - start > 5 || res.val > UINT32_MAX) {
+      return decode_err(d, kUpb_DecodeStatus_Malformed);
+    }
     *val = res.val;
-    if (!ptr || *val > UINT32_MAX || ptr - start > 5) return decode_err(d);
-    return ptr;
+    return res.ptr;
   }
 }
 
@@ -298,20 +299,21 @@ static upb_msg *decode_newsubmsg(upb_decstate *d, const upb_msglayout_sub *subs,
 UPB_NOINLINE
 const char *decode_isdonefallback(upb_decstate *d, const char *ptr,
                                   int overrun) {
-  ptr = decode_isdonefallback_inl(d, ptr, overrun);
+  int status; 
+  ptr = decode_isdonefallback_inl(d, ptr, overrun, &status);
   if (ptr == NULL) {
-    return decode_err(d);
+    return decode_err(d, status);
   }
   return ptr;
 }
 
 static const char *decode_readstr(upb_decstate *d, const char *ptr, int size,
                                   upb_strview *str) {
-  if (d->alias) {
+  if (d->options & kUpb_DecodeOption_AliasString) {
     str->data = ptr;
   } else {
     char *data =  upb_arena_malloc(&d->arena, size);
-    if (!data) return decode_err(d);
+    if (!data) return decode_err(d, kUpb_DecodeStatus_OutOfMemory);
     memcpy(data, ptr, size);
     str->data = data;
   }
@@ -320,32 +322,37 @@ static const char *decode_readstr(upb_decstate *d, const char *ptr, int size,
 }
 
 UPB_FORCEINLINE
-static const char *decode_tosubmsg(upb_decstate *d, const char *ptr,
-                                   upb_msg *submsg,
-                                   const upb_msglayout_sub *subs,
-                                   const upb_msglayout_field *field, int size) {
-  const upb_msglayout *subl = subs[field->submsg_index].submsg;
+static const char *decode_tosubmsg2(upb_decstate *d, const char *ptr,
+                                    upb_msg *submsg, const upb_msglayout *subl,
+                                    int size) {
   int saved_delta = decode_pushlimit(d, ptr, size);
-  if (--d->depth < 0) return decode_err(d);
-  if (!decode_isdone(d, &ptr)) {
-    ptr = decode_msg(d, ptr, submsg, subl);
-  }
-  if (d->end_group != DECODE_NOGROUP) return decode_err(d);
+  if (--d->depth < 0) return decode_err(d, kUpb_DecodeStatus_MaxDepthExceeded);
+  ptr = decode_msg(d, ptr, submsg, subl);
+  if (d->end_group != DECODE_NOGROUP) return decode_err(d, kUpb_DecodeStatus_Malformed);
   decode_poplimit(d, ptr, saved_delta);
   d->depth++;
   return ptr;
 }
 
 UPB_FORCEINLINE
+static const char *decode_tosubmsg(upb_decstate *d, const char *ptr,
+                                   upb_msg *submsg,
+                                   const upb_msglayout_sub *subs,
+                                   const upb_msglayout_field *field, int size) {
+  return decode_tosubmsg2(d, ptr, submsg, subs[field->submsg_index].submsg,
+                          size);
+}
+
+UPB_FORCEINLINE
 static const char *decode_group(upb_decstate *d, const char *ptr,
                                 upb_msg *submsg, const upb_msglayout *subl,
                                 uint32_t number) {
-  if (--d->depth < 0) return decode_err(d);
+  if (--d->depth < 0) return decode_err(d, kUpb_DecodeStatus_MaxDepthExceeded);
   if (decode_isdone(d, &ptr)) {
-    return decode_err(d);
+    return decode_err(d, kUpb_DecodeStatus_Malformed);
   }
   ptr = decode_msg(d, ptr, submsg, subl);
-  if (d->end_group != number) return decode_err(d);
+  if (d->end_group != number) return decode_err(d, kUpb_DecodeStatus_Malformed);
   d->end_group = DECODE_NOGROUP;
   d->depth++;
   return ptr;
@@ -390,7 +397,7 @@ static bool decode_checkenum_slow(upb_decstate *d, const char *ptr, upb_msg *msg
   end = encode_varint32(v, end);
 
   if (!_upb_msg_addunknown(msg, buf, end - buf, &d->arena)) {
-    decode_err(d);
+    decode_err(d, kUpb_DecodeStatus_OutOfMemory);
   }
 
   return false;
@@ -421,7 +428,6 @@ static const char *decode_enum_toarray(upb_decstate *d, const char *ptr,
   return ptr;
 }
 
-#include <stdio.h>
 UPB_FORCEINLINE
 static const char *decode_fixed_packed(upb_decstate *d, const char *ptr,
                                        upb_array *arr, wireval *val,
@@ -430,7 +436,8 @@ static const char *decode_fixed_packed(upb_decstate *d, const char *ptr,
   int mask = (1 << lg2) - 1;
   size_t count = val->size >> lg2;
   if ((val->size & mask) != 0) {
-    return decode_err(d); /* Length isn't a round multiple of elem size. */
+    // Length isn't a round multiple of elem size.
+    return decode_err(d, kUpb_DecodeStatus_Malformed);
   }
   decode_reserve(d, arr, count);
   void *mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
@@ -504,7 +511,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
   } else {
     size_t lg2 = desctype_to_elem_size_lg2[field->descriptortype];
     arr = _upb_array_new(&d->arena, 4, lg2);
-    if (!arr) return decode_err(d);
+    if (!arr) return decode_err(d, kUpb_DecodeStatus_OutOfMemory);
     *arrp = arr;
   }
 
@@ -651,6 +658,33 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
       UPB_UNREACHABLE();
   }
 
+  return ptr;
+}
+
+// Computes a bitmask in which the |n| lowest bits are set, except that we
+// skip the lowest bit (because upb never uses hasbit 0).
+//
+// Sample output:
+//    decode_requiredmask(1) => 0b10 (0x2)
+//    decode_requiredmask(5) => 0b111110 (0x3e)
+uint64_t decode_requiredmask(int n) {
+  assert(0 < n && n < 63);
+  return ((1 << n) - 1) << 1;
+}
+
+UPB_NOINLINE
+const char *decode_checkrequired(upb_decstate *d, const char *ptr,
+                                 const upb_msg *msg, const upb_msglayout *l) {
+  assert(l->required_count);
+  if (UPB_LIKELY((d->options & kUpb_DecodeOption_CheckRequired) == 0)) {
+    return ptr;
+  }
+  uint64_t msg_head;
+  memcpy(&msg_head, msg, 8);
+  msg_head = _upb_be_swap64(msg_head);
+  if (decode_requiredmask(l->required_count) & ~msg_head) {
+    d->missing_required = true;
+  }
   return ptr;
 }
 
@@ -813,7 +847,7 @@ static const char *decode_wireval(upb_decstate *d, const char *ptr,
     default:
       break;
   }
-  return decode_err(d);
+  return decode_err(d, kUpb_DecodeStatus_Malformed);
 }
 
 UPB_FORCEINLINE
@@ -827,7 +861,7 @@ static const char *decode_known(upb_decstate *d, const char *ptr, upb_msg *msg,
   if (UPB_UNLIKELY(mode & _UPB_MODE_IS_EXTENSION)) {
     const upb_msglayout_ext *ext_layout = (const upb_msglayout_ext*)field;
     upb_msg_ext *ext = _upb_msg_getorcreateext(msg, ext_layout, &d->arena);
-    if (UPB_UNLIKELY(!ext)) return decode_err(d);
+        if (UPB_UNLIKELY(!ext)) return decode_err(d, kUpb_DecodeStatus_OutOfMemory);
     msg = &ext->data;
     subs = &ext->ext->sub;
   }
@@ -844,24 +878,60 @@ static const char *decode_known(upb_decstate *d, const char *ptr, upb_msg *msg,
   }
 }
 
-UPB_FORCEINLINE
+static const char *decode_reverse_skip_varint(const char *ptr, uint32_t val) {
+  uint32_t seen = 0;
+  do {
+    ptr--;
+    seen <<= 7;
+    seen |= *ptr & 0x7f;
+  } while (seen != val);
+  return ptr;
+}
+
 static const char *decode_unknown(upb_decstate *d, const char *ptr,
                                   upb_msg *msg, int field_number, int wire_type,
-                                  wireval val, const char **field_start) {
-  if (field_number == 0) return decode_err(d);
+                                  wireval val) {
+  if (field_number == 0) return decode_err(d, kUpb_DecodeStatus_Malformed);
+
+  // Since unknown fields are the uncommon case, we do a little extra work here
+  // to walk backwards through the buffer to find the field start.  This frees
+  // up a register in the fast paths (when the field is known), which leads to
+  // significant speedups in benchmarks.
+  const char *start = ptr;
 
   if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
   if (msg) {
+    switch (wire_type) {
+      case UPB_WIRE_TYPE_VARINT:
+      case UPB_WIRE_TYPE_DELIMITED:
+        start--;
+        while (start[-1] & 0x80) start--;
+        break;
+      case UPB_WIRE_TYPE_32BIT:
+        start -= 4;
+        break;
+      case UPB_WIRE_TYPE_64BIT:
+        start -= 8;
+        break;
+      default:
+        break;
+    }
+
+    assert(start == d->debug_valstart);
+    uint32_t tag = ((uint32_t)field_number << 3) | wire_type;
+    start = decode_reverse_skip_varint(start, tag);
+    assert(start == d->debug_tagstart);
+
     if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
-      d->unknown = *field_start;
+      d->unknown = start;
       d->unknown_msg = msg;
       ptr = decode_group(d, ptr, NULL, NULL, field_number);
+      start = d->unknown;
       d->unknown_msg = NULL;
-      *field_start = d->unknown;
+      d->unknown = NULL;
     }
-    if (!_upb_msg_addunknown(msg, *field_start, ptr - *field_start,
-                             &d->arena)) {
-      return decode_err(d);
+    if (!_upb_msg_addunknown(msg, start, ptr - start, &d->arena)) {
+      return decode_err(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
     ptr = decode_group(d, ptr, NULL, NULL, field_number);
@@ -873,19 +943,39 @@ UPB_NOINLINE
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
   int last_field_index = 0;
-  while (true) {
+
+#if UPB_FASTTABLE
+  // The first time we want to skip fast dispatch, because we may have just been
+  // invoked by the fast parser to handle a case that it bailed on.
+  if (!decode_isdone(d, &ptr)) goto nofast;
+#endif
+
+  while (!decode_isdone(d, &ptr)) {
     uint32_t tag;
     const upb_msglayout_field *field;
     int field_number;
     int wire_type;
-    const char *field_start = ptr;
     wireval val;
     int op;
+
+    if (decode_tryfastdispatch(d, &ptr, msg, layout)) break;
+
+#if UPB_FASTTABLE
+  nofast:
+#endif
+
+#ifndef NDEBUG
+    d->debug_tagstart = ptr;
+#endif
 
     UPB_ASSERT(ptr < d->limit_ptr);
     ptr = decode_tag(d, ptr, &tag);
     field_number = tag >> 3;
     wire_type = tag & 7;
+
+#ifndef NDEBUG
+    d->debug_valstart = ptr;
+#endif
 
     if (wire_type == UPB_WIRE_TYPE_END_GROUP) {
       d->end_group = field_number;
@@ -900,8 +990,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     } else {
       switch (op) {
         case OP_UNKNOWN:
-          ptr = decode_unknown(d, ptr, msg, field_number, wire_type, val,
-                               &field_start);
+          ptr = decode_unknown(d, ptr, msg, field_number, wire_type, val);
           break;
         case OP_MSGSET_ITEM:
           ptr = decode_msgset(d, ptr, msg, layout);
@@ -914,10 +1003,11 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
         }
       }
     }
-
-    if (decode_isdone(d, &ptr)) return ptr;
-    if (decode_tryfastdispatch(d, &ptr, msg, layout)) return ptr;
   }
+
+  return UPB_UNLIKELY(layout && layout->required_count)
+             ? decode_checkrequired(d, ptr, msg, layout)
+             : ptr;
 }
 
 const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
@@ -928,34 +1018,32 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
   return decode_msg(d, ptr, msg, decode_totablep(table));
 }
 
-static bool decode_top(struct upb_decstate *d, const char *buf, void *msg,
-                       const upb_msglayout *l) {
+static upb_DecodeStatus decode_top(struct upb_decstate *d, const char *buf,
+                                   void *msg, const upb_msglayout *l) {
   if (!decode_tryfastdispatch(d, &buf, msg, l)) {
     decode_msg(d, buf, msg, l);
   }
-  return d->end_group == DECODE_NOGROUP;
+  if (d->end_group != DECODE_NOGROUP) return kUpb_DecodeStatus_Malformed;
+  if (d->missing_required) return kUpb_DecodeStatus_MissingRequired;
+  return kUpb_DecodeStatus_Ok;
 }
 
-bool _upb_decode(const char *buf, size_t size, void *msg,
-                 const upb_msglayout *l, const upb_extreg *extreg, int options,
-                 upb_arena *arena) {
-  bool ok;
+upb_DecodeStatus _upb_decode(const char *buf, size_t size, void *msg,
+                             const upb_msglayout *l, const upb_extreg *extreg,
+                             int options, upb_arena *arena) {
   upb_decstate state;
   unsigned depth = (unsigned)options >> 16;
 
-  if (size == 0) {
-    return true;
-  } else if (size <= 16) {
+  if (size <= 16) {
     memset(&state.patch, 0, 32);
     memcpy(&state.patch, buf, size);
     buf = state.patch;
     state.end = buf + size;
     state.limit = 0;
-    state.alias = false;
+    options &= ~kUpb_DecodeOption_AliasString;  // Can't alias patch buf.
   } else {
     state.end = buf + size - 16;
     state.limit = 16;
-    state.alias = options & UPB_DECODE_ALIAS;
   }
 
   state.extreg = extreg;
@@ -963,21 +1051,22 @@ bool _upb_decode(const char *buf, size_t size, void *msg,
   state.unknown_msg = NULL;
   state.depth = depth ? depth : 64;
   state.end_group = DECODE_NOGROUP;
+  state.options = (uint16_t)options;
+  state.missing_required = false;
   state.arena.head = arena->head;
   state.arena.last_size = arena->last_size;
   state.arena.cleanup_metadata = arena->cleanup_metadata;
   state.arena.parent = arena;
 
-  if (UPB_UNLIKELY(UPB_SETJMP(state.err))) {
-    ok = false;
-  } else {
-    ok = decode_top(&state, buf, msg, l);
+  upb_DecodeStatus status = UPB_SETJMP(state.err);
+  if (UPB_LIKELY(status == kUpb_DecodeStatus_Ok)) {
+    status = decode_top(&state, buf, msg, l);
   }
 
   arena->head.ptr = state.arena.head.ptr;
   arena->head.end = state.arena.head.end;
   arena->cleanup_metadata = state.arena.cleanup_metadata;
-  return ok;
+  return status;
 }
 
 #undef OP_UNKNOWN

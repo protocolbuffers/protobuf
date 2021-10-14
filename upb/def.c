@@ -1592,6 +1592,7 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
   l->fields = fields;
   l->subs = subs;
   l->table_mask = 0;
+  l->required_count = 0;
 
   if (upb_msgdef_extrangecount(m) > 0) {
     if (google_protobuf_MessageOptions_message_set_wire_format(m->opts)) {
@@ -1653,6 +1654,19 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
 
   /* Assign hasbits for required fields first. */
   size_t hasbit = 0;
+
+  for (int i = 0; i < m->field_count; i++) {
+    const upb_fielddef* f = &m->fields[i];
+    upb_msglayout_field *field = &fields[upb_fielddef_index(f)];
+    if (upb_fielddef_label(f) == UPB_LABEL_REQUIRED) {
+      field->presence = ++hasbit;
+      if (hasbit >= 63) {
+        symtab_errf(ctx, "Message with >=63 required fields: %s",
+                    upb_msgdef_fullname(m));
+      }
+      l->required_count++;
+    }
+  }
 
   /* Allocate hasbits and set basic field attributes. */
   sublayout_count = 0;
@@ -2200,7 +2214,7 @@ static void create_fielddef(
       if (ctx->symtab->allow_name_conflicts &&
           deftype(existing_v) == UPB_DEFTYPE_FIELD_JSONNAME) {
         // Field name takes precedence over json name.
-        upb_strtable_remove(&m->ntof, shortname, strlen(shortname), NULL);
+        upb_strtable_remove(&m->ntof, shortname, NULL);
       } else {
         symtab_errf(ctx, "duplicate field name (%s)", shortname);
       }
@@ -2998,7 +3012,7 @@ bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init) {
   }
 
   file = google_protobuf_FileDescriptorProto_parse_ex(
-      init->descriptor.data, init->descriptor.size, NULL, UPB_DECODE_ALIAS,
+      init->descriptor.data, init->descriptor.size, NULL, kUpb_DecodeOption_AliasString,
       arena);
   s->bytes_loaded += init->descriptor.size;
 

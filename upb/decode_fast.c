@@ -68,9 +68,10 @@ typedef enum {
 UPB_NOINLINE
 static const char *fastdecode_isdonefallback(UPB_PARSE_PARAMS) {
   int overrun = data;
-  ptr = decode_isdonefallback_inl(d, ptr, overrun);
+  int status;
+  ptr = decode_isdonefallback_inl(d, ptr, overrun, &status);
   if (ptr == NULL) {
-    return fastdecode_err(d);
+    return fastdecode_err(d, status);
   }
   data = fastdecode_loadtag(ptr);
   UPB_MUSTTAIL return fastdecode_tagdispatch(UPB_PARSE_ARGS);
@@ -83,7 +84,10 @@ static const char *fastdecode_dispatch(UPB_PARSE_PARAMS) {
     if (UPB_LIKELY(overrun == d->limit)) {
       // Parse is finished.
       *(uint32_t*)msg |= hasbits;  // Sync hasbits.
-      return ptr;
+      const upb_msglayout *l = decode_totablep(table);
+      return UPB_UNLIKELY(l->required_count)
+                 ? decode_checkrequired(d, ptr, msg, l)
+                 : ptr;
     } else {
       data = overrun;
       UPB_MUSTTAIL return fastdecode_isdonefallback(UPB_PARSE_ARGS);
@@ -397,8 +401,7 @@ done:
                                                                                \
   ptr += tagbytes;                                                             \
   ptr = fastdecode_varint64(ptr, &val);                                        \
-  if (ptr == NULL)                                                             \
-    return fastdecode_err(d);                                                  \
+  if (ptr == NULL) return fastdecode_err(d, kUpb_DecodeStatus_Malformed);      \
   val = fastdecode_munge(val, valbytes, zigzag);                               \
   memcpy(dst, &val, valbytes);                                                 \
                                                                                \
@@ -406,14 +409,14 @@ done:
     fastdecode_nextret ret = fastdecode_nextrepeated(                          \
         d, dst, &ptr, &farr, data, tagbytes, valbytes);                        \
     switch (ret.next) {                                                        \
-    case FD_NEXT_SAMEFIELD:                                                    \
-      dst = ret.dst;                                                           \
-      goto again;                                                              \
-    case FD_NEXT_OTHERFIELD:                                                   \
-      data = ret.tag;                                                          \
-      UPB_MUSTTAIL return fastdecode_tagdispatch(UPB_PARSE_ARGS);              \
-    case FD_NEXT_ATLIMIT:                                                      \
-      return ptr;                                                              \
+      case FD_NEXT_SAMEFIELD:                                                  \
+        dst = ret.dst;                                                         \
+        goto again;                                                            \
+      case FD_NEXT_OTHERFIELD:                                                 \
+        data = ret.tag;                                                        \
+        UPB_MUSTTAIL return fastdecode_tagdispatch(UPB_PARSE_ARGS);            \
+      case FD_NEXT_ATLIMIT:                                                    \
+        return ptr;                                                            \
     }                                                                          \
   }                                                                            \
                                                                                \
@@ -462,7 +465,7 @@ static const char *fastdecode_topackedvarint(upb_decstate *d, const char *ptr,
   ptr = fastdecode_delimited(d, ptr, &fastdecode_topackedvarint, &ctx);        \
                                                                                \
   if (UPB_UNLIKELY(ptr == NULL)) {                                             \
-    return fastdecode_err(d);                                                  \
+    return fastdecode_err(d, kUpb_DecodeStatus_Malformed);                     \
   }                                                                            \
                                                                                \
   UPB_MUSTTAIL return fastdecode_dispatch(d, ptr, msg, table, hasbits, 0);
@@ -579,7 +582,7 @@ TAGBYTES(p)
                                                                             \
   if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, size, d->limit_ptr) ||       \
                    (size % valbytes) != 0)) {                               \
-    return fastdecode_err(d);                                               \
+    return fastdecode_err(d, kUpb_DecodeStatus_Malformed);                  \
   }                                                                         \
                                                                             \
   upb_array **arr_p = fastdecode_fieldmem(msg, data);                       \
@@ -590,7 +593,7 @@ TAGBYTES(p)
   if (UPB_LIKELY(!arr)) {                                                   \
     *arr_p = arr = _upb_array_new(&d->arena, elems, elem_size_lg2);         \
     if (!arr) {                                                             \
-      return fastdecode_err(d);                                             \
+      return fastdecode_err(d, kUpb_DecodeStatus_Malformed);                \
     }                                                                       \
   } else {                                                                  \
     _upb_array_resize(arr, elems, &d->arena);                               \
@@ -656,7 +659,7 @@ static const char *fastdecode_verifyutf8(upb_decstate *d, const char *ptr,
                                          uint64_t hasbits, uint64_t data) {
   upb_strview *dst = (upb_strview*)data;
   if (!decode_verifyutf8_inl(dst->data, dst->size)) {
-    return fastdecode_err(d);
+    return fastdecode_err(d, kUpb_DecodeStatus_BadUtf8);
   }
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
 }
@@ -670,16 +673,16 @@ static const char *fastdecode_verifyutf8(upb_decstate *d, const char *ptr,
                                                                                \
   if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, size, d->limit_ptr))) {         \
     dst->size = 0;                                                             \
-    return fastdecode_err(d);                                                  \
+    return fastdecode_err(d, kUpb_DecodeStatus_Malformed);                     \
   }                                                                            \
                                                                                \
-  if (d->alias) {                                                              \
+  if (d->options & kUpb_DecodeOption_AliasString) {                            \
     dst->data = ptr;                                                           \
     dst->size = size;                                                          \
   } else {                                                                     \
     char *data = upb_arena_malloc(&d->arena, size);                            \
     if (!data) {                                                               \
-      return fastdecode_err(d);                                                \
+      return fastdecode_err(d, kUpb_DecodeStatus_OutOfMemory);                 \
     }                                                                          \
     memcpy(data, ptr, size);                                                   \
     dst->data = data;                                                          \
@@ -732,7 +735,7 @@ static void fastdecode_docopy(upb_decstate *d, const char *ptr, uint32_t size,
   size_t common_has;                                                           \
   char *buf;                                                                   \
                                                                                \
-  UPB_ASSERT(!d->alias);                                                       \
+  UPB_ASSERT((d->options & kUpb_DecodeOption_AliasString) == 0);               \
   UPB_ASSERT(fastdecode_checktag(data, tagbytes));                             \
                                                                                \
   dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, &farr,               \
@@ -752,22 +755,18 @@ static void fastdecode_docopy(upb_decstate *d, const char *ptr, uint32_t size,
   common_has = UPB_MIN(arena_has, (d->end - ptr) + 16);                        \
                                                                                \
   if (UPB_LIKELY(size <= 15 - tagbytes)) {                                     \
-    if (arena_has < 16)                                                        \
-      goto longstr;                                                            \
+    if (arena_has < 16) goto longstr;                                          \
     d->arena.head.ptr += 16;                                                   \
     memcpy(buf, ptr - tagbytes - 1, 16);                                       \
     dst->data = buf + tagbytes + 1;                                            \
   } else if (UPB_LIKELY(size <= 32)) {                                         \
-    if (UPB_UNLIKELY(common_has < 32))                                         \
-      goto longstr;                                                            \
+    if (UPB_UNLIKELY(common_has < 32)) goto longstr;                           \
     fastdecode_docopy(d, ptr, size, 32, buf, dst);                             \
   } else if (UPB_LIKELY(size <= 64)) {                                         \
-    if (UPB_UNLIKELY(common_has < 64))                                         \
-      goto longstr;                                                            \
+    if (UPB_UNLIKELY(common_has < 64)) goto longstr;                           \
     fastdecode_docopy(d, ptr, size, 64, buf, dst);                             \
   } else if (UPB_LIKELY(size < 128)) {                                         \
-    if (UPB_UNLIKELY(common_has < 128))                                        \
-      goto longstr;                                                            \
+    if (UPB_UNLIKELY(common_has < 128)) goto longstr;                          \
     fastdecode_docopy(d, ptr, size, 128, buf, dst);                            \
   } else {                                                                     \
     goto longstr;                                                              \
@@ -777,19 +776,19 @@ static void fastdecode_docopy(upb_decstate *d, const char *ptr, uint32_t size,
                                                                                \
   if (card == CARD_r) {                                                        \
     if (validate_utf8 && !decode_verifyutf8_inl(dst->data, dst->size)) {       \
-      return fastdecode_err(d);                                                \
+      return fastdecode_err(d, kUpb_DecodeStatus_BadUtf8);                     \
     }                                                                          \
     fastdecode_nextret ret = fastdecode_nextrepeated(                          \
         d, dst, &ptr, &farr, data, tagbytes, sizeof(upb_strview));             \
     switch (ret.next) {                                                        \
-    case FD_NEXT_SAMEFIELD:                                                    \
-      dst = ret.dst;                                                           \
-      goto again;                                                              \
-    case FD_NEXT_OTHERFIELD:                                                   \
-      data = ret.tag;                                                          \
-      UPB_MUSTTAIL return fastdecode_tagdispatch(UPB_PARSE_ARGS);              \
-    case FD_NEXT_ATLIMIT:                                                      \
-      return ptr;                                                              \
+      case FD_NEXT_SAMEFIELD:                                                  \
+        dst = ret.dst;                                                         \
+        goto again;                                                            \
+      case FD_NEXT_OTHERFIELD:                                                 \
+        data = ret.tag;                                                        \
+        UPB_MUSTTAIL return fastdecode_tagdispatch(UPB_PARSE_ARGS);            \
+      case FD_NEXT_ATLIMIT:                                                    \
+        return ptr;                                                            \
     }                                                                          \
   }                                                                            \
                                                                                \
@@ -820,7 +819,7 @@ static void fastdecode_docopy(upb_decstate *d, const char *ptr, uint32_t size,
     RETURN_GENERIC("string field tag mismatch\n");                             \
   }                                                                            \
                                                                                \
-  if (UPB_UNLIKELY(!d->alias)) {                                               \
+  if (UPB_UNLIKELY((d->options & kUpb_DecodeOption_AliasString) == 0)) {       \
     UPB_MUSTTAIL return copyfunc(UPB_PARSE_ARGS);                              \
   }                                                                            \
                                                                                \
@@ -852,27 +851,27 @@ static void fastdecode_docopy(upb_decstate *d, const char *ptr, uint32_t size,
                                                                                \
   if (card == CARD_r) {                                                        \
     if (validate_utf8 && !decode_verifyutf8_inl(dst->data, dst->size)) {       \
-      return fastdecode_err(d);                                                \
+      return fastdecode_err(d, kUpb_DecodeStatus_BadUtf8);                     \
     }                                                                          \
     fastdecode_nextret ret = fastdecode_nextrepeated(                          \
         d, dst, &ptr, &farr, data, tagbytes, sizeof(upb_strview));             \
     switch (ret.next) {                                                        \
-    case FD_NEXT_SAMEFIELD:                                                    \
-      dst = ret.dst;                                                           \
-      if (UPB_UNLIKELY(!d->alias)) {                                           \
-        /* Buffer flipped and we can't alias any more. Bounce to */            \
-        /* copyfunc(), but via dispatch since we need to reload table */       \
-        /* data also. */                                                       \
-        fastdecode_commitarr(dst, &farr, sizeof(upb_strview));                 \
+      case FD_NEXT_SAMEFIELD:                                                  \
+        dst = ret.dst;                                                         \
+        if (UPB_UNLIKELY((d->options & kUpb_DecodeOption_AliasString) == 0)) { \
+          /* Buffer flipped and we can't alias any more. Bounce to */          \
+          /* copyfunc(), but via dispatch since we need to reload table */     \
+          /* data also. */                                                     \
+          fastdecode_commitarr(dst, &farr, sizeof(upb_strview));               \
+          data = ret.tag;                                                      \
+          UPB_MUSTTAIL return fastdecode_tagdispatch(UPB_PARSE_ARGS);          \
+        }                                                                      \
+        goto again;                                                            \
+      case FD_NEXT_OTHERFIELD:                                                 \
         data = ret.tag;                                                        \
         UPB_MUSTTAIL return fastdecode_tagdispatch(UPB_PARSE_ARGS);            \
-      }                                                                        \
-      goto again;                                                              \
-    case FD_NEXT_OTHERFIELD:                                                   \
-      data = ret.tag;                                                          \
-      UPB_MUSTTAIL return fastdecode_tagdispatch(UPB_PARSE_ARGS);              \
-    case FD_NEXT_ATLIMIT:                                                      \
-      return ptr;                                                              \
+      case FD_NEXT_ATLIMIT:                                                    \
+        return ptr;                                                            \
     }                                                                          \
   }                                                                            \
                                                                                \
@@ -964,7 +963,9 @@ static const char *fastdecode_tosubmsg(upb_decstate *d, const char *ptr,
     RETURN_GENERIC("submessage field tag mismatch\n");                    \
   }                                                                       \
                                                                           \
-  if (--d->depth == 0) return fastdecode_err(d);                          \
+  if (--d->depth == 0) {                                                  \
+    return fastdecode_err(d, kUpb_DecodeStatus_MaxDepthExceeded);         \
+  }                                                                       \
                                                                           \
   upb_msg **dst;                                                          \
   uint32_t submsg_idx = (data >> 16) & 0xff;                              \
@@ -1000,7 +1001,7 @@ static const char *fastdecode_tosubmsg(upb_decstate *d, const char *ptr,
   ptr = fastdecode_delimited(d, ptr, fastdecode_tosubmsg, &submsg);       \
                                                                           \
   if (UPB_UNLIKELY(ptr == NULL || d->end_group != DECODE_NOGROUP)) {      \
-    return fastdecode_err(d);                                             \
+    return fastdecode_err(d, kUpb_DecodeStatus_Malformed);                \
   }                                                                       \
                                                                           \
   if (card == CARD_r) {                                                   \

@@ -30,6 +30,7 @@
 
 #include <vector>
 
+#include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -49,6 +50,26 @@ class Output {
 
  private:
   void Write(absl::string_view data) {
+    std::string stripped;
+    if (absl::StartsWith(data, "\n ")) {
+      size_t indent = data.substr(1).find_first_not_of(' ');
+      if (indent != absl::string_view::npos) {
+        // Remove indentation from all lines.
+        auto line_prefix = data.substr(0, indent + 1);
+        // The final line has an extra newline and is indented two less, eg.
+        //    R"cc(
+        //      UPB_INLINE $0 $1_$2(const $1 *msg) {
+        //        return $1_has_$2(msg) ? *UPB_PTR_AT(msg, $3, $0) : $4;
+        //      }
+        //    )cc",
+        std::string last_line_prefix = std::string(line_prefix);
+        last_line_prefix.resize(last_line_prefix.size() - 2);
+        data.remove_prefix(line_prefix.size());
+        stripped = absl::StrReplaceAll(
+            data, {{line_prefix, "\n"}, {last_line_prefix, "\n"}});
+        data = stripped;
+      }
+    }
     while (!data.empty()) {
       RefreshOutput();
       size_t to_write = std::min(data.size(), size_);
