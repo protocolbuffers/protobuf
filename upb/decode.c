@@ -993,7 +993,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     }
   }
 
-  return UPB_UNLIKELY(layout->required_count)
+  return UPB_UNLIKELY(layout && layout->required_count)
              ? decode_checkrequired(d, ptr, msg, layout)
              : ptr;
 }
