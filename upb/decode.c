@@ -190,10 +190,12 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout);
 
 UPB_NORETURN static void *decode_err(upb_decstate *d, upb_DecodeStatus status) {
+  assert(status != kUpb_DecodeStatus_Ok);
   UPB_LONGJMP(d->err, status);
 }
 
 const char *fastdecode_err(upb_decstate *d, int status) {
+  assert(status != kUpb_DecodeStatus_Ok);
   UPB_LONGJMP(d->err, status);
   return NULL;
 }
@@ -257,7 +259,7 @@ static const char *decode_tag(upb_decstate *d, const char *ptr, uint32_t *val) {
     decode_vret res = decode_longvarint64(ptr, byte);
     ptr = res.ptr;
     *val = res.val;
-    if (!ptr || *val > UINT32_MAX || ptr - start > 5) {
+    if (!ptr || res.val > UINT32_MAX || ptr - start > 5) {
       return decode_err(d, kUpb_DecodeStatus_Malformed);
     }
     return ptr;
@@ -660,6 +662,17 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   return ptr;
 }
 
+// Computes a bitmask in which the |n| lowest bits are set, except that we
+// skip the lowest bit (because upb never uses hasbit 0).
+//
+// Sample output:
+//    decode_requiredmask(1) => 0b10 (0x2)
+//    decode_requiredmask(5) => 0b111110 (0x3e)
+uint64_t decode_requiredmask(int n) {
+  assert(0 < n && n < 63);
+  return ((1 << n) - 1) << 1;
+}
+
 UPB_NOINLINE
 const char *decode_checkrequired(upb_decstate *d, const char *ptr,
                                  const upb_msg *msg, const upb_msglayout *l) {
@@ -667,11 +680,10 @@ const char *decode_checkrequired(upb_decstate *d, const char *ptr,
   if (UPB_LIKELY((d->options & kUpb_DecodeOption_CheckRequired) == 0)) {
     return ptr;
   }
-  uint64_t required_mask = ((1 << l->required_count) - 1) << 1;
   uint64_t msg_head;
   memcpy(&msg_head, msg, 8);
   msg_head = _upb_be_swap64(msg_head);
-  if (required_mask & ~msg_head) {
+  if (decode_requiredmask(l->required_count) & ~msg_head) {
     d->missing_required = true;
   }
   return ptr;
@@ -867,8 +879,8 @@ static const char *decode_known(upb_decstate *d, const char *ptr, upb_msg *msg,
   }
 }
 
-static const char *decode_reverse_skip_varint(const char *ptr, uint64_t val) {
-  uint64_t seen = 0;
+static const char *decode_reverse_skip_varint(const char *ptr, uint32_t val) {
+  uint32_t seen = 0;
   do {
     ptr--;
     seen <<= 7;
@@ -907,7 +919,8 @@ static const char *decode_unknown(upb_decstate *d, const char *ptr,
     }
 
     assert(start == d->debug_valstart);
-    start = decode_reverse_skip_varint(start, (field_number << 3) | wire_type);
+    uint32_t tag = (field_number << 3) | wire_type;
+    start = decode_reverse_skip_varint(start, tag);
     assert(start == d->debug_tagstart);
 
     if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
@@ -1047,7 +1060,7 @@ upb_DecodeStatus _upb_decode(const char *buf, size_t size, void *msg,
   state.arena.parent = arena;
 
   upb_DecodeStatus status = UPB_SETJMP(state.err);
-  if (UPB_LIKELY(status == 0)) {
+  if (UPB_LIKELY(status == kUpb_DecodeStatus_Ok)) {
     status = decode_top(&state, buf, msg, l);
   }
 

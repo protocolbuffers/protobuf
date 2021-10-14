@@ -101,6 +101,9 @@ bool decode_verifyutf8_inl(const char *ptr, int len) {
   return utf8_range2((const unsigned char *)ptr, end - ptr) == 0;
 }
 
+const char *decode_checkrequired(upb_decstate *d, const char *ptr,
+                                 const upb_msg *msg, const upb_msglayout *l);
+
 /* x86-64 pointers always have the high 16 bits matching. So we can shift
  * left 8 and right 8 without loss of information. */
 UPB_INLINE intptr_t decode_totable(const upb_msglayout *tablep) {

@@ -418,31 +418,33 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
 
   if (!message->options().map_entry()) {
     output(
-        "UPB_INLINE $0 *$0_new(upb_arena *arena) {\n"
-        "  return ($0 *)_upb_msg_new(&$1, arena);\n"
-        "}\n"
-        "UPB_INLINE $0 *$0_parse(const char *buf, size_t size,\n"
-        "                        upb_arena *arena) {\n"
-        "  $0 *ret = $0_new(arena);\n"
-        "  if (!ret) return NULL;\n"
-        "  if (upb_decode(buf, size, ret, &$1, arena)) return NULL;\n"
-        "  return ret;\n"
-        "}\n"
-        "UPB_INLINE $0 *$0_parse_ex(const char *buf, size_t size,\n"
-        "                           const upb_extreg *extreg, int options,\n"
-        "                           upb_arena *arena) {\n"
-        "  $0 *ret = $0_new(arena);\n"
-        "  if (!ret) return NULL;\n"
-        "  if (_upb_decode(buf, size, ret, &$1, extreg, options, arena)) {\n"
-        "    return NULL;\n"
-        "  }\n"
-        "  return ret;\n"
-        "}\n"
-        "UPB_INLINE char *$0_serialize(const $0 *msg, upb_arena *arena, size_t "
-        "*len) {\n"
-        "  return upb_encode(msg, &$1, arena, len);\n"
-        "}\n"
-        "\n",
+        R"cc(
+          UPB_INLINE $0 *$0_new(upb_arena *arena) {
+            return ($0 *)_upb_msg_new(&$1, arena);
+          }
+          UPB_INLINE $0 *$0_parse(const char *buf, size_t size, upb_arena *arena) {
+            $0 *ret = $0_new(arena);
+            if (!ret) return NULL;
+            if (upb_decode(buf, size, ret, &$1, arena) != kUpb_DecodeStatus_Ok) {
+              return NULL;
+            }
+            return ret;
+          }
+          UPB_INLINE $0 *$0_parse_ex(const char *buf, size_t size,
+                                     const upb_extreg *extreg, int options,
+                                     upb_arena *arena) {
+            $0 *ret = $0_new(arena);
+            if (!ret) return NULL;
+            if (_upb_decode(buf, size, ret, &$1, extreg, options, arena) !=
+                kUpb_DecodeStatus_Ok) {
+              return NULL;
+            }
+            return ret;
+          }
+          UPB_INLINE char *$0_serialize(const $0 *msg, upb_arena *arena, size_t *len) {
+            return upb_encode(msg, &$1, arena, len);
+          }
+        )cc",
         MessageName(message), MessageInit(message));
   }
 
@@ -543,14 +545,20 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
     } else {
       if (HasNonZeroDefault(field)) {
         output(
-            "UPB_INLINE $0 $1_$2(const $1 *msg) { "
-            "return $1_has_$2(msg) ? *UPB_PTR_AT(msg, $3, $0) : $4; }\n",
+            R"cc(
+              UPB_INLINE $0 $1_$2(const $1 *msg) {
+                return $1_has_$2(msg) ? *UPB_PTR_AT(msg, $3, $0) : $4;
+              }
+            )cc",
             CTypeConst(field), msg_name, field->name(),
             GetSizeInit(layout.GetFieldOffset(field)), FieldDefault(field));
       } else {
         output(
-            "UPB_INLINE $0 $1_$2(const $1 *msg) { "
-            "return *UPB_PTR_AT(msg, $3, $0); }\n",
+            R"cc(
+              UPB_INLINE $0 $1_$2(const $1 *msg) {
+                return *UPB_PTR_AT(msg, $3, $0);
+              }
+            )cc",
             CTypeConst(field), msg_name, field->name(),
             GetSizeInit(layout.GetFieldOffset(field)));
       }
