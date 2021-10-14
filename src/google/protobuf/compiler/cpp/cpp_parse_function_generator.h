@@ -118,6 +118,7 @@ class ParseFunctionGenerator {
 
   // Generates the tail-call table definition.
   void GenerateTailCallTable(Formatter& format);
+  void GenerateFastFieldEntries(Formatter& format, const std::string& fallback);
 
   // Generates parsing code for an `ArenaString` field.
   void GenerateArenaString(Formatter& format, const FieldDescriptor* field);
@@ -187,7 +188,6 @@ enum class TypeFormat {
 // parse_function_inc_generator_main.
 std::string GetTailCallFieldHandlerName(ParseCardinality card,
                                         TypeFormat type_format,
-                                        int table_size_log2,
                                         int tag_length_bytes,
                                         const Options& options);
 

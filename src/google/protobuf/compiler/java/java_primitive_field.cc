@@ -159,12 +159,25 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
     (*variables)["set_has_field_bit_builder"] = "";
     (*variables)["clear_has_field_bit_builder"] = "";
 
-    if (descriptor->type() == FieldDescriptor::TYPE_BYTES) {
-      (*variables)["is_field_present_message"] =
-          "!" + (*variables)["name"] + "_.isEmpty()";
-    } else {
-      (*variables)["is_field_present_message"] =
-          (*variables)["name"] + "_ != " + (*variables)["default"];
+    switch (descriptor->type()) {
+      case FieldDescriptor::TYPE_BYTES:
+        (*variables)["is_field_present_message"] =
+            "!" + (*variables)["name"] + "_.isEmpty()";
+        break;
+      case FieldDescriptor::TYPE_FLOAT:
+        (*variables)["is_field_present_message"] =
+            "java.lang.Float.floatToRawIntBits(" + (*variables)["name"] +
+            "_) != 0";
+        break;
+      case FieldDescriptor::TYPE_DOUBLE:
+        (*variables)["is_field_present_message"] =
+            "java.lang.Double.doubleToRawLongBits(" + (*variables)["name"] +
+            "_) != 0";
+        break;
+      default:
+        (*variables)["is_field_present_message"] =
+            (*variables)["name"] + "_ != " + (*variables)["default"];
+        break;
     }
   }
 

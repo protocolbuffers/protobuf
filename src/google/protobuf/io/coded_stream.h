@@ -136,6 +136,10 @@
 #include <machine/endian.h>  // __BYTE_ORDER
 #elif defined(__FreeBSD__)
 #include <sys/endian.h>  // __BYTE_ORDER
+#elif (defined(sun) || defined(__sun)) && (defined(__SVR4) || defined(__svr4__))
+#include <sys/isa_defs.h>  // __BYTE_ORDER
+#elif defined(_AIX) || defined(__TOS_AIX__)
+#include <sys/machine.h>  // BYTE_ORDER
 #else
 #if !defined(__QNX__)
 #include <endian.h>  // __BYTE_ORDER
@@ -706,6 +710,9 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // aliasing the buffer (ie. not copying the data). The caller is responsible
   // to make sure the buffer is alive for the duration of the
   // ZeroCopyOutputStream.
+#ifndef NDEBUG
+  PROTOBUF_NOINLINE
+#endif
   uint8_t* WriteRawMaybeAliased(const void* data, int size, uint8_t* ptr) {
     if (aliasing_enabled_) {
       return WriteAliasedRaw(data, size, ptr);
@@ -715,6 +722,9 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   }
 
 
+#ifndef NDEBUG
+  PROTOBUF_NOINLINE
+#endif
   uint8_t* WriteStringMaybeAliased(uint32_t num, const std::string& s,
                                    uint8_t* ptr) {
     std::ptrdiff_t size = s.size();
@@ -746,6 +756,9 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     return ptr + size;
   }
   template <typename T>
+#ifndef NDEBUG
+  PROTOBUF_NOINLINE
+#endif
   uint8_t* WriteBytes(uint32_t num, const T& s, uint8_t* ptr) {
     return WriteString(num, s, ptr);
   }

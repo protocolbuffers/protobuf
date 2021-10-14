@@ -380,4 +380,34 @@ public class MessageTest {
                 result.getDescriptorForType().findFieldByName("repeated_foreign_message")))
         .isEqualTo(2);
   }
+
+  @Test
+  public void testPreservesFloatingPointNegative0() throws Exception {
+    proto3_unittest.UnittestProto3.TestAllTypes message =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(-0.0f)
+            .setOptionalDouble(-0.0)
+            .build();
+    assertThat(
+            proto3_unittest.UnittestProto3.TestAllTypes.parseFrom(
+                message.toByteString(), ExtensionRegistry.getEmptyRegistry()))
+        .isEqualTo(message);
+  }
+
+  @Test
+  public void testNegative0FloatingPointEquality() throws Exception {
+    // Like Double#equals and Float#equals, we treat -0.0 as not being equal to +0.0 even though
+    // IEEE 754 mandates that they are equivalent. This test asserts that behavior.
+    proto3_unittest.UnittestProto3.TestAllTypes message1 =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(-0.0f)
+            .setOptionalDouble(-0.0)
+            .build();
+    proto3_unittest.UnittestProto3.TestAllTypes message2 =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(0.0f)
+            .setOptionalDouble(0.0)
+            .build();
+    assertThat(message1).isNotEqualTo(message2);
+  }
 }

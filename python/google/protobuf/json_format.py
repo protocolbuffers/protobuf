@@ -226,7 +226,7 @@ class _Printer(object):
               else:
                 recorded_key = 'false'
             else:
-              recorded_key = key
+              recorded_key = str(key)
             js_map[recorded_key] = self._FieldToJsonObject(
                 v_field, value[key])
           js[name] = js_map

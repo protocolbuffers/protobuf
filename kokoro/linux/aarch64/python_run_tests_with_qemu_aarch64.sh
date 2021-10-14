@@ -7,7 +7,7 @@ cd $(dirname $0)/../../..
 cd python
 
 PYTHON="/opt/python/cp38-cp38/bin/python"
-${PYTHON} -m pip install --user six pytest auditwheel
+${PYTHON} -m pip install --user pytest auditwheel
 
 # check that we are really using aarch64 python
 (${PYTHON} -c 'import sysconfig; print(sysconfig.get_platform())' | grep -q "linux-aarch64") || (echo "Wrong python platform, needs to be aarch64 python."; exit 1)

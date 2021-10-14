@@ -571,8 +571,9 @@ bool WireFormatLite::ReadBytes(io::CodedInputStream* input, std::string** p) {
 }
 
 void PrintUTF8ErrorLog(const char* field_name, const char* operation_str,
-                       bool /*emit_stacktrace*/) {
+                       bool emit_stacktrace) {
   std::string stacktrace;
+  (void)emit_stacktrace;  // Parameter is used by Google-internal code.
   std::string quoted_field_name = "";
   if (field_name != nullptr) {
     quoted_field_name = StringPrintf(" '%s'", field_name);

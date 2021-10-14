@@ -255,7 +255,6 @@ junit_tests(
         ":java_test_protos_java_proto",
         ":test_util",
         "//external:easymock",
-        "//external:easymock_classextension",
         "//external:guava",
         "//external:junit",
         "//external:truth",
@@ -361,7 +360,6 @@ junit_tests(
         ":java_test_protos_java_proto_lite",
         ":test_util_lite",
         "//external:easymock",
-        "//external:easymock_classextension",
         "//external:junit",
         "//external:truth",
     ]

@@ -523,7 +523,8 @@ struct PackedFieldHelper {
 template <>
 struct PackedFieldHelper<WireFormatLite::TYPE_STRING> {
   template <typename O>
-  static void Serialize(const void* /*field*/, const FieldMetadata& md, O* /*output*/) {
+  static void Serialize(const void* /*field*/, const FieldMetadata& md,
+                        O* /*output*/) {
     GOOGLE_LOG(FATAL) << "Not implemented field number " << md.tag << " with type "
                << md.type;
   }

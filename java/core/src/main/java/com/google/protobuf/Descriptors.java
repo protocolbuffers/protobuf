@@ -49,6 +49,7 @@ import com.google.protobuf.DescriptorProtos.OneofOptions;
 import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.DescriptorProtos.ServiceOptions;
 import com.google.protobuf.Descriptors.FileDescriptor.Syntax;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,7 +60,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -1816,6 +1816,15 @@ public final class Descriptors {
           valuesSortedByNumber, distinctNumbers, EnumValueDescriptor.NUMBER_GETTER, number);
     }
 
+    private static class UnknownEnumValueReference extends WeakReference<EnumValueDescriptor> {
+      private final int number;
+
+      private UnknownEnumValueReference(int number, EnumValueDescriptor descriptor) {
+        super(descriptor);
+        this.number = number;
+      }
+    }
+
     /**
      * Get the enum value for a number. If no enum value has this number, construct an
      * EnumValueDescriptor for it.
@@ -1827,43 +1836,28 @@ public final class Descriptors {
       }
       // The number represents an unknown enum value.
       synchronized (this) {
-        // Descriptors are compared by object identity so for the same number
-        // we need to return the same EnumValueDescriptor object. This means
-        // we have to store created EnumValueDescriptors. However, as there
-        // are potentially 2G unknown enum values, storing all of these
-        // objects persistently will consume lots of memory for long-running
-        // services and it's also unnecessary as not many EnumValueDescriptors
-        // will be used at the same time.
-        //
-        // To solve the problem we take advantage of Java's weak references and
-        // rely on gc to release unused descriptors.
-        //
-        // Here is how it works:
-        //   * We store unknown EnumValueDescriptors in a WeakHashMap with the
-        //     value being a weak reference to the descriptor.
-        //   * The descriptor holds a strong reference to the key so as long
-        //     as the EnumValueDescriptor is in use, the key will be there
-        //     and the corresponding map entry will be there. Following-up
-        //     queries with the same number will return the same descriptor.
-        //   * If the user no longer uses an unknown EnumValueDescriptor,
-        //     it will be gc-ed since we only hold a weak reference to it in
-        //     the map. The key in the corresponding map entry will also be
-        //     gc-ed as the only strong reference to it is in the descriptor
-        //     which is just gc-ed. With the key being gone WeakHashMap will
-        //     then remove the whole entry. This way unknown descriptors will
-        //     be freed automatically and we don't need to do anything to
-        //     clean-up unused map entries.
-
-        // Note: We must use "new Integer(number)" here because we don't want
-        // these Integer objects to be cached.
-        Integer key = new Integer(number);
-        WeakReference<EnumValueDescriptor> reference = unknownValues.get(key);
-        if (reference != null) {
-          result = reference.get();
+        if (cleanupQueue == null) {
+          cleanupQueue = new ReferenceQueue<EnumValueDescriptor>();
+          unknownValues = new HashMap<Integer, WeakReference<EnumValueDescriptor>>();
+        } else {
+          while (true) {
+            UnknownEnumValueReference toClean = (UnknownEnumValueReference) cleanupQueue.poll();
+            if (toClean == null) {
+              break;
+            }
+            unknownValues.remove(toClean.number);
+          }
         }
+
+        // There are two ways we can be missing a value: it wasn't in the map, or the reference
+        // has been GC'd.  (It may even have been GC'd since we cleaned up the references a few
+        // lines of code ago.)  So get out the reference, if it's still present...
+        WeakReference<EnumValueDescriptor> reference = unknownValues.get(number);
+        result = (reference == null) ? null : reference.get();
+
         if (result == null) {
-          result = new EnumValueDescriptor(this, key);
-          unknownValues.put(key, new WeakReference<EnumValueDescriptor>(result));
+          result = new EnumValueDescriptor(this, number);
+          unknownValues.put(number, new UnknownEnumValueReference(number, result));
         }
       }
       return result;
@@ -1882,8 +1876,8 @@ public final class Descriptors {
     private final EnumValueDescriptor[] values;
     private final EnumValueDescriptor[] valuesSortedByNumber;
     private final int distinctNumbers;
-    private final WeakHashMap<Integer, WeakReference<EnumValueDescriptor>> unknownValues =
-        new WeakHashMap<>();
+    private Map<Integer, WeakReference<EnumValueDescriptor>> unknownValues = null;
+    private ReferenceQueue<EnumValueDescriptor> cleanupQueue = null;
 
     private EnumDescriptor(
         final EnumDescriptorProto proto,

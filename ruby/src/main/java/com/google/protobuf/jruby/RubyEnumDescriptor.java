@@ -35,6 +35,7 @@ package com.google.protobuf.jruby;
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
+import com.google.protobuf.Descriptors.FileDescriptor;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
@@ -151,6 +152,7 @@ public class RubyEnumDescriptor extends RubyObject {
         Ruby runtime = context.runtime;
 
         RubyModule enumModule = RubyModule.newModule(runtime);
+        boolean defaultValueRequiredButNotFound = descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3;
         for (EnumValueDescriptor value : descriptor.getValues()) {
             String name = value.getName();
             // Make sure its a valid constant name before trying to create it
@@ -159,8 +161,14 @@ public class RubyEnumDescriptor extends RubyObject {
             } else {
                 runtime.getWarnings().warn("Enum value " + name + " does not start with an uppercase letter as is required for Ruby constants.");
             }
+            if (value.getNumber() == 0) {
+                defaultValueRequiredButNotFound = false;
+            }
         }
 
+        if (defaultValueRequiredButNotFound) {
+            throw Utils.createTypeError(context, "Enum definition " + name + " does not contain a value for '0'");
+        }
         enumModule.instance_variable_set(runtime.newString(Utils.DESCRIPTOR_INSTANCE_VAR), this);
         enumModule.defineAnnotatedMethods(RubyEnum.class);
         return enumModule;

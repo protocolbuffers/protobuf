@@ -1,1 +1,1 @@
-exports_files(["six.BUILD", "zlib.BUILD"])
+exports_files(["zlib.BUILD"])
