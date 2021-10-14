@@ -85,6 +85,11 @@ module Google
       def from_time(time)
         self.seconds = time.to_i
         self.nanos = time.nsec
+        self
+      end
+
+      def self.from_time(time)
+        new.from_time(time)
       end
 
       def to_i
