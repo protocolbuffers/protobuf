@@ -81,6 +81,7 @@ public class AnyTest {
 
   @Test
   public void testCustomTypeUrls() throws Exception {
+    assertThat(2).isEqualTo(5);
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TestUtil.setAllFields(builder);
     TestAllTypes message = builder.build();
