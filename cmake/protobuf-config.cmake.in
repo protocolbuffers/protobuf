@@ -129,12 +129,20 @@ function(protobuf_generate)
     endforeach()
     list(APPEND _generated_srcs_all ${_generated_srcs})
 
+    set(_comment "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}.")
+    if(protobuf_generate_PROTOC_OPTIONS)
+      set(_comment "${_comment}\nCustom protoc options: ${protobuf_generate_PROTOC_OPTIONS}")
+    endif()
+    if(protobuf_generate_PLUGIN_OPTIONS)
+      set(_comment "${_comment}\nCustom plugin options: ${protobuf_generate_PLUGIN_OPTIONS}")
+    endif()
+
     add_custom_command(
       OUTPUT ${_generated_srcs}
       COMMAND  protobuf::protoc
       ARGS ${protobuf_generate_PROTOC_OPTIONS} --${protobuf_generate_LANGUAGE}_out ${_plugin_options}${_dll_export_decl}${protobuf_generate_PROTOC_OUT_DIR} ${_plugin} ${_protobuf_include_path} ${_abs_file}
       DEPENDS ${_abs_file} protobuf::protoc
-      COMMENT "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}. Custom options: ${protobuf_generate_PROTOC_OPTIONS}"
+      COMMENT ${_comment}
       VERBATIM )
   endforeach()
 
