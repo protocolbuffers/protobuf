@@ -131,10 +131,10 @@ function(protobuf_generate)
 
     set(_comment "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}.")
     if(protobuf_generate_PROTOC_OPTIONS)
-      set(_comment "${_comment}\nCustom protoc options: ${protobuf_generate_PROTOC_OPTIONS}")
+      set(_comment "${_comment}\n\tCustom protoc options: ${protobuf_generate_PROTOC_OPTIONS}")
     endif()
     if(protobuf_generate_PLUGIN_OPTIONS)
-      set(_comment "${_comment}\nCustom plugin options: ${protobuf_generate_PLUGIN_OPTIONS}")
+      set(_comment "${_comment}\n\tCustom plugin options: ${protobuf_generate_PLUGIN_OPTIONS}")
     endif()
 
     add_custom_command(
