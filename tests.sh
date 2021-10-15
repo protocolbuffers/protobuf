@@ -432,7 +432,7 @@ build_python39_cpp() {
 }
 
 build_python310_cpp() {
-  build_python_cpp_version py39-cpp
+  build_python_cpp_version py310-cpp
 }
 
 
