@@ -33,5 +33,8 @@ if [[ "${KOKORO_INSTALL_RVM:-}" == "yes" ]] ; then
   curl -sSL https://rvm.io/mpapis.asc | gpg --import -
   curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
 
-  curl -sSL https://get.rvm.io | bash -s stable --ruby
+  # Old OpenSSL versions cannot handle the SSL certificate used by
+  # https://get.rvm.io, so as a workaround we download RVM directly from
+  # GitHub. See this issue for details: https://github.com/rvm/rvm/issues/5133
+  curl -sSL https://raw.githubusercontent.com/rvm/rvm/master/binscripts/rvm-installer | bash -s stable --ruby
 fi
