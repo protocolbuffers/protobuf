@@ -1393,6 +1393,10 @@ static int SetHasOptions(PyFileDescriptor *self, PyObject *value,
   return CheckCalledFromGeneratedFile("has_options");
 }
 
+static PyObject* GetDebugString(PyFileDescriptor *self) {
+  return PyString_FromCppString(_GetDescriptor(self)->DebugString());
+}
+
 static PyObject* GetOptions(PyFileDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
@@ -1439,6 +1443,7 @@ static PyGetSetDef Getters[] = {
 };
 
 static PyMethodDef Methods[] = {
+  { "GetDebugString", (PyCFunction)GetDebugString, METH_NOARGS, },
   { "GetOptions", (PyCFunction)GetOptions, METH_NOARGS, },
   { "CopyToProto", (PyCFunction)CopyToProto, METH_O, },
   {NULL}
