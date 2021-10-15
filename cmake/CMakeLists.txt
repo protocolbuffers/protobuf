@@ -127,9 +127,6 @@ if (protobuf_DISABLE_RTTI)
 endif()
 
 find_package(Threads REQUIRED)
-if (CMAKE_USE_PTHREADS_INIT)
-  add_definitions(-DHAVE_PTHREAD)
-endif (CMAKE_USE_PTHREADS_INIT)
 
 set(_protobuf_FIND_ZLIB)
 if (protobuf_WITH_ZLIB)
