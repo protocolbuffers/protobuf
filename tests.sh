@@ -375,6 +375,10 @@ build_python39() {
   build_python_version py39-python
 }
 
+build_python310() {
+  build_python_version py310-python
+}
+
 build_python_cpp() {
   internal_build_cpp
   export LD_LIBRARY_PATH=../src/.libs # for Linux
@@ -426,6 +430,11 @@ build_python38_cpp() {
 build_python39_cpp() {
   build_python_cpp_version py39-cpp
 }
+
+build_python310_cpp() {
+  build_python_cpp_version py310-cpp
+}
+
 
 build_ruby23() {
   internal_build_cpp  # For conformance tests.
