@@ -143,6 +143,10 @@ class DescriptorTest(unittest.TestCase):
   def testContainingServiceFixups(self):
     self.assertEqual(self.my_service, self.my_method.containing_service)
 
+  @unittest.skipIf(
+    api_implementation.Type() != 'cpp',
+    'GetDebugString is only available with the cpp implementation',
+  )
   def testGetDebugString(self):
     self.assertEqual(self.my_file.GetDebugString(), TEST_FILE_DESCRIPTOR_DEBUG)
 
