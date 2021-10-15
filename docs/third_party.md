@@ -97,7 +97,9 @@ These are projects we know about implementing Protocol Buffers for other program
 * Ruby: http://github.com/mozy/ruby-protocol-buffers
 * Ruby: https://github.com/bmizerany/beefcake/tree/master/lib/beefcake
 * Ruby: https://github.com/localshred/protobuf
+* Rust: https://github.com/tokio-rs/prost
 * Rust: https://github.com/stepancheg/rust-protobuf/
+* Rust: https://github.com/tafia/quick-protobuf
 * Scala: http://github.com/jeffplaisance/scala-protobuf
 * Scala: http://code.google.com/p/protobuf-scala
 * Scala: https://github.com/SandroGrzicic/ScalaBuff
