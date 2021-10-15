@@ -49,14 +49,14 @@ const FieldDescriptor* KeyField(const FieldDescriptor* descriptor) {
   GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
   const Descriptor* message = descriptor->message_type();
   GOOGLE_CHECK(message->options().map_entry());
-  return message->FindFieldByName("key");
+  return message->map_key();
 }
 
 const FieldDescriptor* ValueField(const FieldDescriptor* descriptor) {
   GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
   const Descriptor* message = descriptor->message_type();
   GOOGLE_CHECK(message->options().map_entry());
-  return message->FindFieldByName("value");
+  return message->map_value();
 }
 
 std::string TypeName(const FieldDescriptor* field,

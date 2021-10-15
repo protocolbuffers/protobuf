@@ -752,7 +752,7 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
       case FieldDescriptor::TYPE_MESSAGE: {
         if (field->is_map()) {
           const FieldDescriptor* val =
-              field->message_type()->FindFieldByName("value");
+              field->message_type()->map_value();
           GOOGLE_CHECK(val);
           if (val->type() == FieldDescriptor::TYPE_ENUM &&
               !HasPreservingUnknownEnumSemantics(field)) {

@@ -3408,7 +3408,7 @@ class LengthMapKeyComparator
     const Reflection* reflection1 = message1.GetReflection();
     const Reflection* reflection2 = message2.GetReflection();
     const FieldDescriptor* key_field =
-        message1.GetDescriptor()->FindFieldByName("key");
+        message1.GetDescriptor()->map_key();
     return reflection1->GetString(message1, key_field).size() ==
            reflection2->GetString(message2, key_field).size();
   }

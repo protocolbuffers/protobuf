@@ -855,8 +855,8 @@ class PROTOBUF_EXPORT MapIterator {
   MapIterator(Message* message, const FieldDescriptor* field) {
     const Reflection* reflection = message->GetReflection();
     map_ = reflection->MutableMapData(message, field);
-    key_.SetType(field->message_type()->FindFieldByName("key")->cpp_type());
-    value_.SetType(field->message_type()->FindFieldByName("value")->cpp_type());
+    key_.SetType(field->message_type()->map_key()->cpp_type());
+    value_.SetType(field->message_type()->map_value()->cpp_type());
     map_->InitializeIterator(this);
   }
   MapIterator(const MapIterator& other) {
