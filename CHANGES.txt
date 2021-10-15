@@ -1,19 +1,47 @@
-Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
-
-  Python
-  * Proto2 DecodeError now includes message name in error message
+2021-10-15 version 3.19.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
   * Make proto2::Message::DiscardUnknownFields() non-virtual
   * Separate RepeatedPtrField into its own header file
   * For default floating point values of 0, consider all bits significant
+  * cmake: support `MSVC_RUNTIME_LIBRARY` property (#8851)
+  * Fix shadowing warnings (#8926)
+  * Fix for issue #8484, constant initialization doesn't compile in msvc clang-cl environment (#8993)
+  * Fix build on AIX and SunOS (#8373) (#9065)
+  * Add Android stlport and default toolchains to BUILD. (#8290)
 
   Java
+  * This release drops support for Java 7. Use 3.18.x if you still need Java 7 support.
   * For default floating point values of 0, consider all bits significant
   * Annotate `//java/com/google/protobuf/util/...` with nullness annotations
+  * Use ArrayList copy constructor (#7853)
 
   Kotlin
   * Switch Kotlin proto DSLs to be implemented with inline value classes
+
+  Python
+  * Proto2 DecodeError now includes message name in error message
+  * Make MessageToDict convert map keys to strings (#8122)
+  * Add python-requires in setup.py (#8989)
+  * Add python 3.10 (#9034)
+
+  JavaScript
+  * Skip exports if not available by CommonJS (#8856)
+  * JS: Comply with CSP no-unsafe-eval. (#8864)
+
+  PHP
+  * Added "object" as a reserved name for PHP (#8962)
+
+  Ruby
+  * Override Map.clone to use Map's dup method (#7938)
+  * Ruby: build extensions for arm64-darwin (#8232)
+  * Add class method Timestamp.from_time to ruby well known types (#8562)
+  * Adopt pure ruby DSL implementation for JRuby (#9047)
+  * Add size to Map class (#8068)
+
+  C#
+  * Correctly set ExtensionRegistry when parsing with MessageParser, but using an already existing CodedInputStream (#7246)
+  * [C#] Make FieldDescriptor propertyName public (#7642)
 
 2021-10-04 version 3.18.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
