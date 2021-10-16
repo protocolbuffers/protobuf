@@ -421,7 +421,7 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
     //    -> A.B.C
     if (package_name.find("::") != std::string::npos) {
       need_change_to_module = false;
-    } else {
+    } else if (package_name.find(".") != std::string::npos) {
       GOOGLE_LOG(WARNING) << "ruby_package option should be in the form of:"
                           << " 'A::B::C' and not 'A.B.C'";
     }
