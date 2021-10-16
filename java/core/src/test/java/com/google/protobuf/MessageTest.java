@@ -132,6 +132,20 @@ public class MessageTest {
     assertThat(result.toString()).isEqualTo("");
   }
 
+  @Test
+  public void testNotEmptyMessage() throws Exception {
+    TestAllTypes result =
+        TestAllTypes.newBuilder()
+            .setOptionalDouble(.1)
+            .build();
+
+    assertThat(result.toString())
+        .hasMessageThat()
+        .isEqualTo(
+            ""
+                + "optional_double: 0.1\n");
+  }
+
   // =================================================================
   // Required-field-related tests.
 

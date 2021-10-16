@@ -183,8 +183,17 @@ final class MessageLiteToString {
     if (o instanceof Boolean) {
       return !((Boolean) o);
     }
-    if (o instanceof Number) {
-      return ((byte) o) == (byte) 0;
+    if (o instanceof Integer) {
+      return ((Integer) o) == 0;
+    }
+    if (o instanceof Long) {
+      return ((Long) o) == 0;
+    }
+    if (o instanceof Float) {
+      return Float.floatToRawIntBits((Float) o) == 0;
+    }
+    if (o instanceof Double) {
+      return Double.doubleToRawLongBits((Double) o) == 0;
     }
     if (o instanceof String) {
       return o.equals("");
