@@ -35,7 +35,11 @@ class TestWellKnownTypes < Test::Unit::TestCase
     assert_equal 123456, ts.seconds
     assert_equal 654321000, ts.nanos
     assert_equal time, ts.to_time
-  end
+
+      # Instance method returns the same value as class method
+    assert_equal Google::Protobuf::Timestamp.new.from_time(time),
+                 Google::Protobuf::Timestamp.from_time(time)
+end
 
   def test_duration
     duration = Google::Protobuf::Duration.new(seconds: 123, nanos: 456)
@@ -202,5 +206,13 @@ class TestWellKnownTypes < Test::Unit::TestCase
     assert_equal false, s[:b][:y]
     assert_equal false, s['b'][:y]
     assert_equal false, s[:b]['y']
+  end
+
+  def test_b8325
+    value_field = Google::Protobuf::ListValue.descriptor.lookup("values")
+    proto = Google::Protobuf::ListValue.new(
+        values: [Google::Protobuf::Value.new(string_value: "Hello")]
+    )
+    assert_equal '[<Google::Protobuf::Value: string_value: "Hello">]', value_field.get(proto).inspect
   end
 end

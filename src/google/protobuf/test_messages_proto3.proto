@@ -277,3 +277,13 @@ enum ForeignEnum {
   FOREIGN_BAR = 1;
   FOREIGN_BAZ = 2;
 }
+
+message NullHypothesisProto3 {
+}
+
+message EnumOnlyProto3 {
+  enum Bool {
+    kFalse = 0;
+    kTrue = 1;
+  }
+}

@@ -48,12 +48,6 @@
 #include <google/protobuf/reflection.h>
 #include <google/protobuf/stubs/map_util.h>
 
-#if PY_MAJOR_VERSION >= 3
-  #define PyInt_Check PyLong_Check
-  #define PyInt_AsLong PyLong_AsLong
-  #define PyInt_FromLong PyLong_FromLong
-#endif
-
 namespace google {
 namespace protobuf {
 namespace python {
@@ -246,13 +240,8 @@ PyObject* Subscript(RepeatedCompositeContainer* self, PyObject* item) {
     Py_ssize_t from, to, step, slicelength, cur, i;
     PyObject* result;
 
-#if PY_MAJOR_VERSION >= 3
-    if (PySlice_GetIndicesEx(item,
-                             length, &from, &to, &step, &slicelength) == -1) {
-#else
-    if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(item),
-                             length, &from, &to, &step, &slicelength) == -1) {
-#endif
+    if (PySlice_GetIndicesEx(item, length, &from, &to, &step, &slicelength) ==
+        -1) {
       return nullptr;
     }
 
@@ -379,16 +368,19 @@ static void ReorderAttached(RepeatedCompositeContainer* self,
   const FieldDescriptor* descriptor = self->parent_field_descriptor;
   const Py_ssize_t length = Length(reinterpret_cast<PyObject*>(self));
 
-  // Since Python protobuf objects are never arena-allocated, adding and
-  // removing message pointers to the underlying array is just updating
-  // pointers.
-  for (Py_ssize_t i = 0; i < length; ++i)
-    reflection->ReleaseLast(message, descriptor);
-
+  // We need to rearrange things to match python's sort order.  Because there
+  // was already an O(n*log(n)) step in python and a bunch of reflection, we
+  // expect an O(n**2) step in C++ won't hurt too much.
   for (Py_ssize_t i = 0; i < length; ++i) {
-    CMessage* py_cmsg = reinterpret_cast<CMessage*>(
-        PyList_GET_ITEM(child_list, i));
-    reflection->AddAllocatedMessage(message, descriptor, py_cmsg->message);
+    Message* child_message =
+        reinterpret_cast<CMessage*>(PyList_GET_ITEM(child_list, i))->message;
+    for (Py_ssize_t j = i; j < length; ++j) {
+      if (child_message ==
+          &reflection->GetRepeatedMessage(*message, descriptor, j)) {
+        reflection->SwapElements(message, descriptor, i, j);
+        break;
+      }
+    }
   }
 }
 

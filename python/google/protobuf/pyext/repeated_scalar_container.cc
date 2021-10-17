@@ -33,6 +33,7 @@
 
 #include <google/protobuf/pyext/repeated_scalar_container.h>
 
+#include <cstdint>
 #include <memory>
 
 #include <google/protobuf/stubs/common.h>
@@ -45,15 +46,8 @@
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
-#if PY_MAJOR_VERSION >= 3
-#define PyInt_FromLong PyLong_FromLong
-#if PY_VERSION_HEX < 0x03030000
-#error "Python 3.0 - 3.2 are not supported."
-#else
 #define PyString_AsString(ob) \
   (PyUnicode_Check(ob) ? PyUnicode_AsUTF8(ob) : PyBytes_AsString(ob))
-#endif
-#endif
 
 namespace google {
 namespace protobuf {
@@ -207,25 +201,25 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
   PyObject* result = nullptr;
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
-      int32 value =
+      int32_t value =
           reflection->GetRepeatedInt32(*message, field_descriptor, index);
-      result = PyInt_FromLong(value);
+      result = PyLong_FromLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
-      int64 value =
+      int64_t value =
           reflection->GetRepeatedInt64(*message, field_descriptor, index);
       result = PyLong_FromLongLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
-      uint32 value =
+      uint32_t value =
           reflection->GetRepeatedUInt32(*message, field_descriptor, index);
       result = PyLong_FromLongLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
-      uint64 value =
+      uint64_t value =
           reflection->GetRepeatedUInt64(*message, field_descriptor, index);
       result = PyLong_FromUnsignedLongLong(value);
       break;
@@ -252,7 +246,7 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
       const EnumValueDescriptor* enum_value =
           message->GetReflection()->GetRepeatedEnum(*message, field_descriptor,
                                                     index);
-      result = PyInt_FromLong(enum_value->number());
+      result = PyLong_FromLong(enum_value->number());
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
@@ -278,22 +272,12 @@ static PyObject* Subscript(PyObject* pself, PyObject* slice) {
   Py_ssize_t length;
   Py_ssize_t slicelength;
   bool return_list = false;
-#if PY_MAJOR_VERSION < 3
-  if (PyInt_Check(slice)) {
-    from = to = PyInt_AsLong(slice);
-  } else  // NOLINT
-#endif
-      if (PyLong_Check(slice)) {
+  if (PyLong_Check(slice)) {
     from = to = PyLong_AsLong(slice);
   } else if (PySlice_Check(slice)) {
     length = Len(pself);
-#if PY_MAJOR_VERSION >= 3
     if (PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slicelength) ==
         -1) {
-#else
-    if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(slice), length,
-                             &from, &to, &step, &slicelength) == -1) {
-#endif
       return nullptr;
     }
     return_list = true;
@@ -435,23 +419,13 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
   Message* message = self->parent->message;
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
 
-#if PY_MAJOR_VERSION < 3
-  if (PyInt_Check(slice)) {
-    from = to = PyInt_AsLong(slice);
-  } else  // NOLINT
-#endif
-      if (PyLong_Check(slice)) {
+  if (PyLong_Check(slice)) {
     from = to = PyLong_AsLong(slice);
   } else if (PySlice_Check(slice)) {
     const Reflection* reflection = message->GetReflection();
     length = reflection->FieldSize(*message, field_descriptor);
-#if PY_MAJOR_VERSION >= 3
     if (PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slicelength) ==
         -1) {
-#else
-    if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(slice), length,
-                             &from, &to, &step, &slicelength) == -1) {
-#endif
       return -1;
     }
     create_list = true;

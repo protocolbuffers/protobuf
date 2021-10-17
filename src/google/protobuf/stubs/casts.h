@@ -116,8 +116,7 @@ inline To down_cast(From& f) {
 
 template<typename To, typename From>
 inline To bit_cast(const From& from) {
-  GOOGLE_COMPILE_ASSERT(sizeof(From) == sizeof(To),
-                        bit_cast_with_different_sizes);
+  static_assert(sizeof(From) == sizeof(To), "bit_cast_with_different_sizes");
   To dest;
   memcpy(&dest, &from, sizeof(dest));
   return dest;

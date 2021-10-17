@@ -66,7 +66,7 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
   // to rebuild it from scratch. When keep_descriptor_pool_after_request==true,
   // we steal the upb_symtab from the global DescriptorPool object just before
   // destroying it.
-  upb_symtab *saved_symtab;
+  upb_symtab *global_symtab;
 
   // Object cache (see interface in protobuf.h).
   HashTable object_cache;
@@ -74,7 +74,20 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
   // Name cache (see interface in protobuf.h).
   HashTable name_msg_cache;
   HashTable name_enum_cache;
+
+  // An array of descriptor objects constructed during this request. These are
+  // logically referenced by the corresponding class entry, but since we can't
+  // actually write a class entry destructor, we reference them here, to be
+  // destroyed on request shutdown.
+  HashTable descriptors;
 ZEND_END_MODULE_GLOBALS(protobuf)
+
+void free_protobuf_globals(zend_protobuf_globals *globals) {
+  zend_hash_destroy(&globals->name_msg_cache);
+  zend_hash_destroy(&globals->name_enum_cache);
+  upb_symtab_free(globals->global_symtab);
+  globals->global_symtab = NULL;
+}
 
 ZEND_DECLARE_MODULE_GLOBALS(protobuf)
 
@@ -140,14 +153,14 @@ const zval *get_generated_pool() {
 //     discouraged by the documentation: https://serverfault.com/a/231660
 
 static PHP_GSHUTDOWN_FUNCTION(protobuf) {
-  if (protobuf_globals->saved_symtab) {
-    upb_symtab_free(protobuf_globals->saved_symtab);
+  if (protobuf_globals->global_symtab) {
+    free_protobuf_globals(protobuf_globals);
   }
 }
 
 static PHP_GINIT_FUNCTION(protobuf) {
   ZVAL_NULL(&protobuf_globals->generated_pool);
-  protobuf_globals->saved_symtab = NULL;
+  protobuf_globals->global_symtab = NULL;
 }
 
 /**
@@ -158,12 +171,16 @@ static PHP_GINIT_FUNCTION(protobuf) {
 static PHP_RINIT_FUNCTION(protobuf) {
   // Create the global generated pool.
   // Reuse the symtab (if any) left to us by the last request.
-  upb_symtab *symtab = PROTOBUF_G(saved_symtab);
+  upb_symtab *symtab = PROTOBUF_G(global_symtab);
+  if (!symtab) {
+    PROTOBUF_G(global_symtab) = symtab = upb_symtab_new();
+    zend_hash_init(&PROTOBUF_G(name_msg_cache), 64, NULL, NULL, 0);
+    zend_hash_init(&PROTOBUF_G(name_enum_cache), 64, NULL, NULL, 0);
+  }
   DescriptorPool_CreateWithSymbolTable(&PROTOBUF_G(generated_pool), symtab);
 
   zend_hash_init(&PROTOBUF_G(object_cache), 64, NULL, NULL, 0);
-  zend_hash_init(&PROTOBUF_G(name_msg_cache), 64, NULL, NULL, 0);
-  zend_hash_init(&PROTOBUF_G(name_enum_cache), 64, NULL, NULL, 0);
+  zend_hash_init(&PROTOBUF_G(descriptors), 64, NULL, ZVAL_PTR_DTOR, 0);
 
   return SUCCESS;
 }
@@ -175,15 +192,13 @@ static PHP_RINIT_FUNCTION(protobuf) {
  */
 static PHP_RSHUTDOWN_FUNCTION(protobuf) {
   // Preserve the symtab if requested.
-  if (PROTOBUF_G(keep_descriptor_pool_after_request)) {
-    zval *zv = &PROTOBUF_G(generated_pool);
-    PROTOBUF_G(saved_symtab) = DescriptorPool_Steal(zv);
+  if (!PROTOBUF_G(keep_descriptor_pool_after_request)) {
+    free_protobuf_globals(ZEND_MODULE_GLOBALS_BULK(protobuf));
   }
 
   zval_dtor(&PROTOBUF_G(generated_pool));
   zend_hash_destroy(&PROTOBUF_G(object_cache));
-  zend_hash_destroy(&PROTOBUF_G(name_msg_cache));
-  zend_hash_destroy(&PROTOBUF_G(name_enum_cache));
+  zend_hash_destroy(&PROTOBUF_G(descriptors));
 
   return SUCCESS;
 }
@@ -191,6 +206,15 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 // -----------------------------------------------------------------------------
 // Object Cache.
 // -----------------------------------------------------------------------------
+
+void Descriptors_Add(zend_object *desc) {
+  // The hash table will own a ref (it will destroy it when the table is
+  // destroyed), but for some reason the insert operation does not add a ref, so
+  // we do that here with ZVAL_OBJ_COPY().
+  zval zv;
+  ZVAL_OBJ_COPY(&zv, desc);
+  zend_hash_next_index_insert(&PROTOBUF_G(descriptors), &zv);
+}
 
 void ObjCache_Add(const void *upb_obj, zend_object *php_obj) {
   zend_ulong k = (zend_ulong)upb_obj;
@@ -210,8 +234,7 @@ bool ObjCache_Get(const void *upb_obj, zval *val) {
   zend_object *obj = zend_hash_index_find_ptr(&PROTOBUF_G(object_cache), k);
 
   if (obj) {
-    GC_ADDREF(obj);
-    ZVAL_OBJ(val, obj);
+    ZVAL_OBJ_COPY(val, obj);
     return true;
   } else {
     ZVAL_NULL(val);
@@ -280,7 +303,7 @@ static const zend_module_dep protobuf_deps[] = {
 
 PHP_INI_BEGIN()
 STD_PHP_INI_ENTRY("protobuf.keep_descriptor_pool_after_request", "0",
-                  PHP_INI_SYSTEM, OnUpdateBool,
+                  PHP_INI_ALL, OnUpdateBool,
                   keep_descriptor_pool_after_request, zend_protobuf_globals,
                   protobuf_globals)
 PHP_INI_END()

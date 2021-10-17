@@ -48,26 +48,27 @@ const std::string kDescriptorMetadataFile =
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {
-    "abstract",   "and",        "array",        "as",           "break",
-    "callable",   "case",       "catch",        "class",        "clone",
-    "const",      "continue",   "declare",      "default",      "die",
-    "do",         "echo",       "else",         "elseif",       "empty",
-    "enddeclare", "endfor",     "endforeach",   "endif",        "endswitch",
-    "endwhile",   "eval",       "exit",         "extends",      "final",
-    "for",        "foreach",    "function",     "global",       "goto",
-    "if",         "implements", "include",      "include_once", "instanceof",
-    "insteadof",  "interface",  "isset",        "list",         "namespace",
-    "new",        "or",         "print",        "private",      "protected",
-    "public",     "require",    "require_once", "return",       "static",
-    "switch",     "throw",      "trait",        "try",          "unset",
-    "use",        "var",        "while",        "xor",          "int",
-    "float",      "bool",       "string",       "true",         "false",
-    "null",       "void",       "iterable"};
+    "abstract",     "and",        "array",      "as",         "break",
+    "callable",     "case",       "catch",      "class",      "clone",
+    "const",        "continue",   "declare",    "default",    "die",
+    "do",           "echo",       "else",       "elseif",     "empty",
+    "enddeclare",   "endfor",     "endforeach", "endif",      "endswitch",
+    "endwhile",     "eval",       "exit",       "extends",    "final",
+    "finally",      "fn",         "for",        "foreach",    "function",
+    "global",       "goto",       "if",         "implements", "include",
+    "include_once", "instanceof", "insteadof",  "interface",  "isset",
+    "list",         "match",      "namespace",  "new",        "or",
+    "print",        "private",    "protected",  "public",     "require",
+    "require_once", "return",     "static",     "switch",     "throw",
+    "trait",        "try",        "unset",      "use",        "var",
+    "while",        "xor",        "yield",      "int",        "float",
+    "bool",         "string",     "true",       "false",      "null",
+    "void",         "iterable"};
 const char* const kValidConstantNames[] = {
     "int",   "float", "bool", "string",   "true",
     "false", "null",  "void", "iterable",
 };
-const int kReservedNamesSize = 73;
+const int kReservedNamesSize = 77;
 const int kValidConstantNamesSize = 9;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
@@ -648,32 +649,21 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   std::string deprecation_trigger = (field->options().deprecated()) ? "@trigger_error('" +
       field->name() + " is deprecated.', E_USER_DEPRECATED);\n        " : "";
 
+  // Emit getter.
   if (oneof != NULL) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
         "    ^deprecation_trigger^return $this->readOneof(^number^);\n"
-        "}\n\n"
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    ^deprecation_trigger^return $this->hasOneof(^number^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "number", IntToString(field->number()),
         "deprecation_trigger", deprecation_trigger);
-  } else if (field->has_presence()) {
+  } else if (field->has_presence() && !field->message_type()) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
         "    ^deprecation_trigger^return isset($this->^name^) ? $this->^name^ : ^default_value^;\n"
-        "}\n\n"
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    ^deprecation_trigger^return isset($this->^name^);\n"
-        "}\n\n"
-        "public function clear^camel_name^()\n"
-        "{\n"
-        "    ^deprecation_trigger^unset($this->^name^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
@@ -687,6 +677,32 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
+        "deprecation_trigger", deprecation_trigger);
+  }
+
+  // Emit hazzers/clear.
+  if (oneof) {
+    printer->Print(
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^return $this->hasOneof(^number^);\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "number", IntToString(field->number()),
+        "deprecation_trigger", deprecation_trigger);
+  } else if (field->has_presence()) {
+    printer->Print(
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^return isset($this->^name^);\n"
+        "}\n\n"
+        "public function clear^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^unset($this->^name^);\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "name", field->name(),
+        "default_value", DefaultForField(field),
         "deprecation_trigger", deprecation_trigger);
   }
 
@@ -725,8 +741,8 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   // Type check.
   if (field->is_map()) {
     const Descriptor* map_entry = field->message_type();
-    const FieldDescriptor* key = map_entry->FindFieldByName("key");
-    const FieldDescriptor* value = map_entry->FindFieldByName("value");
+    const FieldDescriptor* key = map_entry->map_key();
+    const FieldDescriptor* value = map_entry->map_value();
     printer->Print(
         "$arr = GPBUtil::checkMapField($var, "
         "\\Google\\Protobuf\\Internal\\GPBType::^key_type^, "
@@ -873,9 +889,9 @@ void GenerateMessageToPool(const std::string& name_prefix,
     const FieldDescriptor* field = message->field(i);
     if (field->is_map()) {
       const FieldDescriptor* key =
-          field->message_type()->FindFieldByName("key");
+          field->message_type()->map_key();
       const FieldDescriptor* val =
-          field->message_type()->FindFieldByName("value");
+          field->message_type()->map_value();
       printer->Print(
           "->map('^field^', \\Google\\Protobuf\\Internal\\GPBType::^key^, "
           "\\Google\\Protobuf\\Internal\\GPBType::^value^, ^number^^other^)\n",
@@ -1103,9 +1119,9 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
       file, &nodes_without_dependency, &deps, &dependency_count);
 
   while (!nodes_without_dependency.empty()) {
-    auto file = *nodes_without_dependency.begin();
-    nodes_without_dependency.erase(file);
-    for (auto dependent : deps[file]) {
+    auto file_node = *nodes_without_dependency.begin();
+    nodes_without_dependency.erase(file_node);
+    for (auto dependent : deps[file_node]) {
       if (dependency_count[dependent] == 1) {
         dependency_count.erase(dependent);
         nodes_without_dependency.insert(dependent);
@@ -1114,11 +1130,11 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
       }
     }
 
-    bool needs_aggregate = NeedsUnwrapping(file, options);
+    bool needs_aggregate = NeedsUnwrapping(file_node, options);
 
     if (needs_aggregate) {
       auto file_proto = sorted_file_set.add_file();
-      file->CopyTo(file_proto);
+      file_node->CopyTo(file_proto);
 
       // Filter out descriptor.proto as it cannot be depended on for now.
       RepeatedPtrField<std::string>* dependency =
@@ -1140,7 +1156,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
         it->clear_extension();
       }
     } else {
-      std::string dependency_filename = GeneratedMetadataFileName(file, false);
+      std::string dependency_filename = GeneratedMetadataFileName(file_node, false);
       printer->Print(
           "\\^name^::initOnce();\n",
           "name", FilenameToClassname(dependency_filename));
@@ -1894,8 +1910,8 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
       "}\n"
       "\n"
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
-      "  PHP_ME($c_name$, name, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
-      "  PHP_ME($c_name$, value, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  PHP_ME($c_name$, name, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  PHP_ME($c_name$, value, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
       "  ZEND_FE_END\n"
       "};\n"
       "\n"
@@ -1953,7 +1969,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "                                           \"$name$\");\n"
       "  zval ret;\n"
       "  Message_get(intern, f, &ret);\n"
-      "  RETURN_ZVAL(&ret, 1, 0);\n"
+      "  RETURN_COPY_VALUE(&ret);\n"
       "}\n"
       "\n"
       "static PHP_METHOD($c_name$, set$camel_name$) {\n"
@@ -1966,7 +1982,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "    return;\n"
       "  }\n"
       "  Message_set(intern, f, val);\n"
-      "  RETURN_ZVAL(getThis(), 1, 0);\n"
+      "  RETURN_COPY(getThis());\n"
       "}\n"
       "\n",
       "c_name", c_name,
@@ -2012,7 +2028,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
 
   printer->Print(
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
-      "  PHP_ME($c_name$, __construct, arginfo_void, ZEND_ACC_PUBLIC)\n",
+      "  PHP_ME($c_name$, __construct, arginfo_construct, ZEND_ACC_PUBLIC)\n",
       "c_name", c_name);
 
   for (int i = 0; i < message->field_count(); i++) {
@@ -2111,7 +2127,14 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
 
   printer.Print(
       "// This file is generated from the .proto files for the well-known\n"
-      "// types. Do not edit!\n");
+      "// types. Do not edit!\n\n");
+
+  printer.Print(
+      "ZEND_BEGIN_ARG_INFO_EX(arginfo_lookup, 0, 0, 1)\n"
+      "  ZEND_ARG_INFO(0, key)\n"
+      "ZEND_END_ARG_INFO()\n"
+      "\n"
+  );
 
   for (auto file : files) {
     printer.Print(

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name     = 'Protobuf-C++'
-  s.version  = '3.14.0'
+  s.version  = '3.18.1'
   s.summary  = 'Protocol Buffers v3 runtime library for C++.'
   s.homepage = 'https://github.com/google/protobuf'
   s.license  = '3-Clause BSD License'
@@ -21,7 +21,8 @@ Pod::Spec.new do |s|
                     'src/google/**/*_unittest.{h,cc}',
                     'src/google/protobuf/test_util*.{h,cc}',
                     'src/google/protobuf/map_lite_test_util.{h,cc}',
-                    'src/google/protobuf/map_test_util*.{h,cc,inc}'
+                    'src/google/protobuf/map_test_util*.{h,cc,inc}',
+                    'src/google/protobuf/reflection_tester.{h,cc}'
 
   s.header_mappings_dir = 'src'
 
@@ -34,9 +35,6 @@ Pod::Spec.new do |s|
     # Do not let src/google/protobuf/stubs/time.h override system API
     'USE_HEADERMAP' => 'NO',
     'ALWAYS_SEARCH_USER_PATHS' => 'NO',
-
-    # Configure tool is not being used for Xcode. When building, assume pthread is supported.
-    'GCC_PREPROCESSOR_DEFINITIONS' => '"$(inherited)" "HAVE_PTHREAD=1"',
   }
 
 end

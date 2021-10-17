@@ -1,11 +1,5 @@
 setlocal
 
-if %PYTHON%==C:\python35_32bit set generator=Visual Studio 14
-if %PYTHON%==C:\python35_32bit set vcplatform=Win32
-
-if %PYTHON%==C:\python35 set generator=Visual Studio 14 Win64
-if %PYTHON%==C:\python35 set vcplatform=x64
-
 if %PYTHON%==C:\python36_32bit set generator=Visual Studio 14
 if %PYTHON%==C:\python36_32bit set vcplatform=Win32
 
@@ -29,6 +23,12 @@ if %PYTHON%==C:\python39_32bit set vcplatform=Win32
 
 if %PYTHON%==C:\python39 set generator=Visual Studio 14 Win64
 if %PYTHON%==C:\python39 set vcplatform=x64
+
+if %PYTHON%==C:\python310_32bit set generator=Visual Studio 14
+if %PYTHON%==C:\python310_32bit set vcplatform=Win32
+
+if %PYTHON%==C:\python310 set generator=Visual Studio 14 Win64
+if %PYTHON%==C:\python310 set vcplatform=x64
 
 REM Prepend newly installed Python to the PATH of this build (this cannot be
 REM done from inside the powershell script as it would require to restart

@@ -58,8 +58,27 @@ namespace Google.Protobuf
         internal ReadOnlySpan<byte> buffer;
         internal ParserInternalState state;
 
+        /// <summary>
+        /// Initialize a <see cref="ParseContext"/>, building all <see cref="ParserInternalState"/> from defaults and
+        /// the given <paramref name="buffer"/>.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Initialize(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, out ParseContext ctx)
+        internal static void Initialize(ReadOnlySpan<byte> buffer, out ParseContext ctx)
+        {
+            ParserInternalState state = default;
+            state.sizeLimit = DefaultSizeLimit;
+            state.recursionLimit = DefaultRecursionLimit;
+            state.currentLimit = int.MaxValue;
+            state.bufferSize = buffer.Length;
+
+            Initialize(buffer, ref state, out ctx);
+        }
+
+        /// <summary>
+        /// Initialize a <see cref="ParseContext"/> using existing <see cref="ParserInternalState"/>, e.g. from <see cref="CodedInputStream"/>.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Initialize(ReadOnlySpan<byte> buffer, ref ParserInternalState state, out ParseContext ctx)
         {
             ctx.buffer = buffer;
             ctx.state = state;

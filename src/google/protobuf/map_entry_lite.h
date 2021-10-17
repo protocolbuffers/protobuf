@@ -107,9 +107,9 @@ struct MapEntryFuncs {
   static const int kKeyFieldNumber = 1;
   static const int kValueFieldNumber = 2;
 
-  static uint8* InternalSerialize(int field_number, const Key& key,
-                                  const Value& value, uint8* ptr,
-                                  io::EpsCopyOutputStream* stream) {
+  static uint8_t* InternalSerialize(int field_number, const Key& key,
+                                    const Value& value, uint8_t* ptr,
+                                    io::EpsCopyOutputStream* stream) {
     ptr = stream->EnsureSpace(ptr);
     ptr = WireFormatLite::WriteTagToArray(
         field_number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, ptr);
@@ -125,7 +125,7 @@ struct MapEntryFuncs {
     size_t inner_length =
         2 + KeyTypeHandler::ByteSize(key) + ValueTypeHandler::ByteSize(value);
     return inner_length + io::CodedOutputStream::VarintSize32(
-                              static_cast<uint32>(inner_length));
+                              static_cast<uint32_t>(inner_length));
   }
 
   static int GetCachedSize(const Key& key, const Value& value) {
@@ -167,9 +167,9 @@ class MapEntryImpl : public Base {
   static const int kValueFieldNumber = 2;
 
   // Constants for field tag.
-  static const uint8 kKeyTag =
+  static const uint8_t kKeyTag =
       GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(kKeyFieldNumber, KeyTypeHandler::kWireType);
-  static const uint8 kValueTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
+  static const uint8_t kValueTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
       kValueFieldNumber, ValueTypeHandler::kWireType);
   static const size_t kTagSize = 1;
 
@@ -194,7 +194,7 @@ class MapEntryImpl : public Base {
         _has_bits_{} {}
 
   ~MapEntryImpl() {
-    if (Base::GetArena() != NULL) return;
+    if (Base::GetArenaForAllocation() != nullptr) return;
     KeyTypeHandler::DeleteNoArena(key_);
     ValueTypeHandler::DeleteNoArena(value_);
   }
@@ -209,11 +209,12 @@ class MapEntryImpl : public Base {
   }
   inline KeyMapEntryAccessorType* mutable_key() {
     set_has_key();
-    return KeyTypeHandler::EnsureMutable(&key_, Base::GetArena());
+    return KeyTypeHandler::EnsureMutable(&key_, Base::GetArenaForAllocation());
   }
   inline ValueMapEntryAccessorType* mutable_value() {
     set_has_value();
-    return ValueTypeHandler::EnsureMutable(&value_, Base::GetArena());
+    return ValueTypeHandler::EnsureMutable(&value_,
+                                           Base::GetArenaForAllocation());
   }
 
   // implements MessageLite =========================================
@@ -228,7 +229,7 @@ class MapEntryImpl : public Base {
 
   const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
     while (!ctx->Done(&ptr)) {
-      uint32 tag;
+      uint32_t tag;
       ptr = ReadTag(ptr, &tag);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       if (tag == kKeyTag) {
@@ -262,8 +263,8 @@ class MapEntryImpl : public Base {
     return size;
   }
 
-  ::google::protobuf::uint8* _InternalSerialize(::google::protobuf::uint8* ptr,
-                              io::EpsCopyOutputStream* stream) const override {
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* ptr, io::EpsCopyOutputStream* stream) const override {
     ptr = KeyTypeHandler::Write(kKeyFieldNumber, key(), ptr, stream);
     return ValueTypeHandler::Write(kValueFieldNumber, value(), ptr, stream);
   }
@@ -285,11 +286,6 @@ class MapEntryImpl : public Base {
     return ValueTypeHandler::IsInitialized(value_);
   }
 
-  Base* New() const override {
-    Derived* entry = new Derived;
-    return entry;
-  }
-
   Base* New(Arena* arena) const override {
     Derived* entry = Arena::CreateMessage<Derived>(arena);
     return entry;
@@ -301,13 +297,14 @@ class MapEntryImpl : public Base {
   void MergeFromInternal(const MapEntryImpl& from) {
     if (from._has_bits_[0]) {
       if (from.has_key()) {
-        KeyTypeHandler::EnsureMutable(&key_, Base::GetArena());
-        KeyTypeHandler::Merge(from.key(), &key_, Base::GetArena());
+        KeyTypeHandler::EnsureMutable(&key_, Base::GetArenaForAllocation());
+        KeyTypeHandler::Merge(from.key(), &key_, Base::GetArenaForAllocation());
         set_has_key();
       }
       if (from.has_value()) {
-        ValueTypeHandler::EnsureMutable(&value_, Base::GetArena());
-        ValueTypeHandler::Merge(from.value(), &value_, Base::GetArena());
+        ValueTypeHandler::EnsureMutable(&value_, Base::GetArenaForAllocation());
+        ValueTypeHandler::Merge(from.value(), &value_,
+                                Base::GetArenaForAllocation());
         set_has_value();
       }
     }
@@ -315,8 +312,8 @@ class MapEntryImpl : public Base {
 
  public:
   void Clear() override {
-    KeyTypeHandler::Clear(&key_, Base::GetArena());
-    ValueTypeHandler::Clear(&value_, Base::GetArena());
+    KeyTypeHandler::Clear(&key_, Base::GetArenaForAllocation());
+    ValueTypeHandler::Clear(&value_, Base::GetArenaForAllocation());
     clear_has_key();
     clear_has_value();
   }
@@ -328,7 +325,8 @@ class MapEntryImpl : public Base {
    public:
     explicit Parser(MapField* mf) : mf_(mf), map_(mf->MutableMap()) {}
     ~Parser() {
-      if (entry_ != nullptr && entry_->GetArena() == nullptr) delete entry_;
+      if (entry_ != nullptr && entry_->GetArenaForAllocation() == nullptr)
+        delete entry_;
     }
 
     // This does what the typical MergePartialFromCodedStream() is expected to
@@ -419,7 +417,8 @@ class MapEntryImpl : public Base {
 
     template <typename UnknownType>
     const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
-                                        bool (*is_valid)(int), uint32 field_num,
+                                        bool (*is_valid)(int),
+                                        uint32_t field_num,
                                         InternalMetadata* metadata) {
       auto entry = NewEntry();
       ptr = entry->_InternalParse(ptr, ctx);
@@ -497,7 +496,7 @@ class MapEntryImpl : public Base {
  public:  // Needed for constructing tables
   KeyOnMemory key_;
   ValueOnMemory value_;
-  uint32 _has_bits_[1];
+  uint32_t _has_bits_[1];
 
  private:
   friend class ::PROTOBUF_NAMESPACE_ID::Arena;
@@ -524,7 +523,9 @@ class MapEntryLite : public MapEntryImpl<T, MessageLite, Key, Value,
       SuperType;
   constexpr MapEntryLite() {}
   explicit MapEntryLite(Arena* arena) : SuperType(arena) {}
-  ~MapEntryLite() { MessageLite::_internal_metadata_.Delete<std::string>(); }
+  ~MapEntryLite() {
+    MessageLite::_internal_metadata_.template Delete<std::string>();
+  }
   void MergeFrom(const MapEntryLite& other) { MergeFromInternal(other); }
 
  private:
@@ -638,8 +639,8 @@ struct MapEntryHelper<
   // The proto compiler generates the offsets in this struct as if this was
   // a regular message. This way the table driven code barely notices it's
   // dealing with a map field.
-  uint32 _has_bits_;     // NOLINT
-  uint32 _cached_size_;  // NOLINT
+  uint32_t _has_bits_;     // NOLINT
+  uint32_t _cached_size_;  // NOLINT
   KeyOnMemory key_;      // NOLINT
   ValueOnMemory value_;  // NOLINT
 };

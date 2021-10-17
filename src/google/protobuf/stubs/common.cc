@@ -44,10 +44,6 @@
 #endif
 #include <windows.h>
 #define snprintf _snprintf    // see comment in strutil.cc
-#elif defined(HAVE_PTHREAD)
-#include <pthread.h>
-#else
-#error "No suitable threading library available."
 #endif
 #if defined(__ANDROID__)
 #include <android/log.h>
@@ -211,32 +207,29 @@ LogMessage& LogMessage::operator<<(const uint128& value) {
   return *this;
 }
 
-// Since this is just for logging, we don't care if the current locale changes
-// the results -- in fact, we probably prefer that.  So we use snprintf()
-// instead of Simple*toa().
+LogMessage& LogMessage::operator<<(char value) {
+  return *this << StringPiece(&value, 1);
+}
+
+LogMessage& LogMessage::operator<<(void* value) {
+  StrAppend(&message_, strings::Hex(reinterpret_cast<uintptr_t>(value)));
+  return *this;
+}
+
 #undef DECLARE_STREAM_OPERATOR
-#define DECLARE_STREAM_OPERATOR(TYPE, FORMAT)                       \
-  LogMessage& LogMessage::operator<<(TYPE value) {                  \
-    /* 128 bytes should be big enough for any of the primitive */   \
-    /* values which we print with this, but well use snprintf() */  \
-    /* anyway to be extra safe. */                                  \
-    char buffer[128];                                               \
-    snprintf(buffer, sizeof(buffer), FORMAT, value);                \
-    /* Guard against broken MSVC snprintf(). */                     \
-    buffer[sizeof(buffer)-1] = '\0';                                \
-    message_ += buffer;                                             \
-    return *this;                                                   \
+#define DECLARE_STREAM_OPERATOR(TYPE)              \
+  LogMessage& LogMessage::operator<<(TYPE value) { \
+    StrAppend(&message_, value);                   \
+    return *this;                                  \
   }
 
-DECLARE_STREAM_OPERATOR(char         , "%c" )
-DECLARE_STREAM_OPERATOR(int          , "%d" )
-DECLARE_STREAM_OPERATOR(unsigned int , "%u" )
-DECLARE_STREAM_OPERATOR(long         , "%ld")
-DECLARE_STREAM_OPERATOR(unsigned long, "%lu")
-DECLARE_STREAM_OPERATOR(double       , "%g" )
-DECLARE_STREAM_OPERATOR(void*        , "%p" )
-DECLARE_STREAM_OPERATOR(long long         , "%" PROTOBUF_LL_FORMAT "d")
-DECLARE_STREAM_OPERATOR(unsigned long long, "%" PROTOBUF_LL_FORMAT "u")
+DECLARE_STREAM_OPERATOR(int)
+DECLARE_STREAM_OPERATOR(unsigned int)
+DECLARE_STREAM_OPERATOR(long)           // NOLINT(runtime/int)
+DECLARE_STREAM_OPERATOR(unsigned long)  // NOLINT(runtime/int)
+DECLARE_STREAM_OPERATOR(double)
+DECLARE_STREAM_OPERATOR(long long)           // NOLINT(runtime/int)
+DECLARE_STREAM_OPERATOR(unsigned long long)  // NOLINT(runtime/int)
 #undef DECLARE_STREAM_OPERATOR
 
 LogMessage::LogMessage(LogLevel level, const char* filename, int line)

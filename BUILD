@@ -4,6 +4,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 
 licenses(["notice"])
@@ -13,38 +14,6 @@ exports_files(["LICENSE"])
 ################################################################################
 # build configuration
 ################################################################################
-
-# TODO(yannic): Remove in 3.14.0.
-string_flag(
-    name = "incompatible_use_com_google_googletest",
-    build_setting_default = "true",
-    values = ["true", "false"]
-)
-
-config_setting(
-    name = "use_com_google_googletest",
-    flag_values = {
-        "//:incompatible_use_com_google_googletest": "true"
-    },
-)
-
-GTEST = select({
-    "//:use_com_google_googletest": [
-        "@com_google_googletest//:gtest",
-    ],
-    "//conditions:default": [
-        "//external:gtest",
-    ],
-})
-
-GTEST_MAIN = select({
-    "//:use_com_google_googletest": [
-        "@com_google_googletest//:gtest_main",
-    ],
-    "//conditions:default": [
-        "//external:gtest_main",
-    ],
-})
 
 ################################################################################
 # ZLIB configuration
@@ -57,7 +26,6 @@ ZLIB_DEPS = ["@zlib//:zlib"]
 ################################################################################
 
 MSVC_COPTS = [
-    "/DHAVE_PTHREAD",
     "/wd4018",  # -Wno-sign-compare
     "/wd4065",  # switch statement contains 'default' but no 'case' labels
     "/wd4146",  # unary minus operator applied to unsigned type, result still unsigned
@@ -70,7 +38,6 @@ MSVC_COPTS = [
     "/wd4334",  # 'operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
     "/wd4355",  # 'this' : used in base member initializer list
     "/wd4506",  # no definition for inline function 'function'
-    "/wd4514",  # -Wno-unused-function
     "/wd4800",  # 'type' : forcing value to bool 'true' or 'false' (performance warning)
     "/wd4996",  # The compiler encountered a deprecated declaration.
 ]
@@ -78,14 +45,10 @@ MSVC_COPTS = [
 COPTS = select({
     ":msvc": MSVC_COPTS,
     "//conditions:default": [
-        "-DHAVE_PTHREAD",
         "-DHAVE_ZLIB",
+        "-Wmissing-field-initializers",
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
-        "-Wno-unused-function",
-        # Prevents ISO C++ const string assignment warnings for pyext sources.
-        "-Wno-write-strings",
-        "-Wno-deprecated-declarations",
     ],
 })
 
@@ -100,10 +63,28 @@ create_compiler_config_setting(
     ],
 )
 
+# Android NDK builds can specify different crosstool_top flags to choose which
+# STL they use for C++. We need these multiple variants to catch all of those
+# versions of crosstool_top and reliably detect Android.
+#
+# For more info on the various crosstool_tops used by NDK Bazel builds, see:
+# https://docs.bazel.build/versions/master/android-ndk.html#configuring-the-stl
+
 config_setting(
     name = "android",
     values = {
         "crosstool_top": "//external:android/crosstool",
+    },
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+config_setting(
+    name = "android-stlport",
+    values = {
+        "crosstool_top": "@androidndk//:toolchain-stlport",
     },
     visibility = [
         # Public, but Protobuf only visibility.
@@ -133,11 +114,24 @@ config_setting(
     ],
 )
 
+config_setting(
+    name = "android-default",
+    values = {
+        "crosstool_top": "@androidndk//:default_crosstool",
+    },
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
 # Android and MSVC builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
     ":android": [],
+    ":android-stlport": [],
     ":android-libcpp": [],
     ":android-gnu-libstdcpp": [],
+    ":android-default": [],
     ":msvc": [
         # Suppress linker warnings about files with no symbols defined.
         "-ignore:4221",
@@ -168,8 +162,10 @@ cc_library(
         "src/google/protobuf/extension_set.cc",
         "src/google/protobuf/generated_enum_util.cc",
         "src/google/protobuf/generated_message_table_driven_lite.cc",
+        "src/google/protobuf/generated_message_tctable_lite.cc",
         "src/google/protobuf/generated_message_util.cc",
         "src/google/protobuf/implicit_weak_message.cc",
+        "src/google/protobuf/inlined_string_field.cc",
         "src/google/protobuf/io/coded_stream.cc",
         "src/google/protobuf/io/io_win32.cc",
         "src/google/protobuf/io/strtod.cc",
@@ -180,6 +176,7 @@ cc_library(
         "src/google/protobuf/message_lite.cc",
         "src/google/protobuf/parse_context.cc",
         "src/google/protobuf/repeated_field.cc",
+        "src/google/protobuf/repeated_ptr_field.cc",
         "src/google/protobuf/stubs/bytestream.cc",
         "src/google/protobuf/stubs/common.cc",
         "src/google/protobuf/stubs/int128.cc",
@@ -224,8 +221,10 @@ cc_library(
         "src/google/protobuf/empty.pb.cc",
         "src/google/protobuf/extension_set_heavy.cc",
         "src/google/protobuf/field_mask.pb.cc",
+        "src/google/protobuf/generated_message_bases.cc",
         "src/google/protobuf/generated_message_reflection.cc",
         "src/google/protobuf/generated_message_table_driven.cc",
+        "src/google/protobuf/generated_message_tctable_full.cc",
         "src/google/protobuf/io/gzip_stream.cc",
         "src/google/protobuf/io/printer.cc",
         "src/google/protobuf/io/tokenizer.cc",
@@ -255,7 +254,6 @@ cc_library(
         "src/google/protobuf/util/internal/protostream_objectsource.cc",
         "src/google/protobuf/util/internal/protostream_objectwriter.cc",
         "src/google/protobuf/util/internal/type_info.cc",
-        "src/google/protobuf/util/internal/type_info_test_helper.cc",
         "src/google/protobuf/util/internal/utility.cc",
         "src/google/protobuf/util/json_util.cc",
         "src/google/protobuf/util/message_differencer.cc",
@@ -323,16 +321,49 @@ WELL_KNOWN_PROTO_MAP = {
 
 WELL_KNOWN_PROTOS = [value[0] for value in WELL_KNOWN_PROTO_MAP.values()]
 
+LITE_WELL_KNOWN_PROTO_MAP = {
+    "any": ("src/google/protobuf/any.proto", []),
+    "api": (
+        "src/google/protobuf/api.proto",
+        [
+            "source_context",
+            "type",
+        ],
+    ),
+    "duration": ("src/google/protobuf/duration.proto", []),
+    "empty": ("src/google/protobuf/empty.proto", []),
+    "field_mask": ("src/google/protobuf/field_mask.proto", []),
+    "source_context": ("src/google/protobuf/source_context.proto", []),
+    "struct": ("src/google/protobuf/struct.proto", []),
+    "timestamp": ("src/google/protobuf/timestamp.proto", []),
+    "type": (
+        "src/google/protobuf/type.proto",
+        [
+            "any",
+            "source_context",
+        ],
+    ),
+    "wrappers": ("src/google/protobuf/wrappers.proto", []),
+}
+
+LITE_WELL_KNOWN_PROTOS = [value[0] for value in LITE_WELL_KNOWN_PROTO_MAP.values()]
+
 filegroup(
     name = "well_known_protos",
     srcs = WELL_KNOWN_PROTOS,
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "lite_well_known_protos",
+    srcs = LITE_WELL_KNOWN_PROTOS,
+    visibility = ["//visibility:public"],
+)
+
 adapt_proto_library(
     name = "cc_wkt_protos_genproto",
-    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
     visibility = ["//visibility:public"],
+    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
 )
 
 cc_library(
@@ -363,13 +394,12 @@ cc_library(
 
 [native_cc_proto_library(
     name = proto + "_cc_proto",
-    deps = [proto + "_proto"],
     visibility = ["//visibility:private"],
+    deps = [proto + "_proto"],
 ) for proto in WELL_KNOWN_PROTO_MAP.keys()]
 
 cc_proto_blacklist_test(
     name = "cc_proto_blacklist_test",
-    deps = [proto + "_cc_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
     tags = [
         # Exclude this target from wildcard expansion (//...). Due to
         # https://github.com/bazelbuild/bazel/issues/10590, this test has to
@@ -378,6 +408,7 @@ cc_proto_blacklist_test(
         # See also https://github.com/protocolbuffers/protobuf/pull/7096.
         "manual",
     ],
+    deps = [proto + "_cc_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
 )
 
 ################################################################################
@@ -401,6 +432,7 @@ cc_library(
         "src/google/protobuf/compiler/cpp/cpp_message.cc",
         "src/google/protobuf/compiler/cpp/cpp_message_field.cc",
         "src/google/protobuf/compiler/cpp/cpp_padding_optimizer.cc",
+        "src/google/protobuf/compiler/cpp/cpp_parse_function_generator.cc",
         "src/google/protobuf/compiler/cpp/cpp_primitive_field.cc",
         "src/google/protobuf/compiler/cpp/cpp_service.cc",
         "src/google/protobuf/compiler/cpp/cpp_string_field.cc",
@@ -433,6 +465,7 @@ cc_library(
         "src/google/protobuf/compiler/java/java_generator.cc",
         "src/google/protobuf/compiler/java/java_generator_factory.cc",
         "src/google/protobuf/compiler/java/java_helpers.cc",
+        "src/google/protobuf/compiler/java/java_kotlin_generator.cc",
         "src/google/protobuf/compiler/java/java_map_field.cc",
         "src/google/protobuf/compiler/java/java_map_field_lite.cc",
         "src/google/protobuf/compiler/java/java_message.cc",
@@ -488,6 +521,12 @@ cc_binary(
 ################################################################################
 # Tests
 ################################################################################
+
+filegroup(
+    name = "testdata",
+    srcs = glob(["src/google/protobuf/testdata/**/*"]),
+    visibility = ["//:__subpackages__"],
+)
 
 RELATIVE_LITE_TEST_PROTOS = [
     # AUTOGEN(lite_test_protos)
@@ -550,6 +589,57 @@ RELATIVE_TEST_PROTOS = [
 
 TEST_PROTOS = ["src/" + s for s in RELATIVE_TEST_PROTOS]
 
+GENERIC_RELATIVE_TEST_PROTOS = [
+    "google/protobuf/unittest.proto",
+    "google/protobuf/unittest_arena.proto",
+    "google/protobuf/unittest_custom_options.proto",
+    "google/protobuf/unittest_drop_unknown_fields.proto",
+    "google/protobuf/unittest_embed_optimize_for.proto",
+    "google/protobuf/unittest_empty.proto",
+    "google/protobuf/unittest_enormous_descriptor.proto",
+    "google/protobuf/unittest_import.proto",
+    "google/protobuf/unittest_import_public.proto",
+    "google/protobuf/unittest_lazy_dependencies.proto",
+    "google/protobuf/unittest_lazy_dependencies_custom_option.proto",
+    "google/protobuf/unittest_lazy_dependencies_enum.proto",
+    "google/protobuf/unittest_lite_imports_nonlite.proto",
+    "google/protobuf/unittest_mset.proto",
+    "google/protobuf/unittest_mset_wire_format.proto",
+    "google/protobuf/unittest_no_field_presence.proto",
+    "google/protobuf/unittest_no_generic_services.proto",
+    "google/protobuf/unittest_optimize_for.proto",
+    "google/protobuf/unittest_preserve_unknown_enum.proto",
+    "google/protobuf/unittest_preserve_unknown_enum2.proto",
+    "google/protobuf/unittest_proto3.proto",
+    "google/protobuf/unittest_proto3_arena.proto",
+    "google/protobuf/unittest_proto3_arena_lite.proto",
+    "google/protobuf/unittest_proto3_lite.proto",
+    "google/protobuf/unittest_proto3_optional.proto",
+    "google/protobuf/unittest_well_known_types.proto",
+]
+
+GENERIC_TEST_PROTOS = ["src/" + s for s in GENERIC_RELATIVE_TEST_PROTOS]
+
+proto_library(
+    name = "generic_test_protos",
+    srcs = LITE_TEST_PROTOS + GENERIC_TEST_PROTOS,
+    strip_import_prefix = "src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
+)
+
 cc_proto_library(
     name = "cc_test_protos",
     srcs = LITE_TEST_PROTOS + TEST_PROTOS,
@@ -562,7 +652,10 @@ cc_proto_library(
 COMMON_TEST_SRCS = [
     # AUTOGEN(common_test_srcs)
     "src/google/protobuf/arena_test_util.cc",
+    "src/google/protobuf/map_lite_test_util.cc",
+    "src/google/protobuf/test_util_lite.cc",
     "src/google/protobuf/map_test_util.inc",
+    "src/google/protobuf/reflection_tester.cc",
     "src/google/protobuf/test_util.cc",
     "src/google/protobuf/test_util.inc",
     "src/google/protobuf/testing/file.cc",
@@ -571,6 +664,7 @@ COMMON_TEST_SRCS = [
 
 cc_binary(
     name = "test_plugin",
+    testonly = True,
     srcs = [
         # AUTOGEN(test_plugin_srcs)
         "src/google/protobuf/compiler/mock_code_generator.cc",
@@ -580,7 +674,8 @@ cc_binary(
     deps = [
         ":protobuf",
         ":protoc_lib",
-    ] + GTEST,
+        "@com_google_googletest//:gtest",
+    ],
 )
 
 cc_test(
@@ -592,7 +687,9 @@ cc_test(
     ],
     deps = [
         ":protobuf_lite",
-    ] + GTEST_MAIN,
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
 )
 
 cc_test(
@@ -603,6 +700,7 @@ cc_test(
         "src/google/protobuf/arena_unittest.cc",
         "src/google/protobuf/arenastring_unittest.cc",
         "src/google/protobuf/compiler/annotation_test_util.cc",
+        "src/google/protobuf/compiler/command_line_interface_unittest.cc",
         "src/google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc",
         "src/google/protobuf/compiler/cpp/cpp_move_unittest.cc",
         "src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc",
@@ -625,6 +723,7 @@ cc_test(
         "src/google/protobuf/dynamic_message_unittest.cc",
         "src/google/protobuf/extension_set_unittest.cc",
         "src/google/protobuf/generated_message_reflection_unittest.cc",
+        "src/google/protobuf/inlined_string_field_unittest.cc",
         "src/google/protobuf/io/coded_stream_unittest.cc",
         "src/google/protobuf/io/io_win32_unittest.cc",
         "src/google/protobuf/io/printer_unittest.cc",
@@ -632,6 +731,7 @@ cc_test(
         "src/google/protobuf/io/zero_copy_stream_unittest.cc",
         "src/google/protobuf/map_field_test.cc",
         "src/google/protobuf/map_test.cc",
+        "src/google/protobuf/map_test.inc",
         "src/google/protobuf/message_unittest.cc",
         "src/google/protobuf/message_unittest.inc",
         "src/google/protobuf/no_field_presence_test.cc",
@@ -671,14 +771,19 @@ cc_test(
         "src/google/protobuf/util/type_resolver_util_test.cc",
         "src/google/protobuf/well_known_types_unittest.cc",
         "src/google/protobuf/wire_format_unittest.cc",
+        "src/google/protobuf/wire_format_unittest.inc",
     ] + select({
         "//conditions:default": [
             # AUTOGEN(non_msvc_test_srcs)
-            "src/google/protobuf/compiler/command_line_interface_unittest.cc",
         ],
         ":msvc": [],
     }),
-    copts = COPTS,
+    copts = COPTS + select({
+        ":msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
     data = [
         ":test_plugin",
     ] + glob([
@@ -695,7 +800,9 @@ cc_test(
         ":cc_test_protos",
         ":protobuf",
         ":protoc_lib",
-    ] + PROTOBUF_DEPS + GTEST_MAIN,
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ] + PROTOBUF_DEPS,
 )
 
 ################################################################################
@@ -704,10 +811,19 @@ cc_test(
 
 internal_gen_well_known_protos_java(
     name = "gen_well_known_protos_java",
-    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
     visibility = [
         "//java:__subpackages__",
     ],
+    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+)
+
+internal_gen_well_known_protos_java(
+    name = "gen_well_known_protos_javalite",
+    javalite = True,
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [proto + "_proto" for proto in LITE_WELL_KNOWN_PROTO_MAP.keys()],
 )
 
 alias(
@@ -765,6 +881,8 @@ cc_binary(
     copts = COPTS + [
         "-DPYTHON_PROTO2_CPP_IMPL_V2",
     ],
+    linkshared = 1,
+    linkstatic = 1,
     tags = [
         # Exclude this target from wildcard expansion (//...) because it may
         # not even be buildable. It will be built if it is needed according
@@ -772,8 +890,6 @@ cc_binary(
         # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
         "manual",
     ],
-    linkshared = 1,
-    linkstatic = 1,
     deps = select({
         "//conditions:default": [],
         ":use_fast_cpp_protos": ["//external:python_headers"],
@@ -796,6 +912,8 @@ cc_binary(
         "python/",
         "src/",
     ],
+    linkshared = 1,
+    linkstatic = 1,
     tags = [
         # Exclude this target from wildcard expansion (//...) because it may
         # not even be buildable. It will be built if it is needed according
@@ -803,8 +921,6 @@ cc_binary(
         # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
         "manual",
     ],
-    linkshared = 1,
-    linkstatic = 1,
     deps = [
         ":protobuf",
         ":proto_api",
@@ -867,7 +983,6 @@ py_proto_library(
     protoc = ":protoc",
     py_libs = [
         ":python_srcs",
-        "@six//:six",
     ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
@@ -1120,19 +1235,115 @@ cc_binary(
     ],
 )
 
-sh_test(
-    name = "build_files_updated_unittest",
-    srcs = [
-        "build_files_updated_unittest.sh",
+# TODO: re-enable this test if appropriate, or replace with something that
+# uses the new setup.
+# sh_test(
+#     name = "build_files_updated_unittest",
+#     srcs = [
+#         "build_files_updated_unittest.sh",
+#     ],
+#     data = [
+#         "BUILD",
+#         "cmake/extract_includes.bat.in",
+#         "cmake/libprotobuf.cmake",
+#         "cmake/libprotobuf-lite.cmake",
+#         "cmake/libprotoc.cmake",
+#         "cmake/tests.cmake",
+#         "src/Makefile.am",
+#         "update_file_lists.sh",
+#     ],
+# )
+
+java_proto_library(
+    name = "test_messages_proto2_java_proto",
+    visibility = [
+        "//java:__subpackages__",
     ],
-    data = [
-        "BUILD",
-        "cmake/extract_includes.bat.in",
-        "cmake/libprotobuf.cmake",
-        "cmake/libprotobuf-lite.cmake",
-        "cmake/libprotoc.cmake",
-        "cmake/tests.cmake",
-        "src/Makefile.am",
-        "update_file_lists.sh",
+    deps = [":test_messages_proto2_proto"],
+)
+
+java_proto_library(
+    name = "test_messages_proto3_java_proto",
+    visibility = [
+        "//java:__subpackages__",
     ],
+    deps = [":test_messages_proto3_proto"],
+)
+
+java_proto_library(
+    name = "conformance_java_proto",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [":conformance_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto2_java_proto_lite",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [":test_messages_proto2_proto"],
+)
+
+java_lite_proto_library(
+    name = "conformance_java_proto_lite",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [":conformance_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto3_java_proto_lite",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [":test_messages_proto3_proto"],
+)
+
+java_binary(
+    name = "conformance_java",
+    srcs = ["conformance/ConformanceJava.java"],
+    main_class = "ConformanceJava",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [
+        ":conformance_java_proto",
+        ":test_messages_proto2_java_proto",
+        ":test_messages_proto3_java_proto",
+        "//:protobuf_java",
+        "//:protobuf_java_util",
+    ],
+)
+
+java_binary(
+    name = "conformance_java_lite",
+    srcs = ["conformance/ConformanceJavaLite.java"],
+    main_class = "ConformanceJavaLite",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [
+        ":conformance_java_proto_lite",
+        ":test_messages_proto2_java_proto_lite",
+        ":test_messages_proto3_java_proto_lite",
+        "//:protobuf_java_util",
+        "//:protobuf_javalite",
+    ],
+)
+
+exports_files([
+    "conformance/conformance_test_runner.sh",
+    "conformance/failure_list_java.txt",
+    "conformance/failure_list_java_lite.txt",
+    "conformance/text_format_failure_list_java.txt",
+    "conformance/text_format_failure_list_java_lite.txt",
+])
+
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob(["**/*.bzl"]),
+    visibility = ["//visibility:public"],
 )

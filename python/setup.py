@@ -16,6 +16,7 @@ import platform
 # namespace_packages option for the "google" package.
 from setuptools import setup, Extension, find_packages
 
+from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build_py import build_py as _build_py
 from distutils.command.clean import clean as _clean
 from distutils.spawn import find_executable
@@ -157,6 +158,23 @@ class build_py(_build_py):
             if not any(fnmatch.fnmatchcase(fil, pat=pat) for pat in exclude)]
 
 
+class build_ext(_build_ext):
+
+  def get_ext_filename(self, ext_name):
+    # since python3.5, python extensions' shared libraries use a suffix that
+    # corresponds to the value of sysconfig.get_config_var('EXT_SUFFIX') and
+    # contains info about the architecture the library targets.  E.g. on x64
+    # linux the suffix is ".cpython-XYZ-x86_64-linux-gnu.so" When
+    # crosscompiling python wheels, we need to be able to override this
+    # suffix so that the resulting file name matches the target architecture
+    # and we end up with a well-formed wheel.
+    filename = _build_ext.get_ext_filename(self, ext_name)
+    orig_ext_suffix = sysconfig.get_config_var("EXT_SUFFIX")
+    new_ext_suffix = os.getenv("PROTOCOL_BUFFERS_OVERRIDE_EXT_SUFFIX")
+    if new_ext_suffix and filename.endswith(orig_ext_suffix):
+      filename = filename[:-len(orig_ext_suffix)] + new_ext_suffix
+    return filename
+
 class test_conformance(_build_py):
   target = 'test_python'
   def run(self):
@@ -193,11 +211,11 @@ if __name__ == '__main__':
     extra_compile_args = []
 
     if sys.platform != 'win32':
-        extra_compile_args.append('-Wno-write-strings')
-        extra_compile_args.append('-Wno-invalid-offsetof')
-        extra_compile_args.append('-Wno-sign-compare')
-        extra_compile_args.append('-Wno-unused-variable')
-        extra_compile_args.append('-std=c++11')
+      extra_compile_args.append('-Wno-write-strings')
+      extra_compile_args.append('-Wno-invalid-offsetof')
+      extra_compile_args.append('-Wno-sign-compare')
+      extra_compile_args.append('-Wno-unused-variable')
+      extra_compile_args.append('-std=c++11')
 
     if sys.platform == 'darwin':
       extra_compile_args.append("-Wno-shorten-64-to-32");
@@ -254,10 +272,7 @@ if __name__ == '__main__':
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 
   # Keep this list of dependencies in sync with tox.ini.
-  install_requires = ['six>=1.9']
-  if sys.version_info <= (2,7):
-    install_requires.append('ordereddict')
-    install_requires.append('unittest2')
+  install_requires = []
 
   setup(
       name='protobuf',
@@ -270,31 +285,29 @@ if __name__ == '__main__':
       maintainer_email='protobuf@googlegroups.com',
       license='3-Clause BSD License',
       classifiers=[
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        ],
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+      ],
       namespace_packages=['google'],
       packages=find_packages(
           exclude=[
               'import_test_package',
               'protobuf_distutils',
-          ],
-      ),
+          ],),
       test_suite='google.protobuf.internal',
       cmdclass={
           'clean': clean,
           'build_py': build_py,
+          'build_ext': build_ext,
           'test_conformance': test_conformance,
       },
       install_requires=install_requires,
       ext_modules=ext_module_list,
+      python_requires=">=3.5",
   )

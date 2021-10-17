@@ -41,16 +41,9 @@ This files defines well known classes which need extra maintenance including:
 __author__ = 'jieluo@google.com (Jie Luo)'
 
 import calendar
+import collections.abc
 from datetime import datetime
 from datetime import timedelta
-import six
-
-try:
-  # Since python 3
-  import collections.abc as collections_abc
-except ImportError:
-  # Won't work after python 3.8
-  import collections as collections_abc
 
 from google.protobuf.descriptor import FieldDescriptor
 
@@ -143,6 +136,8 @@ class Timestamp(object):
     Raises:
       ValueError: On parsing problems.
     """
+    if not isinstance(value, str):
+      raise ValueError('Timestamp JSON value not a string: {!r}'.format(value))
     timezone_offset = value.find('Z')
     if timezone_offset == -1:
       timezone_offset = value.find('+')
@@ -303,6 +298,8 @@ class Duration(object):
     Raises:
       ValueError: On parsing problems.
     """
+    if not isinstance(value, str):
+      raise ValueError('Duration JSON value not a string: {!r}'.format(value))
     if len(value) < 1 or value[-1] != 's':
       raise ValueError(
           'Duration must end with letter "s": {0}.'.format(value))
@@ -428,6 +425,8 @@ class FieldMask(object):
 
   def FromJsonString(self, value):
     """Converts string to FieldMask according to proto3 JSON spec."""
+    if not isinstance(value, str):
+      raise ValueError('FieldMask JSON value not a string: {!r}'.format(value))
     self.Clear()
     if value:
       for path in value.split(','):
@@ -712,9 +711,6 @@ def _AddFieldPaths(node, prefix, field_mask):
     _AddFieldPaths(node[name], child_path, field_mask)
 
 
-_INT_OR_FLOAT = six.integer_types + (float,)
-
-
 def _SetStructValue(struct_value, value):
   if value is None:
     struct_value.null_value = 0
@@ -722,9 +718,9 @@ def _SetStructValue(struct_value, value):
     # Note: this check must come before the number check because in Python
     # True and False are also considered numbers.
     struct_value.bool_value = value
-  elif isinstance(value, six.string_types):
+  elif isinstance(value, str):
     struct_value.string_value = value
-  elif isinstance(value, _INT_OR_FLOAT):
+  elif isinstance(value, (int, float)):
     struct_value.number_value = value
   elif isinstance(value, (dict, Struct)):
     struct_value.struct_value.Clear()
@@ -804,7 +800,7 @@ class Struct(object):
     for key, value in dictionary.items():
       _SetStructValue(self.fields[key], value)
 
-collections_abc.MutableMapping.register(Struct)
+collections.abc.MutableMapping.register(Struct)
 
 
 class ListValue(object):
@@ -850,7 +846,7 @@ class ListValue(object):
     list_value.Clear()
     return list_value
 
-collections_abc.MutableSequence.register(ListValue)
+collections.abc.MutableSequence.register(ListValue)
 
 
 WKTBASES = {

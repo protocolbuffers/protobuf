@@ -35,7 +35,6 @@ package com.google.protobuf.jruby;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import org.jcodings.Encoding;
 import org.jcodings.specific.ASCIIEncoding;
 import org.jruby.*;
 import org.jruby.exceptions.RaiseException;
@@ -70,6 +69,12 @@ public class Utils {
         Ruby runtime = context.runtime;
 
         switch(fieldType) {
+            case SFIXED32:
+            case SFIXED64:
+            case FIXED64:
+            case SINT64:
+            case SINT32:
+            case FIXED32:
             case INT32:
             case INT64:
             case UINT32:
@@ -83,7 +88,8 @@ public class Utils {
                         throw runtime.newRangeError("Non-integral floating point value assigned to integer field '" + fieldName + "' (given " + value.getMetaClass() + ").");
                     }
                 }
-                if (fieldType == FieldDescriptor.Type.UINT32 || fieldType == FieldDescriptor.Type.UINT64) {
+                if (fieldType == FieldDescriptor.Type.UINT32 || fieldType == FieldDescriptor.Type.UINT64 ||
+                    fieldType == FieldDescriptor.Type.FIXED32  || fieldType == FieldDescriptor.Type.FIXED64) {
                     if (((RubyNumeric) value).isNegative()) {
                         throw runtime.newRangeError("Assigning negative value to unsigned integer field '" + fieldName + "' (given " + value.getMetaClass() + ").");
                     }
@@ -94,9 +100,11 @@ public class Utils {
                         RubyNumeric.num2int(value);
                         break;
                     case UINT32:
+                    case FIXED32:
                         num2uint(value);
                         break;
                     case UINT64:
+                    case FIXED64:
                         num2ulong(context.runtime, value);
                         break;
                     default:
@@ -183,14 +191,24 @@ public class Utils {
     }
 
     public static IRubyObject wrapPrimaryValue(ThreadContext context, FieldDescriptor.Type fieldType, Object value) {
+        return wrapPrimaryValue(context, fieldType, value, false);
+    }
+
+    public static IRubyObject wrapPrimaryValue(ThreadContext context, FieldDescriptor.Type fieldType, Object value, boolean encodeBytes) {
         Ruby runtime = context.runtime;
         switch (fieldType) {
             case INT32:
+            case SFIXED32:
+            case SINT32:
                 return runtime.newFixnum((Integer) value);
+            case SFIXED64:
+            case SINT64:
             case INT64:
                 return runtime.newFixnum((Long) value);
+            case FIXED32:
             case UINT32:
                 return runtime.newFixnum(((Integer) value) & (-1l >>> 32));
+            case FIXED64:
             case UINT64:
                 long ret = (Long) value;
                 return ret >= 0 ? runtime.newFixnum(ret) :
@@ -202,7 +220,9 @@ public class Utils {
             case BOOL:
                 return (Boolean) value ? runtime.getTrue() : runtime.getFalse();
             case BYTES: {
-                IRubyObject wrapped = RubyString.newString(runtime, ((ByteString) value).toStringUtf8(), ASCIIEncoding.INSTANCE);
+                IRubyObject wrapped = encodeBytes ?
+                    RubyString.newString(runtime, ((ByteString) value).toStringUtf8(), ASCIIEncoding.INSTANCE) :
+                    RubyString.newString(runtime, ((ByteString) value).toByteArray());
                 wrapped.setFrozen(true);
                 return wrapped;
             }
@@ -259,58 +279,6 @@ public class Utils {
                 fieldDescriptor.isRepeated() &&
                 fieldDescriptor.getMessageType().getOptions().getMapEntry();
     }
-
-    /*
-     * call-seq:
-     *     Utils.createFieldBuilder(context, label, name, type, number, typeClass = nil, options = nil)
-     *
-     * Most places calling this are already dealing with an optional number of
-     * arguments so dealing with them here. This helper is a standard way to
-     * create a FieldDescriptor builder that handles some of the options that
-     * are used in different places.
-     */
-    public static FieldDescriptorProto.Builder createFieldBuilder(ThreadContext context,
-            String label, IRubyObject[] args) {
-
-        Ruby runtime = context.runtime;
-        IRubyObject options = context.nil;
-        IRubyObject typeClass = context.nil;
-
-        if (args.length > 4) {
-            options = args[4];
-            typeClass = args[3];
-        } else if (args.length > 3) {
-            if (args[3] instanceof RubyHash) {
-                options = args[3];
-            } else {
-                typeClass = args[3];
-            }
-        }
-
-        FieldDescriptorProto.Builder builder = FieldDescriptorProto.newBuilder();
-
-        builder.setLabel(FieldDescriptorProto.Label.valueOf("LABEL_" + label.toUpperCase()))
-            .setName(args[0].asJavaString())
-            .setNumber(RubyNumeric.num2int(args[2]))
-            .setType(FieldDescriptorProto.Type.valueOf("TYPE_" + args[1].asJavaString().toUpperCase()));
-
-        if (!typeClass.isNil()) {
-            if (!(typeClass instanceof RubyString)) {
-                throw runtime.newArgumentError("expected string for type class");
-            }
-            builder.setTypeName("." + typeClass.asJavaString());
-        }
-
-        if (options instanceof RubyHash) {
-            IRubyObject defaultValue = ((RubyHash) options).fastARef(runtime.newSymbol("default"));
-            if (defaultValue != null) {
-                builder.setDefaultValue(defaultValue.toString());
-            }
-        }
-
-        return builder;
-    }
-
 
     public static RaiseException createTypeError(ThreadContext context, String message) {
         if (cTypeError == null) {

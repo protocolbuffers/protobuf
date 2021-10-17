@@ -31,6 +31,46 @@ module BasicTest
     end
     include CommonTests
 
+    def test_issue_8311_crash
+      Google::Protobuf::DescriptorPool.generated_pool.build do
+        add_file("inner.proto", :syntax => :proto3) do
+          add_message "Inner" do
+            # Removing either of these fixes the segfault.
+            optional :foo, :string, 1
+            optional :bar, :string, 2
+          end
+        end
+      end
+
+      Google::Protobuf::DescriptorPool.generated_pool.build do
+        add_file("outer.proto", :syntax => :proto3) do
+          add_message "Outer" do
+            repeated :inners, :message, 1, "Inner"
+          end
+        end
+      end
+
+      outer = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("Outer").msgclass
+
+      outer.new(
+          inners: []
+      )['inners'].to_s
+
+      assert_raise Google::Protobuf::TypeError do
+        outer.new(
+            inners: [nil]
+        ).to_s
+      end
+    end
+
+    def test_issue_8559_crash
+      msg = TestMessage.new
+      msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
+      # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
+      GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
+      TestMessage.encode(msg)
+    end
+
     def test_has_field
       m = TestSingularFields.new
       assert !m.has_singular_msg?
@@ -127,6 +167,17 @@ module BasicTest
       assert_equal TestMessage2.new(:foo => 42), m.singular_msg
       TestSingularFields.descriptor.lookup('singular_msg').clear(m)
       assert_equal nil, m.singular_msg
+    end
+
+    def test_import_proto2
+      m = TestMessage.new
+      assert !m.has_optional_proto2_submessage?
+      m.optional_proto2_submessage = ::FooBar::Proto2::TestImportedMessage.new
+      assert m.has_optional_proto2_submessage?
+      assert TestMessage.descriptor.lookup('optional_proto2_submessage').has?(m)
+
+      m.clear_optional_proto2_submessage
+      assert !m.has_optional_proto2_submessage?
     end
 
     def test_clear_repeated_fields
@@ -448,6 +499,7 @@ module BasicTest
         :optional_int64=>0,
         :optional_msg=>nil,
         :optional_msg2=>nil,
+        :optional_proto2_submessage=>nil,
         :optional_string=>"foo",
         :optional_uint32=>0,
         :optional_uint64=>0,
@@ -567,6 +619,22 @@ module BasicTest
       assert_raise(FrozenErrorType) { m.map_string_msg['bar'] = proto_module::TestMessage2.new }
       assert_raise(FrozenErrorType) { m.map_string_int32.delete('a') }
       assert_raise(FrozenErrorType) { m.map_string_int32.clear }
+    end
+
+    def test_map_length
+      m = proto_module::MapMessage.new
+      assert_equal 0, m.map_string_int32.length
+      assert_equal 0, m.map_string_msg.length
+      assert_equal 0, m.map_string_int32.size
+      assert_equal 0, m.map_string_msg.size
+
+      m.map_string_int32['a'] = 1
+      m.map_string_int32['b'] = 2
+      m.map_string_msg['a'] = proto_module::TestMessage2.new
+      assert_equal 2, m.map_string_int32.length
+      assert_equal 1, m.map_string_msg.length
+      assert_equal 2, m.map_string_int32.size
+      assert_equal 1, m.map_string_msg.size
     end
   end
 end

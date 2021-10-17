@@ -50,6 +50,10 @@
 #include <string_view>
 #endif  // defined(__cpp_lib_string_view)
 
+#if !defined(GOOGLE_PROTOBUF_NO_RDTSC) && defined(__APPLE__)
+#include <mach/mach_time.h>
+#endif
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_enum_util.h>
@@ -118,7 +122,7 @@ class MapAllocator {
       return static_cast<pointer>(::operator new(n * sizeof(value_type)));
     } else {
       return reinterpret_cast<pointer>(
-          Arena::CreateArray<uint8>(arena_, n * sizeof(value_type)));
+          Arena::CreateArray<uint8_t>(arena_, n * sizeof(value_type)));
     }
   }
 
@@ -698,21 +702,18 @@ class Map {
         p = FindHelper(k);
       }
       const size_type b = p.second;  // bucket number
-      Node* node;
       // If K is not key_type, make the conversion to key_type explicit.
       using TypeToInit = typename std::conditional<
           std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
           key_type>::type;
-      if (alloc_.arena() == nullptr) {
-        node = new Node{value_type(static_cast<TypeToInit>(std::forward<K>(k))),
-                        nullptr};
-      } else {
-        node = Alloc<Node>(1);
-        Arena::CreateInArenaStorage(
-            const_cast<Key*>(&node->kv.first), alloc_.arena(),
-            static_cast<TypeToInit>(std::forward<K>(k)));
-        Arena::CreateInArenaStorage(&node->kv.second, alloc_.arena());
-      }
+      Node* node = Alloc<Node>(1);
+      // Even when arena is nullptr, CreateInArenaStorage is still used to
+      // ensure the arena of submessage will be consistent. Otherwise,
+      // submessage may have its own arena when message-owned arena is enabled.
+      Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first),
+                                  alloc_.arena(),
+                                  static_cast<TypeToInit>(std::forward<K>(k)));
+      Arena::CreateInArenaStorage(&node->kv.second, alloc_.arena());
 
       iterator result = InsertUnique(b, node);
       ++num_elements_;
@@ -1026,12 +1027,12 @@ class Map {
     size_type BucketNumber(const K& k) const {
       // We xor the hash value against the random seed so that we effectively
       // have a random hash function.
-      uint64 h = hash_function()(k) ^ seed_;
+      uint64_t h = hash_function()(k) ^ seed_;
 
       // We use the multiplication method to determine the bucket number from
       // the hash value. The constant kPhi (suggested by Knuth) is roughly
       // (sqrt(5) - 1) / 2 * 2^64.
-      constexpr uint64 kPhi = uint64{0x9e3779b97f4a7c15};
+      constexpr uint64_t kPhi = uint64_t{0x9e3779b97f4a7c15};
       return ((kPhi * h) >> 32) & (num_buckets_ - 1);
     }
 
@@ -1071,7 +1072,7 @@ class Map {
 
     void** CreateEmptyTable(size_type n) {
       GOOGLE_DCHECK(n >= kMinTableSize);
-      GOOGLE_DCHECK_EQ(n & (n - 1), 0);
+      GOOGLE_DCHECK_EQ(n & (n - 1), 0u);
       void** result = Alloc<void*>(n);
       memset(result, 0, n * sizeof(result[0]));
       return result;
@@ -1082,13 +1083,25 @@ class Map {
       // We get a little bit of randomness from the address of the map. The
       // lower bits are not very random, due to alignment, so we discard them
       // and shift the higher bits into their place.
-      size_type s = reinterpret_cast<uintptr_t>(this) >> 12;
-#if defined(__x86_64__) && defined(__GNUC__) && \
-    !defined(GOOGLE_PROTOBUF_NO_RDTSC)
-      uint32 hi, lo;
+      size_type s = reinterpret_cast<uintptr_t>(this) >> 4;
+#if !defined(GOOGLE_PROTOBUF_NO_RDTSC)
+#if defined(__APPLE__)
+      // Use a commpage-based fast time function on Apple environments (MacOS,
+      // iOS, tvOS, watchOS, etc).
+      s += mach_absolute_time();
+#elif defined(__x86_64__) && defined(__GNUC__)
+      uint32_t hi, lo;
       asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
-      s += ((static_cast<uint64>(hi) << 32) | lo);
+      s += ((static_cast<uint64_t>(hi) << 32) | lo);
+#elif defined(__aarch64__) && defined(__GNUC__)
+      // There is no rdtsc on ARMv8. CNTVCT_EL0 is the virtual counter of the
+      // system timer. It runs at a different frequency than the CPU's, but is
+      // the best source of time-based entropy we get.
+      uint64_t virtual_timer_value;
+      asm volatile("mrs %0, cntvct_el0" : "=r"(virtual_timer_value));
+      s += virtual_timer_value;
 #endif
+#endif  // !defined(GOOGLE_PROTOBUF_NO_RDTSC)
       return s;
     }
 
@@ -1321,7 +1334,7 @@ class Map {
 
   void swap(Map& other) {
     if (arena() == other.arena()) {
-      elements_.Swap(&other.elements_);
+      InternalSwap(other);
     } else {
       // TODO(zuguang): optimize this. The temporary copy can be allocated
       // in the same arena as the other message, and the "other = copy" can
@@ -1331,6 +1344,8 @@ class Map {
       other = copy;
     }
   }
+
+  void InternalSwap(Map& other) { elements_.Swap(&other.elements_); }
 
   // Access to hasher.  Currently this returns a copy, but it may
   // be modified to return a const reference in the future.

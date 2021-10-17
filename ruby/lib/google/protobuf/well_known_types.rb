@@ -83,7 +83,7 @@ module Google
       end
 
       def self.from_time(time)
-        Timestamp.new(seconds: time.to_i, nanos: time.nsec)
+        new.from_time(time)
       end
 
       def from_time(time)
@@ -138,31 +138,7 @@ module Google
       end
       
       def self.from_ruby(value)
-        ret = Value.new
-        case value
-        when NilClass
-          ret.null_value = 0
-        when Numeric
-          ret.number_value = value
-        when String
-          ret.string_value = value
-        when TrueClass
-          ret.bool_value = true
-        when FalseClass
-          ret.bool_value = false
-        when Struct
-          ret.struct_value = value
-        when Hash
-          ret.struct_value = Struct.from_hash(value)
-        when ListValue
-          ret.list_value = value
-        when Array
-          ret.list_value = ListValue.from_a(value)
-        else
-          raise UnexpectedStructType
-        end
-        
-        ret
+        Value.new.from_ruby(value)
       end
 
       def from_ruby(value)

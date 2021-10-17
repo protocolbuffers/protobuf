@@ -35,6 +35,7 @@
 
 #include <structmember.h>  // A Python header file.
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -76,31 +77,32 @@
 #include <google/protobuf/port_def.inc>
 // clang-format on
 
-#if PY_MAJOR_VERSION >= 3
-  #define PyInt_AsLong PyLong_AsLong
-  #define PyInt_FromLong PyLong_FromLong
-  #define PyInt_FromSize_t PyLong_FromSize_t
-  #define PyString_Check PyUnicode_Check
-  #define PyString_FromString PyUnicode_FromString
-  #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
-  #define PyString_FromFormat PyUnicode_FromFormat
-  #if PY_VERSION_HEX < 0x03030000
-    #error "Python 3.0 - 3.2 are not supported."
-  #else
-  #define PyString_AsString(ob) \
-    (PyUnicode_Check(ob)? PyUnicode_AsUTF8(ob): PyBytes_AsString(ob))
+#define PyString_AsString(ob) \
+  (PyUnicode_Check(ob) ? PyUnicode_AsUTF8(ob) : PyBytes_AsString(ob))
 #define PyString_AsStringAndSize(ob, charpp, sizep)                           \
   (PyUnicode_Check(ob) ? ((*(charpp) = const_cast<char*>(                     \
                                PyUnicode_AsUTF8AndSize(ob, (sizep)))) == NULL \
                               ? -1                                            \
                               : 0)                                            \
                        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
-#endif
-#endif
 
 namespace google {
 namespace protobuf {
 namespace python {
+
+class MessageReflectionFriend {
+ public:
+  static void UnsafeShallowSwapFields(
+      Message* lhs, Message* rhs,
+      const std::vector<const FieldDescriptor*>& fields) {
+    lhs->GetReflection()->UnsafeShallowSwapFields(lhs, rhs, fields);
+  }
+  static bool IsLazyField(const Reflection* reflection, const Message& message,
+                          const FieldDescriptor* field) {
+    return reflection->IsLazyField(field) ||
+           reflection->IsLazyExtension(message, field);
+  }
+};
 
 static PyObject* kDESCRIPTOR;
 PyObject* EnumTypeWrapper_class;
@@ -109,8 +111,6 @@ static PyObject* kEmptyWeakref;
 static PyObject* WKT_classes = NULL;
 
 namespace message_meta {
-
-static int InsertEmptyWeakref(PyTypeObject* base);
 
 namespace {
 // Copied over from internal 'google/protobuf/stubs/strutil.h'.
@@ -161,8 +161,8 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
     for (int j = 0; j < enum_descriptor->value_count(); ++j) {
       const EnumValueDescriptor* enum_value_descriptor =
           enum_descriptor->value(j);
-      ScopedPyObjectPtr value_number(PyInt_FromLong(
-          enum_value_descriptor->number()));
+      ScopedPyObjectPtr value_number(
+          PyLong_FromLong(enum_value_descriptor->number()));
       if (value_number == NULL) {
         return -1;
       }
@@ -196,15 +196,14 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
 }
 
 static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
-  static char *kwlist[] = {"name", "bases", "dict", 0};
+  static const char* kwlist[] = {"name", "bases", "dict", 0};
   PyObject *bases, *dict;
   const char* name;
 
   // Check arguments: (name, bases, dict)
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO!O!:type", kwlist,
-                                   &name,
-                                   &PyTuple_Type, &bases,
-                                   &PyDict_Type, &dict)) {
+  if (!PyArg_ParseTupleAndKeywords(
+          args, kwargs, "sO!O!:type", const_cast<char**>(kwlist), &name,
+          &PyTuple_Type, &bases, &PyDict_Type, &dict)) {
     return NULL;
   }
 
@@ -273,13 +272,6 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   }
   CMessageClass* newtype = reinterpret_cast<CMessageClass*>(result.get());
 
-  // Insert the empty weakref into the base classes.
-  if (InsertEmptyWeakref(
-          reinterpret_cast<PyTypeObject*>(PythonMessage_class)) < 0 ||
-      InsertEmptyWeakref(CMessage_Type) < 0) {
-    return NULL;
-  }
-
   // Cache the descriptor, both as Python object and as C++ pointer.
   const Descriptor* descriptor =
       PyMessageDescriptor_AsDescriptor(py_descriptor);
@@ -334,32 +326,6 @@ static int GcClear(PyObject* pself) {
   return PyType_Type.tp_clear(pself);
 }
 
-// This function inserts and empty weakref at the end of the list of
-// subclasses for the main protocol buffer Message class.
-//
-// This eliminates a O(n^2) behaviour in the internal add_subclass
-// routine.
-static int InsertEmptyWeakref(PyTypeObject *base_type) {
-#if PY_MAJOR_VERSION >= 3
-  // Python 3.4 has already included the fix for the issue that this
-  // hack addresses. For further background and the fix please see
-  // https://bugs.python.org/issue17936.
-  return 0;
-#else
-#ifdef Py_DEBUG
-  // The code below causes all new subclasses to append an entry, which is never
-  // cleared. This is a small memory leak, which we disable in Py_DEBUG mode
-  // to have stable refcounting checks.
-#else
-  PyObject *subclasses = base_type->tp_subclasses;
-  if (subclasses && PyList_CheckExact(subclasses)) {
-    return PyList_Append(subclasses, kEmptyWeakref);
-  }
-#endif  // !Py_DEBUG
-  return 0;
-#endif  // PY_MAJOR_VERSION >= 3
-}
-
 // The _extensions_by_name dictionary is built on every access.
 // TODO(amauryfa): Migrate all users to pool.FindAllExtensions()
 static PyObject* GetExtensionsByName(CMessageClass *self, void *closure) {
@@ -412,7 +378,7 @@ static PyObject* GetExtensionsByNumber(CMessageClass *self, void *closure) {
     if (extension == NULL) {
       return NULL;
     }
-    ScopedPyObjectPtr number(PyInt_FromLong(extensions[i]->number()));
+    ScopedPyObjectPtr number(PyLong_FromLong(extensions[i]->number()));
     if (number == NULL) {
       return NULL;
     }
@@ -450,7 +416,7 @@ static PyObject* GetClassAttribute(CMessageClass *self, PyObject* name) {
           self->message_descriptor->FindExtensionByLowercaseName(field_name);
     }
     if (field) {
-      return PyInt_FromLong(field->number());
+      return PyLong_FromLong(field->number());
     }
   }
   PyErr_SetObject(PyExc_AttributeError, name);
@@ -472,6 +438,18 @@ static PyObject* GetAttr(CMessageClass* self, PyObject* name) {
 }
 
 }  // namespace message_meta
+
+// Protobuf has a 64MB limit built in, this variable will override this. Please
+// do not enable this unless you fully understand the implications: protobufs
+// must all be kept in memory at the same time, so if they grow too big you may
+// get OOM errors. The protobuf APIs do not provide any tools for processing
+// protobufs in chunks.  If you have protos this big you should break them up if
+// it is at all convenient to do so.
+#ifdef PROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS
+static bool allow_oversize_protos = true;
+#else
+static bool allow_oversize_protos = false;
+#endif
 
 static PyTypeObject _CMessageClass_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
@@ -546,7 +524,7 @@ PyObject* PickleError_class;
 
 // Format an error message for unexpected types.
 // Always return with an exception set.
-void FormatTypeError(PyObject* arg, char* expected_types) {
+void FormatTypeError(PyObject* arg, const char* expected_types) {
   // This function is often called with an exception set.
   // Clear it to call PyObject_Repr() in good conditions.
   PyErr_Clear();
@@ -591,20 +569,6 @@ bool VerifyIntegerCastAndRange(PyObject* arg, ValueType value) {
 
 template <class T>
 bool CheckAndGetInteger(PyObject* arg, T* value) {
-  // The fast path.
-#if PY_MAJOR_VERSION < 3
-  // For the typical case, offer a fast path.
-  if (PROTOBUF_PREDICT_TRUE(PyInt_Check(arg))) {
-    long int_result = PyInt_AsLong(arg);
-    if (PROTOBUF_PREDICT_TRUE(IsValidNumericCast<T>(int_result))) {
-      *value = static_cast<T>(int_result);
-      return true;
-    } else {
-      OutOfRangeError(arg);
-      return false;
-    }
-  }
-#endif
   // This effectively defines an integer as "an object that can be cast as
   // an integer and can be used as an ordinal number".
   // This definition includes everything that implements numbers.Integral
@@ -694,7 +658,7 @@ bool CheckAndGetFloat(PyObject* arg, float* value) {
 }
 
 bool CheckAndGetBool(PyObject* arg, bool* value) {
-  long long_value = PyInt_AsLong(arg);
+  long long_value = PyLong_AsLong(arg);  // NOLINT
   if (long_value == -1 && PyErr_Occurred()) {
     FormatTypeError(arg, "int, long, bool");
     return false;
@@ -868,6 +832,7 @@ int FixupMessageAfterMerge(CMessage* self) {
   if (!self->composite_fields) {
     return 0;
   }
+  PyMessageFactory* factory = GetFactoryForMessage(self);
   for (const auto& item : *self->composite_fields) {
     const FieldDescriptor* descriptor = item.first;
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
@@ -881,8 +846,8 @@ int FixupMessageAfterMerge(CMessage* self) {
       if (reflection->HasField(*message, descriptor)) {
         // Message used to be read_only, but is no longer. Get the new pointer
         // and record it.
-        Message* mutable_message =
-            reflection->MutableMessage(message, descriptor, nullptr);
+        Message* mutable_message = reflection->MutableMessage(
+            message, descriptor, factory->message_factory);
         cmsg->message = mutable_message;
         cmsg->read_only = false;
         if (FixupMessageAfterMerge(cmsg) < 0) {
@@ -950,7 +915,7 @@ const FieldDescriptor* GetExtensionDescriptor(PyObject* extension) {
 // descriptor, otherwise simply return value.  Always returns a new reference.
 static PyObject* GetIntegerEnumValue(const FieldDescriptor& descriptor,
                                      PyObject* value) {
-  if (PyString_Check(value) || PyUnicode_Check(value)) {
+  if (PyUnicode_Check(value)) {
     const EnumDescriptor* enum_descriptor = descriptor.enum_type();
     if (enum_descriptor == NULL) {
       PyErr_SetString(PyExc_TypeError, "not an enum field");
@@ -967,7 +932,7 @@ static PyObject* GetIntegerEnumValue(const FieldDescriptor& descriptor,
       PyErr_Format(PyExc_ValueError, "unknown enum label \"%s\"", enum_label);
       return NULL;
     }
-    return PyInt_FromLong(enum_value_descriptor->number());
+    return PyLong_FromLong(enum_value_descriptor->number());
   }
   Py_INCREF(value);
   return value;
@@ -989,15 +954,7 @@ int DeleteRepeatedField(
 
   if (PySlice_Check(slice)) {
     from = to = step = slice_length = 0;
-#if PY_MAJOR_VERSION < 3
-    PySlice_GetIndicesEx(
-        reinterpret_cast<PySliceObject*>(slice),
-        length, &from, &to, &step, &slice_length);
-#else
-    PySlice_GetIndicesEx(
-        slice,
-        length, &from, &to, &step, &slice_length);
-#endif
+    PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slice_length);
     if (from < to) {
       min = from;
       max = to - 1;
@@ -1043,6 +1000,9 @@ int DeleteRepeatedField(
     }
   }
 
+  Arena* arena = Arena::InternalHelper<Message>::GetArenaForAllocation(message);
+  GOOGLE_DCHECK_EQ(arena, nullptr)
+      << "python protobuf is expected to be allocated from heap";
   // Remove items, starting from the end.
   for (; length > to; length--) {
     if (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -1051,7 +1011,18 @@ int DeleteRepeatedField(
     }
     // It seems that RemoveLast() is less efficient for sub-messages, and
     // the memory is not completely released. Prefer ReleaseLast().
-    Message* sub_message = reflection->ReleaseLast(message, field_descriptor);
+    //
+    // To work around a debug hardening (PROTOBUF_FORCE_COPY_IN_RELEASE),
+    // explicitly use UnsafeArenaReleaseLast. To not break rare use cases where
+    // arena is used, we fallback to ReleaseLast (but GOOGLE_DCHECK to find/fix it).
+    //
+    // Note that arena is likely null and GOOGLE_DCHECK and ReleaesLast might be
+    // redundant. The current approach takes extra cautious path not to disrupt
+    // production.
+    Message* sub_message =
+        (arena == nullptr)
+            ? reflection->UnsafeArenaReleaseLast(message, field_descriptor)
+            : reflection->ReleaseLast(message, field_descriptor);
     // If there is a live weak reference to an item being removed, we "Release"
     // it, and it takes ownership of the message.
     if (CMessage* released = self->MaybeReleaseSubMessage(sub_message)) {
@@ -1080,7 +1051,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
   PyObject* name;
   PyObject* value;
   while (PyDict_Next(kwargs, &pos, &name, &value)) {
-    if (!(PyString_Check(name) || PyUnicode_Check(name))) {
+    if (!(PyUnicode_Check(name))) {
       PyErr_SetString(PyExc_ValueError, "Field name must be a string");
       return -1;
     }
@@ -1103,7 +1074,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
     if (descriptor->is_map()) {
       ScopedPyObjectPtr map(GetFieldValue(self, descriptor));
       const FieldDescriptor* value_descriptor =
-          descriptor->message_type()->FindFieldByName("value");
+          descriptor->message_type()->map_value();
       if (value_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         ScopedPyObjectPtr iter(PyObject_GetIter(value));
         if (iter == NULL) {
@@ -1280,7 +1251,7 @@ static CMessage* NewCMessage(CMessageClass* type) {
   if (self == nullptr) {
     return nullptr;
   }
-  self->message = prototype->New();
+  self->message = prototype->New(nullptr);  // Ensures no arena is used.
   self->parent = nullptr;  // This message owns its data.
   return self;
 }
@@ -1355,7 +1326,7 @@ PyObject* IsInitialized(CMessage* self, PyObject* args) {
     if (initialization_errors == NULL) {
       return NULL;
     }
-    ScopedPyObjectPtr extend_name(PyString_FromString("extend"));
+    ScopedPyObjectPtr extend_name(PyUnicode_FromString("extend"));
     if (extend_name == NULL) {
       return NULL;
     }
@@ -1428,16 +1399,10 @@ bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
 PyObject* HasField(CMessage* self, PyObject* arg) {
   char* field_name;
   Py_ssize_t size;
-#if PY_MAJOR_VERSION < 3
-  if (PyString_AsStringAndSize(arg, &field_name, &size) < 0) {
-    return NULL;
-  }
-#else
   field_name = const_cast<char*>(PyUnicode_AsUTF8AndSize(arg, &size));
   if (!field_name) {
     return NULL;
   }
-#endif
 
   Message* message = self->message;
   bool is_in_oneof;
@@ -1525,7 +1490,7 @@ static int InternalReparentFields(
   if (new_message == nullptr) {
     return -1;
   }
-  new_message->message = self->message->New();
+  new_message->message = self->message->New(nullptr);
   ScopedPyObjectPtr holder(reinterpret_cast<PyObject*>(new_message));
   new_message->child_submessages = new CMessage::SubMessagesMap();
   new_message->composite_fields = new CMessage::CompositeFieldsMap();
@@ -1555,10 +1520,17 @@ static int InternalReparentFields(
                                            to_release);
   }
 
-  self->message->GetReflection()->SwapFields(
-      self->message, new_message->message,
-      std::vector<const FieldDescriptor*>(fields_to_swap.begin(),
-                                          fields_to_swap.end()));
+  if (self->message->GetArena() == new_message->message->GetArena()) {
+    MessageReflectionFriend::UnsafeShallowSwapFields(
+        self->message, new_message->message,
+        std::vector<const FieldDescriptor*>(fields_to_swap.begin(),
+                                            fields_to_swap.end()));
+  } else {
+    self->message->GetReflection()->SwapFields(
+        self->message, new_message->message,
+        std::vector<const FieldDescriptor*>(fields_to_swap.begin(),
+                                            fields_to_swap.end()));
+  }
 
   // This might delete the Python message completely if all children were moved.
   Py_DECREF(self);
@@ -1679,10 +1651,10 @@ static PyObject* InternalSerializeToString(
     CMessage* self, PyObject* args, PyObject* kwargs,
     bool require_initialized) {
   // Parse the "deterministic" kwarg; defaults to False.
-  static char* kwlist[] = { "deterministic", 0 };
+  static const char* kwlist[] = {"deterministic", 0};
   PyObject* deterministic_obj = Py_None;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist,
-                                   &deterministic_obj)) {
+  if (!PyArg_ParseTupleAndKeywords(
+          args, kwargs, "|O", const_cast<char**>(kwlist), &deterministic_obj)) {
     return NULL;
   }
   // Preemptively convert to a bool first, so we don't need to back out of
@@ -1698,7 +1670,7 @@ static PyObject* InternalSerializeToString(
     if (errors == NULL) {
       return NULL;
     }
-    ScopedPyObjectPtr comma(PyString_FromString(","));
+    ScopedPyObjectPtr comma(PyUnicode_FromString(","));
     if (comma == NULL) {
       return NULL;
     }
@@ -1824,7 +1796,7 @@ static PyObject* ToStr(CMessage* self) {
     PyErr_SetString(PyExc_ValueError, "Unable to convert message to str");
     return NULL;
   }
-  return PyString_FromString(output.c_str());
+  return PyUnicode_FromString(output.c_str());
 }
 
 PyObject* MergeFrom(CMessage* self, PyObject* arg) {
@@ -1898,18 +1870,6 @@ static PyObject* CopyFrom(CMessage* self, PyObject* arg) {
   Py_RETURN_NONE;
 }
 
-// Protobuf has a 64MB limit built in, this variable will override this. Please
-// do not enable this unless you fully understand the implications: protobufs
-// must all be kept in memory at the same time, so if they grow too big you may
-// get OOM errors. The protobuf APIs do not provide any tools for processing
-// protobufs in chunks.  If you have protos this big you should break them up if
-// it is at all convenient to do so.
-#ifdef PROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS
-static bool allow_oversize_protos = true;
-#else
-static bool allow_oversize_protos = false;
-#endif
-
 // Provide a method in the module to set allow_oversize_protos to a boolean
 // value. This method returns the newly value of allow_oversize_protos.
 PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
@@ -1927,9 +1887,8 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
 }
 
 static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
-  const void* data;
-  Py_ssize_t data_length;
-  if (PyObject_AsReadBuffer(arg, &data, &data_length) < 0) {
+  Py_buffer data;
+  if (PyObject_GetBuffer(arg, &data, PyBUF_SIMPLE) < 0) {
     return NULL;
   }
 
@@ -1942,7 +1901,8 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   const char* ptr;
   internal::ParseContext ctx(
       depth, false, &ptr,
-      StringPiece(static_cast<const char*>(data), data_length));
+      StringPiece(static_cast<const char*>(data.buf), data.len));
+  PyBuffer_Release(&data);
   ctx.data().pool = factory->pool->pool;
   ctx.data().factory = factory->message_factory;
 
@@ -1959,7 +1919,9 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   // explicit in our correctness checks.
   if (ptr == nullptr || ctx.BytesUntilLimit(ptr) < 0) {
     // Parse error or the parser overshoot the limit.
-    PyErr_Format(DecodeError_class, "Error parsing message");
+    PyErr_Format(
+        DecodeError_class, "Error parsing message with type '%s'",
+        self->GetMessageClass()->message_descriptor->full_name().c_str());
     return NULL;
   }
   // ctx has an explicit limit set (length of string_view), so we have to
@@ -1968,9 +1930,9 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
     // TODO(jieluo): Raise error and return NULL instead.
     // b/27494216
     PyErr_Warn(nullptr, "Unexpected end-group tag: Not all data was converted");
-    return PyInt_FromLong(data_length - ctx.BytesUntilLimit(ptr));
+    return PyLong_FromLong(data.len - ctx.BytesUntilLimit(ptr));
   }
-  return PyInt_FromLong(data_length);
+  return PyLong_FromLong(data.len);
 }
 
 static PyObject* ParseFromString(CMessage* self, PyObject* arg) {
@@ -2035,7 +1997,7 @@ static PyObject* WhichOneof(CMessage* self, PyObject* arg) {
     Py_RETURN_NONE;
   } else {
     const std::string& name = field_in_oneof->name();
-    return PyString_FromStringAndSize(name.c_str(), name.size());
+    return PyUnicode_FromStringAndSize(name.c_str(), name.size());
   }
 }
 
@@ -2135,8 +2097,8 @@ PyObject* FindInitializationErrors(CMessage* self) {
   }
   for (size_t i = 0; i < errors.size(); ++i) {
     const std::string& error = errors[i];
-    PyObject* error_string = PyString_FromStringAndSize(
-        error.c_str(), error.length());
+    PyObject* error_string =
+        PyUnicode_FromStringAndSize(error.c_str(), error.length());
     if (error_string == NULL) {
       Py_DECREF(error_list);
       return NULL;
@@ -2191,22 +2153,22 @@ PyObject* InternalGetScalar(const Message* message,
   PyObject* result = NULL;
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
-      int32 value = reflection->GetInt32(*message, field_descriptor);
-      result = PyInt_FromLong(value);
+      int32_t value = reflection->GetInt32(*message, field_descriptor);
+      result = PyLong_FromLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
-      int64 value = reflection->GetInt64(*message, field_descriptor);
+      int64_t value = reflection->GetInt64(*message, field_descriptor);
       result = PyLong_FromLongLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
-      uint32 value = reflection->GetUInt32(*message, field_descriptor);
-      result = PyInt_FromSize_t(value);
+      uint32_t value = reflection->GetUInt32(*message, field_descriptor);
+      result = PyLong_FromSsize_t(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
-      uint64 value = reflection->GetUInt64(*message, field_descriptor);
+      uint64_t value = reflection->GetUInt64(*message, field_descriptor);
       result = PyLong_FromUnsignedLongLong(value);
       break;
     }
@@ -2235,7 +2197,7 @@ PyObject* InternalGetScalar(const Message* message,
     case FieldDescriptor::CPPTYPE_ENUM: {
       const EnumValueDescriptor* enum_value =
           message->GetReflection()->GetEnum(*message, field_descriptor);
-      result = PyInt_FromLong(enum_value->number());
+      result = PyLong_FromLong(enum_value->number());
       break;
     }
     default:
@@ -2251,8 +2213,6 @@ CMessage* InternalGetSubMessage(
     CMessage* self, const FieldDescriptor* field_descriptor) {
   const Reflection* reflection = self->message->GetReflection();
   PyMessageFactory* factory = GetFactoryForMessage(self);
-  const Message& sub_message = reflection->GetMessage(
-      *self->message, field_descriptor, factory->message_factory);
 
   CMessageClass* message_class = message_factory::GetOrCreateMessageClass(
       factory, field_descriptor->message_type());
@@ -2270,7 +2230,21 @@ CMessage* InternalGetSubMessage(
   Py_INCREF(self);
   cmsg->parent = self;
   cmsg->parent_field_descriptor = field_descriptor;
-  cmsg->read_only = !reflection->HasField(*self->message, field_descriptor);
+  if (reflection->HasField(*self->message, field_descriptor)) {
+    // Force triggering MutableMessage to set the lazy message 'Dirty'
+    if (MessageReflectionFriend::IsLazyField(reflection, *self->message,
+                                             field_descriptor)) {
+      Message* sub_message = reflection->MutableMessage(
+          self->message, field_descriptor, factory->message_factory);
+      cmsg->read_only = false;
+      cmsg->message = sub_message;
+      return cmsg;
+    }
+  } else {
+    cmsg->read_only = true;
+  }
+  const Message& sub_message = reflection->GetMessage(
+      *self->message, field_descriptor, factory->message_factory);
   cmsg->message = const_cast<Message*>(&sub_message);
   return cmsg;
 }
@@ -2413,7 +2387,7 @@ PyObject* ToUnicode(CMessage* self) {
   if (text_format == NULL) {
     return NULL;
   }
-  ScopedPyObjectPtr method_name(PyString_FromString("MessageToString"));
+  ScopedPyObjectPtr method_name(PyUnicode_FromString("MessageToString"));
   if (method_name == NULL) {
     return NULL;
   }
@@ -2424,11 +2398,7 @@ PyObject* ToUnicode(CMessage* self) {
   if (encoded == NULL) {
     return NULL;
   }
-#if PY_MAJOR_VERSION < 3
-  PyObject* decoded = PyString_AsDecodedObject(encoded.get(), "utf-8", NULL);
-#else
   PyObject* decoded = PyUnicode_FromEncodedObject(encoded.get(), "utf-8", NULL);
-#endif
   if (decoded == NULL) {
     return NULL;
   }
@@ -2612,7 +2582,7 @@ PyObject* GetFieldValue(CMessage* self,
   ContainerBase* py_container = nullptr;
   if (field_descriptor->is_map()) {
     const Descriptor* entry_type = field_descriptor->message_type();
-    const FieldDescriptor* value_type = entry_type->FindFieldByName("value");
+    const FieldDescriptor* value_type = entry_type->map_value();
     if (value_type->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       CMessageClass* value_class = message_factory::GetMessageClass(
           GetFactoryForMessage(self), value_type->message_type());
@@ -2689,7 +2659,7 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
 PyObject* ContainerBase::DeepCopy() {
   CMessage* new_parent =
       cmessage::NewEmptyMessage(this->parent->GetMessageClass());
-  new_parent->message = this->parent->message->New();
+  new_parent->message = this->parent->message->New(nullptr);
 
   // Copy the map field into the new message.
   this->parent->message->GetReflection()->SwapFields(
@@ -2853,20 +2823,36 @@ Message* PyMessage_GetMutableMessagePointer(PyObject* msg) {
   return cmsg->message;
 }
 
-PyObject* PyMessage_New(const Descriptor* descriptor,
-                        PyObject* py_message_factory) {
+// Returns a new reference to the MessageClass to use for message creation.
+// - if a PyMessageFactory is passed, use it.
+// - Otherwise, if a PyDescriptorPool was created, use its factory.
+static CMessageClass* GetMessageClassFromDescriptor(
+    const Descriptor* descriptor, PyObject* py_message_factory) {
   PyMessageFactory* factory = nullptr;
   if (py_message_factory == nullptr) {
-    factory = GetDescriptorPool_FromPool(descriptor->file()->pool())
-                  ->py_message_factory;
+    PyDescriptorPool* pool =
+        GetDescriptorPool_FromPool(descriptor->file()->pool());
+    if (pool == nullptr) {
+      PyErr_SetString(PyExc_TypeError,
+                      "Unknown descriptor pool; C++ users should call "
+                      "DescriptorPool_FromPool and keep it alive");
+      return nullptr;
+    }
+    factory = pool->py_message_factory;
   } else if (PyObject_TypeCheck(py_message_factory, &PyMessageFactory_Type)) {
     factory = reinterpret_cast<PyMessageFactory*>(py_message_factory);
   } else {
     PyErr_SetString(PyExc_TypeError, "Expected a MessageFactory");
     return nullptr;
   }
-  auto* message_class =
-      message_factory::GetOrCreateMessageClass(factory, descriptor);
+
+  return message_factory::GetOrCreateMessageClass(factory, descriptor);
+}
+
+PyObject* PyMessage_New(const Descriptor* descriptor,
+                        PyObject* py_message_factory) {
+  CMessageClass* message_class =
+      GetMessageClassFromDescriptor(descriptor, py_message_factory);
   if (message_class == nullptr) {
     return nullptr;
   }
@@ -2881,20 +2867,8 @@ PyObject* PyMessage_New(const Descriptor* descriptor,
 
 PyObject* PyMessage_NewMessageOwnedExternally(Message* message,
                                               PyObject* py_message_factory) {
-  if (py_message_factory) {
-    PyErr_SetString(PyExc_NotImplementedError,
-                    "Default message_factory=NULL is the only supported value");
-    return nullptr;
-  }
-  if (message->GetReflection()->GetMessageFactory() !=
-      MessageFactory::generated_factory()) {
-    PyErr_SetString(PyExc_TypeError,
-                    "Message pointer was not created from the default factory");
-    return nullptr;
-  }
-
-  CMessageClass* message_class = message_factory::GetOrCreateMessageClass(
-      GetDefaultDescriptorPool()->py_message_factory, message->GetDescriptor());
+  CMessageClass* message_class = GetMessageClassFromDescriptor(
+      message->GetDescriptor(), py_message_factory);
   if (message_class == nullptr) {
     return nullptr;
   }
@@ -2914,7 +2888,7 @@ void InitGlobals() {
   // TODO(gps): Check all return values in this function for NULL and propagate
   // the error (MemoryError) on up to result in an import failure.  These should
   // also be freed and reset to NULL during finalization.
-  kDESCRIPTOR = PyString_FromString("DESCRIPTOR");
+  kDESCRIPTOR = PyUnicode_FromString("DESCRIPTOR");
 
   PyObject *dummy_obj = PySet_New(NULL);
   kEmptyWeakref = PyWeakref_NewRef(dummy_obj, NULL);
@@ -2983,11 +2957,7 @@ bool InitProto2MessageModule(PyObject *m) {
         reinterpret_cast<PyObject*>(&RepeatedCompositeContainer_Type));
 
     // Register them as MutableSequence.
-#if PY_MAJOR_VERSION >= 3
     ScopedPyObjectPtr collections(PyImport_ImportModule("collections.abc"));
-#else
-    ScopedPyObjectPtr collections(PyImport_ImportModule("collections"));
-#endif
     if (collections == NULL) {
       return false;
     }

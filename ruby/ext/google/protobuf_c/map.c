@@ -93,7 +93,7 @@ VALUE Map_GetRubyWrapper(upb_map* map, upb_fieldtype_t key_type,
   if (val == Qnil) {
     val = Map_alloc(cMap);
     Map* self;
-    ObjectCache_Add(map, val, Arena_get(arena));
+    ObjectCache_Add(map, val);
     TypedData_Get_Struct(val, Map, &Map_type, self);
     self->map = map;
     self->arena = arena;
@@ -167,7 +167,8 @@ VALUE Map_deep_copy(VALUE obj) {
                             new_arena_rb);
 }
 
-const upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef *field) {
+const upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef* field,
+                             upb_arena* arena) {
   const upb_fielddef* key_field = map_field_key(field);
   const upb_fielddef* value_field = map_field_value(field);
   TypeInfo value_type_info = TypeInfo_get(value_field);
@@ -189,6 +190,7 @@ const upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef *field) {
     rb_raise(cTypeError, "Map value type has wrong message/enum class");
   }
 
+  Arena_fuse(self->arena, arena);
   return self->map;
 }
 
@@ -236,7 +238,7 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
     upb_msg *self_msg = Map_GetMutable(_self);
     size_t iter = UPB_MAP_BEGIN;
 
-    upb_arena_fuse(arena, Arena_get(other->arena));
+    Arena_fuse(other->arena, arena);
 
     if (self->key_type != other->key_type ||
         self->value_type_info.type != other->value_type_info.type ||
@@ -318,7 +320,7 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
 
   self->map = upb_map_new(Arena_get(self->arena), self->key_type,
                           self->value_type_info.type);
-  ObjectCache_Add(self->map, _self, Arena_get(self->arena));
+  ObjectCache_Add(self->map, _self);
 
   if (init_arg != Qnil) {
     Map_merge_into_self(_self, init_arg);
@@ -511,7 +513,7 @@ static VALUE Map_dup(VALUE _self) {
   upb_arena *arena = Arena_get(new_self->arena);
   upb_map *new_map = Map_GetMutable(new_map_rb);
 
-  upb_arena_fuse(arena, Arena_get(self->arena));
+  Arena_fuse(self->arena, arena);
 
   while (upb_mapiter_next(self->map, &iter)) {
     upb_msgval key = upb_mapiter_key(self->map, iter);
@@ -590,9 +592,10 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
  */
 static VALUE Map_freeze(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-
-  ObjectCache_Pin(self->map, _self, Arena_get(self->arena));
-  RB_OBJ_FREEZE(_self);
+  if (!RB_OBJ_FROZEN(_self)) {
+    Arena_Pin(self->arena, _self);
+    RB_OBJ_FREEZE(_self);
+  }
   return _self;
 }
 
@@ -677,7 +680,10 @@ void Map_register(VALUE module) {
   rb_define_method(klass, "delete", Map_delete, 1);
   rb_define_method(klass, "clear", Map_clear, 0);
   rb_define_method(klass, "length", Map_length, 0);
+  rb_define_method(klass, "size", Map_length, 0);
   rb_define_method(klass, "dup", Map_dup, 0);
+  // Also define #clone so that we don't inherit Object#clone.
+  rb_define_method(klass, "clone", Map_dup, 0);
   rb_define_method(klass, "==", Map_eq, 1);
   rb_define_method(klass, "freeze", Map_freeze, 0);
   rb_define_method(klass, "hash", Map_hash, 0);

@@ -64,7 +64,7 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
     EMPTY_MAP_FIELD.makeImmutable();
   }
 
-  /** Returns an singleton immutable empty MapFieldLite instance. */
+  /** Returns a singleton immutable empty MapFieldLite instance. */
   @SuppressWarnings({"unchecked", "cast"})
   public static <K, V> MapFieldLite<K, V> emptyMapField() {
     return (MapFieldLite<K, V>) EMPTY_MAP_FIELD;

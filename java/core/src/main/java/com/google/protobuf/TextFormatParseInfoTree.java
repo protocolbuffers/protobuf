@@ -90,7 +90,7 @@ public class TextFormatParseInfoTree {
   /**
    * Retrieve all the locations of a field.
    *
-   * @param fieldDescriptor the @{link FieldDescriptor} of the desired field
+   * @param fieldDescriptor the {@link FieldDescriptor} of the desired field
    * @return a list of the locations of values of the field. If there are not values or the field
    *     doesn't exist, an empty list is returned.
    */
@@ -105,7 +105,7 @@ public class TextFormatParseInfoTree {
    * <p>Returns the {@link TextFormatParseLocation} for index-th value of the field in the parsed
    * text.
    *
-   * @param fieldDescriptor the @{link FieldDescriptor} of the desired field
+   * @param fieldDescriptor the {@link FieldDescriptor} of the desired field
    * @param index the index of the value.
    * @return the {@link TextFormatParseLocation} of the value
    * @throws IllegalArgumentException index is out of range
@@ -117,7 +117,7 @@ public class TextFormatParseInfoTree {
   /**
    * Retrieve a list of all the location information trees for a sub message field.
    *
-   * @param fieldDescriptor the @{link FieldDescriptor} of the desired field
+   * @param fieldDescriptor the {@link FieldDescriptor} of the desired field
    * @return A list of {@link TextFormatParseInfoTree}
    */
   public List<TextFormatParseInfoTree> getNestedTrees(final FieldDescriptor fieldDescriptor) {
@@ -128,7 +128,7 @@ public class TextFormatParseInfoTree {
   /**
    * Returns the parse info tree for the given field, which must be a message type.
    *
-   * @param fieldDescriptor the @{link FieldDescriptor} of the desired sub message
+   * @param fieldDescriptor the {@link FieldDescriptor} of the desired sub message
    * @param index the index of message value.
    * @return the {@code ParseInfoTree} of the message value. {@code null} is returned if the field
    *     doesn't exist or the index is out of range.
