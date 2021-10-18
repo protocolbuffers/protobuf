@@ -29,6 +29,7 @@
 #define UPB_UTIL_REQUIRED_FIELDS_H_
 
 #include "upb/def.h"
+#include "upb/reflection.h"
 
 /* Must be last. */
 #include "upb/port_def.inc"
@@ -37,9 +38,31 @@
 extern "C" {
 #endif
 
-bool upb_msg_findunsetrequired(const upb_msg *msg, const upb_msgdef *m,
-                               const upb_symtab *ext_pool, char ***fields,
-                               size_t *count, upb_arena *arena);
+// A FieldPath can be encoded as an array of upb_FieldPathEntry, in the
+// following format:
+//    { {.field = f1}, {.field = f2} }                      # f1.f2
+//    { {.field = f1}, {.index = 5}, {.field = f2} }        # f1[5].f2
+//    { {.field = f1}, {.key = "abc"}, {.field = f2} }      # f1["abc"].f2
+//
+// A user must look at the type of `f1` to know whether to expect an index or
+// map key after it.
+typedef union {
+  const upb_fielddef* field;
+  size_t index;
+  upb_msgval key;
+} upb_FieldPathEntry;
+
+// Checks whether `msg` or any of its children has unset required fields,
+// returning `true` if any are found.
+//
+// When this function returns true, `fields` is updated (if non-NULL) to point
+// to a heap-allocated array encoding the field paths of the required fields
+// that are missing.  Each path is terminated with {.field = NULL}, and a final
+// {.field = NULL} terminates the list of paths.  The caller is responsible for
+// freeing this array.
+bool upb_util_HasUnsetRequired(const upb_msg* msg, const upb_msgdef* m,
+                               const upb_symtab* ext_pool,
+                               upb_FieldPathEntry** fields);
 
 #ifdef __cplusplus
 }  /* extern "C" */

@@ -37,145 +37,133 @@
 #include "upb/port_def.inc"
 
 typedef struct {
-  upb_arena *arena;
-  char **fields;
-  size_t count;
+  upb_FieldPathEntry *path;
   size_t size;
+  size_t cap;
+} upb_FieldPathVector;
+
+typedef struct {
+  upb_FieldPathVector stack;
+  upb_FieldPathVector out_fields;
   const upb_symtab *ext_pool;
   jmp_buf err;
-} Find_Ctx;
+  bool has_unset_required;
+  bool save_paths;
+} upb_FindContext;
 
-UPB_PRINTF(2, 3)
-static char *upb_arena_printf(upb_arena *arena, const char *fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  size_t n = vsnprintf(NULL, 0, fmt, args);
-  va_end(args);
-
-  char *p = upb_arena_malloc(arena, n + 1);
-  if (!p) return NULL;
-
-  va_start(args, fmt);
-  vsnprintf(p, n + 1, fmt, args);
-  va_end(args);
-  return p;
+void upb_FieldPathVector_Init(upb_FieldPathVector *vec) {
+  vec->path = NULL;
+  vec->size = 0;
+  vec->cap = 0;
 }
 
-UPB_PRINTF(2, 3)
-static char *upb_asprintf(char *old, const char *fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  size_t n = vsnprintf(NULL, 0, fmt, args);
-  va_end(args);
-
-  size_t old_size = old ? strlen(old) : 0;
-  char *p = realloc(old, old_size + n + 1);
-  if (!p) return NULL;
-
-  va_start(args, fmt);
-  vsnprintf(p + old_size, n + 1, fmt, args);
-  va_end(args);
-  return p;
-}
-
-// Allocate on the heap instead of the arena, since the accumulated
-// allocations can grow quite large (O(all fields), not just set).
-bool append_str(Find_Ctx *ctx, const char *prefix, const upb_fielddef *f) {
-  if (ctx->count == ctx->size) {
-    size_t new_size = UPB_MAX(4, ctx->size * 2);
-    char **new_fields = upb_arena_realloc(ctx->arena, ctx->fields,
-                                          ctx->size * sizeof(*ctx->fields),
-                                          new_size * sizeof(*ctx->fields));
-    if (!new_fields) return false;
-    ctx->fields = new_fields;
-    ctx->size = new_size;
+void upb_FieldPathVector_Reserve(upb_FindContext *ctx, upb_FieldPathVector *vec,
+                                 size_t elems) {
+  if (vec->cap - vec->size < elems) {
+    size_t need = vec->size + elems;
+    vec->cap = UPB_MAX(4, vec->cap);
+    while (vec->cap < need) vec->cap *= 2;
+    vec->path = realloc(vec->path, vec->cap * sizeof(*vec->path));
+    if (!vec->path) { UPB_LONGJMP(ctx->err, 1); }
   }
-  char *s = upb_arena_printf(ctx->arena, "%s.%s", prefix, upb_fielddef_name(f));
-  if (!s) return false;
-  ctx->fields[ctx->count++] = s;
-  return true;
 }
 
-// Really we should use a map key for maps, but proto2 doesn't so we don't.
-char *alloc_prefix(const char *prefix, const upb_fielddef *f, int index) {
-  char *ret = NULL;
-  if (upb_fielddef_isextension(f)) {
-    ret = upb_asprintf(ret, "(%s)", upb_fielddef_fullname(f));
-  } else {
-    ret = upb_asprintf(ret, "%s", upb_fielddef_name(f));
-  }
-
-  if (index >= 0) {
-    ret = upb_asprintf(ret, "[%d]", index);
-  }
-
-  ret = upb_asprintf(ret, ".");
-  return ret;
+void upb_FindContext_Push(upb_FindContext* ctx, upb_FieldPathEntry ent) {
+  if (!ctx->save_paths) return;
+  upb_FieldPathVector_Reserve(ctx, &ctx->stack, 1);
+  ctx->stack.path[ctx->stack.size++] = ent;
 }
 
-bool find_in_msg(Find_Ctx *ctx, const char *prefix, const upb_msg *msg,
-                 const upb_msgdef *m) {
+void upb_FindContext_Pop(upb_FindContext* ctx) {
+  if (!ctx->save_paths) return;
+  assert(ctx->stack.size != 0);
+  ctx->stack.size--;
+}
+
+static void upb_util_FindUnsetRequiredInternal(upb_FindContext *ctx,
+                                               const upb_msg *msg,
+                                               const upb_msgdef *m) {
   // OPT: add markers in the schema for where we can avoid iterating:
   // 1. messages with no required fields.
   // 2. messages that cannot possibly reach any required fields.
+
+  // Iterate over all fields to see if any required fields are missing.
   for (int i = 0, n = upb_msgdef_fieldcount(m); i < n; i++) {
     const upb_fielddef *f = upb_msgdef_field(m, i);
     if (upb_fielddef_label(f) != UPB_LABEL_REQUIRED) continue;
+
     if (!upb_msg_has(msg, f)) {
-      if (!append_str(ctx, prefix, f)) return false;;
+      // A required field is missing.
+      ctx->has_unset_required = true;
+
+      // Append the contents of the stack to the out array, then NULL-terminate.
+      upb_FieldPathVector_Reserve(ctx, &ctx->out_fields, ctx->stack.size + 1);
+      memcpy(&ctx->out_fields.path[ctx->out_fields.size], &ctx->stack.path,
+             ctx->stack.size * sizeof(*ctx->stack.path));
+      ctx->out_fields.size += ctx->stack.size;
+      ctx->out_fields.path[ctx->out_fields.size++] =
+          (upb_FieldPathEntry){.field = NULL};
     }
   }
 
+  // Iterate over all present fields to find sub-messages that might be missing
+  // required fields.  This may revisit some of the fields already inspected
+  // in the previous loop.  We do this separately because this loop will also
+  // find present extensions, which the previous loop will not.
+  //
+  // TODO(haberman): consider changing upb_msg_next() to be capable of visiting
+  // extensions only, for example with a UPB_MSG_BEGINEXT constant.
   size_t iter = UPB_MSG_BEGIN;
   const upb_fielddef *f;
   upb_msgval val;
   while (upb_msg_next(msg, m, ctx->ext_pool, &f, &val, &iter)) {
     // Skip non-submessage fields.
     if (!upb_fielddef_issubmsg(f)) continue;
+
+    upb_FindContext_Push(ctx, (upb_FieldPathEntry){.field = f});
     const upb_msgdef *sub_m = upb_fielddef_msgsubdef(f);
+
     if (upb_fielddef_ismap(f)) {
+      // Map field.
       const upb_fielddef *val_f = upb_msgdef_field(sub_m, 1);
       const upb_msgdef *val_m = upb_fielddef_msgsubdef(val_f);
       if (!val_m) continue;
       const upb_map *map = val.map_val;
       size_t iter = UPB_MAP_BEGIN;
-      int i = 0;
       while (upb_mapiter_next(map, &iter)) {
-        char *sub_prefix = alloc_prefix(prefix, f, i++);
-        if (!sub_prefix) return false;
+        upb_msgval key = upb_mapiter_value(map, iter);
         upb_msgval map_val = upb_mapiter_value(map, iter);
-        bool ok = find_in_msg(ctx, sub_prefix, map_val.msg_val, val_m);
-        free(sub_prefix);
-        if (!ok) return false;
+        upb_FindContext_Push(ctx, (upb_FieldPathEntry){.key = key});
+        upb_util_FindUnsetRequiredInternal(ctx, map_val.msg_val, val_m);
+        upb_FindContext_Pop(ctx);
       }
     } else if (upb_fielddef_isseq(f)) {
+      // Repeated field.
       const upb_array *arr = val.array_val;
       for (size_t i = 0, n = upb_array_size(arr); i < n; i++) {
         upb_msgval elem = upb_array_get(arr, i);
-        char *sub_prefix = alloc_prefix(prefix, f, i);
-        if (!sub_prefix) return false;
-        bool ok = find_in_msg(ctx, sub_prefix, elem.msg_val, sub_m);
-        free(sub_prefix);
-        if (!ok) return false;
+        upb_FindContext_Push(ctx, (upb_FieldPathEntry){.index = i});
+        upb_util_FindUnsetRequiredInternal(ctx, elem.msg_val, sub_m);
+        upb_FindContext_Pop(ctx);
       }
     } else {
-      char *sub_prefix = alloc_prefix(prefix, f, -1);
-      if (!sub_prefix) return false;
-      bool ok = find_in_msg(ctx, sub_prefix, val.msg_val, sub_m);
-      free(sub_prefix);
-      if (!ok) return false;
+      // Scalar field.
+      upb_util_FindUnsetRequiredInternal(ctx, val.msg_val, sub_m);
     }
-  }
 
-  return true;
+    upb_FindContext_Pop(ctx);
+  }
 }
 
-bool upb_msg_findunsetrequired(const upb_msg *msg, const upb_msgdef *m,
-                               const upb_symtab *ext_pool, char ***fields,
-                               size_t *count, upb_arena *arena) {
-  Find_Ctx ctx = {arena, NULL, 0, 0, ext_pool};
-  if (!find_in_msg(&ctx, "", msg, m)) return false;
-  *count = ctx.count;
-  *fields = ctx.fields;
-  return true;
+bool upb_util_HasUnsetRequired(const upb_msg* msg, const upb_msgdef* m,
+                               const upb_symtab* ext_pool,
+                               upb_FieldPathEntry** fields) {
+  upb_FindContext ctx;
+  ctx.ext_pool = ext_pool;
+  upb_FieldPathVector_Init(&ctx.stack);
+  upb_FieldPathVector_Init(&ctx.out_fields);
+  upb_util_FindUnsetRequiredInternal(&ctx, msg, m);
+  free(ctx.stack.path);
+  if (fields) *fields = ctx.out_fields.path;
+  return ctx.has_unset_required;
 }
