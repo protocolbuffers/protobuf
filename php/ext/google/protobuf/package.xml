@@ -10,10 +10,10 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2021-10-15</date>
- <time>13:38:38</time>
+ <date>2021-10-18</date>
+ <time>15:36:35</time>
  <version>
-  <release>3.19.0RC1</release>
+  <release>3.19.0RC2</release>
   <api>3.19.0</api>
  </version>
  <stability>
@@ -22,7 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- * Added "object" as a reserved name (#8962)
+ * Added &quot;object&quot; as a reserved name (#8962)
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -1109,6 +1109,21 @@ G  A release.
    </stability>
    <date>2021-10-15</date>
    <time>13:38:38</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.19.0RC2</release>
+    <api>3.19.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2021-10-18</date>
+   <time>15:36:35</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
    </notes>
