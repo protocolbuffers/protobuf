@@ -822,18 +822,11 @@ public class JsonFormatTest {
   }
 
   @Test
-  public void testTimestampMergeError() throws Exception {
-    final String incorrectTimestampString = "{\"seconds\":1800,\"nanos\":0}";
-    try {
-      TestTimestamp.Builder builder = TestTimestamp.newBuilder();
-      mergeFromJson(String.format("{\"timestamp_value\": %s}", incorrectTimestampString), builder);
-      assertWithMessage("expected exception").fail();
-    } catch (InvalidProtocolBufferException e) {
-      // Exception expected.
-      assertThat(e)
-          .hasMessageThat()
-          .isEqualTo("Failed to parse timestamp: " + incorrectTimestampString);
-    }
+  public void testTimestampMerge() throws Exception {
+    final String timestampString = "{\"seconds\":1800,\"nanos\":0}";
+    TestTimestamp.Builder builder = TestTimestamp.newBuilder();
+    mergeFromJson(String.format("{\"timestamp_value\": %s}", incorrectTimestampString), builder);
+    assertThat(String.valueOf(builder.getTimestampValue()).trim()).isEqualTo("seconds: 1800");
   }
 
   @Test
