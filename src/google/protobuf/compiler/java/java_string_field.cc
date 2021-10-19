@@ -1,5 +1,4 @@
-// Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Protocol Buffers - Google's data interchange format // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -968,16 +967,14 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
 
   // property for List<String>
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
-  printer->Print(
-      variables_,
-      "public val $kt_name$: "
-      "com.google.protobuf.kotlin.DslList"
-      "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>\n"
-      "  @kotlin.OptIn"
-      "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
-      "  get() = com.google.protobuf.kotlin.DslList(\n"
-      "    $kt_dsl_builder$.${$get$capitalized_name$List$}$()\n"
-      "  )\n");
+  printer->Print(variables_,
+                 "$kt_deprecation$public val $kt_name$: "
+                 "com.google.protobuf.kotlin.DslList"
+                 "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>\n"
+                 "  @kotlin.jvm.JvmSynthetic\n"
+                 "  get() = com.google.protobuf.kotlin.DslList(\n"
+                 "    $kt_dsl_builder$.${$get$capitalized_name$List$}$()\n"
+                 "  )\n");
 
   // List<String>.add(String)
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
@@ -994,13 +991,14 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
   // List<String> += String
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                /* builder */ false);
-  printer->Print(variables_,
+   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"plusAssign$kt_capitalized_name$\")\n"
-                 "public operator fun com.google.protobuf.kotlin.DslList"
+                 "@Suppress(\"NOTHING_TO_INLINE\")\n"
+                 "public inline operator fun com.google.protobuf.kotlin.DslList"
                  "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>."
                  "plusAssign(value: kotlin.String) {\n"
-                 "  $kt_dsl_builder$.${$add$capitalized_name$$}$(value)\n"
+                 "  add(value)\n"
                  "}\n");
 
   // List<String>.addAll(Iterable<String>)
@@ -1019,14 +1017,15 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
   // List<String> += Iterable<String>
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                /* builder */ false);
-  printer->Print(
+   printer->Print(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@kotlin.jvm.JvmName(\"plusAssignAll$kt_capitalized_name$\")\n"
-      "public operator fun com.google.protobuf.kotlin.DslList"
+      "@Suppress(\"NOTHING_TO_INLINE\")\n"
+      "public inline operator fun com.google.protobuf.kotlin.DslList"
       "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>."
       "plusAssign(values: kotlin.collections.Iterable<kotlin.String>) {\n"
-      "  $kt_dsl_builder$.${$addAll$capitalized_name$$}$(values)\n"
+      "  addAll(values)\n"
       "}\n");
 
   // List<String>[Int] = String
