@@ -1,4 +1,5 @@
-// Protocol Buffers - Google's data interchange format // Copyright 2008 Google Inc.  All rights reserved.
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -1017,7 +1018,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
   // List<String> += Iterable<String>
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                /* builder */ false);
-   printer->Print(
+  printer->Print(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@kotlin.jvm.JvmName(\"plusAssignAll$kt_capitalized_name$\")\n"
