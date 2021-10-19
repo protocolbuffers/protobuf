@@ -467,8 +467,6 @@ void EndPackageModules(int levels, io::Printer* printer) {
 
 bool GenerateDslDescriptor(const FileDescriptor* file, io::Printer* printer,
                            std::string* error) {
-  printer->Print(
-    "require 'google/protobuf'\n\n");
   printer->Print("Google::Protobuf::DescriptorPool.generated_pool.build do\n");
   printer->Indent();
   printer->Print("add_file(\"$filename$\", :syntax => :$syntax$) do\n",
@@ -508,6 +506,9 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
     "# source: $filename$\n"
     "\n",
     "filename", file->name());
+
+  printer->Print(
+    "require 'google/protobuf'\n\n");
 
   for (int i = 0; i < file->dependency_count(); i++) {
     printer->Print("require '$name$'\n", "name", GetRequireName(file->dependency(i)->name()));
