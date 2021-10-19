@@ -38,7 +38,6 @@ import com.google.protobuf.Any;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.BytesValue;
-import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.FloatValue;
@@ -50,6 +49,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.Struct;
+import com.google.protobuf.Timestamp;
 import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import com.google.protobuf.Value;
@@ -68,6 +68,8 @@ import com.google.protobuf.util.proto.JsonTestProto.TestRecursive;
 import com.google.protobuf.util.proto.JsonTestProto.TestStruct;
 import com.google.protobuf.util.proto.JsonTestProto.TestTimestamp;
 import com.google.protobuf.util.proto.JsonTestProto.TestWrappers;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -79,6 +81,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.Encoder;
+import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.protobuf.ProtobufDatumReader;
+import org.apache.avro.protobuf.ProtobufDatumWriter;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -186,6 +197,11 @@ public class JsonFormatTest {
   private void mergeFromJsonIgnoringUnknownFields(String json, Message.Builder builder)
       throws IOException {
     JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
+  }
+
+  private void mergeFromJsonLenient(String json, Message.Builder builder)
+          throws IOException {
+    JsonFormat.parser().lenient().merge(json, builder);
   }
 
   @Test
@@ -834,6 +850,54 @@ public class JsonFormatTest {
           .hasMessageThat()
           .isEqualTo("Failed to parse timestamp: " + incorrectTimestampString);
     }
+  }
+
+  @Test
+  public void testTimestampMergeLenient() throws Exception {
+    final String timestampJson = "{\"seconds\":1800,\"nanos\":10}";
+
+    TestTimestamp.Builder builder = TestTimestamp.newBuilder();
+    mergeFromJsonLenient(String.format("{\"timestamp_value\": %s}", timestampJson), builder);
+    TestTimestamp timestamp = builder.build();
+    assertThat(timestamp.getTimestampValue().getNanos()).isEqualTo(10);
+    assertThat(timestamp.getTimestampValue().getSeconds()).isEqualTo(1800);
+  }
+
+  @Test
+  public void testTimestampProtoToAvroToJsonToProto() throws Exception {
+    TestTimestamp testTimestamp = TestTimestamp.newBuilder()
+            .setTimestampValue(Timestamp.newBuilder()
+                            .setSeconds(10)
+                            .setNanos(100)
+                            .build())
+            .build();
+
+    //Proto To Avro
+    GenericRecord avroRecord = genericRecord(testTimestamp);
+
+    //Avro to Json
+    String json = avroRecord.toString();
+
+    //Json to Proto
+    TestTimestamp.Builder builder = TestTimestamp.newBuilder();
+    mergeFromJsonLenient(json, builder);
+
+    assertThat(builder.build()).isEqualTo(testTimestamp);
+  }
+
+  private static GenericRecord genericRecord(Message message) throws IOException {
+    Class<Message> tClass = (Class<Message>) message.getClass();
+    ProtobufDatumWriter<Message> datumWriter = new ProtobufDatumWriter<>(tClass);
+    GenericDatumReader<GenericRecord> genericDatumReader = new GenericDatumReader<>(new ProtobufDatumReader<>(tClass).getSchema());
+    return getGenericRecord(message, datumWriter, genericDatumReader);
+  }
+
+  private static <T extends Message> GenericRecord getGenericRecord(T message, ProtobufDatumWriter<T> writer, GenericDatumReader<GenericRecord> reader) throws IOException {
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    Encoder e = EncoderFactory.get().binaryEncoder(os, null);
+    writer.write(message, e);
+    e.flush();
+    return reader.read(null, DecoderFactory.get().binaryDecoder(new ByteArrayInputStream(os.toByteArray()), null));
   }
 
   @Test
