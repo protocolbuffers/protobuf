@@ -33,13 +33,13 @@ class TestWellKnownTypes < Test::Unit::TestCase
     time = Time.at(123456, Rational(654321321, 1000))
     ts = Google::Protobuf::Timestamp.from_time(time)
     assert_equal 123456, ts.seconds
-    assert_equal 654321000, ts.nanos
+    assert_equal 654321321, ts.nanos
     assert_equal time, ts.to_time
 
       # Instance method returns the same value as class method
     assert_equal Google::Protobuf::Timestamp.new.from_time(time),
                  Google::Protobuf::Timestamp.from_time(time)
-end
+  end
 
   def test_duration
     duration = Google::Protobuf::Duration.new(seconds: 123, nanos: 456)
