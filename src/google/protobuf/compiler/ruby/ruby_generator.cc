@@ -507,11 +507,13 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
     "\n",
     "filename", file->name());
 
-  printer->Print(
-    "require 'google/protobuf'\n\n");
+  printer->Print("require 'google/protobuf'\n\n");
 
-  for (int i = 0; i < file->dependency_count(); i++) {
-    printer->Print("require '$name$'\n", "name", GetRequireName(file->dependency(i)->name()));
+  if (file->dependency_count() != 0) {
+    for (int i = 0; i < file->dependency_count(); i++) {
+      printer->Print("require '$name$'\n", "name", GetRequireName(file->dependency(i)->name()));
+    }
+    printer->Print("\n");
   }
 
   // TODO: Remove this when ruby supports extensions for proto2 syntax.
