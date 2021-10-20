@@ -193,13 +193,9 @@ static void upb_FindContext_Pop(upb_FindContext* ctx) {
   ctx->stack.size--;
 }
 
-static void upb_util_FindUnsetRequiredInternal(upb_FindContext* ctx,
-                                               const upb_msg* msg,
-                                               const upb_msgdef* m) {
-  // OPT: add markers in the schema for where we can avoid iterating:
-  // 1. messages with no required fields.
-  // 2. messages that cannot possibly reach any required fields.
-
+static void upb_util_FindUnsetInMessage(upb_FindContext* ctx,
+                                        const upb_msg* msg,
+                                        const upb_msgdef* m) {
   // Iterate over all fields to see if any required fields are missing.
   for (int i = 0, n = upb_msgdef_fieldcount(m); i < n; i++) {
     const upb_fielddef* f = upb_msgdef_field(m, i);
@@ -223,6 +219,16 @@ static void upb_util_FindUnsetRequiredInternal(upb_FindContext* ctx,
       }
     }
   }
+}
+
+static void upb_util_FindUnsetRequiredInternal(upb_FindContext* ctx,
+                                               const upb_msg* msg,
+                                               const upb_msgdef* m) {
+  // OPT: add markers in the schema for where we can avoid iterating:
+  // 1. messages with no required fields.
+  // 2. messages that cannot possibly reach any required fields.
+
+  upb_util_FindUnsetInMessage(ctx, msg, m);
 
   // Iterate over all present fields to find sub-messages that might be missing
   // required fields.  This may revisit some of the fields already inspected

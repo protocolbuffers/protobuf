@@ -67,6 +67,8 @@ typedef union {
 //
 // The output buffer `buf` will always be NULL-terminated. If the output data
 // (including NULL terminator) exceeds `size`, the result will be truncated.
+// Returns the string length of the data we attempted to write, excluding the
+// terminating NULL.
 size_t upb_FieldPath_ToText(upb_FieldPathEntry **path, char *buf, size_t size);
 
 // Checks whether `msg` or any of its children has unset required fields,
