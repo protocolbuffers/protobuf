@@ -30,6 +30,7 @@
 
 #include <google/protobuf/pyext/unknown_fields.h>
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <set>
 #include <memory>

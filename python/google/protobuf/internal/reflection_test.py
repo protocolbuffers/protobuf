@@ -37,6 +37,7 @@ import copy
 import gc
 import operator
 import struct
+import sys
 import warnings
 import unittest
 
@@ -376,7 +377,8 @@ class ReflectionTest(unittest.TestCase):
     self.assertRaises(TypeError, setattr, proto, 'optional_float', 'foo')
     self.assertRaises(TypeError, setattr, proto, 'optional_double', 'foo')
     # TODO(jieluo): Fix type checking difference for python and c extension
-    if api_implementation.Type() == 'python':
+    if (api_implementation.Type() == 'python' or
+        (sys.version_info.major, sys.version_info.minor) >= (3, 10)):
       self.assertRaises(TypeError, setattr, proto, 'optional_bool', 1.1)
     else:
       proto.optional_bool = 1.1
