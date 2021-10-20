@@ -59,6 +59,9 @@ static void upb_FieldPath_Printf(upb_PrintfAppender* a, const char* fmt, ...) {
   va_end(args);
 
   if (UPB_LIKELY(have > n)) {
+    // We can't end up here if the user passed (NULL, 0), therefore ptr is known
+    // to be non-NULL, and UPB_PTRADD() is not necessary.
+    assert(a->ptr);
     a->ptr += n;
   } else {
     a->ptr = UPB_PTRADD(a->ptr, have);
