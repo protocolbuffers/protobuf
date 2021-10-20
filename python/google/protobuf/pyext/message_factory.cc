@@ -30,6 +30,7 @@
 
 #include <unordered_map>
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <google/protobuf/dynamic_message.h>
