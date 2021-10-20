@@ -32,7 +32,9 @@ cc_test(
     name = "required_fields_test",
     srcs = ["required_fields_test.cc"],
     deps = [
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
+        "//:json",
         ":required_fields",
         ":required_fields_test_upb_proto",
         ":required_fields_test_upb_proto_reflection",

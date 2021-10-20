@@ -48,9 +48,19 @@ extern "C" {
 // map key after it.
 typedef union {
   const upb_fielddef* field;
-  size_t index;
-  upb_msgval key;
+  size_t array_index;
+  upb_msgval map_key;
 } upb_FieldPathEntry;
+
+// Writes a string representing `*path` to `buf` in the following textual format:
+//    foo.bar.repeated_baz[2].string_msg_map["abc"]
+//
+// The given buffer will always be NULL-terminated. If the data (including NULL
+// terminator) exceeds `size`, the result will be truncated.
+//
+// The pointer `*path` will be updated to point to one past the terminating NULL
+// pointer of the input array.
+size_t upb_FieldPath_ToText(upb_FieldPathEntry **path, char *buf, size_t size);
 
 // Checks whether `msg` or any of its children has unset required fields,
 // returning `true` if any are found.
