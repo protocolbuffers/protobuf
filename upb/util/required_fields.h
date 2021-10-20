@@ -44,8 +44,11 @@ extern "C" {
 //    { {.field = f1}, {.index = 5}, {.field = f2} }        # f1[5].f2
 //    { {.field = f1}, {.key = "abc"}, {.field = f2} }      # f1["abc"].f2
 //
-// A user must look at the type of `f1` to know whether to expect an index or
-// map key after it.
+// Users must look at the type of `field` to know if an index or map key
+// follows.
+//
+// A field path may be NULL-terminated, in which case a NULL field indicates
+// the end of the field path.
 typedef union {
   const upb_fielddef* field;
   size_t array_index;
@@ -53,13 +56,17 @@ typedef union {
 } upb_FieldPathEntry;
 
 // Writes a string representing `*path` to `buf` in the following textual format:
-//    foo.bar.repeated_baz[2].string_msg_map["abc"]
+//    foo.bar                    # Regular fields
+//    repeated_baz[2].bar        # Repeated field
+//    int32_msg_map[5].bar       # Integer-keyed map
+//    string_msg_map["abc"]      # String-keyed map
+//    bool_msg_map[true]         # Bool-keyed map
 //
-// The given buffer will always be NULL-terminated. If the data (including NULL
-// terminator) exceeds `size`, the result will be truncated.
+// The input array `*path` must be NULL-terminated.  The pointer `*path` will be
+// updated to point to one past the terminating NULL pointer of the input array.
 //
-// The pointer `*path` will be updated to point to one past the terminating NULL
-// pointer of the input array.
+// The output buffer `buf` will always be NULL-terminated. If the output data
+// (including NULL terminator) exceeds `size`, the result will be truncated.
 size_t upb_FieldPath_ToText(upb_FieldPathEntry **path, char *buf, size_t size);
 
 // Checks whether `msg` or any of its children has unset required fields,
