@@ -43,6 +43,15 @@ class EnumTypeWrapper(object):
 
   DESCRIPTOR = None
 
+  # This is a type alias, which mypy typing stubs can type as
+  # a genericized parameter constrained to an int, allowing subclasses
+  # to be typed with more constraint in .pyi stubs
+  # Eg.
+  # def MyGeneratedEnum(Message):
+  #   ValueType = NewType('ValueType', int)
+  #   def Name(self, number: MyGeneratedEnum.ValueType) -> str
+  ValueType = int
+
   def __init__(self, enum_type):
     """Inits EnumTypeWrapper with an EnumDescriptor."""
     self._enum_type = enum_type
