@@ -35,5 +35,13 @@ bazel test -k --copt=-Werror --host_copt=-Werror \
   @com_google_protobuf//:cc_proto_blacklist_test
 trap - EXIT
 
-cd examples
+pushd examples
 bazel build //...
+popd
+
+# Verify that we can build successfully from generated tar files.
+./autogen.sh && ./configure && make -j$(nproc) dist
+DIST=`ls *.tar.gz`
+tar -xf $DIST
+cd ${DIST//.tar.gz}
+bazel build //:protobuf //:protobuf_java

@@ -1424,8 +1424,10 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   examples/list_people.py                \
   examples/list_people_test.go           \
   examples/pubspec.yaml                  \
+  maven_install.json                     \
   protobuf.bzl                           \
   protobuf_deps.bzl                      \
+  protobuf_version.bzl                   \
   third_party/zlib.BUILD                 \
   util/python/BUILD                      \
   internal.bzl
