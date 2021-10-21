@@ -30,8 +30,10 @@
 
 #include <memory>
 
+#include <google/protobuf/any.pb.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/printer.h>
 
@@ -61,6 +63,17 @@ TEST(CSharpEnumValue, PascalCasedPrefixStripping) {
   // Identifiers can't start with digits
   EXPECT_EQ("_2Bar", GetEnumValueName("Foo", "FOO_2_BAR"));
   EXPECT_EQ("_2", GetEnumValueName("Foo", "FOO___2"));
+}
+
+TEST(DescriptorProtoHelpers, IsDescriptorProto) {
+  EXPECT_TRUE(IsDescriptorProto(DescriptorProto::descriptor()->file()));
+  EXPECT_FALSE(IsDescriptorProto(Any::descriptor()->file()));
+}
+
+TEST(DescriptorProtoHelpers, IsDescriptorOptionMessage) {
+  EXPECT_TRUE(IsDescriptorOptionMessage(FileOptions::descriptor()));
+  EXPECT_FALSE(IsDescriptorOptionMessage(Any::descriptor()));
+  EXPECT_FALSE(IsDescriptorOptionMessage(DescriptorProto::descriptor()));
 }
 
 }  // namespace
