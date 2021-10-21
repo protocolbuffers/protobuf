@@ -292,3 +292,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Protoc-gen-jsonschema
    * Website: https://github.com/chrusty/protoc-gen-jsonschema
    * Extension: 1125-1129
+
+1. Protoc-gen-checker
+   * Website: https://github.com/Intrinsec/protoc-gen-checker
+   * Extension: 1130-1139
