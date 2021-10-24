@@ -64,7 +64,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
 
   /**
    * Names that should be avoided (in UpperCamelCase format).
-   * Using them will cause the compiler to generate accessors whose names are
+   * Using them causes the compiler to generate accessors whose names are
    * colliding with methods defined in base classes.
    *
    * Keep this list in sync with kForbiddenWordList in
@@ -616,21 +616,88 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
     String name = (fd.getType() == FieldDescriptor.Type.GROUP)
                   ? fd.getMessageType().getName()
                   : fd.getName();
-    String suffix = specialFieldNames.contains(snakeCaseToCamelCase(name, true)) ? "__" : "_";
-    return snakeCaseToCamelCase(name, false) + suffix;
+
+    // convert to UpperCamelCase for comparison to the specialFieldNames
+    // (which are in UpperCamelCase)
+    String upperCamelCaseName = snakeCaseToUpperCamelCase(name);
+
+    String suffix = specialFieldNames.contains(upperCamelCaseName)
+                  // For field names that match the specialFieldNames,
+                  // append "__" to prevent field accessor method names from
+                  // clashing with other methods.
+                  ? "__"
+                  // For other field names, append "_" to prevent field names
+                  // from clashing with java keywords.
+                  : "_";
+    return snakeCaseToLowerCamelCase(name) + suffix;
   }
 
   private static String getCachedSizeFieldName(FieldDescriptor fd) {
-    return snakeCaseToCamelCase(fd.getName()) + "MemoizedSerializedSize";
+    return snakeCaseToLowerCamelCase(fd.getName()) + "MemoizedSerializedSize";
   }
 
-  private static String snakeCaseToCamelCase(String snakeCase) {
+  /**
+   * Converts a snake case string into lower camel case.
+   *
+   * <p>
+   * Some examples:
+   * <pre>
+   *     snakeCaseToLowerCamelCase("foo_bar") => "fooBar"
+   *     snakeCaseToLowerCamelCase("foo") => "foo"
+   * </pre>
+   * </p>
+   *
+   * @param snakeCase the string in snake case to convert
+   * @return the string converted to camel case, with a lowercase first character
+   */
+  private static String snakeCaseToLowerCamelCase(String snakeCase) {
   	return snakeCaseToCamelCase(snakeCase, false);
   }
 
   /**
-   * This method must match exactly with the corresponding function in protocol compiler. See:
-   * https://github.com/protocolbuffers/protobuf/blob/v3.15.0/src/google/protobuf/compiler/java/java_helpers.cc#L158
+   * Converts a snake case string into upper camel case.
+   *
+   * <p>
+   * Some examples:
+   * <pre>
+   *     snakeCaseToUpperCamelCase("foo_bar") => "FooBar"
+   *     snakeCaseToUpperCamelCase("foo") => "Foo"
+   * </pre>
+   * </p>
+   *
+   * @param snakeCase the string in snake case to convert
+   * @return the string converted to camel case, with an uppercase first character
+   */
+  private static String snakeCaseToUpperCamelCase(String snakeCase) {
+  	return snakeCaseToCamelCase(snakeCase, true);
+  }
+
+  /**
+   * Converts a snake case string into camel case.
+   *
+   * <p>For better readability, prefer calling either
+   * {@link #snakeCaseToLowerCamelCase(String)} or {@link #snakeCaseToUpperCamelCase(String)}.</p>
+   *
+   * <p>Some examples:
+   * <pre>
+   *     snakeCaseToCamelCase("foo_bar", false) => "fooBar"
+   *     snakeCaseToCamelCase("foo_bar", true) => "FooBar"
+   *     snakeCaseToCamelCase("foo", false) => "foo"
+   *     snakeCaseToCamelCase("foo", true) => "Foo"
+   *     snakeCaseToCamelCase("Foo", false) => "foo"
+   *     snakeCaseToCamelCase("fooBar", false) => "fooBar"
+   * </pre></p>
+   *
+   * <p>This implementation of this method must exactly match the corresponding
+   * function in the protocol compiler.  Specifically, the
+   * {@code UnderscoresToCamelCase} function in
+   * {@code src/google/protobuf/compiler/java/java_helpers.cc}.</p>
+   *
+   * @param snakeCase the string in snake case to convert
+   * @param capFirst true if the first letter of the returned string should be uppercase.
+   *                 false if the first letter of the returned string should be lowercase.
+   * @return the string converted to camel case, with an uppercase or lowercase first
+   *         character depending on if {@code capFirst} is true of false, respectively
    */
   private static String snakeCaseToCamelCase(String snakeCase, boolean capFirst) {
     StringBuilder sb = new StringBuilder(snakeCase.length() + 1);
@@ -680,7 +747,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
 
   /** Constructs the name of the get method for the given field in the proto. */
   private static String getterForField(String snakeCase) {
-    String camelCase = snakeCaseToCamelCase(snakeCase);
+    String camelCase = snakeCaseToLowerCamelCase(snakeCase);
     StringBuilder builder = new StringBuilder("get");
     // Capitalize the first character in the field name.
     builder.append(Character.toUpperCase(camelCase.charAt(0)));
@@ -706,7 +773,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
     }
 
     private static OneofInfo newInfo(Class<?> messageType, OneofDescriptor desc) {
-      String camelCase = snakeCaseToCamelCase(desc.getName());
+      String camelCase = snakeCaseToLowerCamelCase(desc.getName());
       String valueFieldName = camelCase + "_";
       String caseFieldName = camelCase + "Case_";
 
