@@ -207,11 +207,15 @@ static_assert(std::is_standard_layout<ParseTableField>::value, "");
 static_assert(std::is_trivial<ParseTableField>::value, "");
 static_assert(std::is_standard_layout<AuxiliaryParseTableField>::value, "");
 static_assert(std::is_trivial<AuxiliaryParseTableField>::value, "");
-static_assert(std::is_standard_layout<AuxiliaryParseTableField::enum_aux>::value, "");
+static_assert(
+    std::is_standard_layout<AuxiliaryParseTableField::enum_aux>::value, "");
 static_assert(std::is_trivial<AuxiliaryParseTableField::enum_aux>::value, "");
-static_assert(std::is_standard_layout<AuxiliaryParseTableField::message_aux>::value, "");
-static_assert(std::is_trivial<AuxiliaryParseTableField::message_aux>::value, "");
-static_assert(std::is_standard_layout<AuxiliaryParseTableField::string_aux>::value, "");
+static_assert(
+    std::is_standard_layout<AuxiliaryParseTableField::message_aux>::value, "");
+static_assert(std::is_trivial<AuxiliaryParseTableField::message_aux>::value,
+              "");
+static_assert(
+    std::is_standard_layout<AuxiliaryParseTableField::string_aux>::value, "");
 static_assert(std::is_trivial<AuxiliaryParseTableField::string_aux>::value, "");
 static_assert(std::is_standard_layout<ParseTable>::value, "");
 static_assert(std::is_trivial<ParseTable>::value, "");
@@ -259,7 +263,7 @@ inline void TableSerialize(const MessageLite& msg,
   SerializeInternal(base, field_table + 1, num_fields, output);
 }
 
-uint8* SerializeInternalToArray(const uint8* base, const FieldMetadata* table,
+PROTOBUF_EXPORT uint8* SerializeInternalToArray(const uint8* base, const FieldMetadata* table,
                                 int32 num_fields, bool is_deterministic,
                                 uint8* buffer);
 

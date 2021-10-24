@@ -33,9 +33,17 @@
 
 #include <php.h>
 
+#include "def.h"
 #include "php-upb.h"
 
 void Map_ModuleInit();
+
+typedef struct {
+  upb_fieldtype_t key_type;
+  TypeInfo val_type;
+} MapField_Type;
+
+MapField_Type MapType_Get(const upb_fielddef *f);
 
 // Gets a upb_map* for the PHP object |val|:
 //  * If |val| is a RepeatedField object, we first check its type and verify
@@ -47,17 +55,16 @@ void Map_ModuleInit();
 //    |arena| and add all of the PHP elements to it.
 //
 // If an error occurs, we raise a PHP error and return NULL.
-upb_map *MapField_GetUpbMap(zval *val, const upb_fielddef *f, upb_arena *arena);
+upb_map *MapField_GetUpbMap(zval *val, MapField_Type type, upb_arena *arena);
 
 // Creates a PHP MapField object for the given upb_map* and |f| and returns it
 // in |val|. The PHP object will keep a reference to this |arena| to ensure the
 // underlying array data stays alive.
 //
 // If |map| is NULL, this will return a PHP null object.
-void MapField_GetPhpWrapper(zval *val, upb_map *arr, const upb_fielddef *f,
+void MapField_GetPhpWrapper(zval *val, upb_map *arr, MapField_Type type,
                             zval *arena);
 
-bool MapEq(const upb_map *m1, const upb_map *m2, upb_fieldtype_t key_type,
-           upb_fieldtype_t val_type, const upb_msgdef *m);
+bool MapEq(const upb_map *m1, const upb_map *m2, MapField_Type type);
 
 #endif  // PHP_PROTOBUF_MAP_H_

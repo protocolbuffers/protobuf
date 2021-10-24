@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
 #include <google/protobuf/stubs/callback.h>
@@ -63,9 +64,9 @@ bool GetBoolOptionOrDefault(
   return GetBoolFromAny(opt->value());
 }
 
-int64 GetInt64OptionOrDefault(
+int64_t GetInt64OptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    StringPiece option_name, int64 default_value) {
+    StringPiece option_name, int64_t default_value) {
   const google::protobuf::Option* opt = FindOptionOrNull(options, option_name);
   if (opt == nullptr) {
     return default_value;
@@ -106,7 +107,7 @@ bool GetBoolFromAny(const google::protobuf::Any& any) {
   return b.value();
 }
 
-int64 GetInt64FromAny(const google::protobuf::Any& any) {
+int64_t GetInt64FromAny(const google::protobuf::Any& any) {
   google::protobuf::Int64Value i;
   ParseFromAny(any.value(), &i);
   return i.value();
@@ -179,7 +180,7 @@ const google::protobuf::Field* FindJsonFieldInTypeOrNull(
 }
 
 const google::protobuf::Field* FindFieldInTypeByNumberOrNull(
-    const google::protobuf::Type* type, int32 number) {
+    const google::protobuf::Type* type, int32_t number) {
   if (type != nullptr) {
     for (int i = 0; i < type->fields_size(); ++i) {
       const google::protobuf::Field& field = type->fields(i);
@@ -205,7 +206,7 @@ const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
 }
 
 const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
-    const google::protobuf::Enum* enum_type, int32 value) {
+    const google::protobuf::Enum* enum_type, int32_t value) {
   if (enum_type != nullptr) {
     for (int i = 0; i < enum_type->enumvalue_size(); ++i) {
       const google::protobuf::EnumValue& enum_value = enum_type->enumvalue(i);

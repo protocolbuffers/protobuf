@@ -699,6 +699,61 @@ TEST_P(ProtoStreamObjectWriterTest, ImplicitMessageList) {
   CheckOutput(expected);
 }
 
+TEST_P(ProtoStreamObjectWriterTest, DisableImplicitMessageList) {
+  options_.disable_implicit_message_list = true;
+  options_.suppress_implicit_message_list_error = true;
+  ResetProtoWriter();
+
+  Book expected;
+  // The repeated friend field of the author is empty.
+  expected.mutable_author();
+
+  EXPECT_CALL(listener_, InvalidValue(_, _, _)).Times(0);
+
+  ow_->StartObject("")
+      ->StartObject("author")
+      ->StartObject("friend")
+      ->RenderString("name", "first")
+      ->EndObject()
+      ->StartObject("friend")
+      ->RenderString("name", "second")
+      ->EndObject()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(expected);
+}
+
+TEST_P(ProtoStreamObjectWriterTest,
+       DisableImplicitMessageListWithoutErrorSuppressed) {
+  options_.disable_implicit_message_list = true;
+  ResetProtoWriter();
+
+  Book expected;
+  // The repeated friend field of the author is empty.
+  expected.mutable_author();
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(
+          _, StringPiece("friend"),
+          StringPiece(
+              "Starting an object in a repeated field but the parent object "
+              "is not a list")))
+      .With(Args<0>(HasObjectLocation("author")))
+      .Times(2);
+
+  ow_->StartObject("")
+      ->StartObject("author")
+      ->StartObject("friend")
+      ->RenderString("name", "first")
+      ->EndObject()
+      ->StartObject("friend")
+      ->RenderString("name", "second")
+      ->EndObject()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(expected);
+}
+
 TEST_P(ProtoStreamObjectWriterTest,
        LastWriteWinsOnNonRepeatedMessageFieldWithDuplicates) {
   Book expected;

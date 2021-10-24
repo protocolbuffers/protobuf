@@ -1,7 +1,5 @@
 <?php
 
-require_once('generated/NoNamespaceEnum.php');
-require_once('generated/NoNamespaceMessage.php');
 require_once('test_base.php');
 require_once('test_util.php');
 
@@ -23,6 +21,13 @@ use Foo\testLowerCaseMessage;
 use Foo\testLowerCaseEnum;
 use PBEmpty\PBEcho\TestEmptyPackage;
 use Php\Test\TestNamespace;
+
+# This is not allowed, but we at least shouldn't crash.
+class C extends \Google\Protobuf\Internal\Message {
+    public function __construct($data = null) {
+        parent::__construct($data);
+    }
+}
 
 class GeneratedClassTest extends TestBase
 {
@@ -69,6 +74,33 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(MAX_INT32, $m->getOptionalInt32());
         $m->setOptionalInt32(MIN_INT32_STRING);
         $this->assertSame(MIN_INT32, $m->getOptionalInt32());
+    }
+
+    #########################################################
+    # Test deprecated int32 field.
+    #########################################################
+
+    public function testDeprecatedInt32Field()
+    {
+        $m = new TestMessage();
+
+        // temporarily change error handler to capture the deprecated errors
+        $deprecationCount = 0;
+        set_error_handler(function ($errno, $errstr) use (&$deprecationCount) {
+            if ($errstr === 'deprecated_optional_int32 is deprecated.') {
+                $deprecationCount++;
+            }
+        }, E_USER_DEPRECATED);
+
+        // default test set
+        $m->setDeprecatedOptionalInt32(MAX_INT32);
+        $this->assertSame(MAX_INT32, $m->getDeprecatedOptionalInt32());
+        $m->setDeprecatedOptionalInt32(MIN_INT32);
+        $this->assertSame(MIN_INT32, $m->getDeprecatedOptionalInt32());
+
+        restore_error_handler();
+
+        $this->assertSame(4, $deprecationCount);
     }
 
     #########################################################
@@ -440,14 +472,18 @@ class GeneratedClassTest extends TestBase
     {
         $m = new TestMessage();
 
+        $this->assertNull($m->getOptionalMessage());
+
         $sub_m = new Sub();
         $sub_m->setA(1);
         $m->setOptionalMessage($sub_m);
         $this->assertSame(1, $m->getOptionalMessage()->getA());
+        $this->assertTrue($m->hasOptionalMessage());
 
         $null = null;
         $m->setOptionalMessage($null);
         $this->assertNull($m->getOptionalMessage());
+        $this->assertFalse($m->hasOptionalMessage());
     }
 
     public function testLegacyMessageField()
@@ -725,10 +761,10 @@ class GeneratedClassTest extends TestBase
     public function testMessageWithoutNamespace()
     {
         $m = new TestMessage();
-        $n = new NoNameSpaceMessage();
+        $n = new NoNamespaceMessage();
         $m->setOptionalNoNamespaceMessage($n);
         $repeatedNoNamespaceMessage = $m->getRepeatedNoNamespaceMessage();
-        $repeatedNoNamespaceMessage[] = new NoNameSpaceMessage();
+        $repeatedNoNamespaceMessage[] = new NoNamespaceMessage();
         $m->setRepeatedNoNamespaceMessage($repeatedNoNamespaceMessage);
 
         // test nested messages
@@ -741,9 +777,9 @@ class GeneratedClassTest extends TestBase
     public function testEnumWithoutNamespace()
     {
         $m = new TestMessage();
-        $m->setOptionalNoNamespaceEnum(NoNameSpaceEnum::VALUE_A);
+        $m->setOptionalNoNamespaceEnum(NoNamespaceEnum::VALUE_A);
         $repeatedNoNamespaceEnum = $m->getRepeatedNoNamespaceEnum();
-        $repeatedNoNamespaceEnum[] = NoNameSpaceEnum::VALUE_A;
+        $repeatedNoNamespaceEnum[] = NoNamespaceEnum::VALUE_A;
         $m->setRepeatedNoNamespaceEnum($repeatedNoNamespaceEnum);
         $this->assertTrue(true);
     }
@@ -1492,6 +1528,28 @@ class GeneratedClassTest extends TestBase
     }
 
     #########################################################
+    # Test clone.
+    #########################################################
+
+    public function testClone()
+    {
+        $m = new TestMessage([
+            'optional_int32' => -42,
+            'optional_int64' => -43,
+            'optional_message' => new Sub([
+                'a' => 33
+            ]),
+            'map_int32_message' => [1 => new Sub(['a' => 36])],
+        ]);
+        $m2 = clone $m;
+        $this->assertEquals($m->getOptionalInt32(), $m2->getOptionalInt32());
+        $this->assertEquals($m->getOptionalInt64(), $m2->getOptionalInt64());
+        $this->assertSame($m->getOptionalMessage(), $m2->getOptionalMessage());
+        $this->assertSame($m->getMapInt32Message()[1], $m2->getMapInt32Message()[1]);
+        $this->assertEquals($m->serializeToJsonString(), $m2->serializeToJsonString());
+    }
+
+    #########################################################
     # Test message equals.
     #########################################################
 
@@ -1694,6 +1752,32 @@ class GeneratedClassTest extends TestBase
         $m->clear();
         $this->assertFalse($m->hasOneofInt32());
         $this->assertFalse($m->hasOneofString());
+
+        $sub_m = new Sub();
+        $sub_m->setA(1);
+        $m->setOneofMessage($sub_m);
+        $this->assertTrue($m->hasOneofMessage());
+        $m->setOneofMessage(null);
+        $this->assertFalse($m->hasOneofMessage());
+    }
+
+    #########################################################
+    # Test that we don't crash if users create their own messages.
+    #########################################################
+
+    public function testUserDefinedClass() {
+        if (getenv("USE_ZEND_ALLOC") === "0") {
+            // We're running a memory test. This test appears to leak in a way
+            // we cannot control, PHP bug?
+            //
+            // TODO: investigate further.
+            $this->markTestSkipped();
+            return;
+        }
+
+        # This is not allowed, but at least we shouldn't crash.
+        $this->expectException(Exception::class);
+        new C();
     }
 
     #########################################################
@@ -1704,9 +1788,16 @@ class GeneratedClassTest extends TestBase
     {
         throw new Exception('Intended');
     }
-
     public function testNoSegfaultWithError()
     {
+        if (getenv("USE_ZEND_ALLOC") === "0") {
+            // We're running a memory test. This test appears to leak in a way
+            // we cannot control, PHP bug?
+            //
+            // TODO: investigate further.
+            $this->markTestSkipped();
+            return;
+        }
         $this->expectException(Exception::class);
 
         new TestMessage(['optional_int32' => $this->throwIntendedException()]);

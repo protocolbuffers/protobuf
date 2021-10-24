@@ -1,3 +1,7 @@
+Recommended.Proto2.JsonInput.FieldNameExtension.Validator
 Recommended.Proto3.JsonInput.BytesFieldBase64Url.JsonOutput
 Recommended.Proto3.JsonInput.BytesFieldBase64Url.ProtobufOutput
-Recommended.Proto2.JsonInput.FieldNameExtension.Validator
+Required.Proto3.JsonInput.OneofFieldNullFirst.JsonOutput
+Required.Proto3.JsonInput.OneofFieldNullFirst.ProtobufOutput
+Required.Proto3.JsonInput.OneofFieldNullSecond.JsonOutput
+Required.Proto3.JsonInput.OneofFieldNullSecond.ProtobufOutput

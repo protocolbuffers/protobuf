@@ -74,7 +74,7 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
 
   DynamicMessageTest() : factory_(&pool_) {}
 
-  virtual void SetUp() {
+  virtual void SetUp() override {
     // We want to make sure that DynamicMessage works (particularly with
     // extensions) even if we use descriptors that are *not* from compiled-in
     // types, so we make copies of the descriptors for unittest.proto and
@@ -285,6 +285,7 @@ TEST_F(DynamicMessageTest, Arena) {
   (void)oneof_message;
   // Return without freeing: should not leak.
 }
+
 
 TEST_F(DynamicMessageTest, Proto3) {
   Message* message = proto3_prototype_->New();

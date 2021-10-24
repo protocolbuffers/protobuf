@@ -245,19 +245,23 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::MessageParser<ManyWrapperFieldsMessage> _parser = new pb::MessageParser<ManyWrapperFieldsMessage>(() => new ManyWrapperFieldsMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<ManyWrapperFieldsMessage> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.Benchmarks.WrapperBenchmarkMessagesReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ManyWrapperFieldsMessage() {
       OnConstruction();
     }
@@ -265,6 +269,7 @@ namespace Google.Protobuf.Benchmarks {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ManyWrapperFieldsMessage(ManyWrapperFieldsMessage other) : this() {
       DoubleField95 = other.DoubleField95;
       DoubleField1 = other.DoubleField1;
@@ -381,6 +386,7 @@ namespace Google.Protobuf.Benchmarks {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ManyWrapperFieldsMessage Clone() {
       return new ManyWrapperFieldsMessage(this);
     }
@@ -390,6 +396,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField95_codec = pb::FieldCodec.ForStructWrapper<double>(762);
     private double? doubleField95_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField95 {
       get { return doubleField95_; }
       set {
@@ -403,6 +410,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField1_codec = pb::FieldCodec.ForStructWrapper<double>(10);
     private double? doubleField1_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField1 {
       get { return doubleField1_; }
       set {
@@ -416,6 +424,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField79_codec = pb::FieldCodec.ForStructWrapper<double>(634);
     private double? doubleField79_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField79 {
       get { return doubleField79_; }
       set {
@@ -429,6 +438,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field2_codec = pb::FieldCodec.ForStructWrapper<long>(18);
     private long? int64Field2_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field2 {
       get { return int64Field2_; }
       set {
@@ -442,6 +452,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField96_codec = pb::FieldCodec.ForStructWrapper<double>(770);
     private double? doubleField96_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField96 {
       get { return doubleField96_; }
       set {
@@ -455,6 +466,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field3_codec = pb::FieldCodec.ForStructWrapper<long>(26);
     private long? int64Field3_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field3 {
       get { return int64Field3_; }
       set {
@@ -468,6 +480,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field4_codec = pb::FieldCodec.ForStructWrapper<long>(34);
     private long? int64Field4_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field4 {
       get { return int64Field4_; }
       set {
@@ -481,6 +494,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField97_codec = pb::FieldCodec.ForStructWrapper<double>(778);
     private double? doubleField97_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField97 {
       get { return doubleField97_; }
       set {
@@ -494,6 +508,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField65_codec = pb::FieldCodec.ForStructWrapper<double>(522);
     private double? doubleField65_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField65 {
       get { return doubleField65_; }
       set {
@@ -507,6 +522,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField66_codec = pb::FieldCodec.ForStructWrapper<double>(530);
     private double? doubleField66_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField66 {
       get { return doubleField66_; }
       set {
@@ -520,6 +536,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField7_codec = pb::FieldCodec.ForStructWrapper<double>(58);
     private double? doubleField7_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField7 {
       get { return doubleField7_; }
       set {
@@ -533,6 +550,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField62_codec = pb::FieldCodec.ForStructWrapper<double>(498);
     private double? doubleField62_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField62 {
       get { return doubleField62_; }
       set {
@@ -546,6 +564,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField118_codec = pb::FieldCodec.ForStructWrapper<double>(946);
     private double? doubleField118_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField118 {
       get { return doubleField118_; }
       set {
@@ -559,6 +578,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField119_codec = pb::FieldCodec.ForStructWrapper<double>(954);
     private double? doubleField119_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField119 {
       get { return doubleField119_; }
       set {
@@ -572,6 +592,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField67_codec = pb::FieldCodec.ForStructWrapper<double>(538);
     private double? doubleField67_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField67 {
       get { return doubleField67_; }
       set {
@@ -585,6 +606,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField120_codec = pb::FieldCodec.ForStructWrapper<double>(962);
     private double? doubleField120_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField120 {
       get { return doubleField120_; }
       set {
@@ -598,6 +620,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField121_codec = pb::FieldCodec.ForStructWrapper<double>(970);
     private double? doubleField121_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField121 {
       get { return doubleField121_; }
       set {
@@ -611,6 +634,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField122_codec = pb::FieldCodec.ForStructWrapper<double>(978);
     private double? doubleField122_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField122 {
       get { return doubleField122_; }
       set {
@@ -624,6 +648,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField123_codec = pb::FieldCodec.ForStructWrapper<double>(986);
     private double? doubleField123_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField123 {
       get { return doubleField123_; }
       set {
@@ -637,6 +662,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField124_codec = pb::FieldCodec.ForStructWrapper<double>(994);
     private double? doubleField124_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField124 {
       get { return doubleField124_; }
       set {
@@ -650,6 +676,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField8_codec = pb::FieldCodec.ForStructWrapper<double>(66);
     private double? doubleField8_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField8 {
       get { return doubleField8_; }
       set {
@@ -663,6 +690,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField9_codec = pb::FieldCodec.ForStructWrapper<double>(74);
     private double? doubleField9_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField9 {
       get { return doubleField9_; }
       set {
@@ -676,6 +704,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField98_codec = pb::FieldCodec.ForStructWrapper<double>(786);
     private double? doubleField98_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField98 {
       get { return doubleField98_; }
       set {
@@ -689,6 +718,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField10_codec = pb::FieldCodec.ForStructWrapper<double>(82);
     private double? doubleField10_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField10 {
       get { return doubleField10_; }
       set {
@@ -702,6 +732,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField11_codec = pb::FieldCodec.ForStructWrapper<double>(90);
     private double? doubleField11_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField11 {
       get { return doubleField11_; }
       set {
@@ -715,6 +746,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField99_codec = pb::FieldCodec.ForStructWrapper<double>(794);
     private double? doubleField99_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField99 {
       get { return doubleField99_; }
       set {
@@ -728,6 +760,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField84_codec = pb::FieldCodec.ForStructWrapper<double>(674);
     private double? doubleField84_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField84 {
       get { return doubleField84_; }
       set {
@@ -741,6 +774,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField14_codec = pb::FieldCodec.ForStructWrapper<double>(114);
     private double? doubleField14_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField14 {
       get { return doubleField14_; }
       set {
@@ -754,6 +788,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField77_codec = pb::FieldCodec.ForStructWrapper<double>(618);
     private double? doubleField77_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField77 {
       get { return doubleField77_; }
       set {
@@ -767,6 +802,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField15_codec = pb::FieldCodec.ForStructWrapper<double>(122);
     private double? doubleField15_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField15 {
       get { return doubleField15_; }
       set {
@@ -780,6 +816,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field19_codec = pb::FieldCodec.ForStructWrapper<long>(154);
     private long? int64Field19_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field19 {
       get { return int64Field19_; }
       set {
@@ -793,6 +830,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field115_codec = pb::FieldCodec.ForStructWrapper<long>(922);
     private long? int64Field115_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field115 {
       get { return int64Field115_; }
       set {
@@ -806,6 +844,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField116_codec = pb::FieldCodec.ForStructWrapper<double>(930);
     private double? doubleField116_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField116 {
       get { return doubleField116_; }
       set {
@@ -819,6 +858,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field117_codec = pb::FieldCodec.ForStructWrapper<long>(938);
     private long? int64Field117_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field117 {
       get { return int64Field117_; }
       set {
@@ -832,6 +872,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField20_codec = pb::FieldCodec.ForStructWrapper<double>(162);
     private double? doubleField20_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField20 {
       get { return doubleField20_; }
       set {
@@ -845,6 +886,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField21_codec = pb::FieldCodec.ForStructWrapper<double>(170);
     private double? doubleField21_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField21 {
       get { return doubleField21_; }
       set {
@@ -858,6 +900,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<string> _single_stringField73_codec = pb::FieldCodec.ForClassWrapper<string>(586);
     private string stringField73_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string StringField73 {
       get { return stringField73_; }
       set {
@@ -871,6 +914,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<string> _single_stringField74_codec = pb::FieldCodec.ForClassWrapper<string>(594);
     private string stringField74_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string StringField74 {
       get { return stringField74_; }
       set {
@@ -884,6 +928,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField22_codec = pb::FieldCodec.ForStructWrapper<double>(178);
     private double? doubleField22_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField22 {
       get { return doubleField22_; }
       set {
@@ -897,6 +942,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField69_codec = pb::FieldCodec.ForStructWrapper<double>(554);
     private double? doubleField69_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField69 {
       get { return doubleField69_; }
       set {
@@ -910,6 +956,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField70_codec = pb::FieldCodec.ForStructWrapper<double>(562);
     private double? doubleField70_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField70 {
       get { return doubleField70_; }
       set {
@@ -923,6 +970,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField71_codec = pb::FieldCodec.ForStructWrapper<double>(570);
     private double? doubleField71_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField71 {
       get { return doubleField71_; }
       set {
@@ -936,6 +984,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField72_codec = pb::FieldCodec.ForStructWrapper<double>(578);
     private double? doubleField72_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField72 {
       get { return doubleField72_; }
       set {
@@ -949,6 +998,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField25_codec = pb::FieldCodec.ForStructWrapper<double>(202);
     private double? doubleField25_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField25 {
       get { return doubleField25_; }
       set {
@@ -962,6 +1012,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field26_codec = pb::FieldCodec.ForStructWrapper<long>(210);
     private long? int64Field26_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field26 {
       get { return int64Field26_; }
       set {
@@ -975,6 +1026,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField68_codec = pb::FieldCodec.ForStructWrapper<double>(546);
     private double? doubleField68_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField68 {
       get { return doubleField68_; }
       set {
@@ -988,6 +1040,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField28_codec = pb::FieldCodec.ForStructWrapper<double>(226);
     private double? doubleField28_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField28 {
       get { return doubleField28_; }
       set {
@@ -1001,6 +1054,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField106_codec = pb::FieldCodec.ForStructWrapper<double>(850);
     private double? doubleField106_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField106 {
       get { return doubleField106_; }
       set {
@@ -1014,6 +1068,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField29_codec = pb::FieldCodec.ForStructWrapper<double>(234);
     private double? doubleField29_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField29 {
       get { return doubleField29_; }
       set {
@@ -1027,6 +1082,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField30_codec = pb::FieldCodec.ForStructWrapper<double>(242);
     private double? doubleField30_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField30 {
       get { return doubleField30_; }
       set {
@@ -1040,6 +1096,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField101_codec = pb::FieldCodec.ForStructWrapper<double>(810);
     private double? doubleField101_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField101 {
       get { return doubleField101_; }
       set {
@@ -1053,6 +1110,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField102_codec = pb::FieldCodec.ForStructWrapper<double>(818);
     private double? doubleField102_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField102 {
       get { return doubleField102_; }
       set {
@@ -1066,6 +1124,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField103_codec = pb::FieldCodec.ForStructWrapper<double>(826);
     private double? doubleField103_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField103 {
       get { return doubleField103_; }
       set {
@@ -1079,6 +1138,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField104_codec = pb::FieldCodec.ForStructWrapper<double>(834);
     private double? doubleField104_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField104 {
       get { return doubleField104_; }
       set {
@@ -1092,6 +1152,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField105_codec = pb::FieldCodec.ForStructWrapper<double>(842);
     private double? doubleField105_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField105 {
       get { return doubleField105_; }
       set {
@@ -1105,6 +1166,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField31_codec = pb::FieldCodec.ForStructWrapper<double>(250);
     private double? doubleField31_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField31 {
       get { return doubleField31_; }
       set {
@@ -1118,6 +1180,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field32_codec = pb::FieldCodec.ForStructWrapper<long>(258);
     private long? int64Field32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field32 {
       get { return int64Field32_; }
       set {
@@ -1131,6 +1194,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField75_codec = pb::FieldCodec.ForStructWrapper<double>(602);
     private double? doubleField75_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField75 {
       get { return doubleField75_; }
       set {
@@ -1144,6 +1208,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField129_codec = pb::FieldCodec.ForStructWrapper<double>(1034);
     private double? doubleField129_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField129 {
       get { return doubleField129_; }
       set {
@@ -1156,6 +1221,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int EnumField80FieldNumber = 80;
     private int enumField80_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int EnumField80 {
       get { return enumField80_; }
       set {
@@ -1167,6 +1233,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int EnumField81FieldNumber = 81;
     private int enumField81_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int EnumField81 {
       get { return enumField81_; }
       set {
@@ -1179,6 +1246,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field82_codec = pb::FieldCodec.ForStructWrapper<long>(658);
     private long? int64Field82_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field82 {
       get { return int64Field82_; }
       set {
@@ -1191,6 +1259,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int EnumField83FieldNumber = 83;
     private int enumField83_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int EnumField83 {
       get { return enumField83_; }
       set {
@@ -1203,6 +1272,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field85_codec = pb::FieldCodec.ForStructWrapper<long>(682);
     private long? int64Field85_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field85 {
       get { return int64Field85_; }
       set {
@@ -1216,6 +1286,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field86_codec = pb::FieldCodec.ForStructWrapper<long>(690);
     private long? int64Field86_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field86 {
       get { return int64Field86_; }
       set {
@@ -1229,6 +1300,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field87_codec = pb::FieldCodec.ForStructWrapper<long>(698);
     private long? int64Field87_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field87 {
       get { return int64Field87_; }
       set {
@@ -1242,6 +1314,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field125_codec = pb::FieldCodec.ForStructWrapper<long>(1002);
     private long? int64Field125_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field125 {
       get { return int64Field125_; }
       set {
@@ -1255,6 +1328,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field37_codec = pb::FieldCodec.ForStructWrapper<long>(298);
     private long? int64Field37_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field37 {
       get { return int64Field37_; }
       set {
@@ -1268,6 +1342,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField38_codec = pb::FieldCodec.ForStructWrapper<double>(306);
     private double? doubleField38_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField38 {
       get { return doubleField38_; }
       set {
@@ -1281,6 +1356,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_interactions_codec = pb::FieldCodec.ForStructWrapper<long>(314);
     private long? interactions_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Interactions {
       get { return interactions_; }
       set {
@@ -1295,6 +1371,7 @@ namespace Google.Protobuf.Benchmarks {
         = pb::FieldCodec.ForInt32(802);
     private readonly pbc::RepeatedField<int> repeatedIntField100_ = new pbc::RepeatedField<int>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> RepeatedIntField100 {
       get { return repeatedIntField100_; }
     }
@@ -1304,6 +1381,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField40_codec = pb::FieldCodec.ForStructWrapper<double>(322);
     private double? doubleField40_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField40 {
       get { return doubleField40_; }
       set {
@@ -1317,6 +1395,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field41_codec = pb::FieldCodec.ForStructWrapper<long>(330);
     private long? int64Field41_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field41 {
       get { return int64Field41_; }
       set {
@@ -1330,6 +1409,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field126_codec = pb::FieldCodec.ForStructWrapper<long>(1010);
     private long? int64Field126_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field126 {
       get { return int64Field126_; }
       set {
@@ -1343,6 +1423,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field127_codec = pb::FieldCodec.ForStructWrapper<long>(1018);
     private long? int64Field127_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field127 {
       get { return int64Field127_; }
       set {
@@ -1356,6 +1437,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField128_codec = pb::FieldCodec.ForStructWrapper<double>(1026);
     private double? doubleField128_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField128 {
       get { return doubleField128_; }
       set {
@@ -1369,6 +1451,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField109_codec = pb::FieldCodec.ForStructWrapper<double>(874);
     private double? doubleField109_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField109 {
       get { return doubleField109_; }
       set {
@@ -1382,6 +1465,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field110_codec = pb::FieldCodec.ForStructWrapper<long>(882);
     private long? int64Field110_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field110 {
       get { return int64Field110_; }
       set {
@@ -1395,6 +1479,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField111_codec = pb::FieldCodec.ForStructWrapper<double>(890);
     private double? doubleField111_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField111 {
       get { return doubleField111_; }
       set {
@@ -1408,6 +1493,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field112_codec = pb::FieldCodec.ForStructWrapper<long>(898);
     private long? int64Field112_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field112 {
       get { return int64Field112_; }
       set {
@@ -1421,6 +1507,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField113_codec = pb::FieldCodec.ForStructWrapper<double>(906);
     private double? doubleField113_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField113 {
       get { return doubleField113_; }
       set {
@@ -1434,6 +1521,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field114_codec = pb::FieldCodec.ForStructWrapper<long>(914);
     private long? int64Field114_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field114 {
       get { return int64Field114_; }
       set {
@@ -1447,6 +1535,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField42_codec = pb::FieldCodec.ForStructWrapper<double>(338);
     private double? doubleField42_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField42 {
       get { return doubleField42_; }
       set {
@@ -1460,6 +1549,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field43_codec = pb::FieldCodec.ForStructWrapper<long>(346);
     private long? int64Field43_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field43 {
       get { return int64Field43_; }
       set {
@@ -1473,6 +1563,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field44_codec = pb::FieldCodec.ForStructWrapper<long>(354);
     private long? int64Field44_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field44 {
       get { return int64Field44_; }
       set {
@@ -1486,6 +1577,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField45_codec = pb::FieldCodec.ForStructWrapper<double>(362);
     private double? doubleField45_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField45 {
       get { return doubleField45_; }
       set {
@@ -1499,6 +1591,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField46_codec = pb::FieldCodec.ForStructWrapper<double>(370);
     private double? doubleField46_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField46 {
       get { return doubleField46_; }
       set {
@@ -1512,6 +1605,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField78_codec = pb::FieldCodec.ForStructWrapper<double>(626);
     private double? doubleField78_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField78 {
       get { return doubleField78_; }
       set {
@@ -1525,6 +1619,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField88_codec = pb::FieldCodec.ForStructWrapper<double>(706);
     private double? doubleField88_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField88 {
       get { return doubleField88_; }
       set {
@@ -1538,6 +1633,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField47_codec = pb::FieldCodec.ForStructWrapper<double>(378);
     private double? doubleField47_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField47 {
       get { return doubleField47_; }
       set {
@@ -1551,6 +1647,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField89_codec = pb::FieldCodec.ForStructWrapper<double>(714);
     private double? doubleField89_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField89 {
       get { return doubleField89_; }
       set {
@@ -1564,6 +1661,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField48_codec = pb::FieldCodec.ForStructWrapper<double>(386);
     private double? doubleField48_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField48 {
       get { return doubleField48_; }
       set {
@@ -1577,6 +1675,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField49_codec = pb::FieldCodec.ForStructWrapper<double>(394);
     private double? doubleField49_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField49 {
       get { return doubleField49_; }
       set {
@@ -1590,6 +1689,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField50_codec = pb::FieldCodec.ForStructWrapper<double>(402);
     private double? doubleField50_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField50 {
       get { return doubleField50_; }
       set {
@@ -1603,6 +1703,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField90_codec = pb::FieldCodec.ForStructWrapper<double>(722);
     private double? doubleField90_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField90 {
       get { return doubleField90_; }
       set {
@@ -1616,6 +1717,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField51_codec = pb::FieldCodec.ForStructWrapper<double>(410);
     private double? doubleField51_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField51 {
       get { return doubleField51_; }
       set {
@@ -1629,6 +1731,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField91_codec = pb::FieldCodec.ForStructWrapper<double>(730);
     private double? doubleField91_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField91 {
       get { return doubleField91_; }
       set {
@@ -1642,6 +1745,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField92_codec = pb::FieldCodec.ForStructWrapper<double>(738);
     private double? doubleField92_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField92 {
       get { return doubleField92_; }
       set {
@@ -1655,6 +1759,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field107_codec = pb::FieldCodec.ForStructWrapper<long>(858);
     private long? int64Field107_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field107 {
       get { return int64Field107_; }
       set {
@@ -1668,6 +1773,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField93_codec = pb::FieldCodec.ForStructWrapper<double>(746);
     private double? doubleField93_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField93 {
       get { return doubleField93_; }
       set {
@@ -1681,6 +1787,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField108_codec = pb::FieldCodec.ForStructWrapper<double>(866);
     private double? doubleField108_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField108 {
       get { return doubleField108_; }
       set {
@@ -1694,6 +1801,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField52_codec = pb::FieldCodec.ForStructWrapper<double>(418);
     private double? doubleField52_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField52 {
       get { return doubleField52_; }
       set {
@@ -1707,6 +1815,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField53_codec = pb::FieldCodec.ForStructWrapper<double>(426);
     private double? doubleField53_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField53 {
       get { return doubleField53_; }
       set {
@@ -1720,6 +1829,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField94_codec = pb::FieldCodec.ForStructWrapper<double>(754);
     private double? doubleField94_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField94 {
       get { return doubleField94_; }
       set {
@@ -1733,6 +1843,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField54_codec = pb::FieldCodec.ForStructWrapper<double>(434);
     private double? doubleField54_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField54 {
       get { return doubleField54_; }
       set {
@@ -1746,6 +1857,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField55_codec = pb::FieldCodec.ForStructWrapper<double>(442);
     private double? doubleField55_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField55 {
       get { return doubleField55_; }
       set {
@@ -1759,6 +1871,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField56_codec = pb::FieldCodec.ForStructWrapper<double>(450);
     private double? doubleField56_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField56 {
       get { return doubleField56_; }
       set {
@@ -1772,6 +1885,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField57_codec = pb::FieldCodec.ForStructWrapper<double>(458);
     private double? doubleField57_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField57 {
       get { return doubleField57_; }
       set {
@@ -1785,6 +1899,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<double?> _single_doubleField58_codec = pb::FieldCodec.ForStructWrapper<double>(466);
     private double? doubleField58_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double? DoubleField58 {
       get { return doubleField58_; }
       set {
@@ -1798,6 +1913,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field59_codec = pb::FieldCodec.ForStructWrapper<long>(474);
     private long? int64Field59_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field59 {
       get { return int64Field59_; }
       set {
@@ -1811,6 +1927,7 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::FieldCodec<long?> _single_int64Field60_codec = pb::FieldCodec.ForStructWrapper<long>(482);
     private long? int64Field60_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long? Int64Field60 {
       get { return int64Field60_; }
       set {
@@ -1820,11 +1937,13 @@ namespace Google.Protobuf.Benchmarks {
 
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as ManyWrapperFieldsMessage);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(ManyWrapperFieldsMessage other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -1947,6 +2066,7 @@ namespace Google.Protobuf.Benchmarks {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       if (doubleField95_ != null) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(DoubleField95);
@@ -2067,11 +2187,13 @@ namespace Google.Protobuf.Benchmarks {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -2418,6 +2540,7 @@ namespace Google.Protobuf.Benchmarks {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (doubleField1_ != null) {
         _single_doubleField1_codec.WriteTagAndValue(ref output, DoubleField1);
@@ -2760,6 +2883,7 @@ namespace Google.Protobuf.Benchmarks {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       if (doubleField95_ != null) {
@@ -3100,6 +3224,7 @@ namespace Google.Protobuf.Benchmarks {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(ManyWrapperFieldsMessage other) {
       if (other == null) {
         return;
@@ -3653,6 +3778,7 @@ namespace Google.Protobuf.Benchmarks {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -4436,6 +4562,7 @@ namespace Google.Protobuf.Benchmarks {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -5228,19 +5355,23 @@ namespace Google.Protobuf.Benchmarks {
     private static readonly pb::MessageParser<ManyPrimitiveFieldsMessage> _parser = new pb::MessageParser<ManyPrimitiveFieldsMessage>(() => new ManyPrimitiveFieldsMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<ManyPrimitiveFieldsMessage> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.Benchmarks.WrapperBenchmarkMessagesReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ManyPrimitiveFieldsMessage() {
       OnConstruction();
     }
@@ -5248,6 +5379,7 @@ namespace Google.Protobuf.Benchmarks {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ManyPrimitiveFieldsMessage(ManyPrimitiveFieldsMessage other) : this() {
       doubleField95_ = other.doubleField95_;
       doubleField1_ = other.doubleField1_;
@@ -5364,6 +5496,7 @@ namespace Google.Protobuf.Benchmarks {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ManyPrimitiveFieldsMessage Clone() {
       return new ManyPrimitiveFieldsMessage(this);
     }
@@ -5372,6 +5505,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField95FieldNumber = 95;
     private double doubleField95_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField95 {
       get { return doubleField95_; }
       set {
@@ -5383,6 +5517,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField1FieldNumber = 1;
     private double doubleField1_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField1 {
       get { return doubleField1_; }
       set {
@@ -5394,6 +5529,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField79FieldNumber = 79;
     private double doubleField79_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField79 {
       get { return doubleField79_; }
       set {
@@ -5405,6 +5541,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field2FieldNumber = 2;
     private long int64Field2_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field2 {
       get { return int64Field2_; }
       set {
@@ -5416,6 +5553,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField96FieldNumber = 96;
     private double doubleField96_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField96 {
       get { return doubleField96_; }
       set {
@@ -5427,6 +5565,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field3FieldNumber = 3;
     private long int64Field3_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field3 {
       get { return int64Field3_; }
       set {
@@ -5438,6 +5577,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field4FieldNumber = 4;
     private long int64Field4_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field4 {
       get { return int64Field4_; }
       set {
@@ -5449,6 +5589,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField97FieldNumber = 97;
     private double doubleField97_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField97 {
       get { return doubleField97_; }
       set {
@@ -5460,6 +5601,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField65FieldNumber = 65;
     private double doubleField65_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField65 {
       get { return doubleField65_; }
       set {
@@ -5471,6 +5613,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField66FieldNumber = 66;
     private double doubleField66_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField66 {
       get { return doubleField66_; }
       set {
@@ -5482,6 +5625,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField7FieldNumber = 7;
     private double doubleField7_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField7 {
       get { return doubleField7_; }
       set {
@@ -5493,6 +5637,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField62FieldNumber = 62;
     private double doubleField62_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField62 {
       get { return doubleField62_; }
       set {
@@ -5504,6 +5649,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField118FieldNumber = 118;
     private double doubleField118_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField118 {
       get { return doubleField118_; }
       set {
@@ -5515,6 +5661,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField119FieldNumber = 119;
     private double doubleField119_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField119 {
       get { return doubleField119_; }
       set {
@@ -5526,6 +5673,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField67FieldNumber = 67;
     private double doubleField67_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField67 {
       get { return doubleField67_; }
       set {
@@ -5537,6 +5685,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField120FieldNumber = 120;
     private double doubleField120_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField120 {
       get { return doubleField120_; }
       set {
@@ -5548,6 +5697,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField121FieldNumber = 121;
     private double doubleField121_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField121 {
       get { return doubleField121_; }
       set {
@@ -5559,6 +5709,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField122FieldNumber = 122;
     private double doubleField122_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField122 {
       get { return doubleField122_; }
       set {
@@ -5570,6 +5721,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField123FieldNumber = 123;
     private double doubleField123_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField123 {
       get { return doubleField123_; }
       set {
@@ -5581,6 +5733,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField124FieldNumber = 124;
     private double doubleField124_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField124 {
       get { return doubleField124_; }
       set {
@@ -5592,6 +5745,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField8FieldNumber = 8;
     private double doubleField8_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField8 {
       get { return doubleField8_; }
       set {
@@ -5603,6 +5757,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField9FieldNumber = 9;
     private double doubleField9_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField9 {
       get { return doubleField9_; }
       set {
@@ -5614,6 +5769,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField98FieldNumber = 98;
     private double doubleField98_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField98 {
       get { return doubleField98_; }
       set {
@@ -5625,6 +5781,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField10FieldNumber = 10;
     private double doubleField10_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField10 {
       get { return doubleField10_; }
       set {
@@ -5636,6 +5793,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField11FieldNumber = 11;
     private double doubleField11_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField11 {
       get { return doubleField11_; }
       set {
@@ -5647,6 +5805,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField99FieldNumber = 99;
     private double doubleField99_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField99 {
       get { return doubleField99_; }
       set {
@@ -5658,6 +5817,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField84FieldNumber = 84;
     private double doubleField84_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField84 {
       get { return doubleField84_; }
       set {
@@ -5669,6 +5829,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField14FieldNumber = 14;
     private double doubleField14_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField14 {
       get { return doubleField14_; }
       set {
@@ -5680,6 +5841,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField77FieldNumber = 77;
     private double doubleField77_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField77 {
       get { return doubleField77_; }
       set {
@@ -5691,6 +5853,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField15FieldNumber = 15;
     private double doubleField15_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField15 {
       get { return doubleField15_; }
       set {
@@ -5702,6 +5865,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field19FieldNumber = 19;
     private long int64Field19_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field19 {
       get { return int64Field19_; }
       set {
@@ -5713,6 +5877,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field115FieldNumber = 115;
     private long int64Field115_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field115 {
       get { return int64Field115_; }
       set {
@@ -5724,6 +5889,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField116FieldNumber = 116;
     private double doubleField116_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField116 {
       get { return doubleField116_; }
       set {
@@ -5735,6 +5901,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field117FieldNumber = 117;
     private long int64Field117_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field117 {
       get { return int64Field117_; }
       set {
@@ -5746,6 +5913,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField20FieldNumber = 20;
     private double doubleField20_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField20 {
       get { return doubleField20_; }
       set {
@@ -5757,6 +5925,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField21FieldNumber = 21;
     private double doubleField21_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField21 {
       get { return doubleField21_; }
       set {
@@ -5768,6 +5937,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int StringField73FieldNumber = 73;
     private string stringField73_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string StringField73 {
       get { return stringField73_; }
       set {
@@ -5779,6 +5949,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int StringField74FieldNumber = 74;
     private string stringField74_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string StringField74 {
       get { return stringField74_; }
       set {
@@ -5790,6 +5961,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField22FieldNumber = 22;
     private double doubleField22_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField22 {
       get { return doubleField22_; }
       set {
@@ -5801,6 +5973,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField69FieldNumber = 69;
     private double doubleField69_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField69 {
       get { return doubleField69_; }
       set {
@@ -5812,6 +5985,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField70FieldNumber = 70;
     private double doubleField70_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField70 {
       get { return doubleField70_; }
       set {
@@ -5823,6 +5997,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField71FieldNumber = 71;
     private double doubleField71_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField71 {
       get { return doubleField71_; }
       set {
@@ -5834,6 +6009,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField72FieldNumber = 72;
     private double doubleField72_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField72 {
       get { return doubleField72_; }
       set {
@@ -5845,6 +6021,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField25FieldNumber = 25;
     private double doubleField25_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField25 {
       get { return doubleField25_; }
       set {
@@ -5856,6 +6033,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field26FieldNumber = 26;
     private long int64Field26_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field26 {
       get { return int64Field26_; }
       set {
@@ -5867,6 +6045,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField68FieldNumber = 68;
     private double doubleField68_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField68 {
       get { return doubleField68_; }
       set {
@@ -5878,6 +6057,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField28FieldNumber = 28;
     private double doubleField28_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField28 {
       get { return doubleField28_; }
       set {
@@ -5889,6 +6069,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField106FieldNumber = 106;
     private double doubleField106_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField106 {
       get { return doubleField106_; }
       set {
@@ -5900,6 +6081,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField29FieldNumber = 29;
     private double doubleField29_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField29 {
       get { return doubleField29_; }
       set {
@@ -5911,6 +6093,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField30FieldNumber = 30;
     private double doubleField30_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField30 {
       get { return doubleField30_; }
       set {
@@ -5922,6 +6105,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField101FieldNumber = 101;
     private double doubleField101_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField101 {
       get { return doubleField101_; }
       set {
@@ -5933,6 +6117,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField102FieldNumber = 102;
     private double doubleField102_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField102 {
       get { return doubleField102_; }
       set {
@@ -5944,6 +6129,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField103FieldNumber = 103;
     private double doubleField103_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField103 {
       get { return doubleField103_; }
       set {
@@ -5955,6 +6141,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField104FieldNumber = 104;
     private double doubleField104_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField104 {
       get { return doubleField104_; }
       set {
@@ -5966,6 +6153,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField105FieldNumber = 105;
     private double doubleField105_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField105 {
       get { return doubleField105_; }
       set {
@@ -5977,6 +6165,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField31FieldNumber = 31;
     private double doubleField31_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField31 {
       get { return doubleField31_; }
       set {
@@ -5988,6 +6177,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field32FieldNumber = 32;
     private long int64Field32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field32 {
       get { return int64Field32_; }
       set {
@@ -5999,6 +6189,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField75FieldNumber = 75;
     private double doubleField75_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField75 {
       get { return doubleField75_; }
       set {
@@ -6010,6 +6201,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField129FieldNumber = 129;
     private double doubleField129_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField129 {
       get { return doubleField129_; }
       set {
@@ -6021,6 +6213,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int EnumField80FieldNumber = 80;
     private int enumField80_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int EnumField80 {
       get { return enumField80_; }
       set {
@@ -6032,6 +6225,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int EnumField81FieldNumber = 81;
     private int enumField81_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int EnumField81 {
       get { return enumField81_; }
       set {
@@ -6043,6 +6237,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field82FieldNumber = 82;
     private long int64Field82_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field82 {
       get { return int64Field82_; }
       set {
@@ -6054,6 +6249,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int EnumField83FieldNumber = 83;
     private int enumField83_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int EnumField83 {
       get { return enumField83_; }
       set {
@@ -6065,6 +6261,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field85FieldNumber = 85;
     private long int64Field85_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field85 {
       get { return int64Field85_; }
       set {
@@ -6076,6 +6273,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field86FieldNumber = 86;
     private long int64Field86_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field86 {
       get { return int64Field86_; }
       set {
@@ -6087,6 +6285,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field87FieldNumber = 87;
     private long int64Field87_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field87 {
       get { return int64Field87_; }
       set {
@@ -6098,6 +6297,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field125FieldNumber = 125;
     private long int64Field125_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field125 {
       get { return int64Field125_; }
       set {
@@ -6109,6 +6309,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field37FieldNumber = 37;
     private long int64Field37_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field37 {
       get { return int64Field37_; }
       set {
@@ -6120,6 +6321,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField38FieldNumber = 38;
     private double doubleField38_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField38 {
       get { return doubleField38_; }
       set {
@@ -6131,6 +6333,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int InteractionsFieldNumber = 39;
     private long interactions_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Interactions {
       get { return interactions_; }
       set {
@@ -6144,6 +6347,7 @@ namespace Google.Protobuf.Benchmarks {
         = pb::FieldCodec.ForInt32(802);
     private readonly pbc::RepeatedField<int> repeatedIntField100_ = new pbc::RepeatedField<int>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> RepeatedIntField100 {
       get { return repeatedIntField100_; }
     }
@@ -6152,6 +6356,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField40FieldNumber = 40;
     private double doubleField40_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField40 {
       get { return doubleField40_; }
       set {
@@ -6163,6 +6368,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field41FieldNumber = 41;
     private long int64Field41_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field41 {
       get { return int64Field41_; }
       set {
@@ -6174,6 +6380,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field126FieldNumber = 126;
     private long int64Field126_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field126 {
       get { return int64Field126_; }
       set {
@@ -6185,6 +6392,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field127FieldNumber = 127;
     private long int64Field127_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field127 {
       get { return int64Field127_; }
       set {
@@ -6196,6 +6404,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField128FieldNumber = 128;
     private double doubleField128_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField128 {
       get { return doubleField128_; }
       set {
@@ -6207,6 +6416,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField109FieldNumber = 109;
     private double doubleField109_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField109 {
       get { return doubleField109_; }
       set {
@@ -6218,6 +6428,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field110FieldNumber = 110;
     private long int64Field110_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field110 {
       get { return int64Field110_; }
       set {
@@ -6229,6 +6440,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField111FieldNumber = 111;
     private double doubleField111_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField111 {
       get { return doubleField111_; }
       set {
@@ -6240,6 +6452,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field112FieldNumber = 112;
     private long int64Field112_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field112 {
       get { return int64Field112_; }
       set {
@@ -6251,6 +6464,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField113FieldNumber = 113;
     private double doubleField113_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField113 {
       get { return doubleField113_; }
       set {
@@ -6262,6 +6476,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field114FieldNumber = 114;
     private long int64Field114_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field114 {
       get { return int64Field114_; }
       set {
@@ -6273,6 +6488,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField42FieldNumber = 42;
     private double doubleField42_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField42 {
       get { return doubleField42_; }
       set {
@@ -6284,6 +6500,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field43FieldNumber = 43;
     private long int64Field43_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field43 {
       get { return int64Field43_; }
       set {
@@ -6295,6 +6512,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field44FieldNumber = 44;
     private long int64Field44_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field44 {
       get { return int64Field44_; }
       set {
@@ -6306,6 +6524,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField45FieldNumber = 45;
     private double doubleField45_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField45 {
       get { return doubleField45_; }
       set {
@@ -6317,6 +6536,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField46FieldNumber = 46;
     private double doubleField46_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField46 {
       get { return doubleField46_; }
       set {
@@ -6328,6 +6548,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField78FieldNumber = 78;
     private double doubleField78_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField78 {
       get { return doubleField78_; }
       set {
@@ -6339,6 +6560,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField88FieldNumber = 88;
     private double doubleField88_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField88 {
       get { return doubleField88_; }
       set {
@@ -6350,6 +6572,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField47FieldNumber = 47;
     private double doubleField47_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField47 {
       get { return doubleField47_; }
       set {
@@ -6361,6 +6584,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField89FieldNumber = 89;
     private double doubleField89_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField89 {
       get { return doubleField89_; }
       set {
@@ -6372,6 +6596,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField48FieldNumber = 48;
     private double doubleField48_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField48 {
       get { return doubleField48_; }
       set {
@@ -6383,6 +6608,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField49FieldNumber = 49;
     private double doubleField49_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField49 {
       get { return doubleField49_; }
       set {
@@ -6394,6 +6620,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField50FieldNumber = 50;
     private double doubleField50_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField50 {
       get { return doubleField50_; }
       set {
@@ -6405,6 +6632,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField90FieldNumber = 90;
     private double doubleField90_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField90 {
       get { return doubleField90_; }
       set {
@@ -6416,6 +6644,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField51FieldNumber = 51;
     private double doubleField51_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField51 {
       get { return doubleField51_; }
       set {
@@ -6427,6 +6656,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField91FieldNumber = 91;
     private double doubleField91_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField91 {
       get { return doubleField91_; }
       set {
@@ -6438,6 +6668,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField92FieldNumber = 92;
     private double doubleField92_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField92 {
       get { return doubleField92_; }
       set {
@@ -6449,6 +6680,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field107FieldNumber = 107;
     private long int64Field107_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field107 {
       get { return int64Field107_; }
       set {
@@ -6460,6 +6692,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField93FieldNumber = 93;
     private double doubleField93_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField93 {
       get { return doubleField93_; }
       set {
@@ -6471,6 +6704,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField108FieldNumber = 108;
     private double doubleField108_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField108 {
       get { return doubleField108_; }
       set {
@@ -6482,6 +6716,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField52FieldNumber = 52;
     private double doubleField52_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField52 {
       get { return doubleField52_; }
       set {
@@ -6493,6 +6728,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField53FieldNumber = 53;
     private double doubleField53_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField53 {
       get { return doubleField53_; }
       set {
@@ -6504,6 +6740,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField94FieldNumber = 94;
     private double doubleField94_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField94 {
       get { return doubleField94_; }
       set {
@@ -6515,6 +6752,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField54FieldNumber = 54;
     private double doubleField54_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField54 {
       get { return doubleField54_; }
       set {
@@ -6526,6 +6764,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField55FieldNumber = 55;
     private double doubleField55_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField55 {
       get { return doubleField55_; }
       set {
@@ -6537,6 +6776,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField56FieldNumber = 56;
     private double doubleField56_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField56 {
       get { return doubleField56_; }
       set {
@@ -6548,6 +6788,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField57FieldNumber = 57;
     private double doubleField57_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField57 {
       get { return doubleField57_; }
       set {
@@ -6559,6 +6800,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int DoubleField58FieldNumber = 58;
     private double doubleField58_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double DoubleField58 {
       get { return doubleField58_; }
       set {
@@ -6570,6 +6812,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field59FieldNumber = 59;
     private long int64Field59_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field59 {
       get { return int64Field59_; }
       set {
@@ -6581,6 +6824,7 @@ namespace Google.Protobuf.Benchmarks {
     public const int Int64Field60FieldNumber = 60;
     private long int64Field60_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Int64Field60 {
       get { return int64Field60_; }
       set {
@@ -6589,11 +6833,13 @@ namespace Google.Protobuf.Benchmarks {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as ManyPrimitiveFieldsMessage);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(ManyPrimitiveFieldsMessage other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -6716,6 +6962,7 @@ namespace Google.Protobuf.Benchmarks {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       if (DoubleField95 != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(DoubleField95);
@@ -6836,11 +7083,13 @@ namespace Google.Protobuf.Benchmarks {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -7294,6 +7543,7 @@ namespace Google.Protobuf.Benchmarks {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (DoubleField1 != 0D) {
         output.WriteRawTag(9);
@@ -7743,6 +7993,7 @@ namespace Google.Protobuf.Benchmarks {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       if (DoubleField95 != 0D) {
@@ -8083,6 +8334,7 @@ namespace Google.Protobuf.Benchmarks {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(ManyPrimitiveFieldsMessage other) {
       if (other == null) {
         return;
@@ -8422,6 +8674,7 @@ namespace Google.Protobuf.Benchmarks {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -8884,6 +9137,7 @@ namespace Google.Protobuf.Benchmarks {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {

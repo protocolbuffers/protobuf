@@ -77,9 +77,10 @@ PyMessageFactory* NewMessageFactory(PyTypeObject* type, PyDescriptorPool* pool) 
 }
 
 PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
-  static char* kwlist[] = {"pool", 0};
+  static const char* kwlist[] = {"pool", 0};
   PyObject* pool = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &pool)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O",
+                                   const_cast<char**>(kwlist), &pool)) {
     return NULL;
   }
   ScopedPyObjectPtr owned_pool;

@@ -246,7 +246,7 @@ void FieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
 }
 
 void FieldGenerator::SetOneofIndexBase(int index_base) {
-  const OneofDescriptor *oneof = descriptor_->real_containing_oneof();
+  const OneofDescriptor* oneof = descriptor_->real_containing_oneof();
   if (oneof != NULL) {
     int index = oneof->index() + index_base;
     // Flip the sign to mark it as a oneof.

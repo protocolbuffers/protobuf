@@ -80,6 +80,15 @@ namespace Google.Protobuf
             MergeFrom(message, input, false, null);
 
         /// <summary>
+        /// Merges data from the given span into an existing message.
+        /// </summary>
+        /// <param name="message">The message to merge the data into.</param>
+        /// <param name="span">Span containing the data to merge, which must be protobuf-encoded binary data.</param>
+        [SecuritySafeCritical]
+        public static void MergeFrom(this IMessage message, ReadOnlySpan<byte> span) =>
+            MergeFrom(message, span, false, null);
+
+        /// <summary>
         /// Merges length-delimited data from the given stream into an existing message.
         /// </summary>
         /// <remarks>
@@ -286,6 +295,16 @@ namespace Google.Protobuf
 
         [SecuritySafeCritical]
         internal static void MergeFrom(this IMessage message, ReadOnlySequence<byte> data, bool discardUnknownFields, ExtensionRegistry registry)
+        {
+            ParseContext.Initialize(data, out ParseContext ctx);
+            ctx.DiscardUnknownFields = discardUnknownFields;
+            ctx.ExtensionRegistry = registry;
+            ParsingPrimitivesMessages.ReadRawMessage(ref ctx, message);
+            ParsingPrimitivesMessages.CheckReadEndOfStreamTag(ref ctx.state);
+        }
+
+        [SecuritySafeCritical]
+        internal static void MergeFrom(this IMessage message, ReadOnlySpan<byte> data, bool discardUnknownFields, ExtensionRegistry registry)
         {
             ParseContext.Initialize(data, out ParseContext ctx);
             ctx.DiscardUnknownFields = discardUnknownFields;

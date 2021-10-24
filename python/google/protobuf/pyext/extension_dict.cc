@@ -32,14 +32,16 @@
 // Author: tibell@google.com (Johan Tibell)
 
 #include <google/protobuf/pyext/extension_dict.h>
+
+#include <cstdint>
 #include <memory>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/message.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/message_factory.h>
@@ -263,7 +265,7 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
 }
 
 PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* arg) {
-  int64 number = PyLong_AsLong(arg);
+  int64_t number = PyLong_AsLong(arg);
   if (number == -1 && PyErr_Occurred()) {
     return NULL;
   }

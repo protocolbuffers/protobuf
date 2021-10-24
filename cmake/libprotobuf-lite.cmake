@@ -3,6 +3,7 @@ set(libprotobuf_lite_files
   ${protobuf_source_dir}/src/google/protobuf/arena.cc
   ${protobuf_source_dir}/src/google/protobuf/arenastring.cc
   ${protobuf_source_dir}/src/google/protobuf/extension_set.cc
+  ${protobuf_source_dir}/src/google/protobuf/field_access_listener.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_enum_util.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_table_driven_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_util.cc
@@ -57,7 +58,7 @@ set(libprotobuf_lite_includes
   ${protobuf_source_dir}/src/google/protobuf/wire_format_lite.h
 )
 
-if (MSVC)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 set(libprotobuf_lite_rc_files
   ${CMAKE_CURRENT_BINARY_DIR}/version.rc
 )

@@ -176,9 +176,10 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
 // The public DescriptorPool constructor.
 static PyObject* New(PyTypeObject* type,
                      PyObject* args, PyObject* kwargs) {
-  static char* kwlist[] = {"descriptor_db", 0};
+  static const char* kwlist[] = {"descriptor_db", 0};
   PyObject* py_database = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &py_database)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O",
+                                   const_cast<char**>(kwlist), &py_database)) {
     return NULL;
   }
   DescriptorDatabase* database = NULL;
@@ -218,7 +219,7 @@ static int GcClear(PyObject* pself) {
 }
 
 PyObject* SetErrorFromCollector(DescriptorPool::ErrorCollector* self,
-                                char* name, char* error_type) {
+                                const char* name, const char* error_type) {
   BuildFileErrorCollector* error_collector =
       reinterpret_cast<BuildFileErrorCollector*>(self);
   if (error_collector && !error_collector->error_message.empty()) {

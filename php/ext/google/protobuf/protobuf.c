@@ -74,6 +74,12 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
   // Name cache (see interface in protobuf.h).
   HashTable name_msg_cache;
   HashTable name_enum_cache;
+
+  // An array of descriptor objects constructed during this request. These are
+  // logically referenced by the corresponding class entry, but since we can't
+  // actually write a class entry destructor, we reference them here, to be
+  // destroyed on request shutdown.
+  HashTable descriptors;
 ZEND_END_MODULE_GLOBALS(protobuf)
 
 ZEND_DECLARE_MODULE_GLOBALS(protobuf)
@@ -164,6 +170,7 @@ static PHP_RINIT_FUNCTION(protobuf) {
   zend_hash_init(&PROTOBUF_G(object_cache), 64, NULL, NULL, 0);
   zend_hash_init(&PROTOBUF_G(name_msg_cache), 64, NULL, NULL, 0);
   zend_hash_init(&PROTOBUF_G(name_enum_cache), 64, NULL, NULL, 0);
+  zend_hash_init(&PROTOBUF_G(descriptors), 64, NULL, ZVAL_PTR_DTOR, 0);
 
   return SUCCESS;
 }
@@ -184,6 +191,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
   zend_hash_destroy(&PROTOBUF_G(object_cache));
   zend_hash_destroy(&PROTOBUF_G(name_msg_cache));
   zend_hash_destroy(&PROTOBUF_G(name_enum_cache));
+  zend_hash_destroy(&PROTOBUF_G(descriptors));
 
   return SUCCESS;
 }
@@ -191,6 +199,15 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 // -----------------------------------------------------------------------------
 // Object Cache.
 // -----------------------------------------------------------------------------
+
+void Descriptors_Add(zend_object *desc) {
+  // The hash table will own a ref (it will destroy it when the table is
+  // destroyed), but for some reason the insert operation does not add a ref, so
+  // we do that here with ZVAL_OBJ_COPY().
+  zval zv;
+  ZVAL_OBJ_COPY(&zv, desc);
+  zend_hash_next_index_insert(&PROTOBUF_G(descriptors), &zv);
+}
 
 void ObjCache_Add(const void *upb_obj, zend_object *php_obj) {
   zend_ulong k = (zend_ulong)upb_obj;
@@ -210,8 +227,7 @@ bool ObjCache_Get(const void *upb_obj, zval *val) {
   zend_object *obj = zend_hash_index_find_ptr(&PROTOBUF_G(object_cache), k);
 
   if (obj) {
-    GC_ADDREF(obj);
-    ZVAL_OBJ(val, obj);
+    ZVAL_OBJ_COPY(val, obj);
     return true;
   } else {
     ZVAL_NULL(val);

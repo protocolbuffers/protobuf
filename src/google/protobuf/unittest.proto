@@ -364,6 +364,12 @@ message TestNestedExtension {
   }
 }
 
+message TestChildExtension {
+  optional string a = 1;
+  optional string b = 2;
+  optional TestAllExtensions optional_extension = 3;
+}
+
 // We have separate messages for testing required fields because it's
 // annoying to have to fill in required fields in TestProto in order to
 // do anything with it.  Note that we don't need to test every type of
@@ -746,6 +752,10 @@ message TestOneof2 {
     string bar_string_piece = 15 [ctype=STRING_PIECE, default = "SPIECE"];
     bytes bar_bytes = 16 [default = "BYTES"];
     NestedEnum bar_enum = 17 [default = BAR];
+    string bar_string_with_empty_default = 20 [default = ""];
+    string bar_cord_with_empty_default = 21 [ctype=CORD, default = ""];
+    string bar_string_piece_with_empty_default = 22 [ctype=STRING_PIECE, default = ""];
+    bytes bar_bytes_with_empty_default = 23 [default = ""];
   }
 
   optional int32 baz_int = 18;
@@ -1115,3 +1125,33 @@ enum VeryLargeEnum {
   ENUM_LABEL_99 = 99;
   ENUM_LABEL_100 = 100;
 };
+
+message TestExtensionRangeSerialize {
+  optional int32 foo_one = 1;
+
+  extensions 2 to 2;
+  extensions 3 to 4;
+
+  optional int32 foo_two = 6;
+  optional int32 foo_three = 7;
+
+  extensions 9 to 10;
+
+  optional int32 foo_four = 13;
+
+  extensions 15 to 15;
+  extensions 17 to 17;
+  extensions 19 to 19;
+
+  extend TestExtensionRangeSerialize {
+    optional int32 bar_one = 2;
+    optional int32 bar_two = 4;
+
+    optional int32 bar_three = 10;
+
+    optional int32 bar_four = 15;
+    optional int32 bar_five = 19;
+  }
+}
+
+

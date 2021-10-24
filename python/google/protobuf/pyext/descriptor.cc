@@ -30,15 +30,18 @@
 
 // Author: petar@google.com (Petar Petrov)
 
+#include <google/protobuf/pyext/descriptor.h>
+
 #include <Python.h>
 #include <frameobject.h>
+
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/descriptor_containers.h>
 #include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
@@ -195,7 +198,7 @@ bool Reparse(
   std::string serialized;
   from.SerializeToString(&serialized);
   io::CodedInputStream input(
-      reinterpret_cast<const uint8*>(serialized.c_str()), serialized.size());
+      reinterpret_cast<const uint8_t*>(serialized.c_str()), serialized.size());
   input.SetExtensionRegistry(message_factory->pool->pool,
                              message_factory->message_factory);
   bool success = to->ParseFromCodedStream(&input);
@@ -247,8 +250,9 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
                  message_type->full_name().c_str());
     return NULL;
   }
+  ScopedPyObjectPtr args(PyTuple_New(0));
   ScopedPyObjectPtr value(
-      PyEval_CallObject(message_class->AsPyObject(), NULL));
+      PyObject_Call(message_class->AsPyObject(), args.get(), NULL));
   Py_DECREF(message_class);
   if (value == NULL) {
     return NULL;
@@ -804,22 +808,22 @@ static PyObject* GetDefaultValue(PyBaseDescriptor *self, void *closure) {
 
   switch (_GetDescriptor(self)->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
-      int32 value = _GetDescriptor(self)->default_value_int32();
+      int32_t value = _GetDescriptor(self)->default_value_int32();
       result = PyInt_FromLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
-      int64 value = _GetDescriptor(self)->default_value_int64();
+      int64_t value = _GetDescriptor(self)->default_value_int64();
       result = PyLong_FromLongLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
-      uint32 value = _GetDescriptor(self)->default_value_uint32();
+      uint32_t value = _GetDescriptor(self)->default_value_uint32();
       result = PyInt_FromSize_t(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
-      uint64 value = _GetDescriptor(self)->default_value_uint64();
+      uint64_t value = _GetDescriptor(self)->default_value_uint64();
       result = PyLong_FromUnsignedLongLong(value);
       break;
     }

@@ -129,7 +129,7 @@ void MapFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline const ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >&\n"
       "$classname$::$name$() const {\n"
-      "$annotate_accessor$"
+      "$annotate_get$"
       "  // @@protoc_insertion_point(field_map:$full_name$)\n"
       "  return _internal_$name$();\n"
       "}\n"
@@ -139,7 +139,7 @@ void MapFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >*\n"
       "$classname$::mutable_$name$() {\n"
-      "$annotate_accessor$"
+      "$annotate_mutable$"
       "  // @@protoc_insertion_point(field_mutable_map:$full_name$)\n"
       "  return _internal_mutable_$name$();\n"
       "}\n");
@@ -157,7 +157,7 @@ void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 
 void MapFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.Swap(&other->$name$_);\n");
+  format("$name$_.InternalSwap(&other->$name$_);\n");
 }
 
 void MapFieldGenerator::GenerateCopyConstructorCode(
@@ -229,7 +229,10 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   if (utf8_check) {
     format(
         "struct Utf8Check {\n"
-        "  static void Check(ConstPtr p) {\n");
+        "  static void Check(ConstPtr p) {\n"
+        // p may be unused when GetUtf8CheckMode evaluates to kNone,
+        // thus disabling the validation.
+        "    (void)p;\n");
     format.Indent();
     format.Indent();
     if (string_key) {
@@ -288,6 +291,29 @@ void MapFieldGenerator::GenerateByteSize(io::Printer* printer) const {
       "  total_size += $map_classname$::Funcs::ByteSizeLong(it->first, "
       "it->second);\n"
       "}\n");
+}
+
+void MapFieldGenerator::GenerateConstinitInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    format("$name$_(::$proto_ns$::internal::ConstantInitialized{})");
+  } else {
+    format("$name$_()");
+  }
+}
+
+bool MapFieldGenerator::GenerateArenaDestructorCode(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    // _this is the object being destructed (we are inside a static method
+    // here).
+    format("_this->$name$_. ~MapField();\n");
+    return true;
+  } else {
+    return false;
+  }
 }
 
 }  // namespace cpp

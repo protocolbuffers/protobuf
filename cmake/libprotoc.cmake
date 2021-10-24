@@ -12,6 +12,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_parse_function_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_primitive_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_service.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_string_field.cc
@@ -44,6 +45,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator_factory.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_helpers.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_kotlin_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message.cc
@@ -93,8 +95,10 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message_field.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message_layout_helper.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_names.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_options.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_parse_function_generator.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_primitive_field.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_service.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_string_field.h
@@ -159,7 +163,7 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.h
 )
 
-if (MSVC)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 set(libprotoc_rc_files
   ${CMAKE_CURRENT_BINARY_DIR}/version.rc
 )

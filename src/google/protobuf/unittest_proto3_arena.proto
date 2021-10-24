@@ -116,6 +116,23 @@ message TestAllTypes {
   repeated   string repeated_string   = 44;
   repeated    bytes repeated_bytes    = 45;
 
+  // Optional
+  optional    int32 proto3_optional_int32    = 116;
+  optional    int64 proto3_optional_int64    = 117;
+  optional   uint32 proto3_optional_uint32   = 118;
+  optional   uint64 proto3_optional_uint64   = 119;
+  optional   sint32 proto3_optional_sint32   = 120;
+  optional   sint64 proto3_optional_sint64   = 121;
+  optional  fixed32 proto3_optional_fixed32  = 122;
+  optional  fixed64 proto3_optional_fixed64  = 123;
+  optional sfixed32 proto3_optional_sfixed32 = 124;
+  optional sfixed64 proto3_optional_sfixed64 = 125;
+  optional    float proto3_optional_float    = 126;
+  optional   double proto3_optional_double   = 127;
+  optional     bool proto3_optional_bool     = 128;
+  optional   string proto3_optional_string   = 129;
+  optional    bytes proto3_optional_bytes    = 130;
+
   // Groups are not allowed in proto3.
   // repeated group RepeatedGroup = 46 {
   //   optional int32 a = 47;

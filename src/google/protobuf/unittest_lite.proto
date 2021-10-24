@@ -494,3 +494,8 @@ message DupEnum {
     BAR2 = 2;
   }
 }
+
+message RecursiveMessage {
+  optional RecursiveMessage recurse = 1;
+  optional bytes payload = 2;
+}

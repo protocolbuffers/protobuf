@@ -786,13 +786,7 @@ class FileDescriptorTables {
   mutable internal::WrappedMutex unknown_enum_values_mu_;
 };
 
-DescriptorPool::Tables::Tables()
-    // Start some hash-map and hash-set objects with a small # of buckets
-    : known_bad_files_(3),
-      known_bad_symbols_(3),
-      extensions_loaded_from_db_(3),
-      symbols_by_name_(3),
-      files_by_name_(3) {
+DescriptorPool::Tables::Tables() {
   well_known_types_.insert({
       {"google.protobuf.DoubleValue", Descriptor::WELLKNOWNTYPE_DOUBLEVALUE},
       {"google.protobuf.FloatValue", Descriptor::WELLKNOWNTYPE_FLOATVALUE},
@@ -816,16 +810,8 @@ DescriptorPool::Tables::Tables()
 DescriptorPool::Tables::~Tables() { GOOGLE_DCHECK(checkpoints_.empty()); }
 
 FileDescriptorTables::FileDescriptorTables()
-    // Initialize all the hash tables to start out with a small # of buckets.
-    : symbols_by_parent_(3),
-      fields_by_lowercase_name_(3),
-      fields_by_lowercase_name_tmp_(new FieldsByNameMap()),
-      fields_by_camelcase_name_(3),
-      fields_by_camelcase_name_tmp_(new FieldsByNameMap()),
-      fields_by_number_(3),
-      enum_values_by_number_(3),
-      unknown_enum_values_by_number_(3),
-      locations_by_path_(3) {}
+    : fields_by_lowercase_name_tmp_(new FieldsByNameMap()),
+      fields_by_camelcase_name_tmp_(new FieldsByNameMap()) {}
 
 FileDescriptorTables::~FileDescriptorTables() {}
 
@@ -1090,7 +1076,7 @@ inline void DescriptorPool::Tables::FindAllExtensions(
 
 bool DescriptorPool::Tables::AddSymbol(const std::string& full_name,
                                        Symbol symbol) {
-  if (InsertIfNotPresent(&symbols_by_name_, full_name.c_str(), symbol)) {
+  if (InsertIfNotPresent(&symbols_by_name_, full_name, symbol)) {
     symbols_after_checkpoint_.push_back(full_name.c_str());
     return true;
   } else {
@@ -1106,7 +1092,7 @@ bool FileDescriptorTables::AddAliasUnderParent(const void* parent,
 }
 
 bool DescriptorPool::Tables::AddFile(const FileDescriptor* file) {
-  if (InsertIfNotPresent(&files_by_name_, file->name().c_str(), file)) {
+  if (InsertIfNotPresent(&files_by_name_, file->name(), file)) {
     files_after_checkpoint_.push_back(file->name().c_str());
     return true;
   } else {
@@ -2591,7 +2577,7 @@ void Descriptor::DebugString(int depth, std::string* contents,
     enum_type(i)->DebugString(depth, contents, debug_string_options);
   }
   for (int i = 0; i < field_count(); i++) {
-    if (field(i)->containing_oneof() == nullptr) {
+    if (field(i)->real_containing_oneof() == nullptr) {
       field(i)->DebugString(depth, contents, debug_string_options);
     } else if (field(i)->containing_oneof()->field(0) == field(i)) {
       // This is the first field in this oneof, so print the whole oneof.
@@ -2626,6 +2612,8 @@ void Descriptor::DebugString(int depth, std::string* contents,
       const Descriptor::ReservedRange* range = reserved_range(i);
       if (range->end == range->start + 1) {
         strings::SubstituteAndAppend(contents, "$0, ", range->start);
+      } else if (range->end > FieldDescriptor::kMaxNumber) {
+        strings::SubstituteAndAppend(contents, "$0 to max, ", range->start);
       } else {
         strings::SubstituteAndAppend(contents, "$0 to $1, ", range->start,
                                   range->end - 1);
@@ -2699,7 +2687,7 @@ void FieldDescriptor::DebugString(
   std::string label = StrCat(kLabelToName[this->label()], " ");
 
   // Label is omitted for maps, oneof, and plain proto3 fields.
-  if (is_map() || containing_oneof() ||
+  if (is_map() || real_containing_oneof() ||
       (is_optional() && !has_optional_keyword())) {
     label.clear();
   }
@@ -2829,6 +2817,8 @@ void EnumDescriptor::DebugString(
       const EnumDescriptor::ReservedRange* range = reserved_range(i);
       if (range->end == range->start) {
         strings::SubstituteAndAppend(contents, "$0, ", range->start);
+      } else if (range->end == INT_MAX) {
+        strings::SubstituteAndAppend(contents, "$0 to max, ", range->start);
       } else {
         strings::SubstituteAndAppend(contents, "$0 to $1, ", range->start,
                                   range->end);
@@ -4019,6 +4009,11 @@ bool DescriptorBuilder::AddSymbol(const std::string& full_name,
   // Use its file as the parent instead.
   if (parent == nullptr) parent = file_;
 
+  if (full_name.find('\0') != std::string::npos) {
+    AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
+             "\"" + full_name + "\" contains null character.");
+    return false;
+  }
   if (tables_->AddSymbol(full_name, symbol)) {
     if (!file_tables_->AddAliasUnderParent(parent, name, symbol)) {
       // This is only possible if there was already an error adding something of
@@ -4059,6 +4054,11 @@ bool DescriptorBuilder::AddSymbol(const std::string& full_name,
 void DescriptorBuilder::AddPackage(const std::string& name,
                                    const Message& proto,
                                    const FileDescriptor* file) {
+  if (name.find('\0') != std::string::npos) {
+    AddError(name, proto, DescriptorPool::ErrorCollector::NAME,
+             "\"" + name + "\" contains null character.");
+    return;
+  }
   if (tables_->AddSymbol(name, Symbol(file))) {
     // Success.  Also add parent package, if any.
     std::string::size_type dot_pos = name.find_last_of('.');
@@ -4371,6 +4371,12 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     result->package_ = tables_->AllocateString("");
   }
   result->pool_ = pool_;
+
+  if (result->name().find('\0') != std::string::npos) {
+    AddError(result->name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "\"" + result->name() + "\" contains null character.");
+    return nullptr;
+  }
 
   // Add to tables.
   if (!tables_->AddFile(result)) {

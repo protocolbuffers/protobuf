@@ -33,6 +33,8 @@
 
 #include <google/protobuf/pyext/descriptor_database.h>
 
+#include <cstdint>
+
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -164,7 +166,7 @@ bool PyDescriptorDatabase::FindAllExtensionNumbers(
     return false;
   }
   Py_ssize_t size = PyList_Size(py_list.get());
-  int64 item_value;
+  int64_t item_value;
   for (Py_ssize_t i = 0 ; i < size; ++i) {
     ScopedPyObjectPtr item(PySequence_GetItem(py_list.get(), i));
     item_value = PyLong_AsLong(item.get());

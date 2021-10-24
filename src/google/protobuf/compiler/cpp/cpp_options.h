@@ -69,6 +69,14 @@ struct Options {
   std::string annotation_pragma_name;
   std::string annotation_guard_name;
   const AccessInfoMap* access_info_map = nullptr;
+  enum {
+    kTCTableNever,
+    kTCTableGuarded,
+    kTCTableAlways
+  } tctable_mode = kTCTableNever;
+  bool inject_field_listener_events = false;
+  bool eagerly_verified_lazy = false;
+  bool force_eagerly_verified_lazy = false;
 };
 
 }  // namespace cpp

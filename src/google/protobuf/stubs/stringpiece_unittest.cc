@@ -305,15 +305,8 @@ TEST(StringPiece, STL2) {
   const StringPiece a("abcdefghijklmnopqrstuvwxyz");
   const StringPiece b("abc");
   const StringPiece c("xyz");
-  StringPiece d("foobar");
   const StringPiece e;
   const StringPiece f("123" "\0" "456", 7);
-
-  d.clear();
-  EXPECT_EQ(d.size(), 0);
-  EXPECT_TRUE(d.empty());
-  EXPECT_TRUE(d.data() == nullptr);
-  EXPECT_TRUE(d.begin() == d.end());
 
   EXPECT_EQ(StringPiece::npos, std::string::npos);
 
@@ -324,26 +317,16 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(a.find(c, StringPiece::npos), StringPiece::npos);
   EXPECT_EQ(b.find(c), StringPiece::npos);
   EXPECT_EQ(b.find(c, StringPiece::npos), StringPiece::npos);
-  EXPECT_EQ(a.find(d), 0);
   EXPECT_EQ(a.find(e), 0);
-  EXPECT_EQ(a.find(d, 12), 12);
   EXPECT_EQ(a.find(e, 17), 17);
   StringPiece g("xx not found bb");
   EXPECT_EQ(a.find(g), StringPiece::npos);
   // empty string nonsense
-  EXPECT_EQ(d.find(b), StringPiece::npos);
   EXPECT_EQ(e.find(b), StringPiece::npos);
-  EXPECT_EQ(d.find(b, 4), StringPiece::npos);
   EXPECT_EQ(e.find(b, 7), StringPiece::npos);
 
   size_t empty_search_pos = std::string().find(std::string());
-  EXPECT_EQ(d.find(d), empty_search_pos);
-  EXPECT_EQ(d.find(e), empty_search_pos);
-  EXPECT_EQ(e.find(d), empty_search_pos);
   EXPECT_EQ(e.find(e), empty_search_pos);
-  EXPECT_EQ(d.find(d, 4), std::string().find(std::string(), 4));
-  EXPECT_EQ(d.find(e, 4), std::string().find(std::string(), 4));
-  EXPECT_EQ(e.find(d, 4), std::string().find(std::string(), 4));
   EXPECT_EQ(e.find(e, 4), std::string().find(std::string(), 4));
 
   EXPECT_EQ(a.find('a'), 0);
@@ -359,13 +342,9 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(g.find('o', 5), 8);
   EXPECT_EQ(a.find('b', 5), StringPiece::npos);
   // empty string nonsense
-  EXPECT_EQ(d.find('\0'), StringPiece::npos);
   EXPECT_EQ(e.find('\0'), StringPiece::npos);
-  EXPECT_EQ(d.find('\0', 4), StringPiece::npos);
   EXPECT_EQ(e.find('\0', 7), StringPiece::npos);
-  EXPECT_EQ(d.find('x'), StringPiece::npos);
   EXPECT_EQ(e.find('x'), StringPiece::npos);
-  EXPECT_EQ(d.find('x', 4), StringPiece::npos);
   EXPECT_EQ(e.find('x', 7), StringPiece::npos);
 
   EXPECT_EQ(a.rfind(b), 0);
@@ -376,23 +355,13 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(a.rfind(c, 0), StringPiece::npos);
   EXPECT_EQ(b.rfind(c), StringPiece::npos);
   EXPECT_EQ(b.rfind(c, 0), StringPiece::npos);
-  EXPECT_EQ(a.rfind(d), a.as_string().rfind(std::string()));
   EXPECT_EQ(a.rfind(e), a.as_string().rfind(std::string()));
-  EXPECT_EQ(a.rfind(d, 12), 12);
   EXPECT_EQ(a.rfind(e, 17), 17);
   EXPECT_EQ(a.rfind(g), StringPiece::npos);
-  EXPECT_EQ(d.rfind(b), StringPiece::npos);
   EXPECT_EQ(e.rfind(b), StringPiece::npos);
-  EXPECT_EQ(d.rfind(b, 4), StringPiece::npos);
   EXPECT_EQ(e.rfind(b, 7), StringPiece::npos);
   // empty string nonsense
-  EXPECT_EQ(d.rfind(d, 4), std::string().rfind(std::string()));
-  EXPECT_EQ(e.rfind(d, 7), std::string().rfind(std::string()));
-  EXPECT_EQ(d.rfind(e, 4), std::string().rfind(std::string()));
   EXPECT_EQ(e.rfind(e, 7), std::string().rfind(std::string()));
-  EXPECT_EQ(d.rfind(d), std::string().rfind(std::string()));
-  EXPECT_EQ(e.rfind(d), std::string().rfind(std::string()));
-  EXPECT_EQ(d.rfind(e), std::string().rfind(std::string()));
   EXPECT_EQ(e.rfind(e), std::string().rfind(std::string()));
 
   EXPECT_EQ(g.rfind('o'), 8);
@@ -405,9 +374,7 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(f.rfind('3'), 2);
   EXPECT_EQ(f.rfind('5'), 5);
   // empty string nonsense
-  EXPECT_EQ(d.rfind('o'), StringPiece::npos);
   EXPECT_EQ(e.rfind('o'), StringPiece::npos);
-  EXPECT_EQ(d.rfind('o', 4), StringPiece::npos);
   EXPECT_EQ(e.rfind('o', 7), StringPiece::npos);
 
   EXPECT_EQ(a.find_first_of(b), 0);
@@ -425,13 +392,8 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(a.find_first_of(f), StringPiece::npos);
   EXPECT_EQ(f.find_first_of(a), StringPiece::npos);
   // empty string nonsense
-  EXPECT_EQ(a.find_first_of(d), StringPiece::npos);
   EXPECT_EQ(a.find_first_of(e), StringPiece::npos);
-  EXPECT_EQ(d.find_first_of(b), StringPiece::npos);
   EXPECT_EQ(e.find_first_of(b), StringPiece::npos);
-  EXPECT_EQ(d.find_first_of(d), StringPiece::npos);
-  EXPECT_EQ(e.find_first_of(d), StringPiece::npos);
-  EXPECT_EQ(d.find_first_of(e), StringPiece::npos);
   EXPECT_EQ(e.find_first_of(e), StringPiece::npos);
 
   EXPECT_EQ(a.find_first_not_of(b), 3);
@@ -440,14 +402,9 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(c.find_first_not_of(a), StringPiece::npos);
   EXPECT_EQ(f.find_first_not_of(a), 0);
   EXPECT_EQ(a.find_first_not_of(f), 0);
-  EXPECT_EQ(a.find_first_not_of(d), 0);
   EXPECT_EQ(a.find_first_not_of(e), 0);
   // empty string nonsense
-  EXPECT_EQ(d.find_first_not_of(a), StringPiece::npos);
   EXPECT_EQ(e.find_first_not_of(a), StringPiece::npos);
-  EXPECT_EQ(d.find_first_not_of(d), StringPiece::npos);
-  EXPECT_EQ(e.find_first_not_of(d), StringPiece::npos);
-  EXPECT_EQ(d.find_first_not_of(e), StringPiece::npos);
   EXPECT_EQ(e.find_first_not_of(e), StringPiece::npos);
 
   StringPiece h("====");
@@ -459,9 +416,7 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(f.find_first_not_of('\0', 3), 4);
   EXPECT_EQ(f.find_first_not_of('\0', 2), 2);
   // empty string nonsense
-  EXPECT_EQ(d.find_first_not_of('x'), StringPiece::npos);
   EXPECT_EQ(e.find_first_not_of('x'), StringPiece::npos);
-  EXPECT_EQ(d.find_first_not_of('\0'), StringPiece::npos);
   EXPECT_EQ(e.find_first_not_of('\0'), StringPiece::npos);
 
   //  StringPiece g("xx not found bb");
@@ -483,21 +438,11 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(f.find_last_of(i, 6), 6);
   EXPECT_EQ(f.find_last_of(a, 4), StringPiece::npos);
   // empty string nonsense
-  EXPECT_EQ(f.find_last_of(d), StringPiece::npos);
   EXPECT_EQ(f.find_last_of(e), StringPiece::npos);
-  EXPECT_EQ(f.find_last_of(d, 4), StringPiece::npos);
   EXPECT_EQ(f.find_last_of(e, 4), StringPiece::npos);
-  EXPECT_EQ(d.find_last_of(d), StringPiece::npos);
-  EXPECT_EQ(d.find_last_of(e), StringPiece::npos);
-  EXPECT_EQ(e.find_last_of(d), StringPiece::npos);
   EXPECT_EQ(e.find_last_of(e), StringPiece::npos);
-  EXPECT_EQ(d.find_last_of(f), StringPiece::npos);
   EXPECT_EQ(e.find_last_of(f), StringPiece::npos);
-  EXPECT_EQ(d.find_last_of(d, 4), StringPiece::npos);
-  EXPECT_EQ(d.find_last_of(e, 4), StringPiece::npos);
-  EXPECT_EQ(e.find_last_of(d, 4), StringPiece::npos);
   EXPECT_EQ(e.find_last_of(e, 4), StringPiece::npos);
-  EXPECT_EQ(d.find_last_of(f, 4), StringPiece::npos);
   EXPECT_EQ(e.find_last_of(f, 4), StringPiece::npos);
 
   EXPECT_EQ(a.find_last_not_of(b), a.size()-1);
@@ -509,21 +454,11 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(a.find_last_not_of(b, 3), 3);
   EXPECT_EQ(a.find_last_not_of(b, 2), StringPiece::npos);
   // empty string nonsense
-  EXPECT_EQ(f.find_last_not_of(d), f.size()-1);
   EXPECT_EQ(f.find_last_not_of(e), f.size()-1);
-  EXPECT_EQ(f.find_last_not_of(d, 4), 4);
   EXPECT_EQ(f.find_last_not_of(e, 4), 4);
-  EXPECT_EQ(d.find_last_not_of(d), StringPiece::npos);
-  EXPECT_EQ(d.find_last_not_of(e), StringPiece::npos);
-  EXPECT_EQ(e.find_last_not_of(d), StringPiece::npos);
   EXPECT_EQ(e.find_last_not_of(e), StringPiece::npos);
-  EXPECT_EQ(d.find_last_not_of(f), StringPiece::npos);
   EXPECT_EQ(e.find_last_not_of(f), StringPiece::npos);
-  EXPECT_EQ(d.find_last_not_of(d, 4), StringPiece::npos);
-  EXPECT_EQ(d.find_last_not_of(e, 4), StringPiece::npos);
-  EXPECT_EQ(e.find_last_not_of(d, 4), StringPiece::npos);
   EXPECT_EQ(e.find_last_not_of(e, 4), StringPiece::npos);
-  EXPECT_EQ(d.find_last_not_of(f, 4), StringPiece::npos);
   EXPECT_EQ(e.find_last_not_of(f, 4), StringPiece::npos);
 
   EXPECT_EQ(h.find_last_not_of('x'), h.size() - 1);
@@ -533,9 +468,7 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(h.find_last_not_of('=', 2), StringPiece::npos);
   EXPECT_EQ(b.find_last_not_of('b', 1), 0);
   // empty string nonsense
-  EXPECT_EQ(d.find_last_not_of('x'), StringPiece::npos);
   EXPECT_EQ(e.find_last_not_of('x'), StringPiece::npos);
-  EXPECT_EQ(d.find_last_not_of('\0'), StringPiece::npos);
   EXPECT_EQ(e.find_last_not_of('\0'), StringPiece::npos);
 
   EXPECT_EQ(a.substr(0, 3), b);
@@ -546,33 +479,15 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(a.substr(3, 2), "de");
   // empty string nonsense
   EXPECT_EQ(a.substr(99, 2), e);
-  EXPECT_EQ(d.substr(99), e);
-  EXPECT_EQ(d.substr(0, 99), e);
-  EXPECT_EQ(d.substr(99, 99), e);
+  EXPECT_EQ(e.substr(99), e);
+  EXPECT_EQ(e.substr(0, 99), e);
+  EXPECT_EQ(e.substr(99, 99), e);
   // use of npos
   EXPECT_EQ(a.substr(0, StringPiece::npos), a);
   EXPECT_EQ(a.substr(23, StringPiece::npos), c);
   EXPECT_EQ(a.substr(StringPiece::npos, 0), e);
   EXPECT_EQ(a.substr(StringPiece::npos, 1), e);
   EXPECT_EQ(a.substr(StringPiece::npos, StringPiece::npos), e);
-
-  // Substring constructors.
-  EXPECT_EQ(StringPiece(a, 0, 3), b);
-  EXPECT_EQ(StringPiece(a, 23), c);
-  EXPECT_EQ(StringPiece(a, 23, 3), c);
-  EXPECT_EQ(StringPiece(a, 23, 99), c);
-  EXPECT_EQ(StringPiece(a, 0), a);
-  EXPECT_EQ(StringPiece(a, 3, 2), "de");
-  // empty string nonsense
-  EXPECT_EQ(StringPiece(d, 0, 99), e);
-  // Verify that they work taking an actual string, not just a StringPiece.
-  std::string a2 = a.as_string();
-  EXPECT_EQ(StringPiece(a2, 0, 3), b);
-  EXPECT_EQ(StringPiece(a2, 23), c);
-  EXPECT_EQ(StringPiece(a2, 23, 3), c);
-  EXPECT_EQ(StringPiece(a2, 23, 99), c);
-  EXPECT_EQ(StringPiece(a2, 0), a);
-  EXPECT_EQ(StringPiece(a2, 3, 2), "de");
 }
 
 TEST(StringPiece, Custom) {
@@ -647,23 +562,7 @@ TEST(StringPiece, Custom) {
   c.remove_suffix(c.size());
   EXPECT_EQ(c, e);
 
-  // set
-  c.set("foobar", 6);
-  EXPECT_EQ(c, a);
-  c.set("foobar", 0);
-  EXPECT_EQ(c, e);
-  c.set("foobar", 7);
-  EXPECT_NE(c, a);
-
-  c.set("foobar");
-  EXPECT_EQ(c, a);
-
-  c.set(static_cast<const void*>("foobar"), 6);
-  EXPECT_EQ(c, a);
-  c.set(static_cast<const void*>("foobar"), 0);
-  EXPECT_EQ(c, e);
-  c.set(static_cast<const void*>("foobar"), 7);
-  EXPECT_NE(c, a);
+  c = StringPiece("foobar", 7);
 
   // as_string
   std::string s3(a.as_string().c_str(), 7);
@@ -680,21 +579,25 @@ TEST(StringPiece, Custom) {
   }
 
   // Consume
-  a.set("foobar");
-  EXPECT_TRUE(a.Consume("foo"));
-  EXPECT_EQ(a, "bar");
-  EXPECT_FALSE(a.Consume("foo"));
-  EXPECT_FALSE(a.Consume("barbar"));
-  EXPECT_FALSE(a.Consume("ar"));
-  EXPECT_EQ(a, "bar");
+  {
+    StringPiece str("foobar");
+    EXPECT_TRUE(str.Consume("foo"));
+    EXPECT_EQ(str, "bar");
+    EXPECT_FALSE(str.Consume("foo"));
+    EXPECT_FALSE(str.Consume("barbar"));
+    EXPECT_FALSE(str.Consume("ar"));
+    EXPECT_EQ(str, "bar");
+  }
 
-  a.set("foobar");
-  EXPECT_TRUE(a.ConsumeFromEnd("bar"));
-  EXPECT_EQ(a, "foo");
-  EXPECT_FALSE(a.ConsumeFromEnd("bar"));
-  EXPECT_FALSE(a.ConsumeFromEnd("foofoo"));
-  EXPECT_FALSE(a.ConsumeFromEnd("fo"));
-  EXPECT_EQ(a, "foo");
+  {
+    StringPiece str("foobar");
+    EXPECT_TRUE(str.ConsumeFromEnd("bar"));
+    EXPECT_EQ(str, "foo");
+    EXPECT_FALSE(str.ConsumeFromEnd("bar"));
+    EXPECT_FALSE(str.ConsumeFromEnd("foofoo"));
+    EXPECT_FALSE(str.ConsumeFromEnd("fo"));
+    EXPECT_EQ(str, "foo");
+  }
 }
 
 TEST(StringPiece, Contains) {
@@ -710,10 +613,6 @@ TEST(StringPiece, Contains) {
 TEST(StringPiece, NullInput) {
   // we used to crash here, but now we don't.
   StringPiece s(nullptr);
-  EXPECT_EQ(s.data(), (const char*)nullptr);
-  EXPECT_EQ(s.size(), 0);
-
-  s.set(nullptr);
   EXPECT_EQ(s.data(), (const char*)nullptr);
   EXPECT_EQ(s.size(), 0);
 
@@ -786,7 +685,7 @@ TEST(FindOneCharTest, EdgeCases) {
 #ifdef PROTOBUF_HAS_DEATH_TEST
 #ifndef NDEBUG
 TEST(NonNegativeLenTest, NonNegativeLen) {
-  EXPECT_DEATH(StringPiece("xyz", -1), "len >= 0");
+  EXPECT_DEATH(StringPiece("xyz", -1), "string length exceeds max size");
 }
 #endif  // ndef DEBUG
 #endif  // PROTOBUF_HAS_DEATH_TEST

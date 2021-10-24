@@ -44,6 +44,8 @@ message TestMessage {
   repeated bytes repeated_bytes = 20;
   repeated TestMessage2 repeated_msg = 21;
   repeated TestEnum repeated_enum = 22;
+
+  optional TestSingularFields optional_msg2 = 23;
 }
 
 message TestSingularFields {
@@ -61,7 +63,7 @@ message TestSingularFields {
 }
 
 message TestMessage2 {
-  int32 foo = 1;
+  optional int32 foo = 1;
 }
 
 enum TestEnum {

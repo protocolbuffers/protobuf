@@ -33,6 +33,7 @@
 
 #include <google/protobuf/pyext/repeated_scalar_container.h>
 
+#include <cstdint>
 #include <memory>
 
 #include <google/protobuf/stubs/common.h>
@@ -207,25 +208,25 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
   PyObject* result = nullptr;
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
-      int32 value =
+      int32_t value =
           reflection->GetRepeatedInt32(*message, field_descriptor, index);
       result = PyInt_FromLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
-      int64 value =
+      int64_t value =
           reflection->GetRepeatedInt64(*message, field_descriptor, index);
       result = PyLong_FromLongLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
-      uint32 value =
+      uint32_t value =
           reflection->GetRepeatedUInt32(*message, field_descriptor, index);
       result = PyLong_FromLongLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
-      uint64 value =
+      uint64_t value =
           reflection->GetRepeatedUInt64(*message, field_descriptor, index);
       result = PyLong_FromUnsignedLongLong(value);
       break;
@@ -753,7 +754,11 @@ PyTypeObject RepeatedScalarContainer_Type = {
     sizeof(RepeatedScalarContainer),         // tp_basicsize
     0,                                       //  tp_itemsize
     repeated_scalar_container::Dealloc,      //  tp_dealloc
-    0,                                       //  tp_print, in Python >=3.8: Py_ssize_t tp_vectorcall_offset
+#if PY_VERSION_HEX >= 0x03080000
+    0,                                       //  tp_vectorcall_offset
+#else
+    nullptr,                                 //  tp_print
+#endif
     nullptr,                                 //  tp_getattr
     nullptr,                                 //  tp_setattr
     nullptr,                                 //  tp_compare

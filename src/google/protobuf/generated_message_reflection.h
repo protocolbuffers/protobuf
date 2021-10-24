@@ -198,6 +198,13 @@ struct ReflectionSchema {
            OffsetValue(offsets_[field->index()], field->type());
   }
 
+  // Returns true if the field is implicitly backed by LazyField.
+  bool IsEagerlyVerifiedLazyField(const FieldDescriptor* field) const {
+    GOOGLE_DCHECK_EQ(field->type(), FieldDescriptor::TYPE_MESSAGE);
+    (void)field;
+    return false;
+  }
+
   // Returns true if the field's accessor is called by any external code (aka,
   // non proto library code).
   bool IsFieldUsed(const FieldDescriptor* field) const {
@@ -235,8 +242,11 @@ struct ReflectionSchema {
   int weak_field_map_offset_;
 
   // We tag offset values to provide additional data about fields (such as
-  // "unused").
-  static uint32 OffsetValue(uint32 v, FieldDescriptor::Type /* type */) {
+  // "unused" or "lazy").
+  static uint32 OffsetValue(uint32 v, FieldDescriptor::Type type) {
+    if (type == FieldDescriptor::TYPE_MESSAGE) {
+      return v & 0x7FFFFFFEu;
+    }
     return v & 0x7FFFFFFFu;
   }
 };
@@ -253,25 +263,24 @@ struct MigrationSchema {
   int object_size;
 };
 
-struct SCCInfoBase;
-
+// This struct tries to reduce unnecessary padding.
+// The num_xxx might not be close to their respective pointer, but this saves
+// padding.
 struct PROTOBUF_EXPORT DescriptorTable {
   mutable bool is_initialized;
   bool is_eager;
+  int size;  // of serialized descriptor
   const char* descriptor;
   const char* filename;
-  int size;  // of serialized descriptor
   once_flag* once;
-  SCCInfoBase* const* init_default_instances;
   const DescriptorTable* const* deps;
-  int num_sccs;
   int num_deps;
+  int num_messages;
   const MigrationSchema* schemas;
   const Message* const* default_instances;
   const uint32* offsets;
   // update the following descriptor arrays.
   Metadata* file_level_metadata;
-  int num_messages;
   const EnumDescriptor** file_level_enum_descriptors;
   const ServiceDescriptor** file_level_service_descriptors;
 };
@@ -290,6 +299,14 @@ enum {
 // the types defined in the file.  AssignDescriptors() is thread-safe.
 void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table,
                                        bool eager = false);
+
+// Overload used to implement GetMetadataStatic in the generated code.
+// See comments in compiler/cpp/internal/file.cc as to why.
+// It takes a `Metadata` and returns it to allow for tail calls and reduce
+// binary size.
+Metadata PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* (*table)(),
+                                           internal::once_flag* once,
+                                           const Metadata& metadata);
 
 // These cannot be in lite so we put them in the reflection.
 PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8* base, uint32 offset,
