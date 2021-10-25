@@ -38,6 +38,8 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,7 +70,7 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
   @Test
   public void testToString() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
-    ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
+    ByteString unicode = ByteString.wrap(testString.getBytes(StandardCharsets.UTF_8));
     ByteString chopped = unicode.substring(2, unicode.size() - 6);
     assertWithMessage("%s.substring() must have the expected type", classUnderTest)
         .that(classUnderTest)
@@ -84,13 +86,13 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
   @Test
   public void testCharsetToString() {
     String testString = "I love unicode \u1234\u5678 characters";
-    ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
+    ByteString unicode = ByteString.wrap(testString.getBytes(StandardCharsets.UTF_8));
     ByteString chopped = unicode.substring(2, unicode.size() - 6);
     assertWithMessage("%s.substring() must have the expected type", classUnderTest)
         .that(classUnderTest)
         .isEqualTo(getActualClassName(chopped));
 
-    String roundTripString = chopped.toString(Internal.UTF_8);
+    String roundTripString = chopped.toString(StandardCharsets.UTF_8);
     assertWithMessage("%s unicode bytes must match", classUnderTest)
         .that(testString.substring(2, testString.length() - 6))
         .isEqualTo(roundTripString);
