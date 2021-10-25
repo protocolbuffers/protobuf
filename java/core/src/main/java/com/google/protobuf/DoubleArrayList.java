@@ -35,6 +35,7 @@ import static com.google.protobuf.Internal.checkNotNull;
 import com.google.protobuf.Internal.DoubleList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.RandomAccess;
 
 /**
@@ -238,7 +239,7 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
   public boolean addAll(Collection<? extends Double> collection) {
     ensureIsMutable();
 
-    checkNotNull(collection);
+    Objects.requireNonNull(collection);
 
     // We specialize when adding another DoubleArrayList to avoid boxing elements.
     if (!(collection instanceof DoubleArrayList)) {

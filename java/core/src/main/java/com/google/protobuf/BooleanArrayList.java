@@ -30,11 +30,10 @@
 
 package com.google.protobuf;
 
-import static com.google.protobuf.Internal.checkNotNull;
-
 import com.google.protobuf.Internal.BooleanList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.RandomAccess;
 
 /**
@@ -238,7 +237,7 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
   public boolean addAll(Collection<? extends Boolean> collection) {
     ensureIsMutable();
 
-    checkNotNull(collection);
+    Objects.requireNonNull(collection);
 
     // We specialize when adding another BooleanArrayList to avoid boxing elements.
     if (!(collection instanceof BooleanArrayList)) {

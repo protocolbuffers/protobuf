@@ -42,6 +42,7 @@ import static com.google.protobuf.WireFormat.WIRETYPE_VARINT;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** An adapter between the {@link Reader} interface and {@link CodedInputStream}. */
 @ExperimentalApi
@@ -63,7 +64,7 @@ final class CodedInputStreamReader implements Reader {
   }
 
   private CodedInputStreamReader(CodedInputStream input) {
-    this.input = Internal.checkNotNull(input, "input");
+    this.input = Objects.requireNonNull(input, "input");
     this.input.wrapper = this;
   }
 
