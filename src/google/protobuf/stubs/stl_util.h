@@ -57,7 +57,7 @@ inline void STLStringResizeUninitializedAmortized(std::string* s,
   const size_t cap = s->capacity();
   if (new_size > cap) {
     // Make sure to always grow by at least a factor of 2x.
-    s->reserve(std::max(new_size, 2 * cap));
+    s->reserve(std::max<size_t>(new_size, 2 * cap));
   }
   STLStringResizeUninitialized(s, new_size);
 }
