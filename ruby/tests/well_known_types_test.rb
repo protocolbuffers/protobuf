@@ -215,4 +215,33 @@ class TestWellKnownTypes < Test::Unit::TestCase
     )
     assert_equal '[<Google::Protobuf::Value: string_value: "Hello">]', value_field.get(proto).inspect
   end
+
+  def test_from_ruby
+    pb = Google::Protobuf::Value.from_ruby(nil)
+    assert_equal pb.null_value, 0
+
+    pb = Google::Protobuf::Value.from_ruby(1.23)
+    assert_equal pb.number_value, 1.23
+
+    pb = Google::Protobuf::Value.from_ruby('1.23')
+    assert_equal pb.string_value, '1.23'
+
+    pb = Google::Protobuf::Value.from_ruby(true)
+    assert_equal pb.bool_value, true
+
+    pb = Google::Protobuf::Value.from_ruby(false)
+    assert_equal pb.bool_value, false
+
+    pb = Google::Protobuf::Value.from_ruby(Google::Protobuf::Struct.from_hash({ a: 1, b: '2', c: [1, 2, 3] }))
+    assert_equal pb.struct_value, Google::Protobuf::Struct.from_hash({ a: 1, b: '2', c: [1, 2, 3] })
+
+    pb = Google::Protobuf::Value.from_ruby({ a: 1, b: '2', c: [1, 2, 3] })
+    assert_equal pb.struct_value, Google::Protobuf::Struct.from_hash({ a: 1, b: '2', c: [1, 2, 3] })
+
+    pb = Google::Protobuf::Value.from_ruby(Google::Protobuf::ListValue.from_a([1, 2, 3]))
+    assert_equal pb.struct_value, Google::Protobuf::ListValue.from_a([1, 2, 3])
+
+    pb = Google::Protobuf::Value.from_ruby([1, 2, 3])
+    assert_equal pb.struct_value, Google::Protobuf::ListValue.from_a([1, 2, 3])
+  end
 end

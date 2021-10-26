@@ -136,7 +136,7 @@ module Google
           raise UnexpectedStructType
         end
       end
-      
+
       def self.from_ruby(value)
         Value.new.from_ruby(value)
       end
@@ -164,7 +164,7 @@ module Google
         else
           raise UnexpectedStructType
         end
-        
+
         self
       end
     end
