@@ -3634,7 +3634,14 @@ void Generator::GenerateFile(const GeneratorOptions& options,
       // - self: defined inside Web Workers (WorkerGlobalScope)
       // - Function('return this')(): this will work on most platforms, but it may be blocked by things like CSP.
       //   Function('') is almost the same as eval('')
-      printer->Print("var global = (function() { return this || window || global || self || Function('return this')(); }).call(null);\n\n");
+      printer->Print(
+          "var global = (function() {\n"
+          "  if (this) { return this; }\n"
+          "  if (typeof window !== 'undefined') { return window; }\n"
+          "  if (typeof global !== 'undefined') { return global; }\n"
+          "  if (typeof self !== 'undefined') { return self; }\n"
+          "  return Function('return this')();\n"
+          "}.call(null));\n\n");
     }
 
     for (int i = 0; i < file->dependency_count(); i++) {
