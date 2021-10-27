@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 require 'test/unit'
-require 'google/protobuf/well_known_types'
+require 'lib/google/protobuf/well_known_types'
 
 class TestWellKnownTypes < Test::Unit::TestCase
   def test_timestamp
@@ -218,7 +218,7 @@ class TestWellKnownTypes < Test::Unit::TestCase
 
   def test_from_ruby
     pb = Google::Protobuf::Value.from_ruby(nil)
-    assert_equal pb.null_value, 0
+    assert_equal pb.null_value, :NULL_VALUE
 
     pb = Google::Protobuf::Value.from_ruby(1.23)
     assert_equal pb.number_value, 1.23
@@ -232,16 +232,16 @@ class TestWellKnownTypes < Test::Unit::TestCase
     pb = Google::Protobuf::Value.from_ruby(false)
     assert_equal pb.bool_value, false
 
-    pb = Google::Protobuf::Value.from_ruby(Google::Protobuf::Struct.from_hash({ a: 1, b: '2', c: [1, 2, 3] }))
-    assert_equal pb.struct_value, Google::Protobuf::Struct.from_hash({ a: 1, b: '2', c: [1, 2, 3] })
+    pb = Google::Protobuf::Value.from_ruby(Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true }))
+    assert_equal pb.struct_value, Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true })
 
-    pb = Google::Protobuf::Value.from_ruby({ a: 1, b: '2', c: [1, 2, 3] })
-    assert_equal pb.struct_value, Google::Protobuf::Struct.from_hash({ a: 1, b: '2', c: [1, 2, 3] })
+    pb = Google::Protobuf::Value.from_ruby({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true })
+    assert_equal pb.struct_value, Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true })
 
     pb = Google::Protobuf::Value.from_ruby(Google::Protobuf::ListValue.from_a([1, 2, 3]))
-    assert_equal pb.struct_value, Google::Protobuf::ListValue.from_a([1, 2, 3])
+    assert_equal pb.list_value, Google::Protobuf::ListValue.from_a([1, 2, 3])
 
     pb = Google::Protobuf::Value.from_ruby([1, 2, 3])
-    assert_equal pb.struct_value, Google::Protobuf::ListValue.from_a([1, 2, 3])
+    assert_equal pb.list_value, Google::Protobuf::ListValue.from_a([1, 2, 3])
   end
 end

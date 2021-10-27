@@ -138,13 +138,13 @@ module Google
       end
 
       def self.from_ruby(value)
-        Value.new.from_ruby(value)
+        self.new.from_ruby(value)
       end
 
       def from_ruby(value)
         case value
         when NilClass
-          self.null_value = 0
+          self.null_value = :NULL_VALUE
         when Numeric
           self.number_value = value
         when String
