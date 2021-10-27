@@ -196,10 +196,7 @@ final class IntArrayList extends AbstractProtobufList<Integer>
     if (size == array.length) {
       // Resize to 1.5x the size
       int length = ((size * 3) / 2) + 1;
-      int[] newArray = new int[length];
-
-      System.arraycopy(array, 0, newArray, 0, size);
-      array = newArray;
+      array = Arrays.copyOf(array, length);
     }
 
     array[size++] = element;
@@ -218,14 +215,10 @@ final class IntArrayList extends AbstractProtobufList<Integer>
     } else {
       // Resize to 1.5x the size
       int length = ((size * 3) / 2) + 1;
-      int[] newArray = new int[length];
-
-      // Copy the first part directly
-      System.arraycopy(array, 0, newArray, 0, index);
+      array = Arrays.copyOf(array, length);
 
       // Copy the rest shifted over by one to make room
-      System.arraycopy(array, index, newArray, index + 1, size - index);
-      array = newArray;
+      System.arraycopy(array, index, array, index + 1, size - index);
     }
 
     array[index] = element;
