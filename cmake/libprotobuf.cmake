@@ -123,6 +123,11 @@ if(MSVC AND protobuf_BUILD_SHARED_LIBS)
     PUBLIC  PROTOBUF_USE_DLLS
     PRIVATE LIBPROTOBUF_EXPORTS)
 endif()
+if(${CMAKE_SYSTEM_NAME} STREQUAL "iOS" AND protobuf_BUILD_SHARED_LIBS)
+  target_compile_definitions(libprotobuf
+    PUBLIC  PROTOBUF_USE_DLLS
+    PRIVATE LIBPROTOBUF_EXPORTS)
+endif()
 set_target_properties(libprotobuf PROPERTIES
     VERSION ${protobuf_VERSION}
     OUTPUT_NAME ${LIB_PREFIX}protobuf
