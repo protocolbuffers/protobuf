@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 require 'test/unit'
-require 'lib/google/protobuf/well_known_types'
+require 'google/protobuf/well_known_types'
 
 class TestWellKnownTypes < Test::Unit::TestCase
   def test_timestamp
