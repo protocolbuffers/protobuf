@@ -59,6 +59,7 @@ import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.UnittestProto.TestRequired;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -277,7 +278,7 @@ public class TextFormatTest {
    * are converted directly to bytes, *not* encoded using UTF-8.
    */
   private ByteString bytes(String str) {
-    return ByteString.copyFrom(str.getBytes(Internal.ISO_8859_1));
+    return ByteString.copyFrom(str.getBytes(StandardCharsets.ISO_8859_1));
   }
 
   /**

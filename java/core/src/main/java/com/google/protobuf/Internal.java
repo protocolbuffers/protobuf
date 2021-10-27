@@ -32,7 +32,7 @@ package com.google.protobuf;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractList;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -53,10 +53,6 @@ import java.util.Set;
 public final class Internal {
 
   private Internal() {}
-
-  static final Charset US_ASCII = Charset.forName("US-ASCII");
-  static final Charset UTF_8 = Charset.forName("UTF-8");
-  static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
   /** Throws an appropriate {@link NullPointerException} if the given objects is {@code null}. */
   static <T> T checkNotNull(T obj) {
@@ -97,7 +93,7 @@ public final class Internal {
    * actually want. The generated code calls this automatically.
    */
   public static String stringDefaultValue(String bytes) {
-    return new String(bytes.getBytes(ISO_8859_1), UTF_8);
+    return new String(bytes.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
   }
 
   /**
@@ -108,7 +104,7 @@ public final class Internal {
    * ISO-8859-1 encoding.
    */
   public static ByteString bytesDefaultValue(String bytes) {
-    return ByteString.copyFrom(bytes.getBytes(ISO_8859_1));
+    return ByteString.copyFrom(bytes.getBytes(StandardCharsets.ISO_8859_1));
   }
   /**
    * Helper called by generated code to construct default values for bytes fields.
@@ -116,7 +112,7 @@ public final class Internal {
    * <p>This is like {@link #bytesDefaultValue}, but returns a byte array.
    */
   public static byte[] byteArrayDefaultValue(String bytes) {
-    return bytes.getBytes(ISO_8859_1);
+    return bytes.getBytes(StandardCharsets.ISO_8859_1);
   }
 
   /**
@@ -183,12 +179,12 @@ public final class Internal {
 
   /** Helper method to get the UTF-8 bytes of a string. */
   public static byte[] toByteArray(String value) {
-    return value.getBytes(UTF_8);
+    return value.getBytes(StandardCharsets.UTF_8);
   }
 
   /** Helper method to convert a byte array to a string using UTF-8 encoding. */
   public static String toStringUtf8(byte[] bytes) {
-    return new String(bytes, UTF_8);
+    return new String(bytes, StandardCharsets.UTF_8);
   }
 
   /**
