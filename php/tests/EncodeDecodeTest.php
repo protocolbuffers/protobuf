@@ -1661,6 +1661,8 @@ class EncodeDecodeTest extends TestBase
         $data = $from->serializeToJsonString();
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getFieldUnwrapped());
+
+        $to = new $class();
         $data = $from->serializeToJsonString(true);
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getFieldUnwrapped());
@@ -1672,6 +1674,8 @@ class EncodeDecodeTest extends TestBase
         $data = $from->serializeToJsonString();
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getFieldUnwrapped());
+
+        $to = new $class();
         $data = $from->serializeToJsonString(true);
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getFieldUnwrapped());
@@ -1683,6 +1687,8 @@ class EncodeDecodeTest extends TestBase
         $data = $from->serializeToJsonString();
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getOneofFieldUnwrapped());
+
+        $to = new $class();
         $data = $from->serializeToJsonString(true);
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getOneofFieldUnwrapped());
@@ -1694,6 +1700,8 @@ class EncodeDecodeTest extends TestBase
         $data = $from->serializeToJsonString();
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
+
+        $to = new $class();
         $data = $from->serializeToJsonString(true);
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
@@ -1717,6 +1725,8 @@ class EncodeDecodeTest extends TestBase
         $data = $from->serializeToJsonString();
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getFieldUnwrapped());
+
+        $to = new $class();
         $data = $from->serializeToJsonString(true);
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getFieldUnwrapped());
@@ -1728,6 +1738,8 @@ class EncodeDecodeTest extends TestBase
         $data = $from->serializeToJsonString();
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getFieldUnwrapped());
+
+        $to = new $class();
         $data = $from->serializeToJsonString(true);
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getFieldUnwrapped());
@@ -1739,6 +1751,8 @@ class EncodeDecodeTest extends TestBase
         $data = $from->serializeToJsonString();
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getOneofFieldUnwrapped());
+
+        $to = new $class();
         $data = $from->serializeToJsonString(true);
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getOneofFieldUnwrapped());
@@ -1750,6 +1764,8 @@ class EncodeDecodeTest extends TestBase
         $data = $from->serializeToJsonString();
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
+
+        $to = new $class();
         $data = $from->serializeToJsonString(true);
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());

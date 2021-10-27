@@ -775,16 +775,16 @@ PHP_METHOD(Message, serializeToJsonString) {
   size_t size;
   int options = 0;
   char buf[1024];
-  zend_bool preserve_proto_fieldnames = false;
+  zend_bool include_default_value_fields = false;
   upb_status status;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS(), "|b",
-                            &preserve_proto_fieldnames) == FAILURE) {
+                            &include_default_value_fields) == FAILURE) {
     return;
   }
 
-  if (preserve_proto_fieldnames) {
-    options |= UPB_JSONENC_PROTONAMES;
+  if (include_default_value_fields) {
+    options |= UPB_JSONENC_EMITDEFAULTS;
   }
 
   upb_status_clear(&status);
@@ -1072,6 +1072,10 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_mergeFrom, 0, 0, 1)
   ZEND_ARG_INFO(0, data)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_serializeToJson, 0, 0, 0)
+  ZEND_ARG_INFO(0, arg)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_mergeFromWithArg, 0, 0, 1)
   ZEND_ARG_INFO(0, data)
   ZEND_ARG_INFO(0, arg)
@@ -1091,7 +1095,7 @@ static zend_function_entry Message_methods[] = {
   PHP_ME(Message, discardUnknownFields,  arginfo_void,      ZEND_ACC_PUBLIC)
   PHP_ME(Message, serializeToString,     arginfo_void,      ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromString,       arginfo_mergeFrom, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, serializeToJsonString, arginfo_void,      ZEND_ACC_PUBLIC)
+  PHP_ME(Message, serializeToJsonString, arginfo_serializeToJson,  ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromJsonString,   arginfo_mergeFromWithArg, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFrom,             arginfo_mergeFrom, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readWrapperValue,      arginfo_read,      ZEND_ACC_PROTECTED)
