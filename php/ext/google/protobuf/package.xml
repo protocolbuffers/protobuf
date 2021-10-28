@@ -22,7 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- * Added &quot;object&quot; as a reserved name (#8962)
+ * No new changes in 3.19.1
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
