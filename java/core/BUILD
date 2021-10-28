@@ -1,5 +1,5 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@rules_java//java:defs.bzl", "java_library", "java_proto_library", "java_lite_proto_library")
+load("@rules_java//java:defs.bzl", "java_library", "java_lite_proto_library", "java_proto_library")
 load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("//:internal.bzl", "conformance_test")
@@ -103,7 +103,7 @@ LITE_SRCS = [
 java_library(
     name = "lite",
     srcs = LITE_SRCS + [
-        "//:gen_well_known_protos_javalite"
+        "//:gen_well_known_protos_javalite",
     ],
     visibility = [
         "//java/lite:__pkg__",
@@ -115,10 +115,10 @@ java_export(
     name = "lite_mvn",
     maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % PROTOBUF_VERSION,
     pom_template = "//java/lite:pom_template.xml",
-    runtime_deps = [":lite"],
     resources = [
         "//:lite_well_known_protos",
     ],
+    runtime_deps = [":lite"],
 )
 
 java_library(
@@ -150,25 +150,25 @@ java_export(
     name = "core_mvn",
     maven_coordinates = "com.google.protobuf:protobuf-java:%s" % PROTOBUF_VERSION,
     pom_template = "pom_template.xml",
-    runtime_deps = [":core"],
     resources = [
         "//:well_known_protos",
     ],
+    runtime_deps = [":core"],
 )
 
 filegroup(
     name = "release",
-    visibility = ["//java:__pkg__"],
     srcs = [
-        ":core_mvn-pom",
-        ":core_mvn-maven-source",
         ":core_mvn-docs",
+        ":core_mvn-maven-source",
+        ":core_mvn-pom",
         ":core_mvn-project",
-        ":lite_mvn-pom",
-        ":lite_mvn-maven-source",
         ":lite_mvn-docs",
+        ":lite_mvn-maven-source",
+        ":lite_mvn-pom",
         ":lite_mvn-project",
-    ]
+    ],
+    visibility = ["//java:__pkg__"],
 )
 
 proto_lang_toolchain(
@@ -207,22 +207,22 @@ java_library(
     name = "test_util",
     srcs = [
         "src/test/java/com/google/protobuf/TestUtil.java",
-        "src/test/java/com/google/protobuf/TestUtilLite.java"
+        "src/test/java/com/google/protobuf/TestUtilLite.java",
     ],
     deps = [
         ":core",
         ":generic_test_protos_java_proto",
         ":java_test_protos_java_proto",
-        "//external:guava",
-        "//external:junit",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
     ],
 )
 
 test_suite(
     name = "tests",
     tests = [
-        "core_build_test",
         "conformance_test",
+        "core_build_test",
         "core_tests",
     ],
 )
@@ -236,29 +236,32 @@ build_test(
 
 conformance_test(
     name = "conformance_test",
-    testee = "//:conformance_java",
     failure_list = "//:conformance/failure_list_java.txt",
+    testee = "//:conformance_java",
     text_format_failure_list = "//:conformance/text_format_failure_list_java.txt",
 )
 
 junit_tests(
     name = "core_tests",
-    srcs = glob(["src/test/java/**/*.java"], exclude = [
-        "src/test/java/com/google/protobuf/TestUtil.java",
-        "src/test/java/com/google/protobuf/TestUtilLite.java",
-    ]),
-    data = ["//:testdata"],
     size = "large",
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = [
+            "src/test/java/com/google/protobuf/TestUtil.java",
+            "src/test/java/com/google/protobuf/TestUtilLite.java",
+        ],
+    ),
+    data = ["//:testdata"],
     deps = [
         ":core",
         ":generic_test_protos_java_proto",
         ":java_test_protos_java_proto",
         ":test_util",
-        "//external:easymock",
-        "//external:guava",
-        "//external:junit",
-        "//external:truth",
-    ]
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_easymock_easymock",
+    ],
 )
 
 java_lite_proto_library(
@@ -281,17 +284,17 @@ genrule(
     name = "rewrite_javalite_test_util",
     srcs = [
         "//java/lite:lite.awk",
-        "src/test/java/com/google/protobuf/TestUtil.java"
+        "src/test/java/com/google/protobuf/TestUtil.java",
     ],
     outs = ["TestUtil.java"],
-    cmd = "awk -f $(location //java/lite:lite.awk) $(location src/test/java/com/google/protobuf/TestUtil.java) > $@"
+    cmd = "awk -f $(location //java/lite:lite.awk) $(location src/test/java/com/google/protobuf/TestUtil.java) > $@",
 )
 
 java_library(
     name = "test_util_lite",
     srcs = [
+        "src/test/java/com/google/protobuf/TestUtilLite.java",
         ":rewrite_javalite_test_util",
-        "src/test/java/com/google/protobuf/TestUtilLite.java"
     ],
     visibility = [
         "//java/lite:__pkg__",
@@ -300,8 +303,8 @@ java_library(
         ":generic_test_protos_java_proto_lite",
         ":java_test_protos_java_proto_lite",
         ":lite_runtime_only",
-        "//external:guava",
-        "//external:junit",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
     ],
 )
 
@@ -350,18 +353,20 @@ LITE_TEST_EXCLUSIONS = [
 
 junit_tests(
     name = "lite_tests",
-    srcs = glob(["src/test/java/**/*.java"], exclude = LITE_TEST_EXCLUSIONS),
+    size = "large",
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = LITE_TEST_EXCLUSIONS,
+    ),
     data = ["//:testdata"],
     test_prefix = "Lite",
-    size = "large",
     deps = [
-        ":lite",
         ":generic_test_protos_java_proto_lite",
         ":java_test_protos_java_proto_lite",
+        ":lite",
         ":test_util_lite",
-        "//external:easymock",
-        "//external:junit",
-        "//external:truth",
-    ]
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_easymock_easymock",
+    ],
 )
-
