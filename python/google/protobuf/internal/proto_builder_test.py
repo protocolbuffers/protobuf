@@ -31,10 +31,7 @@
 """Tests for google.protobuf.proto_builder."""
 
 import collections
-try:
-  import unittest2 as unittest
-except ImportError:
-  import unittest
+import unittest
 
 from google.protobuf import descriptor_pb2  # pylint: disable=g-import-not-at-top
 from google.protobuf import descriptor
