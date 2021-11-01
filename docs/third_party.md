@@ -108,6 +108,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Swift: https://github.com/alexeyxo/protobuf-swift
 * Swift: https://github.com/apple/swift-protobuf/
 * Typescript: https://github.com/thesayyn/protoc-gen-ts
+* Typescript: https://github.com/pbkit/pbkit
 * Vala: https://launchpad.net/protobuf-vala
 * Visual Basic: http://code.google.com/p/protobuf-net/
 
@@ -130,6 +131,7 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * https://github.com/awakesecurity/gRPC-haskell (Haskell)
 * https://github.com/Yeolar/raster (C++)
 * https://github.com/jnordberg/wsrpc (JavaScript Node.js/Browser)
+* https://github.com/pbkit/npm-packages/blob/main/frpc-test/src/index.spec.ts (TypeScript Node.js/Browser)
 * https://github.com/ppissias/xsrpcj (Java)
 * https://github.com/twitchtv/twirp (Multiple languages)
 
