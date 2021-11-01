@@ -83,12 +83,6 @@ void AddEnums(const protobuf::Descriptor* message,
   }
 }
 
-template <class T>
-void SortDefs(std::vector<T>* defs) {
-  std::sort(defs->begin(), defs->end(),
-            [](T a, T b) { return a->full_name() < b->full_name(); });
-}
-
 std::vector<const protobuf::EnumDescriptor*> SortedEnums(
     const protobuf::FileDescriptor* file) {
   std::vector<const protobuf::EnumDescriptor*> enums;
@@ -98,7 +92,6 @@ std::vector<const protobuf::EnumDescriptor*> SortedEnums(
   for (int i = 0; i < file->message_type_count(); i++) {
     AddEnums(file->message_type(i), &enums);
   }
-  SortDefs(&enums);
   return enums;
 }
 
@@ -780,6 +773,11 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
 
   std::vector<const protobuf::EnumDescriptor*> this_file_enums =
       SortedEnums(file);
+  std::sort(
+      this_file_enums.begin(), this_file_enums.end(),
+      [](const protobuf::EnumDescriptor* a, const protobuf::EnumDescriptor* b) {
+        return a->full_name() < b->full_name();
+      });
 
   for (auto enumdesc : this_file_enums) {
     output("typedef enum {\n");

@@ -40,6 +40,7 @@ namespace upb {
 typedef upb_msgval MessageValue;
 
 class EnumDefPtr;
+class FileDefPtr;
 class MessageDefPtr;
 class OneofDefPtr;
 
@@ -191,6 +192,8 @@ class MessageDefPtr {
 
   const upb_msgdef* ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
+
+  FileDefPtr file() const;
 
   const char* full_name() const { return upb_msgdef_fullname(ptr_); }
   const char* name() const { return upb_msgdef_name(ptr_); }
@@ -446,6 +449,10 @@ class SymbolTable {
  private:
   std::unique_ptr<upb_symtab, decltype(&upb_symtab_free)> ptr_;
 };
+
+inline FileDefPtr MessageDefPtr::file() const {
+  return FileDefPtr(upb_msgdef_file(ptr_));
+}
 
 inline MessageDefPtr FieldDefPtr::message_subdef() const {
   return MessageDefPtr(upb_fielddef_msgsubdef(ptr_));

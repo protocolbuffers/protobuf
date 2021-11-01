@@ -518,15 +518,21 @@ static const upb_msglayout *messages_layout[27] = {
   &google_protobuf_GeneratedCodeInfo_Annotation_msginit,
 };
 
+const upb_enumlayout google_protobuf_FieldDescriptorProto_Type_enuminit = {
+  NULL,
+  0x7fffeULL,
+  0,
+};
+
 const upb_enumlayout google_protobuf_FieldDescriptorProto_Label_enuminit = {
   NULL,
   0xeULL,
   0,
 };
 
-const upb_enumlayout google_protobuf_FieldDescriptorProto_Type_enuminit = {
+const upb_enumlayout google_protobuf_FileOptions_OptimizeMode_enuminit = {
   NULL,
-  0x7fffeULL,
+  0xeULL,
   0,
 };
 
@@ -542,12 +548,6 @@ const upb_enumlayout google_protobuf_FieldOptions_JSType_enuminit = {
   0,
 };
 
-const upb_enumlayout google_protobuf_FileOptions_OptimizeMode_enuminit = {
-  NULL,
-  0xeULL,
-  0,
-};
-
 const upb_enumlayout google_protobuf_MethodOptions_IdempotencyLevel_enuminit = {
   NULL,
   0x7ULL,
@@ -555,11 +555,11 @@ const upb_enumlayout google_protobuf_MethodOptions_IdempotencyLevel_enuminit = {
 };
 
 static const upb_enumlayout *enums_layout[6] = {
-  &google_protobuf_FieldDescriptorProto_Label_enuminit,
   &google_protobuf_FieldDescriptorProto_Type_enuminit,
+  &google_protobuf_FieldDescriptorProto_Label_enuminit,
+  &google_protobuf_FileOptions_OptimizeMode_enuminit,
   &google_protobuf_FieldOptions_CType_enuminit,
   &google_protobuf_FieldOptions_JSType_enuminit,
-  &google_protobuf_FileOptions_OptimizeMode_enuminit,
   &google_protobuf_MethodOptions_IdempotencyLevel_enuminit,
 };
 
