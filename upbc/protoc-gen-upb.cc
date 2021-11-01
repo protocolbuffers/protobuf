@@ -773,6 +773,11 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
 
   std::vector<const protobuf::EnumDescriptor*> this_file_enums =
       SortedEnums(file);
+  std::sort(
+      this_file_enums.begin(), this_file_enums.end(),
+      [](const protobuf::EnumDescriptor* a, const protobuf::EnumDescriptor* b) {
+        return a->full_name() < b->full_name();
+      });
 
   for (auto enumdesc : this_file_enums) {
     output("typedef enum {\n");

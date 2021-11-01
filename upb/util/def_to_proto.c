@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -27,9 +27,10 @@
 
 #include "upb/util/def_to_proto.h"
 
+#include <inttypes.h>
 #include <setjmp.h>
 #include <stdio.h>
-#include <inttypes.h>
+
 #include "upb/reflection.h"
 
 /* Must be last. */
@@ -38,9 +39,10 @@
 typedef struct {
   upb_arena *arena;
   jmp_buf err;
-} toproto_ctx;
+} upb_ToProto_Context;
 
-#define CHK_OOM(val) if (!(val)) UPB_LONGJMP(ctx->err, 1);
+#define CHK_OOM(val) \
+  if (!(val)) UPB_LONGJMP(ctx->err, 1);
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
@@ -57,18 +59,18 @@ typedef struct {
     google_protobuf_##desc_type##_set_options(proto, dst);                  \
   }
 
-static upb_strview strviewdup2(toproto_ctx *ctx, upb_strview str) {
+static upb_strview strviewdup2(upb_ToProto_Context *ctx, upb_strview str) {
   char *p = upb_arena_malloc(ctx->arena, str.size);
   CHK_OOM(p);
   memcpy(p, str.data, str.size);
   return (upb_strview){.data = p, .size = str.size};
 }
 
-static upb_strview strviewdup(toproto_ctx *ctx, const char *s) {
+static upb_strview strviewdup(upb_ToProto_Context *ctx, const char *s) {
   return strviewdup2(ctx, (upb_strview){.data = s, .size = strlen(s)});
 }
 
-static upb_strview qual_dup(toproto_ctx *ctx, const char *s) {
+static upb_strview qual_dup(upb_ToProto_Context *ctx, const char *s) {
   size_t n = strlen(s);
   char *p = upb_arena_malloc(ctx->arena, n + 1);
   CHK_OOM(p);
@@ -78,7 +80,7 @@ static upb_strview qual_dup(toproto_ctx *ctx, const char *s) {
 }
 
 UPB_PRINTF(2, 3)
-static upb_strview printf_dup(toproto_ctx *ctx, const char *fmt, ...) {
+static upb_strview printf_dup(upb_ToProto_Context *ctx, const char *fmt, ...) {
   const size_t max = 32;
   char *p = upb_arena_malloc(ctx->arena, max);
   CHK_OOM(p);
@@ -90,7 +92,8 @@ static upb_strview printf_dup(toproto_ctx *ctx, const char *fmt, ...) {
   return (upb_strview){.data = p, .size = n};
 }
 
-static upb_strview default_string(toproto_ctx *ctx, const upb_fielddef *f) {
+static upb_strview default_string(upb_ToProto_Context *ctx,
+                                  const upb_fielddef *f) {
   upb_msgval d = upb_fielddef_default(f);
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE_BOOL:
@@ -122,7 +125,7 @@ static upb_strview default_string(toproto_ctx *ctx, const upb_fielddef *f) {
 }
 
 static google_protobuf_FieldDescriptorProto *fielddef_toproto(
-    toproto_ctx *ctx, const upb_fielddef *f) {
+    upb_ToProto_Context *ctx, const upb_fielddef *f) {
   google_protobuf_FieldDescriptorProto *proto =
       google_protobuf_FieldDescriptorProto_new(ctx->arena);
   CHK_OOM(proto);
@@ -150,7 +153,8 @@ static google_protobuf_FieldDescriptorProto *fielddef_toproto(
 
   if (upb_fielddef_isextension(f)) {
     google_protobuf_FieldDescriptorProto_set_extendee(
-        proto, qual_dup(ctx, upb_msgdef_fullname(upb_fielddef_containingtype(f))));
+        proto,
+        qual_dup(ctx, upb_msgdef_fullname(upb_fielddef_containingtype(f))));
   }
 
   if (upb_fielddef_hasdefault(f)) {
@@ -177,7 +181,7 @@ static google_protobuf_FieldDescriptorProto *fielddef_toproto(
 }
 
 static google_protobuf_OneofDescriptorProto *oneofdef_toproto(
-    toproto_ctx *ctx, const upb_oneofdef *o) {
+    upb_ToProto_Context *ctx, const upb_oneofdef *o) {
   google_protobuf_OneofDescriptorProto *proto =
       google_protobuf_OneofDescriptorProto_new(ctx->arena);
   CHK_OOM(proto);
@@ -194,7 +198,7 @@ static google_protobuf_OneofDescriptorProto *oneofdef_toproto(
 }
 
 static google_protobuf_EnumValueDescriptorProto *enumvaldef_toproto(
-    toproto_ctx *ctx, const upb_enumvaldef *e) {
+    upb_ToProto_Context *ctx, const upb_enumvaldef *e) {
   google_protobuf_EnumValueDescriptorProto *proto =
       google_protobuf_EnumValueDescriptorProto_new(ctx->arena);
   CHK_OOM(proto);
@@ -213,7 +217,7 @@ static google_protobuf_EnumValueDescriptorProto *enumvaldef_toproto(
 }
 
 static google_protobuf_EnumDescriptorProto *enumdef_toproto(
-    toproto_ctx *ctx, const upb_enumdef *e) {
+    upb_ToProto_Context *ctx, const upb_enumdef *e) {
   google_protobuf_EnumDescriptorProto *proto =
       google_protobuf_EnumDescriptorProto_new(ctx->arena);
   CHK_OOM(proto);
@@ -222,7 +226,7 @@ static google_protobuf_EnumDescriptorProto *enumdef_toproto(
       proto, strviewdup(ctx, upb_enumdef_name(e)));
 
   int n;
-  
+
   n = upb_enumdef_valuecount(e);
   google_protobuf_EnumValueDescriptorProto **vals =
       google_protobuf_EnumDescriptorProto_resize_value(proto, n, ctx->arena);
@@ -230,7 +234,7 @@ static google_protobuf_EnumDescriptorProto *enumdef_toproto(
   for (int i = 0; i < n; i++) {
     vals[i] = enumvaldef_toproto(ctx, upb_enumdef_value(e, i));
   }
-  
+
   // TODO: reserved range, reserved name
 
   if (upb_enumdef_hasoptions(e)) {
@@ -242,7 +246,7 @@ static google_protobuf_EnumDescriptorProto *enumdef_toproto(
 }
 
 static google_protobuf_DescriptorProto_ExtensionRange *extrange_toproto(
-    toproto_ctx *ctx, const upb_extrange *e) {
+    upb_ToProto_Context *ctx, const upb_extrange *e) {
   google_protobuf_DescriptorProto_ExtensionRange *proto =
       google_protobuf_DescriptorProto_ExtensionRange_new(ctx->arena);
   CHK_OOM(proto);
@@ -260,17 +264,17 @@ static google_protobuf_DescriptorProto_ExtensionRange *extrange_toproto(
   return proto;
 }
 
-static google_protobuf_DescriptorProto *msgdef_toproto(toproto_ctx *ctx,
+static google_protobuf_DescriptorProto *msgdef_toproto(upb_ToProto_Context *ctx,
                                                        const upb_msgdef *m) {
   google_protobuf_DescriptorProto *proto =
       google_protobuf_DescriptorProto_new(ctx->arena);
   CHK_OOM(proto);
 
-  google_protobuf_DescriptorProto_set_name(
-      proto, strviewdup(ctx, upb_msgdef_name(m)));
+  google_protobuf_DescriptorProto_set_name(proto,
+                                           strviewdup(ctx, upb_msgdef_name(m)));
 
   int n;
-  
+
   n = upb_msgdef_fieldcount(m);
   google_protobuf_FieldDescriptorProto **fields =
       google_protobuf_DescriptorProto_resize_field(proto, n, ctx->arena);
@@ -309,7 +313,8 @@ static google_protobuf_DescriptorProto *msgdef_toproto(toproto_ctx *ctx,
 
   n = upb_msgdef_extrangecount(m);
   google_protobuf_DescriptorProto_ExtensionRange **ext_ranges =
-      google_protobuf_DescriptorProto_resize_extension_range(proto, n, ctx->arena);
+      google_protobuf_DescriptorProto_resize_extension_range(proto, n,
+                                                             ctx->arena);
   for (int i = 0; i < n; i++) {
     ext_ranges[i] = extrange_toproto(ctx, upb_msgdef_extrange(m, i));
   }
@@ -324,7 +329,7 @@ static google_protobuf_DescriptorProto *msgdef_toproto(toproto_ctx *ctx,
 }
 
 static google_protobuf_MethodDescriptorProto *methoddef_toproto(
-    toproto_ctx *ctx, const upb_methoddef *m) {
+    upb_ToProto_Context *ctx, const upb_methoddef *m) {
   google_protobuf_MethodDescriptorProto *proto =
       google_protobuf_MethodDescriptorProto_new(ctx->arena);
   CHK_OOM(proto);
@@ -354,7 +359,7 @@ static google_protobuf_MethodDescriptorProto *methoddef_toproto(
 }
 
 static google_protobuf_ServiceDescriptorProto *servicedef_toproto(
-    toproto_ctx *ctx, const upb_servicedef *s) {
+    upb_ToProto_Context *ctx, const upb_servicedef *s) {
   google_protobuf_ServiceDescriptorProto *proto =
       google_protobuf_ServiceDescriptorProto_new(ctx->arena);
   CHK_OOM(proto);
@@ -379,7 +384,7 @@ static google_protobuf_ServiceDescriptorProto *servicedef_toproto(
 }
 
 static google_protobuf_FileDescriptorProto *filedef_toproto(
-    toproto_ctx *ctx, const upb_filedef *f) {
+    upb_ToProto_Context *ctx, const upb_filedef *f) {
   google_protobuf_FileDescriptorProto *proto =
       google_protobuf_FileDescriptorProto_new(ctx->arena);
   CHK_OOM(proto);
@@ -399,8 +404,8 @@ static google_protobuf_FileDescriptorProto *filedef_toproto(
   }
 
   n = upb_filedef_depcount(f);
-  upb_strview *deps =
-      google_protobuf_FileDescriptorProto_resize_dependency(proto, n, ctx->arena);
+  upb_strview *deps = google_protobuf_FileDescriptorProto_resize_dependency(
+      proto, n, ctx->arena);
   for (int i = 0; i < n; i++) {
     deps[i] = strviewdup(ctx, upb_filedef_name(upb_filedef_dep(f, i)));
   }
@@ -460,48 +465,56 @@ static google_protobuf_FileDescriptorProto *filedef_toproto(
 
 google_protobuf_DescriptorProto *upb_MessageDef_ToProto(const upb_msgdef *m,
                                                         upb_arena *a) {
-  toproto_ctx ctx = {a};
-  return UPB_SETJMP(ctx.err) ? NULL : msgdef_toproto(&ctx, m);
+  upb_ToProto_Context ctx = {a};
+  if (UPB_SETJMP(ctx.err)) return NULL;
+  return msgdef_toproto(&ctx, m);
 }
 
 google_protobuf_EnumDescriptorProto *upb_EnumDef_ToProto(const upb_enumdef *e,
                                                          upb_arena *a) {
-  toproto_ctx ctx = {a};
-  return UPB_SETJMP(ctx.err) ? NULL : enumdef_toproto(&ctx, e);
+  upb_ToProto_Context ctx = {a};
+  if (UPB_SETJMP(ctx.err)) return NULL;
+  return enumdef_toproto(&ctx, e);
 }
 
 google_protobuf_EnumValueDescriptorProto *upb_EnumValueDef_ToProto(
     const upb_enumvaldef *e, upb_arena *a) {
-  toproto_ctx ctx = {a};
-  return UPB_SETJMP(ctx.err) ? NULL : enumvaldef_toproto(&ctx, e);
+  upb_ToProto_Context ctx = {a};
+  if (UPB_SETJMP(ctx.err)) return NULL;
+  return enumvaldef_toproto(&ctx, e);
 }
 
 google_protobuf_FieldDescriptorProto *upb_FieldDef_ToProto(
     const upb_fielddef *f, upb_arena *a) {
-  toproto_ctx ctx = {a};
-  return UPB_SETJMP(ctx.err) ? NULL : fielddef_toproto(&ctx, f);
+  upb_ToProto_Context ctx = {a};
+  if (UPB_SETJMP(ctx.err)) return NULL;
+  return fielddef_toproto(&ctx, f);
 }
 
 google_protobuf_OneofDescriptorProto *upb_OneofDef_ToProto(
     const upb_oneofdef *o, upb_arena *a) {
-  toproto_ctx ctx = {a};
-  return UPB_SETJMP(ctx.err) ? NULL : oneofdef_toproto(&ctx, o);
+  upb_ToProto_Context ctx = {a};
+  if (UPB_SETJMP(ctx.err)) return NULL;
+  return oneofdef_toproto(&ctx, o);
 }
 
 google_protobuf_FileDescriptorProto *upb_FileDef_ToProto(const upb_filedef *f,
                                                          upb_arena *a) {
-  toproto_ctx ctx = {a};
-  return UPB_SETJMP(ctx.err) ? NULL : filedef_toproto(&ctx, f);
+  upb_ToProto_Context ctx = {a};
+  if (UPB_SETJMP(ctx.err)) return NULL;
+  return filedef_toproto(&ctx, f);
 }
 
 google_protobuf_MethodDescriptorProto *upb_MethodDef_ToProto(
     const upb_methoddef *m, upb_arena *a) {
-  toproto_ctx ctx = {a};
-  return UPB_SETJMP(ctx.err) ? NULL : methoddef_toproto(&ctx, m);
+  upb_ToProto_Context ctx = {a};
+  if (UPB_SETJMP(ctx.err)) return NULL;
+  return methoddef_toproto(&ctx, m);
 }
 
 google_protobuf_ServiceDescriptorProto *upb_ServiceDef_ToProto(
     const upb_servicedef *s, upb_arena *a) {
-  toproto_ctx ctx = {a};
-  return UPB_SETJMP(ctx.err) ? NULL : servicedef_toproto(&ctx, s);
+  upb_ToProto_Context ctx = {a};
+  if (UPB_SETJMP(ctx.err)) return NULL;
+  return servicedef_toproto(&ctx, s);
 }
