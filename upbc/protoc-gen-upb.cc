@@ -83,12 +83,6 @@ void AddEnums(const protobuf::Descriptor* message,
   }
 }
 
-template <class T>
-void SortDefs(std::vector<T>* defs) {
-  std::sort(defs->begin(), defs->end(),
-            [](T a, T b) { return a->full_name() < b->full_name(); });
-}
-
 std::vector<const protobuf::EnumDescriptor*> SortedEnums(
     const protobuf::FileDescriptor* file) {
   std::vector<const protobuf::EnumDescriptor*> enums;
@@ -98,7 +92,6 @@ std::vector<const protobuf::EnumDescriptor*> SortedEnums(
   for (int i = 0; i < file->message_type_count(); i++) {
     AddEnums(file->message_type(i), &enums);
   }
-  SortDefs(&enums);
   return enums;
 }
 

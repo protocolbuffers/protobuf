@@ -79,17 +79,14 @@ static upb_strview qual_dup(toproto_ctx *ctx, const char *s) {
 
 UPB_PRINTF(2, 3)
 static upb_strview printf_dup(toproto_ctx *ctx, const char *fmt, ...) {
+  const size_t max = 32;
+  char *p = upb_arena_malloc(ctx->arena, max);
+  CHK_OOM(p);
   va_list args;
   va_start(args, fmt);
-  size_t n = vsnprintf(NULL, 0, fmt, args);
+  size_t n = vsnprintf(p, max, fmt, args);
   va_end(args);
-
-  char *p = upb_arena_malloc(ctx->arena, n + 1);
-  CHK_OOM(p);
-
-  va_start(args, fmt);
-  vsnprintf(p, n, fmt, args);
-  va_end(args);
+  UPB_ASSERT(n < max);
   return (upb_strview){.data = p, .size = n};
 }
 
@@ -98,7 +95,11 @@ static upb_strview default_string(toproto_ctx *ctx, const upb_fielddef *f) {
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE_BOOL:
       return strviewdup(ctx, d.bool_val ? "true" : "false");
-    case UPB_TYPE_ENUM:  // TODO: encode as string?
+    case UPB_TYPE_ENUM: {
+      const upb_enumdef *e = upb_fielddef_enumsubdef(f);
+      const upb_enumvaldef *ev = upb_enumdef_lookupnum(e, d.int32_val);
+      return strviewdup(ctx, upb_enumvaldef_name(ev));
+    }
     case UPB_TYPE_INT64:
       return printf_dup(ctx, "%" PRId64, d.int64_val);
     case UPB_TYPE_UINT64:
@@ -134,7 +135,10 @@ static google_protobuf_FieldDescriptorProto *fielddef_toproto(
   google_protobuf_FieldDescriptorProto_set_type(proto,
                                                 upb_fielddef_descriptortype(f));
 
-  // TODO: json_name (needs has_json_name from fielddef).
+  if (upb_fielddef_hasjsonname(f)) {
+    google_protobuf_FieldDescriptorProto_set_json_name(
+        proto, strviewdup(ctx, upb_fielddef_jsonname(f)));
+  }
 
   if (upb_fielddef_issubmsg(f)) {
     google_protobuf_FieldDescriptorProto_set_type_name(
@@ -405,8 +409,15 @@ static google_protobuf_FileDescriptorProto *filedef_toproto(
   int32_t *public_deps =
       google_protobuf_FileDescriptorProto_resize_public_dependency(proto, n,
                                                                    ctx->arena);
-  const int32_t *proto_deps = _upb_filedef_publicdepnums(f);
-  memcpy(public_deps, proto_deps, n * sizeof(int32_t));
+  const int32_t *public_dep_nums = _upb_filedef_publicdepnums(f);
+  memcpy(public_deps, public_dep_nums, n * sizeof(int32_t));
+
+  n = upb_filedef_weakdepcount(f);
+  int32_t *weak_deps =
+      google_protobuf_FileDescriptorProto_resize_weak_dependency(proto, n,
+                                                                 ctx->arena);
+  const int32_t *weak_dep_nums = _upb_filedef_weakdepnums(f);
+  memcpy(weak_deps, weak_dep_nums, n * sizeof(int32_t));
 
   n = upb_filedef_toplvlmsgcount(f);
   google_protobuf_DescriptorProto **msgs =
@@ -443,8 +454,6 @@ static google_protobuf_FileDescriptorProto *filedef_toproto(
     SET_OPTIONS(proto, FileDescriptorProto, FileOptions,
                 upb_filedef_options(f));
   }
-
-  // TODO: public & weak dependencies.
 
   return proto;
 }

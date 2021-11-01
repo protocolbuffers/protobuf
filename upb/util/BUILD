@@ -39,6 +39,8 @@ cc_test(
     deps = [
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
+        "//:descriptor_upb_proto_reflection",
+        "@com_google_protobuf//:protobuf",
         ":def_to_proto",
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",

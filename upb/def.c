@@ -77,6 +77,7 @@ struct upb_fielddef {
   bool is_extension_;
   bool packed_;
   bool proto3_optional_;
+  bool has_json_name_;
   upb_descriptortype_t type_;
   upb_label_t label_;
 };
@@ -156,6 +157,7 @@ struct upb_filedef {
 
   const upb_filedef **deps;
   const int32_t* public_deps;
+  const int32_t* weak_deps;
   const upb_msgdef *top_lvl_msgs;
   const upb_enumdef *top_lvl_enums;
   const upb_fielddef *top_lvl_exts;
@@ -165,6 +167,7 @@ struct upb_filedef {
 
   int dep_count;
   int public_dep_count;
+  int weak_dep_count;
   int top_lvl_msg_count;
   int top_lvl_enum_count;
   int top_lvl_ext_count;
@@ -545,6 +548,10 @@ const char *upb_fielddef_name(const upb_fielddef *f) {
 
 const char *upb_fielddef_jsonname(const upb_fielddef *f) {
   return f->json_name;
+}
+
+bool upb_fielddef_hasjsonname(const upb_fielddef *f) {
+  return f->has_json_name_;
 }
 
 const upb_filedef *upb_fielddef_file(const upb_fielddef *f) {
@@ -1047,8 +1054,16 @@ int upb_filedef_publicdepcount(const upb_filedef *f) {
   return f->public_dep_count;
 }
 
+int upb_filedef_weakdepcount(const upb_filedef *f) {
+  return f->weak_dep_count;
+}
+
 const int32_t *_upb_filedef_publicdepnums(const upb_filedef *f) {
   return f->public_deps;
+}
+
+const int32_t *_upb_filedef_weakdepnums(const upb_filedef *f) {
+  return f->weak_deps;
 }
 
 int upb_filedef_toplvlenumcount(const upb_filedef *f) {
@@ -1071,6 +1086,11 @@ const upb_filedef *upb_filedef_dep(const upb_filedef *f, int i) {
 const upb_filedef *upb_filedef_publicdep(const upb_filedef *f, int i) {
   UPB_ASSERT(0 <= i && i < f->public_dep_count);
   return f->deps[f->public_deps[i]];
+}
+
+const upb_filedef *upb_filedef_weakdep(const upb_filedef *f, int i) {
+  UPB_ASSERT(0 <= i && i < f->public_dep_count);
+  return f->deps[f->weak_deps[i]];
 }
 
 const upb_msgdef *upb_filedef_toplvlmsg(const upb_filedef *f, int i) {
@@ -2152,8 +2172,10 @@ static void create_fielddef(
   if (google_protobuf_FieldDescriptorProto_has_json_name(field_proto)) {
     json_name = strviewdup(
         ctx, google_protobuf_FieldDescriptorProto_json_name(field_proto));
+    f->has_json_name_ = true;
   } else {
     json_name = makejsonname(ctx, shortname);
+    f->has_json_name_ = false;
   }
 
   field_number = google_protobuf_FieldDescriptorProto_number(field_proto);
@@ -2751,6 +2773,7 @@ static void build_filedef(
   const google_protobuf_ServiceDescriptorProto *const *services;
   const upb_strview *strs;
   const int32_t *public_deps;
+  const int32_t *weak_deps;
   size_t i, n;
 
   file->symtab = ctx->symtab;
@@ -2841,6 +2864,18 @@ static void build_filedef(
       symtab_errf(ctx, "public_dep %d is out of range", (int)public_deps[i]);
     }
     mutable_public_deps[i] = public_deps[i];
+  }
+
+  weak_deps =
+      google_protobuf_FileDescriptorProto_weak_dependency(file_proto, &n);
+  file->weak_dep_count = n;
+  file->weak_deps = symtab_alloc(ctx, sizeof(*file->weak_deps) * n);
+  int32_t *mutable_weak_deps = (int32_t*)file->weak_deps;
+  for (i = 0; i < n; i++) {
+    if (weak_deps[i] >= file->dep_count) {
+      symtab_errf(ctx, "public_dep %d is out of range", (int)public_deps[i]);
+    }
+    mutable_weak_deps[i] = weak_deps[i];
   }
 
   /* Create enums. */

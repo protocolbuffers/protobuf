@@ -121,6 +121,7 @@ upb_label_t upb_fielddef_label(const upb_fielddef *f);
 uint32_t upb_fielddef_number(const upb_fielddef *f);
 const char *upb_fielddef_name(const upb_fielddef *f);
 const char *upb_fielddef_jsonname(const upb_fielddef *f);
+bool upb_fielddef_hasjsonname(const upb_fielddef *f);
 bool upb_fielddef_isextension(const upb_fielddef *f);
 bool upb_fielddef_packed(const upb_fielddef *f);
 const upb_filedef *upb_fielddef_file(const upb_fielddef *f);
@@ -354,18 +355,21 @@ const char *upb_filedef_phpnamespace(const upb_filedef *f);
 upb_syntax_t upb_filedef_syntax(const upb_filedef *f);
 int upb_filedef_depcount(const upb_filedef *f);
 int upb_filedef_publicdepcount(const upb_filedef *f);
+int upb_filedef_weakdepcount(const upb_filedef *f);
 int upb_filedef_toplvlmsgcount(const upb_filedef *f);
 int upb_filedef_toplvlenumcount(const upb_filedef *f);
 int upb_filedef_toplvlextcount(const upb_filedef *f);
 int upb_filedef_servicecount(const upb_filedef *f);
 const upb_filedef *upb_filedef_dep(const upb_filedef *f, int i);
 const upb_filedef *upb_filedef_publicdep(const upb_filedef *f, int i);
+const upb_filedef *upb_filedef_weakdep(const upb_filedef *f, int i);
 const upb_msgdef *upb_filedef_toplvlmsg(const upb_filedef *f, int i);
 const upb_enumdef *upb_filedef_toplvlenum(const upb_filedef *f, int i);
 const upb_fielddef *upb_filedef_toplvlext(const upb_filedef *f, int i);
 const upb_servicedef *upb_filedef_service(const upb_filedef *f, int i);
 const upb_symtab *upb_filedef_symtab(const upb_filedef *f);
 const int32_t *_upb_filedef_publicdepnums(const upb_filedef *f);
+const int32_t *_upb_filedef_weakdepnums(const upb_filedef *f);
 
 /* upb_methoddef **************************************************************/
 
