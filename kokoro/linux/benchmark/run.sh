@@ -23,8 +23,10 @@ popd
 ./configure CXXFLAGS="-fPIC -O2"
 make -j8
 pushd python
-python setup.py build --cpp_implementation
-pip install . --user
+virtualenv -p python3 env
+source env/bin/activate
+python3 setup.py build --cpp_implementation
+pip3 install --install-option="--cpp_implementation" .
 popd
 
 # build and run Python benchmark
@@ -91,7 +93,7 @@ cat tmp/python_result.json
 # print the postprocessed results to the build job log
 # TODO(jtattermusch): re-enable uploading results to bigquery (it is currently broken)
 make python_add_init
-env LD_LIBRARY_PATH="${repo_root}/src/.libs" python -m util.result_parser \
+env LD_LIBRARY_PATH="${repo_root}/src/.libs" python3 -m util.result_parser \
 	-cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" -python="../tmp/python_result.json"
 popd
 
