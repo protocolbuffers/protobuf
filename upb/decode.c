@@ -282,6 +282,7 @@ static void decode_munge(int type, wireval *val) {
     }
     case UPB_DESCRIPTOR_TYPE_INT32:
     case UPB_DESCRIPTOR_TYPE_UINT32:
+    case UPB_DESCRIPTOR_TYPE_ENUM:
       if (!_upb_isle()) {
         /* The next stage will memcpy(dst, &val, 4) */
         val->uint32_val = val->uint64_val;
