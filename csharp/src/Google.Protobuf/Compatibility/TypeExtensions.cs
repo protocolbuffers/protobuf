@@ -31,6 +31,7 @@
 #endregion
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 #if !NET35
@@ -59,7 +60,11 @@ namespace Google.Protobuf.Compatibility
         /// including inherited properties or null if there is no such public property.
         /// Here, "public property" means a property where either the getter, or the setter, or both, is public.
         /// </summary>
-        internal static PropertyInfo GetProperty(this Type target, string name)
+        [UnconditionalSuppressMessage("Trimming", "IL2072",
+            Justification = "The BaseType of the target will have all properties because of the annotation.")]
+        internal static PropertyInfo GetProperty(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)]
+            this Type target, string name)
         {
             // GetDeclaredProperty only returns properties declared in the given type, so we need to recurse.
             while (target != null)
@@ -86,7 +91,11 @@ namespace Google.Protobuf.Compatibility
         /// class Child : Base declares public void Foo(long)).
         /// </remarks>
         /// <exception cref="AmbiguousMatchException">One type in the hierarchy declared more than one method with the same name</exception>
-        internal static MethodInfo GetMethod(this Type target, string name)
+        [UnconditionalSuppressMessage("Trimming", "IL2072",
+            Justification = "The BaseType of the target will have all properties because of the annotation.")]
+        internal static MethodInfo GetMethod(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
+            this Type target, string name)
         {
             // GetDeclaredMethod only returns methods declared in the given type, so we need to recurse.
             while (target != null)

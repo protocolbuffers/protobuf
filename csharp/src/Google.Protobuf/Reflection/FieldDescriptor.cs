@@ -452,7 +452,7 @@ namespace Google.Protobuf.Reflection
             }
             return IsMap ? new MapFieldAccessor(property, this)
                 : IsRepeated ? new RepeatedFieldAccessor(property, this)
-                : (IFieldAccessor) new SingleFieldAccessor(property, this);
+                : (IFieldAccessor) new SingleFieldAccessor(ContainingType.ClrType, property, this);
         }
     }
 }
