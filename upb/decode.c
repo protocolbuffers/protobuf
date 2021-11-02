@@ -484,6 +484,7 @@ static const char *decode_enum_packed(upb_decstate *d, const char *ptr,
   while (!decode_isdone(d, &ptr)) {
     wireval elem;
     ptr = decode_varint64(d, ptr, &elem.uint64_val);
+    decode_munge(field->descriptortype, &elem);
     if (!decode_checkenum(d, ptr, msg, e, field, &elem)) {
       continue;
     }
