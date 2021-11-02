@@ -27,7 +27,7 @@ http_archive(
 )
 
 # Load common dependencies.
-load("//:protobuf_deps.bzl", "protobuf_deps")
+load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 protobuf_deps()
 
 bind(
@@ -36,70 +36,23 @@ bind(
 )
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
-maven_install(
-    artifacts = [
-        "com.google.code.findbugs:jsr305:3.0.2",
-        "com.google.code.gson:gson:2.8.6",
-        "com.google.errorprone:error_prone_annotations:2.3.2",
-        "com.google.j2objc:j2objc-annotations:1.3",
-        "com.google.guava:guava:30.1.1-jre",
-        "com.google.truth:truth:1.1.2",
-        "junit:junit:4.12",
-        "org.easymock:easymock:3.2",
 
-    ],
+maven_install(
+    artifacts = PROTOBUF_MAVEN_ARTIFACTS,
+    # For updating instructions, see:
+    # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
+    maven_install_json = "//:maven_install.json",
     repositories = [
         "https://repo1.maven.org/maven2",
         "https://repo.maven.apache.org/maven2",
     ],
-    # For updating instructions, see: 
-    # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
-    maven_install_json = "//:maven_install.json",
 )
 
 load("@maven//:defs.bzl", "pinned_maven_install")
+
 pinned_maven_install()
-
-bind(
-    name = "guava",
-    actual = "@maven//:com_google_guava_guava",
-)
-
-bind(
-    name = "gson",
-    actual = "@maven//:com_google_code_gson_gson",
-)
-
-bind(
-    name = "error_prone_annotations",
-    actual = "@maven//:com_google_errorprone_error_prone_annotations",
-)
-
-bind(
-    name = "j2objc_annotations",
-    actual = "@maven//:com_google_j2objc_j2objc_annotations",
-)
-
-bind(
-    name = "jsr305",
-    actual = "@maven//:com_google_code_findbugs_jsr305",
-)
-
-bind(
-    name = "junit",
-    actual = "@maven//:junit_junit",
-)
-
-bind(
-    name = "easymock",
-    actual = "@maven//:org_easymock_easymock",
-)
-
-bind(
-    name = "truth",
-    actual = "@maven//:com_google_truth_truth",
-)
 
 # For `cc_proto_blacklist_test` and `build_test`.
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
 bazel_skylib_workspace()

@@ -11,33 +11,34 @@ java_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "//external:error_prone_annotations",
-        "//external:j2objc_annotations",
-        "//external:gson",
-        "//external:jsr305",
-        "//external:guava",
         "//java/core",
         "//java/lite",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_code_gson_gson",
+        "@maven//:com_google_errorprone_error_prone_annotations",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_j2objc_j2objc_annotations",
     ],
 )
+
 # Bazel users, don't depend on this target, use :util.
 java_export(
     name = "util_mvn",
     maven_coordinates = "com.google.protobuf:protobuf-java-util:%s" % PROTOBUF_VERSION,
     pom_template = "pom_template.xml",
-    runtime_deps = [":util"],
     visibility = ["//java:__pkg__"],
+    runtime_deps = [":util"],
 )
 
 filegroup(
     name = "release",
-    visibility = ["//java:__pkg__"],
     srcs = [
-        ":util_mvn-pom",
-        ":util_mvn-maven-source",
         ":util_mvn-docs",
+        ":util_mvn-maven-source",
+        ":util_mvn-pom",
         ":util_mvn-project",
-    ]
+    ],
+    visibility = ["//java:__pkg__"],
 )
 
 proto_library(
@@ -60,15 +61,15 @@ java_proto_library(
 
 junit_tests(
     name = "tests",
-    srcs = glob(["src/test/java/**/*.java"]),
     package_name = "com.google.protobuf.util",
+    srcs = glob(["src/test/java/**/*.java"]),
     deps = [
         ":test_protos_java_proto",
         ":util",
-        "//external:guava",
-        "//external:junit",
-        "//external:truth",
         "//java/core",
         "//java/core:generic_test_protos_java_proto",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
     ],
 )
