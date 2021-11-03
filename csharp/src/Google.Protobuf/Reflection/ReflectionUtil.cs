@@ -33,6 +33,9 @@
 using Google.Protobuf.Compatibility;
 using System;
 using System.Reflection;
+#if NET6_0
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Google.Protobuf.Reflection
 {
@@ -115,7 +118,13 @@ namespace Google.Protobuf.Reflection
         internal static Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method) =>
             GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageBool(method);
 
-        internal static Func<IMessage, bool> CreateIsInitializedCaller(Type msg) =>
+        internal static Func<IMessage, bool> CreateIsInitializedCaller(
+#if NET6_0
+            [DynamicallyAccessedMembers(
+                DynamicallyAccessedMemberTypes.PublicProperties |
+                DynamicallyAccessedMemberTypes.NonPublicProperties)]
+#endif
+            Type msg) =>
             ((IExtensionSetReflector)Activator.CreateInstance(typeof(ExtensionSetReflector<>).MakeGenericType(msg))).CreateIsInitializedCaller();
 
         /// <summary>
@@ -308,11 +317,18 @@ namespace Google.Protobuf.Reflection
             }
         }
 
-        private class ExtensionSetReflector<T1> : IExtensionSetReflector where T1 : IExtendableMessage<T1>
+        private class ExtensionSetReflector<
+#if NET6_0
+            [DynamicallyAccessedMembers(
+                DynamicallyAccessedMemberTypes.PublicProperties |
+                DynamicallyAccessedMemberTypes.NonPublicProperties)]
+#endif
+            T1> : IExtensionSetReflector where T1 : IExtendableMessage<T1>
         {
             public Func<IMessage, bool> CreateIsInitializedCaller()
             {
                 var prop = typeof(T1).GetTypeInfo().GetDeclaredProperty("_Extensions");
+
 #if NET35
                 var getFunc = (Func<T1, ExtensionSet<T1>>)prop.GetGetMethod(true).CreateDelegate(typeof(Func<T1, ExtensionSet<T1>>));
 #else

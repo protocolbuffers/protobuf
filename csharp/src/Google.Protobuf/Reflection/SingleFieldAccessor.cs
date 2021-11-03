@@ -31,6 +31,9 @@
 #endregion
 
 using System;
+#if NET6_0
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Reflection;
 using Google.Protobuf.Compatibility;
 
@@ -50,6 +53,9 @@ namespace Google.Protobuf.Reflection
         private readonly Action<IMessage> clearDelegate;
         private readonly Func<IMessage, bool> hasDelegate;
 
+#if NET6_0
+        [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "workaround for now")]
+#endif
         internal SingleFieldAccessor(PropertyInfo property, FieldDescriptor descriptor) : base(property, descriptor)
         {
             if (!property.CanWrite)

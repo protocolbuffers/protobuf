@@ -33,6 +33,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+#if NET6_0
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Linq;
 using System.Reflection;
 #if NET35
@@ -182,6 +185,12 @@ namespace Google.Protobuf.Reflection
         /// a wrapper type, and handle the result appropriately.
         /// </para>
         /// </remarks>
+#if NET6_0
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.PublicProperties |
+            DynamicallyAccessedMemberTypes.NonPublicProperties |
+            DynamicallyAccessedMemberTypes.PublicMethods)]
+#endif
         public Type ClrType { get; }
 
         /// <summary>

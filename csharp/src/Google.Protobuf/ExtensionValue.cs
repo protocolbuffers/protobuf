@@ -44,6 +44,8 @@ namespace Google.Protobuf
         void WriteTo(ref WriteContext ctx);
         int CalculateSize();
         bool IsInitialized();
+
+        object GetValue();
     }
 
     internal sealed class ExtensionValue<T> : IExtensionValue
@@ -134,6 +136,8 @@ namespace Google.Protobuf
                 return true;
             }
         }
+
+        object IExtensionValue.GetValue() => GetValue();
     }
 
     internal sealed class RepeatedExtensionValue<T> : IExtensionValue
@@ -165,8 +169,8 @@ namespace Google.Protobuf
             if (ReferenceEquals(this, other))
                 return true;
 
-            return other is RepeatedExtensionValue<T> 
-                && field.Equals((other as RepeatedExtensionValue<T>).field) 
+            return other is RepeatedExtensionValue<T>
+                && field.Equals((other as RepeatedExtensionValue<T>).field)
                 && codec.Equals((other as RepeatedExtensionValue<T>).codec);
         }
 
@@ -221,5 +225,7 @@ namespace Google.Protobuf
 
             return true;
         }
+
+        object IExtensionValue.GetValue() => GetValue();
     }
 }

@@ -30,6 +30,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 using System;
+#if NET6_0
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Google.Protobuf.Reflection
 {
@@ -47,6 +50,12 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Irrelevant for file descriptors; the CLR type for the message for message descriptors.
         /// </summary>
+#if NET6_0
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.PublicProperties |
+            DynamicallyAccessedMemberTypes.NonPublicProperties |
+            DynamicallyAccessedMemberTypes.PublicMethods)]
+#endif
         public Type ClrType { get; private set; }
 
         /// <summary>
@@ -88,7 +97,14 @@ namespace Google.Protobuf.Reflection
         /// Each array parameter may be null, to indicate a lack of values.
         /// The parameter order is designed to make it feasible to format the generated code readably.
         /// </summary>
-        public GeneratedClrTypeInfo(Type clrType, MessageParser parser, string[] propertyNames, string[] oneofNames, Type[] nestedEnums, Extension[] extensions, GeneratedClrTypeInfo[] nestedTypes)
+        public GeneratedClrTypeInfo(
+#if NET6_0
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.PublicProperties |
+            DynamicallyAccessedMemberTypes.NonPublicProperties |
+            DynamicallyAccessedMemberTypes.PublicMethods)]
+#endif
+            Type clrType, MessageParser parser, string[] propertyNames, string[] oneofNames, Type[] nestedEnums, Extension[] extensions, GeneratedClrTypeInfo[] nestedTypes)
         {
             NestedTypes = nestedTypes ?? EmptyCodeInfo;
             NestedEnums = nestedEnums ?? ReflectionUtil.EmptyTypes;
@@ -104,7 +120,14 @@ namespace Google.Protobuf.Reflection
         /// Each array parameter may be null, to indicate a lack of values.
         /// The parameter order is designed to make it feasible to format the generated code readably.
         /// </summary>
-        public GeneratedClrTypeInfo(Type clrType, MessageParser parser, string[] propertyNames, string[] oneofNames, Type[] nestedEnums, GeneratedClrTypeInfo[] nestedTypes)
+        public GeneratedClrTypeInfo(
+#if NET6_0
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.PublicProperties |
+            DynamicallyAccessedMemberTypes.NonPublicProperties |
+            DynamicallyAccessedMemberTypes.PublicMethods)]
+#endif
+            Type clrType, MessageParser parser, string[] propertyNames, string[] oneofNames, Type[] nestedEnums, GeneratedClrTypeInfo[] nestedTypes)
             : this(clrType, parser, propertyNames, oneofNames, nestedEnums, null, nestedTypes)
         {
         }

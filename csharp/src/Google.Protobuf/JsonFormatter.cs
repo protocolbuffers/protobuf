@@ -32,6 +32,9 @@
 
 using System;
 using System.Collections;
+#if NET6_0
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Globalization;
 using System.Text;
 using Google.Protobuf.Reflection;
@@ -879,6 +882,10 @@ namespace Google.Protobuf
             private static readonly Dictionary<System.Type, Dictionary<object, string>> dictionaries
                 = new Dictionary<System.Type, Dictionary<object, string>>();
 
+#if NET6_0
+            [UnconditionalSuppressMessage("Trimming", "IL2072",
+                Justification = "Reflection-based name mapping is not supported when trimming")]
+#endif
             internal static string GetOriginalName(object value)
             {
                 var enumType = value.GetType();
@@ -911,7 +918,13 @@ namespace Google.Protobuf
                                         // If the attribute hasn't been applied, fall back to the name of the field.
                                         ?.Name ?? f.Name);
 #else
-            private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
+            private static Dictionary<object, string> GetNameMapping(
+#if NET6_0
+                [DynamicallyAccessedMembers(
+                    DynamicallyAccessedMemberTypes.PublicFields |
+                    DynamicallyAccessedMemberTypes.NonPublicFields)]
+#endif
+                System.Type enumType) =>
                 enumType.GetTypeInfo().DeclaredFields
                     .Where(f => f.IsStatic)
                     .Where(f => f.GetCustomAttributes<OriginalNameAttribute>()

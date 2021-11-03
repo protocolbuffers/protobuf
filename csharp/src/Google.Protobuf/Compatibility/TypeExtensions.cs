@@ -32,6 +32,9 @@
 
 using System;
 using System.Reflection;
+#if NET6_0
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 #if !NET35
 namespace Google.Protobuf.Compatibility
@@ -59,7 +62,19 @@ namespace Google.Protobuf.Compatibility
         /// including inherited properties or null if there is no such public property.
         /// Here, "public property" means a property where either the getter, or the setter, or both, is public.
         /// </summary>
-        internal static PropertyInfo GetProperty(this Type target, string name)
+#if NET6_0
+        [UnconditionalSuppressMessage(
+            "Trimming",
+            "IL2072",
+            Justification = "`target` needs the same requirements as Type.GetProperty, which it has.")]
+#endif
+        internal static PropertyInfo GetProperty(
+#if NET6_0
+            [DynamicallyAccessedMembers(
+                DynamicallyAccessedMemberTypes.PublicProperties |
+                DynamicallyAccessedMemberTypes.NonPublicProperties)]
+#endif
+            this Type target, string name)
         {
             // GetDeclaredProperty only returns properties declared in the given type, so we need to recurse.
             while (target != null)
@@ -86,7 +101,19 @@ namespace Google.Protobuf.Compatibility
         /// class Child : Base declares public void Foo(long)).
         /// </remarks>
         /// <exception cref="AmbiguousMatchException">One type in the hierarchy declared more than one method with the same name</exception>
-        internal static MethodInfo GetMethod(this Type target, string name)
+#if NET6_0
+        [UnconditionalSuppressMessage(
+            "Trimming",
+            "IL2072",
+            Justification = "`target` needs the same requirements as Type.GetProperty, which it has.")]
+#endif
+        internal static MethodInfo GetMethod(
+#if NET6_0
+            [DynamicallyAccessedMembers(
+                DynamicallyAccessedMemberTypes.PublicMethods |
+                DynamicallyAccessedMemberTypes.NonPublicMethods)]
+#endif
+            this Type target, string name)
         {
             // GetDeclaredMethod only returns methods declared in the given type, so we need to recurse.
             while (target != null)
