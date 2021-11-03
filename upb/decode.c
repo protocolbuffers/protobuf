@@ -265,6 +265,13 @@ static const char *decode_tag(upb_decstate *d, const char *ptr, uint32_t *val) {
   }
 }
 
+static void decode_munge_int32(wireval *val) {
+  if (!_upb_isle()) {
+    /* The next stage will memcpy(dst, &val, 4) */
+    val->uint32_val = val->uint64_val;
+  }
+}
+
 static void decode_munge(int type, wireval *val) {
   switch (type) {
     case UPB_DESCRIPTOR_TYPE_BOOL:
@@ -282,10 +289,8 @@ static void decode_munge(int type, wireval *val) {
     }
     case UPB_DESCRIPTOR_TYPE_INT32:
     case UPB_DESCRIPTOR_TYPE_UINT32:
-      if (!_upb_isle()) {
-        /* The next stage will memcpy(dst, &val, 4) */
-        val->uint32_val = val->uint64_val;
-      }
+    case UPB_DESCRIPTOR_TYPE_ENUM:
+      decode_munge_int32(val);
       break;
   }
 }
@@ -483,6 +488,7 @@ static const char *decode_enum_packed(upb_decstate *d, const char *ptr,
   while (!decode_isdone(d, &ptr)) {
     wireval elem;
     ptr = decode_varint64(d, ptr, &elem.uint64_val);
+    decode_munge_int32(&elem);
     if (!decode_checkenum(d, ptr, msg, e, field, &elem)) {
       continue;
     }
