@@ -13,7 +13,7 @@ def _package_naming_impl(ctx):
 
   # infer from the current cpp toolchain.
   toolchain = find_cpp_toolchain(ctx)
-  values["cpu"] = toolchain.cpu.replace("darwin", "osx")
+  values["cpu"] = toolchain.cpu
   
   return PackageVariablesInfo(values = values)
 
