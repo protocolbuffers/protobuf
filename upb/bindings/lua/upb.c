@@ -52,6 +52,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "lauxlib.h"
@@ -180,10 +181,9 @@ const char *lupb_checkstring(lua_State *L, int narg, size_t *len) {
 /* Unlike luaL_checkinteger, these do not implicitly convert from string or
  * round an existing double value.  We allow floating-point input, but only if
  * the actual value is integral. */
-#define INTCHECK(type, ctype)                                                  \
+#define INTCHECK(type, ctype, min, max_bits)                                   \
   ctype lupb_check##type(lua_State *L, int narg) {                             \
     double n;                                                                  \
-    ctype i;                                                                   \
     if (lua_isinteger(L, narg)) {                                              \
       return lua_tointeger(L, narg);                                           \
     }                                                                          \
@@ -192,13 +192,13 @@ const char *lupb_checkstring(lua_State *L, int narg, size_t *len) {
     luaL_checktype(L, narg, LUA_TNUMBER);                                      \
     n = lua_tonumber(L, narg);                                                 \
                                                                                \
-    i = (ctype)n;                                                              \
-    if ((double)i != n) {                                                      \
-      /* double -> ctype truncated or rounded. */                              \
+    /* Check this double has no fractional part and remains in bounds. */      \
+    double i;                                                                  \
+    if ((modf(n, &i) != 0.0) || n < min || n >= ldexp(1, max_bits)) {          \
       luaL_error(L, "number %f was not an integer or out of range for " #type, \
                  n);                                                           \
     }                                                                          \
-    return i;                                                                  \
+    return (ctype) n;                                                          \
   }                                                                            \
   void lupb_push##type(lua_State *L, ctype val) {                              \
     /* TODO: push integer for Lua >= 5.3, 64-bit cdata for LuaJIT. */          \
@@ -207,10 +207,10 @@ const char *lupb_checkstring(lua_State *L, int narg, size_t *len) {
     lua_pushnumber(L, val);                                                    \
   }
 
-INTCHECK(int64,  int64_t)
-INTCHECK(int32,  int32_t)
-INTCHECK(uint64, uint64_t)
-INTCHECK(uint32, uint32_t)
+INTCHECK(int64,  int64_t, INT64_MIN, 63)
+INTCHECK(int32,  int32_t, INT32_MIN, 31)
+INTCHECK(uint64, uint64_t, 0, 64)
+INTCHECK(uint32, uint32_t, 0, 32)
 
 double lupb_checkdouble(lua_State *L, int narg) {
   /* If we were being really hard-nosed here, we'd check whether the input was
