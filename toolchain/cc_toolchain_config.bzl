@@ -4,7 +4,6 @@ load(
     "feature",
     "flag_group",
     "flag_set",
-    "tool",
     "tool_path",
 )
 
