@@ -20,6 +20,7 @@ def _package_naming_impl(ctx):
 package_naming = rule(
   implementation = _package_naming_impl,
     attrs = {
+      # Necessary data dependency for find_cpp_toolchain.
       "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
     toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
