@@ -545,6 +545,7 @@ Please refer to our official github site for more installation instructions:
     outs = ["readme.txt"],
 )
 
+# plugin.proto is excluded from this list because it belongs in a nested folder (protobuf/compiler/plugin.proto)
 pkg_files(
     name = "wkt_protos_files",
     srcs =  [value[0] for value in WELL_KNOWN_PROTO_MAP.values() if not value[0].endswith("plugin.proto")],
@@ -568,12 +569,11 @@ pkg_files(
 
 package_naming(
     name = "protoc_pkg_naming",
-    product_name = "protoc",
 )
 
 pkg_zip(
     name = "protoc_release",
-    package_file_name = "{product_name}-{version}-{cpu}.zip",
+    package_file_name = "protoc-{version}-{cpu}.zip",
     package_variables = ":protoc_pkg_naming",
     srcs = [
         ":protoc_files",

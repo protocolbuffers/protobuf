@@ -8,7 +8,6 @@ load(":protobuf_version.bzl", "PROTOBUF_VERSION")
 
 def _package_naming_impl(ctx):
   values = {}
-  values["product_name"] = ctx.attr.product_name
   values["version"] = PROTOBUF_VERSION
 
   # infer from the current cpp toolchain.
@@ -21,12 +20,6 @@ def _package_naming_impl(ctx):
 package_naming = rule(
   implementation = _package_naming_impl,
     attrs = {
-      "product_name": attr.string(
-          doc = "Placeholder for our final product name.",
-      ),
-      "version": attr.string(
-          doc = "Placeholder for our release version.",
-      ),
       "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
     toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
