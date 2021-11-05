@@ -574,17 +574,39 @@ const upb_oneofdef *upb_fielddef_realcontainingoneof(const upb_fielddef *f) {
 upb_msgval upb_fielddef_default(const upb_fielddef *f) {
   UPB_ASSERT(!upb_fielddef_issubmsg(f));
   upb_msgval ret;
-  if (upb_fielddef_isstring(f)) {
-    str_t *str = f->defaultval.str;
-    if (str) {
-      ret.str_val.data = str->str;
-      ret.str_val.size = str->len;
-    } else {
-      ret.str_val.size = 0;
+
+  switch (upb_fielddef_type(f)) {
+    case UPB_TYPE_BOOL:
+      ret.bool_val = upb_fielddef_defaultbool(f);
+      break;
+    case UPB_TYPE_INT64:
+      ret.int64_val = upb_fielddef_defaultint64(f);
+      break;
+    case UPB_TYPE_UINT64:
+      ret.uint64_val = upb_fielddef_defaultuint64(f);
+      break;
+    case UPB_TYPE_ENUM:
+    case UPB_TYPE_INT32:
+      ret.int32_val = upb_fielddef_defaultint32(f);
+      break;
+    case UPB_TYPE_UINT32:
+      ret.uint32_val = upb_fielddef_defaultuint32(f);
+      break;
+    case UPB_TYPE_FLOAT:
+      ret.float_val = upb_fielddef_defaultfloat(f);
+      break;
+    case UPB_TYPE_DOUBLE:
+      ret.double_val = upb_fielddef_defaultdouble(f);
+      break;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      ret.str_val.data = upb_fielddef_defaultstr(f, &ret.str_val.size);
+      break;
     }
-  } else {
-    memcpy(&ret, &f->defaultval, 8);
+    default:
+      UPB_UNREACHABLE();
   }
+
   return ret;
 }
 
