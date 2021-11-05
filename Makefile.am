@@ -9,7 +9,7 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = . src
 
 # Always include third_party directories in distributions.
-DIST_SUBDIRS = src conformance benchmarks third_party/googletest
+DIST_SUBDIRS = src conformance benchmarks
 
 # Build gmock before we build protobuf tests.  We don't add gmock to SUBDIRS
 # because then "make check" would also build and run all of gmock's own tests,
@@ -18,20 +18,24 @@ DIST_SUBDIRS = src conformance benchmarks third_party/googletest
 # the installed version of gmock if there is one.
 check-local:
 	@echo "Making lib/libgmock.a lib/libgmock_main.a in gmock"
-	@cd third_party/googletest/googletest && $(MAKE) $(AM_MAKEFLAGS) lib/libgtest.la lib/libgtest_main.la
-	@cd third_party/googletest/googlemock && $(MAKE) $(AM_MAKEFLAGS) lib/libgmock.la lib/libgmock_main.la
+	@cmake -S $(srcdir)/third_party/googletest -B third_party/googletest -DINSTALL_GTEST=OFF
+	@$(MAKE) -C third_party/googletest $(AM_MAKEFLAGS)
 
-# We would like to clean gmock when "make clean" is invoked.  But we have to
-# be careful because clean-local is also invoked during "make distclean", but
-# "make distclean" already recurses into gmock because it's listed among the
-# DIST_SUBDIRS.  distclean will delete gmock/Makefile, so if we then try to
-# cd to the directory again and "make clean" it will fail.  So, check that the
-# Makefile exists before recursing.
 clean-local:
-	@if test -e third_party/googletest/Makefile; then \
-	  echo "Making clean in googletest"; \
-	  cd third_party/googletest && $(MAKE) $(AM_MAKEFLAGS) clean; \
-	fi; \
+	@rm -rf third_party/googletest/CMakeFiles \
+	  third_party/googletest/lib \
+	  third_party/googletest/googlemock/CMakeFiles \
+	  third_party/googletest/googletest/CMakeFiles \
+	  third_party/googletest/CTestTestfile.cmake \
+	  third_party/googletest/googletest/CTestTestfile.cmake \
+	  third_party/googletest/googletest/Makefile \
+	  third_party/googletest/googletest/cmake_install.cmake \
+	  third_party/googletest/Makefile \
+	  third_party/googletest/CMakeCache.txt \
+	  third_party/googletest/googlemock/CTestTestfile.cmake \
+	  third_party/googletest/googlemock/Makefile \
+	  third_party/googletest/googlemock/cmake_install.cmake \
+	  third_party/googletest/cmake_install.cmake; \
 	if test -e conformance/Makefile; then \
 	  echo "Making clean in conformance"; \
 	  cd conformance && $(MAKE) $(AM_MAKEFLAGS) clean; \
@@ -1431,6 +1435,70 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   protobuf_deps.bzl                                 \
   protobuf_release.bzl                              \
   protobuf_version.bzl                              \
+  third_party/googletest/BUILD.bazel \
+  third_party/googletest/CMakeLists.txt \
+  third_party/googletest/googletest/CMakeLists.txt \
+  third_party/googletest/googletest/src/gtest-death-test.cc \
+  third_party/googletest/googletest/src/gtest-port.cc \
+  third_party/googletest/googletest/src/gtest-test-part.cc \
+  third_party/googletest/googletest/src/gtest-internal-inl.h \
+  third_party/googletest/googletest/src/gtest-filepath.cc \
+  third_party/googletest/googletest/src/gtest-all.cc \
+  third_party/googletest/googletest/src/gtest-printers.cc \
+  third_party/googletest/googletest/src/gtest-matchers.cc \
+  third_party/googletest/googletest/src/gtest-typed-test.cc \
+  third_party/googletest/googletest/src/gtest_main.cc \
+  third_party/googletest/googletest/src/gtest.cc \
+  third_party/googletest/googletest/cmake/internal_utils.cmake \
+  third_party/googletest/googletest/README.md \
+  third_party/googletest/googletest/include/gtest/gtest_prod.h \
+  third_party/googletest/googletest/include/gtest/gtest_pred_impl.h \
+  third_party/googletest/googletest/include/gtest/gtest.h \
+  third_party/googletest/googletest/include/gtest/gtest-death-test.h \
+  third_party/googletest/googletest/include/gtest/gtest-message.h \
+  third_party/googletest/googletest/include/gtest/internal/custom/gtest.h \
+  third_party/googletest/googletest/include/gtest/internal/custom/gtest-printers.h \
+  third_party/googletest/googletest/include/gtest/internal/custom/gtest-port.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-internal.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-filepath.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-type-util.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-port-arch.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-string.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-port.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-param-util.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-death-test-internal.h \
+  third_party/googletest/googletest/include/gtest/gtest-matchers.h \
+  third_party/googletest/googletest/include/gtest/gtest-spi.h \
+  third_party/googletest/googletest/include/gtest/gtest-typed-test.h \
+  third_party/googletest/googletest/include/gtest/gtest-printers.h \
+  third_party/googletest/googletest/include/gtest/gtest-test-part.h \
+  third_party/googletest/googletest/include/gtest/gtest-param-test.h \
+  third_party/googletest/WORKSPACE \
+  third_party/googletest/README.md \
+  third_party/googletest/googlemock/CMakeLists.txt \
+  third_party/googletest/googlemock/src/gmock-all.cc \
+  third_party/googletest/googlemock/src/gmock-matchers.cc \
+  third_party/googletest/googlemock/src/gmock.cc \
+  third_party/googletest/googlemock/src/gmock_main.cc \
+  third_party/googletest/googlemock/src/gmock-internal-utils.cc \
+  third_party/googletest/googlemock/src/gmock-cardinalities.cc \
+  third_party/googletest/googlemock/src/gmock-spec-builders.cc \
+  third_party/googletest/googlemock/README.md \
+  third_party/googletest/googlemock/include/gmock/gmock.h \
+  third_party/googletest/googlemock/include/gmock/gmock-actions.h \
+  third_party/googletest/googlemock/include/gmock/gmock-matchers.h \
+  third_party/googletest/googlemock/include/gmock/gmock-nice-strict.h \
+  third_party/googletest/googlemock/include/gmock/gmock-more-actions.h \
+  third_party/googletest/googlemock/include/gmock/gmock-more-matchers.h \
+  third_party/googletest/googlemock/include/gmock/internal/gmock-port.h \
+  third_party/googletest/googlemock/include/gmock/internal/custom/gmock-port.h \
+  third_party/googletest/googlemock/include/gmock/internal/custom/gmock-generated-actions.h \
+  third_party/googletest/googlemock/include/gmock/internal/custom/gmock-matchers.h \
+  third_party/googletest/googlemock/include/gmock/internal/gmock-pp.h \
+  third_party/googletest/googlemock/include/gmock/internal/gmock-internal-utils.h \
+  third_party/googletest/googlemock/include/gmock/gmock-spec-builders.h \
+  third_party/googletest/googlemock/include/gmock/gmock-cardinalities.h \
+  third_party/googletest/googlemock/include/gmock/gmock-function-mocker.h \
   third_party/zlib.BUILD                            \
   util/python/BUILD                                 \
   internal.bzl
