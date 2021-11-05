@@ -61,6 +61,10 @@ typedef struct {
   PyObject *(*get_elem_wrapper)(const void *elem);
 } PyUpb_GenericSequence_Funcs;
 
+// Returns a new GenericSequence.  The vtable `funcs` must outlive this object
+// (generally it should be static).  The GenericSequence will take a ref on
+// `parent_obj`, which must be sufficient to keep `parent` alive.  The object
+// `parent` will be passed as an argument to the functions in `funcs`.
 PyObject *PyUpb_GenericSequence_New(const PyUpb_GenericSequence_Funcs *funcs,
                                     const void *parent, PyObject *parent_obj);
 
@@ -78,6 +82,10 @@ typedef struct {
   const char *(*get_elem_name)(const void *elem);
 } PyUpb_ByNameMap_Funcs;
 
+// Returns a new ByNameMap.  The vtable `funcs` must outlive this object
+// (generally it should be static).  The ByNameMap will take a ref on
+// `parent_obj`, which must be sufficient to keep `parent` alive.  The object
+// `parent` will be passed as an argument to the functions in `funcs`.
 PyObject *PyUpb_ByNameMap_New(const PyUpb_ByNameMap_Funcs *funcs,
                               const void *parent, PyObject *parent_obj);
 
@@ -95,6 +103,10 @@ typedef struct {
   int (*get_elem_num)(const void *elem);
 } PyUpb_ByNumberMap_Funcs;
 
+// Returns a new ByNumberMap.  The vtable `funcs` must outlive this object
+// (generally it should be static).  The ByNumberMap will take a ref on
+// `parent_obj`, which must be sufficient to keep `parent` alive.  The object
+// `parent` will be passed as an argument to the functions in `funcs`.
 PyObject *PyUpb_ByNumberMap_New(const PyUpb_ByNumberMap_Funcs *funcs,
                                 const void *parent, PyObject *parent_obj);
 
