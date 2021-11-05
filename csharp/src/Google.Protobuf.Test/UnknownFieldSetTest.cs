@@ -139,6 +139,30 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void TestClone_lengthDelimited()
+        {
+            UnknownFieldSet destUnknownFieldSet = new UnknownFieldSet();
+
+            UnknownField unknownVarintField = new UnknownField();
+            unknownVarintField.AddVarint(99);
+            destUnknownFieldSet.AddOrReplaceField(997, unknownVarintField);
+
+            UnknownField unknownLengthDelimitedField1 = new UnknownField();
+            unknownLengthDelimitedField1.AddLengthDelimited(ByteString.CopyFromUtf8("some data"));
+
+            UnknownField unknownLengthDelimitedField2 = new UnknownField();
+            unknownLengthDelimitedField2.AddLengthDelimited(ByteString.CopyFromUtf8("some more data"));
+
+            destUnknownFieldSet.AddOrReplaceField(999, unknownLengthDelimitedField1);
+            destUnknownFieldSet.AddOrReplaceField(999, unknownLengthDelimitedField2);
+
+
+            UnknownFieldSet clone = UnknownFieldSet.Clone(destUnknownFieldSet);
+            Assert.IsTrue(clone.HasField(997));
+            Assert.IsTrue(clone.HasField(999));
+        }
+
+        [Test]
         [TestCaseSource(typeof(Data), "Messages")]
         public void TestDiscardUnknownFields(IMessage message)
         {
