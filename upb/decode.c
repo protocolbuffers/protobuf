@@ -449,8 +449,31 @@ static const char *decode_fixed_packed(upb_decstate *d, const char *ptr,
   arr->len += count;
   // Note: if/when the decoder supports multi-buffer input, we will need to
   // handle buffer seams here.
-  memcpy(mem, ptr, val->size);
-  return ptr + val->size;
+  if (_upb_isle()) {
+    memcpy(mem, ptr, val->size);
+    ptr += val->size;
+  } else {
+    const char *end = ptr + val->size;
+    char *dst = mem;
+    while (ptr < end) {
+      if (lg2 == 2) {
+        uint32_t val;
+        memcpy(&val, ptr, sizeof(val));
+        val = _upb_be_swap32(val);
+        memcpy(dst, &val, sizeof(val));
+      } else {
+        UPB_ASSERT(lg2 == 3);
+        uint64_t val;
+        memcpy(&val, ptr, sizeof(val));
+        val = _upb_be_swap64(val);
+        memcpy(dst, &val, sizeof(val));
+      }
+      ptr += 1 << lg2;
+      dst += 1 << lg2;
+    }
+  }
+
+  return ptr;
 }
 
 UPB_FORCEINLINE
