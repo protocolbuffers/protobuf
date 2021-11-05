@@ -651,7 +651,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
    * @return the string converted to camel case, with a lowercase first character
    */
   private static String snakeCaseToLowerCamelCase(String snakeCase) {
-  	return snakeCaseToCamelCase(snakeCase, false);
+    return snakeCaseToCamelCase(snakeCase, false);
   }
 
   /**
@@ -669,7 +669,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
    * @return the string converted to camel case, with an uppercase first character
    */
   private static String snakeCaseToUpperCamelCase(String snakeCase) {
-  	return snakeCaseToCamelCase(snakeCase, true);
+    return snakeCaseToCamelCase(snakeCase, true);
   }
 
   /**
@@ -697,7 +697,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
    * @param capFirst true if the first letter of the returned string should be uppercase.
    *                 false if the first letter of the returned string should be lowercase.
    * @return the string converted to camel case, with an uppercase or lowercase first
-   *         character depending on if {@code capFirst} is true of false, respectively
+   *         character depending on if {@code capFirst} is true or false, respectively
    */
   private static String snakeCaseToCamelCase(String snakeCase, boolean capFirst) {
     StringBuilder sb = new StringBuilder(snakeCase.length() + 1);
