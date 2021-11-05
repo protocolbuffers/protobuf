@@ -55,6 +55,12 @@ typedef struct {
   PyTypeObject *field_descriptor_type;
   PyTypeObject *file_descriptor_type;
 
+  // From descriptor_containers.c
+  PyTypeObject *by_name_map_type;
+  PyTypeObject *by_number_map_type;
+  PyTypeObject *descriptor_iterator_type;
+  PyTypeObject *generic_sequence_type;
+
   // From descriptor_pool.c
   PyTypeObject *descriptor_pool_type;
 
@@ -66,6 +72,7 @@ typedef struct {
 // Returns the global state object from the current interpreter. The current
 // interpreter is looked up from thread-local state.
 PyUpb_ModuleState *PyUpb_ModuleState_Get(void);
+PyUpb_ModuleState *PyUpb_ModuleState_GetFromModule(PyObject *module);
 
 // -----------------------------------------------------------------------------
 // ObjectCache
@@ -93,6 +100,23 @@ PyObject *PyUpb_ObjCache_Get(const void *key);
 // -----------------------------------------------------------------------------
 
 PyTypeObject *AddObject(PyObject *m, const char *name, PyType_Spec *spec);
+
+// Creates a Python type from `spec` and adds it to the given module `m`.
+PyTypeObject *PyUpb_AddClass(PyObject *m, PyType_Spec *spec);
+
+// Our standard dealloc func. It follows the guidance defined in:
+//   https://docs.python.org/3/c-api/typeobj.html#c.PyTypeObject.tp_dealloc
+// However it tests Py_TPFLAGS_HEAPTYPE dynamically so that a single dealloc
+// function can work for any type.
+static inline void PyUpb_Dealloc(void *self) {
+  PyTypeObject *tp = Py_TYPE(self);
+  freefunc tp_free = PyType_GetSlot(tp, Py_tp_free);
+  tp_free(self);
+  if (PyType_GetFlags(tp) & Py_TPFLAGS_HEAPTYPE) {
+    Py_DECREF(tp);
+  }
+}
+
 const char *PyUpb_GetStrData(PyObject *obj);
 
 #endif  // PYUPB_PROTOBUF_H__

@@ -49,9 +49,16 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
 // ModuleState
 // -----------------------------------------------------------------------------
 
+PyUpb_ModuleState *PyUpb_ModuleState_GetFromModule(PyObject *module) {
+  PyUpb_ModuleState *state = PyModule_GetState(module);
+  assert(state);
+  assert(PyModule_GetDef(module) == &module_def);
+  return state;
+}
+
 PyUpb_ModuleState *PyUpb_ModuleState_Get() {
   PyObject *module = PyState_FindModule(&module_def);
-  return PyModule_GetState(module);
+  return PyUpb_ModuleState_GetFromModule(module);
 }
 
 // -----------------------------------------------------------------------------
@@ -89,6 +96,23 @@ PyObject *PyUpb_ObjCache_Get(const void *key) {
 
 PyTypeObject *AddObject(PyObject *m, const char *name, PyType_Spec *spec) {
   PyObject *type = PyType_FromSpec(spec);
+  return type && PyModule_AddObject(m, name, type) == 0 ? (PyTypeObject *)type
+                                                        : NULL;
+}
+
+static const char *PyUpb_GetClassName(PyType_Spec *spec) {
+  // spec->name contains a fully-qualified name, like:
+  //   google.protobuf.pyext._message.FooBar
+  //
+  // Find the rightmost '.' to get "FooBar".
+  const char *name = strrchr(spec->name, '.');
+  assert(name);
+  return name + 1;
+}
+
+PyTypeObject *PyUpb_AddClass(PyObject *m, PyType_Spec *spec) {
+  PyObject *type = PyType_FromSpec(spec);
+  const char *name = PyUpb_GetClassName(spec);
   return type && PyModule_AddObject(m, name, type) == 0 ? (PyTypeObject *)type
                                                         : NULL;
 }
