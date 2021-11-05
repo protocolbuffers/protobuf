@@ -639,13 +639,11 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   /**
    * Converts a snake case string into lower camel case.
    *
-   * <p>
-   * Some examples:
+   * <p>Some examples:</p>
    * <pre>
    *     snakeCaseToLowerCamelCase("foo_bar") => "fooBar"
    *     snakeCaseToLowerCamelCase("foo") => "foo"
    * </pre>
-   * </p>
    *
    * @param snakeCase the string in snake case to convert
    * @return the string converted to camel case, with a lowercase first character
@@ -657,13 +655,11 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   /**
    * Converts a snake case string into upper camel case.
    *
-   * <p>
-   * Some examples:
+   * <p>Some examples:</p>
    * <pre>
    *     snakeCaseToUpperCamelCase("foo_bar") => "FooBar"
    *     snakeCaseToUpperCamelCase("foo") => "Foo"
    * </pre>
-   * </p>
    *
    * @param snakeCase the string in snake case to convert
    * @return the string converted to camel case, with an uppercase first character
@@ -678,7 +674,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
    * <p>For better readability, prefer calling either
    * {@link #snakeCaseToLowerCamelCase(String)} or {@link #snakeCaseToUpperCamelCase(String)}.</p>
    *
-   * <p>Some examples:
+   * <p>Some examples:</p>
    * <pre>
    *     snakeCaseToCamelCase("foo_bar", false) => "fooBar"
    *     snakeCaseToCamelCase("foo_bar", true) => "FooBar"
@@ -686,7 +682,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
    *     snakeCaseToCamelCase("foo", true) => "Foo"
    *     snakeCaseToCamelCase("Foo", false) => "foo"
    *     snakeCaseToCamelCase("fooBar", false) => "fooBar"
-   * </pre></p>
+   * </pre>
    *
    * <p>This implementation of this method must exactly match the corresponding
    * function in the protocol compiler.  Specifically, the
