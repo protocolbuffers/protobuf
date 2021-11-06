@@ -296,7 +296,8 @@ bool DoTestIo(upb_symtab *symtab) {
   output = conformance_ConformanceResponse_serialize(c.response, c.arena,
                                                      &output_size);
 
-  CheckedWrite(STDOUT_FILENO, &output_size, sizeof(uint32_t));
+  uint32_t network_out = (uint32_t) output_size;
+  CheckedWrite(STDOUT_FILENO, &network_out, sizeof(uint32_t));
   CheckedWrite(STDOUT_FILENO, output, output_size);
 
   test_count++;
