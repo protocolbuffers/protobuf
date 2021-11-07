@@ -44,8 +44,13 @@ typedef struct {
   int index;             // Current iterator index.
 } PyUpb_DescriptorIterator;
 
-static void PyUpb_DescriptorIterator_Dealloc(PyUpb_DescriptorIterator *_self) {
-  PyUpb_DescriptorIterator *self = (PyUpb_DescriptorIterator*)_self;
+PyUpb_DescriptorIterator *PyUpb_DescriptorIterator_Self(PyObject *obj) {
+  assert(Py_TYPE(obj) == PyUpb_ModuleState_Get()->descriptor_iterator_type);
+  return (PyUpb_DescriptorIterator*)obj;
+}
+
+static void PyUpb_DescriptorIterator_Dealloc(PyObject *_self) {
+  PyUpb_DescriptorIterator *self = PyUpb_DescriptorIterator_Self(_self);
   Py_DECREF(self->parent_obj);
   PyUpb_Dealloc(self);
 }
@@ -65,7 +70,7 @@ PyObject *PyUpb_DescriptorIterator_New(const PyUpb_GenericSequence_Funcs *funcs,
 }
 
 PyObject* PyUpb_DescriptorIterator_IterNext(PyObject* _self) {
-  PyUpb_DescriptorIterator *self = (PyUpb_DescriptorIterator*)_self;
+  PyUpb_DescriptorIterator *self = PyUpb_DescriptorIterator_Self(_self);
   int size = self->funcs->get_elem_count(self->parent);
   if (self->index >= size) return NULL;
   const void *elem = self->funcs->index(self->parent, self->index);
@@ -99,6 +104,17 @@ typedef struct {
   PyObject *parent_obj;  // Python object that keeps parent alive, we own a ref.
 } PyUpb_GenericSequence;
 
+PyUpb_GenericSequence *PyUpb_GenericSequence_Self(PyObject *obj) {
+  assert(Py_TYPE(obj) == PyUpb_ModuleState_Get()->generic_sequence_type);
+  return (PyUpb_GenericSequence*)obj;
+}
+
+static void PyUpb_GenericSequence_Dealloc(PyObject *_self) {
+  PyUpb_GenericSequence *self = PyUpb_GenericSequence_Self(_self);
+  Py_CLEAR(self->parent_obj);
+  PyUpb_Dealloc(self);
+}
+
 PyObject *PyUpb_GenericSequence_New(
     const PyUpb_GenericSequence_Funcs *funcs, const void *parent,
     PyObject *parent_obj) {
@@ -112,25 +128,14 @@ PyObject *PyUpb_GenericSequence_New(
   return &seq->ob_base;
 }
 
-PyUpb_GenericSequence *PyUpb_GenericSequence_Get(PyObject *obj) {
-  assert(Py_TYPE(obj) == PyUpb_ModuleState_Get()->generic_sequence_type);
-  return (PyUpb_GenericSequence*)obj;
-}
-
-static void PyUpb_GenericSequence_Dealloc(PyObject *_self) {
-  PyUpb_GenericSequence *self = PyUpb_GenericSequence_Get(_self);
-  Py_CLEAR(self->parent_obj);
-  PyUpb_Dealloc(self);
-}
-
 static Py_ssize_t PyUpb_GenericSequence_Length(PyObject* _self) {
-  PyUpb_GenericSequence *self = PyUpb_GenericSequence_Get(_self);
+  PyUpb_GenericSequence *self = PyUpb_GenericSequence_Self(_self);
   return self->funcs->get_elem_count(self->parent);
 }
 
 static PyObject *PyUpb_GenericSequence_GetItem(PyObject *_self,
                                                Py_ssize_t index) {
-  PyUpb_GenericSequence *self = PyUpb_GenericSequence_Get(_self);
+  PyUpb_GenericSequence *self = PyUpb_GenericSequence_Self(_self);
   Py_ssize_t size = self->funcs->get_elem_count(self->parent);
   if (index < 0 || index >= size) {
     PyErr_Format(PyExc_IndexError, "list index (%zd) out of range", index);
@@ -162,9 +167,13 @@ static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence *self,
     PyObject *item1 = PyUpb_GenericSequence_GetItem((PyObject*)self, i);
     if (!item1) return -1;
     PyObject* item2 = PyList_GetItem(other, i);
-    if (!item2) return -1;
+    if (!item2) {
+      Py_DECREF(item1);
+      return -1;
+    }
     int cmp = PyObject_RichCompareBool(item1, item2, Py_EQ);
     Py_DECREF(item1);
+    Py_DECREF(item2);
     if (cmp != 1) return cmp;
   }
   // All items were found and equal
@@ -173,19 +182,19 @@ static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence *self,
 
 static PyObject *PyUpb_GenericSequence_RichCompare(PyObject *_self,
                                                    PyObject *other, int opid) {
-  PyUpb_GenericSequence *self = PyUpb_GenericSequence_Get(_self);
+  PyUpb_GenericSequence *self = PyUpb_GenericSequence_Self(_self);
   if (opid != Py_EQ && opid != Py_NE) {
-    Py_INCREF(Py_NotImplemented);
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
   }
-  bool ret = (opid == Py_EQ) == PyUpb_GenericSequence_IsEqual(self, other);
+  bool ret = PyUpb_GenericSequence_IsEqual(self, other);
+  if (opid == Py_NE) ret = !ret;
   return PyBool_FromLong(ret);
 }
 
-// Linear search.  Could optimize this in some, cases (defs that have index),
-// not not all (FileDescriptor.dependencies).
+// Linear search.  Could optimize this in some cases (defs that have index),
+// but not all (FileDescriptor.dependencies).
 static int PyUpb_GenericSequence_Find(PyObject *_self, PyObject *item) {
-  PyUpb_GenericSequence *self = PyUpb_GenericSequence_Get(_self);
+  PyUpb_GenericSequence *self = PyUpb_GenericSequence_Self(_self);
   const void *item_ptr = PyUpb_AnyDescriptor_GetDef(item);
   int count = self->funcs->get_elem_count(self->parent);
   for (int i = 0; i < count; i++) {
@@ -208,13 +217,17 @@ static PyObject* PyUpb_GenericSequence_Index(PyObject* self, PyObject* item) {
 
 // Implements list.count(): number of occurrences of the item in the sequence.
 // An item can only appear once in a sequence. If it exists, return 1.
-static PyObject *PyUpb_GenericSequence_Count(PyObject *self, PyObject *item) {
-  int position = PyUpb_GenericSequence_Find(self, item);
-  if (position < 0) {
-    return PyLong_FromLong(0);
-  } else {
-    return PyLong_FromLong(1);
+static PyObject *PyUpb_GenericSequence_Count(PyObject *_self, PyObject *item) {
+  PyUpb_GenericSequence *self = PyUpb_GenericSequence_Self(_self);
+  const void *item_ptr = PyUpb_AnyDescriptor_GetDef(item);
+  int n = self->funcs->get_elem_count(self->parent);
+  int count = 0;
+  for (int i = 0; i < n; i++) {
+    if (self->funcs->index(self->parent, i) == item_ptr) {
+      count++;
+    }
   }
+  return PyLong_FromLong(count);
 }
 
 static PyObject *PyUpb_GenericSequence_Append(PyObject *self, PyObject *args) {
@@ -263,6 +276,17 @@ typedef struct {
   PyObject *parent_obj;  // Python object that keeps parent alive, we own a ref.
 } PyUpb_ByNameMap;
 
+PyUpb_ByNameMap *PyUpb_ByNameMap_Self(PyObject *obj) {
+  assert(Py_TYPE(obj) == PyUpb_ModuleState_Get()->by_name_map_type);
+  return (PyUpb_ByNameMap*)obj;
+}
+
+static void PyUpb_ByNameMap_Dealloc(PyObject *_self) {
+  PyUpb_ByNameMap *self = PyUpb_ByNameMap_Self(_self);
+  Py_DECREF(self->parent_obj);
+  PyUpb_Dealloc(self);
+}
+
 PyObject *PyUpb_ByNameMap_New(const PyUpb_ByNameMap_Funcs *funcs,
                               const void *parent, PyObject *parent_obj) {
   PyUpb_ModuleState *s = PyUpb_ModuleState_Get();
@@ -274,19 +298,13 @@ PyObject *PyUpb_ByNameMap_New(const PyUpb_ByNameMap_Funcs *funcs,
   return &map->ob_base;
 }
 
-static void PyUpb_ByNameMap_Dealloc(PyObject *_self) {
-  PyUpb_ByNameMap *self = (void*)_self;
-  Py_DECREF(self->parent_obj);
-  PyUpb_Dealloc(self);
-}
-
 static Py_ssize_t PyUpb_ByNameMap_Length(PyObject* _self) {
-  PyUpb_ByNameMap *self = (void*)_self;
+  PyUpb_ByNameMap *self = PyUpb_ByNameMap_Self(_self);
   return self->funcs->base.get_elem_count(self->parent);
 }
 
 static PyObject *PyUpb_ByNameMap_Subscript(PyObject *_self, PyObject *key) {
-  PyUpb_ByNameMap *self = (void*)_self;
+  PyUpb_ByNameMap *self = PyUpb_ByNameMap_Self(_self);
   const char *name = PyUpb_GetStrData(key);
   const void *elem = name ? self->funcs->lookup(self->parent, name) : NULL;
 
@@ -306,14 +324,14 @@ static int PyUpb_ByNameMap_AssignSubscript(PyObject *self, PyObject *key,
 }
 
 static int PyUpb_ByNameMap_Contains(PyObject *_self, PyObject *key) {
-  PyUpb_ByNameMap *self = (void*)_self;
+  PyUpb_ByNameMap *self = PyUpb_ByNameMap_Self(_self);
   const char *name = PyUpb_GetStrData(key);
   const void *elem = name ? self->funcs->lookup(self->parent, name) : NULL;
   return elem ? 1 : 0;
 }
 
 static PyObject *PyUpb_ByNameMap_Get(PyObject *_self, PyObject *args) {
-  PyUpb_ByNameMap *self = (void*)_self;
+  PyUpb_ByNameMap *self = PyUpb_ByNameMap_Self(_self);
   PyObject* key;
   PyObject* default_value = Py_None;
   if (!PyArg_UnpackTuple(args, "get", 1, 2, &key, &default_value)) {
@@ -332,13 +350,13 @@ static PyObject *PyUpb_ByNameMap_Get(PyObject *_self, PyObject *args) {
 }
 
 static PyObject *PyUpb_ByNameMap_GetIter(PyObject *_self) {
-  PyUpb_ByNameMap *self = (PyUpb_ByNameMap *)_self;
+  PyUpb_ByNameMap *self = PyUpb_ByNameMap_Self(_self);
   return PyUpb_DescriptorIterator_New(&self->funcs->base, self->parent,
                                       self->parent_obj);
 }
 
 static PyObject *PyUpb_ByNameMap_Keys(PyObject *_self, PyObject *args) {
-  PyUpb_ByNameMap *self = (PyUpb_ByNameMap *)_self;
+  PyUpb_ByNameMap *self = PyUpb_ByNameMap_Self(_self);
   int n = self->funcs->base.get_elem_count(self->parent);
   PyObject *ret = PyList_New(n);
   if (!ret) return NULL;
@@ -352,14 +370,17 @@ static PyObject *PyUpb_ByNameMap_Keys(PyObject *_self, PyObject *args) {
 }
 
 static PyObject *PyUpb_ByNameMap_Values(PyObject *_self, PyObject *args) {
-  PyUpb_ByNameMap *self = (PyUpb_ByNameMap *)_self;
+  PyUpb_ByNameMap *self = PyUpb_ByNameMap_Self(_self);
   int n = self->funcs->base.get_elem_count(self->parent);
   PyObject *ret = PyList_New(n);
   if (!ret) return NULL;
   for (int i = 0; i < n; i++) {
     const void *elem = self->funcs->base.index(self->parent, i);
     PyObject *py_elem = self->funcs->base.get_elem_wrapper(elem);
-    if (!elem) return NULL;
+    if (!elem) {
+      Py_DECREF(ret);
+      return NULL;
+    }
     PyList_SetItem(ret, i, py_elem);
   }
   return ret;
@@ -369,20 +390,26 @@ static PyObject *PyUpb_ByNameMap_Items(PyObject *_self, PyObject *args) {
   PyUpb_ByNameMap *self = (PyUpb_ByNameMap *)_self;
   int n = self->funcs->base.get_elem_count(self->parent);
   PyObject *ret = PyList_New(n);
+  PyObject *item;
   if (!ret) return NULL;
   for (int i = 0; i < n; i++) {
-    PyObject *item = PyTuple_New(2);
-    if (!item) return NULL;
+    item = PyTuple_New(2);
+    if (!item) goto err1;
     const void *elem = self->funcs->base.index(self->parent, i);
-    if (!elem) return NULL;
     PyObject *py_elem = self->funcs->base.get_elem_wrapper(elem);
-    if (!py_elem) return NULL;
+    if (!py_elem) goto err2;
     PyTuple_SetItem(item, 0,
                     PyUnicode_FromString(self->funcs->get_elem_name(elem)));
     PyTuple_SetItem(item, 1, py_elem);
     PyList_SetItem(ret, i, item);
   }
   return ret;
+
+err2:
+  Py_DECREF(item);
+err1:
+  Py_DECREF(ret);
+  return NULL;
 }
 
 // A mapping container can only be equal to another mapping container, or (for
@@ -405,13 +432,13 @@ static int PyUpb_ByNameMap_IsEqual(PyUpb_ByNameMap* self, PyObject* other) {
 }
 
 static PyObject *PyUpb_ByNameMap_RichCompare(PyObject *_self, PyObject *other,
-                                               int opid) {
-  PyUpb_ByNameMap *self = (void*)_self;
+                                             int opid) {
+  PyUpb_ByNameMap *self = PyUpb_ByNameMap_Self(_self);
   if (opid != Py_EQ && opid != Py_NE) {
-    Py_INCREF(Py_NotImplemented);
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
   }
-  bool ret = (opid == Py_EQ) == PyUpb_ByNameMap_IsEqual(self, other);
+  bool ret = PyUpb_ByNameMap_IsEqual(self, other);
+  if (opid == Py_NE) ret = !ret;
   return PyBool_FromLong(ret);
 }
 
@@ -453,8 +480,13 @@ typedef struct {
   PyObject *parent_obj;  // Python object that keeps parent alive, we own a ref.
 } PyUpb_ByNumberMap;
 
+PyUpb_ByNumberMap *PyUpb_ByNumberMap_Self(PyObject *obj) {
+  assert(Py_TYPE(obj) == PyUpb_ModuleState_Get()->by_number_map_type);
+  return (PyUpb_ByNumberMap*)obj;
+}
+
 PyObject *PyUpb_ByNumberMap_New(const PyUpb_ByNumberMap_Funcs *funcs,
-                              const void *parent, PyObject *parent_obj) {
+                                const void *parent, PyObject *parent_obj) {
   PyUpb_ModuleState *s = PyUpb_ModuleState_Get();
   PyUpb_ByNumberMap *map = (void*)PyType_GenericAlloc(s->by_number_map_type, 0);
   map->funcs = funcs;
@@ -465,27 +497,30 @@ PyObject *PyUpb_ByNumberMap_New(const PyUpb_ByNumberMap_Funcs *funcs,
 }
 
 static void PyUpb_ByNumberMap_Dealloc(PyObject *_self) {
-  PyUpb_ByNumberMap *self = (void*)_self;
+  PyUpb_ByNumberMap *self = PyUpb_ByNumberMap_Self(_self);
   Py_DECREF(self->parent_obj);
   PyUpb_Dealloc(self);
 }
 
 static Py_ssize_t PyUpb_ByNumberMap_Length(PyObject* _self) {
-  PyUpb_ByNameMap *self = (void*)_self;
+  PyUpb_ByNumberMap *self = PyUpb_ByNumberMap_Self(_self);
   return self->funcs->base.get_elem_count(self->parent);
 }
 
-static PyObject *PyUpb_ByNumberMap_Subscript(PyObject *_self, PyObject *key) {
-  PyUpb_ByNumberMap *self = (void*)_self;
+static const void *PyUpb_ByNumberMap_LookupHelper(PyUpb_ByNumberMap *self,
+                                                  PyObject *key) {
   long num = PyLong_AsLong(key);
-  const void *elem;
   if (num == -1 && PyErr_Occurred()) {
-    elem = NULL;
     PyErr_Clear();
+    return NULL;
   } else {
-    elem = self->funcs->lookup(self->parent, num);
+    return self->funcs->lookup(self->parent, num);
   }
+}
 
+static PyObject *PyUpb_ByNumberMap_Subscript(PyObject *_self, PyObject *key) {
+  PyUpb_ByNumberMap *self = PyUpb_ByNumberMap_Self(_self);
+  const void *elem = PyUpb_ByNumberMap_LookupHelper(self, key);
   if (elem) {
     return self->funcs->base.get_elem_wrapper(elem);
   } else {
@@ -502,95 +537,90 @@ static int PyUpb_ByNumberMap_AssignSubscript(PyObject *self, PyObject *key,
 }
 
 static PyObject *PyUpb_ByNumberMap_Get(PyObject *_self, PyObject *args) {
-  PyUpb_ByNumberMap *self = (void*)_self;
+  PyUpb_ByNumberMap *self = PyUpb_ByNumberMap_Self(_self);
   PyObject* key;
   PyObject* default_value = Py_None;
   if (!PyArg_UnpackTuple(args, "get", 1, 2, &key, &default_value)) {
     return NULL;
   }
 
-  const void *elem;
-  long num = PyLong_AsLong(key);
-  if (num == -1 && PyErr_Occurred()) {
-    elem = NULL;
-    PyErr_Clear();
-  } else {
-    elem = self->funcs->lookup(self->parent, num);
-  }
-
+  const void *elem = PyUpb_ByNumberMap_LookupHelper(self, key);
   if (elem) {
     return self->funcs->base.get_elem_wrapper(elem);
   } else {
-    Py_INCREF(default_value);
-    return default_value;
+    return PyUpb_NewRef(default_value);
   }
 }
 
 static PyObject *PyUpb_ByNumberMap_GetIter(PyObject *_self) {
-  PyUpb_ByNumberMap *self = (PyUpb_ByNumberMap *)_self;
+  PyUpb_ByNumberMap *self = PyUpb_ByNumberMap_Self(_self);
   return PyUpb_DescriptorIterator_New(&self->funcs->base, self->parent,
                                       self->parent_obj);
 }
 
 static PyObject *PyUpb_ByNumberMap_Keys(PyObject *_self, PyObject *args) {
-  PyUpb_ByNumberMap *self = (PyUpb_ByNumberMap *)_self;
+  PyUpb_ByNumberMap *self = PyUpb_ByNumberMap_Self(_self);
   int n = self->funcs->base.get_elem_count(self->parent);
   PyObject *ret = PyList_New(n);
   if (!ret) return NULL;
   for (int i = 0; i < n; i++) {
     const void *elem = self->funcs->base.index(self->parent, i);
     PyObject *key = PyLong_FromLong(self->funcs->get_elem_num(elem));
-    if (!key) return NULL;
+    if (!key) {
+      Py_DECREF(ret);
+      return NULL;
+    }
     PyList_SetItem(ret, i, key);
   }
   return ret;
 }
 
 static PyObject *PyUpb_ByNumberMap_Values(PyObject *_self, PyObject *args) {
-  PyUpb_ByNumberMap *self = (PyUpb_ByNumberMap *)_self;
+  PyUpb_ByNumberMap *self = PyUpb_ByNumberMap_Self(_self);
   int n = self->funcs->base.get_elem_count(self->parent);
   PyObject *ret = PyList_New(n);
   if (!ret) return NULL;
   for (int i = 0; i < n; i++) {
     const void *elem = self->funcs->base.index(self->parent, i);
-    if (!elem) return NULL;
     PyObject *py_elem = self->funcs->base.get_elem_wrapper(elem);
-    if (!py_elem) return NULL;
+    if (!py_elem) {
+      Py_DECREF(ret);
+      return NULL;
+    }
     PyList_SetItem(ret, i, py_elem);
   }
   return ret;
 }
 
 static PyObject *PyUpb_ByNumberMap_Items(PyObject *_self, PyObject *args) {
-  PyUpb_ByNumberMap *self = (PyUpb_ByNumberMap *)_self;
+  PyUpb_ByNumberMap *self = PyUpb_ByNumberMap_Self(_self);
   int n = self->funcs->base.get_elem_count(self->parent);
   PyObject *ret = PyList_New(n);
+  PyObject *item;
   if (!ret) return NULL;
   for (int i = 0; i < n; i++) {
-    PyObject *item = PyTuple_New(2);
-    if (!item) return NULL;
+    item = PyTuple_New(2);
+    if (!item) goto err1;
     const void *elem = self->funcs->base.index(self->parent, i);
-    if (!elem) return NULL;
     int number = self->funcs->get_elem_num(elem);
     PyObject *py_elem = self->funcs->base.get_elem_wrapper(elem);
-    if (!py_elem) return NULL;
+    if (!py_elem) goto err2;
     PyTuple_SetItem(item, 0, PyLong_FromLong(number));
     PyTuple_SetItem(item, 1, py_elem);
     PyList_SetItem(ret, i, item);
   }
   return ret;
+
+err2:
+  Py_DECREF(item);
+err1:
+  Py_DECREF(ret);
+  return NULL;
 }
 
 static int PyUpb_ByNumberMap_Contains(PyObject *_self, PyObject *key) {
-  PyUpb_ByNumberMap *self = (PyUpb_ByNumberMap *)_self;
-  long num = PyLong_AsLong(key);
-  const void *elem;
-  if (num == -1 && PyErr_Occurred()) {
-    elem = NULL;
-    PyErr_Clear();
-  } else {
-    elem = self->funcs->lookup(self->parent, num);
-  }
+  PyUpb_ByNumberMap *self = PyUpb_ByNumberMap_Self(_self);
+  const void *elem = PyUpb_ByNumberMap_LookupHelper(self, key);
   return elem ? 1 : 0;
 }
 
@@ -615,12 +645,12 @@ static int PyUpb_ByNumberMap_IsEqual(PyUpb_ByNumberMap* self, PyObject* other) {
 
 static PyObject *PyUpb_ByNumberMap_RichCompare(PyObject *_self, PyObject *other,
                                                int opid) {
-  PyUpb_ByNumberMap *self = (void*)_self;
+  PyUpb_ByNumberMap *self = PyUpb_ByNumberMap_Self(_self);
   if (opid != Py_EQ && opid != Py_NE) {
-    Py_INCREF(Py_NotImplemented);
-    return Py_NotImplemented;
+    Py_RETURN_NOTIMPLEMENTED;
   }
-  bool ret = (opid == Py_EQ) == PyUpb_ByNumberMap_IsEqual(self, other);
+  bool ret = PyUpb_ByNumberMap_IsEqual(self, other);
+  if (opid == Py_NE) ret = !ret;
   return PyBool_FromLong(ret);
 }
 

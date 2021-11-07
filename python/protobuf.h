@@ -117,6 +117,14 @@ static inline void PyUpb_Dealloc(void *self) {
   }
 }
 
+// Equivalent to the Py_NewRef() function introduced in Python 3.10.  If/when we
+// drop support for Python <3.10, we can remove this function and replace all
+// callers with Py_NewRef().
+static inline PyObject *PyUpb_NewRef(PyObject *obj) {
+  Py_INCREF(obj);
+  return obj;
+}
+
 const char *PyUpb_GetStrData(PyObject *obj);
 
 #endif  // PYUPB_PROTOBUF_H__
