@@ -278,7 +278,7 @@ static void decode_munge(int type, wireval *val) {
       val->bool_val = val->uint64_val != 0;
       break;
     case UPB_DESCRIPTOR_TYPE_SINT32: {
-      uint32_t n = val->uint32_val;
+      uint32_t n = val->uint64_val;
       val->uint32_val = (n >> 1) ^ -(int32_t)(n & 1);
       break;
     }
