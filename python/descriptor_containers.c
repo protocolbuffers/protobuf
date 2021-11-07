@@ -159,18 +159,19 @@ static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence *self,
   if (!PyList_Check(other)) return 0;
 
   // return list(self) == other
+  // We can clamp `i` to int because GenericSequence uses int for size (this
+  // is useful when we do int iteration below).
   int n = PyUpb_GenericSequence_Length((PyObject*)self);
-  if (n != PyList_Size(other)) {
+  if ((Py_ssize_t)n != PyList_Size(other)) {
     return false;
   }
+
+  PyObject *item1;
+  PyObject *item2;
   for (int i = 0; i < n; i++) {
-    PyObject *item1 = PyUpb_GenericSequence_GetItem((PyObject*)self, i);
-    if (!item1) return -1;
-    PyObject* item2 = PyList_GetItem(other, i);
-    if (!item2) {
-      Py_DECREF(item1);
-      return -1;
-    }
+    item1 = PyUpb_GenericSequence_GetItem((PyObject*)self, i);
+    item2 = PyList_GetItem(other, i);
+    if (!item1 || !item2) goto error;
     int cmp = PyObject_RichCompareBool(item1, item2, Py_EQ);
     Py_DECREF(item1);
     Py_DECREF(item2);
@@ -178,6 +179,11 @@ static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence *self,
   }
   // All items were found and equal
   return 1;
+
+error:
+  if (item1) Py_DECREF(item1);
+  if (item2) Py_DECREF(item2);
+  return -1;
 }
 
 static PyObject *PyUpb_GenericSequence_RichCompare(PyObject *_self,
@@ -215,8 +221,6 @@ static PyObject* PyUpb_GenericSequence_Index(PyObject* self, PyObject* item) {
   }
 }
 
-// Implements list.count(): number of occurrences of the item in the sequence.
-// An item can only appear once in a sequence. If it exists, return 1.
 static PyObject *PyUpb_GenericSequence_Count(PyObject *_self, PyObject *item) {
   PyUpb_GenericSequence *self = PyUpb_GenericSequence_Self(_self);
   const void *item_ptr = PyUpb_AnyDescriptor_GetDef(item);
@@ -377,7 +381,7 @@ static PyObject *PyUpb_ByNameMap_Values(PyObject *_self, PyObject *args) {
   for (int i = 0; i < n; i++) {
     const void *elem = self->funcs->base.index(self->parent, i);
     PyObject *py_elem = self->funcs->base.get_elem_wrapper(elem);
-    if (!elem) {
+    if (!py_elem) {
       Py_DECREF(ret);
       return NULL;
     }
@@ -391,13 +395,13 @@ static PyObject *PyUpb_ByNameMap_Items(PyObject *_self, PyObject *args) {
   int n = self->funcs->base.get_elem_count(self->parent);
   PyObject *ret = PyList_New(n);
   PyObject *item;
+  PyObject *py_elem;
   if (!ret) return NULL;
   for (int i = 0; i < n; i++) {
-    item = PyTuple_New(2);
-    if (!item) goto err1;
     const void *elem = self->funcs->base.index(self->parent, i);
-    PyObject *py_elem = self->funcs->base.get_elem_wrapper(elem);
-    if (!py_elem) goto err2;
+    item = PyTuple_New(2);
+    py_elem = self->funcs->base.get_elem_wrapper(elem);
+    if (!item || !py_elem) goto error;
     PyTuple_SetItem(item, 0,
                     PyUnicode_FromString(self->funcs->get_elem_name(elem)));
     PyTuple_SetItem(item, 1, py_elem);
@@ -405,10 +409,10 @@ static PyObject *PyUpb_ByNameMap_Items(PyObject *_self, PyObject *args) {
   }
   return ret;
 
-err2:
-  Py_DECREF(item);
-err1:
-  Py_DECREF(ret);
+error:
+  if (!py_elem) Py_DECREF(py_elem);
+  if (item) Py_DECREF(item);
+  if (ret) Py_DECREF(ret);
   return NULL;
 }
 
@@ -597,24 +601,24 @@ static PyObject *PyUpb_ByNumberMap_Items(PyObject *_self, PyObject *args) {
   int n = self->funcs->base.get_elem_count(self->parent);
   PyObject *ret = PyList_New(n);
   PyObject *item;
+  PyObject *py_elem;
   if (!ret) return NULL;
   for (int i = 0; i < n; i++) {
-    item = PyTuple_New(2);
-    if (!item) goto err1;
     const void *elem = self->funcs->base.index(self->parent, i);
     int number = self->funcs->get_elem_num(elem);
-    PyObject *py_elem = self->funcs->base.get_elem_wrapper(elem);
-    if (!py_elem) goto err2;
+    item = PyTuple_New(2);
+    py_elem = self->funcs->base.get_elem_wrapper(elem);
+    if (!item || ! py_elem) goto error;
     PyTuple_SetItem(item, 0, PyLong_FromLong(number));
     PyTuple_SetItem(item, 1, py_elem);
     PyList_SetItem(ret, i, item);
   }
   return ret;
 
-err2:
-  Py_DECREF(item);
-err1:
-  Py_DECREF(ret);
+error:
+  if (py_elem) Py_DECREF(py_elem);
+  if (item) Py_DECREF(item);
+  if (ret) Py_DECREF(ret);
   return NULL;
 }
 
