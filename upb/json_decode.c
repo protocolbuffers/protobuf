@@ -719,7 +719,8 @@ static upb_msgval jsondec_int(jsondec *d, const upb_fielddef *f) {
       jsondec_err(d, "Expected number or string");
   }
 
-  if (upb_fielddef_type(f) == UPB_TYPE_INT32) {
+  if (upb_fielddef_type(f) == UPB_TYPE_INT32 ||
+      upb_fielddef_type(f) == UPB_TYPE_ENUM) {
     if (val.int64_val > INT32_MAX || val.int64_val < INT32_MIN) {
       jsondec_err(d, "Integer out of range.");
     }
