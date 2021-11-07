@@ -181,8 +181,8 @@ static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence *self,
   return 1;
 
 error:
-  if (item1) Py_DECREF(item1);
-  if (item2) Py_DECREF(item2);
+  Py_XDECREF(item1);
+  Py_XDECREF(item2);
   return -1;
 }
 
@@ -410,9 +410,9 @@ static PyObject *PyUpb_ByNameMap_Items(PyObject *_self, PyObject *args) {
   return ret;
 
 error:
-  if (!py_elem) Py_DECREF(py_elem);
-  if (item) Py_DECREF(item);
-  if (ret) Py_DECREF(ret);
+  Py_XDECREF(py_elem);
+  Py_XDECREF(item);
+  Py_XDECREF(ret);
   return NULL;
 }
 
@@ -616,9 +616,9 @@ static PyObject *PyUpb_ByNumberMap_Items(PyObject *_self, PyObject *args) {
   return ret;
 
 error:
-  if (py_elem) Py_DECREF(py_elem);
-  if (item) Py_DECREF(item);
-  if (ret) Py_DECREF(ret);
+  Py_XDECREF(py_elem);
+  Py_XDECREF(item);
+  Py_XDECREF(ret);
   return NULL;
 }
 
