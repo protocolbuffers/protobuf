@@ -171,10 +171,23 @@ static void encode_fixedarray(upb_encstate *e, const upb_array *arr,
   size_t bytes = arr->len * elem_size;
   const char* data = _upb_array_constptr(arr);
   const char* ptr = data + bytes - elem_size;
-  if (tag) {
+
+  if (tag || !_upb_isle()) {
     while (true) {
-      encode_bytes(e, ptr, elem_size);
-      encode_varint(e, tag);
+      if (elem_size == 4) {
+        uint32_t val;
+        memcpy(&val, ptr, sizeof(val));
+        val = _upb_be_swap32(val);
+        encode_bytes(e, &val, elem_size);
+      } else {
+        UPB_ASSERT(elem_size == 8);
+        uint64_t val;
+        memcpy(&val, ptr, sizeof(val));
+        val = _upb_be_swap64(val);
+        encode_bytes(e, &val, elem_size);
+      }
+
+      if (tag) encode_varint(e, tag);
       if (ptr == data) break;
       ptr -= elem_size;
     }
