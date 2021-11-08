@@ -367,10 +367,14 @@ static PyObject *PyUpb_ByNameMap_Keys(PyObject *_self, PyObject *args) {
   for (int i = 0; i < n; i++) {
     const void *elem = self->funcs->base.index(self->parent, i);
     PyObject *key = PyUnicode_FromString(self->funcs->get_elem_name(elem));
-    if (!key) return NULL;
+    if (!key) goto error;
     PyList_SetItem(ret, i, key);
   }
   return ret;
+
+error:
+  Py_XDECREF(ret);
+  return NULL;
 }
 
 static PyObject *PyUpb_ByNameMap_Values(PyObject *_self, PyObject *args) {
@@ -381,13 +385,14 @@ static PyObject *PyUpb_ByNameMap_Values(PyObject *_self, PyObject *args) {
   for (int i = 0; i < n; i++) {
     const void *elem = self->funcs->base.index(self->parent, i);
     PyObject *py_elem = self->funcs->base.get_elem_wrapper(elem);
-    if (!py_elem) {
-      Py_DECREF(ret);
-      return NULL;
-    }
+    if (!py_elem) goto error;
     PyList_SetItem(ret, i, py_elem);
   }
   return ret;
+
+error:
+  Py_XDECREF(ret);
+  return NULL;
 }
 
 static PyObject *PyUpb_ByNameMap_Items(PyObject *_self, PyObject *args) {
@@ -570,13 +575,14 @@ static PyObject *PyUpb_ByNumberMap_Keys(PyObject *_self, PyObject *args) {
   for (int i = 0; i < n; i++) {
     const void *elem = self->funcs->base.index(self->parent, i);
     PyObject *key = PyLong_FromLong(self->funcs->get_elem_num(elem));
-    if (!key) {
-      Py_DECREF(ret);
-      return NULL;
-    }
+    if (!key) goto error;
     PyList_SetItem(ret, i, key);
   }
   return ret;
+
+error:
+  Py_XDECREF(ret);
+  return NULL;
 }
 
 static PyObject *PyUpb_ByNumberMap_Values(PyObject *_self, PyObject *args) {
@@ -587,13 +593,14 @@ static PyObject *PyUpb_ByNumberMap_Values(PyObject *_self, PyObject *args) {
   for (int i = 0; i < n; i++) {
     const void *elem = self->funcs->base.index(self->parent, i);
     PyObject *py_elem = self->funcs->base.get_elem_wrapper(elem);
-    if (!py_elem) {
-      Py_DECREF(ret);
-      return NULL;
-    }
+    if (!py_elem) goto error;
     PyList_SetItem(ret, i, py_elem);
   }
   return ret;
+
+error:
+  Py_XDECREF(ret);
+  return NULL;
 }
 
 static PyObject *PyUpb_ByNumberMap_Items(PyObject *_self, PyObject *args) {
