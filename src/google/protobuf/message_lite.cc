@@ -38,6 +38,9 @@
 #include <climits>
 #include <cstdint>
 #include <string>
+# ifdef _MSC_VER
+#  include <crtdbg.h>
+# endif  // _MSC_VER
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -569,8 +572,6 @@ class MemoryIsNotDeallocated
 
  private:
   int old_crtdbg_flag_;
-
-  GTEST_DISALLOW_COPY_AND_ASSIGN_(MemoryIsNotDeallocated);
 };
 #endif  // _MSC_VER
 
