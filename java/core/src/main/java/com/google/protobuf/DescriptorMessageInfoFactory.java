@@ -621,14 +621,27 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
     // (which are in UpperCamelCase)
     String upperCamelCaseName = snakeCaseToUpperCamelCase(name);
 
-    String suffix = specialFieldNames.contains(upperCamelCaseName)
-                  // For field names that match the specialFieldNames,
-                  // append "__" to prevent field accessor method names from
-                  // clashing with other methods.
-                  ? "__"
-                  // For other field names, append "_" to prevent field names
-                  // from clashing with java keywords.
-                  : "_";
+    // Append underscores to match the behavior of the protoc java compiler
+    final String suffix;
+    if (specialFieldNames.contains(upperCamelCaseName)) {
+      // For proto field names that match the specialFieldNames,
+      // the protoc java compiler appends "__" to the java field name
+      // to prevent the field's accessor method names from clashing with other methods.
+      // For example:
+      //     proto field name = "class"
+      //     java field name = "class__"
+      //     accessor method name = "getClass_()"  (so that it does not clash with Object.getClass())
+      suffix = "__";
+    } else {
+      // For other proto field names,
+      // the protoc java compiler appends "_" to the java field name
+      // to prevent field names from clashing with java keywords.
+      // For example:
+      //     proto field name = "int"
+      //     java field name = "int_" (so that it does not clash with int keyword)
+      //     accessor method name = "getInt_()"
+      suffix = "_";
+    }
     return snakeCaseToLowerCamelCase(name) + suffix;
   }
 
