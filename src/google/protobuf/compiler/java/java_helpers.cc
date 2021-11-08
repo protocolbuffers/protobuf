@@ -67,8 +67,8 @@ namespace {
 const char* kDefaultPackage = "";
 
 // Names that should be avoided (in UpperCamelCase format).
-// Using them will cause the compiler to generate accessors whose names are
-// colliding with methods defined in base classes.
+// Using them will cause the compiler to generate accessors whose names
+// collide with methods defined in base classes.
 // Keep this list in sync with specialFieldNames in
 // java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java
 const char* kForbiddenWordList[] = {

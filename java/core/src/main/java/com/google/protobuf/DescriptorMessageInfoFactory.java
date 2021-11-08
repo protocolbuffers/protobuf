@@ -64,8 +64,8 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
 
   /**
    * Names that should be avoided (in UpperCamelCase format).
-   * Using them causes the compiler to generate accessors whose names are
-   * colliding with methods defined in base classes.
+   * Using them causes the compiler to generate accessors whose names
+   * collide with methods defined in base classes.
    *
    * Keep this list in sync with kForbiddenWordList in
    * src/google/protobuf/compiler/java/java_helpers.cc
