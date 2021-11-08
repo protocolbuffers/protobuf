@@ -617,7 +617,7 @@
 #ifdef PROTOBUF_PRAGMA_INIT_SEG
 #error PROTOBUF_PRAGMA_INIT_SEG was previously defined
 #endif
-#if _MSC_VER
+#ifdef _MSC_VER
 #define PROTOBUF_PRAGMA_INIT_SEG __pragma(init_seg(lib))
 #else
 #define PROTOBUF_PRAGMA_INIT_SEG
@@ -784,7 +784,7 @@
 #endif
 
 // Silence some MSVC warnings in all our code.
-#if _MSC_VER
+#ifdef _MSC_VER
 #pragma warning(push)
 // For non-trivial unions
 #pragma warning(disable : 4582)
