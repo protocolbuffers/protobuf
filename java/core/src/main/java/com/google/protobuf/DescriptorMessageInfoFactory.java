@@ -639,7 +639,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
       // For example:
       //     proto field name = "int"
       //     java field name = "int_" (so that it does not clash with int keyword)
-      //     accessor method name = "getInt_()"
+      //     accessor method name = "getInt()"
       suffix = "_";
     }
     return snakeCaseToLowerCamelCase(name) + suffix;
