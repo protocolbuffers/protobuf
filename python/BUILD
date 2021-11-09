@@ -35,6 +35,8 @@ load(
 cc_binary(
     name = "message",
     srcs = [
+        "convert.c",
+        "convert.h",
         "descriptor.c",
         "descriptor.h",
         "descriptor_containers.c",

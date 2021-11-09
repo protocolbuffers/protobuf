@@ -318,6 +318,7 @@ const upb_enumvaldef *upb_enumdef_value(const upb_enumdef *e, int i);
 const upb_enumvaldef *upb_enumdef_lookupname(const upb_enumdef *e,
                                              const char *name, size_t len);
 const upb_enumvaldef *upb_enumdef_lookupnum(const upb_enumdef *e, int32_t num);
+bool upb_enumdef_checknum(const upb_enumdef *e, int32_t num);
 
 /* DEPRECATED, slated for removal */
 int upb_enumdef_numvals(const upb_enumdef *e);

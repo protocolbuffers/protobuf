@@ -394,6 +394,12 @@ const upb_enumvaldef *upb_enumdef_lookupnum(const upb_enumdef *def, int32_t num)
                                                   : NULL;
 }
 
+bool upb_enumdef_checknum(const upb_enumdef *e, int32_t num) {
+  // We could use upb_enumdef_lookupnum(e, num) != NULL, but we expect this to
+  // be faster (especially for small numbers).
+  return _upb_enumlayout_checkval(e->layout, num);
+}
+
 const upb_enumvaldef *upb_enumdef_value(const upb_enumdef *e, int i) {
   UPB_ASSERT(0 <= i && i < e->value_count);
   return &e->values[i];
