@@ -47,6 +47,11 @@ PyObject *PyUpb_AnyDescriptor_GetPool(PyObject *desc) {
   return base->pool;
 }
 
+const void *PyUpb_AnyDescriptor_GetDef(PyObject *desc) {
+  PyUpb_DescriptorBase *base = (void*)desc;
+  return base->def;
+}
+
 static PyObject *PyUpb_DescriptorBase_New(PyTypeObject *subtype, PyObject *args,
                                           PyObject *kwds) {
   return PyErr_Format(PyExc_RuntimeError,

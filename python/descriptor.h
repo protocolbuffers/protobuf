@@ -40,6 +40,11 @@ PyObject *PyUpb_FileDescriptor_GetOrCreateWrapper(const upb_filedef *file,
 
 const upb_filedef *PyUpb_FileDescriptor_GetDef(PyObject *file);
 
+// Returns the underlying |def| for a given wrapper object. The caller must
+// have already verified that the given Python object is of the expected type.
+const upb_filedef *PyUpb_FileDescriptor_GetDef(PyObject *file);
+const void *PyUpb_AnyDescriptor_GetDef(PyObject *_self);
+
 bool PyUpb_InitDescriptor(PyObject *m);
 
 #endif  // PYUPB_DESCRIPTOR_H__
