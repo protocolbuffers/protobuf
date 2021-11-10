@@ -63,9 +63,9 @@ PyObject* PyUpb_UpbToPy(upb_msgval val, const upb_fielddef *f, PyObject *arena) 
 }
 
 static bool PyUpb_GetInt64(PyObject *obj, int64_t *val) {
-  // If the value is already a Python long, retrieves it.  Otherwise performs
-  // any automatic conversions to long (using __index__() or __int__()) that
-  // users expect.
+  // If the value is already a Python long, PyLong_AsLongLong() retrieves it.
+  // Otherwise it performs any automatic conversions to long (using __index__()
+  // or __int__()) that users expect.
   *val = PyLong_AsLongLong(obj);
   if (!PyErr_Occurred()) return true;
   if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
@@ -112,47 +112,55 @@ static upb_msgval PyUpb_MaybeCopyString(const char *ptr, size_t size,
   return ret;
 }
 
-#define CHECK_RANGE(in, out, low, high) \
-  ((out) = (in), ((out) >= (low) && (out) <= (high)))
+static bool PyUpb_PyToUpbEnum(PyObject *obj, const upb_enumdef *e,
+                              upb_msgval *val) {
+  if (PyUnicode_Check(obj)) {
+    Py_ssize_t size;
+    const char *name = PyUnicode_AsUTF8AndSize(obj, &size);
+    const upb_enumvaldef *ev = upb_enumdef_lookupname(e, name, size);
+    if (!ev) {
+      PyErr_Format(PyExc_ValueError, "unknown enum label \"%s\"", name);
+      return false;
+    }
+    val->int32_val = upb_enumvaldef_number(ev);
+    return true;
+  } else {
+    if (!PyUpb_GetInt64(obj, &val->int64_val) ||
+        val->int64_val < INT32_MIN || val->int64_val > INT32_MAX) {
+      return false;
+    }
+    val->int32_val = val->int64_val;
+    if (upb_filedef_syntax(upb_enumdef_file(e)) == UPB_SYNTAX_PROTO2 &&
+        !upb_enumdef_checknum(e, val->int32_val)) {
+      PyErr_Format(PyExc_ValueError, "invalid enumerator %d",
+                    (int)val->int32_val);
+      return false;
+    }
+    return true;
+  }
+}
 
 bool PyUpb_PyToUpb(PyObject *obj, const upb_fielddef *f, upb_msgval *val,
                    upb_arena *arena) {
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE_ENUM:
-      if (PyUnicode_Check(obj)) {
-        Py_ssize_t size;
-        const char *name = PyUnicode_AsUTF8AndSize(obj, &size);
-        const upb_enumdef *e = upb_fielddef_enumsubdef(f);
-        const upb_enumvaldef *ev = upb_enumdef_lookupname(e, name, size);
-        if (!ev) {
-          PyErr_Format(PyExc_ValueError, "unknown enum label \"%s\"", name);
-          return false;
-        }
-        val->int32_val = upb_enumvaldef_number(ev);
-        return true;
-      } else {
-        if (!PyUpb_GetInt64(obj, &val->int64_val) ||
-            !CHECK_RANGE(val->int64_val, val->int32_val, INT32_MIN,
-                         INT32_MAX)) {
-          return false;
-        }
-        const upb_enumdef *e = upb_fielddef_enumsubdef(f);
-        if (upb_filedef_syntax(upb_enumdef_file(e)) == UPB_SYNTAX_PROTO2 &&
-            !upb_enumdef_checknum(e, val->int32_val)) {
-          PyErr_Format(PyExc_ValueError, "invalid enumerator %d",
-                       (int)val->int32_val);
-          return false;
-        }
-        return true;
-      }
+      return PyUpb_PyToUpbEnum(obj, upb_fielddef_enumsubdef(f), val);
     case UPB_TYPE_INT32:
-      return PyUpb_GetInt64(obj, &val->int64_val) &&
-             CHECK_RANGE(val->int64_val, val->int32_val, INT32_MIN, INT32_MAX);
+      if (!PyUpb_GetInt64(obj, &val->int64_val) || val->int64_val < INT32_MIN ||
+          val->int64_val > INT32_MAX) {
+        return false;
+      }
+      val->int32_val = val->int64_val;
+      return true;
     case UPB_TYPE_INT64:
       return PyUpb_GetInt64(obj, &val->int64_val);
     case UPB_TYPE_UINT32:
-      return PyUpb_GetUint64(obj, &val->uint64_val) &&
-             CHECK_RANGE(val->uint64_val, val->uint32_val, 0, UINT32_MAX);
+      if (!PyUpb_GetUint64(obj, &val->uint64_val) ||
+          val->uint64_val > UINT32_MAX) {
+        return false;
+      }
+      val->uint32_val = val->uint64_val;
+      return true;
     case UPB_TYPE_UINT64:
       return PyUpb_GetUint64(obj, &val->uint64_val);
     case UPB_TYPE_FLOAT:
@@ -238,15 +246,16 @@ bool PyUpb_ValueEq(upb_msgval val1, upb_msgval val2, const upb_fielddef *f) {
 bool PyUpb_Map_IsEqual(const upb_map *map1, const upb_map *map2,
                        const upb_fielddef *f) {
   assert(upb_fielddef_ismap(f));
-  const upb_msgdef *entry_m = upb_fielddef_msgsubdef(f);
-  const upb_fielddef *val_f = upb_msgdef_field(entry_m, 1);
-  size_t iter = UPB_MAP_BEGIN;
   size_t size1 = map1 ? upb_map_size(map1) : 0;
   size_t size2 = map2 ? upb_map_size(map2) : 0;
 
   if (map1 == map2) return true;
   if (size1 != size2) return false;
   if (size1 == 0) return true;
+
+  const upb_msgdef *entry_m = upb_fielddef_msgsubdef(f);
+  const upb_fielddef *val_f = upb_msgdef_field(entry_m, 1);
+  size_t iter = UPB_MAP_BEGIN;
 
   while (upb_mapiter_next(map1, &iter)) {
     upb_msgval key = upb_mapiter_key(map1, iter);
@@ -262,6 +271,8 @@ bool PyUpb_Map_IsEqual(const upb_map *map1, const upb_map *map2,
 static bool PyUpb_ArrayElem_IsEqual(const upb_array *arr1,
                                     const upb_array *arr2, size_t i,
                                     const upb_fielddef *f) {
+  assert(i < upb_array_size(arr1));
+  assert(i < upb_array_size(arr2));
   upb_msgval val1 = upb_array_get(arr1, i);
   upb_msgval val2 = upb_array_get(arr2, i);
   return PyUpb_ValueEq(val1, val2, f);
