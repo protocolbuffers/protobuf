@@ -41,8 +41,10 @@ cc_toolchain_config(
     name = "linux-aarch_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
-    include_flag = ["-I/usr/aarch64-linux-gnu/include/c++/10/aarch64-linux-gnu/",
-                    "-I/usr/aarch64-linux-gnu/include/c++/10"],
+    include_flag = [
+        "-I/usr/aarch64-linux-gnu/include/c++/10/aarch64-linux-gnu/",
+        "-I/usr/aarch64-linux-gnu/include/c++/10"
+    ],
     linker_path = "/usr/bin/ld",
     target_cpu = "aarch64",
     target_full_name = "aarch64-linux-gnu",
@@ -54,8 +56,10 @@ cc_toolchain_config(
     name = "linux-ppcle_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
-    include_flag = ["-I/usr/powerpc64le-linux-gnu/include/c++/10/powerpc64le-linux-gnu/",
-                    "-I/usr/powerpc64le-linux-gnu/include/c++/10/"],
+    include_flag = [
+        "-I/usr/powerpc64le-linux-gnu/include/c++/10/powerpc64le-linux-gnu/",
+        "-I/usr/powerpc64le-linux-gnu/include/c++/10/"
+    ],
     linker_path = "/usr/bin/ld",
     target_cpu = "ppc64",
     target_full_name = "powerpc64le-linux-gnu",
@@ -67,8 +71,10 @@ cc_toolchain_config(
     name = "linux-s390_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
-    include_flag = ["-I/usr/s390x-linux-gnu/include/c++/10/s390x-linux-gnu/",
-                    "-I/usr/s390x-linux-gnu/include/c++/10/"],
+    include_flag = [
+        "-I/usr/s390x-linux-gnu/include/c++/10/s390x-linux-gnu/",
+        "-I/usr/s390x-linux-gnu/include/c++/10/"
+    ],
     linker_path = "/usr/bin/ld",
     target_cpu = "systemz",
     target_full_name = "s390x-linux-gnu",
@@ -102,8 +108,10 @@ cc_toolchain_config(
     name = "darwin-aarch_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lc++",
-    include_flag = ["-I/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
-                    "-I/tools/apple_sdks/xcode_13_0/macosx/usr/include"],
+    include_flag = [
+        "-I/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
+        "-I/tools/apple_sdks/xcode_13_0/macosx/usr/include"
+    ],
     linker_path = "/tools",
     sysroot = "/tools/apple_sdks/xcode_13_0/macosx",
     target_cpu = "aarch64",
@@ -116,8 +124,10 @@ cc_toolchain_config(
     name = "darwin-x86_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lc++",
-    include_flag = ["-I/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
-                    "-I/tools/apple_sdks/xcode_13_0/macosx/usr/include"],
+    include_flag = [
+        "-I/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
+        "-I/tools/apple_sdks/xcode_13_0/macosx/usr/include"
+    ],
     linker_path = "/tools",
     sysroot = "/tools/apple_sdks/xcode_13_0/macosx",
     target_cpu = "x86_64",
