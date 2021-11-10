@@ -35,15 +35,15 @@ def _impl(ctx):
       ),
       tool_path(
           name = "ld",
-          path = "/usr/bin/ld",
+          path = ctx.attr.linker_path,
       ),
       tool_path(
           name = "ar",
-          path = "/usr/bin/ar",
+          path = "/usr/bin/llvm-ar",
       ),
       tool_path(
           name = "compat-ld",
-          path = "/usr/bin/ld",
+          path = ctx.attr.linker_path,
       ),
       tool_path(
           name = "cpp",
@@ -84,7 +84,8 @@ def _impl(ctx):
               flag_groups = [
                   flag_group(
                       flags = [
-                          "-lstdc++",
+                          "-B" + ctx.attr.linker_path,
+                          ctx.attr.cpp_flag,
                           "--target=" + ctx.attr.target_full_name,
                       ],
                   ),
@@ -92,6 +93,36 @@ def _impl(ctx):
           ),
       ],
   )
+
+  sysroot_flags = feature(
+      name = "sysroot_flags",
+      #Only enable this if a sysroot was specified
+      enabled = (ctx.attr.sysroot != ""),
+      flag_sets = [
+          flag_set(
+              actions = all_link_actions,
+              flag_groups = [
+                  flag_group(
+                      flags = [
+                          "--sysroot",
+                          ctx.attr.sysroot,
+                      ],
+                  ),
+              ],
+          ),
+          flag_set(
+              actions = all_compile_actions,
+              flag_groups = [
+                  flag_group(
+                      flags = [
+                          "-isysroot" + ctx.attr.sysroot,
+                      ],
+                  ),
+              ],
+         ),
+      ],
+  )
+
   compiler_flags = feature(
       name = "default_compile_flags",
       enabled = True,
@@ -107,8 +138,8 @@ def _impl(ctx):
                           "--target=" + ctx.attr.target_full_name,
                           "-isystem",
                           ctx.attr.toolchain_dir,
-                          ctx.attr.include_flag,
-                      ],
+                          "-fvisibility=hidden",
+                      ] + ctx.attr.include_flag,
                   ),
               ],
           ),
@@ -116,8 +147,8 @@ def _impl(ctx):
   )
 
   return cc_common.create_cc_toolchain_config_info(
-      abi_libc_version = ctx.attr.target_cpu,
-      abi_version = ctx.attr.target_cpu,
+      abi_libc_version = ctx.attr.abi_version,
+      abi_version = ctx.attr.abi_version,
       ctx = ctx,
       compiler = "clang",
       cxx_builtin_include_directories = [
@@ -125,7 +156,7 @@ def _impl(ctx):
           "/usr/include",
           "/usr/local/lib/clang",
       ],
-      features = [linker_flags, compiler_flags],
+      features = [linker_flags, compiler_flags, sysroot_flags],
       host_system_name = "local",
       target_cpu = ctx.attr.target_cpu,
       target_libc = ctx.attr.target_cpu,
@@ -137,8 +168,12 @@ def _impl(ctx):
 cc_toolchain_config = rule(
     implementation = _impl,
     attrs = {
+        "abi_version": attr.string(default = "local"),
         "bit_flag": attr.string(mandatory = True, values = ["-m32", "-m64"]),
-        "include_flag": attr.string(mandatory = False),
+        "cpp_flag": attr.string(mandatory = True),
+        "include_flag": attr.string_list(),
+        "linker_path": attr.string(mandatory = True),
+        "sysroot": attr.string(mandatory = False),
         "target_cpu": attr.string(mandatory = True, values = ["aarch64", "ppc64", "systemz", "x86_32", "x86_64"]),
         "target_full_name": attr.string(mandatory = True),
         "toolchain_dir": attr.string(mandatory = True),
