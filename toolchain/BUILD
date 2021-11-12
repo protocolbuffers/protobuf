@@ -42,8 +42,8 @@ cc_toolchain_config(
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
     include_flag = [
-        "-I/usr/aarch64-linux-gnu/include/c++/10/aarch64-linux-gnu/",
-        "-I/usr/aarch64-linux-gnu/include/c++/10"
+        "-I/usr/aarch64-linux-gnu/include/c++/8/aarch64-linux-gnu/",
+        "-I/usr/aarch64-linux-gnu/include/c++/8"
     ],
     linker_path = "/usr/bin/ld",
     target_cpu = "aarch64",
@@ -57,8 +57,8 @@ cc_toolchain_config(
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
     include_flag = [
-        "-I/usr/powerpc64le-linux-gnu/include/c++/10/powerpc64le-linux-gnu/",
-        "-I/usr/powerpc64le-linux-gnu/include/c++/10/"
+        "-I/usr/powerpc64le-linux-gnu/include/c++/8/powerpc64le-linux-gnu/",
+        "-I/usr/powerpc64le-linux-gnu/include/c++/8/"
     ],
     linker_path = "/usr/bin/ld",
     target_cpu = "ppc64",
@@ -72,8 +72,8 @@ cc_toolchain_config(
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
     include_flag = [
-        "-I/usr/s390x-linux-gnu/include/c++/10/s390x-linux-gnu/",
-        "-I/usr/s390x-linux-gnu/include/c++/10/"
+        "-I/usr/s390x-linux-gnu/include/c++/8/s390x-linux-gnu/",
+        "-I/usr/s390x-linux-gnu/include/c++/8/"
     ],
     linker_path = "/usr/bin/ld",
     target_cpu = "systemz",
