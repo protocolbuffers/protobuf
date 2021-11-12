@@ -25,7 +25,13 @@ rm -rf multibuild/
 mkdir artifacts
 export ARTIFACT_DIR=$(pwd)/artifacts
 
+# Pin multibuild script to a version just before the default
+# manylinux image has switched from manylinux1 to manylinux2014.
+# Also, pinning version avoid potentially unwanted future changes from
+# silently creeping in.
+# See https://github.com/protocolbuffers/protobuf/issues/9180
 git clone https://github.com/matthew-brett/multibuild.git
+(cd multibuild; git checkout 13a01725b0f0aa551ab34aa2311cdc1c77be4337)
 cp kokoro/release/python/linux/config.sh config.sh
 
 build_artifact_version() {
