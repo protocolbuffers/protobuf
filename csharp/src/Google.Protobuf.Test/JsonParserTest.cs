@@ -551,13 +551,9 @@ namespace Google.Protobuf
         }
 
         [Test]
-        // Skip these test cases in .NET 5 because floating point parsing supports bigger values.
-        // These big values won't throw an error in the test.
-#if !NET5_0
         [TestCase("1.7977e308")]
         [TestCase("-1.7977e308")]
         [TestCase("1e309")]
-#endif
         [TestCase("1,0")]
         [TestCase("1.0.0")]
         [TestCase("+1")]

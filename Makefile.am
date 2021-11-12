@@ -54,6 +54,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/CHANGES.txt                                                         \
   csharp/Google.Protobuf.Tools.targets                                       \
   csharp/Google.Protobuf.Tools.nuspec                                        \
+  csharp/NuGet.Config                                                        \
   csharp/README.md                                                           \
   csharp/build_packages.bat                                                  \
   csharp/build_tools.sh                                                      \
