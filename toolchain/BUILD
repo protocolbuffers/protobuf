@@ -109,14 +109,14 @@ cc_toolchain_config(
     bit_flag = "-m64",
     cpp_flag = "-lc++",
     include_flag = [
-        "-I/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
-        "-I/tools/apple_sdks/xcode_13_0/macosx/usr/include"
+        "-I/root/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
+        "-I/root/tools/apple_sdks/xcode_13_0/macosx/usr/include"
     ],
-    linker_path = "/tools",
-    sysroot = "/tools/apple_sdks/xcode_13_0/macosx",
+    linker_path = "/root/tools",
+    sysroot = "/root/tools/apple_sdks/xcode_13_0/macosx",
     target_cpu = "aarch64",
     target_full_name = "aarch64-apple-macosx11.3",
-    toolchain_dir = "/tools/apple_sdks/xcode_13_0/macosx",
+    toolchain_dir = "/root/tools/apple_sdks/xcode_13_0/macosx",
     toolchain_name = "darwin_aarch_64",
 )
 
@@ -125,13 +125,13 @@ cc_toolchain_config(
     bit_flag = "-m64",
     cpp_flag = "-lc++",
     include_flag = [
-        "-I/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
-        "-I/tools/apple_sdks/xcode_13_0/macosx/usr/include"
+        "-I/root/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
+        "-I/root/tools/apple_sdks/xcode_13_0/macosx/usr/include"
     ],
-    linker_path = "/tools",
-    sysroot = "/tools/apple_sdks/xcode_13_0/macosx",
+    linker_path = "/root/tools",
+    sysroot = "/root/tools/apple_sdks/xcode_13_0/macosx",
     target_cpu = "x86_64",
     target_full_name = "x86_64-apple-macosx11.3",
-    toolchain_dir = "/tools/apple_sdks/xcode_13_0/macosx",
+    toolchain_dir = "/root/tools/apple_sdks/xcode_13_0/macosx",
     toolchain_name = "darwin_x86_64",
 )
