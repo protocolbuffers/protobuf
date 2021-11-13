@@ -2,6 +2,8 @@
 tags
 .idea/
 lib/google/protobuf_java.jar
+lib/google/protobuf/*_pb.rb
+!lib/google/protobuf/descriptor_pb.rb
 protobuf-jruby.iml
 target/
 pkg/
