@@ -101,4 +101,55 @@ class EncodeDecodeTest < Test::Unit::TestCase
     assert_match json, "{\"CustomJsonName\":42}"
   end
 
+  def test_decode_depth_limit
+    msg = A::B::C::TestMessage.new(
+      optional_msg: A::B::C::TestMessage.new(
+        optional_msg: A::B::C::TestMessage.new(
+          optional_msg: A::B::C::TestMessage.new(
+            optional_msg: A::B::C::TestMessage.new(
+              optional_msg: A::B::C::TestMessage.new(
+              )
+            )
+          )
+        )
+      )
+    )
+    msg_encoded = A::B::C::TestMessage.encode(msg)
+    msg_out = A::B::C::TestMessage.decode(msg_encoded)
+    assert_match msg.to_json, msg_out.to_json
+
+    assert_raise Google::Protobuf::ParseError do
+      A::B::C::TestMessage.decode(msg_encoded, { max_recursion_depth: 4 })
+    end
+
+    msg_out = A::B::C::TestMessage.decode(msg_encoded, { max_recursion_depth: 5 })
+    assert_match msg.to_json, msg_out.to_json
+  end
+
+  def test_encode_depth_limit
+    msg = A::B::C::TestMessage.new(
+      optional_msg: A::B::C::TestMessage.new(
+        optional_msg: A::B::C::TestMessage.new(
+          optional_msg: A::B::C::TestMessage.new(
+            optional_msg: A::B::C::TestMessage.new(
+              optional_msg: A::B::C::TestMessage.new(
+              )
+            )
+          )
+        )
+      )
+    )
+    msg_encoded = A::B::C::TestMessage.encode(msg)
+    msg_out = A::B::C::TestMessage.decode(msg_encoded)
+    assert_match msg.to_json, msg_out.to_json
+
+    assert_raise RuntimeError do
+      A::B::C::TestMessage.encode(msg, { max_recursion_depth: 5 })
+    end
+
+    msg_encoded = A::B::C::TestMessage.encode(msg, { max_recursion_depth: 6 })
+    msg_out = A::B::C::TestMessage.decode(msg_encoded)
+    assert_match msg.to_json, msg_out.to_json
+  end
+
 end
