@@ -25,13 +25,14 @@ rm -rf multibuild/
 mkdir artifacts
 export ARTIFACT_DIR=$(pwd)/artifacts
 
-# Pin multibuild script to a version just before the default
-# manylinux image has switched from manylinux1 to manylinux2014.
-# Also, pinning version avoid potentially unwanted future changes from
-# silently creeping in.
-# See https://github.com/protocolbuffers/protobuf/issues/9180
 git clone https://github.com/matthew-brett/multibuild.git
-(cd multibuild; git checkout 13a01725b0f0aa551ab34aa2311cdc1c77be4337)
+# Pin multibuild scripts at a known commit to avoid potentially unwanted future changes from
+# silently creeping in (see https://github.com/protocolbuffers/protobuf/issues/9180).
+# IMPORTANT: always pin multibuild at the same commit for:
+# - linux/build_artifacts.sh
+# - linux/build_artifacts.sh
+# - windows/build_artifacts.bat
+(cd multibuild; git checkout b89bb903e94308be79abefa4f436bf123ebb1313)
 cp kokoro/release/python/linux/config.sh config.sh
 
 build_artifact_version() {
@@ -53,9 +54,20 @@ build_artifact_version() {
   sudo rm -rf $REPO_DIR
 }
 
+build_x86_64_artifact_version() {
+  # Explicitly request building manylinux1 wheels, which is no longer the default.
+  # https://github.com/protocolbuffers/protobuf/issues/9180
+  MB_ML_VER=1
+
+  # TODO(jtatermusch): currently when crosscompiling, "auditwheel repair" will be disabled
+  # since auditwheel doesn't work for crosscomiled wheels.
+  build_artifact_version $@
+}
+
 build_crosscompiled_aarch64_artifact_version() {
   # crosscompilation is only supported with the dockcross manylinux2014 image
   DOCKER_IMAGE=dockcross/manylinux2014-aarch64:20210706-65bf2dd
+  MB_ML_VER=2014
   PLAT=aarch64
 
   # TODO(jtatermusch): currently when crosscompiling, "auditwheel repair" will be disabled
@@ -63,11 +75,11 @@ build_crosscompiled_aarch64_artifact_version() {
   build_artifact_version $@
 }
 
-build_artifact_version 3.6
-build_artifact_version 3.7
-build_artifact_version 3.8
-build_artifact_version 3.9
-build_artifact_version 3.10
+build_x86_64_artifact_version 3.6
+build_x86_64_artifact_version 3.7
+build_x86_64_artifact_version 3.8
+build_x86_64_artifact_version 3.9
+build_x86_64_artifact_version 3.10
 
 build_crosscompiled_aarch64_artifact_version 3.7
 build_crosscompiled_aarch64_artifact_version 3.8
