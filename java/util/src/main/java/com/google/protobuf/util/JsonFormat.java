@@ -398,6 +398,7 @@ public class JsonFormat {
         com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
         TypeRegistry.getEmptyTypeRegistry(),
         false,
+        false,
         Parser.DEFAULT_RECURSION_LIMIT);
   }
 
@@ -408,6 +409,7 @@ public class JsonFormat {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
     private final boolean ignoringUnknownFields;
+    private final boolean lenient;
     private final int recursionLimit;
 
     // The default parsing recursion limit is aligned with the proto binary parser.
@@ -417,10 +419,12 @@ public class JsonFormat {
         com.google.protobuf.TypeRegistry registry,
         TypeRegistry oldRegistry,
         boolean ignoreUnknownFields,
+        boolean lenient,
         int recursionLimit) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.ignoringUnknownFields = ignoreUnknownFields;
+      this.lenient = lenient;
       this.recursionLimit = recursionLimit;
     }
 
@@ -438,6 +442,7 @@ public class JsonFormat {
       return new Parser(
           com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
           oldRegistry,
+          lenient,
           ignoringUnknownFields,
           recursionLimit);
     }
@@ -453,7 +458,7 @@ public class JsonFormat {
           || this.registry != com.google.protobuf.TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Parser(registry, oldRegistry, ignoringUnknownFields, recursionLimit);
+      return new Parser(registry, oldRegistry, ignoringUnknownFields,lenient,recursionLimit);
     }
 
     /**
@@ -461,8 +466,17 @@ public class JsonFormat {
      * encountered. The new Parser clones all other configurations from this Parser.
      */
     public Parser ignoringUnknownFields() {
-      return new Parser(this.registry, oldRegistry, true, recursionLimit);
+      return new Parser(this.registry, oldRegistry, true,lenient, recursionLimit);
     }
+
+    /**
+     * Creates a new {@link Parser} configured to handle lenient parsing e.g. Timestamp represented as seconds and nanos instead of String format.
+     * The new Parser clones all other configurations from this Parser.
+     */
+    public Parser lenient() {
+      return new Parser(this.registry, oldRegistry, ignoringUnknownFields, true, recursionLimit);
+    }
+
 
     /**
      * Parses from JSON into a protobuf message.
@@ -473,7 +487,7 @@ public class JsonFormat {
     public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
+      new ParserImpl(registry, oldRegistry, ignoringUnknownFields,lenient, recursionLimit)
           .merge(json, builder);
     }
 
@@ -487,13 +501,13 @@ public class JsonFormat {
     public void merge(Reader json, Message.Builder builder) throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
+      new ParserImpl(registry, oldRegistry, ignoringUnknownFields,lenient, recursionLimit)
           .merge(json, builder);
     }
 
     // For testing only.
     Parser usingRecursionLimit(int recursionLimit) {
-      return new Parser(registry, oldRegistry, ignoringUnknownFields, recursionLimit);
+      return new Parser(registry, oldRegistry, ignoringUnknownFields,lenient, recursionLimit);
     }
   }
 
@@ -1299,16 +1313,19 @@ public class JsonFormat {
     private final TypeRegistry oldRegistry;
     private final boolean ignoringUnknownFields;
     private final int recursionLimit;
+    private final boolean lenient;
     private int currentDepth;
 
     ParserImpl(
         com.google.protobuf.TypeRegistry registry,
         TypeRegistry oldRegistry,
         boolean ignoreUnknownFields,
+        boolean lenient,
         int recursionLimit) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.ignoringUnknownFields = ignoreUnknownFields;
+      this.lenient = lenient;
       this.recursionLimit = recursionLimit;
       this.currentDepth = 0;
     }
@@ -1560,7 +1577,14 @@ public class JsonFormat {
     private void mergeTimestamp(JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
       try {
-        Timestamp value = Timestamps.parse(json.getAsString());
+        Timestamp value;
+        if (lenient && json.isJsonObject()) {
+          long seconds = json.getAsJsonObject().get("seconds").getAsLong();
+          int nanos = json.getAsJsonObject().get("nanos").getAsInt();
+          value = Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
+        } else {
+          value = Timestamps.parse(json.getAsString());
+        }
         builder.mergeFrom(value.toByteString());
       } catch (ParseException | UnsupportedOperationException e) {
         throw new InvalidProtocolBufferException("Failed to parse timestamp: " + json);

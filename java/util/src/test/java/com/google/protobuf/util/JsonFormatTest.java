@@ -188,6 +188,11 @@ public class JsonFormatTest {
     JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
   }
 
+  private void mergeFromJsonLenient(String json, Message.Builder builder)
+          throws IOException {
+    JsonFormat.parser().lenient().merge(json, builder);
+  }
+
   @Test
   public void testAllFields() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -834,6 +839,17 @@ public class JsonFormatTest {
           .hasMessageThat()
           .isEqualTo("Failed to parse timestamp: " + incorrectTimestampString);
     }
+  }
+
+  @Test
+  public void testTimestampMergeLenient() throws Exception {
+    final String timestampJson = "{\"seconds\":1800,\"nanos\":10}";
+
+    TestTimestamp.Builder builder = TestTimestamp.newBuilder();
+    mergeFromJsonLenient(String.format("{\"timestamp_value\": %s}", timestampJson), builder);
+    TestTimestamp timestamp = builder.build();
+    assertThat(timestamp.getTimestampValue().getNanos()).isEqualTo(10);
+    assertThat(timestamp.getTimestampValue().getSeconds()).isEqualTo(1800);
   }
 
   @Test
