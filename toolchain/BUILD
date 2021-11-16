@@ -113,7 +113,7 @@ cc_toolchain_config(
         "-I/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include"
     ],
     linker_path = "/usr/tools",
-    sysroot = "/usr/tools/apple_sdks/xcode_13_0/macosx",
+    sysroot = "/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include",
     target_cpu = "aarch64",
     target_full_name = "aarch64-apple-macosx11.3",
     toolchain_dir = "/usr/tools/apple_sdks/xcode_13_0/macosx",
@@ -129,7 +129,7 @@ cc_toolchain_config(
         "-I/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include"
     ],
     linker_path = "/usr/tools",
-    sysroot = "/usr/tools/apple_sdks/xcode_13_0/macosx",
+    sysroot = "/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include",
     target_cpu = "x86_64",
     target_full_name = "x86_64-apple-macosx11.3",
     toolchain_dir = "/usr/tools/apple_sdks/xcode_13_0/macosx",
