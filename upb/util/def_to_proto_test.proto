@@ -74,3 +74,17 @@ service Service {
 extend Message {
   optional int32 ext = 1001;
 }
+
+message PretendMessageSet {
+  option message_set_wire_format = true;
+  // Since this is message_set_wire_format, "max" here means INT32_MAX.
+  // (For normal messages "max" would mean 2**29 - 1).
+  extensions 4 to max;
+}
+
+message MessageSetItem {
+  extend PretendMessageSet {
+    // Since max is exclusive, this is INT32_MAX-1, not INT32_MAX.
+    optional MessageSetItem message_set_extension = 2147483646;
+  }
+}

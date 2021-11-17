@@ -2178,7 +2178,7 @@ static void create_fielddef(
   const char *full_name;
   const char *json_name;
   const char *shortname;
-  uint32_t field_number;
+  int32_t field_number;
 
   f->file = ctx->file;  /* Must happen prior to symtab_add(). */
 
@@ -2201,10 +2201,6 @@ static void create_fielddef(
   }
 
   field_number = google_protobuf_FieldDescriptorProto_number(field_proto);
-
-  if (field_number == 0 || field_number > UPB_MAX_FIELDNUMBER) {
-    symtab_errf(ctx, "invalid field number (%u)", field_number);
-  }
 
   f->full_name = full_name;
   f->json_name = json_name;
@@ -2244,6 +2240,10 @@ static void create_fielddef(
     /* direct message field. */
     upb_value v, field_v, json_v, existing_v;
     size_t json_size;
+
+    if (field_number <= 0 || field_number > UPB_MAX_FIELDNUMBER) {
+      symtab_errf(ctx, "invalid field number (%u)", field_number);
+    }
 
     f->index_ = f - m->fields;
     f->msgdef = m;
@@ -2611,8 +2611,23 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
   for (i = 0; i < n_ext_range; i++) {
     const google_protobuf_DescriptorProto_ExtensionRange *r = ext_ranges[i];
     upb_extrange *r_def = (upb_extrange*)&m->ext_ranges[i];
-    r_def->start = google_protobuf_DescriptorProto_ExtensionRange_start(r);
-    r_def->end = google_protobuf_DescriptorProto_ExtensionRange_end(r);
+    int32_t start = google_protobuf_DescriptorProto_ExtensionRange_start(r);
+    int32_t end = google_protobuf_DescriptorProto_ExtensionRange_end(r);
+    int32_t max =
+        google_protobuf_MessageOptions_message_set_wire_format(m->opts)
+            ? INT32_MAX
+            : UPB_MAX_FIELDNUMBER + 1;
+
+    // A full validation would also check that each range is disjoint, and that
+    // none of the fields overlap with the extension ranges, but we are just
+    // sanity checking here.
+    if (start < 1 || end <= start || end > max) {
+      symtab_errf(ctx, "Extension range (%d, %d) is invalid, message=%s\n",
+                  (int)start, (int)end, m->full_name);
+    }
+
+    r_def->start = start;
+    r_def->end = end;
     SET_OPTIONS(r_def->opts, DescriptorProto_ExtensionRange,
                 ExtensionRangeOptions, r);
   }
@@ -2647,15 +2662,13 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
   }
 }
 
-static void resolve_fielddef(symtab_addctx *ctx, const char *prefix,
-                             upb_fielddef *f) {
+static void resolve_subdef(symtab_addctx *ctx, const char *prefix,
+                           upb_fielddef *f) {
   const google_protobuf_FieldDescriptorProto *field_proto = f->sub.unresolved;
   upb_strview name =
       google_protobuf_FieldDescriptorProto_type_name(field_proto);
   bool has_name =
       google_protobuf_FieldDescriptorProto_has_type_name(field_proto);
-
-  // Resolve subdef by type name, if necessary.
   switch ((int)f->type_) {
     case FIELD_TYPE_UNSPECIFIED: {
       // Type was not specified and must be inferred.
@@ -2693,36 +2706,60 @@ static void resolve_fielddef(symtab_addctx *ctx, const char *prefix,
       // No resolution necessary.
       break;
   }
+}
 
-  if (f->is_extension_) {
-    if (!google_protobuf_FieldDescriptorProto_has_extendee(field_proto)) {
-      symtab_errf(ctx, "extension for field '%s' had no extendee",
-                  f->full_name);
-    }
-
-    name = google_protobuf_FieldDescriptorProto_extendee(field_proto);
-    f->msgdef =
-        symtab_resolve(ctx, f->full_name, prefix, name, UPB_DEFTYPE_MSG);
-
-    const upb_msglayout_ext *ext = ctx->file->ext_layouts[f->layout_index];
-    if (ctx->layout) {
-      UPB_ASSERT(upb_fielddef_number(f) == ext->field.number);
-    } else {
-      upb_msglayout_ext *mut_ext = (upb_msglayout_ext*)ext;
-      fill_fieldlayout(&mut_ext->field, f);
-      mut_ext->field.presence = 0;
-      mut_ext->field.offset = 0;
-      mut_ext->field.submsg_index = 0;
-      mut_ext->extendee = f->msgdef->layout;
-      mut_ext->sub.submsg = f->sub.msgdef->layout;
-    }
-
-    CHK_OOM(upb_inttable_insert(&ctx->symtab->exts, (uintptr_t)ext,
-                                upb_value_constptr(f), ctx->arena));
+static void resolve_extension(
+    symtab_addctx *ctx, const char *prefix, upb_fielddef *f,
+    const google_protobuf_FieldDescriptorProto *field_proto) {
+  if (!google_protobuf_FieldDescriptorProto_has_extendee(field_proto)) {
+    symtab_errf(ctx, "extension for field '%s' had no extendee",
+                f->full_name);
   }
 
-  /* Have to delay resolving of the default value until now because of the enum
-   * case, since enum defaults are specified with a label. */
+  upb_strview name = google_protobuf_FieldDescriptorProto_extendee(field_proto);
+  const upb_msgdef *m =
+      symtab_resolve(ctx, f->full_name, prefix, name, UPB_DEFTYPE_MSG);
+  f->msgdef = m;
+
+  bool found = false;
+
+  for (int i = 0, n = m->ext_range_count; i < n; i++) {
+    const upb_extrange *r = &m->ext_ranges[i];
+    if (r->start <= f->number_ && f->number_ < r->end) {
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    symtab_errf(ctx,
+                "field number %u in extension %s has no extension range in "
+                "message %s",
+                (unsigned)f->number_, f->full_name, f->msgdef->full_name);
+  }
+
+  const upb_msglayout_ext *ext = ctx->file->ext_layouts[f->layout_index];
+  if (ctx->layout) {
+    UPB_ASSERT(upb_fielddef_number(f) == ext->field.number);
+  } else {
+    upb_msglayout_ext *mut_ext = (upb_msglayout_ext*)ext;
+    fill_fieldlayout(&mut_ext->field, f);
+    mut_ext->field.presence = 0;
+    mut_ext->field.offset = 0;
+    mut_ext->field.submsg_index = 0;
+    mut_ext->extendee = f->msgdef->layout;
+    mut_ext->sub.submsg = f->sub.msgdef->layout;
+  }
+
+  CHK_OOM(upb_inttable_insert(&ctx->symtab->exts, (uintptr_t)ext,
+                              upb_value_constptr(f), ctx->arena));
+}
+
+static void resolve_default(
+    symtab_addctx *ctx, upb_fielddef *f,
+    const google_protobuf_FieldDescriptorProto *field_proto) {
+  // Have to delay resolving of the default value until now because of the enum
+  // case, since enum defaults are specified with a label.
   if (google_protobuf_FieldDescriptorProto_has_default_value(field_proto)) {
     upb_strview defaultval =
         google_protobuf_FieldDescriptorProto_default_value(field_proto);
@@ -2742,6 +2779,19 @@ static void resolve_fielddef(symtab_addctx *ctx, const char *prefix,
   } else {
     set_default_default(ctx, f);
     f->has_default = false;
+  }
+}
+
+static void resolve_fielddef(symtab_addctx *ctx, const char *prefix,
+                             upb_fielddef *f) {
+  // We have to stash this away since resolve_subdef() may overwrite it.
+  const google_protobuf_FieldDescriptorProto *field_proto = f->sub.unresolved;
+
+  resolve_subdef(ctx, prefix, f);
+  resolve_default(ctx, f, field_proto);
+
+  if (f->is_extension_) {
+    resolve_extension(ctx, prefix, f, field_proto);
   }
 }
 
