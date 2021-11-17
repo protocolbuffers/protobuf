@@ -2178,7 +2178,7 @@ static void create_fielddef(
   const char *full_name;
   const char *json_name;
   const char *shortname;
-  uint32_t field_number;
+  int32_t field_number;
 
   f->file = ctx->file;  /* Must happen prior to symtab_add(). */
 
@@ -2241,7 +2241,7 @@ static void create_fielddef(
     upb_value v, field_v, json_v, existing_v;
     size_t json_size;
 
-    if (field_number == 0 || field_number > UPB_MAX_FIELDNUMBER) {
+    if (field_number <= 0 || field_number > UPB_MAX_FIELDNUMBER) {
       symtab_errf(ctx, "invalid field number (%u)", field_number);
     }
 
@@ -2611,8 +2611,23 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
   for (i = 0; i < n_ext_range; i++) {
     const google_protobuf_DescriptorProto_ExtensionRange *r = ext_ranges[i];
     upb_extrange *r_def = (upb_extrange*)&m->ext_ranges[i];
-    r_def->start = google_protobuf_DescriptorProto_ExtensionRange_start(r);
-    r_def->end = google_protobuf_DescriptorProto_ExtensionRange_end(r);
+    int32_t start = google_protobuf_DescriptorProto_ExtensionRange_start(r);
+    int32_t end = google_protobuf_DescriptorProto_ExtensionRange_end(r);
+    int32_t max =
+        google_protobuf_MessageOptions_message_set_wire_format(m->opts)
+            ? INT32_MAX
+            : UPB_MAX_FIELDNUMBER + 1;
+
+    // A full validation would also check that each range is disjoint, and that
+    // none of the fields overlap with the extension ranges, but we are just
+    // sanity checking here.
+    if (start < 1 || end <= start || end > max) {
+      symtab_errf(ctx, "Extension range (%d, %d) is invalid, message=%s\n",
+                  (int)start, (int)end, m->full_name);
+    }
+
+    r_def->start = start;
+    r_def->end = end;
     SET_OPTIONS(r_def->opts, DescriptorProto_ExtensionRange,
                 ExtensionRangeOptions, r);
   }
