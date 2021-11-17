@@ -376,7 +376,7 @@ upb_extreg *upb_extreg_new(upb_arena *arena) {
 bool _upb_extreg_add(upb_extreg *r, const upb_msglayout_ext **e, size_t count) {
   char buf[EXTREG_KEY_SIZE];
   const upb_msglayout_ext **start = e;
-  const upb_msglayout_ext **end = e + count;
+  const upb_msglayout_ext **end = UPB_PTRADD(e, count);
   for (; e < end; e++) {
     const upb_msglayout_ext *ext = *e;
     extreg_key(buf, ext->extendee, ext->field.number);

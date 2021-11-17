@@ -2943,8 +2943,10 @@ static void build_filedef(
     resolve_msgdef(ctx, (upb_msgdef*)&file->top_lvl_msgs[i]);
   }
 
-  CHK_OOM(
-      _upb_extreg_add(ctx->symtab->extreg, file->ext_layouts, file->ext_count));
+  if (file->ext_count) {
+    CHK_OOM(_upb_extreg_add(ctx->symtab->extreg, file->ext_layouts,
+                            file->ext_count));
+  }
 }
 
 static void remove_filedef(upb_symtab *s, upb_filedef *file) {
