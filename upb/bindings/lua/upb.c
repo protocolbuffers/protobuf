@@ -52,6 +52,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "lauxlib.h"
@@ -180,10 +181,9 @@ const char *lupb_checkstring(lua_State *L, int narg, size_t *len) {
 /* Unlike luaL_checkinteger, these do not implicitly convert from string or
  * round an existing double value.  We allow floating-point input, but only if
  * the actual value is integral. */
-#define INTCHECK(type, ctype)                                                  \
+#define INTCHECK(type, ctype, min, max)                                        \
   ctype lupb_check##type(lua_State *L, int narg) {                             \
     double n;                                                                  \
-    ctype i;                                                                   \
     if (lua_isinteger(L, narg)) {                                              \
       return lua_tointeger(L, narg);                                           \
     }                                                                          \
@@ -192,13 +192,21 @@ const char *lupb_checkstring(lua_State *L, int narg, size_t *len) {
     luaL_checktype(L, narg, LUA_TNUMBER);                                      \
     n = lua_tonumber(L, narg);                                                 \
                                                                                \
-    i = (ctype)n;                                                              \
-    if ((double)i != n) {                                                      \
-      /* double -> ctype truncated or rounded. */                              \
+    /* Check this double has no fractional part and remains in bounds.         \
+     * Consider INT64_MIN and INT64_MAX:                                       \
+     * 1. INT64_MIN -(2^63) is a power of 2, so this converts to a double.     \
+     * 2. INT64_MAX (2^63 - 1) is not a power of 2, and conversion of          \
+     * out-of-range integer values to a double can lead to undefined behavior. \
+     * On some compilers, this conversion can return 0, but it also can return \
+     * the max value. To deal with this, we can first divide by 2 to prevent   \
+     * the overflow, multiply it back, and add 1 to find the true limit. */    \
+    double i;                                                                  \
+    double max_value = (((double) max / 2) * 2) + 1;                           \
+    if ((modf(n, &i) != 0.0) || n < min || n >= max_value) {                   \
       luaL_error(L, "number %f was not an integer or out of range for " #type, \
                  n);                                                           \
     }                                                                          \
-    return i;                                                                  \
+    return (ctype) n;                                                          \
   }                                                                            \
   void lupb_push##type(lua_State *L, ctype val) {                              \
     /* TODO: push integer for Lua >= 5.3, 64-bit cdata for LuaJIT. */          \
@@ -207,10 +215,10 @@ const char *lupb_checkstring(lua_State *L, int narg, size_t *len) {
     lua_pushnumber(L, val);                                                    \
   }
 
-INTCHECK(int64,  int64_t)
-INTCHECK(int32,  int32_t)
-INTCHECK(uint64, uint64_t)
-INTCHECK(uint32, uint32_t)
+INTCHECK(int64,  int64_t, INT64_MIN, INT64_MAX)
+INTCHECK(int32,  int32_t, INT32_MIN, INT32_MAX)
+INTCHECK(uint64, uint64_t, 0, UINT64_MAX)
+INTCHECK(uint32, uint32_t, 0, UINT32_MAX)
 
 double lupb_checkdouble(lua_State *L, int narg) {
   /* If we were being really hard-nosed here, we'd check whether the input was
