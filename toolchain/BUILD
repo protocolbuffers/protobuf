@@ -5,8 +5,8 @@ package(default_visibility = ["//visibility:public"])
 filegroup(name = "empty")
 
 TOOLCHAINS = {
-    "darwin-x86_64": "cc-compiler-osx-x86_64",
-    "darwin-aarch_64": "cc-compiler-osx-aarch_64",
+    "osx-x86_64": "cc-compiler-osx-x86_64",
+    "osx-aarch_64": "cc-compiler-osx-aarch_64",
     "linux-aarch_64": "cc-compiler-linux-aarch_64",
     "linux-ppcle_64": "cc-compiler-linux-ppcle_64",
     "linux-s390_64": "cc-compiler-linux-s390_64",
