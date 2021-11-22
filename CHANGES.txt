@@ -1,3 +1,15 @@
+2021-10-28 version 3.19.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Bazel
+  * Ensure that release archives contain everything needed for Bazel (#9131)
+  * Align dependency handling with Bazel best practices (#9165)
+
+  JavaScript
+  * Fix `ReferenceError: window is not defined` when getting the global object (#9156)
+
+  Ruby
+  * Fix memory leak in MessageClass.encode (#9150)
+
 2021-10-15 version 3.19.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
@@ -17,6 +29,7 @@
 
   Kotlin
   * Switch Kotlin proto DSLs to be implemented with inline value classes
+  * Fix inlining and deprecation for repeated string fields in kotlin (#9120)
 
   Python
   * Proto2 DecodeError now includes message name in error message
@@ -37,6 +50,7 @@
   * Add class method Timestamp.from_time to ruby well known types (#8562)
   * Adopt pure ruby DSL implementation for JRuby (#9047)
   * Add size to Map class (#8068)
+  * Fix for descriptor_pb.rb: google/protobuf should be required first (#9121)
 
   C#
   * Correctly set ExtensionRegistry when parsing with MessageParser, but using an already existing CodedInputStream (#7246)

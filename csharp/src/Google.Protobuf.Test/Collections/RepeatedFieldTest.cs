@@ -840,7 +840,7 @@ namespace Google.Protobuf.Collections
             var list2 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.PayloadFlipped };
             var list3 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.SignallingFlipped };
 
-            // All SampleNaNs have the same hashcode under certain targets (e.g. netcoreapp2.1)
+            // All SampleNaNs have the same hashcode under certain targets (e.g. netcoreapp3.1)
             EqualityTester.AssertInequality(list1, list2, checkHashcode: false);
             EqualityTester.AssertEquality(list1, list3);
             Assert.True(list1.Contains(SampleNaNs.SignallingFlipped));

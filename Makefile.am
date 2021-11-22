@@ -54,6 +54,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/CHANGES.txt                                                         \
   csharp/Google.Protobuf.Tools.targets                                       \
   csharp/Google.Protobuf.Tools.nuspec                                        \
+  csharp/NuGet.Config                                                        \
   csharp/README.md                                                           \
   csharp/build_packages.bat                                                  \
   csharp/build_tools.sh                                                      \
@@ -1429,6 +1430,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   maven_install.json                                \
   protobuf.bzl                                      \
   protobuf_deps.bzl                                 \
+  protobuf_release.bzl                              \
   protobuf_version.bzl                              \
   third_party/zlib.BUILD                            \
   util/python/BUILD                                 \

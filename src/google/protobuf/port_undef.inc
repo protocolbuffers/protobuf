@@ -140,6 +140,6 @@
 #endif
 
 // Pop the warning(push) from port_def.inc
-#if _MSC_VER
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif

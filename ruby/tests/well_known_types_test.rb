@@ -15,18 +15,28 @@ class TestWellKnownTypes < Test::Unit::TestCase
 
     # millisecond accuracy
     time = Time.at(123456, 654321)
-    ts = Google::Protobuf::Timestamp.from_time(time)
+    resp = ts.from_time(time)
     assert_equal 123456, ts.seconds
     assert_equal 654321000, ts.nanos
     assert_equal time, ts.to_time
+    assert_equal resp, ts
 
     # nanosecond accuracy
     time = Time.at(123456, Rational(654321321, 1000))
+    resp = ts.from_time(time)
+    assert_equal 123456, ts.seconds
+    assert_equal 654321321, ts.nanos
+    assert_equal time, ts.to_time
+    assert_equal resp, ts
+
+    # Class based initialisation using from_time
+    time = Time.at(123456, Rational(654321321, 1000))
     ts = Google::Protobuf::Timestamp.from_time(time)
+    assert_equal 123456, ts.seconds
     assert_equal 654321321, ts.nanos
     assert_equal time, ts.to_time
 
-    # Instance method returns the same value as class method
+      # Instance method returns the same value as class method
     assert_equal Google::Protobuf::Timestamp.new.from_time(time),
                  Google::Protobuf::Timestamp.from_time(time)
   end
@@ -204,5 +214,34 @@ class TestWellKnownTypes < Test::Unit::TestCase
         values: [Google::Protobuf::Value.new(string_value: "Hello")]
     )
     assert_equal '[<Google::Protobuf::Value: string_value: "Hello">]', value_field.get(proto).inspect
+  end
+
+  def test_from_ruby
+    pb = Google::Protobuf::Value.from_ruby(nil)
+    assert_equal pb.null_value, :NULL_VALUE
+
+    pb = Google::Protobuf::Value.from_ruby(1.23)
+    assert_equal pb.number_value, 1.23
+
+    pb = Google::Protobuf::Value.from_ruby('1.23')
+    assert_equal pb.string_value, '1.23'
+
+    pb = Google::Protobuf::Value.from_ruby(true)
+    assert_equal pb.bool_value, true
+
+    pb = Google::Protobuf::Value.from_ruby(false)
+    assert_equal pb.bool_value, false
+
+    pb = Google::Protobuf::Value.from_ruby(Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true }))
+    assert_equal pb.struct_value, Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true })
+
+    pb = Google::Protobuf::Value.from_ruby({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true })
+    assert_equal pb.struct_value, Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true })
+
+    pb = Google::Protobuf::Value.from_ruby(Google::Protobuf::ListValue.from_a([1, 2, 3]))
+    assert_equal pb.list_value, Google::Protobuf::ListValue.from_a([1, 2, 3])
+
+    pb = Google::Protobuf::Value.from_ruby([1, 2, 3])
+    assert_equal pb.list_value, Google::Protobuf::ListValue.from_a([1, 2, 3])
   end
 end

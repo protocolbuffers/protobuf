@@ -80,9 +80,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
     if (size == array.length) {
       // Resize to 1.5x the size
       int length = ((size * 3) / 2) + 1;
-      E[] newArray = Arrays.copyOf(array, length);
-
-      array = newArray;
+      array = Arrays.copyOf(array, length);
     }
 
     array[size++] = element;

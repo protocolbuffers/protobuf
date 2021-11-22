@@ -347,7 +347,7 @@ inline void InlinedStringField::Swap(
     InlinedStringField* from, const std::string* /*default_value*/,
     Arena* arena, bool donated, bool from_donated, uint32_t* donating_states,
     uint32_t* from_donating_states, uint32_t mask) {
-#if GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
+#ifdef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
   // If one is donated and the other is not, undonate the donated one.
   if (donated && !from_donated) {
     MutableSlow(arena, donated, donating_states, mask);

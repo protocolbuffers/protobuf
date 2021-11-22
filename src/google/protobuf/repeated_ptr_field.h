@@ -1617,6 +1617,8 @@ class RepeatedPtrIterator {
   using iterator = RepeatedPtrIterator<Element>;
   using iterator_category = std::random_access_iterator_tag;
   using value_type = typename std::remove_const<Element>::type;
+  using const_iterator = RepeatedPtrIterator<const value_type>;
+  using nonconst_iterator = RepeatedPtrIterator<value_type>;
   using difference_type = std::ptrdiff_t;
   using pointer = Element*;
   using reference = Element&;
@@ -1652,14 +1654,20 @@ class RepeatedPtrIterator {
   iterator operator--(int) { return iterator(it_--); }
 
   // equality_comparable
-  bool operator==(const iterator& x) const { return it_ == x.it_; }
-  bool operator!=(const iterator& x) const { return it_ != x.it_; }
+  bool operator==(const nonconst_iterator& x) const { return it_ == x.it_; }
+  bool operator==(const const_iterator& x) const { return it_ == x.it_; }
+  bool operator!=(const nonconst_iterator& x) const { return it_ != x.it_; }
+  bool operator!=(const const_iterator& x) const { return it_ != x.it_; }
 
   // less_than_comparable
-  bool operator<(const iterator& x) const { return it_ < x.it_; }
-  bool operator<=(const iterator& x) const { return it_ <= x.it_; }
-  bool operator>(const iterator& x) const { return it_ > x.it_; }
-  bool operator>=(const iterator& x) const { return it_ >= x.it_; }
+  bool operator<(const nonconst_iterator& x) const { return it_ < x.it_; }
+  bool operator<(const const_iterator& x) const { return it_ < x.it_; }
+  bool operator<=(const nonconst_iterator& x) const { return it_ <= x.it_; }
+  bool operator<=(const const_iterator& x) const { return it_ <= x.it_; }
+  bool operator>(const nonconst_iterator& x) const { return it_ > x.it_; }
+  bool operator>(const const_iterator& x) const { return it_ > x.it_; }
+  bool operator>=(const nonconst_iterator& x) const { return it_ >= x.it_; }
+  bool operator>=(const const_iterator& x) const { return it_ >= x.it_; }
 
   // addable, subtractable
   iterator& operator+=(difference_type d) {

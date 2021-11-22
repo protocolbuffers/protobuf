@@ -153,7 +153,7 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3019000
+#define PROTOBUF_VERSION 3019001
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
@@ -617,7 +617,7 @@
 #ifdef PROTOBUF_PRAGMA_INIT_SEG
 #error PROTOBUF_PRAGMA_INIT_SEG was previously defined
 #endif
-#if _MSC_VER
+#ifdef _MSC_VER
 #define PROTOBUF_PRAGMA_INIT_SEG __pragma(init_seg(lib))
 #else
 #define PROTOBUF_PRAGMA_INIT_SEG
@@ -784,7 +784,7 @@
 #endif
 
 // Silence some MSVC warnings in all our code.
-#if _MSC_VER
+#ifdef _MSC_VER
 #pragma warning(push)
 // For non-trivial unions
 #pragma warning(disable : 4582)

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net451;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net451;netcoreapp3.1</TargetFrameworks>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <IsPackable>False</IsPackable>
