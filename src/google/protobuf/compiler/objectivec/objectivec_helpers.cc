@@ -102,9 +102,14 @@ class PrefixModeStorage {
 
   bool is_package_exempted(const std::string& package);
 
+  // When using a proto package as the prefix, this should be added as the
+  // prefix in front of it.
+  const std::string& forced_package_prefix() const { return forced_prefix_; }
+
  private:
   bool use_package_name_;
   std::string exception_path_;
+  std::string forced_prefix_;
   std::unordered_set<std::string> exceptions_;
 };
 
@@ -119,6 +124,13 @@ PrefixModeStorage::PrefixModeStorage() {
   const char* exception_path = getenv("GPB_OBJC_PACKAGE_PREFIX_EXCEPTIONS_PATH");
   if (exception_path) {
     exception_path_ = exception_path;
+  }
+
+  // This one is a not expected to be common, so it doesn't get a generation
+  // option, just the env var.
+  const char* prefix = getenv("GPB_OBJC_USE_PACKAGE_AS_PREFIX_PREFIX");
+  if (prefix) {
+    forced_prefix_ = prefix;
   }
 }
 
@@ -510,8 +522,8 @@ std::string FileClassPrefix(const FileDescriptor* file) {
     return file->options().objc_class_prefix();
   }
 
-  // If package prefix isn't enabled or no package, done.
-  if (!g_prefix_mode.use_package_name() || file->package().empty()) {
+  // If package prefix isn't enabled, done.
+  if (!g_prefix_mode.use_package_name()) {
     return "";
   }
 
@@ -538,7 +550,7 @@ std::string FileClassPrefix(const FileDescriptor* file) {
   if (!result.empty()) {
     result.append("_");
   }
-  return result;
+  return g_prefix_mode.forced_package_prefix() + result;
 }
 
 std::string FilePath(const FileDescriptor* file) {
