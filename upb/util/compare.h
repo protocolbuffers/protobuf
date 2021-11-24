@@ -37,8 +37,8 @@ extern "C" {
 // Returns true if unknown fields from the two messages are equal when sorted
 // and varints are made canonical.
 //
-// This operation should be considered best effort; the comparison is inherently
-// lossy without schema data:
+// This function is discouraged, as the comparison is inherently lossy without
+// schema data:
 //
 //  1. We don't know whether delimited fields are sub-messages. Unknown
 //     sub-messages will therefore not have their fields sorted and varints

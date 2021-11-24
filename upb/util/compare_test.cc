@@ -67,7 +67,6 @@ struct UnknownField {
   TypeAndValue value;
 };
 
-
 TypeAndValue Varint(uint64_t val) {
   TypeAndValue ret{UnknownFieldType::kVarint};
   ret.value.varint = val;
@@ -102,21 +101,6 @@ TypeAndValue Group(UnknownFields nested) {
   TypeAndValue ret{UnknownFieldType::kGroup};
   ret.value.group = &nested;
   return ret;
-}
-
-void f() {
-    auto fields = UnknownFields{
-        {1, Varint(1)},
-        {2, Fixed64(2)},
-    };
-
-    auto fields2 = UnknownFields{
-      {1, Group({
-        {2, Group({
-          {3, Varint(1)},
-        })},
-      })},
-    };
 }
 
 void EncodeVarint(uint64_t val, std::string* str) {

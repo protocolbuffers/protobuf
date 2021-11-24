@@ -34,9 +34,10 @@
 #include "protobuf.h"
 
 // Converts `val` to a Python object according to the type information in `f`.
-// Any newly-created objects that reference non-primitive data from `val` should
-// reference `arena` to keep the referent alive.  If the conversion cannot be
-// performed, returns NULL and sets a Python error.
+// Any newly-created Python objects that reference non-primitive data from `val`
+// will take a reference on `arena`; the caller must ensure that `val` belongs
+// to `arena`. If the conversion cannot be performed, returns NULL and sets a
+// Python error.
 PyObject *PyUpb_UpbToPy(upb_msgval val, const upb_fielddef *f, PyObject *arena);
 
 // Converts `obj` to a upb_msgval `*val` according to the type information in

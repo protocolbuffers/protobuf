@@ -55,6 +55,7 @@ PyObject* PyUpb_UpbToPy(upb_msgval val, const upb_fielddef *f, PyObject *arena) 
     case UPB_TYPE_MESSAGE:
       PyErr_Format(PyExc_NotImplementedError,
                    "Conversion of message types not yet implemented");
+      return NULL;
     default:
       PyErr_Format(PyExc_SystemError,
                    "Getting a value from a field of unknown type %d",
@@ -97,6 +98,28 @@ static bool PyUpb_GetUint64(PyObject *obj, uint64_t *val) {
   return false;
 }
 
+static bool PyUpb_GetInt32(PyObject *obj, int32_t *val) {
+  int64_t i64;
+  if (!PyUpb_GetInt64(obj, &i64)) return false;
+  if (i64 < INT32_MIN || i64 > INT32_MAX) {
+    PyErr_Format(PyExc_ValueError, "Value out of range: %S", obj);
+    return false;
+  }
+  *val = i64;
+  return true;
+}
+
+static bool PyUpb_GetUint32(PyObject *obj, uint32_t *val) {
+  uint64_t u64;
+  if (!PyUpb_GetUint64(obj, &u64)) return false;
+  if (u64 > UINT32_MAX) {
+    PyErr_Format(PyExc_ValueError, "Value out of range: %S", obj);
+    return false;
+  }
+  *val = u64;
+  return true;
+}
+
 // If `arena` is specified, copies the string data into the given arena.
 // Otherwise aliases the given data.
 static upb_msgval PyUpb_MaybeCopyString(const char *ptr, size_t size,
@@ -126,17 +149,14 @@ static bool PyUpb_PyToUpbEnum(PyObject *obj, const upb_enumdef *e,
     val->int32_val = upb_enumvaldef_number(ev);
     return true;
   } else {
-    if (!PyUpb_GetInt64(obj, &val->int64_val) ||
-        val->int64_val < INT32_MIN || val->int64_val > INT32_MAX) {
-      return false;
-    }
-    val->int32_val = val->int64_val;
+    int32_t i32;
+    if (!PyUpb_GetInt32(obj, &i32)) return false;
     if (upb_filedef_syntax(upb_enumdef_file(e)) == UPB_SYNTAX_PROTO2 &&
-        !upb_enumdef_checknum(e, val->int32_val)) {
-      PyErr_Format(PyExc_ValueError, "invalid enumerator %d",
-                    (int)val->int32_val);
+        !upb_enumdef_checknum(e, i32)) {
+      PyErr_Format(PyExc_ValueError, "invalid enumerator %d", (int)i32);
       return false;
     }
+    val->int32_val = i32;
     return true;
   }
 }
@@ -147,21 +167,11 @@ bool PyUpb_PyToUpb(PyObject *obj, const upb_fielddef *f, upb_msgval *val,
     case UPB_TYPE_ENUM:
       return PyUpb_PyToUpbEnum(obj, upb_fielddef_enumsubdef(f), val);
     case UPB_TYPE_INT32:
-      if (!PyUpb_GetInt64(obj, &val->int64_val) || val->int64_val < INT32_MIN ||
-          val->int64_val > INT32_MAX) {
-        return false;
-      }
-      val->int32_val = val->int64_val;
-      return true;
+      return PyUpb_GetInt32(obj, &val->int32_val);
     case UPB_TYPE_INT64:
       return PyUpb_GetInt64(obj, &val->int64_val);
     case UPB_TYPE_UINT32:
-      if (!PyUpb_GetUint64(obj, &val->uint64_val) ||
-          val->uint64_val > UINT32_MAX) {
-        return false;
-      }
-      val->uint32_val = val->uint64_val;
-      return true;
+      return PyUpb_GetUint32(obj, &val->uint32_val);
     case UPB_TYPE_UINT64:
       return PyUpb_GetUint64(obj, &val->uint64_val);
     case UPB_TYPE_FLOAT:
@@ -247,10 +257,10 @@ bool PyUpb_ValueEq(upb_msgval val1, upb_msgval val2, const upb_fielddef *f) {
 bool PyUpb_Map_IsEqual(const upb_map *map1, const upb_map *map2,
                        const upb_fielddef *f) {
   assert(upb_fielddef_ismap(f));
+  if (map1 == map2) return true;
+
   size_t size1 = map1 ? upb_map_size(map1) : 0;
   size_t size2 = map2 ? upb_map_size(map2) : 0;
-
-  if (map1 == map2) return true;
   if (size1 != size2) return false;
   if (size1 == 0) return true;
 
@@ -282,10 +292,10 @@ static bool PyUpb_ArrayElem_IsEqual(const upb_array *arr1,
 bool PyUpb_Array_IsEqual(const upb_array *arr1, const upb_array *arr2,
                          const upb_fielddef *f) {
   assert(upb_fielddef_isseq(f) && !upb_fielddef_ismap(f));
+  if (arr1 == arr2) return true;
+
   size_t n1 = arr1 ? upb_array_size(arr1) : 0;
   size_t n2 = arr2 ? upb_array_size(arr2) : 0;
-
-  if (arr1 == arr2) return true;
   if (n1 != n2) return false;
 
   // Half the length rounded down.  Important: the empty list rounds to 0.
@@ -340,5 +350,7 @@ bool PyUpb_Message_IsEqual(const upb_msg *msg1, const upb_msg *msg2,
   size_t usize1, usize2;
   const char *uf1 = upb_msg_getunknown(msg1, &usize1);
   const char *uf2 = upb_msg_getunknown(msg2, &usize2);
+  // 100 is arbitrary, we're trying to prevent stack overflow but it's not
+  // obvious how deep we should allow here.
   return upb_Message_UnknownFieldsAreEqual(uf1, usize1, uf2, usize2, 100);
 }
