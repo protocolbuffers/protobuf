@@ -57,7 +57,7 @@ std::string FindRubyTestDir() {
 // Some day, we may integrate build systems between protoc and the language
 // extensions to the point where we can do this test in a more automated way.
 
-void RubyTest(string proto_file, string import_proto_file = "") {
+void RubyTest(std::string proto_file, std::string import_proto_file = "") {
   std::string ruby_tests = FindRubyTestDir();
 
   google::protobuf::compiler::CommandLineInterface cli;

@@ -153,7 +153,7 @@ TEST(ObjCHelper, TextFormatDecodeData_RawStrings) {
 
   EXPECT_EQ(4, decode_data.num_entries());
 
-  uint8 expected_data[] = {
+  uint8_t expected_data[] = {
       0x4,
       0x1, 0x0, 'z', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 'J', 0x0,
       0x3, 0x0, 'a', 'b', 'c', 'd', 'e', 'z', 'g', 'h', 'I', 'J', 0x0,
@@ -178,7 +178,7 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
 
   EXPECT_EQ(5, decode_data.num_entries());
 
-  uint8 expected_data[] = {
+  uint8_t expected_data[] = {
       0x5,
       // All as is (00 op)
       0x1,  0x0A, 0x0,

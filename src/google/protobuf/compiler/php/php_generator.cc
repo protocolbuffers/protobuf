@@ -83,14 +83,14 @@ struct Options {
   bool is_descriptor = false;
   bool aggregate_metadata = false;
   bool gen_c_wkt = false;
-  std::set<string> aggregate_metadata_prefixes;
+  std::set<std::string> aggregate_metadata_prefixes;
 };
 
 namespace {
 
 // Forward decls.
 std::string PhpName(const std::string& full_name, const Options& options);
-std::string IntToString(int32 value);
+std::string IntToString(int32_t value);
 std::string FilenameToClassname(const std::string& filename);
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options);
@@ -430,7 +430,7 @@ std::string GeneratedServiceFileName(const ServiceDescriptor* service,
   return result + ".php";
 }
 
-std::string IntToString(int32 value) {
+std::string IntToString(int32_t value) {
   std::ostringstream os;
   os << value;
   return os.str();
