@@ -288,15 +288,20 @@ bool PyUpb_Array_IsEqual(const upb_array *arr1, const upb_array *arr2,
   if (arr1 == arr2) return true;
   if (n1 != n2) return false;
 
-  // Half the length rounded up.  Important: the empty list rounds to 0.
-  size_t half = (n1 + 1) / 2;
+  // Half the length rounded down.  Important: the empty list rounds to 0.
+  size_t half = n1 / 2;
 
   // Search from the ends-in.  We expect differences to more quickly manifest
-  // at the ends than in the middle.  We may compare the most middle element
-  // twice.
+  // at the ends than in the middle.  If the length is odd we will miss the
+  // middle element.
   for (size_t i = 0; i < half; i++) {
     if (!PyUpb_ArrayElem_IsEqual(arr1, arr2, i, f)) return false;
     if (!PyUpb_ArrayElem_IsEqual(arr1, arr2, n1 - 1 - i, f)) return false;
+  }
+
+  // For an odd-lengthed list, pick up the middle element.
+  if (n1 & 1) {
+    if (!PyUpb_ArrayElem_IsEqual(arr1, arr2, half, f)) return false;
   }
 
   return true;
@@ -316,7 +321,11 @@ bool PyUpb_Message_IsEqual(const upb_msg *msg1, const upb_msg *msg2,
     bool ok2 = msg2 && upb_msg_next(msg2, m, NULL, &f2, &val2, &iter2);
     if (ok1 != ok2) return false;
     if (!ok1) break;  // Both messages are at end.
+
+    // If the two messages yielded different "next" fields, then the set of
+    // present fields is different.
     if (f1 != f2) return false;
+
     if (upb_fielddef_ismap(f1)) {
       if (!PyUpb_Map_IsEqual(val1.map_val, val2.map_val, f1)) return false;
     } else if (upb_fielddef_isseq(f1)) {

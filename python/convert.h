@@ -40,7 +40,7 @@
 PyObject *PyUpb_UpbToPy(upb_msgval val, const upb_fielddef *f, PyObject *arena);
 
 // Converts `obj` to a upb_msgval `*val` according to the type information in
-// `f`. If `arena is provided, any string data will be copied into `arena`,
+// `f`. If `arena` is provided, any string data will be copied into `arena`,
 // otherwise the returned value will alias the Python-owned data (this can be
 // useful for an ephemeral upb_msgval).  If the conversion cannot be performed,
 // returns false.
