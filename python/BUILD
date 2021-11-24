@@ -63,6 +63,7 @@ cc_binary(
         ":version_script.lds",
         "//:reflection",
         "//:upb",
+        "//upb/util:compare",
         "@system_python//:python_headers",
     ],
 )

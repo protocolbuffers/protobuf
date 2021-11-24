@@ -29,6 +29,7 @@
 
 #include "python/protobuf.h"
 #include "upb/reflection.h"
+#include "upb/util/compare.h"
 
 PyObject* PyUpb_UpbToPy(upb_msgval val, const upb_fielddef *f, PyObject *arena) {
   switch (upb_fielddef_type(f)) {
@@ -330,9 +331,5 @@ bool PyUpb_Message_IsEqual(const upb_msg *msg1, const upb_msg *msg2,
   size_t usize1, usize2;
   const char *uf1 = upb_msg_getunknown(msg1, &usize1);
   const char *uf2 = upb_msg_getunknown(msg2, &usize2);
-  // TODO(haberman): compare unknown fields one by one.
-  if (usize1 != usize2) return false;
-  if (memcmp(uf1, uf2, usize1)) return false;
-
-  return true;
+  return upb_Message_UnknownFieldsAreEqual(uf1, usize1, uf2, usize2, 100);
 }

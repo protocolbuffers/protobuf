@@ -94,6 +94,7 @@ cc_library(
     srcs = ["compare.c"],
     hdrs = ["compare.h"],
     deps = ["//:reflection"],
+    visibility = ["//visibility:public"],
 )
 
 cc_test(
