@@ -573,7 +573,7 @@ package_naming(
 
 pkg_zip(
     name = "protoc_release",
-    package_file_name = "protoc-{version}-{cpu}.zip",
+    package_file_name = "protoc-{version}-{platform}.zip",
     package_variables = ":protoc_pkg_naming",
     srcs = [
         ":protoc_files",
