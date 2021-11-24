@@ -37,21 +37,26 @@ extern "C" {
 // Returns true if unknown fields from the two messages are equal when sorted
 // and varints are made canonical.
 //
-// These semantics are unfortunate, as the comparison is lossy without schema
-// data:
+// This operation should be considered best effort; the comparison is inherently
+// lossy without schema data:
+//
 //  1. We don't know whether delimited fields are sub-messages. Unknown
 //     sub-messages will therefore not have their fields sorted and varints
 //     canonicalized.
 //  2. We don't know about oneof/non-repeated fields, which should semantically
 //     discard every value except the last.
+
 typedef enum {
     kUpb_UnknownCompareResult_Equal = 0,
     kUpb_UnknownCompareResult_NotEqual = 1,
     kUpb_UnknownCompareResult_OutOfMemory = 2,
     kUpb_UnknownCompareResult_MaxDepthExceeded = 3,
 } upb_UnknownCompareResult;
-upb_UnknownCompareResult upb_Message_UnknownFieldsAreEqual(const upb_msg *msg1,
-                                                           const upb_msg *msg2,
+
+upb_UnknownCompareResult upb_Message_UnknownFieldsAreEqual(const char *buf1,
+                                                           size_t size1,
+                                                           const char *buf2,
+                                                           size_t size2,
                                                            int max_depth);
 
 #ifdef __cplusplus

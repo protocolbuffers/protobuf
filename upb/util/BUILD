@@ -95,3 +95,13 @@ cc_library(
     hdrs = ["compare.h"],
     deps = ["//:reflection"],
 )
+
+cc_test(
+    name = "compare_test",
+    srcs = ["compare_test.cc"],
+    deps = [
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        ":compare",
+    ],
+)
