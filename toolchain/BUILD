@@ -12,6 +12,8 @@ TOOLCHAINS = {
     "linux-s390_64": "cc-compiler-linux-s390_64",
     "linux-x86_32": "cc-compiler-linux-x86_32",
     "linux-x86_64": "cc-compiler-linux-x86_64",
+    "win32": "cc-compiler-windows-x86_32",
+    "win64": "cc-compiler-windows-x86_64",
 }
 
 cc_toolchain_suite(
@@ -134,4 +136,40 @@ cc_toolchain_config(
     target_full_name = "x86_64-apple-macosx11.3",
     toolchain_dir = "/usr/tools/apple_sdks/xcode_13_0/macosx",
     toolchain_name = "darwin_x86_64",
+)
+
+cc_toolchain_config(
+    name = "win32-config",
+    bit_flag = "-m32",
+    cpp_flag = "-lstdc++",
+    extra_include = "/usr/lib/gcc/i686-w64-mingw32/10-posix/include",
+    extra_linker_flag = "-L/usr/lib/gcc/i686-w64-mingw32/10-posix",
+    include_flag = [
+        "-I/usr/lib/gcc/i686-w64-mingw32/10-posix/include/c++",
+        "-I/usr/lib/gcc/i686-w64-mingw32/10-posix/include/c++/i686-w64-mingw32",
+        "-I/usr/i686-w64-mingw32/include"
+    ],
+    linker_path = "/usr/bin/ld",
+    target_cpu = "x86_32",
+    target_full_name = "i686-w64-mingw32",
+    toolchain_dir = "/usr/i686-w64-mingw32/include",
+    toolchain_name = "i686-w64-mingw32",
+)
+
+cc_toolchain_config(
+    name = "win64-config",
+    bit_flag = "-m64",
+    cpp_flag = "-lstdc++",
+    extra_include = "/usr/lib/gcc/x86_64-w64-mingw32/10-posix/include",
+    extra_linker_flag = "-L/usr/lib/gcc/x86_64-w64-mingw32/10-posix",
+    include_flag = [
+        "-I/usr/lib/gcc/x86_64-w64-mingw32/10-posix/include/c++/",
+        "-I/usr/lib/gcc/x86_64-w64-mingw32/10-posix/include/c++/x86_64-w64-mingw32",
+        "-I/usr/x86_64-w64-mingw32/include"
+    ],
+    linker_path = "/usr/bin/ld",
+    target_cpu = "x86_64",
+    target_full_name = "x86_64-w64-mingw32",
+    toolchain_dir = "/usr/x86_64-w64-mingw32/include",
+    toolchain_name = "x86_64-w64-mingw32",
 )
