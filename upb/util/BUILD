@@ -5,6 +5,8 @@ load(
     "upb_proto_reflection_library",
 )
 
+# Def to Proto
+
 cc_library(
     name = "def_to_proto",
     srcs = ["def_to_proto.c"],
@@ -47,6 +49,8 @@ cc_test(
     ],
 )
 
+# Required fields
+
 cc_library(
     name = "required_fields",
     srcs = ["required_fields.c"],
@@ -80,5 +84,25 @@ cc_test(
         ":required_fields",
         ":required_fields_test_upb_proto",
         ":required_fields_test_upb_proto_reflection",
+    ],
+)
+
+# Compare
+
+cc_library(
+    name = "compare",
+    srcs = ["compare.c"],
+    hdrs = ["compare.h"],
+    deps = ["//:reflection"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "compare_test",
+    srcs = ["compare_test.cc"],
+    deps = [
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        ":compare",
     ],
 )
