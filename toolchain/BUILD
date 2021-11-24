@@ -5,8 +5,8 @@ package(default_visibility = ["//visibility:public"])
 filegroup(name = "empty")
 
 TOOLCHAINS = {
-    "darwin-x86_64": "cc-compiler-osx-x86_64",
-    "darwin-aarch_64": "cc-compiler-osx-aarch_64",
+    "osx-x86_64": "cc-compiler-osx-x86_64",
+    "osx-aarch_64": "cc-compiler-osx-aarch_64",
     "linux-aarch_64": "cc-compiler-linux-aarch_64",
     "linux-ppcle_64": "cc-compiler-linux-ppcle_64",
     "linux-s390_64": "cc-compiler-linux-s390_64",
@@ -107,7 +107,7 @@ cc_toolchain_config(
 )
 
 cc_toolchain_config(
-    name = "darwin-aarch_64-config",
+    name = "osx-aarch_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lc++",
     include_flag = [
@@ -119,11 +119,11 @@ cc_toolchain_config(
     target_cpu = "aarch64",
     target_full_name = "aarch64-apple-macosx11.3",
     toolchain_dir = "/usr/tools/apple_sdks/xcode_13_0/macosx",
-    toolchain_name = "darwin_aarch_64",
+    toolchain_name = "osx_aarch_64",
 )
 
 cc_toolchain_config(
-    name = "darwin-x86_64-config",
+    name = "osx-x86_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lc++",
     include_flag = [
@@ -135,7 +135,7 @@ cc_toolchain_config(
     target_cpu = "x86_64",
     target_full_name = "x86_64-apple-macosx11.3",
     toolchain_dir = "/usr/tools/apple_sdks/xcode_13_0/macosx",
-    toolchain_name = "darwin_x86_64",
+    toolchain_name = "osx_x86_64",
 )
 
 cc_toolchain_config(

@@ -102,9 +102,14 @@ class PrefixModeStorage {
 
   bool is_package_exempted(const std::string& package);
 
+  // When using a proto package as the prefix, this should be added as the
+  // prefix in front of it.
+  const std::string& forced_package_prefix() const { return forced_prefix_; }
+
  private:
   bool use_package_name_;
   std::string exception_path_;
+  std::string forced_prefix_;
   std::unordered_set<std::string> exceptions_;
 };
 
@@ -119,6 +124,13 @@ PrefixModeStorage::PrefixModeStorage() {
   const char* exception_path = getenv("GPB_OBJC_PACKAGE_PREFIX_EXCEPTIONS_PATH");
   if (exception_path) {
     exception_path_ = exception_path;
+  }
+
+  // This one is a not expected to be common, so it doesn't get a generation
+  // option, just the env var.
+  const char* prefix = getenv("GPB_OBJC_USE_PACKAGE_AS_PREFIX_PREFIX");
+  if (prefix) {
+    forced_prefix_ = prefix;
   }
 }
 
@@ -352,9 +364,9 @@ bool IsReservedCIdentifier(const std::string& input) {
 }
 
 std::string SanitizeNameForObjC(const std::string& prefix,
-                           const std::string& input,
-                           const std::string& extension,
-                           std::string* out_suffix_added) {
+                                const std::string& input,
+                                const std::string& extension,
+                                std::string* out_suffix_added) {
   static const std::unordered_set<std::string> kReservedWords =
       MakeWordsMap(kReservedWordList, GOOGLE_ARRAYSIZE(kReservedWordList));
   static const std::unordered_set<std::string> kNSObjectMethods =
@@ -510,8 +522,8 @@ std::string FileClassPrefix(const FileDescriptor* file) {
     return file->options().objc_class_prefix();
   }
 
-  // If package prefix isn't enabled or no package, done.
-  if (!g_prefix_mode.use_package_name() || file->package().empty()) {
+  // If package prefix isn't enabled, done.
+  if (!g_prefix_mode.use_package_name()) {
     return "";
   }
 
@@ -538,7 +550,7 @@ std::string FileClassPrefix(const FileDescriptor* file) {
   if (!result.empty()) {
     result.append("_");
   }
-  return result;
+  return g_prefix_mode.forced_package_prefix() + result;
 }
 
 std::string FilePath(const FileDescriptor* file) {
@@ -1240,6 +1252,11 @@ bool ValidateObjCClassPrefix(
 
   const std::string prefix = file->options().objc_class_prefix();
   const std::string package = file->package();
+  // For files without packages, the can be registered as "no_package:PATH",
+  // allowing the expected prefixes file.
+  static const std::string no_package_prefix("no_package:");
+  const std::string lookup_key =
+      package.empty() ? no_package_prefix + file->name() : package;
 
   // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
   // error cases, so it seems to be ok to use as a back door for warnings.
@@ -1247,7 +1264,7 @@ bool ValidateObjCClassPrefix(
   // Check: Error - See if there was an expected prefix for the package and
   // report if it doesn't match (wrong or missing).
   std::map<std::string, std::string>::const_iterator package_match =
-      expected_package_prefixes.find(package);
+      expected_package_prefixes.find(lookup_key);
   if (package_match != expected_package_prefixes.end()) {
     // There was an entry, and...
     if (has_prefix && package_match->second == prefix) {
@@ -1256,8 +1273,11 @@ bool ValidateObjCClassPrefix(
     } else {
       // ...it didn't match!
       *out_error = "error: Expected 'option objc_class_prefix = \"" +
-                   package_match->second + "\";' for package '" + package +
-                   "' in '" + file->name() + "'";
+                   package_match->second + "\";'";
+      if (!package.empty()) {
+        *out_error += " for package '" + package + "'";
+      }
+      *out_error += " in '" + file->name() + "'";
       if (has_prefix) {
         *out_error += "; but found '" + prefix + "' instead";
       }
@@ -1286,35 +1306,12 @@ bool ValidateObjCClassPrefix(
          i != expected_package_prefixes.end(); ++i) {
       if (i->second == prefix) {
         other_package_for_prefix = i->first;
-        break;
+        // Stop on the first real package listing, if it was a no_package file
+        // specific entry, keep looking to try and find a package one.
+        if (!HasPrefixString(other_package_for_prefix, no_package_prefix)) {
+          break;
+        }
       }
-    }
-
-    // Check: Warning - If the file does not have a package, check whether the
-    // prefix was declared is being used by another package or not. This is
-    // a special case for empty packages.
-    if (package.empty()) {
-      // The file does not have a package and ...
-      if (other_package_for_prefix.empty()) {
-        // ... no other package has declared that prefix.
-        std::cerr
-             << "protoc:0: warning: File '" << file->name() << "' has no "
-             << "package. Consider adding a new package to the proto and adding '"
-             << "new.package = " << prefix << "' to the expected prefixes file ("
-             << expected_prefixes_path << ")." << std::endl;
-        std::cerr.flush();
-      } else {
-        // ... another package has declared the same prefix.
-        std::cerr
-             << "protoc:0: warning: File '" << file->name() << "' has no package "
-             << "and package '" << other_package_for_prefix << "' already uses '"
-             << prefix << "' as its prefix. Consider either adding a new package "
-             << "to the proto, or reusing one of the packages already using this "
-             << "prefix in the expected prefixes file ("
-             << expected_prefixes_path << ")." << std::endl;
-        std::cerr.flush();
-      }
-      return true;
     }
 
     // Check: Error - Make sure the prefix wasn't expected for a different
@@ -1323,14 +1320,20 @@ bool ValidateObjCClassPrefix(
     if (!other_package_for_prefix.empty()) {
       *out_error =
           "error: Found 'option objc_class_prefix = \"" + prefix +
-          "\";' in '" + file->name() +
-          "'; that prefix is already used for 'package " +
-          other_package_for_prefix + ";'. It can only be reused by listing " +
-          "it in the expected file (" +
-          expected_prefixes_path + ").";
+          "\";' in '" + file->name() + "'; that prefix is already used for ";
+      if (HasPrefixString(other_package_for_prefix, no_package_prefix)) {
+        *out_error += "file '" +
+          StripPrefixString(other_package_for_prefix, no_package_prefix) +
+          "'.";
+      } else {
+        *out_error += "'package " + other_package_for_prefix + ";'.";
+      }
+      *out_error +=
+        "It can only be reused by adding '" + lookup_key + " = " + prefix +
+        "' to the expected prefixes file (" + expected_prefixes_path + ").";
       return false;  // Only report first usage of the prefix.
     }
-  } // !prefix.empty()
+  } // !prefix.empty() && have_expected_prefix_file
 
   // Check: Warning - Make sure the prefix is is a reasonable value according
   // to Apple's rules (the checks above implicitly whitelist anything that
@@ -1359,17 +1362,18 @@ bool ValidateObjCClassPrefix(
     if (prefixes_must_be_registered) {
       *out_error =
         "error: '" + file->name() + "' has 'option objc_class_prefix = \"" +
-        prefix + "\";', but it is not registered; add it to the expected " +
-        "prefixes file (" + expected_prefixes_path + ") for the package '" +
-        package + "'.";
+        prefix + "\";', but it is not registered. Add '" + lookup_key + " = " +
+        (prefix.empty() ? "\"\"" : prefix) +
+        "' to the expected prefixes file (" + expected_prefixes_path + ").";
       return false;
     }
 
     std::cerr
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
-         << prefix << "\";' in '" << file->name() << "';"
-         << " consider adding it to the expected prefixes file ("
-         << expected_prefixes_path << ")." << std::endl;
+         << prefix << "\";' in '" << file->name() << "'; consider adding '"
+         << lookup_key << " = " << (prefix.empty() ? "\"\"" : prefix)
+         << "' to the expected prefixes file (" << expected_prefixes_path
+         << ")." << std::endl;
     std::cerr.flush();
   }
 
