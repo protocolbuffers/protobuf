@@ -12,8 +12,28 @@ def _package_naming_impl(ctx):
 
   # infer from the current cpp toolchain.
   toolchain = find_cpp_toolchain(ctx)
-  values["cpu"] = toolchain.cpu
-  
+  cpu = toolchain.cpu
+  system_name = toolchain.target_gnu_system_name
+
+  # rename cpus to match what we want artifacts to be
+  if cpu == "systemz":
+    cpu = "s390_64"
+  elif cpu == "aarch64":
+    cpu = "aarch_64"
+
+  # use the system name to determine the os and then create platform names
+  if "apple" in system_name:
+    values["platform"] = "osx-" + cpu
+  elif "linux" in system_name:
+    values["platform"] = "linux-" + cpu
+  elif "mingw" in system_name:
+    if "cpu" == "x86_64":
+      values["platform"] = "win64"
+    else:
+      values["platform"] = "win32"
+  else:
+    values["platform"] = "unknown"
+
   return PackageVariablesInfo(values = values)
 
 
