@@ -32,7 +32,7 @@ def _package_naming_impl(ctx):
     else:
       values["platform"] = "win32"
   else:
-    values["platform"] = "unknown"
+    fail("Unrecognized platform")
 
   return PackageVariablesInfo(values = values)
 
