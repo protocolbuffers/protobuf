@@ -116,7 +116,7 @@ class GenerateAndTest {
                                     &context_, &error_));
     context_.ExpectFileMatches(file1, file2);
   }
-  void SetParameter(string parameter) {
+  void SetParameter(std::string parameter) {
     parameter_ = parameter;
   }
 

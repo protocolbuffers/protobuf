@@ -54,8 +54,8 @@ namespace objectivec {
 bool PROTOC_EXPORT UseProtoPackageAsDefaultPrefix();
 void PROTOC_EXPORT SetUseProtoPackageAsDefaultPrefix(bool on_or_off);
 // Get/Set the path to a file to load as exceptions when
-// `UseProtoPackageAsDefaultPrefixUseProtoPackageAsDefaultPrefix()` is `true`.
-// And empty string means there should be no exceptions loaded.
+// `UseProtoPackageAsDefaultPrefix()` is `true`. An empty string means there
+// should be no exceptions.
 std::string PROTOC_EXPORT GetProtoPackagePrefixExceptionList();
 void PROTOC_EXPORT SetProtoPackagePrefixExceptionList(
     const std::string& file_path);
