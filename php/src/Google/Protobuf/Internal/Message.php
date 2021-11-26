@@ -1465,7 +1465,7 @@ class Message
     /**
      * @ignore
      */
-    public function serializeToJsonStream(&$output, $includeDefaultValueFields = false)
+    public function serializeToJsonStream(&$output, $emitDefaults = false)
     {
         if (is_a($this, 'Google\Protobuf\Any')) {
             $output->writeRaw("{", 1);
@@ -1485,7 +1485,7 @@ class Message
             } else {
                 $value_fields = $value_msg->desc->getField();
                 foreach ($value_fields as $field) {
-                    if ($value_msg->existField($field, $includeDefaultValueFields)) {
+                    if ($value_msg->existField($field, $emitDefaults)) {
                         $output->writeRaw(",", 1);
                         if (!$value_msg->serializeFieldToJsonStream($output, $field)) {
                             return false;
@@ -1511,7 +1511,7 @@ class Message
             $output->writeRaw($timestamp, strlen($timestamp));
         } elseif (get_class($this) === 'Google\Protobuf\ListValue') {
             $field = $this->desc->getField()[1];
-            if (!$this->existField($field, $includeDefaultValueFields)) {
+            if (!$this->existField($field, $emitDefaults)) {
                 $output->writeRaw("[]", 2);
             } else {
                 if (!$this->serializeFieldToJsonStream($output, $field)) {
@@ -1520,7 +1520,7 @@ class Message
             }
         } elseif (get_class($this) === 'Google\Protobuf\Struct') {
             $field = $this->desc->getField()[1];
-            if (!$this->existField($field, $includeDefaultValueFields)) {
+            if (!$this->existField($field, $emitDefaults)) {
                 $output->writeRaw("{}", 2);
             } else {
                 if (!$this->serializeFieldToJsonStream($output, $field)) {
@@ -1534,7 +1534,7 @@ class Message
             $fields = $this->desc->getField();
             $first = true;
             foreach ($fields as $field) {
-                if ($this->existField($field, $includeDefaultValueFields) ||
+                if ($this->existField($field, $emitDefaults) ||
                     GPBUtil::hasJsonValue($this)) {
                     if ($first) {
                         $first = false;
@@ -1567,24 +1567,24 @@ class Message
     /**
      * Serialize the message to json string.
      *
-     * @param bool $includeDefaultValueFields If true, singular primitive fields,
+     * @param bool $emitDefaults If true, singular primitive fields,
      * repeated fields, and map fields will always be serialized.  If
      * false, only serialize non-empty fields. Singular message fields
      * and oneof fields are not affected by this option.
      *
      * @return string Serialized json protobuf data.
      */
-    public function serializeToJsonString($includeDefaultValueFields = false)
+    public function serializeToJsonString($emitDefaults = false)
     {
-        $output = new CodedOutputStream($this->jsonByteSize($includeDefaultValueFields));
-        $this->serializeToJsonStream($output, $includeDefaultValueFields);
+        $output = new CodedOutputStream($this->jsonByteSize($emitDefaults));
+        $this->serializeToJsonStream($output, $emitDefaults);
         return $output->getData();
     }
 
     /**
      * @ignore
      */
-    private function existField($field, $includeDefaultValueFields = false)
+    private function existField($field, $emitDefaults = false)
     {
         $getter = $field->getGetter();
         $hazzer = "has" . substr($getter, 3);
@@ -1601,11 +1601,11 @@ class Message
 
         $values = $this->$getter();
         if ($field->isMap()) {
-            return $includeDefaultValueFields || count($values) !== 0;
+            return $emitDefaults || count($values) !== 0;
         } elseif ($field->isRepeated()) {
-            return $includeDefaultValueFields || count($values) !== 0;
+            return $emitDefaults || count($values) !== 0;
         } else {
-            return $values !== $this->defaultValue($field) || ($includeDefaultValueFields && $this->defaultValue($field) !== null);
+            return $values !== $this->defaultValue($field) || ($emitDefaults && $this->defaultValue($field) !== null);
         }
     }
 
@@ -1855,7 +1855,7 @@ class Message
     /**
      * @ignore
      */
-    private function fieldJsonByteSize($field, $includeDefaultValueFields = false)
+    private function fieldJsonByteSize($field, $emitDefaults = false)
     {
         $size = 0;
 
@@ -1863,7 +1863,7 @@ class Message
             $getter = $field->getGetter();
             $values = $this->$getter();
             $count = count($values);
-            if ($count !== 0 || $includeDefaultValueFields) {
+            if ($count !== 0 || $emitDefaults) {
                 if (!GPBUtil::hasSpecialJsonMapping($this)) {
                     $size += 3;                              // size for "\"\":".
                     $size += strlen($field->getJsonName());  // size for field name
@@ -1901,7 +1901,7 @@ class Message
             $getter = $field->getGetter();
             $values = $this->$getter();
             $count = count($values);
-            if ($count !== 0 || $includeDefaultValueFields) {
+            if ($count !== 0 || $emitDefaults) {
                 if (!GPBUtil::hasSpecialJsonMapping($this)) {
                     $size += 3;                              // size for "\"\":".
                     $size += strlen($field->getJsonName());  // size for field name
@@ -1915,7 +1915,7 @@ class Message
                     $size += $this->fieldDataOnlyJsonByteSize($field, $value);
                 }
             }
-        } elseif ($this->existField($field, $includeDefaultValueFields) || GPBUtil::hasJsonValue($this)) {
+        } elseif ($this->existField($field, $emitDefaults) || GPBUtil::hasJsonValue($this)) {
             if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 $size += 3;                              // size for "\"\":".
                 $size += strlen($field->getJsonName());  // size for field name
@@ -1971,7 +1971,7 @@ class Message
     /**
      * @ignore
      */
-    public function jsonByteSize($includeDefaultValueFields = false)
+    public function jsonByteSize($emitDefaults = false)
     {
         $size = 0;
         if (is_a($this, 'Google\Protobuf\Any')) {
@@ -1988,10 +1988,10 @@ class Message
             if (GPBUtil::hasSpecialJsonMapping($value_msg)) {
                 // Size for "\",value\":".
                 $size += 9;
-                $size += $value_msg->jsonByteSize($includeDefaultValueFields);
+                $size += $value_msg->jsonByteSize($emitDefaults);
             } else {
                 // Size for value. +1 for comma, -2 for "{}".
-                $size += $value_msg->jsonByteSize($includeDefaultValueFields) -1;
+                $size += $value_msg->jsonByteSize($emitDefaults) -1;
             }
         } elseif (get_class($this) === 'Google\Protobuf\FieldMask') {
             $field_mask = GPBUtil::formatFieldMask($this);
@@ -2005,8 +2005,8 @@ class Message
             $size += strlen($timestamp);
         } elseif (get_class($this) === 'Google\Protobuf\ListValue') {
             $field = $this->desc->getField()[1];
-            if ($this->existField($field, $includeDefaultValueFields)) {
-                $field_size = $this->fieldJsonByteSize($field, $includeDefaultValueFields);
+            if ($this->existField($field, $emitDefaults)) {
+                $field_size = $this->fieldJsonByteSize($field, $emitDefaults);
                 $size += $field_size;
             } else {
                 // Size for "[]".
@@ -2014,8 +2014,8 @@ class Message
             }
         } elseif (get_class($this) === 'Google\Protobuf\Struct') {
             $field = $this->desc->getField()[1];
-            if ($this->existField($field, $includeDefaultValueFields)) {
-                $field_size = $this->fieldJsonByteSize($field, $includeDefaultValueFields);
+            if ($this->existField($field, $emitDefaults)) {
+                $field_size = $this->fieldJsonByteSize($field, $emitDefaults);
                 $size += $field_size;
             } else {
                 // Size for "{}".
@@ -2030,7 +2030,7 @@ class Message
             $fields = $this->desc->getField();
             $count = 0;
             foreach ($fields as $field) {
-                $field_size = $this->fieldJsonByteSize($field, $includeDefaultValueFields);
+                $field_size = $this->fieldJsonByteSize($field, $emitDefaults);
                 $size += $field_size;
                 if ($field_size != 0) {
                   $count++;

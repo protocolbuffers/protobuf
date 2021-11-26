@@ -775,15 +775,15 @@ PHP_METHOD(Message, serializeToJsonString) {
   size_t size;
   int options = 0;
   char buf[1024];
-  zend_bool include_default_value_fields = false;
+  zend_bool emit_defaults = false;
   upb_status status;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS(), "|b",
-                            &include_default_value_fields) == FAILURE) {
+                            &emit_defaults) == FAILURE) {
     return;
   }
 
-  if (include_default_value_fields) {
+  if (emit_defaults) {
     options |= UPB_JSONENC_EMITDEFAULTS;
   }
 
