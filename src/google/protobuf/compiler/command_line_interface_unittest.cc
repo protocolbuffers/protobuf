@@ -1698,8 +1698,13 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileGivenTwoInputs) {
   Run("protocol_compiler --dependency_out=$tmpdir/manifest "
       "--test_out=$tmpdir --proto_path=$tmpdir bar.proto foo.proto");
 
-  ExpectErrorText(
-      "Can only process one input file when using --dependency_out=FILE.\n");
+  ExpectFileContent("manifest",
+                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator: \\\n"
+                    "\t$tmpdir/bar.proto\n\n"
+                    "$tmpdir/foo.proto.MockCodeGenerator.test_generator: \\\n"
+                    "\t$tmpdir/foo.proto\n\n"
+                    "$tmpdir/bar.proto: \\\n"
+                    "\t$tmpdir/foo.proto\n");
 }
 
 #ifdef PROTOBUF_OPENSOURCE
@@ -1750,8 +1755,54 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
   ExpectNoErrors();
 
   ExpectFileContent("manifest",
-                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
-                    "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
+                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator: \\\n"
+                    "\t$tmpdir/bar.proto\n\n"
+                    "$tmpdir/bar.proto: \\\n"
+                    "\t$tmpdir/foo.proto\n");
+
+}
+
+TEST_F(CommandLineInterfaceTest, WriteDependencyManifestWithReusedProto) {
+  CreateTempFile("qux.proto",
+                  "syntax = \"proto2\";\n"
+                  "message Qux {};\n");
+  CreateTempFile("baz.proto",
+                  "syntax = \"proto2\";\n"
+                  "import \"qux.proto\";\n"
+                  "message Baz {\n"
+                  " optional Qux qux = 1;\n"
+                  "}\n");
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"baz.proto\";\n"
+                 "message Foo {\n"
+                 "  optional Baz baz = 1;\n"
+                 "}\n");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"baz.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Baz baz = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest "
+      "--test_out=$tmpdir --proto_path=$tmpdir bar.proto foo.proto");
+
+  ExpectNoErrors();
+
+  ExpectFileContent("manifest",
+                    "$tmpdir/foo.proto.MockCodeGenerator.test_generator: \\\n"
+                    "\t$tmpdir/foo.proto\n\n"
+                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator: \\\n"
+                    "\t$tmpdir/bar.proto\n\n"
+                    "$tmpdir/baz.proto: \\\n"
+                    "\t$tmpdir/qux.proto\n\n"
+                    "$tmpdir/bar.proto: \\\n"
+                    "\t$tmpdir/baz.proto\n\n"
+                    "$tmpdir/foo.proto: \\\n"
+                    "\t$tmpdir/baz.proto\n"
+  );
+
 }
 #endif  // !_WIN32
 

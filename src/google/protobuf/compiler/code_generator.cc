@@ -55,6 +55,7 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
   bool succeeded = true;
   for (int i = 0; i < files.size(); i++) {
     const FileDescriptor* file = files[i];
+    generator_context->SetCurrentFile(file);
     succeeded = Generate(file, parameter, generator_context, error);
     if (!succeeded && error && error->empty()) {
       *error =
@@ -101,6 +102,10 @@ void GeneratorContext::GetCompilerVersion(Version* version) const {
   version->set_minor(GOOGLE_PROTOBUF_VERSION / 1000 % 1000);
   version->set_patch(GOOGLE_PROTOBUF_VERSION % 1000);
   version->set_suffix(GOOGLE_PROTOBUF_VERSION_SUFFIX);
+}
+
+void GeneratorContext::SetCurrentFile(const FileDescriptor *file) {
+  current_file_ = file;
 }
 
 // Parses a set of comma-delimited name/value pairs.

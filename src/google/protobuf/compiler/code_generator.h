@@ -176,6 +176,11 @@ class PROTOC_EXPORT GeneratorContext {
   // this GeneratorContext.
   virtual void GetCompilerVersion(Version* version) const;
 
+  virtual void SetCurrentFile(const FileDescriptor *file);
+
+protected:
+  // The current file that code is being generated for
+  const FileDescriptor* current_file_ = nullptr;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GeneratorContext);

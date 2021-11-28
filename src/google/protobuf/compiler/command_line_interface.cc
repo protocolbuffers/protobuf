@@ -399,6 +399,26 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   // Get name of all output files.
   void GetOutputFilenames(std::vector<std::string>* output_filenames);
 
+  // Add an entry to map from a generated file path to its contents.
+  // Return value is the result of std::map::insert()
+  std::pair<std::map<std::string, std::string>::iterator, bool>
+  InsertFilePathMapping(const std::string& path, const std::string& content) {
+    auto search = descriptor_out_paths_.find(current_file_);
+    if (search != descriptor_out_paths_.end()) {
+      search->second.push_back(path);
+    }
+    else {
+      descriptor_out_paths_.emplace(std::make_pair(current_file_, std::vector<std::string> { path }));
+    }
+
+    return files_.insert({path, content});
+  }
+  
+  void ListDescriptorToPathMappings(std::map<const FileDescriptor*, std::vector<std::string>>* output)
+  {
+    *output = descriptor_out_paths_;
+  }
+
   // implements GeneratorContext --------------------------------------
   io::ZeroCopyOutputStream* Open(const std::string& filename) override;
   io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename) override;
@@ -411,6 +431,10 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
     *output = parsed_files_;
   }
 
+  void SetCurrentFile(const FileDescriptor *file) override {
+    GeneratorContext::SetCurrentFile(file);
+  }
+
  private:
   friend class MemoryOutputStream;
 
@@ -418,6 +442,9 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   // instead of an unordered_map so that files are written in order (good when
   // writing zips).
   std::map<std::string, std::string> files_;
+  // Maps from a FileDescriptor to the paths of the files that were
+  // generated from that descriptor
+  std::map<const FileDescriptor*, std::vector<std::string>> descriptor_out_paths_;
   const std::vector<const FileDescriptor*>& parsed_files_;
   bool had_error_;
 };
@@ -603,7 +630,7 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
 }
 
 void CommandLineInterface::GeneratorContextImpl::AddJarManifest() {
-  auto pair = files_.insert({"META-INF/MANIFEST.MF", ""});
+  auto pair = InsertFilePathMapping("META-INF/MANIFEST.MF", "");
   if (pair.second) {
     pair.first->second =
         "Manifest-Version: 1.0\n"
@@ -738,7 +765,7 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
   } else {
     // Create a new file to store the new metadata in info_to_insert_.
     encoded_data =
-        &directory_->files_.insert({filename_ + ".pb.meta", ""}).first->second;
+        &directory_->InsertFilePathMapping(filename_ + ".pb.meta", "").first->second;
   }
   GeneratedCodeInfo new_metadata;
   bool crossed_offset = false;
@@ -777,7 +804,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
   inner_.reset();
 
   // Insert into the directory.
-  auto pair = directory_->files_.insert({filename_, ""});
+  auto pair = directory_->InsertFilePathMapping(filename_, "");
   auto it = pair.first;
   bool already_present = !pair.second;
 
@@ -1573,12 +1600,6 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
               << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
-  if (!dependency_out_name_.empty() && input_files_.size() > 1) {
-    std::cerr
-        << "Can only process one input file when using --dependency_out=FILE."
-        << std::endl;
-    return PARSE_ARGUMENT_FAIL;
-  }
   if (imports_in_descriptor_set_ && descriptor_set_out_name_.empty()) {
     std::cerr << "--include_imports only makes sense when combined with "
                  "--descriptor_set_out."
@@ -2187,27 +2208,18 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     const std::vector<const FileDescriptor*>& parsed_files,
     const GeneratorContextMap& output_directories,
     DiskSourceTree* source_tree) {
+  if (!source_tree) {
+    std::cerr << "Can't resolve dependencies without source tree information."
+      << std::endl;
+    return false;
+  }
+
   FileDescriptorSet file_set;
 
   std::set<const FileDescriptor*> already_seen;
   for (int i = 0; i < parsed_files.size(); i++) {
     GetTransitiveDependencies(parsed_files[i], false, false, &already_seen,
                               file_set.mutable_file());
-  }
-
-  std::vector<std::string> output_filenames;
-  for (const auto& pair : output_directories) {
-    const std::string& location = pair.first;
-    GeneratorContextImpl* directory = pair.second.get();
-    std::vector<std::string> relative_output_filenames;
-    directory->GetOutputFilenames(&relative_output_filenames);
-    for (int i = 0; i < relative_output_filenames.size(); i++) {
-      std::string output_filename = location + relative_output_filenames[i];
-      if (output_filename.compare(0, 2, "./") == 0) {
-        output_filename = output_filename.substr(2);
-      }
-      output_filenames.push_back(output_filename);
-    }
   }
 
   int fd;
@@ -2224,27 +2236,61 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   io::FileOutputStream out(fd);
   io::Printer printer(&out, '$');
 
-  for (int i = 0; i < output_filenames.size(); i++) {
-    printer.Print(output_filenames[i].c_str());
-    if (i == output_filenames.size() - 1) {
-      printer.Print(":");
-    } else {
-      printer.Print(" \\\n");
-    }
-  }
+  auto ResolvePath = [&source_tree](const FileDescriptor* descriptor) {
+        const std::string& virtual_file = descriptor->name();
+        std::string disk_file;
+        if (source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
+          return disk_file;
+        } else {
+          std::cerr << "Unable to identify path for file " << virtual_file
+                    << std::endl;
+          return std::string();
+        }
+  };
 
-  for (int i = 0; i < file_set.file_size(); i++) {
-    const FileDescriptorProto& file = file_set.file(i);
-    const std::string& virtual_file = file.name();
-    std::string disk_file;
-    if (source_tree &&
-        source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
-      printer.Print(" $disk_file$", "disk_file", disk_file);
-      if (i < file_set.file_size() - 1) printer.Print("\\\n");
-    } else {
-      std::cerr << "Unable to identify path for file " << virtual_file
-                << std::endl;
-      return false;
+  for (const auto& pair : output_directories) {
+    const std::string& location = pair.first;
+    GeneratorContextImpl* directory = pair.second.get();
+    std::map<const FileDescriptor *, std::vector<std::string>> descriptor_to_paths;
+    directory->ListDescriptorToPathMappings(&descriptor_to_paths);
+    for (auto it = descriptor_to_paths.rbegin(); it != descriptor_to_paths.rend(); it++)
+    {
+        const auto pair = *it;
+        const FileDescriptor* descriptor = pair.first;
+        const auto& paths = pair.second;
+        for (size_t i = 0; i < paths.size(); i++)
+        {
+          std::string output_filename = location + paths[i];
+          if (output_filename.compare(0, 2, "./") == 0) {
+            output_filename = output_filename.substr(2);
+          }
+          printer.Print("$filename$$eol_escape$",
+          "filename", output_filename.c_str(),
+          "eol_escape", i != paths.size()- 1 ? " \\\n" : "");
+        }
+        std::string disk_file = ResolvePath(descriptor);
+        if (disk_file.empty()) return false;
+        printer.Print(": \\\n\t$disk_file$\n\n", "disk_file", disk_file);
+    }
+    for (auto it = already_seen.begin(); it != already_seen.end(); it++)
+    {
+      const FileDescriptor* descriptor = *it;
+      if (!descriptor->dependency_count()) continue;
+      std::string disk_file = ResolvePath(descriptor);
+      if (disk_file.empty()) return false;
+      printer.Print("$name$: \\\n", "name", disk_file);
+      for (int i = 0; i < descriptor->dependency_count(); i++)
+      {
+        const FileDescriptor* dep = descriptor->dependency(i);
+        std::string disk_file = ResolvePath(dep);
+        if (disk_file.empty()) return false;
+        printer.Print("\t$dep$$eol_escape$\n",
+          "dep", disk_file,
+          "eol_escape", i == descriptor->dependency_count()-1 ? "" : " \\");
+      }
+      if (std::next(it) != already_seen.end()) {
+        printer.Print("\n");
+      }
     }
   }
 
