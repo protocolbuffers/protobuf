@@ -494,7 +494,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/UnknownFieldSetTest.java             \
   java/core/src/test/java/com/google/protobuf/UnmodifiableLazyStringListTest.java  \
   java/core/src/test/java/com/google/protobuf/Utf8Test.java                        \
-  java/core/src/test/java/com/google/protobuf/Utf8Utils.java                       \
   java/core/src/test/java/com/google/protobuf/WellKnownTypesTest.java              \
   java/core/src/test/java/com/google/protobuf/WireFormatLiteTest.java              \
   java/core/src/test/java/com/google/protobuf/WireFormatTest.java                  \
