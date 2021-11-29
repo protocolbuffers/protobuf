@@ -465,13 +465,11 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/Proto2ExtensionLookupSchemaTest.java \
   java/core/src/test/java/com/google/protobuf/Proto2LiteSchemaTest.java            \
   java/core/src/test/java/com/google/protobuf/Proto2MessageFactory.java            \
-  java/core/src/test/java/com/google/protobuf/Proto2MessageInfoFactory.java        \
   java/core/src/test/java/com/google/protobuf/Proto2MessageLiteFactory.java        \
   java/core/src/test/java/com/google/protobuf/Proto2SchemaTest.java                \
   java/core/src/test/java/com/google/protobuf/Proto2UnknownEnumValueTest.java      \
   java/core/src/test/java/com/google/protobuf/Proto3LiteSchemaTest.java            \
   java/core/src/test/java/com/google/protobuf/Proto3MessageFactory.java            \
-  java/core/src/test/java/com/google/protobuf/Proto3MessageInfoFactory.java        \
   java/core/src/test/java/com/google/protobuf/Proto3MessageLiteFactory.java        \
   java/core/src/test/java/com/google/protobuf/Proto3MessageLiteInfoFactory.java    \
   java/core/src/test/java/com/google/protobuf/Proto3SchemaTest.java                \
