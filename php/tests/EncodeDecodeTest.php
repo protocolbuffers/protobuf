@@ -58,7 +58,8 @@ class EncodeDecodeTest extends TestBase
         $m = new TestMessage();
         $m->mergeFromJsonString("{\"unknown\":1}", true);
         $this->assertEquals("{}", $m->serializeToJsonString());
-        $this->assertFalse(strpos($m->serializeToJsonString(true), "unknown"));
+        $this->assertEquals("{}", $m->serializeToJsonString(['emit_defaults' => false]));
+        $this->assertFalse(strpos($m->serializeToJsonString(['emit_defaults'=> true]), "unknown"));
     }
 
     public function testDecodeTopLevelBoolValue()
@@ -77,7 +78,7 @@ class EncodeDecodeTest extends TestBase
         $m = new BoolValue();
         $m->setValue(true);
         $this->assertSame("true", $m->serializeToJsonString());
-        $this->assertSame("true", $m->serializeToJsonString(true));
+        $this->assertSame("true", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTopLevelDoubleValue()
@@ -92,7 +93,7 @@ class EncodeDecodeTest extends TestBase
         $m = new DoubleValue();
         $m->setValue(1.5);
         $this->assertSame("1.5", $m->serializeToJsonString());
-        $this->assertSame("1.5", $m->serializeToJsonString(true));
+        $this->assertSame("1.5", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTopLevelFloatValue()
@@ -107,7 +108,7 @@ class EncodeDecodeTest extends TestBase
         $m = new FloatValue();
         $m->setValue(1.5);
         $this->assertSame("1.5", $m->serializeToJsonString());
-        $this->assertSame("1.5", $m->serializeToJsonString(true));
+        $this->assertSame("1.5", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTopLevelInt32Value()
@@ -122,7 +123,7 @@ class EncodeDecodeTest extends TestBase
         $m = new Int32Value();
         $m->setValue(1);
         $this->assertSame("1", $m->serializeToJsonString());
-        $this->assertSame("1", $m->serializeToJsonString(true));
+        $this->assertSame("1", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeRepeatedInt32Value()
@@ -144,7 +145,7 @@ class EncodeDecodeTest extends TestBase
         $m = new UInt32Value();
         $m->setValue(1);
         $this->assertSame("1", $m->serializeToJsonString());
-        $this->assertSame("1", $m->serializeToJsonString(true));
+        $this->assertSame("1", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTopLevelInt64Value()
@@ -166,7 +167,7 @@ class EncodeDecodeTest extends TestBase
         $m = new Int64Value();
         $m->setValue(1);
         $this->assertSame("\"1\"", $m->serializeToJsonString());
-        $this->assertSame("\"1\"", $m->serializeToJsonString(true));
+        $this->assertSame("\"1\"", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTopLevelUInt64Value()
@@ -188,7 +189,7 @@ class EncodeDecodeTest extends TestBase
         $m = new UInt64Value();
         $m->setValue(1);
         $this->assertSame("\"1\"", $m->serializeToJsonString());
-        $this->assertSame("\"1\"", $m->serializeToJsonString(true));
+        $this->assertSame("\"1\"", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTopLevelStringValue()
@@ -203,7 +204,7 @@ class EncodeDecodeTest extends TestBase
         $m = new StringValue();
         $m->setValue("a");
         $this->assertSame("\"a\"", $m->serializeToJsonString());
-        $this->assertSame("\"a\"", $m->serializeToJsonString(true));
+        $this->assertSame("\"a\"", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeRepeatedStringValue()
@@ -232,7 +233,7 @@ class EncodeDecodeTest extends TestBase
         $m = new BytesValue();
         $m->setValue("a");
         $this->assertSame("\"YQ==\"", $m->serializeToJsonString());
-        $this->assertSame("\"YQ==\"", $m->serializeToJsonString(true));
+        $this->assertSame("\"YQ==\"", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function generateRandomString($length = 10) {
@@ -250,7 +251,7 @@ class EncodeDecodeTest extends TestBase
         $m->setValue($data);
         $expected = "\"" . base64_encode($data) . "\"";
         $this->assertSame(strlen($expected), strlen($m->serializeToJsonString()));
-        $this->assertSame(strlen($expected), strlen($m->serializeToJsonString(true)));
+        $this->assertSame(strlen($expected), strlen($m->serializeToJsonString(['emit_defaults'=> true])));
     }
 
     public function testEncode()
@@ -376,7 +377,7 @@ class EncodeDecodeTest extends TestBase
       $m = new TestMessage();
       $this->assertFalse($m->hasTrueOptionalInt32());
       $this->assertSame("{}", $m->serializeToJsonString());
-      $this->assertFalse(strpos($m->serializeToJsonString(true), "trueOptionalInt32"));
+      $this->assertFalse(strpos($m->serializeToJsonString(['emit_defaults'=> true]), "trueOptionalInt32"));
 
       $m->setTrueOptionalInt32(0);
       $this->assertTrue($m->hasTrueOptionalInt32());
@@ -384,7 +385,7 @@ class EncodeDecodeTest extends TestBase
       $this->assertSame("{\"trueOptionalInt32\":0}", $data);
       $this->assertGreaterThanOrEqual(
           0,
-          strpos($m->serializeToJsonString(true), "\"trueOptionalInt32\":0")
+          strpos($m->serializeToJsonString(['emit_defaults'=> true]), "\"trueOptionalInt32\":0")
       );
 
       $m2 = new TestMessage();
@@ -402,7 +403,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("{\"oneofEnum\":\"ONE\"}", $data);
         $this->assertGreaterThanOrEqual(
             0,
-            strpos($m->serializeToJsonString(true), "\"oneofEnum\":\"ONE\"")
+            strpos($m->serializeToJsonString(['emit_defaults'=> true]), "\"oneofEnum\":\"ONE\"")
         );
         $n = new TestMessage();
         $n->mergeFromJsonString($data);
@@ -414,7 +415,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("{\"oneofString\":\"a\"}", $data);
         $this->assertGreaterThanOrEqual(
             0,
-            strpos($m->serializeToJsonString(true), "\"oneofString\":\"a\"")
+            strpos($m->serializeToJsonString(['emit_defaults'=> true]), "\"oneofString\":\"a\"")
         );
         $n = new TestMessage();
         $n->mergeFromJsonString($data);
@@ -426,7 +427,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("{\"oneofBytes\":\"YmJiYg==\"}", $data);
         $this->assertGreaterThanOrEqual(
             0,
-            strpos($m->serializeToJsonString(true), "\"oneofBytes\":\"YmJiYg==\"")
+            strpos($m->serializeToJsonString(['emit_defaults'=> true]), "\"oneofBytes\":\"YmJiYg==\"")
         );
         $n = new TestMessage();
         $n->mergeFromJsonString($data);
@@ -439,7 +440,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("{\"oneofMessage\":{}}", $data);
         $this->assertGreaterThanOrEqual(
             0,
-            strpos($m->serializeToJsonString(true), "\"oneofMessage\":{}")
+            strpos($m->serializeToJsonString(['emit_defaults'=> true]), "\"oneofMessage\":{}")
         );
         $n = new TestMessage();
         $n->mergeFromJsonString($data);
@@ -986,7 +987,7 @@ class EncodeDecodeTest extends TestBase
     public function testJsonEncodeWithIncludeDefaults()
     {
         $m = new TestMessage();
-        $arrayData = json_decode($m->serializeToJsonString(true), true);
+        $arrayData = json_decode($m->serializeToJsonString(['emit_defaults'=> true]), true);
 
         $this->assertSame(0, $arrayData['optionalInt32']);
         $this->assertSame('0', $arrayData['optionalInt64']);
@@ -1102,7 +1103,7 @@ class EncodeDecodeTest extends TestBase
 
         // Now assert that setting Sub message to null does not show up in serializing
         $m->setOptionalMessage(null);
-        $arrayData = json_decode($m->serializeToJsonString(true), true);
+        $arrayData = json_decode($m->serializeToJsonString(['emit_defaults'=> true]), true);
         $this->assertArrayNotHasKey('optionalMessage', $arrayData);
     }
 
@@ -1120,7 +1121,7 @@ class EncodeDecodeTest extends TestBase
         $m->setSeconds(1234);
         $m->setNanos(999999999);
         $this->assertEquals("\"1234.999999999s\"", $m->serializeToJsonString());
-        $this->assertEquals("\"1234.999999999s\"", $m->serializeToJsonString(true));
+        $this->assertEquals("\"1234.999999999s\"", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTimestamp()
@@ -1139,7 +1140,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals("\"2000-01-01T00:00:00.123456789Z\"",
                             $m->serializeToJsonString());
         $this->assertEquals("\"2000-01-01T00:00:00.123456789Z\"",
-            $m->serializeToJsonString(true));
+            $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTopLevelValue()
@@ -1174,22 +1175,22 @@ class EncodeDecodeTest extends TestBase
         $m = new Value();
         $m->setStringValue("a");
         $this->assertSame("\"a\"", $m->serializeToJsonString());
-        $this->assertSame("\"a\"", $m->serializeToJsonString(true));
+        $this->assertSame("\"a\"", $m->serializeToJsonString(['emit_defaults'=> true]));
 
         $m = new Value();
         $m->setNumberValue(1.5);
         $this->assertSame("1.5", $m->serializeToJsonString());
-        $this->assertSame("1.5", $m->serializeToJsonString(true));
+        $this->assertSame("1.5", $m->serializeToJsonString(['emit_defaults'=> true]));
 
         $m = new Value();
         $m->setBoolValue(true);
         $this->assertSame("true", $m->serializeToJsonString());
-        $this->assertSame("true", $m->serializeToJsonString(true));
+        $this->assertSame("true", $m->serializeToJsonString(['emit_defaults'=> true]));
 
         $m = new Value();
         $m->setNullValue(0);
         $this->assertSame("null", $m->serializeToJsonString());
-        $this->assertSame("null", $m->serializeToJsonString(true));
+        $this->assertSame("null", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTopLevelListValue()
@@ -1207,7 +1208,7 @@ class EncodeDecodeTest extends TestBase
         $sub->setNumberValue(1.5);
         $arr[] = $sub;
         $this->assertSame("[1.5]", $m->serializeToJsonString());
-        $this->assertSame("[1.5]", $m->serializeToJsonString(true));
+        $this->assertSame("[1.5]", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testEncodeEmptyListValue()
@@ -1215,7 +1216,7 @@ class EncodeDecodeTest extends TestBase
         $m = new Struct();
         $m->setFields(['test' => (new Value())->setListValue(new ListValue())]);
         $this->assertSame('{"test":[]}', $m->serializeToJsonString());
-        $this->assertSame('{"test":[]}', $m->serializeToJsonString(true));
+        $this->assertSame('{"test":[]}', $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTopLevelStruct()
@@ -1235,7 +1236,7 @@ class EncodeDecodeTest extends TestBase
         $sub->setNumberValue(1.5);
         $map["a"] = $sub;
         $this->assertSame("{\"a\":1.5}", $m->serializeToJsonString());
-        $this->assertSame("{\"a\":1.5}", $m->serializeToJsonString(true));
+        $this->assertSame("{\"a\":1.5}", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testEncodeEmptyStruct()
@@ -1243,7 +1244,7 @@ class EncodeDecodeTest extends TestBase
         $m = new Struct();
         $m->setFields(['test' => (new Value())->setStructValue(new Struct())]);
         $this->assertSame('{"test":{}}', $m->serializeToJsonString());
-        $this->assertSame('{"test":{}}', $m->serializeToJsonString(true));
+        $this->assertSame('{"test":{}}', $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTopLevelAny()
@@ -1385,7 +1386,7 @@ class EncodeDecodeTest extends TestBase
             "\"optionalNestedEnum\":\"ZERO\",\"mapStringMessage\":{}," .
             "\"mapStringAny\":{},\"mapStringList\":{}," .
             "\"mapStringStruct\":{},\"deprecatedOptionalInt32\":0}";
-        $result = $m->serializeToJsonString(true);
+        $result = $m->serializeToJsonString(['emit_defaults'=> true]);
         $this->assertEquals($expected3, $result);
 
         // Test a well known message.
@@ -1401,7 +1402,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame(
             "{\"@type\":\"type.googleapis.com/google.protobuf.Int32Value\"," .
             "\"value\":123}",
-            $m->serializeToJsonString(true));
+            $m->serializeToJsonString(['emit_defaults'=> true]));
 
         // Test an Any message.
         $outer = new Any();
@@ -1415,7 +1416,7 @@ class EncodeDecodeTest extends TestBase
             "{\"@type\":\"type.googleapis.com/google.protobuf.Any\"," .
             "\"value\":{\"@type\":\"type.googleapis.com/google.protobuf.Int32Value\"," .
             "\"value\":123}}",
-            $outer->serializeToJsonString(true));
+            $outer->serializeToJsonString(['emit_defaults'=> true]));
 
         // Test a Timestamp message.
         $packed = new Google\Protobuf\Timestamp();
@@ -1430,7 +1431,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame(
             "{\"@type\":\"type.googleapis.com/google.protobuf.Timestamp\"," .
             "\"value\":\"2000-01-01T00:00:00.123456789Z\"}",
-            $m->serializeToJsonString(true));
+            $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testEncodeAnyWithDefaultWrapperMessagePacked()
@@ -1446,7 +1447,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame(
             "{\"@type\":\"type.googleapis.com/foo.TestInt32Value\"," .
             "\"field\":0,\"repeatedField\":[]}",
-            $any->serializeToJsonString(true));
+            $any->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeTopLevelFieldMask()
@@ -1470,7 +1471,7 @@ class EncodeDecodeTest extends TestBase
         $m = new FieldMask();
         $m->setPaths(["foo.bar_baz", "qux"]);
         $this->assertSame("\"foo.barBaz,qux\"", $m->serializeToJsonString());
-        $this->assertSame("\"foo.barBaz,qux\"", $m->serializeToJsonString(true));
+        $this->assertSame("\"foo.barBaz,qux\"", $m->serializeToJsonString(['emit_defaults'=> true]));
     }
 
     public function testDecodeEmptyFieldMask()
@@ -1488,7 +1489,7 @@ class EncodeDecodeTest extends TestBase
                           $m->serializeToJsonString());
         $this->assertGreaterThanOrEqual(
             0,
-            strpos($m->serializeToJsonString(true), "\"mapInt32Int32\":{\"0\":0}")
+            strpos($m->serializeToJsonString(['emit_defaults'=> true]), "\"mapInt32Int32\":{\"0\":0}")
         );
 
         $m = new TestMessage();
@@ -1497,7 +1498,7 @@ class EncodeDecodeTest extends TestBase
                           $m->serializeToJsonString());
         $this->assertGreaterThanOrEqual(
             0,
-            strpos($m->serializeToJsonString(true), "\"mapInt32Int32\":{\"\":\"\"}")
+            strpos($m->serializeToJsonString(['emit_defaults'=> true]), "\"mapInt32Int32\":{\"\":\"\"}")
         );
     }
 
@@ -1509,7 +1510,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("{\"mapStringString\":{\"1\":\"1\"}}", $data);
         $this->assertGreaterThanOrEqual(
             0,
-            strpos($m->serializeToJsonString(true), "\"mapInt32Int32\":{\"1\":\"1\"}")
+            strpos($m->serializeToJsonString(['emit_defaults'=> true]), "\"mapInt32Int32\":{\"1\":\"1\"}")
         );
         $n = new TestMessage();
         $n->mergeFromJsonString($data);
@@ -1663,7 +1664,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($nonDefaultValue, $to->getFieldUnwrapped());
 
         $to = new $class();
-        $data = $from->serializeToJsonString(true);
+        $data = $from->serializeToJsonString(['emit_defaults'=> true]);
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getFieldUnwrapped());
 
@@ -1676,7 +1677,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($defaultValue, $to->getFieldUnwrapped());
 
         $to = new $class();
-        $data = $from->serializeToJsonString(true);
+        $data = $from->serializeToJsonString(['emit_defaults'=> true]);
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getFieldUnwrapped());
 
@@ -1689,7 +1690,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($nonDefaultValue, $to->getOneofFieldUnwrapped());
 
         $to = new $class();
-        $data = $from->serializeToJsonString(true);
+        $data = $from->serializeToJsonString(['emit_defaults'=> true]);
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getOneofFieldUnwrapped());
 
@@ -1702,7 +1703,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
 
         $to = new $class();
-        $data = $from->serializeToJsonString(true);
+        $data = $from->serializeToJsonString(['emit_defaults'=> true]);
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
     }
@@ -1727,7 +1728,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($nonDefaultValue, $to->getFieldUnwrapped());
 
         $to = new $class();
-        $data = $from->serializeToJsonString(true);
+        $data = $from->serializeToJsonString(['emit_defaults'=> true]);
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getFieldUnwrapped());
 
@@ -1740,7 +1741,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($defaultValue, $to->getFieldUnwrapped());
 
         $to = new $class();
-        $data = $from->serializeToJsonString(true);
+        $data = $from->serializeToJsonString(['emit_defaults'=> true]);
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getFieldUnwrapped());
 
@@ -1753,7 +1754,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($nonDefaultValue, $to->getOneofFieldUnwrapped());
 
         $to = new $class();
-        $data = $from->serializeToJsonString(true);
+        $data = $from->serializeToJsonString(['emit_defaults'=> true]);
         $to->mergeFromJsonString($data);
         $this->assertEquals($nonDefaultValue, $to->getOneofFieldUnwrapped());
 
@@ -1766,7 +1767,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
 
         $to = new $class();
-        $data = $from->serializeToJsonString(true);
+        $data = $from->serializeToJsonString(['emit_defaults'=> true]);
         $to->mergeFromJsonString($data);
         $this->assertEquals($defaultValue, $to->getOneofFieldUnwrapped());
     }

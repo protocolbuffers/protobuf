@@ -764,6 +764,11 @@ PHP_METHOD(Message, mergeFromJsonString) {
   }
 }
 
+// JSON options /////////////////////////////////////////////////////////////////////
+
+static const char JSONENC_EMIT_DEFAULTS[] = "emit_defaults";
+static const char JSONENC_PRESERVE_PROTO_FIELD_NAMES[] = "preserve_proto_fieldnames";
+
 /**
  * Message::serializeToJsonString()
  *
@@ -775,16 +780,37 @@ PHP_METHOD(Message, serializeToJsonString) {
   size_t size;
   int options = 0;
   char buf[1024];
-  zend_bool emit_defaults = false;
   upb_status status;
+  zval *options_arr = NULL;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|b",
-                            &emit_defaults) == FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a!", &options_arr) == FAILURE) {
     return;
   }
 
-  if (emit_defaults) {
-    options |= UPB_JSONENC_EMITDEFAULTS;
+  if (options_arr && Z_TYPE_P(options_arr) == IS_ARRAY) {
+    HashTable* table = HASH_OF(options_arr);
+    zval *opt_defaults;
+    zval *opt_names;
+
+    zend_string *emit_defaults_str = zend_string_init(JSONENC_EMIT_DEFAULTS, strlen(JSONENC_EMIT_DEFAULTS), 0);
+    if (opt_defaults = zend_hash_find(table, emit_defaults_str)) {
+      if (Z_ISREF_P(opt_defaults)) {
+        ZVAL_DEREF(opt_defaults);
+      }
+      if (Z_TYPE_P(opt_defaults) == IS_TRUE) {
+        options |= UPB_JSONENC_EMITDEFAULTS;
+      }
+    }
+
+    zend_string *preserve_names_str = zend_string_init(JSONENC_PRESERVE_PROTO_FIELD_NAMES, strlen(JSONENC_PRESERVE_PROTO_FIELD_NAMES), 0);
+    if (opt_names = zend_hash_find(table, preserve_names_str)) {
+      if (Z_ISREF_P(opt_names)) {
+        ZVAL_DEREF(opt_names);
+      }
+      if (Z_TYPE_P(opt_names) == IS_TRUE) {
+        options |= UPB_JSONENC_PROTONAMES;
+      }
+    }
   }
 
   upb_status_clear(&status);
