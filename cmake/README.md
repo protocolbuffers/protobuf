@@ -320,8 +320,6 @@ The following warnings have been disabled while building the protobuf libraries
 and compiler.  You may have to disable some of them in your own project as
 well, or live with them.
 
-* C4018 - 'expression' : signed/unsigned mismatch
-* C4146 - unary minus operator applied to unsigned type, result still unsigned
 * C4244 - Conversion from 'type1' to 'type2', possible loss of data.
 * C4251 - 'identifier' : class 'type' needs to have dll-interface to be used by
   clients of class 'type2'
