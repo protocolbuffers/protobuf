@@ -210,7 +210,6 @@ if (MSVC)
   add_definitions(/utf-8)
   # MSVC warning suppressions
   add_definitions(
-    /wd4018 # 'expression' : signed/unsigned mismatch
     /wd4065 # switch statement contains 'default' but no 'case' labels
     /wd4146 # unary minus operator applied to unsigned type, result still unsigned
     /wd4244 # 'conversion' conversion from 'type1' to 'type2', possible loss of data
