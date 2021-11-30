@@ -40,6 +40,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Google.Protobuf
 {
@@ -879,6 +880,8 @@ namespace Google.Protobuf
             private static readonly Dictionary<System.Type, Dictionary<object, string>> dictionaries
                 = new Dictionary<System.Type, Dictionary<object, string>>();
 
+            [UnconditionalSuppressMessage("Trimming", "IL2072",
+                Justification = "The field for the value must still be present. It will be returned by reflection, will be in this collection, and its name can be resolved.")]
             internal static string GetOriginalName(object value)
             {
                 var enumType = value.GetType();
@@ -898,21 +901,13 @@ namespace Google.Protobuf
                 return originalName;
             }
 
-#if NET35
-            // TODO: Consider adding functionality to TypeExtensions to avoid this difference.
-            private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
-                enumType.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static)
-                    .Where(f => (f.GetCustomAttributes(typeof(OriginalNameAttribute), false)
-                                 .FirstOrDefault() as OriginalNameAttribute)
-                                 ?.PreferredAlias ?? true)
-                    .ToDictionary(f => f.GetValue(null),
-                                  f => (f.GetCustomAttributes(typeof(OriginalNameAttribute), false)
-                                        .FirstOrDefault() as OriginalNameAttribute)
-                                        // If the attribute hasn't been applied, fall back to the name of the field.
-                                        ?.Name ?? f.Name);
-#else
-            private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
-                enumType.GetTypeInfo().DeclaredFields
+            private static Dictionary<object, string> GetNameMapping(
+                [DynamicallyAccessedMembers(
+                    DynamicallyAccessedMemberTypes.PublicFields |
+                    DynamicallyAccessedMemberTypes.NonPublicFields)]
+                System.Type enumType)
+            {
+                return enumType.GetTypeInfo().DeclaredFields
                     .Where(f => f.IsStatic)
                     .Where(f => f.GetCustomAttributes<OriginalNameAttribute>()
                                  .FirstOrDefault()?.PreferredAlias ?? true)
@@ -921,7 +916,7 @@ namespace Google.Protobuf
                                         .FirstOrDefault()
                                         // If the attribute hasn't been applied, fall back to the name of the field.
                                         ?.Name ?? f.Name);
-#endif
+            }
         }
     }
 }
