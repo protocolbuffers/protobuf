@@ -30,15 +30,8 @@
 
 #include <stdbool.h>
 
-#define Py_LIMITED_API 0x03060000
-#include <Python.h>
-
-// This function was not officially added to the limited API until Python 3.10.
-// But in practice it has been stable since Python 3.1.  See:
-//   https://bugs.python.org/issue41784
-PyAPI_FUNC(const char *)
-    PyUnicode_AsUTF8AndSize(PyObject *unicode, Py_ssize_t *size);
-
+#include "python/descriptor.h"
+#include "python/python.h"
 #include "upb/table_internal.h"
 
 #define PYUPB_MODULE_NAME "google.protobuf.pyext._message"
@@ -52,8 +45,7 @@ PyAPI_FUNC(const char *)
 
 typedef struct {
   // From descriptor.c
-  PyTypeObject *field_descriptor_type;
-  PyTypeObject *file_descriptor_type;
+  PyTypeObject *descriptor_types[kPyUpb_Descriptor_Count];
 
   // From descriptor_containers.c
   PyTypeObject *by_name_map_type;
@@ -62,11 +54,15 @@ typedef struct {
   PyTypeObject *generic_sequence_type;
 
   // From descriptor_pool.c
+  PyObject *default_pool;
+
+  // From descriptor_pool.c
   PyTypeObject *descriptor_pool_type;
 
   // From protobuf.c
   upb_arena *obj_cache_arena;
   upb_inttable obj_cache;
+  PyTypeObject *arena_type;
 } PyUpb_ModuleState;
 
 // Returns the global state object from the current interpreter. The current
@@ -96,6 +92,13 @@ void PyUpb_ObjCache_Delete(const void *key);
 PyObject *PyUpb_ObjCache_Get(const void *key);
 
 // -----------------------------------------------------------------------------
+// Arena
+// -----------------------------------------------------------------------------
+
+PyObject *PyUpb_Arena_New(void);
+upb_arena *PyUpb_Arena_Get(PyObject *arena);
+
+// -----------------------------------------------------------------------------
 // Utilities
 // -----------------------------------------------------------------------------
 
@@ -103,6 +106,8 @@ PyTypeObject *AddObject(PyObject *m, const char *name, PyType_Spec *spec);
 
 // Creates a Python type from `spec` and adds it to the given module `m`.
 PyTypeObject *PyUpb_AddClass(PyObject *m, PyType_Spec *spec);
+
+PyObject *PyUpb_Forbidden_New(PyObject *cls, PyObject *args, PyObject *kwds);
 
 // Our standard dealloc func. It follows the guidance defined in:
 //   https://docs.python.org/3/c-api/typeobj.html#c.PyTypeObject.tp_dealloc

@@ -41,6 +41,11 @@ typedef struct {
   PyObject* db;
 } PyUpb_DescriptorPool;
 
+PyObject *PyUpb_DescriptorPool_GetDefaultPool() {
+  PyUpb_ModuleState *s = PyUpb_ModuleState_Get();
+  return s->default_pool;
+}
+
 static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
                                                PyObject* db) {
   PyUpb_DescriptorPool* pool = PyObject_GC_New(PyUpb_DescriptorPool, type);
@@ -48,7 +53,12 @@ static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
   pool->db = db;
   Py_XINCREF(pool->db);
   PyObject_GC_Track(&pool->ob_base);
+  PyUpb_ObjCache_Add(pool->symtab, &pool->ob_base);
   return &pool->ob_base;
+}
+
+upb_symtab *PyUpb_DescriptorPool_GetSymtab(PyObject *pool) {
+  return ((PyUpb_DescriptorPool*)pool)->symtab;
 }
 
 static int PyUpb_DescriptorPool_Traverse(PyUpb_DescriptorPool* self,
@@ -62,10 +72,17 @@ static int PyUpb_DescriptorPool_Clear(PyUpb_DescriptorPool* self) {
   return 0;
 }
 
+PyObject* PyUpb_DescriptorPool_Get(const upb_symtab *symtab) {
+  PyObject *pool = PyUpb_ObjCache_Get(symtab);
+  assert(pool);
+  return pool;
+}
+
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
   upb_symtab_free(self->symtab);
   PyUpb_DescriptorPool_Clear(self);
-  PyObject_GC_Del(self);
+  PyUpb_ObjCache_Delete(self->symtab);
+  PyUpb_Dealloc(self);
 }
 
 /*
@@ -132,7 +149,7 @@ static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
     goto done;
   }
 
-  result = PyUpb_FileDescriptor_GetOrCreateWrapper(filedef, _self);
+  result = PyUpb_FileDescriptor_Get(filedef);
 
 done:
   upb_arena_free(arena);
@@ -157,7 +174,7 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find extension %.200s", name);
   }
 
-  return PyUpb_FieldDescriptor_GetOrCreateWrapper(field, _self);
+  return PyUpb_FieldDescriptor_Get(field);
 }
 
 static PyMethodDef PyUpb_DescriptorPool_Methods[] = {

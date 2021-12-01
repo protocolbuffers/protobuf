@@ -30,21 +30,50 @@
 
 #include <stdbool.h>
 
-#include "protobuf.h"
+#include "python/python.h"
 #include "upb/def.h"
 
-PyObject *PyUpb_FieldDescriptor_GetOrCreateWrapper(const upb_fielddef *field,
-                                                   PyObject *pool);
-PyObject *PyUpb_FileDescriptor_GetOrCreateWrapper(const upb_filedef *file,
-                                                  PyObject *pool);
+typedef enum {
+  kPyUpb_Descriptor = 0,
+  kPyUpb_EnumDescriptor = 1,
+  kPyUpb_EnumValueDescriptor = 2,
+  kPyUpb_FieldDescriptor = 3,
+  kPyUpb_FileDescriptor = 4,
+  kPyUpb_MethodDescriptor = 5,
+  kPyUpb_OneofDescriptor = 6,
+  kPyUpb_ServiceDescriptor = 7,
+  kPyUpb_Descriptor_Count = 8,
+} PyUpb_DescriptorType;
 
+// Given a descriptor object |desc|, returns a Python message class object for
+// the msgdef |m|, which must be from the same pool.
+PyObject *PyUpb_Descriptor_GetClass(const upb_msgdef *m);
+
+// Returns a Python wrapper object for the given def. This will return an
+// existing object if one already exists, otherwise a new object will be
+// created.  The caller always owns a ref on the returned object.
+PyObject *PyUpb_Descriptor_Get(const upb_msgdef *msgdef);
+PyObject *PyUpb_EnumDescriptor_Get(const upb_enumdef *enumdef);
+PyObject *PyUpb_FieldDescriptor_Get(const upb_fielddef *field);
+PyObject *PyUpb_FileDescriptor_Get(const upb_filedef *file);
+PyObject *PyUpb_OneofDescriptor_Get(const upb_oneofdef *oneof);
+PyObject *PyUpb_EnumValueDescriptor_Get(const upb_enumvaldef *enumval);
+PyObject *PyUpb_Descriptor_GetOrCreateWrapper(const upb_msgdef *msg);
+PyObject *PyUpb_ServiceDescriptor_Get(const upb_servicedef *s);
+
+// Returns the underlying |def| for a given wrapper object. The caller must
+// have already verified that the given Python object is of the expected type.
 const upb_filedef *PyUpb_FileDescriptor_GetDef(PyObject *file);
+const upb_fielddef *PyUpb_FieldDescriptor_GetDef(PyObject *file);
+const upb_msgdef *PyUpb_Descriptor_GetDef(PyObject *_self);
+const void *PyUpb_AnyDescriptor_GetDef(PyObject *_self);
 
 // Returns the underlying |def| for a given wrapper object. The caller must
 // have already verified that the given Python object is of the expected type.
 const upb_filedef *PyUpb_FileDescriptor_GetDef(PyObject *file);
 const void *PyUpb_AnyDescriptor_GetDef(PyObject *_self);
 
-bool PyUpb_InitDescriptor(PyObject *m);
+// Module-level init.
+bool PyUpb_InitDescriptor(PyObject* m);
 
-#endif  // PYUPB_DESCRIPTOR_H__
+#endif   // PYUPB_DESCRIPTOR_H__
