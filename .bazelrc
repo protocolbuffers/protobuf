@@ -6,7 +6,7 @@ build --extra_toolchains=@system_python//:python_toolchain
 # Use our custom-configured c++ toolchain.
 
 build:m32 --copt=-m32 --linkopt=-m32
-build:asan --copt=-fsanitize=address --linkopt=-fsanitize=address --copt=-D__SANITIZE_ADDRESS__=1
+build:asan --copt=-fsanitize=address --linkopt=-fsanitize=address
 
 # For Valgrind, we have to disable checks of "possible" leaks because the Python
 # interpreter does the sorts of things that flag Valgrind "possible" leak checks.
