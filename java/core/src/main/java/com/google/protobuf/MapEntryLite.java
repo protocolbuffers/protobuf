@@ -192,7 +192,7 @@ public class MapEntryLite<K, V> {
   }
 
   /**
-   * Parses an entry off of the input into the map. This helper avoids allocaton of a {@link
+   * Parses an entry off of the input into the map. This helper avoids allocation of a {@link
    * MapEntryLite} by parsing directly into the provided {@link MapFieldLite}.
    */
   public void parseInto(

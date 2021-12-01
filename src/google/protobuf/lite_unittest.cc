@@ -41,6 +41,8 @@
 #include <google/protobuf/test_util_lite.h>
 #include <google/protobuf/unittest_lite.pb.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <gtest/gtest.h>
@@ -613,7 +615,7 @@ TEST(Lite, AllLite28) {
     protobuf_unittest::TestMapLite message1, message2;
     std::string data;
     MapLiteTestUtil::SetMapFields(&message1);
-    int size = message1.ByteSize();
+    size_t size = message1.ByteSizeLong();
     data.resize(size);
     ::google::protobuf::uint8* start = reinterpret_cast<::google::protobuf::uint8*>(::google::protobuf::string_as_array(&data));
     ::google::protobuf::uint8* end = message1.SerializeWithCachedSizesToArray(start);
@@ -630,7 +632,7 @@ TEST(Lite, AllLite29) {
     // Test the generated SerializeWithCachedSizes()
     protobuf_unittest::TestMapLite message1, message2;
     MapLiteTestUtil::SetMapFields(&message1);
-    int size = message1.ByteSize();
+    size_t size = message1.ByteSizeLong();
     std::string data;
     data.resize(size);
     {
@@ -1185,6 +1187,85 @@ TEST(Lite, AliasedEnum) {
   ASSERT_TRUE(
       protobuf_unittest::DupEnum::TestEnumWithDupValueLite_Parse("FOO2", &value));
   EXPECT_EQ(protobuf_unittest::DupEnum::FOO2, value);
+}
+
+
+TEST(Lite, CodedInputStreamRollback) {
+  {
+    protobuf_unittest::TestAllTypesLite m;
+    m.set_optional_bytes(std::string(30, 'a'));
+    std::string serialized = m.SerializeAsString();
+    serialized += '\014';
+    serialized += std::string(3, ' ');
+    io::ArrayInputStream is(serialized.data(), serialized.size(),
+                            serialized.size() - 6);
+    {
+      io::CodedInputStream cis(&is);
+      m.Clear();
+      m.MergePartialFromCodedStream(&cis);
+      EXPECT_TRUE(cis.LastTagWas(12));
+      EXPECT_FALSE(cis.ConsumedEntireMessage());
+      // Should leave is with 3 spaces;
+    }
+    const void* data;
+    int size;
+    ASSERT_TRUE(is.Next(&data, &size));
+    ASSERT_EQ(size, 3);
+    EXPECT_EQ(memcmp(data, "   ", 3), 0);
+  }
+  {
+    protobuf_unittest::TestPackedTypesLite m;
+    constexpr int kCount = 30;
+    for (int i = 0; i < kCount; i++) m.add_packed_fixed32(i);
+    std::string serialized = m.SerializeAsString();
+    serialized += '\014';
+    serialized += std::string(3, ' ');
+    // Buffer breaks in middle of a fixed32.
+    io::ArrayInputStream is(serialized.data(), serialized.size(),
+                            serialized.size() - 7);
+    {
+      io::CodedInputStream cis(&is);
+      m.Clear();
+      m.MergePartialFromCodedStream(&cis);
+      EXPECT_TRUE(cis.LastTagWas(12));
+      EXPECT_FALSE(cis.ConsumedEntireMessage());
+      // Should leave is with 3 spaces;
+    }
+    ASSERT_EQ(m.packed_fixed32_size(), kCount);
+    for (int i = 0; i < kCount; i++) EXPECT_EQ(m.packed_fixed32(i), i);
+    const void* data;
+    int size;
+    ASSERT_TRUE(is.Next(&data, &size));
+    ASSERT_EQ(size, 3);
+    EXPECT_EQ(memcmp(data, "   ", 3), 0);
+  }
+  {
+    protobuf_unittest::TestPackedTypesLite m;
+    constexpr int kCount = 30;
+    // Make sure we output 2 byte varints
+    for (int i = 0; i < kCount; i++) m.add_packed_fixed32(128 + i);
+    std::string serialized = m.SerializeAsString();
+    serialized += '\014';
+    serialized += std::string(3, ' ');
+    // Buffer breaks in middle of a 2 byte varint.
+    io::ArrayInputStream is(serialized.data(), serialized.size(),
+                            serialized.size() - 5);
+    {
+      io::CodedInputStream cis(&is);
+      m.Clear();
+      m.MergePartialFromCodedStream(&cis);
+      EXPECT_TRUE(cis.LastTagWas(12));
+      EXPECT_FALSE(cis.ConsumedEntireMessage());
+      // Should leave is with 3 spaces;
+    }
+    ASSERT_EQ(m.packed_fixed32_size(), kCount);
+    for (int i = 0; i < kCount; i++) EXPECT_EQ(m.packed_fixed32(i), i + 128);
+    const void* data;
+    int size;
+    ASSERT_TRUE(is.Next(&data, &size));
+    ASSERT_EQ(size, 3);
+    EXPECT_EQ(memcmp(data, "   ", 3), 0);
+  }
 }
 
 }  // namespace protobuf

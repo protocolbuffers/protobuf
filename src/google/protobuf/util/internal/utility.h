@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_UTILITY_H__
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_UTILITY_H__
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -41,8 +42,8 @@
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
+#include <google/protobuf/stubs/status.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -53,7 +54,7 @@ namespace util {
 namespace converter {
 
 // Size of "type.googleapis.com"
-static const int64 kTypeUrlSize = 19;
+static const int64_t kTypeUrlSize = 19;
 
 // Finds the tech option identified by option_name. Parses the boolean value and
 // returns it.
@@ -64,9 +65,9 @@ PROTOBUF_EXPORT bool GetBoolOptionOrDefault(
 
 // Returns int64 option value. If the option isn't found, returns the
 // default_value.
-PROTOBUF_EXPORT int64 GetInt64OptionOrDefault(
+PROTOBUF_EXPORT int64_t GetInt64OptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    StringPiece option_name, int64 default_value);
+    StringPiece option_name, int64_t default_value);
 
 // Returns double option value. If the option isn't found, returns the
 // default_value.
@@ -82,12 +83,12 @@ PROTOBUF_EXPORT std::string GetStringOptionOrDefault(
 
 // Returns a boolean value contained in Any type.
 // TODO(skarvaje): Make these utilities dealing with Any types more generic,
-// add more error checking and move to a more public/sharable location so others
-// can use.
+// add more error checking and move to a more public/shareable location so
+// others can use.
 PROTOBUF_EXPORT bool GetBoolFromAny(const google::protobuf::Any& any);
 
 // Returns int64 value contained in Any type.
-PROTOBUF_EXPORT int64 GetInt64FromAny(const google::protobuf::Any& any);
+PROTOBUF_EXPORT int64_t GetInt64FromAny(const google::protobuf::Any& any);
 
 // Returns double value contained in Any type.
 PROTOBUF_EXPORT double GetDoubleFromAny(const google::protobuf::Any& any);
@@ -127,7 +128,7 @@ const google::protobuf::Field* FindJsonFieldInTypeOrNull(
 
 // Similar to FindFieldInTypeOrNull, but this looks up fields by number.
 const google::protobuf::Field* FindFieldInTypeByNumberOrNull(
-    const google::protobuf::Type* type, int32 number);
+    const google::protobuf::Type* type, int32_t number);
 
 // Finds and returns the EnumValue identified by enum_name in the passed tech
 // Enum object. Returns nullptr if none found.
@@ -137,7 +138,7 @@ const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
 // Finds and returns the EnumValue identified by value in the passed tech
 // Enum object. Returns nullptr if none found.
 const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
-    const google::protobuf::Enum* enum_type, int32 value);
+    const google::protobuf::Enum* enum_type, int32_t value);
 
 // Finds and returns the EnumValue identified by enum_name without underscore in
 // the passed tech Enum object. Returns nullptr if none found.

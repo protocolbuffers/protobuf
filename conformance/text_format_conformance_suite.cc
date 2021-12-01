@@ -258,6 +258,84 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
   RunValidTextFormatTest("FloatFieldLargerThanUint64", REQUIRED,
                          "optional_float: 18446744073709551616");
 
+  // String literals x {Strings, Bytes}
+  for (const auto& field_type : std::vector<std::string>{"String", "Bytes"}) {
+    const std::string field_name =
+        field_type == "String" ? "optional_string" : "optional_bytes";
+    RunValidTextFormatTest(
+        StrCat("StringLiteralConcat", field_type), REQUIRED,
+        StrCat(field_name, ": 'first' \"second\"\n'third'"));
+    RunValidTextFormatTest(
+        StrCat("StringLiteralBasicEscapes", field_type), REQUIRED,
+        StrCat(field_name, ": '\\a\\b\\f\\n\\r\\t\\v\\?\\\\\\'\\\"'"));
+    RunValidTextFormatTest(
+        StrCat("StringLiteralOctalEscapes", field_type), REQUIRED,
+        StrCat(field_name, ": '\\341\\210\\264'"));
+    RunValidTextFormatTest(StrCat("StringLiteralHexEscapes", field_type),
+                           REQUIRED,
+                           StrCat(field_name, ": '\\xe1\\x88\\xb4'"));
+    RunValidTextFormatTest(
+        StrCat("StringLiteralShortUnicodeEscape", field_type),
+        RECOMMENDED, StrCat(field_name, ": '\\u1234'"));
+    RunValidTextFormatTest(
+        StrCat("StringLiteralLongUnicodeEscapes", field_type),
+        RECOMMENDED, StrCat(field_name, ": '\\U00001234\\U00010437'"));
+    // String literals don't include line feeds.
+    ExpectParseFailure(StrCat("StringLiteralIncludesLF", field_type),
+                       REQUIRED,
+                       StrCat(field_name, ": 'first line\nsecond line'"));
+    // Unicode escapes don't include code points that lie beyond the planes
+    // (> 0x10ffff).
+    ExpectParseFailure(
+        StrCat("StringLiteralLongUnicodeEscapeTooLarge", field_type),
+        REQUIRED, StrCat(field_name, ": '\\U00110000'"));
+    // Unicode escapes don't include surrogates.
+    ExpectParseFailure(
+        StrCat("StringLiteralShortUnicodeEscapeSurrogatePair",
+                     field_type),
+        RECOMMENDED, StrCat(field_name, ": '\\ud801\\udc37'"));
+    ExpectParseFailure(
+        StrCat("StringLiteralShortUnicodeEscapeSurrogateFirstOnly",
+                     field_type),
+        RECOMMENDED, StrCat(field_name, ": '\\ud800'"));
+    ExpectParseFailure(
+        StrCat("StringLiteralShortUnicodeEscapeSurrogateSecondOnly",
+                     field_type),
+        RECOMMENDED, StrCat(field_name, ": '\\udc00'"));
+    ExpectParseFailure(
+        StrCat("StringLiteralLongUnicodeEscapeSurrogateFirstOnly",
+                     field_type),
+        RECOMMENDED, StrCat(field_name, ": '\\U0000d800'"));
+    ExpectParseFailure(
+        StrCat("StringLiteralLongUnicodeEscapeSurrogateSecondOnly",
+                     field_type),
+        RECOMMENDED, StrCat(field_name, ": '\\U0000dc00'"));
+    ExpectParseFailure(
+        StrCat("StringLiteralLongUnicodeEscapeSurrogatePair", field_type),
+        RECOMMENDED, StrCat(field_name, ": '\\U0000d801\\U00000dc37'"));
+    ExpectParseFailure(
+        StrCat("StringLiteralUnicodeEscapeSurrogatePairLongShort",
+                     field_type),
+        RECOMMENDED, StrCat(field_name, ": '\\U0000d801\\udc37'"));
+    ExpectParseFailure(
+        StrCat("StringLiteralUnicodeEscapeSurrogatePairShortLong",
+                     field_type),
+        RECOMMENDED, StrCat(field_name, ": '\\ud801\\U0000dc37'"));
+
+    // The following method depend on the type of field, as strings have extra
+    // validation.
+    const auto test_method =
+        field_type == "String"
+            ? &TextFormatConformanceTestSuite::ExpectParseFailure
+            : &TextFormatConformanceTestSuite::RunValidTextFormatTest;
+
+    // String fields reject invalid UTF-8 byte sequences; bytes fields don't.
+    (this->*test_method)(StrCat(field_type, "FieldBadUTF8Octal"),
+                         REQUIRED, StrCat(field_name, ": '\\300'"));
+    (this->*test_method)(StrCat(field_type, "FieldBadUTF8Hex"), REQUIRED,
+                         StrCat(field_name, ": '\\xc0'"));
+  }
+
   // Group fields
   RunValidTextFormatTestProto2("GroupFieldNoColon", REQUIRED,
                                "Data { group_int32: 1 }");
@@ -311,6 +389,87 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
         [type.googleapis.com/unknown] {
           optional_int32: 12345
         }
+      }
+      )");
+
+  // Map fields
+  TestAllTypesProto3 prototype;
+  (*prototype.mutable_map_string_string())["c"] = "value";
+  (*prototype.mutable_map_string_string())["b"] = "value";
+  (*prototype.mutable_map_string_string())["a"] = "value";
+  RunValidTextFormatTestWithMessage("AlphabeticallySortedMapStringKeys",
+                                    REQUIRED,
+                                    R"(
+      map_string_string {
+        key: "a"
+        value: "value"
+      }
+      map_string_string {
+        key: "b"
+        value: "value"
+      }
+      map_string_string {
+        key: "c"
+        value: "value"
+      }
+      )",
+                                    prototype);
+
+  prototype.Clear();
+  (*prototype.mutable_map_int32_int32())[3] = 0;
+  (*prototype.mutable_map_int32_int32())[2] = 0;
+  (*prototype.mutable_map_int32_int32())[1] = 0;
+  RunValidTextFormatTestWithMessage("AlphabeticallySortedMapIntKeys", REQUIRED,
+                                    R"(
+      map_int32_int32 {
+        key: 1
+        value: 0
+      }
+      map_int32_int32 {
+        key: 2
+        value: 0
+      }
+      map_int32_int32 {
+        key: 3
+        value: 0
+      }
+      )",
+                                    prototype);
+
+  prototype.Clear();
+  (*prototype.mutable_map_bool_bool())[true] = false;
+  (*prototype.mutable_map_bool_bool())[false] = false;
+  RunValidTextFormatTestWithMessage("AlphabeticallySortedMapBoolKeys", REQUIRED,
+                                    R"(
+      map_bool_bool {
+        key: false
+        value: false
+      }
+      map_bool_bool {
+        key: true
+        value: false
+      }
+      )",
+                                    prototype);
+
+  prototype.Clear();
+  ConformanceRequestSetting setting_map(
+      REQUIRED, conformance::TEXT_FORMAT, conformance::PROTOBUF,
+      conformance::TEXT_FORMAT_TEST, prototype, "DuplicateMapKey", R"(
+      map_string_nested_message {
+        key: "duplicate"
+        value: { a: 123 }
+      }
+      map_string_nested_message {
+        key: "duplicate"
+        value: { corecursive: {} }
+      }
+      )");
+  // The last-specified value will be retained in a parsed map
+  RunValidInputTest(setting_map, R"(
+      map_string_nested_message {
+        key: "duplicate"
+        value: { corecursive: {} }
       }
       )");
 }

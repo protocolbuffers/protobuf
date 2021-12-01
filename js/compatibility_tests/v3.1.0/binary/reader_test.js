@@ -46,7 +46,7 @@ goog.require('jspb.BinaryConstants');
 goog.require('jspb.BinaryDecoder');
 goog.require('jspb.BinaryReader');
 goog.require('jspb.BinaryWriter');
-
+goog.requireType('jspb.BinaryMessage');
 
 
 describe('binaryReaderTest', function() {
@@ -55,7 +55,7 @@ describe('binaryReaderTest', function() {
    */
   it('testInstanceCaches', /** @suppress {visibility} */ function() {
     var writer = new jspb.BinaryWriter();
-    var dummyMessage = /** @type {!jspb.BinaryMessage} */({});
+    var dummyMessage = /** @type {!jspb.BinaryMessage} */ ({});
     writer.writeMessage(1, dummyMessage, goog.nullFunction);
     writer.writeMessage(2, dummyMessage, goog.nullFunction);
 
@@ -135,7 +135,7 @@ describe('binaryReaderTest', function() {
     // Calling readMessage on a non-delimited field should trigger an
     // assertion.
     var reader = jspb.BinaryReader.alloc([8, 1]);
-    var dummyMessage = /** @type {!jspb.BinaryMessage} */({});
+    var dummyMessage = /** @type {!jspb.BinaryMessage} */ ({});
     reader.nextField();
     assertThrows(function() {
       reader.readMessage(dummyMessage, goog.nullFunction);
@@ -144,47 +144,91 @@ describe('binaryReaderTest', function() {
     // Reading past the end of the stream should trigger an assertion.
     reader = jspb.BinaryReader.alloc([9, 1]);
     reader.nextField();
-    assertThrows(function() {reader.readFixed64()});
+    assertThrows(function() {
+      reader.readFixed64()
+    });
 
     // Reading past the end of a submessage should trigger an assertion.
     reader = jspb.BinaryReader.alloc([10, 4, 13, 1, 1, 1]);
     reader.nextField();
     reader.readMessage(dummyMessage, function() {
       reader.nextField();
-      assertThrows(function() {reader.readFixed32()});
+      assertThrows(function() {
+        reader.readFixed32()
+      });
     });
 
     // Skipping an invalid field should trigger an assertion.
     reader = jspb.BinaryReader.alloc([12, 1]);
     reader.nextWireType_ = 1000;
-    assertThrows(function() {reader.skipField()});
+    assertThrows(function() {
+      reader.skipField()
+    });
 
     // Reading fields with the wrong wire type should assert.
     reader = jspb.BinaryReader.alloc([9, 0, 0, 0, 0, 0, 0, 0, 0]);
     reader.nextField();
-    assertThrows(function() {reader.readInt32()});
-    assertThrows(function() {reader.readInt32String()});
-    assertThrows(function() {reader.readInt64()});
-    assertThrows(function() {reader.readInt64String()});
-    assertThrows(function() {reader.readUint32()});
-    assertThrows(function() {reader.readUint32String()});
-    assertThrows(function() {reader.readUint64()});
-    assertThrows(function() {reader.readUint64String()});
-    assertThrows(function() {reader.readSint32()});
-    assertThrows(function() {reader.readBool()});
-    assertThrows(function() {reader.readEnum()});
+    assertThrows(function() {
+      reader.readInt32()
+    });
+    assertThrows(function() {
+      reader.readInt32String()
+    });
+    assertThrows(function() {
+      reader.readInt64()
+    });
+    assertThrows(function() {
+      reader.readInt64String()
+    });
+    assertThrows(function() {
+      reader.readUint32()
+    });
+    assertThrows(function() {
+      reader.readUint32String()
+    });
+    assertThrows(function() {
+      reader.readUint64()
+    });
+    assertThrows(function() {
+      reader.readUint64String()
+    });
+    assertThrows(function() {
+      reader.readSint32()
+    });
+    assertThrows(function() {
+      reader.readBool()
+    });
+    assertThrows(function() {
+      reader.readEnum()
+    });
 
     reader = jspb.BinaryReader.alloc([8, 1]);
     reader.nextField();
-    assertThrows(function() {reader.readFixed32()});
-    assertThrows(function() {reader.readFixed64()});
-    assertThrows(function() {reader.readSfixed32()});
-    assertThrows(function() {reader.readSfixed64()});
-    assertThrows(function() {reader.readFloat()});
-    assertThrows(function() {reader.readDouble()});
+    assertThrows(function() {
+      reader.readFixed32()
+    });
+    assertThrows(function() {
+      reader.readFixed64()
+    });
+    assertThrows(function() {
+      reader.readSfixed32()
+    });
+    assertThrows(function() {
+      reader.readSfixed64()
+    });
+    assertThrows(function() {
+      reader.readFloat()
+    });
+    assertThrows(function() {
+      reader.readDouble()
+    });
 
-    assertThrows(function() {reader.readString()});
-    assertThrows(function() {reader.readBytes()});
+    assertThrows(function() {
+      reader.readString()
+    });
+    assertThrows(function() {
+      reader.readBytes()
+    });
   });
 
 
@@ -198,8 +242,8 @@ describe('binaryReaderTest', function() {
    * @private
    * @suppress {missingProperties}
    */
-  var doTestUnsignedField_ = function(readField,
-      writeField, epsilon, upperLimit, filter) {
+  var doTestUnsignedField_ = function(
+      readField, writeField, epsilon, upperLimit, filter) {
     assertNotNull(readField);
     assertNotNull(writeField);
 
@@ -250,8 +294,8 @@ describe('binaryReaderTest', function() {
    * @private
    * @suppress {missingProperties}
    */
-  var doTestSignedField_ = function(readField,
-      writeField, epsilon, lowerLimit, upperLimit, filter) {
+  var doTestSignedField_ = function(
+      readField, writeField, epsilon, lowerLimit, upperLimit, filter) {
     var writer = new jspb.BinaryWriter();
 
     // Encode zero and limits.
@@ -267,20 +311,14 @@ describe('binaryReaderTest', function() {
     for (var cursor = lowerLimit; cursor < -epsilon; cursor /= 1.1) {
       var val = filter(cursor);
       writeField.call(writer, 6, val);
-      inputValues.push({
-        fieldNumber: 6,
-        value: val
-      });
+      inputValues.push({fieldNumber: 6, value: val});
     }
 
     // Encode positive values.
     for (var cursor = epsilon; cursor < upperLimit; cursor *= 1.1) {
       var val = filter(cursor);
       writeField.call(writer, 7, val);
-      inputValues.push({
-        fieldNumber: 7,
-        value: val
-      });
+      inputValues.push({fieldNumber: 7, value: val});
     }
 
     var reader = jspb.BinaryReader.alloc(writer.getResultBuffer());
@@ -327,33 +365,34 @@ describe('binaryReaderTest', function() {
     assertNotUndefined(jspb.BinaryWriter.prototype.writeBool);
     doTestUnsignedField_(
         jspb.BinaryReader.prototype.readUint32,
-        jspb.BinaryWriter.prototype.writeUint32,
-        1, Math.pow(2, 32) - 1, Math.round);
+        jspb.BinaryWriter.prototype.writeUint32, 1, Math.pow(2, 32) - 1,
+        Math.round);
 
     doTestUnsignedField_(
         jspb.BinaryReader.prototype.readUint64,
-        jspb.BinaryWriter.prototype.writeUint64,
-        1, Math.pow(2, 64) - 1025, Math.round);
+        jspb.BinaryWriter.prototype.writeUint64, 1, Math.pow(2, 64) - 1025,
+        Math.round);
 
     doTestSignedField_(
         jspb.BinaryReader.prototype.readInt32,
-        jspb.BinaryWriter.prototype.writeInt32,
-        1, -Math.pow(2, 31), Math.pow(2, 31) - 1, Math.round);
+        jspb.BinaryWriter.prototype.writeInt32, 1, -Math.pow(2, 31),
+        Math.pow(2, 31) - 1, Math.round);
 
     doTestSignedField_(
         jspb.BinaryReader.prototype.readInt64,
-        jspb.BinaryWriter.prototype.writeInt64,
-        1, -Math.pow(2, 63), Math.pow(2, 63) - 513, Math.round);
+        jspb.BinaryWriter.prototype.writeInt64, 1, -Math.pow(2, 63),
+        Math.pow(2, 63) - 513, Math.round);
 
     doTestSignedField_(
         jspb.BinaryReader.prototype.readEnum,
-        jspb.BinaryWriter.prototype.writeEnum,
-        1, -Math.pow(2, 31), Math.pow(2, 31) - 1, Math.round);
+        jspb.BinaryWriter.prototype.writeEnum, 1, -Math.pow(2, 31),
+        Math.pow(2, 31) - 1, Math.round);
 
     doTestUnsignedField_(
         jspb.BinaryReader.prototype.readBool,
-        jspb.BinaryWriter.prototype.writeBool,
-        1, 1, function(x) { return !!x; });
+        jspb.BinaryWriter.prototype.writeBool, 1, 1, function(x) {
+          return !!x;
+        });
   });
 
 
@@ -387,24 +426,22 @@ describe('binaryReaderTest', function() {
     // uint32 and sint32 take no more than 5 bytes
     // 08 - field prefix (type = 0 means varint)
     doTestHexStringVarint_(
-      jspb.BinaryReader.prototype.readUint32,
-      12, '08 8C 80 80 80 00');
+        jspb.BinaryReader.prototype.readUint32, 12, '08 8C 80 80 80 00');
 
     // 11 stands for -6 in zigzag encoding
     doTestHexStringVarint_(
-      jspb.BinaryReader.prototype.readSint32,
-      -6, '08 8B 80 80 80 00');
+        jspb.BinaryReader.prototype.readSint32, -6, '08 8B 80 80 80 00');
 
     // uint64 and sint64 take no more than 10 bytes
     // 08 - field prefix (type = 0 means varint)
     doTestHexStringVarint_(
-      jspb.BinaryReader.prototype.readUint64,
-      12, '08 8C 80 80 80 80 80 80 80 80 00');
+        jspb.BinaryReader.prototype.readUint64, 12,
+        '08 8C 80 80 80 80 80 80 80 80 00');
 
     // 11 stands for -6 in zigzag encoding
     doTestHexStringVarint_(
-      jspb.BinaryReader.prototype.readSint64,
-      -6, '08 8B 80 80 80 80 80 80 80 80 00');
+        jspb.BinaryReader.prototype.readSint64, -6,
+        '08 8B 80 80 80 80 80 80 80 80 00');
   });
 
 
@@ -415,27 +452,15 @@ describe('binaryReaderTest', function() {
     var writer = new jspb.BinaryWriter();
 
     var testSignedData = [
-      '2730538252207801776',
-      '-2688470994844604560',
-      '3398529779486536359',
-      '3568577411627971000',
-      '272477188847484900',
-      '-6649058714086158188',
-      '-7695254765712060806',
-      '-4525541438037104029',
-      '-4993706538836508568',
+      '2730538252207801776', '-2688470994844604560', '3398529779486536359',
+      '3568577411627971000', '272477188847484900', '-6649058714086158188',
+      '-7695254765712060806', '-4525541438037104029', '-4993706538836508568',
       '4990160321893729138'
     ];
     var testUnsignedData = [
-      '7822732630241694882',
-      '6753602971916687352',
-      '2399935075244442116',
-      '8724292567325338867',
-      '16948784802625696584',
-      '4136275908516066934',
-      '3575388346793700364',
-      '5167142028379259461',
-      '1557573948689737699',
+      '7822732630241694882', '6753602971916687352', '2399935075244442116',
+      '8724292567325338867', '16948784802625696584', '4136275908516066934',
+      '3575388346793700364', '5167142028379259461', '1557573948689737699',
       '17100725280812548567'
     ];
 
@@ -463,13 +488,13 @@ describe('binaryReaderTest', function() {
   it('testZigzagFields', function() {
     doTestSignedField_(
         jspb.BinaryReader.prototype.readSint32,
-        jspb.BinaryWriter.prototype.writeSint32,
-        1, -Math.pow(2, 31), Math.pow(2, 31) - 1, Math.round);
+        jspb.BinaryWriter.prototype.writeSint32, 1, -Math.pow(2, 31),
+        Math.pow(2, 31) - 1, Math.round);
 
     doTestSignedField_(
         jspb.BinaryReader.prototype.readSint64,
-        jspb.BinaryWriter.prototype.writeSint64,
-        1, -Math.pow(2, 63), Math.pow(2, 63) - 513, Math.round);
+        jspb.BinaryWriter.prototype.writeSint64, 1, -Math.pow(2, 63),
+        Math.pow(2, 63) - 513, Math.round);
   });
 
 
@@ -479,23 +504,23 @@ describe('binaryReaderTest', function() {
   it('testFixedFields', function() {
     doTestUnsignedField_(
         jspb.BinaryReader.prototype.readFixed32,
-        jspb.BinaryWriter.prototype.writeFixed32,
-        1, Math.pow(2, 32) - 1, Math.round);
+        jspb.BinaryWriter.prototype.writeFixed32, 1, Math.pow(2, 32) - 1,
+        Math.round);
 
     doTestUnsignedField_(
         jspb.BinaryReader.prototype.readFixed64,
-        jspb.BinaryWriter.prototype.writeFixed64,
-        1, Math.pow(2, 64) - 1025, Math.round);
+        jspb.BinaryWriter.prototype.writeFixed64, 1, Math.pow(2, 64) - 1025,
+        Math.round);
 
     doTestSignedField_(
         jspb.BinaryReader.prototype.readSfixed32,
-        jspb.BinaryWriter.prototype.writeSfixed32,
-        1, -Math.pow(2, 31), Math.pow(2, 31) - 1, Math.round);
+        jspb.BinaryWriter.prototype.writeSfixed32, 1, -Math.pow(2, 31),
+        Math.pow(2, 31) - 1, Math.round);
 
     doTestSignedField_(
         jspb.BinaryReader.prototype.readSfixed64,
-        jspb.BinaryWriter.prototype.writeSfixed64,
-        1, -Math.pow(2, 63), Math.pow(2, 63) - 513, Math.round);
+        jspb.BinaryWriter.prototype.writeSfixed64, 1, -Math.pow(2, 63),
+        Math.pow(2, 63) - 513, Math.round);
   });
 
 
@@ -506,18 +531,17 @@ describe('binaryReaderTest', function() {
     doTestSignedField_(
         jspb.BinaryReader.prototype.readFloat,
         jspb.BinaryWriter.prototype.writeFloat,
-        jspb.BinaryConstants.FLOAT32_MIN,
-        -jspb.BinaryConstants.FLOAT32_MAX,
-        jspb.BinaryConstants.FLOAT32_MAX,
-        truncate);
+        jspb.BinaryConstants.FLOAT32_MIN, -jspb.BinaryConstants.FLOAT32_MAX,
+        jspb.BinaryConstants.FLOAT32_MAX, truncate);
 
     doTestSignedField_(
         jspb.BinaryReader.prototype.readDouble,
         jspb.BinaryWriter.prototype.writeDouble,
         jspb.BinaryConstants.FLOAT64_EPS * 10,
-        -jspb.BinaryConstants.FLOAT64_MIN,
-        jspb.BinaryConstants.FLOAT64_MIN,
-        function(x) { return x; });
+        -jspb.BinaryConstants.FLOAT64_MIN, jspb.BinaryConstants.FLOAT64_MIN,
+        function(x) {
+          return x;
+        });
   });
 
 
@@ -584,7 +608,7 @@ describe('binaryReaderTest', function() {
    */
   it('testNesting', function() {
     var writer = new jspb.BinaryWriter();
-    var dummyMessage = /** @type {!jspb.BinaryMessage} */({});
+    var dummyMessage = /** @type {!jspb.BinaryMessage} */ ({});
 
     writer.writeInt32(1, 100);
 
@@ -677,7 +701,7 @@ describe('binaryReaderTest', function() {
 
     // Write a group with a nested group inside.
     writer.writeInt32(5, sentinel);
-    var dummyMessage = /** @type {!jspb.BinaryMessage} */({});
+    var dummyMessage = /** @type {!jspb.BinaryMessage} */ ({});
     writer.writeGroup(5, dummyMessage, function() {
       writer.writeInt64(42, 42);
       writer.writeGroup(6, dummyMessage, function() {
@@ -830,7 +854,7 @@ describe('binaryReaderTest', function() {
     var fieldTag = (1 << 3) | jspb.BinaryConstants.WireType.DELIMITED;
     var blob = [1, 2, 3, 4, 5];
     var writer = new jspb.BinaryWriter();
-    var dummyMessage = /** @type {!jspb.BinaryMessage} */({});
+    var dummyMessage = /** @type {!jspb.BinaryMessage} */ ({});
 
     writer.writeMessage(1, dummyMessage, function() {
       writer.writeMessage(1, dummyMessage, function() {
@@ -863,7 +887,7 @@ describe('binaryReaderTest', function() {
    */
   it('testReadCallbacks', function() {
     var writer = new jspb.BinaryWriter();
-    var dummyMessage = /** @type {!jspb.BinaryMessage} */({});
+    var dummyMessage = /** @type {!jspb.BinaryMessage} */ ({});
 
     // Add an int, a submessage, and another int.
     writer.writeInt32(1, 100);

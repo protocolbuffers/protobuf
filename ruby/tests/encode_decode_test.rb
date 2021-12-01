@@ -4,6 +4,7 @@
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
 require 'generated_code_pb'
+require 'google/protobuf/well_known_types'
 require 'test/unit'
 
 def hex2bin(s)
@@ -92,6 +93,12 @@ class EncodeDecodeTest < Test::Unit::TestCase
       )
       Google::Protobuf::Any.encode(m)
     end
+  end
+
+  def test_json_name
+    msg = A::B::C::TestJsonName.new(:value => 42)
+    json = msg.to_json
+    assert_match json, "{\"CustomJsonName\":42}"
   end
 
 end

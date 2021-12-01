@@ -116,7 +116,7 @@ const char* PrimitiveArrayTypeName(const FieldDescriptor* descriptor) {
 }
 
 void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           std::map<string, string>* variables) {
+                           std::map<std::string, std::string>* variables) {
   std::string primitive_name = PrimitiveTypeName(descriptor);
   (*variables)["type"] = primitive_name;
   (*variables)["storage_type"] = primitive_name;
@@ -172,7 +172,7 @@ RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
     : RepeatedFieldGenerator(descriptor, options) {
   SetPrimitiveVariables(descriptor, &variables_);
 
-  string base_name = PrimitiveArrayTypeName(descriptor);
+  std::string base_name = PrimitiveArrayTypeName(descriptor);
   if (base_name.length()) {
     variables_["array_storage_type"] = "GPB" + base_name + "Array";
   } else {

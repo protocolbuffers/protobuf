@@ -60,6 +60,8 @@ class ClassNameResolver {
 
   // Gets the unqualified outer class name for the file.
   std::string GetFileClassName(const FileDescriptor* file, bool immutable);
+  std::string GetFileClassName(const FileDescriptor* file, bool immutable,
+                               bool kotlin);
   // Gets the unqualified immutable outer class name of a file.
   std::string GetFileImmutableClassName(const FileDescriptor* file);
   // Gets the unqualified default immutable outer class name of a file
@@ -80,9 +82,17 @@ class ClassNameResolver {
 
   // Gets the fully-qualified class name corresponding to the given descriptor.
   std::string GetClassName(const Descriptor* descriptor, bool immutable);
+  std::string GetClassName(const Descriptor* descriptor, bool immutable,
+                           bool kotlin);
   std::string GetClassName(const EnumDescriptor* descriptor, bool immutable);
+  std::string GetClassName(const EnumDescriptor* descriptor, bool immutable,
+                           bool kotlin);
   std::string GetClassName(const ServiceDescriptor* descriptor, bool immutable);
+  std::string GetClassName(const ServiceDescriptor* descriptor, bool immutable,
+                           bool kotlin);
   std::string GetClassName(const FileDescriptor* descriptor, bool immutable);
+  std::string GetClassName(const FileDescriptor* descriptor, bool immutable,
+                           bool kotlin);
 
   template <class DescriptorType>
   std::string GetImmutableClassName(const DescriptorType* descriptor) {
@@ -96,6 +106,8 @@ class ClassNameResolver {
   // Gets the fully qualified name of an extension identifier.
   std::string GetExtensionIdentifierName(const FieldDescriptor* descriptor,
                                          bool immutable);
+  std::string GetExtensionIdentifierName(const FieldDescriptor* descriptor,
+                                         bool immutable, bool kotlin);
 
   // Gets the fully qualified name for generated classes in Java convention.
   // Nested classes will be separated using '$' instead of '.'
@@ -103,15 +115,29 @@ class ClassNameResolver {
   //   com.package.OuterClass$OuterMessage$InnerMessage
   std::string GetJavaImmutableClassName(const Descriptor* descriptor);
   std::string GetJavaImmutableClassName(const EnumDescriptor* descriptor);
+  std::string GetKotlinFactoryName(const Descriptor* descriptor);
+  std::string GetKotlinExtensionsClassName(const Descriptor* descriptor);
+  std::string GetJavaMutableClassName(const Descriptor* descriptor);
+  std::string GetJavaMutableClassName(const EnumDescriptor* descriptor);
+  // Gets the outer class and the actual class for downgraded mutable messages.
+  std::string GetDowngradedFileClassName(const FileDescriptor* file);
+  std::string GetDowngradedClassName(const Descriptor* descriptor);
+
  private:
   // Get the full name of a Java class by prepending the Java package name
   // or outer class name.
   std::string GetClassFullName(const std::string& name_without_package,
                                const FileDescriptor* file, bool immutable,
                                bool is_own_file);
+  std::string GetClassFullName(const std::string& name_without_package,
+                               const FileDescriptor* file, bool immutable,
+                               bool is_own_file, bool kotlin);
   // Get the Java Class style full name of a message.
   std::string GetJavaClassFullName(const std::string& name_without_package,
                                    const FileDescriptor* file, bool immutable);
+  std::string GetJavaClassFullName(const std::string& name_without_package,
+                                   const FileDescriptor* file, bool immutable,
+                                   bool kotlin);
   // Caches the result to provide better performance.
   std::map<const FileDescriptor*, std::string>
       file_immutable_outer_class_names_;

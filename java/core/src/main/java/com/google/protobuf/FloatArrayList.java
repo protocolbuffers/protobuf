@@ -140,6 +140,26 @@ final class FloatArrayList extends AbstractProtobufList<Float>
   }
 
   @Override
+  public int indexOf(Object element) {
+    if (!(element instanceof Float)) {
+      return -1;
+    }
+    float unboxedElement = (Float) element;
+    int numElems = size();
+    for (int i = 0; i < numElems; i++) {
+      if (array[i] == unboxedElement) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  @Override
+  public boolean contains(Object element) {
+    return indexOf(element) != -1;
+  }
+
+  @Override
   public int size() {
     return size;
   }
@@ -176,10 +196,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     if (size == array.length) {
       // Resize to 1.5x the size
       int length = ((size * 3) / 2) + 1;
-      float[] newArray = new float[length];
-
-      System.arraycopy(array, 0, newArray, 0, size);
-      array = newArray;
+      array = Arrays.copyOf(array, length);
     }
 
     array[size++] = element;
@@ -198,14 +215,10 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     } else {
       // Resize to 1.5x the size
       int length = ((size * 3) / 2) + 1;
-      float[] newArray = new float[length];
-
-      // Copy the first part directly
-      System.arraycopy(array, 0, newArray, 0, index);
+      array = Arrays.copyOf(array, length);
 
       // Copy the rest shifted over by one to make room
-      System.arraycopy(array, index, newArray, index + 1, size - index);
-      array = newArray;
+      System.arraycopy(array, index, array, index + 1, size - index);
     }
 
     array[index] = element;
@@ -244,20 +257,6 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     size = newSize;
     modCount++;
     return true;
-  }
-
-  @Override
-  public boolean remove(Object o) {
-    ensureIsMutable();
-    for (int i = 0; i < size; i++) {
-      if (o.equals(array[i])) {
-        System.arraycopy(array, i + 1, array, i, size - i - 1);
-        size--;
-        modCount++;
-        return true;
-      }
-    }
-    return false;
   }
 
   @Override

@@ -148,13 +148,8 @@ __author__ = 'tmarek@google.com (Torsten Marek)'
 import functools
 import re
 import types
-try:
-  import unittest2 as unittest
-except ImportError:
-  import unittest
+import unittest
 import uuid
-
-import six
 
 try:
   # Since python 3
@@ -180,8 +175,8 @@ def _StrClass(cls):
 
 
 def _NonStringIterable(obj):
-  return (isinstance(obj, collections_abc.Iterable) and not
-          isinstance(obj, six.string_types))
+  return (isinstance(obj, collections_abc.Iterable) and
+          not isinstance(obj, str))
 
 
 def _FormatParameterList(testcase_params):

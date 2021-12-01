@@ -38,9 +38,10 @@ namespace Google.Protobuf
 {
     internal interface IExtensionValue : IEquatable<IExtensionValue>, IDeepCloneable<IExtensionValue>
     {
-        void MergeFrom(CodedInputStream input);
+        void MergeFrom(ref ParseContext ctx);
+
         void MergeFrom(IExtensionValue value);
-        void WriteTo(CodedOutputStream output);
+        void WriteTo(ref WriteContext ctx);
         int CalculateSize();
         bool IsInitialized();
     }
@@ -58,7 +59,7 @@ namespace Google.Protobuf
 
         public int CalculateSize()
         {
-            return codec.CalculateSizeWithTag(field);
+            return codec.CalculateUnconditionalSizeWithTag(field);
         }
 
         public IExtensionValue Clone()
@@ -91,9 +92,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void MergeFrom(CodedInputStream input)
+        public void MergeFrom(ref ParseContext ctx)
         {
-            codec.ValueMerger(input, ref field);
+            codec.ValueMerger(ref ctx, ref field);
         }
 
         public void MergeFrom(IExtensionValue value)
@@ -105,13 +106,13 @@ namespace Google.Protobuf
             }
         }
 
-        public void WriteTo(CodedOutputStream output)
+        public void WriteTo(ref WriteContext ctx)
         {
-            output.WriteTag(codec.Tag);
-            codec.ValueWriter(output, field);
+            ctx.WriteTag(codec.Tag);
+            codec.ValueWriter(ref ctx, field);
             if (codec.EndTag != 0)
             {
-                output.WriteTag(codec.EndTag);
+                ctx.WriteTag(codec.EndTag);
             }
         }
 
@@ -180,9 +181,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void MergeFrom(CodedInputStream input)
+        public void MergeFrom(ref ParseContext ctx)
         {
-            field.AddEntriesFrom(input, codec);
+            field.AddEntriesFrom(ref ctx, codec);
         }
 
         public void MergeFrom(IExtensionValue value)
@@ -193,9 +194,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void WriteTo(CodedOutputStream output)
+        public void WriteTo(ref WriteContext ctx)
         {
-            field.WriteTo(output, codec);
+            field.WriteTo(ref ctx, codec);
         }
 
         public RepeatedField<T> GetValue() => field;

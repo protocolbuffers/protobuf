@@ -82,7 +82,7 @@ namespace Conformance {
     [pbr::OriginalName("JSON_TEST")] JsonTest = 2,
     /// <summary>
     /// Similar to JSON_TEST. However, during parsing json, testee should ignore
-    /// unknown fields. This feature is optional. Each implementation can descide
+    /// unknown fields. This feature is optional. Each implementation can decide
     /// whether to support it.  See
     /// https://developers.google.com/protocol-buffers/docs/proto3#json_options
     /// for more detail.
@@ -107,23 +107,31 @@ namespace Conformance {
   /// This will be known by message_type == "conformance.FailureSet", a conformance
   /// test should return a serialized FailureSet in protobuf_payload.
   /// </summary>
-  public sealed partial class FailureSet : pb::IMessage<FailureSet> {
+  public sealed partial class FailureSet : pb::IMessage<FailureSet>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<FailureSet> _parser = new pb::MessageParser<FailureSet>(() => new FailureSet());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<FailureSet> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FailureSet() {
       OnConstruction();
     }
@@ -131,12 +139,14 @@ namespace Conformance {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FailureSet(FailureSet other) : this() {
       failure_ = other.failure_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FailureSet Clone() {
       return new FailureSet(this);
     }
@@ -147,16 +157,19 @@ namespace Conformance {
         = pb::FieldCodec.ForString(10);
     private readonly pbc::RepeatedField<string> failure_ = new pbc::RepeatedField<string>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<string> Failure {
       get { return failure_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as FailureSet);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(FailureSet other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -169,6 +182,7 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       hash ^= failure_.GetHashCode();
@@ -179,19 +193,37 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       failure_.WriteTo(output, _repeated_failure_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      failure_.WriteTo(ref output, _repeated_failure_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       size += failure_.CalculateSize(_repeated_failure_codec);
@@ -202,6 +234,7 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(FailureSet other) {
       if (other == null) {
         return;
@@ -211,7 +244,11 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -224,7 +261,27 @@ namespace Conformance {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            failure_.AddEntriesFrom(ref input, _repeated_failure_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
@@ -235,23 +292,31 @@ namespace Conformance {
   ///   2. parse the protobuf or JSON payload in "payload" (which may fail)
   ///   3. if the parse succeeded, serialize the message in the requested format.
   /// </summary>
-  public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest> {
+  public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<ConformanceRequest> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ConformanceRequest() {
       OnConstruction();
     }
@@ -259,6 +324,7 @@ namespace Conformance {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ConformanceRequest(ConformanceRequest other) : this() {
       requestedOutputFormat_ = other.requestedOutputFormat_;
       messageType_ = other.messageType_;
@@ -284,6 +350,7 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ConformanceRequest Clone() {
       return new ConformanceRequest(this);
     }
@@ -291,6 +358,7 @@ namespace Conformance {
     /// <summary>Field number for the "protobuf_payload" field.</summary>
     public const int ProtobufPayloadFieldNumber = 1;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pb::ByteString ProtobufPayload {
       get { return payloadCase_ == PayloadOneofCase.ProtobufPayload ? (pb::ByteString) payload_ : pb::ByteString.Empty; }
       set {
@@ -302,6 +370,7 @@ namespace Conformance {
     /// <summary>Field number for the "json_payload" field.</summary>
     public const int JsonPayloadFieldNumber = 2;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JsonPayload {
       get { return payloadCase_ == PayloadOneofCase.JsonPayload ? (string) payload_ : ""; }
       set {
@@ -316,6 +385,7 @@ namespace Conformance {
     /// Google internal only.  Opensource testees just skip it.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JspbPayload {
       get { return payloadCase_ == PayloadOneofCase.JspbPayload ? (string) payload_ : ""; }
       set {
@@ -327,6 +397,7 @@ namespace Conformance {
     /// <summary>Field number for the "text_payload" field.</summary>
     public const int TextPayloadFieldNumber = 8;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string TextPayload {
       get { return payloadCase_ == PayloadOneofCase.TextPayload ? (string) payload_ : ""; }
       set {
@@ -342,6 +413,7 @@ namespace Conformance {
     /// Which format should the testee serialize its message to?
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Conformance.WireFormat RequestedOutputFormat {
       get { return requestedOutputFormat_; }
       set {
@@ -355,9 +427,10 @@ namespace Conformance {
     /// <summary>
     /// The full name for the test message to use; for the moment, either:
     /// protobuf_test_messages.proto3.TestAllTypesProto3 or
-    /// protobuf_test_messages.proto2.TestAllTypesProto2.
+    /// protobuf_test_messages.google.protobuf.TestAllTypesProto2.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string MessageType {
       get { return messageType_; }
       set {
@@ -370,10 +443,11 @@ namespace Conformance {
     private global::Conformance.TestCategory testCategory_ = global::Conformance.TestCategory.UnspecifiedTest;
     /// <summary>
     /// Each test is given a specific test category. Some category may need
-    /// spedific support in testee programs. Refer to the definition of TestCategory
+    /// specific support in testee programs. Refer to the definition of TestCategory
     /// for more information.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Conformance.TestCategory TestCategory {
       get { return testCategory_; }
       set {
@@ -388,6 +462,7 @@ namespace Conformance {
     /// Specify details for how to encode jspb.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Conformance.JspbEncodingConfig JspbEncodingOptions {
       get { return jspbEncodingOptions_; }
       set {
@@ -403,6 +478,7 @@ namespace Conformance {
     /// unknown fields instead of ignore. This feature is optional.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool PrintUnknownFields {
       get { return printUnknownFields_; }
       set {
@@ -421,22 +497,26 @@ namespace Conformance {
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public PayloadOneofCase PayloadCase {
       get { return payloadCase_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void ClearPayload() {
       payloadCase_ = PayloadOneofCase.None;
       payload_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as ConformanceRequest);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(ConformanceRequest other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -458,6 +538,7 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
@@ -477,12 +558,17 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
         output.WriteRawTag(10);
         output.WriteBytes(ProtobufPayload);
@@ -522,9 +608,57 @@ namespace Conformance {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
+        output.WriteRawTag(10);
+        output.WriteBytes(ProtobufPayload);
+      }
+      if (payloadCase_ == PayloadOneofCase.JsonPayload) {
+        output.WriteRawTag(18);
+        output.WriteString(JsonPayload);
+      }
+      if (RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) RequestedOutputFormat);
+      }
+      if (MessageType.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(MessageType);
+      }
+      if (TestCategory != global::Conformance.TestCategory.UnspecifiedTest) {
+        output.WriteRawTag(40);
+        output.WriteEnum((int) TestCategory);
+      }
+      if (jspbEncodingOptions_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(JspbEncodingOptions);
+      }
+      if (payloadCase_ == PayloadOneofCase.JspbPayload) {
+        output.WriteRawTag(58);
+        output.WriteString(JspbPayload);
+      }
+      if (payloadCase_ == PayloadOneofCase.TextPayload) {
+        output.WriteRawTag(66);
+        output.WriteString(TextPayload);
+      }
+      if (PrintUnknownFields != false) {
+        output.WriteRawTag(72);
+        output.WriteBool(PrintUnknownFields);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
@@ -561,6 +695,7 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(ConformanceRequest other) {
       if (other == null) {
         return;
@@ -602,7 +737,11 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -650,30 +789,93 @@ namespace Conformance {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            ProtobufPayload = input.ReadBytes();
+            break;
+          }
+          case 18: {
+            JsonPayload = input.ReadString();
+            break;
+          }
+          case 24: {
+            RequestedOutputFormat = (global::Conformance.WireFormat) input.ReadEnum();
+            break;
+          }
+          case 34: {
+            MessageType = input.ReadString();
+            break;
+          }
+          case 40: {
+            TestCategory = (global::Conformance.TestCategory) input.ReadEnum();
+            break;
+          }
+          case 50: {
+            if (jspbEncodingOptions_ == null) {
+              JspbEncodingOptions = new global::Conformance.JspbEncodingConfig();
+            }
+            input.ReadMessage(JspbEncodingOptions);
+            break;
+          }
+          case 58: {
+            JspbPayload = input.ReadString();
+            break;
+          }
+          case 66: {
+            TextPayload = input.ReadString();
+            break;
+          }
+          case 72: {
+            PrintUnknownFields = input.ReadBool();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
   /// <summary>
   /// Represents a single test case's output.
   /// </summary>
-  public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse> {
+  public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<ConformanceResponse> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ConformanceResponse() {
       OnConstruction();
     }
@@ -681,6 +883,7 @@ namespace Conformance {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ConformanceResponse(ConformanceResponse other) : this() {
       switch (other.ResultCase) {
         case ResultOneofCase.ParseError:
@@ -713,6 +916,7 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ConformanceResponse Clone() {
       return new ConformanceResponse(this);
     }
@@ -727,6 +931,7 @@ namespace Conformance {
     /// test.  Some of the test cases are intentionally invalid input.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string ParseError {
       get { return resultCase_ == ResultOneofCase.ParseError ? (string) result_ : ""; }
       set {
@@ -743,6 +948,7 @@ namespace Conformance {
     /// this field.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string SerializeError {
       get { return resultCase_ == ResultOneofCase.SerializeError ? (string) result_ : ""; }
       set {
@@ -759,6 +965,7 @@ namespace Conformance {
     /// about the failure.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string RuntimeError {
       get { return resultCase_ == ResultOneofCase.RuntimeError ? (string) result_ : ""; }
       set {
@@ -774,6 +981,7 @@ namespace Conformance {
     /// protobuf, serialize it to protobuf and set it in this field.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pb::ByteString ProtobufPayload {
       get { return resultCase_ == ResultOneofCase.ProtobufPayload ? (pb::ByteString) result_ : pb::ByteString.Empty; }
       set {
@@ -789,6 +997,7 @@ namespace Conformance {
     /// serialize to JSON and set it in this field.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JsonPayload {
       get { return resultCase_ == ResultOneofCase.JsonPayload ? (string) result_ : ""; }
       set {
@@ -804,6 +1013,7 @@ namespace Conformance {
     /// wasn't supported, like JSON input/output.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Skipped {
       get { return resultCase_ == ResultOneofCase.Skipped ? (string) result_ : ""; }
       set {
@@ -820,6 +1030,7 @@ namespace Conformance {
     /// format. Opensource testees can just skip it.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JspbPayload {
       get { return resultCase_ == ResultOneofCase.JspbPayload ? (string) result_ : ""; }
       set {
@@ -835,6 +1046,7 @@ namespace Conformance {
     /// TEXT_FORMAT, serialize to TEXT_FORMAT and set it in this field.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string TextPayload {
       get { return resultCase_ == ResultOneofCase.TextPayload ? (string) result_ : ""; }
       set {
@@ -858,22 +1070,26 @@ namespace Conformance {
     }
     private ResultOneofCase resultCase_ = ResultOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ResultOneofCase ResultCase {
       get { return resultCase_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void ClearResult() {
       resultCase_ = ResultOneofCase.None;
       result_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as ConformanceResponse);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(ConformanceResponse other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -894,6 +1110,7 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       if (resultCase_ == ResultOneofCase.ParseError) hash ^= ParseError.GetHashCode();
@@ -912,12 +1129,17 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (resultCase_ == ResultOneofCase.ParseError) {
         output.WriteRawTag(10);
         output.WriteString(ParseError);
@@ -953,9 +1175,53 @@ namespace Conformance {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (resultCase_ == ResultOneofCase.ParseError) {
+        output.WriteRawTag(10);
+        output.WriteString(ParseError);
+      }
+      if (resultCase_ == ResultOneofCase.RuntimeError) {
+        output.WriteRawTag(18);
+        output.WriteString(RuntimeError);
+      }
+      if (resultCase_ == ResultOneofCase.ProtobufPayload) {
+        output.WriteRawTag(26);
+        output.WriteBytes(ProtobufPayload);
+      }
+      if (resultCase_ == ResultOneofCase.JsonPayload) {
+        output.WriteRawTag(34);
+        output.WriteString(JsonPayload);
+      }
+      if (resultCase_ == ResultOneofCase.Skipped) {
+        output.WriteRawTag(42);
+        output.WriteString(Skipped);
+      }
+      if (resultCase_ == ResultOneofCase.SerializeError) {
+        output.WriteRawTag(50);
+        output.WriteString(SerializeError);
+      }
+      if (resultCase_ == ResultOneofCase.JspbPayload) {
+        output.WriteRawTag(58);
+        output.WriteString(JspbPayload);
+      }
+      if (resultCase_ == ResultOneofCase.TextPayload) {
+        output.WriteRawTag(66);
+        output.WriteString(TextPayload);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       if (resultCase_ == ResultOneofCase.ParseError) {
@@ -989,6 +1255,7 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(ConformanceResponse other) {
       if (other == null) {
         return;
@@ -1024,7 +1291,11 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1065,30 +1336,86 @@ namespace Conformance {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            ParseError = input.ReadString();
+            break;
+          }
+          case 18: {
+            RuntimeError = input.ReadString();
+            break;
+          }
+          case 26: {
+            ProtobufPayload = input.ReadBytes();
+            break;
+          }
+          case 34: {
+            JsonPayload = input.ReadString();
+            break;
+          }
+          case 42: {
+            Skipped = input.ReadString();
+            break;
+          }
+          case 50: {
+            SerializeError = input.ReadString();
+            break;
+          }
+          case 58: {
+            JspbPayload = input.ReadString();
+            break;
+          }
+          case 66: {
+            TextPayload = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
   /// <summary>
   /// Encoding options for jspb format.
   /// </summary>
-  public sealed partial class JspbEncodingConfig : pb::IMessage<JspbEncodingConfig> {
+  public sealed partial class JspbEncodingConfig : pb::IMessage<JspbEncodingConfig>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<JspbEncodingConfig> _parser = new pb::MessageParser<JspbEncodingConfig>(() => new JspbEncodingConfig());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<JspbEncodingConfig> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public JspbEncodingConfig() {
       OnConstruction();
     }
@@ -1096,12 +1423,14 @@ namespace Conformance {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public JspbEncodingConfig(JspbEncodingConfig other) : this() {
       useJspbArrayAnyFormat_ = other.useJspbArrayAnyFormat_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public JspbEncodingConfig Clone() {
       return new JspbEncodingConfig(this);
     }
@@ -1113,6 +1442,7 @@ namespace Conformance {
     /// Encode the value field of Any as jspb array if true, otherwise binary.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool UseJspbArrayAnyFormat {
       get { return useJspbArrayAnyFormat_; }
       set {
@@ -1121,11 +1451,13 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as JspbEncodingConfig);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(JspbEncodingConfig other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -1138,6 +1470,7 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       if (UseJspbArrayAnyFormat != false) hash ^= UseJspbArrayAnyFormat.GetHashCode();
@@ -1148,12 +1481,17 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (UseJspbArrayAnyFormat != false) {
         output.WriteRawTag(8);
         output.WriteBool(UseJspbArrayAnyFormat);
@@ -1161,9 +1499,25 @@ namespace Conformance {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (UseJspbArrayAnyFormat != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(UseJspbArrayAnyFormat);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       if (UseJspbArrayAnyFormat != false) {
@@ -1176,6 +1530,7 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(JspbEncodingConfig other) {
       if (other == null) {
         return;
@@ -1187,7 +1542,11 @@ namespace Conformance {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1200,7 +1559,27 @@ namespace Conformance {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            UseJspbArrayAnyFormat = input.ReadBool();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

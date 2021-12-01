@@ -38,18 +38,10 @@ If sys.gettotalrefcount() is not available (because Python was built without
 the Py_DEBUG option), then this module is a no-op and tests will run normally.
 """
 
+import copyreg
 import gc
 import sys
-
-try:
-  import copy_reg as copyreg  #PY26
-except ImportError:
-  import copyreg
-
-try:
-  import unittest2 as unittest  #PY26
-except ImportError:
-  import unittest
+import unittest
 
 
 class LocalTestResult(unittest.TestResult):

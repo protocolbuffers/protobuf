@@ -3,8 +3,8 @@
 # Build file to set up and run tests
 set -ex
 
-# Install the latest Bazel version available
-use_bazel.sh latest
+# Install Bazel 4.0.0.
+use_bazel.sh 4.0.0
 bazel version
 
 # Print bazel testlogs to stdout when tests failed.
@@ -22,12 +22,26 @@ cd $(dirname $0)/../../..
 
 git submodule update --init --recursive
 
+#  Disabled for now, re-enable if appropriate.
+#  //:build_files_updated_unittest \
+
 trap print_test_logs EXIT
-bazel test --copt=-Werror --host_copt=-Werror \
-  //:build_files_updated_unittest \
+bazel test -k --copt=-Werror --host_copt=-Werror \
+  //java:tests \
+  //:protoc \
+  //:protobuf \
+  //:protobuf_python \
   //:protobuf_test \
   @com_google_protobuf//:cc_proto_blacklist_test
 trap - EXIT
 
-cd examples
-bazel build :all
+pushd examples
+bazel build //...
+popd
+
+# Verify that we can build successfully from generated tar files.
+./autogen.sh && ./configure && make -j$(nproc) dist
+DIST=`ls *.tar.gz`
+tar -xf $DIST
+cd ${DIST//.tar.gz}
+bazel build //:protobuf //:protobuf_java

@@ -1,34 +1,62 @@
 #!/bin/bash
+
+cd $(dirname $0)
+
 set -e
 
-# Compile c extension
-VERSION=7.4
 PORT=12345
+TIMEOUT=10
 
-export PATH=/usr/local/php-$VERSION/bin:$PATH
-export C_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$VERSION/include/php:$C_INCLUDE_PATH
-export CPLUS_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$VERSION/include/php:$CPLUS_INCLUDE_PATH
-/bin/bash ./compile_extension.sh $VERSION
+./compile_extension.sh
 
-nohup php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf/modules/protobuf.so -S localhost:$PORT multirequest.php 2>&1 &
+run_test() {
+  echo
+  echo "Running multirequest test, args: $@"
 
-sleep 1
+  RUN_UNDER=""
+  EXTRA_ARGS=""
+  ARGS="-d xdebug.profiler_enable=0 -d display_errors=on -dextension=../ext/google/protobuf/modules/protobuf.so"
 
-wget http://localhost:$PORT/multirequest.result -O multirequest.result
-wget http://localhost:$PORT/multirequest.result -O multirequest.result
+  for i in "$@"; do
+    case $i in
+      --valgrind)
+        RUN_UNDER="valgrind --error-exitcode=1"
+        shift
+        ;;
+      --keep_descriptors)
+        EXTRA_ARGS=-dprotobuf.keep_descriptor_pool_after_request=1
+        shift
+        ;;
+    esac
+  done
 
-pushd ../ext/google/protobuf
-phpize --clean
-popd
+  export ZEND_DONT_UNLOAD_MODULES=1
+  export USE_ZEND_ALLOC=0
+  rm -f nohup.out
+  nohup $RUN_UNDER php $ARGS $EXTRA_ARGS -S localhost:$PORT multirequest.php >nohup.out 2>&1 &
+  PID=$!
 
-PID=`ps | grep "php" | awk '{print $1}'`
-echo $PID
+  if ! timeout $TIMEOUT bash -c "until echo > /dev/tcp/localhost/$PORT; do sleep 0.1; done" > /dev/null 2>&1; then
+    echo "Server failed to come up after $TIMEOUT seconds"
+    cat nohup.out
+    exit 1
+  fi
 
-if [[ -z "$PID" ]]
-then
-  echo "Failed"
-  exit 1
-else
-  kill $PID
-  echo "Succeeded"
-fi
+  seq 2 | xargs -I{} wget -nv http://localhost:$PORT/multirequest.result -O multirequest{}.result
+  REQUESTS_SUCCEEDED=$?
+
+
+  if kill $PID > /dev/null 2>&1 && [[ $REQUESTS_SUCCEEDED == "0" ]]; then
+    wait
+    echo "Multirequest test SUCCEEDED"
+  else
+    echo "Multirequest test FAILED"
+    cat nohup.out
+    exit 1
+  fi
+}
+
+run_test
+run_test --keep_descriptors
+run_test --valgrind
+run_test --valgrind --keep_descriptors

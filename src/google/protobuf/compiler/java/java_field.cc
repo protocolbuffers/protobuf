@@ -87,7 +87,7 @@ ImmutableFieldGenerator* MakeImmutableGenerator(const FieldDescriptor* field,
             field, messageBitIndex, builderBitIndex, context);
     }
   } else {
-    if (field->containing_oneof()) {
+    if (IsRealOneof(field)) {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
           return new ImmutableMessageOneofFieldGenerator(
@@ -144,7 +144,7 @@ ImmutableFieldLiteGenerator* MakeImmutableLiteGenerator(
             field, messageBitIndex, context);
     }
   } else {
-    if (field->containing_oneof()) {
+    if (IsRealOneof(field)) {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
           return new ImmutableMessageOneofFieldLiteGenerator(
@@ -251,12 +251,32 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["disambiguated_reason"] = info->disambiguated_reason;
   (*variables)["constant_name"] = FieldConstantName(descriptor);
   (*variables)["number"] = StrCat(descriptor->number());
+  (*variables)["kt_dsl_builder"] = "_builder";
   // These variables are placeholders to pick out the beginning and ends of
   // identifiers for annotations (when doing so with existing variables would
   // be ambiguous or impossible). They should never be set to anything but the
   // empty string.
   (*variables)["{"] = "";
   (*variables)["}"] = "";
+  (*variables)["kt_name"] =
+      IsForbiddenKotlin(info->name) ? info->name + "_" : info->name;
+  (*variables)["kt_capitalized_name"] = IsForbiddenKotlin(info->name)
+                                            ? info->capitalized_name + "_"
+                                            : info->capitalized_name;
+  if (!descriptor->is_repeated()) {
+    (*variables)["annotation_field_type"] = FieldTypeName(descriptor->type());
+  } else if (GetJavaType(descriptor) == JAVATYPE_MESSAGE &&
+             IsMapEntry(descriptor->message_type())) {
+    (*variables)["annotation_field_type"] =
+        std::string(FieldTypeName(descriptor->type())) + "MAP";
+  } else {
+    (*variables)["annotation_field_type"] =
+        std::string(FieldTypeName(descriptor->type())) + "_LIST";
+    if (descriptor->is_packed()) {
+      (*variables)["annotation_field_type"] =
+          (*variables)["annotation_field_type"] + "_PACKED";
+    }
+  }
 }
 
 void SetCommonOneofVariables(const FieldDescriptor* descriptor,

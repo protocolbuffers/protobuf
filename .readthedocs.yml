@@ -1,0 +1,22 @@
+# .readthedocs.yml
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+# Required
+version: 2
+
+sphinx:
+  configuration: python/docs/conf.py
+  fail_on_warning: false
+
+# Setup build requirements for docs.
+# Use conda so that we can install the latest libprotobuf package without
+# having to build from scratch just for docs builds.
+conda:
+  environment: python/docs/environment.yml
+
+python:
+  version: 3.7
+  install:
+    - method: setuptools
+      path: python

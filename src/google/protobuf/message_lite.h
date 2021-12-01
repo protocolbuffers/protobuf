@@ -46,12 +46,16 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/explicitly_constructed.h>
+#include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/stubs/strutil.h>
 
 
+// clang-format off
 #include <google/protobuf/port_def.inc>
+// clang-format on
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -63,6 +67,10 @@ namespace protobuf {
 template <typename T>
 class RepeatedPtrField;
 
+class FastReflectionMessageMutator;
+class FastReflectionStringSetter;
+class Reflection;
+
 namespace io {
 
 class CodedInputStream;
@@ -73,12 +81,26 @@ class ZeroCopyOutputStream;
 }  // namespace io
 namespace internal {
 
+class SwapFieldHelper;
+
+// Tag type used to invoke the constinit constructor overload of some classes.
+// Such constructors are internal implementation details of the library.
+struct ConstantInitialized {
+  explicit ConstantInitialized() = default;
+};
+
 // See parse_context.h for explanation
 class ParseContext;
 
+class ExtensionSet;
+class LazyField;
 class RepeatedPtrFieldBase;
+class TcParser;
 class WireFormatLite;
 class WeakFieldMap;
+
+template <typename Type>
+class GenericTypeHandler;  // defined in repeated_field.h
 
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization
@@ -107,50 +129,13 @@ inline int ToIntSize(size_t size) {
   return static_cast<int>(size);
 }
 
-// This type wraps a variable whose constructor and destructor are explicitly
-// called. It is particularly useful for a global variable, without its
-// constructor and destructor run on start and end of the program lifetime.
-// This circumvents the initial construction order fiasco, while keeping
-// the address of the empty string a compile time constant.
-//
-// Pay special attention to the initialization state of the object.
-// 1. The object is "uninitialized" to begin with.
-// 2. Call Construct() or DefaultConstruct() only if the object is
-//    uninitialized. After the call, the object becomes "initialized".
-// 3. Call get() and get_mutable() only if the object is initialized.
-// 4. Call Destruct() only if the object is initialized.
-//    After the call, the object becomes uninitialized.
-template <typename T>
-class ExplicitlyConstructed {
- public:
-  void DefaultConstruct() { new (&union_) T(); }
-
-  template <typename... Args>
-  void Construct(Args&&... args) {
-    new (&union_) T(std::forward<Args>(args)...);
-  }
-
-  void Destruct() { get_mutable()->~T(); }
-
-  constexpr const T& get() const { return reinterpret_cast<const T&>(union_); }
-  T* get_mutable() { return reinterpret_cast<T*>(&union_); }
-
- private:
-  // Prefer c++14 aligned_storage, but for compatibility this will do.
-  union AlignedUnion {
-    char space[sizeof(T)];
-    int64 align_to_int64;
-    void* align_to_ptr;
-  } union_;
-};
-
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference.
 PROTOBUF_EXPORT extern ExplicitlyConstructed<std::string>
     fixed_address_empty_string;
 
 
-PROTOBUF_EXPORT inline const std::string& GetEmptyStringAlreadyInited() {
+PROTOBUF_EXPORT constexpr const std::string& GetEmptyStringAlreadyInited() {
   return fixed_address_empty_string.get();
 }
 
@@ -181,10 +166,13 @@ PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 // is best when you only have a small number of message types linked
 // into your binary, in which case the size of the protocol buffers
 // runtime itself is the biggest problem.
+//
+// Users must not derive from this class. Only the protocol compiler and
+// the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT MessageLite {
  public:
-  inline MessageLite() {}
-  virtual ~MessageLite() {}
+  constexpr MessageLite() {}
+  virtual ~MessageLite() = default;
 
   // Basic Operations ------------------------------------------------
 
@@ -193,29 +181,14 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
-  virtual MessageLite* New() const = 0;
+  MessageLite* New() const { return New(nullptr); }
 
   // Construct a new instance on the arena. Ownership is passed to the caller
-  // if arena is a NULL. Default implementation for backwards compatibility.
-  virtual MessageLite* New(Arena* arena) const;
+  // if arena is a nullptr.
+  virtual MessageLite* New(Arena* arena) const = 0;
 
-  // Get the arena, if any, associated with this message. Virtual method
-  // required for generic operations but most arena-related operations should
-  // use the GetArenaNoVirtual() generated-code method. Default implementation
-  // to reduce code size by avoiding the need for per-type implementations
-  // when types do not implement arena support.
-  virtual Arena* GetArena() const { return NULL; }
-
-  // Get a pointer that may be equal to this message's arena, or may not be.
-  // If the value returned by this method is equal to some arena pointer, then
-  // this message is on that arena; however, if this message is on some arena,
-  // this method may or may not return that arena's pointer. As a tradeoff,
-  // this method may be more efficient than GetArena(). The intent is to allow
-  // underlying representations that use e.g. tagged pointers to sometimes
-  // store the arena pointer directly, and sometimes in a more indirect way,
-  // and allow a fastpath comparison against the arena pointer when it's easy
-  // to obtain.
-  virtual void* GetMaybeArenaPointer() const { return GetArena(); }
+  // Same as GetOwningArena.
+  Arena* GetArena() const { return GetOwningArena(); }
 
   // Clear all fields of the message and set them to their default values.
   // Clear() avoids freeing memory, assuming that any memory allocated
@@ -261,28 +234,35 @@ class PROTOBUF_EXPORT MessageLite {
   // format.  A successful return does not indicate the entire input is
   // consumed, ensure you call ConsumedEntireMessage() to check that if
   // applicable.
-  bool ParseFromCodedStream(io::CodedInputStream* input);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromCodedStream(
+      io::CodedInputStream* input);
   // Like ParseFromCodedStream(), but accepts messages that are missing
   // required fields.
-  bool ParsePartialFromCodedStream(io::CodedInputStream* input);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromCodedStream(
+      io::CodedInputStream* input);
   // Read a protocol buffer from the given zero-copy input stream.  If
   // successful, the entire input will be consumed.
-  bool ParseFromZeroCopyStream(io::ZeroCopyInputStream* input);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromZeroCopyStream(
+      io::ZeroCopyInputStream* input);
   // Like ParseFromZeroCopyStream(), but accepts messages that are missing
   // required fields.
-  bool ParsePartialFromZeroCopyStream(io::ZeroCopyInputStream* input);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromZeroCopyStream(
+      io::ZeroCopyInputStream* input);
   // Parse a protocol buffer from a file descriptor.  If successful, the entire
   // input will be consumed.
-  bool ParseFromFileDescriptor(int file_descriptor);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromFileDescriptor(
+      int file_descriptor);
   // Like ParseFromFileDescriptor(), but accepts messages that are missing
   // required fields.
-  bool ParsePartialFromFileDescriptor(int file_descriptor);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromFileDescriptor(
+      int file_descriptor);
   // Parse a protocol buffer from a C++ istream.  If successful, the entire
   // input will be consumed.
-  bool ParseFromIstream(std::istream* input);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromIstream(std::istream* input);
   // Like ParseFromIstream(), but accepts messages that are missing
   // required fields.
-  bool ParsePartialFromIstream(std::istream* input);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromIstream(
+      std::istream* input);
   // Read a protocol buffer from the given zero-copy input stream, expecting
   // the message to be exactly "size" bytes long.  If successful, exactly
   // this many bytes will have been consumed from the input.
@@ -291,25 +271,29 @@ class PROTOBUF_EXPORT MessageLite {
   // Like ParseFromBoundedZeroCopyStream(), but accepts messages that are
   // missing required fields.
   bool MergeFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input, int size);
-  bool ParseFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input, int size);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromBoundedZeroCopyStream(
+      io::ZeroCopyInputStream* input, int size);
   // Like ParseFromBoundedZeroCopyStream(), but accepts messages that are
   // missing required fields.
-  bool ParsePartialFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
-                                             int size);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromBoundedZeroCopyStream(
+      io::ZeroCopyInputStream* input, int size);
   // Parses a protocol buffer contained in a string. Returns true on success.
   // This function takes a string in the (non-human-readable) binary wire
   // format, matching the encoding output by MessageLite::SerializeToString().
   // If you'd like to convert a human-readable string into a protocol buffer
   // object, see google::protobuf::TextFormat::ParseFromString().
-  bool ParseFromString(const std::string& data);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromString(ConstStringParam data);
   // Like ParseFromString(), but accepts messages that are missing
   // required fields.
-  bool ParsePartialFromString(const std::string& data);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromString(
+      ConstStringParam data);
   // Parse a protocol buffer contained in an array of bytes.
-  bool ParseFromArray(const void* data, int size);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromArray(const void* data,
+                                                       int size);
   // Like ParseFromArray(), but accepts messages that are missing
   // required fields.
-  bool ParsePartialFromArray(const void* data, int size);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromArray(const void* data,
+                                                              int size);
 
 
   // Reads a protocol buffer from the stream and merges it into this
@@ -333,7 +317,7 @@ class PROTOBUF_EXPORT MessageLite {
   bool MergePartialFromCodedStream(io::CodedInputStream* input);
 
   // Merge a protocol buffer contained in a string.
-  bool MergeFromString(const std::string& data);
+  bool MergeFromString(ConstStringParam data);
 
 
   // Serialization ---------------------------------------------------
@@ -418,7 +402,7 @@ class PROTOBUF_EXPORT MessageLite {
   // must point at a byte array of at least ByteSize() bytes.  Whether to use
   // deterministic serialization, e.g., maps in sorted order, is determined by
   // CodedOutputStream::IsDefaultSerializationDeterministic().
-  uint8* SerializeWithCachedSizesToArray(uint8* target) const;
+  uint8_t* SerializeWithCachedSizesToArray(uint8_t* target) const;
 
   // Returns the result of the last call to ByteSize().  An embedded message's
   // size is needed both to serialize it (because embedded messages are
@@ -444,6 +428,22 @@ class PROTOBUF_EXPORT MessageLite {
     return Arena::CreateMaybeMessage<T>(arena);
   }
 
+  inline explicit MessageLite(Arena* arena, bool is_message_owned = false)
+      : _internal_metadata_(arena, is_message_owned) {}
+
+  // Returns the arena, if any, that directly owns this message and its internal
+  // memory (Arena::Own is different in that the arena doesn't directly own the
+  // internal memory). This method is used in proto's implementation for
+  // swapping, moving and setting allocated, for deciding whether the ownership
+  // of this message or its internal memory could be changed.
+  Arena* GetOwningArena() const { return _internal_metadata_.owning_arena(); }
+
+  // Returns the arena, used for allocating internal objects(e.g., child
+  // messages, etc), or owning incoming objects (e.g., set allocated).
+  Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
+
+  internal::InternalMetadata _internal_metadata_;
+
  public:
   enum ParseFlags {
     kMerge = 0,
@@ -460,25 +460,40 @@ class PROTOBUF_EXPORT MessageLite {
   bool ParseFrom(const T& input);
 
   // Fast path when conditions match (ie. non-deterministic)
-  //  uint8* _InternalSerialize(uint8* ptr) const;
-  virtual uint8* _InternalSerialize(uint8* ptr,
-                                    io::EpsCopyOutputStream* stream) const = 0;
+  //  uint8_t* _InternalSerialize(uint8_t* ptr) const;
+  virtual uint8_t* _InternalSerialize(
+      uint8_t* ptr, io::EpsCopyOutputStream* stream) const = 0;
 
- private:
-  // TODO(gerbens) make this a pure abstract function
-  virtual const void* InternalGetTable() const { return NULL; }
-
-  friend class internal::WireFormatLite;
-  friend class Message;
-  friend class internal::WeakFieldMap;
-
+  // Identical to IsInitialized() except that it logs an error message.
   bool IsInitializedWithErrors() const {
     if (IsInitialized()) return true;
     LogInitializationErrorMessage();
     return false;
   }
 
+ private:
+  // TODO(gerbens) make this a pure abstract function
+  virtual const void* InternalGetTable() const { return nullptr; }
+
+  friend class FastReflectionMessageMutator;
+  friend class FastReflectionStringSetter;
+  friend class Message;
+  friend class Reflection;
+  friend class internal::ExtensionSet;
+  friend class internal::LazyField;
+  friend class internal::SwapFieldHelper;
+  friend class internal::TcParser;
+  friend class internal::WeakFieldMap;
+  friend class internal::WireFormatLite;
+
+  template <typename Type>
+  friend class Arena::InternalHelper;
+  template <typename Type>
+  friend class internal::GenericTypeHandler;
+
   void LogInitializationErrorMessage() const;
+
+  bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageLite);
 };
@@ -486,18 +501,24 @@ class PROTOBUF_EXPORT MessageLite {
 namespace internal {
 
 template <bool alias>
-bool MergePartialFromImpl(StringPiece input, MessageLite* msg);
-extern template bool MergePartialFromImpl<false>(StringPiece input,
-                                                 MessageLite* msg);
-extern template bool MergePartialFromImpl<true>(StringPiece input,
-                                                MessageLite* msg);
+bool MergeFromImpl(StringPiece input, MessageLite* msg,
+                   MessageLite::ParseFlags parse_flags);
+extern template bool MergeFromImpl<false>(StringPiece input,
+                                          MessageLite* msg,
+                                          MessageLite::ParseFlags parse_flags);
+extern template bool MergeFromImpl<true>(StringPiece input,
+                                         MessageLite* msg,
+                                         MessageLite::ParseFlags parse_flags);
 
 template <bool alias>
-bool MergePartialFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg);
-extern template bool MergePartialFromImpl<false>(io::ZeroCopyInputStream* input,
-                                                 MessageLite* msg);
-extern template bool MergePartialFromImpl<true>(io::ZeroCopyInputStream* input,
-                                                MessageLite* msg);
+bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
+                   MessageLite::ParseFlags parse_flags);
+extern template bool MergeFromImpl<false>(io::ZeroCopyInputStream* input,
+                                          MessageLite* msg,
+                                          MessageLite::ParseFlags parse_flags);
+extern template bool MergeFromImpl<true>(io::ZeroCopyInputStream* input,
+                                         MessageLite* msg,
+                                         MessageLite::ParseFlags parse_flags);
 
 struct BoundedZCIS {
   io::ZeroCopyInputStream* zcis;
@@ -505,18 +526,20 @@ struct BoundedZCIS {
 };
 
 template <bool alias>
-bool MergePartialFromImpl(BoundedZCIS input, MessageLite* msg);
-extern template bool MergePartialFromImpl<false>(BoundedZCIS input,
-                                                 MessageLite* msg);
-extern template bool MergePartialFromImpl<true>(BoundedZCIS input,
-                                                MessageLite* msg);
+bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
+                   MessageLite::ParseFlags parse_flags);
+extern template bool MergeFromImpl<false>(BoundedZCIS input, MessageLite* msg,
+                                          MessageLite::ParseFlags parse_flags);
+extern template bool MergeFromImpl<true>(BoundedZCIS input, MessageLite* msg,
+                                         MessageLite::ParseFlags parse_flags);
 
 template <typename T>
 struct SourceWrapper;
 
 template <bool alias, typename T>
-bool MergePartialFromImpl(const SourceWrapper<T>& input, MessageLite* msg) {
-  return input.template MergePartialInto<alias>(msg);
+bool MergeFromImpl(const SourceWrapper<T>& input, MessageLite* msg,
+                   MessageLite::ParseFlags parse_flags) {
+  return input.template MergeInto<alias>(msg, parse_flags);
 }
 
 }  // namespace internal
@@ -524,9 +547,8 @@ bool MergePartialFromImpl(const SourceWrapper<T>& input, MessageLite* msg) {
 template <MessageLite::ParseFlags flags, typename T>
 bool MessageLite::ParseFrom(const T& input) {
   if (flags & kParse) Clear();
-  constexpr bool alias = flags & kMergeWithAliasing;
-  bool res = internal::MergePartialFromImpl<alias>(input, this);
-  return res && ((flags & kMergePartial) || IsInitializedWithErrors());
+  constexpr bool alias = (flags & kMergeWithAliasing) != 0;
+  return internal::MergeFromImpl<alias>(input, this, flags);
 }
 
 // ===================================================================

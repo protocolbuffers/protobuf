@@ -38,6 +38,7 @@ package protobuf_unittest;
 
 import "google/protobuf/unittest_import_lite.proto";
 
+option cc_enable_arenas = true;
 option optimize_for = LITE_RUNTIME;
 option java_package = "com.google.protobuf";
 
@@ -46,6 +47,10 @@ message TestAllTypesLite {
   message NestedMessage {
     optional int32 bb = 1;
     optional int64 cc = 2;
+  }
+
+  message NestedMessage2 {
+    optional int32 dd = 1;
   }
 
   enum NestedEnum {
@@ -162,6 +167,7 @@ message TestAllTypesLite {
     string oneof_string = 113;
     bytes oneof_bytes = 114;
     NestedMessage oneof_lazy_nested_message = 115 [lazy = true];
+    NestedMessage2 oneof_nested_message2 = 117;
   }
 
   // Tests toString for non-repeated fields with a list suffix
@@ -487,4 +493,9 @@ message DupEnum {
     FOO2 = 1;
     BAR2 = 2;
   }
+}
+
+message RecursiveMessage {
+  optional RecursiveMessage recurse = 1;
+  optional bytes payload = 2;
 }

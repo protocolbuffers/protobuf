@@ -33,7 +33,9 @@
 using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
+using Google.Protobuf.Buffers;
 using NUnit.Framework;
+using System.Text;
 
 namespace Google.Protobuf
 {
@@ -48,21 +50,38 @@ namespace Google.Protobuf
             // Only do 32-bit write if the value fits in 32 bits.
             if ((value >> 32) == 0)
             {
+                // CodedOutputStream
                 MemoryStream rawOutput = new MemoryStream();
                 CodedOutputStream output = new CodedOutputStream(rawOutput);
                 output.WriteRawVarint32((uint) value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
+
+                // IBufferWriter
+                var bufferWriter = new TestArrayBufferWriter<byte>();
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteUInt32((uint) value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
+
                 // Also try computing size.
                 Assert.AreEqual(data.Length, CodedOutputStream.ComputeRawVarint32Size((uint) value));
             }
 
             {
+                // CodedOutputStream
                 MemoryStream rawOutput = new MemoryStream();
                 CodedOutputStream output = new CodedOutputStream(rawOutput);
                 output.WriteRawVarint64(value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
+
+                // IBufferWriter
+                var bufferWriter = new TestArrayBufferWriter<byte>();
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteUInt64(value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
 
                 // Also try computing size.
                 Assert.AreEqual(data.Length, CodedOutputStream.ComputeRawVarint64Size(value));
@@ -80,6 +99,13 @@ namespace Google.Protobuf
                     output.WriteRawVarint32((uint) value);
                     output.Flush();
                     Assert.AreEqual(data, rawOutput.ToArray());
+
+                    var bufferWriter = new TestArrayBufferWriter<byte>();
+                    bufferWriter.MaxGrowBy = bufferSize;
+                    WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                    ctx.WriteUInt32((uint) value);
+                    ctx.Flush();
+                    Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
                 }
 
                 {
@@ -88,7 +114,15 @@ namespace Google.Protobuf
                     output.WriteRawVarint64(value);
                     output.Flush();
                     Assert.AreEqual(data, rawOutput.ToArray());
+
+                    var bufferWriter = new TestArrayBufferWriter<byte>();
+                    bufferWriter.MaxGrowBy = bufferSize;
+                    WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                    ctx.WriteUInt64(value);
+                    ctx.Flush();
+                    Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
                 }
+
             }
         }
 
@@ -133,20 +167,35 @@ namespace Google.Protobuf
         /// </summary>
         private static void AssertWriteLittleEndian32(byte[] data, uint value)
         {
-            MemoryStream rawOutput = new MemoryStream();
-            CodedOutputStream output = new CodedOutputStream(rawOutput);
-            output.WriteRawLittleEndian32(value);
-            output.Flush();
-            Assert.AreEqual(data, rawOutput.ToArray());
+            {
+                var rawOutput = new MemoryStream();
+                var output = new CodedOutputStream(rawOutput);
+                output.WriteRawLittleEndian32(value);
+                output.Flush();
+                Assert.AreEqual(data, rawOutput.ToArray());
+
+                var bufferWriter = new TestArrayBufferWriter<byte>();
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteFixed32(value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
+            }
 
             // Try different buffer sizes.
             for (int bufferSize = 1; bufferSize <= 16; bufferSize *= 2)
             {
-                rawOutput = new MemoryStream();
-                output = new CodedOutputStream(rawOutput, bufferSize);
+                var rawOutput = new MemoryStream();
+                var output = new CodedOutputStream(rawOutput, bufferSize);
                 output.WriteRawLittleEndian32(value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
+
+                var bufferWriter = new TestArrayBufferWriter<byte>();
+                bufferWriter.MaxGrowBy = bufferSize;
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteFixed32(value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
             }
         }
 
@@ -156,20 +205,35 @@ namespace Google.Protobuf
         /// </summary>
         private static void AssertWriteLittleEndian64(byte[] data, ulong value)
         {
-            MemoryStream rawOutput = new MemoryStream();
-            CodedOutputStream output = new CodedOutputStream(rawOutput);
-            output.WriteRawLittleEndian64(value);
-            output.Flush();
-            Assert.AreEqual(data, rawOutput.ToArray());
+            {
+                var rawOutput = new MemoryStream();
+                var output = new CodedOutputStream(rawOutput);
+                output.WriteRawLittleEndian64(value);
+                output.Flush();
+                Assert.AreEqual(data, rawOutput.ToArray());
+
+                var bufferWriter = new TestArrayBufferWriter<byte>();
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteFixed64(value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
+            }
 
             // Try different block sizes.
             for (int blockSize = 1; blockSize <= 16; blockSize *= 2)
             {
-                rawOutput = new MemoryStream();
-                output = new CodedOutputStream(rawOutput, blockSize);
+                var rawOutput = new MemoryStream();
+                var output = new CodedOutputStream(rawOutput, blockSize);
                 output.WriteRawLittleEndian64(value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
+
+                var bufferWriter = new TestArrayBufferWriter<byte>();
+                bufferWriter.MaxGrowBy = blockSize;
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteFixed64(value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
             }
         }
 
@@ -205,41 +269,72 @@ namespace Google.Protobuf
                 message.WriteTo(output);
                 output.Flush();
                 Assert.AreEqual(rawBytes, rawOutput.ToArray());
+
+                var bufferWriter = new TestArrayBufferWriter<byte>();
+                bufferWriter.MaxGrowBy = blockSize;
+                message.WriteTo(bufferWriter);
+                Assert.AreEqual(rawBytes, bufferWriter.WrittenSpan.ToArray()); 
             }
+        }
+
+        [Test]
+        public void WriteContext_WritesWithFlushes()
+        {
+            TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
+
+            MemoryStream expectedOutput = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(expectedOutput);
+            output.WriteMessage(message);
+            output.Flush();
+            byte[] expectedBytes1 = expectedOutput.ToArray();
+
+            output.WriteMessage(message);
+            output.Flush();
+            byte[] expectedBytes2 = expectedOutput.ToArray();
+
+            var bufferWriter = new TestArrayBufferWriter<byte>();
+            WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+            ctx.WriteMessage(message);
+            ctx.Flush();
+            Assert.AreEqual(expectedBytes1, bufferWriter.WrittenSpan.ToArray());
+
+            ctx.WriteMessage(message);
+            ctx.Flush();
+            Assert.AreEqual(expectedBytes2, bufferWriter.WrittenSpan.ToArray());
         }
         
         [Test]
         public void EncodeZigZag32()
         {
-            Assert.AreEqual(0u, CodedOutputStream.EncodeZigZag32(0));
-            Assert.AreEqual(1u, CodedOutputStream.EncodeZigZag32(-1));
-            Assert.AreEqual(2u, CodedOutputStream.EncodeZigZag32(1));
-            Assert.AreEqual(3u, CodedOutputStream.EncodeZigZag32(-2));
-            Assert.AreEqual(0x7FFFFFFEu, CodedOutputStream.EncodeZigZag32(0x3FFFFFFF));
-            Assert.AreEqual(0x7FFFFFFFu, CodedOutputStream.EncodeZigZag32(unchecked((int) 0xC0000000)));
-            Assert.AreEqual(0xFFFFFFFEu, CodedOutputStream.EncodeZigZag32(0x7FFFFFFF));
-            Assert.AreEqual(0xFFFFFFFFu, CodedOutputStream.EncodeZigZag32(unchecked((int) 0x80000000)));
+            Assert.AreEqual(0u, WritingPrimitives.EncodeZigZag32(0));
+            Assert.AreEqual(1u, WritingPrimitives.EncodeZigZag32(-1));
+            Assert.AreEqual(2u, WritingPrimitives.EncodeZigZag32(1));
+            Assert.AreEqual(3u, WritingPrimitives.EncodeZigZag32(-2));
+            Assert.AreEqual(0x7FFFFFFEu, WritingPrimitives.EncodeZigZag32(0x3FFFFFFF));
+            Assert.AreEqual(0x7FFFFFFFu, WritingPrimitives.EncodeZigZag32(unchecked((int) 0xC0000000)));
+            Assert.AreEqual(0xFFFFFFFEu, WritingPrimitives.EncodeZigZag32(0x7FFFFFFF));
+            Assert.AreEqual(0xFFFFFFFFu, WritingPrimitives.EncodeZigZag32(unchecked((int) 0x80000000)));
         }
 
         [Test]
         public void EncodeZigZag64()
         {
-            Assert.AreEqual(0u, CodedOutputStream.EncodeZigZag64(0));
-            Assert.AreEqual(1u, CodedOutputStream.EncodeZigZag64(-1));
-            Assert.AreEqual(2u, CodedOutputStream.EncodeZigZag64(1));
-            Assert.AreEqual(3u, CodedOutputStream.EncodeZigZag64(-2));
+            Assert.AreEqual(0u, WritingPrimitives.EncodeZigZag64(0));
+            Assert.AreEqual(1u, WritingPrimitives.EncodeZigZag64(-1));
+            Assert.AreEqual(2u, WritingPrimitives.EncodeZigZag64(1));
+            Assert.AreEqual(3u, WritingPrimitives.EncodeZigZag64(-2));
             Assert.AreEqual(0x000000007FFFFFFEuL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0x000000003FFFFFFFUL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0x000000003FFFFFFFUL)));
             Assert.AreEqual(0x000000007FFFFFFFuL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0xFFFFFFFFC0000000UL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0xFFFFFFFFC0000000UL)));
             Assert.AreEqual(0x00000000FFFFFFFEuL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0x000000007FFFFFFFUL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0x000000007FFFFFFFUL)));
             Assert.AreEqual(0x00000000FFFFFFFFuL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0xFFFFFFFF80000000UL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0xFFFFFFFF80000000UL)));
             Assert.AreEqual(0xFFFFFFFFFFFFFFFEL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0x7FFFFFFFFFFFFFFFUL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0x7FFFFFFFFFFFFFFFUL)));
             Assert.AreEqual(0xFFFFFFFFFFFFFFFFL,
-                            CodedOutputStream.EncodeZigZag64(unchecked((long) 0x8000000000000000UL)));
+                            WritingPrimitives.EncodeZigZag64(unchecked((long) 0x8000000000000000UL)));
         }
 
         [Test]
@@ -247,26 +342,26 @@ namespace Google.Protobuf
         {
             // Some easier-to-verify round-trip tests.  The inputs (other than 0, 1, -1)
             // were chosen semi-randomly via keyboard bashing.
-            Assert.AreEqual(0, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(0)));
-            Assert.AreEqual(1, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(1)));
-            Assert.AreEqual(-1, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-1)));
-            Assert.AreEqual(14927, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(14927)));
-            Assert.AreEqual(-3612, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-3612)));
+            Assert.AreEqual(0, ParsingPrimitives.DecodeZigZag32(WritingPrimitives.EncodeZigZag32(0)));
+            Assert.AreEqual(1, ParsingPrimitives.DecodeZigZag32(WritingPrimitives.EncodeZigZag32(1)));
+            Assert.AreEqual(-1, ParsingPrimitives.DecodeZigZag32(WritingPrimitives.EncodeZigZag32(-1)));
+            Assert.AreEqual(14927, ParsingPrimitives.DecodeZigZag32(WritingPrimitives.EncodeZigZag32(14927)));
+            Assert.AreEqual(-3612, ParsingPrimitives.DecodeZigZag32(WritingPrimitives.EncodeZigZag32(-3612)));
         }
 
         [Test]
         public void RoundTripZigZag64()
         {
-            Assert.AreEqual(0, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(0)));
-            Assert.AreEqual(1, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(1)));
-            Assert.AreEqual(-1, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-1)));
-            Assert.AreEqual(14927, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(14927)));
-            Assert.AreEqual(-3612, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-3612)));
+            Assert.AreEqual(0, ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(0)));
+            Assert.AreEqual(1, ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(1)));
+            Assert.AreEqual(-1, ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(-1)));
+            Assert.AreEqual(14927, ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(14927)));
+            Assert.AreEqual(-3612, ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(-3612)));
 
             Assert.AreEqual(856912304801416L,
-                            CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(856912304801416L)));
+                            ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(856912304801416L)));
             Assert.AreEqual(-75123905439571256L,
-                            CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-75123905439571256L)));
+                            ParsingPrimitives.DecodeZigZag64(WritingPrimitives.EncodeZigZag64(-75123905439571256L)));
         }
 
         [Test]
@@ -395,7 +490,7 @@ namespace Google.Protobuf
             Assert.IsTrue(memoryStream.CanWrite);
             using (var cos = new CodedOutputStream(memoryStream))
             {
-                cos.WriteRawByte(0);
+                cos.WriteRawBytes(new byte[] {0});
                 Assert.AreEqual(0, memoryStream.Position); // Not flushed yet
             }
             Assert.AreEqual(1, memoryStream.ToArray().Length); // Flushed data from CodedOutputStream to MemoryStream
@@ -409,7 +504,7 @@ namespace Google.Protobuf
             Assert.IsTrue(memoryStream.CanWrite);
             using (var cos = new CodedOutputStream(memoryStream, true))
             {
-                cos.WriteRawByte(0);
+                cos.WriteRawBytes(new byte[] {0});
                 Assert.AreEqual(0, memoryStream.Position); // Not flushed yet
             }
             Assert.AreEqual(1, memoryStream.Position); // Flushed data from CodedOutputStream to MemoryStream
@@ -421,6 +516,68 @@ namespace Google.Protobuf
         {
             var stream = new CodedOutputStream(new byte[10]);
             stream.Dispose();
+        }
+
+        [Test]
+        public void WriteString_AsciiSmall_MaxUtf8SizeExceedsBuffer()
+        {
+            var buffer = new byte[5];
+            var output = new CodedOutputStream(buffer);
+            output.WriteString("ABC");
+
+            output.Flush();
+
+            // Verify written content
+            var input = new CodedInputStream(buffer);
+            Assert.AreEqual("ABC", input.ReadString());
+        }
+
+        [Test]
+        public void WriteStringsOfDifferentSizes_Ascii()
+        {
+            for (int i = 1; i <= 1024; i++)
+            {
+                var buffer = new byte[4096];
+                var output = new CodedOutputStream(buffer);
+                var sb = new StringBuilder();
+                for (int j = 0; j < i; j++)
+                {
+                    sb.Append((j % 10).ToString()); // incrementing numbers, repeating
+                }
+                var s = sb.ToString();
+                output.WriteString(s);
+
+                output.Flush();
+
+                // Verify written content
+                var input = new CodedInputStream(buffer);
+                Assert.AreEqual(s, input.ReadString());
+            }
+        }
+
+        [Test]
+        public void WriteStringsOfDifferentSizes_Unicode()
+        {
+            for (int i = 1; i <= 1024; i++)
+            {
+                var buffer = new byte[4096];
+                var output = new CodedOutputStream(buffer);
+                var sb = new StringBuilder();
+                for (int j = 0; j < i; j++)
+                {
+                    char c = (char)((j % 10) + 10112);
+                    sb.Append(c.ToString()); // incrementing unicode numbers, repeating
+                }
+                var s = sb.ToString();
+                output.WriteString(s);
+
+                output.Flush();
+
+                // Verify written content
+                var input = new CodedInputStream(buffer);
+
+                Assert.AreEqual(s, input.ReadString());
+            }
         }
     }
 }

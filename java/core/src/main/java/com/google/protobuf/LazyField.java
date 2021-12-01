@@ -35,10 +35,10 @@ import java.util.Map.Entry;
 
 /**
  * LazyField encapsulates the logic of lazily parsing message fields. It stores the message in a
- * ByteString initially and then parse it on-demand.
+ * ByteString initially and then parses it on-demand.
  *
- * <p>Most of key methods are implemented in {@link LazyFieldLite} but this class can contain
- * default instance of the message to provide {@code hashCode()}, {@code euqals()} and {@code
+ * <p>Most methods are implemented in {@link LazyFieldLite} but this class can contain a
+ * default instance of the message to provide {@code hashCode()}, {@code equals()}, and {@code
  * toString()}.
  *
  * @author xiangl@google.com (Xiang Li)
@@ -46,7 +46,7 @@ import java.util.Map.Entry;
 public class LazyField extends LazyFieldLite {
 
   /**
-   * Carry a message's default instance which is used by {@code hashCode()}, {@code euqals()} and
+   * Carry a message's default instance which is used by {@code hashCode()}, {@code equals()}, and
    * {@code toString()}.
    */
   private final MessageLite defaultInstance;

@@ -269,8 +269,8 @@ namespace Google.Protobuf
         [Test]
         public void RequiredFieldsNoThrow()
         {
-            Assert.DoesNotThrow(() => TestRequired.Parser.ParseFrom(new byte[0]));
-            Assert.DoesNotThrow(() => (TestRequired.Parser as MessageParser).ParseFrom(new byte[0]));
+            Assert.DoesNotThrow(() => MessageParsingHelpers.AssertReadingMessage(TestRequired.Parser, new byte[0], m => { }));
+            Assert.DoesNotThrow(() => MessageParsingHelpers.AssertReadingMessage(TestRequired.Parser as MessageParser, new byte[0], m => { }));
         }
 
         [Test]
@@ -344,9 +344,9 @@ namespace Google.Protobuf
                 }
             };
 
-            byte[] bytes = message.ToByteArray();
-            TestAllTypes parsed = Proto2.TestAllTypes.Parser.ParseFrom(bytes);
-            Assert.AreEqual(message, parsed);
+            MessageParsingHelpers.AssertWritingMessage(message);
+
+            MessageParsingHelpers.AssertRoundtrip(Proto2.TestAllTypes.Parser, message);
         }
 
         [Test]
@@ -361,9 +361,11 @@ namespace Google.Protobuf
                 new RepeatedGroup_extension { A = 30 }
             });
 
-            byte[] bytes = message.ToByteArray();
-            TestAllExtensions extendable_parsed = TestAllExtensions.Parser.WithExtensionRegistry(new ExtensionRegistry() { UnittestExtensions.OptionalGroupExtension, UnittestExtensions.RepeatedGroupExtension }).ParseFrom(bytes);
-            Assert.AreEqual(message, extendable_parsed);
+            MessageParsingHelpers.AssertWritingMessage(message);
+
+            MessageParsingHelpers.AssertRoundtrip(
+                TestAllExtensions.Parser.WithExtensionRegistry(new ExtensionRegistry() { UnittestExtensions.OptionalGroupExtension, UnittestExtensions.RepeatedGroupExtension }),
+                message);
         }
 
         [Test]
@@ -372,9 +374,24 @@ namespace Google.Protobuf
             var message = new TestGroupExtension();
             message.SetExtension(TestNestedExtension.Extensions.OptionalGroupExtension, new TestNestedExtension.Types.OptionalGroup_extension { A = 10 });
 
+            MessageParsingHelpers.AssertWritingMessage(message);
+            
+            MessageParsingHelpers.AssertRoundtrip(
+                TestGroupExtension.Parser.WithExtensionRegistry(new ExtensionRegistry() { TestNestedExtension.Extensions.OptionalGroupExtension }),
+                message);
+        }
+
+        [Test]
+        public void RoundTrip_ParseUsingCodedInput()
+        {
+            var message = new TestAllExtensions();
+            message.SetExtension(UnittestExtensions.OptionalBoolExtension, true);
             byte[] bytes = message.ToByteArray();
-            TestGroupExtension extendable_parsed = TestGroupExtension.Parser.WithExtensionRegistry(new ExtensionRegistry() { TestNestedExtension.Extensions.OptionalGroupExtension }).ParseFrom(bytes);
-            Assert.AreEqual(message, extendable_parsed);
+            using (CodedInputStream input = new CodedInputStream(bytes))
+            {
+                var parsed = TestAllExtensions.Parser.WithExtensionRegistry(new ExtensionRegistry() { UnittestExtensions.OptionalBoolExtension }).ParseFrom(input);
+                Assert.AreEqual(message, parsed);
+            }
         }
     }
 }

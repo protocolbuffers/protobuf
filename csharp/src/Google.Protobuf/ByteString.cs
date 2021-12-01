@@ -34,6 +34,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 #if !NET35
 using System.Threading;
@@ -48,40 +50,36 @@ namespace Google.Protobuf
     /// <summary>
     /// Immutable array of bytes.
     /// </summary>
+    [SecuritySafeCritical]
     public sealed class ByteString : IEnumerable<byte>, IEquatable<ByteString>
     {
         private static readonly ByteString empty = new ByteString(new byte[0]);
 
-        private readonly byte[] bytes;
+        private readonly ReadOnlyMemory<byte> bytes;
 
         /// <summary>
-        /// Unsafe operations that can cause IO Failure and/or other catastrophic side-effects.
+        /// Internal use only. Ensure that the provided memory is not mutated and belongs to this instance.
         /// </summary>
-        internal static class Unsafe
-        {
-            /// <summary>
-            /// Constructs a new ByteString from the given byte array. The array is
-            /// *not* copied, and must not be modified after this constructor is called.
-            /// </summary>
-            internal static ByteString FromBytes(byte[] bytes)
-            {
-                return new ByteString(bytes);
-            }
-        }
-
-        /// <summary>
-        /// Internal use only.  Ensure that the provided array is not mutated and belongs to this instance.
-        /// </summary>
-        internal static ByteString AttachBytes(byte[] bytes)
+        internal static ByteString AttachBytes(ReadOnlyMemory<byte> bytes)
         {
             return new ByteString(bytes);
         }
 
         /// <summary>
-        /// Constructs a new ByteString from the given byte array. The array is
+        /// Internal use only. Ensure that the provided memory is not mutated and belongs to this instance.
+        /// This method encapsulates converting array to memory. Reduces need for SecuritySafeCritical
+        /// in .NET Framework.
+        /// </summary>
+        internal static ByteString AttachBytes(byte[] bytes)
+        {
+            return AttachBytes(bytes.AsMemory());
+        }
+
+        /// <summary>
+        /// Constructs a new ByteString from the given memory. The memory is
         /// *not* copied, and must not be modified after this constructor is called.
         /// </summary>
-        private ByteString(byte[] bytes)
+        private ByteString(ReadOnlyMemory<byte> bytes)
         {
             this.bytes = bytes;
         }
@@ -110,13 +108,23 @@ namespace Google.Protobuf
             get { return Length == 0; }
         }
 
-#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
         /// <summary>
         /// Provides read-only access to the data of this <see cref="ByteString"/>.
         /// No data is copied so this is the most efficient way of accessing.
         /// </summary>
-        public ReadOnlySpan<byte> Span => new ReadOnlySpan<byte>(bytes);
-#endif
+        public ReadOnlySpan<byte> Span
+        {
+            get { return bytes.Span; }
+        }
+
+        /// <summary>
+        /// Provides read-only access to the data of this <see cref="ByteString"/>.
+        /// No data is copied so this is the most efficient way of accessing.
+        /// </summary>
+        public ReadOnlyMemory<byte> Memory
+        {
+            get { return bytes; }
+        }
 
         /// <summary>
         /// Converts this <see cref="ByteString"/> into a byte array.
@@ -125,7 +133,7 @@ namespace Google.Protobuf
         /// <returns>A byte array with the same data as this <c>ByteString</c>.</returns>
         public byte[] ToByteArray()
         {
-            return (byte[]) bytes.Clone();
+            return bytes.ToArray();
         }
 
         /// <summary>
@@ -134,7 +142,16 @@ namespace Google.Protobuf
         /// <returns>A base64 representation of this <c>ByteString</c>.</returns>
         public string ToBase64()
         {
-            return Convert.ToBase64String(bytes);
+            if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment))
+            {
+                // Fast path. ByteString was created with an array, so pass the underlying array.
+                return Convert.ToBase64String(segment.Array, segment.Offset, segment.Count);
+            }
+            else
+            {
+                // Slow path. BytesString is not an array. Convert memory and pass result to ToBase64String.
+                return Convert.ToBase64String(bytes.ToArray());
+            }
         }
 
         /// <summary>
@@ -160,7 +177,7 @@ namespace Google.Protobuf
             int capacity = stream.CanSeek ? checked((int) (stream.Length - stream.Position)) : 0;
             var memoryStream = new MemoryStream(capacity);
             stream.CopyTo(memoryStream);
-#if NETSTANDARD1_0 || NETSTANDARD2_0
+#if NETSTANDARD1_1 || NETSTANDARD2_0
             byte[] bytes = memoryStream.ToArray();
 #else
             // Avoid an extra copy if we can.
@@ -178,21 +195,10 @@ namespace Google.Protobuf
         /// <param name="stream">The stream to copy into a ByteString.</param>
         /// <param name="cancellationToken">The cancellation token to use when reading from the stream, if any.</param>
         /// <returns>A ByteString with content read from the given stream.</returns>
-        public async static Task<ByteString> FromStreamAsync(Stream stream, CancellationToken cancellationToken = default(CancellationToken))
+        public static Task<ByteString> FromStreamAsync(Stream stream, CancellationToken cancellationToken = default(CancellationToken))
         {
             ProtoPreconditions.CheckNotNull(stream, nameof(stream));
-            int capacity = stream.CanSeek ? checked((int) (stream.Length - stream.Position)) : 0;
-            var memoryStream = new MemoryStream(capacity);
-            // We have to specify the buffer size here, as there's no overload accepting the cancellation token
-            // alone. But it's documented to use 81920 by default if not specified.
-            await stream.CopyToAsync(memoryStream, 81920, cancellationToken);
-#if NETSTANDARD1_0 || NETSTANDARD2_0
-            byte[] bytes = memoryStream.ToArray();
-#else
-            // Avoid an extra copy if we can.
-            byte[] bytes = memoryStream.Length == memoryStream.Capacity ? memoryStream.GetBuffer() : memoryStream.ToArray();
-#endif
-            return AttachBytes(bytes);
+            return ByteStringAsync.FromStreamAsyncCore(stream, cancellationToken);
         }
 #endif
 
@@ -218,7 +224,6 @@ namespace Google.Protobuf
             return new ByteString(portion);
         }
 
-#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
         /// <summary>
         /// Constructs a <see cref="ByteString" /> from a read only span. The contents
         /// are copied, so further modifications to the span will not
@@ -228,7 +233,6 @@ namespace Google.Protobuf
         {
             return new ByteString(bytes.ToArray());
         }
-#endif
 
         /// <summary>
         /// Creates a new <see cref="ByteString" /> by encoding the specified text with
@@ -248,11 +252,11 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Retuns the byte at the given index.
+        /// Returns the byte at the given index.
         /// </summary>
         public byte this[int index]
         {
-            get { return bytes[index]; }
+            get { return bytes.Span[index]; }
         }
 
         /// <summary>
@@ -266,7 +270,18 @@ namespace Google.Protobuf
         /// <returns>The result of decoding the binary data with the given decoding.</returns>
         public string ToString(Encoding encoding)
         {
-            return encoding.GetString(bytes, 0, bytes.Length);
+            if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment))
+            {
+                // Fast path. ByteString was created with an array.
+                return encoding.GetString(segment.Array, segment.Offset, segment.Count);
+            }
+            else
+            {
+                // Slow path. BytesString is not an array. Convert memory and pass result to GetString.
+                // TODO: Consider using GetString overload that takes a pointer.
+                byte[] array = bytes.ToArray();
+                return encoding.GetString(array, 0, array.Length);
+            }
         }
 
         /// <summary>
@@ -286,9 +301,10 @@ namespace Google.Protobuf
         /// Returns an iterator over the bytes in this <see cref="ByteString"/>.
         /// </summary>
         /// <returns>An iterator over the bytes in this object.</returns>
+        [SecuritySafeCritical]
         public IEnumerator<byte> GetEnumerator()
         {
-            return ((IEnumerable<byte>) bytes).GetEnumerator();
+            return MemoryMarshal.ToEnumerable(bytes).GetEnumerator();
         }
 
         /// <summary>
@@ -306,7 +322,17 @@ namespace Google.Protobuf
         public CodedInputStream CreateCodedInput()
         {
             // We trust CodedInputStream not to reveal the provided byte array or modify it
-            return new CodedInputStream(bytes);
+            if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment) && segment.Count == bytes.Length)
+            {
+                // Fast path. ByteString was created with a complete array.
+                return new CodedInputStream(segment.Array, segment.Offset, segment.Count);
+            }
+            else
+            {
+                // Slow path. BytesString is not an array, or is a slice of an array.
+                // Convert memory and pass result to WriteRawBytes.
+                return new CodedInputStream(bytes.ToArray());
+            }
         }
 
         /// <summary>
@@ -325,18 +351,8 @@ namespace Google.Protobuf
             {
                 return false;
             }
-            if (lhs.bytes.Length != rhs.bytes.Length)
-            {
-                return false;
-            }
-            for (int i = 0; i < lhs.Length; i++)
-            {
-                if (rhs.bytes[i] != lhs.bytes[i])
-                {
-                    return false;
-                }
-            }
-            return true;
+
+            return lhs.bytes.Span.SequenceEqual(rhs.bytes.Span);
         }
 
         /// <summary>
@@ -355,6 +371,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="obj">The object to compare this with.</param>
         /// <returns><c>true</c> if <paramref name="obj"/> refers to an equal <see cref="ByteString"/>; <c>false</c> otherwise.</returns>
+        [SecuritySafeCritical]
         public override bool Equals(object obj)
         {
             return this == (obj as ByteString);
@@ -365,12 +382,15 @@ namespace Google.Protobuf
         /// will return the same hash code.
         /// </summary>
         /// <returns>A hash code for this object.</returns>
+        [SecuritySafeCritical]
         public override int GetHashCode()
         {
+            ReadOnlySpan<byte> b = bytes.Span;
+
             int ret = 23;
-            foreach (byte b in bytes)
+            for (int i = 0; i < b.Length; i++)
             {
-                ret = (ret * 31) + b;
+                ret = (ret * 31) + b[i];
             }
             return ret;
         }
@@ -386,19 +406,11 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Used internally by CodedOutputStream to avoid creating a copy for the write
-        /// </summary>
-        internal void WriteRawBytesTo(CodedOutputStream outputStream)
-        {
-            outputStream.WriteRawBytes(bytes, 0, bytes.Length);
-        }
-
-        /// <summary>
         /// Copies the entire byte array to the destination array provided at the offset specified.
         /// </summary>
         public void CopyTo(byte[] array, int position)
         {
-            ByteArray.Copy(bytes, 0, array, position, bytes.Length);
+            bytes.CopyTo(array.AsMemory(position));
         }
 
         /// <summary>
@@ -406,7 +418,17 @@ namespace Google.Protobuf
         /// </summary>
         public void WriteTo(Stream outputStream)
         {
-            outputStream.Write(bytes, 0, bytes.Length);
+            if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment))
+            {
+                // Fast path. ByteString was created with an array, so pass the underlying array.
+                outputStream.Write(segment.Array, segment.Offset, segment.Count);
+            }
+            else
+            {
+                // Slow path. BytesString is not an array. Convert memory and pass result to WriteRawBytes.
+                var array = bytes.ToArray();
+                outputStream.Write(array, 0, array.Length);
+            }
         }
     }
 }

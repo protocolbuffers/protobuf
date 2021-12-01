@@ -37,25 +37,169 @@
 namespace google {
 namespace protobuf {
 namespace {
-TEST(Status, Empty) {
-  util::Status status;
-  EXPECT_EQ(util::error::OK, util::Status::OK.error_code());
-  EXPECT_EQ(util::error::OK, util::Status::OK.code());
-  EXPECT_EQ("OK", util::Status::OK.ToString());
-}
 
-TEST(Status, GenericCodes) {
-  EXPECT_EQ(util::error::OK, util::Status::OK.error_code());
-  EXPECT_EQ(util::error::OK, util::Status::OK.code());
-  EXPECT_EQ(util::error::CANCELLED, util::Status::CANCELLED.error_code());
-  EXPECT_EQ(util::error::CANCELLED, util::Status::CANCELLED.code());
-  EXPECT_EQ(util::error::UNKNOWN, util::Status::UNKNOWN.error_code());
-  EXPECT_EQ(util::error::UNKNOWN, util::Status::UNKNOWN.code());
+TEST(Status, Constructor) {
+  EXPECT_EQ(util::StatusCode::kOk,
+            util::Status(util::StatusCode::kOk, "").code());
+  EXPECT_EQ(util::StatusCode::kCancelled,
+            util::Status(util::StatusCode::kCancelled, "").code());
+  EXPECT_EQ(util::StatusCode::kUnknown,
+            util::Status(util::StatusCode::kUnknown, "").code());
+  EXPECT_EQ(util::StatusCode::kInvalidArgument,
+            util::Status(util::StatusCode::kInvalidArgument, "").code());
+  EXPECT_EQ(util::StatusCode::kDeadlineExceeded,
+            util::Status(util::StatusCode::kDeadlineExceeded, "").code());
+  EXPECT_EQ(util::StatusCode::kNotFound,
+            util::Status(util::StatusCode::kNotFound, "").code());
+  EXPECT_EQ(util::StatusCode::kAlreadyExists,
+            util::Status(util::StatusCode::kAlreadyExists, "").code());
+  EXPECT_EQ(util::StatusCode::kPermissionDenied,
+            util::Status(util::StatusCode::kPermissionDenied, "").code());
+  EXPECT_EQ(util::StatusCode::kUnauthenticated,
+            util::Status(util::StatusCode::kUnauthenticated, "").code());
+  EXPECT_EQ(util::StatusCode::kResourceExhausted,
+            util::Status(util::StatusCode::kResourceExhausted, "").code());
+  EXPECT_EQ(util::StatusCode::kFailedPrecondition,
+            util::Status(util::StatusCode::kFailedPrecondition, "").code());
+  EXPECT_EQ(util::StatusCode::kAborted,
+            util::Status(util::StatusCode::kAborted, "").code());
+  EXPECT_EQ(util::StatusCode::kOutOfRange,
+            util::Status(util::StatusCode::kOutOfRange, "").code());
+  EXPECT_EQ(util::StatusCode::kUnimplemented,
+            util::Status(util::StatusCode::kUnimplemented, "").code());
+  EXPECT_EQ(util::StatusCode::kInternal,
+            util::Status(util::StatusCode::kInternal, "").code());
+  EXPECT_EQ(util::StatusCode::kUnavailable,
+            util::Status(util::StatusCode::kUnavailable, "").code());
+  EXPECT_EQ(util::StatusCode::kDataLoss,
+            util::Status(util::StatusCode::kDataLoss, "").code());
 }
 
 TEST(Status, ConstructorZero) {
-  util::Status status(util::error::OK, "msg");
+  util::Status status(util::StatusCode::kOk, "msg");
   EXPECT_TRUE(status.ok());
+  EXPECT_EQ("OK", status.ToString());
+  EXPECT_EQ(util::OkStatus(), status);
+}
+
+TEST(Status, ConvenienceConstructors) {
+  EXPECT_EQ(util::StatusCode::kOk, util::OkStatus().code());
+  EXPECT_EQ("", util::OkStatus().message());
+
+  EXPECT_EQ(util::StatusCode::kCancelled, util::CancelledError("").code());
+  EXPECT_EQ("", util::CancelledError("").message());
+  EXPECT_EQ("foo", util::CancelledError("foo").message());
+  EXPECT_EQ("bar", util::CancelledError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kUnknown, util::UnknownError("").code());
+  EXPECT_EQ("", util::UnknownError("").message());
+  EXPECT_EQ("foo", util::UnknownError("foo").message());
+  EXPECT_EQ("bar", util::UnknownError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kInvalidArgument,
+            util::InvalidArgumentError("").code());
+  EXPECT_EQ("", util::InvalidArgumentError("").message());
+  EXPECT_EQ("foo", util::InvalidArgumentError("foo").message());
+  EXPECT_EQ("bar", util::InvalidArgumentError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kDeadlineExceeded,
+            util::DeadlineExceededError("").code());
+  EXPECT_EQ("", util::DeadlineExceededError("").message());
+  EXPECT_EQ("foo", util::DeadlineExceededError("foo").message());
+  EXPECT_EQ("bar", util::DeadlineExceededError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kNotFound, util::NotFoundError("").code());
+  EXPECT_EQ("", util::NotFoundError("").message());
+  EXPECT_EQ("foo", util::NotFoundError("foo").message());
+  EXPECT_EQ("bar", util::NotFoundError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kAlreadyExists,
+            util::AlreadyExistsError("").code());
+  EXPECT_EQ("", util::AlreadyExistsError("").message());
+  EXPECT_EQ("foo", util::AlreadyExistsError("foo").message());
+  EXPECT_EQ("bar", util::AlreadyExistsError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kPermissionDenied,
+            util::PermissionDeniedError("").code());
+  EXPECT_EQ("", util::PermissionDeniedError("").message());
+  EXPECT_EQ("foo", util::PermissionDeniedError("foo").message());
+  EXPECT_EQ("bar", util::PermissionDeniedError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kUnauthenticated,
+            util::UnauthenticatedError("").code());
+  EXPECT_EQ("", util::UnauthenticatedError("").message());
+  EXPECT_EQ("foo", util::UnauthenticatedError("foo").message());
+  EXPECT_EQ("bar", util::UnauthenticatedError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kResourceExhausted,
+            util::ResourceExhaustedError("").code());
+  EXPECT_EQ("", util::ResourceExhaustedError("").message());
+  EXPECT_EQ("foo", util::ResourceExhaustedError("foo").message());
+  EXPECT_EQ("bar", util::ResourceExhaustedError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kFailedPrecondition,
+            util::FailedPreconditionError("").code());
+  EXPECT_EQ("", util::FailedPreconditionError("").message());
+  EXPECT_EQ("foo", util::FailedPreconditionError("foo").message());
+  EXPECT_EQ("bar", util::FailedPreconditionError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kAborted, util::AbortedError("").code());
+  EXPECT_EQ("", util::AbortedError("").message());
+  EXPECT_EQ("foo", util::AbortedError("foo").message());
+  EXPECT_EQ("bar", util::AbortedError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kOutOfRange, util::OutOfRangeError("").code());
+  EXPECT_EQ("", util::OutOfRangeError("").message());
+  EXPECT_EQ("foo", util::OutOfRangeError("foo").message());
+  EXPECT_EQ("bar", util::OutOfRangeError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kUnimplemented,
+            util::UnimplementedError("").code());
+  EXPECT_EQ("", util::UnimplementedError("").message());
+  EXPECT_EQ("foo", util::UnimplementedError("foo").message());
+  EXPECT_EQ("bar", util::UnimplementedError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kInternal, util::InternalError("").code());
+  EXPECT_EQ("", util::InternalError("").message());
+  EXPECT_EQ("foo", util::InternalError("foo").message());
+  EXPECT_EQ("bar", util::InternalError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kUnavailable, util::UnavailableError("").code());
+  EXPECT_EQ("", util::UnavailableError("").message());
+  EXPECT_EQ("foo", util::UnavailableError("foo").message());
+  EXPECT_EQ("bar", util::UnavailableError("bar").message());
+
+  EXPECT_EQ(util::StatusCode::kDataLoss, util::DataLossError("").code());
+  EXPECT_EQ("", util::DataLossError("").message());
+  EXPECT_EQ("foo", util::DataLossError("foo").message());
+  EXPECT_EQ("bar", util::DataLossError("bar").message());
+}
+
+TEST(Status, ConvenienceTests) {
+  EXPECT_TRUE(util::OkStatus().ok());
+  EXPECT_TRUE(util::IsCancelled(util::CancelledError("")));
+  EXPECT_TRUE(util::IsUnknown(util::UnknownError("")));
+  EXPECT_TRUE(util::IsInvalidArgument(util::InvalidArgumentError("")));
+  EXPECT_TRUE(util::IsDeadlineExceeded(util::DeadlineExceededError("")));
+  EXPECT_TRUE(util::IsNotFound(util::NotFoundError("")));
+  EXPECT_TRUE(util::IsAlreadyExists(util::AlreadyExistsError("")));
+  EXPECT_TRUE(util::IsPermissionDenied(util::PermissionDeniedError("")));
+  EXPECT_TRUE(util::IsUnauthenticated(util::UnauthenticatedError("")));
+  EXPECT_TRUE(util::IsResourceExhausted(util::ResourceExhaustedError("")));
+  EXPECT_TRUE(util::IsFailedPrecondition(util::FailedPreconditionError("")));
+  EXPECT_TRUE(util::IsAborted(util::AbortedError("")));
+  EXPECT_TRUE(util::IsOutOfRange(util::OutOfRangeError("")));
+  EXPECT_TRUE(util::IsUnimplemented(util::UnimplementedError("")));
+  EXPECT_TRUE(util::IsInternal(util::InternalError("")));
+  EXPECT_TRUE(util::IsUnavailable(util::UnavailableError("")));
+  EXPECT_TRUE(util::IsDataLoss(util::DataLossError("")));
+}
+
+TEST(Status, Empty) {
+  util::Status status;
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(util::OkStatus(), status);
+  EXPECT_EQ(util::StatusCode::kOk, status.code());
   EXPECT_EQ("OK", status.ToString());
 }
 
@@ -67,72 +211,68 @@ TEST(Status, CheckOK) {
 }
 
 TEST(Status, ErrorMessage) {
-  util::Status status(util::error::INVALID_ARGUMENT, "");
+  util::Status status = util::InvalidArgumentError("");
   EXPECT_FALSE(status.ok());
-  EXPECT_EQ("", status.error_message().ToString());
   EXPECT_EQ("", status.message().ToString());
   EXPECT_EQ("INVALID_ARGUMENT", status.ToString());
-  status = util::Status(util::error::INVALID_ARGUMENT, "msg");
+  status = util::InvalidArgumentError("msg");
   EXPECT_FALSE(status.ok());
-  EXPECT_EQ("msg", status.error_message().ToString());
   EXPECT_EQ("msg", status.message().ToString());
   EXPECT_EQ("INVALID_ARGUMENT:msg", status.ToString());
-  status = util::Status(util::error::OK, "msg");
+  status = util::Status(util::StatusCode::kOk, "msg");
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ("", status.error_message().ToString());
   EXPECT_EQ("", status.message().ToString());
   EXPECT_EQ("OK", status.ToString());
 }
 
 TEST(Status, Copy) {
-  util::Status a(util::error::UNKNOWN, "message");
+  util::Status a = util::UnknownError("message");
   util::Status b(a);
   ASSERT_EQ(a.ToString(), b.ToString());
 }
 
 TEST(Status, Assign) {
-  util::Status a(util::error::UNKNOWN, "message");
+  util::Status a = util::UnknownError("message");
   util::Status b;
   b = a;
   ASSERT_EQ(a.ToString(), b.ToString());
 }
 
 TEST(Status, AssignEmpty) {
-  util::Status a(util::error::UNKNOWN, "message");
+  util::Status a = util::UnknownError("message");
   util::Status b;
   a = b;
-  ASSERT_EQ(string("OK"), a.ToString());
+  ASSERT_EQ(std::string("OK"), a.ToString());
   ASSERT_TRUE(b.ok());
   ASSERT_TRUE(a.ok());
 }
 
-TEST(Status, EqualsOK) {
-  ASSERT_EQ(util::Status::OK, util::Status());
-}
+TEST(Status, EqualsOK) { ASSERT_EQ(util::OkStatus(), util::Status()); }
 
 TEST(Status, EqualsSame) {
-  const util::Status a = util::Status(util::error::CANCELLED, "message");
-  const util::Status b = util::Status(util::error::CANCELLED, "message");
+  const util::Status a = util::CancelledError("message");
+  const util::Status b = util::CancelledError("message");
   ASSERT_EQ(a, b);
 }
 
 TEST(Status, EqualsCopy) {
-  const util::Status a = util::Status(util::error::CANCELLED, "message");
+  const util::Status a = util::CancelledError("message");
   const util::Status b = a;
   ASSERT_EQ(a, b);
 }
 
 TEST(Status, EqualsDifferentCode) {
-  const util::Status a = util::Status(util::error::CANCELLED, "message");
-  const util::Status b = util::Status(util::error::UNKNOWN, "message");
+  const util::Status a = util::CancelledError("message");
+  const util::Status b = util::UnknownError("message");
   ASSERT_NE(a, b);
 }
 
 TEST(Status, EqualsDifferentMessage) {
-  const util::Status a = util::Status(util::error::CANCELLED, "message");
-  const util::Status b = util::Status(util::error::CANCELLED, "another");
+  const util::Status a = util::CancelledError("message");
+  const util::Status b = util::CancelledError("another");
   ASSERT_NE(a, b);
 }
+
 }  // namespace
 }  // namespace protobuf
 }  // namespace google

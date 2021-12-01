@@ -30,7 +30,7 @@
 
 package com.google.protobuf;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import protobuf_unittest.UnittestProto;
 import proto3_unittest.UnittestProto3;
@@ -83,12 +83,12 @@ public class DiscardUnknownFieldsTest {
     // Use DiscardUnknownFieldsParser to parse the first payload.
     int oldLimit = input.pushLimit(messageSize);
     Message parsed = DiscardUnknownFieldsParser.wrap(message.getParserForType()).parseFrom(input);
-    assertEquals(message.getClass().getName(), 0, parsed.getSerializedSize());
+    assertWithMessage(message.getClass().getName()).that(parsed.getSerializedSize()).isEqualTo(0);
     input.popLimit(oldLimit);
 
     // Use the normal parser to parse the remaining payload should have unknown fields preserved.
     parsed = message.getParserForType().parseFrom(input);
-    assertEquals(message.getClass().getName(), payload, parsed.toByteString());
+    assertWithMessage(message.getClass().getName()).that(parsed.toByteString()).isEqualTo(payload);
   }
 
   /**
@@ -99,20 +99,20 @@ public class DiscardUnknownFieldsTest {
       throws Exception {
     UnknownFieldSet unknownFields = UnknownFieldSet.newBuilder().mergeFrom(payload).build();
     Message built = message.newBuilderForType().setUnknownFields(unknownFields).build();
-    assertEquals(message.getClass().getName(), payload, built.toByteString());
+    assertWithMessage(message.getClass().getName()).that(built.toByteString()).isEqualTo(payload);
   }
 
   private static void assertUnknownFieldsPreserved(MessageLite message) throws Exception {
     MessageLite parsed = message.getParserForType().parseFrom(payload);
-    assertEquals(message.getClass().getName(), payload, parsed.toByteString());
+    assertWithMessage(message.getClass().getName()).that(parsed.toByteString()).isEqualTo(payload);
 
     parsed = message.newBuilderForType().mergeFrom(payload).build();
-    assertEquals(message.getClass().getName(), payload, parsed.toByteString());
+    assertWithMessage(message.getClass().getName()).that(parsed.toByteString()).isEqualTo(payload);
   }
 
   private static void assertUnknownFieldsExplicitlyDiscarded(Message message) throws Exception {
     Message parsed = DiscardUnknownFieldsParser.wrap(message.getParserForType()).parseFrom(payload);
-    assertEquals(message.getClass().getName(), 0, parsed.getSerializedSize());
+    assertWithMessage(message.getClass().getName()).that(parsed.getSerializedSize()).isEqualTo(0);
   }
 
   private static final ByteString payload =

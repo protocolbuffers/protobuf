@@ -53,14 +53,14 @@ class EnumGenerator {
   void GenerateHeader(io::Printer* printer);
   void GenerateSource(io::Printer* printer);
 
-  const string& name() const { return name_; }
+  const std::string& name() const { return name_; }
 
  private:
   const EnumDescriptor* descriptor_;
   std::vector<const EnumValueDescriptor*> base_values_;
   std::vector<const EnumValueDescriptor*> all_values_;
   std::set<const EnumValueDescriptor*> alias_values_to_skip_;
-  const string name_;
+  const std::string name_;
 };
 
 }  // namespace objectivec

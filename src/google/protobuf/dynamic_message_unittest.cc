@@ -74,7 +74,7 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
 
   DynamicMessageTest() : factory_(&pool_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     // We want to make sure that DynamicMessage works (particularly with
     // extensions) even if we use descriptors that are *not* from compiled-in
     // types, so we make copies of the descriptors for unittest.proto and
@@ -92,33 +92,33 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
     proto2_nofieldpresence_unittest::TestAllTypes::descriptor()->file()->CopyTo(
         &unittest_no_field_presence_file);
 
-    ASSERT_TRUE(pool_.BuildFile(unittest_import_public_file) != NULL);
-    ASSERT_TRUE(pool_.BuildFile(unittest_import_file) != NULL);
-    ASSERT_TRUE(pool_.BuildFile(unittest_file) != NULL);
-    ASSERT_TRUE(pool_.BuildFile(unittest_no_field_presence_file) != NULL);
+    ASSERT_TRUE(pool_.BuildFile(unittest_import_public_file) != nullptr);
+    ASSERT_TRUE(pool_.BuildFile(unittest_import_file) != nullptr);
+    ASSERT_TRUE(pool_.BuildFile(unittest_file) != nullptr);
+    ASSERT_TRUE(pool_.BuildFile(unittest_no_field_presence_file) != nullptr);
 
     descriptor_ = pool_.FindMessageTypeByName("protobuf_unittest.TestAllTypes");
-    ASSERT_TRUE(descriptor_ != NULL);
+    ASSERT_TRUE(descriptor_ != nullptr);
     prototype_ = factory_.GetPrototype(descriptor_);
 
     extensions_descriptor_ =
         pool_.FindMessageTypeByName("protobuf_unittest.TestAllExtensions");
-    ASSERT_TRUE(extensions_descriptor_ != NULL);
+    ASSERT_TRUE(extensions_descriptor_ != nullptr);
     extensions_prototype_ = factory_.GetPrototype(extensions_descriptor_);
 
     packed_descriptor_ =
         pool_.FindMessageTypeByName("protobuf_unittest.TestPackedTypes");
-    ASSERT_TRUE(packed_descriptor_ != NULL);
+    ASSERT_TRUE(packed_descriptor_ != nullptr);
     packed_prototype_ = factory_.GetPrototype(packed_descriptor_);
 
     oneof_descriptor_ =
         pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2");
-    ASSERT_TRUE(oneof_descriptor_ != NULL);
+    ASSERT_TRUE(oneof_descriptor_ != nullptr);
     oneof_prototype_ = factory_.GetPrototype(oneof_descriptor_);
 
     proto3_descriptor_ = pool_.FindMessageTypeByName(
         "proto2_nofieldpresence_unittest.TestAllTypes");
-    ASSERT_TRUE(proto3_descriptor_ != NULL);
+    ASSERT_TRUE(proto3_descriptor_ != nullptr);
     proto3_prototype_ = factory_.GetPrototype(proto3_descriptor_);
   }
 };
@@ -145,7 +145,7 @@ TEST_P(DynamicMessageTest, IndependentOffsets) {
   // one to a unique value then checking that they all still have those
   // unique values (i.e. they don't stomp each other).
   Arena arena;
-  Message* message = prototype_->New(GetParam() ? &arena : NULL);
+  Message* message = prototype_->New(GetParam() ? &arena : nullptr);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
   reflection_tester.SetAllFieldsViaReflection(message);
@@ -159,7 +159,7 @@ TEST_P(DynamicMessageTest, IndependentOffsets) {
 TEST_P(DynamicMessageTest, Extensions) {
   // Check that extensions work.
   Arena arena;
-  Message* message = extensions_prototype_->New(GetParam() ? &arena : NULL);
+  Message* message = extensions_prototype_->New(GetParam() ? &arena : nullptr);
   TestUtil::ReflectionTester reflection_tester(extensions_descriptor_);
 
   reflection_tester.SetAllFieldsViaReflection(message);
@@ -173,7 +173,7 @@ TEST_P(DynamicMessageTest, Extensions) {
 TEST_P(DynamicMessageTest, PackedFields) {
   // Check that packed fields work properly.
   Arena arena;
-  Message* message = packed_prototype_->New(GetParam() ? &arena : NULL);
+  Message* message = packed_prototype_->New(GetParam() ? &arena : nullptr);
   TestUtil::ReflectionTester reflection_tester(packed_descriptor_);
 
   reflection_tester.SetPackedFieldsViaReflection(message);
@@ -187,7 +187,7 @@ TEST_P(DynamicMessageTest, PackedFields) {
 TEST_P(DynamicMessageTest, Oneof) {
   // Check that oneof fields work properly.
   Arena arena;
-  Message* message = oneof_prototype_->New(GetParam() ? &arena : NULL);
+  Message* message = oneof_prototype_->New(GetParam() ? &arena : nullptr);
 
   // Check default values.
   const Descriptor* descriptor = message->GetDescriptor();
@@ -252,19 +252,19 @@ TEST_P(DynamicMessageTest, Oneof) {
 }
 
 TEST_P(DynamicMessageTest, SpaceUsed) {
-  // Test that SpaceUsed() works properly
+  // Test that SpaceUsedLong() works properly
 
   // Since we share the implementation with generated messages, we don't need
   // to test very much here.  Just make sure it appears to be working.
 
   Arena arena;
-  Message* message = prototype_->New(GetParam() ? &arena : NULL);
+  Message* message = prototype_->New(GetParam() ? &arena : nullptr);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
-  int initial_space_used = message->SpaceUsed();
+  size_t initial_space_used = message->SpaceUsedLong();
 
   reflection_tester.SetAllFieldsViaReflection(message);
-  EXPECT_LT(initial_space_used, message->SpaceUsed());
+  EXPECT_LT(initial_space_used, message->SpaceUsedLong());
 
   if (!GetParam()) {
     delete message;
@@ -286,6 +286,7 @@ TEST_F(DynamicMessageTest, Arena) {
   // Return without freeing: should not leak.
 }
 
+
 TEST_F(DynamicMessageTest, Proto3) {
   Message* message = proto3_prototype_->New();
   const Reflection* refl = message->GetReflection();
@@ -299,8 +300,8 @@ TEST_F(DynamicMessageTest, Proto3) {
       desc->FindFieldByName("optional_int32");
   const FieldDescriptor* optional_msg =
       desc->FindFieldByName("optional_nested_message");
-  EXPECT_TRUE(optional_int32 != NULL);
-  EXPECT_TRUE(optional_msg != NULL);
+  EXPECT_TRUE(optional_int32 != nullptr);
+  EXPECT_TRUE(optional_msg != nullptr);
 
   EXPECT_EQ(false, refl->HasField(*message, optional_int32));
   refl->SetInt32(message, optional_int32, 42);

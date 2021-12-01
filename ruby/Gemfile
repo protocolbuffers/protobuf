@@ -1,3 +1,5 @@
 source 'https://rubygems.org'
 
 gemspec
+
+gem "irb", "~> 1.1", "< 1.2.0" if RUBY_VERSION < "2.5"

@@ -32,7 +32,7 @@
 // This is a test including a single public header to ensure things build.
 // It helps test that imports are complete/ordered correctly.
 
-#import "google/protobuf/Api.pbobjc.h"
+#import "GPBApi.pbobjc.h"
 
 
 // Something in the body of this file so the compiler/linker won't complain

@@ -42,24 +42,16 @@ Simple usage example:
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
-# pylint: disable=g-statement-before-imports,g-import-not-at-top
-try:
-  from collections import OrderedDict
-except ImportError:
-  from ordereddict import OrderedDict  # PY26
-# pylint: enable=g-statement-before-imports,g-import-not-at-top
 
 import base64
+from collections import OrderedDict
 import json
 import math
-
 from operator import methodcaller
-
 import re
 import sys
 
-import six
-
+from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 from google.protobuf import symbol_database
 
@@ -77,9 +69,8 @@ _INFINITY = 'Infinity'
 _NEG_INFINITY = '-Infinity'
 _NAN = 'NaN'
 
-_UNPAIRED_SURROGATE_PATTERN = re.compile(six.u(
-    r'[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]'
-))
+_UNPAIRED_SURROGATE_PATTERN = re.compile(
+    u'[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]')
 
 _VALID_EXTENSION_NAME = re.compile(r'\[[a-zA-Z0-9\._]*\]$')
 
@@ -194,7 +185,6 @@ class _Printer(object):
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
-    # TODO(jieluo): change the float precision default to 8 valid digits.
     if float_precision:
       self.float_format = '.{}g'.format(float_precision)
     else:
@@ -236,7 +226,7 @@ class _Printer(object):
               else:
                 recorded_key = 'false'
             else:
-              recorded_key = key
+              recorded_key = str(key)
             js_map[recorded_key] = self._FieldToJsonObject(
                 v_field, value[key])
           js[name] = js_map
@@ -245,8 +235,7 @@ class _Printer(object):
           js[name] = [self._FieldToJsonObject(field, k)
                       for k in value]
         elif field.is_extension:
-          full_qualifier = field.full_name[:-len(field.name)]
-          name = '[%s%s]' % (full_qualifier, name)
+          name = '[%s]' % field.full_name
           js[name] = self._FieldToJsonObject(field, value)
         else:
           js[name] = self._FieldToJsonObject(field, value)
@@ -287,6 +276,8 @@ class _Printer(object):
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
       if self.use_integers_for_enums:
         return value
+      if field.enum_type.full_name == 'google.protobuf.NullValue':
+        return None
       enum_value = field.enum_type.values_by_number.get(value, None)
       if enum_value is not None:
         return enum_value.name
@@ -313,9 +304,12 @@ class _Printer(object):
           return _INFINITY
       if math.isnan(value):
         return _NAN
-      if (self.float_format and
-          field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT):
-        return float(format(value, self.float_format))
+      if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
+        if self.float_format:
+          return float(format(value, self.float_format))
+        else:
+          return type_checkers.ToShortestFloat(value)
+
     return value
 
   def _AnyMessageToJsonObject(self, message):
@@ -422,7 +416,8 @@ def Parse(text, message, ignore_unknown_fields=False, descriptor_pool=None):
   Raises::
     ParseError: On JSON parsing problems.
   """
-  if not isinstance(text, six.text_type): text = text.decode('utf-8')
+  if not isinstance(text, str):
+    text = text.decode('utf-8')
   try:
     js = json.loads(text, object_pairs_hook=_DuplicateChecker)
   except ValueError as e:
@@ -451,7 +446,7 @@ def ParseDict(js_dict,
   return message
 
 
-_INT_OR_FLOAT = six.integer_types + (float,)
+_INT_OR_FLOAT = (int, float)
 
 
 class _Parser(object):
@@ -527,8 +522,9 @@ class _Parser(object):
                            '"{1}" fields.'.format(
                                message.DESCRIPTOR.full_name, name))
         names.append(name)
+        value = js[name]
         # Check no other oneof field is parsed.
-        if field.containing_oneof is not None:
+        if field.containing_oneof is not None and value is not None:
           oneof_name = field.containing_oneof.name
           if oneof_name in names:
             raise ParseError('Message type "{0}" should not have multiple '
@@ -536,12 +532,14 @@ class _Parser(object):
                                  message.DESCRIPTOR.full_name, oneof_name))
           names.append(oneof_name)
 
-        value = js[name]
         if value is None:
           if (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE
               and field.message_type.full_name == 'google.protobuf.Value'):
             sub_message = getattr(message, field.name)
             sub_message.null_value = 0
+          elif (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM
+                and field.enum_type.full_name == 'google.protobuf.NullValue'):
+            setattr(message, field.name, 0)
           else:
             message.ClearField(field.name)
           continue
@@ -639,12 +637,13 @@ class _Parser(object):
       message.null_value = 0
     elif isinstance(value, bool):
       message.bool_value = value
-    elif isinstance(value, six.string_types):
+    elif isinstance(value, str):
       message.string_value = value
     elif isinstance(value, _INT_OR_FLOAT):
       message.number_value = value
     else:
-      raise ParseError('Unexpected type for Value message.')
+      raise ParseError('Value {0} has unexpected type {1}.'.format(
+          value, type(value)))
 
   def _ConvertListValueMessage(self, value, message):
     """Convert a JSON representation into ListValue message."""
@@ -716,12 +715,18 @@ def _ConvertScalarFieldValue(value, field, require_str=False):
   if field.cpp_type in _INT_TYPES:
     return _ConvertInteger(value)
   elif field.cpp_type in _FLOAT_TYPES:
-    return _ConvertFloat(value)
+    return _ConvertFloat(value, field)
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
     return _ConvertBool(value, require_str)
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_STRING:
     if field.type == descriptor.FieldDescriptor.TYPE_BYTES:
-      return base64.b64decode(value)
+      if isinstance(value, str):
+        encoded = value.encode('utf-8')
+      else:
+        encoded = value
+      # Add extra padding '='
+      padded_value = encoded + b'=' * (4 - len(encoded) % 4)
+      return base64.urlsafe_b64decode(padded_value)
     else:
       # Checking for unpaired surrogates appears to be unreliable,
       # depending on the specific Python version, so we check manually.
@@ -762,14 +767,35 @@ def _ConvertInteger(value):
   if isinstance(value, float) and not value.is_integer():
     raise ParseError('Couldn\'t parse integer: {0}.'.format(value))
 
-  if isinstance(value, six.text_type) and value.find(' ') != -1:
+  if isinstance(value, str) and value.find(' ') != -1:
     raise ParseError('Couldn\'t parse integer: "{0}".'.format(value))
+
+  if isinstance(value, bool):
+    raise ParseError('Bool value {0} is not acceptable for '
+                     'integer field.'.format(value))
 
   return int(value)
 
 
-def _ConvertFloat(value):
+def _ConvertFloat(value, field):
   """Convert an floating point number."""
+  if isinstance(value, float):
+    if math.isnan(value):
+      raise ParseError('Couldn\'t parse NaN, use quoted "NaN" instead.')
+    if math.isinf(value):
+      if value > 0:
+        raise ParseError('Couldn\'t parse Infinity or value too large, '
+                         'use quoted "Infinity" instead.')
+      else:
+        raise ParseError('Couldn\'t parse -Infinity or value too small, '
+                         'use quoted "-Infinity" instead.')
+    if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
+      # pylint: disable=protected-access
+      if value > type_checkers._FLOAT_MAX:
+        raise ParseError('Float value too large')
+      # pylint: disable=protected-access
+      if value < type_checkers._FLOAT_MIN:
+        raise ParseError('Float value too small')
   if value == 'nan':
     raise ParseError('Couldn\'t parse float "nan", use "NaN" instead.')
   try:

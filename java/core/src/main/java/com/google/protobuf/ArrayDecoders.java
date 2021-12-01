@@ -34,12 +34,13 @@ import static com.google.protobuf.MessageSchema.getMutableUnknownFields;
 
 import com.google.protobuf.Internal.ProtobufList;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Helper functions to decode protobuf wire format from a byte array.
  *
  * <p>Note that these functions don't do boundary check on the byte array but instead rely on Java
- * VM to check it. That means parsing rountines utilizing these functions must catch
+ * VM to check it. That means parsing routines utilizing these functions must catch
  * IndexOutOfBoundsException and convert it to protobuf's InvalidProtocolBufferException when
  * crossing protobuf public API boundaries.
  */
@@ -51,7 +52,7 @@ final class ArrayDecoders {
    * multiple values and let the function set the return value in this Registers instance instead.
    *
    * <p>TODO(xiaofeng): This could be merged into CodedInputStream or CodedInputStreamReader which
-   * is already being passed through all the parsing rountines.
+   * is already being passed through all the parsing routines.
    */
   static final class Registers {
     public int int1;
@@ -191,7 +192,7 @@ final class ArrayDecoders {
       registers.object1 = "";
       return position;
     } else {
-      registers.object1 = new String(data, position, length, Internal.UTF_8);
+      registers.object1 = new String(data, position, length, StandardCharsets.UTF_8);
       return position + length;
     }
   }
@@ -577,7 +578,7 @@ final class ArrayDecoders {
     } else if (length == 0) {
       output.add("");
     } else {
-      String value = new String(data, position, length, Internal.UTF_8);
+      String value = new String(data, position, length, StandardCharsets.UTF_8);
       output.add(value);
       position += length;
     }
@@ -593,7 +594,7 @@ final class ArrayDecoders {
       } else if (nextLength == 0) {
         output.add("");
       } else {
-        String value = new String(data, position, nextLength, Internal.UTF_8);
+        String value = new String(data, position, nextLength, StandardCharsets.UTF_8);
         output.add(value);
         position += nextLength;
       }
@@ -619,7 +620,7 @@ final class ArrayDecoders {
       if (!Utf8.isValidUtf8(data, position, position + length)) {
         throw InvalidProtocolBufferException.invalidUtf8();
       }
-      String value = new String(data, position, length, Internal.UTF_8);
+      String value = new String(data, position, length, StandardCharsets.UTF_8);
       output.add(value);
       position += length;
     }
@@ -638,7 +639,7 @@ final class ArrayDecoders {
         if (!Utf8.isValidUtf8(data, position, position + nextLength)) {
           throw InvalidProtocolBufferException.invalidUtf8();
         }
-        String value = new String(data, position, nextLength, Internal.UTF_8);
+        String value = new String(data, position, nextLength, StandardCharsets.UTF_8);
         output.add(value);
         position += nextLength;
       }

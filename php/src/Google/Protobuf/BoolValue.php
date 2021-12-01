@@ -21,7 +21,7 @@ class BoolValue extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>bool value = 1;</code>
      */
-    private $value = false;
+    protected $value = false;
 
     /**
      * Constructor.

@@ -40,44 +40,44 @@ package google.protobuf.internal;
 // canonicalization of serialized output, which should always be in tag order.
 // We also mix in some extensions for extra fun.
 message OutOfOrderFields {
-  optional   sint32 optional_sint32   =  5;
+  optional sint32 optional_sint32 = 5;
   extensions 4 to 4;
-  optional   uint32 optional_uint32   =  3;
+  optional uint32 optional_uint32 = 3;
   extensions 2 to 2;
-  optional    int32 optional_int32    =  1;
-};
-
+  optional int32 optional_int32 = 1;
+}
 
 extend OutOfOrderFields {
-  optional   uint64 optional_uint64   =  4;
-  optional    int64 optional_int64    =  2;
+  optional uint64 optional_uint64 = 4;
+  optional int64 optional_int64 = 2;
 }
 
-enum is {                               // top level enum keyword
+enum is {  // top level enum keyword
   default = 0;
-  else = 1;                             // top level enum value keyword
+  else = 1;  // top level enum value keyword
 }
 
-message class {                         // message keyword
-  optional int32 int_field = 1;
-  optional int32 if = 2;                // field keyword
-  optional is as = 3;                   // enum field keyword
+message class {  // message keyword
+  optional int32 int_field = 1 [json_name = "json_int"];
+  optional int32 if = 2;  // field keyword
+  optional is as = 3;     // enum field keyword
   optional is enum_field = 4;
   enum for {                            // nested enum keyword
     default = 0;
-    True = 1;                           // nested enum value keyword
+    True = 1;  // nested enum value keyword
   }
   optional for nested_enum_field = 5;
   message try {
     optional int32 field = 1;
     extensions 999 to 9999;
   }
-  optional try nested_message = 6;
+  optional try
+    nested_message = 6;
   extensions 999 to 9999;
 }
 
 extend class {
-  optional int32 continue = 1001;       // top level extension keyword
+  optional int32 continue = 1001;  // top level extension keyword
 }
 
 extend class.try {
@@ -86,7 +86,7 @@ extend class.try {
 
 message ExtendClass {
   extend class {
-    optional int32 return = 1002;       // nested extension keyword
+    optional int32 return = 1002;  // nested extension keyword
   }
 }
 

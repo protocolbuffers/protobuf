@@ -30,7 +30,7 @@
 
 package com.google.protobuf;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.protobuf.testing.Proto2Testing.Proto2Message;
 import com.google.protobuf.testing.Proto3Testing.Proto3Message;
@@ -57,14 +57,14 @@ public final class CodedAdapterTest {
 
     // Deserialize with BinaryReader and verify that the message matches the original.
     Proto3Message result = fromByteArray(expectedBytes, Proto3Message.class);
-    assertEquals(expected, result);
+    assertThat(result).isEqualTo(expected);
 
     // Now write it back out using BinaryWriter and verify the output length.
     byte[] actualBytes = toByteArray(result, expectedBytes.length);
 
     // Read back in the bytes and verify that it matches the original message.
     Proto3Message actual = Proto3Message.parseFrom(actualBytes);
-    assertEquals(expected, actual);
+    assertThat(actual).isEqualTo(expected);
   }
 
   @Test
@@ -74,14 +74,14 @@ public final class CodedAdapterTest {
 
     // Deserialize with BinaryReader and verify that the message matches the original.
     Proto2Message result = fromByteArray(expectedBytes, Proto2Message.class);
-    assertEquals(expected, result);
+    assertThat(result).isEqualTo(expected);
 
     // Now write it back out using BinaryWriter and verify the output length.
     byte[] actualBytes = toByteArray(result, expectedBytes.length);
 
     // Read back in the bytes and verify that it matches the original message.
     Proto2Message actual = Proto2Message.parseFrom(actualBytes);
-    assertEquals(expected, actual);
+    assertThat(actual).isEqualTo(expected);
   }
 
   public static <T> byte[] toByteArray(T msg, int size) throws Exception {
@@ -90,7 +90,7 @@ public final class CodedAdapterTest {
     CodedOutputStreamWriter writer =
         CodedOutputStreamWriter.forCodedOutput(CodedOutputStream.newInstance(out));
     schema.writeTo(msg, writer);
-    assertEquals(out.length, writer.getTotalBytesWritten());
+    assertThat(writer.getTotalBytesWritten()).isEqualTo(out.length);
     return out;
   }
 
