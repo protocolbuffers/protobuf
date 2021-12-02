@@ -41,8 +41,8 @@ typedef struct {
   PyObject* db;
 } PyUpb_DescriptorPool;
 
-PyObject *PyUpb_DescriptorPool_GetDefaultPool() {
-  PyUpb_ModuleState *s = PyUpb_ModuleState_Get();
+PyObject* PyUpb_DescriptorPool_GetDefaultPool() {
+  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   return s->default_pool;
 }
 
@@ -57,7 +57,7 @@ static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
   return &pool->ob_base;
 }
 
-upb_symtab *PyUpb_DescriptorPool_GetSymtab(PyObject *pool) {
+upb_symtab* PyUpb_DescriptorPool_GetSymtab(PyObject* pool) {
   return ((PyUpb_DescriptorPool*)pool)->symtab;
 }
 
@@ -72,8 +72,8 @@ static int PyUpb_DescriptorPool_Clear(PyUpb_DescriptorPool* self) {
   return 0;
 }
 
-PyObject* PyUpb_DescriptorPool_Get(const upb_symtab *symtab) {
-  PyObject *pool = PyUpb_ObjCache_Get(symtab);
+PyObject* PyUpb_DescriptorPool_Get(const upb_symtab* symtab) {
+  PyObject* pool = PyUpb_ObjCache_Get(symtab);
   assert(pool);
   return pool;
 }
@@ -117,6 +117,7 @@ static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
   char* buf;
   Py_ssize_t size;
   upb_arena* arena = upb_arena_new();
+  if (!arena) PYUPB_RETURN_OOM;
   PyObject* result = NULL;
 
   if (self->db) {
