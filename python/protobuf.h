@@ -36,6 +36,8 @@
 
 #define PYUPB_MODULE_NAME "google.protobuf.pyext._message"
 
+#define PYUPB_RETURN_OOM return PyErr_SetNone(PyExc_MemoryError), NULL
+
 // -----------------------------------------------------------------------------
 // ModuleState
 // -----------------------------------------------------------------------------
@@ -107,6 +109,8 @@ PyTypeObject *AddObject(PyObject *m, const char *name, PyType_Spec *spec);
 // Creates a Python type from `spec` and adds it to the given module `m`.
 PyTypeObject *PyUpb_AddClass(PyObject *m, PyType_Spec *spec);
 
+// A function that implements the tp_new slot for types that we do not allow
+// users to create directly. This will immediately fail with an error message.
 PyObject *PyUpb_Forbidden_New(PyObject *cls, PyObject *args, PyObject *kwds);
 
 // Our standard dealloc func. It follows the guidance defined in:

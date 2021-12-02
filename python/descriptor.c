@@ -149,16 +149,29 @@ static PyObject* PyUpb_DescriptorBase_CopyToProto(PyObject* _self,
                                                   const upb_msglayout* layout,
                                                   PyObject* py_proto) {
   PyUpb_DescriptorBase* self = (void*)_self;
+  PyObject* ret = NULL;
+  PyObject* str = NULL;
   upb_arena* arena = upb_arena_new();
+  if (!arena) PYUPB_RETURN_OOM;
   upb_msg* proto = func(self->def, arena);
+  if (!proto) goto oom;
   size_t size;
   char* pb = upb_encode(proto, layout, arena, &size);
-  PyObject* str = PyBytes_FromStringAndSize(pb, size);
+  if (!pb) goto oom;
+  str = PyBytes_FromStringAndSize(pb, size);
+  if (!str) goto oom;
   // Disabled until python/message.c is reviewed and checked in.
   // PyObject *ret = PyUpb_CMessage_MergeFromString(py_proto, str);
+  PyErr_Format(PyExc_NotImplementedError, "Not yet implemented");
+
+done:
+  Py_XDECREF(str);
   upb_arena_free(arena);
-  Py_DECREF(str);
-  return PyErr_Format(PyExc_NotImplementedError, "Not yet implemented");
+  return ret;
+
+oom:
+  PyErr_SetNone(PyExc_MemoryError);
+  goto done;
 }
 
 static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
@@ -169,9 +182,8 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
 }
 
 #define DESCRIPTOR_BASE_SLOTS                           \
-  {Py_tp_new, (void*)&PyUpb_Forbidden_New}, {           \
-    Py_tp_dealloc, (void*)&PyUpb_DescriptorBase_Dealloc \
-  }
+  {Py_tp_new, (void*)&PyUpb_Forbidden_New},             \
+  {Py_tp_dealloc, (void*)&PyUpb_DescriptorBase_Dealloc}
 
 // -----------------------------------------------------------------------------
 // Descriptor
@@ -339,7 +351,7 @@ static PyObject* PyUpb_Descriptor_GetFieldsByName(PyObject* _self,
   return PyUpb_ByNameMap_New(&funcs, self->def, self->pool);
 }
 
-static PyObject* PyUpb_Descriptor_GetFieldsByCamelcaseName(PyObject* _self,
+static PyObject* PyUpb_Descriptor_GetFieldsByCamelCaseName(PyObject* _self,
                                                            void* closure) {
   PyUpb_DescriptorBase* self = (void*)_self;
   static PyUpb_ByNameMap_Funcs funcs = {
@@ -505,7 +517,7 @@ static PyGetSetDef PyUpb_Descriptor_Getters[] = {
     {"fields", PyUpb_Descriptor_GetFields, NULL, "Fields sequence"},
     {"fields_by_name", PyUpb_Descriptor_GetFieldsByName, NULL,
      "Fields by name"},
-    {"fields_by_camelcase_name", PyUpb_Descriptor_GetFieldsByCamelcaseName,
+    {"fields_by_camelcase_name", PyUpb_Descriptor_GetFieldsByCamelCaseName,
      NULL, "Fields by camelCase name"},
     {"fields_by_number", PyUpb_Descriptor_GetFieldsByNumber, NULL,
      "Fields by number"},
@@ -521,6 +533,7 @@ static PyGetSetDef PyUpb_Descriptor_Getters[] = {
     {"enum_types", PyUpb_Descriptor_GetEnumTypes, NULL, "Enum sequence"},
     {"enum_types_by_name", PyUpb_Descriptor_GetEnumTypesByName, NULL,
      "Enum types by name"},
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "enum_values_by_name", PyUpb_Descriptor_GetEnumValuesByName, NULL,
     //  "Enum values by name"},
     {"oneofs_by_name", PyUpb_Descriptor_GetOneofsByName, NULL,
@@ -673,16 +686,8 @@ static PyGetSetDef PyUpb_EnumDescriptor_Getters[] = {
     {NULL}};
 
 static PyMethodDef PyUpb_EnumDescriptor_Methods[] = {
-    {
-        "GetOptions",
-        PyUpb_EnumDescriptor_GetOptions,
-        METH_NOARGS,
-    },
-    {
-        "CopyToProto",
-        PyUpb_EnumDescriptor_CopyToProto,
-        METH_O,
-    },
+    {"GetOptions", PyUpb_EnumDescriptor_GetOptions, METH_NOARGS},
+    {"CopyToProto", PyUpb_EnumDescriptor_CopyToProto, METH_O},
     {NULL}};
 
 static PyType_Slot PyUpb_EnumDescriptor_Slots[] = {
@@ -744,6 +749,7 @@ static PyObject* PyUpb_EnumValueDescriptor_GetOptions(PyObject* _self,
 static PyGetSetDef PyUpb_EnumValueDescriptor_Getters[] = {
     {"name", PyUpb_EnumValueDescriptor_GetName, NULL, "name"},
     {"number", PyUpb_EnumValueDescriptor_GetNumber, NULL, "number"},
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "index", (getter)GetIndex, NULL, "index"},
     {"type", PyUpb_EnumValueDescriptor_GetType, NULL, "index"},
     {"has_options", PyUpb_EnumValueDescriptor_GetHasOptions, NULL,
@@ -797,7 +803,7 @@ static PyObject* PyUpb_FieldDescriptor_GetName(PyUpb_DescriptorBase* self,
   return PyUnicode_FromString(upb_fielddef_name(self->def));
 }
 
-static PyObject* PyUpb_FieldDescriptor_GetCamelcaseName(
+static PyObject* PyUpb_FieldDescriptor_GetCamelCaseName(
     PyUpb_DescriptorBase* self, void* closure) {
   // TODO: Ok to use jsonname here?
   return PyUnicode_FromString(upb_fielddef_jsonname(self->def));
@@ -811,11 +817,8 @@ static PyObject* PyUpb_FieldDescriptor_GetJsonName(PyUpb_DescriptorBase* self,
 static PyObject* PyUpb_FieldDescriptor_GetFile(PyUpb_DescriptorBase* self,
                                                void* closure) {
   const upb_filedef* file = upb_fielddef_file(self->def);
-  if (file) {
-    return PyUpb_FileDescriptor_Get(file);
-  } else {
-    Py_RETURN_NONE;
-  }
+  if (!file) Py_RETURN_NONE;
+  return PyUpb_FileDescriptor_Get(file);
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetType(PyUpb_DescriptorBase* self,
@@ -825,7 +828,33 @@ static PyObject* PyUpb_FieldDescriptor_GetType(PyUpb_DescriptorBase* self,
 
 static PyObject* PyUpb_FieldDescriptor_GetCppType(PyUpb_DescriptorBase* self,
                                                   void* closure) {
-  static const uint8_t cpp_types[] = {-1, 7, 6, 1, 3, 8, 10, 5, 2, 4, 9, 9};
+  // Enum values copied from descriptor.h in C++.
+  enum CppType {
+    CPPTYPE_INT32 = 1,     // TYPE_INT32, TYPE_SINT32, TYPE_SFIXED32
+    CPPTYPE_INT64 = 2,     // TYPE_INT64, TYPE_SINT64, TYPE_SFIXED64
+    CPPTYPE_UINT32 = 3,    // TYPE_UINT32, TYPE_FIXED32
+    CPPTYPE_UINT64 = 4,    // TYPE_UINT64, TYPE_FIXED64
+    CPPTYPE_DOUBLE = 5,    // TYPE_DOUBLE
+    CPPTYPE_FLOAT = 6,     // TYPE_FLOAT
+    CPPTYPE_BOOL = 7,      // TYPE_BOOL
+    CPPTYPE_ENUM = 8,      // TYPE_ENUM
+    CPPTYPE_STRING = 9,    // TYPE_STRING, TYPE_BYTES
+    CPPTYPE_MESSAGE = 10,  // TYPE_MESSAGE, TYPE_GROUP
+  };
+  static const uint8_t cpp_types[] = {
+    -1,
+    [UPB_TYPE_INT32] = CPPTYPE_INT32,
+    [UPB_TYPE_INT64] = CPPTYPE_INT64,
+    [UPB_TYPE_UINT32] = CPPTYPE_UINT32,
+    [UPB_TYPE_UINT64] = CPPTYPE_UINT64,
+    [UPB_TYPE_DOUBLE] = CPPTYPE_DOUBLE,
+    [UPB_TYPE_FLOAT] = CPPTYPE_FLOAT,
+    [UPB_TYPE_BOOL] = CPPTYPE_BOOL,
+    [UPB_TYPE_ENUM] = CPPTYPE_ENUM,
+    [UPB_TYPE_STRING] = CPPTYPE_STRING,
+    [UPB_TYPE_BYTES] = CPPTYPE_STRING,
+    [UPB_TYPE_MESSAGE] = CPPTYPE_MESSAGE,
+  };
   return PyLong_FromLong(cpp_types[upb_fielddef_type(self->def)]);
 }
 
@@ -852,31 +881,22 @@ static PyObject* PyUpb_FieldDescriptor_GetIndex(PyUpb_DescriptorBase* self,
 static PyObject* PyUpb_FieldDescriptor_GetMessageType(
     PyUpb_DescriptorBase* self, void* closure) {
   const upb_msgdef* subdef = upb_fielddef_msgsubdef(self->def);
-  if (subdef) {
-    return PyUpb_Descriptor_Get(subdef);
-  } else {
-    Py_RETURN_NONE;
-  }
+  if (!subdef) Py_RETURN_NONE;
+  return PyUpb_Descriptor_Get(subdef);
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetEnumType(PyUpb_DescriptorBase* self,
                                                    void* closure) {
   const upb_enumdef* enumdef = upb_fielddef_enumsubdef(self->def);
-  if (enumdef) {
-    return PyUpb_EnumDescriptor_Get(enumdef);
-  } else {
-    Py_RETURN_NONE;
-  }
+  if (!enumdef) Py_RETURN_NONE;
+  return PyUpb_EnumDescriptor_Get(enumdef);
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetContainingType(
     PyUpb_DescriptorBase* self, void* closure) {
   const upb_msgdef* m = upb_fielddef_containingtype(self->def);
-  if (m) {
-    return PyUpb_Descriptor_Get(m);
-  } else {
-    Py_RETURN_NONE;
-  }
+  if (!m) Py_RETURN_NONE;
+  return PyUpb_Descriptor_Get(m);
 }
 
 static PyObject* PyUpb_FieldDescriptor_HasDefaultValue(
@@ -895,11 +915,8 @@ static PyObject* PyUpb_FieldDescriptor_GetDefaultValue(
 static PyObject* PyUpb_FieldDescriptor_GetContainingOneof(
     PyUpb_DescriptorBase* self, void* closure) {
   const upb_oneofdef* oneof = upb_fielddef_containingoneof(self->def);
-  if (oneof) {
-    return PyUpb_OneofDescriptor_Get(oneof);
-  } else {
-    Py_RETURN_NONE;
-  }
+  if (!oneof) Py_RETURN_NONE;
+  return PyUpb_OneofDescriptor_Get(oneof);
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetHasOptions(
@@ -919,8 +936,8 @@ static PyObject* PyUpb_FieldDescriptor_GetOptions(PyObject* _self,
 static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
     {"full_name", (getter)PyUpb_FieldDescriptor_GetFullName, NULL, "Full name"},
     {"name", (getter)PyUpb_FieldDescriptor_GetName, NULL, "Unqualified name"},
-    {"camelcase_name", (getter)PyUpb_FieldDescriptor_GetCamelcaseName, NULL,
-     "Camelcase name"},
+    {"camelcase_name", (getter)PyUpb_FieldDescriptor_GetCamelCaseName, NULL,
+     "CamelCase name"},
     {"json_name", (getter)PyUpb_FieldDescriptor_GetJsonName, NULL, "Json name"},
     {"file", (getter)PyUpb_FieldDescriptor_GetFile, NULL, "File Descriptor"},
     {"type", (getter)PyUpb_FieldDescriptor_GetType, NULL, "Type"},
@@ -932,18 +949,21 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
      "Default Value"},
     {"has_default_value", (getter)PyUpb_FieldDescriptor_HasDefaultValue},
     {"is_extension", (getter)PyUpb_FieldDescriptor_GetIsExtension, NULL, "ID"},
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "id", (getter)GetID, NULL, "ID"},
     {"message_type", (getter)PyUpb_FieldDescriptor_GetMessageType, NULL,
      "Message type"},
     {"enum_type", (getter)PyUpb_FieldDescriptor_GetEnumType, NULL, "Enum type"},
     {"containing_type", (getter)PyUpb_FieldDescriptor_GetContainingType, NULL,
      "Containing type"},
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "extension_scope", (getter)GetExtensionScope, (setter)NULL,
     //  "Extension scope"},
     {"containing_oneof", (getter)PyUpb_FieldDescriptor_GetContainingOneof, NULL,
      "Containing oneof"},
     {"has_options", (getter)PyUpb_FieldDescriptor_GetHasOptions, NULL,
      "Has Options"},
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "_options",
     //(getter)NULL, (setter)SetOptions, "Options"}, { "_serialized_options",
     //(getter)NULL, (setter)SetSerializedOptions, "Serialized Options"},
@@ -1261,6 +1281,7 @@ static PyObject* PyUpb_MethodDescriptor_CopyToProto(PyObject* _self,
 static PyGetSetDef PyUpb_MethodDescriptor_Getters[] = {
     {"name", PyUpb_MethodDescriptor_GetName, NULL, "Name", NULL},
     {"full_name", PyUpb_MethodDescriptor_GetFullName, NULL, "Full name", NULL},
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "index", PyUpb_MethodDescriptor_GetIndex, NULL, "Index", NULL},
     {"containing_service", PyUpb_MethodDescriptor_GetContainingService, NULL,
      "Containing service", NULL},
@@ -1349,6 +1370,7 @@ static PyGetSetDef PyUpb_OneofDescriptor_Getters[] = {
     {"containing_type", PyUpb_OneofDescriptor_GetContainingType, NULL,
      "Containing type"},
     {"has_options", PyUpb_OneofDescriptor_GetHasOptions, NULL, "Has Options"},
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "fields", (getter)GetFields, NULL, "Fields"},
     {NULL}};
 
