@@ -34,9 +34,9 @@
 
 PyObject* PyUpb_DescriptorPool_GetSerializedPb(PyObject* _self,
                                                const char* filename);
-PyObject* PyUpb_DescriptorPool_Get(const upb_symtab *symtab);
-upb_symtab *PyUpb_DescriptorPool_GetSymtab(PyObject *pool);
-PyObject *PyUpb_DescriptorPool_GetDefaultPool(void);
+PyObject* PyUpb_DescriptorPool_Get(const upb_symtab* symtab);
+upb_symtab* PyUpb_DescriptorPool_GetSymtab(PyObject* pool);
+PyObject* PyUpb_DescriptorPool_GetDefaultPool(void);
 
 bool PyUpb_InitDescriptorPool(PyObject* m);
 

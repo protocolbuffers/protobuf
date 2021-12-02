@@ -96,23 +96,22 @@ PyObject *PyUpb_ObjCache_Get(const void *key) {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD
-  upb_arena *arena;
+  PyObject_HEAD upb_arena* arena;
 } PyUpb_Arena;
 
-PyObject *PyUpb_Arena_New(void) {
-  PyUpb_ModuleState *state = PyUpb_ModuleState_Get();
-  PyUpb_Arena *arena = (void*)PyType_GenericAlloc(state->arena_type, 0);
+PyObject* PyUpb_Arena_New(void) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_Arena* arena = (void*)PyType_GenericAlloc(state->arena_type, 0);
   arena->arena = upb_arena_new();
   return &arena->ob_base;
 }
 
-static void PyUpb_Arena_Dealloc(PyObject *self) {
+static void PyUpb_Arena_Dealloc(PyObject* self) {
   upb_arena_free(PyUpb_Arena_Get(self));
   PyUpb_Dealloc(self);
 }
 
-upb_arena *PyUpb_Arena_Get(PyObject *arena) {
+upb_arena* PyUpb_Arena_Get(PyObject* arena) {
   return ((PyUpb_Arena*)arena)->arena;
 }
 
@@ -129,8 +128,8 @@ static PyType_Spec PyUpb_Arena_Spec = {
     PyUpb_Arena_Slots,
 };
 
-static bool PyUpb_InitArena(PyObject *m) {
-  PyUpb_ModuleState *state = PyUpb_ModuleState_GetFromModule(m);
+static bool PyUpb_InitArena(PyObject* m) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
   state->arena_type = PyUpb_AddClass(m, &PyUpb_Arena_Spec);
   return state->arena_type;
 }
