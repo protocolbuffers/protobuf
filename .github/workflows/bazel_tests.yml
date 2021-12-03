@@ -17,6 +17,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        install: "valgrind"
         include:
           - { CC: clang, os: ubuntu-20.04, flags: "" }
           - { CC: clang, os: ubuntu-20.04, flags: "-c opt" }  # Some warnings only fire with -c opt
