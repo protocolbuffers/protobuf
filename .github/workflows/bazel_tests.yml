@@ -17,7 +17,6 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        install: "valgrind"
         include:
           - { CC: clang, os: ubuntu-20.04, flags: "" }
           - { CC: clang, os: ubuntu-20.04, flags: "-c opt" }  # Some warnings only fire with -c opt
@@ -31,7 +30,6 @@ jobs:
       - name: Setup Python venv
         run: rm -rf /tmp/venv && python3 -m venv /tmp/venv
       - name: Install dependencies
-        run: sudo apt install -y ${{ matrix.install }}
-        if: matrix.install != ''
+        run: sudo apt install -y valgrind
       - name: Run tests
         run: cd ${{ github.workspace }} && PATH=/tmp/venv/bin:$PATH CC=${{ matrix.CC }} bazel test --test_output=errors --config=valgrind python:minimal_test ${{ matrix.flags }}
