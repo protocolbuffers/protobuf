@@ -153,7 +153,6 @@ def _impl(ctx):
       cxx_builtin_include_directories = [
           ctx.attr.toolchain_dir,
           ctx.attr.extra_include,
-          "/usr/include",
           "/usr/local/include",
           "/usr/local/lib/clang",
       ],
