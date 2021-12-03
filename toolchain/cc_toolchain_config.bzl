@@ -1,6 +1,7 @@
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
+    "artifact_name_pattern",
     "feature",
     "flag_group",
     "flag_set",
@@ -27,6 +28,14 @@ all_compile_actions = [
 ]
 
 def _impl(ctx):
+  artifact_name_patterns = [
+      artifact_name_pattern(
+          category_name = "executable",
+          prefix = "",
+          extension = ".exe",
+      ),
+  ]
+
   tool_paths = [
       tool_path(
           name = "gcc",
@@ -86,8 +95,7 @@ def _impl(ctx):
                           "-B" + ctx.attr.linker_path,
                           ctx.attr.cpp_flag,
                           "--target=" + ctx.attr.target_full_name,
-                          ctx.attr.extra_linker_flag,
-                      ],
+                      ] + ctx.attr.extra_linker_flags,
                   ),
               ],
           ),
@@ -129,7 +137,7 @@ def _impl(ctx):
                           "-isystem",
                           ctx.attr.toolchain_dir,
                           "-fvisibility=hidden",
-                      ] + ctx.attr.include_flag,
+                      ] + ctx.attr.extra_compiler_flags,
                   ),
               ],
           ),
@@ -139,6 +147,7 @@ def _impl(ctx):
   return cc_common.create_cc_toolchain_config_info(
       abi_libc_version = ctx.attr.abi_version,
       abi_version = ctx.attr.abi_version,
+      artifact_name_patterns = artifact_name_patterns,
       ctx = ctx,
       compiler = "clang",
       cxx_builtin_include_directories = [
@@ -163,9 +172,9 @@ cc_toolchain_config = rule(
         "abi_version": attr.string(default = "local"),
         "bit_flag": attr.string(mandatory = True, values = ["-m32", "-m64"]),
         "cpp_flag": attr.string(mandatory = True),
+        "extra_compiler_flags": attr.string_list(),
         "extra_include": attr.string(mandatory = False),
-        "extra_linker_flag": attr.string(mandatory = False),
-        "include_flag": attr.string_list(),
+        "extra_linker_flags": attr.string_list(),
         "linker_path": attr.string(mandatory = True),
         "sysroot": attr.string(mandatory = False),
         "target_cpu": attr.string(mandatory = True, values = ["aarch64", "ppc64", "systemz", "x86_32", "x86_64"]),
