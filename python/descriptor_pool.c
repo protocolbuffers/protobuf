@@ -125,7 +125,7 @@ static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
         PyExc_ValueError,
         "Cannot call Add on a DescriptorPool that uses a DescriptorDatabase. "
         "Add your file to the underlying database.");
-    return NULL;
+    goto done;
   }
 
   if (PyBytes_AsStringAndSize(serialized_pb, &buf, &size) < 0) {
