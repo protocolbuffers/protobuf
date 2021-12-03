@@ -50,6 +50,11 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
 // ModuleState
 // -----------------------------------------------------------------------------
 
+PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
+  PyObject* module = PyState_FindModule(&module_def);
+  return module ? PyModule_GetState(module) : NULL;
+}
+
 PyUpb_ModuleState *PyUpb_ModuleState_GetFromModule(PyObject *module) {
   PyUpb_ModuleState *state = PyModule_GetState(module);
   assert(state);
@@ -57,8 +62,9 @@ PyUpb_ModuleState *PyUpb_ModuleState_GetFromModule(PyObject *module) {
   return state;
 }
 
-PyUpb_ModuleState *PyUpb_ModuleState_Get() {
+PyUpb_ModuleState *PyUpb_ModuleState_Get(void) {
   PyObject *module = PyState_FindModule(&module_def);
+  assert(module);
   return PyUpb_ModuleState_GetFromModule(module);
 }
 
@@ -73,7 +79,14 @@ void PyUpb_ObjCache_Add(const void *key, PyObject *py_obj) {
 }
 
 void PyUpb_ObjCache_Delete(const void *key) {
-  PyUpb_ModuleState *s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState *s = PyUpb_ModuleState_MaybeGet();
+  if (!s) {
+    // During the shutdown sequence, our object's Dealloc() methods can be
+    // called *after* our module Dealloc() method has been called.  At that
+    // point our state will be NULL and there is nothing to delete out of the
+    // map.
+    return;
+  }
   upb_value val;
   upb_inttable_remove(&s->obj_cache, (uintptr_t)key, &val);
   assert(upb_value_getptr(val));

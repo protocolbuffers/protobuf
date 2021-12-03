@@ -30,6 +30,7 @@ jobs:
       - name: Setup Python venv
         run: rm -rf /tmp/venv && python3 -m venv /tmp/venv
       - name: Install dependencies
-        run: sudo apt install -y valgrind
+        run: sudo apt install -y ${{ matrix.install }}
+        if: matrix.install != ''
       - name: Run tests
-        run: cd ${{ github.workspace }} && PATH=/tmp/venv/bin:$PATH CC=${{ matrix.CC }} bazel test --test_output=errors --config=valgrind python:minimal_test ${{ matrix.flags }}
+        run: cd ${{ github.workspace }} && PATH=/tmp/venv/bin:$PATH CC=${{ matrix.CC }} bazel test --test_output=errors ... ${{ matrix.flags }}
