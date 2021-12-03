@@ -15,6 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
           - { CC: clang, os: ubuntu-20.04, flags: "" }
