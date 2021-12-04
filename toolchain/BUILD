@@ -47,6 +47,7 @@ cc_toolchain_config(
         "-I/usr/aarch64-linux-gnu/include/c++/8/aarch64-linux-gnu/",
         "-I/usr/aarch64-linux-gnu/include/c++/8"
     ],
+    extra_include = "/usr/include",
     linker_path = "/usr/bin/ld",
     target_cpu = "aarch64",
     target_full_name = "aarch64-linux-gnu",
@@ -62,6 +63,7 @@ cc_toolchain_config(
         "-I/usr/powerpc64le-linux-gnu/include/c++/8/powerpc64le-linux-gnu/",
         "-I/usr/powerpc64le-linux-gnu/include/c++/8/"
     ],
+    extra_include = "/usr/include"
     linker_path = "/usr/bin/ld",
     target_cpu = "ppc64",
     target_full_name = "powerpc64le-linux-gnu",
@@ -77,6 +79,7 @@ cc_toolchain_config(
         "-I/usr/s390x-linux-gnu/include/c++/8/s390x-linux-gnu/",
         "-I/usr/s390x-linux-gnu/include/c++/8/"
     ],
+    extra_include = "/usr/include",
     linker_path = "/usr/bin/ld",
     target_cpu = "systemz",
     target_full_name = "s390x-linux-gnu",
@@ -88,6 +91,7 @@ cc_toolchain_config(
     name = "linux-x86_32-config",
     bit_flag = "-m32",
     cpp_flag = "-lstdc++",
+    extra_include = "/usr/include",
     linker_path = "/usr/bin/ld",
     target_cpu = "x86_32",
     target_full_name = "i386-linux-gnu",
@@ -99,6 +103,7 @@ cc_toolchain_config(
     name = "linux-x86_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
+    extra_include = "/usr/include",
     linker_path = "/usr/bin/ld",
     target_cpu = "x86_64",
     target_full_name = "x86_64-linux-gnu",
@@ -114,6 +119,7 @@ cc_toolchain_config(
         "-I/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
         "-I/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include"
     ],
+    extra_include = "/usr/include",
     linker_path = "/usr/tools",
     sysroot = "/usr/tools/apple_sdks/xcode_13_0/macosx",
     target_cpu = "aarch64",
@@ -130,6 +136,7 @@ cc_toolchain_config(
         "-I/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
         "-I/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include"
     ],
+    extra_include = "/usr/include",
     linker_path = "/usr/tools",
     sysroot = "/usr/tools/apple_sdks/xcode_13_0/macosx",
     target_cpu = "x86_64",
