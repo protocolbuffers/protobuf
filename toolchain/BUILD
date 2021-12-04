@@ -63,7 +63,7 @@ cc_toolchain_config(
         "-I/usr/powerpc64le-linux-gnu/include/c++/8/powerpc64le-linux-gnu/",
         "-I/usr/powerpc64le-linux-gnu/include/c++/8/"
     ],
-    extra_include = "/usr/include"
+    extra_include = "/usr/include",
     linker_path = "/usr/bin/ld",
     target_cpu = "ppc64",
     target_full_name = "powerpc64le-linux-gnu",
