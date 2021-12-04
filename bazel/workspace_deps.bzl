@@ -16,7 +16,6 @@ def upb_deps():
         sha256 = "b10bf4e2d1a7586f54e64a5d9e7837e5188fc75ae69e36f215eb01def4f9721b",
         strip_prefix = "protobuf-3.15.3",
         urls = [
-            "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.15.3.tar.gz",
             "https://github.com/protocolbuffers/protobuf/archive/v3.15.3.tar.gz",
         ],
     )
