@@ -45,6 +45,7 @@ cc_binary(
         "descriptor_pool.h",
         "protobuf.c",
         "protobuf.h",
+        "python.h",
     ],
     copts = UPB_DEFAULT_COPTS + [
         # The Python API requires patterns that are ISO C incompatible, like
@@ -64,6 +65,7 @@ cc_binary(
         "//:reflection",
         "//:upb",
         "//upb/util:compare",
+        "//upb/util:def_to_proto",
         "@system_python//:python_headers",
     ],
 )

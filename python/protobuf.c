@@ -28,6 +28,7 @@
 #include "protobuf.h"
 
 #include "descriptor.h"
+#include "descriptor_containers.h"
 #include "descriptor_pool.h"
 
 static void PyUpb_ModuleDealloc(void *module) {
@@ -49,6 +50,11 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
 // ModuleState
 // -----------------------------------------------------------------------------
 
+PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
+  PyObject* module = PyState_FindModule(&module_def);
+  return module ? PyModule_GetState(module) : NULL;
+}
+
 PyUpb_ModuleState *PyUpb_ModuleState_GetFromModule(PyObject *module) {
   PyUpb_ModuleState *state = PyModule_GetState(module);
   assert(state);
@@ -56,8 +62,9 @@ PyUpb_ModuleState *PyUpb_ModuleState_GetFromModule(PyObject *module) {
   return state;
 }
 
-PyUpb_ModuleState *PyUpb_ModuleState_Get() {
+PyUpb_ModuleState *PyUpb_ModuleState_Get(void) {
   PyObject *module = PyState_FindModule(&module_def);
+  assert(module);
   return PyUpb_ModuleState_GetFromModule(module);
 }
 
@@ -72,7 +79,14 @@ void PyUpb_ObjCache_Add(const void *key, PyObject *py_obj) {
 }
 
 void PyUpb_ObjCache_Delete(const void *key) {
-  PyUpb_ModuleState *s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState *s = PyUpb_ModuleState_MaybeGet();
+  if (!s) {
+    // During the shutdown sequence, our object's Dealloc() methods can be
+    // called *after* our module Dealloc() method has been called.  At that
+    // point our state will be NULL and there is nothing to delete out of the
+    // map.
+    return;
+  }
   upb_value val;
   upb_inttable_remove(&s->obj_cache, (uintptr_t)key, &val);
   assert(upb_value_getptr(val));
@@ -88,6 +102,50 @@ PyObject *PyUpb_ObjCache_Get(const void *key) {
   } else {
     return NULL;
   }
+}
+
+// -----------------------------------------------------------------------------
+// Arena
+// -----------------------------------------------------------------------------
+
+typedef struct {
+  PyObject_HEAD
+  upb_arena* arena;
+} PyUpb_Arena;
+
+PyObject* PyUpb_Arena_New(void) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_Arena* arena = (void*)PyType_GenericAlloc(state->arena_type, 0);
+  arena->arena = upb_arena_new();
+  return &arena->ob_base;
+}
+
+static void PyUpb_Arena_Dealloc(PyObject* self) {
+  upb_arena_free(PyUpb_Arena_Get(self));
+  PyUpb_Dealloc(self);
+}
+
+upb_arena* PyUpb_Arena_Get(PyObject* arena) {
+  return ((PyUpb_Arena*)arena)->arena;
+}
+
+static PyType_Slot PyUpb_Arena_Slots[] = {
+    {Py_tp_dealloc, PyUpb_Arena_Dealloc},
+    {0, NULL},
+};
+
+static PyType_Spec PyUpb_Arena_Spec = {
+    PYUPB_MODULE_NAME ".Arena",
+    sizeof(PyUpb_Arena),
+    0,  // itemsize
+    Py_TPFLAGS_DEFAULT,
+    PyUpb_Arena_Slots,
+};
+
+static bool PyUpb_InitArena(PyObject* m) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
+  state->arena_type = PyUpb_AddClass(m, &PyUpb_Arena_Spec);
+  return state->arena_type;
 }
 
 // -----------------------------------------------------------------------------
@@ -127,6 +185,14 @@ const char *PyUpb_GetStrData(PyObject *obj) {
   }
 }
 
+PyObject *PyUpb_Forbidden_New(PyObject *cls, PyObject *args, PyObject *kwds) {
+  PyObject *name = PyObject_GetAttrString(cls, "__name__");
+  PyErr_Format(PyExc_RuntimeError,
+               "Objects of type %U may not be created directly.", name);
+  Py_XDECREF(name);
+  return NULL;
+}
+
 // -----------------------------------------------------------------------------
 // Module Entry Point
 // -----------------------------------------------------------------------------
@@ -139,7 +205,8 @@ PyMODINIT_FUNC PyInit__message(void) {
   state->obj_cache_arena = upb_arena_new();
   upb_inttable_init(&state->obj_cache, state->obj_cache_arena);
 
-  if (!PyUpb_InitDescriptorPool(m) || !PyUpb_InitDescriptor(m)) {
+  if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||
+      !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m)) {
     Py_DECREF(m);
     return NULL;
   }

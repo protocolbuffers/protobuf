@@ -25,19 +25,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PYUPB_DESCRIPTOR_POOL_H__
-#define PYUPB_DESCRIPTOR_POOL_H__
+#ifndef PYUPB_PYTHON_H__
+#define PYUPB_PYTHON_H__
 
-#include <stdbool.h>
+// We restrict ourselves to the limited API, so that we will be ABI-compatible
+// with any version of Python >= 3.6.1  (3.6.1 introduce PySlice_Unpack())
+#define Py_LIMITED_API 0x03060100
+#include <Python.h>
 
-#include "protobuf.h"
+// This function was not officially added to the limited API until Python 3.10.
+// But in practice it has been stable since Python 3.1.  See:
+//   https://bugs.python.org/issue41784
+PyAPI_FUNC(const char *)
+    PyUnicode_AsUTF8AndSize(PyObject *unicode, Py_ssize_t *size);
 
-PyObject* PyUpb_DescriptorPool_GetSerializedPb(PyObject* _self,
-                                               const char* filename);
-PyObject* PyUpb_DescriptorPool_Get(const upb_symtab* symtab);
-upb_symtab* PyUpb_DescriptorPool_GetSymtab(PyObject* pool);
-PyObject* PyUpb_DescriptorPool_GetDefaultPool(void);
-
-bool PyUpb_InitDescriptorPool(PyObject* m);
-
-#endif  // PYUPB_DESCRIPTOR_POOL_H__
+#endif  // PYUPB_PYTHON_H__
