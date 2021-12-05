@@ -233,7 +233,7 @@ TEST(MessageTest, TestBadUTF8) {
                          serialized.data(), serialized.size(), arena.ptr()));
 }
 
-TEST(MessageTest, RequiredFieldsTopLevelMessage) {
+TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   upb::Arena arena;
   upb_test_TestRequiredFields *test_msg;
   upb_test_EmptyMessage *empty_msg;
@@ -291,7 +291,7 @@ TEST(MessageTest, RequiredFieldsTopLevelMessage) {
                         kUpb_DecodeOption_CheckRequired, arena.ptr()));
 }
 
-TEST(MessageTest, RequiredFieldsSubMessage) {
+TEST(MessageTest, DecodeRequiredFieldsSubMessage) {
   upb::Arena arena;
   upb_test_TestRequiredFields *test_msg =
       upb_test_TestRequiredFields_new(arena.ptr());
@@ -325,4 +325,37 @@ TEST(MessageTest, RequiredFieldsSubMessage) {
   EXPECT_NE(nullptr, upb_test_SubMessageHasRequired_parse_ex(
                          serialized, size, NULL,
                          kUpb_DecodeOption_CheckRequired, arena.ptr()));
+}
+
+TEST(MessageTest, EncodeRequiredFields) {
+  upb::Arena arena;
+  upb_test_TestRequiredFields *test_msg =
+      upb_test_TestRequiredFields_new(arena.ptr());
+
+  // Succeeds, we didn't ask for required field checking.
+  size_t size;
+  char* serialized =
+      upb_test_TestRequiredFields_serialize_ex(test_msg, 0, arena.ptr(), &size);
+  ASSERT_TRUE(serialized != nullptr);
+  EXPECT_EQ(size, 0);
+
+  // Fails, we asked for required field checking but the required field is
+  // missing.
+  serialized = upb_test_TestRequiredFields_serialize_ex(
+      test_msg, UPB_ENCODE_CHECKREQUIRED, arena.ptr(), &size);
+  ASSERT_TRUE(serialized == nullptr);
+
+  // Fails, some required fields are present but not others.
+  upb_test_TestRequiredFields_set_required_int32(test_msg, 1);
+  serialized = upb_test_TestRequiredFields_serialize_ex(
+      test_msg, UPB_ENCODE_CHECKREQUIRED, arena.ptr(), &size);
+  ASSERT_TRUE(serialized == nullptr);
+
+  // Succeeds, all required fields are set.
+  upb_test_EmptyMessage *empty_msg = upb_test_EmptyMessage_new(arena.ptr());
+  upb_test_TestRequiredFields_set_required_int64(test_msg, 2);
+  upb_test_TestRequiredFields_set_required_message(test_msg, empty_msg);
+  serialized = upb_test_TestRequiredFields_serialize_ex(
+      test_msg, UPB_ENCODE_CHECKREQUIRED, arena.ptr(), &size);
+  ASSERT_TRUE(serialized != nullptr);
 }

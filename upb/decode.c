@@ -690,17 +690,6 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   return ptr;
 }
 
-// Computes a bitmask in which the |n| lowest bits are set, except that we
-// skip the lowest bit (because upb never uses hasbit 0).
-//
-// Sample output:
-//    decode_requiredmask(1) => 0b10 (0x2)
-//    decode_requiredmask(5) => 0b111110 (0x3e)
-uint64_t decode_requiredmask(int n) {
-  assert(0 < n && n < 63);
-  return ((1 << n) - 1) << 1;
-}
-
 UPB_NOINLINE
 const char *decode_checkrequired(upb_decstate *d, const char *ptr,
                                  const upb_msg *msg, const upb_msglayout *l) {
@@ -711,7 +700,7 @@ const char *decode_checkrequired(upb_decstate *d, const char *ptr,
   uint64_t msg_head;
   memcpy(&msg_head, msg, 8);
   msg_head = _upb_be_swap64(msg_head);
-  if (decode_requiredmask(l->required_count) & ~msg_head) {
+  if (upb_msglayout_requiredmask(l) & ~msg_head) {
     d->missing_required = true;
   }
   return ptr;

@@ -52,6 +52,9 @@ enum {
 
   /* When set, unknown fields are not printed. */
   UPB_ENCODE_SKIPUNKNOWN = 2,
+
+  /* When set, the encode will fail if any required fields are missing. */
+  UPB_ENCODE_CHECKREQUIRED = 4,
 };
 
 #define UPB_ENCODE_MAXDEPTH(depth) ((depth) << 16)

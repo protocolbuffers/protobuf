@@ -437,6 +437,12 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
           UPB_INLINE char *$0_serialize(const $0 *msg, upb_arena *arena, size_t *len) {
             return upb_encode(msg, &$1, arena, len);
           }
+          UPB_INLINE char *$0_serialize_ex(const $0 *msg,
+                                           int options,
+                                           upb_arena *arena,
+                                           size_t *len) {
+            return upb_encode_ex(msg, &$1, options, arena, len);
+          }
         )cc",
         MessageName(message), MessageInit(message));
   }
