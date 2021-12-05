@@ -175,7 +175,7 @@ void MessageLayout::PlaceNonOneofFields(
       int index = ++hasbit_count_;
       hasbit_indexes_[field] = index;
       if (field->is_required()) {
-        if (index >= 63) {
+        if (index > 63) {
           // This could be fixed in the decoder without too much trouble.  But
           // we expect this to be so rare that we don't worry about it for now.
           std::cerr << "upb does not support messages with more than 63 "

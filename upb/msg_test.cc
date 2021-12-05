@@ -25,12 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "src/google/protobuf/test_messages_proto3.upb.h"
 #include "upb/def.hpp"
 #include "upb/json_decode.h"
 #include "upb/json_encode.h"
+#include "upb/max_required_test.upb.h"
+#include "upb/max_required_test.upbdefs.h"
 #include "upb/msg_test.upb.h"
 #include "upb/msg_test.upbdefs.h"
 #include "upb/upb.hpp"
@@ -356,6 +358,42 @@ TEST(MessageTest, EncodeRequiredFields) {
   upb_test_TestRequiredFields_set_required_int64(test_msg, 2);
   upb_test_TestRequiredFields_set_required_message(test_msg, empty_msg);
   serialized = upb_test_TestRequiredFields_serialize_ex(
+      test_msg, UPB_ENCODE_CHECKREQUIRED, arena.ptr(), &size);
+  ASSERT_TRUE(serialized != nullptr);
+}
+
+TEST(MessageTest, MaxRequiredFields) {
+  upb::Arena arena;
+  upb_test_TestMaxRequiredFields *test_msg =
+      upb_test_TestMaxRequiredFields_new(arena.ptr());
+
+  // Fails, we asked for required field checking but the required field is
+  // missing.
+  size_t size;
+  char* serialized = upb_test_TestMaxRequiredFields_serialize_ex(
+      test_msg, UPB_ENCODE_CHECKREQUIRED, arena.ptr(), &size);
+  ASSERT_TRUE(serialized == nullptr);
+
+  upb::SymbolTable symtab;
+  upb::MessageDefPtr m(upb_test_TestMaxRequiredFields_getmsgdef(symtab.ptr()));
+  upb_msgval val;
+  val.int32_val = 1;
+  for (int i = 1; i <= 62; i++) {
+    upb::FieldDefPtr f = m.FindFieldByNumber(i);
+    ASSERT_TRUE(f);
+    upb_msg_set(test_msg, f.ptr(), val, arena.ptr());
+  }
+
+  // Fails, field 63 still isn't set.
+  serialized = upb_test_TestMaxRequiredFields_serialize_ex(
+      test_msg, UPB_ENCODE_CHECKREQUIRED, arena.ptr(), &size);
+  ASSERT_TRUE(serialized == nullptr);
+
+  // Succeeds, all required fields are set.
+  upb::FieldDefPtr f = m.FindFieldByNumber(63);
+  ASSERT_TRUE(f);
+  upb_msg_set(test_msg, f.ptr(), val, arena.ptr());
+  serialized = upb_test_TestMaxRequiredFields_serialize_ex(
       test_msg, UPB_ENCODE_CHECKREQUIRED, arena.ptr(), &size);
   ASSERT_TRUE(serialized != nullptr);
 }

@@ -230,8 +230,25 @@ cc_test(
 
 proto_library(
     name = "msg_test_proto",
-    srcs = ["upb/msg_test.proto"],
+    srcs = [
+        "upb/msg_test.proto",
+        "upb/max_required_test.proto",
+    ],
     deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+)
+
+genrule(
+    name = "gen_max_required_test_proto",
+    outs = ["upb/max_required_test.proto"],
+    cmd = """
+          echo "syntax = \\\"proto2\\\";" >> $@
+          echo "package upb_test;" >> $@
+          echo "message TestMaxRequiredFields {" >> $@
+          for i in {1..63}; do
+            echo "  required int32 required_int32_$$i = $$i;" >> $@
+          done
+          echo "}" >> $@
+          """,
 )
 
 upb_proto_reflection_library(
