@@ -34,7 +34,8 @@
 #include "upb/text_encode.h"
 #include "upb/util/required_fields.h"
 
-const upb_msgdef* PyUpb_MessageMeta_GetMsgdef(PyObject* cls);
+static const upb_msgdef* PyUpb_MessageMeta_GetMsgdef(PyObject* cls);
+static PyObject* PyUpb_MessageMeta_GetAttr(PyObject* self, PyObject* name);
 
 // -----------------------------------------------------------------------------
 // CPythonBits
@@ -60,8 +61,6 @@ typedef struct {
   // than the version we are dynamically linked against.  Here we want the
   // version that is actually running in this process.
   long python_version_hex;     // PY_VERSION_HEX
-
-  PyObject* descriptor;
 } PyUpb_CPythonBits;
 
 // A global containing the values for this process.
@@ -214,6 +213,15 @@ static PyObject* PyUpb_CMessage_New(PyObject* cls, PyObject* unused_args,
   return ret;
 }
 
+/*
+ * PyUpb_CMessage_LookupName()
+ *
+ * Tries to find a field or oneof named `py_name` in the message object `self`.
+ * The user can pass `f` and/or `o` to indicate whether a field or a oneof name
+ * is expected.  If the name is found and is has an expected type, the function
+ * sets `*f` or `*o` respectively and returns true.  Otherwise returns false
+ * and sets an exception of type `exc_type` if provided.
+ */
 static bool PyUpb_CMessage_LookupName(PyUpb_CMessage* self, PyObject* py_name,
                                       const upb_fielddef** f,
                                       const upb_oneofdef** o,
@@ -247,8 +255,23 @@ static bool PyUpb_CMessage_LookupName(PyUpb_CMessage* self, PyObject* py_name,
   return true;
 }
 
-int PyUpb_CMessage_InitMapAttributes(PyObject* map, PyObject* value,
-                                     const upb_fielddef* f) {
+static bool PyUpb_CMessage_InitMessageMapEntry(PyObject* dst, PyObject* src) {
+  if (!src || !dst) return false;
+
+  // Currently we are doing Clear()+MergeFrom().  Replace with CopyFrom() once that
+  // is implemented.
+  PyObject* ok = PyObject_CallMethod(dst, "Clear", NULL);
+  if (!ok) return false;
+  Py_DECREF(ok);
+  ok = PyObject_CallMethod(dst, "MergeFrom", "O", src);
+  if (!ok) return false;
+  Py_DECREF(ok);
+
+  return true;
+}
+
+static int PyUpb_CMessage_InitMapAttributes(PyObject* map, PyObject* value,
+                                            const upb_fielddef* f) {
   const upb_msgdef* entry_m = upb_fielddef_msgsubdef(f);
   const upb_fielddef* val_f = upb_msgdef_field(entry_m, 1);
   if (upb_fielddef_issubmsg(val_f)) {
@@ -263,22 +286,10 @@ int PyUpb_CMessage_InitMapAttributes(PyObject* map, PyObject* value,
       PyObject* src = PyObject_GetItem(value, item);
       PyObject* dst = PyObject_GetItem(map, item);
       Py_DECREF(item);
-
-      if (!src || !dst) {
-        Py_XDECREF(src);
-        Py_XDECREF(dst);
-        Py_DECREF(iter);
-        return -1;
-      }
-
-      PyObject* ok = PyObject_CallMethod(dst, "Clear", NULL);
-      assert(ok);
-      Py_DECREF(ok);
-      PyObject* ok2 = PyObject_CallMethod(dst, "MergeFrom", "O", src);
-      Py_DECREF(src);
-      Py_DECREF(dst);
-      Py_XDECREF(ok2);
-      if (!ok2) {
+      bool ok = PyUpb_CMessage_InitMessageMapEntry(dst, src);
+      Py_XDECREF(src);
+      Py_XDECREF(dst);
+      if (!ok) {
         Py_DECREF(iter);
         return -1;
       }
@@ -473,6 +484,21 @@ void PyUpb_CMessage_AssureWritable(PyUpb_CMessage* self) {
   self->version++;
 }
 
+/*
+ * PyUpb_CMessage_SyncSubobjs()
+ *
+ * This operation must be invoked whenever the underlying upb_msg has been
+ * mutated directly in C.  This will attach any newly-present field data
+ * to previously returned "empty" wrapper objects.
+ *
+ * For example:
+ *   foo = FooMessage()
+ *   sub = foo.submsg  # Empty, unset sub-message
+ *
+ *   # SyncSubobjs() is required to connect our existing 'sub' wrapper to the
+ *   # newly created foo.submsg data in C.
+ *   foo.MergeFrom(FooMessage(submsg={}))
+ */
 static void PyUpb_CMessage_SyncSubobjs(PyUpb_CMessage* self) {
   PyUpb_WeakMap* subobj_map = self->unset_subobj_map;
   upb_msg* msg = PyUpb_CMessage_GetMsg(self);
@@ -511,6 +537,9 @@ static void PyUpb_CMessage_SyncSubobjs(PyUpb_CMessage* self) {
   }
 
   Py_DECREF(&self->ob_base);
+
+  // TODO(haberman): present fields need to be iterated too if they can reach
+  // a WeakMap.
 }
 
 static PyObject* PyUpb_CMessage_ToString(PyUpb_CMessage* self) {
@@ -596,7 +625,8 @@ PyObject* PyUpb_CMessage_Get(upb_msg* u_msg, const upb_msgdef* m,
 
   if (!ret) {
     PyObject* cls = PyUpb_Descriptor_GetClass(m);
-    // https://bugs.python.org/issue35810
+    // It is not safe to use PyObject_{,GC}_New() due to:
+    //    https://bugs.python.org/issue35810
     PyUpb_CMessage* py_msg = (void*)PyType_GenericAlloc((PyTypeObject*)cls, 0);
     py_msg->arena = arena;
     py_msg->def = (uintptr_t)m;
@@ -613,6 +643,17 @@ PyObject* PyUpb_CMessage_Get(upb_msg* u_msg, const upb_msgdef* m,
   return ret;
 }
 
+/*
+ * PyUpb_CMessage_GetFieldValue()
+ *
+ * Implements the equivalent of getattr(msg, field), once `field` has
+ * already been resolved to a `upb_fielddef*`.
+ *
+ * This may involve constructing a wrapper object for the given field, or
+ * returning one that was previously constructed.  If the field is not actually
+ * set, the wrapper object will be an "unset" object that is not actually
+ * connected to any C data.
+ */
 PyObject* PyUpb_CMessage_GetFieldValue(PyObject* _self,
                                        const upb_fielddef* field) {
   PyUpb_CMessage* self = (PyUpb_CMessage*)_self;
@@ -708,8 +749,6 @@ int PyUpb_CMessage_GetVersion(PyObject* _self) {
   PyUpb_CMessage* self = (PyUpb_CMessage*)_self;
   return self->version;
 }
-
-static PyObject* PyUpb_MessageMeta_GetAttr(PyObject* self, PyObject* name);
 
 /*
  * PyUpb_CMessage_GetAttr()
@@ -946,7 +985,8 @@ static PyObject* PyUpb_CMessage_ClearField(PyUpb_CMessage* self,
       obj = PyUpb_ObjCache_Get(msgval.map_val);
     }
     if (obj) {
-      PyUpb_MapContainer_Invalidate(obj);
+      // TODO(haberman) add when maps are checked in.
+      // PyUpb_MapContainer_Invalidate(obj);
       Py_DECREF(obj);
     }
   }
@@ -1117,6 +1157,7 @@ static PyGetSetDef PyUpb_CMessage_Getters[] = {
     {NULL}};
 
 static PyMethodDef PyUpb_CMessage_Methods[] = {
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
     //  "Makes a deep copy of the class." },
     //{ "__unicode__", (PyCFunction)ToUnicode, METH_NOARGS,
@@ -1129,6 +1170,7 @@ static PyMethodDef PyUpb_CMessage_Methods[] = {
      "Clears a message field."},
     {"ClearField", (PyCFunction)PyUpb_CMessage_ClearField, METH_O,
      "Clears a message field."},
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "CopyFrom", (PyCFunction)CopyFrom, METH_O,
     //  "Copies a protocol message into the current message." },
     {"DiscardUnknownFields", (PyCFunction)PyUpb_CMessage_DiscardUnknownFields,
@@ -1142,6 +1184,7 @@ static PyMethodDef PyUpb_CMessage_Methods[] = {
      "Checks if a message field is set."},
     {"HasField", PyUpb_CMessage_HasField, METH_O,
      "Checks if a message field is set."},
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "IsInitialized", (PyCFunction)IsInitialized, METH_VARARGS,
     //  "Checks if all required fields of a protocol message are set." },
     {"ListFields", PyUpb_CMessage_ListFields, METH_NOARGS,
@@ -1152,6 +1195,7 @@ static PyMethodDef PyUpb_CMessage_Methods[] = {
      "Merges a serialized message into the current message."},
     {"ParseFromString", PyUpb_CMessage_ParseFromString, METH_O,
      "Parses a serialized message into the current message."},
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "RegisterExtension", (PyCFunction)RegisterExtension, METH_O |
     // METH_CLASS,
     //  "Registers an extension with the current message." },
@@ -1169,6 +1213,7 @@ static PyMethodDef PyUpb_CMessage_Methods[] = {
     {"WhichOneof", PyUpb_CMessage_WhichOneof, METH_O,
      "Returns the name of the field set inside a oneof, "
      "or None if no field is set."},
+    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "_CheckCalledFromGeneratedFile",
     //(PyCFunction)_CheckCalledFromGeneratedFile,
     //  METH_NOARGS | METH_STATIC,
@@ -1202,17 +1247,34 @@ PyType_Spec PyUpb_CMessage_Spec = {
 // MessageMeta
 // -----------------------------------------------------------------------------
 
+// MessageMeta is the metaclass for message objects.  The generated code uses it
+// to construct message classes, ie.
+//
+// FooMessage = _message.MessageMeta('FooMessage', (_message.Message), {...})
+//
+// (This is not quite true: at the moment the Python library subclasses
+// MessageMeta, and uses that subclass as the metaclass.  There is a TODO below
+// to simplify this, so that the illustration above is indeed accurate).
+
 typedef struct {
   const upb_msglayout* layout;
   PyObject* py_message_descriptor;
 } PyUpb_MessageMeta;
 
-PyUpb_MessageMeta* PyUpb_GetMessageMeta(PyObject* cls) {
+// The PyUpb_MessageMeta struct is trailing data tacked onto the end of
+// MessageMeta instances.  This means that we get our instances of this struct
+// by adding the appropriate number of bytes.
+static PyUpb_MessageMeta* PyUpb_GetMessageMeta(PyObject* cls) {
 #ifndef NDEBUG
   PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
   assert(!state || cls->ob_type == state->message_meta_type);
 #endif
   return (PyUpb_MessageMeta*)((char*)cls + cpython_bits.type_basicsize);
+}
+
+static const upb_msgdef* PyUpb_MessageMeta_GetMsgdef(PyObject* cls) {
+  PyUpb_MessageMeta* self = PyUpb_GetMessageMeta(cls);
+  return PyUpb_Descriptor_GetDef(self->py_message_descriptor);
 }
 
 PyObject* PyUpb_MessageMeta_ModuleQualifiedName(const upb_msgdef* m) {
@@ -1326,46 +1388,6 @@ static void PyUpb_MessageMeta_Dealloc(PyObject* self) {
   PyUpb_Dealloc(self);
 }
 
-PyObject* PyUpb_MessageMeta_CreateClass(PyObject* py_descriptor) {
-  const upb_msgdef* m = PyUpb_Descriptor_GetDef(py_descriptor);
-  PyObject* dict = PyDict_New();
-  PyObject* ret = PyUpb_MessageMeta_DoCreateClass(py_descriptor,
-                                                  upb_msgdef_fullname(m), dict);
-  Py_DECREF(dict);
-  return ret;
-}
-
-/*
-// Compute some class attributes on the fly:
-// - All the _FIELD_NUMBER attributes, for all fields and nested extensions.
-// Returns a new reference, or NULL with an exception set.
-static PyObject* GetClassAttribute(CMessageClass *self, PyObject* name) {
-  char* attr;
-  Py_ssize_t attr_size;
-  static const char kSuffix[] = "_FIELD_NUMBER";
-  if (PyString_AsStringAndSize(name, &attr, &attr_size) >= 0 &&
-      HasSuffixString(StringPiece(attr, attr_size), kSuffix)) {
-    std::string field_name(attr, attr_size - sizeof(kSuffix) + 1);
-    LowerString(&field_name);
-
-    // Try to find a field with the given name, without the suffix.
-    const FieldDescriptor* field =
-        self->message_descriptor->FindFieldByLowercaseName(field_name);
-    if (!field) {
-      // Search nested extensions as well.
-      field =
-          self->message_descriptor->FindExtensionByLowercaseName(field_name);
-    }
-    if (field) {
-      return PyInt_FromLong(field->number());
-    }
-  }
-  PyErr_SetObject(PyExc_AttributeError, name);
-  return NULL;
-}
-
-*/
-
 static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
                                                   PyObject* name) {
   const char* name_buf = PyUpb_GetStrData(name);
@@ -1394,6 +1416,9 @@ static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
   } else if ((ext = upb_symtab_lookupext(symtab, key))) {
     ret = PyUpb_FieldDescriptor_Get(ext);
   }
+
+  // TODO(haberman): *_FIELD_NUMBER attributes?  Haven't seen any failing
+  // tests for these yet.
 
   Py_DECREF(py_key);
 
@@ -1437,29 +1462,26 @@ static PyType_Spec PyUpb_MessageMeta_Spec = {
     PyUpb_MessageMeta_Slots,
 };
 
-bool PyUpb_GetTypeFuncs(void) {
-}
-
-bool PyUpb_InitMessage(PyObject* m) {
-  if (!PyUpb_GetTypeFuncs()) return false;
-
-  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
-  state->cmessage_type = PyUpb_AddClass(m, &PyUpb_CMessage_Spec);
-
-  if (!state->cmessage_type) return false;
-
+static PyObject* PyUpb_MessageMeta_CreateType() {
   PyObject* bases = Py_BuildValue("(O)", &PyType_Type);
+  if (!bases) return NULL;
   PyUpb_MessageMeta_Spec.basicsize =
       cpython_bits.type_basicsize + sizeof(PyUpb_MessageMeta);
   PyObject* type = PyType_FromSpecWithBases(&PyUpb_MessageMeta_Spec, bases);
   Py_DECREF(bases);
+  return type;
+}
 
-  if (!type) return false;
+bool PyUpb_InitMessage(PyObject* m) {
+  if (!PyUpb_CPythonBits_Init(&cpython_bits)) return false;
+  PyObject* message_meta_type = PyUpb_MessageMeta_CreateType();
 
-  if (PyModule_AddObject(m, "MessageMeta", type) == 0) {
-    state->message_meta_type = (PyTypeObject*)type;
-    return true;
-  } else {
-    return false;
-  }
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
+  state->cmessage_type = PyUpb_AddClass(m, &PyUpb_CMessage_Spec);
+  state->message_meta_type = (PyTypeObject*)message_meta_type;
+
+  if (!state->cmessage_type || !state->message_meta_type) return false;
+  if (PyModule_AddObject(m, "MessageMeta", message_meta_type)) return false;
+
+  return true;
 }

@@ -38,6 +38,9 @@
 
 #define PYUPB_RETURN_OOM return PyErr_SetNone(PyExc_MemoryError), NULL
 
+struct PyUpb_WeakMap;
+typedef struct PyUpb_WeakMap PyUpb_WeakMap;
+
 // -----------------------------------------------------------------------------
 // ModuleState
 // -----------------------------------------------------------------------------
@@ -73,8 +76,7 @@ typedef struct {
   // From protobuf.c
   PyObject *wkt_bases;
   PyTypeObject *arena_type;
-  upb_arena *obj_cache_arena;
-  upb_inttable obj_cache;
+  PyUpb_WeakMap *obj_cache;
 } PyUpb_ModuleState;
 
 // Returns the global state object from the current interpreter. The current
@@ -105,9 +107,6 @@ PyObject *PyUpb_GetWktBases(PyUpb_ModuleState *state);
 // remove itself from the map when it is destroyed. The map is weak so it does
 // not take references to the cached objects.
 
-struct PyUpb_WeakMap;
-typedef struct PyUpb_WeakMap PyUpb_WeakMap;
-
 PyUpb_WeakMap *PyUpb_WeakMap_New(void);
 void PyUpb_WeakMap_Free(PyUpb_WeakMap *map);
 
@@ -128,20 +127,15 @@ bool PyUpb_WeakMap_Next(PyUpb_WeakMap *map, const void **key, PyObject **obj,
 void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap *map, intptr_t *iter);
 
 // -----------------------------------------------------------------------------
-// ObjectCache
+// ObjCache
 // -----------------------------------------------------------------------------
 
 // The object cache is a global WeakMap for mapping upb objects to the
 // corresponding wrapper.
-
-// Adds the given object to the cache, indexed by the given key.
 void PyUpb_ObjCache_Add(const void *key, PyObject *py_obj);
-
-// Removes the given key from the cache. It must exist in the cache currently.
 void PyUpb_ObjCache_Delete(const void *key);
-
-// Returns a new reference to an object if it exists, otherwise returns NULL.
-PyObject *PyUpb_ObjCache_Get(const void *key);
+PyObject *PyUpb_ObjCache_Get(const void *key);  // returns NULL if not present.
+PyUpb_WeakMap *PyUpb_ObjCache_Instance(void);
 
 // -----------------------------------------------------------------------------
 // Arena
