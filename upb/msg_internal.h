@@ -198,6 +198,18 @@ typedef struct {
   int ext_count;
 } upb_msglayout_file;
 
+// Computes a bitmask in which the |l->required_count| lowest bits are set,
+// except that we skip the lowest bit (because upb never uses hasbit 0).
+//
+// Sample output:
+//    requiredmask(1) => 0b10 (0x2)
+//    requiredmask(5) => 0b111110 (0x3e)
+UPB_INLINE uint64_t upb_msglayout_requiredmask(const upb_msglayout *l) {
+  int n = l->required_count;
+  assert(0 < n && n <= 63);
+  return ((1ULL << n) - 1) << 1;
+}
+
 /** upb_extreg ****************************************************************/
 
 /* Adds the given extension info for message type |l| and field number |num|

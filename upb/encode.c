@@ -511,6 +511,15 @@ static void encode_message(upb_encstate *e, const upb_msg *msg,
                            const upb_msglayout *m, size_t *size) {
   size_t pre_len = e->limit - e->ptr;
 
+  if ((e->options & UPB_ENCODE_CHECKREQUIRED) && m->required_count) {
+    uint64_t msg_head;
+    memcpy(&msg_head, msg, 8);
+    msg_head = _upb_be_swap64(msg_head);
+    if (upb_msglayout_requiredmask(m) & ~msg_head) {
+      encode_err(e);
+    }
+  }
+
   if ((e->options & UPB_ENCODE_SKIPUNKNOWN) == 0) {
     size_t unknown_size;
     const char *unknown = upb_msg_getunknown(msg, &unknown_size);
