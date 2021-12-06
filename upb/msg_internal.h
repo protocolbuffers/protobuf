@@ -207,7 +207,7 @@ typedef struct {
 UPB_INLINE uint64_t upb_msglayout_requiredmask(const upb_msglayout *l) {
   int n = l->required_count;
   assert(0 < n && n <= 63);
-  return (((uint64_t)1 << n) - 1) << 1;
+  return ((1ULL << n) - 1) << 1;
 }
 
 /** upb_extreg ****************************************************************/

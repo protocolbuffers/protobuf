@@ -31,8 +31,6 @@
 #include "upb/def.hpp"
 #include "upb/json_decode.h"
 #include "upb/json_encode.h"
-#include "upb/max_required_test.upb.h"
-#include "upb/max_required_test.upbdefs.h"
 #include "upb/msg_test.upb.h"
 #include "upb/msg_test.upbdefs.h"
 #include "upb/upb.hpp"
@@ -378,7 +376,7 @@ TEST(MessageTest, MaxRequiredFields) {
   upb::MessageDefPtr m(upb_test_TestMaxRequiredFields_getmsgdef(symtab.ptr()));
   upb_msgval val;
   val.int32_val = 1;
-  for (int i = 1; i <= 62; i++) {
+  for (int i = 1; i <= 61; i++) {
     upb::FieldDefPtr f = m.FindFieldByNumber(i);
     ASSERT_TRUE(f);
     upb_msg_set(test_msg, f.ptr(), val, arena.ptr());
@@ -390,7 +388,7 @@ TEST(MessageTest, MaxRequiredFields) {
   ASSERT_TRUE(serialized == nullptr);
 
   // Succeeds, all required fields are set.
-  upb::FieldDefPtr f = m.FindFieldByNumber(63);
+  upb::FieldDefPtr f = m.FindFieldByNumber(62);
   ASSERT_TRUE(f);
   upb_msg_set(test_msg, f.ptr(), val, arena.ptr());
   serialized = upb_test_TestMaxRequiredFields_serialize_ex(
