@@ -48,8 +48,8 @@ void PyUpb_CMessage_SetConcreteSubobj(PyObject* _self, const upb_fielddef* f,
 PyObject* PyUpb_CMessage_Get(upb_msg* u_msg, const upb_msgdef* m,
                              PyObject* arena);
 
-// Call to check whether the given Python object is a message.  If not, returns
-// false and sets a TypeError exception.
+// Verifies that a Python object is a message.  Sets a TypeError exception and
+// returns false on failure.
 bool PyUpb_CMessage_Check(PyObject* self);
 
 // Gets the upb_msg* for this message object if the message is set/writable.

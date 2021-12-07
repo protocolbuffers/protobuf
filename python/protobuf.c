@@ -115,13 +115,6 @@ uintptr_t PyUpb_WeakMap_GetKey(const void *key) {
 }
 
 void PyUpb_WeakMap_Add(PyUpb_WeakMap *map, const void *key, PyObject *py_obj) {
-  /*
-  uintptr_t k = (uintptr_t)key;
-  for (int i = 0; i < 64; i++) {
-    counts[i] += ((k & (1ULL << i)) != 0);
-  }
-  total++;
-  */
   upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
                       upb_value_ptr(py_obj), map->arena);
 }
@@ -153,13 +146,10 @@ bool PyUpb_WeakMap_Next(PyUpb_WeakMap *map, const void **key, PyObject **obj,
                         intptr_t *iter) {
   uintptr_t u_key;
   upb_value val;
-  if (upb_inttable_next2(&map->table, &u_key, &val, iter)) {
-    *key = (void *)(u_key << 3);
-    *obj = upb_value_getptr(val);
-    return true;
-  } else {
-    return false;
-  }
+  if (!upb_inttable_next2(&map->table, &u_key, &val, iter)) return false;
+  *key = (void *)(u_key << 3);
+  *obj = upb_value_getptr(val);
+  return true;
 }
 
 void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap *map, intptr_t *iter) {
