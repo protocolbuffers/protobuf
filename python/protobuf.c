@@ -79,7 +79,7 @@ PyObject *PyUpb_GetWktBases(PyUpb_ModuleState *state) {
 
     state->wkt_bases = PyObject_GetAttrString(wkt_module, "WKTBASES");
     PyObject *m = PyState_FindModule(&module_def);
-    // Make sure it is GC'd.
+    // Reparent ownership to m.
     PyModule_AddObject(m, "__internal_wktbases", state->wkt_bases);
     Py_DECREF(wkt_module);
   }

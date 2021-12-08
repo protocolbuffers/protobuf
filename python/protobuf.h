@@ -122,6 +122,14 @@ PyObject *PyUpb_WeakMap_Get(PyUpb_WeakMap *map, const void *key);
 
 #define PYUPB_WEAKMAP_BEGIN UPB_INTTABLE_BEGIN
 
+// Iteration over the weak map, eg.
+//
+// intptr_t it = PYUPB_WEAKMAP_BEGIN;
+// while (PyUpb_WeakMap_Next(map, &key, &obj, &it)) {
+//   // ...
+// }
+//
+// Note that the callee does not own a ref on the returned `obj`.
 bool PyUpb_WeakMap_Next(PyUpb_WeakMap *map, const void **key, PyObject **obj,
                         intptr_t *iter);
 void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap *map, intptr_t *iter);
