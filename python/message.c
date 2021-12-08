@@ -469,6 +469,21 @@ static bool PyUpb_CMessage_IsEqual(PyUpb_CMessage* m1, PyObject* _m2) {
   return PyUpb_Message_IsEqual(m1_msg, m2_msg, m1_msgdef);
 }
 
+static const upb_fielddef* PyUpb_CMessage_InitAsMsg(PyUpb_CMessage* m,
+                                                    upb_arena* arena) {
+  const upb_fielddef* f = PyUpb_CMessage_GetFieldDef(m);
+  m->ptr.msg = upb_msg_new(upb_fielddef_msgsubdef(f), arena);
+  m->def = (uintptr_t)upb_fielddef_msgsubdef(f);
+  return f;
+}
+
+static void PyUpb_CMessage_SetField(PyUpb_CMessage* p, const upb_fielddef* cf,
+                                    PyUpb_CMessage* c, upb_arena* arena) {
+  upb_msg_set(p->ptr.msg, cf, (upb_msgval){.msg_val = c->ptr.msg}, arena);
+  PyUpb_WeakMap_Delete(p->unset_subobj_map, cf);
+  PyUpb_ObjCache_Add(c->ptr.msg, &c->ob_base);
+}
+
 /*
  * PyUpb_CMessage_AssureWritable()
  *
@@ -487,42 +502,29 @@ static bool PyUpb_CMessage_IsEqual(PyUpb_CMessage* m1, PyObject* _m2) {
  * Post-condition:
  *   PyUpb_CMessage_IsUnset(self) is false
  */
-void PyUpb_CMessage_AssureWritable(PyUpb_CMessage* self) {
-  if (!PyUpb_CMessage_IsUnset(self)) return;
-
+void PyUpb_CMessage_AssureWritable(PyUpb_CMessage* child) {
+  if (!PyUpb_CMessage_IsUnset(child)) return;
   // This is a non-present message. We need to create a real upb_msg for this
   // object and every parent until we reach a present message.
-  upb_arena* arena = PyUpb_Arena_Get(self->arena);
-  PyUpb_CMessage* child = self;
-  PyUpb_CMessage* parent = self->ptr.parent;
-  const upb_fielddef* child_f = PyUpb_CMessage_GetFieldDef(child);
-  // This overwrites child->ptr.parent.
-  child->ptr.msg = upb_msg_new(upb_fielddef_msgsubdef(child_f), arena);
+  upb_arena* arena = PyUpb_Arena_Get(child->arena);
 
-  while (PyUpb_CMessage_IsUnset(child)) {
-    PyUpb_CMessage* next_parent = parent->ptr.parent;
+  PyUpb_CMessage* next_parent = NULL;
+  PyUpb_CMessage* parent = child->ptr.parent;
+  const upb_fielddef* child_f = PyUpb_CMessage_InitAsMsg(child, arena);
+  do {
     const upb_fielddef* parent_f = NULL;
     if (PyUpb_CMessage_IsUnset(parent)) {
-      parent_f = PyUpb_CMessage_GetFieldDef(parent);
-      // This overwrites parent->ptr.parent.
-      parent->ptr.msg = upb_msg_new(upb_fielddef_msgsubdef(parent_f), arena);
+      next_parent = parent->ptr.parent;
+      parent_f = PyUpb_CMessage_InitAsMsg(parent, arena);
     }
-    upb_msgval msgval;
-    msgval.msg_val = child->ptr.msg;
-    upb_msg_set(parent->ptr.msg, child_f, msgval, arena);
-    child->def = (uintptr_t)upb_fielddef_msgsubdef(child_f);
-    PyUpb_WeakMap_Delete(parent->unset_subobj_map, child_f);
-    PyUpb_ObjCache_Add(child->ptr.msg, &child->ob_base);
-    if (child != self) {
-      Py_DECREF(child);  // Was previously a parent.
-    }
-    child = parent;
+    PyUpb_CMessage_SetField(parent, child_f, child, arena);
+    Py_DECREF(&child->ob_base);
     child_f = parent_f;
+    child = parent;
     parent = next_parent;
-  }
+  } while (PyUpb_CMessage_IsUnset(child));
 
-  Py_DECREF(child);
-  self->version++;
+  child->version++;
 }
 
 static void PyUpb_CMessage_SyncSubobjs(PyUpb_CMessage* self);
