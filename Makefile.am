@@ -11,6 +11,8 @@ SUBDIRS = . src
 # Always include third_party directories in distributions.
 DIST_SUBDIRS = src conformance benchmarks third_party/googletest
 
+# meaningless comment to test if the CI is reallty flaky
+
 # Build gmock before we build protobuf tests.  We don't add gmock to SUBDIRS
 # because then "make check" would also build and run all of gmock's own tests,
 # which takes a lot of time and is generally not useful to us.  Also, we don't
