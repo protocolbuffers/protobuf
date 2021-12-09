@@ -1049,7 +1049,13 @@ static PyObject* PyUpb_CMessage_ClearExtension(PyUpb_CMessage* self,
 
 static PyObject* PyUpb_CMessage_ClearField(PyUpb_CMessage* self,
                                            PyObject* arg) {
+  // We always need AssureWritable() here (even for an unset message) to
+  // preserve behavior like:
+  //   msg = FooMessage()
+  //   msg.foo.Clear()
+  //   assert msg.HasField("foo")
   PyUpb_CMessage_AssureWritable(self);
+
   const upb_fielddef* f;
   const upb_oneofdef* o;
   if (!PyUpb_CMessage_LookupName(self, arg, &f, &o, PyExc_ValueError)) {
@@ -1401,7 +1407,6 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
   }
 
   PyObject* ret = cpython_bits.type_new(state->message_meta_type, args, NULL);
-  assert(Py_REFCNT(args) == 1);
   Py_DECREF(args);
   if (!ret) return NULL;
 
