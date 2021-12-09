@@ -134,6 +134,19 @@ void upb_array_set(upb_array *arr, size_t i, upb_msgval val);
 /* Appends an element to the array.  Returns false on allocation failure. */
 bool upb_array_append(upb_array *array, upb_msgval val, upb_arena *arena);
 
+
+/* Inserts one or more empty elements into the array.  Existing elements are
+ * shifted right.  The new elements have undefined state and must be set with
+ * upb_array_set().
+ * REQUIRES: i <= upb_array_size(arr) */
+bool upb_array_insert(upb_array *array, size_t i, size_t count,
+                      upb_arena *arena);
+
+/* Deletes one or more elements from the array.  Existing elements are shifted
+ * left.
+ * REQUIRES: i + count <= upb_array_size(arr) */
+void upb_array_delete(upb_array *array, size_t i, size_t count);
+
 /* Changes the size of a vector.  New elements are initialized to empty/0.
  * Returns false on allocation failure. */
 bool upb_array_resize(upb_array *array, size_t size, upb_arena *arena);

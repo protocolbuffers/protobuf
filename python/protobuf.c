@@ -25,11 +25,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "protobuf.h"
+#include "python/protobuf.h"
 
-#include "descriptor.h"
-#include "descriptor_containers.h"
-#include "descriptor_pool.h"
+#include "python/descriptor.h"
+#include "python/descriptor_containers.h"
+#include "python/descriptor_pool.h"
+#include "python/message.h"
+#include "python/repeated.h"
 
 static void PyUpb_ModuleDealloc(void *module) {
   PyUpb_ModuleState *s = PyModule_GetState(module);
@@ -288,7 +290,8 @@ PyMODINIT_FUNC PyInit__message(void) {
   state->obj_cache = PyUpb_WeakMap_New();
 
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||
-      !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m)) {
+      !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m) ||
+      !PyUpb_InitMessage(m) || !PyUpb_Repeated_Init(m)) {
     Py_DECREF(m);
     return NULL;
   }

@@ -373,6 +373,35 @@ bool upb_array_append(upb_array *arr, upb_msgval val, upb_arena *arena) {
   return true;
 }
 
+
+bool upb_array_insert(upb_array *arr, size_t i, size_t count,
+                      upb_arena *arena) {
+  UPB_ASSERT(i <= arr->len);
+  UPB_ASSERT(count + arr->len >= count);
+  size_t oldsize = arr->len;
+  if (!upb_array_resize(arr, arr->len + count, arena)) {
+    return false;
+  }
+  char* data = _upb_array_ptr(arr);
+  int lg2 = arr->data & 7;
+  memmove(&data[(i + count) << lg2], &data[i << lg2], (oldsize - i) << lg2);
+  return true;
+}
+
+/*
+ *              i        end      arr->len
+ * |------------|XXXXXXXX|--------|
+ */
+void upb_array_delete(upb_array *arr, size_t i, size_t count) {
+  size_t end = i + count;
+  UPB_ASSERT(end >= i);
+  UPB_ASSERT(end <= arr->len);
+  char* data = _upb_array_ptr(arr);
+  int lg2 = arr->data & 7;
+  memmove(&data[i << lg2], &data[end << lg2], (arr->len - end) << lg2);
+  arr->len -= count;
+}
+
 bool upb_array_resize(upb_array *arr, size_t size, upb_arena *arena) {
   return _upb_array_resize(arr, size, arena);
 }
