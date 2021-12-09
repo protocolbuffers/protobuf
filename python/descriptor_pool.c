@@ -46,15 +46,21 @@ PyObject* PyUpb_DescriptorPool_GetDefaultPool() {
   return s->default_pool;
 }
 
-static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
-                                               PyObject* db) {
-  PyUpb_DescriptorPool* pool = PyObject_GC_New(PyUpb_DescriptorPool, type);
+static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(PyTypeObject* type,
+                                               PyObject* db,
+                                               PyUpb_WeakMap *obj_cache) {
+  PyUpb_DescriptorPool* pool = (void*)PyType_GenericAlloc(type, 0);
   pool->symtab = upb_symtab_new();
   pool->db = db;
   Py_XINCREF(pool->db);
-  PyObject_GC_Track(&pool->ob_base);
-  PyUpb_ObjCache_Add(pool->symtab, &pool->ob_base);
+  PyUpb_WeakMap_Add(obj_cache, pool->symtab, &pool->ob_base);
   return &pool->ob_base;
+}
+
+static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
+                                               PyObject* db) {
+  return PyUpb_DescriptorPool_DoCreateWithCache(type, db,
+                                                PyUpb_ObjCache_Instance());
 }
 
 upb_symtab* PyUpb_DescriptorPool_GetSymtab(PyObject* pool) {
@@ -235,13 +241,14 @@ static PyType_Spec PyUpb_DescriptorPool_Spec = {
 // -----------------------------------------------------------------------------
 
 bool PyUpb_InitDescriptorPool(PyObject* m) {
+  PyUpb_ModuleState *state = PyUpb_ModuleState_GetFromModule(m);
   PyTypeObject* descriptor_pool_type =
       AddObject(m, "DescriptorPool", &PyUpb_DescriptorPool_Spec);
 
   if (!descriptor_pool_type) return false;
 
-  PyObject* default_pool =
-      PyUpb_DescriptorPool_DoCreate(descriptor_pool_type, NULL);
-  return default_pool &&
-         PyModule_AddObject(m, "default_pool", default_pool) == 0;
+  state->default_pool = PyUpb_DescriptorPool_DoCreateWithCache(
+      descriptor_pool_type, NULL, state->obj_cache);
+  return state->default_pool &&
+         PyModule_AddObject(m, "default_pool", state->default_pool) == 0;
 }

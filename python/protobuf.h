@@ -38,6 +38,9 @@
 
 #define PYUPB_RETURN_OOM return PyErr_SetNone(PyExc_MemoryError), NULL
 
+struct PyUpb_WeakMap;
+typedef struct PyUpb_WeakMap PyUpb_WeakMap;
+
 // -----------------------------------------------------------------------------
 // ModuleState
 // -----------------------------------------------------------------------------
@@ -61,10 +64,19 @@ typedef struct {
   // From descriptor_pool.c
   PyTypeObject *descriptor_pool_type;
 
+  // From message.c
+  PyObject *decode_error_class;
+  PyObject* descriptor_string;
+  PyObject *encode_error_class;
+  PyObject *enum_type_wrapper_class;
+  PyObject *message_class;
+  PyTypeObject *cmessage_type;
+  PyTypeObject *message_meta_type;
+
   // From protobuf.c
-  upb_arena *obj_cache_arena;
-  upb_inttable obj_cache;
+  PyObject *wkt_bases;
   PyTypeObject *arena_type;
+  PyUpb_WeakMap *obj_cache;
 } PyUpb_ModuleState;
 
 // Returns the global state object from the current interpreter. The current
@@ -72,26 +84,66 @@ typedef struct {
 PyUpb_ModuleState *PyUpb_ModuleState_Get(void);
 PyUpb_ModuleState *PyUpb_ModuleState_GetFromModule(PyObject *module);
 
+// Returns NULL if module state is not yet available (during startup).
+// Any use of the module state during startup needs to be passed explicitly.
+PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void);
+
+// Returns:
+//   from google.protobuf.internal.well_known_types import WKTBASES
+//
+// This has to be imported lazily rather than at module load time, because
+// otherwise it would cause a circular import.
+PyObject *PyUpb_GetWktBases(PyUpb_ModuleState *state);
+
 // -----------------------------------------------------------------------------
-// ObjectCache
+// WeakMap
 // -----------------------------------------------------------------------------
 
-// The ObjectCache is a weak map that maps C pointers to the corresponding
-// Python wrapper object. We want a consistent Python wrapper object for each
-// C object, both to save memory and to provide object stability (ie. x is x).
+// A WeakMap maps C pointers to the corresponding Python wrapper object. We
+// want a consistent Python wrapper object for each C object, both to save
+// memory and to provide object stability (ie. x is x).
 //
 // Each wrapped object should add itself to the map when it is constructed and
 // remove itself from the map when it is destroyed. The map is weak so it does
 // not take references to the cached objects.
 
-// Adds the given object to the cache, indexed by the given key.
-void PyUpb_ObjCache_Add(const void *key, PyObject *py_obj);
+PyUpb_WeakMap *PyUpb_WeakMap_New(void);
+void PyUpb_WeakMap_Free(PyUpb_WeakMap *map);
+
+// Adds the given object to the map, indexed by the given key.
+void PyUpb_WeakMap_Add(PyUpb_WeakMap *map, const void *key, PyObject *py_obj);
 
 // Removes the given key from the cache. It must exist in the cache currently.
-void PyUpb_ObjCache_Delete(const void *key);
+void PyUpb_WeakMap_Delete(PyUpb_WeakMap *map, const void *key);
+void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap *map, const void *key);
 
 // Returns a new reference to an object if it exists, otherwise returns NULL.
-PyObject *PyUpb_ObjCache_Get(const void *key);
+PyObject *PyUpb_WeakMap_Get(PyUpb_WeakMap *map, const void *key);
+
+#define PYUPB_WEAKMAP_BEGIN UPB_INTTABLE_BEGIN
+
+// Iteration over the weak map, eg.
+//
+// intptr_t it = PYUPB_WEAKMAP_BEGIN;
+// while (PyUpb_WeakMap_Next(map, &key, &obj, &it)) {
+//   // ...
+// }
+//
+// Note that the callee does not own a ref on the returned `obj`.
+bool PyUpb_WeakMap_Next(PyUpb_WeakMap *map, const void **key, PyObject **obj,
+                        intptr_t *iter);
+void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap *map, intptr_t *iter);
+
+// -----------------------------------------------------------------------------
+// ObjCache
+// -----------------------------------------------------------------------------
+
+// The object cache is a global WeakMap for mapping upb objects to the
+// corresponding wrapper.
+void PyUpb_ObjCache_Add(const void *key, PyObject *py_obj);
+void PyUpb_ObjCache_Delete(const void *key);
+PyObject *PyUpb_ObjCache_Get(const void *key);  // returns NULL if not present.
+PyUpb_WeakMap *PyUpb_ObjCache_Instance(void);
 
 // -----------------------------------------------------------------------------
 // Arena

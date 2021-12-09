@@ -33,7 +33,7 @@
 
 static void PyUpb_ModuleDealloc(void *module) {
   PyUpb_ModuleState *s = PyModule_GetState(module);
-  upb_arena_free(s->obj_cache_arena);
+  PyUpb_WeakMap_Free(s->obj_cache);
 }
 
 static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
@@ -68,40 +68,121 @@ PyUpb_ModuleState *PyUpb_ModuleState_Get(void) {
   return PyUpb_ModuleState_GetFromModule(module);
 }
 
-// -----------------------------------------------------------------------------
-// ObjectCache
-// -----------------------------------------------------------------------------
+PyObject *PyUpb_GetWktBases(PyUpb_ModuleState *state) {
+  if (!state->wkt_bases) {
+    PyObject *wkt_module =
+        PyImport_ImportModule("google.protobuf.internal.well_known_types");
 
-void PyUpb_ObjCache_Add(const void *key, PyObject *py_obj) {
-  PyUpb_ModuleState *s = PyUpb_ModuleState_Get();
-  upb_inttable_insert(&s->obj_cache, (uintptr_t)key, upb_value_ptr(py_obj),
-                      s->obj_cache_arena);
-}
+    if (wkt_module == NULL) {
+      return false;
+    }
 
-void PyUpb_ObjCache_Delete(const void *key) {
-  PyUpb_ModuleState *s = PyUpb_ModuleState_MaybeGet();
-  if (!s) {
-    // During the shutdown sequence, our object's Dealloc() methods can be
-    // called *after* our module Dealloc() method has been called.  At that
-    // point our state will be NULL and there is nothing to delete out of the
-    // map.
-    return;
+    state->wkt_bases = PyObject_GetAttrString(wkt_module, "WKTBASES");
+    PyObject *m = PyState_FindModule(&module_def);
+    // Reparent ownership to m.
+    PyModule_AddObject(m, "__internal_wktbases", state->wkt_bases);
+    Py_DECREF(wkt_module);
   }
-  upb_value val;
-  upb_inttable_remove(&s->obj_cache, (uintptr_t)key, &val);
-  assert(upb_value_getptr(val));
+
+  return state->wkt_bases;
 }
 
-PyObject *PyUpb_ObjCache_Get(const void *key) {
-  PyUpb_ModuleState *s = PyUpb_ModuleState_Get();
+// -----------------------------------------------------------------------------
+// WeakMap
+// -----------------------------------------------------------------------------
+
+struct PyUpb_WeakMap {
+  upb_inttable table;
+  upb_arena *arena;
+};
+
+PyUpb_WeakMap *PyUpb_WeakMap_New(void) {
+  upb_arena *arena = upb_arena_new();
+  PyUpb_WeakMap *map = upb_arena_malloc(arena, sizeof(*map));
+  map->arena = arena;
+  upb_inttable_init(&map->table, map->arena);
+  return map;
+}
+
+void PyUpb_WeakMap_Free(PyUpb_WeakMap *map) {
+  upb_arena_free(map->arena);
+}
+
+uintptr_t PyUpb_WeakMap_GetKey(const void *key) {
+  uintptr_t n = (uintptr_t)key;
+  assert((n & 7) == 0);
+  return n >> 3;
+}
+
+void PyUpb_WeakMap_Add(PyUpb_WeakMap *map, const void *key, PyObject *py_obj) {
+  upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
+                      upb_value_ptr(py_obj), map->arena);
+}
+
+void PyUpb_WeakMap_Delete(PyUpb_WeakMap *map, const void *key) {
   upb_value val;
-  if (upb_inttable_lookup(&s->obj_cache, (uintptr_t)key, &val)) {
+  bool removed =
+      upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), &val);
+  (void)removed;
+  assert(removed);
+}
+
+void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap *map, const void *key) {
+  upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), NULL);
+}
+
+PyObject *PyUpb_WeakMap_Get(PyUpb_WeakMap *map, const void *key) {
+  upb_value val;
+  if (upb_inttable_lookup(&map->table, PyUpb_WeakMap_GetKey(key), &val)) {
     PyObject *ret = upb_value_getptr(val);
     Py_INCREF(ret);
     return ret;
   } else {
     return NULL;
   }
+}
+
+bool PyUpb_WeakMap_Next(PyUpb_WeakMap *map, const void **key, PyObject **obj,
+                        intptr_t *iter) {
+  uintptr_t u_key;
+  upb_value val;
+  if (!upb_inttable_next2(&map->table, &u_key, &val, iter)) return false;
+  *key = (void *)(u_key << 3);
+  *obj = upb_value_getptr(val);
+  return true;
+}
+
+void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap *map, intptr_t *iter) {
+  upb_inttable_removeiter(&map->table, iter);
+}
+
+// -----------------------------------------------------------------------------
+// ObjCache
+// -----------------------------------------------------------------------------
+
+PyUpb_WeakMap *PyUpb_ObjCache_Instance(void) {
+  PyUpb_ModuleState *state = PyUpb_ModuleState_Get();
+  return state->obj_cache;
+}
+
+void PyUpb_ObjCache_Add(const void *key, PyObject *py_obj) {
+  PyUpb_WeakMap_Add(PyUpb_ObjCache_Instance(), key, py_obj);
+}
+
+void PyUpb_ObjCache_Delete(const void *key) {
+  PyUpb_ModuleState *state = PyUpb_ModuleState_MaybeGet();
+  if (!state) {
+    // During the shutdown sequence, our object's Dealloc() methods can be
+    // called *after* our module Dealloc() method has been called.  At that
+    // point our state will be NULL and there is nothing to delete out of the
+    // map.
+    return;
+  }
+  PyUpb_WeakMap_Delete(state->obj_cache, key);
+}
+
+PyObject *PyUpb_ObjCache_Get(const void *key) {
+  return PyUpb_WeakMap_Get(PyUpb_ObjCache_Instance(), key);
 }
 
 // -----------------------------------------------------------------------------
@@ -199,11 +280,12 @@ PyObject *PyUpb_Forbidden_New(PyObject *cls, PyObject *args, PyObject *kwds) {
 
 PyMODINIT_FUNC PyInit__message(void) {
   PyObject *m = PyModule_Create(&module_def);
-  PyState_AddModule(m, &module_def);
-  PyUpb_ModuleState *state = PyUpb_ModuleState_Get();
+  if (!m) return NULL;
 
-  state->obj_cache_arena = upb_arena_new();
-  upb_inttable_init(&state->obj_cache, state->obj_cache_arena);
+  PyUpb_ModuleState *state = PyUpb_ModuleState_GetFromModule(m);
+
+  state->wkt_bases = NULL;
+  state->obj_cache = PyUpb_WeakMap_New();
 
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||
       !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m)) {
