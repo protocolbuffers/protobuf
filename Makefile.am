@@ -516,7 +516,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/map_test.proto                      \
   java/core/src/test/proto/com/google/protobuf/message_lite_extension_util_test.proto\
   java/core/src/test/proto/com/google/protobuf/multiple_files_test.proto           \
-  java/core/src/test/proto/com/google/protobuf/nested_builders_test.proto          \
   java/core/src/test/proto/com/google/protobuf/nested_extension.proto              \
   java/core/src/test/proto/com/google/protobuf/nested_extension_lite.proto         \
   java/core/src/test/proto/com/google/protobuf/non_nested_extension.proto          \
