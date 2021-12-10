@@ -49,7 +49,7 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* u_arr,
 
 // Switches a repeated field in the unset state to be set, with `arr` as the
 // data being pointed to.
-void PyUpb_RepeatedContainer_SwitchToSet(PyObject* self, upb_array* arr);
+void PyUpb_RepeatedContainer_Reify(PyObject* self, upb_array* arr);
 
 PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value);
 PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* _self, PyObject* args,

@@ -599,7 +599,7 @@ static void PyUpb_CMessage_SyncSubobjs(PyUpb_CMessage* self) {
       // PyUpb_MapContainer_SwitchToSet(obj, (upb_map*)msgval.map_val);
     } else if (upb_fielddef_isseq(f)) {
       if (!msgval.array_val) continue;
-      PyUpb_RepeatedContainer_SwitchToSet(obj, (upb_array*)msgval.array_val);
+      PyUpb_RepeatedContainer_Reify(obj, (upb_array*)msgval.array_val);
     } else {
       PyUpb_CMessage* sub = (void*)obj;
       assert(self == sub->ptr.parent);

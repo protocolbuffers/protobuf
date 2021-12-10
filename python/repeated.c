@@ -43,6 +43,7 @@ static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
 // field of size `size`.
 static bool IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
                          Py_ssize_t* count, Py_ssize_t* step) {
+  assert(i && count && step);
   if (PySlice_Check(index)) {
     Py_ssize_t start, stop;
     if (PySlice_Unpack(index, &start, &stop, step) < 0) return false;
@@ -60,7 +61,6 @@ static bool IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
     *step = 0;
     *count = 1;
 
-    // Range check.
     if (*i < 0 || *i >= size) {
       PyErr_Format(PyExc_IndexError, "list index out of range");
       return false;
@@ -74,17 +74,17 @@ typedef struct {
   PyObject_HEAD
   PyObject* arena;
   // The field descriptor (PyObject*).
-  // The low bit indicates whether the field is unset (see ptr below).
-  //   - low bit set: repeated field is unset (no underlying data).
-  //   - low bit clear: repeated field is set (points to upb_array).
+  // The low bit indicates whether the container is reified (see ptr below).
+  //   - low bit set: repeated field is a stub (no underlying data).
+  //   - low bit clear: repeated field is reified (points to upb_array).
   uintptr_t field;
   union {
-    upb_array* arr;    // when set: the data for this array.
-    PyObject* parent;  // when unset: owning pointer to parent message.
+    upb_array* arr;    // stub: the data for this array.
+    PyObject* parent;  // reified: owning pointer to parent message.
   } ptr;
 } PyUpb_RepeatedContainer;
 
-static bool PyUpb_RepeatedContainer_IsUnset(PyUpb_RepeatedContainer* self) {
+static bool PyUpb_RepeatedContainer_IsStub(PyUpb_RepeatedContainer* self) {
   return self->field & 1;
 }
 
@@ -101,17 +101,17 @@ static const upb_fielddef* PyUpb_RepeatedContainer_GetField(
 
 static upb_array* PyUpb_RepeatedContainer_GetIfWritable(
     PyUpb_RepeatedContainer* self) {
-  return PyUpb_RepeatedContainer_IsUnset(self) ? NULL : self->ptr.arr;
+  return PyUpb_RepeatedContainer_IsStub(self) ? NULL : self->ptr.arr;
 }
 
-void PyUpb_RepeatedContainer_SwitchToSet(PyObject* _self, upb_array* arr) {
+void PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_array* arr) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
-  assert(PyUpb_RepeatedContainer_IsUnset(self));
+  assert(PyUpb_RepeatedContainer_IsStub(self));
   PyUpb_ObjCache_Add(arr, &self->ob_base);
   Py_DECREF(self->ptr.parent);
   self->ptr.arr = arr;  // Overwrites self->ptr.parent.
-  self->field = self->field & ~(uintptr_t)1;
-  assert(!PyUpb_RepeatedContainer_IsUnset(self));
+  self->field &= ~(uintptr_t)1;
+  assert(!PyUpb_RepeatedContainer_IsStub(self));
 }
 
 static upb_array* PyUpb_RepeatedContainer_AssureWritable(
@@ -122,16 +122,16 @@ static upb_array* PyUpb_RepeatedContainer_AssureWritable(
   const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
   upb_arena* arena = PyUpb_Arena_Get(self->arena);
   arr = upb_array_new(arena, upb_fielddef_type(f));
-  upb_msgval msgval = {.array_val = arr};
-  PyUpb_CMessage_SetConcreteSubobj(self->ptr.parent, f, msgval);
-  PyUpb_RepeatedContainer_SwitchToSet((PyObject*)self, arr);
+  PyUpb_CMessage_SetConcreteSubobj(self->ptr.parent, f,
+                                   (upb_msgval){.array_val = arr});
+  PyUpb_RepeatedContainer_Reify((PyObject*)self, arr);
   return arr;
 }
 
 static void PyUpb_RepeatedContainer_Dealloc(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   Py_DECREF(self->arena);
-  if (PyUpb_RepeatedContainer_IsUnset(self)) {
+  if (PyUpb_RepeatedContainer_IsStub(self)) {
     PyUpb_CMessage_CacheDelete(self->ptr.parent,
                                PyUpb_RepeatedContainer_GetField(self));
     Py_DECREF(self->ptr.parent);
@@ -172,18 +172,16 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* u_arr,
                                                      const upb_fielddef* f,
                                                      PyObject* arena) {
   PyObject* ret = PyUpb_ObjCache_Get(u_arr);
+  if (ret) return ret;
 
-  if (!ret) {
-    PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
-    PyUpb_RepeatedContainer* repeated = (void*)PyType_GenericAlloc(cls, 0);
-    repeated->arena = arena;
-    repeated->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f);
-    repeated->ptr.arr = u_arr;
-    ret = &repeated->ob_base;
-    Py_INCREF(arena);
-    PyUpb_ObjCache_Add(u_arr, ret);
-  }
-
+  PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
+  PyUpb_RepeatedContainer* repeated = (void*)PyType_GenericAlloc(cls, 0);
+  repeated->arena = arena;
+  repeated->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f);
+  repeated->ptr.arr = u_arr;
+  ret = &repeated->ob_base;
+  Py_INCREF(arena);
+  PyUpb_ObjCache_Add(u_arr, ret);
   return ret;
 }
 
@@ -191,28 +189,28 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_array* arr = PyUpb_RepeatedContainer_AssureWritable(self);
   size_t start_size = upb_array_size(arr);
-  PyObject* iter = PyObject_GetIter(value);
-  if (!iter) {
+  PyObject* it = PyObject_GetIter(value);
+  if (!it) {
     PyErr_SetString(PyExc_TypeError, "Value must be iterable");
     return NULL;
   }
 
   const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
   bool submsg = upb_fielddef_issubmsg(f);
-  PyObject* item;
+  PyObject* e;
 
-  while ((item = PyIter_Next(iter))) {
+  while ((e = PyIter_Next(it))) {
     PyObject* ret;
     if (submsg) {
-      ret = PyUpb_RepeatedCompositeContainer_Append(_self, item);
+      ret = PyUpb_RepeatedCompositeContainer_Append(_self, e);
     } else {
-      ret = PyUpb_RepeatedScalarContainer_Append(_self, item);
+      ret = PyUpb_RepeatedScalarContainer_Append(_self, e);
     }
     Py_XDECREF(ret);
-    Py_DECREF(item);
+    Py_DECREF(e);
   }
 
-  Py_DECREF(iter);
+  Py_DECREF(it);
 
   if (PyErr_Occurred()) {
     upb_array_resize(arr, start_size, NULL);
@@ -238,15 +236,14 @@ static PyObject* PyUpb_RepeatedContainer_Item(PyObject* _self,
 PyObject* PyUpb_RepeatedContainer_ToList(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_array* arr = PyUpb_RepeatedContainer_GetIfWritable(self);
-  PyObject* list = PyList_New(0);
-  if (arr) {
-    const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
-    size_t n = upb_array_size(arr);
-    for (size_t i = 0; i < n; i++) {
-      PyObject* val = PyUpb_UpbToPy(upb_array_get(arr, i), f, self->arena);
-      PyList_Append(list, val);
-      Py_DECREF(val);
-    }
+  if (!arr) return PyList_New(0);
+
+  const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
+  size_t n = upb_array_size(arr);
+  PyObject* list = PyList_New(n);
+  for (size_t i = 0; i < n; i++) {
+    PyObject* val = PyUpb_UpbToPy(upb_array_get(arr, i), f, self->arena);
+    PyList_SetItem(list, n, val);
   }
   return list;
 }
@@ -298,6 +295,69 @@ static PyObject* PyUpb_RepeatedContainer_Subscript(PyObject* _self,
   }
 }
 
+static int PyUpb_RepeatedContainer_SetSubscript(
+    PyUpb_RepeatedContainer* self, upb_array* arr, const upb_fielddef* f,
+    Py_ssize_t idx, Py_ssize_t count, Py_ssize_t step, PyObject* value) {
+  upb_arena* arena = PyUpb_Arena_Get(self->arena);
+  if (upb_fielddef_issubmsg(f)) {
+    PyErr_SetString(PyExc_TypeError, "does not support assignment");
+    return -1;
+  }
+
+  if (step == 0) {
+    // Set single value.
+    upb_msgval msgval;
+    if (!PyUpb_PyToUpb(value, f, &msgval, arena)) return -1;
+    upb_array_set(arr, idx, msgval);
+    return 0;
+  }
+
+  // Set range.
+  PyObject* seq =
+      PySequence_Fast(value, "must assign iterable to extended slice");
+  if (!seq) return -1;
+  if (PySequence_Size(seq) != count) {
+    PyErr_Format(PyExc_ValueError,
+                  "attempt to assign sequence of size %zd to extended slice "
+                  "of size %zd",
+                  PySequence_Size(seq), count);
+    Py_DECREF(seq);
+    return -1;
+  }
+  for (Py_ssize_t i = 0; i < count; i++, idx += step) {
+    upb_msgval msgval;
+    PyObject* item = PySequence_GetItem(seq, i);
+    // XXX: if this fails we can leave the list partially mutated.
+    bool ok = PyUpb_PyToUpb(item, f, &msgval, arena);
+    Py_DECREF(item);
+    if (!ok) return -1;
+    upb_array_set(arr, idx, msgval);
+  }
+  return 0;
+}
+
+static int PyUpb_RepeatedContainer_DeleteSubscript(upb_array* arr,
+                                                   Py_ssize_t idx,
+                                                   Py_ssize_t count,
+                                                   Py_ssize_t step) {
+  // This is a delete, not a set.
+  // Normalize direction: deletion is order-independent.
+  if (step > 0) {
+    idx += step * (count - 1);
+    step = -step;
+  }
+  if (step == -1) {
+    // Contiguous range.
+    upb_array_delete(arr, idx - (count - 1), count);
+  } else {
+    // Stepped slice.
+    for (Py_ssize_t i = 0; i < count; i++, idx += step) {
+      upb_array_delete(arr, idx, 1);
+    }
+  }
+  return 0;
+}
+
 static int PyUpb_RepeatedContainer_AssignSubscript(PyObject* _self,
                                                    PyObject* key,
                                                    PyObject* value) {
@@ -308,57 +368,11 @@ static int PyUpb_RepeatedContainer_AssignSubscript(PyObject* _self,
   Py_ssize_t idx, count, step;
   if (!IndexToRange(key, size, &idx, &count, &step)) return -1;
   if (value) {
-    // This is a set, not a delete.
-    upb_arena* arena = PyUpb_Arena_Get(self->arena);
-    if (upb_fielddef_issubmsg(f)) {
-      PyErr_SetString(PyExc_TypeError, "does not support assignment");
-      return -1;
-    }
-    if (step == 0) {
-      upb_msgval msgval;
-      if (!PyUpb_PyToUpb(value, f, &msgval, arena)) return -1;
-      upb_array_set(arr, idx, msgval);
-      return 0;
-    } else {
-      PyObject* seq =
-          PySequence_Fast(value, "must assign iterable to extended slice");
-      if (!seq) return -1;
-      if (PySequence_Size(seq) != count) {
-        PyErr_Format(PyExc_ValueError,
-                     "attempt to assign sequence of size %zd to extended slice "
-                     "of size %zd",
-                     PySequence_Size(seq), count);
-        Py_DECREF(seq);
-        return -1;
-      }
-      for (Py_ssize_t i = 0; i < count; i++, idx += step) {
-        upb_msgval msgval;
-        PyObject* item = PySequence_GetItem(seq, i);
-        // XXX: if this fails we can leave the list partially mutated.
-        bool ok = PyUpb_PyToUpb(item, f, &msgval, arena);
-        Py_DECREF(item);
-        if (!ok) return -1;
-        upb_array_set(arr, idx, msgval);
-      }
-    }
+    return PyUpb_RepeatedContainer_SetSubscript(self, arr, f, idx, count, step,
+                                                value);
   } else {
-    // This is a delete, not a set.
-    // Normalize direction: deletion is order-independent.
-    if (step > 0) {
-      idx += step * (count - 1);
-      step = -step;
-    }
-    if (step == -1) {
-      // Contiguous range.
-      upb_array_delete(arr, idx - (count - 1), count);
-    } else {
-      // Stepped slice.
-      for (Py_ssize_t i = 0; i < count; i++, idx += step) {
-        upb_array_delete(arr, idx, 1);
-      }
-    }
+    return PyUpb_RepeatedContainer_DeleteSubscript(arr, idx, count, step);
   }
-  return 0;
 }
 
 static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
@@ -375,6 +389,7 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
   return ret;
 }
 
+// A helper function used only for Sort().
 static bool PyUpb_RepeatedContainer_Assign(PyObject* _self, PyObject* list) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
@@ -480,22 +495,6 @@ static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
   return py_msg;
 }
 
-int AssignSubscript(PyObject* _self, PyObject* index, PyObject* value) {
-  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
-  size_t size =
-      PyUpb_RepeatedContainer_IsUnset(self) ? 0 : upb_array_size(self->ptr.arr);
-
-  if (value != NULL) {
-    PyErr_SetString(PyExc_TypeError, "does not support assignment");
-    return -1;
-  }
-
-  Py_ssize_t i, count, step;
-  if (!IndexToRange(index, size, &i, &count, &step)) return -1;
-  upb_array_delete(self->ptr.arr, i, count);  // XXX: step
-  return 0;
-}
-
 static PyObject* PyUpb_RepeatedContainer_Insert(PyObject* _self,
                                                 PyObject* args) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
@@ -598,9 +597,9 @@ static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
   Py_RETURN_NONE;
 }
 
-static int PyUpb_RepeatedScalarContainer_AssItem(PyObject* _self,
-                                                 Py_ssize_t index,
-                                                 PyObject* item) {
+static int PyUpb_RepeatedScalarContainer_AssignItem(PyObject* _self,
+                                                    Py_ssize_t index,
+                                                    PyObject* item) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_array* arr = PyUpb_RepeatedContainer_GetIfWritable(self);
   Py_ssize_t size = arr ? upb_array_size(arr) : 0;
@@ -651,7 +650,7 @@ static PyType_Slot PyUpb_RepeatedScalarContainer_Slots[] = {
     {Py_tp_repr, PyUpb_RepeatedContainer_Repr},
     {Py_sq_length, PyUpb_RepeatedContainer_Length},
     {Py_sq_item, PyUpb_RepeatedContainer_Item},
-    {Py_sq_ass_item, PyUpb_RepeatedScalarContainer_AssItem},
+    {Py_sq_ass_item, PyUpb_RepeatedScalarContainer_AssignItem},
     {Py_mp_length, PyUpb_RepeatedContainer_Length},
     {Py_mp_subscript, PyUpb_RepeatedContainer_Subscript},
     {Py_mp_ass_subscript, PyUpb_RepeatedContainer_AssignSubscript},
