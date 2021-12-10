@@ -373,7 +373,7 @@ bool upb_array_append(upb_array *arr, upb_msgval val, upb_arena *arena) {
   return true;
 }
 
-bool upb_array_move(upb_array* arr, size_t dst_idx, size_t src_idx,
+void upb_array_move(upb_array* arr, size_t dst_idx, size_t src_idx,
                     size_t count) {
   char* data = _upb_array_ptr(arr);
   int lg2 = arr->data & 7;

@@ -354,11 +354,18 @@ static int PyUpb_RepeatedContainer_DeleteSubscript(upb_array* arr,
     step = -step;
   }
   size_t dst = start;
-  size_t src = start + 1;
-  for (Py_ssize_t i = 0; i < count; i++, dst += step, src += step + 1) {
-    upb_array_move(arr, dst, src, step);
+  size_t src = step ? start + 1 : start + count;
+  if (step) {
+    // Move elements between steps.
+    for (Py_ssize_t i = 0; i < count; i++, dst += step, src += step + 1) {
+      upb_array_move(arr, dst, src, step);
+    }
   }
-  upb_array_resize(arr, upb_array_size(arr) - count, NULL);
+  // Move tail.
+  size_t tail = upb_array_size(arr) - src;
+  assert(dst + tail == upb_array_size(arr) - count);
+  upb_array_move(arr, dst, src, upb_array_size(arr) - src);
+  upb_array_resize(arr, dst + tail, NULL);
   return 0;
 }
 

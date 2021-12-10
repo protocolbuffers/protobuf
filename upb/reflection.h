@@ -136,7 +136,7 @@ bool upb_array_append(upb_array *array, upb_msgval val, upb_arena *arena);
 
 /* Moves elements within the array using memmove(). Like memmove(), the source
  * and destination elements may be overlapping. */
-bool upb_array_move(upb_array* array, size_t dst_idx, size_t src_idx,
+void upb_array_move(upb_array* array, size_t dst_idx, size_t src_idx,
                     size_t count);
 
 /* Inserts one or more empty elements into the array.  Existing elements are
