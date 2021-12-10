@@ -316,8 +316,8 @@ static int PyUpb_RepeatedContainer_SetSubscript(
   PyObject* seq =
       PySequence_Fast(value, "must assign iterable to extended slice");
   PyObject* item = NULL;
-  if (!seq) goto err;
   int ret = -1;
+  if (!seq) goto err;
   if (PySequence_Size(seq) != count) {
     PyErr_Format(PyExc_ValueError,
                   "attempt to assign sequence of size %zd to extended slice "
@@ -331,6 +331,8 @@ static int PyUpb_RepeatedContainer_SetSubscript(
     if (!item) goto err;
     // XXX: if this fails we can leave the list partially mutated.
     if (!PyUpb_PyToUpb(item, f, &msgval, arena)) goto err;
+    Py_DECREF(item);
+    item = NULL;
     upb_array_set(arr, idx, msgval);
   }
   ret = 0;
