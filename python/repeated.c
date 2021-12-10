@@ -316,15 +316,14 @@ static int PyUpb_RepeatedContainer_SetSubscript(
   PyObject* seq =
       PySequence_Fast(value, "must assign iterable to extended slice");
   PyObject* item = NULL;
-  if (!seq) return -1;
+  if (!seq) goto err;
   int ret = -1;
   if (PySequence_Size(seq) != count) {
     PyErr_Format(PyExc_ValueError,
                   "attempt to assign sequence of size %zd to extended slice "
                   "of size %zd",
                   PySequence_Size(seq), count);
-    Py_DECREF(seq);
-    return -1;
+    goto err;
   }
   for (Py_ssize_t i = 0; i < count; i++, idx += step) {
     upb_msgval msgval;
@@ -355,7 +354,7 @@ static int PyUpb_RepeatedContainer_DeleteSubscript(upb_array* arr,
   }
   size_t dst = start;
   size_t src = step ? start + 1 : start + count;
-  if (step) {
+  if (step > 1) {
     // Move elements between steps.
     for (Py_ssize_t i = 0; i < count; i++, dst += step, src += step + 1) {
       upb_array_move(arr, dst, src, step);
