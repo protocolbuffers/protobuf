@@ -134,11 +134,15 @@ void upb_array_set(upb_array *arr, size_t i, upb_msgval val);
 /* Appends an element to the array.  Returns false on allocation failure. */
 bool upb_array_append(upb_array *array, upb_msgval val, upb_arena *arena);
 
+/* Moves elements within the array using memmove(). Like memmove(), the source
+ * and destination elements may be overlapping. */
+bool upb_array_move(upb_array* array, size_t dst_idx, size_t src_idx,
+                    size_t count);
 
 /* Inserts one or more empty elements into the array.  Existing elements are
  * shifted right.  The new elements have undefined state and must be set with
  * `upb_array_set()`.
- * REQUIRES: i <= `upb_array_size(arr)` */
+ * REQUIRES: `i <= upb_array_size(arr)` */
 bool upb_array_insert(upb_array *array, size_t i, size_t count,
                       upb_arena *arena);
 

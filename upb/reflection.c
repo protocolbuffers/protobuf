@@ -373,6 +373,12 @@ bool upb_array_append(upb_array *arr, upb_msgval val, upb_arena *arena) {
   return true;
 }
 
+bool upb_array_move(upb_array* arr, size_t dst_idx, size_t src_idx,
+                    size_t count) {
+  char* data = _upb_array_ptr(arr);
+  int lg2 = arr->data & 7;
+  memmove(&data[dst_idx << lg2], &data[src_idx << lg2], count << lg2);
+}
 
 bool upb_array_insert(upb_array *arr, size_t i, size_t count,
                       upb_arena *arena) {
@@ -382,9 +388,7 @@ bool upb_array_insert(upb_array *arr, size_t i, size_t count,
   if (!upb_array_resize(arr, arr->len + count, arena)) {
     return false;
   }
-  char* data = _upb_array_ptr(arr);
-  int lg2 = arr->data & 7;
-  memmove(&data[(i + count) << lg2], &data[i << lg2], (oldsize - i) << lg2);
+  upb_array_move(arr, i + count, i, oldsize - i);
   return true;
 }
 
@@ -396,9 +400,7 @@ void upb_array_delete(upb_array *arr, size_t i, size_t count) {
   size_t end = i + count;
   UPB_ASSERT(end >= i);
   UPB_ASSERT(end <= arr->len);
-  char* data = _upb_array_ptr(arr);
-  int lg2 = arr->data & 7;
-  memmove(&data[i << lg2], &data[end << lg2], (arr->len - end) << lg2);
+  upb_array_move(arr, i, end, arr->len - end);
   arr->len -= count;
 }
 

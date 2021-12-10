@@ -243,7 +243,7 @@ PyObject* PyUpb_RepeatedContainer_ToList(PyObject* _self) {
   PyObject* list = PyList_New(n);
   for (size_t i = 0; i < n; i++) {
     PyObject* val = PyUpb_UpbToPy(upb_array_get(arr, i), f, self->arena);
-    PyList_SetItem(list, n, val);
+    PyList_SetItem(list, i, val);
   }
   return list;
 }
@@ -315,7 +315,9 @@ static int PyUpb_RepeatedContainer_SetSubscript(
   // Set range.
   PyObject* seq =
       PySequence_Fast(value, "must assign iterable to extended slice");
+  PyObject* item = NULL;
   if (!seq) return -1;
+  int ret = -1;
   if (PySequence_Size(seq) != count) {
     PyErr_Format(PyExc_ValueError,
                   "attempt to assign sequence of size %zd to extended slice "
@@ -326,35 +328,37 @@ static int PyUpb_RepeatedContainer_SetSubscript(
   }
   for (Py_ssize_t i = 0; i < count; i++, idx += step) {
     upb_msgval msgval;
-    PyObject* item = PySequence_GetItem(seq, i);
+    item = PySequence_GetItem(seq, i);
+    if (!item) goto err;
     // XXX: if this fails we can leave the list partially mutated.
-    bool ok = PyUpb_PyToUpb(item, f, &msgval, arena);
-    Py_DECREF(item);
-    if (!ok) return -1;
+    if (!PyUpb_PyToUpb(item, f, &msgval, arena)) goto err;
     upb_array_set(arr, idx, msgval);
   }
-  return 0;
+  ret = 0;
+
+err:
+  Py_XDECREF(seq);
+  Py_XDECREF(item);
+  return ret;
 }
 
 static int PyUpb_RepeatedContainer_DeleteSubscript(upb_array* arr,
                                                    Py_ssize_t idx,
                                                    Py_ssize_t count,
                                                    Py_ssize_t step) {
-  // This is a delete, not a set.
   // Normalize direction: deletion is order-independent.
-  if (step > 0) {
-    idx += step * (count - 1);
+  Py_ssize_t start = idx;
+  if (step < 0) {
+    Py_ssize_t end = start + step * (count - 1);
+    start = end;
     step = -step;
   }
-  if (step == -1) {
-    // Contiguous range.
-    upb_array_delete(arr, idx - (count - 1), count);
-  } else {
-    // Stepped slice.
-    for (Py_ssize_t i = 0; i < count; i++, idx += step) {
-      upb_array_delete(arr, idx, 1);
-    }
+  size_t dst = start;
+  size_t src = start + 1;
+  for (Py_ssize_t i = 0; i < count; i++, dst += step, src += step + 1) {
+    upb_array_move(arr, dst, src, step);
   }
+  upb_array_resize(arr, upb_array_size(arr) - count, NULL);
   return 0;
 }
 
