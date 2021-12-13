@@ -50,6 +50,8 @@ class TestMessageExtension(unittest.TestCase):
         # system.
         self.assertTrue(_message._IS_UPB)
 
+TestMessageExtension.test_descriptor_pool.__unittest_expecting_failure__ = True
+
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

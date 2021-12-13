@@ -52,10 +52,6 @@ toolchain(
 )
 """
 
-_build_defs_file = """
-EXT_SUFFIX = "%s"
-"""
-
 def _get_config_var(repository_ctx, name):
   py_program = "import sysconfig; print(sysconfig.get_config_var('%s'), end='')"
   result = repository_ctx.execute(["python3", "-c", py_program % (name)])
@@ -65,11 +61,9 @@ def _get_config_var(repository_ctx, name):
 
 def _python_headers_impl(repository_ctx):
   path = _get_config_var(repository_ctx, "INCLUDEPY")
-  ext_suffix = _get_config_var(repository_ctx, "EXT_SUFFIX")
   repository_ctx.symlink(path, "python")
   python3 = repository_ctx.which("python3")
   repository_ctx.file("BUILD.bazel", _build_file % python3)
-  repository_ctx.file("build_defs.bzl", _build_defs_file % ext_suffix)
 
 # The system_python() repository rule exposes Python headers from the system.
 #
