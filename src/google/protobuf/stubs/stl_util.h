@@ -37,6 +37,8 @@
 
 #include <algorithm>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -81,5 +83,7 @@ inline char* string_as_array(std::string* str) {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STL_UTIL_H__
