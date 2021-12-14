@@ -800,6 +800,9 @@ static void fastdecode_docopy(upb_decstate *d, const char *ptr, uint32_t size,
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);                     \
                                                                                \
   longstr:                                                                     \
+  if (card == CARD_r) {                                                        \
+    fastdecode_commitarr(dst + 1, &farr, sizeof(upb_strview));                 \
+  }                                                                            \
   ptr--;                                                                       \
   if (validate_utf8) {                                                         \
     UPB_MUSTTAIL return fastdecode_longstring_utf8(d, ptr, msg, table,         \
