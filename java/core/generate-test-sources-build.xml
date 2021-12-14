@@ -47,7 +47,6 @@
         <arg value="${test.proto.dir}/com/google/protobuf/test_bad_identifiers.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/test_check_utf8.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/test_check_utf8_size.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/test_custom_options.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/wrappers_test.proto"/>
     </exec>
     <!-- Also generate some Lite protos needed for ExtensionRegistryFactoryTest -->

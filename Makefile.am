@@ -533,7 +533,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/test_bad_identifiers.proto          \
   java/core/src/test/proto/com/google/protobuf/test_check_utf8.proto               \
   java/core/src/test/proto/com/google/protobuf/test_check_utf8_size.proto          \
-  java/core/src/test/proto/com/google/protobuf/test_custom_options.proto           \
   java/core/src/test/proto/com/google/protobuf/wrappers_test.proto                 \
   java/internal/BUILD                                                              \
   java/internal/testing.bzl                                                        \
