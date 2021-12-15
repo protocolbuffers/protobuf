@@ -45,6 +45,8 @@ source.
 If you would like to build protoc binary from source, see the [C++ Installation
 Instructions](src/README.md).
 
+*NOTE:* If you are using a Linux distribution, the easiest way to install the `protoc` protobuf compiler is to use a package manager from the command line, eg `sudo apt install -y protobuf-compiler`.
+
 Protobuf Runtime Installation
 -----------------------------
 
