@@ -70,8 +70,10 @@ class RepeatedFieldIter implements \Iterator
      * Reset the status of the iterator
      *
      * @return void
+     * @todo need to add return type void (require update php version to 7.1)
      */
-    public function rewind(): void
+    #[\ReturnTypeWillChange]
+    public function rewind()
     {
         $this->position = 0;
     }
@@ -100,8 +102,10 @@ class RepeatedFieldIter implements \Iterator
      * Move to the next position.
      *
      * @return void
+     * @todo need to add return type void (require update php version to 7.1)
      */
-    public function next(): void
+    #[\ReturnTypeWillChange]
+    public function next()
     {
         ++$this->position;
     }

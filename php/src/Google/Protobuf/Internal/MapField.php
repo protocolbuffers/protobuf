@@ -150,8 +150,10 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException Invalid type for key.
      * @throws \ErrorException Invalid type for value.
      * @throws \ErrorException Non-existing key.
+     * @todo need to add return type void (require update php version to 7.1)
      */
-    public function offsetSet($key, $value): void
+    #[\ReturnTypeWillChange]
+    public function offsetSet($key, $value)
     {
         $this->checkKey($this->key_type, $key);
 
@@ -208,8 +210,10 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @param object $key The key of the element to be removed.
      * @return void
      * @throws \ErrorException Invalid type for key.
+     * @todo need to add return type void (require update php version to 7.1)
      */
-    public function offsetUnset($key): void
+    #[\ReturnTypeWillChange]
+    public function offsetUnset($key)
     {
         $this->checkKey($this->key_type, $key);
         unset($this->container[$key]);
