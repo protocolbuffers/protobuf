@@ -1329,7 +1329,7 @@ bool ValidateObjCClassPrefix(
         *out_error += "'package " + other_package_for_prefix + ";'.";
       }
       *out_error +=
-        "It can only be reused by adding '" + lookup_key + " = " + prefix +
+        " It can only be reused by adding '" + lookup_key + " = " + prefix +
         "' to the expected prefixes file (" + expected_prefixes_path + ").";
       return false;  // Only report first usage of the prefix.
     }
