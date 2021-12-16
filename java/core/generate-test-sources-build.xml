@@ -30,7 +30,6 @@
         <arg value="${test.proto.dir}/com/google/protobuf/map_initialization_order_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_lite_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_test.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/message_lite_extension_util_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/multiple_files_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/nested_builders_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/nested_extension.proto"/>
