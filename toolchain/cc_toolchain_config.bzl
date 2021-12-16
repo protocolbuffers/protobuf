@@ -129,14 +129,15 @@ def _impl(ctx):
               actions = all_compile_actions,
               flag_groups = [
                   flag_group(
-                      flags = ctx.attr.extra_compiler_flags + [
+                      flags = [
                           ctx.attr.bit_flag,
                           "-Wall",
                           "-no-canonical-prefixes",
                           "--target=" + ctx.attr.target_full_name,
+                          "-fvisibility=hidden",
+                      ] + ctx.attr.extra_compiler_flags + [
                           "-isystem",
                           ctx.attr.toolchain_dir,
-                          "-fvisibility=hidden",
                       ],
                   ),
               ],
