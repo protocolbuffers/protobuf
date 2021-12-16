@@ -134,10 +134,11 @@ def _impl(ctx):
                           "-Wall",
                           "-no-canonical-prefixes",
                           "--target=" + ctx.attr.target_full_name,
+                          "-fvisibility=hidden",
+                      ] + ctx.attr.extra_compiler_flags + [
                           "-isystem",
                           ctx.attr.toolchain_dir,
-                          "-fvisibility=hidden",
-                      ] + ctx.attr.extra_compiler_flags,
+                      ],
                   ),
               ],
           ),
