@@ -152,7 +152,6 @@ cc_toolchain_config(
     extra_compiler_flags = [
         "-I/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++",
         "-I/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++/i686-w64-mingw32",
-        "-I/usr/i686-w64-mingw32/include",
         "-fsjlj-exceptions",
     ],
     extra_include = "/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include",
@@ -174,7 +173,6 @@ cc_toolchain_config(
     extra_compiler_flags = [
         "-I/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/",
         "-I/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/x86_64-w64-mingw32",
-        "-I/usr/x86_64-w64-mingw32/include"
     ],
     extra_include = "/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include",
     extra_linker_flags = [
