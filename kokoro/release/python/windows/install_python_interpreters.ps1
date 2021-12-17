@@ -97,7 +97,7 @@ $Python39x64Config = @{
 Install-Python @Python39x64Config
 
 # Python 3.10
-$Python39x86Config = @{
+$Python310x86Config = @{
     PythonVersion = "3.10.0"
     PythonInstaller = "python-3.10.0"
     PythonInstallPath = "C:\python310_32bit"
@@ -105,7 +105,7 @@ $Python39x86Config = @{
 }
 Install-Python @Python310x86Config
 
-$Python39x64Config = @{
+$Python310x64Config = @{
     PythonVersion = "3.10.0"
     PythonInstaller = "python-3.10.0-amd64"
     PythonInstallPath = "C:\python310"
