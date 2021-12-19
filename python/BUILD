@@ -93,10 +93,28 @@ genrule(
     cmd = "cp $< $@",
 )
 
+genrule(
+    name = "api_implementation_ext",
+    srcs = [":api_implementation"],
+    outs = ["google/protobuf/internal/_api_implementation" + EXT_SUFFIX],
+    cmd = "cp $< $@",
+)
+
 py_test(
     name = "minimal_test",
-    srcs = ["minimal_test.py"],
-    data = [":message_ext"],
+    #srcs = ["minimal_test.py"],
+    srcs = [
+        "minimal_test.py",
+        "@com_google_protobuf//:python_tests",
+    ],
+    deps = [
+        "@com_google_protobuf//:python_tests",
+    ],
+    data = [
+        "@com_google_protobuf//:python_tests",
+        ":message_ext",
+        ":api_implementation_ext",
+    ],
     imports = ["."],
     legacy_create_init = False,
 )

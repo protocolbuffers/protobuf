@@ -19,6 +19,14 @@ def upb_deps():
             "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.19.1.tar.gz",
             "https://github.com/protocolbuffers/protobuf/archive/v3.19.1.tar.gz",
         ],
+        patches = [
+            "//bazel:protobuf.patch",
+        ],
+        patch_cmds = [
+            "rm python/google/protobuf/__init__.py",
+            "rm python/google/protobuf/pyext/__init__.py",
+            "rm python/google/protobuf/internal/__init__.py",
+        ]
     )
 
     maybe(

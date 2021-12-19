@@ -29,6 +29,7 @@
 
 import unittest
 from google.protobuf.pyext import _message
+from google.protobuf.internal import api_implementation
 
 class TestMessageExtension(unittest.TestCase):
 
@@ -48,9 +49,11 @@ class TestMessageExtension(unittest.TestCase):
     def test_lib_is_upb(self):
         # Ensure we are not pulling in a different protobuf library on the
         # system.
+        print(_message._IS_UPB)
         self.assertTrue(_message._IS_UPB)
+        self.assertEqual(api_implementation.Type(), "cpp")
 
-TestMessageExtension.test_descriptor_pool.__unittest_expecting_failure__ = True
+#TestMessageExtension.test_descriptor_pool.__unittest_expecting_failure__ = True
 
 
 if __name__ == '__main__':

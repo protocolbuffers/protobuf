@@ -288,7 +288,8 @@ PyMODINIT_FUNC PyInit__message(void) {
   state->obj_cache = PyUpb_WeakMap_New();
 
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||
-      !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m)) {
+      !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m) ||
+      !PyUpb_InitMessage(m)) {
     Py_DECREF(m);
     return NULL;
   }

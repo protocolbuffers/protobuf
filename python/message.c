@@ -332,7 +332,7 @@ static bool PyUpb_CMessage_InitMapAttribute(PyObject* _self, PyObject* name,
   return ok >= 0;
 }
 
-static bool PyUpb_CMessage_InitRepeatedAttribute() {
+static bool PyUpb_CMessage_InitRepeatedAttribute(void) {
   // TODO(haberman): disabled until repeated container is in.
   // PyObject* repeated = PyUpb_CMessage_GetAttr(_self, name);
   // PyObject* tmp = PyUpb_RepeatedContainer_Extend(repeated, value);
@@ -1537,7 +1537,7 @@ static PyType_Spec PyUpb_MessageMeta_Spec = {
     PyUpb_MessageMeta_Slots,
 };
 
-static PyObject* PyUpb_MessageMeta_CreateType() {
+static PyObject* PyUpb_MessageMeta_CreateType(void) {
   PyObject* bases = Py_BuildValue("(O)", &PyType_Type);
   if (!bases) return NULL;
   PyUpb_MessageMeta_Spec.basicsize =

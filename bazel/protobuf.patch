@@ -1,0 +1,10 @@
+--- BUILD
++++ BUILD
+@@ -1110,6 +1110,7 @@ py_library(
+         ":python_common_test_protos",
+         ":python_specific_test_protos",
+     ],
++    visibility = ["//visibility:public"],
+ )
+ 
+ internal_protobuf_py_tests(
