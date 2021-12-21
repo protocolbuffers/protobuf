@@ -119,7 +119,7 @@ function accessAllTypes() {
   arrayVal[0] = true;
   msgAllTypes.setRepeatedBoolList(arrayVal);
   msgAllTypes.setRepeatedBytesList(['']);
-  arrayVal = msgAllTypes.getRepeatedBytesList();
+  arrayVal = msgAllTypes.getRepeatedBytesList_asB64();
   arrayVal[0] = '';
   msgAllTypes.setRepeatedBytesList(arrayVal);
   msgPackedTypes.setPackedDoubleList([1.0]);
@@ -233,8 +233,7 @@ function accessAllTypes() {
 
   let s = '';
   s += msgAllTypes.getOptionalBool() || false;
-  s += msgAllTypes.getOptionalBytes() || '';
-  // s += msgAllTypes.getOptionalBytes_asB64() || "";
+  s += msgAllTypes.getOptionalBytes_asB64() || '';
   // s += msgAllTypes.getOptionalBytes_asU8() || new Uint8Array([]);
   s += msgAllTypes.getOptionalDouble() || 0.0;
   s += msgAllTypes.getOptionalFixed32() || 0;
@@ -254,10 +253,9 @@ function accessAllTypes() {
   s += msgAllTypes.getRepeatedBoolList();
   s += msgAllTypes.getRepeatedBoolList()[0];
   s += msgAllTypes.getRepeatedBoolList().length;
-  s += msgAllTypes.getRepeatedBytesList();
-  s += msgAllTypes.getRepeatedBytesList()[0];
-  s += msgAllTypes.getRepeatedBytesList().length;
   s += msgAllTypes.getRepeatedBytesList_asB64();
+  s += msgAllTypes.getRepeatedBytesList_asB64()[0];
+  s += msgAllTypes.getRepeatedBytesList_asB64().length;
   s += msgAllTypes.getRepeatedBytesList_asU8();
   s += msgAllTypes.getRepeatedDoubleList();
   s += msgAllTypes.getRepeatedDoubleList()[0];
