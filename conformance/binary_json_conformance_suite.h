@@ -53,6 +53,7 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
   void RunJsonTestsForStruct();
   void RunJsonTestsForValue();
   void RunJsonTestsForAny();
+  void RunJsonTestsForUnknownEnumStringValues();
   void RunValidJsonTest(const std::string& test_name, ConformanceLevel level,
                         const std::string& input_json,
                         const std::string& equivalent_text_format);
@@ -60,10 +61,16 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
       const std::string& test_name, ConformanceLevel level,
       const protobuf_test_messages::proto3::TestAllTypesProto3& input,
       const std::string& equivalent_text_format);
+  // Runs in proto3 only.
   void RunValidJsonIgnoreUnknownTest(const std::string& test_name,
                                      ConformanceLevel level,
                                      const std::string& input_json,
                                      const std::string& equivalent_text_format);
+  void RunValidJsonIgnoreUnknownTestWithProtoVersion(const std::string& test_name,
+                                     ConformanceLevel level,
+                                     const std::string& input_json,
+                                     const std::string& equivalent_text_format,
+                                     bool is_proto3);
   void RunValidProtobufTest(const std::string& test_name,
                             ConformanceLevel level,
                             const std::string& input_protobuf,
@@ -97,9 +104,15 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
                                      const std::string& input_json,
                                      const Validator& validator,
                                      bool is_proto3);
+  // Runs in proto3 only.
   void ExpectParseFailureForJson(const std::string& test_name,
                                  ConformanceLevel level,
                                  const std::string& input_json);
+  void ExpectParseFailureForJsonWithProtoVersion(const std::string& test_name,
+                                 ConformanceLevel level,
+                                 const std::string& input_json,
+                                 bool is_proto3);
+  // Runs for both proto2 and proto3.
   void ExpectSerializeFailureForJson(const std::string& test_name,
                                      ConformanceLevel level,
                                      const std::string& text_format);

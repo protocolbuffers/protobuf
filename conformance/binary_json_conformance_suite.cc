@@ -501,11 +501,19 @@ void BinaryAndJsonConformanceSuite::RunValidJsonTestWithProtobufInput(
 void BinaryAndJsonConformanceSuite::RunValidJsonIgnoreUnknownTest(
     const string& test_name, ConformanceLevel level, const string& input_json,
     const string& equivalent_text_format) {
-  TestAllTypesProto3 prototype;
+  RunValidJsonIgnoreUnknownTestWithProtoVersion(
+      test_name, level, input_json, equivalent_text_format, /*is_proto3=*/true);
+}
+
+void BinaryAndJsonConformanceSuite::RunValidJsonIgnoreUnknownTestWithProtoVersion(
+    const string& test_name, ConformanceLevel level, const string& input_json,
+    const string& equivalent_text_format, bool is_proto3) {
+  std::unique_ptr<Message> prototype = NewTestMessage(is_proto3);
+
   ConformanceRequestSetting setting(
       level, conformance::JSON, conformance::PROTOBUF,
       conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST,
-      prototype, test_name, input_json);
+      *prototype, test_name, input_json);
   RunValidInputTest(setting, equivalent_text_format);
 }
 
@@ -606,17 +614,26 @@ void BinaryAndJsonConformanceSuite::RunValidJsonTestWithValidator(
 
 void BinaryAndJsonConformanceSuite::ExpectParseFailureForJson(
     const string& test_name, ConformanceLevel level, const string& input_json) {
-  TestAllTypesProto3 prototype;
+  ExpectParseFailureForJsonWithProtoVersion(test_name, level, input_json, /*is_proto3=*/true);
+}
+
+void BinaryAndJsonConformanceSuite::ExpectParseFailureForJsonWithProtoVersion(
+    const string& test_name, ConformanceLevel level, const string& input_json,
+    bool is_proto3) {
+  std::unique_ptr<Message> prototype = NewTestMessage(is_proto3);
+
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
   ConformanceRequestSetting setting(
       level, conformance::JSON, conformance::JSON,
       conformance::JSON_TEST,
-      prototype, test_name, input_json);
+      *prototype, test_name, input_json);
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
   string effective_test_name = StrCat(
-      setting.ConformanceLevelToString(level), ".Proto3.JsonInput.", test_name);
+      setting.ConformanceLevelToString(level), ".Proto",
+      is_proto3 ? 3 : 2,
+      ".JsonInput.", test_name);
 
   RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kParseError) {
@@ -1557,6 +1574,7 @@ void BinaryAndJsonConformanceSuite::RunJsonTests() {
   RunJsonTestsForStruct();
   RunJsonTestsForValue();
   RunJsonTestsForAny();
+  RunJsonTestsForUnknownEnumStringValues();
 
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonNumber", REQUIRED,
                                 R"({
@@ -1590,6 +1608,37 @@ void BinaryAndJsonConformanceSuite::RunJsonTests() {
                                 "");
 
   ExpectParseFailureForJson("RejectTopLevelNull", REQUIRED, "null");
+}
+
+void BinaryAndJsonConformanceSuite::RunJsonTestsForUnknownEnumStringValues() {
+  // The tests here are taking an input message which only contains an unknown enum value represented as string.
+  // Depending on whether unknown fields are ignored the implementation should either
+  // reject the message or parse it as an empty message.
+  struct TestCase {
+    string enum_location;
+    string input_json;
+  };
+  const std::vector<TestCase> test_cases = {
+    {"InOptionalField", R"({ "optional_nested_enum": "UNKNOWN_ENUM_VALUE" })"},
+    {"InRepeatedField", R"({ "repeated_nested_enum": ["UNKNOWN_ENUM_VALUE"] })"},
+    {"InMap", R"({ "map_string_nested_enum": {"key": "UNKNOWN_ENUM_VALUE"} })"},
+  };
+  for (const TestCase& test_case : test_cases) {
+    for (int is_proto3 = 0; is_proto3 < 2; ++is_proto3) {
+      ExpectParseFailureForJsonWithProtoVersion(
+          StrCat("RejectUnknownEnumStringValue", test_case.enum_location),
+          RECOMMENDED,
+          test_case.input_json,
+          is_proto3);
+
+      RunValidJsonIgnoreUnknownTestWithProtoVersion(
+          StrCat("IgnoreUnknownEnumStringValue", test_case.enum_location),
+          RECOMMENDED,
+          test_case.input_json,
+          "",
+          is_proto3);
+    }
+  }
 }
 
 void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldNameConvention() {
