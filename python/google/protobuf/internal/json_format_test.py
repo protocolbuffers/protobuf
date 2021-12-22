@@ -907,6 +907,17 @@ class JsonFormatTest(JsonFormatBase):
         'for enum type protobuf_unittest.TestAllTypes.NestedEnum.',
         json_format.Parse, '{"optionalNestedEnum": 12345}', message)
 
+  def testAntonProto3(self):
+    message = json_format_proto3_pb2.TestMessage()
+    text = '{"enumValue": "BAZ"}'
+    json_format.Parse(text, message, ignore_unknown_fields=True)
+
+  def testAntonProto2(self):
+    message = json_format_pb2.TestNumbers()
+    text = '{"a": "BAZ"}'
+    json_format.Parse(text, message, ignore_unknown_fields=True)
+    self.assertFalse(message.HasField("a"))
+
   def testBytes(self):
     message = json_format_proto3_pb2.TestMessage()
     # Test url base64
