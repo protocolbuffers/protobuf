@@ -87,6 +87,10 @@ class ParseError(Error):
   """Thrown in case of parsing error."""
 
 
+class _UnknownEnumStringValueError(ParseError):
+    """Thrown if an unknown enum string value is encountered. This exception never leaks outside of the module."""
+
+
 def MessageToJson(
     message,
     including_default_value_fields=False,
@@ -583,6 +587,11 @@ class _Parser(object):
             message.Extensions[field] = _ConvertScalarFieldValue(value, field)
           else:
             setattr(message, field.name, _ConvertScalarFieldValue(value, field))
+      except _UnknownEnumStringValueError as e:
+        if self.ignore_unknown_fields:
+            pass
+        else:
+            raise ParseError('Failed to parse {0} field: {1}.'.format(name, e))
       except ParseError as e:
         if field and field.containing_oneof is None:
           raise ParseError('Failed to parse {0} field: {1}.'.format(name, e))
@@ -711,6 +720,7 @@ def _ConvertScalarFieldValue(value, field, require_str=False):
 
   Raises:
     ParseError: In case of convert problems.
+    _UnknownEnumStringValueError: In case of an unknown enum string value.
   """
   if field.cpp_type in _INT_TYPES:
     return _ConvertInteger(value)
@@ -741,7 +751,7 @@ def _ConvertScalarFieldValue(value, field, require_str=False):
         number = int(value)
         enum_value = field.enum_type.values_by_number.get(number, None)
       except ValueError:
-        raise ParseError('Invalid enum value {0} for enum type {1}.'.format(
+        raise _UnknownEnumStringValueError('Invalid enum value {0} for enum type {1}.'.format(
             value, field.enum_type.full_name))
       if enum_value is None:
         if field.file.syntax == 'proto3':
