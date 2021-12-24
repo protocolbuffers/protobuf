@@ -156,9 +156,9 @@ upb_msgval Convert_RubyToUpb(VALUE value, const char* name, TypeInfo type_info,
     }
     case UPB_TYPE_STRING: {
       VALUE utf8 = rb_enc_from_encoding(rb_utf8_encoding());
-      if (CLASS_OF(value) == rb_cSymbol) {
+      if (rb_obj_class(value) == rb_cSymbol) {
         value = rb_funcall(value, rb_intern("to_s"), 0);
-      } else if (CLASS_OF(value) != rb_cString) {
+      } else if (rb_obj_class(value) != rb_cString) {
         rb_raise(cTypeError, "Invalid argument for string field '%s' (given %s).",
                  name, rb_class2name(CLASS_OF(value)));
       }
@@ -177,7 +177,7 @@ upb_msgval Convert_RubyToUpb(VALUE value, const char* name, TypeInfo type_info,
     }
     case UPB_TYPE_BYTES: {
       VALUE bytes = rb_enc_from_encoding(rb_ascii8bit_encoding());
-      if (CLASS_OF(value) != rb_cString) {
+      if (rb_obj_class(value) != rb_cString) {
         rb_raise(cTypeError, "Invalid argument for bytes field '%s' (given %s).",
                  name, rb_class2name(CLASS_OF(value)));
       }
