@@ -639,8 +639,8 @@ module BasicTest
 
     def test_string_with_singleton_class_enabled
       str = 'foobar'
-      # Accessing a singleton class of an object changes its low level class representation
-      # as far as the C API's CLASS_OF() method concerned, exposing the issue
+      # NOTE: Accessing a singleton class of an object changes its low level class representation
+      #       as far as the C API's CLASS_OF() method concerned, exposing the issue
       str.singleton_class
       m = proto_module::MapMessage.new(optional_string: str)
 
