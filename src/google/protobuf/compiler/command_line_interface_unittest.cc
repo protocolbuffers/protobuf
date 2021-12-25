@@ -1217,7 +1217,8 @@ TEST_F(CommandLineInterfaceTest, InsertWithAnnotationFixup) {
       "--plug_out=insert_endlines=test_generator,test_plugin:$tmpdir "
       "--proto_path=$tmpdir foo.proto");
 
-  ExpectNoErrors();
+  ExpectWarningSubstring(
+      "foo.proto:2:36: warning: Message name should be in UpperCamelCase.");
   CheckGeneratedAnnotations("test_generator", "foo.proto");
   CheckGeneratedAnnotations("test_plugin", "foo.proto");
 }
