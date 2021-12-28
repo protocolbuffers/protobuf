@@ -167,10 +167,9 @@ static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence *self,
   }
 
   PyObject *item1;
-  PyObject *item2;
   for (int i = 0; i < n; i++) {
     item1 = PyUpb_GenericSequence_GetItem((PyObject*)self, i);
-    item2 = PyList_GetItem(other, i);
+    PyObject* item2 = PyList_GetItem(other, i);
     if (!item1 || !item2) goto error;
     int cmp = PyObject_RichCompareBool(item1, item2, Py_EQ);
     Py_DECREF(item1);
@@ -181,7 +180,6 @@ static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence *self,
 
 error:
   Py_XDECREF(item1);
-  Py_XDECREF(item2);
   return -1;
 }
 
