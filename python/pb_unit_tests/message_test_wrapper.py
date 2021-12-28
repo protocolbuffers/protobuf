@@ -126,9 +126,9 @@ message_test.Proto3Test.testSubmessageMap.__unittest_expecting_failure__ = True
 # We must skip these tests entirely (rather than running them with
 # __unittest_expecting_failure__) because they error out in setUpClass():
 #
-#  NotImplementedError: unset repeated
+#  AttributeError: 'google.protobuf.pyext._message.DescriptorPool' object has no attribute 'Add'
 #
-# TODO: change to __unittest_expecting_failure__ when repeated fields are available
+# TODO: change to __unittest_expecting_failure__ when DescriptorPoo.Add is implemented
 message_test.OversizeProtosTest.__unittest_skip__ = True
 
 if __name__ == '__main__':

@@ -137,14 +137,10 @@ reflection_test.SerializationTest.testSerializeUninitialized.__unittest_expectin
 reflection_test.SerializationTest.testSerializeUninitializedSubMessage.__unittest_expecting_failure__ = True
 reflection_test.SerializationTest.testSerializeWithOptionalGroup.__unittest_expecting_failure__ = True
 reflection_test.TestAllTypesEqualityTest.testEmptyProtosEqual.__unittest_expecting_failure__ = True
-
-# We must skip these tests entirely (rather than running them with
-# __unittest_expecting_failure__) because they error out in setUp():
-#
-#  NotImplementedError: access repeated
-#
-# TODO: change to __unittest_expecting_failure__ when repeated fields are available.
-reflection_test.FullProtosEqualityTest.__unittest_skip__ = True
+reflection_test.FullProtosEqualityTest.testAllFieldsFilledEquality.__unittest_expecting_failure__ = True
+reflection_test.FullProtosEqualityTest.testNonRepeatedComposite.__unittest_expecting_failure__ = True
+reflection_test.FullProtosEqualityTest.testNonRepeatedCompositeHasBits.__unittest_expecting_failure__ = True
+reflection_test.FullProtosEqualityTest.testRepeatedComposite.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(module=reflection_test, verbosity=2)
