@@ -23,38 +23,19 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-"""A bare-bones unit test that doesn't load any generated code."""
-
-
+from google.protobuf.internal import message_factory_test
 import unittest
-from google.protobuf.pyext import _message
-from google.protobuf.internal import api_implementation
 
-class TestMessageExtension(unittest.TestCase):
-
-    def test_descriptor_pool(self):
-        serialized_desc = b'\n\ntest.proto\"\x0e\n\x02M1*\x08\x08\x01\x10\x80\x80\x80\x80\x02:\x15\n\x08test_ext\x12\x03.M1\x18\x01 \x01(\x05'
-        pool = _message.DescriptorPool()
-        file_desc = pool.AddSerializedFile(serialized_desc)
-        self.assertEqual("test.proto", file_desc.name)
-        ext_desc = pool.FindExtensionByName("test_ext")
-        self.assertEqual(1, ext_desc.number)
-
-        # Test object cache: repeatedly retrieving the same descriptor
-        # should result in the same object
-        self.assertIs(ext_desc, pool.FindExtensionByName("test_ext"))
-
-
-    def test_lib_is_upb(self):
-        # Ensure we are not pulling in a different protobuf library on the
-        # system.
-        print(_message._IS_UPB)
-        self.assertTrue(_message._IS_UPB)
-        self.assertEqual(api_implementation.Type(), "cpp")
-
-#TestMessageExtension.test_descriptor_pool.__unittest_expecting_failure__ = True
-
+# We must skip these tests entirely (rather than running them with
+# __unittest_expecting_failure__) because they error out in setUp():
+#
+#  AttributeError: 'google.protobuf.pyext._message.FileDescriptor' object has no attribute 'serialized_pb'
+#
+# TODO: change to __unittest_expecting_failure__ when serialized_pb is available.
+message_factory_test.MessageFactoryTest.testCreatePrototypeOverride.__unittest_skip__ = True
+message_factory_test.MessageFactoryTest.testDuplicateExtensionNumber.__unittest_skip__ = True
+message_factory_test.MessageFactoryTest.testGetMessages.__unittest_skip__ = True
+message_factory_test.MessageFactoryTest.testGetPrototype.__unittest_skip__ = True
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+  unittest.main(module=message_factory_test, verbosity=2)

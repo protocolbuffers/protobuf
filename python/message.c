@@ -326,13 +326,16 @@ void PyUpb_CMessage_AssureWritable(PyUpb_CMessage* self);
 static bool PyUpb_CMessage_InitMapAttribute(PyObject* _self, PyObject* name,
                                             const upb_fielddef* f,
                                             PyObject* value) {
-  PyObject* map = PyUpb_CMessage_GetAttr(_self, name);
-  int ok = PyUpb_CMessage_InitMapAttributes(map, value, f);
-  Py_DECREF(map);
-  return ok >= 0;
+  // TODO(haberman): disabled until map container is in.
+  // PyObject* map = PyUpb_CMessage_GetAttr(_self, name);
+  // int ok = PyUpb_CMessage_InitMapAttributes(map, value, f);
+  // Py_DECREF(map);
+  // return ok >= 0;
+  PyErr_SetString(PyExc_NotImplementedError, "map init");
+  return false;
 }
 
-static bool PyUpb_CMessage_InitRepeatedAttribute() {
+static bool PyUpb_CMessage_InitRepeatedAttribute(void) {
   // TODO(haberman): disabled until repeated container is in.
   // PyObject* repeated = PyUpb_CMessage_GetAttr(_self, name);
   // PyObject* tmp = PyUpb_RepeatedContainer_Extend(repeated, value);
@@ -909,23 +912,37 @@ static PyObject* PyUpb_CMessage_HasField(PyObject* _self, PyObject* arg) {
 static PyObject* PyUpb_CMessage_ListFields(PyObject* _self, PyObject* arg) {
   PyObject* list = PyList_New(0);
   upb_msg* msg = PyUpb_CMessage_GetIfWritable(_self);
+  if (!msg) return list;
 
-  if (msg) {
-    size_t iter1 = UPB_MSG_BEGIN;
-    const upb_msgdef* m = PyUpb_CMessage_GetMsgdef(_self);
-    const upb_symtab* symtab = upb_filedef_symtab(upb_msgdef_file(m));
-    const upb_fielddef* f;
-    upb_msgval val;
-    while (upb_msg_next(msg, m, symtab, &f, &val, &iter1)) {
-      PyObject* field_desc = PyUpb_FieldDescriptor_Get(f);
-      PyObject* py_val = PyUpb_CMessage_GetFieldValue(_self, f);
-      PyObject* tuple = Py_BuildValue("(NN)", field_desc, py_val);
-      PyList_Append(list, tuple);
-      Py_DECREF(tuple);
-    }
+  size_t iter1 = UPB_MSG_BEGIN;
+  const upb_msgdef* m = PyUpb_CMessage_GetMsgdef(_self);
+  const upb_symtab* symtab = upb_filedef_symtab(upb_msgdef_file(m));
+  const upb_fielddef* f;
+  PyObject* field_desc = NULL;
+  PyObject* py_val = NULL;
+  PyObject* tuple = NULL;
+  upb_msgval val;
+  while (upb_msg_next(msg, m, symtab, &f, &val, &iter1)) {
+    PyObject* field_desc = PyUpb_FieldDescriptor_Get(f);
+    PyObject* py_val = PyUpb_CMessage_GetFieldValue(_self, f);
+    if (!field_desc || !py_val) goto err;
+    PyObject* tuple = Py_BuildValue("(NN)", field_desc, py_val);
+    field_desc = NULL;
+    py_val = NULL;
+    if (!tuple) goto err;
+    if (!PyList_Append(list, tuple)) goto err;
+    Py_DECREF(tuple);
+    tuple = NULL;
   }
 
   return list;
+
+err:
+  Py_XDECREF(field_desc);
+  Py_XDECREF(py_val);
+  Py_XDECREF(tuple);
+  Py_DECREF(list);
+  return NULL;
 }
 
 PyObject* PyUpb_CMessage_MergeFrom(PyObject* self, PyObject* arg) {
@@ -1438,8 +1455,9 @@ static PyObject* PyUpb_MessageMeta_New(PyTypeObject* type, PyObject* args,
   Py_ssize_t size = PyTuple_Size(bases);
   if (!(size == 0 ||
         (size == 1 && PyTuple_GetItem(bases, 0) == state->message_class))) {
-    PyErr_SetString(PyExc_TypeError,
-                    "A Message class can only inherit from Message");
+    PyErr_Format(PyExc_TypeError,
+                 "A Message class can only inherit from Message, not %S",
+                 bases);
     return NULL;
   }
 
@@ -1537,7 +1555,7 @@ static PyType_Spec PyUpb_MessageMeta_Spec = {
     PyUpb_MessageMeta_Slots,
 };
 
-static PyObject* PyUpb_MessageMeta_CreateType() {
+static PyObject* PyUpb_MessageMeta_CreateType(void) {
   PyObject* bases = Py_BuildValue("(O)", &PyType_Type);
   if (!bases) return NULL;
   PyUpb_MessageMeta_Spec.basicsize =
@@ -1557,6 +1575,20 @@ bool PyUpb_InitMessage(PyObject* m) {
 
   if (!state->cmessage_type || !state->message_meta_type) return false;
   if (PyModule_AddObject(m, "MessageMeta", message_meta_type)) return false;
+
+  PyObject* mod = PyImport_ImportModule("google.protobuf.message");
+
+  if (mod == NULL) return false;
+
+  state->encode_error_class = PyObject_GetAttrString(mod, "EncodeError");
+  state->decode_error_class = PyObject_GetAttrString(mod, "DecodeError");
+  state->message_class = PyObject_GetAttrString(mod, "Message");
+  Py_DECREF(mod);
+
+  if (!state->encode_error_class || !state->decode_error_class ||
+      !state->message_class) {
+    return false;
+  }
 
   return true;
 }
