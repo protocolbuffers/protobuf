@@ -43,6 +43,8 @@ system_python(
     name = "system_python"
 )
 
+register_toolchains("@system_python//:python_toolchain")
+
 http_archive(
     name = "rules_fuzzing",
     sha256 = "e1b54211f7cee604194db080a8765220d3ef5db2a873fded429ce13e74d93a6b",

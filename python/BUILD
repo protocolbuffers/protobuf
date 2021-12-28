@@ -27,10 +27,6 @@ load(
     "//bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
 )
-load(
-    "@system_python//:build_defs.bzl",
-    "EXT_SUFFIX",
-)
 
 cc_binary(
     name = "message",
@@ -76,18 +72,58 @@ cc_binary(
     ],
 )
 
-# Copy the extension into the location recognized by Python.
+cc_binary(
+    name = "api_implementation",
+    srcs = [
+        "api_implementation.c",
+    ],
+    # Enable once linker script is available.
+    #copts = ["-fvisibility=hidden"],
+    deps = ["@system_python//:python_headers"],
+    linkshared = True,
+    linkstatic = True,
+)
+
+# Copy the extensions into the location recognized by Python.
+# .abi3.so indicates use of the limited API, and cross-version ABI compatibility.
+EXT_SUFFIX = ".abi3.so"
+
 genrule(
-    name = "message_ext",
+    name = "copy_message",
     srcs = [":message"],
     outs = ["google/protobuf/pyext/_message" + EXT_SUFFIX],
     cmd = "cp $< $@",
 )
 
+genrule(
+    name = "copy_api_implementation",
+    srcs = [":api_implementation"],
+    outs = ["google/protobuf/internal/_api_implementation" + EXT_SUFFIX],
+    cmd = "cp $< $@",
+    visibility = ["//python:__subpackages__"],
+)
+
+py_library(
+    name = "message_ext",
+    data = [
+        "google/protobuf/pyext/_message" + EXT_SUFFIX,
+        "google/protobuf/internal/_api_implementation" + EXT_SUFFIX,
+    ],
+    imports = ["."],
+    visibility = ["//python:__subpackages__"],
+)
+
 py_test(
     name = "minimal_test",
-    srcs = ["minimal_test.py"],
-    data = [":message_ext"],
+    srcs = [
+        "minimal_test.py",
+    ],
+    deps = [
+        "//python:message_ext",
+        "@com_google_protobuf//:python_srcs",
+        "@com_google_protobuf//:python_common_test_protos",
+        "@com_google_protobuf//:python_specific_test_protos",
+    ],
     imports = ["."],
     legacy_create_init = False,
 )

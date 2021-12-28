@@ -241,15 +241,25 @@ PyObject* PyUpb_RepeatedContainer_ToList(PyObject* _self) {
   const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
   size_t n = upb_array_size(arr);
   PyObject* list = PyList_New(n);
+  PyObject* ret = list;
+  if (!list) return NULL;
   for (size_t i = 0; i < n; i++) {
     PyObject* val = PyUpb_UpbToPy(upb_array_get(arr, i), f, self->arena);
+    if (!val) {
+      val = Py_None;
+      Py_INCREF(val);
+      ret = NULL;
+    }
     PyList_SetItem(list, i, val);
   }
-  return list;
+  if (ret != list) Py_DECREF(list);
+  return ret;
 }
 
 static PyObject* PyUpb_RepeatedContainer_Repr(PyObject* _self) {
   PyObject* list = PyUpb_RepeatedContainer_ToList(_self);
+  if (!list) return NULL;
+  assert(!PyErr_Occurred());
   PyObject* repr = PyObject_Repr(list);
   Py_DECREF(list);
   return repr;
@@ -285,12 +295,19 @@ static PyObject* PyUpb_RepeatedContainer_Subscript(PyObject* _self,
   if (step == 0) {
     return PyUpb_UpbToPy(upb_array_get(arr, idx), f, self->arena);
   } else {
-    PyObject* ret = PyList_New(count);
+    PyObject* list = PyList_New(count);
+    PyObject* ret = list;
     for (Py_ssize_t i = 0; i < count; i++, idx += step) {
       upb_msgval msgval = upb_array_get(self->ptr.arr, idx);
       PyObject* item = PyUpb_UpbToPy(msgval, f, self->arena);
-      PyList_SetItem(ret, i, item);
+      if (!item) {
+        item = Py_None;
+        Py_INCREF(Py_None);
+        ret = NULL;
+      }
+      PyList_SetItem(list, i, item);
     }
+    if (ret != list) Py_DECREF(list);
     return ret;
   }
 }
@@ -355,7 +372,7 @@ static int PyUpb_RepeatedContainer_DeleteSubscript(upb_array* arr,
     step = -step;
   }
   size_t dst = start;
-  size_t src = step ? start + 1 : start + count;
+  size_t src = step > 1 ? start + 1 : start + count;
   if (step > 1) {
     // Move elements between steps.
     for (Py_ssize_t i = 0; i < count; i++, dst += step, src += step + 1) {
