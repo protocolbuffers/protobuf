@@ -25,11 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "protobuf.h"
+#include "python/protobuf.h"
 
-#include "descriptor.h"
-#include "descriptor_containers.h"
-#include "descriptor_pool.h"
+#include "python/descriptor.h"
+#include "python/descriptor_containers.h"
+#include "python/descriptor_pool.h"
+#include "python/message.h"
 
 static void PyUpb_ModuleDealloc(void *module) {
   PyUpb_ModuleState *s = PyModule_GetState(module);

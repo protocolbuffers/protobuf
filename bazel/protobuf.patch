@@ -1,10 +1,47 @@
 --- BUILD
 +++ BUILD
-@@ -1110,6 +1110,7 @@ py_library(
-         ":python_common_test_protos",
-         ":python_specific_test_protos",
-     ],
+@@ -931,13 +931,10 @@ py_library(
+         [
+             "python/google/protobuf/**/*.py",
+         ],
+-        exclude = [
+-            "python/google/protobuf/internal/*_test.py",
+-            "python/google/protobuf/internal/test_util.py",
+-        ],
+     ),
+     imports = ["python"],
+     srcs_version = "PY2AND3",
 +    visibility = ["//visibility:public"],
  )
  
- internal_protobuf_py_tests(
+ cc_binary(
+@@ -1038,13 +1035,6 @@ py_proto_library(
+     name = "protobuf_python",
+     srcs = COPIED_WELL_KNOWN_PROTOS,
+     include = "python",
+-    data = select({
+-        "//conditions:default": [],
+-        ":use_fast_cpp_protos": [
+-            ":python/google/protobuf/internal/_api_implementation.so",
+-            ":python/google/protobuf/pyext/_message.so",
+-        ],
+-    }),
+     default_runtime = "",
+     protoc = ":protoc",
+     py_libs = [
+@@ -1080,6 +1070,7 @@ py_proto_library(
+     protoc = ":protoc",
+     srcs_version = "PY2AND3",
+     deps = [":protobuf_python"],
++    visibility = ["//visibility:public"],
+ )
+ 
+ py_proto_library(
+@@ -1093,6 +1084,7 @@ py_proto_library(
+     protoc = ":protoc",
+     srcs_version = "PY2AND3",
+     deps = [":python_common_test_protos"],
++    visibility = ["//visibility:public"],
+ )
+ 
+ py_library(

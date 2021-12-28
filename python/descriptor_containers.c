@@ -174,7 +174,6 @@ static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence *self,
     if (!item1 || !item2) goto error;
     int cmp = PyObject_RichCompareBool(item1, item2, Py_EQ);
     Py_DECREF(item1);
-    Py_DECREF(item2);
     if (cmp != 1) return cmp;
   }
   // All items were found and equal

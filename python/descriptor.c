@@ -190,6 +190,7 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
 // -----------------------------------------------------------------------------
 
 PyObject* PyUpb_Descriptor_Get(const upb_msgdef* m) {
+  assert(m);
   const upb_filedef* file = upb_msgdef_file(m);
   return PyUpb_DescriptorBase_Get(kPyUpb_Descriptor, m, file);
 }
@@ -647,7 +648,9 @@ static PyObject* PyUpb_EnumDescriptor_GetValuesByNumber(PyObject* _self,
 static PyObject* PyUpb_EnumDescriptor_GetContainingType(PyObject* _self,
                                                         void* closure) {
   PyUpb_DescriptorBase* self = (void*)_self;
-  return PyUpb_Descriptor_Get(upb_enumdef_containingtype(self->def));
+  const upb_msgdef* m = upb_enumdef_containingtype(self->def);
+  if (!m) Py_RETURN_NONE;
+  return PyUpb_Descriptor_Get(m);
 }
 
 static PyObject* PyUpb_EnumDescriptor_GetHasOptions(PyObject* _self,

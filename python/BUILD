@@ -87,74 +87,41 @@ cc_binary(
 EXT_SUFFIX = ".abi3.so"
 
 genrule(
-    name = "message_ext",
+    name = "copy_message",
     srcs = [":message"],
     outs = ["google/protobuf/pyext/_message" + EXT_SUFFIX],
     cmd = "cp $< $@",
 )
 
 genrule(
-    name = "api_implementation_ext",
+    name = "copy_api_implementation",
     srcs = [":api_implementation"],
     outs = ["google/protobuf/internal/_api_implementation" + EXT_SUFFIX],
     cmd = "cp $< $@",
+    visibility = ["//python:__subpackages__"],
+)
+
+py_library(
+    name = "message_ext",
+    data = [
+        "google/protobuf/pyext/_message" + EXT_SUFFIX,
+        "google/protobuf/internal/_api_implementation" + EXT_SUFFIX,
+    ],
+    imports = ["."],
+    visibility = ["//python:__subpackages__"],
 )
 
 py_test(
     name = "minimal_test",
-    #srcs = ["minimal_test.py"],
     srcs = [
         "minimal_test.py",
-        "@com_google_protobuf//:python_tests",
     ],
     deps = [
-        "@com_google_protobuf//:python_tests",
-    ],
-    data = [
-        "@com_google_protobuf//:python_tests",
-        ":message_ext",
-        ":api_implementation_ext",
+        "//python:message_ext",
+        "@com_google_protobuf//:python_srcs",
+        "@com_google_protobuf//:python_common_test_protos",
+        "@com_google_protobuf//:python_specific_test_protos",
     ],
     imports = ["."],
     legacy_create_init = False,
 )
-
-TESTS = [
-    "descriptor_database_test",
-    "descriptor_pool_test",
-    "descriptor_test",
-    "generator_test",
-    "json_format_test",
-    "keywords_test",
-    "message_factory_test",
-    "message_test",
-    "proto_builder_test",
-    "reflection_test",
-    "service_reflection_test",
-    "symbol_database_test",
-    "text_encoding_test",
-    "text_format_test",
-    "unknown_fields_test",
-    "well_known_types_test",
-    "wire_format_test",
-]
-
-[
-  py_test(
-      name = test,
-      main = "python/google/protobuf/internal/" + test + ".py",
-      srcs = [
-          "@com_google_protobuf//:python_tests",
-      ],
-      deps = [
-          "@com_google_protobuf//:python_tests",
-      ],
-      data = [
-          "@com_google_protobuf//:python_tests",
-          ":message_ext",
-          ":api_implementation_ext",
-      ],
-      imports = ["."],
-      legacy_create_init = False,
-  ) for test in TESTS
-]
