@@ -3,7 +3,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
 load("@rules_pkg//:pkg.bzl", "pkg_zip")
-load("@rules_pkg//:mappings.bzl", "pkg_files")
+load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_files")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
@@ -563,6 +563,7 @@ pkg_files(
 pkg_files(
     name = "protoc_files",
     srcs =  [":protoc"],
+    attributes = pkg_attributes(mode = "0555"),
     visibility = ["//visibility:private"],
     prefix = "bin/",
 )
