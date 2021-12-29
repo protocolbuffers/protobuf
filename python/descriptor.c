@@ -160,6 +160,7 @@ static PyObject* PyUpb_DescriptorBase_GetSerializedProto(
   return str;
 
 oom:
+  upb_arena_free(arena);
   PyErr_SetNone(PyExc_MemoryError);
   return NULL;
 }

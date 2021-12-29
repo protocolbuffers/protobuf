@@ -240,6 +240,17 @@ static PyObject* PyUpb_DescriptorPool_FindMessageTypeByName(PyObject* _self,
   return PyUpb_Descriptor_Get(m);
 }
 
+// Splits a dotted symbol like foo.bar.baz on the last dot.  Returns the portion
+// after the last dot (baz) and updates `*parent_size` to the length of the
+// parent (foo.bar).  Returns NULL if no dots were present.
+static const char* PyUpb_DescriptorPool_SplitSymbolName(const char* sym,
+                                                        size_t* parent_size) {
+  const char* last_dot = strrchr(sym, '.');
+  if (!last_dot) return NULL;
+  *parent_size = last_dot - sym;
+  return last_dot + 1;
+}
+
 /*
  * PyUpb_DescriptorPool_FindFieldByName()
  *
@@ -253,14 +264,19 @@ static PyObject* PyUpb_DescriptorPool_FindFieldByName(PyObject* _self,
   const char* name = PyUpb_GetStrData(arg);
   if (!name) return NULL;
 
+  // First lookup as extension.
   const upb_fielddef* f = upb_symtab_lookupext(self->symtab, name);
+
   if (!f) {
-    const char* last_dot = strrchr(name, '.');
-    if (last_dot) {
+    // Otherwise look for a normal field.
+    size_t parent_size;
+    const char* child =
+        PyUpb_DescriptorPool_SplitSymbolName(name, &parent_size);
+    if (child) {
       const upb_msgdef* parent =
-          upb_symtab_lookupmsg2(self->symtab, name, last_dot - name);
+          upb_symtab_lookupmsg2(self->symtab, name, parent_size);
       if (parent) {
-        f = upb_msgdef_ntofz(parent, last_dot + 1);
+        f = upb_msgdef_ntofz(parent, child);
       }
     }
   }
@@ -306,12 +322,14 @@ static PyObject* PyUpb_DescriptorPool_FindOneofByName(PyObject* _self,
   const char* name = PyUpb_GetStrData(arg);
   if (!name) return NULL;
 
-  const char* last_dot = strrchr(name, '.');
-  if (last_dot) {
+  size_t parent_size;
+  const char* child = PyUpb_DescriptorPool_SplitSymbolName(name, &parent_size);
+
+  if (child) {
     const upb_msgdef* parent =
-        upb_symtab_lookupmsg2(self->symtab, name, last_dot - name);
+        upb_symtab_lookupmsg2(self->symtab, name, parent_size);
     if (parent) {
-      const upb_oneofdef* o = upb_msgdef_ntooz(parent, last_dot + 1);
+      const upb_oneofdef* o = upb_msgdef_ntooz(parent, child);
       return PyUpb_OneofDescriptor_Get(o);
     }
   }
@@ -376,6 +394,7 @@ static PyObject* PyUpb_DescriptorPool_FindAllExtensions(PyObject* _self,
   PyObject* ret = PyList_New(n);
   for (size_t i = 0; i < n; i++) {
     PyObject* field = PyUpb_FieldDescriptor_Get(ext[i]);
+    if (!field) return NULL;
     PyList_SetItem(ret, i, field);
   }
   return ret;

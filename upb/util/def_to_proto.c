@@ -393,9 +393,8 @@ static google_protobuf_FileDescriptorProto *filedef_toproto(
       proto, strviewdup(ctx, upb_filedef_name(f)));
 
   const char* package = upb_filedef_package(f);
-  size_t n;
   if (package) {
-    n = strlen(package);
+    size_t n = strlen(package);
     if (n) {
       google_protobuf_FileDescriptorProto_set_package(
           proto, strviewdup(ctx, upb_filedef_package(f)));
@@ -407,6 +406,7 @@ static google_protobuf_FileDescriptorProto *filedef_toproto(
                                                    strviewdup(ctx, "proto3"));
   }
 
+  size_t n;
   n = upb_filedef_depcount(f);
   upb_strview *deps = google_protobuf_FileDescriptorProto_resize_dependency(
       proto, n, ctx->arena);
