@@ -61,7 +61,7 @@ static bool IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
     *step = 0;
     *count = 1;
 
-    if (*i < 0 || *i >= size) {
+    if (*i < 0 || size <= *i) {
       PyErr_Format(PyExc_IndexError, "list index out of range");
       return false;
     }

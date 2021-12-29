@@ -398,7 +398,7 @@ bool upb_array_insert(upb_array *arr, size_t i, size_t count,
  */
 void upb_array_delete(upb_array *arr, size_t i, size_t count) {
   size_t end = i + count;
-  UPB_ASSERT(end >= i);
+  UPB_ASSERT(i <= end);
   UPB_ASSERT(end <= arr->len);
   upb_array_move(arr, i, end, arr->len - end);
   arr->len -= count;
