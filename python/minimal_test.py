@@ -30,6 +30,7 @@
 import unittest
 from google.protobuf.pyext import _message
 from google.protobuf.internal import api_implementation
+from google.protobuf import unittest_pb2
 
 class TestMessageExtension(unittest.TestCase):
 
@@ -52,6 +53,21 @@ class TestMessageExtension(unittest.TestCase):
         print(_message._IS_UPB)
         self.assertTrue(_message._IS_UPB)
         self.assertEqual(api_implementation.Type(), "cpp")
+
+    def test_repeated_field_slice_delete(self):
+        def test_slice(start, end, step):
+            vals = list(range(20))
+            message = unittest_pb2.TestAllTypes(repeated_int32=vals)
+            del vals[start:end:step]
+            del message.repeated_int32[start:end:step]
+            self.assertEqual(vals, list(message.repeated_int32))
+        test_slice(3, 11, 1)
+        test_slice(3, 11, 2)
+        test_slice(3, 11, 3)
+        test_slice(11, 3, -1)
+        test_slice(11, 3, -2)
+        test_slice(11, 3, -3)
+        test_slice(10, 25, 4)
 
 #TestMessageExtension.test_descriptor_pool.__unittest_expecting_failure__ = True
 

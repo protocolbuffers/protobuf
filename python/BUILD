@@ -44,6 +44,8 @@ cc_binary(
         "protobuf.c",
         "protobuf.h",
         "python.h",
+        "repeated.c",
+        "repeated.h",
     ],
     copts = UPB_DEFAULT_COPTS + [
         # The Python API requires patterns that are ISO C incompatible, like

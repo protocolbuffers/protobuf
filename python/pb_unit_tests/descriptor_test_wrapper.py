@@ -47,9 +47,9 @@ descriptor_test.MakeDescriptorTest.testMakeDescriptorWithUnsignedIntField.__unit
 # We must skip these tests entirely (rather than running them with
 # __unittest_expecting_failure__) because they error out in setUp():
 #
-#  NotImplementedError: unset repeated
+#  AttributeError: 'google.protobuf.pyext._message.DescriptorPool' object has no attribute 'Add'
 #
-# TODO: change to __unittest_expecting_failure__ when repeated fields are checked in.
+# TODO: change to __unittest_expecting_failure__ when DescriptorPool.Add() is implemented
 descriptor_test.DescriptorTest.testAggregateOptions.__unittest_skip__ = True
 descriptor_test.DescriptorTest.testComplexExtensionOptions.__unittest_skip__ = True
 descriptor_test.DescriptorTest.testContainingServiceFixups.__unittest_skip__ = True

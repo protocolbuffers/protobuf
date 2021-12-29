@@ -77,6 +77,10 @@ typedef struct {
   PyObject *wkt_bases;
   PyTypeObject *arena_type;
   PyUpb_WeakMap *obj_cache;
+
+  // From repeated.c
+  PyTypeObject* repeated_composite_container_type;
+  PyTypeObject* repeated_scalar_container_type;
 } PyUpb_ModuleState;
 
 // Returns the global state object from the current interpreter. The current
