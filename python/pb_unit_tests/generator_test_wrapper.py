@@ -32,9 +32,6 @@ generator_test.GeneratorTest.testFileDescriptor.__unittest_expecting_failure__ =
 generator_test.GeneratorTest.testMessageWithCustomOptions.__unittest_expecting_failure__ = True
 generator_test.GeneratorTest.testOneof.__unittest_expecting_failure__ = True
 generator_test.GeneratorTest.testOptions.__unittest_expecting_failure__ = True
-generator_test.SymbolDatabaseRegistrationTest.testEnums.__unittest_expecting_failure__ = True
-generator_test.SymbolDatabaseRegistrationTest.testFindFileByName.__unittest_expecting_failure__ = True
-generator_test.SymbolDatabaseRegistrationTest.testGetSymbol.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(module=generator_test, verbosity=2)

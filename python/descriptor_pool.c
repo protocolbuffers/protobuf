@@ -28,6 +28,7 @@
 #include "python/descriptor_pool.h"
 
 #include "python/descriptor.h"
+#include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/def.h"
 
@@ -39,6 +40,7 @@ typedef struct {
   PyObject_HEAD
   upb_symtab* symtab;
   PyObject* db;
+  PyObject* serialized_pb_dict;
 } PyUpb_DescriptorPool;
 
 PyObject* PyUpb_DescriptorPool_GetDefaultPool() {
@@ -46,12 +48,12 @@ PyObject* PyUpb_DescriptorPool_GetDefaultPool() {
   return s->default_pool;
 }
 
-static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(PyTypeObject* type,
-                                               PyObject* db,
-                                               PyUpb_WeakMap *obj_cache) {
+static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
+    PyTypeObject* type, PyObject* db, PyUpb_WeakMap* obj_cache) {
   PyUpb_DescriptorPool* pool = (void*)PyType_GenericAlloc(type, 0);
   pool->symtab = upb_symtab_new();
   pool->db = db;
+  pool->serialized_pb_dict = PyDict_New();
   Py_XINCREF(pool->db);
   PyUpb_WeakMap_Add(obj_cache, pool->symtab, &pool->ob_base);
   return &pool->ob_base;
@@ -85,10 +87,17 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_symtab* symtab) {
 }
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
-  upb_symtab_free(self->symtab);
   PyUpb_DescriptorPool_Clear(self);
+  Py_DECREF(self->serialized_pb_dict);
+  upb_symtab_free(self->symtab);
   PyUpb_ObjCache_Delete(self->symtab);
   PyUpb_Dealloc(self);
+}
+
+PyObject* PyUpb_DescriptorPool_GetSerializedPb(PyObject* _self,
+                                               const char* filename) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+  return PyDict_GetItemString(self->serialized_pb_dict, filename);
 }
 
 /*
@@ -106,6 +115,7 @@ static PyObject* PyUpb_DescriptorPool_New(PyTypeObject* type, PyObject* args,
     return NULL;
   }
 
+  if (db == Py_None) db = NULL;
   return PyUpb_DescriptorPool_DoCreate(type, db);
 }
 
@@ -156,11 +166,48 @@ static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
     goto done;
   }
 
+  PyDict_SetItemString(self->serialized_pb_dict, upb_filedef_name(filedef),
+                       serialized_pb);
+
   result = PyUpb_FileDescriptor_Get(filedef);
 
 done:
   upb_arena_free(arena);
   return result;
+}
+
+static PyObject* PyUpb_DescriptorPool_Add(PyObject* _self,
+                                          PyObject* file_desc) {
+  PyObject* subargs = PyTuple_New(0);
+  // TODO: check file_desc type more.
+  PyObject* serialized =
+      PyUpb_CMessage_SerializeToString(file_desc, subargs, NULL);
+  Py_DECREF(subargs);
+  if (!serialized) return NULL;
+  PyObject* ret = PyUpb_DescriptorPool_AddSerializedFile(_self, serialized);
+  Py_DECREF(serialized);
+  return ret;
+}
+
+/*
+ * PyUpb_DescriptorPool_FindFileByName()
+ *
+ * Implements:
+ *   DescriptorPool.FindFileByName(self, name)
+ */
+static PyObject* PyUpb_DescriptorPool_FindFileByName(PyObject* _self,
+                                                     PyObject* arg) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+
+  const char* name = PyUpb_GetStrData(arg);
+  if (!name) return NULL;
+
+  const upb_filedef* file = upb_symtab_lookupfile(self->symtab, name);
+  if (file == NULL) {
+    return PyErr_Format(PyExc_KeyError, "Couldn't find file %.200s", name);
+  }
+
+  return PyUpb_FileDescriptor_Get(file);
 }
 
 /*
@@ -184,40 +231,195 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByName(PyObject* _self,
   return PyUpb_FieldDescriptor_Get(field);
 }
 
+/*
+ * PyUpb_DescriptorPool_FindMessageTypeByName()
+ *
+ * Implements:
+ *   DescriptorPool.FindMessageTypeByName(self, name)
+ */
+static PyObject* PyUpb_DescriptorPool_FindMessageTypeByName(PyObject* _self,
+                                                            PyObject* arg) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+
+  const char* name = PyUpb_GetStrData(arg);
+  if (!name) return NULL;
+
+  const upb_msgdef* m = upb_symtab_lookupmsg(self->symtab, name);
+  if (m == NULL) {
+    return PyErr_Format(PyExc_KeyError, "Couldn't find message %.200s", name);
+  }
+
+  return PyUpb_Descriptor_Get(m);
+}
+
+/*
+ * PyUpb_DescriptorPool_FindFieldByName()
+ *
+ * Implements:
+ *   DescriptorPool.FindFieldByName(self, name)
+ */
+static PyObject* PyUpb_DescriptorPool_FindFieldByName(PyObject* _self,
+                                                      PyObject* arg) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+
+  const char* name = PyUpb_GetStrData(arg);
+  if (!name) return NULL;
+
+  const upb_fielddef* f = upb_symtab_lookupext(self->symtab, name);
+  if (!f) {
+    const char* last_dot = strrchr(name, '.');
+    if (last_dot) {
+      const upb_msgdef* parent =
+          upb_symtab_lookupmsg2(self->symtab, name, last_dot - name);
+      if (parent) {
+        f = upb_msgdef_ntofz(parent, last_dot + 1);
+      }
+    }
+  }
+
+  if (!f) {
+    return PyErr_Format(PyExc_KeyError, "Couldn't find message %.200s", name);
+  }
+
+  return PyUpb_FieldDescriptor_Get(f);
+}
+
+/*
+ * PyUpb_DescriptorPool_FindEnumTypeByName()
+ *
+ * Implements:
+ *   DescriptorPool.FindEnumTypeByName(self, name)
+ */
+static PyObject* PyUpb_DescriptorPool_FindEnumTypeByName(PyObject* _self,
+                                                         PyObject* arg) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+
+  const char* name = PyUpb_GetStrData(arg);
+  if (!name) return NULL;
+
+  const upb_enumdef* e = upb_symtab_lookupenum(self->symtab, name);
+  if (e == NULL) {
+    return PyErr_Format(PyExc_KeyError, "Couldn't find enum %.200s", name);
+  }
+
+  return PyUpb_EnumDescriptor_Get(e);
+}
+
+/*
+ * PyUpb_DescriptorPool_FindOneofByName()
+ *
+ * Implements:
+ *   DescriptorPool.FindOneofByName(self, name)
+ */
+static PyObject* PyUpb_DescriptorPool_FindOneofByName(PyObject* _self,
+                                                      PyObject* arg) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+
+  const char* name = PyUpb_GetStrData(arg);
+  if (!name) return NULL;
+
+  const char* last_dot = strrchr(name, '.');
+  if (last_dot) {
+    const upb_msgdef* parent =
+        upb_symtab_lookupmsg2(self->symtab, name, last_dot - name);
+    if (parent) {
+      const upb_oneofdef* o = upb_msgdef_ntooz(parent, last_dot + 1);
+      return PyUpb_OneofDescriptor_Get(o);
+    }
+  }
+
+  return PyErr_Format(PyExc_KeyError, "Couldn't find enum %.200s", name);
+}
+
+static PyObject* PyUpb_DescriptorPool_FindServiceByName(PyObject* _self,
+                                                        PyObject* arg) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+
+  const char* name = PyUpb_GetStrData(arg);
+  if (!name) return NULL;
+
+  const upb_servicedef* s = upb_symtab_lookupservice(self->symtab, name);
+  if (s == NULL) {
+    return PyErr_Format(PyExc_KeyError, "Couldn't find enum %.200s", name);
+  }
+
+  return PyUpb_ServiceDescriptor_Get(s);
+}
+
+static PyObject* PyUpb_DescriptorPool_FindFileContainingSymbol(PyObject* _self,
+                                                               PyObject* arg) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+
+  const char* name = PyUpb_GetStrData(arg);
+  if (!name) return NULL;
+
+  const upb_filedef* f = upb_symtab_lookupfileforsym(self->symtab, name);
+  if (f == NULL) {
+    return PyErr_Format(PyExc_KeyError, "Couldn't find symbol %.200s", name);
+  }
+
+  return PyUpb_FileDescriptor_Get(f);
+}
+
+static PyObject* PyUpb_DescriptorPool_FindExtensionByNumber(PyObject* _self,
+                                                            PyObject* args) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+  PyObject* message_descriptor;
+  int number;
+  if (!PyArg_ParseTuple(args, "Oi", &message_descriptor, &number)) {
+    return NULL;
+  }
+
+  const upb_fielddef* f = upb_symtab_lookupextbynum(
+      self->symtab, PyUpb_Descriptor_GetDef(message_descriptor), number);
+  if (f == NULL) {
+    return PyErr_Format(PyExc_KeyError, "Couldn't find Extension %d", number);
+  }
+
+  return PyUpb_FieldDescriptor_Get(f);
+}
+
+static PyObject* PyUpb_DescriptorPool_FindAllExtensions(PyObject* _self,
+                                                        PyObject* msg_desc) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+  const upb_msgdef* m = PyUpb_Descriptor_GetDef(msg_desc);
+  size_t n;
+  const upb_fielddef** ext = upb_symtab_getallexts(self->symtab, m, &n);
+  PyObject* ret = PyList_New(n);
+  for (size_t i = 0; i < n; i++) {
+    PyObject* field = PyUpb_FieldDescriptor_Get(ext[i]);
+    PyList_SetItem(ret, i, field);
+  }
+  return ret;
+}
+
 static PyMethodDef PyUpb_DescriptorPool_Methods[] = {
-    /*
-      TODO: implement remaining methods.
-    { "Add", Add, METH_O,
-      "Adds the FileDescriptorProto and its types to this pool." },
-      */
+    {"Add", PyUpb_DescriptorPool_Add, METH_O,
+     "Adds the FileDescriptorProto and its types to this pool."},
     {"AddSerializedFile", PyUpb_DescriptorPool_AddSerializedFile, METH_O,
      "Adds a serialized FileDescriptorProto to this pool."},
-    /*
-    { "FindFileByName", FindFileByName, METH_O,
-      "Searches for a file descriptor by its .proto name." },
-    { "FindMessageTypeByName", FindMessageByName, METH_O,
-      "Searches for a message descriptor by full name." },
-    { "FindFieldByName", FindFieldByNameMethod, METH_O,
-      "Searches for a field descriptor by full name." },
-      */
+    {"FindFileByName", PyUpb_DescriptorPool_FindFileByName, METH_O,
+     "Searches for a file descriptor by its .proto name."},
+    {"FindMessageTypeByName", PyUpb_DescriptorPool_FindMessageTypeByName,
+     METH_O, "Searches for a message descriptor by full name."},
+    {"FindFieldByName", PyUpb_DescriptorPool_FindFieldByName, METH_O,
+     "Searches for a field descriptor by full name."},
     {"FindExtensionByName", PyUpb_DescriptorPool_FindExtensionByName, METH_O,
      "Searches for extension descriptor by full name."},
-    /*
-    { "FindEnumTypeByName", FindEnumTypeByNameMethod, METH_O,
-      "Searches for enum type descriptor by full name." },
-    { "FindOneofByName", FindOneofByNameMethod, METH_O,
-      "Searches for oneof descriptor by full name." },
-    { "FindServiceByName", FindServiceByName, METH_O,
-      "Searches for service descriptor by full name." },
-    { "FindMethodByName", FindMethodByName, METH_O,
-      "Searches for method descriptor by full name." },
-    { "FindFileContainingSymbol", FindFileContainingSymbol, METH_O,
-      "Gets the FileDescriptor containing the specified symbol." },
-    { "FindExtensionByNumber", FindExtensionByNumber, METH_VARARGS,
-      "Gets the extension descriptor for the given number." },
-    { "FindAllExtensions", FindAllExtensions, METH_O,
-      "Gets all known extensions of the given message descriptor." },
-    */
+    {"FindEnumTypeByName", PyUpb_DescriptorPool_FindEnumTypeByName, METH_O,
+     "Searches for enum type descriptor by full name."},
+    {"FindOneofByName", PyUpb_DescriptorPool_FindOneofByName, METH_O,
+     "Searches for oneof descriptor by full name."},
+    {"FindServiceByName", PyUpb_DescriptorPool_FindServiceByName, METH_O,
+     "Searches for service descriptor by full name."},
+    //{ "Find, PyUpb_DescriptorPool_Find, METH_O,
+    //  "Searches for method descriptor by full name." },
+    {"FindFileContainingSymbol", PyUpb_DescriptorPool_FindFileContainingSymbol,
+     METH_O, "Gets the FileDescriptor containing the specified symbol."},
+    {"FindExtensionByNumber", PyUpb_DescriptorPool_FindExtensionByNumber,
+     METH_VARARGS, "Gets the extension descriptor for the given number."},
+    {"FindAllExtensions", PyUpb_DescriptorPool_FindAllExtensions, METH_O,
+     "Gets all known extensions of the given message descriptor."},
     {NULL}};
 
 static PyType_Slot PyUpb_DescriptorPool_Slots[] = {
@@ -241,9 +443,9 @@ static PyType_Spec PyUpb_DescriptorPool_Spec = {
 // -----------------------------------------------------------------------------
 
 bool PyUpb_InitDescriptorPool(PyObject* m) {
-  PyUpb_ModuleState *state = PyUpb_ModuleState_GetFromModule(m);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
   PyTypeObject* descriptor_pool_type =
-      AddObject(m, "DescriptorPool", &PyUpb_DescriptorPool_Spec);
+      PyUpb_AddClass(m, &PyUpb_DescriptorPool_Spec);
 
   if (!descriptor_pool_type) return false;
 

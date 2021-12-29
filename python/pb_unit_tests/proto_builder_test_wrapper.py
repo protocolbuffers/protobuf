@@ -27,9 +27,6 @@ from google.protobuf.internal import proto_builder_test
 import unittest
 
 proto_builder_test.ProtoBuilderTest.testMakeLargeProtoClass.__unittest_expecting_failure__ = True
-proto_builder_test.ProtoBuilderTest.testMakeSameProtoClassTwice.__unittest_expecting_failure__ = True
-proto_builder_test.ProtoBuilderTest.testMakeSimpleProtoClass.__unittest_expecting_failure__ = True
-proto_builder_test.ProtoBuilderTest.testOrderedFields.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(module=proto_builder_test, verbosity=2)

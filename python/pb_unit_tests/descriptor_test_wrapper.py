@@ -40,9 +40,7 @@ descriptor_test.DescriptorCopyToProtoTest.testCopyToProto_TypeError.__unittest_e
 descriptor_test.GeneratedDescriptorTest.testDescriptor.__unittest_expecting_failure__ = True
 descriptor_test.MakeDescriptorTest.testCamelcaseName.__unittest_expecting_failure__ = True
 descriptor_test.MakeDescriptorTest.testJsonName.__unittest_expecting_failure__ = True
-descriptor_test.MakeDescriptorTest.testMakeDescriptorWithNestedFields.__unittest_expecting_failure__ = True
 descriptor_test.MakeDescriptorTest.testMakeDescriptorWithOptions.__unittest_expecting_failure__ = True
-descriptor_test.MakeDescriptorTest.testMakeDescriptorWithUnsignedIntField.__unittest_expecting_failure__ = True
 
 # We must skip these tests entirely (rather than running them with
 # __unittest_expecting_failure__) because they error out in setUp():
