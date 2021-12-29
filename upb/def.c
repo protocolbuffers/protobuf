@@ -48,7 +48,8 @@ typedef struct {
  * for descriptor options we make an exception since the max size is known and
  * modest (<200 bytes). All types can share a default instance since it is
  * initialized to zeroes. */
-static const char opt_default[_UPB_MAXOPT_SIZE] = {0};
+static const char opt_default_buf[_UPB_MAXOPT_SIZE + sizeof(void*)] = {0};
+static const char *opt_default = &opt_default_buf[sizeof(void*)];
 
 struct upb_fielddef {
   const google_protobuf_FieldOptions *opts;

@@ -41,17 +41,6 @@ text_format_test.OnlyWorksWithProto2RightNowTests.testPrintMap.__unittest_expect
 text_format_test.OnlyWorksWithProto2RightNowTests.testPrintMapUsingCppImplementation.__unittest_expecting_failure__ = True
 text_format_test.OnlyWorksWithProto2RightNowTests.testPrintUnknownFields.__unittest_expecting_failure__ = True
 text_format_test.OptionalColonMessageToStringTest.testForcePrintOptionalColon.__unittest_expecting_failure__ = True
-text_format_test.OptionalColonMessageToStringTest.testPrintShortFormatRepeatedFields.__unittest_expecting_failure__ = True
-getattr(text_format_test.PrettyPrinterTest, "testPrettyPrintMultiLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.PrettyPrinterTest, "testPrettyPrintMultiLine" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.PrettyPrinterTest, "testPrettyPrintMultiLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.PrettyPrinterTest, "testPrettyPrintMultiLine" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.PrettyPrinterTest, "testPrettyPrintMultipleParts" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.PrettyPrinterTest, "testPrettyPrintMultipleParts" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.PrettyPrinterTest, "testPrettyPrintNoMatch" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.PrettyPrinterTest, "testPrettyPrintNoMatch" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.PrettyPrinterTest, "testPrettyPrintOneLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.PrettyPrinterTest, "testPrettyPrintOneLine" + sep + "1").__unittest_expecting_failure__ = True
 text_format_test.Proto2Tests.testExtensionInsideAnyMessage.__unittest_expecting_failure__ = True
 text_format_test.Proto2Tests.testMergeDuplicateExtensionScalars.__unittest_expecting_failure__ = True
 text_format_test.Proto2Tests.testParseAllExtensions.__unittest_expecting_failure__ = True
@@ -81,57 +70,15 @@ text_format_test.Proto3Tests.testPrintMessageExpandAnyAsOneLinePointyBrackets.__
 text_format_test.Proto3Tests.testPrintMessageExpandAnyDescriptorPoolMissingType.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testPrintMessageExpandAnyPointyBrackets.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testPrintMessageExpandAnyRepeated.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testProto3Optional.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testTopAnyMessage.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testUnknownEnums.__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringASCII" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringASCII" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringASCII" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringASCII" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringUnicode" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringUnicode" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringUnicode" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringUnicode" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExoticAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExoticAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExoticAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExoticAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExoticUnicodeSubclass" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExoticUnicodeSubclass" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExoticUnicodeSubclass" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExoticUnicodeSubclass" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExotic" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExotic" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExotic" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExotic" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintFloatFormat" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintFloatFormat" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintFloatFormat" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintFloatFormat" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintFloatPrecision" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintFloatPrecision" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintFloatPrecision" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintFloatPrecision" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedMessageAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedMessageAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedMessageAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedMessageAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedNewLineInStringAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedNewLineInStringAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedNewLineInStringAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedNewLineInStringAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintRawUtf8String" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintRawUtf8String" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintRawUtf8String" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintRawUtf8String" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintRepeatedFieldsAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintRepeatedFieldsAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintRepeatedFieldsAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintRepeatedFieldsAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintShortFormatRepeatedFields" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintShortFormatRepeatedFields" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintShortFormatRepeatedFields" + sep + "0").__unittest_expecting_failure__ = True
@@ -148,10 +95,6 @@ getattr(text_format_test.TextFormatMessageToTextBytesTests, "testEscapedUtf8ASCI
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testEscapedUtf8ASCIIRoundTrip" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testEscapedUtf8ASCIIRoundTrip" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testEscapedUtf8ASCIIRoundTrip" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToTextBytesTests, "testMessageToBytes" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToTextBytesTests, "testMessageToBytes" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToTextBytesTests, "testMessageToBytes" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToTextBytesTests, "testMessageToBytes" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testRawUtf8RoundTrip" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testRawUtf8RoundTrip" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testRawUtf8RoundTrip" + sep + "0").__unittest_expecting_failure__ = True
@@ -168,10 +111,6 @@ getattr(text_format_test.TextFormatParserTests, "testParseEmptyText" + sep + "0"
 getattr(text_format_test.TextFormatParserTests, "testParseEmptyText" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseEmptyText" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseEmptyText" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "1").__unittest_expecting_failure__ = True
 
 # We must skip these tests entirely (rather than running them with
 # __unittest_expecting_failure__) because they error out in setUp():
@@ -179,7 +118,7 @@ getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "1").__
 #  NotImplementedError: Conversion of message types not yet implemented
 #
 # TODO: change to __unittest_expecting_failure__ when message types can be converted
-text_format_test.WhitespaceTest.__unittest_skip__ = True
+#text_format_test.WhitespaceTest.__unittest_skip__ = True
 
 if __name__ == '__main__':
   unittest.main(module=text_format_test, verbosity=2)
