@@ -79,8 +79,8 @@ typedef struct {
   //   - low bit clear: repeated field is reified (points to upb_array).
   uintptr_t field;
   union {
-    upb_array* arr;    // stub: the data for this array.
-    PyObject* parent;  // reified: owning pointer to parent message.
+    PyObject* parent;  // stub: owning pointer to parent message.
+    upb_array* arr;    // reified: the data for this array.
   } ptr;
 } PyUpb_RepeatedContainer;
 
@@ -371,19 +371,31 @@ static int PyUpb_RepeatedContainer_DeleteSubscript(upb_array* arr,
     start = end;
     step = -step;
   }
+
   size_t dst = start;
-  size_t src = step > 1 ? start + 1 : start + count;
+  size_t src;
   if (step > 1) {
-    // Move elements between steps.
-    for (Py_ssize_t i = 0; i < count; i++, dst += step, src += step + 1) {
+    // Move elements between steps:
+    //
+    //        src
+    //         |
+    // |------X---X---X---X------------------------------|
+    //        |
+    //       dst           <-------- tail -------------->
+    src = start + 1;
+    for (Py_ssize_t i = 1; i < count; i++, dst += step - 1, src += step) {
       upb_array_move(arr, dst, src, step);
     }
+  } else {
+    src = start + count;
   }
+
   // Move tail.
   size_t tail = upb_array_size(arr) - src;
-  assert(dst + tail == upb_array_size(arr) - count);
-  upb_array_move(arr, dst, src, upb_array_size(arr) - src);
-  upb_array_resize(arr, dst + tail, NULL);
+  size_t new_size = dst + tail;
+  assert(new_size == upb_array_size(arr) - count);
+  upb_array_move(arr, dst, src, tail);
+  upb_array_resize(arr, new_size, NULL);
   return 0;
 }
 
