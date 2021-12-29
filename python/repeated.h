@@ -39,11 +39,11 @@ PyObject* PyUpb_RepeatedContainer_NewUnset(PyObject* parent,
                                            const upb_fielddef* f,
                                            PyObject* arena);
 
-// Returns a repeated field object wrapping `u_arr`, of field type `f`, which
+// Returns a repeated field object wrapping `arr`, of field type `f`, which
 // must be on `arena`.  If an existing wrapper object exists, it will be
 // returned, otherwise a new object will be created.  The caller always owns a
 // ref on the returned value.
-PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* u_arr,
+PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* arr,
                                                      const upb_fielddef* f,
                                                      PyObject* arena);
 
@@ -51,7 +51,12 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* u_arr,
 // data being pointed to.
 void PyUpb_RepeatedContainer_Reify(PyObject* self, upb_array* arr);
 
+// Implements repeated_field.extend(iterable).  `_self` must be a repeated
+// field (either repeated composite or repeated scalar).
 PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value);
+
+// Implements repeated_field.add(initial_values).  `_self` must be a repeated
+// composite field.
 PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* _self, PyObject* args,
                                                PyObject* kwargs);
 

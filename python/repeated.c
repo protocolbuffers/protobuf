@@ -168,20 +168,20 @@ PyObject* PyUpb_RepeatedContainer_NewUnset(PyObject* parent,
   return &repeated->ob_base;
 }
 
-PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* u_arr,
+PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* arr,
                                                      const upb_fielddef* f,
                                                      PyObject* arena) {
-  PyObject* ret = PyUpb_ObjCache_Get(u_arr);
+  PyObject* ret = PyUpb_ObjCache_Get(arr);
   if (ret) return ret;
 
   PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
   PyUpb_RepeatedContainer* repeated = (void*)PyType_GenericAlloc(cls, 0);
   repeated->arena = arena;
   repeated->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f);
-  repeated->ptr.arr = u_arr;
+  repeated->ptr.arr = arr;
   ret = &repeated->ob_base;
   Py_INCREF(arena);
-  PyUpb_ObjCache_Add(u_arr, ret);
+  PyUpb_ObjCache_Add(arr, ret);
   return ret;
 }
 
@@ -241,19 +241,12 @@ PyObject* PyUpb_RepeatedContainer_ToList(PyObject* _self) {
   const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
   size_t n = upb_array_size(arr);
   PyObject* list = PyList_New(n);
-  PyObject* ret = list;
-  if (!list) return NULL;
   for (size_t i = 0; i < n; i++) {
     PyObject* val = PyUpb_UpbToPy(upb_array_get(arr, i), f, self->arena);
-    if (!val) {
-      val = Py_None;
-      Py_INCREF(val);
-      ret = NULL;
-    }
+    if (!val) return NULL;
     PyList_SetItem(list, i, val);
   }
-  if (ret != list) Py_DECREF(list);
-  return ret;
+  return list;
 }
 
 static PyObject* PyUpb_RepeatedContainer_Repr(PyObject* _self) {
@@ -296,19 +289,13 @@ static PyObject* PyUpb_RepeatedContainer_Subscript(PyObject* _self,
     return PyUpb_UpbToPy(upb_array_get(arr, idx), f, self->arena);
   } else {
     PyObject* list = PyList_New(count);
-    PyObject* ret = list;
     for (Py_ssize_t i = 0; i < count; i++, idx += step) {
       upb_msgval msgval = upb_array_get(self->ptr.arr, idx);
       PyObject* item = PyUpb_UpbToPy(msgval, f, self->arena);
-      if (!item) {
-        item = Py_None;
-        Py_INCREF(Py_None);
-        ret = NULL;
-      }
+      if (!item) return NULL;
       PyList_SetItem(list, i, item);
     }
-    if (ret != list) Py_DECREF(list);
-    return ret;
+    return list;
   }
 }
 
