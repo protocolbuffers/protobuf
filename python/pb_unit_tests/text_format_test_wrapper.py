@@ -99,13 +99,5 @@ getattr(text_format_test.TextFormatParserTests, "testParseEmptyText" + sep + "1"
 getattr(text_format_test.TextFormatParserTests, "testParseEmptyText" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseEmptyText" + sep + "1").__unittest_expecting_failure__ = True
 
-# We must skip these tests entirely (rather than running them with
-# __unittest_expecting_failure__) because they error out in setUp():
-#
-#  NotImplementedError: Conversion of message types not yet implemented
-#
-# TODO: change to __unittest_expecting_failure__ when message types can be converted
-#text_format_test.WhitespaceTest.__unittest_skip__ = True
-
 if __name__ == '__main__':
   unittest.main(module=text_format_test, verbosity=2)

@@ -26,16 +26,10 @@
 from google.protobuf.internal import message_factory_test
 import unittest
 
-# We must skip these tests entirely (rather than running them with
-# __unittest_expecting_failure__) because they error out in setUp():
-#
-#  AttributeError: 'google.protobuf.pyext._message.FileDescriptor' object has no attribute 'serialized_pb'
-#
-# TODO: change to __unittest_expecting_failure__ when serialized_pb is available.
-message_factory_test.MessageFactoryTest.testCreatePrototypeOverride.__unittest_skip__ = True
-message_factory_test.MessageFactoryTest.testDuplicateExtensionNumber.__unittest_skip__ = True
-message_factory_test.MessageFactoryTest.testGetMessages.__unittest_skip__ = True
-message_factory_test.MessageFactoryTest.testGetPrototype.__unittest_skip__ = True
+message_factory_test.MessageFactoryTest.testCreatePrototypeOverride.__unittest_expecting_failure__ = True
+message_factory_test.MessageFactoryTest.testDuplicateExtensionNumber.__unittest_expecting_failure__ = True
+message_factory_test.MessageFactoryTest.testGetMessages.__unittest_expecting_failure__ = True
+message_factory_test.MessageFactoryTest.testGetPrototype.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(module=message_factory_test, verbosity=2)

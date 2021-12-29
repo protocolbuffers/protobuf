@@ -41,43 +41,29 @@ descriptor_test.GeneratedDescriptorTest.testDescriptor.__unittest_expecting_fail
 descriptor_test.MakeDescriptorTest.testCamelcaseName.__unittest_expecting_failure__ = True
 descriptor_test.MakeDescriptorTest.testJsonName.__unittest_expecting_failure__ = True
 descriptor_test.MakeDescriptorTest.testMakeDescriptorWithOptions.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testAggregateOptions.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testComplexExtensionOptions.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testContainingServiceFixups.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testContainingTypeFixups.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testCustomOptionsCopyTo.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testDefault.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testDifferentCustomOptionTypes.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testEnumFixups.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testEnumValueName.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testFileDescriptor.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testFileDescriptorReferences.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testGetOptions.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testImmutableCppDescriptor.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testNestedOptions.__unittest_expecting_failure__ = True
+descriptor_test.NewDescriptorTest.testSimpleCustomOptions.__unittest_expecting_failure__ = True
 
 # We must skip these tests entirely (rather than running them with
 # __unittest_expecting_failure__) because they error out in setUp():
 #
-#  AttributeError: 'google.protobuf.pyext._message.DescriptorPool' object has no attribute 'Add'
+#  TypeError: Couldn't build proto file into descriptor pool: duplicate file name (some/filename/some.proto)
 #
-# TODO: change to __unittest_expecting_failure__ when DescriptorPool.Add() is implemented
-descriptor_test.DescriptorTest.testAggregateOptions.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testComplexExtensionOptions.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testContainingServiceFixups.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testContainingTypeFixups.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testCustomOptionsCopyTo.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testDefault.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testDifferentCustomOptionTypes.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testEnumFixups.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testEnumValueName.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testFileDescriptor.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testFileDescriptorReferences.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testGetOptions.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testImmutableCppDescriptor.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testNestedOptions.__unittest_skip__ = True
-descriptor_test.DescriptorTest.testSimpleCustomOptions.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testAggregateOptions.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testComplexExtensionOptions.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testContainingServiceFixups.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testContainingTypeFixups.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testCustomOptionsCopyTo.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testDefault.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testDifferentCustomOptionTypes.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testEnumFixups.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testEnumValueName.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testFileDescriptor.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testFileDescriptorReferences.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testGetOptions.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testImmutableCppDescriptor.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testNestedOptions.__unittest_skip__ = True
-descriptor_test.NewDescriptorTest.testSimpleCustomOptions.__unittest_skip__ = True
+# TODO: change to __unittest_expecting_failure__ when we have some solution for duplicated filenames
+descriptor_test.DescriptorTest.__unittest_skip__ = True
 
 if __name__ == '__main__':
   unittest.main(module=descriptor_test, verbosity=2)
