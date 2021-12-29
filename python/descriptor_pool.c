@@ -40,7 +40,6 @@ typedef struct {
   PyObject_HEAD
   upb_symtab* symtab;
   PyObject* db;
-  PyObject* serialized_pb_dict;
 } PyUpb_DescriptorPool;
 
 PyObject* PyUpb_DescriptorPool_GetDefaultPool() {
@@ -53,7 +52,6 @@ static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
   PyUpb_DescriptorPool* pool = (void*)PyType_GenericAlloc(type, 0);
   pool->symtab = upb_symtab_new();
   pool->db = db;
-  pool->serialized_pb_dict = PyDict_New();
   Py_XINCREF(pool->db);
   PyUpb_WeakMap_Add(obj_cache, pool->symtab, &pool->ob_base);
   return &pool->ob_base;
@@ -88,16 +86,9 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_symtab* symtab) {
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
   PyUpb_DescriptorPool_Clear(self);
-  Py_DECREF(self->serialized_pb_dict);
   upb_symtab_free(self->symtab);
   PyUpb_ObjCache_Delete(self->symtab);
   PyUpb_Dealloc(self);
-}
-
-PyObject* PyUpb_DescriptorPool_GetSerializedPb(PyObject* _self,
-                                               const char* filename) {
-  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
-  return PyDict_GetItemString(self->serialized_pb_dict, filename);
 }
 
 /*
@@ -165,9 +156,6 @@ static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
                  upb_status_errmsg(&status));
     goto done;
   }
-
-  PyDict_SetItemString(self->serialized_pb_dict, upb_filedef_name(filedef),
-                       serialized_pb);
 
   result = PyUpb_FileDescriptor_Get(filedef);
 

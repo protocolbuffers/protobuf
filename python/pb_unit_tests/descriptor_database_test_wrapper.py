@@ -26,8 +26,5 @@
 from google.protobuf.internal import descriptor_database_test
 import unittest
 
-descriptor_database_test.DescriptorDatabaseTest.testAdd.__unittest_expecting_failure__ = True
-descriptor_database_test.DescriptorDatabaseTest.testConflictRegister.__unittest_expecting_failure__ = True
-
 if __name__ == '__main__':
   unittest.main(module=descriptor_database_test, verbosity=2)

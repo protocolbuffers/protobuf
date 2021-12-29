@@ -32,8 +32,11 @@
 
 #include "protobuf.h"
 
+// Returns a serialized protocol buffer for the given filename, which much have
+// been previously loaded into this DescriptorPool.
 PyObject* PyUpb_DescriptorPool_GetSerializedPb(PyObject* _self,
                                                const char* filename);
+
 PyObject* PyUpb_DescriptorPool_Get(const upb_symtab* symtab);
 upb_symtab* PyUpb_DescriptorPool_GetSymtab(PyObject* pool);
 PyObject* PyUpb_DescriptorPool_GetDefaultPool(void);

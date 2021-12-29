@@ -392,10 +392,14 @@ static google_protobuf_FileDescriptorProto *filedef_toproto(
   google_protobuf_FileDescriptorProto_set_name(
       proto, strviewdup(ctx, upb_filedef_name(f)));
 
-  size_t n = strlen(upb_filedef_package(f));
-  if (n) {
-    google_protobuf_FileDescriptorProto_set_package(
-        proto, strviewdup(ctx, upb_filedef_package(f)));
+  const char* package = upb_filedef_package(f);
+  size_t n;
+  if (package) {
+    n = strlen(package);
+    if (n) {
+      google_protobuf_FileDescriptorProto_set_package(
+          proto, strviewdup(ctx, upb_filedef_package(f)));
+    }
   }
 
   if (upb_filedef_syntax(f) == UPB_SYNTAX_PROTO3) {

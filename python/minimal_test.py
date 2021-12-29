@@ -31,6 +31,10 @@ import unittest
 from google.protobuf.pyext import _message
 from google.protobuf.internal import api_implementation
 from google.protobuf import unittest_pb2
+from google.protobuf import descriptor_pool
+from google.protobuf.internal import factory_test1_pb2
+from google.protobuf.internal import factory_test2_pb2
+from google.protobuf import descriptor_pb2
 
 class TestMessageExtension(unittest.TestCase):
 
