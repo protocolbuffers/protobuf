@@ -47,7 +47,9 @@ typedef struct {
 /* The upb core does not generally have a concept of default instances. However
  * for descriptor options we make an exception since the max size is known and
  * modest (<200 bytes). All types can share a default instance since it is
- * initialized to zeroes. */
+ * initialized to zeroes.
+ *
+ * We have to allocate an extra pointer for upb's internal metadata. */
 static const char opt_default_buf[_UPB_MAXOPT_SIZE + sizeof(void*)] = {0};
 static const char *opt_default = &opt_default_buf[sizeof(void*)];
 
@@ -1444,7 +1446,7 @@ void *symtab_alloc(symtab_addctx *ctx, size_t bytes) {
     target = google_protobuf_##options_type##_parse(pb, size, ctx->arena);    \
     CHK_OOM(target);                                                          \
   } else {                                                                    \
-    target = (const google_protobuf_##options_type *)&opt_default;            \
+    target = (const google_protobuf_##options_type *)opt_default;             \
   }
 
 static void check_ident(symtab_addctx *ctx, upb_strview name, bool full) {
