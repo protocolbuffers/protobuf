@@ -30,6 +30,7 @@
 #include "python/convert.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
+#include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/def.h"
 #include "upb/util/def_to_proto.h"
@@ -144,13 +145,9 @@ static PyObject* PyUpb_DescriptorBase_GetOptions(PyUpb_DescriptorBase* self,
 
 typedef void* PyUpb_ToProto_Func(const void* def, upb_arena* arena);
 
-static PyObject* PyUpb_DescriptorBase_CopyToProto(PyObject* _self,
-                                                  PyUpb_ToProto_Func* func,
-                                                  const upb_msglayout* layout,
-                                                  PyObject* py_proto) {
+static PyObject* PyUpb_DescriptorBase_GetSerializedProto(
+    PyObject* _self, PyUpb_ToProto_Func* func, const upb_msglayout* layout) {
   PyUpb_DescriptorBase* self = (void*)_self;
-  PyObject* ret = NULL;
-  PyObject* str = NULL;
   upb_arena* arena = upb_arena_new();
   if (!arena) PYUPB_RETURN_OOM;
   upb_msg* proto = func(self->def, arena);
@@ -158,20 +155,24 @@ static PyObject* PyUpb_DescriptorBase_CopyToProto(PyObject* _self,
   size_t size;
   char* pb = upb_encode(proto, layout, arena, &size);
   if (!pb) goto oom;
-  str = PyBytes_FromStringAndSize(pb, size);
-  if (!str) goto oom;
-  // Disabled until python/message.c is reviewed and checked in.
-  // PyObject *ret = PyUpb_CMessage_MergeFromString(py_proto, str);
-  PyErr_Format(PyExc_NotImplementedError, "Not yet implemented");
-
-done:
-  Py_XDECREF(str);
+  PyObject* str = PyBytes_FromStringAndSize(pb, size);
   upb_arena_free(arena);
-  return ret;
+  return str;
 
 oom:
+  upb_arena_free(arena);
   PyErr_SetNone(PyExc_MemoryError);
-  goto done;
+  return NULL;
+}
+
+static PyObject* PyUpb_DescriptorBase_CopyToProto(PyObject* _self,
+                                                  PyUpb_ToProto_Func* func,
+                                                  const upb_msglayout* layout,
+                                                  PyObject* py_proto) {
+  PyObject* serialized =
+      PyUpb_DescriptorBase_GetSerializedProto(_self, func, layout);
+  if (!serialized) return NULL;
+  return PyUpb_CMessage_MergeFromString(py_proto, serialized);
 }
 
 static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
@@ -1065,6 +1066,13 @@ static PyObject* PyUpb_FileDescriptor_GetPackage(PyObject* _self,
   return PyUnicode_FromString(upb_filedef_package(self->def));
 }
 
+static PyObject* PyUpb_FileDescriptor_GetSerializedPb(PyObject* self,
+                                                      void* closure) {
+  return PyUpb_DescriptorBase_GetSerializedProto(
+      self, (PyUpb_ToProto_Func*)&upb_FileDef_ToProto,
+      &google_protobuf_FileDescriptorProto_msginit);
+}
+
 static PyObject* PyUpb_FileDescriptor_GetMessageTypesByName(PyObject* _self,
                                                             void* closure) {
   static PyUpb_ByNameMap_Funcs funcs = {
@@ -1180,6 +1188,7 @@ static PyGetSetDef PyUpb_FileDescriptor_Getters[] = {
     {"pool", PyUpb_FileDescriptor_GetPool, NULL, "pool"},
     {"name", (getter)PyUpb_FileDescriptor_GetName, NULL, "name"},
     {"package", PyUpb_FileDescriptor_GetPackage, NULL, "package"},
+    {"serialized_pb", PyUpb_FileDescriptor_GetSerializedPb},
     {"message_types_by_name", PyUpb_FileDescriptor_GetMessageTypesByName, NULL,
      "Messages by name"},
     {"enum_types_by_name", PyUpb_FileDescriptor_GetEnumTypesByName, NULL,

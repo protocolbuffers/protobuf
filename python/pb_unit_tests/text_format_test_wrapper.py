@@ -40,7 +40,6 @@ text_format_test.OnlyWorksWithProto2RightNowTests.testPrintInIndexOrder.__unitte
 text_format_test.OnlyWorksWithProto2RightNowTests.testPrintMap.__unittest_expecting_failure__ = True
 text_format_test.OnlyWorksWithProto2RightNowTests.testPrintMapUsingCppImplementation.__unittest_expecting_failure__ = True
 text_format_test.OnlyWorksWithProto2RightNowTests.testPrintUnknownFields.__unittest_expecting_failure__ = True
-text_format_test.OptionalColonMessageToStringTest.testForcePrintOptionalColon.__unittest_expecting_failure__ = True
 text_format_test.Proto2Tests.testExtensionInsideAnyMessage.__unittest_expecting_failure__ = True
 text_format_test.Proto2Tests.testMergeDuplicateExtensionScalars.__unittest_expecting_failure__ = True
 text_format_test.Proto2Tests.testParseAllExtensions.__unittest_expecting_failure__ = True
@@ -57,19 +56,7 @@ text_format_test.Proto2Tests.testPrintAllExtensionsPointy.__unittest_expecting_f
 text_format_test.Proto2Tests.testPrintMessageSet.__unittest_expecting_failure__ = True
 text_format_test.Proto2Tests.testPrintMessageSetAsOneLine.__unittest_expecting_failure__ = True
 text_format_test.Proto2Tests.testPrintMessageSetByFieldNumber.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testMergeAlternativeUrl.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testMergeExpandedAny.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testMergeExpandedAnyDescriptorPoolMissingType.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testMergeExpandedAnyPointyBrackets.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testMergeExpandedAnyRepeated.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testMergeMissingAnyEndToken.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testPrintAndParseMessageInvalidAny.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testPrintMessageExpandAny.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testPrintMessageExpandAnyAsOneLine.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testPrintMessageExpandAnyAsOneLinePointyBrackets.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testPrintMessageExpandAnyDescriptorPoolMissingType.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testPrintMessageExpandAnyPointyBrackets.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testPrintMessageExpandAnyRepeated.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testTopAnyMessage.__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "1").__unittest_expecting_failure__ = True
@@ -111,14 +98,6 @@ getattr(text_format_test.TextFormatParserTests, "testParseEmptyText" + sep + "0"
 getattr(text_format_test.TextFormatParserTests, "testParseEmptyText" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseEmptyText" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseEmptyText" + sep + "1").__unittest_expecting_failure__ = True
-
-# We must skip these tests entirely (rather than running them with
-# __unittest_expecting_failure__) because they error out in setUp():
-#
-#  NotImplementedError: Conversion of message types not yet implemented
-#
-# TODO: change to __unittest_expecting_failure__ when message types can be converted
-#text_format_test.WhitespaceTest.__unittest_skip__ = True
 
 if __name__ == '__main__':
   unittest.main(module=text_format_test, verbosity=2)

@@ -392,10 +392,13 @@ static google_protobuf_FileDescriptorProto *filedef_toproto(
   google_protobuf_FileDescriptorProto_set_name(
       proto, strviewdup(ctx, upb_filedef_name(f)));
 
-  size_t n = strlen(upb_filedef_package(f));
-  if (n) {
-    google_protobuf_FileDescriptorProto_set_package(
-        proto, strviewdup(ctx, upb_filedef_package(f)));
+  const char* package = upb_filedef_package(f);
+  if (package) {
+    size_t n = strlen(package);
+    if (n) {
+      google_protobuf_FileDescriptorProto_set_package(
+          proto, strviewdup(ctx, upb_filedef_package(f)));
+    }
   }
 
   if (upb_filedef_syntax(f) == UPB_SYNTAX_PROTO3) {
@@ -403,6 +406,7 @@ static google_protobuf_FileDescriptorProto *filedef_toproto(
                                                    strviewdup(ctx, "proto3"));
   }
 
+  size_t n;
   n = upb_filedef_depcount(f);
   upb_strview *deps = google_protobuf_FileDescriptorProto_resize_dependency(
       proto, n, ctx->arena);

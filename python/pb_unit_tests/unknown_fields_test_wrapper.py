@@ -26,12 +26,6 @@
 from google.protobuf.internal import unknown_fields_test
 import unittest
 
-# We must skip these tests entirely (rather than running them with
-# __unittest_expecting_failure__) because they error out in setUp():
-#
-#  NotImplementedError: access repeated
-#
-# TODO: change to __unittest_expecting_failure__ when repeated fields are available
 unknown_fields_test.UnknownEnumValuesTest.testCheckUnknownFieldValueForEnum.__unittest_expecting_failure__ = True
 unknown_fields_test.UnknownEnumValuesTest.testRoundTrip.__unittest_expecting_failure__ = True
 unknown_fields_test.UnknownFieldsAccessorsTest.testCheckUnknownFieldValue.__unittest_expecting_failure__ = True

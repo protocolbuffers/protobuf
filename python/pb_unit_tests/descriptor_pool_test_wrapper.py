@@ -25,49 +25,47 @@
 
 from google.protobuf.internal import descriptor_pool_test
 import unittest
+import copy
 
 print(unittest)
 
 descriptor_pool_test.AddDescriptorTest.testAddTypeError.__unittest_expecting_failure__ = True
-descriptor_pool_test.AddDescriptorTest.testCustomDescriptorPool.__unittest_expecting_failure__ = True
-descriptor_pool_test.AddDescriptorTest.testEmptyDescriptorPool.__unittest_expecting_failure__ = True
 descriptor_pool_test.AddDescriptorTest.testEnum.__unittest_expecting_failure__ = True
 descriptor_pool_test.AddDescriptorTest.testFile.__unittest_expecting_failure__ = True
 descriptor_pool_test.AddDescriptorTest.testFileDescriptorOptionsWithCustomDescriptorPool.__unittest_expecting_failure__ = True
 descriptor_pool_test.AddDescriptorTest.testMessage.__unittest_expecting_failure__ = True
 descriptor_pool_test.AddDescriptorTest.testService.__unittest_expecting_failure__ = True
+descriptor_pool_test.CreateDescriptorPoolTest.testFindFieldByName.__unittest_expecting_failure__ = True
+descriptor_pool_test.CreateDescriptorPoolTest.testFindMessageTypeByName.__unittest_expecting_failure__ = True
+descriptor_pool_test.CreateDescriptorPoolTest.testFindService.__unittest_expecting_failure__ = True
+descriptor_pool_test.CreateDescriptorPoolTest.testFindTypeErrors.__unittest_expecting_failure__ = True
+descriptor_pool_test.CreateDescriptorPoolTest.testUserDefinedDB.__unittest_expecting_failure__ = True
+descriptor_pool_test.SecondaryDescriptorFromDescriptorDB.testErrorCollector.__unittest_expecting_failure__ = True
 
-# We must skip these tests entirely (rather than running them with
-# __unittest_expecting_failure__) because they error out in setUp():
-#
-#  AttributeError: 'google.protobuf.pyext._message.FileDescriptor' object has no attribute 'serialized_pb'
-#
-# TODO: change to __unittest_expecting_failure__ when serialized_pb is available.
-descriptor_pool_test.CreateDescriptorPoolTest.testAddSerializedFile.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testComplexNesting.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testConflictRegister.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testDefaultValueForCustomMessages.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testEnumDefaultValue.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testExtensionsAreNotFields.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindAllExtensions.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindEnumTypeByName.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindEnumTypeByNameFailure.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindExtensionByName.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindExtensionByNumber.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindFieldByName.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindFileByName.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindFileByNameFailure.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindFileContainingSymbol.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindFileContainingSymbolFailure.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindMessageTypeByName.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindMessageTypeByNameFailure.__unittest_skip__ = True
-descriptor_pool_test.DefaultDescriptorPoolTest.testFindMethods.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindOneofByName.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindService.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindTypeErrors.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testUserDefinedDB.__unittest_skip__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testAddFileDescriptor.__unittest_skip__ = True
-descriptor_pool_test.SecondaryDescriptorFromDescriptorDB.testErrorCollector.__unittest_skip__ = True
+# Some tests are defined in a base class and inherited by multiple sub-classes.
+# If only some of the subclasses fail, we need to duplicate the test method
+# before marking it, otherwise the mark will affect all subclasses.
+def wrap(cls, method):
+  existing = getattr(cls, method)
+  setattr(cls, method, lambda self: existing(self))
+  getattr(cls, method).__unittest_expecting_failure__ = True
+
+wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testAddFileDescriptor")
+wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testAddSerializedFile")
+wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testComplexNesting")
+wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testExtensionsAreNotFields")
+wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testAddFileDescriptor")
+wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testAddSerializedFile")
+wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testComplexNesting")
+wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testEnumDefaultValue")
+wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testExtensionsAreNotFields")
+wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindAllExtensions")
+wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindEnumTypeByName")
+wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindExtensionByName")
+wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindExtensionByNumber")
+wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindFileByName")
+wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindFileContainingSymbol")
+wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindOneofByName")
 
 if __name__ == '__main__':
   unittest.main(module=descriptor_pool_test, verbosity=2)

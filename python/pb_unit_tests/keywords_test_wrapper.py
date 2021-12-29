@@ -28,8 +28,6 @@ import unittest
 
 keywords_test.KeywordsConflictTest.testExtension.__unittest_expecting_failure__ = True
 keywords_test.KeywordsConflictTest.testExtensionForNestedMessage.__unittest_expecting_failure__ = True
-keywords_test.KeywordsConflictTest.testMessage.__unittest_expecting_failure__ = True
-keywords_test.KeywordsConflictTest.testNestedMessage.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(module=keywords_test, verbosity=2)
