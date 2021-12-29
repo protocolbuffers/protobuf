@@ -74,7 +74,6 @@ text_format_test.Proto3Tests.testMergeExpandedAnyDescriptorPoolMissingType.__uni
 text_format_test.Proto3Tests.testMergeExpandedAnyPointyBrackets.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testMergeExpandedAnyRepeated.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testMergeMissingAnyEndToken.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testMergeUnexpandedAny.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testPrintAndParseMessageInvalidAny.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testPrintMessageExpandAny.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testPrintMessageExpandAnyAsOneLine.__unittest_expecting_failure__ = True
@@ -85,14 +84,6 @@ text_format_test.Proto3Tests.testPrintMessageExpandAnyRepeated.__unittest_expect
 text_format_test.Proto3Tests.testProto3Optional.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testTopAnyMessage.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testUnknownEnums.__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMergeTests, "testMergeDuplicateNestedMessageScalars" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMergeTests, "testMergeDuplicateNestedMessageScalars" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMergeTests, "testMergeDuplicateNestedMessageScalars" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMergeTests, "testMergeDuplicateNestedMessageScalars" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMergeTests, "testReplaceMessageInMessage" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMergeTests, "testReplaceMessageInMessage" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMergeTests, "testReplaceMessageInMessage" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMergeTests, "testReplaceMessageInMessage" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "0").__unittest_expecting_failure__ = True
@@ -181,14 +172,6 @@ getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "0").__
 getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseRepeatedMessageShortFormat" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseRepeatedMessageShortFormat" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseRepeatedMessageShortFormat" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseRepeatedMessageShortFormat" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseUnknownField" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseUnknownField" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseUnknownField" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseUnknownField" + sep + "1").__unittest_expecting_failure__ = True
 
 # We must skip these tests entirely (rather than running them with
 # __unittest_expecting_failure__) because they error out in setUp():
