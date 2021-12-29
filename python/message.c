@@ -930,7 +930,7 @@ static PyObject* PyUpb_CMessage_ListFields(PyObject* _self, PyObject* arg) {
     field_desc = NULL;
     py_val = NULL;
     if (!tuple) goto err;
-    if (!PyList_Append(list, tuple)) goto err;
+    if (PyList_Append(list, tuple)) goto err;
     Py_DECREF(tuple);
     tuple = NULL;
   }
