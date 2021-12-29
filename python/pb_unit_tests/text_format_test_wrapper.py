@@ -85,7 +85,6 @@ text_format_test.Proto3Tests.testPrintMessageExpandAnyPointyBrackets.__unittest_
 text_format_test.Proto3Tests.testPrintMessageExpandAnyRepeated.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testProto3Optional.__unittest_expecting_failure__ = True
 text_format_test.Proto3Tests.testTopAnyMessage.__unittest_expecting_failure__ = True
-text_format_test.Proto3Tests.testUnknownEnums.__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMergeTests, "testMergeDuplicateNestedMessageScalars" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMergeTests, "testMergeDuplicateNestedMessageScalars" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMergeTests, "testMergeDuplicateNestedMessageScalars" + sep + "0").__unittest_expecting_failure__ = True
@@ -98,14 +97,6 @@ getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + s
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringASCII" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringASCII" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringASCII" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringASCII" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringUnicode" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringUnicode" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringUnicode" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testMessageToStringUnicode" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExoticAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExoticAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintExoticAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
@@ -130,10 +121,6 @@ getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedMessage
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedMessageAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedMessageAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedMessageAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedNewLineInStringAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedNewLineInStringAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedNewLineInStringAsOneLine" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testPrintNestedNewLineInStringAsOneLine" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintRawUtf8String" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintRawUtf8String" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintRawUtf8String" + sep + "0").__unittest_expecting_failure__ = True
@@ -158,10 +145,6 @@ getattr(text_format_test.TextFormatMessageToTextBytesTests, "testEscapedUtf8ASCI
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testEscapedUtf8ASCIIRoundTrip" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testEscapedUtf8ASCIIRoundTrip" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testEscapedUtf8ASCIIRoundTrip" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToTextBytesTests, "testMessageToBytes" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToTextBytesTests, "testMessageToBytes" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToTextBytesTests, "testMessageToBytes" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToTextBytesTests, "testMessageToBytes" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testRawUtf8RoundTrip" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testRawUtf8RoundTrip" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToTextBytesTests, "testRawUtf8RoundTrip" + sep + "0").__unittest_expecting_failure__ = True
@@ -206,10 +189,6 @@ getattr(text_format_test.TextFormatParserTests, "testParseExotic" + sep + "0")._
 getattr(text_format_test.TextFormatParserTests, "testParseExotic" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseExotic" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseExotic" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "1").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatParserTests, "testParseOneof" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseRepeatedMessageShortFormat" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseRepeatedMessageShortFormat" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatParserTests, "testParseRepeatedMessageShortFormat" + sep + "0").__unittest_expecting_failure__ = True
