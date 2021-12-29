@@ -243,7 +243,10 @@ PyObject* PyUpb_RepeatedContainer_ToList(PyObject* _self) {
   PyObject* list = PyList_New(n);
   for (size_t i = 0; i < n; i++) {
     PyObject* val = PyUpb_UpbToPy(upb_array_get(arr, i), f, self->arena);
-    if (!val) return NULL;
+    if (!val) {
+      Py_DECREF(list);
+      return NULL;
+    }
     PyList_SetItem(list, i, val);
   }
   return list;
@@ -292,7 +295,10 @@ static PyObject* PyUpb_RepeatedContainer_Subscript(PyObject* _self,
     for (Py_ssize_t i = 0; i < count; i++, idx += step) {
       upb_msgval msgval = upb_array_get(self->ptr.arr, idx);
       PyObject* item = PyUpb_UpbToPy(msgval, f, self->arena);
-      if (!item) return NULL;
+      if (!item) {
+        Py_DECREF(list);
+        return NULL;
+      }
       PyList_SetItem(list, i, item);
     }
     return list;
