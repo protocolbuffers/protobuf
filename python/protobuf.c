@@ -253,18 +253,24 @@ static const char *PyUpb_GetClassName(PyType_Spec *spec) {
 }
 
 PyTypeObject *PyUpb_AddClass(PyObject *m, PyType_Spec *spec) {
-  PyObject *type = PyType_FromSpec(spec);
+  PyObject *type = (void*)PyType_FromSpec(spec);
   const char *name = PyUpb_GetClassName(spec);
-  int result = PyModule_AddObject(m, name, type);
-  return type && result == 0 ? (PyTypeObject*)type : NULL;
+  if (PyModule_AddObject(m, name, type) < 0) {
+    Py_XDECREF(type);
+    return NULL;
+  }
+  return (PyTypeObject*)type;
 }
 
 PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
                                       PyObject* bases) {
   PyObject* type = PyType_FromSpecWithBases(spec, bases);
   const char* name = PyUpb_GetClassName(spec);
-  int result = PyModule_AddObject(m, name, type);
-  return type && result == 0 ? (PyTypeObject*)type : NULL;
+  if (PyModule_AddObject(m, name, type) < 0) {
+    Py_XDECREF(type);
+    return NULL;
+  }
+  return (PyTypeObject*)type;
 }
 
 const char *PyUpb_GetStrData(PyObject *obj) {
