@@ -435,9 +435,8 @@ static int PyUpb_CMessage_Init(PyObject* _self, PyObject* args,
   return PyUpb_CMessage_InitAttributes(_self, args, kwargs);
 }
 
-static PyObject* PyUpb_CMessage_NewUnset(PyObject* parent,
-                                         const upb_fielddef* f,
-                                         PyObject* arena) {
+static PyObject* PyUpb_CMessage_NewStub(PyObject* parent, const upb_fielddef* f,
+                                        PyObject* arena) {
   const upb_msgdef* sub_m = upb_fielddef_msgsubdef(f);
   PyObject* cls = PyUpb_Descriptor_GetClass(sub_m);
 
@@ -539,14 +538,14 @@ void PyUpb_CMessage_AssureWritable(PyUpb_CMessage* self) {
 static void PyUpb_CMessage_SyncSubobjs(PyUpb_CMessage* self);
 
 /*
- * PyUpb_CMessage_SwitchToSet()
+ * PyUpb_CMessage_Reify()
  *
- * The message equivalent of PyUpb_*Container_SwitchToSet(), this transitions
+ * The message equivalent of PyUpb_*Container_Reify(), this transitions
  * the wrapper from the unset state (owning a reference on self->ptr.parent) to the
  * set state (having a non-owning pointer to self->ptr.msg).
  */
-static void PyUpb_CMessage_SwitchToSet(PyUpb_CMessage* self,
-                                       const upb_fielddef* f, upb_msg* msg) {
+static void PyUpb_CMessage_Reify(PyUpb_CMessage* self, const upb_fielddef* f,
+                                 upb_msg* msg) {
   assert(f == PyUpb_CMessage_GetFieldDef(self));
   PyUpb_ObjCache_Add(msg, &self->ob_base);
   Py_DECREF(&self->ptr.parent->ob_base);
@@ -596,14 +595,14 @@ static void PyUpb_CMessage_SyncSubobjs(PyUpb_CMessage* self) {
     PyUpb_WeakMap_DeleteIter(subobj_map, &iter);
     if (upb_fielddef_ismap(f)) {
       if (!msgval.map_val) continue;
-      PyUpb_MapContainer_SwitchToSet(obj, (upb_map*)msgval.map_val);
+      PyUpb_MapContainer_Reify(obj, (upb_map*)msgval.map_val);
     } else if (upb_fielddef_isseq(f)) {
       if (!msgval.array_val) continue;
       PyUpb_RepeatedContainer_Reify(obj, (upb_array*)msgval.array_val);
     } else {
       PyUpb_CMessage* sub = (void*)obj;
       assert(self == sub->ptr.parent);
-      PyUpb_CMessage_SwitchToSet(sub, f, (upb_msg*)msgval.msg_val);
+      PyUpb_CMessage_Reify(sub, f, (upb_msg*)msgval.msg_val);
     }
   }
 
@@ -727,11 +726,11 @@ PyObject* PyUpb_CMessage_GetUnsetWrapper(PyUpb_CMessage* self,
   if (subobj) return subobj;
 
   if (upb_fielddef_ismap(field)) {
-    subobj = PyUpb_MapContainer_NewUnset(_self, field, self->arena);
+    subobj = PyUpb_MapContainer_NewStub(_self, field, self->arena);
   } else if (upb_fielddef_isseq(field)) {
-    subobj = PyUpb_RepeatedContainer_NewUnset(_self, field, self->arena);
+    subobj = PyUpb_RepeatedContainer_NewStub(_self, field, self->arena);
   } else {
-    subobj = PyUpb_CMessage_NewUnset(&self->ob_base, field, self->arena);
+    subobj = PyUpb_CMessage_NewStub(&self->ob_base, field, self->arena);
   }
   PyUpb_WeakMap_Add(self->unset_subobj_map, field, subobj);
 

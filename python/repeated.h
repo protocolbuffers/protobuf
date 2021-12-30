@@ -33,11 +33,10 @@
 #include "python/python.h"
 #include "upb/def.h"
 
-// Creates a new repeated field in the unset state for field `f` of message
-// object `parent`.
-PyObject* PyUpb_RepeatedContainer_NewUnset(PyObject* parent,
-                                           const upb_fielddef* f,
-                                           PyObject* arena);
+// Creates a new repeated field stub for field `f` of message object `parent`.
+PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
+                                          const upb_fielddef* f,
+                                          PyObject* arena);
 
 // Returns a repeated field object wrapping `arr`, of field type `f`, which
 // must be on `arena`.  If an existing wrapper object exists, it will be
@@ -47,8 +46,7 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* arr,
                                                      const upb_fielddef* f,
                                                      PyObject* arena);
 
-// Switches a repeated field in the unset state to be set, with `arr` as the
-// data being pointed to.
+// Reifies a repeated field stub to point to the concrete data in `arr`.
 void PyUpb_RepeatedContainer_Reify(PyObject* self, upb_array* arr);
 
 // Implements repeated_field.extend(iterable).  `_self` must be a repeated

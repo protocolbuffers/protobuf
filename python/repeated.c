@@ -155,9 +155,9 @@ static Py_ssize_t PyUpb_RepeatedContainer_Length(PyObject* self) {
   return arr ? upb_array_size(arr) : 0;
 }
 
-PyObject* PyUpb_RepeatedContainer_NewUnset(PyObject* parent,
-                                           const upb_fielddef* f,
-                                           PyObject* arena) {
+PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
+                                          const upb_fielddef* f,
+                                          PyObject* arena) {
   PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
   PyUpb_RepeatedContainer* repeated = (void*)PyType_GenericAlloc(cls, 0);
   repeated->arena = arena;

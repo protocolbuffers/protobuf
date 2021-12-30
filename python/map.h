@@ -33,16 +33,29 @@
 #include "python/python.h"
 #include "upb/def.h"
 
-PyObject* PyUpb_MapContainer_NewUnset(PyObject* parent, const upb_fielddef* f,
-                                      PyObject* arena);
-PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_map* u_map,
+// Creates a new repeated field stub for field `f` of message object `parent`.
+PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_fielddef* f,
+                                     PyObject* arena);
+
+// Returns a map object wrapping `map`, of field type `f`, which must be on
+// `arena`.  If an existing wrapper object exists, it will be returned,
+// otherwise a new object will be created.  The caller always owns a ref on the
+// returned value.
+PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_map* map,
                                                 const upb_fielddef* f,
                                                 PyObject* arena);
-void PyUpb_MapContainer_SwitchToSet(PyObject* self, upb_map* map);
+
+// Reifies a map stub to point to the concrete data in `map`.
+void PyUpb_MapContainer_Reify(PyObject* self, upb_map* map);
+
+// Assigns `self[key] = val` for the map `self`.
 int PyUpb_MapContainer_AssignSubscript(PyObject* self, PyObject* key,
                                        PyObject* val);
+
+// Invalidates any existing iterators for the map `obj`.
 void PyUpb_MapContainer_Invalidate(PyObject* obj);
 
+// Module-level init.
 bool PyUpb_Map_Init(PyObject* m);
 
 #endif  // PYUPB_MAP_H__
