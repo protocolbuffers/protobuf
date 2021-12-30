@@ -253,7 +253,7 @@ static const char *PyUpb_GetClassName(PyType_Spec *spec) {
 }
 
 PyTypeObject *PyUpb_AddClass(PyObject *m, PyType_Spec *spec) {
-  PyObject *type = (void*)PyType_FromSpec(spec);
+  PyObject *type = PyType_FromSpec(spec);
   const char *name = PyUpb_GetClassName(spec);
   if (PyModule_AddObject(m, name, type) < 0) {
     Py_XDECREF(type);
