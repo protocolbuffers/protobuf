@@ -341,6 +341,7 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter *s, upb_descriptortype_t key_type,
       compar = _upb_mapsorter_cmpbool;
       break;
     case UPB_DESCRIPTOR_TYPE_STRING:
+    case UPB_DESCRIPTOR_TYPE_BYTES:
       compar = _upb_mapsorter_cmpstr;
       break;
     default:

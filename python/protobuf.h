@@ -64,6 +64,11 @@ typedef struct {
   // From descriptor_pool.c
   PyTypeObject *descriptor_pool_type;
 
+  // From map.c
+  PyTypeObject* map_iterator_type;
+  PyTypeObject* message_map_container_type;
+  PyTypeObject* scalar_map_container_type;
+
   // From message.c
   PyObject *decode_error_class;
   PyObject* descriptor_string;
@@ -164,6 +169,11 @@ PyTypeObject *AddObject(PyObject *m, const char *name, PyType_Spec *spec);
 
 // Creates a Python type from `spec` and adds it to the given module `m`.
 PyTypeObject *PyUpb_AddClass(PyObject *m, PyType_Spec *spec);
+
+// Like PyUpb_AddClass(), but allows you to specify a tuple of base classes
+// in `bases`.
+PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
+                                      PyObject* bases);
 
 // A function that implements the tp_new slot for types that we do not allow
 // users to create directly. This will immediately fail with an error message.

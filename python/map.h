@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PYUPB_REPEATED_H__
-#define PYUPB_REPEATED_H__
+#ifndef PYUPB_MAP_H__
+#define PYUPB_MAP_H__
 
 #include <stdbool.h>
 
@@ -34,31 +34,28 @@
 #include "upb/def.h"
 
 // Creates a new repeated field stub for field `f` of message object `parent`.
-PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
-                                          const upb_fielddef* f,
-                                          PyObject* arena);
+PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_fielddef* f,
+                                     PyObject* arena);
 
-// Returns a repeated field object wrapping `arr`, of field type `f`, which
-// must be on `arena`.  If an existing wrapper object exists, it will be
-// returned, otherwise a new object will be created.  The caller always owns a
-// ref on the returned value.
-PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* arr,
-                                                     const upb_fielddef* f,
-                                                     PyObject* arena);
+// Returns a map object wrapping `map`, of field type `f`, which must be on
+// `arena`.  If an existing wrapper object exists, it will be returned,
+// otherwise a new object will be created.  The caller always owns a ref on the
+// returned value.
+PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_map* map,
+                                                const upb_fielddef* f,
+                                                PyObject* arena);
 
-// Reifies a repeated field stub to point to the concrete data in `arr`.
-void PyUpb_RepeatedContainer_Reify(PyObject* self, upb_array* arr);
+// Reifies a map stub to point to the concrete data in `map`.
+void PyUpb_MapContainer_Reify(PyObject* self, upb_map* map);
 
-// Implements repeated_field.extend(iterable).  `_self` must be a repeated
-// field (either repeated composite or repeated scalar).
-PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value);
+// Assigns `self[key] = val` for the map `self`.
+int PyUpb_MapContainer_AssignSubscript(PyObject* self, PyObject* key,
+                                       PyObject* val);
 
-// Implements repeated_field.add(initial_values).  `_self` must be a repeated
-// composite field.
-PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* _self, PyObject* args,
-                                               PyObject* kwargs);
+// Invalidates any existing iterators for the map `obj`.
+void PyUpb_MapContainer_Invalidate(PyObject* obj);
 
 // Module-level init.
-bool PyUpb_Repeated_Init(PyObject* m);
+bool PyUpb_Map_Init(PyObject* m);
 
-#endif  // PYUPB_REPEATED_H__
+#endif  // PYUPB_MAP_H__

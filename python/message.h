@@ -52,9 +52,9 @@ PyObject* PyUpb_CMessage_Get(upb_msg* u_msg, const upb_msgdef* m,
 // returns false on failure.
 bool PyUpb_CMessage_Check(PyObject* self);
 
-// Gets the upb_msg* for this message object if the message is set/writable.
+// Gets the upb_msg* for this message object if the message is reified.
 // Otherwise returns NULL.
-upb_msg* PyUpb_CMessage_GetIfWritable(PyObject* _self);
+upb_msg* PyUpb_CMessage_GetIfReified(PyObject* _self);
 
 // Returns the `upb_msgdef` for a given CMessage.
 const upb_msgdef* PyUpb_CMessage_GetMsgdef(PyObject* self);
