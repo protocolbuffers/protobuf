@@ -52,12 +52,12 @@ typedef struct {
 
 static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map);
 
-static bool PyUpb_MapContainer_IsUnset(PyUpb_MapContainer* self) {
+static bool PyUpb_MapContainer_IsStub(PyUpb_MapContainer* self) {
   return self->field & 1;
 }
 
 static upb_map* PyUpb_MapContainer_GetIfWritable(PyUpb_MapContainer* self) {
-  return PyUpb_MapContainer_IsUnset(self) ? NULL : self->ptr.map;
+  return PyUpb_MapContainer_IsStub(self) ? NULL : self->ptr.map;
 }
 
 static const upb_fielddef* PyUpb_MapContainer_GetField(
@@ -68,7 +68,7 @@ static const upb_fielddef* PyUpb_MapContainer_GetField(
 static void PyUpb_MapContainer_Dealloc(void* _self) {
   PyUpb_MapContainer* self = _self;
   Py_DECREF(self->arena);
-  if (PyUpb_MapContainer_IsUnset(self)) {
+  if (PyUpb_MapContainer_IsStub(self)) {
     PyUpb_CMessage_CacheDelete(self->ptr.parent,
                                PyUpb_MapContainer_GetField(self));
     Py_DECREF(self->ptr.parent);
@@ -104,7 +104,7 @@ void PyUpb_MapContainer_Reify(PyObject* _self, upb_map* map) {
   Py_DECREF(self->ptr.parent);
   self->ptr.map = map;  // Overwrites self->ptr.parent.
   self->field = self->field & ~(uintptr_t)1;
-  assert(!PyUpb_MapContainer_IsUnset(self));
+  assert(!PyUpb_MapContainer_IsStub(self));
 }
 
 void PyUpb_MapContainer_Invalidate(PyObject* obj) {
