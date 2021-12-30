@@ -30,6 +30,7 @@
 #include "python/descriptor.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
+#include "python/map.h"
 #include "python/message.h"
 #include "python/repeated.h"
 
@@ -254,8 +255,16 @@ static const char *PyUpb_GetClassName(PyType_Spec *spec) {
 PyTypeObject *PyUpb_AddClass(PyObject *m, PyType_Spec *spec) {
   PyObject *type = PyType_FromSpec(spec);
   const char *name = PyUpb_GetClassName(spec);
-  return type && PyModule_AddObject(m, name, type) == 0 ? (PyTypeObject *)type
-                                                        : NULL;
+  int result = PyModule_AddObject(m, name, type);
+  return type && result == 0 ? (PyTypeObject*)type : NULL;
+}
+
+PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
+                                      PyObject* bases) {
+  PyObject* type = PyType_FromSpecWithBases(spec, bases);
+  const char* name = PyUpb_GetClassName(spec);
+  int result = PyModule_AddObject(m, name, type);
+  return type && result == 0 ? (PyTypeObject*)type : NULL;
 }
 
 const char *PyUpb_GetStrData(PyObject *obj) {
@@ -290,7 +299,7 @@ PyMODINIT_FUNC PyInit__message(void) {
   state->obj_cache = PyUpb_WeakMap_New();
 
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||
-      !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m) ||
+      !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m) || !PyUpb_Map_Init(m) ||
       !PyUpb_InitMessage(m) || !PyUpb_Repeated_Init(m)) {
     Py_DECREF(m);
     return NULL;

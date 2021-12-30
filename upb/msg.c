@@ -285,6 +285,7 @@ static int _upb_mapsorter_cmpstr(const void *_a, const void *_b) {
   return a.size - b.size;
 }
 
+#include <stdio.h>
 bool _upb_mapsorter_pushmap(_upb_mapsorter *s, upb_descriptortype_t key_type,
                             const upb_map *map, _upb_sortedmap *sorted) {
   int map_size = _upb_map_size(map);
@@ -341,6 +342,7 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter *s, upb_descriptortype_t key_type,
       compar = _upb_mapsorter_cmpbool;
       break;
     case UPB_DESCRIPTOR_TYPE_STRING:
+    case UPB_DESCRIPTOR_TYPE_BYTES:
       compar = _upb_mapsorter_cmpstr;
       break;
     default:

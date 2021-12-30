@@ -29,6 +29,7 @@
 
 #include "python/convert.h"
 #include "python/descriptor.h"
+#include "python/map.h"
 #include "python/repeated.h"
 #include "upb/def.h"
 #include "upb/reflection.h"
@@ -286,8 +287,8 @@ static bool PyUpb_CMessage_InitMessageMapEntry(PyObject* dst, PyObject* src) {
   return true;
 }
 
-static int PyUpb_CMessage_InitMapAttributes(PyObject* map, PyObject* value,
-                                            const upb_fielddef* f) {
+int PyUpb_CMessage_InitMapAttributes(PyObject* map, PyObject* value,
+                                     const upb_fielddef* f) {
   const upb_msgdef* entry_m = upb_fielddef_msgsubdef(f);
   const upb_fielddef* val_f = upb_msgdef_field(entry_m, 1);
   PyObject* it = NULL;
@@ -327,13 +328,10 @@ void PyUpb_CMessage_AssureWritable(PyUpb_CMessage* self);
 static bool PyUpb_CMessage_InitMapAttribute(PyObject* _self, PyObject* name,
                                             const upb_fielddef* f,
                                             PyObject* value) {
-  // TODO(haberman): disabled until map container is in.
-  // PyObject* map = PyUpb_CMessage_GetAttr(_self, name);
-  // int ok = PyUpb_CMessage_InitMapAttributes(map, value, f);
-  // Py_DECREF(map);
-  // return ok >= 0;
-  PyErr_SetString(PyExc_NotImplementedError, "map init");
-  return false;
+  PyObject* map = PyUpb_CMessage_GetAttr(_self, name);
+  int ok = PyUpb_CMessage_InitMapAttributes(map, value, f);
+  Py_DECREF(map);
+  return ok >= 0;
 }
 
 static bool PyUpb_CMessage_InitRepeatedAttribute(PyObject* _self,
@@ -598,8 +596,7 @@ static void PyUpb_CMessage_SyncSubobjs(PyUpb_CMessage* self) {
     PyUpb_WeakMap_DeleteIter(subobj_map, &iter);
     if (upb_fielddef_ismap(f)) {
       if (!msgval.map_val) continue;
-      // TODO(haberman): re-enable when maps are checked in.
-      // PyUpb_MapContainer_SwitchToSet(obj, (upb_map*)msgval.map_val);
+      PyUpb_MapContainer_SwitchToSet(obj, (upb_map*)msgval.map_val);
     } else if (upb_fielddef_isseq(f)) {
       if (!msgval.array_val) continue;
       PyUpb_RepeatedContainer_Reify(obj, (upb_array*)msgval.array_val);
@@ -730,10 +727,7 @@ PyObject* PyUpb_CMessage_GetUnsetWrapper(PyUpb_CMessage* self,
   if (subobj) return subobj;
 
   if (upb_fielddef_ismap(field)) {
-    // TODO(haberman): re-enable when maps are checked in.
-    // subobj = PyUpb_MapContainer_NewUnset(_self, field, self->arena);
-    PyErr_SetString(PyExc_NotImplementedError, "unset map");
-    return NULL;
+    subobj = PyUpb_MapContainer_NewUnset(_self, field, self->arena);
   } else if (upb_fielddef_isseq(field)) {
     subobj = PyUpb_RepeatedContainer_NewUnset(_self, field, self->arena);
   } else {
@@ -751,12 +745,8 @@ PyObject* PyUpb_CMessage_GetPresentWrapper(PyUpb_CMessage* self,
   upb_mutmsgval mutval =
       upb_msg_mutable(self->ptr.msg, field, PyUpb_Arena_Get(self->arena));
   if (upb_fielddef_ismap(field)) {
-    // TODO(haberman): re-enable when maps are checked in.
-    // return PyUpb_MapContainer_GetOrCreateWrapper(mutval.map, field,
-    //                                              self->arena);
-    (void)mutval;
-    PyErr_SetString(PyExc_NotImplementedError, "access map");
-    return NULL;
+    return PyUpb_MapContainer_GetOrCreateWrapper(mutval.map, field,
+                                                 self->arena);
   } else {
     return PyUpb_RepeatedContainer_GetOrCreateWrapper(mutval.array, field,
                                                       self->arena);
@@ -1036,7 +1026,8 @@ static PyObject* PyUpb_CMessage_Clear(PyUpb_CMessage* self, PyObject* args) {
 
 static void PyUpb_CMessage_AbandonField(PyUpb_CMessage* self,
                                         const upb_fielddef* f) {
-  if (self->unset_subobj_map && upb_fielddef_issubmsg(f)) {
+  if (self->unset_subobj_map && upb_fielddef_issubmsg(f) &&
+      !upb_fielddef_isseq(f)) {
     PyObject* sub = PyUpb_WeakMap_Get(self->unset_subobj_map, f);
     if (sub) {
       PyUpb_CMessage_AssureWritable((PyUpb_CMessage*)sub);
@@ -1089,8 +1080,7 @@ static PyObject* PyUpb_CMessage_ClearField(PyUpb_CMessage* self,
       obj = PyUpb_ObjCache_Get(msgval.map_val);
     }
     if (obj) {
-      // TODO(haberman) add when maps are checked in.
-      // PyUpb_MapContainer_Invalidate(obj);
+      PyUpb_MapContainer_Invalidate(obj);
       Py_DECREF(obj);
     }
   }
