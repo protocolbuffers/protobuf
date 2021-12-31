@@ -30,6 +30,7 @@
 #include "python/descriptor.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
+#include "python/extension_dict.h"
 #include "python/map.h"
 #include "python/message.h"
 #include "python/repeated.h"
@@ -305,7 +306,8 @@ PyMODINIT_FUNC PyInit__message(void) {
   state->obj_cache = PyUpb_WeakMap_New();
 
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||
-      !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m) || !PyUpb_Map_Init(m) ||
+      !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m) ||
+      !PyUpb_InitExtensionDict(m) || !PyUpb_Map_Init(m) ||
       !PyUpb_InitMessage(m) || !PyUpb_Repeated_Init(m)) {
     Py_DECREF(m);
     return NULL;

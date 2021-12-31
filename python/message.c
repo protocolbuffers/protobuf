@@ -29,6 +29,7 @@
 
 #include "python/convert.h"
 #include "python/descriptor.h"
+#include "python/extension_dict.h"
 #include "python/map.h"
 #include "python/repeated.h"
 #include "upb/def.h"
@@ -1241,11 +1242,8 @@ static PyObject* PyUpb_CMessage_GetExtensionDict(PyObject* _self,
     return NULL;
   }
 
-  // TODO(haberman): re-enable when ExtensionDict is checked in.
-  // self->ext_dict = PyUpb_ExtensionDict_New(_self);
-  // return self->ext_dict;
-  PyErr_SetString(PyExc_NotImplementedError, "get extension dict");
-  return NULL;
+  self->ext_dict = PyUpb_ExtensionDict_New(_self);
+  return self->ext_dict;
 }
 
 static PyGetSetDef PyUpb_CMessage_Getters[] = {

@@ -26,7 +26,6 @@
 from google.protobuf.internal import generator_test
 import unittest
 
-generator_test.GeneratorTest.testBadIdentifiers.__unittest_expecting_failure__ = True
 generator_test.GeneratorTest.testExtensionScope.__unittest_expecting_failure__ = True
 generator_test.GeneratorTest.testMessageWithCustomOptions.__unittest_expecting_failure__ = True
 generator_test.GeneratorTest.testOneof.__unittest_expecting_failure__ = True

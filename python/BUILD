@@ -39,6 +39,8 @@ cc_binary(
         "descriptor_containers.h",
         "descriptor_pool.c",
         "descriptor_pool.h",
+        "extension_dict.c",
+        "extension_dict.h",
         "map.c",
         "map.h",
         "message.c",
