@@ -1,5 +1,14 @@
 --- BUILD
 +++ BUILD
+@@ -525,7 +525,7 @@ cc_binary(
+ filegroup(
+     name = "testdata",
+     srcs = glob(["src/google/protobuf/testdata/**/*"]),
+-    visibility = ["//:__subpackages__"],
++    visibility = ["//visibility:public"],
+ )
+ 
+ RELATIVE_LITE_TEST_PROTOS = [
 @@ -931,13 +931,10 @@ py_library(
          [
              "python/google/protobuf/**/*.py",
@@ -45,3 +54,20 @@
  )
  
  py_library(
+
+--- python/google/protobuf/internal/test_util.py
++++ python/google/protobuf/internal/test_util.py
+@@ -634,6 +634,13 @@ def GoldenFile(filename):
+     # Found it.  Load the golden file from the testdata directory.
+     return open(full_path, 'rb')
+ 
++  # Search for cross-repo path.
++  full_path = os.path.join('external/com_google_protobuf/src/google/protobuf/testdata',
++                           filename)
++  if os.path.exists(full_path):
++    # Found it.  Load the golden file from the testdata directory.
++    return open(full_path, 'rb')
++
+   raise RuntimeError(
+       'Could not find golden files.  This test must be run from within the '
+       'protobuf source package so that it can read test data files from the '
