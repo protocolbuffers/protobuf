@@ -44,6 +44,8 @@
 extern "C" {
 #endif
 
+/** upb_msg *******************************************************************/
+
 typedef void upb_msg;
 
 /* For users these are opaque. They can be obtained from upb_msgdef_layout()
@@ -58,6 +60,9 @@ void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
 
 /* Returns a reference to the message's unknown data. */
 const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
+
+/* Returns the number of extensions present in this message. */
+size_t upb_msg_extcount(const upb_msg *msg);
 
 /** upb_extreg *******************************************************************/
 

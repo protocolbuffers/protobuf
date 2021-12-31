@@ -55,7 +55,6 @@ message_test.MessageTest.testRepeatedContains_proto3.__unittest_expecting_failur
 message_test.Proto2Test.testExtensionsErrors.__unittest_expecting_failure__ = True
 message_test.Proto2Test.testGoldenExtensions.__unittest_expecting_failure__ = True
 message_test.Proto2Test.testGoldenPackedExtensions.__unittest_expecting_failure__ = True
-message_test.Proto2Test.testMergeFromExtensions.__unittest_expecting_failure__ = True
 message_test.Proto2Test.testParsingMerge.__unittest_expecting_failure__ = True
 message_test.Proto2Test.testPickleIncompleteProto.__unittest_expecting_failure__ = True
 message_test.Proto2Test.testPythonicInit.__unittest_expecting_failure__ = True

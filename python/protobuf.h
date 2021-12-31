@@ -64,6 +64,10 @@ typedef struct {
   // From descriptor_pool.c
   PyTypeObject *descriptor_pool_type;
 
+  // From extension_dict.c
+  PyTypeObject* extension_dict_type;
+  PyTypeObject* extension_iterator_type;
+
   // From map.c
   PyTypeObject* map_iterator_type;
   PyTypeObject* message_map_container_type;

@@ -162,6 +162,12 @@ upb_msg_ext *_upb_msg_getorcreateext(upb_msg *msg, const upb_msglayout_ext *e,
   return ext;
 }
 
+size_t upb_msg_extcount(const upb_msg *msg) {
+  size_t count;
+  _upb_msg_getexts(msg, &count);
+  return count;
+}
+
 /** upb_array *****************************************************************/
 
 bool _upb_array_realloc(upb_array *arr, size_t min_size, upb_arena *arena) {
