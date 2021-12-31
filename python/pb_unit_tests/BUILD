@@ -124,6 +124,9 @@ py_test(
         "@com_google_protobuf//:python_common_test_protos",
         "@com_google_protobuf//:python_specific_test_protos",
     ],
+    data = [
+        "@com_google_protobuf//:testdata",
+    ],
     legacy_create_init = False,
 )
 
