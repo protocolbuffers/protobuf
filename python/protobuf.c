@@ -40,11 +40,28 @@ static void PyUpb_ModuleDealloc(void *module) {
   PyUpb_WeakMap_Free(s->obj_cache);
 }
 
+PyObject* PyUpb_SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
+  if (!arg || !PyBool_Check(arg)) {
+    PyErr_SetString(PyExc_TypeError,
+                    "Argument to SetAllowOversizeProtos must be boolean");
+    return NULL;
+  }
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  state->allow_oversize_protos = PyObject_IsTrue(arg);
+  Py_INCREF(arg);
+  return arg;
+}
+
+static PyMethodDef PyUpb_ModuleMethods[] = {
+    {"SetAllowOversizeProtos", PyUpb_SetAllowOversizeProtos, METH_O,
+     "Enable/disable oversize proto parsing."},
+    {NULL, NULL}};
+
 static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
                                         PYUPB_MODULE_NAME,
                                         "Protobuf Module",
                                         sizeof(PyUpb_ModuleState),
-                                        NULL,  // m_methods
+                                        PyUpb_ModuleMethods,  // m_methods
                                         NULL,  // m_slots
                                         NULL,  // m_traverse
                                         NULL,  // m_clear
@@ -302,6 +319,7 @@ PyMODINIT_FUNC PyInit__message(void) {
 
   PyUpb_ModuleState *state = PyUpb_ModuleState_GetFromModule(m);
 
+  state->allow_oversize_protos = false;
   state->wkt_bases = NULL;
   state->obj_cache = PyUpb_WeakMap_New();
 

@@ -287,7 +287,7 @@ static int _upb_mapsorter_cmpstr(const void *_a, const void *_b) {
   _upb_mapsorter_getkeys(_a, _b, &a, &b, UPB_MAPTYPE_STRING);
   size_t common_size = UPB_MIN(a.size, b.size);
   int cmp = memcmp(a.data, b.data, common_size);
-  if (cmp) return cmp;
+  if (cmp) return -cmp;
   return a.size - b.size;
 }
 

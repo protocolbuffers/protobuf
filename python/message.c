@@ -847,9 +847,12 @@ __attribute__((flatten)) static PyObject* PyUpb_CMessage_GetAttr(
   PyObject* ret = PyObject_GenericGetAttr(_self, attr);
   if (ret) return ret;
 
-  // If the attribute wasn't found, look for attributes on the class. But if a
-  // different kind of error (other than AttributeError) was found, return that.
-  if (PyErr_ExceptionMatches(PyExc_AttributeError)) {
+  // Swallow AttributeError if it occurred and try again on the metaclass
+  // to pick up class attributes.  But we have to special-case "Extensions"
+  // which affirmatively returns AttributeError when a message is not
+  // extendable.
+  if (PyErr_ExceptionMatches(PyExc_AttributeError) &&
+      strcmp(PyUpb_GetStrData(attr), "Extensions") != 0) {
     PyErr_Clear();
     return PyUpb_MessageMeta_GetAttr((PyObject*)Py_TYPE(_self), attr);
   }
@@ -986,11 +989,14 @@ PyObject* PyUpb_CMessage_MergeFromString(PyObject* _self, PyObject* arg) {
   const upb_extreg* extreg = upb_symtab_extreg(upb_filedef_symtab(file));
   const upb_msglayout* layout = upb_msgdef_layout(msgdef);
   upb_arena* arena = PyUpb_Arena_Get(self->arena);
+  int options = 0;
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  options |=
+      UPB_DECODE_MAXDEPTH(state->allow_oversize_protos ? UINT32_MAX : 100);
   upb_DecodeStatus status =
-      _upb_decode(buf, size, self->ptr.msg, layout, extreg, 0, arena);
+      _upb_decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
   Py_XDECREF(bytes);
   if (status != kUpb_DecodeStatus_Ok) {
-    PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
     PyErr_Format(state->decode_error_class, "Error parsing message");
     return NULL;
   }
@@ -1183,6 +1189,8 @@ PyObject* PyUpb_CMessage_SerializeInternal(PyObject* _self, PyObject* args,
   int options = 0;
   if (check_required) options |= UPB_ENCODE_CHECKREQUIRED;
   if (deterministic) options |= UPB_ENCODE_DETERMINISTIC;
+  // Python does not currently have any effective limit on serialization depth.
+  options |= UPB_ENCODE_MAXDEPTH(UINT32_MAX);
   char* pb = upb_encode_ex(self->ptr.msg, layout, options, arena, &size);
   PyObject* ret = NULL;
 
@@ -1248,10 +1256,6 @@ static PyObject* PyUpb_CMessage_GetExtensionDict(PyObject* _self,
 
 static PyGetSetDef PyUpb_CMessage_Getters[] = {
     {"Extensions", PyUpb_CMessage_GetExtensionDict, NULL, "Extension dict"},
-    /*
-    {"_extensions_by_name", (getter)GetExtensionsByName, NULL},
-    {"_extensions_by_number", (getter)GetExtensionsByNumber, NULL},
-    */
     {NULL}};
 
 static PyMethodDef PyUpb_CMessage_Methods[] = {
