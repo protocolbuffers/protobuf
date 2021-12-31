@@ -989,9 +989,8 @@ PyObject* PyUpb_CMessage_MergeFromString(PyObject* _self, PyObject* arg) {
   const upb_extreg* extreg = upb_symtab_extreg(upb_filedef_symtab(file));
   const upb_msglayout* layout = upb_msgdef_layout(msgdef);
   upb_arena* arena = PyUpb_Arena_Get(self->arena);
-  int options = 0;
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  options |=
+  int options =
       UPB_DECODE_MAXDEPTH(state->allow_oversize_protos ? UINT32_MAX : 100);
   upb_DecodeStatus status =
       _upb_decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
@@ -1186,11 +1185,10 @@ PyObject* PyUpb_CMessage_SerializeInternal(PyObject* _self, PyObject* args,
   const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
   const upb_msglayout* layout = upb_msgdef_layout(msgdef);
   size_t size = 0;
-  int options = 0;
+  int options = UPB_ENCODE_MAXDEPTH(UINT32_MAX);
   if (check_required) options |= UPB_ENCODE_CHECKREQUIRED;
   if (deterministic) options |= UPB_ENCODE_DETERMINISTIC;
   // Python does not currently have any effective limit on serialization depth.
-  options |= UPB_ENCODE_MAXDEPTH(UINT32_MAX);
   char* pb = upb_encode_ex(self->ptr.msg, layout, options, arena, &size);
   PyObject* ret = NULL;
 
