@@ -132,11 +132,8 @@ static PyObject* PyUpb_DescriptorBase_GetOptions(PyUpb_DescriptorBase* self,
     (void)ok;
     assert(ok);
 
-    // Disabled until python/message.c is reviewed and checked in.
-    // self->options = PyUpb_CMessage_Get(opts2, m, py_arena);
+    self->options = PyUpb_CMessage_Get(opts2, m, py_arena);
     Py_DECREF(py_arena);
-    PyErr_Format(PyExc_NotImplementedError, "Not yet implemented");
-    return NULL;
   }
 
   Py_INCREF(self->options);

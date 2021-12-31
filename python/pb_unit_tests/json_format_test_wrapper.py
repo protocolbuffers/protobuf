@@ -26,12 +26,5 @@
 from google.protobuf.internal import json_format_test
 import unittest
 
-json_format_test.JsonFormatTest.testExtensionSerializationDictMatchesProto3Spec.__unittest_expecting_failure__ = True
-json_format_test.JsonFormatTest.testExtensionSerializationJsonMatchesProto3Spec.__unittest_expecting_failure__ = True
-json_format_test.JsonFormatTest.testExtensionToDictAndBack.__unittest_expecting_failure__ = True
-json_format_test.JsonFormatTest.testExtensionToJsonAndBack.__unittest_expecting_failure__ = True
-json_format_test.JsonFormatTest.testInvalidMap.__unittest_expecting_failure__ = True
-json_format_test.JsonFormatTest.testMapFields.__unittest_expecting_failure__ = True
-
 if __name__ == '__main__':
   unittest.main(module=json_format_test, verbosity=2)
