@@ -26,18 +26,8 @@
 from google.protobuf.internal import well_known_types_test
 import unittest
 
-well_known_types_test.AnyTest.testAnyMessage.__unittest_expecting_failure__ = True
 well_known_types_test.AnyTest.testPackDeterministic.__unittest_expecting_failure__ = True
-well_known_types_test.AnyTest.testPackWithCustomTypeUrl.__unittest_expecting_failure__ = True
-well_known_types_test.FieldMaskTest.testMergeMessageWithMapField.__unittest_expecting_failure__ = True
-well_known_types_test.FieldMaskTest.testMergeMessageWithoutMapFields.__unittest_expecting_failure__ = True
-well_known_types_test.StructTest.testMergeFrom.__unittest_expecting_failure__ = True
 well_known_types_test.StructTest.testStruct.__unittest_expecting_failure__ = True
-well_known_types_test.StructTest.testStructAssignment.__unittest_expecting_failure__ = True
-well_known_types_test.TimeUtilTest.testDatetimeConversionWithTimezone.__unittest_expecting_failure__ = True
-well_known_types_test.TimeUtilTest.testDurationSerializeAndParse.__unittest_expecting_failure__ = True
-well_known_types_test.TimeUtilTest.testTimedeltaConversion.__unittest_expecting_failure__ = True
-well_known_types_test.TimeUtilTest.testTimestampSerializeAndParse.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(module=well_known_types_test, verbosity=2)

@@ -319,22 +319,23 @@ bool PyUpb_Array_IsEqual(const upb_array *arr1, const upb_array *arr2,
 
 bool PyUpb_Message_IsEqual(const upb_msg *msg1, const upb_msg *msg2,
                            const upb_msgdef *m) {
+  const upb_symtab* symtab = upb_filedef_symtab(upb_msgdef_file(m));
   size_t iter1 = UPB_MSG_BEGIN;
   size_t iter2 = UPB_MSG_BEGIN;
 
   if (msg1 == msg2) return true;
+  if (upb_msg_extcount(msg1) != upb_msg_extcount(msg2)) return false;
 
-  while (true) {
-    const upb_fielddef *f1, *f2;
-    upb_msgval val1, val2;
-    bool ok1 = msg1 && upb_msg_next(msg1, m, NULL, &f1, &val1, &iter1);
-    bool ok2 = msg2 && upb_msg_next(msg2, m, NULL, &f2, &val2, &iter2);
-    if (ok1 != ok2) return false;
-    if (!ok1) break;  // Both messages are at end.
-
-    // If the two messages yielded different "next" fields, then the set of
-    // present fields is different.
-    if (f1 != f2) return false;
+  const upb_fielddef *f1, *f2;
+  upb_msgval val1, val2;
+  while (upb_msg_next(msg1, m, symtab, &f1, &val1, &iter1)) {
+    if (upb_fielddef_isextension(f1)) {
+      val2 = upb_msg_get(msg2, f1);
+    } else {
+      if (!upb_msg_next(msg2, m, NULL, &f2, &val2, &iter2) || f1 != f2) {
+        return false;
+      }
+    }
 
     if (upb_fielddef_ismap(f1)) {
       if (!PyUpb_Map_IsEqual(val1.map_val, val2.map_val, f1)) return false;
@@ -347,10 +348,13 @@ bool PyUpb_Message_IsEqual(const upb_msg *msg1, const upb_msg *msg2,
     }
   }
 
+  if (upb_msg_next(msg2, m, NULL, &f2, &val2, &iter2)) return false;
+
   size_t usize1, usize2;
   const char *uf1 = upb_msg_getunknown(msg1, &usize1);
   const char *uf2 = upb_msg_getunknown(msg2, &usize2);
   // 100 is arbitrary, we're trying to prevent stack overflow but it's not
   // obvious how deep we should allow here.
-  return upb_Message_UnknownFieldsAreEqual(uf1, usize1, uf2, usize2, 100);
+  return upb_Message_UnknownFieldsAreEqual(uf1, usize1, uf2, usize2, 100) ==
+         kUpb_UnknownCompareResult_Equal;
 }

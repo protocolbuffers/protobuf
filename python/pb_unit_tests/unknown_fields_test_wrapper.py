@@ -27,7 +27,6 @@ from google.protobuf.internal import unknown_fields_test
 import unittest
 
 unknown_fields_test.UnknownEnumValuesTest.testCheckUnknownFieldValueForEnum.__unittest_expecting_failure__ = True
-unknown_fields_test.UnknownEnumValuesTest.testRoundTrip.__unittest_expecting_failure__ = True
 unknown_fields_test.UnknownFieldsAccessorsTest.testCheckUnknownFieldValue.__unittest_expecting_failure__ = True
 unknown_fields_test.UnknownFieldsAccessorsTest.testClear.__unittest_expecting_failure__ = True
 unknown_fields_test.UnknownFieldsAccessorsTest.testMergeFrom.__unittest_expecting_failure__ = True
@@ -35,7 +34,6 @@ unknown_fields_test.UnknownFieldsAccessorsTest.testSubUnknownFields.__unittest_e
 unknown_fields_test.UnknownFieldsAccessorsTest.testUnknownExtensions.__unittest_expecting_failure__ = True
 unknown_fields_test.UnknownFieldsAccessorsTest.testUnknownField.__unittest_expecting_failure__ = True
 unknown_fields_test.UnknownFieldsAccessorsTest.testUnknownFieldsNoMemoryLeak.__unittest_expecting_failure__ = True
-unknown_fields_test.UnknownFieldsTest.testEquals.__unittest_expecting_failure__ = True
 unknown_fields_test.UnknownFieldsTest.testSerializeMessageSetWireFormatUnknownExtension.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
