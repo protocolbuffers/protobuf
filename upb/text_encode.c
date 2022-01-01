@@ -152,9 +152,24 @@ static void txtenc_string(txtenc *e, upb_strview str, bool bytes) {
 
 static void txtenc_field(txtenc *e, upb_msgval val, const upb_fielddef *f) {
   txtenc_indent(e);
-  txtenc_printf(e, "%s: ", upb_fielddef_name(f));
+  upb_fieldtype_t type = upb_fielddef_type(f);
+  const char* name = upb_fielddef_name(f);
 
-  switch (upb_fielddef_type(f)) {
+  if (type == UPB_TYPE_MESSAGE) {
+    txtenc_printf(e, "%s {", name);
+    txtenc_endfield(e);
+    e->indent_depth++;
+    txtenc_msg(e, val.msg_val, upb_fielddef_msgsubdef(f));
+    e->indent_depth--;
+    txtenc_indent(e);
+    txtenc_putstr(e, "}");
+    txtenc_endfield(e);
+    return;
+  }
+
+  txtenc_printf(e, "%s: ", name);
+
+  switch (type) {
     case UPB_TYPE_BOOL:
       txtenc_putstr(e, val.bool_val ? "true" : "false");
       break;
@@ -185,15 +200,8 @@ static void txtenc_field(txtenc *e, upb_msgval val, const upb_fielddef *f) {
     case UPB_TYPE_ENUM:
       txtenc_enum(val.int32_val, f, e);
       break;
-    case UPB_TYPE_MESSAGE:
-      txtenc_putstr(e, "{");
-      txtenc_endfield(e);
-      e->indent_depth++;
-      txtenc_msg(e, val.msg_val, upb_fielddef_msgsubdef(f));
-      e->indent_depth--;
-      txtenc_indent(e);
-      txtenc_putstr(e, "}");
-      break;
+    default:
+      UPB_UNREACHABLE();
   }
 
   txtenc_endfield(e);

@@ -26,7 +26,5 @@
 from google.protobuf.internal import well_known_types_test
 import unittest
 
-well_known_types_test.AnyTest.testPackDeterministic.__unittest_expecting_failure__ = True
-
 if __name__ == '__main__':
   unittest.main(module=well_known_types_test, verbosity=2)

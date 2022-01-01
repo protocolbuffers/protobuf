@@ -32,6 +32,9 @@ from google.protobuf.pyext import _message
 from google.protobuf.internal import api_implementation
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pool
+from google.protobuf import text_format
+from google.protobuf import message_factory
+from google.protobuf import message
 from google.protobuf.internal import factory_test1_pb2
 from google.protobuf.internal import factory_test2_pb2
 from google.protobuf import descriptor_pb2
@@ -72,9 +75,35 @@ class TestMessageExtension(unittest.TestCase):
         test_slice(11, 3, -2)
         test_slice(11, 3, -3)
         test_slice(10, 25, 4)
+    
+    def testExtensionsErrors(self):
+        msg = unittest_pb2.TestAllTypes()
+        self.assertRaises(AttributeError, getattr, msg, 'Extensions')
 
 #TestMessageExtension.test_descriptor_pool.__unittest_expecting_failure__ = True
 
+class OversizeProtosTest(unittest.TestCase):
+  def setUp(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    m = msg
+    for i in range(101):
+      m = m.child
+    m.Clear()
+    self.p_serialized = msg.SerializeToString()
+    
+  def testAssertOversizeProto(self):
+    from google.protobuf.pyext._message import SetAllowOversizeProtos
+    SetAllowOversizeProtos(False)
+    q = unittest_pb2.NestedTestAllTypes()
+    with self.assertRaises(message.DecodeError):
+      q.ParseFromString(self.p_serialized)
+      print(q)
+  
+  def testSucceedOversizeProto(self):
+    from google.protobuf.pyext._message import SetAllowOversizeProtos
+    SetAllowOversizeProtos(True)
+    q = unittest_pb2.NestedTestAllTypes()
+    q.ParseFromString(self.p_serialized)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

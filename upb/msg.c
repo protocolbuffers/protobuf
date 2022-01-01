@@ -252,34 +252,36 @@ static void _upb_mapsorter_getkeys(const void *_a, const void *_b, void *a_key,
   _upb_map_fromkey(b_tabkey, b_key, size);
 }
 
+#define UPB_COMPARE_INTEGERS(a, b) ((a) < (b) ? -1 : ((a) == (b) ? 0 : 1))
+
 static int _upb_mapsorter_cmpi64(const void *_a, const void *_b) {
   int64_t a, b;
   _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
-  return a - b;
+  return UPB_COMPARE_INTEGERS(a, b);
 }
 
 static int _upb_mapsorter_cmpu64(const void *_a, const void *_b) {
   uint64_t a, b;
   _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
-  return a - b;
+  return UPB_COMPARE_INTEGERS(a, b);
 }
 
 static int _upb_mapsorter_cmpi32(const void *_a, const void *_b) {
   int32_t a, b;
   _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
-  return a - b;
+  return UPB_COMPARE_INTEGERS(a, b);
 }
 
 static int _upb_mapsorter_cmpu32(const void *_a, const void *_b) {
   uint32_t a, b;
   _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
-  return a - b;
+  return UPB_COMPARE_INTEGERS(a, b);
 }
 
 static int _upb_mapsorter_cmpbool(const void *_a, const void *_b) {
   bool a, b;
   _upb_mapsorter_getkeys(_a, _b, &a, &b, 1);
-  return a - b;
+  return UPB_COMPARE_INTEGERS(a, b);
 }
 
 static int _upb_mapsorter_cmpstr(const void *_a, const void *_b) {
@@ -287,9 +289,11 @@ static int _upb_mapsorter_cmpstr(const void *_a, const void *_b) {
   _upb_mapsorter_getkeys(_a, _b, &a, &b, UPB_MAPTYPE_STRING);
   size_t common_size = UPB_MIN(a.size, b.size);
   int cmp = memcmp(a.data, b.data, common_size);
-  if (cmp) return cmp;
-  return a.size - b.size;
+  if (cmp) return -cmp;
+  return UPB_COMPARE_INTEGERS(a.size, b.size);
 }
+
+#undef UPB_COMPARE_INTEGERS
 
 bool _upb_mapsorter_pushmap(_upb_mapsorter *s, upb_descriptortype_t key_type,
                             const upb_map *map, _upb_sortedmap *sorted) {

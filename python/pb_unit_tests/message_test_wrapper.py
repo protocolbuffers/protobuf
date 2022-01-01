@@ -26,28 +26,29 @@
 from google.protobuf.internal import message_test
 import unittest
 
-message_test.MessageTest.testBadUtf8String_proto2.__unittest_expecting_failure__ = True
-message_test.MessageTest.testBadUtf8String_proto3.__unittest_expecting_failure__ = True
+# We don't want to support extending repeated fields with nothing; this behavior
+# is marked for deprecation in the existing library.
 message_test.MessageTest.testExtendFloatWithNothing_proto2.__unittest_expecting_failure__ = True
 message_test.MessageTest.testExtendFloatWithNothing_proto3.__unittest_expecting_failure__ = True
 message_test.MessageTest.testExtendInt32WithNothing_proto2.__unittest_expecting_failure__ = True
 message_test.MessageTest.testExtendInt32WithNothing_proto3.__unittest_expecting_failure__ = True
 message_test.MessageTest.testExtendStringWithNothing_proto2.__unittest_expecting_failure__ = True
 message_test.MessageTest.testExtendStringWithNothing_proto3.__unittest_expecting_failure__ = True
+
+# Our float printing suffers from not having dtoa().
 message_test.MessageTest.testFloatPrinting_proto2.__unittest_expecting_failure__ = True
 message_test.MessageTest.testFloatPrinting_proto3.__unittest_expecting_failure__ = True
 message_test.MessageTest.testHighPrecisionDoublePrinting_proto2.__unittest_expecting_failure__ = True
 message_test.MessageTest.testHighPrecisionDoublePrinting_proto3.__unittest_expecting_failure__ = True
-message_test.MessageTest.testInsertRepeatedCompositeField_proto2.__unittest_expecting_failure__ = True
-message_test.MessageTest.testInsertRepeatedCompositeField_proto3.__unittest_expecting_failure__ = True
-message_test.Proto2Test.testExtensionsErrors.__unittest_expecting_failure__ = True
+
+# For these tests we are throwing the correct error, only the text of the error
+# message is a mismatch.  For technical reasons around the limited API, matching
+# the existing error message exactly is not feasible.
+message_test.Proto3Test.testCopyFromBadType.__unittest_expecting_failure__ = True
+message_test.Proto3Test.testMergeFromBadType.__unittest_expecting_failure__ = True
+
 message_test.Proto2Test.testPythonicInit.__unittest_expecting_failure__ = True
 message_test.Proto2Test.test_documentation.__unittest_expecting_failure__ = True
-message_test.Proto3Test.testCopyFromBadType.__unittest_expecting_failure__ = True
-message_test.Proto3Test.testMapDeterministicSerialization.__unittest_expecting_failure__ = True
-message_test.Proto3Test.testMergeFromBadType.__unittest_expecting_failure__ = True
-message_test.OversizeProtosTest.testAssertOversizeProto.__unittest_expecting_failure__ = True
-message_test.OversizeProtosTest.testSucceedOversizeProto.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(module=message_test, verbosity=2)

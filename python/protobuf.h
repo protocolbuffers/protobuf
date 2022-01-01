@@ -83,6 +83,7 @@ typedef struct {
   PyTypeObject *message_meta_type;
 
   // From protobuf.c
+  bool allow_oversize_protos;
   PyObject *wkt_bases;
   PyTypeObject *arena_type;
   PyUpb_WeakMap *obj_cache;
