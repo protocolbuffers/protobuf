@@ -69,6 +69,9 @@ PyObject* PyUpb_CMessage_SerializeToString(PyObject* self, PyObject* args,
 int PyUpb_CMessage_InitAttributes(PyObject* _self, PyObject* args,
                                   PyObject* kwargs);
 
+// Clears the given field in this message.
+void PyUpb_CMessage_DoClearField(PyObject* _self, const upb_fielddef* f);
+
 // Clears the ExtensionDict from the message.  The message must have an
 // ExtensionDict set.
 void PyUpb_CMessage_ClearExtensionDict(PyObject* _self);
