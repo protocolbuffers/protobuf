@@ -187,6 +187,26 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* arr,
   return ret;
 }
 
+static PyObject* PyUpb_RepeatedContainer_MergeFrom(PyObject* _self,
+                                                   PyObject* args);
+
+PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
+  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  PyUpb_RepeatedContainer* clone = (void*)PyType_GenericAlloc(Py_TYPE(_self), 0);
+  const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
+  if (clone == NULL) return NULL;
+  clone->arena = PyUpb_Arena_New();
+  clone->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f);
+  clone->ptr.arr =
+      upb_array_new(PyUpb_Arena_Get(clone->arena), upb_fielddef_type(f));
+  PyUpb_ObjCache_Add(clone->ptr.arr, (PyObject*)clone);
+  if (!PyUpb_RepeatedContainer_MergeFrom((PyObject*)clone, _self)) {
+    Py_DECREF(clone);
+    return NULL;
+  } 
+  return (PyObject*)clone;
+}
+
 PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_array* arr = PyUpb_RepeatedContainer_AssureReified(self);
@@ -571,7 +591,8 @@ static PyObject* PyUpb_RepeatedContainer_Insert(PyObject* _self,
 
 static PyMethodDef PyUpb_RepeatedCompositeContainer_Methods[] = {
     // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    // {"__deepcopy__", DeepCopy, METH_VARARGS, "Makes a deep copy of the class."},
+    {"__deepcopy__", PyUpb_RepeatedContainer_DeepCopy, METH_VARARGS,
+     "Makes a deep copy of the class."},
     {"add", (PyCFunction)PyUpb_RepeatedCompositeContainer_Add,
      METH_VARARGS | METH_KEYWORDS, "Adds an object to the repeated container."},
     {"append", PyUpb_RepeatedCompositeContainer_Append, METH_O,
@@ -655,8 +676,8 @@ static int PyUpb_RepeatedScalarContainer_AssignItem(PyObject* _self,
 
 static PyMethodDef PyUpb_RepeatedScalarContainer_Methods[] = {
     // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    // {"__deepcopy__", DeepCopy, METH_VARARGS, "Makes a deep copy of the
-    // class."},
+    {"__deepcopy__", PyUpb_RepeatedContainer_DeepCopy, METH_VARARGS,
+     "Makes a deep copy of the class."},
     // {"__reduce__", Reduce, METH_NOARGS,
     //  "Outputs picklable representation of the repeated field."},
     {"append", PyUpb_RepeatedScalarContainer_Append, METH_O,

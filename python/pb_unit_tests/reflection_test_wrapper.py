@@ -26,7 +26,7 @@
 from google.protobuf.internal import reflection_test
 import unittest
 
-reflection_test.ByteSizeTest.testRepeatedCompositesDelete.__unittest_expecting_failure__ = True
+#reflection_test.ByteSizeTest.testRepeatedCompositesDelete.__unittest_expecting_failure__ = True
 reflection_test.ByteSizeTest.testRepeatedScalarsRemove.__unittest_expecting_failure__ = True
 reflection_test.ClassAPITest.testMakeClassWithNestedDescriptor.__unittest_expecting_failure__ = True
 reflection_test.Proto2ReflectionTest.testExtensionContainsError.__unittest_expecting_failure__ = True
