@@ -88,24 +88,9 @@ static void PyUpb_ExtensionDict_Dealloc(PyUpb_ExtensionDict* self) {
   PyUpb_Dealloc(self);
 }
 
-static const upb_fielddef* PyUpb_ExtensionDict_GetExtensionDef(PyObject* key) {
-  const upb_fielddef* f = PyUpb_FieldDescriptor_GetDef(key);
-  if (!f) {
-    PyErr_Clear();
-    PyErr_Format(PyExc_KeyError, "Object %R is not a field descriptor\n", key);
-    return NULL;
-  }
-  if (!upb_fielddef_isextension(f)) {
-    PyErr_Format(PyExc_KeyError, "Field %s is not an extension\n",
-                 upb_fielddef_fullname(f));
-    return NULL;
-  }
-  return f;
-}
-
 static int PyUpb_ExtensionDict_Contains(PyObject* _self, PyObject* key) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
-  const upb_fielddef* f = PyUpb_ExtensionDict_GetExtensionDef(key);
+  const upb_fielddef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
   if (!f) return -1;
   upb_msg* msg = PyUpb_CMessage_GetIfReified(self->msg);
   if (!msg) return 0;
@@ -125,7 +110,7 @@ static Py_ssize_t PyUpb_ExtensionDict_Length(PyObject* _self) {
 
 static PyObject* PyUpb_ExtensionDict_Subscript(PyObject* _self, PyObject* key) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
-  const upb_fielddef* f = PyUpb_ExtensionDict_GetExtensionDef(key);
+  const upb_fielddef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
   if (!f) return NULL;
   return PyUpb_CMessage_GetFieldValue(self->msg, f);
 }
@@ -133,7 +118,7 @@ static PyObject* PyUpb_ExtensionDict_Subscript(PyObject* _self, PyObject* key) {
 static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
                                                PyObject* val) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
-  const upb_fielddef* f = PyUpb_ExtensionDict_GetExtensionDef(key);
+  const upb_fielddef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
   if (!f) return -1;
   if (val) {
     return PyUpb_CMessage_SetFieldValue(self->msg, f, val);

@@ -26,8 +26,6 @@
 from google.protobuf.internal import reflection_test
 import unittest
 
-#reflection_test.Proto2ReflectionTest.testExtensionDelete.__unittest_expecting_failure__ = True
-reflection_test.Proto2ReflectionTest.testExtensionFailureModes.__unittest_expecting_failure__ = True
 reflection_test.Proto2ReflectionTest.testExtensionIter.__unittest_expecting_failure__ = True
 reflection_test.Proto2ReflectionTest.testIsInitialized.__unittest_expecting_failure__ = True
 reflection_test.Proto2ReflectionTest.testListFieldsAndExtensions.__unittest_expecting_failure__ = True

@@ -69,6 +69,11 @@ PyObject* PyUpb_CMessage_SerializeToString(PyObject* self, PyObject* args,
 int PyUpb_CMessage_InitAttributes(PyObject* _self, PyObject* args,
                                   PyObject* kwargs);
 
+// Checks that `key` is a field descriptor for an extension type, and that the
+// extendee is this message.  Otherwise returns NULL and sets a KeyError.
+const upb_fielddef* PyUpb_CMessage_GetExtensionDef(PyObject* _self,
+                                                   PyObject* key);
+
 // Clears the given field in this message.
 void PyUpb_CMessage_DoClearField(PyObject* _self, const upb_fielddef* f);
 

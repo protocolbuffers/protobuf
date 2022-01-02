@@ -1068,13 +1068,8 @@ void PyUpb_CMessage_DoClearField(PyObject* _self, const upb_fielddef* f) {
 static PyObject* PyUpb_CMessage_ClearExtension(PyObject* _self, PyObject* arg) {
   PyUpb_CMessage* self = (void*)_self;
   PyUpb_CMessage_AssureReified(self);
-  const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
-  const upb_fielddef* f = PyUpb_FieldDescriptor_GetDef(arg);
+  const upb_fielddef* f = PyUpb_CMessage_GetExtensionDef(_self, arg);
   if (!f) return NULL;
-  if (upb_fielddef_containingtype(f) != msgdef) {
-    PyErr_Format(PyExc_ValueError, "Extension doesn't match (%s vs %s)",
-                 upb_msgdef_fullname(msgdef), upb_fielddef_fullname(f));
-  }
   PyUpb_CMessage_DoClearField(_self, f);
   Py_RETURN_NONE;
 }
@@ -1159,11 +1154,38 @@ err:
   goto done;
 }
 
+const upb_fielddef* PyUpb_CMessage_GetExtensionDef(PyObject* _self, PyObject* key) {
+  const upb_fielddef* f = PyUpb_FieldDescriptor_GetDef(key);
+  if (!f) {
+    PyErr_Clear();
+    PyErr_Format(PyExc_KeyError, "Object %R is not a field descriptor\n", key);
+    return NULL;
+  }
+  if (!upb_fielddef_isextension(f)) {
+    PyErr_Format(PyExc_KeyError, "Field %s is not an extension\n",
+                 upb_fielddef_fullname(f));
+    return NULL;
+  }
+  const upb_msgdef* msgdef = PyUpb_CMessage_GetMsgdef(_self);
+  if (upb_fielddef_containingtype(f) != msgdef) {
+    PyErr_Format(PyExc_KeyError, "Extension doesn't match (%s vs %s)",
+                 upb_msgdef_fullname(msgdef), upb_fielddef_fullname(f));
+    return NULL;
+  }
+  return f;
+}
+
+
 static PyObject* PyUpb_CMessage_HasExtension(PyObject* _self,
                                              PyObject* ext_desc) {
   upb_msg* msg = PyUpb_CMessage_GetIfReified(_self);
-  const upb_fielddef* f = PyUpb_FieldDescriptor_GetDef(ext_desc);
+  const upb_fielddef* f = PyUpb_CMessage_GetExtensionDef(_self, ext_desc);
   if (!f) return NULL;
+  if (upb_fielddef_isseq(f)) {
+    PyErr_SetString(PyExc_KeyError,
+                    "Field is repeated. A singular method is required.");
+    return NULL;
+  }
   if (!msg) Py_RETURN_FALSE;
   return PyBool_FromLong(upb_msg_has(msg, f));
 }
