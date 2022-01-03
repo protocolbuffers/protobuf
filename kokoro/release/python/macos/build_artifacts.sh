@@ -25,7 +25,7 @@ rm -rf multibuild/
 mkdir artifacts
 export ARTIFACT_DIR=$(pwd)/artifacts
 
-git clone https://github.com/matthew-brett/
+git clone https://github.com/matthew-brett/multibuild.git
 # Pin multibuild scripts at a known commit to avoid potentially unwanted future changes from
 # silently creeping in (see https://github.com/protocolbuffers/protobuf/issues/9180).
 # IMPORTANT: always pin multibuild at the same commit for:
