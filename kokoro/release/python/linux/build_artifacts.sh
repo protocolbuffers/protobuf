@@ -54,17 +54,20 @@ build_artifact_version() {
   sudo rm -rf $REPO_DIR
 }
 
-build_x86_64_artifact_version() {
+build_x86_64_manylinux1_artifact_version() {
   # Explicitly request building manylinux1 wheels, which is no longer the default.
   # https://github.com/protocolbuffers/protobuf/issues/9180
   MB_ML_VER=1
-
-  # TODO(jtatermusch): currently when crosscompiling, "auditwheel repair" will be disabled
-  # since auditwheel doesn't work for crosscomiled wheels.
   build_artifact_version $@
 }
 
-build_crosscompiled_aarch64_artifact_version() {
+build_x86_64_manylinux2010_artifact_version() {
+  # Explicitly request building manylinux2010 wheels
+  MB_ML_VER=2010
+  build_artifact_version $@
+}
+
+build_crosscompiled_aarch64_manylinux2014_artifact_version() {
   # crosscompilation is only supported with the dockcross manylinux2014 image
   DOCKER_IMAGE=dockcross/manylinux2014-aarch64:20210706-65bf2dd
   MB_ML_VER=2014
@@ -75,13 +78,13 @@ build_crosscompiled_aarch64_artifact_version() {
   build_artifact_version $@
 }
 
-build_x86_64_artifact_version 3.6
-build_x86_64_artifact_version 3.7
-build_x86_64_artifact_version 3.8
-build_x86_64_artifact_version 3.9
-build_x86_64_artifact_version 3.10
+build_x86_64_manylinux1_artifact_version 3.6
+build_x86_64_manylinux1_artifact_version 3.7
+build_x86_64_manylinux1_artifact_version 3.8
+build_x86_64_manylinux1_artifact_version 3.9
+build_x86_64_manylinux2010_artifact_version 3.10
 
-build_crosscompiled_aarch64_artifact_version 3.7
-build_crosscompiled_aarch64_artifact_version 3.8
-build_crosscompiled_aarch64_artifact_version 3.9
-build_crosscompiled_aarch64_artifact_version 3.10
+build_crosscompiled_aarch64_manylinux2014_artifact_version 3.7
+build_crosscompiled_aarch64_manylinux2014_artifact_version 3.8
+build_crosscompiled_aarch64_manylinux2014_artifact_version 3.9
+build_crosscompiled_aarch64_manylinux2014_artifact_version 3.10
