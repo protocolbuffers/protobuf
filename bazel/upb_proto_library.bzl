@@ -272,7 +272,7 @@ def _maybe_add(d):
     if not _is_bazel:
         d["_grep_includes"] = attr.label(
             allow_single_file = True,
-            cfg = "host",
+            cfg = "exec",
             default = "//tools/cpp:grep-includes",
         )
     return d
@@ -286,12 +286,12 @@ _upb_proto_library_aspect = aspect(
         ),
         "_gen_upb": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = "//upbc:protoc-gen-upb",
         ),
         "_protoc": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = "@com_google_protobuf//:protoc",
         ),
         "_cc_toolchain": attr.label(
@@ -335,12 +335,12 @@ _upb_proto_reflection_library_aspect = aspect(
         ),
         "_gen_upbdefs": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = "//upbc:protoc-gen-upbdefs",
         ),
         "_protoc": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = "@com_google_protobuf//:protoc",
         ),
         "_cc_toolchain": attr.label(

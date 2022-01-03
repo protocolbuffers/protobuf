@@ -157,7 +157,7 @@ upb_amalgamation = rule(
     attrs = {
         "_amalgamator": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = "//bazel:amalgamate",
         ),
         "prefix": attr.string(
