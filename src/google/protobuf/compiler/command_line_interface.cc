@@ -2269,10 +2269,8 @@ Parse PROTO_FILES and generate output based on the options given:
                               with a non-zero exit code if any warnings
                               are generated.
   --print_free_field_numbers  Print the free field numbers of the messages
-                              defined in the given proto files. Groups share
-                              the same field number space with the parent
-                              message. Extension ranges are counted as
-                              occupied fields numbers.
+                              defined in the given proto files. Extension ranges
+                              are counted as occupied fields numbers.
   --enable_codegen_trace      Enables tracing which parts of protoc are
                               responsible for what codegen output. Not supported
                               by all backends or on all platforms.)";
@@ -2739,13 +2737,9 @@ typedef std::pair<int, int> FieldRange;
 void GatherOccupiedFieldRanges(
     const Descriptor* descriptor, absl::btree_set<FieldRange>* ranges,
     std::vector<const Descriptor*>* nested_messages) {
-  absl::flat_hash_set<const Descriptor*> groups;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     const FieldDescriptor* fd = descriptor->field(i);
     ranges->insert(FieldRange(fd->number(), fd->number() + 1));
-    if (fd->type() == FieldDescriptor::TYPE_GROUP) {
-      groups.insert(fd->message_type());
-    }
   }
   for (int i = 0; i < descriptor->extension_range_count(); ++i) {
     ranges->insert(FieldRange(descriptor->extension_range(i)->start,
@@ -2759,11 +2753,7 @@ void GatherOccupiedFieldRanges(
   // post-order strict.
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     const Descriptor* nested_desc = descriptor->nested_type(i);
-    if (groups.find(nested_desc) != groups.end()) {
-      GatherOccupiedFieldRanges(nested_desc, ranges, nested_messages);
-    } else {
-      nested_messages->push_back(nested_desc);
-    }
+    nested_messages->push_back(nested_desc);
   }
 }
 
