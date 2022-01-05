@@ -493,6 +493,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/TypeRegistryTest.java                \
   java/core/src/test/java/com/google/protobuf/UnknownEnumValueTest.java            \
   java/core/src/test/java/com/google/protobuf/UnknownFieldSetTest.java             \
+  java/core/src/test/java/com/google/protobuf/UnknownFieldSetPerformanceTest.java             \
   java/core/src/test/java/com/google/protobuf/UnmodifiableLazyStringListTest.java  \
   java/core/src/test/java/com/google/protobuf/Utf8Test.java                        \
   java/core/src/test/java/com/google/protobuf/Utf8Utils.java                       \

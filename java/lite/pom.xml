@@ -232,6 +232,7 @@
                     <exclude>TypeRegistryTest.java</exclude>
                     <exclude>UnknownEnumValueTest.java</exclude>
                     <exclude>UnknownFieldSetLiteTest.java</exclude>
+                    <exclude>UnknownFieldSetPerformanceTest.java</exclude>
                     <exclude>UnknownFieldSetTest.java</exclude>
                     <exclude>WellKnownTypesTest.java</exclude>
                     <exclude>WireFormatTest.java</exclude>
