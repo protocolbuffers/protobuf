@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignEnum;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
@@ -40,8 +42,11 @@ import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import proto3_unittest.UnittestProto3;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Tests related to unknown field handling.
@@ -58,7 +63,7 @@ public class UnknownFieldSetTest extends TestCase {
     unknownFields = emptyMessage.getUnknownFields();
   }
 
-  UnknownFieldSet.Field getField(String name) {
+  private UnknownFieldSet.Field getField(String name) {
     Descriptors.FieldDescriptor field = descriptor.findFieldByName(name);
     assertNotNull(field);
     return unknownFields.getField(field.getNumber());
@@ -173,6 +178,17 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals("1: 1\n2: 2\n3: 3\n3: 4\n", destination.toString());
   }
 
+  @Test
+  public void testAsMap() throws Exception {
+    UnknownFieldSet.Builder builder = UnknownFieldSet.newBuilder().mergeFrom(unknownFields);
+    Map<Integer, UnknownFieldSet.Field> mapFromBuilder = builder.asMap();
+    assertThat(mapFromBuilder).isNotEmpty();
+    UnknownFieldSet fields = builder.build();
+    Map<Integer, UnknownFieldSet.Field> mapFromFieldSet = fields.asMap();
+    assertThat(mapFromFieldSet).containsExactlyEntriesIn(mapFromBuilder);
+  }
+
+  @Test
   public void testClear() throws Exception {
     UnknownFieldSet fields = UnknownFieldSet.newBuilder().mergeFrom(unknownFields).clear().build();
     assertTrue(fields.asMap().isEmpty());
