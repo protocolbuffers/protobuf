@@ -116,7 +116,7 @@ void PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_array* arr) {
   assert(!PyUpb_RepeatedContainer_IsStub(self));
 }
 
-static upb_array* PyUpb_RepeatedContainer_AssureReified(PyObject* _self) {
+upb_array* PyUpb_RepeatedContainer_EnsureReified(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
   if (arr) return arr;  // Already writable.
@@ -209,7 +209,7 @@ PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
 
 PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
-  upb_array* arr = PyUpb_RepeatedContainer_AssureReified(_self);
+  upb_array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   size_t start_size = upb_array_size(arr);
   PyObject* it = PyObject_GetIter(value);
   if (!it) {
@@ -435,7 +435,7 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   Py_ssize_t index = -1;
   if (!PyArg_ParseTuple(args, "|n", &index)) return NULL;
-  upb_array* arr = PyUpb_RepeatedContainer_AssureReified(_self);
+  upb_array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   size_t size = upb_array_size(arr);
   if (index < 0) index += size;
   if (index >= size) index = size - 1;
@@ -447,7 +447,7 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
 
 static PyObject* PyUpb_RepeatedContainer_Remove(PyObject* _self,
                                                 PyObject* value) {
-  upb_array* arr = PyUpb_RepeatedContainer_AssureReified(_self);
+  upb_array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   Py_ssize_t match_index = -1;
   Py_ssize_t n = PyUpb_RepeatedContainer_Length(_self);
   for (Py_ssize_t i = 0; i < n; ++i) {
@@ -474,7 +474,7 @@ static PyObject* PyUpb_RepeatedContainer_Remove(PyObject* _self,
 static bool PyUpb_RepeatedContainer_Assign(PyObject* _self, PyObject* list) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
-  upb_array* arr = PyUpb_RepeatedContainer_AssureReified(_self);
+  upb_array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   Py_ssize_t size = PyList_Size(list);
   bool submsg = upb_fielddef_issubmsg(f);
   upb_arena* arena = PyUpb_Arena_Get(self->arena);
@@ -538,7 +538,7 @@ static PyObject* PyUpb_RepeatedContainer_MergeFrom(PyObject* _self,
 
 static PyObject* PyUpb_RepeatedCompositeContainer_AppendNew(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
-  upb_array* arr = PyUpb_RepeatedContainer_AssureReified(_self);
+  upb_array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   if (!arr) return NULL;
   const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
   upb_arena* arena = PyUpb_Arena_Get(self->arena);
@@ -582,7 +582,7 @@ static PyObject* PyUpb_RepeatedContainer_Insert(PyObject* _self,
   Py_ssize_t index;
   PyObject* value;
   if (!PyArg_ParseTuple(args, "nO", &index, &value)) return NULL;
-  upb_array* arr = PyUpb_RepeatedContainer_AssureReified(_self);
+  upb_array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   if (!arr) return NULL;
 
   // Normalize index.
@@ -667,7 +667,7 @@ static PyType_Spec PyUpb_RepeatedCompositeContainer_Spec = {
 static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
                                                       PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
-  upb_array* arr = PyUpb_RepeatedContainer_AssureReified(_self);
+  upb_array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   upb_arena* arena = PyUpb_Arena_Get(self->arena);
   const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
   upb_msgval msgval;

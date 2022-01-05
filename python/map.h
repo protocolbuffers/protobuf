@@ -48,6 +48,9 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_map* map,
 // Reifies a map stub to point to the concrete data in `map`.
 void PyUpb_MapContainer_Reify(PyObject* self, upb_map* map);
 
+// Reifies this map object if it is not already reified.
+upb_map* PyUpb_MapContainer_EnsureReified(PyObject* self);
+
 // Assigns `self[key] = val` for the map `self`.
 int PyUpb_MapContainer_AssignSubscript(PyObject* self, PyObject* key,
                                        PyObject* val);
