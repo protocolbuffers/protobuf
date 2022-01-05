@@ -73,6 +73,14 @@ using ::open;
 
 namespace {
 
+bool BoolFromEnvVar(const char* env_var, bool default_value) {
+  const char* value = getenv(env_var);
+  if (value) {
+    return std::string("YES") == ToUpper(value);
+  }
+  return default_value;
+}
+
 class SimpleLineCollector : public LineConsumer {
  public:
   SimpleLineCollector(std::unordered_set<std::string>* inout_set)
@@ -117,9 +125,7 @@ PrefixModeStorage::PrefixModeStorage() {
   // Even thought there are generation options, have an env back door since some
   // of these helpers could be used in other plugins.
 
-  const char* use_package_cstr = getenv("GPB_OBJC_USE_PACKAGE_AS_PREFIX");
-  use_package_name_ =
-    (use_package_cstr && (std::string("YES") == ToUpper(use_package_cstr)));
+  use_package_name_ = BoolFromEnvVar("GPB_OBJC_USE_PACKAGE_AS_PREFIX", false);
 
   const char* exception_path = getenv("GPB_OBJC_PACKAGE_PREFIX_EXCEPTIONS_PATH");
   if (exception_path) {
@@ -180,7 +186,9 @@ void SetProtoPackagePrefixExceptionList(const std::string& file_path) {
 }
 
 Options::Options() {
-  // Default is the value of the env for the package prefixes.
+  // While there are generator options, also support env variables to help with
+  // build systems where it isn't as easy to hook in for add the generation
+  // options when invoking protoc.
   const char* file_path = getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES");
   if (file_path) {
     expected_prefixes_path = file_path;
@@ -190,8 +198,9 @@ Options::Options() {
     expected_prefixes_suppressions =
         Split(suppressions, ";", true);
   }
-  prefixes_must_be_registered = false;
-  require_prefixes = false;
+  prefixes_must_be_registered =
+      BoolFromEnvVar("GPB_OBJC_PREFIXES_MUST_BE_REGISTERED", false);
+  require_prefixes = BoolFromEnvVar("GPB_OBJC_REQUIRE_PREFIXES", false);
 }
 
 namespace {
