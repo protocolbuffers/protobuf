@@ -37,6 +37,8 @@
 
 namespace Google\Protobuf\Internal;
 
+use Traversable;
+
 /**
  * MapField is used by generated protocol message classes to manipulate map
  * fields. It can be used like native PHP array.
@@ -134,6 +136,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($key)
     {
         return $this->container[$key];
@@ -151,7 +154,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException Invalid type for value.
      * @throws \ErrorException Non-existing key.
      */
-    public function offsetSet($key, $value)
+    public function offsetSet($key, $value): void
     {
         $this->checkKey($this->key_type, $key);
 
@@ -209,7 +212,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @return void
      * @throws \ErrorException Invalid type for key.
      */
-    public function offsetUnset($key)
+    public function offsetUnset($key): void
     {
         $this->checkKey($this->key_type, $key);
         unset($this->container[$key]);
@@ -224,7 +227,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @return bool True if the element at the given key exists.
      * @throws \ErrorException Invalid type for key.
      */
-    public function offsetExists($key)
+    public function offsetExists($key): bool
     {
         $this->checkKey($this->key_type, $key);
         return isset($this->container[$key]);
@@ -233,7 +236,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * @ignore
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new MapFieldIter($this->container, $this->key_type);
     }
@@ -245,7 +248,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * @return integer The number of stored elements.
      */
-    public function count()
+    public function count(): int
     {
         return count($this->container);
     }

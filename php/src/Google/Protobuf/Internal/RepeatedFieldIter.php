@@ -71,7 +71,7 @@ class RepeatedFieldIter implements \Iterator
      *
      * @return void
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->position = 0;
     }
@@ -81,6 +81,7 @@ class RepeatedFieldIter implements \Iterator
      *
      * @return object The element at the current position.
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return $this->container[$this->position];
@@ -91,6 +92,7 @@ class RepeatedFieldIter implements \Iterator
      *
      * @return integer The current position.
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->position;
@@ -101,7 +103,7 @@ class RepeatedFieldIter implements \Iterator
      *
      * @return void
      */
-    public function next()
+    public function next(): void
     {
         ++$this->position;
     }
@@ -111,7 +113,7 @@ class RepeatedFieldIter implements \Iterator
      *
      * @return bool True if there are more elements to iterate.
      */
-    public function valid()
+    public function valid(): bool
     {
         return isset($this->container[$this->position]);
     }
