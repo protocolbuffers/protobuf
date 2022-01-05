@@ -30,7 +30,7 @@
 
 package com.google.protobuf.kotlin
 
-import com.google.common.truth.Truth.assertThat
+import static com.google.common.truth.Truth.assertThat
 import com.google.protobuf.TestUtil
 import com.google.protobuf.TestUtil.toBytes
 import com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.EvilNamesProto2

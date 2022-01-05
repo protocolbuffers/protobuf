@@ -231,6 +231,7 @@ java_library(
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
     ],
+    visibility = ["//java:__subpackages__"],
 )
 
 test_suite(

@@ -655,6 +655,8 @@ RELATIVE_TEST_PROTOS = [
 TEST_PROTOS = ["src/" + s for s in RELATIVE_TEST_PROTOS]
 
 GENERIC_RELATIVE_TEST_PROTOS = [
+    "google/protobuf/map_proto2_unittest.proto",
+    "google/protobuf/map_unittest.proto",
     "google/protobuf/unittest.proto",
     "google/protobuf/unittest_arena.proto",
     "google/protobuf/unittest_custom_options.proto",
@@ -1181,7 +1183,7 @@ proto_library(
     name = "generated_protos_proto",
     srcs = [
         "src/google/protobuf/unittest_import_public.proto",
-        "unittest_gen.proto",
+        "unittest_gen_import.proto",
     ],
 )
 
@@ -1189,7 +1191,7 @@ py_proto_library(
     name = "generated_protos_py",
     srcs = [
         "src/google/protobuf/unittest_import_public.proto",
-        "unittest_gen.proto",
+        "unittest_gen_import.proto",
     ],
     default_runtime = "",
     protoc = ":protoc",
@@ -1319,6 +1321,19 @@ cc_binary(
 #     ],
 # )
 
+
+java_proto_library(
+    name = "java_test_protos",
+    deps = [":generic_test_protos"],
+    visibility = ["//visibility:public"],
+)
+
+java_lite_proto_library(
+    name = "java_lite_test_protos",
+    deps = [":generic_test_protos"],
+    visibility = ["//visibility:public"],
+)
+
 java_proto_library(
     name = "test_messages_proto2_java_proto",
     visibility = [
@@ -1412,3 +1427,149 @@ filegroup(
     srcs = glob(["**/*.bzl"]),
     visibility = ["//visibility:public"],
 )
+
+# Kotlin proto rules
+
+genrule(
+    name = "gen_kotlin_unittest_lite",
+    srcs = [
+        "src/google/protobuf/unittest_lite.proto",
+        "src/google/protobuf/unittest_import.proto",
+        "src/google/protobuf/unittest_import_public.proto",
+    ],
+    outs = [
+        "TestAllTypesLiteKt.kt",
+        "ForeignMessageLiteKt.kt",
+        "TestAllExtensionsLiteKt.kt",
+        "TestEmptyMessageLiteKt.kt",
+        "TestEmptyMessageWithExtensionsLiteKt.kt",
+        "TestMapLiteKt.kt",
+        "OptionalGroup_extension_liteKt.kt",
+        "RepeatedGroup_extension_liteKt.kt",
+    ],
+    visibility = ["//visibility:public"],
+    cmd = "sed -i 's:google/:src/google/:' src/google/protobuf/unittest_lite.proto && " +
+          "sed -i 's:google/:src/google/:' src/google/protobuf/unittest_import.proto && " +
+          "$(location //:protoc) " +
+          "--kotlin_out=lite:$(@D) " +
+          "$(locations src/google/protobuf/unittest_lite.proto) && " +
+          "cp $(@D)/protobuf_unittest/TestAllTypesLiteKt.kt " +
+          "$(location TestAllTypesLiteKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/ForeignMessageLiteKt.kt " +
+          "$(location ForeignMessageLiteKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestAllExtensionsLiteKt.kt " +
+          "$(location TestAllExtensionsLiteKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestAllTypesLiteKt.kt " +
+          "$(location TestAllTypesLiteKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestEmptyMessageLiteKt.kt " +
+          "$(location TestEmptyMessageLiteKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestEmptyMessageWithExtensionsLiteKt.kt " +
+          "$(location TestEmptyMessageWithExtensionsLiteKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestMapLiteKt.kt " +
+          "$(location TestMapLiteKt.kt) && " +
+          "cp $(@D)/src/google/protobuf/OptionalGroup_extension_liteKt.kt " +
+          "$(location OptionalGroup_extension_liteKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/RepeatedGroup_extension_liteKt.kt " +
+          "$(location RepeatedGroup_extension_liteKt.kt)",
+    tools = [":protoc"],
+)
+
+genrule(
+    name = "gen_kotlin_unittest",
+    srcs = [
+        "src/google/protobuf/unittest.proto",
+        "src/google/protobuf/unittest_import.proto",
+        "src/google/protobuf/unittest_import_public.proto",
+        "src/google/protobuf/map_proto2_unittest.proto",
+    ],
+    outs = [
+        "TestAllTypesKt.kt",
+        "ForeignMessageKt.kt",
+        "TestAllExtensionsKt.kt",
+        "TestEmptyMessageKt.kt",
+        "TestEmptyMessageWithExtensionsKt.kt",
+        "TestIntIntMapKt.kt",
+        "TestEnumMapKt.kt",
+        "TestMapsKt.kt",
+        "OptionalGroup_extensionKt.kt",
+        "RepeatedGroup_extensionKt.kt",
+    ],
+    visibility = ["//visibility:public"],
+    cmd = "sed -i 's:google/:src/google/:' src/google/protobuf/unittest.proto && " +
+          "sed -i 's:google/:src/google/:' src/google/protobuf/unittest_import.proto && " + 
+          "sed -i 's:google/:src/google/:' src/google/protobuf/map_proto2_unittest.proto && " +
+          "$(location //:protoc) " +
+          "--kotlin_out=shared,immutable:$(@D) " +
+          "$(location src/google/protobuf/unittest.proto) && " +
+          "$(location //:protoc) " +
+          "--kotlin_out=shared,immutable:$(@D) " + 
+          "$(location src/google/protobuf/map_proto2_unittest.proto) && " +
+          "cp $(@D)/protobuf_unittest/TestAllTypesKt.kt " +
+          "$(location TestAllTypesKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/ForeignMessageKt.kt " +
+          "$(location ForeignMessageKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestAllExtensionsKt.kt " +
+          "$(location TestAllExtensionsKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestEmptyMessageKt.kt " +
+          "$(location TestEmptyMessageKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestEmptyMessageWithExtensionsKt.kt " +
+          "$(location TestEmptyMessageWithExtensionsKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestIntIntMapKt.kt " +
+          "$(location TestIntIntMapKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestEnumMapKt.kt " +
+          "$(location TestEnumMapKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestMapsKt.kt " +
+          "$(location TestMapsKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/OptionalGroup_extensionKt.kt " +
+          "$(location OptionalGroup_extensionKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/RepeatedGroup_extensionKt.kt " +
+          "$(location RepeatedGroup_extensionKt.kt)",
+    tools = ["//:protoc"],
+)
+
+genrule(
+    name = "gen_kotlin_proto3_unittest_lite",
+    srcs = [
+        "src/google/protobuf/unittest_proto3_lite.proto",
+        "src/google/protobuf/unittest_import.proto",
+    ],
+    outs = [
+        "TestAllTypesProto3LiteKt.kt",
+        "TestEmptyMessageProto3LiteKt.kt",
+    ],
+    visibility = ["//visibility:public"],
+    cmd = "sed -i 's:google/:src/google/:' src/google/protobuf/unittest_proto3_lite.proto && " +
+          "$(location //:protoc) " +
+          "--kotlin_out=lite:$(@D) " +
+          "$(location src/google/protobuf/unittest_proto3_lite.proto) && " +
+          "cp $(@D)/src/google/protobuf/TestAllTypesKt.kt " +
+          "$(location TestAllTypesProto3LiteKt.kt) && " +
+          "cp $(@D)/src/google/protobuf/TestEmptyMessageKt.kt " +
+          "$(location TestEmptyMessageProto3LiteKt.kt)",
+    tools = ["//:protoc"],
+)
+
+genrule(
+    name = "gen_kotlin_proto3_unittest",
+    srcs = [
+        "src/google/protobuf/unittest_proto3.proto",
+        "src/google/protobuf/unittest_import.proto",
+        "src/google/protobuf/unittest_import_public.proto",
+    ],
+    outs = [
+        "TestAllTypesProto3Kt.kt",
+        "TestEmptyMessageProto3Kt.kt",
+    ],
+    visibility = ["//visibility:public"],
+    cmd = "sed -i 's:google/:src/google/:' src/google/protobuf/unittest_proto3.proto && " +
+          "sed -i 's:google/:src/google/:' src/google/protobuf/unittest_import.proto && " +
+          "$(location //:protoc) " +
+          "--kotlin_out=shared,immutable:$(@D) " +
+          "$(location src/google/protobuf/unittest_proto3.proto) && " +
+          "cp $(@D)/proto3_unittest/TestAllTypesKt.kt " +
+          "$(location TestAllTypesProto3Kt.kt) && " +
+          "cp $(@D)/proto3_unittest/TestEmptyMessageKt.kt " +
+          "$(location TestEmptyMessageProto3Kt.kt)",
+    tools = ["//:protoc"],
+)
+
