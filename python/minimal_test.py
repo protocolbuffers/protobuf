@@ -82,11 +82,11 @@ class TestMessageExtension(unittest.TestCase):
         self.assertRaises(AttributeError, getattr, msg, 'Extensions')
     
     def testClearStubMapField(self):
-        msg = map_unittest_pb2.TestMap()
-        int32_map = msg.map_int32_int32
-        msg.ClearField("map_int32_int32")
+        msg = map_unittest_pb2.TestMapSubmessage()
+        int32_map = msg.test_map.map_int32_int32
+        msg.test_map.ClearField("map_int32_int32")
         int32_map[123] = 456
-        self.assertEqual(0, msg.ByteSize())
+        self.assertEqual(0, msg.test_map.ByteSize())
 
     def testClearReifiedMapField(self):
         msg = map_unittest_pb2.TestMap()
@@ -97,11 +97,11 @@ class TestMessageExtension(unittest.TestCase):
         self.assertEqual(0, msg.ByteSize())
 
     def testClearStubRepeatedField(self):
-        msg = unittest_pb2.TestAllTypes()
-        int32_array = msg.repeated_int32
-        msg.ClearField("repeated_int32")
+        msg = unittest_pb2.NestedTestAllTypes()
+        int32_array = msg.payload.repeated_int32
+        msg.payload.ClearField("repeated_int32")
         int32_array.append(123)
-        self.assertEqual(0, msg.ByteSize())
+        self.assertEqual(0, msg.payload.ByteSize())
 
     def testClearReifiedRepeatdField(self):
         msg = unittest_pb2.TestAllTypes()

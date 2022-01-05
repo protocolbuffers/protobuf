@@ -108,6 +108,7 @@ static upb_msgval _upb_msg_getraw(const upb_msg *msg, const upb_fielddef *f) {
 }
 
 bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f) {
+  assert(upb_fielddef_haspresence(f));
   if (upb_fielddef_isextension(f)) {
     const upb_msglayout_ext *ext = _upb_fielddef_extlayout(f);
     return _upb_msg_getext(msg, ext) != NULL;

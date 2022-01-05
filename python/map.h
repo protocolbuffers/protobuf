@@ -34,6 +34,7 @@
 #include "upb/def.h"
 
 // Creates a new repeated field stub for field `f` of message object `parent`.
+// Precondition: `parent` must be a stub.
 PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_fielddef* f,
                                      PyObject* arena);
 

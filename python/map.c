@@ -89,6 +89,9 @@ PyTypeObject* PyUpb_MapContainer_GetClass(const upb_fielddef* f) {
 
 PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_fielddef* f,
                                      PyObject* arena) {
+  // We only create stubs when the parent is reified, by convention.  However
+  // this is not an invariant: the parent could become reified at any time.
+  assert(PyUpb_CMessage_GetIfReified(parent) == NULL);
   PyTypeObject* cls = PyUpb_MapContainer_GetClass(f);
   PyUpb_MapContainer* map = (void*)PyType_GenericAlloc(cls, 0);
   map->arena = arena;
@@ -196,7 +199,6 @@ PyObject* PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
 }
 
 PyObject* PyUpb_MapContainer_Clear(PyObject* _self, PyObject* key) {
-  PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   upb_map* map = PyUpb_MapContainer_EnsureReified(_self);
   upb_map_clear(map);
   Py_RETURN_NONE;

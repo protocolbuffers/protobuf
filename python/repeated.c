@@ -160,6 +160,9 @@ static Py_ssize_t PyUpb_RepeatedContainer_Length(PyObject* self) {
 PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
                                           const upb_fielddef* f,
                                           PyObject* arena) {
+  // We only create stubs when the parent is reified, by convention.  However
+  // this is not an invariant: the parent could become reified at any time.
+  assert(PyUpb_CMessage_GetIfReified(parent) == NULL);
   PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
   PyUpb_RepeatedContainer* repeated = (void*)PyType_GenericAlloc(cls, 0);
   repeated->arena = arena;
@@ -193,8 +196,8 @@ static PyObject* PyUpb_RepeatedContainer_MergeFrom(PyObject* _self,
 PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   PyUpb_RepeatedContainer* clone = (void*)PyType_GenericAlloc(Py_TYPE(_self), 0);
-  const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
   if (clone == NULL) return NULL;
+  const upb_fielddef* f = PyUpb_RepeatedContainer_GetField(self);
   clone->arena = PyUpb_Arena_New();
   clone->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f);
   clone->ptr.arr =

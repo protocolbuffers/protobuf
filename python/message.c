@@ -715,12 +715,30 @@ PyObject* PyUpb_CMessage_Get(upb_msg* u_msg, const upb_msgdef* m,
   return ret;
 }
 
-PyObject* PyUpb_CMessage_GetUnsetWrapper(PyUpb_CMessage* self,
-                                         const upb_fielddef* field) {
+/* PyUpb_CMessage_GetStub()
+ *
+ * Non-present messages return "stub" objects that point to their parent, but
+ * will materialize into real upb objects if they are mutated.
+ * 
+ * Note: we do *not* create stubs for repeated/map fields unless the parent
+ * is a stub:
+ * 
+ *    msg = TestMessage()
+ *    msg.submessage                # (A) Creates a stub
+ *    msg.repeated_foo              # (B) Does *not* create a stub
+ *    msg.submessage.repeated_bar   # (C) Creates a stub
+ *    
+ * In case (B) we have some freedom: we could either create a stub, or create
+ * a reified object with underlying data.  It appears that either could work
+ * equally well, with no observable change to users.  There isn't a clear
+ * advantage to either choice.  We choose to follow the behavior of the
+ * pre-existing C++ behavior for consistency, but if it becomes apparent that
+ * there would be some benefit to reversing this decision, it should be totally
+ * within the realm of possibility.
+ */
+PyObject* PyUpb_CMessage_GetStub(PyUpb_CMessage* self,
+                                 const upb_fielddef* field) {
   PyObject* _self = (void*)self;
-  // Non-present messages return magical "empty" messages that point to their
-  // parent, but will materialize into real messages if any fields are
-  // assigned.
   if (!self->unset_subobj_map) {
     self->unset_subobj_map = PyUpb_WeakMap_New();
   }
@@ -786,8 +804,8 @@ PyObject* PyUpb_CMessage_GetFieldValue(PyObject* _self,
   bool seq = upb_fielddef_isseq(field);
 
   if ((PyUpb_CMessage_IsStub(self) && (submsg || seq)) ||
-      (submsg && !upb_msg_has(self->ptr.msg, field))) {
-    return PyUpb_CMessage_GetUnsetWrapper(self, field);
+      (submsg && !seq && !upb_msg_has(self->ptr.msg, field))) {
+    return PyUpb_CMessage_GetStub(self, field);
   } else if (seq) {
     return PyUpb_CMessage_GetPresentWrapper(self, field);
   } else {
@@ -1053,7 +1071,7 @@ void PyUpb_CMessage_DoClearField(PyObject* _self, const upb_fielddef* f) {
     PyUpb_MapContainer_Invalidate(sub);
   } else if (upb_fielddef_isseq(f)) {
     if (sub) {
-      //PyUpb_RepeatedContainer_EnsureReified(sub);
+      PyUpb_RepeatedContainer_EnsureReified(sub);
     }
   } else if (upb_fielddef_issubmsg(f)) {
     if (sub) {
