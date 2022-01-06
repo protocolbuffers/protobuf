@@ -2,7 +2,8 @@
 
 This page lists code related to Protocol Buffers which is developed and maintained by third parties.  You may find this code useful, but note that **these projects are not affiliated with or endorsed by Google (unless explicitly marked)**; try them at your own risk.  Also note that many projects here are in the early stages of development and not production-ready.
 
-If you have a project that should be listed here, please [send us a pull request](https://github.com/google/protobuf/pulls) to update this page.
+If you have a project that should be listed here, please
+[send us a pull request](https://github.com/protocolbuffers/protobuf/pulls) to update this page.
 
 ## Programming Languages
 
@@ -18,7 +19,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * C: https://github.com/haberman/upb/wiki
 * C: https://github.com/squidfunk/protobluff
 * C: https://github.com/eerimoq/pbtools
-* C++: https://github.com/google/protobuf (Google-official implementation)
+* C++: https://github.com/protocolbuffers/protobuf (Google-official implementation)
 * C++: https://EmbeddedProto.com
 * C/C++: http://spbc.sf.net/
 * C#: https://code.google.com/p/protobuf-csharp-port
@@ -52,7 +53,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Haskell: https://github.com/google/proto-lens (Google-unofficial implementation)
 * Haskell: https://github.com/awakesecurity/proto3-suite (code generator) https://github.com/awakesecurity/proto3-wire (binary serializer/deserializer)
 * Haxe: https://github.com/Atry/protoc-gen-haxe
-* Java: https://github.com/google/protobuf (Google-official implementation)
+* Java: https://github.com/protocolbuffers/protobuf (Google-official implementation)
 * Java/Android: https://github.com/square/wire
 * Java: https://github.com/HebiRobotics/QuickBuffers/
 * Java ME: https://code.google.com/p/protobuf-javame/
@@ -87,7 +88,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * PHP: https://github.com/chobie/php-protocolbuffers
 * Prolog: http://www.swi-prolog.org/pldoc/package/protobufs.html
 * Purescript: https://github.com/xc-jp/purescript-protobuf
-* Python: https://github.com/google/protobuf (Google-official implementation)
+* Python: https://github.com/protocolbuffers/protobuf (Google-official implementation)
 * Python: https://github.com/eigenein/protobuf
 * Python: https://github.com/danielgtaylor/python-betterproto
 * R: http://cran.r-project.org/package=RProtoBuf
