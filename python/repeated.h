@@ -34,6 +34,7 @@
 #include "upb/def.h"
 
 // Creates a new repeated field stub for field `f` of message object `parent`.
+// Precondition: `parent` must be a stub.
 PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
                                           const upb_fielddef* f,
                                           PyObject* arena);
@@ -48,6 +49,9 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* arr,
 
 // Reifies a repeated field stub to point to the concrete data in `arr`.
 void PyUpb_RepeatedContainer_Reify(PyObject* self, upb_array* arr);
+
+// Reifies this repeated object if it is not already reified.
+upb_array* PyUpb_RepeatedContainer_EnsureReified(PyObject* self);
 
 // Implements repeated_field.extend(iterable).  `_self` must be a repeated
 // field (either repeated composite or repeated scalar).

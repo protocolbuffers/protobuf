@@ -88,6 +88,20 @@ static void PyUpb_ExtensionDict_Dealloc(PyUpb_ExtensionDict* self) {
   PyUpb_Dealloc(self);
 }
 
+static int PyUpb_ExtensionDict_Contains(PyObject* _self, PyObject* key) {
+  PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
+  const upb_fielddef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
+  if (!f) return -1;
+  upb_msg* msg = PyUpb_CMessage_GetIfReified(self->msg);
+  if (!msg) return 0;
+  if (upb_fielddef_isseq(f)) {
+    upb_msgval val = upb_msg_get(msg, f);
+    return upb_array_size(val.array_val) > 0;
+  } else {
+    return upb_msg_has(msg, f);
+  }
+}
+
 static Py_ssize_t PyUpb_ExtensionDict_Length(PyObject* _self) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
   upb_msg* msg = PyUpb_CMessage_GetIfReified(self->msg);
@@ -96,26 +110,22 @@ static Py_ssize_t PyUpb_ExtensionDict_Length(PyObject* _self) {
 
 static PyObject* PyUpb_ExtensionDict_Subscript(PyObject* _self, PyObject* key) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
-  const upb_fielddef* f = PyUpb_FieldDescriptor_GetDef(key);
+  const upb_fielddef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
   if (!f) return NULL;
-  if (!upb_fielddef_isextension(f)) {
-    return PyErr_Format(PyExc_KeyError, "Field %s is not an extension\n",
-                        upb_fielddef_fullname(f));
-  }
   return PyUpb_CMessage_GetFieldValue(self->msg, f);
 }
 
-int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
-                                        PyObject* val) {
+static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
+                                               PyObject* val) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
-  const upb_fielddef* f = PyUpb_FieldDescriptor_GetDef(key);
+  const upb_fielddef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
   if (!f) return -1;
-  if (!upb_fielddef_isextension(f)) {
-    PyErr_Format(PyExc_KeyError, "Field %s is not an extension\n",
-                 upb_fielddef_fullname(f));
-    return -1;
+  if (val) {
+    return PyUpb_CMessage_SetFieldValue(self->msg, f, val);
+  } else {
+    PyUpb_CMessage_DoClearField(self->msg, f);
+    return 0;
   }
-  return PyUpb_CMessage_SetFieldValue(self->msg, f, val);
 }
 
 static PyMethodDef PyUpb_ExtensionDict_Methods[] = {
@@ -133,8 +143,8 @@ static PyType_Slot PyUpb_ExtensionDict_Slots[] = {
     //{Py_tp_hash, PyObject_HashNotImplemented},
     //{Py_tp_richcompare, PyUpb_ExtensionDict_RichCompare},
     //{Py_tp_iter, PyUpb_ExtensionDict_GetIter},
+    {Py_sq_contains, PyUpb_ExtensionDict_Contains},
     {Py_sq_length, PyUpb_ExtensionDict_Length},
-    //{Py_sq_contains, PyUpb_ExtensionDict_Contains},
     {Py_mp_length, PyUpb_ExtensionDict_Length},
     {Py_mp_subscript, PyUpb_ExtensionDict_Subscript},
     {Py_mp_ass_subscript, PyUpb_ExtensionDict_AssignSubscript},

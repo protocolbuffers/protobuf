@@ -31,6 +31,7 @@ import unittest
 from google.protobuf.pyext import _message
 from google.protobuf.internal import api_implementation
 from google.protobuf import unittest_pb2
+from google.protobuf import map_unittest_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import text_format
 from google.protobuf import message_factory
@@ -79,6 +80,37 @@ class TestMessageExtension(unittest.TestCase):
     def testExtensionsErrors(self):
         msg = unittest_pb2.TestAllTypes()
         self.assertRaises(AttributeError, getattr, msg, 'Extensions')
+    
+    def testClearStubMapField(self):
+        msg = map_unittest_pb2.TestMapSubmessage()
+        int32_map = msg.test_map.map_int32_int32
+        msg.test_map.ClearField("map_int32_int32")
+        int32_map[123] = 456
+        self.assertEqual(0, msg.test_map.ByteSize())
+
+    def testClearReifiedMapField(self):
+        msg = map_unittest_pb2.TestMap()
+        int32_map = msg.map_int32_int32
+        int32_map[123] = 456
+        msg.ClearField("map_int32_int32")
+        int32_map[111] = 222
+        self.assertEqual(0, msg.ByteSize())
+
+    def testClearStubRepeatedField(self):
+        msg = unittest_pb2.NestedTestAllTypes()
+        int32_array = msg.payload.repeated_int32
+        msg.payload.ClearField("repeated_int32")
+        int32_array.append(123)
+        self.assertEqual(0, msg.payload.ByteSize())
+
+    def testClearReifiedRepeatdField(self):
+        msg = unittest_pb2.TestAllTypes()
+        int32_array = msg.repeated_int32
+        int32_array.append(123)
+        self.assertNotEqual(0, msg.ByteSize())
+        msg.ClearField("repeated_int32")
+        int32_array.append(123)
+        self.assertEqual(0, msg.ByteSize())
 
 #TestMessageExtension.test_descriptor_pool.__unittest_expecting_failure__ = True
 

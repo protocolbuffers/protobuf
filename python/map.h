@@ -34,6 +34,7 @@
 #include "upb/def.h"
 
 // Creates a new repeated field stub for field `f` of message object `parent`.
+// Precondition: `parent` must be a stub.
 PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_fielddef* f,
                                      PyObject* arena);
 
@@ -47,6 +48,9 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_map* map,
 
 // Reifies a map stub to point to the concrete data in `map`.
 void PyUpb_MapContainer_Reify(PyObject* self, upb_map* map);
+
+// Reifies this map object if it is not already reified.
+upb_map* PyUpb_MapContainer_EnsureReified(PyObject* self);
 
 // Assigns `self[key] = val` for the map `self`.
 int PyUpb_MapContainer_AssignSubscript(PyObject* self, PyObject* key,

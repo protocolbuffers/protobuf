@@ -168,15 +168,15 @@ typedef struct PyUpb_CMessage {
 
 static PyObject* PyUpb_CMessage_GetAttr(PyObject* _self, PyObject* attr);
 
-bool PyUpb_CMessage_IsUnset(PyUpb_CMessage* msg) { return msg->def & 1; }
+bool PyUpb_CMessage_IsStub(PyUpb_CMessage* msg) { return msg->def & 1; }
 
 const upb_fielddef* PyUpb_CMessage_GetFieldDef(PyUpb_CMessage* msg) {
-  assert(PyUpb_CMessage_IsUnset(msg));
+  assert(PyUpb_CMessage_IsStub(msg));
   return (void*)(msg->def & ~(uintptr_t)1);
 }
 
 static const upb_msgdef* _PyUpb_CMessage_GetMsgdef(PyUpb_CMessage* msg) {
-  return PyUpb_CMessage_IsUnset(msg)
+  return PyUpb_CMessage_IsStub(msg)
              ? upb_fielddef_msgsubdef(PyUpb_CMessage_GetFieldDef(msg))
              : (void*)msg->def;
 }
@@ -186,7 +186,7 @@ const upb_msgdef* PyUpb_CMessage_GetMsgdef(PyObject* self) {
 }
 
 static upb_msg* PyUpb_CMessage_GetMsg(PyUpb_CMessage* self) {
-  assert(!PyUpb_CMessage_IsUnset(self));
+  assert(!PyUpb_CMessage_IsStub(self));
   return self->ptr.msg;
 }
 
@@ -209,7 +209,7 @@ bool PyUpb_CMessage_Check(PyObject* self) {
 // If NULL is returned, the object is empty and has no underlying data.
 upb_msg* PyUpb_CMessage_GetIfReified(PyObject* _self) {
   PyUpb_CMessage* self = (void*)_self;
-  return PyUpb_CMessage_IsUnset(self) ? NULL : self->ptr.msg;
+  return PyUpb_CMessage_IsStub(self) ? NULL : self->ptr.msg;
 }
 
 static PyObject* PyUpb_CMessage_New(PyObject* cls, PyObject* unused_args,
@@ -326,7 +326,7 @@ err:
   return ret;
 }
 
-void PyUpb_CMessage_AssureReified(PyUpb_CMessage* self);
+void PyUpb_CMessage_EnsureReified(PyUpb_CMessage* self);
 
 static bool PyUpb_CMessage_InitMapAttribute(PyObject* _self, PyObject* name,
                                             const upb_fielddef* f,
@@ -396,7 +396,7 @@ int PyUpb_CMessage_InitAttributes(PyObject* _self, PyObject* args,
   Py_ssize_t pos = 0;
   PyObject* name;
   PyObject* value;
-  PyUpb_CMessage_AssureReified(self);
+  PyUpb_CMessage_EnsureReified(self);
   upb_msg* msg = PyUpb_CMessage_GetMsg(self);
   upb_arena* arena = PyUpb_Arena_Get(self->arena);
 
@@ -493,7 +493,7 @@ static void PyUpb_CMessage_SetField(PyUpb_CMessage* parent,
 }
 
 /*
- * PyUpb_CMessage_AssureReified()
+ * PyUpb_CMessage_EnsureReified()
  *
  * This implements the "expando" behavior of Python protos:
  *   foo = FooProto()
@@ -508,10 +508,10 @@ static void PyUpb_CMessage_SetField(PyUpb_CMessage* parent,
  * object.
  *
  * Post-condition:
- *   PyUpb_CMessage_IsUnset(self) is false
+ *   PyUpb_CMessage_IsStub(self) is false
  */
-void PyUpb_CMessage_AssureReified(PyUpb_CMessage* self) {
-  if (!PyUpb_CMessage_IsUnset(self)) return;
+void PyUpb_CMessage_EnsureReified(PyUpb_CMessage* self) {
+  if (!PyUpb_CMessage_IsStub(self)) return;
   upb_arena* arena = PyUpb_Arena_Get(self->arena);
 
   // This is a non-present message. We need to create a real upb_msg for this
@@ -524,7 +524,7 @@ void PyUpb_CMessage_AssureReified(PyUpb_CMessage* self) {
   do {
     PyUpb_CMessage* next_parent = parent->ptr.parent;
     const upb_fielddef* parent_f = NULL;
-    if (PyUpb_CMessage_IsUnset(parent)) {
+    if (PyUpb_CMessage_IsStub(parent)) {
       parent_f = PyUpb_CMessage_InitAsMsg(parent, arena);
     }
     PyUpb_CMessage_SetField(parent, child_f, child, arena);
@@ -562,7 +562,7 @@ static void PyUpb_CMessage_Reify(PyUpb_CMessage* self, const upb_fielddef* f,
  *
  * This operation must be invoked whenever the underlying upb_msg has been
  * mutated directly in C.  This will attach any newly-present field data
- * to previously returned "empty" wrapper objects.
+ * to previously returned stub wrapper objects.
  *
  * For example:
  *   foo = FooMessage()
@@ -616,7 +616,7 @@ static void PyUpb_CMessage_SyncSubobjs(PyUpb_CMessage* self) {
 }
 
 static PyObject* PyUpb_CMessage_ToString(PyUpb_CMessage* self) {
-  if (PyUpb_CMessage_IsUnset(self)) {
+  if (PyUpb_CMessage_IsStub(self)) {
     return PyUnicode_FromStringAndSize(NULL, 0);
   }
   upb_msg* msg = PyUpb_CMessage_GetMsg(self);
@@ -658,7 +658,7 @@ void PyUpb_CMessage_CacheDelete(PyObject* _self, const upb_fielddef* f) {
 void PyUpb_CMessage_SetConcreteSubobj(PyObject* _self, const upb_fielddef* f,
                                       upb_msgval subobj) {
   PyUpb_CMessage* self = (void*)_self;
-  PyUpb_CMessage_AssureReified(self);
+  PyUpb_CMessage_EnsureReified(self);
   PyUpb_CMessage_CacheDelete(_self, f);
   upb_msg_set(self->ptr.msg, f, subobj, PyUpb_Arena_Get(self->arena));
 }
@@ -666,7 +666,7 @@ void PyUpb_CMessage_SetConcreteSubobj(PyObject* _self, const upb_fielddef* f,
 static void PyUpb_CMessage_Dealloc(PyObject* _self) {
   PyUpb_CMessage* self = (void*)_self;
 
-  if (PyUpb_CMessage_IsUnset(self)) {
+  if (PyUpb_CMessage_IsStub(self)) {
     PyUpb_CMessage_CacheDelete((PyObject*)self->ptr.parent,
                                PyUpb_CMessage_GetFieldDef(self));
     Py_DECREF(self->ptr.parent);
@@ -715,12 +715,30 @@ PyObject* PyUpb_CMessage_Get(upb_msg* u_msg, const upb_msgdef* m,
   return ret;
 }
 
-PyObject* PyUpb_CMessage_GetUnsetWrapper(PyUpb_CMessage* self,
-                                         const upb_fielddef* field) {
+/* PyUpb_CMessage_GetStub()
+ *
+ * Non-present messages return "stub" objects that point to their parent, but
+ * will materialize into real upb objects if they are mutated.
+ * 
+ * Note: we do *not* create stubs for repeated/map fields unless the parent
+ * is a stub:
+ * 
+ *    msg = TestMessage()
+ *    msg.submessage                # (A) Creates a stub
+ *    msg.repeated_foo              # (B) Does *not* create a stub
+ *    msg.submessage.repeated_bar   # (C) Creates a stub
+ *    
+ * In case (B) we have some freedom: we could either create a stub, or create
+ * a reified object with underlying data.  It appears that either could work
+ * equally well, with no observable change to users.  There isn't a clear
+ * advantage to either choice.  We choose to follow the behavior of the
+ * pre-existing C++ behavior for consistency, but if it becomes apparent that
+ * there would be some benefit to reversing this decision, it should be totally
+ * within the realm of possibility.
+ */
+PyObject* PyUpb_CMessage_GetStub(PyUpb_CMessage* self,
+                                 const upb_fielddef* field) {
   PyObject* _self = (void*)self;
-  // Non-present messages return magical "empty" messages that point to their
-  // parent, but will materialize into real messages if any fields are
-  // assigned.
   if (!self->unset_subobj_map) {
     self->unset_subobj_map = PyUpb_WeakMap_New();
   }
@@ -743,7 +761,7 @@ PyObject* PyUpb_CMessage_GetUnsetWrapper(PyUpb_CMessage* self,
 
 PyObject* PyUpb_CMessage_GetPresentWrapper(PyUpb_CMessage* self,
                                            const upb_fielddef* field) {
-  assert(!PyUpb_CMessage_IsUnset(self));
+  assert(!PyUpb_CMessage_IsStub(self));
   upb_mutmsgval mutval =
       upb_msg_mutable(self->ptr.msg, field, PyUpb_Arena_Get(self->arena));
   if (upb_fielddef_ismap(field)) {
@@ -758,7 +776,7 @@ PyObject* PyUpb_CMessage_GetPresentWrapper(PyUpb_CMessage* self,
 PyObject* PyUpb_CMessage_GetScalarValue(PyUpb_CMessage* self,
                                         const upb_fielddef* field) {
   upb_msgval val;
-  if (PyUpb_CMessage_IsUnset(self)) {
+  if (PyUpb_CMessage_IsStub(self)) {
     // Unset message always returns default values.
     val = upb_fielddef_default(field);
   } else {
@@ -785,9 +803,9 @@ PyObject* PyUpb_CMessage_GetFieldValue(PyObject* _self,
   bool submsg = upb_fielddef_issubmsg(field);
   bool seq = upb_fielddef_isseq(field);
 
-  if ((PyUpb_CMessage_IsUnset(self) && (submsg || seq)) ||
-      (submsg && !upb_msg_has(self->ptr.msg, field))) {
-    return PyUpb_CMessage_GetUnsetWrapper(self, field);
+  if ((PyUpb_CMessage_IsStub(self) && (submsg || seq)) ||
+      (submsg && !seq && !upb_msg_has(self->ptr.msg, field))) {
+    return PyUpb_CMessage_GetStub(self, field);
   } else if (seq) {
     return PyUpb_CMessage_GetPresentWrapper(self, field);
   } else {
@@ -798,6 +816,8 @@ PyObject* PyUpb_CMessage_GetFieldValue(PyObject* _self,
 int PyUpb_CMessage_SetFieldValue(PyObject* _self, const upb_fielddef* field,
                                  PyObject* value) {
   PyUpb_CMessage* self = (void*)_self;
+  assert(value);
+
   if (upb_fielddef_issubmsg(field) || upb_fielddef_isseq(field)) {
     PyErr_Format(PyExc_AttributeError,
                  "Assignment not allowed to message, map, or repeated "
@@ -806,7 +826,7 @@ int PyUpb_CMessage_SetFieldValue(PyObject* _self, const upb_fielddef* field,
     return -1;
   }
 
-  PyUpb_CMessage_AssureReified(self);
+  PyUpb_CMessage_EnsureReified(self);
 
   upb_msgval val;
   upb_arena* arena = PyUpb_Arena_Get(self->arena);
@@ -893,7 +913,7 @@ static PyObject* PyUpb_CMessage_HasField(PyObject* _self, PyObject* arg) {
     return NULL;
   }
 
-  if (PyUpb_CMessage_IsUnset(self)) Py_RETURN_FALSE;
+  if (PyUpb_CMessage_IsStub(self)) Py_RETURN_FALSE;
 
   return PyBool_FromLong(field ? upb_msg_has(self->ptr.msg, field)
                                : upb_msg_whichoneof(self->ptr.msg, oneof) != NULL);
@@ -956,7 +976,7 @@ PyObject* PyUpb_CMessage_MergeFrom(PyObject* self, PyObject* arg) {
 
 static PyObject* PyUpb_CMessage_SetInParent(PyObject* _self, PyObject* arg) {
   PyUpb_CMessage* self = (void*)_self;
-  PyUpb_CMessage_AssureReified(self);
+  PyUpb_CMessage_EnsureReified(self);
   Py_RETURN_NONE;
 }
 
@@ -983,7 +1003,7 @@ PyObject* PyUpb_CMessage_MergeFromString(PyObject* _self, PyObject* arg) {
     return NULL;
   }
 
-  PyUpb_CMessage_AssureReified(self);
+  PyUpb_CMessage_EnsureReified(self);
   const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
   const upb_filedef* file = upb_msgdef_file(msgdef);
   const upb_extreg* extreg = upb_symtab_extreg(upb_filedef_symtab(file));
@@ -1025,46 +1045,62 @@ static PyObject* PyUpb_CMessage_ByteSize(PyObject* self, PyObject* args) {
 }
 
 static PyObject* PyUpb_CMessage_Clear(PyUpb_CMessage* self, PyObject* args) {
-  PyUpb_CMessage_AssureReified(self);
+  PyUpb_CMessage_EnsureReified(self);
   const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
   upb_msg_clear(self->ptr.msg, msgdef);
   Py_RETURN_NONE;
 }
 
-static void PyUpb_CMessage_AbandonField(PyUpb_CMessage* self,
-                                        const upb_fielddef* f) {
-  if (self->unset_subobj_map && upb_fielddef_issubmsg(f) &&
-      !upb_fielddef_isseq(f)) {
-    PyObject* sub = PyUpb_WeakMap_Get(self->unset_subobj_map, f);
+void PyUpb_CMessage_DoClearField(PyObject* _self, const upb_fielddef* f) {
+  PyUpb_CMessage* self = (void*)_self;
+  PyUpb_CMessage_EnsureReified((PyUpb_CMessage*)self);
+
+  // We must ensure that any stub object is reified so its parent no longer
+  // points to us.
+  PyObject* sub = self->unset_subobj_map
+                      ? PyUpb_WeakMap_Get(self->unset_subobj_map, f)
+                      : NULL;
+
+  if (upb_fielddef_ismap(f)) {
+    // For maps we additionally have to invalidate any iterators.  So we need
+    // to get an object even if it's reified.
+    if (!sub) {
+      sub = PyUpb_CMessage_GetFieldValue(_self, f);
+    }
+    PyUpb_MapContainer_EnsureReified(sub);
+    PyUpb_MapContainer_Invalidate(sub);
+  } else if (upb_fielddef_isseq(f)) {
     if (sub) {
-      PyUpb_CMessage_AssureReified((PyUpb_CMessage*)sub);
+      PyUpb_RepeatedContainer_EnsureReified(sub);
+    }
+  } else if (upb_fielddef_issubmsg(f)) {
+    if (sub) {
+      PyUpb_CMessage_EnsureReified((PyUpb_CMessage*)sub);
     }
   }
+
+  Py_XDECREF(sub);
+  upb_msg_clearfield(self->ptr.msg, f);
 }
 
-static PyObject* PyUpb_CMessage_ClearExtension(PyUpb_CMessage* self,
-                                               PyObject* arg) {
-  PyUpb_CMessage_AssureReified(self);
-  const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
-  const upb_fielddef* f = PyUpb_FieldDescriptor_GetDef(arg);
+static PyObject* PyUpb_CMessage_ClearExtension(PyObject* _self, PyObject* arg) {
+  PyUpb_CMessage* self = (void*)_self;
+  PyUpb_CMessage_EnsureReified(self);
+  const upb_fielddef* f = PyUpb_CMessage_GetExtensionDef(_self, arg);
   if (!f) return NULL;
-  if (upb_fielddef_containingtype(f) != msgdef) {
-    PyErr_Format(PyExc_ValueError, "Extension doesn't match (%s vs %s)",
-                 upb_msgdef_fullname(msgdef), upb_fielddef_fullname(f));
-  }
-  PyUpb_CMessage_AbandonField(self, f);
-  upb_msg_clearfield(self->ptr.msg, f);
+  PyUpb_CMessage_DoClearField(_self, f);
   Py_RETURN_NONE;
 }
 
-static PyObject* PyUpb_CMessage_ClearField(PyUpb_CMessage* self,
-                                           PyObject* arg) {
-  // We always need AssureWritable() here (even for an unset message) to
+static PyObject* PyUpb_CMessage_ClearField(PyObject* _self, PyObject* arg) {
+  PyUpb_CMessage* self = (void*)_self;
+
+  // We always need EnsureReified() here (even for an unset message) to
   // preserve behavior like:
   //   msg = FooMessage()
   //   msg.foo.Clear()
   //   assert msg.HasField("foo")
-  PyUpb_CMessage_AssureReified(self);
+  PyUpb_CMessage_EnsureReified(self);
 
   const upb_fielddef* f;
   const upb_oneofdef* o;
@@ -1073,33 +1109,13 @@ static PyObject* PyUpb_CMessage_ClearField(PyUpb_CMessage* self,
   }
 
   if (o) f = upb_msg_whichoneof(self->ptr.msg, o);
-  if (f) upb_msg_clearfield(self->ptr.msg, f);
-
-  if (upb_fielddef_ismap(f)) {
-    // We have to invalidate any existing iterator over this map.
-    PyObject* obj = NULL;
-    if (self->unset_subobj_map) {
-      obj = PyUpb_WeakMap_Get(self->unset_subobj_map, f);
-    }
-    if (!obj) {
-      upb_msg* msg = PyUpb_CMessage_GetMsg(self);
-      upb_msgval msgval = upb_msg_get(msg, f);
-      obj = PyUpb_ObjCache_Get(msgval.map_val);
-    }
-    if (obj) {
-      PyUpb_MapContainer_Invalidate(obj);
-      Py_DECREF(obj);
-    }
-  }
-
-  PyUpb_CMessage_AbandonField(self, f);
-
+  PyUpb_CMessage_DoClearField(_self, f);
   Py_RETURN_NONE;
 }
 
 static PyObject* PyUpb_CMessage_DiscardUnknownFields(PyUpb_CMessage* self,
                                                      PyObject* arg) {
-  PyUpb_CMessage_AssureReified(self);
+  PyUpb_CMessage_EnsureReified(self);
   const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
   upb_msg_discardunknown(self->ptr.msg, msgdef, 64);
   Py_RETURN_NONE;
@@ -1156,11 +1172,38 @@ err:
   goto done;
 }
 
+const upb_fielddef* PyUpb_CMessage_GetExtensionDef(PyObject* _self, PyObject* key) {
+  const upb_fielddef* f = PyUpb_FieldDescriptor_GetDef(key);
+  if (!f) {
+    PyErr_Clear();
+    PyErr_Format(PyExc_KeyError, "Object %R is not a field descriptor\n", key);
+    return NULL;
+  }
+  if (!upb_fielddef_isextension(f)) {
+    PyErr_Format(PyExc_KeyError, "Field %s is not an extension\n",
+                 upb_fielddef_fullname(f));
+    return NULL;
+  }
+  const upb_msgdef* msgdef = PyUpb_CMessage_GetMsgdef(_self);
+  if (upb_fielddef_containingtype(f) != msgdef) {
+    PyErr_Format(PyExc_KeyError, "Extension doesn't match (%s vs %s)",
+                 upb_msgdef_fullname(msgdef), upb_fielddef_fullname(f));
+    return NULL;
+  }
+  return f;
+}
+
+
 static PyObject* PyUpb_CMessage_HasExtension(PyObject* _self,
                                              PyObject* ext_desc) {
   upb_msg* msg = PyUpb_CMessage_GetIfReified(_self);
-  const upb_fielddef* f = PyUpb_FieldDescriptor_GetDef(ext_desc);
+  const upb_fielddef* f = PyUpb_CMessage_GetExtensionDef(_self, ext_desc);
   if (!f) return NULL;
+  if (upb_fielddef_isseq(f)) {
+    PyErr_SetString(PyExc_KeyError,
+                    "Field is repeated. A singular method is required.");
+    return NULL;
+  }
   if (!msg) Py_RETURN_FALSE;
   return PyBool_FromLong(upb_msg_has(msg, f));
 }
@@ -1177,7 +1220,7 @@ PyObject* PyUpb_CMessage_SerializeInternal(PyObject* _self, PyObject* args,
     return NULL;
   }
 
-  if (PyUpb_CMessage_IsUnset(self)) {
+  if (PyUpb_CMessage_IsStub(self)) {
     return PyBytes_FromStringAndSize(NULL, 0);
   }
 
@@ -1266,9 +1309,9 @@ static PyMethodDef PyUpb_CMessage_Methods[] = {
      "Returns the size of the message in bytes."},
     {"Clear", (PyCFunction)PyUpb_CMessage_Clear, METH_NOARGS,
      "Clears the message."},
-    {"ClearExtension", (PyCFunction)PyUpb_CMessage_ClearExtension, METH_O,
+    {"ClearExtension", PyUpb_CMessage_ClearExtension, METH_O,
      "Clears a message field."},
-    {"ClearField", (PyCFunction)PyUpb_CMessage_ClearField, METH_O,
+    {"ClearField", PyUpb_CMessage_ClearField, METH_O,
      "Clears a message field."},
     // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "CopyFrom", (PyCFunction)CopyFrom, METH_O,
