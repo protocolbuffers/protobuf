@@ -8,6 +8,7 @@
  viewBox="0.00 0.00 222.00 98.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 94)">
 <title>G</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-94 218,-94 218,4 -4,4"/>
 <!-- upb_msg -->
 <g id="node1" class="node">
 <title>upb_msg</title>

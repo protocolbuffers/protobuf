@@ -8,6 +8,7 @@
  viewBox="0.00 0.00 417.00 303.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 299)">
 <title>G</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-299 413,-299 413,4 -4,4"/>
 <g id="clust1" class="cluster">
 <title>cluster_1</title>
 <path fill="gray" stroke="black" d="M29,-98C29,-98 380,-98 380,-98 386,-98 392,-104 392,-110 392,-110 392,-215 392,-215 392,-221 386,-227 380,-227 380,-227 29,-227 29,-227 23,-227 17,-221 17,-215 17,-215 17,-110 17,-110 17,-104 23,-98 29,-98"/>
@@ -15,11 +16,9 @@
 </g>
 <g id="clust2" class="cluster">
 <title>cluster_python</title>
-<polygon fill="transparent" stroke="transparent" points="8,-235 8,-287 401,-287 401,-235 8,-235"/>
 </g>
 <g id="clust6" class="cluster">
 <title>cluster_01</title>
-<polygon fill="transparent" stroke="transparent" points="8.5,-8 8.5,-90 239.5,-90 239.5,-8 8.5,-8"/>
 </g>
 <!-- upb_msg -->
 <g id="node1" class="node">

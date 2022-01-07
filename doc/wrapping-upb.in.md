@@ -182,7 +182,6 @@ For example, a relatively simple protobuf tree might look something like this:
 digraph G {
   rankdir=LR; 
   newrank=true;
-  graph[bgcolor=transparent]
   node [style="rounded,filled" shape=box colorscheme=accent8 fillcolor=1, ordering=out]
   upb_msg -> upb_msg2;
   upb_msg -> upb_array;
@@ -201,7 +200,6 @@ from that arena are freed together.
 digraph G {
   rankdir=LR;
   newrank=true;
-  graph[bgcolor=transparent]
   subgraph cluster_0 {
     label = "upb Arena"
     graph[style="rounded,filled" fillcolor=gray]
@@ -227,7 +225,6 @@ the objects are in when you create links between them.
 digraph G {
   rankdir=LR;
   newrank=true;
-  graph[bgcolor=transparent]
   subgraph cluster_0 {
     label = "upb Arena 1"
     graph[style="rounded,filled" fillcolor=gray]
@@ -268,14 +265,13 @@ For this example, we will assume we are wrapping upb in Python:
 
 ```dot {align="center"}
 digraph G { 
-  graph[bgcolor=transparent]
   rankdir=LR;
   newrank=true;
   compound=true;
   
   subgraph cluster_1 {
     label = "upb Arena"
-    graph[bgcolor=transparent style="rounded,filled" fillcolor=gray]
+    graph[style="rounded,filled" fillcolor=gray]
     node [style="rounded,filled" shape=box colorscheme=accent8 fillcolor=1, ordering=out]
     upb_msg -> upb_array [style=dashed];
     upb_msg -> upb_msg2 [style=dashed];
