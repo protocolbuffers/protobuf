@@ -35,7 +35,6 @@ import static com.google.common.truth.Truth.assertWithMessage;
 
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -277,8 +276,8 @@ final class IsValidUtf8TestUtil {
       }
       ByteString bs = factory.newByteString(bytes);
       boolean isRoundTrippable = bs.isValidUtf8();
-      String s = new String(bytes, StandardCharsets.UTF_8);
-      byte[] bytesReencoded = s.getBytes(StandardCharsets.UTF_8);
+      String s = new String(bytes, Internal.UTF_8);
+      byte[] bytesReencoded = s.getBytes(Internal.UTF_8);
       boolean bytesEqual = Arrays.equals(bytes, bytesReencoded);
 
       if (bytesEqual != isRoundTrippable) {
