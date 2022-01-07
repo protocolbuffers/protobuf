@@ -51,7 +51,6 @@ import com.google.protobuf.DescriptorProtos.ServiceOptions;
 import com.google.protobuf.Descriptors.FileDescriptor.Syntax;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -334,13 +333,13 @@ public final class Descriptors {
       //   should get the original bytes that we want.
       // Literal strings are limited to 64k, so it may be split into multiple strings.
       if (strings.length == 1) {
-        return strings[0].getBytes(StandardCharsets.ISO_8859_1);
+        return strings[0].getBytes(Internal.ISO_8859_1);
       }
       StringBuilder descriptorData = new StringBuilder();
       for (String part : strings) {
         descriptorData.append(part);
       }
-      return descriptorData.toString().getBytes(StandardCharsets.ISO_8859_1);
+      return descriptorData.toString().getBytes(Internal.ISO_8859_1);
     }
 
     private static FileDescriptor[] findDescriptors(

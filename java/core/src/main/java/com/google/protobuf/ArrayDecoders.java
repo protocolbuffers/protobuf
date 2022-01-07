@@ -34,7 +34,6 @@ import static com.google.protobuf.MessageSchema.getMutableUnknownFields;
 
 import com.google.protobuf.Internal.ProtobufList;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Helper functions to decode protobuf wire format from a byte array.
@@ -192,7 +191,7 @@ final class ArrayDecoders {
       registers.object1 = "";
       return position;
     } else {
-      registers.object1 = new String(data, position, length, StandardCharsets.UTF_8);
+      registers.object1 = new String(data, position, length, Internal.UTF_8);
       return position + length;
     }
   }
@@ -578,7 +577,7 @@ final class ArrayDecoders {
     } else if (length == 0) {
       output.add("");
     } else {
-      String value = new String(data, position, length, StandardCharsets.UTF_8);
+      String value = new String(data, position, length, Internal.UTF_8);
       output.add(value);
       position += length;
     }
@@ -594,7 +593,7 @@ final class ArrayDecoders {
       } else if (nextLength == 0) {
         output.add("");
       } else {
-        String value = new String(data, position, nextLength, StandardCharsets.UTF_8);
+        String value = new String(data, position, nextLength, Internal.UTF_8);
         output.add(value);
         position += nextLength;
       }
@@ -620,7 +619,7 @@ final class ArrayDecoders {
       if (!Utf8.isValidUtf8(data, position, position + length)) {
         throw InvalidProtocolBufferException.invalidUtf8();
       }
-      String value = new String(data, position, length, StandardCharsets.UTF_8);
+      String value = new String(data, position, length, Internal.UTF_8);
       output.add(value);
       position += length;
     }
@@ -639,7 +638,7 @@ final class ArrayDecoders {
         if (!Utf8.isValidUtf8(data, position, position + nextLength)) {
           throw InvalidProtocolBufferException.invalidUtf8();
         }
-        String value = new String(data, position, nextLength, StandardCharsets.UTF_8);
+        String value = new String(data, position, nextLength, Internal.UTF_8);
         output.add(value);
         position += nextLength;
       }

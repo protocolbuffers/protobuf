@@ -34,7 +34,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -134,7 +133,7 @@ public class Utf8Test {
   }
 
   private static void assertEncoding(String message) {
-    byte[] expected = message.getBytes(StandardCharsets.UTF_8);
+    byte[] expected = message.getBytes(Internal.UTF_8);
     byte[] output = encodeToByteArray(message, expected.length, safeProcessor);
     assertWithMessage("encodeUtf8[ARRAY]")
         .that(output).isEqualTo(expected);
