@@ -30,8 +30,6 @@
 
 package com.google.protobuf;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
@@ -491,11 +489,11 @@ public final class TextFormat {
         }
         switch (fieldType) {
           case BOOLEAN:
-            return Boolean.compare((boolean) getKey(), (boolean) b.getKey());
+            return Boolean.valueOf((boolean) getKey()).compareTo((boolean) b.getKey());
           case LONG:
-            return Long.compare((long) getKey(), (long) b.getKey());
+            return Long.valueOf((long) getKey()).compareTo((long) b.getKey());
           case INT:
-            return Integer.compare((int) getKey(), (int) b.getKey());
+            return Integer.valueOf((int) getKey()).compareTo((int) b.getKey());
           case STRING:
             String aString = (String) getKey();
             String bString = (String) b.getKey();
@@ -2393,11 +2391,12 @@ public final class TextFormat {
                               | digitValue(input.byteAt(i + 1)) << 8
                               | digitValue(input.byteAt(i + 2)) << 4
                               | digitValue(input.byteAt(i + 3)));
-                  if (Character.isSurrogate(ch)) {
+                              
+                  if (ch >= Character.MIN_SURROGATE && ch <= Character.MAX_SURROGATE) {
                     throw new InvalidEscapeSequenceException(
                         "Invalid escape sequence: '\\u' refers to a surrogate");
                   }
-                  byte[] chUtf8 = Character.toString(ch).getBytes(UTF_8);
+                  byte[] chUtf8 = Character.toString(ch).getBytes(Internal.UTF_8);
                   System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
                   pos += chUtf8.length;
                   i += 3;
@@ -2440,7 +2439,7 @@ public final class TextFormat {
                 }
                 int[] codepoints = new int[1];
                 codepoints[0] = codepoint;
-                byte[] chUtf8 = new String(codepoints, 0, 1).getBytes(UTF_8);
+                byte[] chUtf8 = new String(codepoints, 0, 1).getBytes(Internal.UTF_8);
                 System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
                 pos += chUtf8.length;
                 i += 7;
