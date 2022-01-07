@@ -117,7 +117,27 @@
           </execution>
         </executions>
       </plugin>
-
+      
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+        <configuration>
+          <signature>
+            <groupId>net.sf.androidscents.signature</groupId>
+            <artifactId>android-api-level-19</artifactId>
+            <version>4.4.2_r4</version>
+          </signature>
+        </configuration>
+        <executions>
+          <execution>
+            <id>android</id>
+            <phase>test</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <!-- Configure the OSGI bundle -->
       <plugin>
         <groupId>org.apache.felix</groupId>

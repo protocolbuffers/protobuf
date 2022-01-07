@@ -164,6 +164,11 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.0.0-M5</version>
         </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <version>1.20</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     
@@ -171,7 +176,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>1.20</version>
         <configuration>
           <signature>
             <groupId>net.sf.androidscents.signature</groupId>
