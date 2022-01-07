@@ -1,4 +1,4 @@
-*.s??
+*.sw?
 obj/
 lib/
 bazel-*
