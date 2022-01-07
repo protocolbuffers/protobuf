@@ -51,8 +51,8 @@ stable and widely supported format across all protobuf tooling.
 
   // We load reflection data via a serialized descriptor.  The code generator
   // for your language should embed serialized descriptors into your generated
-  // files; for each file you load, you can add the descriptor to the symtab as
-  // shown.
+  // files. For each generated file loaded by your library, you can add the
+  // serialized descriptor to the symtab as shown.
   upb_arena *tmp = upb_arena_new();
   google_protobuf_FileDescriptorProto* file =
       google_protobuf_FileDescriptorProto_parse(desc_data, desc_size, tmp);
@@ -91,7 +91,7 @@ implementation details.
   upb_symtab_free(symtab);
 ```
 
-Using reflection is an natural choice in heavily reflective, dynamic runtimes
+Using reflection is a natural choice in heavily reflective, dynamic runtimes
 like Python, Ruby, PHP, or Lua.  These languages generally perform method
 dispatch through a dictionary/hash table anyway, so we are not adding any extra
 overhead by using upb's hash table to lookup fields by name at field access
@@ -151,10 +151,12 @@ class FooProto {
 }
 ```
 
-It is always possible for a library built on direct access to also load reflection
-data as an add-on, optional package for when users want JSON, text format, or
-reflection-based access to a message.  You do not give up any of these possibilities
-by using direct access.
+It is always possible to load reflection data as desired, even if your library
+is designed primarily around direct access.  Users who want to use JSON, text
+format, or reflection could potentially load reflection data from separate
+generated modules, for cases where they do not mind the size overhead or the
+leaking of field names. You do not give up any of these possibilities by using
+direct access.
 
 However, using direct access does have some noticeable downsides.  It requires
 tighter coupling with upb's implementation details, as the mini table format is
