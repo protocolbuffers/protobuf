@@ -268,22 +268,19 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
           ByteIterator latterBytes = latter.iterator();
 
           while (formerBytes.hasNext() && latterBytes.hasNext()) {
-            // Note: This code was copied from com.google.common.primitives.UnsignedBytes#compare,
-            // as Guava libraries cannot be used in the {@code com.google.protobuf} package.
-            int result =
-                Integer.compare(toInt(formerBytes.nextByte()), toInt(latterBytes.nextByte()));
+            int result = Integer.valueOf(toInt(formerBytes.nextByte()))
+                .compareTo(toInt(latterBytes.nextByte()));
             if (result != 0) {
               return result;
             }
           }
-
-          return Integer.compare(former.size(), latter.size());
+          return Integer.valueOf(former.size()).compareTo(Integer.valueOf(latter.size()));
         }
       };
 
   /**
    * Returns a {@link Comparator} which compares {@link ByteString}-s lexicographically
-   * as sequences of unsigned bytes (i.e. values between 0 and 255, inclusive).
+   * as sequences of unsigned byte values between 0 and 255, inclusive.
    *
    * <p>For example, {@code (byte) -1} is considered to be greater than {@code (byte) 1} because it
    * is interpreted as an unsigned value, {@code 255}:
