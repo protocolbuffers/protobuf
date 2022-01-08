@@ -121,15 +121,46 @@ static PyObject* PyUpb_DescriptorPool_New(PyTypeObject* type, PyObject* args,
   return PyUpb_DescriptorPool_DoCreate(type, db);
 }
 
-/*
- * PyUpb_DescriptorPool_AddSerializedFile()
- *
- * Implements:
- *   DescriptorPool.AddSerializedFile(self, serialized_file_descriptor)
- *
- * Adds the given serialized FileDescriptorProto to the pool.
- */
-static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
+static PyObject* PyUpb_DescriptorPool_DoAdd(PyObject* _self,
+                                            PyObject* file_desc);
+
+static bool PyUpb_DescriptorPool_TryLoadFileProto(PyUpb_DescriptorPool* self,
+                                                  PyObject* proto) {
+  if (proto == NULL) {
+    if (PyErr_ExceptionMatches(PyExc_KeyError)) {
+      // Expected error: item was simply not found.
+      PyErr_Clear();
+      return true;  // We didn't accomplish our goal, but we didn't error out.
+    }
+    return false;
+  }
+  if (proto == Py_None) return true;
+  return PyUpb_DescriptorPool_DoAdd((PyObject*)self, proto) != NULL;
+}
+
+static bool PyUpb_DescriptorPool_TryLoadSymbol(PyUpb_DescriptorPool* self,
+                                               PyObject* sym) {
+  if (!self->db) return false;
+  PyObject* file_proto =
+      PyObject_CallMethod(self->db, "FindFileContainingSymbol", "O", sym);
+  bool ret = PyUpb_DescriptorPool_TryLoadFileProto(self, file_proto);
+  Py_XDECREF(file_proto);
+  return ret;
+}
+
+bool PyUpb_DescriptorPool_CheckNoDatabase(PyObject* _self) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+  if (self->db) {
+    PyErr_SetString(
+        PyExc_ValueError,
+        "Cannot call Add on a DescriptorPool that uses a DescriptorDatabase. "
+        "Add your file to the underlying database.");
+    return false;
+  }
+  return true;
+}
+
+static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
     PyObject* _self, PyObject* serialized_pb) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
   char* buf;
@@ -137,14 +168,6 @@ static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
   upb_arena* arena = upb_arena_new();
   if (!arena) PYUPB_RETURN_OOM;
   PyObject* result = NULL;
-
-  if (self->db) {
-    PyErr_SetString(
-        PyExc_ValueError,
-        "Cannot call Add on a DescriptorPool that uses a DescriptorDatabase. "
-        "Add your file to the underlying database.");
-    goto done;
-  }
 
   if (PyBytes_AsStringAndSize(serialized_pb, &buf, &size) < 0) {
     goto done;
@@ -196,17 +219,43 @@ done:
   return result;
 }
 
-static PyObject* PyUpb_DescriptorPool_Add(PyObject* _self,
-                                          PyObject* file_desc) {
+static PyObject* PyUpb_DescriptorPool_DoAdd(PyObject* _self,
+                                            PyObject* file_desc) {
   PyObject* subargs = PyTuple_New(0);
-  // TODO: check file_desc type more.
+  if (!PyUpb_CMessage_Check(file_desc)) return NULL;
+  const upb_msgdef* m = PyUpb_CMessage_GetMsgdef(file_desc);
+  const char* file_proto_name = "google.protobuf.FileDescriptorProto";
+  if (strcmp(upb_msgdef_fullname(m), file_proto_name) != 0) {
+    fprintf(stderr, "YO: %s\n", upb_msgdef_fullname(m));
+    return PyErr_Format(PyExc_TypeError, "Can only add FileDescriptorProto");
+  }
   PyObject* serialized =
       PyUpb_CMessage_SerializeToString(file_desc, subargs, NULL);
   Py_DECREF(subargs);
   if (!serialized) return NULL;
-  PyObject* ret = PyUpb_DescriptorPool_AddSerializedFile(_self, serialized);
+  PyObject* ret = PyUpb_DescriptorPool_DoAddSerializedFile(_self, serialized);
   Py_DECREF(serialized);
   return ret;
+}
+
+/*
+ * PyUpb_DescriptorPool_AddSerializedFile()
+ *
+ * Implements:
+ *   DescriptorPool.AddSerializedFile(self, serialized_file_descriptor)
+ *
+ * Adds the given serialized FileDescriptorProto to the pool.
+ */
+static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
+    PyObject * self, PyObject * serialized_pb) {
+  if (!PyUpb_DescriptorPool_CheckNoDatabase(self)) return NULL;
+  return PyUpb_DescriptorPool_DoAddSerializedFile(self, serialized_pb);
+}
+
+static PyObject* PyUpb_DescriptorPool_Add(PyObject* self,
+                                          PyObject* file_desc) {
+  if (!PyUpb_DescriptorPool_CheckNoDatabase(self)) return NULL;
+  return PyUpb_DescriptorPool_DoAdd(self, file_desc);
 }
 
 /*
@@ -265,6 +314,10 @@ static PyObject* PyUpb_DescriptorPool_FindMessageTypeByName(PyObject* _self,
   if (!name) return NULL;
 
   const upb_msgdef* m = upb_symtab_lookupmsg(self->symtab, name);
+  if (m == NULL && self->db) {
+    if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
+    m = upb_symtab_lookupmsg(self->symtab, name);
+  }
   if (m == NULL) {
     return PyErr_Format(PyExc_KeyError, "Couldn't find message %.200s", name);
   }
