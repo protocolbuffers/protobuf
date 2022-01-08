@@ -92,6 +92,34 @@ static upb_strview printf_dup(upb_ToProto_Context *ctx, const char *fmt, ...) {
   return (upb_strview){.data = p, .size = n};
 }
 
+static bool upb_isprint(char ch) {
+  return ch >= 0x20 && ch <= 0x7f;
+}
+
+static upb_strview default_bytes(upb_ToProto_Context* ctx, upb_strview val) {
+  size_t n = 0;
+  for (size_t i = 0; i < val.size; i++) {
+    n += upb_isprint(val.data[i]) ? 1 : 4;  // '\123'
+  }
+  char* p = upb_arena_malloc(ctx->arena, n);
+  CHK_OOM(p);
+  char* dst = p;
+  const char* src = val.data;
+  const char* end = src + val.size;
+  while (src < end) {
+    unsigned char ch = *src++;
+    if (upb_isprint(ch)) {
+      *dst++ = ch;
+    } else {
+      *dst++ = '\\';
+      *dst++ = '0' + (ch >> 6);
+      *dst++ = '0' + ((ch >> 3) & 0x7);
+      *dst++ = '0' + (ch & 0x7);
+    }
+  }
+  return (upb_strview){.data = p, .size = n};
+}
+
 static upb_strview default_string(upb_ToProto_Context *ctx,
                                   const upb_fielddef *f) {
   upb_msgval d = upb_fielddef_default(f);
@@ -118,7 +146,7 @@ static upb_strview default_string(upb_ToProto_Context *ctx,
     case UPB_TYPE_STRING:
       return strviewdup2(ctx, d.str_val);
     case UPB_TYPE_BYTES:
-      return strviewdup2(ctx, d.str_val);  // XXX C-escape
+      return default_bytes(ctx, d.str_val);
     default:
       UPB_UNREACHABLE();
   }
