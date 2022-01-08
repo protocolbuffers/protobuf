@@ -148,6 +148,16 @@ static bool PyUpb_DescriptorPool_TryLoadSymbol(PyUpb_DescriptorPool* self,
   return ret;
 }
 
+static bool PyUpb_DescriptorPool_TryLoadFilename(PyUpb_DescriptorPool* self,
+                                                 PyObject* filename) {
+  if (!self->db) return false;
+  PyObject* file_proto =
+      PyObject_CallMethod(self->db, "FindFileByName", "O", filename);
+  bool ret = PyUpb_DescriptorPool_TryLoadFileProto(self, file_proto);
+  Py_XDECREF(file_proto);
+  return ret;
+}
+
 bool PyUpb_DescriptorPool_CheckNoDatabase(PyObject* _self) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
   if (self->db) {
@@ -201,6 +211,24 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
     }
   }
 
+  if (self->db) {
+    // Load dependent files if necessary.
+    size_t n;
+    const upb_strview* deps =
+        google_protobuf_FileDescriptorProto_dependency(proto, &n);
+    for (size_t i = 0; i < n; i++) {
+      const upb_filedef* dep =
+          upb_symtab_lookupfile2(self->symtab, deps[i].data, deps[i].size);
+      if (!dep) {
+        PyObject* filename =
+            PyUnicode_FromStringAndSize(deps[i].data, deps[i].size);
+        if (!filename) goto done;
+        if (!PyUpb_DescriptorPool_TryLoadFilename(self, filename)) goto done;
+        Py_DECREF(filename);
+      }
+    }
+  }
+
   upb_status status;
   upb_status_clear(&status);
 
@@ -226,7 +254,6 @@ static PyObject* PyUpb_DescriptorPool_DoAdd(PyObject* _self,
   const upb_msgdef* m = PyUpb_CMessage_GetMsgdef(file_desc);
   const char* file_proto_name = "google.protobuf.FileDescriptorProto";
   if (strcmp(upb_msgdef_fullname(m), file_proto_name) != 0) {
-    fprintf(stderr, "YO: %s\n", upb_msgdef_fullname(m));
     return PyErr_Format(PyExc_TypeError, "Can only add FileDescriptorProto");
   }
   PyObject* serialized =
@@ -272,6 +299,10 @@ static PyObject* PyUpb_DescriptorPool_FindFileByName(PyObject* _self,
   if (!name) return NULL;
 
   const upb_filedef* file = upb_symtab_lookupfile(self->symtab, name);
+  if (file == NULL && self->db) {
+    if (!PyUpb_DescriptorPool_TryLoadFilename(self, arg)) return NULL;
+    file = upb_symtab_lookupfile(self->symtab, name);
+  }
   if (file == NULL) {
     return PyErr_Format(PyExc_KeyError, "Couldn't find file %.200s", name);
   }
@@ -293,6 +324,10 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByName(PyObject* _self,
   if (!name) return NULL;
 
   const upb_fielddef* field = upb_symtab_lookupext(self->symtab, name);
+  if (field == NULL && self->db) {
+    if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
+    field = upb_symtab_lookupext(self->symtab, name);
+  }
   if (field == NULL) {
     return PyErr_Format(PyExc_KeyError, "Couldn't find extension %.200s", name);
   }
@@ -382,6 +417,10 @@ static PyObject* PyUpb_DescriptorPool_FindEnumTypeByName(PyObject* _self,
   if (!name) return NULL;
 
   const upb_enumdef* e = upb_symtab_lookupenum(self->symtab, name);
+  if (e == NULL && self->db) {
+    if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
+    e = upb_symtab_lookupenum(self->symtab, name);
+  }
   if (e == NULL) {
     return PyErr_Format(PyExc_KeyError, "Couldn't find enum %.200s", name);
   }
@@ -408,13 +447,17 @@ static PyObject* PyUpb_DescriptorPool_FindOneofByName(PyObject* _self,
   if (child) {
     const upb_msgdef* parent =
         upb_symtab_lookupmsg2(self->symtab, name, parent_size);
+    if (parent == NULL && self->db) {
+      if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
+      parent = upb_symtab_lookupmsg2(self->symtab, name, parent_size);
+    }
     if (parent) {
       const upb_oneofdef* o = upb_msgdef_ntooz(parent, child);
       return PyUpb_OneofDescriptor_Get(o);
     }
   }
 
-  return PyErr_Format(PyExc_KeyError, "Couldn't find enum %.200s", name);
+  return PyErr_Format(PyExc_KeyError, "Couldn't find oneof %.200s", name);
 }
 
 static PyObject* PyUpb_DescriptorPool_FindServiceByName(PyObject* _self,
@@ -440,6 +483,10 @@ static PyObject* PyUpb_DescriptorPool_FindFileContainingSymbol(PyObject* _self,
   if (!name) return NULL;
 
   const upb_filedef* f = upb_symtab_lookupfileforsym(self->symtab, name);
+  if (f == NULL && self->db) {
+    if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
+    f = upb_symtab_lookupfileforsym(self->symtab, name);
+  }
   if (f == NULL) {
     return PyErr_Format(PyExc_KeyError, "Couldn't find symbol %.200s", name);
   }

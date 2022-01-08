@@ -26,7 +26,5 @@
 from google.protobuf.internal import generator_test
 import unittest
 
-generator_test.GeneratorTest.testExtensionScope.__unittest_expecting_failure__ = True
-
 if __name__ == '__main__':
   unittest.main(module=generator_test, verbosity=2)

@@ -67,7 +67,10 @@ struct upb_fielddef {
     bool boolean;
     str_t *str;
   } defaultval;
-  const upb_oneofdef *oneof;
+  union {
+    const upb_oneofdef *oneof;
+    const upb_msgdef *extension_scope;
+  } scope;
   union {
     const upb_msgdef *msgdef;
     const upb_enumdef *enumdef;
@@ -465,6 +468,10 @@ int32_t upb_enumvaldef_number(const upb_enumvaldef *ev) {
   return ev->number;
 }
 
+uint32_t upb_enumvaldef_index(const upb_enumvaldef *ev) {
+  return ev - ev->enum_->values;
+}
+
 /* upb_extrange ***************************************************************/
 
 const google_protobuf_ExtensionRangeOptions *upb_extrange_options(
@@ -578,13 +585,18 @@ const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f) {
   return f->msgdef;
 }
 
+const upb_msgdef *upb_fielddef_extensionscope(const upb_fielddef *f) {
+  return f->is_extension_ ? f->scope.extension_scope : NULL;
+}
+
 const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f) {
-  return f->oneof;
+  return f->is_extension_ ? NULL : f->scope.oneof;
 }
 
 const upb_oneofdef *upb_fielddef_realcontainingoneof(const upb_fielddef *f) {
-  if (!f->oneof || upb_oneofdef_issynthetic(f->oneof)) return NULL;
-  return f->oneof;
+  const upb_oneofdef* oneof = upb_fielddef_containingoneof(f);
+  if (!oneof || upb_oneofdef_issynthetic(oneof)) return NULL;
+  return oneof;
 }
 
 upb_msgval upb_fielddef_default(const upb_fielddef *f) {
@@ -1869,7 +1881,7 @@ static void finalize_oneofs(symtab_addctx *ctx, upb_msgdef *m) {
 
   for (i = 0; i < m->field_count; i++) {
     const upb_fielddef *f = &m->fields[i];
-    upb_oneofdef *o = (upb_oneofdef*)f->oneof;
+    upb_oneofdef *o = (upb_oneofdef*)upb_fielddef_containingoneof(f);
     if (o) {
       o->fields[o->field_count++] = f;
     }
@@ -2322,7 +2334,7 @@ static void set_default_default(symtab_addctx *ctx, upb_fielddef *f) {
 static void create_fielddef(
     symtab_addctx *ctx, const char *prefix, upb_msgdef *m,
     const google_protobuf_FieldDescriptorProto *field_proto,
-    const upb_fielddef *_f) {
+    const upb_fielddef *_f, bool is_extension) {
   upb_fielddef *f = (upb_fielddef*)_f;
   upb_strview name;
   const char *full_name;
@@ -2356,7 +2368,7 @@ static void create_fielddef(
   f->json_name = json_name;
   f->label_ = (int)google_protobuf_FieldDescriptorProto_label(field_proto);
   f->number_ = field_number;
-  f->oneof = NULL;
+  f->scope.oneof = NULL;
   f->proto3_optional_ =
       google_protobuf_FieldDescriptorProto_proto3_optional(field_proto);
 
@@ -2386,7 +2398,7 @@ static void create_fielddef(
     f->type_ = FIELD_TYPE_UNSPECIFIED;  // We'll fill this in in resolve_fielddef().
   }
 
-  if (m) {
+  if (!is_extension) {
     /* direct message field. */
     upb_value v, field_v, json_v, existing_v;
     size_t json_size;
@@ -2450,6 +2462,7 @@ static void create_fielddef(
   } else {
     /* extension field. */
     f->is_extension_ = true;
+    f->scope.extension_scope = m;
     symtab_add(ctx, full_name, pack_def(f, UPB_DEFTYPE_EXT));
     f->layout_index = ctx->ext_count++;
     if (ctx->layout) {
@@ -2497,7 +2510,7 @@ static void create_fielddef(
     }
 
     oneof = (upb_oneofdef *)&m->oneofs[oneof_index];
-    f->oneof = oneof;
+    f->scope.oneof = oneof;
 
     oneof->field_count++;
     if (f->proto3_optional_) {
@@ -2507,7 +2520,6 @@ static void create_fielddef(
     CHK_OOM(
         upb_strtable_insert(&oneof->ntof, name.data, name.size, v, ctx->arena));
   } else {
-    f->oneof = NULL;
     if (f->proto3_optional_) {
       symtab_errf(ctx, "field with proto3_optional was not in a oneof (%s)",
                   f->full_name);
@@ -2753,7 +2765,7 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
   m->field_count = n_field;
   m->fields = symtab_alloc(ctx, sizeof(*m->fields) * n_field);
   for (i = 0; i < n_field; i++) {
-    create_fielddef(ctx, m->full_name, m, fields[i], &m->fields[i]);
+    create_fielddef(ctx, m->full_name, m, fields[i], &m->fields[i], false);
   }
 
   m->ext_range_count = n_ext_range;
@@ -2800,7 +2812,7 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
   m->nested_ext_count = n;
   m->nested_exts = symtab_alloc(ctx, sizeof(*m->nested_exts) * n);
   for (i = 0; i < n; i++) {
-    create_fielddef(ctx, m->full_name, NULL, fields[i], &m->nested_exts[i]);
+    create_fielddef(ctx, m->full_name, m, fields[i], &m->nested_exts[i], true);
     ((upb_fielddef*)&m->nested_exts[i])->index_ = i;
   }
 
@@ -3113,7 +3125,8 @@ static void build_filedef(
   file->top_lvl_ext_count = n;
   file->top_lvl_exts = symtab_alloc(ctx, sizeof(*file->top_lvl_exts) * n);
   for (i = 0; i < n; i++) {
-    create_fielddef(ctx, file->package, NULL, exts[i], &file->top_lvl_exts[i]);
+    create_fielddef(ctx, file->package, NULL, exts[i], &file->top_lvl_exts[i],
+                    true);
     ((upb_fielddef*)&file->top_lvl_exts[i])->index_ = i;
   }
 

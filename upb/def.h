@@ -126,6 +126,7 @@ bool upb_fielddef_isextension(const upb_fielddef *f);
 bool upb_fielddef_packed(const upb_fielddef *f);
 const upb_filedef *upb_fielddef_file(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
+const upb_msgdef *upb_fielddef_extensionscope(const upb_fielddef *f);
 const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f);
 const upb_oneofdef *upb_fielddef_realcontainingoneof(const upb_fielddef *f);
 uint32_t upb_fielddef_index(const upb_fielddef *f);
@@ -343,6 +344,7 @@ bool upb_enumvaldef_hasoptions(const upb_enumvaldef *e);
 const char *upb_enumvaldef_fullname(const upb_enumvaldef *e);
 const char *upb_enumvaldef_name(const upb_enumvaldef *e);
 int32_t upb_enumvaldef_number(const upb_enumvaldef *e);
+uint32_t upb_enumvaldef_index(const upb_enumvaldef *e);
 const upb_enumdef *upb_enumvaldef_enum(const upb_enumvaldef *e);
 
 /* upb_filedef ****************************************************************/
