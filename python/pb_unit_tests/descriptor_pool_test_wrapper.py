@@ -35,7 +35,6 @@ descriptor_pool_test.AddDescriptorTest.testFile.__unittest_expecting_failure__ =
 descriptor_pool_test.AddDescriptorTest.testMessage.__unittest_expecting_failure__ = True
 descriptor_pool_test.AddDescriptorTest.testService.__unittest_expecting_failure__ = True
 descriptor_pool_test.CreateDescriptorPoolTest.testFindFieldByName.__unittest_expecting_failure__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindMessageTypeByName.__unittest_expecting_failure__ = True
 descriptor_pool_test.CreateDescriptorPoolTest.testFindService.__unittest_expecting_failure__ = True
 descriptor_pool_test.CreateDescriptorPoolTest.testFindTypeErrors.__unittest_expecting_failure__ = True
 descriptor_pool_test.CreateDescriptorPoolTest.testUserDefinedDB.__unittest_expecting_failure__ = True
@@ -49,9 +48,7 @@ def wrap(cls, method):
   setattr(cls, method, lambda self: existing(self))
   getattr(cls, method).__unittest_expecting_failure__ = True
 
-wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testAddSerializedFile")
 wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testComplexNesting")
-wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testAddSerializedFile")
 wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testComplexNesting")
 wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindAllExtensions")
 wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindEnumTypeByName")
@@ -60,6 +57,7 @@ wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindExtensio
 wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindFileByName")
 wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindFileContainingSymbol")
 wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindOneofByName")
+wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindMessageTypeByName")
 
 if __name__ == '__main__':
   unittest.main(module=descriptor_pool_test, verbosity=2)

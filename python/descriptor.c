@@ -1364,6 +1364,17 @@ static PyObject* PyUpb_OneofDescriptor_GetHasOptions(PyObject* _self,
   return PyBool_FromLong(upb_oneofdef_hasoptions(self->def));
 }
 
+static PyObject* PyUpb_OneofDescriptor_GetFields(PyObject* _self,
+                                                 void* closure) {
+  PyUpb_DescriptorBase* self = (void*)_self;
+  static PyUpb_GenericSequence_Funcs funcs = {
+      (void*)&upb_oneofdef_fieldcount,
+      (void*)&upb_oneofdef_field,
+      (void*)&PyUpb_FieldDescriptor_Get,
+  };
+  return PyUpb_GenericSequence_New(&funcs, self->def, self->pool);
+}
+
 static PyObject* PyUpb_OneofDescriptor_GetOptions(PyObject* _self,
                                                   PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
@@ -1379,8 +1390,7 @@ static PyGetSetDef PyUpb_OneofDescriptor_Getters[] = {
     {"containing_type", PyUpb_OneofDescriptor_GetContainingType, NULL,
      "Containing type"},
     {"has_options", PyUpb_OneofDescriptor_GetHasOptions, NULL, "Has Options"},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    //{ "fields", (getter)GetFields, NULL, "Fields"},
+    {"fields", PyUpb_OneofDescriptor_GetFields, NULL, "Fields"},
     {NULL}};
 
 static PyMethodDef PyUpb_OneofDescriptor_Methods[] = {

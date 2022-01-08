@@ -260,8 +260,15 @@ static bool upb_isbetween(uint8_t c, uint8_t low, uint8_t high) {
   return c >= low && c <= high;
 }
 
+static char upb_ascii_lower(char ch) {
+  // Per ASCII this will lower-case a letter.  If the result is a letter, the
+  // input was definitely a letter.  If the output is not a letter, this may
+  // have transformed the character unpredictably.
+  return ch | 0x20;
+}
+
 static bool upb_isletter(char c) {
-  char lower = c | 0x20;  // Per ASCII this will lowercase a letter.
+  char lower = upb_ascii_lower(c);
   return upb_isbetween(lower, 'a', 'z') || c == '_';
 }
 
@@ -2030,10 +2037,145 @@ static void create_oneofdef(
 
 static str_t *newstr(symtab_addctx *ctx, const char *data, size_t len) {
   str_t *ret = symtab_alloc(ctx, sizeof(*ret) + len);
-  if (!ret) return NULL;
+  CHK_OOM(ret);
   ret->len = len;
   if (len) memcpy(ret->str, data, len);
   ret->str[len] = '\0';
+  return ret;
+}
+
+static bool upb_symtab_TryGetChar(const char** src, const char* end, char* ch) {
+  const char* ptr = *src + 1;
+  if (ptr == end) return false;
+  *ch = *ptr;
+  *src = ptr;
+  return true;
+}
+
+static char upb_symtab_TryGetHexDigit(symtab_addctx* ctx, const upb_fielddef* f,
+                                      const char** src, const char* end) {
+  char ch;
+  if (!upb_symtab_TryGetChar(src, end, &ch)) return -1;
+  if (ch >= '0' && ch <= '9') {
+    return ch - '0';
+  }
+  ch = upb_ascii_lower(ch);
+  if (ch >= 'a' && ch <= 'f') {
+    return ch - 'a' + 0xa;
+  }
+  *src -= 1;  // Char wasn't actually a hex digit.
+  return -1;
+}
+
+static char upb_symtab_ParseHexEscape(symtab_addctx* ctx, const upb_fielddef* f,
+                                      const char** src, const char* end) {
+  char hex_digit = upb_symtab_TryGetHexDigit(ctx, f, src, end);
+  if (hex_digit < 0) {
+    symtab_errf(ctx,
+                "\\x cannot be followed by non-hex digit in field '%s' default",
+                upb_fielddef_fullname(f));
+    return 0;
+  }
+  unsigned int ret = hex_digit;
+  while ((hex_digit = upb_symtab_TryGetHexDigit(ctx, f, src, end)) >= 0) {
+    ret = (ret << 4) | hex_digit;
+  }
+  if (ret > 0xff) {
+    symtab_errf(ctx, "Value of hex escape in field %s exceeds 8 bits",
+                upb_fielddef_fullname(f));
+    return 0;
+  }
+  return ret;
+}
+
+char upb_symtab_TryGetOctalDigit(const char** src, const char* end) {
+  char ch;
+  if (!upb_symtab_TryGetChar(src, end, &ch)) return -1;
+  if (ch >= '0' && ch <= '7') {
+    return ch - '0';
+  }
+  *src -= 1;  // Char wasn't actually a octal digit.
+  return -1;
+}
+
+static char upb_symtab_ParseOctalEscape(symtab_addctx* ctx,
+                                        const upb_fielddef* f, char first,
+                                        const char** src, const char* end) {
+  char ch = first - '0';
+  char digit;
+  if ((digit = upb_symtab_TryGetOctalDigit(src, end)) >= 0) {
+    ch = (ch << 3) | digit;
+  }
+  if ((digit = upb_symtab_TryGetOctalDigit(src, end)) >= 0) {
+    ch = (ch << 3) | digit;
+  }
+  return ch;
+}
+
+static char upb_symtab_ParseEscape(symtab_addctx* ctx, const upb_fielddef* f,
+                                   const char** src, const char* end) {
+  char ch;
+  if (!upb_symtab_TryGetChar(src, end, &ch)) {
+    symtab_errf(ctx, "unterminated escape sequence in field %s",
+                upb_fielddef_fullname(f));
+    return 0;
+  }
+  switch (ch) {
+    case 'a':
+      return '\a';
+    case 'b':
+      return '\b';
+    case 'f':
+      return '\f';
+    case 'n':
+      return '\n';
+    case 'r':
+      return '\r';
+    case 't':
+      return '\t';
+    case 'v':
+      return '\v';
+    case '\\':
+      return '\\';
+    case '\'':
+      return '\'';
+    case '\"':
+      return '\"';
+    case '?':
+      return '\?';
+    case 'x':
+    case 'X':
+      return upb_symtab_ParseHexEscape(ctx, f, src, end);
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+      return upb_symtab_ParseOctalEscape(ctx, f, ch, src, end);
+  }
+  symtab_errf(ctx, "Unknown escape sequence: \\%c", ch);
+}
+
+static str_t* unescape(symtab_addctx* ctx, const upb_fielddef* f,
+                      const char* data, size_t len) {
+  // Size here is an upper bound; escape sequences could ultimately shrink it.
+  str_t* ret = symtab_alloc(ctx, sizeof(*ret) + len);
+  char* dst = &ret->str[0];
+  const char* src = data;
+  const char* end = data + len;
+
+  for (; src < end; dst++, src++) {
+    if (*src == '\\') {
+      *dst = upb_symtab_ParseEscape(ctx, f, &src, end);
+    } else {
+      *dst = *src;
+    }
+  }
+
+  ret->len = dst - &ret->str[0];
   return ret;
 }
 
@@ -2134,8 +2276,7 @@ static void parse_default(symtab_addctx *ctx, const char *str, size_t len,
       f->defaultval.str = newstr(ctx, str, len);
       break;
     case UPB_TYPE_BYTES:
-      /* XXX: need to interpret the C-escaped value. */
-      f->defaultval.str = newstr(ctx, str, len);
+      f->defaultval.str = unescape(ctx, f, str, len);
       break;
     case UPB_TYPE_MESSAGE:
       /* Should not have a default value. */
