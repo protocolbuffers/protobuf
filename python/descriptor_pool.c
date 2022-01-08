@@ -264,20 +264,15 @@ static PyObject* PyUpb_DescriptorPool_FindFieldByName(PyObject* _self,
   const char* name = PyUpb_GetStrData(arg);
   if (!name) return NULL;
 
-  // First lookup as extension.
-  const upb_fielddef* f = upb_symtab_lookupext(self->symtab, name);
-
-  if (!f) {
-    // Otherwise look for a normal field.
-    size_t parent_size;
-    const char* child =
-        PyUpb_DescriptorPool_SplitSymbolName(name, &parent_size);
-    if (child) {
-      const upb_msgdef* parent =
-          upb_symtab_lookupmsg2(self->symtab, name, parent_size);
-      if (parent) {
-        f = upb_msgdef_ntofz(parent, child);
-      }
+  size_t parent_size;
+  const char* child =
+      PyUpb_DescriptorPool_SplitSymbolName(name, &parent_size);
+  const upb_fielddef* f = NULL;
+  if (child) {
+    const upb_msgdef* parent =
+        upb_symtab_lookupmsg2(self->symtab, name, parent_size);
+    if (parent) {
+      f = upb_msgdef_ntofz(parent, child);
     }
   }
 
