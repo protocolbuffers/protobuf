@@ -38,6 +38,9 @@
 static void PyUpb_ModuleDealloc(void *module) {
   PyUpb_ModuleState *s = PyModule_GetState(module);
   PyUpb_WeakMap_Free(s->obj_cache);
+  if (s->c_descriptor_symtab) {
+    upb_symtab_free(s->c_descriptor_symtab);
+  }
 }
 
 PyObject* PyUpb_SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
@@ -322,6 +325,7 @@ PyMODINIT_FUNC PyInit__message(void) {
   state->allow_oversize_protos = false;
   state->wkt_bases = NULL;
   state->obj_cache = PyUpb_WeakMap_New();
+  state->c_descriptor_symtab = NULL;
 
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||
       !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m) ||

@@ -27,10 +27,13 @@
 
 #include "python/descriptor_pool.h"
 
+#include "python/convert.h"
 #include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/def.h"
+#include "upb/util/def_to_proto.h"
+#include "google/protobuf/descriptor.upbdefs.h"
 
 // -----------------------------------------------------------------------------
 // DescriptorPool
@@ -45,6 +48,14 @@ typedef struct {
 PyObject* PyUpb_DescriptorPool_GetDefaultPool() {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   return s->default_pool;
+}
+
+const upb_msgdef* PyUpb_DescriptorPool_GetFileProtoDef(void) {
+  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  if (!s->c_descriptor_symtab) {
+    s->c_descriptor_symtab = upb_symtab_new();
+  }
+  return google_protobuf_FileDescriptorProto_getmsgdef(s->c_descriptor_symtab);
 }
 
 static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
@@ -144,6 +155,27 @@ static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
   if (!proto) {
     PyErr_SetString(PyExc_TypeError, "Couldn't parse file content!");
     goto done;
+  }
+
+  upb_strview name = google_protobuf_FileDescriptorProto_name(proto);
+  const upb_filedef* file =
+      upb_symtab_lookupfile2(self->symtab, name.data, name.size);
+
+  if (file) {
+    // If the existing file is equal to the new file, then silently ignore the
+    // duplicate add.
+    google_protobuf_FileDescriptorProto* existing =
+        upb_FileDef_ToProto(file, arena);
+    if (!existing) {
+      PyErr_SetNone(PyExc_MemoryError);
+      goto done;
+    }
+    const upb_msgdef* m = PyUpb_DescriptorPool_GetFileProtoDef();
+    if (PyUpb_Message_IsEqual(proto, existing, m)) {
+      Py_INCREF(Py_None);
+      result = Py_None;
+      goto done;
+    }
   }
 
   upb_status status;

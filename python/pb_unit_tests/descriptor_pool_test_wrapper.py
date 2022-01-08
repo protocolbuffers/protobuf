@@ -49,13 +49,10 @@ def wrap(cls, method):
   setattr(cls, method, lambda self: existing(self))
   getattr(cls, method).__unittest_expecting_failure__ = True
 
-wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testAddFileDescriptor")
 wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testAddSerializedFile")
 wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testComplexNesting")
-wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testAddFileDescriptor")
 wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testAddSerializedFile")
 wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testComplexNesting")
-wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testEnumDefaultValue")
 wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindAllExtensions")
 wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindEnumTypeByName")
 wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindExtensionByName")
