@@ -514,6 +514,16 @@ static PyObject* PyUpb_Descriptor_GetEnumValuesByName(PyObject* _self,
     const upb_enumdef* e = upb_msgdef_nestedenum(self->def, i);
     int value_count = upb_enumdef_valuecount(e);
     for (int j = 0; j < value_count; j++) {
+      // Collisions should be impossible here, as uniqueness is checked by
+      // protoc (this is an invariant of the protobuf language).  However this
+      // uniqueness constraint is not currently checked by upb/def.c at load
+      // time, so if the user supplies a manually-constructed descriptor that
+      // does not respect this constraint, a collision could be possible and the
+      // last-defined enumerator would win.  This could be seen as an argument
+      // for having upb actually build the table at load time, thus checking the
+      // constraint proactively, but upb is always checking a subset of the full
+      // validation performed by C++, and we have to pick and choose the biggest
+      // bang for the buck.
       const upb_enumvaldef* ev = upb_enumdef_value(e, j);
       const char* name = upb_enumvaldef_name(ev);
       PyObject* val = PyLong_FromLong(upb_enumvaldef_number(ev));

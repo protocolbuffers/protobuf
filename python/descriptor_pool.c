@@ -159,13 +159,26 @@ static bool PyUpb_DescriptorPool_TryLoadFilename(PyUpb_DescriptorPool* self,
 }
 
 bool PyUpb_DescriptorPool_CheckNoDatabase(PyObject* _self) {
-  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
-  if (self->db) {
-    PyErr_SetString(
-        PyExc_ValueError,
-        "Cannot call Add on a DescriptorPool that uses a DescriptorDatabase. "
-        "Add your file to the underlying database.");
-    return false;
+  return true;
+}
+
+static bool PyUpb_DescriptorPool_LoadDependentFiles(
+    PyUpb_DescriptorPool* self, google_protobuf_FileDescriptorProto* proto) {
+  // Load dependent files if necessary.
+  size_t n;
+  const upb_strview* deps =
+      google_protobuf_FileDescriptorProto_dependency(proto, &n);
+  for (size_t i = 0; i < n; i++) {
+    const upb_filedef* dep =
+        upb_symtab_lookupfile2(self->symtab, deps[i].data, deps[i].size);
+    if (!dep) {
+      PyObject* filename =
+          PyUnicode_FromStringAndSize(deps[i].data, deps[i].size);
+      if (!filename) return false;
+      bool ok = PyUpb_DescriptorPool_TryLoadFilename(self, filename);
+      Py_DECREF(filename);
+      if (!ok) return false;
+    }
   }
   return true;
 }
@@ -173,12 +186,12 @@ bool PyUpb_DescriptorPool_CheckNoDatabase(PyObject* _self) {
 static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
     PyObject* _self, PyObject* serialized_pb) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
-  char* buf;
-  Py_ssize_t size;
   upb_arena* arena = upb_arena_new();
   if (!arena) PYUPB_RETURN_OOM;
   PyObject* result = NULL;
 
+  char* buf;
+  Py_ssize_t size;
   if (PyBytes_AsStringAndSize(serialized_pb, &buf, &size) < 0) {
     goto done;
   }
@@ -212,21 +225,7 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
   }
 
   if (self->db) {
-    // Load dependent files if necessary.
-    size_t n;
-    const upb_strview* deps =
-        google_protobuf_FileDescriptorProto_dependency(proto, &n);
-    for (size_t i = 0; i < n; i++) {
-      const upb_filedef* dep =
-          upb_symtab_lookupfile2(self->symtab, deps[i].data, deps[i].size);
-      if (!dep) {
-        PyObject* filename =
-            PyUnicode_FromStringAndSize(deps[i].data, deps[i].size);
-        if (!filename) goto done;
-        if (!PyUpb_DescriptorPool_TryLoadFilename(self, filename)) goto done;
-        Py_DECREF(filename);
-      }
-    }
+    if (!PyUpb_DescriptorPool_LoadDependentFiles(self, proto)) goto done;
   }
 
   upb_status status;
@@ -274,15 +273,29 @@ static PyObject* PyUpb_DescriptorPool_DoAdd(PyObject* _self,
  * Adds the given serialized FileDescriptorProto to the pool.
  */
 static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
-    PyObject * self, PyObject * serialized_pb) {
-  if (!PyUpb_DescriptorPool_CheckNoDatabase(self)) return NULL;
-  return PyUpb_DescriptorPool_DoAddSerializedFile(self, serialized_pb);
+    PyObject * _self, PyObject * serialized_pb) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+  if (self->db) {
+    PyErr_SetString(
+        PyExc_ValueError,
+        "Cannot call AddSerializedFile on a DescriptorPool that uses a "
+        "DescriptorDatabase. Add your file to the underlying database.");
+    return false;
+  }
+  return PyUpb_DescriptorPool_DoAddSerializedFile(_self, serialized_pb);
 }
 
-static PyObject* PyUpb_DescriptorPool_Add(PyObject* self,
+static PyObject* PyUpb_DescriptorPool_Add(PyObject* _self,
                                           PyObject* file_desc) {
-  if (!PyUpb_DescriptorPool_CheckNoDatabase(self)) return NULL;
-  return PyUpb_DescriptorPool_DoAdd(self, file_desc);
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+  if (self->db) {
+    PyErr_SetString(
+        PyExc_ValueError,
+        "Cannot call Add on a DescriptorPool that uses a DescriptorDatabase. "
+        "Add your file to the underlying database.");
+    return false;
+  }
+  return PyUpb_DescriptorPool_DoAdd(_self, file_desc);
 }
 
 /*
