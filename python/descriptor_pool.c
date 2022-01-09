@@ -164,7 +164,6 @@ bool PyUpb_DescriptorPool_CheckNoDatabase(PyObject* _self) {
 
 static bool PyUpb_DescriptorPool_LoadDependentFiles(
     PyUpb_DescriptorPool* self, google_protobuf_FileDescriptorProto* proto) {
-  // Load dependent files if necessary.
   size_t n;
   const upb_strview* deps =
       google_protobuf_FileDescriptorProto_dependency(proto, &n);
