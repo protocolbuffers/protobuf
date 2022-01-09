@@ -105,6 +105,14 @@ PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_fielddef* f,
 
 void PyUpb_MapContainer_Reify(PyObject* _self, upb_map* map) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
+  if (!map) {
+    const upb_fielddef* f = PyUpb_MapContainer_GetField(self);
+    upb_arena* arena = PyUpb_Arena_Get(self->arena);
+    const upb_msgdef* entry_m = upb_fielddef_msgsubdef(f);
+    const upb_fielddef* key_f = upb_msgdef_field(entry_m, 0);
+    const upb_fielddef* val_f = upb_msgdef_field(entry_m, 1);
+    map = upb_map_new(arena, upb_fielddef_type(key_f), upb_fielddef_type(val_f));
+  }
   PyUpb_ObjCache_Add(map, &self->ob_base);
   Py_DECREF(self->ptr.parent);
   self->ptr.map = map;  // Overwrites self->ptr.parent.

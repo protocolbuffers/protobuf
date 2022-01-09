@@ -550,6 +550,10 @@ static void PyUpb_CMessage_SyncSubobjs(PyUpb_CMessage* self);
 static void PyUpb_CMessage_Reify(PyUpb_CMessage* self, const upb_fielddef* f,
                                  upb_msg* msg) {
   assert(f == PyUpb_CMessage_GetFieldDef(self));
+  if (!msg) {
+    const upb_msgdef* msgdef = PyUpb_CMessage_GetMsgdef((PyObject*)self);
+    msg = upb_msg_new(msgdef, PyUpb_Arena_Get(self->arena));
+  }
   PyUpb_ObjCache_Add(msg, &self->ob_base);
   Py_DECREF(&self->ptr.parent->ob_base);
   self->ptr.msg = msg;  // Overwrites self->ptr.parent
@@ -585,7 +589,7 @@ static void PyUpb_CMessage_SyncSubobjs(PyUpb_CMessage* self) {
   PyObject* obj;
 
   // The last ref to this message could disappear during iteration.
-  // When we call PyUpb_*Container_SwitchToSet() below, the container will drop
+  // When we call PyUpb_*Container_Reify() below, the container will drop
   // its ref on `self`.  If that was the last ref on self, the object will be
   // deleted, and `subobj_map` along with it.  We need it to live until we are
   // done iterating.
@@ -1047,6 +1051,32 @@ static PyObject* PyUpb_CMessage_ByteSize(PyObject* self, PyObject* args) {
 static PyObject* PyUpb_CMessage_Clear(PyUpb_CMessage* self, PyObject* args) {
   PyUpb_CMessage_EnsureReified(self);
   const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
+  PyUpb_WeakMap* subobj_map = self->unset_subobj_map;
+
+  if (subobj_map) {
+    upb_msg* msg = PyUpb_CMessage_GetMsg(self);
+    intptr_t iter = PYUPB_WEAKMAP_BEGIN;
+    const void* key;
+    PyObject* obj;
+
+    while (PyUpb_WeakMap_Next(subobj_map, &key, &obj, &iter)) {
+      const upb_fielddef* f = key;
+      PyUpb_WeakMap_DeleteIter(subobj_map, &iter);
+      if (upb_fielddef_ismap(f)) {
+        assert(upb_msg_get(msg, f).map_val == NULL);
+        PyUpb_MapContainer_Reify(obj, NULL);
+      } else if (upb_fielddef_isseq(f)) {
+        assert(upb_msg_get(msg, f).array_val == NULL);
+        PyUpb_RepeatedContainer_Reify(obj, NULL);
+      } else {
+        assert(!upb_msg_has(msg, f));
+        PyUpb_CMessage* sub = (void*)obj;
+        assert(self == sub->ptr.parent);
+        PyUpb_CMessage_Reify(sub, f, NULL);
+      }
+    }
+  }
+
   upb_msg_clear(self->ptr.msg, msgdef);
   Py_RETURN_NONE;
 }
