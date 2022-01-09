@@ -545,6 +545,20 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
   return ret;
 }
 
+static PyObject* PyUpb_RepeatedContainer_Reverse(PyObject* _self) {
+  upb_array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
+  size_t n = upb_array_size(arr);
+  size_t half = n / 2;  // Rounds down.
+  for (size_t i = 0; i < half; i++) {
+    size_t i2 = n - i - 1;
+    upb_msgval val1 = upb_array_get(arr, i);
+    upb_msgval val2 = upb_array_get(arr, i2);
+    upb_array_set(arr, i, val2);
+    upb_array_set(arr, i2, val1);
+  }
+  Py_RETURN_NONE;
+}
+
 static PyObject* PyUpb_RepeatedContainer_MergeFrom(PyObject* _self,
                                                    PyObject* args) {
   return PyUpb_RepeatedContainer_Extend(_self, args);
@@ -650,9 +664,8 @@ static PyMethodDef PyUpb_RepeatedCompositeContainer_Methods[] = {
      "Removes an object from the repeated container."},
     {"sort", (PyCFunction)PyUpb_RepeatedContainer_Sort,
      METH_VARARGS | METH_KEYWORDS, "Sorts the repeated container."},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    //{"reverse", reinterpret_cast<PyCFunction>(Reverse), METH_NOARGS,
-    // "Reverses elements order of the repeated container."},
+    {"reverse", (PyCFunction)PyUpb_RepeatedContainer_Reverse, METH_NOARGS,
+     "Reverses elements order of the repeated container."},
     {"MergeFrom", PyUpb_RepeatedContainer_MergeFrom, METH_O,
      "Adds objects to the repeated container."},
     {NULL, NULL}};
@@ -734,9 +747,8 @@ static PyMethodDef PyUpb_RepeatedScalarContainer_Methods[] = {
      "Removes an object from the repeated container."},
     {"sort", (PyCFunction)PyUpb_RepeatedContainer_Sort,
      METH_VARARGS | METH_KEYWORDS, "Sorts the repeated container."},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    // {"reverse", reinterpret_cast<PyCFunction>(Reverse), METH_NOARGS,
-    //  "Reverses elements order of the repeated container."},
+    {"reverse", (PyCFunction)PyUpb_RepeatedContainer_Reverse, METH_NOARGS,
+     "Reverses elements order of the repeated container."},
     {"MergeFrom", PyUpb_RepeatedContainer_MergeFrom, METH_O,
      "Merges a repeated container into the current container."},
     {NULL, NULL}};
