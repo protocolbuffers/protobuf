@@ -67,7 +67,10 @@ struct upb_fielddef {
     bool boolean;
     str_t *str;
   } defaultval;
-  const upb_oneofdef *oneof;
+  union {
+    const upb_oneofdef *oneof;
+    const upb_msgdef *extension_scope;
+  } scope;
   union {
     const upb_msgdef *msgdef;
     const upb_enumdef *enumdef;
@@ -137,7 +140,7 @@ struct upb_enumdef {
 
 struct upb_enumvaldef {
   const google_protobuf_EnumValueOptions *opts;
-  const upb_enumdef *enum_;
+  const upb_enumdef *parent;
   const char *full_name;
   int32_t number;
 };
@@ -260,8 +263,15 @@ static bool upb_isbetween(uint8_t c, uint8_t low, uint8_t high) {
   return c >= low && c <= high;
 }
 
+static char upb_ascii_lower(char ch) {
+  // Per ASCII this will lower-case a letter.  If the result is a letter, the
+  // input was definitely a letter.  If the output is not a letter, this may
+  // have transformed the character unpredictably.
+  return ch | 0x20;
+}
+
 static bool upb_isletter(char c) {
-  char lower = c | 0x20;  // Per ASCII this will lowercase a letter.
+  char lower = upb_ascii_lower(c);
   return upb_isbetween(lower, 'a', 'z') || c == '_';
 }
 
@@ -443,7 +453,7 @@ bool upb_enumvaldef_hasoptions(const upb_enumvaldef *e) {
 }
 
 const upb_enumdef *upb_enumvaldef_enum(const upb_enumvaldef *ev) {
-  return ev->enum_;
+  return ev->parent;
 }
 
 const char *upb_enumvaldef_fullname(const upb_enumvaldef *ev) {
@@ -456,6 +466,11 @@ const char *upb_enumvaldef_name(const upb_enumvaldef *ev) {
 
 int32_t upb_enumvaldef_number(const upb_enumvaldef *ev) {
   return ev->number;
+}
+
+uint32_t upb_enumvaldef_index(const upb_enumvaldef *ev) {
+  // Compute index in our parent's array.
+  return ev - ev->parent->values;
 }
 
 /* upb_extrange ***************************************************************/
@@ -571,13 +586,18 @@ const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f) {
   return f->msgdef;
 }
 
+const upb_msgdef *upb_fielddef_extensionscope(const upb_fielddef *f) {
+  return f->is_extension_ ? f->scope.extension_scope : NULL;
+}
+
 const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f) {
-  return f->oneof;
+  return f->is_extension_ ? NULL : f->scope.oneof;
 }
 
 const upb_oneofdef *upb_fielddef_realcontainingoneof(const upb_fielddef *f) {
-  if (!f->oneof || upb_oneofdef_issynthetic(f->oneof)) return NULL;
-  return f->oneof;
+  const upb_oneofdef* oneof = upb_fielddef_containingoneof(f);
+  if (!oneof || upb_oneofdef_issynthetic(oneof)) return NULL;
+  return oneof;
 }
 
 upb_msgval upb_fielddef_default(const upb_fielddef *f) {
@@ -1011,6 +1031,7 @@ int upb_oneofdef_numfields(const upb_oneofdef *o) {
 }
 
 uint32_t upb_oneofdef_index(const upb_oneofdef *o) {
+  // Compute index in our parent's array.
   return o - o->parent->oneofs;
 }
 
@@ -1862,7 +1883,7 @@ static void finalize_oneofs(symtab_addctx *ctx, upb_msgdef *m) {
 
   for (i = 0; i < m->field_count; i++) {
     const upb_fielddef *f = &m->fields[i];
-    upb_oneofdef *o = (upb_oneofdef*)f->oneof;
+    upb_oneofdef *o = (upb_oneofdef*)upb_fielddef_containingoneof(f);
     if (o) {
       o->fields[o->field_count++] = f;
     }
@@ -2030,10 +2051,145 @@ static void create_oneofdef(
 
 static str_t *newstr(symtab_addctx *ctx, const char *data, size_t len) {
   str_t *ret = symtab_alloc(ctx, sizeof(*ret) + len);
-  if (!ret) return NULL;
+  CHK_OOM(ret);
   ret->len = len;
   if (len) memcpy(ret->str, data, len);
   ret->str[len] = '\0';
+  return ret;
+}
+
+static bool upb_symtab_TryGetChar(const char** src, const char* end, char* ch) {
+  if (*src == end) return false;
+  *ch = **src;
+  *src += 1;
+  return true;
+}
+
+static char upb_symtab_TryGetHexDigit(symtab_addctx* ctx, const upb_fielddef* f,
+                                      const char** src, const char* end) {
+  char ch;
+  if (!upb_symtab_TryGetChar(src, end, &ch)) return -1;
+  if ('0' <= ch && ch <= '9') {
+    return ch - '0';
+  }
+  ch = upb_ascii_lower(ch);
+  if ('a' <= ch && ch <= 'f') {
+    return ch - 'a' + 0xa;
+  }
+  *src -= 1;  // Char wasn't actually a hex digit.
+  return -1;
+}
+
+static char upb_symtab_ParseHexEscape(symtab_addctx* ctx, const upb_fielddef* f,
+                                      const char** src, const char* end) {
+  char hex_digit = upb_symtab_TryGetHexDigit(ctx, f, src, end);
+  if (hex_digit < 0) {
+    symtab_errf(ctx,
+                "\\x cannot be followed by non-hex digit in field '%s' default",
+                upb_fielddef_fullname(f));
+    return 0;
+  }
+  unsigned int ret = hex_digit;
+  while ((hex_digit = upb_symtab_TryGetHexDigit(ctx, f, src, end)) >= 0) {
+    ret = (ret << 4) | hex_digit;
+  }
+  if (ret > 0xff) {
+    symtab_errf(ctx, "Value of hex escape in field %s exceeds 8 bits",
+                upb_fielddef_fullname(f));
+    return 0;
+  }
+  return ret;
+}
+
+char upb_symtab_TryGetOctalDigit(const char** src, const char* end) {
+  char ch;
+  if (!upb_symtab_TryGetChar(src, end, &ch)) return -1;
+  if ('0' <= ch && ch <= '7') {
+    return ch - '0';
+  }
+  *src -= 1;  // Char wasn't actually an octal digit.
+  return -1;
+}
+
+static char upb_symtab_ParseOctalEscape(symtab_addctx* ctx,
+                                        const upb_fielddef* f,
+                                        const char** src, const char* end) {
+  char ch = 0;
+  for (int i = 0; i < 3; i++) {
+    char digit;
+    if ((digit = upb_symtab_TryGetOctalDigit(src, end)) >= 0) {
+      ch = (ch << 3) | digit;
+    }
+  }
+  return ch;
+}
+
+static char upb_symtab_ParseEscape(symtab_addctx* ctx, const upb_fielddef* f,
+                                   const char** src, const char* end) {
+  char ch;
+  if (!upb_symtab_TryGetChar(src, end, &ch)) {
+    symtab_errf(ctx, "unterminated escape sequence in field %s",
+                upb_fielddef_fullname(f));
+    return 0;
+  }
+  switch (ch) {
+    case 'a':
+      return '\a';
+    case 'b':
+      return '\b';
+    case 'f':
+      return '\f';
+    case 'n':
+      return '\n';
+    case 'r':
+      return '\r';
+    case 't':
+      return '\t';
+    case 'v':
+      return '\v';
+    case '\\':
+      return '\\';
+    case '\'':
+      return '\'';
+    case '\"':
+      return '\"';
+    case '?':
+      return '\?';
+    case 'x':
+    case 'X':
+      return upb_symtab_ParseHexEscape(ctx, f, src, end);
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+      *src -= 1;
+      return upb_symtab_ParseOctalEscape(ctx, f, src, end);
+  }
+  symtab_errf(ctx, "Unknown escape sequence: \\%c", ch);
+}
+
+static str_t* unescape(symtab_addctx* ctx, const upb_fielddef* f,
+                      const char* data, size_t len) {
+  // Size here is an upper bound; escape sequences could ultimately shrink it.
+  str_t* ret = symtab_alloc(ctx, sizeof(*ret) + len);
+  char* dst = &ret->str[0];
+  const char* src = data;
+  const char* end = data + len;
+
+  while (src < end) {
+    if (*src == '\\') {
+      src++;
+      *dst++ = upb_symtab_ParseEscape(ctx, f, &src, end);
+    } else {
+      *dst++ = *src++;
+    }
+  }
+
+  ret->len = dst - &ret->str[0];
   return ret;
 }
 
@@ -2134,8 +2290,7 @@ static void parse_default(symtab_addctx *ctx, const char *str, size_t len,
       f->defaultval.str = newstr(ctx, str, len);
       break;
     case UPB_TYPE_BYTES:
-      /* XXX: need to interpret the C-escaped value. */
-      f->defaultval.str = newstr(ctx, str, len);
+      f->defaultval.str = unescape(ctx, f, str, len);
       break;
     case UPB_TYPE_MESSAGE:
       /* Should not have a default value. */
@@ -2181,7 +2336,7 @@ static void set_default_default(symtab_addctx *ctx, upb_fielddef *f) {
 static void create_fielddef(
     symtab_addctx *ctx, const char *prefix, upb_msgdef *m,
     const google_protobuf_FieldDescriptorProto *field_proto,
-    const upb_fielddef *_f) {
+    const upb_fielddef *_f, bool is_extension) {
   upb_fielddef *f = (upb_fielddef*)_f;
   upb_strview name;
   const char *full_name;
@@ -2215,7 +2370,7 @@ static void create_fielddef(
   f->json_name = json_name;
   f->label_ = (int)google_protobuf_FieldDescriptorProto_label(field_proto);
   f->number_ = field_number;
-  f->oneof = NULL;
+  f->scope.oneof = NULL;
   f->proto3_optional_ =
       google_protobuf_FieldDescriptorProto_proto3_optional(field_proto);
 
@@ -2245,7 +2400,7 @@ static void create_fielddef(
     f->type_ = FIELD_TYPE_UNSPECIFIED;  // We'll fill this in in resolve_fielddef().
   }
 
-  if (m) {
+  if (!is_extension) {
     /* direct message field. */
     upb_value v, field_v, json_v, existing_v;
     size_t json_size;
@@ -2309,6 +2464,7 @@ static void create_fielddef(
   } else {
     /* extension field. */
     f->is_extension_ = true;
+    f->scope.extension_scope = m;
     symtab_add(ctx, full_name, pack_def(f, UPB_DEFTYPE_EXT));
     f->layout_index = ctx->ext_count++;
     if (ctx->layout) {
@@ -2356,7 +2512,7 @@ static void create_fielddef(
     }
 
     oneof = (upb_oneofdef *)&m->oneofs[oneof_index];
-    f->oneof = oneof;
+    f->scope.oneof = oneof;
 
     oneof->field_count++;
     if (f->proto3_optional_) {
@@ -2366,7 +2522,6 @@ static void create_fielddef(
     CHK_OOM(
         upb_strtable_insert(&oneof->ntof, name.data, name.size, v, ctx->arena));
   } else {
-    f->oneof = NULL;
     if (f->proto3_optional_) {
       symtab_errf(ctx, "field with proto3_optional was not in a oneof (%s)",
                   f->full_name);
@@ -2487,7 +2642,7 @@ static void create_enumvaldef(
   upb_strview name = google_protobuf_EnumValueDescriptorProto_name(val_proto);
   upb_value v = upb_value_constptr(val);
 
-  val->enum_ = e;  /* Must happen prior to symtab_add(). */
+  val->parent = e;  /* Must happen prior to symtab_add(). */
   val->full_name = makefullname(ctx, prefix, name);
   val->number = google_protobuf_EnumValueDescriptorProto_number(val_proto);
   symtab_add(ctx, val->full_name, pack_def(val, UPB_DEFTYPE_ENUMVAL));
@@ -2560,6 +2715,10 @@ static void create_enumdef(
   }
 }
 
+static void msgdef_create_nested(
+    symtab_addctx* ctx, const google_protobuf_DescriptorProto* msg_proto,
+    upb_msgdef* m);
+
 static void create_msgdef(symtab_addctx *ctx, const char *prefix,
                           const google_protobuf_DescriptorProto *msg_proto,
                           const upb_msgdef *containing_type,
@@ -2567,10 +2726,8 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
   upb_msgdef *m = (upb_msgdef*)_m;
   const google_protobuf_OneofDescriptorProto *const *oneofs;
   const google_protobuf_FieldDescriptorProto *const *fields;
-  const google_protobuf_EnumDescriptorProto *const *enums;
-  const google_protobuf_DescriptorProto *const *msgs;
   const google_protobuf_DescriptorProto_ExtensionRange *const *ext_ranges;
-  size_t i, n_oneof, n_field, n_ext_range, n;
+  size_t i, n_oneof, n_field, n_ext_range;
   upb_strview name;
 
   m->file = ctx->file;  /* Must happen prior to symtab_add(). */
@@ -2612,7 +2769,8 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
   m->field_count = n_field;
   m->fields = symtab_alloc(ctx, sizeof(*m->fields) * n_field);
   for (i = 0; i < n_field; i++) {
-    create_fielddef(ctx, m->full_name, m, fields[i], &m->fields[i]);
+    create_fielddef(ctx, m->full_name, m, fields[i], &m->fields[i],
+                    /* is_extension= */ false);
   }
 
   m->ext_range_count = n_ext_range;
@@ -2644,29 +2802,38 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
   finalize_oneofs(ctx, m);
   assign_msg_wellknowntype(m);
   upb_inttable_compact(&m->itof, ctx->arena);
+  msgdef_create_nested(ctx, msg_proto, m);
+}
 
-  /* This message is built.  Now build nested entities. */
+static void msgdef_create_nested(
+    symtab_addctx* ctx, const google_protobuf_DescriptorProto* msg_proto,
+    upb_msgdef* m) {
+  size_t n;
 
-  enums = google_protobuf_DescriptorProto_enum_type(msg_proto, &n);
+  const google_protobuf_EnumDescriptorProto* const* enums =
+      google_protobuf_DescriptorProto_enum_type(msg_proto, &n);
   m->nested_enum_count = n;
   m->nested_enums = symtab_alloc(ctx, sizeof(*m->nested_enums) * n);
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     m->nested_enum_count = i + 1;
     create_enumdef(ctx, m->full_name, enums[i], m, &m->nested_enums[i]);
   }
 
-  fields = google_protobuf_DescriptorProto_extension(msg_proto, &n);
+  const google_protobuf_FieldDescriptorProto* const* exts =
+      google_protobuf_DescriptorProto_extension(msg_proto, &n);
   m->nested_ext_count = n;
   m->nested_exts = symtab_alloc(ctx, sizeof(*m->nested_exts) * n);
-  for (i = 0; i < n; i++) {
-    create_fielddef(ctx, m->full_name, NULL, fields[i], &m->nested_exts[i]);
+  for (size_t i = 0; i < n; i++) {
+    create_fielddef(ctx, m->full_name, m, exts[i], &m->nested_exts[i],
+                    /* is_extension= */ true);
     ((upb_fielddef*)&m->nested_exts[i])->index_ = i;
   }
 
-  msgs = google_protobuf_DescriptorProto_nested_type(msg_proto, &n);
+  const google_protobuf_DescriptorProto* const* msgs =
+      google_protobuf_DescriptorProto_nested_type(msg_proto, &n);
   m->nested_msg_count = n;
   m->nested_msgs = symtab_alloc(ctx, sizeof(*m->nested_msgs) * n);
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     create_msgdef(ctx, m->full_name, msgs[i], m, &m->nested_msgs[i]);
   }
 }
@@ -2972,7 +3139,8 @@ static void build_filedef(
   file->top_lvl_ext_count = n;
   file->top_lvl_exts = symtab_alloc(ctx, sizeof(*file->top_lvl_exts) * n);
   for (i = 0; i < n; i++) {
-    create_fielddef(ctx, file->package, NULL, exts[i], &file->top_lvl_exts[i]);
+    create_fielddef(ctx, file->package, NULL, exts[i], &file->top_lvl_exts[i],
+                    /* is_extension= */ true);
     ((upb_fielddef*)&file->top_lvl_exts[i])->index_ = i;
   }
 

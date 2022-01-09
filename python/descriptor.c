@@ -485,6 +485,59 @@ static PyObject* PyUpb_Descriptor_GetName(PyObject* self, void* closure) {
   return PyUnicode_FromString(upb_msgdef_name(msgdef));
 }
 
+static PyObject* PyUpb_Descriptor_GetEnumValuesByName(PyObject* _self,
+                                                      void* closure) {
+  // upb does not natively store any table containing all nested values.
+  // Consider:
+  //     message M {
+  //       enum E1 {
+  //         A = 0;
+  //         B = 1;
+  //       }
+  //       enum E2 {
+  //         C = 0;
+  //         D = 1;
+  //       }
+  //     }
+  //
+  // In this case, upb stores tables for E1 and E2, but it does not store a
+  // table for M that combines them (it is rarely needed and costs precious
+  // space and time to build).
+  //
+  // To work around this, we build an actual Python dict whenever a user
+  // actually asks for this.
+  PyUpb_DescriptorBase* self = (void*)_self;
+  PyObject* ret = PyDict_New();
+  if (!ret) return NULL;
+  int enum_count = upb_msgdef_nestedenumcount(self->def);
+  for (int i = 0; i < enum_count; i++) {
+    const upb_enumdef* e = upb_msgdef_nestedenum(self->def, i);
+    int value_count = upb_enumdef_valuecount(e);
+    for (int j = 0; j < value_count; j++) {
+      // Collisions should be impossible here, as uniqueness is checked by
+      // protoc (this is an invariant of the protobuf language).  However this
+      // uniqueness constraint is not currently checked by upb/def.c at load
+      // time, so if the user supplies a manually-constructed descriptor that
+      // does not respect this constraint, a collision could be possible and the
+      // last-defined enumerator would win.  This could be seen as an argument
+      // for having upb actually build the table at load time, thus checking the
+      // constraint proactively, but upb is always checking a subset of the full
+      // validation performed by C++, and we have to pick and choose the biggest
+      // bang for the buck.
+      const upb_enumvaldef* ev = upb_enumdef_value(e, j);
+      const char* name = upb_enumvaldef_name(ev);
+      PyObject* val = PyLong_FromLong(upb_enumvaldef_number(ev));
+      if (!val || PyDict_SetItemString(ret, name, val) < 0) {
+        Py_XDECREF(val);
+        Py_DECREF(ret);
+        return NULL;
+      }
+      Py_DECREF(val);
+    }
+  }
+  return ret;
+}
+
 static PyObject* PyUpb_Descriptor_GetOneofsByName(PyObject* _self,
                                                   void* closure) {
   PyUpb_DescriptorBase* self = (void*)_self;
@@ -532,9 +585,8 @@ static PyGetSetDef PyUpb_Descriptor_Getters[] = {
     {"enum_types", PyUpb_Descriptor_GetEnumTypes, NULL, "Enum sequence"},
     {"enum_types_by_name", PyUpb_Descriptor_GetEnumTypesByName, NULL,
      "Enum types by name"},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    //{ "enum_values_by_name", PyUpb_Descriptor_GetEnumValuesByName, NULL,
-    //  "Enum values by name"},
+    {"enum_values_by_name", PyUpb_Descriptor_GetEnumValuesByName, NULL,
+     "Enum values by name"},
     {"oneofs_by_name", PyUpb_Descriptor_GetOneofsByName, NULL,
      "Oneofs by name"},
     {"oneofs", PyUpb_Descriptor_GetOneofs, NULL, "Oneofs Sequence"},
@@ -726,6 +778,12 @@ static PyObject* PyUpb_EnumValueDescriptor_GetNumber(PyObject* self,
   return PyLong_FromLong(upb_enumvaldef_number(base->def));
 }
 
+static PyObject* PyUpb_EnumValueDescriptor_GetIndex(PyObject* self,
+                                                    void* closure) {
+  PyUpb_DescriptorBase* base = (PyUpb_DescriptorBase*)self;
+  return PyLong_FromLong(upb_enumvaldef_index(base->def));
+}
+
 static PyObject* PyUpb_EnumValueDescriptor_GetType(PyObject* self,
                                                    void* closure) {
   PyUpb_DescriptorBase* base = (PyUpb_DescriptorBase*)self;
@@ -750,8 +808,7 @@ static PyObject* PyUpb_EnumValueDescriptor_GetOptions(PyObject* _self,
 static PyGetSetDef PyUpb_EnumValueDescriptor_Getters[] = {
     {"name", PyUpb_EnumValueDescriptor_GetName, NULL, "name"},
     {"number", PyUpb_EnumValueDescriptor_GetNumber, NULL, "number"},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    //{ "index", (getter)GetIndex, NULL, "index"},
+    {"index", PyUpb_EnumValueDescriptor_GetIndex, NULL, "index"},
     {"type", PyUpb_EnumValueDescriptor_GetType, NULL, "index"},
     {"has_options", PyUpb_EnumValueDescriptor_GetHasOptions, NULL,
      "Has Options"},
@@ -900,6 +957,13 @@ static PyObject* PyUpb_FieldDescriptor_GetContainingType(
   return PyUpb_Descriptor_Get(m);
 }
 
+static PyObject* PyUpb_FieldDescriptor_GetExtensionScope(
+    PyUpb_DescriptorBase* self, void* closure) {
+  const upb_msgdef* m = upb_fielddef_extensionscope(self->def);
+  if (!m) Py_RETURN_NONE;
+  return PyUpb_Descriptor_Get(m);
+}
+
 static PyObject* PyUpb_FieldDescriptor_HasDefaultValue(
     PyUpb_DescriptorBase* self, void* closure) {
   return PyBool_FromLong(upb_fielddef_hasdefault(self->def));
@@ -957,9 +1021,8 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
     {"enum_type", (getter)PyUpb_FieldDescriptor_GetEnumType, NULL, "Enum type"},
     {"containing_type", (getter)PyUpb_FieldDescriptor_GetContainingType, NULL,
      "Containing type"},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    //{ "extension_scope", (getter)GetExtensionScope, (setter)NULL,
-    //  "Extension scope"},
+    {"extension_scope", (getter)PyUpb_FieldDescriptor_GetExtensionScope, NULL,
+     "Extension scope"},
     {"containing_oneof", (getter)PyUpb_FieldDescriptor_GetContainingOneof, NULL,
      "Containing oneof"},
     {"has_options", (getter)PyUpb_FieldDescriptor_GetHasOptions, NULL,
@@ -1364,6 +1427,17 @@ static PyObject* PyUpb_OneofDescriptor_GetHasOptions(PyObject* _self,
   return PyBool_FromLong(upb_oneofdef_hasoptions(self->def));
 }
 
+static PyObject* PyUpb_OneofDescriptor_GetFields(PyObject* _self,
+                                                 void* closure) {
+  PyUpb_DescriptorBase* self = (void*)_self;
+  static PyUpb_GenericSequence_Funcs funcs = {
+      (void*)&upb_oneofdef_fieldcount,
+      (void*)&upb_oneofdef_field,
+      (void*)&PyUpb_FieldDescriptor_Get,
+  };
+  return PyUpb_GenericSequence_New(&funcs, self->def, self->pool);
+}
+
 static PyObject* PyUpb_OneofDescriptor_GetOptions(PyObject* _self,
                                                   PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
@@ -1379,8 +1453,7 @@ static PyGetSetDef PyUpb_OneofDescriptor_Getters[] = {
     {"containing_type", PyUpb_OneofDescriptor_GetContainingType, NULL,
      "Containing type"},
     {"has_options", PyUpb_OneofDescriptor_GetHasOptions, NULL, "Has Options"},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    //{ "fields", (getter)GetFields, NULL, "Fields"},
+    {"fields", PyUpb_OneofDescriptor_GetFields, NULL, "Fields"},
     {NULL}};
 
 static PyMethodDef PyUpb_OneofDescriptor_Methods[] = {

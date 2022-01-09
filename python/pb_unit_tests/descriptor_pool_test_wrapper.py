@@ -35,36 +35,9 @@ descriptor_pool_test.AddDescriptorTest.testFile.__unittest_expecting_failure__ =
 descriptor_pool_test.AddDescriptorTest.testMessage.__unittest_expecting_failure__ = True
 descriptor_pool_test.AddDescriptorTest.testService.__unittest_expecting_failure__ = True
 descriptor_pool_test.CreateDescriptorPoolTest.testFindFieldByName.__unittest_expecting_failure__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindMessageTypeByName.__unittest_expecting_failure__ = True
 descriptor_pool_test.CreateDescriptorPoolTest.testFindService.__unittest_expecting_failure__ = True
 descriptor_pool_test.CreateDescriptorPoolTest.testFindTypeErrors.__unittest_expecting_failure__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testUserDefinedDB.__unittest_expecting_failure__ = True
 descriptor_pool_test.SecondaryDescriptorFromDescriptorDB.testErrorCollector.__unittest_expecting_failure__ = True
-
-# Some tests are defined in a base class and inherited by multiple sub-classes.
-# If only some of the subclasses fail, we need to duplicate the test method
-# before marking it, otherwise the mark will affect all subclasses.
-def wrap(cls, method):
-  existing = getattr(cls, method)
-  setattr(cls, method, lambda self: existing(self))
-  getattr(cls, method).__unittest_expecting_failure__ = True
-
-wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testAddFileDescriptor")
-wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testAddSerializedFile")
-wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testComplexNesting")
-wrap(descriptor_pool_test.CreateDescriptorPoolTest, "testExtensionsAreNotFields")
-wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testAddFileDescriptor")
-wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testAddSerializedFile")
-wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testComplexNesting")
-wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testEnumDefaultValue")
-wrap(descriptor_pool_test.DefaultDescriptorPoolTest, "testExtensionsAreNotFields")
-wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindAllExtensions")
-wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindEnumTypeByName")
-wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindExtensionByName")
-wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindExtensionByNumber")
-wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindFileByName")
-wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindFileContainingSymbol")
-wrap(descriptor_pool_test.SecondaryDescriptorFromDescriptorDB, "testFindOneofByName")
 
 if __name__ == '__main__':
   unittest.main(module=descriptor_pool_test, verbosity=2)

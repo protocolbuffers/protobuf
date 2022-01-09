@@ -69,6 +69,7 @@ cc_binary(
         "//:reflection",
         "//:textformat",
         "//:upb",
+        "//:descriptor_upb_proto_reflection",
         "//upb/util:compare",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
