@@ -359,12 +359,21 @@ static int PyUpb_RepeatedContainer_SetSubscript(
   PyObject* item = NULL;
   int ret = -1;
   if (!seq) goto err;
-  if (PySequence_Size(seq) != count) {
-    PyErr_Format(PyExc_ValueError,
-                  "attempt to assign sequence of size %zd to extended slice "
-                  "of size %zd",
-                  PySequence_Size(seq), count);
-    goto err;
+  Py_ssize_t seq_size = PySequence_Size(seq);
+  if (seq_size != count) {
+    if (step == 1) {
+      // We must shift the tail elements (either right or left).
+      size_t tail = upb_array_size(arr) - (idx + count);
+      upb_array_resize(arr, idx + seq_size + tail, arena);
+      upb_array_move(arr, idx + seq_size, idx + count, tail);
+      count = seq_size;
+    } else {
+      PyErr_Format(PyExc_ValueError,
+                   "attempt to assign sequence of  %zd to extended slice "
+                   "of size %zd",
+                   seq_size, count);
+      goto err;
+    }
   }
   for (Py_ssize_t i = 0; i < count; i++, idx += step) {
     upb_msgval msgval;
