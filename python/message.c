@@ -1636,7 +1636,6 @@ bool PyUpb_InitMessage(PyObject* m) {
   if (PyModule_AddObject(m, "MessageMeta", message_meta_type)) return false;
 
   PyObject* mod = PyImport_ImportModule("google.protobuf.message");
-
   if (mod == NULL) return false;
 
   state->encode_error_class = PyObject_GetAttrString(mod, "EncodeError");
@@ -1644,8 +1643,16 @@ bool PyUpb_InitMessage(PyObject* m) {
   state->message_class = PyObject_GetAttrString(mod, "Message");
   Py_DECREF(mod);
 
+  PyObject* enum_type_wrapper =
+      PyImport_ImportModule("google.protobuf.internal.enum_type_wrapper");
+  if (enum_type_wrapper == NULL) return false;
+
+  state->enum_type_wrapper_class =
+      PyObject_GetAttrString(enum_type_wrapper, "EnumTypeWrapper");
+  Py_DECREF(enum_type_wrapper);
+
   if (!state->encode_error_class || !state->decode_error_class ||
-      !state->message_class) {
+      !state->message_class || !state->enum_type_wrapper_class) {
     return false;
   }
 
