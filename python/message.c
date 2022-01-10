@@ -962,12 +962,35 @@ static PyObject* PyUpb_CMessage_IsInitialized(PyObject* _self, PyObject* args) {
   }
 }
 
-static PyObject* PyUpb_CMessage_ListFieldsLessThan(PyObject* self,
-                                                   PyObject* val) {
+static PyObject* PyUpb_CMessage_ListFieldsItemKey(PyObject* self,
+                                                  PyObject* val) {
   assert(PyTuple_Check(val));
   PyObject* field = PyTuple_GetItem(val, 0);
   const upb_fielddef* f = PyUpb_FieldDescriptor_GetDef(field);
   return PyLong_FromLong(upb_fielddef_number(f));
+}
+
+static bool PyUpb_CMessage_SortFieldList(PyObject* list) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  bool ok = false;
+  PyObject* args = PyList_New(0);
+  PyObject* kwargs = PyDict_New();
+  PyObject* m = PyObject_GetAttrString(list, "sort");
+  PyObject* ret = NULL;
+  if (!args || !kwargs || !m) goto err;
+  if (PyDict_SetItemString(kwargs, "key", state->listfields_item_key) < 0) {
+    goto err;
+  }
+  ret = PyObject_Call(m, args, kwargs);
+  if (!ret) goto err;
+  ok = true;
+
+ err:
+  Py_XDECREF(m);
+  Py_XDECREF(args);
+  Py_XDECREF(kwargs);
+  Py_XDECREF(ret);
+  return ret;
 }
 
 static PyObject* PyUpb_CMessage_ListFields(PyObject* _self, PyObject* arg) {
@@ -1001,23 +1024,7 @@ static PyObject* PyUpb_CMessage_ListFields(PyObject* _self, PyObject* arg) {
     tuple = NULL;
   }
 
-  if (!in_order) {
-    PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-    PyObject* args = PyList_New(0);
-    PyObject* kwargs = PyDict_New();
-    PyDict_SetItemString(kwargs, "key", state->listfields_cmp_lt);
-    PyObject* m = PyObject_GetAttrString(list, "sort");
-    assert(m);
-    assert(args);
-    assert(kwargs);
-    PyObject* ret = PyObject_Call(m, args, kwargs);
-    Py_XDECREF(ret);
-    Py_XDECREF(m);
-    Py_XDECREF(args);
-    Py_XDECREF(kwargs);
-    if (!ret) return NULL;
-  }
-
+  if (!in_order && !PyUpb_CMessage_SortFieldList(list)) goto err;
   return list;
 
 err:
@@ -1465,7 +1472,7 @@ static PyMethodDef PyUpb_CMessage_Methods[] = {
     {"WhichOneof", PyUpb_CMessage_WhichOneof, METH_O,
      "Returns the name of the field set inside a oneof, "
      "or None if no field is set."},
-    {"_ListFieldsLessThan", PyUpb_CMessage_ListFieldsLessThan,
+    {"_ListFieldsItemKey", PyUpb_CMessage_ListFieldsItemKey,
      METH_O | METH_STATIC,
      "Compares ListFields() list entries by field number"},
     {NULL, NULL}};
@@ -1736,8 +1743,8 @@ bool PyUpb_InitMessage(PyObject* m) {
 
   if (!state->cmessage_type || !state->message_meta_type) return false;
   if (PyModule_AddObject(m, "MessageMeta", message_meta_type)) return false;
-  state->listfields_cmp_lt =
-      PyObject_GetAttrString((PyObject*)state->cmessage_type, "_ListFieldsLessThan");
+  state->listfields_item_key =
+      PyObject_GetAttrString((PyObject*)state->cmessage_type, "_ListFieldsItemKey");
 
   PyObject* mod = PyImport_ImportModule("google.protobuf.message");
   if (mod == NULL) return false;
@@ -1756,7 +1763,7 @@ bool PyUpb_InitMessage(PyObject* m) {
   Py_DECREF(enum_type_wrapper);
 
   if (!state->encode_error_class || !state->decode_error_class ||
-      !state->message_class || !state->listfields_cmp_lt ||
+      !state->message_class || !state->listfields_item_key ||
       !state->enum_type_wrapper_class) {
     return false;
   }
