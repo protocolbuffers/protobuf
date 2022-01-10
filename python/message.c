@@ -1626,10 +1626,28 @@ static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
     ret = PyUpb_FieldDescriptor_Get(ext);
   }
 
-  // TODO(haberman): *_FIELD_NUMBER attributes?  Haven't seen any failing
-  // tests for these yet.
-
   Py_DECREF(py_key);
+
+  const char* suffix =  "_FIELD_NUMBER";
+  size_t n = strlen(name_buf);
+  size_t suffix_n = strlen(suffix);
+  if (n > strlen(suffix) &&
+      memcmp(suffix, name_buf + n - suffix_n, suffix_n) == 0) {
+    // We can't look up field names dynamically, because the <NAME>_FIELD_NUMBER
+    // naming scheme upper-cases the field name and is therefore non-reversible.
+    // So we just add all field numbers.
+    int n = upb_msgdef_fieldcount(msgdef);
+    for (int i = 0; i < n; i++) {
+      const upb_fielddef* f = upb_msgdef_field(msgdef, i);
+      PyObject* name = PyUnicode_FromFormat(
+          "%s_FIELD_NUMBER", upb_fielddef_name(f));
+      PyObject* upper = PyObject_CallMethod(name, "upper", "");
+      PyObject_SetAttr(self, upper, PyLong_FromLong(upb_fielddef_number(f)));
+      Py_DECREF(name);
+      Py_DECREF(upper);
+    }
+    ret = PyObject_GenericGetAttr(self, name);
+  }
 
   return ret;
 }
