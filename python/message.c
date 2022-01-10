@@ -1328,6 +1328,18 @@ PyObject* PyUpb_CMessage_SerializeInternal(PyObject* _self, PyObject* args,
 
   if (!pb) {
     PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+    PyObject* errors = PyUpb_CMessage_FindInitializationErrors(_self, NULL);
+    if (PyList_Size(errors) != 0) {
+      PyObject* comma = PyUnicode_FromString(",");
+      PyObject* missing_fields = PyUnicode_Join(comma, errors);
+      PyErr_Format(state->encode_error_class,
+                   "Message %s is missing required fields: %U",
+                   upb_msgdef_fullname(msgdef), missing_fields);
+      Py_XDECREF(comma);
+      Py_XDECREF(missing_fields);
+      Py_DECREF(errors);
+      goto done;
+    }
     PyErr_Format(state->encode_error_class, "Failed to serialize proto");
     goto done;
   }
