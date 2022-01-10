@@ -121,12 +121,14 @@ static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
   const upb_fielddef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
   if (!f) return -1;
   if (val) {
-    return PyUpb_CMessage_SetFieldValue(self->msg, f, val);
+    return PyUpb_CMessage_SetFieldValue(self->msg, f, val, PyExc_TypeError);
   } else {
     PyUpb_CMessage_DoClearField(self->msg, f);
     return 0;
   }
 }
+
+static PyObject* PyUpb_ExtensionIterator_New(PyObject* _ext_dict);
 
 static PyMethodDef PyUpb_ExtensionDict_Methods[] = {
     {"_FindExtensionByName", PyUpb_ExtensionDict_FindExtensionByName, METH_O,
@@ -142,7 +144,7 @@ static PyType_Slot PyUpb_ExtensionDict_Slots[] = {
     //{Py_tp_getset, PyUpb_ExtensionDict_Getters},
     //{Py_tp_hash, PyObject_HashNotImplemented},
     //{Py_tp_richcompare, PyUpb_ExtensionDict_RichCompare},
-    //{Py_tp_iter, PyUpb_ExtensionDict_GetIter},
+    {Py_tp_iter, PyUpb_ExtensionIterator_New},
     {Py_sq_contains, PyUpb_ExtensionDict_Contains},
     {Py_sq_length, PyUpb_ExtensionDict_Length},
     {Py_mp_length, PyUpb_ExtensionDict_Length},
@@ -164,23 +166,51 @@ static PyType_Spec PyUpb_ExtensionDict_Spec = {
 
 typedef struct {
   PyObject_HEAD
-  PyObject* arena;
+  PyObject* msg;
+  size_t iter;
 } PyUpb_ExtensionIterator;
 
-static void PyUpb_ExtensionIterator_Dealloc(PyUpb_ExtensionDict* self) {
-  PyUpb_Dealloc(self);
+static PyObject* PyUpb_ExtensionIterator_New(PyObject* _ext_dict) {
+  PyUpb_ExtensionDict* ext_dict = (PyUpb_ExtensionDict*)_ext_dict;
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ExtensionIterator* iter =
+      (void*)PyType_GenericAlloc(state->extension_iterator_type, 0);
+  if (!iter) return NULL;
+  iter->msg = ext_dict->msg;
+  iter->iter = UPB_MSG_BEGIN;
+  Py_INCREF(iter->msg);
+  return &iter->ob_base;
+}
+
+static void PyUpb_ExtensionIterator_Dealloc(void* _self) {
+  PyUpb_ExtensionIterator* self = (PyUpb_ExtensionIterator*)_self;
+  Py_DECREF(&self->msg);
+  PyUpb_Dealloc(_self);
+}
+
+PyObject* PyUpb_ExtensionIterator_IterNext(PyObject* _self) {
+  PyUpb_ExtensionIterator* self = (PyUpb_ExtensionIterator*)_self;
+  upb_msg* msg = PyUpb_CMessage_GetIfReified(self->msg);
+  if (!msg) return NULL;
+  const upb_msgdef* m = PyUpb_CMessage_GetMsgdef(self->msg);
+  const upb_symtab* symtab = upb_filedef_symtab(upb_msgdef_file(m));
+  while (true) {
+    const upb_fielddef* f;
+    upb_msgval val;
+    if (!upb_msg_next(msg, m, symtab, &f, &val, &self->iter)) return NULL;
+    if (upb_fielddef_isextension(f)) return PyUpb_FieldDescriptor_Get(f);
+  }
 }
 
 static PyType_Slot PyUpb_ExtensionIterator_Slots[] = {
     {Py_tp_dealloc, PyUpb_ExtensionIterator_Dealloc},
     {Py_tp_iter, PyObject_SelfIter},
-    //{Py_tp_iter, PyUpb_ExtensionIterator_GetIter},
-    //{Py_tp_iternext, PyUpb_ExtensionIterator_IterNext},
+    {Py_tp_iternext, PyUpb_ExtensionIterator_IterNext},
     {0, NULL}};
 
 static PyType_Spec PyUpb_ExtensionIterator_Spec = {
     PYUPB_MODULE_NAME ".ExtensionIterator",  // tp_name
-    sizeof(PyUpb_ExtensionDict),             // tp_basicsize
+    sizeof(PyUpb_ExtensionIterator),         // tp_basicsize
     0,                                       // tp_itemsize
     Py_TPFLAGS_DEFAULT,                      // tp_flags
     PyUpb_ExtensionIterator_Slots,

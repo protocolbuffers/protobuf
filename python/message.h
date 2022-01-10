@@ -89,7 +89,7 @@ PyObject* PyUpb_CMessage_GetFieldValue(PyObject* _self,
 // Implements the equivalent of setattr(msg, field, value), once `field` has
 // already been resolved to a `upb_fielddef*`.
 int PyUpb_CMessage_SetFieldValue(PyObject* _self, const upb_fielddef* field,
-                                 PyObject* value);
+                                 PyObject* value, PyObject* exc);
 
 // Returns the version associated with this message.  The version will be
 // incremented when the message changes.

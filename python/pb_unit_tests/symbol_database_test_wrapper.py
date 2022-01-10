@@ -26,14 +26,5 @@
 from google.protobuf.internal import symbol_database_test
 import unittest
 
-symbol_database_test.SymbolDatabaseTest.testEnums.__unittest_expecting_failure__ = True
-symbol_database_test.SymbolDatabaseTest.testFindFileByName.__unittest_expecting_failure__ = True
-symbol_database_test.SymbolDatabaseTest.testFindFileContainingSymbol.__unittest_expecting_failure__ = True
-symbol_database_test.SymbolDatabaseTest.testFindMessageTypeByName.__unittest_expecting_failure__ = True
-symbol_database_test.SymbolDatabaseTest.testFindServiceByName.__unittest_expecting_failure__ = True
-symbol_database_test.SymbolDatabaseTest.testGetMessages.__unittest_expecting_failure__ = True
-symbol_database_test.SymbolDatabaseTest.testGetPrototype.__unittest_expecting_failure__ = True
-symbol_database_test.SymbolDatabaseTest.testGetSymbol.__unittest_expecting_failure__ = True
-
 if __name__ == '__main__':
   unittest.main(module=symbol_database_test, verbosity=2)

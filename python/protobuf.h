@@ -82,6 +82,7 @@ typedef struct {
   PyObject *message_class;
   PyTypeObject *cmessage_type;
   PyTypeObject *message_meta_type;
+  PyObject* listfields_item_key;
 
   // From protobuf.c
   bool allow_oversize_protos;

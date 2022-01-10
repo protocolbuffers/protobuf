@@ -51,8 +51,19 @@ PyObject* PyUpb_UpbToPy(upb_msgval val, const upb_fielddef *f, PyObject *arena) 
       return PyBool_FromLong(val.bool_val);
     case UPB_TYPE_BYTES:
       return PyBytes_FromStringAndSize(val.str_val.data, val.str_val.size);
-    case UPB_TYPE_STRING:
-      return PyUnicode_DecodeUTF8(val.str_val.data, val.str_val.size, NULL);
+    case UPB_TYPE_STRING: {
+      PyObject* ret =
+          PyUnicode_DecodeUTF8(val.str_val.data, val.str_val.size, NULL);
+      // If the string can't be decoded in UTF-8, just return a bytes object
+      // that contains the raw bytes. This can't happen if the value was
+      // assigned using the members of the Python message object, but can happen
+      // if the values were parsed from the wire (binary).
+      if (ret == NULL) {
+        PyErr_Clear();
+        ret = PyBytes_FromStringAndSize(val.str_val.data, val.str_val.size);
+      }
+      return ret;
+    }
     case UPB_TYPE_MESSAGE:
       return PyUpb_CMessage_Get((upb_msg*)val.msg_val,
                                 upb_fielddef_msgsubdef(f), arena);
@@ -65,9 +76,14 @@ PyObject* PyUpb_UpbToPy(upb_msgval val, const upb_fielddef *f, PyObject *arena) 
 }
 
 static bool PyUpb_GetInt64(PyObject *obj, int64_t *val) {
+  // We require that the value is either an integer or has an __index__
+  // conversion.
+  if (!PyIndex_Check(obj)) {
+    PyErr_Format(PyExc_TypeError, "Expected integer: %S", obj);
+    return false;
+  }
   // If the value is already a Python long, PyLong_AsLongLong() retrieves it.
-  // Otherwise it performs any automatic conversions to long (using __index__()
-  // or __int__()) that users expect.
+  // Otherwise is converts to integer using __int__.
   *val = PyLong_AsLongLong(obj);
   if (!PyErr_Occurred()) return true;
   if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
@@ -80,17 +96,22 @@ static bool PyUpb_GetInt64(PyObject *obj, int64_t *val) {
 }
 
 static bool PyUpb_GetUint64(PyObject *obj, uint64_t *val) {
-  // For uint64 Python does not offer any functions as convenient as
-  // PyLong_AsLongLong().  If the object is not already a "long" we must
-  // manually perform the automatic conversion (using __index__() or __int__())
-  // that users expect.
+  // We require that the value is either an integer or has an __index__
+  // conversion.
+  if (!PyIndex_Check(obj)) {
+    PyErr_Format(PyExc_TypeError, "Expected integer: %S", obj);
+    return false;
+  }
   if (PyLong_Check(obj)) {
     *val = PyLong_AsUnsignedLongLong(obj);
-  } else {
+  } else if (PyIndex_Check(obj)) {
     PyObject* casted = PyNumber_Long(obj);
     if (!casted) return false;
     *val = PyLong_AsUnsignedLongLong(casted);
     Py_DECREF(casted);
+  } else {
+    PyErr_Format(PyExc_TypeError, "Expected integer: %S", obj);
+    return false;
   }
   if (!PyErr_Occurred()) return true;
   PyErr_Clear();
