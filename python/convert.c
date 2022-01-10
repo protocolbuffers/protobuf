@@ -51,8 +51,19 @@ PyObject* PyUpb_UpbToPy(upb_msgval val, const upb_fielddef *f, PyObject *arena) 
       return PyBool_FromLong(val.bool_val);
     case UPB_TYPE_BYTES:
       return PyBytes_FromStringAndSize(val.str_val.data, val.str_val.size);
-    case UPB_TYPE_STRING:
-      return PyUnicode_DecodeUTF8(val.str_val.data, val.str_val.size, NULL);
+    case UPB_TYPE_STRING: {
+      PyObject* ret =
+          PyUnicode_DecodeUTF8(val.str_val.data, val.str_val.size, NULL);
+      // If the string can't be decoded in UTF-8, just return a bytes object
+      // that contains the raw bytes. This can't happen if the value was
+      // assigned using the members of the Python message object, but can happen
+      // if the values were parsed from the wire (binary).
+      if (ret == NULL) {
+        PyErr_Clear();
+        ret = PyBytes_FromStringAndSize(val.str_val.data, val.str_val.size);
+      }
+      return ret;
+    }
     case UPB_TYPE_MESSAGE:
       return PyUpb_CMessage_Get((upb_msg*)val.msg_val,
                                 upb_fielddef_msgsubdef(f), arena);

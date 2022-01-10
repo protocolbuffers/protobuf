@@ -30,7 +30,6 @@ import unittest
 # reasonable to guarantee.
 reflection_test.Proto2ReflectionTest.testExtensionIter.__unittest_expecting_failure__ = True
 
-reflection_test.Proto2ReflectionTest.testStringUTF8Serialization.__unittest_expecting_failure__ = True
 reflection_test.Proto2ReflectionTest.testTopLevelExtensionsForOptionalMessage.__unittest_expecting_failure__ = True
 reflection_test.Proto2ReflectionTest.testTopLevelExtensionsForRepeatedMessage.__unittest_expecting_failure__ = True
 reflection_test.Proto2ReflectionTest.testTopLevelExtensionsForRepeatedScalar.__unittest_expecting_failure__ = True
