@@ -204,7 +204,7 @@ static void upb_util_FindUnsetInMessage(upb_FindContext* ctx,
     const upb_fielddef* f = upb_msgdef_field(m, i);
     if (upb_fielddef_label(f) != UPB_LABEL_REQUIRED) continue;
 
-    if (!upb_msg_has(msg, f)) {
+    if (!msg || !upb_msg_has(msg, f)) {
       // A required field is missing.
       ctx->has_unset_required = true;
 
@@ -232,6 +232,7 @@ static void upb_util_FindUnsetRequiredInternal(upb_FindContext* ctx,
   // 2. messages that cannot possibly reach any required fields.
 
   upb_util_FindUnsetInMessage(ctx, msg, m);
+  if (!msg) return;
 
   // Iterate over all present fields to find sub-messages that might be missing
   // required fields.  This may revisit some of the fields already inspected

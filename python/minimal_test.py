@@ -166,6 +166,15 @@ class OversizeProtosTest(unittest.TestCase):
       count += 1
     self.assertEqual(count, 3)
     self.assertEqual(len(expected), 0)
+  
+  def testIsInitializedStub(self):
+    proto = unittest_pb2.TestRequiredForeign()
+    self.assertTrue(proto.IsInitialized())
+    self.assertFalse(proto.optional_message.IsInitialized())
+    errors = []
+    self.assertFalse(proto.optional_message.IsInitialized(errors))
+    self.assertEqual(['a', 'b', 'c'], errors)
+    self.assertRaises(message.EncodeError, proto.optional_message.SerializeToString)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

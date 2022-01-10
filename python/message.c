@@ -935,10 +935,19 @@ static PyObject* PyUpb_CMessage_IsInitializedAppendErrors(PyObject* _self,
                                                           PyObject* errors) {
   PyObject* list = PyUpb_CMessage_FindInitializationErrors(_self, NULL);
   if (!list) return NULL;
-  bool ret = PyList_Size(list) == 0;
-  if (!ret) PyObject_CallMethod(errors, "extend", "O", list);
+  bool ok = PyList_Size(list) == 0;
+  PyObject* ret = NULL;
+  PyObject* result = NULL;
+  if (!ok) {
+    result = PyObject_CallMethod(errors, "extend", "O", list);
+    if (!result) goto done;
+  }
+  ret = PyBool_FromLong(ok);
+
+done:
   Py_XDECREF(list);
-  return PyBool_FromLong(ret);
+  Py_XDECREF(result);
+  return ret;
 }
 
 static PyObject* PyUpb_CMessage_IsInitialized(PyObject* _self, PyObject* args) {
@@ -947,7 +956,6 @@ static PyObject* PyUpb_CMessage_IsInitialized(PyObject* _self, PyObject* args) {
     return NULL;
   }
   upb_msg* msg = PyUpb_CMessage_GetIfReified(_self);
-  if (!msg) Py_RETURN_NONE;  // TODO
   if (errors) {
     // We need to collect a list of unset required fields and append it to
     // `errors`.
@@ -976,21 +984,21 @@ static bool PyUpb_CMessage_SortFieldList(PyObject* list) {
   PyObject* args = PyList_New(0);
   PyObject* kwargs = PyDict_New();
   PyObject* method = PyObject_GetAttrString(list, "sort");
-  PyObject* ret = NULL;
+  PyObject* call_result = NULL;
   if (!args || !kwargs || !method) goto err;
   if (PyDict_SetItemString(kwargs, "key", state->listfields_item_key) < 0) {
     goto err;
   }
-  ret = PyObject_Call(method, args, kwargs);
-  if (!ret) goto err;
+  call_result = PyObject_Call(method, args, kwargs);
+  if (!call_result) goto err;
   ok = true;
 
  err:
   Py_XDECREF(method);
   Py_XDECREF(args);
   Py_XDECREF(kwargs);
-  Py_XDECREF(ret);
-  return ret;
+  Py_XDECREF(call_result);
+  return ok;
 }
 
 static PyObject* PyUpb_CMessage_ListFields(PyObject* _self, PyObject* arg) {
@@ -1233,7 +1241,6 @@ static PyObject* PyUpb_CMessage_FindInitializationErrors(PyObject* _self,
                                                          PyObject* arg) {
   PyUpb_CMessage* self = (void*)_self;
   upb_msg* msg = PyUpb_CMessage_GetIfReified(_self);
-  if (!msg) return PyList_New(0);
   const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
   const upb_symtab* ext_pool = upb_filedef_symtab(upb_msgdef_file(msgdef));
   upb_FieldPathEntry* fields;
@@ -1344,12 +1351,23 @@ PyObject* PyUpb_CMessage_SerializeInternal(PyObject* _self, PyObject* args,
     return NULL;
   }
 
+  const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
   if (PyUpb_CMessage_IsStub(self)) {
-    return PyBytes_FromStringAndSize(NULL, 0);
+    // Nothing to serialize, but we do have to check whether the message is
+    // initialized.
+    PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+    PyObject* errors = PyUpb_CMessage_FindInitializationErrors(_self, NULL);
+    if (!errors) return NULL;
+    if (PyList_Size(errors) == 0) {
+      Py_DECREF(errors);
+      return PyBytes_FromStringAndSize(NULL, 0);
+    }
+    PyUpb_CMessage_ReportInitializationErrors(msgdef, errors,
+                                              state->encode_error_class);
+    return NULL;
   }
 
   upb_arena* arena = upb_arena_new();
-  const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
   const upb_msglayout* layout = upb_msgdef_layout(msgdef);
   size_t size = 0;
   // Python does not currently have any effective limit on serialization depth.
@@ -1679,8 +1697,7 @@ static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
   const char* suffix =  "_FIELD_NUMBER";
   size_t n = strlen(name_buf);
   size_t suffix_n = strlen(suffix);
-  if (n > strlen(suffix) &&
-      memcmp(suffix, name_buf + n - suffix_n, suffix_n) == 0) {
+  if (n > suffix_n && memcmp(suffix, name_buf + n - suffix_n, suffix_n) == 0) {
     // We can't look up field names dynamically, because the <NAME>_FIELD_NUMBER
     // naming scheme upper-cases the field name and is therefore non-reversible.
     // So we just add all field numbers.

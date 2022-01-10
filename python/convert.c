@@ -80,6 +80,7 @@ static bool PyUpb_GetInt64(PyObject *obj, int64_t *val) {
   // conversion.
   if (!PyIndex_Check(obj)) {
     PyErr_Format(PyExc_TypeError, "Expected integer: %S", obj);
+    return false;
   }
   // If the value is already a Python long, PyLong_AsLongLong() retrieves it.
   // Otherwise is converts to integer using __int__.
@@ -99,6 +100,7 @@ static bool PyUpb_GetUint64(PyObject *obj, uint64_t *val) {
   // conversion.
   if (!PyIndex_Check(obj)) {
     PyErr_Format(PyExc_TypeError, "Expected integer: %S", obj);
+    return false;
   }
   if (PyLong_Check(obj)) {
     *val = PyLong_AsUnsignedLongLong(obj);

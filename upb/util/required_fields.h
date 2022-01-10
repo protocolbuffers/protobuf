@@ -72,7 +72,8 @@ typedef union {
 size_t upb_FieldPath_ToText(upb_FieldPathEntry **path, char *buf, size_t size);
 
 // Checks whether `msg` or any of its children has unset required fields,
-// returning `true` if any are found.
+// returning `true` if any are found.  `msg` may be NULL, in which case the
+// message will be treated as empty.
 //
 // When this function returns true, `fields` is updated (if non-NULL) to point
 // to a heap-allocated array encoding the field paths of the required fields
