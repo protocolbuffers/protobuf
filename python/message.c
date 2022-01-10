@@ -823,12 +823,12 @@ PyObject* PyUpb_CMessage_GetFieldValue(PyObject* _self,
 }
 
 int PyUpb_CMessage_SetFieldValue(PyObject* _self, const upb_fielddef* field,
-                                 PyObject* value) {
+                                 PyObject* value, PyObject* exc) {
   PyUpb_CMessage* self = (void*)_self;
   assert(value);
 
   if (upb_fielddef_issubmsg(field) || upb_fielddef_isseq(field)) {
-    PyErr_Format(PyExc_AttributeError,
+    PyErr_Format(exc,
                  "Assignment not allowed to message, map, or repeated "
                  "field \"%s\" in protocol message object.",
                  upb_fielddef_name(field));
@@ -904,7 +904,7 @@ static int PyUpb_CMessage_SetAttr(PyObject* _self, PyObject* attr,
     return -1;
   }
 
-  return PyUpb_CMessage_SetFieldValue(_self, field, value);
+  return PyUpb_CMessage_SetFieldValue(_self, field, value, PyExc_AttributeError);
 }
 
 static PyObject* PyUpb_CMessage_HasField(PyObject* _self, PyObject* arg) {
