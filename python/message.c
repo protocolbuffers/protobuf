@@ -1316,6 +1316,22 @@ static PyObject* PyUpb_CMessage_HasExtension(PyObject* _self,
   return PyBool_FromLong(upb_msg_has(msg, f));
 }
 
+void PyUpb_CMessage_ReportInitializationErrors(const upb_msgdef* msgdef,
+                                               PyObject* errors,
+                                               PyObject* exc) {
+  PyObject* comma = PyUnicode_FromString(",");
+  PyObject* missing_fields = NULL;
+  if (!comma) goto done;
+  missing_fields = PyUnicode_Join(comma, errors);
+  if (!missing_fields) goto done;
+  PyErr_Format(exc, "Message %s is missing required fields: %U",
+               upb_msgdef_fullname(msgdef), missing_fields);
+done:
+  Py_XDECREF(comma);
+  Py_XDECREF(missing_fields);
+  Py_DECREF(errors);
+}
+
 PyObject* PyUpb_CMessage_SerializeInternal(PyObject* _self, PyObject* args,
                                            PyObject* kwargs,
                                            bool check_required) {
@@ -1336,10 +1352,10 @@ PyObject* PyUpb_CMessage_SerializeInternal(PyObject* _self, PyObject* args,
   const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
   const upb_msglayout* layout = upb_msgdef_layout(msgdef);
   size_t size = 0;
+  // Python does not currently have any effective limit on serialization depth.
   int options = UPB_ENCODE_MAXDEPTH(UINT32_MAX);
   if (check_required) options |= UPB_ENCODE_CHECKREQUIRED;
   if (deterministic) options |= UPB_ENCODE_DETERMINISTIC;
-  // Python does not currently have any effective limit on serialization depth.
   char* pb = upb_encode_ex(self->ptr.msg, layout, options, arena, &size);
   PyObject* ret = NULL;
 
@@ -1347,17 +1363,11 @@ PyObject* PyUpb_CMessage_SerializeInternal(PyObject* _self, PyObject* args,
     PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
     PyObject* errors = PyUpb_CMessage_FindInitializationErrors(_self, NULL);
     if (PyList_Size(errors) != 0) {
-      PyObject* comma = PyUnicode_FromString(",");
-      PyObject* missing_fields = PyUnicode_Join(comma, errors);
-      PyErr_Format(state->encode_error_class,
-                   "Message %s is missing required fields: %U",
-                   upb_msgdef_fullname(msgdef), missing_fields);
-      Py_XDECREF(comma);
-      Py_XDECREF(missing_fields);
-      Py_DECREF(errors);
-      goto done;
+      PyUpb_CMessage_ReportInitializationErrors(msgdef, errors,
+                                                state->encode_error_class);
+    } else {
+      PyErr_Format(state->encode_error_class, "Failed to serialize proto");
     }
-    PyErr_Format(state->encode_error_class, "Failed to serialize proto");
     goto done;
   }
 
