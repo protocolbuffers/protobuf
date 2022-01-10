@@ -923,6 +923,37 @@ static PyObject* PyUpb_CMessage_HasField(PyObject* _self, PyObject* arg) {
                                : upb_msg_whichoneof(self->ptr.msg, oneof) != NULL);
 }
 
+static PyObject* PyUpb_CMessage_FindInitializationErrors(PyObject* _self,
+                                                         PyObject* arg);
+
+static PyObject* PyUpb_CMessage_IsInitialized(PyObject* _self, PyObject* args) {
+  PyObject* errors = NULL;
+  if (!PyArg_ParseTuple(args, "|O", &errors)) {
+    return NULL;
+  }
+  upb_msg* msg = PyUpb_CMessage_GetIfReified(_self);
+  if (!msg) Py_RETURN_NONE;  // TODO
+  if (errors) {
+    PyObject* list = PyUpb_CMessage_FindInitializationErrors(_self, NULL);
+    if (!list) return NULL;
+    if (PyList_Size(list) == 0) {
+      return PyBool_FromLong(true);
+    }
+    PyObject* extend_name = PyUnicode_FromString("extend");
+    if (extend_name == NULL) {
+      Py_DECREF(list);
+      return NULL;
+    }
+    PyObject_CallMethodObjArgs(errors, extend_name, list, NULL);
+    return PyBool_FromLong(false);
+  } else {
+    const upb_msgdef* m = PyUpb_CMessage_GetMsgdef(_self);
+    const upb_symtab* symtab = upb_filedef_symtab(upb_msgdef_file(m));
+    bool initialized = !upb_util_HasUnsetRequired(msg, m, symtab, NULL);
+    return PyBool_FromLong(initialized);
+  }
+}
+
 static PyObject* PyUpb_CMessage_ListFields(PyObject* _self, PyObject* arg) {
   PyObject* list = PyList_New(0);
   upb_msg* msg = PyUpb_CMessage_GetIfReified(_self);
@@ -1157,14 +1188,15 @@ static PyObject* PyUpb_CMessage_FindInitializationErrors(PyObject* _self,
   upb_msg* msg = PyUpb_CMessage_GetIfReified(_self);
   if (!msg) return PyList_New(0);
   const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
-  const upb_symtab* ext_pool = NULL;  // TODO
+  const upb_symtab* ext_pool = upb_filedef_symtab(upb_msgdef_file(msgdef));
   upb_FieldPathEntry* fields;
   PyObject* ret = PyList_New(0);
   if (upb_util_HasUnsetRequired(msg, msgdef, ext_pool, &fields)) {
     char* buf = NULL;
     size_t size = 0;
     size_t i = 0;
-    while (fields) {
+    assert(fields->field);
+    while (fields->field) {
       upb_FieldPathEntry* field = fields;
       size_t need = upb_FieldPath_ToText(&fields, buf, size);
       if (need >= size) {
@@ -1175,7 +1207,7 @@ static PyObject* PyUpb_CMessage_FindInitializationErrors(PyObject* _self,
         need = upb_FieldPath_ToText(&fields, buf, size);
         assert(size > need);
       }
-      PyList_SetItem(ret, i, PyUnicode_FromString(buf));
+      PyList_Append(ret, PyUnicode_FromString(buf));
     }
     free(buf);
   }
@@ -1348,18 +1380,16 @@ static PyMethodDef PyUpb_CMessage_Methods[] = {
     //  "Copies a protocol message into the current message." },
     {"DiscardUnknownFields", (PyCFunction)PyUpb_CMessage_DiscardUnknownFields,
      METH_NOARGS, "Discards the unknown fields."},
-    {"FindInitializationErrors",
-     (PyCFunction)PyUpb_CMessage_FindInitializationErrors, METH_NOARGS,
-     "Finds unset required fields."},
+    {"FindInitializationErrors", PyUpb_CMessage_FindInitializationErrors,
+     METH_NOARGS, "Finds unset required fields."},
     {"FromString", PyUpb_CMessage_FromString, METH_O | METH_CLASS,
      "Creates new method instance from given serialized data."},
     {"HasExtension", PyUpb_CMessage_HasExtension, METH_O,
      "Checks if a message field is set."},
     {"HasField", PyUpb_CMessage_HasField, METH_O,
      "Checks if a message field is set."},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    //{ "IsInitialized", (PyCFunction)IsInitialized, METH_VARARGS,
-    //  "Checks if all required fields of a protocol message are set." },
+    {"IsInitialized", PyUpb_CMessage_IsInitialized, METH_VARARGS,
+     "Checks if all required fields of a protocol message are set."},
     {"ListFields", PyUpb_CMessage_ListFields, METH_NOARGS,
      "Lists all set fields of a message."},
     {"MergeFrom", PyUpb_CMessage_MergeFrom, METH_O,
