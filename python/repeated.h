@@ -48,7 +48,8 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_array* arr,
                                                      PyObject* arena);
 
 // Reifies a repeated field stub to point to the concrete data in `arr`.
-upb_array* PyUpb_RepeatedContainer_Reify(PyObject* self, upb_array* arr);
+// If `arr` is NULL, an appropriate empty array will be constructed.
+void PyUpb_RepeatedContainer_Reify(PyObject* self, upb_array* arr);
 
 // Reifies this repeated object if it is not already reified.
 upb_array* PyUpb_RepeatedContainer_EnsureReified(PyObject* self);

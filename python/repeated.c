@@ -106,7 +106,7 @@ static upb_array* PyUpb_RepeatedContainer_GetIfReified(
   return PyUpb_RepeatedContainer_IsStub(self) ? NULL : self->ptr.arr;
 }
 
-upb_array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_array* arr) {
+void PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_array* arr) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   assert(PyUpb_RepeatedContainer_IsStub(self));
   if (!arr) {
@@ -119,7 +119,6 @@ upb_array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_array* arr) {
   self->ptr.arr = arr;  // Overwrites self->ptr.parent.
   self->field &= ~(uintptr_t)1;
   assert(!PyUpb_RepeatedContainer_IsStub(self));
-  return arr;
 }
 
 upb_array* PyUpb_RepeatedContainer_EnsureReified(PyObject* _self) {

@@ -47,6 +47,7 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_map* map,
                                                 PyObject* arena);
 
 // Reifies a map stub to point to the concrete data in `map`.
+// If `map` is NULL, an appropriate empty map will be constructed.
 void PyUpb_MapContainer_Reify(PyObject* self, upb_map* map);
 
 // Reifies this map object if it is not already reified.
