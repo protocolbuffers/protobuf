@@ -1614,6 +1614,15 @@ static void PyUpb_MessageMeta_Dealloc(PyObject* self) {
   PyUpb_Dealloc(self);
 }
 
+void PyUpb_MessageMeta_AddFieldNumber(PyObject* self, const upb_fielddef* f) {
+  PyObject* name =
+      PyUnicode_FromFormat("%s_FIELD_NUMBER", upb_fielddef_name(f));
+  PyObject* upper = PyObject_CallMethod(name, "upper", "");
+  PyObject_SetAttr(self, upper, PyLong_FromLong(upb_fielddef_number(f)));
+  Py_DECREF(name);
+  Py_DECREF(upper);
+}
+
 static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
                                                   PyObject* name) {
   const char* name_buf = PyUpb_GetStrData(name);
@@ -1655,13 +1664,11 @@ static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
     // So we just add all field numbers.
     int n = upb_msgdef_fieldcount(msgdef);
     for (int i = 0; i < n; i++) {
-      const upb_fielddef* f = upb_msgdef_field(msgdef, i);
-      PyObject* name = PyUnicode_FromFormat(
-          "%s_FIELD_NUMBER", upb_fielddef_name(f));
-      PyObject* upper = PyObject_CallMethod(name, "upper", "");
-      PyObject_SetAttr(self, upper, PyLong_FromLong(upb_fielddef_number(f)));
-      Py_DECREF(name);
-      Py_DECREF(upper);
+      PyUpb_MessageMeta_AddFieldNumber(self, upb_msgdef_field(msgdef, i));
+    }
+    n = upb_msgdef_nestedextcount(msgdef);
+    for (int i = 0; i < n; i++) {
+      PyUpb_MessageMeta_AddFieldNumber(self, upb_msgdef_nestedext(msgdef, i));
     }
     ret = PyObject_GenericGetAttr(self, name);
   }
