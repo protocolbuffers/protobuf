@@ -230,7 +230,7 @@ static void txtenc_mapentry(txtenc *e, upb_msgval key, upb_msgval val,
   const upb_fielddef *key_f = upb_msgdef_field(entry, 0);
   const upb_fielddef *val_f = upb_msgdef_field(entry, 1);
   txtenc_indent(e);
-  txtenc_printf(e, "%s: {", upb_fielddef_name(f));
+  txtenc_printf(e, "%s {", upb_fielddef_name(f));
   txtenc_endfield(e);
   e->indent_depth++;
 
