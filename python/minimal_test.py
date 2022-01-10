@@ -143,17 +143,17 @@ class OversizeProtosTest(unittest.TestCase):
 
     extension_int32 = more_extensions_pb2.optional_int_extension
     extendee_proto.Extensions[extension_int32] = 23
-    
+
     extension_repeated = more_extensions_pb2.repeated_int_extension
     extendee_proto.Extensions[extension_repeated].append(11)
 
     extension_msg = more_extensions_pb2.optional_message_extension
     extendee_proto.Extensions[extension_msg].foreign_message_int = 56
-  
+
     # Set some normal fields.
     extendee_proto.optional_int32 = 1
     extendee_proto.repeated_string.append('hi')
-  
+
     expected = {
         extension_int32: True,
         extension_msg: True,

@@ -29,6 +29,7 @@ from google.protobuf.internal import _parameterized
 
 sep = _parameterized._SEPARATOR
 
+# These rely on the UnknownFields accessor, which we are trying to deprecate.
 text_format_test.OnlyWorksWithProto2RightNowTests.testPrintUnknownFields.__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintUnknownFieldsEmbeddedMessageInBytes" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintUnknownFieldsEmbeddedMessageInBytes" + sep + "1").__unittest_expecting_failure__ = True
