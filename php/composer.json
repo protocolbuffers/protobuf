@@ -6,7 +6,8 @@
   "homepage": "https://developers.google.com/protocol-buffers/",
   "license": "BSD-3-Clause",
   "require": {
-    "php": ">=7.0.0"
+    "php": ">=7.1.0",
+    "ext-bcmath": "*"
   },
   "require-dev": {
     "phpunit/phpunit": ">=5.0.0"
