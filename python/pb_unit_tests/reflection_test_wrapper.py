@@ -26,13 +26,10 @@
 from google.protobuf.internal import reflection_test
 import unittest
 
-# The tests depend on a specific iteration order for extensions, which is not
-# specified or guaranteed.
+# These tests depend on a specific iteration order for extensions, which is not
+# reasonable to guarantee.
 reflection_test.Proto2ReflectionTest.testExtensionIter.__unittest_expecting_failure__ = True
 
-reflection_test.Proto2ReflectionTest.testListFieldsAndExtensions.__unittest_expecting_failure__ = True
-reflection_test.Proto2ReflectionTest.testRepeatedListExtensions.__unittest_expecting_failure__ = True
-reflection_test.Proto2ReflectionTest.testSingularListExtensions.__unittest_expecting_failure__ = True
 reflection_test.Proto2ReflectionTest.testStringUTF8Serialization.__unittest_expecting_failure__ = True
 reflection_test.Proto2ReflectionTest.testTopLevelExtensionsForOptionalMessage.__unittest_expecting_failure__ = True
 reflection_test.Proto2ReflectionTest.testTopLevelExtensionsForRepeatedMessage.__unittest_expecting_failure__ = True

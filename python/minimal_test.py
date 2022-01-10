@@ -166,6 +166,6 @@ class OversizeProtosTest(unittest.TestCase):
       count += 1
     self.assertEqual(count, 3)
     self.assertEqual(len(expected), 0)
-
+  
 if __name__ == '__main__':
     unittest.main(verbosity=2)

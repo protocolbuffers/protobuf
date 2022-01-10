@@ -34,14 +34,11 @@ text_format_test.OnlyWorksWithProto2RightNowTests.testParseGolden.__unittest_exp
 text_format_test.OnlyWorksWithProto2RightNowTests.testParseLinesGolden.__unittest_expecting_failure__ = True
 text_format_test.OnlyWorksWithProto2RightNowTests.testPrintAllFields.__unittest_expecting_failure__ = True
 text_format_test.OnlyWorksWithProto2RightNowTests.testPrintAllFieldsPointy.__unittest_expecting_failure__ = True
-text_format_test.OnlyWorksWithProto2RightNowTests.testPrintInIndexOrder.__unittest_expecting_failure__ = True
 text_format_test.OnlyWorksWithProto2RightNowTests.testPrintMapUsingCppImplementation.__unittest_expecting_failure__ = True
 text_format_test.OnlyWorksWithProto2RightNowTests.testPrintUnknownFields.__unittest_expecting_failure__ = True
 text_format_test.Proto2Tests.testParseGoldenExtensions.__unittest_expecting_failure__ = True
 text_format_test.Proto2Tests.testPrintAllExtensions.__unittest_expecting_failure__ = True
 text_format_test.Proto2Tests.testPrintAllExtensionsPointy.__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "0").__unittest_expecting_failure__ = True
-getattr(text_format_test.TextFormatMessageToStringTests, "testCustomOptions" + sep + "1").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintUnknownFieldsEmbeddedMessageInBytes" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintUnknownFieldsEmbeddedMessageInBytes" + sep + "1").__unittest_expecting_failure__ = True
 
