@@ -255,8 +255,8 @@ static bool PyUpb_CMessage_LookupName(PyUpb_CMessage* self, PyObject* py_name,
   if (!upb_msgdef_lookupname(msgdef, name, size, f, o)) {
     if (exc_type) {
       PyErr_Format(exc_type,
-                   "Protocol message %s has no field or oneof named %s.",
-                   upb_msgdef_fullname(msgdef), name);
+                   "Protocol message %s has no \"%s\" field.",
+                   upb_msgdef_name(msgdef), name);
     }
     return false;
   }

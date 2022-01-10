@@ -39,7 +39,6 @@ reflection_test.SerializationTest.testCanonicalSerializationOrder.__unittest_exp
 reflection_test.SerializationTest.testCanonicalSerializationOrderSameAsCpp.__unittest_expecting_failure__ = True
 reflection_test.SerializationTest.testFieldDataDescriptor.__unittest_expecting_failure__ = True
 reflection_test.SerializationTest.testFieldProperties.__unittest_expecting_failure__ = True
-reflection_test.SerializationTest.testInitArgsUnknownFieldName.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(module=reflection_test, verbosity=2)
