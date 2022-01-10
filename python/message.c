@@ -931,6 +931,16 @@ static PyObject* PyUpb_CMessage_HasField(PyObject* _self, PyObject* arg) {
 static PyObject* PyUpb_CMessage_FindInitializationErrors(PyObject* _self,
                                                          PyObject* arg);
 
+static PyObject* PyUpb_CMessage_IsInitializedAppendErrors(PyObject* _self,
+                                                          PyObject* errors) {
+  PyObject* list = PyUpb_CMessage_FindInitializationErrors(_self, NULL);
+  if (!list) return NULL;
+  bool ret = PyList_Size(list) == 0;
+  if (!ret) PyObject_CallMethod(errors, "extend", "O", list);
+  Py_XDECREF(list);
+  return PyBool_FromLong(ret);
+}
+
 static PyObject* PyUpb_CMessage_IsInitialized(PyObject* _self, PyObject* args) {
   PyObject* errors = NULL;
   if (!PyArg_ParseTuple(args, "|O", &errors)) {
@@ -939,19 +949,12 @@ static PyObject* PyUpb_CMessage_IsInitialized(PyObject* _self, PyObject* args) {
   upb_msg* msg = PyUpb_CMessage_GetIfReified(_self);
   if (!msg) Py_RETURN_NONE;  // TODO
   if (errors) {
-    PyObject* list = PyUpb_CMessage_FindInitializationErrors(_self, NULL);
-    if (!list) return NULL;
-    if (PyList_Size(list) == 0) {
-      return PyBool_FromLong(true);
-    }
-    PyObject* extend_name = PyUnicode_FromString("extend");
-    if (extend_name == NULL) {
-      Py_DECREF(list);
-      return NULL;
-    }
-    PyObject_CallMethodObjArgs(errors, extend_name, list, NULL);
-    return PyBool_FromLong(false);
+    // We need to collect a list of unset required fields and append it to
+    // `errors`.
+    return PyUpb_CMessage_IsInitializedAppendErrors(_self, errors);
   } else {
+    // We just need to return a boolean "true" or "false" for whether all
+    // required fields are set.
     const upb_msgdef* m = PyUpb_CMessage_GetMsgdef(_self);
     const upb_symtab* symtab = upb_filedef_symtab(upb_msgdef_file(m));
     bool initialized = !upb_util_HasUnsetRequired(msg, m, symtab, NULL);

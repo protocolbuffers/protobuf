@@ -175,6 +175,7 @@ static PyObject* PyUpb_ExtensionIterator_New(PyObject* _ext_dict) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyUpb_ExtensionIterator* iter =
       (void*)PyType_GenericAlloc(state->extension_iterator_type, 0);
+  if (!iter) return NULL;
   iter->msg = ext_dict->msg;
   iter->iter = UPB_MSG_BEGIN;
   Py_INCREF(iter->msg);
@@ -189,11 +190,6 @@ static void PyUpb_ExtensionIterator_Dealloc(void* _self) {
 
 PyObject* PyUpb_ExtensionIterator_IterNext(PyObject* _self) {
   PyUpb_ExtensionIterator* self = (PyUpb_ExtensionIterator*)_self;
-  /*
-  if (self->version != self->map->version) {
-    return PyErr_Format(PyExc_RuntimeError, "Map modified during iteration.");
-  }
-  */
   upb_msg* msg = PyUpb_CMessage_GetIfReified(self->msg);
   if (!msg) return NULL;
   const upb_msgdef* m = PyUpb_CMessage_GetMsgdef(self->msg);
