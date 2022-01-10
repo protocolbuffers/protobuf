@@ -975,18 +975,18 @@ static bool PyUpb_CMessage_SortFieldList(PyObject* list) {
   bool ok = false;
   PyObject* args = PyList_New(0);
   PyObject* kwargs = PyDict_New();
-  PyObject* m = PyObject_GetAttrString(list, "sort");
+  PyObject* method = PyObject_GetAttrString(list, "sort");
   PyObject* ret = NULL;
-  if (!args || !kwargs || !m) goto err;
+  if (!args || !kwargs || !method) goto err;
   if (PyDict_SetItemString(kwargs, "key", state->listfields_item_key) < 0) {
     goto err;
   }
-  ret = PyObject_Call(m, args, kwargs);
+  ret = PyObject_Call(method, args, kwargs);
   if (!ret) goto err;
   ok = true;
 
  err:
-  Py_XDECREF(m);
+  Py_XDECREF(method);
   Py_XDECREF(args);
   Py_XDECREF(kwargs);
   Py_XDECREF(ret);
@@ -1024,7 +1024,9 @@ static PyObject* PyUpb_CMessage_ListFields(PyObject* _self, PyObject* arg) {
     tuple = NULL;
   }
 
+  // Users rely on fields being returned in field number order.
   if (!in_order && !PyUpb_CMessage_SortFieldList(list)) goto err;
+
   return list;
 
 err:
