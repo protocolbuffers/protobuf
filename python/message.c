@@ -243,7 +243,12 @@ static bool PyUpb_CMessage_LookupName(PyUpb_CMessage* self, PyObject* py_name,
                                       PyObject* exc_type) {
   assert(f || o);
   Py_ssize_t size;
-  const char* name = PyUnicode_AsUTF8AndSize(py_name, &size);
+  const char* name = NULL;
+  if (PyUnicode_Check(py_name)) {
+    name = PyUnicode_AsUTF8AndSize(py_name, &size);
+  } else if (PyBytes_Check(py_name)) {
+    PyBytes_AsStringAndSize(py_name, (char**)&name, &size);
+  }
   if (!name) return NULL;
   const upb_msgdef* msgdef = _PyUpb_CMessage_GetMsgdef(self);
 
