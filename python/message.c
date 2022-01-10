@@ -937,16 +937,16 @@ static PyObject* PyUpb_CMessage_IsInitializedAppendErrors(PyObject* _self,
   if (!list) return NULL;
   bool ok = PyList_Size(list) == 0;
   PyObject* ret = NULL;
-  PyObject* result = NULL;
+  PyObject* extend_result = NULL;
   if (!ok) {
-    result = PyObject_CallMethod(errors, "extend", "O", list);
-    if (!result) goto done;
+    extend_result = PyObject_CallMethod(errors, "extend", "O", list);
+    if (!extend_result) goto done;
   }
   ret = PyBool_FromLong(ok);
 
 done:
   Py_XDECREF(list);
-  Py_XDECREF(result);
+  Py_XDECREF(extend_result);
   return ret;
 }
 
