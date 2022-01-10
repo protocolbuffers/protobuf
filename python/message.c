@@ -357,9 +357,14 @@ static bool PyUpb_CMessage_InitMessageAttribute(PyObject* _self, PyObject* name,
     PyObject* tmp = PyUpb_CMessage_MergeFrom(submsg, value);
     ok = tmp != NULL;
     Py_DECREF(tmp);
-  } else {
+  } else if (PyDict_Check(value)) {
     assert(!PyErr_Occurred());
     ok = PyUpb_CMessage_InitAttributes(submsg, NULL, value) >= 0;
+  } else {
+    const upb_msgdef* m = PyUpb_CMessage_GetMsgdef(_self);
+    PyErr_Format(PyExc_TypeError, "Message must be initialized with a dict: %s",
+                 upb_msgdef_fullname(m));
+    ok = false;
   }
   Py_DECREF(submsg);
   return ok;
@@ -371,12 +376,7 @@ static bool PyUpb_CMessage_InitScalarAttribute(upb_msg* msg,
                                                upb_arena* arena) {
   upb_msgval msgval;
   assert(!PyErr_Occurred());
-  if (!PyUpb_PyToUpb(value, f, &msgval, arena)) {
-    PyErr_Clear();
-    PyErr_Format(PyExc_ValueError, "Error initializing field %s",
-                 upb_fielddef_fullname(f));
-    return false;
-  }
+  if (!PyUpb_PyToUpb(value, f, &msgval, arena)) return false;
   upb_msg_set(msg, f, msgval, arena);
   return true;
 }
