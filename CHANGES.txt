@@ -1,3 +1,54 @@
+Unreleased changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+C++
+  * Implements pbarenaz for profiling proto arenas
+  * Add UnknownFieldSet::SerializeToString and SerializeToCodedStream.
+  * Make TextFormat and JSON encoders always invoke BackUp() on
+    ZeroCopyOutputStream to provide a flush opportunity to implementations.
+  * Declare ZeroCopy*Stream classes to be 'future final' (will become final in a
+    future release).
+  * Template CodedOutputStream constructor to allow devirtualized initialization
+  * Change Repeated*Field to reuse memory when using arenas.
+  * Do not log/report the same descriptor symbol multiple times if it contains
+    more than one invalid character.
+  * Make Arena::AllocateAligned() a public function.
+  * Generate narrower .pb.cc code that doesn't wrap as much.
+  * Rework allocations to power-of-two byte sizes instead of power-of-two
+    capacities.
+
+Java
+  * Report original exceptions when parsing JSON
+  * Add `ByteString.fromHex(String)`.
+  * Add `ByteString.empty()`.
+  * UnknownFieldSet.Builder is now reusable. Its build method can be called more
+    than once.
+  * add @CheckReturnValue to some protobuf types
+  * Add `@InlineMe` to deprecated protobuf APIs.
+  * Remove `@InlineMe` from some deprecated `ExtensionRegistry` methods
+  * When oneof case is the same and the field type is Message, merge the
+    subfield. (previously it was replaced.)
+  * Fix bugs in {FieldSet,FieldSet.Builder}.isInitialized()
+  * Add more info to @deprecated javadoc for set/get/has methods
+  * Flush CodedOutputStream also flushes underlying OutputStream
+
+Python
+  * protoc is now able to generate python stub (.pyi) by --gen_pyi
+  * Adds client_streaming and server_streaming fields to MethodDescriptor.
+  * Timestamp.ToDatetime() now accepts an optional tzinfo parameter. If
+    specified, the function returns a timezone-aware datetime in the given time
+    zone. If omitted or None, the function returns a timezone-naive UTC datetime
+    (as previously).
+  * Loosen indexing type requirements to allow valid __index__() implementations
+    rather than only PyLongObjects.
+  * Removed broken pickle support for pure python repeated scalar fields.
+    Convert to list first.
+  * Added path info JSON parse errors
+  * Added JSON parse recursion limit (default 100)
+  * Fix the deepcopy bug caused by not copying message_listener.
+
+Kotlin
+  * Enhancements to Kotlin support for Any protobuf.
+
 2021-10-28 version 3.19.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Bazel
