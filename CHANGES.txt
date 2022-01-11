@@ -7,6 +7,22 @@
 
   Java
   * Improve performance characteristics of UnknownFieldSet parsing (#9371)
+  * This release addresses a Security Advisory for Java users
+   (https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-wrvw-hg22-4m67)
+
+2022-01-05 version 3.18.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Java
+  * Improve performance characteristics of UnknownFieldSet parsing (#9371)
+  * This release addresses a Security Advisory for Java users
+   (https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-wrvw-hg22-4m67)
+
+2022-01-05 version 3.16.1 (Java)
+
+  Java
+  * Improve performance characteristics of UnknownFieldSet parsing (#9371)
+  * This release addresses a Security Advisory for Java users
+   (https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-wrvw-hg22-4m67)
 
 2021-10-28 version 3.19.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
