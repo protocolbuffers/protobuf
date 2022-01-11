@@ -162,7 +162,7 @@ void ForkPipeRunner::RunTest(
     // We failed to read from the child, assume a crash and try to reap.
     GOOGLE_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
 
-    int status;
+    int status = 0;
     waitpid(child_pid_, &status, WEXITED);
 
     string error_msg;

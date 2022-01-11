@@ -36,49 +36,27 @@
 // lite library because they use descriptors or reflection.
 
 #include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/extension_set_inl.h>
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/extension_set.h>
+#include <google/protobuf/extension_set_inl.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/message_lite.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
 namespace internal {
-
-// A FieldSkipper used to store unknown MessageSet fields into UnknownFieldSet.
-class MessageSetFieldSkipper : public UnknownFieldSetFieldSkipper {
- public:
-  explicit MessageSetFieldSkipper(UnknownFieldSet* unknown_fields)
-      : UnknownFieldSetFieldSkipper(unknown_fields) {}
-  ~MessageSetFieldSkipper() override {}
-
-  virtual bool SkipMessageSetField(io::CodedInputStream* input,
-                                   int field_number);
-};
-bool MessageSetFieldSkipper::SkipMessageSetField(io::CodedInputStream* input,
-                                                 int field_number) {
-  uint32_t length;
-  if (!input->ReadVarint32(&length)) return false;
-  if (unknown_fields_ == nullptr) {
-    return input->Skip(length);
-  } else {
-    return input->ReadString(unknown_fields_->AddLengthDelimited(field_number),
-                             length);
-  }
-}
-
 
 // Implementation of ExtensionFinder which finds extensions in a given
 // DescriptorPool, using the given MessageFactory to construct sub-objects.
@@ -376,36 +354,6 @@ const char* ExtensionSet::ParseMessageSetItem(
                                                            metadata, ctx);
 }
 
-bool ExtensionSet::ParseField(uint32_t tag, io::CodedInputStream* input,
-                              const Message* containing_type,
-                              UnknownFieldSet* unknown_fields) {
-  UnknownFieldSetFieldSkipper skipper(unknown_fields);
-  if (input->GetExtensionPool() == nullptr) {
-    GeneratedExtensionFinder finder(containing_type);
-    return ParseField(tag, input, &finder, &skipper);
-  } else {
-    DescriptorPoolExtensionFinder finder(input->GetExtensionPool(),
-                                         input->GetExtensionFactory(),
-                                         containing_type->GetDescriptor());
-    return ParseField(tag, input, &finder, &skipper);
-  }
-}
-
-bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
-                                   const Message* containing_type,
-                                   UnknownFieldSet* unknown_fields) {
-  MessageSetFieldSkipper skipper(unknown_fields);
-  if (input->GetExtensionPool() == nullptr) {
-    GeneratedExtensionFinder finder(containing_type);
-    return ParseMessageSet(input, &finder, &skipper);
-  } else {
-    DescriptorPoolExtensionFinder finder(input->GetExtensionPool(),
-                                         input->GetExtensionFactory(),
-                                         containing_type->GetDescriptor());
-    return ParseMessageSet(input, &finder, &skipper);
-  }
-}
-
 int ExtensionSet::SpaceUsedExcludingSelf() const {
   return internal::FromIntSize(SpaceUsedExcludingSelfLong());
 }
@@ -483,60 +431,6 @@ uint8_t* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
       io::CodedOutputStream::IsDefaultSerializationDeterministic());
   return InternalSerializeMessageSetWithCachedSizesToArray(extendee, target,
                                                            &stream);
-}
-
-bool ExtensionSet::ParseFieldMaybeLazily(
-    int wire_type, int field_number, io::CodedInputStream* input,
-    ExtensionFinder* extension_finder, MessageSetFieldSkipper* field_skipper) {
-  return ParseField(
-      WireFormatLite::MakeTag(field_number,
-                              static_cast<WireFormatLite::WireType>(wire_type)),
-      input, extension_finder, field_skipper);
-}
-
-bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
-                                   ExtensionFinder* extension_finder,
-                                   MessageSetFieldSkipper* field_skipper) {
-  while (true) {
-    const uint32_t tag = input->ReadTag();
-    switch (tag) {
-      case 0:
-        return true;
-      case WireFormatLite::kMessageSetItemStartTag:
-        if (!ParseMessageSetItem(input, extension_finder, field_skipper)) {
-          return false;
-        }
-        break;
-      default:
-        if (!ParseField(tag, input, extension_finder, field_skipper)) {
-          return false;
-        }
-        break;
-    }
-  }
-}
-
-bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream* input,
-                                       ExtensionFinder* extension_finder,
-                                       MessageSetFieldSkipper* field_skipper) {
-  struct MSFull {
-    bool ParseField(int type_id, io::CodedInputStream* input) {
-      return me->ParseFieldMaybeLazily(
-          WireFormatLite::WIRETYPE_LENGTH_DELIMITED, type_id, input,
-          extension_finder, field_skipper);
-    }
-
-    bool SkipField(uint32_t tag, io::CodedInputStream* input) {
-      return field_skipper->SkipField(input, tag);
-    }
-
-    ExtensionSet* me;
-    ExtensionFinder* extension_finder;
-    MessageSetFieldSkipper* field_skipper;
-  };
-
-  return ParseMessageSetItemImpl(input,
-                                 MSFull{this, extension_finder, field_skipper});
 }
 
 }  // namespace internal

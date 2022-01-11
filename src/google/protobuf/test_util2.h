@@ -35,6 +35,8 @@
 
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
 namespace google {
 namespace protobuf {
@@ -74,6 +76,28 @@ bool EqualsToSerialized(const ProtoType& message, const std::string& data) {
   other.ParsePartialFromString(data);
   return util::MessageDifferencer::Equals(message, other);
 }
+
+// Wraps io::ArrayInputStream while checking against bound. When a blocking
+// stream is used with bounded length, proto parsing must not access beyond the
+// bound. Otherwise, it can result in unintended block, then deadlock.
+class BoundedArrayInputStream : public io::ZeroCopyInputStream {
+ public:
+  BoundedArrayInputStream(const void* data, int size)
+      : stream_(data, size), bound_(size) {}
+  ~BoundedArrayInputStream() override {}
+
+  bool Next(const void** data, int* size) override {
+    GOOGLE_CHECK_LT(stream_.ByteCount(), bound_);
+    return stream_.Next(data, size);
+  }
+  void BackUp(int count) override { stream_.BackUp(count); }
+  bool Skip(int count) override { return stream_.Skip(count); }
+  int64_t ByteCount() const override { return stream_.ByteCount(); }
+
+ private:
+  io::ArrayInputStream stream_;
+  int bound_;
+};
 
 }  // namespace TestUtil
 }  // namespace protobuf

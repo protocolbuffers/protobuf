@@ -54,6 +54,7 @@
 #include <google/protobuf/stubs/stl_util.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -196,7 +197,7 @@ void CodedInputStream::PrintTotalBytesLimitError() {
       << total_bytes_limit_
       << " bytes).  To increase the limit (or to disable these "
          "warnings), see CodedInputStream::SetTotalBytesLimit() "
-         "in third_party/protobuf/src/google/protobuf/io/coded_stream.h.";
+         "in third_party/protobuf/io/coded_stream.h.";
 }
 
 bool CodedInputStream::SkipFallback(int count, int original_buffer_size) {
@@ -704,7 +705,7 @@ int EpsCopyOutputStream::Flush(uint8_t* ptr) {
 uint8_t* EpsCopyOutputStream::Trim(uint8_t* ptr) {
   if (had_error_) return ptr;
   int s = Flush(ptr);
-  if (s) stream_->BackUp(s);
+  stream_->BackUp(s);
   // Reset to initial state (expecting new buffer)
   buffer_end_ = end_ = buffer_;
   return buffer_;
@@ -928,18 +929,6 @@ uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num, const std::string
 
 std::atomic<bool> CodedOutputStream::default_serialization_deterministic_{
     false};
-
-CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* stream,
-                                     bool do_eager_refresh)
-    : impl_(stream, IsDefaultSerializationDeterministic(), &cur_),
-      start_count_(stream->ByteCount()) {
-  if (do_eager_refresh) {
-    void* data;
-    int size;
-    if (!stream->Next(&data, &size) || size == 0) return;
-    cur_ = impl_.SetInitialBuffer(data, size);
-  }
-}
 
 CodedOutputStream::~CodedOutputStream() { Trim(); }
 

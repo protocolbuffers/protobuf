@@ -58,9 +58,8 @@ class DescriptorCapturingGenerator : public CodeGenerator {
   explicit DescriptorCapturingGenerator(FileDescriptorProto* file)
       : file_(file) {}
 
-  virtual bool Generate(const FileDescriptor* file,
-                        const std::string& parameter, GeneratorContext* context,
-                        std::string* error) const {
+  bool Generate(const FileDescriptor* file, const std::string& parameter,
+                GeneratorContext* context, std::string* error) const override {
     file->CopyTo(file_);
     return true;
   }

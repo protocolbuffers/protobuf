@@ -92,7 +92,7 @@ class ImmutableExtensionGenerator : public ExtensionGenerator {
  public:
   explicit ImmutableExtensionGenerator(const FieldDescriptor* descriptor,
                                        Context* context);
-  virtual ~ImmutableExtensionGenerator();
+  ~ImmutableExtensionGenerator() override;
 
   void Generate(io::Printer* printer) override;
   int GenerateNonNestedInitializationCode(io::Printer* printer) override;

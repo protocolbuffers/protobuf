@@ -76,6 +76,12 @@ void TestParseCorruptedString(const T& message) {
 
 namespace internal {
 
+struct ArenaTestPeer {
+  static void ReturnArrayMemory(Arena* arena, void* p, size_t size) {
+    arena->ReturnArrayMemory(p, size);
+  }
+};
+
 class NoHeapChecker {
  public:
   NoHeapChecker() { capture_alloc.Hook(); }

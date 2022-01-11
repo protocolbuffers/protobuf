@@ -33,6 +33,7 @@ package com.google.protobuf;
 import java.io.IOException;
 
 @ExperimentalApi
+@CheckReturnValue
 abstract class UnknownFieldSchema<T, B> {
 
   /** Whether unknown fields should be dropped. */

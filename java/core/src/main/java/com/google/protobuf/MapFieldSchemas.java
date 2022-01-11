@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+@CheckReturnValue
 final class MapFieldSchemas {
   private static final MapFieldSchema FULL_SCHEMA = loadSchemaForFullRuntime();
   private static final MapFieldSchema LITE_SCHEMA = new MapFieldSchemaLite();

@@ -41,12 +41,12 @@
 #include <vector>
 
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/compiler/java/java_name_resolver.h>
-#include <google/protobuf/compiler/java/java_names.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/compiler/java/java_name_resolver.h>
+#include <google/protobuf/compiler/java/java_names.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/stubs/hash.h>  // for hash<T *>
 
 namespace google {
@@ -1049,8 +1049,7 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
 
   if (field->is_map()) {
     if (!SupportUnknownEnumValue(field)) {
-      const FieldDescriptor* value =
-          field->message_type()->map_value();
+      const FieldDescriptor* value = field->message_type()->map_value();
       if (GetJavaType(value) == JAVATYPE_ENUM) {
         extra_bits |= kMapWithProto2EnumValue;
       }

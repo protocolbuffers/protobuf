@@ -85,6 +85,17 @@ import org.junit.runners.JUnit4;
 @SuppressWarnings({"ProtoBuilderReturnValueIgnored", "ReturnValueIgnored"})
 @RunWith(JUnit4.class)
 public class GeneratedMessageTest {
+
+  private static final TestOneof2 EXPECTED_MERGED_MESSAGE =
+      TestOneof2.newBuilder()
+          .setFooMessage(TestOneof2.NestedMessage.newBuilder().addCorgeInt(1).addCorgeInt(2))
+          .build();
+
+  private static final TestOneof2 MESSAGE_TO_MERGE_FROM =
+      TestOneof2.newBuilder()
+          .setFooMessage(TestOneof2.NestedMessage.newBuilder().addCorgeInt(2))
+          .build();
+
   TestUtil.ReflectionTester reflectionTester =
       new TestUtil.ReflectionTester(TestAllTypes.getDescriptor(), null);
 
@@ -1650,7 +1661,7 @@ public class GeneratedMessageTest {
   }
 
   @Test
-  public void testOneofMerge() throws Exception {
+  public void testOneofMergeNonMessage() throws Exception {
     // Primitive Type
     {
       TestOneof2.Builder builder = TestOneof2.newBuilder();
@@ -1677,18 +1688,39 @@ public class GeneratedMessageTest {
       assertThat(message2.hasFooEnum()).isTrue();
       assertThat(message2.getFooEnum()).isEqualTo(TestOneof2.NestedEnum.BAR);
     }
+  }
 
-    // Message
-    {
-      TestOneof2.Builder builder = TestOneof2.newBuilder();
-      TestOneof2 message =
-          builder
-              .setFooMessage(TestOneof2.NestedMessage.newBuilder().setQuxInt(234).build())
-              .build();
-      TestOneof2 message2 = TestOneof2.newBuilder().mergeFrom(message).build();
-      assertThat(message2.hasFooMessage()).isTrue();
-      assertThat(message2.getFooMessage().getQuxInt()).isEqualTo(234);
-    }
+  @Test
+  public void testOneofMergeMessage_mergeIntoNewBuilder() {
+    TestOneof2.Builder builder = TestOneof2.newBuilder();
+    TestOneof2 message =
+        builder.setFooMessage(TestOneof2.NestedMessage.newBuilder().setQuxInt(234).build()).build();
+    TestOneof2 message2 = TestOneof2.newBuilder().mergeFrom(message).build();
+    assertThat(message2.hasFooMessage()).isTrue();
+    assertThat(message2.getFooMessage().getQuxInt()).isEqualTo(234);
+  }
+
+  @Test
+  public void testOneofMergeMessage_mergeWithGetMessageBuilder() {
+    TestOneof2.Builder builder = TestOneof2.newBuilder();
+    builder.getFooMessageBuilder().addCorgeInt(1);
+    assertThat(builder.mergeFrom(MESSAGE_TO_MERGE_FROM).build()).isEqualTo(EXPECTED_MERGED_MESSAGE);
+  }
+
+  @Test
+  public void testOneofMergeMessage_mergeIntoMessageBuiltWithGetMessageBuilder() {
+    TestOneof2.Builder builder = TestOneof2.newBuilder();
+    builder.getFooMessageBuilder().addCorgeInt(1);
+    TestOneof2 message = builder.build();
+    assertThat(message.toBuilder().mergeFrom(MESSAGE_TO_MERGE_FROM).build())
+        .isEqualTo(EXPECTED_MERGED_MESSAGE);
+  }
+
+  @Test
+  public void testOneofMergeMessage_mergeWithoutGetMessageBuilder() {
+    TestOneof2.Builder builder =
+        TestOneof2.newBuilder().setFooMessage(TestOneof2.NestedMessage.newBuilder().addCorgeInt(1));
+    assertThat(builder.mergeFrom(MESSAGE_TO_MERGE_FROM).build()).isEqualTo(EXPECTED_MERGED_MESSAGE);
   }
 
   @Test

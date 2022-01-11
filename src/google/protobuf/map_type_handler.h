@@ -31,9 +31,10 @@
 #ifndef GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__
 #define GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__
 
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/arenastring.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/wire_format_lite.h>
 
 #ifdef SWIG
@@ -322,7 +323,8 @@ inline uint8_t* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Write(
     int field, const MapEntryAccessorType& value, uint8_t* ptr,
     io::EpsCopyOutputStream* stream) {
   ptr = stream->EnsureSpace(ptr);
-  return WireFormatLite::InternalWriteMessage(field, value, ptr, stream);
+  return WireFormatLite::InternalWriteMessage(
+      field, value, value.GetCachedSize(), ptr, stream);
 }
 
 #define WRITE_METHOD(FieldType, DeclaredType)                     \

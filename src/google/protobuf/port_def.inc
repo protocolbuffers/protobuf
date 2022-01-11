@@ -148,7 +148,11 @@
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.
+// PROTOBUF_FUTURE_FINAL is used on classes that are historically not marked as
+// final, but that may be marked final in future (breaking) releases.
 // #define PROTOBUF_FUTURE_BREAKING_CHANGES 1
+// #define PROTOBUF_FUTURE_FINAL final
+#define PROTOBUF_FUTURE_FINAL
 
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
@@ -362,11 +366,19 @@
 #error PROTOBUF_RTTI was previously defined
 #endif
 #if defined(GOOGLE_PROTOBUF_NO_RTTI) && GOOGLE_PROTOBUF_NO_RTTI
+// A user-provided definition GOOGLE_PROTOBUF_NO_RTTI=1 disables RTTI.
 #define PROTOBUF_RTTI 0
-#elif __has_feature(cxx_rtti)
+#elif defined(__cpp_rtti)
+// https://en.cppreference.com/w/cpp/feature_test
 #define PROTOBUF_RTTI 1
-#elif defined(__cxx_rtti)
-// https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros#C.2B.2B98
+#elif __has_feature(cxx_rtti)
+// https://clang.llvm.org/docs/LanguageExtensions.html#c-rtti
+#define PROTOBUF_RTTI 1
+#elif defined(__GXX_RTTI)
+// https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+#define PROTOBUF_RTTI 1
+#elif defined(_CPPRTTI)
+// https://docs.microsoft.com/en-us/cpp/build/reference/gr-enable-run-time-type-information
 #define PROTOBUF_RTTI 1
 #else
 #define PROTOBUF_RTTI 0
@@ -466,6 +478,13 @@
 #else
 #define PROTOBUF_NODISCARD
 #endif
+
+// Enable all stable experiments if this flag is set.  This allows us to group
+// all of these experiments under a single build flag, which can be enabled in
+// the protobuf.stable-experiments TAP project.
+#ifdef PROTOBUF_ENABLE_STABLE_EXPERIMENTS
+#define PROTOBUF_FORCE_MESSAGE_OWNED_ARENA
+#endif  // !PROTOBUF_ENABLE_STABLE_EXPERIMENTS
 
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
 #error PROTOBUF_FORCE_COPY_IN_RELEASE was previously defined
@@ -574,14 +593,18 @@
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
-#if defined(__cpp_constinit) && !PROTOBUF_GNUC_MIN(3, 0) && !defined(_MSC_VER)
-// Our use of constinit does not yet work with GCC:
-// https://github.com/protocolbuffers/protobuf/issues/8310
-// Does not work yet with Visual Studio 2019 Update 16.10
+#if defined(__cpp_constinit)
 #define PROTOBUF_CONSTINIT constinit
-#elif !defined(_MSC_VER) && \
-    __has_cpp_attribute(clang::require_constant_initialization)
+// Some older Clang versions incorrectly raise an error about
+// constant-initializing weak default instance pointers. Versions 12.0 and
+// higher seem to work, except that XCode 12.5.1 shows the error even though it
+// uses Clang 12.0.5.
+#elif __has_cpp_attribute(clang::require_constant_initialization) && \
+    ((defined(__APPLE__) && __clang_major__ >= 13) ||                \
+     (!defined(__APPLE__) && __clang_major__ >= 12))
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
+#elif PROTOBUF_GNUC_MIN(12, 0)
+#define PROTOBUF_CONSTINIT __constinit
 #else
 #define PROTOBUF_CONSTINIT
 #endif
@@ -603,15 +626,23 @@
 // complete view on all protos. When code is using reflection or extensions
 // in between registration calls this can lead to surprising behavior. By
 // having the registration run first we mitigate this scenario.
-// Highest priority is 101. We use 102 to allow code that really wants to
-// higher priority to still beat us.
-#ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY
-#error PROTOBUF_ATTRIBUTE_INIT_PRIORITY was previously defined
+// Highest priority is 101. We use 102 for registration, to allow code that
+// really wants to higher priority to still beat us. Some initialization happens
+// at higher priority, though, since it is needed before registration.
+#ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+#error PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 was previously defined
 #endif
-#if PROTOBUF_GNUC_MIN(3, 0) && (!defined(__APPLE__) || defined(__clang__)) && !((defined(sun) || defined(__sun)) && (defined(__SVR4) || defined(__svr4__)))
-#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY __attribute__((init_priority((102))))
+#ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+#error PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 was previously defined
+#endif
+#if PROTOBUF_GNUC_MIN(3, 0) && (!defined(__APPLE__) || defined(__clang__)) && \
+    !((defined(sun) || defined(__sun)) &&                                     \
+      (defined(__SVR4) || defined(__svr4__)))
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 __attribute__((init_priority((101))))
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 __attribute__((init_priority((102))))
 #else
-#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
 #endif
 
 #ifdef PROTOBUF_PRAGMA_INIT_SEG
@@ -711,6 +742,8 @@
 #else
 #define PROTOBUF_UNUSED
 #endif
+
+// ThreadSafeArenaz is turned off completely in opensource builds.
 
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.

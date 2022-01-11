@@ -54,6 +54,7 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
+
 #include <atomic>
 #include <map>
 #include <memory>
@@ -66,6 +67,8 @@
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/port.h>
+
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 // TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
@@ -1336,6 +1339,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
 
   // Look up a MethodDescriptor by name.
   const MethodDescriptor* FindMethodByName(ConstStringParam name) const;
+
   // See Descriptor::CopyTo().
   void CopyTo(ServiceDescriptorProto* proto) const;
 
@@ -1473,7 +1477,6 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
   friend class ServiceDescriptor;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MethodDescriptor);
 };
-
 
 // Describes a whole .proto file.  To get the FileDescriptor for a compiled-in
 // file, get the descriptor for something defined in that file and call
@@ -1973,7 +1976,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class ServiceDescriptor;
   friend class MethodDescriptor;
   friend class FileDescriptor;
-  friend class StreamDescriptor;
   friend class DescriptorBuilder;
   friend class FileDescriptorTables;
 

@@ -32,19 +32,21 @@
 #define GOOGLE_PROTOBUF_MAP_ENTRY_LITE_H__
 
 #include <assert.h>
+
 #include <string>
 
 #include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_type_handler.h>
-#include <google/protobuf/port.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/wire_format_lite.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -193,7 +195,7 @@ class MapEntryImpl : public Base {
         value_(ValueTypeHandler::Constinit()),
         _has_bits_{} {}
 
-  ~MapEntryImpl() {
+  ~MapEntryImpl() override {
     if (Base::GetArenaForAllocation() != nullptr) return;
     KeyTypeHandler::DeleteNoArena(key_);
     ValueTypeHandler::DeleteNoArena(value_);
@@ -523,7 +525,7 @@ class MapEntryLite : public MapEntryImpl<T, MessageLite, Key, Value,
       SuperType;
   constexpr MapEntryLite() {}
   explicit MapEntryLite(Arena* arena) : SuperType(arena) {}
-  ~MapEntryLite() {
+  ~MapEntryLite() override {
     MessageLite::_internal_metadata_.template Delete<std::string>();
   }
   void MergeFrom(const MapEntryLite& other) { MergeFromInternal(other); }
@@ -585,9 +587,7 @@ template <>
 struct FromHelper<WireFormatLite::TYPE_STRING> {
   static ArenaStringPtr From(const std::string& x) {
     ArenaStringPtr res;
-    TaggedPtr<std::string> ptr;
-    ptr.Set(const_cast<std::string*>(&x));
-    res.UnsafeSetTaggedPointer(ptr);
+    res.UnsafeSetDefault(&x);
     return res;
   }
 };
@@ -595,9 +595,7 @@ template <>
 struct FromHelper<WireFormatLite::TYPE_BYTES> {
   static ArenaStringPtr From(const std::string& x) {
     ArenaStringPtr res;
-    TaggedPtr<std::string> ptr;
-    ptr.Set(const_cast<std::string*>(&x));
-    res.UnsafeSetTaggedPointer(ptr);
+    res.UnsafeSetDefault(&x);
     return res;
   }
 };

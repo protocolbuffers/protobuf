@@ -48,6 +48,11 @@ message TestMessageSetContainer {
   optional proto2_wireformat_unittest.TestMessageSet message_set = 1;
 }
 
+message NestedTestMessageSetContainer {
+  optional TestMessageSetContainer container = 1;
+  optional NestedTestMessageSetContainer child = 2;
+}
+
 message TestMessageSetExtension1 {
   extend proto2_wireformat_unittest.TestMessageSet {
     optional TestMessageSetExtension1 message_set_extension = 1545008;
@@ -62,6 +67,18 @@ message TestMessageSetExtension2 {
     optional TestMessageSetExtension2 message_set_extension = 1547769;
   }
   optional string str = 25;
+}
+
+message NestedTestInt {
+  optional fixed32 a = 1;
+  optional NestedTestInt child = 2;
+}
+
+message TestMessageSetExtension3 {
+  extend proto2_wireformat_unittest.TestMessageSet {
+    optional TestMessageSetExtension3 message_set_extension = 195273129;
+  }
+  optional NestedTestInt msg = 35;
 }
 
 // This message was used to generate

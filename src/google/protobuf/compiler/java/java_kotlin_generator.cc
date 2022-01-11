@@ -30,11 +30,11 @@
 
 #include <google/protobuf/compiler/java/java_kotlin_generator.h>
 
+#include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/java/java_file.h>
+#include <google/protobuf/compiler/java/java_generator.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_options.h>
-#include <google/protobuf/compiler/java/java_generator.h>
-#include <google/protobuf/compiler/code_generator.h>
 
 namespace google {
 namespace protobuf {

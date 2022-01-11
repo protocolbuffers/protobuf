@@ -40,6 +40,7 @@
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/stubs/mutex.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -68,7 +69,7 @@ enum class StripPrintDescriptor { kCreate, kFind };
 class PROTOC_EXPORT Generator : public CodeGenerator {
  public:
   Generator();
-  virtual ~Generator();
+  ~Generator() override;
 
   // CodeGenerator methods.
   bool Generate(const FileDescriptor* file, const std::string& parameter,

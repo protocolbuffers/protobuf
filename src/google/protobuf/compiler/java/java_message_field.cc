@@ -32,17 +32,18 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/compiler/java/java_message_field.h>
+
 #include <map>
 #include <string>
 
-#include <google/protobuf/compiler/java/java_context.h>
-#include <google/protobuf/compiler/java/java_doc_comment.h>
-#include <google/protobuf/compiler/java/java_helpers.h>
-#include <google/protobuf/compiler/java/java_message_field.h>
-#include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/java/java_context.h>
+#include <google/protobuf/compiler/java/java_doc_comment.h>
+#include <google/protobuf/compiler/java/java_helpers.h>
+#include <google/protobuf/compiler/java/java_name_resolver.h>
 
 namespace google {
 namespace protobuf {
@@ -698,8 +699,9 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
 
       "if ($has_oneof_case_message$) {\n"
       "  $name$Builder_.mergeFrom(value);\n"
-      "}\n"
-      "$name$Builder_.setMessage(value);\n",
+      "} else {\n"
+      "  $name$Builder_.setMessage(value);\n"
+      "}\n",
 
       "$set_oneof_case_message$;\n"
       "return this;\n");

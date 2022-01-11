@@ -1147,16 +1147,32 @@ class MessageTest(unittest.TestCase):
     m.repeated_string.extend(MessageTest.TestIterable(['3', '4']))
     self.assertSequenceEqual(['', '1', '2', '3', '4'], m.repeated_string)
 
+  class TestIndex(object):
+    """This index object mimics the behavior of numpy.int64 and other types."""
+
+    def __init__(self, value=None):
+      self.value = value
+
+    def __index__(self):
+      return self.value
+
+  def testRepeatedIndexingWithIntIndex(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_int32.extend([1, 2, 3])
+    self.assertEqual(1, msg.repeated_int32[MessageTest.TestIndex(0)])
+
+  def testRepeatedIndexingWithNegative1IntIndex(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_int32.extend([1, 2, 3])
+    self.assertEqual(3, msg.repeated_int32[MessageTest.TestIndex(-1)])
+
+  def testRepeatedIndexingWithNegative1Int(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_int32.extend([1, 2, 3])
+    self.assertEqual(3, msg.repeated_int32[-1])
+
   def testPickleRepeatedScalarContainer(self, message_module):
-    # TODO(tibell): The pure-Python implementation support pickling of
-    #   scalar containers in *some* cases. For now the cpp2 version
-    #   throws an exception to avoid a segfault. Investigate if we
-    #   want to support pickling of these fields.
-    #
-    # For more information see: https://b2.corp.google.com/u/0/issues/18677897
-    if (api_implementation.Type() != 'cpp' or
-        api_implementation.Version() == 2):
-      return
+    # Pickle repeated scalar container is not supported.
     m = message_module.TestAllTypes()
     with self.assertRaises(pickle.PickleError) as _:
       pickle.dumps(m.repeated_int32, pickle.HIGHEST_PROTOCOL)

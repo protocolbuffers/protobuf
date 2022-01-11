@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 /** An adapter between the {@link Writer} interface and {@link CodedOutputStream}. */
+@CheckReturnValue
 @ExperimentalApi
 final class CodedOutputStreamWriter implements Writer {
   private final CodedOutputStream output;
@@ -154,6 +155,7 @@ final class CodedOutputStreamWriter implements Writer {
     output.writeMessage(fieldNumber, (MessageLite) value, schema);
   }
 
+  @Deprecated
   @Override
   public void writeGroup(int fieldNumber, Object value) throws IOException {
     output.writeGroup(fieldNumber, (MessageLite) value);
@@ -164,11 +166,13 @@ final class CodedOutputStreamWriter implements Writer {
     output.writeGroup(fieldNumber, (MessageLite) value, schema);
   }
 
+  @Deprecated
   @Override
   public void writeStartGroup(int fieldNumber) throws IOException {
     output.writeTag(fieldNumber, WireFormat.WIRETYPE_START_GROUP);
   }
 
+  @Deprecated
   @Override
   public void writeEndGroup(int fieldNumber) throws IOException {
     output.writeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP);
@@ -561,6 +565,7 @@ final class CodedOutputStreamWriter implements Writer {
     }
   }
 
+  @Deprecated
   @Override
   public void writeGroupList(int fieldNumber, List<?> value) throws IOException {
     for (int i = 0; i < value.size(); ++i) {

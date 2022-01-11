@@ -63,6 +63,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -456,7 +457,7 @@ TEST_F(TextFormatTest, PrintBufferTooSmall) {
 // A printer that appends 'u' to all unsigned int32.
 class CustomUInt32FieldValuePrinter : public TextFormat::FieldValuePrinter {
  public:
-  virtual std::string PrintUInt32(uint32 val) const {
+  std::string PrintUInt32(uint32_t val) const override {
     return StrCat(FieldValuePrinter::PrintUInt32(val), "u");
   }
 };
@@ -480,7 +481,7 @@ TEST_F(TextFormatTest, DefaultCustomFieldPrinter) {
 
 class CustomInt32FieldValuePrinter : public TextFormat::FieldValuePrinter {
  public:
-  virtual std::string PrintInt32(int32 val) const {
+  std::string PrintInt32(int32_t val) const override {
     return StrCat("value-is(", FieldValuePrinter::PrintInt32(val), ")");
   }
 };
@@ -531,14 +532,14 @@ TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
 
 class CustomMessageFieldValuePrinter : public TextFormat::FieldValuePrinter {
  public:
-  virtual std::string PrintInt32(int32 v) const {
+  std::string PrintInt32(int32_t v) const override {
     return StrCat(FieldValuePrinter::PrintInt32(v), "  # x",
                         strings::Hex(v));
   }
 
-  virtual std::string PrintMessageStart(const Message& message, int field_index,
-                                        int field_count,
-                                        bool single_line_mode) const {
+  std::string PrintMessageStart(const Message& message, int field_index,
+                                int field_count,
+                                bool single_line_mode) const override {
     if (single_line_mode) {
       return " { ";
     }
@@ -629,9 +630,9 @@ TEST_F(TextFormatTest, CustomPrinterForMessageContent) {
 
 class CustomMultilineCommentPrinter : public TextFormat::FieldValuePrinter {
  public:
-  virtual std::string PrintMessageStart(const Message& message, int field_index,
-                                        int field_count,
-                                        bool single_line_comment) const {
+  std::string PrintMessageStart(const Message& message, int field_index,
+                                int field_count,
+                                bool single_line_comment) const override {
     return StrCat(" {  # 1\n", "  # 2\n");
   }
 };
@@ -1433,17 +1434,17 @@ class TextFormatParserTest : public testing::Test {
   class MockErrorCollector : public io::ErrorCollector {
    public:
     MockErrorCollector() {}
-    ~MockErrorCollector() {}
+    ~MockErrorCollector() override {}
 
     std::string text_;
 
     // implements ErrorCollector -------------------------------------
-    void AddError(int line, int column, const std::string& message) {
+    void AddError(int line, int column, const std::string& message) override {
       strings::SubstituteAndAppend(&text_, "$0:$1: $2\n", line + 1, column + 1,
                                 message);
     }
 
-    void AddWarning(int line, int column, const std::string& message) {
+    void AddWarning(int line, int column, const std::string& message) override {
       AddError(line, column, "WARNING:" + message);
     }
   };
