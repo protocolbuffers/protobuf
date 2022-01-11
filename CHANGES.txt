@@ -1,3 +1,13 @@
+2022-01-10 version 3.19.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Python
+  * Fix missing Windows wheel for Python 3.10 on PyPI
+
+2022-01-05 version 3.19.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Java
+  * Improve performance characteristics of UnknownFieldSet parsing (#9371)
+
 2021-10-28 version 3.19.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Bazel
