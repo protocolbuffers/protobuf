@@ -33,10 +33,11 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_string_field.h>
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/descriptor.pb.h>
+
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/descriptor.pb.h>
 
 
 namespace google {
@@ -116,9 +117,14 @@ void StringFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   if (!inlined_) {
     format("::$proto_ns$::internal::ArenaStringPtr $name$_;\n");
   } else {
+    // Skips the automatic destruction; rather calls it explicitly if
+    // allocating arena is null. This is required to support message-owned
+    // arena (go/path-to-arenas) where a root proto is destroyed but
+    // InlinedStringField may have arena-allocated memory.
+    //
     // `_init_inline_xxx` is used for initializing default instances.
     format(
-        "::$proto_ns$::internal::InlinedStringField $name$_;\n"
+        "union { ::$proto_ns$::internal::InlinedStringField $name$_; };\n"
         "static std::true_type _init_inline_$name$_;\n");
   }
 }
@@ -229,7 +235,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
         " $set_hasbit$\n"
         " $name$_.$setter$(nullptr, static_cast<ArgT0 &&>(arg0),"
         " args..., GetArenaForAllocation(), _internal_$name$_donated(), "
-        "&$donating_states_word$, $mask_for_undonate$);\n"
+        "&$donating_states_word$, $mask_for_undonate$, this);\n"
         "$annotate_set$"
         "  // @@protoc_insertion_point(field_set:$full_name$)\n"
         "}\n"
@@ -259,7 +265,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
     format(
         "  $name$_.Set(nullptr, value, GetArenaForAllocation(),\n"
         "    _internal_$name$_donated(), &$donating_states_word$, "
-        "$mask_for_undonate$);\n"
+        "$mask_for_undonate$, this);\n"
         "}\n");
   }
   format(
@@ -274,7 +280,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
     format(
         "  return $name$_.Mutable($default_variable_or_tag$, "
         "GetArenaForAllocation(), _internal_$name$_donated(), "
-        "&$donating_states_word$, $mask_for_undonate$);\n"
+        "&$donating_states_word$, $mask_for_undonate$, this);\n"
         "}\n");
   }
   format(
@@ -336,7 +342,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
     format(
         "    $name$_.SetAllocated(nullptr, $name$, GetArenaForAllocation(), "
         "_internal_$name$_donated(), &$donating_states_word$, "
-        "$mask_for_undonate$);\n");
+        "$mask_for_undonate$, this);\n");
   }
   format(
       "$annotate_set$"
@@ -421,20 +427,18 @@ void StringFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
         "    &other->$name$_, rhs_arena\n"
         ");\n");
   } else {
-    // At this point, it's guaranteed that the two fields being swapped are on
-    // the same arena.
     format(
-        "$name$_.Swap(&other->$name$_, nullptr, GetArenaForAllocation(), "
-        "_internal_$name$_donated(), other->_internal_$name$_donated(), "
-        "&$donating_states_word$, &(other->$donating_states_word$), "
-        "$mask_for_undonate$);\n");
+        "::$proto_ns$::internal::InlinedStringField::InternalSwap(\n"
+        "  &$name$_, lhs_arena, "
+        "(_inlined_string_donated_[0] & 0x1u) == 0, this,\n"
+        "  &other->$name$_, rhs_arena, "
+        "(other->_inlined_string_donated_[0] & 0x1u) == 0, other);\n");
   }
 }
 
 void StringFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (inlined_ && descriptor_->default_value_string().empty()) {
-    // Automatic initialization will construct the string.
     return;
   }
   GOOGLE_DCHECK(!inlined_);
@@ -452,6 +456,9 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   GenerateConstructorCode(printer);
+  if (inlined_) {
+    format("new (&$name$_) ::$proto_ns$::internal::InlinedStringField();\n");
+  }
 
   if (HasHasbit(descriptor_)) {
     format("if (from._internal_has_$name$()) {\n");
@@ -469,7 +476,7 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
     format(
         "$name$_.Set(nullptr, from._internal_$name$(),\n"
         "  GetArenaForAllocation(), _internal_$name$_donated(), "
-        "&$donating_states_word$, $mask_for_undonate$);\n");
+        "&$donating_states_word$, $mask_for_undonate$, this);\n");
   }
 
   format.Outdent();
@@ -478,12 +485,30 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
 
 void StringFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (inlined_) {
-    // The destructor is automatically invoked.
+  if (!inlined_) {
+    format("$name$_.DestroyNoArena($init_value$);\n");
     return;
   }
+  // Explicitly calls ~InlinedStringField as its automatic call is disabled.
+  // Destructor has been implicitly skipped as a union, and even the
+  // message-owned arena is enabled, arena could still be missing for
+  // Arena::CreateMessage(nullptr).
+  format("$name$_.~InlinedStringField();\n");
+}
 
-  format("$name$_.DestroyNoArena($init_value$);\n");
+ArenaDtorNeeds StringFieldGenerator::NeedsArenaDestructor() const {
+  return inlined_ ? ArenaDtorNeeds::kOnDemand : ArenaDtorNeeds::kNone;
+}
+
+void StringFieldGenerator::GenerateArenaDestructorCode(
+    io::Printer* printer) const {
+  if (!inlined_) return;
+  Formatter format(printer, variables_);
+  // _this is the object being destructed (we are inside a static method here).
+  format(
+      "if (!_this->_internal_$name$_donated()) {\n"
+      "  _this->$name$_.~InlinedStringField();\n"
+      "}\n");
 }
 
 void StringFieldGenerator::GenerateSerializeWithCachedSizesToArray(
@@ -606,11 +631,7 @@ void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  }\n"
       "  if ($name$ != nullptr) {\n"
       "    set_has_$name$();\n"
-      "    $field_member$.UnsafeSetDefault($name$);\n"
-      "    ::$proto_ns$::Arena* arena = GetArenaForAllocation();\n"
-      "    if (arena != nullptr) {\n"
-      "      arena->Own($name$);\n"
-      "    }\n"
+      "    $field_member$.InitAllocated($name$, GetArenaForAllocation());\n"
       "  }\n"
       "$annotate_set$"
       "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"

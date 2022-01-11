@@ -42,16 +42,16 @@
 #include <unordered_set>
 #include <vector>
 
+#include <google/protobuf/compiler/scc.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/compiler/cpp/cpp_enum.h>
 #include <google/protobuf/compiler/cpp/cpp_extension.h>
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_message.h>
 #include <google/protobuf/compiler/cpp/cpp_service.h>
-#include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/stubs/strutil.h>
 
 // Must be last.
 #include <google/protobuf/port_def.inc>
@@ -85,6 +85,23 @@ std::vector<const T*> Sorted(const std::unordered_set<const T*>& vals) {
   std::vector<const T*> sorted(vals.begin(), vals.end());
   std::sort(sorted.begin(), sorted.end(), CompareSortKeys<T>);
   return sorted;
+}
+
+// TODO(b/203101078): remove pragmas that suppresses uninitialized warnings when
+// clang bug is fixed.
+inline void MuteWuninitialized(Formatter& format) {
+  format(
+      "#if defined(__llvm__)\n"
+      "  #pragma clang diagnostic push\n"
+      "  #pragma clang diagnostic ignored \"-Wuninitialized\"\n"
+      "#endif  // __llvm__\n");
+}
+
+inline void UnmuteWuninitialized(Formatter& format) {
+  format(
+      "#if defined(__llvm__)\n"
+      "  #pragma clang diagnostic pop\n"
+      "#endif  // __llvm__\n");
 }
 
 }  // namespace
@@ -335,7 +352,14 @@ void FileGenerator::DoIncludeFile(const std::string& google3_name,
              options_.runtime_include_base, path);
     }
   } else {
-    format("#include \"$1$\"", google3_name);
+    std::string path = google3_name;
+    // The bootstrapped proto generated code needs to use the
+    // third_party/protobuf header paths to avoid circular dependencies.
+    if (options_.bootstrap) {
+      path = StringReplace(google3_name, "net/proto2/public",
+                           "third_party/protobuf", false);
+    }
+    format("#include \"$1$\"", path);
   }
 
   if (do_export) {
@@ -428,12 +452,28 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
 
   format("// @@protoc_insertion_point(includes)\n");
   IncludeFile("net/proto2/public/port_def.inc", printer);
+}
+
+void FileGenerator::GenerateSourcePrelude(io::Printer* printer) {
+  Formatter format(printer, variables_);
 
   // For MSVC builds, we use #pragma init_seg to move the initialization of our
   // libraries to happen before the user code.
   // This worksaround the fact that MSVC does not do constant initializers when
   // required by the standard.
   format("\nPROTOBUF_PRAGMA_INIT_SEG\n");
+
+  // Generate convenience aliases.
+  format(
+      "\n"
+      "namespace _pb = ::$1$;\n"
+      "namespace _pbi = _pb::internal;\n",
+      ProtobufNamespace(options_));
+  if (HasGeneratedMethods(file_, options_) &&
+      options_.tctable_mode != Options::kTCTableNever) {
+    format("namespace _fl = _pbi::field_layout;\n");
+  }
+  format("\n");
 }
 
 void FileGenerator::GenerateSourceDefaultInstance(int idx,
@@ -459,7 +499,8 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
   // enough. However, the empty destructor fails to be elided in some
   // configurations (like non-opt or with certain sanitizers). NO_DESTROY is
   // there just to improve performance and binary size in these builds.
-  format("PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT $1$ $2$;\n",
+  format("PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT "
+         "PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $1$ $2$;\n",
          DefaultInstanceType(generator->descriptor_, options_),
          DefaultInstanceName(generator->descriptor_, options_));
 
@@ -468,7 +509,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
     if (IsStringInlined(field, options_)) {
       // Force the initialization of the inlined string in the default instance.
       format(
-          "PROTOBUF_ATTRIBUTE_INIT_PRIORITY std::true_type "
+          "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 std::true_type "
           "$1$::_init_inline_$2$_ = "
           "($3$._instance.$2$_.Init(), std::true_type{});\n",
           ClassName(generator->descriptor_), FieldName(field),
@@ -477,10 +518,11 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
   }
 
   if (options_.lite_implicit_weak_fields) {
-    format("$1$* $2$ = &$3$;\n",
-           DefaultInstanceType(generator->descriptor_, options_),
-           DefaultInstancePtr(generator->descriptor_, options_),
-           DefaultInstanceName(generator->descriptor_, options_));
+    format(
+        "PROTOBUF_CONSTINIT const void* $1$ =\n"
+        "    &$2$;\n",
+        DefaultInstancePtr(generator->descriptor_, options_),
+        DefaultInstanceName(generator->descriptor_, options_));
   }
 }
 
@@ -534,11 +576,11 @@ void FileGenerator::GenerateInternalForwardDeclarations(
     for (auto instance : Sorted(refs.weak_default_instances)) {
       ns.ChangeTo(Namespace(instance, options_));
       if (options_.lite_implicit_weak_fields) {
-        format("extern $1$ $2$;\n", DefaultInstanceType(instance, options_),
-               DefaultInstanceName(instance, options_));
-        format("__attribute__((weak)) $1$* $2$ = nullptr;\n",
-               DefaultInstanceType(instance, options_),
-               DefaultInstancePtr(instance, options_));
+        format(
+            "PROTOBUF_CONSTINIT __attribute__((weak)) const void* $1$ =\n"
+            "    &::PROTOBUF_NAMESPACE_ID::internal::"
+            "implicit_weak_message_default_instance;\n",
+            DefaultInstancePtr(instance, options_));
       } else {
         format("extern __attribute__((weak)) $1$ $2$;\n",
                DefaultInstanceType(instance, options_),
@@ -558,6 +600,9 @@ void FileGenerator::GenerateInternalForwardDeclarations(
 void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* printer) {
   Formatter format(printer, variables_);
   GenerateSourceIncludes(printer);
+  GenerateSourcePrelude(printer);
+
+  if (IsAnyMessage(file_, options_)) MuteWuninitialized(format);
 
   CrossFileReferences refs;
   ForEachField(message_generators_[idx]->descriptor_,
@@ -586,6 +631,8 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* printer) {
     message_generators_[idx]->GenerateSourceInProto2Namespace(printer);
   }
 
+  if (IsAnyMessage(file_, options_)) UnmuteWuninitialized(format);
+
   format(
       "\n"
       "// @@protoc_insertion_point(global_scope)\n");
@@ -594,6 +641,7 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* printer) {
 void FileGenerator::GenerateSourceForExtension(int idx, io::Printer* printer) {
   Formatter format(printer, variables_);
   GenerateSourceIncludes(printer);
+  GenerateSourcePrelude(printer);
   NamespaceOpener ns(Namespace(file_, options_), format);
   extension_generators_[idx]->GenerateDefinition(printer);
 }
@@ -601,10 +649,9 @@ void FileGenerator::GenerateSourceForExtension(int idx, io::Printer* printer) {
 void FileGenerator::GenerateGlobalSource(io::Printer* printer) {
   Formatter format(printer, variables_);
   GenerateSourceIncludes(printer);
+  GenerateSourcePrelude(printer);
 
   {
-    GenerateTables(printer);
-
     // Define the code to initialize reflection. This code uses a global
     // constructor to register reflection data with the runtime pre-main.
     if (HasDescriptorMethods(file_, options_)) {
@@ -623,9 +670,12 @@ void FileGenerator::GenerateGlobalSource(io::Printer* printer) {
 void FileGenerator::GenerateSource(io::Printer* printer) {
   Formatter format(printer, variables_);
   GenerateSourceIncludes(printer);
+  GenerateSourcePrelude(printer);
   CrossFileReferences refs;
   GetCrossFileReferencesForFile(file_, &refs);
   GenerateInternalForwardDeclarations(refs, printer);
+
+  if (IsAnyMessage(file_, options_)) MuteWuninitialized(format);
 
   {
     NamespaceOpener ns(Namespace(file_, options_), format);
@@ -637,8 +687,6 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
   }
 
   {
-    GenerateTables(printer);
-
     if (HasDescriptorMethods(file_, options_)) {
       // Define the code to initialize reflection. This code uses a global
       // constructor to register reflection data with the runtime pre-main.
@@ -694,6 +742,8 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
   format(
       "\n"
       "// @@protoc_insertion_point(global_scope)\n");
+
+  if (IsAnyMessage(file_, options_)) UnmuteWuninitialized(format);
 
   IncludeFile("net/proto2/public/port_undef.inc", printer);
 }
@@ -893,120 +943,10 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   if (file_->name() != "net/proto2/proto/descriptor.proto") {
     format(
         "// Force running AddDescriptors() at dynamic initialization time.\n"
-        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY "
+        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
         "static ::$proto_ns$::internal::AddDescriptorsRunner "
         "$1$(&$desc_table$);\n",
         UniqueName("dynamic_init_dummy", file_, options_));
-  }
-}
-
-void FileGenerator::GenerateTables(io::Printer* printer) {
-  Formatter format(printer, variables_);
-  if (options_.table_driven_parsing) {
-    // TODO(ckennelly): Gate this with the same options flag to enable
-    // table-driven parsing.
-    format(
-        "PROTOBUF_CONSTEXPR_VAR ::$proto_ns$::internal::ParseTableField\n"
-        "    const $tablename$::entries[] "
-        "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
-    format.Indent();
-
-    std::vector<size_t> entries;
-    size_t count = 0;
-    for (int i = 0; i < message_generators_.size(); i++) {
-      size_t value = message_generators_[i]->GenerateParseOffsets(printer);
-      entries.push_back(value);
-      count += value;
-    }
-
-    // We need these arrays to exist, and MSVC does not like empty arrays.
-    if (count == 0) {
-      format("{0, 0, 0, ::$proto_ns$::internal::kInvalidMask, 0, 0},\n");
-    }
-
-    format.Outdent();
-    format(
-        "};\n"
-        "\n"
-        "PROTOBUF_CONSTEXPR_VAR "
-        "::$proto_ns$::internal::AuxiliaryParseTableField\n"
-        "    const $tablename$::aux[] "
-        "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
-    format.Indent();
-
-    std::vector<size_t> aux_entries;
-    count = 0;
-    for (int i = 0; i < message_generators_.size(); i++) {
-      size_t value = message_generators_[i]->GenerateParseAuxTable(printer);
-      aux_entries.push_back(value);
-      count += value;
-    }
-
-    if (count == 0) {
-      format("::$proto_ns$::internal::AuxiliaryParseTableField(),\n");
-    }
-
-    format.Outdent();
-    format(
-        "};\n"
-        "PROTOBUF_CONSTEXPR_VAR ::$proto_ns$::internal::ParseTable const\n"
-        "    $tablename$::schema[] "
-        "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
-    format.Indent();
-
-    size_t offset = 0;
-    size_t aux_offset = 0;
-    for (int i = 0; i < message_generators_.size(); i++) {
-      message_generators_[i]->GenerateParseTable(printer, offset, aux_offset);
-      offset += entries[i];
-      aux_offset += aux_entries[i];
-    }
-
-    if (message_generators_.empty()) {
-      format("{ nullptr, nullptr, 0, -1, -1, false },\n");
-    }
-
-    format.Outdent();
-    format(
-        "};\n"
-        "\n");
-  }
-
-  if (!message_generators_.empty() && options_.table_driven_serialization) {
-    format(
-        "const ::$proto_ns$::internal::FieldMetadata "
-        "$tablename$::field_metadata[] "
-        "= {\n");
-    format.Indent();
-    std::vector<int> field_metadata_offsets;
-    int idx = 0;
-    for (int i = 0; i < message_generators_.size(); i++) {
-      field_metadata_offsets.push_back(idx);
-      idx += message_generators_[i]->GenerateFieldMetadata(printer);
-    }
-    field_metadata_offsets.push_back(idx);
-    format.Outdent();
-    format(
-        "};\n"
-        "const ::$proto_ns$::internal::SerializationTable "
-        "$tablename$::serialization_table[] = {\n");
-    format.Indent();
-    // We rely on the order we layout the tables to match the order we
-    // calculate them with FlattenMessagesInFile, so we check here that
-    // these match exactly.
-    std::vector<const Descriptor*> calculated_order =
-        FlattenMessagesInFile(file_);
-    GOOGLE_CHECK_EQ(calculated_order.size(), message_generators_.size());
-    for (int i = 0; i < message_generators_.size(); i++) {
-      GOOGLE_CHECK_EQ(calculated_order[i], message_generators_[i]->descriptor_);
-      format("{$1$, $tablename$::field_metadata + $2$},\n",
-             field_metadata_offsets[i + 1] - field_metadata_offsets[i],  // 1
-             field_metadata_offsets[i]);                                 // 2
-    }
-    format.Outdent();
-    format(
-        "};\n"
-        "\n");
   }
 }
 
@@ -1185,7 +1125,6 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
   if (HasSimpleBaseClasses(file_, options_)) {
     IncludeFile("net/proto2/public/generated_message_bases.h", printer);
   }
-  IncludeFile("net/proto2/public/generated_message_table_driven.h", printer);
   if (HasGeneratedMethods(file_, options_) &&
       options_.tctable_mode != Options::kTCTableNever) {
     IncludeFile("net/proto2/public/generated_message_tctable_decl.h", printer);
@@ -1297,20 +1236,8 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(
       "\n"
       "// Internal implementation detail -- do not use these members.\n"
       "struct $dllexport_decl $$tablename$ {\n"
-      // These tables describe how to serialize and parse messages. Used
-      // for table driven code.
-      "  static const ::$proto_ns$::internal::ParseTableField entries[]\n"
-      "    PROTOBUF_SECTION_VARIABLE(protodesc_cold);\n"
-      "  static const ::$proto_ns$::internal::AuxiliaryParseTableField aux[]\n"
-      "    PROTOBUF_SECTION_VARIABLE(protodesc_cold);\n"
-      "  static const ::$proto_ns$::internal::ParseTable schema[$1$]\n"
-      "    PROTOBUF_SECTION_VARIABLE(protodesc_cold);\n"
-      "  static const ::$proto_ns$::internal::FieldMetadata field_metadata[];\n"
-      "  static const ::$proto_ns$::internal::SerializationTable "
-      "serialization_table[];\n"
       "  static const $uint32$ offsets[];\n"
-      "};\n",
-      std::max(size_t(1), message_generators_.size()));
+      "};\n");
   if (HasDescriptorMethods(file_, options_)) {
     format(
         "$dllexport_decl $extern const ::$proto_ns$::internal::DescriptorTable "

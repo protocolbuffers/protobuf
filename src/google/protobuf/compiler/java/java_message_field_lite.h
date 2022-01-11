@@ -62,7 +62,7 @@ class ImmutableMessageFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   explicit ImmutableMessageFieldLiteGenerator(const FieldDescriptor* descriptor,
                                               int messageBitIndex,
                                               Context* context);
-  ~ImmutableMessageFieldLiteGenerator();
+  ~ImmutableMessageFieldLiteGenerator() override;
 
   // implements ImmutableFieldLiteGenerator
   // ------------------------------------
@@ -93,7 +93,7 @@ class ImmutableMessageOneofFieldLiteGenerator
   ImmutableMessageOneofFieldLiteGenerator(const FieldDescriptor* descriptor,
                                           int messageBitIndex,
                                           Context* context);
-  ~ImmutableMessageOneofFieldLiteGenerator();
+  ~ImmutableMessageOneofFieldLiteGenerator() override;
 
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;

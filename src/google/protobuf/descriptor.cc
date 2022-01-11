@@ -50,21 +50,21 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/any.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/io/strtod.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/hash.h>
@@ -72,6 +72,7 @@
 #undef PACKAGE  // autoheader #defines this.  :(
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -855,14 +856,6 @@ class TableArena {
     return p;
   }
 
-  static void OperatorDelete(void* p, size_t s) {
-#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
-    ::operator delete(p, s);
-#else
-    ::operator delete(p);
-#endif
-  }
-
   struct OutOfLineAlloc {
     void* ptr;
     uint32_t size;
@@ -932,7 +925,9 @@ class TableArena {
     void operator()(T* p) {
       p->~T();
     }
-    void operator()(OutOfLineAlloc* p) { OperatorDelete(p->ptr, p->size); }
+    void operator()(OutOfLineAlloc* p) {
+      internal::SizedDelete(p->ptr, p->size);
+    }
   };
 
   static uint32_t SizeToRawTag(size_t n) { return (RoundUp(n) / 8) - 1; }
@@ -975,7 +970,7 @@ class TableArena {
       return p;
     }
 
-    void Destroy() { OperatorDelete(this, memory_used()); }
+    void Destroy() { internal::SizedDelete(this, memory_used()); }
 
     void PrependTo(Block*& list) {
       next = list;
@@ -3532,7 +3527,6 @@ void MethodDescriptor::DebugString(
   comment_printer.AddPostComment(contents);
 }
 
-
 // Location methods ===============================================
 
 bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
@@ -3918,7 +3912,6 @@ class DescriptorBuilder {
                     ServiceDescriptor* result);
   void BuildMethod(const MethodDescriptorProto& proto,
                    const ServiceDescriptor* parent, MethodDescriptor* result);
-
   void LogUnusedDependency(const FileDescriptorProto& proto,
                            const FileDescriptor* result);
 
@@ -3941,7 +3934,6 @@ class DescriptorBuilder {
                         const ServiceDescriptorProto& proto);
   void CrossLinkMethod(MethodDescriptor* method,
                        const MethodDescriptorProto& proto);
-
   // Must be run only after cross-linking.
   void InterpretOptions();
 
@@ -4673,11 +4665,12 @@ void DescriptorBuilder::AddPackage(const std::string& name,
     }
   } else if (existing_symbol.type() != Symbol::PACKAGE) {
     // Symbol seems to have been defined in a different file.
+    const FileDescriptor* other_file = existing_symbol.GetFile();
     AddError(name, proto, DescriptorPool::ErrorCollector::NAME,
              "\"" + name +
                  "\" is already defined (as something other than "
                  "a package) in file \"" +
-                 existing_symbol.GetFile()->name() + "\".");
+                 (other_file == nullptr ? "null" : other_file->name()) + "\".");
   }
 }
 
@@ -4695,6 +4688,7 @@ void DescriptorBuilder::ValidateSymbolName(const std::string& name,
           (character < '0' || '9' < character) && (character != '_')) {
         AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
                  "\"" + name + "\" is not a valid identifier.");
+        return;
       }
     }
   }
@@ -6214,7 +6208,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
       if (is_lazy) {
         // Save the symbol names for later for lookup, and allocate the once
         // object needed for the accessors.
-        std::string name = proto.type_name();
+        const std::string& name = proto.type_name();
         field->type_once_ = tables_->Create<internal::once_flag>();
         field->type_descriptor_.lazy_type_name = tables_->Strdup(name);
         field->lazy_default_value_enum_name_ =
@@ -6466,7 +6460,6 @@ void DescriptorBuilder::CrossLinkMethod(MethodDescriptor* method,
     method->output_type_.Set(output_type.descriptor());
   }
 }
-
 // -------------------------------------------------------------------
 
 #define VALIDATE_OPTIONS_FROM_ARRAY(descriptor, array_name, type) \
@@ -6660,7 +6653,7 @@ void DescriptorBuilder::ValidateFieldOptions(
     return;
   }
   // Only message type fields may be lazy.
-  if (field->options().lazy()) {
+  if (field->options().lazy() || field->options().unverified_lazy()) {
     if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                "[lazy = true] can only be specified for submessage fields.");
@@ -7218,11 +7211,9 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
         new UnknownFieldSet());
     switch ((*iter)->type()) {
       case FieldDescriptor::TYPE_MESSAGE: {
-        io::StringOutputStream outstr(
-            parent_unknown_fields->AddLengthDelimited((*iter)->number()));
-        io::CodedOutputStream out(&outstr);
-        internal::WireFormat::SerializeUnknownFields(*unknown_fields, &out);
-        GOOGLE_CHECK(!out.HadError())
+        std::string* outstr =
+            parent_unknown_fields->AddLengthDelimited((*iter)->number());
+        GOOGLE_CHECK(unknown_fields->SerializeToString(outstr))
             << "Unexpected failure while serializing option submessage "
             << debug_msg_name << "\".";
         break;
@@ -7986,7 +7977,6 @@ const Descriptor* MethodDescriptor::input_type() const {
 const Descriptor* MethodDescriptor::output_type() const {
   return output_type_.Get(service());
 }
-
 
 namespace internal {
 void LazyDescriptor::Set(const Descriptor* descriptor) {

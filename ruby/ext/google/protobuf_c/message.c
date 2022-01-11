@@ -1012,13 +1012,14 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
  */
 static VALUE Message_encode(VALUE klass, VALUE msg_rb) {
   Message* msg = ruby_to_Message(msg_rb);
-  upb_arena *arena = upb_arena_new();
   const char *data;
   size_t size;
 
   if (CLASS_OF(msg_rb) != klass) {
     rb_raise(rb_eArgError, "Message of wrong type.");
   }
+
+  upb_arena *arena = upb_arena_new();
 
   data = upb_encode(msg->msg, upb_msgdef_layout(msg->msgdef), arena,
                     &size);

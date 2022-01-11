@@ -24,7 +24,7 @@ option csharp_namespace = "Google.Protobuf.Examples.AddressBook";
 // [END csharp_declaration]
 
 // [START go_declaration]
-option go_package = "../tutorial";
+option go_package = "github.com/protocolbuffers/protobuf/examples/go/tutorialpb";
 // [END go_declaration]
 
 // [START messages]

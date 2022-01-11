@@ -102,10 +102,10 @@ final class Utf8 {
    * State value indicating that the byte sequence is well-formed and complete (no further bytes are
    * needed to complete a character).
    */
-  public static final int COMPLETE = 0;
+  static final int COMPLETE = 0;
 
   /** State value indicating that the byte sequence is definitely not well-formed. */
-  public static final int MALFORMED = -1;
+  static final int MALFORMED = -1;
 
   /**
    * Used by {@code Unsafe} UTF-8 string validation logic to determine the minimum string length
@@ -143,7 +143,7 @@ final class Utf8 {
    * <p>This is a convenience method, equivalent to a call to {@code isValidUtf8(bytes, 0,
    * bytes.length)}.
    */
-  public static boolean isValidUtf8(byte[] bytes) {
+  static boolean isValidUtf8(byte[] bytes) {
     return processor.isValidUtf8(bytes, 0, bytes.length);
   }
 
@@ -155,7 +155,7 @@ final class Utf8 {
    * <p>This is a convenience method, equivalent to {@code partialIsValidUtf8(bytes, index, limit)
    * == Utf8.COMPLETE}.
    */
-  public static boolean isValidUtf8(byte[] bytes, int index, int limit) {
+  static boolean isValidUtf8(byte[] bytes, int index, int limit) {
     return processor.isValidUtf8(bytes, index, limit);
   }
 
@@ -172,7 +172,7 @@ final class Utf8 {
    *     "state" value containing enough information to decode the character when passed to a
    *     subsequent invocation of a partial decoding method.
    */
-  public static int partialIsValidUtf8(int state, byte[] bytes, int index, int limit) {
+  static int partialIsValidUtf8(int state, byte[] bytes, int index, int limit) {
     return processor.partialIsValidUtf8(state, bytes, index, limit);
   }
 
@@ -572,7 +572,7 @@ final class Utf8 {
             return incompleteStateFor(buffer, byte1, index, limit - index);
           }
 
-          final byte byte2 = buffer.get(index++);
+          byte byte2 = buffer.get(index++);
           if (byte2 > (byte) 0xBF
               // overlong? 5 most significant bits must not all be zero
               || (byte1 == (byte) 0xE0 && byte2 < (byte) 0xA0)
@@ -591,7 +591,7 @@ final class Utf8 {
           }
 
           // TODO(nathanmittler): Consider using getInt() to improve performance.
-          final int byte2 = buffer.get(index++);
+          int byte2 = buffer.get(index++);
           if (byte2 > (byte) 0xBF
               // Check that 1 <= plane <= 16.  Tricky optimized form of:
               // if (byte1 > (byte) 0xF4 ||
@@ -611,7 +611,7 @@ final class Utf8 {
     /**
      * Decodes the given byte array slice into a {@link String}.
      *
-     * @throws InvalidProtocolBufferException if the byte array slice is not valid UTF-8.
+     * @throws InvalidProtocolBufferException if the byte array slice is not valid UTF-8
      */
     abstract String decodeUtf8(byte[] bytes, int index, int size)
         throws InvalidProtocolBufferException;
@@ -619,7 +619,7 @@ final class Utf8 {
     /**
      * Decodes the given portion of the {@link ByteBuffer} into a {@link String}.
      *
-     * @throws InvalidProtocolBufferException if the portion of the buffer is not valid UTF-8.
+     * @throws InvalidProtocolBufferException if the portion of the buffer is not valid UTF-8
      */
     final String decodeUtf8(ByteBuffer buffer, int index, int size)
         throws InvalidProtocolBufferException {
@@ -649,7 +649,7 @@ final class Utf8 {
       }
 
       int offset = index;
-      final int limit = offset + size;
+      int limit = offset + size;
 
       // The longest possible resulting String is the same as the number of input bytes, when it is
       // all ASCII. For other cases, this over-allocates and we will truncate in the end.
@@ -1907,12 +1907,24 @@ final class Utf8 {
       return b >= 0;
     }
 
-    /** Returns whether this is a two-byte codepoint with the form '10XXXXXX'. */
+    /**
+     * Returns whether this is a two-byte codepoint with the form '10XXXXXX' iff
+     * {@link #isOneByte(byte)} is false. This private method works in the limited use in
+     * this class where this method is only called when {@link #isOneByte(byte)} has already
+     * returned false. It is not suitable for general or public use.
+     */
     private static boolean isTwoBytes(byte b) {
       return b < (byte) 0xE0;
     }
 
-    /** Returns whether this is a three-byte codepoint with the form '110XXXXX'. */
+    /**
+     * Returns whether this is a three-byte codepoint with the form '110XXXXX' iff
+     * {@link #isOneByte(byte)} and {@link #isTwoBytes(byte)} are false.
+     * This private method works in the limited use in
+     * this class where this method is only called when {@link #isOneByte(byte)} an
+     * {@link #isTwoBytes(byte)} have already returned false. It is not suitable for general
+     * or public use.
+     */
     private static boolean isThreeBytes(byte b) {
       return b < (byte) 0xF0;
     }

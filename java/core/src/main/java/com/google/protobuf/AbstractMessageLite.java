@@ -89,9 +89,9 @@ public abstract class AbstractMessageLite<
     final int serialized = getSerializedSize();
     final int bufferSize =
         CodedOutputStream.computePreferredBufferSize(
-            CodedOutputStream.computeRawVarint32Size(serialized) + serialized);
+            CodedOutputStream.computeUInt32SizeNoTag(serialized) + serialized);
     final CodedOutputStream codedOutput = CodedOutputStream.newInstance(output, bufferSize);
-    codedOutput.writeRawVarint32(serialized);
+    codedOutput.writeUInt32NoTag(serialized);
     writeTo(codedOutput);
     codedOutput.flush();
   }
@@ -316,8 +316,11 @@ public abstract class AbstractMessageLite<
 
       @Override
       public long skip(final long n) throws IOException {
-        final long result = super.skip(Math.min(n, limit));
+        // because we take the minimum of an int and a long, result is guaranteed to be
+        // less than or equal to Integer.MAX_INT so this cast is safe
+        int result = (int) super.skip(Math.min(n, limit));
         if (result >= 0) {
+          // if the superclass adheres to the contract for skip, this condition is always true
           limit -= result;
         }
         return result;

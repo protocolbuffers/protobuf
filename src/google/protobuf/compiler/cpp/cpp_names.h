@@ -33,6 +33,7 @@
 
 #include <string>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {

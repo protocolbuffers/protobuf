@@ -34,10 +34,10 @@
 
 #include <google/protobuf/compiler/cpp/cpp_primitive_field.h>
 
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 
 namespace google {
 namespace protobuf {
@@ -201,7 +201,7 @@ void PrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   format(
       "target = stream->EnsureSpace(target);\n"
       "target = "
-      "::$proto_ns$::internal::WireFormatLite::Write$declared_type$ToArray("
+      "::_pbi::WireFormatLite::Write$declared_type$ToArray("
       "$number$, this->_internal_$name$(), target);\n");
 }
 
@@ -214,12 +214,12 @@ void PrimitiveFieldGenerator::GenerateByteSize(io::Printer* printer) const {
       // Adding one is very common and it turns out it can be done for
       // free inside of WireFormatLite, so we can save an instruction here.
       format(
-          "total_size += ::$proto_ns$::internal::WireFormatLite::"
+          "total_size += ::_pbi::WireFormatLite::"
           "$declared_type$SizePlusOne(this->_internal_$name$());\n");
     } else {
       format(
           "total_size += $tag_size$ +\n"
-          "  ::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
+          "  ::_pbi::WireFormatLite::$declared_type$Size(\n"
           "    this->_internal_$name$());\n");
     }
   } else {
@@ -440,7 +440,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     format(
         "for (int i = 0, n = this->_internal_$name$_size(); i < n; i++) {\n"
         "  target = stream->EnsureSpace(target);\n"
-        "  target = ::$proto_ns$::internal::WireFormatLite::"
+        "  target = ::_pbi::WireFormatLite::"
         "Write$declared_type$ToArray($number$, this->_internal_$name$(i), "
         "target);\n"
         "}\n");
@@ -455,7 +455,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
   int fixed_size = FixedSize(descriptor_->type());
   if (fixed_size == -1) {
     format(
-        "size_t data_size = ::$proto_ns$::internal::WireFormatLite::\n"
+        "size_t data_size = ::_pbi::WireFormatLite::\n"
         "  $declared_type$Size(this->$name$_);\n");
   } else {
     format(
@@ -468,12 +468,11 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
     format(
         "if (data_size > 0) {\n"
         "  total_size += $tag_size$ +\n"
-        "    ::$proto_ns$::internal::WireFormatLite::Int32Size(\n"
-        "        static_cast<$int32$>(data_size));\n"
+        "    ::_pbi::WireFormatLite::Int32Size(static_cast<$int32$>(data_size));\n"
         "}\n");
     if (FixedSize(descriptor_->type()) == -1) {
       format(
-          "int cached_size = ::$proto_ns$::internal::ToCachedSize(data_size);\n"
+          "int cached_size = ::_pbi::ToCachedSize(data_size);\n"
           "_$name$_cached_byte_size_.store(cached_size,\n"
           "                                std::memory_order_relaxed);\n");
     }
@@ -482,7 +481,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
     format(
         "total_size += $tag_size$ *\n"
         "              "
-        "::$proto_ns$::internal::FromIntSize(this->_internal_$name$_size());\n"
+        "::_pbi::FromIntSize(this->_internal_$name$_size());\n"
         "total_size += data_size;\n");
   }
   format.Outdent();

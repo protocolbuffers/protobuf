@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+@CheckReturnValue
 interface NewInstanceSchema {
   /** Create a new message instance given the default instance of the message type. */
   Object newInstance(Object defaultInstance);

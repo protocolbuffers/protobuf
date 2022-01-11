@@ -98,19 +98,6 @@ function readSfixed64(bufferDecoder, start) {
 }
 
 /**
- * Reads a sint32 value from the binary bytes encoded as varint.
- * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
- * @param {number} start Start of the data.
- * @return {number}
- * @package
- */
-function readSint32(bufferDecoder, start) {
-  const bits = bufferDecoder.getUnsignedVarint32At(start);
-  // Truncate upper bits and convert from zig zag to signd int
-  return (bits >>> 1) ^ -(bits & 0x01);
-}
-
-/**
  * Reads a sint64 value from the binary bytes encoded as varint.
  * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
  * @param {number} start Start of the data.
@@ -123,6 +110,17 @@ function readSint64(bufferDecoder, start) {
   const decodedLowerBits = ((lowBits >>> 1) | (highBits & 0x01) << 31) ^ sign;
   const decodedUpperBits = (highBits >>> 1) ^ sign;
   return Int64.fromBits(decodedLowerBits, decodedUpperBits);
+}
+
+/**
+ * Reads a sint32 value from the binary bytes encoded as varint.
+ * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
+ * @param {number} start Start of the data.
+ * @return {number}
+ * @package
+ */
+function readSint32(bufferDecoder, start) {
+  return readSint64(bufferDecoder, start).getLowBits();
 }
 
 /**

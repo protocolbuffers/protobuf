@@ -30,10 +30,10 @@
 
 #include <google/protobuf/compiler/cpp/cpp_map_field.h>
 
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 
 
 namespace google {
@@ -53,10 +53,8 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   (*variables)["type"] = ClassName(descriptor->message_type(), false);
   (*variables)["full_name"] = descriptor->full_name();
 
-  const FieldDescriptor* key =
-      descriptor->message_type()->FindFieldByName("key");
-  const FieldDescriptor* val =
-      descriptor->message_type()->FindFieldByName("value");
+  const FieldDescriptor* key = descriptor->message_type()->map_key();
+  const FieldDescriptor* val = descriptor->message_type()->map_value();
   (*variables)["key_cpp"] = PrimitiveTypeName(options, key->cpp_type());
   switch (val->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
@@ -206,10 +204,8 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   Formatter format(printer, variables_);
   format("if (!this->_internal_$name$().empty()) {\n");
   format.Indent();
-  const FieldDescriptor* key_field =
-      descriptor_->message_type()->FindFieldByName("key");
-  const FieldDescriptor* value_field =
-      descriptor_->message_type()->FindFieldByName("value");
+  const FieldDescriptor* key_field = descriptor_->message_type()->map_key();
+  const FieldDescriptor* value_field = descriptor_->message_type()->map_value();
   const bool string_key = key_field->type() == FieldDescriptor::TYPE_STRING;
   const bool string_value = value_field->type() == FieldDescriptor::TYPE_STRING;
 
@@ -315,17 +311,28 @@ void MapFieldGenerator::GenerateConstinitInitializer(
   }
 }
 
-bool MapFieldGenerator::GenerateArenaDestructorCode(
-    io::Printer* printer) const {
+void MapFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
+  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+
   Formatter format(printer, variables_);
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    // _this is the object being destructed (we are inside a static method
-    // here).
-    format("_this->$name$_. ~MapField();\n");
-    return true;
-  } else {
-    return false;
+  format("$name$_.Destruct();\n");
+}
+
+void MapFieldGenerator::GenerateArenaDestructorCode(
+    io::Printer* printer) const {
+  if (NeedsArenaDestructor() == ArenaDtorNeeds::kNone) {
+    return;
   }
+
+  Formatter format(printer, variables_);
+  // _this is the object being destructed (we are inside a static method here).
+  format("_this->$name$_.Destruct();\n");
+}
+
+ArenaDtorNeeds MapFieldGenerator::NeedsArenaDestructor() const {
+  return HasDescriptorMethods(descriptor_->file(), options_)
+             ? ArenaDtorNeeds::kRequired
+             : ArenaDtorNeeds::kNone;
 }
 
 }  // namespace cpp

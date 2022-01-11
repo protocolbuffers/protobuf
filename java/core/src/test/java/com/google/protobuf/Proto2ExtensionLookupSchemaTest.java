@@ -52,7 +52,6 @@ public class Proto2ExtensionLookupSchemaTest {
   public void setup() {
     TestSchemas.registerGenericProto2Schemas();
 
-    Protobuf.getInstance().schemaFor(Proto2MessageWithExtensions.class);
     data = new Proto2MessageFactory(10, 20, 1, 1).newMessage().toByteArray();
     extensionRegistry = ExtensionRegistry.newInstance();
     Proto2Testing.registerAllExtensions(extensionRegistry);

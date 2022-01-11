@@ -23,7 +23,6 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
-#include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
@@ -43,14 +42,6 @@ PROTOBUF_NAMESPACE_CLOSE
 
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fdescriptor_2eproto {
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTableField entries[]
-    PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
-    PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[27]
-    PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
-  static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
   static const uint32_t offsets[];
 };
 PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto;
@@ -443,9 +434,6 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   protected:
   explicit FileDescriptorSet(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -605,9 +593,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   protected:
   explicit FileDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -1002,9 +987,6 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   protected:
   explicit DescriptorProto_ExtensionRange(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -1195,9 +1177,6 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   protected:
   explicit DescriptorProto_ReservedRange(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -1368,9 +1347,6 @@ class PROTOBUF_EXPORT DescriptorProto final :
   protected:
   explicit DescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -1720,9 +1696,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   protected:
   explicit ExtensionRangeOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -2074,9 +2047,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   protected:
   explicit FieldDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -2506,9 +2476,6 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   protected:
   explicit OneofDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -2689,9 +2656,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   protected:
   explicit EnumDescriptorProto_EnumReservedRange(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -2862,9 +2826,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   protected:
   explicit EnumDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -3113,9 +3074,6 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   protected:
   explicit EnumValueDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -3311,9 +3269,6 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   protected:
   explicit ServiceDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -3514,9 +3469,6 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   protected:
   explicit MethodDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -3767,9 +3719,6 @@ class PROTOBUF_EXPORT FileOptions final :
   protected:
   explicit FileOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -4504,9 +4453,6 @@ class PROTOBUF_EXPORT MessageOptions final :
   protected:
   explicit MessageOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -4919,9 +4865,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   protected:
   explicit FieldOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -5000,11 +4943,12 @@ class PROTOBUF_EXPORT FieldOptions final :
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kCtypeFieldNumber = 1,
+    kJstypeFieldNumber = 6,
     kPackedFieldNumber = 2,
     kLazyFieldNumber = 5,
+    kUnverifiedLazyFieldNumber = 15,
     kDeprecatedFieldNumber = 3,
     kWeakFieldNumber = 10,
-    kJstypeFieldNumber = 6,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
@@ -5037,6 +4981,19 @@ class PROTOBUF_EXPORT FieldOptions final :
   void _internal_set_ctype(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType value);
   public:
 
+  // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
+  bool has_jstype() const;
+  private:
+  bool _internal_has_jstype() const;
+  public:
+  void clear_jstype();
+  ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType jstype() const;
+  void set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType _internal_jstype() const;
+  void _internal_set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value);
+  public:
+
   // optional bool packed = 2;
   bool has_packed() const;
   private:
@@ -5063,6 +5020,19 @@ class PROTOBUF_EXPORT FieldOptions final :
   void _internal_set_lazy(bool value);
   public:
 
+  // optional bool unverified_lazy = 15 [default = false];
+  bool has_unverified_lazy() const;
+  private:
+  bool _internal_has_unverified_lazy() const;
+  public:
+  void clear_unverified_lazy();
+  bool unverified_lazy() const;
+  void set_unverified_lazy(bool value);
+  private:
+  bool _internal_unverified_lazy() const;
+  void _internal_set_unverified_lazy(bool value);
+  public:
+
   // optional bool deprecated = 3 [default = false];
   bool has_deprecated() const;
   private:
@@ -5087,19 +5057,6 @@ class PROTOBUF_EXPORT FieldOptions final :
   private:
   bool _internal_weak() const;
   void _internal_set_weak(bool value);
-  public:
-
-  // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-  bool has_jstype() const;
-  private:
-  bool _internal_has_jstype() const;
-  public:
-  void clear_jstype();
-  ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType jstype() const;
-  void set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType _internal_jstype() const;
-  void _internal_set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value);
   public:
 
 
@@ -5305,11 +5262,12 @@ class PROTOBUF_EXPORT FieldOptions final :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption > uninterpreted_option_;
   int ctype_;
+  int jstype_;
   bool packed_;
   bool lazy_;
+  bool unverified_lazy_;
   bool deprecated_;
   bool weak_;
-  int jstype_;
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
 // -------------------------------------------------------------------
@@ -5428,9 +5386,6 @@ class PROTOBUF_EXPORT OneofOptions final :
   protected:
   explicit OneofOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -5782,9 +5737,6 @@ class PROTOBUF_EXPORT EnumOptions final :
   protected:
   explicit EnumOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -6167,9 +6119,6 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   protected:
   explicit EnumValueOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -6537,9 +6486,6 @@ class PROTOBUF_EXPORT ServiceOptions final :
   protected:
   explicit ServiceOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -6907,9 +6853,6 @@ class PROTOBUF_EXPORT MethodOptions final :
   protected:
   explicit MethodOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -7324,9 +7267,6 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   protected:
   explicit UninterpretedOption_NamePart(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -7505,9 +7445,6 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   protected:
   explicit UninterpretedOption(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -7775,9 +7712,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   protected:
   explicit SourceCodeInfo_Location(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -8034,9 +7968,6 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   protected:
   explicit SourceCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -8198,9 +8129,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   protected:
   explicit GeneratedCodeInfo_Annotation(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -8416,9 +8344,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   protected:
   explicit GeneratedCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -13086,7 +13011,7 @@ inline void FieldOptions::set_ctype(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType 
 
 // optional bool packed = 2;
 inline bool FieldOptions::_internal_has_packed() const {
-  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
 inline bool FieldOptions::has_packed() const {
@@ -13094,7 +13019,7 @@ inline bool FieldOptions::has_packed() const {
 }
 inline void FieldOptions::clear_packed() {
   packed_ = false;
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline bool FieldOptions::_internal_packed() const {
   return packed_;
@@ -13104,7 +13029,7 @@ inline bool FieldOptions::packed() const {
   return _internal_packed();
 }
 inline void FieldOptions::_internal_set_packed(bool value) {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
   packed_ = value;
 }
 inline void FieldOptions::set_packed(bool value) {
@@ -13114,7 +13039,7 @@ inline void FieldOptions::set_packed(bool value) {
 
 // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
 inline bool FieldOptions::_internal_has_jstype() const {
-  bool value = (_has_bits_[0] & 0x00000020u) != 0;
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
   return value;
 }
 inline bool FieldOptions::has_jstype() const {
@@ -13122,7 +13047,7 @@ inline bool FieldOptions::has_jstype() const {
 }
 inline void FieldOptions::clear_jstype() {
   jstype_ = 0;
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType FieldOptions::_internal_jstype() const {
   return static_cast< ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType >(jstype_);
@@ -13133,7 +13058,7 @@ inline ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType FieldOptions::jstype() const
 }
 inline void FieldOptions::_internal_set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value) {
   assert(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType_IsValid(value));
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000002u;
   jstype_ = value;
 }
 inline void FieldOptions::set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value) {
@@ -13143,7 +13068,7 @@ inline void FieldOptions::set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSTyp
 
 // optional bool lazy = 5 [default = false];
 inline bool FieldOptions::_internal_has_lazy() const {
-  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline bool FieldOptions::has_lazy() const {
@@ -13151,7 +13076,7 @@ inline bool FieldOptions::has_lazy() const {
 }
 inline void FieldOptions::clear_lazy() {
   lazy_ = false;
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline bool FieldOptions::_internal_lazy() const {
   return lazy_;
@@ -13161,7 +13086,7 @@ inline bool FieldOptions::lazy() const {
   return _internal_lazy();
 }
 inline void FieldOptions::_internal_set_lazy(bool value) {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
   lazy_ = value;
 }
 inline void FieldOptions::set_lazy(bool value) {
@@ -13169,9 +13094,37 @@ inline void FieldOptions::set_lazy(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.lazy)
 }
 
+// optional bool unverified_lazy = 15 [default = false];
+inline bool FieldOptions::_internal_has_unverified_lazy() const {
+  bool value = (_has_bits_[0] & 0x00000010u) != 0;
+  return value;
+}
+inline bool FieldOptions::has_unverified_lazy() const {
+  return _internal_has_unverified_lazy();
+}
+inline void FieldOptions::clear_unverified_lazy() {
+  unverified_lazy_ = false;
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline bool FieldOptions::_internal_unverified_lazy() const {
+  return unverified_lazy_;
+}
+inline bool FieldOptions::unverified_lazy() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.unverified_lazy)
+  return _internal_unverified_lazy();
+}
+inline void FieldOptions::_internal_set_unverified_lazy(bool value) {
+  _has_bits_[0] |= 0x00000010u;
+  unverified_lazy_ = value;
+}
+inline void FieldOptions::set_unverified_lazy(bool value) {
+  _internal_set_unverified_lazy(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.unverified_lazy)
+}
+
 // optional bool deprecated = 3 [default = false];
 inline bool FieldOptions::_internal_has_deprecated() const {
-  bool value = (_has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_has_bits_[0] & 0x00000020u) != 0;
   return value;
 }
 inline bool FieldOptions::has_deprecated() const {
@@ -13179,7 +13132,7 @@ inline bool FieldOptions::has_deprecated() const {
 }
 inline void FieldOptions::clear_deprecated() {
   deprecated_ = false;
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline bool FieldOptions::_internal_deprecated() const {
   return deprecated_;
@@ -13189,7 +13142,7 @@ inline bool FieldOptions::deprecated() const {
   return _internal_deprecated();
 }
 inline void FieldOptions::_internal_set_deprecated(bool value) {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000020u;
   deprecated_ = value;
 }
 inline void FieldOptions::set_deprecated(bool value) {
@@ -13199,7 +13152,7 @@ inline void FieldOptions::set_deprecated(bool value) {
 
 // optional bool weak = 10 [default = false];
 inline bool FieldOptions::_internal_has_weak() const {
-  bool value = (_has_bits_[0] & 0x00000010u) != 0;
+  bool value = (_has_bits_[0] & 0x00000040u) != 0;
   return value;
 }
 inline bool FieldOptions::has_weak() const {
@@ -13207,7 +13160,7 @@ inline bool FieldOptions::has_weak() const {
 }
 inline void FieldOptions::clear_weak() {
   weak_ = false;
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline bool FieldOptions::_internal_weak() const {
   return weak_;
@@ -13217,7 +13170,7 @@ inline bool FieldOptions::weak() const {
   return _internal_weak();
 }
 inline void FieldOptions::_internal_set_weak(bool value) {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000040u;
   weak_ = value;
 }
 inline void FieldOptions::set_weak(bool value) {

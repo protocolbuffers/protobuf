@@ -239,7 +239,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Contains methods for setting all fields of {@code TestAllTypes} to some values as well as
@@ -901,8 +901,8 @@ public final class TestUtil {
     Assert.assertEquals(208L, message.getRepeatedFixed64(0));
     Assert.assertEquals(209, message.getRepeatedSfixed32(0));
     Assert.assertEquals(210L, message.getRepeatedSfixed64(0));
-    Assert.assertEquals(211F, message.getRepeatedFloat(0));
-    Assert.assertEquals(212D, message.getRepeatedDouble(0));
+    Assert.assertEquals(211F, message.getRepeatedFloat(0), 0.0);
+    Assert.assertEquals(212D, message.getRepeatedDouble(0), 0.0);
     Assert.assertEquals(true, message.getRepeatedBool(0));
     Assert.assertEquals("215", message.getRepeatedString(0));
     Assert.assertEquals(toBytes("216"), message.getRepeatedBytes(0));
@@ -931,8 +931,8 @@ public final class TestUtil {
     Assert.assertEquals(508L, message.getRepeatedFixed64(1));
     Assert.assertEquals(509, message.getRepeatedSfixed32(1));
     Assert.assertEquals(510L, message.getRepeatedSfixed64(1));
-    Assert.assertEquals(511F, message.getRepeatedFloat(1));
-    Assert.assertEquals(512D, message.getRepeatedDouble(1));
+    Assert.assertEquals(511F, message.getRepeatedFloat(1), 0.0);
+    Assert.assertEquals(512D, message.getRepeatedDouble(1), 0.0);
     Assert.assertEquals(true, message.getRepeatedBool(1));
     Assert.assertEquals("515", message.getRepeatedString(1));
     Assert.assertEquals(toBytes("516"), message.getRepeatedBytes(1));

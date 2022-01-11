@@ -680,7 +680,10 @@ void Map_register(VALUE module) {
   rb_define_method(klass, "delete", Map_delete, 1);
   rb_define_method(klass, "clear", Map_clear, 0);
   rb_define_method(klass, "length", Map_length, 0);
+  rb_define_method(klass, "size", Map_length, 0);
   rb_define_method(klass, "dup", Map_dup, 0);
+  // Also define #clone so that we don't inherit Object#clone.
+  rb_define_method(klass, "clone", Map_dup, 0);
   rb_define_method(klass, "==", Map_eq, 1);
   rb_define_method(klass, "freeze", Map_freeze, 0);
   rb_define_method(klass, "hash", Map_hash, 0);

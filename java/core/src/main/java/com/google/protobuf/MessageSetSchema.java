@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 /** Schema used for proto2 messages using message_set_wireformat. */
+@CheckReturnValue
 final class MessageSetSchema<T> implements Schema<T> {
   private final MessageLite defaultInstance;
   private final UnknownFieldSchema<?, ?> unknownFieldSchema;

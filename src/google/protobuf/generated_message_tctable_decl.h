@@ -35,11 +35,13 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_DECL_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_DECL_H__
 
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/message_lite.h>
+#include <google/protobuf/parse_context.h>
 
 // Must come last:
 #include <google/protobuf/port_def.inc>
@@ -51,16 +53,52 @@ namespace internal {
 // Additional information about this field:
 struct TcFieldData {
   constexpr TcFieldData() : data(0) {}
-  constexpr TcFieldData(uint16_t coded_tag, uint8_t hasbit_idx, uint16_t offset)
-      : data(static_cast<uint64_t>(offset) << 48 |
-             static_cast<uint64_t>(hasbit_idx) << 16 | coded_tag) {}
+
+  // Fast table entry constructor:
+  constexpr TcFieldData(uint16_t coded_tag, uint8_t hasbit_idx, uint8_t aux_idx,
+                        uint16_t offset)
+      : data(uint64_t{offset} << 48 |      //
+             uint64_t{aux_idx} << 24 |     //
+             uint64_t{hasbit_idx} << 16 |  //
+             uint64_t{coded_tag}) {}
+
+  // Fields used in fast table parsing:
+  //
+  //     Bit:
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+  //     :   .   :   .   :   . 16|=======| [16] coded_tag()
+  //     :   .   :   .   : 24|===|   .   : [ 8] hasbit_idx()
+  //     :   .   :   . 32|===|   :   .   : [ 8] aux_idx()
+  //     :   . 48:---.---:   .   :   .   : [16] (unused)
+  //     |=======|   .   :   .   :   .   : [16] offset()
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
 
   template <typename TagType = uint16_t>
   TagType coded_tag() const {
     return static_cast<TagType>(data);
   }
   uint8_t hasbit_idx() const { return static_cast<uint8_t>(data >> 16); }
+  uint8_t aux_idx() const { return static_cast<uint8_t>(data >> 24); }
   uint16_t offset() const { return static_cast<uint16_t>(data >> 48); }
+
+  // Fields used in mini table parsing:
+  //
+  //     Bit:
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+  //     :   .   :   .   |===============| [32] tag() (decoded)
+  //     |===============|   .   :   .   : [32] entry_offset()
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+
+  uint32_t tag() const { return static_cast<uint32_t>(data); }
+  uint32_t entry_offset() const { return static_cast<uint32_t>(data >> 32); }
 
   uint64_t data;
 };
@@ -83,13 +121,19 @@ struct alignas(uint64_t) TcParseTableBase {
   uint16_t extension_offset;
   uint32_t extension_range_low;
   uint32_t extension_range_high;
+  uint32_t max_field_number;
   uint8_t fast_idx_mask;
-  uint8_t reserved;
-  uint16_t num_fields;
+  uint8_t num_sequential_fields;
+  uint16_t sequential_fields_start;
+  uint16_t num_field_entries;
+
   const MessageLite* default_instance;
 
   // Handler for fields which are not handled by table dispatch.
   TailCallParseFunc fallback;
+
+  // TODO: move up
+  uint32_t aux_offset;
 
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
@@ -102,6 +146,49 @@ struct alignas(uint64_t) TcParseTableBase {
   const FastFieldEntry* fast_entry(size_t idx) const {
     return reinterpret_cast<const FastFieldEntry*>(this + 1) + idx;
   }
+
+  // Returns a begin/end iterator (pointer) for the field numbers array.
+  // The field numbers are a parallel array to the `FieldEntry` array. Note that
+  // not all numbers may be valid fields; in these cases, the corresponding
+  // field entry will have a field kind of `field_layout::kFkNone`.
+  const uint32_t* field_numbers_begin() const {
+    return reinterpret_cast<const uint32_t*>(
+        fast_entry((fast_idx_mask >> 3) + 1));
+  }
+  const uint32_t* field_numbers_end() const {
+    return field_numbers_begin() + num_field_entries;
+  }
+
+  // Field entry for all fields.
+  struct FieldEntry {
+    uint32_t offset;     // offset in the message object
+    int32_t has_idx;     // has-bit index
+    uint16_t aux_idx;    // index for `field_aux`.
+    uint16_t type_card;  // `FieldType` and `Cardinality` (see _impl.h)
+  };
+
+  // Returns a begin iterator (pointer) to the start of the field entries array.
+  const FieldEntry* field_entries_begin() const {
+    return reinterpret_cast<const FieldEntry*>(field_numbers_end());
+  }
+
+  // Auxiliary entries for field types that need extra information.
+  union FieldAux {
+    constexpr FieldAux() : message_default(nullptr) {}
+    constexpr FieldAux(bool (*enum_validator)(int))
+        : enum_validator(enum_validator) {}
+    constexpr FieldAux(const MessageLite* msg) : message_default(msg) {}
+    bool (*enum_validator)(int);
+    const MessageLite* message_default;
+  };
+  const FieldAux* field_aux(uint32_t idx) const {
+    return reinterpret_cast<const FieldAux*>(reinterpret_cast<uintptr_t>(this) +
+                                             aux_offset) +
+           idx;
+  }
+  const FieldAux* field_aux(const FieldEntry* entry) const {
+    return field_aux(entry->aux_idx);
+  }
 };
 
 #if defined(_MSC_VER) && !defined(_WIN64)
@@ -109,9 +196,12 @@ struct alignas(uint64_t) TcParseTableBase {
 #endif
 
 static_assert(sizeof(TcParseTableBase::FastFieldEntry) <= 16,
+              "Fast field entry is too big.");
+static_assert(sizeof(TcParseTableBase::FieldEntry) <= 16,
               "Field entry is too big.");
 
-template <size_t kFastTableSizeLog2>
+template <size_t kFastTableSizeLog2, size_t kNumFieldEntries = 0,
+          size_t kNumFieldAux = 0>
 struct TcParseTable {
   TcParseTableBase header;
 
@@ -119,15 +209,22 @@ struct TcParseTable {
   //
   // Fields are indexed by the lowest bits of their field number. The field
   // number is masked to fit inside the table. Note that the parsing logic
-  // generally calls `TailCallParseTableBase::table()` instead of accessing
+  // generally calls `TailCallParseTableBase::fast_entry()` instead of accessing
   // this field directly.
-  TcParseTableBase::FastFieldEntry entries[(1 << kFastTableSizeLog2)];
+  std::array<TcParseTableBase::FastFieldEntry, (1 << kFastTableSizeLog2)>
+      fast_entries;
+
+  // Entries for all fields:
+  std::array<uint32_t, kNumFieldEntries> field_numbers;
+  std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
+  std::array<TcParseTableBase::FieldAux, kNumFieldAux> aux_entries;
 };
 
 static_assert(std::is_standard_layout<TcParseTable<1>>::value,
               "TcParseTable must be standard layout.");
 
-static_assert(offsetof(TcParseTable<1>, entries) == sizeof(TcParseTableBase),
+static_assert(offsetof(TcParseTable<1>, fast_entries) ==
+                  sizeof(TcParseTableBase),
               "Table entries must be laid out after TcParseTableBase.");
 
 }  // namespace internal

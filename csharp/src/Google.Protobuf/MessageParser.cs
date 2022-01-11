@@ -187,14 +187,17 @@ namespace Google.Protobuf
         internal void MergeFrom(IMessage message, CodedInputStream codedInput)
         {
             bool originalDiscard = codedInput.DiscardUnknownFields;
+            ExtensionRegistry originalRegistry = codedInput.ExtensionRegistry;
             try
             {
                 codedInput.DiscardUnknownFields = DiscardUnknownFields;
+                codedInput.ExtensionRegistry = Extensions;
                 message.MergeFrom(codedInput);
             }
             finally
             {
                 codedInput.DiscardUnknownFields = originalDiscard;
+                codedInput.ExtensionRegistry = originalRegistry;
             }
         }
 

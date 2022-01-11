@@ -35,12 +35,11 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/compiler/cpp/cpp_options.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_message_tctable_decl.h>
 #include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/compiler/cpp/cpp_options.h>
 
 namespace google {
 namespace protobuf {
@@ -50,18 +49,32 @@ namespace cpp {
 // Helper class for generating tailcall parsing functions.
 struct TailCallTableInfo {
   TailCallTableInfo(const Descriptor* descriptor, const Options& options,
+                    const std::vector<const FieldDescriptor*>& ordered_fields,
                     const std::vector<int>& has_bit_indices,
                     MessageSCCAnalyzer* scc_analyzer);
-  // Information to generate field entries.
-  struct FieldInfo {
-    const FieldDescriptor* field;
-    google::protobuf::internal::TcFieldData bits;
-    std::string func_name;
-  };
+
   // Fields parsed by the table fast-path.
-  std::vector<FieldInfo> fast_path_fields;
-  // Fields parsed by slow-path fallback.
+  struct FastFieldInfo {
+    std::string func_name;
+    const FieldDescriptor* field;
+    uint16_t coded_tag;
+    uint8_t hasbit_idx;
+    uint8_t aux_idx;
+  };
+  std::vector<FastFieldInfo> fast_path_fields;
+
+  // Fields parsed by mini parsing routines.
+  struct FieldEntryInfo {
+    const FieldDescriptor* field;
+    int hasbit_idx;
+    uint16_t aux_idx;
+  };
+  std::vector<FieldEntryInfo> field_entries;
+  std::vector<std::string> aux_entries;
+
+  // Fields parsed by generated fallback function.
   std::vector<const FieldDescriptor*> fallback_fields;
+
   // Table size.
   int table_size_log2;
   // Mask for has-bits of required fields.
@@ -118,7 +131,8 @@ class ParseFunctionGenerator {
 
   // Generates the tail-call table definition.
   void GenerateTailCallTable(Formatter& format);
-  void GenerateFastFieldEntries(Formatter& format, const std::string& fallback);
+  void GenerateFastFieldEntries(Formatter& format);
+  void GenerateFieldEntries(Formatter& format);
 
   // Generates parsing code for an `ArenaString` field.
   void GenerateArenaString(Formatter& format, const FieldDescriptor* field);
@@ -139,12 +153,11 @@ class ParseFunctionGenerator {
   // Generates code to parse the next field from the input stream.
   void GenerateParseIterationBody(
       Formatter& format, const Descriptor* descriptor,
-      const std::vector<const FieldDescriptor*>& ordered_fields);
+      const std::vector<const FieldDescriptor*>& fields);
 
-  // Generates a `switch` statement to parse each of `ordered_fields`.
-  void GenerateFieldSwitch(
-      Formatter& format,
-      const std::vector<const FieldDescriptor*>& ordered_fields);
+  // Generates a `switch` statement to parse each of `fields`.
+  void GenerateFieldSwitch(Formatter& format,
+                           const std::vector<const FieldDescriptor*>& fields);
 
   const Descriptor* descriptor_;
   MessageSCCAnalyzer* scc_analyzer_;
@@ -152,6 +165,7 @@ class ParseFunctionGenerator {
   std::map<std::string, std::string> variables_;
   std::unique_ptr<TailCallTableInfo> tc_table_info_;
   std::vector<int> inlined_string_indices_;
+  const std::vector<const FieldDescriptor*> ordered_fields_;
   int num_hasbits_;
 };
 
@@ -189,7 +203,7 @@ enum class TypeFormat {
 std::string GetTailCallFieldHandlerName(ParseCardinality card,
                                         TypeFormat type_format,
                                         int tag_length_bytes,
-                                        const Options& options);
+                                        const std::string& tcparser_name);
 
 }  // namespace cpp
 }  // namespace compiler

@@ -421,7 +421,7 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
     //    -> A.B.C
     if (package_name.find("::") != std::string::npos) {
       need_change_to_module = false;
-    } else {
+    } else if (package_name.find(".") != std::string::npos) {
       GOOGLE_LOG(WARNING) << "ruby_package option should be in the form of:"
                           << " 'A::B::C' and not 'A.B.C'";
     }
@@ -467,8 +467,6 @@ void EndPackageModules(int levels, io::Printer* printer) {
 
 bool GenerateDslDescriptor(const FileDescriptor* file, io::Printer* printer,
                            std::string* error) {
-  printer->Print(
-    "require 'google/protobuf'\n\n");
   printer->Print("Google::Protobuf::DescriptorPool.generated_pool.build do\n");
   printer->Indent();
   printer->Print("add_file(\"$filename$\", :syntax => :$syntax$) do\n",
@@ -509,8 +507,13 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
     "\n",
     "filename", file->name());
 
-  for (int i = 0; i < file->dependency_count(); i++) {
-    printer->Print("require '$name$'\n", "name", GetRequireName(file->dependency(i)->name()));
+  printer->Print("require 'google/protobuf'\n\n");
+
+  if (file->dependency_count() != 0) {
+    for (int i = 0; i < file->dependency_count(); i++) {
+      printer->Print("require '$name$'\n", "name", GetRequireName(file->dependency(i)->name()));
+    }
+    printer->Print("\n");
   }
 
   // TODO: Remove this when ruby supports extensions for proto2 syntax.

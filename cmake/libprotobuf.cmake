@@ -14,7 +14,6 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/field_mask.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_bases.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_reflection.cc
-  ${protobuf_source_dir}/src/google/protobuf/generated_message_table_driven.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_tctable_full.cc
   ${protobuf_source_dir}/src/google/protobuf/io/gzip_stream.cc
   ${protobuf_source_dir}/src/google/protobuf/io/printer.cc

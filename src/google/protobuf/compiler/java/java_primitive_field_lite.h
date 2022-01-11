@@ -93,7 +93,7 @@ class ImmutablePrimitiveOneofFieldLiteGenerator
   ImmutablePrimitiveOneofFieldLiteGenerator(const FieldDescriptor* descriptor,
                                             int messageBitIndex,
                                             Context* context);
-  ~ImmutablePrimitiveOneofFieldLiteGenerator();
+  ~ImmutablePrimitiveOneofFieldLiteGenerator() override;
 
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;

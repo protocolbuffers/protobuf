@@ -154,7 +154,7 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
     return mutableExtensionsByName.get(fullName);
   }
 
-  /** Deprecated. Use {@link #findImmutableExtensionByNumber( Descriptors.Descriptor, int)} */
+  /** Deprecated. Use {@link #findImmutableExtensionByNumber(Descriptors.Descriptor, int)} */
   @Deprecated
   public ExtensionInfo findExtensionByNumber(
       final Descriptor containingType, final int fieldNumber) {

@@ -380,5 +380,18 @@ namespace Google.Protobuf
                 TestGroupExtension.Parser.WithExtensionRegistry(new ExtensionRegistry() { TestNestedExtension.Extensions.OptionalGroupExtension }),
                 message);
         }
+
+        [Test]
+        public void RoundTrip_ParseUsingCodedInput()
+        {
+            var message = new TestAllExtensions();
+            message.SetExtension(UnittestExtensions.OptionalBoolExtension, true);
+            byte[] bytes = message.ToByteArray();
+            using (CodedInputStream input = new CodedInputStream(bytes))
+            {
+                var parsed = TestAllExtensions.Parser.WithExtensionRegistry(new ExtensionRegistry() { UnittestExtensions.OptionalBoolExtension }).ParseFrom(input);
+                Assert.AreEqual(message, parsed);
+            }
+        }
     }
 }

@@ -55,6 +55,7 @@
 #include <google/protobuf/stubs/stl_util.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -64,7 +65,8 @@ namespace io {
 // ===================================================================
 
 // A ZeroCopyInputStream backed by an in-memory array of bytes.
-class PROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
+class PROTOBUF_EXPORT ArrayInputStream PROTOBUF_FUTURE_FINAL
+    : public ZeroCopyInputStream {
  public:
   // Create an InputStream that returns the bytes pointed to by "data".
   // "data" remains the property of the caller but must remain valid until
@@ -98,7 +100,8 @@ class PROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
 // ===================================================================
 
 // A ZeroCopyOutputStream backed by an in-memory array of bytes.
-class PROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
+class PROTOBUF_EXPORT ArrayOutputStream PROTOBUF_FUTURE_FINAL
+    : public ZeroCopyOutputStream {
  public:
   // Create an OutputStream that writes to the bytes pointed to by "data".
   // "data" remains the property of the caller but must remain valid until
@@ -130,7 +133,8 @@ class PROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
 // ===================================================================
 
 // A ZeroCopyOutputStream which appends bytes to a string.
-class PROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
+class PROTOBUF_EXPORT StringOutputStream PROTOBUF_FUTURE_FINAL
+    : public ZeroCopyOutputStream {
  public:
   // Create a StringOutputStream which appends bytes to the given string.
   // The string remains property of the caller, but it is mutated in arbitrary
@@ -346,7 +350,8 @@ class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
 
 // A ZeroCopyInputStream which wraps some other stream and limits it to
 // a particular byte count.
-class PROTOBUF_EXPORT LimitingInputStream : public ZeroCopyInputStream {
+class PROTOBUF_EXPORT LimitingInputStream PROTOBUF_FUTURE_FINAL
+    : public ZeroCopyInputStream {
  public:
   LimitingInputStream(ZeroCopyInputStream* input, int64_t limit);
   ~LimitingInputStream() override;

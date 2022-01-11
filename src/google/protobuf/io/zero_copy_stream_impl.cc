@@ -104,7 +104,7 @@ FileInputStream::CopyingFileInputStream::CopyingFileInputStream(
       is_closed_(false),
       errno_(0),
       previous_seek_failed_(false) {
-#ifndef _MSC_VER
+#ifndef _WIN32
   int flags = fcntl(file_, F_GETFL);
   flags &= ~O_NONBLOCK;
   fcntl(file_, F_SETFL, flags);
