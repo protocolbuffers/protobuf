@@ -475,7 +475,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/Proto3LiteSchemaTest.java            \
   java/core/src/test/java/com/google/protobuf/Proto3MessageFactory.java            \
   java/core/src/test/java/com/google/protobuf/Proto3MessageLiteFactory.java        \
-  java/core/src/test/java/com/google/protobuf/Proto3MessageLiteInfoFactory.java    \
   java/core/src/test/java/com/google/protobuf/Proto3SchemaTest.java                \
   java/core/src/test/java/com/google/protobuf/ProtobufArrayListTest.java           \
   java/core/src/test/java/com/google/protobuf/RepeatedFieldBuilderV3Test.java      \
@@ -577,7 +576,6 @@ java_EXTRA_DIST=                                                                
   java/lite/pom_template.xml                                                       \
   java/lite/process-lite-sources-build.xml                                         \
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
-  java/lite/src/test/java/com/google/protobuf/Proto2MessageLiteInfoFactory.java    \
   java/BUILD                                                                       \
   java/pom.xml                                                                     \
   java/util/BUILD                                                                  \
