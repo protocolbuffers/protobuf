@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -50,12 +50,13 @@ extern "C" {
 // A field path may be NULL-terminated, in which case a NULL field indicates
 // the end of the field path.
 typedef union {
-  const upb_fielddef* field;
+  const upb_FieldDef* field;
   size_t array_index;
-  upb_msgval map_key;
+  upb_MessageValue map_key;
 } upb_FieldPathEntry;
 
-// Writes a string representing `*path` to `buf` in the following textual format:
+// Writes a string representing `*path` to `buf` in the following textual
+// format:
 //    foo.bar                    # Regular fields
 //    repeated_baz[2].bar        # Repeated field
 //    int32_msg_map[5].bar       # Integer-keyed map
@@ -69,7 +70,7 @@ typedef union {
 // (including NULL terminator) exceeds `size`, the result will be truncated.
 // Returns the string length of the data we attempted to write, excluding the
 // terminating NULL.
-size_t upb_FieldPath_ToText(upb_FieldPathEntry **path, char *buf, size_t size);
+size_t upb_FieldPath_ToText(upb_FieldPathEntry** path, char* buf, size_t size);
 
 // Checks whether `msg` or any of its children has unset required fields,
 // returning `true` if any are found.  `msg` may be NULL, in which case the
@@ -80,14 +81,14 @@ size_t upb_FieldPath_ToText(upb_FieldPathEntry **path, char *buf, size_t size);
 // that are missing.  Each path is terminated with {.field = NULL}, and a final
 // {.field = NULL} terminates the list of paths.  The caller is responsible for
 // freeing this array.
-bool upb_util_HasUnsetRequired(const upb_msg* msg, const upb_msgdef* m,
-                               const upb_symtab* ext_pool,
+bool upb_util_HasUnsetRequired(const upb_msg* msg, const upb_MessageDef* m,
+                               const upb_DefPool* ext_pool,
                                upb_FieldPathEntry** fields);
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 
 #include "upb/port_undef.inc"
 
-#endif  /* UPB_UTIL_REQUIRED_FIELDS_H_ */
+#endif /* UPB_UTIL_REQUIRED_FIELDS_H_ */

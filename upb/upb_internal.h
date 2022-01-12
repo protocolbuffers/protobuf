@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -33,8 +33,8 @@
 struct mem_block;
 typedef struct mem_block mem_block;
 
-struct upb_arena {
-  _upb_arena_head head;
+struct upb_Arena {
+  _upb_ArenaHead head;
   /* Stores cleanup metadata for this arena.
    * - a pointer to the current cleanup counter.
    * - a boolean indicating if there is an unowned initial block.  */
@@ -42,17 +42,17 @@ struct upb_arena {
 
   /* Allocator to allocate arena blocks.  We are responsible for freeing these
    * when we are destroyed. */
-  upb_alloc *block_alloc;
+  upb_alloc* block_alloc;
   uint32_t last_size;
 
   /* When multiple arenas are fused together, each arena points to a parent
    * arena (root points to itself). The root tracks how many live arenas
    * reference it. */
-  uint32_t refcount;  /* Only used when a->parent == a */
-  struct upb_arena *parent;
+  uint32_t refcount; /* Only used when a->parent == a */
+  struct upb_Arena* parent;
 
   /* Linked list of blocks to free/cleanup. */
   mem_block *freelist, *freelist_tail;
 };
 
-#endif  /* UPB_INT_H_ */
+#endif /* UPB_INT_H_ */

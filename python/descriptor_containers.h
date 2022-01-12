@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -42,9 +42,8 @@
 
 #include <stdbool.h>
 
-#include "upb/def.h"
-
 #include "protobuf.h"
+#include "upb/def.h"
 
 // -----------------------------------------------------------------------------
 // PyUpb_GenericSequence
@@ -54,19 +53,19 @@
 
 typedef struct {
   // Returns the number of elements in the map.
-  int (*get_elem_count)(const void *parent);
+  int (*get_elem_count)(const void* parent);
   // Returns an element by index.
-  const void *(*index)(const void *parent, int idx);
+  const void* (*index)(const void* parent, int idx);
   // Returns a Python object wrapping this element, caller owns a ref.
-  PyObject *(*get_elem_wrapper)(const void *elem);
+  PyObject* (*get_elem_wrapper)(const void* elem);
 } PyUpb_GenericSequence_Funcs;
 
 // Returns a new GenericSequence.  The vtable `funcs` must outlive this object
 // (generally it should be static).  The GenericSequence will take a ref on
 // `parent_obj`, which must be sufficient to keep `parent` alive.  The object
 // `parent` will be passed as an argument to the functions in `funcs`.
-PyObject *PyUpb_GenericSequence_New(const PyUpb_GenericSequence_Funcs *funcs,
-                                    const void *parent, PyObject *parent_obj);
+PyObject* PyUpb_GenericSequence_New(const PyUpb_GenericSequence_Funcs* funcs,
+                                    const void* parent, PyObject* parent_obj);
 
 // -----------------------------------------------------------------------------
 // PyUpb_ByNameMap
@@ -77,17 +76,17 @@ PyObject *PyUpb_GenericSequence_New(const PyUpb_GenericSequence_Funcs *funcs,
 typedef struct {
   PyUpb_GenericSequence_Funcs base;
   // Looks up by name and returns either a pointer to the element or NULL.
-  const void *(*lookup)(const void *parent, const char *key);
+  const void* (*lookup)(const void* parent, const char* key);
   // Returns the name associated with this element.
-  const char *(*get_elem_name)(const void *elem);
+  const char* (*get_elem_name)(const void* elem);
 } PyUpb_ByNameMap_Funcs;
 
 // Returns a new ByNameMap.  The vtable `funcs` must outlive this object
 // (generally it should be static).  The ByNameMap will take a ref on
 // `parent_obj`, which must be sufficient to keep `parent` alive.  The object
 // `parent` will be passed as an argument to the functions in `funcs`.
-PyObject *PyUpb_ByNameMap_New(const PyUpb_ByNameMap_Funcs *funcs,
-                              const void *parent, PyObject *parent_obj);
+PyObject* PyUpb_ByNameMap_New(const PyUpb_ByNameMap_Funcs* funcs,
+                              const void* parent, PyObject* parent_obj);
 
 // -----------------------------------------------------------------------------
 // PyUpb_ByNumberMap
@@ -98,18 +97,18 @@ PyObject *PyUpb_ByNameMap_New(const PyUpb_ByNameMap_Funcs *funcs,
 typedef struct {
   PyUpb_GenericSequence_Funcs base;
   // Looks up by name and returns either a pointer to the element or NULL.
-  const void *(*lookup)(const void *parent, int num);
+  const void* (*lookup)(const void* parent, int num);
   // Returns the name associated with this element.
-  int (*get_elem_num)(const void *elem);
+  int (*get_elem_num)(const void* elem);
 } PyUpb_ByNumberMap_Funcs;
 
 // Returns a new ByNumberMap.  The vtable `funcs` must outlive this object
 // (generally it should be static).  The ByNumberMap will take a ref on
 // `parent_obj`, which must be sufficient to keep `parent` alive.  The object
 // `parent` will be passed as an argument to the functions in `funcs`.
-PyObject *PyUpb_ByNumberMap_New(const PyUpb_ByNumberMap_Funcs *funcs,
-                                const void *parent, PyObject *parent_obj);
+PyObject* PyUpb_ByNumberMap_New(const PyUpb_ByNumberMap_Funcs* funcs,
+                                const void* parent, PyObject* parent_obj);
 
 bool PyUpb_InitDescriptorContainers(PyObject* m);
 
-#endif   // PYUPB_DESCRIPTOR_CONTAINERS_H__
+#endif  // PYUPB_DESCRIPTOR_CONTAINERS_H__

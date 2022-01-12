@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -36,11 +36,11 @@ extern "C" {
 
 enum {
   /* When set, emits 0/default values.  TODO(haberman): proto3 only? */
-  UPB_JSONENC_EMITDEFAULTS = 1,
+  upb_JsonEncode_EmitDefaults = 1,
 
   /* When set, use normal (snake_caes) field names instead of JSON (camelCase)
      names. */
-  UPB_JSONENC_PROTONAMES = 2
+  upb_JsonEncode_UseProtoNames = 2
 };
 
 /* Encodes the given |msg| to JSON format.  The message's reflection is given in
@@ -51,12 +51,12 @@ enum {
  * size (excluding NULL) is returned.  This means that a return value >= |size|
  * implies that the output was truncated.  (These are the same semantics as
  * snprintf()). */
-size_t upb_json_encode(const upb_msg *msg, const upb_msgdef *m,
-                       const upb_symtab *ext_pool, int options, char *buf,
-                       size_t size, upb_status *status);
+size_t upb_JsonEncode(const upb_msg* msg, const upb_MessageDef* m,
+                      const upb_DefPool* ext_pool, int options, char* buf,
+                      size_t size, upb_Status* status);
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 
-#endif  /* UPB_JSONENCODE_H_ */
+#endif /* UPB_JSONENCODE_H_ */

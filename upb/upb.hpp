@@ -12,11 +12,11 @@
 //       names of its contributors may be used to endorse or promote products
 //       derived from this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-// DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 // (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 // LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 // ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -34,63 +34,66 @@ namespace upb {
 
 class Status {
  public:
-  Status() { upb_status_clear(&status_); }
+  Status() { upb_Status_Clear(&status_); }
 
-  upb_status* ptr() { return &status_; }
+  upb_Status* ptr() { return &status_; }
 
   // Returns true if there is no error.
-  bool ok() const { return upb_ok(&status_); }
+  bool ok() const { return upb_Status_IsOk(&status_); }
 
   // Guaranteed to be NULL-terminated.
-  const char *error_message() const { return upb_status_errmsg(&status_); }
+  const char* error_message() const {
+    return upb_Status_ErrorMessage(&status_);
+  }
 
   // The error message will be truncated if it is longer than
-  // UPB_STATUS_MAX_MESSAGE-4.
-  void SetErrorMessage(const char *msg) { upb_status_seterrmsg(&status_, msg); }
-  void SetFormattedErrorMessage(const char *fmt, ...) {
+  // _kUpb_Status_MaxMessage-4.
+  void SetErrorMessage(const char* msg) {
+    upb_Status_SetErrorMessage(&status_, msg);
+  }
+  void SetFormattedErrorMessage(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    upb_status_vseterrf(&status_, fmt, args);
+    upb_Status_VSetErrorFormat(&status_, fmt, args);
     va_end(args);
   }
 
   // Resets the status to a successful state with no message.
-  void Clear() { upb_status_clear(&status_); }
+  void Clear() { upb_Status_Clear(&status_); }
 
  private:
-  upb_status status_;
+  upb_Status status_;
 };
 
 class Arena {
  public:
   // A simple arena with no initial memory block and the default allocator.
-  Arena() : ptr_(upb_arena_new(), upb_arena_free) {}
-  Arena(char *initial_block, size_t size)
-      : ptr_(upb_arena_init(initial_block, size, &upb_alloc_global),
-             upb_arena_free) {}
+  Arena() : ptr_(upb_Arena_New(), upb_Arena_Free) {}
+  Arena(char* initial_block, size_t size)
+      : ptr_(upb_Arena_Init(initial_block, size, &upb_alloc_global),
+             upb_Arena_Free) {}
 
-  upb_arena* ptr() { return ptr_.get(); }
+  upb_Arena* ptr() { return ptr_.get(); }
 
   // Allows this arena to be used as a generic allocator.
   //
   // The arena does not need free() calls so when using Arena as an allocator
   // it is safe to skip them.  However they are no-ops so there is no harm in
   // calling free() either.
-  upb_alloc *allocator() { return upb_arena_alloc(ptr_.get()); }
+  upb_alloc* allocator() { return upb_Arena_Alloc(ptr_.get()); }
 
   // Add a cleanup function to run when the arena is destroyed.
   // Returns false on out-of-memory.
   template <class T>
-  bool Own(T *obj) {
-    return upb_arena_addcleanup(ptr_.get(), obj, [](void* obj) {
-      delete static_cast<T*>(obj);
-    });
+  bool Own(T* obj) {
+    return upb_Arena_AddCleanup(ptr_.get(), obj,
+                                [](void* obj) { delete static_cast<T*>(obj); });
   }
 
-  void Fuse(Arena& other) { upb_arena_fuse(ptr(), other.ptr()); }
+  void Fuse(Arena& other) { upb_Arena_Fuse(ptr(), other.ptr()); }
 
  private:
-  std::unique_ptr<upb_arena, decltype(&upb_arena_free)> ptr_;
+  std::unique_ptr<upb_Arena, decltype(&upb_Arena_Free)> ptr_;
 };
 
 // InlinedArena seeds the arenas with a predefined amount of memory.  No
@@ -109,4 +112,4 @@ class InlinedArena : public Arena {
 
 }  // namespace upb
 
-#endif // UPB_HPP_
+#endif  // UPB_HPP_

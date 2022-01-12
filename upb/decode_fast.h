@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -64,22 +64,22 @@
 
 #include "upb/msg.h"
 
-struct upb_decstate;
+struct upb_Decoder;
 
 // The fallback, generic parsing function that can handle any field type.
 // This just uses the regular (non-fast) parser to parse a single field.
-const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
-                               upb_msg *msg, intptr_t table, uint64_t hasbits,
+const char* fastdecode_generic(struct upb_Decoder* d, const char* ptr,
+                               upb_msg* msg, intptr_t table, uint64_t hasbits,
                                uint64_t data);
 
-#define UPB_PARSE_PARAMS                                                 \
-  struct upb_decstate *d, const char *ptr, upb_msg *msg, intptr_t table, \
+#define UPB_PARSE_PARAMS                                                \
+  struct upb_Decoder *d, const char *ptr, upb_msg *msg, intptr_t table, \
       uint64_t hasbits, uint64_t data
 
 /* primitive fields ***********************************************************/
 
 #define F(card, type, valbytes, tagbytes) \
-  const char *upb_p##card##type##valbytes##_##tagbytes##bt(UPB_PARSE_PARAMS);
+  const char* upb_p##card##type##valbytes##_##tagbytes##bt(UPB_PARSE_PARAMS);
 
 #define TYPES(card, tagbytes) \
   F(card, b, 1, tagbytes)     \
@@ -106,8 +106,8 @@ TAGBYTES(p)
 /* string fields **************************************************************/
 
 #define F(card, tagbytes, type)                                     \
-  const char *upb_p##card##type##_##tagbytes##bt(UPB_PARSE_PARAMS); \
-  const char *upb_c##card##type##_##tagbytes##bt(UPB_PARSE_PARAMS);
+  const char* upb_p##card##type##_##tagbytes##bt(UPB_PARSE_PARAMS); \
+  const char* upb_c##card##type##_##tagbytes##bt(UPB_PARSE_PARAMS);
 
 #define UTF8(card, tagbytes) \
   F(card, tagbytes, s)       \
@@ -127,17 +127,17 @@ TAGBYTES(r)
 /* sub-message fields *********************************************************/
 
 #define F(card, tagbytes, size_ceil, ceil_arg) \
-  const char *upb_p##card##m_##tagbytes##bt_max##size_ceil##b(UPB_PARSE_PARAMS);
+  const char* upb_p##card##m_##tagbytes##bt_max##size_ceil##b(UPB_PARSE_PARAMS);
 
 #define SIZES(card, tagbytes) \
-  F(card, tagbytes, 64, 64) \
+  F(card, tagbytes, 64, 64)   \
   F(card, tagbytes, 128, 128) \
   F(card, tagbytes, 192, 192) \
   F(card, tagbytes, 256, 256) \
   F(card, tagbytes, max, -1)
 
 #define TAGBYTES(card) \
-  SIZES(card, 1) \
+  SIZES(card, 1)       \
   SIZES(card, 2)
 
 TAGBYTES(s)
@@ -150,4 +150,4 @@ TAGBYTES(r)
 
 #undef UPB_PARSE_PARAMS
 
-#endif  /* UPB_DECODE_FAST_H_ */
+#endif /* UPB_DECODE_FAST_H_ */

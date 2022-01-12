@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -26,7 +26,7 @@
  */
 
 /*
- * upb_decode: parsing into a upb_msg using a upb_msglayout.
+ * upb_decode: parsing into a upb_msg using a upb_MiniTable.
  */
 
 #ifndef UPB_DECODE_H_
@@ -46,9 +46,9 @@ enum {
    * arena. */
   kUpb_DecodeOption_AliasString = 1,
 
-  /* If set, the parse will return failure if any message is missing any required
-   * fields when the message data ends.  The parse will still continue, and the
-   * failure will only be reported at the end.
+  /* If set, the parse will return failure if any message is missing any
+   * required fields when the message data ends.  The parse will still continue,
+   * and the failure will only be reported at the end.
    *
    * IMPORTANT CAVEATS:
    *
@@ -70,30 +70,30 @@ enum {
 
 typedef enum {
   kUpb_DecodeStatus_Ok = 0,
-  kUpb_DecodeStatus_Malformed = 1,          // Wire format was corrupt
-  kUpb_DecodeStatus_OutOfMemory = 2,        // Arena alloc failed
-  kUpb_DecodeStatus_BadUtf8 = 3,            // String field had bad UTF-8
-  kUpb_DecodeStatus_MaxDepthExceeded = 4,   // Exceeded UPB_DECODE_MAXDEPTH
+  kUpb_DecodeStatus_Malformed = 1,         // Wire format was corrupt
+  kUpb_DecodeStatus_OutOfMemory = 2,       // Arena alloc failed
+  kUpb_DecodeStatus_BadUtf8 = 3,           // String field had bad UTF-8
+  kUpb_DecodeStatus_MaxDepthExceeded = 4,  // Exceeded UPB_DECODE_MAXDEPTH
 
   // kUpb_DecodeOption_CheckRequired failed (see above), but the parse otherwise
   // succeeded.
   kUpb_DecodeStatus_MissingRequired = 5,
 } upb_DecodeStatus;
 
-upb_DecodeStatus _upb_decode(const char *buf, size_t size, upb_msg *msg,
-                             const upb_msglayout *l, const upb_extreg *extreg,
-                             int options, upb_arena *arena);
+upb_DecodeStatus _upb_decode(const char* buf, size_t size, upb_msg* msg,
+                             const upb_MiniTable* l, const upb_extreg* extreg,
+                             int options, upb_Arena* arena);
 
 UPB_INLINE
-upb_DecodeStatus upb_decode(const char *buf, size_t size, upb_msg *msg,
-                            const upb_msglayout *l, upb_arena *arena) {
+upb_DecodeStatus upb_decode(const char* buf, size_t size, upb_msg* msg,
+                            const upb_MiniTable* l, upb_Arena* arena) {
   return _upb_decode(buf, size, msg, l, NULL, 0, arena);
 }
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 
 #include "upb/port_undef.inc"
 
-#endif  /* UPB_DECODE_H_ */
+#endif /* UPB_DECODE_H_ */

@@ -12,11 +12,11 @@
 //       names of its contributors may be used to endorse or promote products
 //       derived from this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-// DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 // (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 // LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 // ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -37,7 +37,7 @@
 
 namespace upb {
 
-typedef upb_msgval MessageValue;
+typedef upb_MessageValue MessageValue;
 
 class EnumDefPtr;
 class FileDefPtr;
@@ -45,41 +45,41 @@ class MessageDefPtr;
 class OneofDefPtr;
 
 // A upb::FieldDefPtr describes a single field in a message.  It is most often
-// found as a part of a upb_msgdef, but can also stand alone to represent
+// found as a part of a upb_MessageDef, but can also stand alone to represent
 // an extension.
 class FieldDefPtr {
  public:
   FieldDefPtr() : ptr_(nullptr) {}
-  explicit FieldDefPtr(const upb_fielddef* ptr) : ptr_(ptr) {}
+  explicit FieldDefPtr(const upb_FieldDef* ptr) : ptr_(ptr) {}
 
-  const upb_fielddef* ptr() const { return ptr_; }
+  const upb_FieldDef* ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
 
-  typedef upb_fieldtype_t Type;
-  typedef upb_label_t Label;
-  typedef upb_descriptortype_t DescriptorType;
+  typedef upb_CType Type;
+  typedef upb_Label Label;
+  typedef upb_FieldType DescriptorType;
 
-  const char* full_name() const { return upb_fielddef_fullname(ptr_); }
+  const char* full_name() const { return upb_FieldDef_FullName(ptr_); }
 
-  Type type() const { return upb_fielddef_type(ptr_); }
-  Label label() const { return upb_fielddef_label(ptr_); }
-  const char* name() const { return upb_fielddef_name(ptr_); }
-  const char* json_name() const { return upb_fielddef_jsonname(ptr_); }
-  uint32_t number() const { return upb_fielddef_number(ptr_); }
-  bool is_extension() const { return upb_fielddef_isextension(ptr_); }
+  Type type() const { return upb_FieldDef_CType(ptr_); }
+  Label label() const { return upb_FieldDef_Label(ptr_); }
+  const char* name() const { return upb_FieldDef_Name(ptr_); }
+  const char* json_name() const { return upb_FieldDef_JsonName(ptr_); }
+  uint32_t number() const { return upb_FieldDef_Number(ptr_); }
+  bool is_extension() const { return upb_FieldDef_IsExtension(ptr_); }
 
   // For non-string, non-submessage fields, this indicates whether binary
   // protobufs are encoded in packed or non-packed format.
   //
   // Note: this accessor reflects the fact that "packed" has different defaults
   // depending on whether the proto is proto2 or proto3.
-  bool packed() const { return upb_fielddef_packed(ptr_); }
+  bool packed() const { return upb_FieldDef_IsPacked(ptr_); }
 
   // An integer that can be used as an index into an array of fields for
   // whatever message this field belongs to.  Guaranteed to be less than
   // f->containing_type()->field_count().  May only be accessed once the def has
   // been finalized.
-  uint32_t index() const { return upb_fielddef_index(ptr_); }
+  uint32_t index() const { return upb_FieldDef_Index(ptr_); }
 
   // The MessageDef to which this field belongs.
   //
@@ -100,74 +100,54 @@ class FieldDefPtr {
   // INT32 and SINT32, whereas our "type" enum does not.  This return of
   // descriptor_type() is a function of type(), integer_format(), and
   // is_tag_delimited().
-  DescriptorType descriptor_type() const {
-    return upb_fielddef_descriptortype(ptr_);
-  }
+  DescriptorType descriptor_type() const { return upb_FieldDef_Type(ptr_); }
 
   // Convenient field type tests.
-  bool IsSubMessage() const { return upb_fielddef_issubmsg(ptr_); }
-  bool IsString() const { return upb_fielddef_isstring(ptr_); }
-  bool IsSequence() const { return upb_fielddef_isseq(ptr_); }
-  bool IsPrimitive() const { return upb_fielddef_isprimitive(ptr_); }
-  bool IsMap() const { return upb_fielddef_ismap(ptr_); }
+  bool IsSubMessage() const { return upb_FieldDef_IsSubMessage(ptr_); }
+  bool IsString() const { return upb_FieldDef_IsString(ptr_); }
+  bool IsSequence() const { return upb_FieldDef_IsRepeated(ptr_); }
+  bool IsPrimitive() const { return upb_FieldDef_IsPrimitive(ptr_); }
+  bool IsMap() const { return upb_FieldDef_IsMap(ptr_); }
 
-  // Returns the non-string default value for this fielddef, which may either
-  // be something the client set explicitly or the "default default" (0 for
-  // numbers, empty for strings).  The field's type indicates the type of the
-  // returned value, except for enum fields that are still mutable.
-  //
-  // Requires that the given function matches the field's current type.
-  int64_t default_int64() const { return upb_fielddef_defaultint64(ptr_); }
-  int32_t default_int32() const { return upb_fielddef_defaultint32(ptr_); }
-  uint64_t default_uint64() const { return upb_fielddef_defaultuint64(ptr_); }
-  uint32_t default_uint32() const { return upb_fielddef_defaultuint32(ptr_); }
-  bool default_bool() const { return upb_fielddef_defaultbool(ptr_); }
-  float default_float() const { return upb_fielddef_defaultfloat(ptr_); }
-  double default_double() const { return upb_fielddef_defaultdouble(ptr_); }
-
-  MessageValue default_value() const { return upb_fielddef_default(ptr_); }
-
-  // The resulting string is always NULL-terminated.  If non-NULL, the length
-  // will be stored in *len.
-  const char* default_string(size_t* len) const {
-    return upb_fielddef_defaultstr(ptr_, len);
-  }
+  MessageValue default_value() const { return upb_FieldDef_Default(ptr_); }
 
   // Returns the enum or submessage def for this field, if any.  The field's
   // type must match (ie. you may only call enum_subdef() for fields where
-  // type() == UPB_TYPE_ENUM).
+  // type() == kUpb_CType_Enum).
   EnumDefPtr enum_subdef() const;
   MessageDefPtr message_subdef() const;
 
  private:
-  const upb_fielddef* ptr_;
+  const upb_FieldDef* ptr_;
 };
 
 // Class that represents a oneof.
 class OneofDefPtr {
  public:
   OneofDefPtr() : ptr_(nullptr) {}
-  explicit OneofDefPtr(const upb_oneofdef* ptr) : ptr_(ptr) {}
+  explicit OneofDefPtr(const upb_OneofDef* ptr) : ptr_(ptr) {}
 
-  const upb_oneofdef* ptr() const { return ptr_; }
+  const upb_OneofDef* ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
 
   // Returns the MessageDef that contains this OneofDef.
   MessageDefPtr containing_type() const;
 
   // Returns the name of this oneof.
-  const char* name() const { return upb_oneofdef_name(ptr_); }
+  const char* name() const { return upb_OneofDef_Name(ptr_); }
 
   // Returns the number of fields in the oneof.
-  int field_count() const { return upb_oneofdef_numfields(ptr_); }
-  FieldDefPtr field(int i) const { return FieldDefPtr(upb_oneofdef_field(ptr_, i)); }
+  int field_count() const { return upb_OneofDef_FieldCount(ptr_); }
+  FieldDefPtr field(int i) const {
+    return FieldDefPtr(upb_OneofDef_Field(ptr_, i));
+  }
 
   // Looks up by name.
   FieldDefPtr FindFieldByName(const char* name, size_t len) const {
-    return FieldDefPtr(upb_oneofdef_ntof(ptr_, name, len));
+    return FieldDefPtr(upb_OneofDef_LookupNameWithSize(ptr_, name, len));
   }
   FieldDefPtr FindFieldByName(const char* name) const {
-    return FieldDefPtr(upb_oneofdef_ntofz(ptr_, name));
+    return FieldDefPtr(upb_OneofDef_LookupName(ptr_, name));
   }
 
   template <class T>
@@ -177,46 +157,50 @@ class OneofDefPtr {
 
   // Looks up by tag number.
   FieldDefPtr FindFieldByNumber(uint32_t num) const {
-    return FieldDefPtr(upb_oneofdef_itof(ptr_, num));
+    return FieldDefPtr(upb_OneofDef_LookupNumber(ptr_, num));
   }
 
  private:
-  const upb_oneofdef* ptr_;
+  const upb_OneofDef* ptr_;
 };
 
 // Structure that describes a single .proto message type.
 class MessageDefPtr {
  public:
   MessageDefPtr() : ptr_(nullptr) {}
-  explicit MessageDefPtr(const upb_msgdef* ptr) : ptr_(ptr) {}
+  explicit MessageDefPtr(const upb_MessageDef* ptr) : ptr_(ptr) {}
 
-  const upb_msgdef* ptr() const { return ptr_; }
+  const upb_MessageDef* ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
 
   FileDefPtr file() const;
 
-  const char* full_name() const { return upb_msgdef_fullname(ptr_); }
-  const char* name() const { return upb_msgdef_name(ptr_); }
+  const char* full_name() const { return upb_MessageDef_FullName(ptr_); }
+  const char* name() const { return upb_MessageDef_Name(ptr_); }
 
   // The number of fields that belong to the MessageDef.
-  int field_count() const { return upb_msgdef_numfields(ptr_); }
-  FieldDefPtr field(int i) const { return FieldDefPtr(upb_msgdef_field(ptr_, i)); }
+  int field_count() const { return upb_MessageDef_FieldCount(ptr_); }
+  FieldDefPtr field(int i) const {
+    return FieldDefPtr(upb_MessageDef_Field(ptr_, i));
+  }
 
   // The number of oneofs that belong to the MessageDef.
-  int oneof_count() const { return upb_msgdef_numoneofs(ptr_); }
-  OneofDefPtr oneof(int i) const { return OneofDefPtr(upb_msgdef_oneof(ptr_, i)); }
+  int oneof_count() const { return upb_MessageDef_OneofCount(ptr_); }
+  OneofDefPtr oneof(int i) const {
+    return OneofDefPtr(upb_MessageDef_Oneof(ptr_, i));
+  }
 
-  upb_syntax_t syntax() const { return upb_msgdef_syntax(ptr_); }
+  upb_Syntax syntax() const { return upb_MessageDef_Syntax(ptr_); }
 
   // These return null pointers if the field is not found.
   FieldDefPtr FindFieldByNumber(uint32_t number) const {
-    return FieldDefPtr(upb_msgdef_itof(ptr_, number));
+    return FieldDefPtr(upb_MessageDef_FindFieldByNumberWithSize(ptr_, number));
   }
   FieldDefPtr FindFieldByName(const char* name, size_t len) const {
-    return FieldDefPtr(upb_msgdef_ntof(ptr_, name, len));
+    return FieldDefPtr(upb_MessageDef_FindFieldByNameWithSize(ptr_, name, len));
   }
   FieldDefPtr FindFieldByName(const char* name) const {
-    return FieldDefPtr(upb_msgdef_ntofz(ptr_, name));
+    return FieldDefPtr(upb_MessageDef_FindFieldByName(ptr_, name));
   }
 
   template <class T>
@@ -225,11 +209,11 @@ class MessageDefPtr {
   }
 
   OneofDefPtr FindOneofByName(const char* name, size_t len) const {
-    return OneofDefPtr(upb_msgdef_ntoo(ptr_, name, len));
+    return OneofDefPtr(upb_MessageDef_FindOneofByNameWithSize(ptr_, name, len));
   }
 
   OneofDefPtr FindOneofByName(const char* name) const {
-    return OneofDefPtr(upb_msgdef_ntooz(ptr_, name));
+    return OneofDefPtr(upb_MessageDef_FindOneofByName(ptr_, name));
   }
 
   template <class T>
@@ -238,64 +222,65 @@ class MessageDefPtr {
   }
 
   // Is this message a map entry?
-  bool mapentry() const { return upb_msgdef_mapentry(ptr_); }
+  bool mapentry() const { return upb_MessageDef_IsMapEntry(ptr_); }
 
-  // Return the type of well known type message. UPB_WELLKNOWN_UNSPECIFIED for
+  // Return the type of well known type message. kUpb_WellKnown_Unspecified for
   // non-well-known message.
-  upb_wellknowntype_t wellknowntype() const {
-    return upb_msgdef_wellknowntype(ptr_);
+  upb_WellKnown wellknowntype() const {
+    return upb_MessageDef_WellKnownType(ptr_);
   }
-
-  // Whether is a number wrapper.
-  bool isnumberwrapper() const { return upb_msgdef_isnumberwrapper(ptr_); }
 
  private:
   class FieldIter {
    public:
-    explicit FieldIter(const upb_msgdef *m, int i) : m_(m), i_(i) {}
+    explicit FieldIter(const upb_MessageDef* m, int i) : m_(m), i_(i) {}
     void operator++() { i_++; }
 
-    FieldDefPtr operator*() { return FieldDefPtr(upb_msgdef_field(m_, i_)); }
+    FieldDefPtr operator*() {
+      return FieldDefPtr(upb_MessageDef_Field(m_, i_));
+    }
     bool operator!=(const FieldIter& other) { return i_ != other.i_; }
     bool operator==(const FieldIter& other) { return i_ == other.i_; }
 
    private:
-    const upb_msgdef *m_;
+    const upb_MessageDef* m_;
     int i_;
   };
 
   class FieldAccessor {
    public:
-    explicit FieldAccessor(const upb_msgdef* md) : md_(md) {}
+    explicit FieldAccessor(const upb_MessageDef* md) : md_(md) {}
     FieldIter begin() { return FieldIter(md_, 0); }
-    FieldIter end() { return FieldIter(md_, upb_msgdef_fieldcount(md_)); }
+    FieldIter end() { return FieldIter(md_, upb_MessageDef_FieldCount(md_)); }
 
    private:
-    const upb_msgdef* md_;
+    const upb_MessageDef* md_;
   };
 
   class OneofIter {
    public:
-    explicit OneofIter(const upb_msgdef *m, int i) : m_(m), i_(i) {}
+    explicit OneofIter(const upb_MessageDef* m, int i) : m_(m), i_(i) {}
     void operator++() { i_++; }
 
-    OneofDefPtr operator*() { return OneofDefPtr(upb_msgdef_oneof(m_, i_)); }
+    OneofDefPtr operator*() {
+      return OneofDefPtr(upb_MessageDef_Oneof(m_, i_));
+    }
     bool operator!=(const OneofIter& other) { return i_ != other.i_; }
     bool operator==(const OneofIter& other) { return i_ == other.i_; }
 
    private:
-    const upb_msgdef *m_;
+    const upb_MessageDef* m_;
     int i_;
   };
 
   class OneofAccessor {
    public:
-    explicit OneofAccessor(const upb_msgdef* md) : md_(md) {}
+    explicit OneofAccessor(const upb_MessageDef* md) : md_(md) {}
     OneofIter begin() { return OneofIter(md_, 0); }
-    OneofIter end() { return OneofIter(md_, upb_msgdef_oneofcount(md_)); }
+    OneofIter end() { return OneofIter(md_, upb_MessageDef_OneofCount(md_)); }
 
    private:
-    const upb_msgdef* md_;
+    const upb_MessageDef* md_;
   };
 
  public:
@@ -303,75 +288,58 @@ class MessageDefPtr {
   OneofAccessor oneofs() const { return OneofAccessor(ptr()); }
 
  private:
-  const upb_msgdef* ptr_;
+  const upb_MessageDef* ptr_;
 };
 
 class EnumValDefPtr {
  public:
   EnumValDefPtr() : ptr_(nullptr) {}
-  explicit EnumValDefPtr(const upb_enumvaldef* ptr) : ptr_(ptr) {}
+  explicit EnumValDefPtr(const upb_EnumValueDef* ptr) : ptr_(ptr) {}
 
-  int32_t number() const { return upb_enumvaldef_number(ptr_); }
-  const char *full_name() const { return upb_enumvaldef_fullname(ptr_); }
-  const char *name() const { return upb_enumvaldef_name(ptr_); }
+  int32_t number() const { return upb_EnumValueDef_Number(ptr_); }
+  const char* full_name() const { return upb_EnumValueDef_FullName(ptr_); }
+  const char* name() const { return upb_EnumValueDef_Name(ptr_); }
 
  private:
-  const upb_enumvaldef* ptr_;
+  const upb_EnumValueDef* ptr_;
 };
 
 class EnumDefPtr {
  public:
   EnumDefPtr() : ptr_(nullptr) {}
-  explicit EnumDefPtr(const upb_enumdef* ptr) : ptr_(ptr) {}
+  explicit EnumDefPtr(const upb_EnumDef* ptr) : ptr_(ptr) {}
 
-  const upb_enumdef* ptr() const { return ptr_; }
+  const upb_EnumDef* ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
 
-  const char* full_name() const { return upb_enumdef_fullname(ptr_); }
-  const char* name() const { return upb_enumdef_name(ptr_); }
+  const char* full_name() const { return upb_EnumDef_FullName(ptr_); }
+  const char* name() const { return upb_EnumDef_Name(ptr_); }
 
   // The value that is used as the default when no field default is specified.
   // If not set explicitly, the first value that was added will be used.
   // The default value must be a member of the enum.
   // Requires that value_count() > 0.
-  int32_t default_value() const { return upb_enumdef_default(ptr_); }
+  int32_t default_value() const { return upb_EnumDef_Default(ptr_); }
 
   // Returns the number of values currently defined in the enum.  Note that
   // multiple names can refer to the same number, so this may be greater than
   // the total number of unique numbers.
-  int value_count() const { return upb_enumdef_numvals(ptr_); }
+  int value_count() const { return upb_EnumDef_ValueCount(ptr_); }
 
   // Lookups from name to integer, returning true if found.
   EnumValDefPtr FindValueByName(const char* name) const {
-    return EnumValDefPtr(upb_enumdef_lookupnamez(ptr_, name));
+    return EnumValDefPtr(upb_EnumDef_FindValueByName(ptr_, name));
   }
 
   // Finds the name corresponding to the given number, or NULL if none was
   // found.  If more than one name corresponds to this number, returns the
   // first one that was added.
   EnumValDefPtr FindValueByNumber(int32_t num) const {
-    return EnumValDefPtr(upb_enumdef_lookupnum(ptr_, num));
+    return EnumValDefPtr(upb_EnumDef_FindValueByNumber(ptr_, num));
   }
 
-  // Iteration over name/value pairs.  The order is undefined.
-  // Adding an enum val invalidates any iterators.
-  //
-  // TODO: make compatible with range-for, with elements as pairs?
-  class Iterator {
-   public:
-    explicit Iterator(EnumDefPtr e) { upb_enum_begin(&iter_, e.ptr()); }
-
-    int32_t number() { return upb_enum_iter_number(&iter_); }
-    const char* name() { return upb_enum_iter_name(&iter_); }
-    bool Done() { return upb_enum_done(&iter_); }
-    void Next() { return upb_enum_next(&iter_); }
-
-   private:
-    upb_enum_iter iter_;
-  };
-
  private:
-  const upb_enumdef* ptr_;
+  const upb_EnumDef* ptr_;
 };
 
 // Class that represents a .proto file with some things defined in it.
@@ -380,61 +348,52 @@ class EnumDefPtr {
 // read the values of file-level options.
 class FileDefPtr {
  public:
-  explicit FileDefPtr(const upb_filedef* ptr) : ptr_(ptr) {}
+  explicit FileDefPtr(const upb_FileDef* ptr) : ptr_(ptr) {}
 
-  const upb_filedef* ptr() const { return ptr_; }
+  const upb_FileDef* ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
 
   // Get/set name of the file (eg. "foo/bar.proto").
-  const char* name() const { return upb_filedef_name(ptr_); }
+  const char* name() const { return upb_FileDef_Name(ptr_); }
 
   // Package name for definitions inside the file (eg. "foo.bar").
-  const char* package() const { return upb_filedef_package(ptr_); }
-
-  // Sets the php class prefix which is prepended to all php generated classes
-  // from this .proto. Default is empty.
-  const char* phpprefix() const { return upb_filedef_phpprefix(ptr_); }
-
-  // Use this option to change the namespace of php generated classes. Default
-  // is empty. When this option is empty, the package name will be used for
-  // determining the namespace.
-  const char* phpnamespace() const { return upb_filedef_phpnamespace(ptr_); }
+  const char* package() const { return upb_FileDef_Package(ptr_); }
 
   // Syntax for the file.  Defaults to proto2.
-  upb_syntax_t syntax() const { return upb_filedef_syntax(ptr_); }
+  upb_Syntax syntax() const { return upb_FileDef_Syntax(ptr_); }
 
   // Get the list of dependencies from the file.  These are returned in the
   // order that they were added to the FileDefPtr.
-  int dependency_count() const { return upb_filedef_depcount(ptr_); }
+  int dependency_count() const { return upb_FileDef_DependencyCount(ptr_); }
   const FileDefPtr dependency(int index) const {
-    return FileDefPtr(upb_filedef_dep(ptr_, index));
+    return FileDefPtr(upb_FileDef_Dependency(ptr_, index));
   }
 
  private:
-  const upb_filedef* ptr_;
+  const upb_FileDef* ptr_;
 };
 
 // Non-const methods in upb::SymbolTable are NOT thread-safe.
 class SymbolTable {
  public:
-  SymbolTable() : ptr_(upb_symtab_new(), upb_symtab_free) {}
-  explicit SymbolTable(upb_symtab* s) : ptr_(s, upb_symtab_free) {}
+  SymbolTable() : ptr_(upb_DefPool_New(), upb_DefPool_Free) {}
+  explicit SymbolTable(upb_DefPool* s) : ptr_(s, upb_DefPool_Free) {}
 
-  const upb_symtab* ptr() const { return ptr_.get(); }
-  upb_symtab* ptr() { return ptr_.get(); }
+  const upb_DefPool* ptr() const { return ptr_.get(); }
+  upb_DefPool* ptr() { return ptr_.get(); }
 
   // Finds an entry in the symbol table with this exact name.  If not found,
   // returns NULL.
-  MessageDefPtr LookupMessage(const char* sym) const {
-    return MessageDefPtr(upb_symtab_lookupmsg(ptr_.get(), sym));
+  MessageDefPtr FindMessageByName(const char* sym) const {
+    return MessageDefPtr(upb_DefPool_FindMessageByName(ptr_.get(), sym));
   }
 
-  EnumDefPtr LookupEnum(const char* sym) const {
-    return EnumDefPtr(upb_symtab_lookupenum(ptr_.get(), sym));
+  EnumDefPtr FindEnumByName(const char* sym) const {
+    return EnumDefPtr(upb_DefPool_FindEnumByName(ptr_.get(), sym));
   }
 
-  FileDefPtr LookupFile(const char* name) const {
-    return FileDefPtr(upb_symtab_lookupfile(ptr_.get(), name));
+  FileDefPtr FindFileByName(const char* name) const {
+    return FileDefPtr(upb_DefPool_FindFileByName(ptr_.get(), name));
   }
 
   // TODO: iteration?
@@ -443,35 +402,35 @@ class SymbolTable {
   FileDefPtr AddFile(const google_protobuf_FileDescriptorProto* file_proto,
                      Status* status) {
     return FileDefPtr(
-        upb_symtab_addfile(ptr_.get(), file_proto, status->ptr()));
+        upb_DefPool_AddFile(ptr_.get(), file_proto, status->ptr()));
   }
 
  private:
-  std::unique_ptr<upb_symtab, decltype(&upb_symtab_free)> ptr_;
+  std::unique_ptr<upb_DefPool, decltype(&upb_DefPool_Free)> ptr_;
 };
 
 inline FileDefPtr MessageDefPtr::file() const {
-  return FileDefPtr(upb_msgdef_file(ptr_));
+  return FileDefPtr(upb_MessageDef_File(ptr_));
 }
 
 inline MessageDefPtr FieldDefPtr::message_subdef() const {
-  return MessageDefPtr(upb_fielddef_msgsubdef(ptr_));
+  return MessageDefPtr(upb_FieldDef_MessageSubDef(ptr_));
 }
 
 inline MessageDefPtr FieldDefPtr::containing_type() const {
-  return MessageDefPtr(upb_fielddef_containingtype(ptr_));
+  return MessageDefPtr(upb_FieldDef_ContainingType(ptr_));
 }
 
 inline MessageDefPtr OneofDefPtr::containing_type() const {
-  return MessageDefPtr(upb_oneofdef_containingtype(ptr_));
+  return MessageDefPtr(upb_OneofDef_ContainingType(ptr_));
 }
 
 inline OneofDefPtr FieldDefPtr::containing_oneof() const {
-  return OneofDefPtr(upb_fielddef_containingoneof(ptr_));
+  return OneofDefPtr(upb_FieldDef_ContainingOneof(ptr_));
 }
 
 inline EnumDefPtr FieldDefPtr::enum_subdef() const {
-  return EnumDefPtr(upb_fielddef_enumsubdef(ptr_));
+  return EnumDefPtr(upb_FieldDef_EnumSubDef(ptr_));
 }
 
 }  // namespace upb

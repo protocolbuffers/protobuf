@@ -50,20 +50,20 @@ typedef struct PyUpb_WeakMap PyUpb_WeakMap;
 
 typedef struct {
   // From descriptor.c
-  PyTypeObject *descriptor_types[kPyUpb_Descriptor_Count];
+  PyTypeObject* descriptor_types[kPyUpb_Descriptor_Count];
 
   // From descriptor_containers.c
-  PyTypeObject *by_name_map_type;
-  PyTypeObject *by_number_map_type;
-  PyTypeObject *descriptor_iterator_type;
-  PyTypeObject *generic_sequence_type;
+  PyTypeObject* by_name_map_type;
+  PyTypeObject* by_number_map_type;
+  PyTypeObject* descriptor_iterator_type;
+  PyTypeObject* generic_sequence_type;
 
   // From descriptor_pool.c
-  PyObject *default_pool;
+  PyObject* default_pool;
 
   // From descriptor_pool.c
-  PyTypeObject *descriptor_pool_type;
-  upb_symtab* c_descriptor_symtab;
+  PyTypeObject* descriptor_pool_type;
+  upb_DefPool* c_descriptor_symtab;
 
   // From extension_dict.c
   PyTypeObject* extension_dict_type;
@@ -75,20 +75,20 @@ typedef struct {
   PyTypeObject* scalar_map_container_type;
 
   // From message.c
-  PyObject *decode_error_class;
+  PyObject* decode_error_class;
   PyObject* descriptor_string;
-  PyObject *encode_error_class;
-  PyObject *enum_type_wrapper_class;
-  PyObject *message_class;
-  PyTypeObject *cmessage_type;
-  PyTypeObject *message_meta_type;
+  PyObject* encode_error_class;
+  PyObject* enum_type_wrapper_class;
+  PyObject* message_class;
+  PyTypeObject* cmessage_type;
+  PyTypeObject* message_meta_type;
   PyObject* listfields_item_key;
 
   // From protobuf.c
   bool allow_oversize_protos;
-  PyObject *wkt_bases;
-  PyTypeObject *arena_type;
-  PyUpb_WeakMap *obj_cache;
+  PyObject* wkt_bases;
+  PyTypeObject* arena_type;
+  PyUpb_WeakMap* obj_cache;
 
   // From repeated.c
   PyTypeObject* repeated_composite_container_type;
@@ -97,8 +97,8 @@ typedef struct {
 
 // Returns the global state object from the current interpreter. The current
 // interpreter is looked up from thread-local state.
-PyUpb_ModuleState *PyUpb_ModuleState_Get(void);
-PyUpb_ModuleState *PyUpb_ModuleState_GetFromModule(PyObject *module);
+PyUpb_ModuleState* PyUpb_ModuleState_Get(void);
+PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module);
 
 // Returns NULL if module state is not yet available (during startup).
 // Any use of the module state during startup needs to be passed explicitly.
@@ -109,7 +109,7 @@ PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void);
 //
 // This has to be imported lazily rather than at module load time, because
 // otherwise it would cause a circular import.
-PyObject *PyUpb_GetWktBases(PyUpb_ModuleState *state);
+PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state);
 
 // -----------------------------------------------------------------------------
 // WeakMap
@@ -123,18 +123,18 @@ PyObject *PyUpb_GetWktBases(PyUpb_ModuleState *state);
 // remove itself from the map when it is destroyed. The map is weak so it does
 // not take references to the cached objects.
 
-PyUpb_WeakMap *PyUpb_WeakMap_New(void);
-void PyUpb_WeakMap_Free(PyUpb_WeakMap *map);
+PyUpb_WeakMap* PyUpb_WeakMap_New(void);
+void PyUpb_WeakMap_Free(PyUpb_WeakMap* map);
 
 // Adds the given object to the map, indexed by the given key.
-void PyUpb_WeakMap_Add(PyUpb_WeakMap *map, const void *key, PyObject *py_obj);
+void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj);
 
 // Removes the given key from the cache. It must exist in the cache currently.
-void PyUpb_WeakMap_Delete(PyUpb_WeakMap *map, const void *key);
-void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap *map, const void *key);
+void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key);
+void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key);
 
 // Returns a new reference to an object if it exists, otherwise returns NULL.
-PyObject *PyUpb_WeakMap_Get(PyUpb_WeakMap *map, const void *key);
+PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key);
 
 #define PYUPB_WEAKMAP_BEGIN UPB_INTTABLE_BEGIN
 
@@ -146,9 +146,9 @@ PyObject *PyUpb_WeakMap_Get(PyUpb_WeakMap *map, const void *key);
 // }
 //
 // Note that the callee does not own a ref on the returned `obj`.
-bool PyUpb_WeakMap_Next(PyUpb_WeakMap *map, const void **key, PyObject **obj,
-                        intptr_t *iter);
-void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap *map, intptr_t *iter);
+bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
+                        intptr_t* iter);
+void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter);
 
 // -----------------------------------------------------------------------------
 // ObjCache
@@ -156,26 +156,26 @@ void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap *map, intptr_t *iter);
 
 // The object cache is a global WeakMap for mapping upb objects to the
 // corresponding wrapper.
-void PyUpb_ObjCache_Add(const void *key, PyObject *py_obj);
-void PyUpb_ObjCache_Delete(const void *key);
-PyObject *PyUpb_ObjCache_Get(const void *key);  // returns NULL if not present.
-PyUpb_WeakMap *PyUpb_ObjCache_Instance(void);
+void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj);
+void PyUpb_ObjCache_Delete(const void* key);
+PyObject* PyUpb_ObjCache_Get(const void* key);  // returns NULL if not present.
+PyUpb_WeakMap* PyUpb_ObjCache_Instance(void);
 
 // -----------------------------------------------------------------------------
 // Arena
 // -----------------------------------------------------------------------------
 
-PyObject *PyUpb_Arena_New(void);
-upb_arena *PyUpb_Arena_Get(PyObject *arena);
+PyObject* PyUpb_Arena_New(void);
+upb_Arena* PyUpb_Arena_Get(PyObject* arena);
 
 // -----------------------------------------------------------------------------
 // Utilities
 // -----------------------------------------------------------------------------
 
-PyTypeObject *AddObject(PyObject *m, const char *name, PyType_Spec *spec);
+PyTypeObject* AddObject(PyObject* m, const char* name, PyType_Spec* spec);
 
 // Creates a Python type from `spec` and adds it to the given module `m`.
-PyTypeObject *PyUpb_AddClass(PyObject *m, PyType_Spec *spec);
+PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec);
 
 // Like PyUpb_AddClass(), but allows you to specify a tuple of base classes
 // in `bases`.
@@ -184,14 +184,14 @@ PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
 
 // A function that implements the tp_new slot for types that we do not allow
 // users to create directly. This will immediately fail with an error message.
-PyObject *PyUpb_Forbidden_New(PyObject *cls, PyObject *args, PyObject *kwds);
+PyObject* PyUpb_Forbidden_New(PyObject* cls, PyObject* args, PyObject* kwds);
 
 // Our standard dealloc func. It follows the guidance defined in:
 //   https://docs.python.org/3/c-api/typeobj.html#c.PyTypeObject.tp_dealloc
 // However it tests Py_TPFLAGS_HEAPTYPE dynamically so that a single dealloc
 // function can work for any type.
-static inline void PyUpb_Dealloc(void *self) {
-  PyTypeObject *tp = Py_TYPE(self);
+static inline void PyUpb_Dealloc(void* self) {
+  PyTypeObject* tp = Py_TYPE(self);
   freefunc tp_free = PyType_GetSlot(tp, Py_tp_free);
   tp_free(self);
   if (PyType_GetFlags(tp) & Py_TPFLAGS_HEAPTYPE) {
@@ -202,11 +202,11 @@ static inline void PyUpb_Dealloc(void *self) {
 // Equivalent to the Py_NewRef() function introduced in Python 3.10.  If/when we
 // drop support for Python <3.10, we can remove this function and replace all
 // callers with Py_NewRef().
-static inline PyObject *PyUpb_NewRef(PyObject *obj) {
+static inline PyObject* PyUpb_NewRef(PyObject* obj) {
   Py_INCREF(obj);
   return obj;
 }
 
-const char *PyUpb_GetStrData(PyObject *obj);
+const char* PyUpb_GetStrData(PyObject* obj);
 
 #endif  // PYUPB_PROTOBUF_H__

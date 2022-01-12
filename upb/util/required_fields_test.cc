@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -36,11 +36,11 @@
 #include "upb/util/required_fields_test.upb.h"
 #include "upb/util/required_fields_test.upbdefs.h"
 
-std::vector<std::string> PathsToText(upb_FieldPathEntry *entry) {
+std::vector<std::string> PathsToText(upb_FieldPathEntry* entry) {
   std::vector<std::string> ret;
   char buf[1024];  // Larger than anything we'll use in this test.
-  while(entry->field) {
-    upb_FieldPathEntry *before = entry;
+  while (entry->field) {
+    upb_FieldPathEntry* before = entry;
     size_t len = upb_FieldPath_ToText(&entry, buf, sizeof(buf));
     EXPECT_LT(len, sizeof(buf));
     assert(len <= sizeof(buf));
@@ -57,24 +57,26 @@ std::vector<std::string> PathsToText(upb_FieldPathEntry *entry) {
   return ret;
 }
 
-void CheckRequired(absl::string_view json, const std::vector<std::string>& missing) {
+void CheckRequired(absl::string_view json,
+                   const std::vector<std::string>& missing) {
   upb::Arena arena;
   upb::SymbolTable symtab;
-  upb_util_test_TestRequiredFields *test_msg =
+  upb_util_test_TestRequiredFields* test_msg =
       upb_util_test_TestRequiredFields_new(arena.ptr());
   upb::MessageDefPtr m(
       upb_util_test_TestRequiredFields_getmsgdef(symtab.ptr()));
   upb::Status status;
-  EXPECT_TRUE(upb_json_decode(json.data(), json.size(), test_msg, m.ptr(),
-                              symtab.ptr(), 0, arena.ptr(), status.ptr()))
+  EXPECT_TRUE(upb_JsonDecode(json.data(), json.size(), test_msg, m.ptr(),
+                             symtab.ptr(), 0, arena.ptr(), status.ptr()))
       << status.error_message();
-  upb_FieldPathEntry *entries;
+  upb_FieldPathEntry* entries;
   EXPECT_EQ(!missing.empty(), upb_util_HasUnsetRequired(
                                   test_msg, m.ptr(), symtab.ptr(), &entries));
   EXPECT_EQ(missing, PathsToText(entries));
   free(entries);
 
-  // Verify that we can pass a NULL pointer to entries when we don't care about them.
+  // Verify that we can pass a NULL pointer to entries when we don't care about
+  // them.
   EXPECT_EQ(!missing.empty(),
             upb_util_HasUnsetRequired(test_msg, m.ptr(), symtab.ptr(), NULL));
 }
@@ -82,7 +84,7 @@ void CheckRequired(absl::string_view json, const std::vector<std::string>& missi
 // message HasRequiredField {
 //   required int32 required_int32 = 1;
 // }
-// 
+//
 // message TestRequiredFields {
 //   required EmptyMessage required_message = 1;
 //   optional TestRequiredFields optional_message = 2;
@@ -115,7 +117,7 @@ TEST(RequiredFieldsTest, TestRequired) {
       )json",
       {"required_message", "optional_message.required_message",
        "optional_message.repeated_message[1].required_int32"});
-  
+
   // Int32 map key.
   CheckRequired(
       R"json(

@@ -35,11 +35,11 @@
 #include "python/message.h"
 #include "python/repeated.h"
 
-static void PyUpb_ModuleDealloc(void *module) {
-  PyUpb_ModuleState *s = PyModule_GetState(module);
+static void PyUpb_ModuleDealloc(void* module) {
+  PyUpb_ModuleState* s = PyModule_GetState(module);
   PyUpb_WeakMap_Free(s->obj_cache);
   if (s->c_descriptor_symtab) {
-    upb_symtab_free(s->c_descriptor_symtab);
+    upb_DefPool_Free(s->c_descriptor_symtab);
   }
 }
 
@@ -65,9 +65,9 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
                                         "Protobuf Module",
                                         sizeof(PyUpb_ModuleState),
                                         PyUpb_ModuleMethods,  // m_methods
-                                        NULL,  // m_slots
-                                        NULL,  // m_traverse
-                                        NULL,  // m_clear
+                                        NULL,                 // m_slots
+                                        NULL,                 // m_traverse
+                                        NULL,                 // m_clear
                                         PyUpb_ModuleDealloc};
 
 // -----------------------------------------------------------------------------
@@ -79,22 +79,22 @@ PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
   return module ? PyModule_GetState(module) : NULL;
 }
 
-PyUpb_ModuleState *PyUpb_ModuleState_GetFromModule(PyObject *module) {
-  PyUpb_ModuleState *state = PyModule_GetState(module);
+PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module) {
+  PyUpb_ModuleState* state = PyModule_GetState(module);
   assert(state);
   assert(PyModule_GetDef(module) == &module_def);
   return state;
 }
 
-PyUpb_ModuleState *PyUpb_ModuleState_Get(void) {
-  PyObject *module = PyState_FindModule(&module_def);
+PyUpb_ModuleState* PyUpb_ModuleState_Get(void) {
+  PyObject* module = PyState_FindModule(&module_def);
   assert(module);
   return PyUpb_ModuleState_GetFromModule(module);
 }
 
-PyObject *PyUpb_GetWktBases(PyUpb_ModuleState *state) {
+PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
   if (!state->wkt_bases) {
-    PyObject *wkt_module =
+    PyObject* wkt_module =
         PyImport_ImportModule("google.protobuf.internal.well_known_types");
 
     if (wkt_module == NULL) {
@@ -102,7 +102,7 @@ PyObject *PyUpb_GetWktBases(PyUpb_ModuleState *state) {
     }
 
     state->wkt_bases = PyObject_GetAttrString(wkt_module, "WKTBASES");
-    PyObject *m = PyState_FindModule(&module_def);
+    PyObject* m = PyState_FindModule(&module_def);
     // Reparent ownership to m.
     PyModule_AddObject(m, "__internal_wktbases", state->wkt_bases);
     Py_DECREF(wkt_module);
@@ -117,33 +117,31 @@ PyObject *PyUpb_GetWktBases(PyUpb_ModuleState *state) {
 
 struct PyUpb_WeakMap {
   upb_inttable table;
-  upb_arena *arena;
+  upb_Arena* arena;
 };
 
-PyUpb_WeakMap *PyUpb_WeakMap_New(void) {
-  upb_arena *arena = upb_arena_new();
-  PyUpb_WeakMap *map = upb_arena_malloc(arena, sizeof(*map));
+PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
+  upb_Arena* arena = upb_Arena_New();
+  PyUpb_WeakMap* map = upb_Arena_Malloc(arena, sizeof(*map));
   map->arena = arena;
   upb_inttable_init(&map->table, map->arena);
   return map;
 }
 
-void PyUpb_WeakMap_Free(PyUpb_WeakMap *map) {
-  upb_arena_free(map->arena);
-}
+void PyUpb_WeakMap_Free(PyUpb_WeakMap* map) { upb_Arena_Free(map->arena); }
 
-uintptr_t PyUpb_WeakMap_GetKey(const void *key) {
+uintptr_t PyUpb_WeakMap_GetKey(const void* key) {
   uintptr_t n = (uintptr_t)key;
   assert((n & 7) == 0);
   return n >> 3;
 }
 
-void PyUpb_WeakMap_Add(PyUpb_WeakMap *map, const void *key, PyObject *py_obj) {
+void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
   upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
                       upb_value_ptr(py_obj), map->arena);
 }
 
-void PyUpb_WeakMap_Delete(PyUpb_WeakMap *map, const void *key) {
+void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key) {
   upb_value val;
   bool removed =
       upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), &val);
@@ -151,14 +149,14 @@ void PyUpb_WeakMap_Delete(PyUpb_WeakMap *map, const void *key) {
   assert(removed);
 }
 
-void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap *map, const void *key) {
+void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key) {
   upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), NULL);
 }
 
-PyObject *PyUpb_WeakMap_Get(PyUpb_WeakMap *map, const void *key) {
+PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key) {
   upb_value val;
   if (upb_inttable_lookup(&map->table, PyUpb_WeakMap_GetKey(key), &val)) {
-    PyObject *ret = upb_value_getptr(val);
+    PyObject* ret = upb_value_getptr(val);
     Py_INCREF(ret);
     return ret;
   } else {
@@ -166,17 +164,17 @@ PyObject *PyUpb_WeakMap_Get(PyUpb_WeakMap *map, const void *key) {
   }
 }
 
-bool PyUpb_WeakMap_Next(PyUpb_WeakMap *map, const void **key, PyObject **obj,
-                        intptr_t *iter) {
+bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
+                        intptr_t* iter) {
   uintptr_t u_key;
   upb_value val;
   if (!upb_inttable_next2(&map->table, &u_key, &val, iter)) return false;
-  *key = (void *)(u_key << 3);
+  *key = (void*)(u_key << 3);
   *obj = upb_value_getptr(val);
   return true;
 }
 
-void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap *map, intptr_t *iter) {
+void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter) {
   upb_inttable_removeiter(&map->table, iter);
 }
 
@@ -184,17 +182,17 @@ void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap *map, intptr_t *iter) {
 // ObjCache
 // -----------------------------------------------------------------------------
 
-PyUpb_WeakMap *PyUpb_ObjCache_Instance(void) {
-  PyUpb_ModuleState *state = PyUpb_ModuleState_Get();
+PyUpb_WeakMap* PyUpb_ObjCache_Instance(void) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   return state->obj_cache;
 }
 
-void PyUpb_ObjCache_Add(const void *key, PyObject *py_obj) {
+void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
   PyUpb_WeakMap_Add(PyUpb_ObjCache_Instance(), key, py_obj);
 }
 
-void PyUpb_ObjCache_Delete(const void *key) {
-  PyUpb_ModuleState *state = PyUpb_ModuleState_MaybeGet();
+void PyUpb_ObjCache_Delete(const void* key) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
   if (!state) {
     // During the shutdown sequence, our object's Dealloc() methods can be
     // called *after* our module Dealloc() method has been called.  At that
@@ -205,7 +203,7 @@ void PyUpb_ObjCache_Delete(const void *key) {
   PyUpb_WeakMap_Delete(state->obj_cache, key);
 }
 
-PyObject *PyUpb_ObjCache_Get(const void *key) {
+PyObject* PyUpb_ObjCache_Get(const void* key) {
   return PyUpb_WeakMap_Get(PyUpb_ObjCache_Instance(), key);
 }
 
@@ -214,23 +212,23 @@ PyObject *PyUpb_ObjCache_Get(const void *key) {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD
-  upb_arena* arena;
+  PyObject_HEAD;
+  upb_Arena* arena;
 } PyUpb_Arena;
 
 PyObject* PyUpb_Arena_New(void) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyUpb_Arena* arena = (void*)PyType_GenericAlloc(state->arena_type, 0);
-  arena->arena = upb_arena_new();
+  arena->arena = upb_Arena_New();
   return &arena->ob_base;
 }
 
 static void PyUpb_Arena_Dealloc(PyObject* self) {
-  upb_arena_free(PyUpb_Arena_Get(self));
+  upb_Arena_Free(PyUpb_Arena_Get(self));
   PyUpb_Dealloc(self);
 }
 
-upb_arena* PyUpb_Arena_Get(PyObject* arena) {
+upb_Arena* PyUpb_Arena_Get(PyObject* arena) {
   return ((PyUpb_Arena*)arena)->arena;
 }
 
@@ -257,25 +255,25 @@ static bool PyUpb_InitArena(PyObject* m) {
 // Utilities
 // -----------------------------------------------------------------------------
 
-PyTypeObject *AddObject(PyObject *m, const char *name, PyType_Spec *spec) {
-  PyObject *type = PyType_FromSpec(spec);
-  return type && PyModule_AddObject(m, name, type) == 0 ? (PyTypeObject *)type
+PyTypeObject* AddObject(PyObject* m, const char* name, PyType_Spec* spec) {
+  PyObject* type = PyType_FromSpec(spec);
+  return type && PyModule_AddObject(m, name, type) == 0 ? (PyTypeObject*)type
                                                         : NULL;
 }
 
-static const char *PyUpb_GetClassName(PyType_Spec *spec) {
+static const char* PyUpb_GetClassName(PyType_Spec* spec) {
   // spec->name contains a fully-qualified name, like:
   //   google.protobuf.pyext._message.FooBar
   //
   // Find the rightmost '.' to get "FooBar".
-  const char *name = strrchr(spec->name, '.');
+  const char* name = strrchr(spec->name, '.');
   assert(name);
   return name + 1;
 }
 
-PyTypeObject *PyUpb_AddClass(PyObject *m, PyType_Spec *spec) {
-  PyObject *type = PyType_FromSpec(spec);
-  const char *name = PyUpb_GetClassName(spec);
+PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec) {
+  PyObject* type = PyType_FromSpec(spec);
+  const char* name = PyUpb_GetClassName(spec);
   if (PyModule_AddObject(m, name, type) < 0) {
     Py_XDECREF(type);
     return NULL;
@@ -294,7 +292,7 @@ PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
   return (PyTypeObject*)type;
 }
 
-const char *PyUpb_GetStrData(PyObject *obj) {
+const char* PyUpb_GetStrData(PyObject* obj) {
   if (PyUnicode_Check(obj)) {
     return PyUnicode_AsUTF8AndSize(obj, NULL);
   } else if (PyBytes_Check(obj)) {
@@ -304,8 +302,8 @@ const char *PyUpb_GetStrData(PyObject *obj) {
   }
 }
 
-PyObject *PyUpb_Forbidden_New(PyObject *cls, PyObject *args, PyObject *kwds) {
-  PyObject *name = PyObject_GetAttrString(cls, "__name__");
+PyObject* PyUpb_Forbidden_New(PyObject* cls, PyObject* args, PyObject* kwds) {
+  PyObject* name = PyObject_GetAttrString(cls, "__name__");
   PyErr_Format(PyExc_RuntimeError,
                "Objects of type %U may not be created directly.", name);
   Py_XDECREF(name);
@@ -317,10 +315,10 @@ PyObject *PyUpb_Forbidden_New(PyObject *cls, PyObject *args, PyObject *kwds) {
 // -----------------------------------------------------------------------------
 
 PyMODINIT_FUNC PyInit__message(void) {
-  PyObject *m = PyModule_Create(&module_def);
+  PyObject* m = PyModule_Create(&module_def);
   if (!m) return NULL;
 
-  PyUpb_ModuleState *state = PyUpb_ModuleState_GetFromModule(m);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
 
   state->allow_oversize_protos = false;
   state->wkt_bases = NULL;

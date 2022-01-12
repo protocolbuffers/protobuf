@@ -35,23 +35,23 @@
 
 // Creates a new repeated field stub for field `f` of message object `parent`.
 // Precondition: `parent` must be a stub.
-PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_fielddef* f,
+PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_FieldDef* f,
                                      PyObject* arena);
 
 // Returns a map object wrapping `map`, of field type `f`, which must be on
 // `arena`.  If an existing wrapper object exists, it will be returned,
 // otherwise a new object will be created.  The caller always owns a ref on the
 // returned value.
-PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_map* map,
-                                                const upb_fielddef* f,
+PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
+                                                const upb_FieldDef* f,
                                                 PyObject* arena);
 
 // Reifies a map stub to point to the concrete data in `map`.
 // If `map` is NULL, an appropriate empty map will be constructed.
-void PyUpb_MapContainer_Reify(PyObject* self, upb_map* map);
+void PyUpb_MapContainer_Reify(PyObject* self, upb_Map* map);
 
 // Reifies this map object if it is not already reified.
-upb_map* PyUpb_MapContainer_EnsureReified(PyObject* self);
+upb_Map* PyUpb_MapContainer_EnsureReified(PyObject* self);
 
 // Assigns `self[key] = val` for the map `self`.
 int PyUpb_MapContainer_AssignSubscript(PyObject* self, PyObject* key,

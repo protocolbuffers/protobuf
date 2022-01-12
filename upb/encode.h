@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -26,7 +26,7 @@
  */
 
 /*
- * upb_encode: parsing into a upb_msg using a upb_msglayout.
+ * upb_Encode: parsing into a upb_msg using a upb_MiniTable.
  */
 
 #ifndef UPB_ENCODE_H_
@@ -48,29 +48,29 @@ enum {
    *
    * If your proto contains maps, the encoder will need to malloc()/free()
    * memory during encode. */
-  UPB_ENCODE_DETERMINISTIC = 1,
+  kUpb_Encode_Deterministic = 1,
 
   /* When set, unknown fields are not printed. */
-  UPB_ENCODE_SKIPUNKNOWN = 2,
+  kUpb_Encode_SkipUnknown = 2,
 
   /* When set, the encode will fail if any required fields are missing. */
-  UPB_ENCODE_CHECKREQUIRED = 4,
+  kUpb_Encode_CheckRequired = 4,
 };
 
 #define UPB_ENCODE_MAXDEPTH(depth) ((depth) << 16)
 
-char *upb_encode_ex(const void *msg, const upb_msglayout *l, int options,
-                    upb_arena *arena, size_t *size);
+char* upb_EncodeEx(const void* msg, const upb_MiniTable* l, int options,
+                   upb_Arena* arena, size_t* size);
 
-UPB_INLINE char *upb_encode(const void *msg, const upb_msglayout *l,
-                            upb_arena *arena, size_t *size) {
-  return upb_encode_ex(msg, l, 0, arena, size);
+UPB_INLINE char* upb_Encode(const void* msg, const upb_MiniTable* l,
+                            upb_Arena* arena, size_t* size) {
+  return upb_EncodeEx(msg, l, 0, arena, size);
 }
 
 #include "upb/port_undef.inc"
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 
-#endif  /* UPB_ENCODE_H_ */
+#endif /* UPB_ENCODE_H_ */

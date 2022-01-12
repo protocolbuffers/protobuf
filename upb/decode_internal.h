@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -43,28 +43,28 @@
 /* Must be last. */
 #include "upb/port_def.inc"
 
-#define DECODE_NOGROUP (uint32_t)-1
+#define DECODE_NOGROUP (uint32_t) - 1
 
-typedef struct upb_decstate {
-  const char *end;         /* Can read up to 16 bytes slop beyond this. */
-  const char *limit_ptr;   /* = end + UPB_MIN(limit, 0) */
-  upb_msg *unknown_msg;    /* If non-NULL, add unknown data at buffer flip. */
-  const char *unknown;     /* Start of unknown data. */
-  const upb_extreg *extreg;  /* For looking up extensions during the parse. */
-  int limit;               /* Submessage limit relative to end. */
-  int depth;               /* Tracks recursion depth to bound stack usage. */
-  uint32_t end_group;   /* field number of END_GROUP tag, else DECODE_NOGROUP */
+typedef struct upb_Decoder {
+  const char* end;          /* Can read up to 16 bytes slop beyond this. */
+  const char* limit_ptr;    /* = end + UPB_MIN(limit, 0) */
+  upb_msg* unknown_msg;     /* If non-NULL, add unknown data at buffer flip. */
+  const char* unknown;      /* Start of unknown data. */
+  const upb_extreg* extreg; /* For looking up extensions during the parse. */
+  int limit;                /* Submessage limit relative to end. */
+  int depth;                /* Tracks recursion depth to bound stack usage. */
+  uint32_t end_group; /* field number of END_GROUP tag, else DECODE_NOGROUP */
   uint16_t options;
   bool missing_required;
   char patch[32];
-  upb_arena arena;
+  upb_Arena arena;
   jmp_buf err;
 
 #ifndef NDEBUG
-  const char *debug_tagstart;
-  const char *debug_valstart;
+  const char* debug_tagstart;
+  const char* debug_valstart;
 #endif
-} upb_decstate;
+} upb_Decoder;
 
 /* Error function that will abort decoding with longjmp(). We can't declare this
  * UPB_NORETURN, even though it is appropriate, because if we do then compilers
@@ -73,13 +73,13 @@ typedef struct upb_decstate {
  * of our optimizations. That is also why we must declare it in a separate file,
  * otherwise the compiler will see that it calls longjmp() and deduce that it is
  * noreturn. */
-const char *fastdecode_err(upb_decstate *d, int status);
+const char* fastdecode_err(upb_Decoder* d, int status);
 
 extern const uint8_t upb_utf8_offsets[];
 
 UPB_INLINE
-bool decode_verifyutf8_inl(const char *ptr, int len) {
-  const char *end = ptr + len;
+bool decode_verifyutf8_inl(const char* ptr, int len) {
+  const char* end = ptr + len;
 
   // Check 8 bytes at a time for any non-ASCII char.
   while (end - ptr >= 8) {
@@ -97,26 +97,26 @@ bool decode_verifyutf8_inl(const char *ptr, int len) {
 
   return true;
 
- non_ascii:
-  return utf8_range2((const unsigned char *)ptr, end - ptr) == 0;
+non_ascii:
+  return utf8_range2((const unsigned char*)ptr, end - ptr) == 0;
 }
 
-const char *decode_checkrequired(upb_decstate *d, const char *ptr,
-                                 const upb_msg *msg, const upb_msglayout *l);
+const char* decode_checkrequired(upb_Decoder* d, const char* ptr,
+                                 const upb_msg* msg, const upb_MiniTable* l);
 
 /* x86-64 pointers always have the high 16 bits matching. So we can shift
  * left 8 and right 8 without loss of information. */
-UPB_INLINE intptr_t decode_totable(const upb_msglayout *tablep) {
+UPB_INLINE intptr_t decode_totable(const upb_MiniTable* tablep) {
   return ((intptr_t)tablep << 8) | tablep->table_mask;
 }
 
-UPB_INLINE const upb_msglayout *decode_totablep(intptr_t table) {
-  return (const upb_msglayout*)(table >> 8);
+UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
+  return (const upb_MiniTable*)(table >> 8);
 }
 
 UPB_INLINE
-const char *decode_isdonefallback_inl(upb_decstate *d, const char *ptr,
-                                      int overrun, int *status) {
+const char* decode_isdonefallback_inl(upb_Decoder* d, const char* ptr,
+                                      int overrun, int* status) {
   if (overrun < d->limit) {
     /* Need to copy remaining data into patch buffer. */
     UPB_ASSERT(overrun < 16);
@@ -143,11 +143,10 @@ const char *decode_isdonefallback_inl(upb_decstate *d, const char *ptr,
   }
 }
 
-const char *decode_isdonefallback(upb_decstate *d, const char *ptr,
-                                  int overrun);
+const char* decode_isdonefallback(upb_Decoder* d, const char* ptr, int overrun);
 
 UPB_INLINE
-bool decode_isdone(upb_decstate *d, const char **ptr) {
+bool decode_isdone(upb_Decoder* d, const char** ptr) {
   int overrun = *ptr - d->end;
   if (UPB_LIKELY(*ptr < d->limit_ptr)) {
     return false;
@@ -161,10 +160,10 @@ bool decode_isdone(upb_decstate *d, const char **ptr) {
 
 #if UPB_FASTTABLE
 UPB_INLINE
-const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
-                                    upb_msg *msg, intptr_t table,
-                                    uint64_t hasbits, uint64_t tag) {
-  const upb_msglayout *table_p = decode_totablep(table);
+const char* fastdecode_tagdispatch(upb_Decoder* d, const char* ptr,
+                                   upb_msg* msg, intptr_t table,
+                                   uint64_t hasbits, uint64_t tag) {
+  const upb_MiniTable* table_p = decode_totablep(table);
   uint8_t mask = table;
   uint64_t data;
   size_t idx = tag & mask;
@@ -182,11 +181,11 @@ UPB_INLINE uint32_t fastdecode_loadtag(const char* ptr) {
   return tag;
 }
 
-UPB_INLINE void decode_checklimit(upb_decstate *d) {
+UPB_INLINE void decode_checklimit(upb_Decoder* d) {
   UPB_ASSERT(d->limit_ptr == d->end + UPB_MIN(0, d->limit));
 }
 
-UPB_INLINE int decode_pushlimit(upb_decstate *d, const char *ptr, int size) {
+UPB_INLINE int decode_pushlimit(upb_Decoder* d, const char* ptr, int size) {
   int limit = size + (int)(ptr - d->end);
   int delta = d->limit - limit;
   decode_checklimit(d);
@@ -196,7 +195,7 @@ UPB_INLINE int decode_pushlimit(upb_decstate *d, const char *ptr, int size) {
   return delta;
 }
 
-UPB_INLINE void decode_poplimit(upb_decstate *d, const char *ptr,
+UPB_INLINE void decode_poplimit(upb_Decoder* d, const char* ptr,
                                 int saved_delta) {
   UPB_ASSERT(ptr - d->end == d->limit);
   decode_checklimit(d);
@@ -207,4 +206,4 @@ UPB_INLINE void decode_poplimit(upb_decstate *d, const char *ptr,
 
 #include "upb/port_undef.inc"
 
-#endif  /* UPB_DECODE_INT_H_ */
+#endif /* UPB_DECODE_INT_H_ */

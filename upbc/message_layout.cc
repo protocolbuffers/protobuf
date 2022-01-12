@@ -12,11 +12,11 @@
 //       names of its contributors may be used to endorse or promote products
 //       derived from this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-// DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 // (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 // LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 // ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -24,6 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "upbc/message_layout.h"
+
 #include "google/protobuf/descriptor.pb.h"
 
 namespace upbc {
@@ -42,7 +43,7 @@ MessageLayout::Size MessageLayout::Place(
   offset.AlignUp(size_and_align.align);
   size_ = offset;
   size_.Add(size_and_align.size);
-  //maxalign_.MaxFrom(size_and_align.align);
+  // maxalign_.MaxFrom(size_and_align.align);
   maxalign_.MaxFrom(size_and_align.size);
   return offset;
 }
@@ -67,7 +68,7 @@ MessageLayout::SizeAndAlign MessageLayout::SizeOfUnwrapped(
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
       return {{4, 8}, {4, 8}};  // Pointer to message.
     case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return {{8, 16}, {4, 8}};  // upb_strview
+      return {{8, 16}, {4, 8}};  // upb_StringView
     case protobuf::FieldDescriptor::CPPTYPE_BOOL:
       return {{1, 1}, {1, 1}};
     case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
@@ -138,7 +139,7 @@ void MessageLayout::ComputeLayout(const protobuf::Descriptor* descriptor) {
     // Map entries aren't actually stored, they are only used during parsing.
     // For parsing, it helps a lot if all map entry messages have the same
     // layout.
-    SizeAndAlign size{{8, 16}, {4, 8}};  // upb_strview
+    SizeAndAlign size{{8, 16}, {4, 8}};  // upb_StringView
     field_offsets_[descriptor->FindFieldByNumber(1)] = Place(size);
     field_offsets_[descriptor->FindFieldByNumber(2)] = Place(size);
   } else {

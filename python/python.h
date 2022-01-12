@@ -36,7 +36,7 @@
 // This function was not officially added to the limited API until Python 3.10.
 // But in practice it has been stable since Python 3.1.  See:
 //   https://bugs.python.org/issue41784
-PyAPI_FUNC(const char *)
-    PyUnicode_AsUTF8AndSize(PyObject *unicode, Py_ssize_t *size);
+PyAPI_FUNC(const char*)
+    PyUnicode_AsUTF8AndSize(PyObject* unicode, Py_ssize_t* size);
 
 #endif  // PYUPB_PYTHON_H__

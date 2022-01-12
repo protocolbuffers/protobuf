@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -58,7 +58,7 @@ const google::protobuf::Descriptor* AddMessageDescriptor(
 // Converts a upb `msg` (with type `msgdef`) into a protobuf Message object from
 // the given factory and descriptor.
 std::unique_ptr<google::protobuf::Message> ToProto(
-    const upb_msg* msg, const upb_msgdef* msgdef,
+    const upb_msg* msg, const upb_MessageDef* msgdef,
     const google::protobuf::Descriptor* desc,
     google::protobuf::MessageFactory* factory) {
   upb::Arena arena;
@@ -67,7 +67,7 @@ std::unique_ptr<google::protobuf::Message> ToProto(
       factory->GetPrototype(desc)->New());
   size_t size;
   const char* buf =
-      upb_encode(msg, upb_msgdef_layout(msgdef), arena.ptr(), &size);
+      upb_Encode(msg, upb_MessageDef_MiniTable(msgdef), arena.ptr(), &size);
   google_msg->ParseFromArray(buf, size);
   return google_msg;
 }
@@ -116,7 +116,7 @@ void CheckFile(const upb::FileDefPtr file,
 TEST(DefToProto, Test) {
   upb::Arena arena;
   upb::SymbolTable symtab;
-  upb_strview test_file_desc =
+  upb_StringView test_file_desc =
       upb_util_def_to_proto_test_proto_upbdefinit.descriptor;
   const auto* file_desc = google_protobuf_FileDescriptorProto_parse(
       test_file_desc.data, test_file_desc.size, arena.ptr());
