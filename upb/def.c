@@ -405,8 +405,7 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
   return &e->values[i];
 }
 
-/* upb_EnumValueDef
- * *************************************************************/
+/* upb_EnumValueDef ***********************************************************/
 
 const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
     const upb_EnumValueDef* e) {
@@ -1048,8 +1047,7 @@ const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
   return NULL;
 }
 
-/* upb_DefPool
- * *****************************************************************/
+/* upb_DefPool ****************************************************************/
 
 void upb_DefPool_Free(upb_DefPool* s) {
   upb_Arena_Free(s->arena);
