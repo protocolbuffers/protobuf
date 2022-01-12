@@ -231,6 +231,7 @@ java_library(
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
     ],
+    visibility = ["//java:__subpackages__"],
 )
 
 test_suite(
@@ -334,6 +335,7 @@ java_library(
     ],
     visibility = [
         "//java/lite:__pkg__",
+        "//java/kotlin-lite:__pkg__",
     ],
     deps = [
         ":generic_test_protos_java_proto_lite",

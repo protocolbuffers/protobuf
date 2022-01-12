@@ -8,6 +8,7 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.errorprone:error_prone_annotations:2.3.2",
     "com.google.j2objc:j2objc-annotations:1.3",
     "com.google.guava:guava:30.1.1-jre",
+    "com.google.guava:guava-testlib:30.1.1-jre",
     "com.google.truth:truth:1.1.2",
     "junit:junit:4.12",
     "org.easymock:easymock:3.2",

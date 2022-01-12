@@ -9,9 +9,9 @@
 
   <artifactId>protobuf-kotlin-lite</artifactId>
 
-  <name>Protocol Buffers [Lite]</name>
+  <name>Protocol Buffers [Kotlin-Lite]</name>
   <description>
-    Lite version of Protocol Buffers library. This version is optimized for code size, but does
+    Lite version of Kotlin Protocol Buffers library. This version is optimized for code size, but does
     not guarantee API/ABI stability.
   </description>
 
