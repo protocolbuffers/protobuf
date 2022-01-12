@@ -101,7 +101,7 @@ static PyUpb_DescriptorBase* PyUpb_DescriptorBase_Check(
 }
 
 static PyObject* PyUpb_DescriptorBase_GetOptions(PyUpb_DescriptorBase* self,
-                                                 const upb_msg* opts,
+                                                 const upb_Message* opts,
                                                  const upb_MiniTable* layout,
                                                  const char* msg_name) {
   if (!self->options) {
@@ -124,7 +124,7 @@ static PyObject* PyUpb_DescriptorBase_GetOptions(PyUpb_DescriptorBase* self,
     PyObject* py_arena = PyUpb_Arena_New();
     upb_Arena* arena = PyUpb_Arena_Get(py_arena);
     char* pb = upb_Encode(opts, layout, arena, &size);
-    upb_msg* opts2 = upb_Message_New(m, arena);
+    upb_Message* opts2 = upb_Message_New(m, arena);
     assert(opts2);
     bool ok = _upb_decode(pb, size, opts2, upb_MessageDef_MiniTable(m),
                           upb_DefPool_ExtensionRegistry(symtab), 0,
@@ -147,7 +147,7 @@ static PyObject* PyUpb_DescriptorBase_GetSerializedProto(
   PyUpb_DescriptorBase* self = (void*)_self;
   upb_Arena* arena = upb_Arena_New();
   if (!arena) PYUPB_RETURN_OOM;
-  upb_msg* proto = func(self->def, arena);
+  upb_Message* proto = func(self->def, arena);
   if (!proto) goto oom;
   size_t size;
   char* pb = upb_Encode(proto, layout, arena, &size);

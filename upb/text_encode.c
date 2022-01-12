@@ -48,7 +48,8 @@ typedef struct {
   _upb_mapsorter sorter;
 } txtenc;
 
-static void txtenc_msg(txtenc* e, const upb_msg* msg, const upb_MessageDef* m);
+static void txtenc_msg(txtenc* e, const upb_Message* msg,
+                       const upb_MessageDef* m);
 
 static void txtenc_putbytes(txtenc* e, const void* data, size_t len) {
   size_t have = e->end - e->ptr;
@@ -404,7 +405,8 @@ static const char* txtenc_unknown(txtenc* e, const char* ptr, const char* end,
 
 #undef CHK
 
-static void txtenc_msg(txtenc* e, const upb_msg* msg, const upb_MessageDef* m) {
+static void txtenc_msg(txtenc* e, const upb_Message* msg,
+                       const upb_MessageDef* m) {
   size_t iter = kUpb_Message_Begin;
   const upb_FieldDef* f;
   upb_MessageValue val;
@@ -421,7 +423,7 @@ static void txtenc_msg(txtenc* e, const upb_msg* msg, const upb_MessageDef* m) {
 
   if ((e->options & UPB_TXTENC_SKIPUNKNOWN) == 0) {
     size_t len;
-    const char* ptr = upb_Message_Getunknown(msg, &len);
+    const char* ptr = upb_Message_GetUnknown(msg, &len);
     char* start = e->ptr;
     if (ptr) {
       if (!txtenc_unknown(e, ptr, ptr + len, -1)) {
@@ -443,7 +445,7 @@ size_t txtenc_nullz(txtenc* e, size_t size) {
   return ret;
 }
 
-size_t upb_text_encode(const upb_msg* msg, const upb_MessageDef* m,
+size_t upb_text_encode(const upb_Message* msg, const upb_MessageDef* m,
                        const upb_DefPool* ext_pool, int options, char* buf,
                        size_t size) {
   txtenc e;

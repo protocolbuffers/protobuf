@@ -424,8 +424,8 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message,
             return ret;
           }
           UPB_INLINE $0* $0_parse_ex(const char* buf, size_t size,
-                                     const upb_extreg* extreg, int options,
-                                     upb_Arena* arena) {
+                                     const upb_ExtensionRegistry* extreg,
+                                     int options, upb_Arena* arena) {
             $0* ret = $0_new(arena);
             if (!ret) return NULL;
             if (_upb_decode(buf, size, ret, &$1, extreg, options, arena) !=

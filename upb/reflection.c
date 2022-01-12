@@ -89,9 +89,10 @@ static const char _upb_CTypeo_sizelg2[12] = {
     UPB_SIZE(3, 4), /* kUpb_CType_Bytes */
 };
 
-/** upb_msg *******************************************************************/
+/** upb_Message
+ * *******************************************************************/
 
-upb_msg* upb_Message_New(const upb_MessageDef* m, upb_Arena* a) {
+upb_Message* upb_Message_New(const upb_MessageDef* m, upb_Arena* a) {
   return _upb_Message_New(upb_MessageDef_MiniTable(m), a);
 }
 
@@ -99,7 +100,7 @@ static bool in_oneof(const upb_MiniTable_Field* field) {
   return field->presence < 0;
 }
 
-static upb_MessageValue _upb_Message_Getraw(const upb_msg* msg,
+static upb_MessageValue _upb_Message_Getraw(const upb_Message* msg,
                                             const upb_FieldDef* f) {
   const upb_MiniTable_Field* field = upb_FieldDef_MiniTable(f);
   const char* mem = UPB_PTR_AT(msg, field->offset, char);
@@ -108,7 +109,7 @@ static upb_MessageValue _upb_Message_Getraw(const upb_msg* msg,
   return val;
 }
 
-bool upb_Message_Has(const upb_msg* msg, const upb_FieldDef* f) {
+bool upb_Message_Has(const upb_Message* msg, const upb_FieldDef* f) {
   assert(upb_FieldDef_HasPresence(f));
   if (upb_FieldDef_IsExtension(f)) {
     const upb_MiniTable_Extension* ext = _upb_FieldDef_ExtensionMiniTable(f);
@@ -127,7 +128,7 @@ bool upb_Message_Has(const upb_msg* msg, const upb_FieldDef* f) {
   }
 }
 
-const upb_FieldDef* upb_Message_WhichOneof(const upb_msg* msg,
+const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
                                            const upb_OneofDef* o) {
   const upb_FieldDef* f = upb_OneofDef_Field(o, 0);
   if (upb_OneofDef_IsSynthetic(o)) {
@@ -142,7 +143,8 @@ const upb_FieldDef* upb_Message_WhichOneof(const upb_msg* msg,
   }
 }
 
-upb_MessageValue upb_Message_Get(const upb_msg* msg, const upb_FieldDef* f) {
+upb_MessageValue upb_Message_Get(const upb_Message* msg,
+                                 const upb_FieldDef* f) {
   if (upb_FieldDef_IsExtension(f)) {
     const upb_Message_Extension* ext =
         _upb_Message_Getext(msg, _upb_FieldDef_ExtensionMiniTable(f));
@@ -159,7 +161,8 @@ upb_MessageValue upb_Message_Get(const upb_msg* msg, const upb_FieldDef* f) {
   return upb_FieldDef_Default(f);
 }
 
-upb_MutableMessageValue upb_Message_Mutable(upb_msg* msg, const upb_FieldDef* f,
+upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
+                                            const upb_FieldDef* f,
                                             upb_Arena* a) {
   UPB_ASSERT(upb_FieldDef_IsSubMessage(f) || upb_FieldDef_IsRepeated(f));
   if (upb_FieldDef_HasPresence(f) && !upb_Message_Has(msg, f)) {
@@ -196,8 +199,8 @@ make:
   return ret;
 }
 
-bool upb_Message_Set(upb_msg* msg, const upb_FieldDef* f, upb_MessageValue val,
-                     upb_Arena* a) {
+bool upb_Message_Set(upb_Message* msg, const upb_FieldDef* f,
+                     upb_MessageValue val, upb_Arena* a) {
   if (upb_FieldDef_IsExtension(f)) {
     upb_Message_Extension* ext = _upb_Message_Getorcreateext(
         msg, _upb_FieldDef_ExtensionMiniTable(f), a);
@@ -216,7 +219,7 @@ bool upb_Message_Set(upb_msg* msg, const upb_FieldDef* f, upb_MessageValue val,
   return true;
 }
 
-void upb_Message_ClearField(upb_msg* msg, const upb_FieldDef* f) {
+void upb_Message_ClearField(upb_Message* msg, const upb_FieldDef* f) {
   if (upb_FieldDef_IsExtension(f)) {
     _upb_Message_Clearext(msg, _upb_FieldDef_ExtensionMiniTable(f));
   } else {
@@ -235,11 +238,11 @@ void upb_Message_ClearField(upb_msg* msg, const upb_FieldDef* f) {
   }
 }
 
-void upb_Message_Clear(upb_msg* msg, const upb_MessageDef* m) {
+void upb_Message_Clear(upb_Message* msg, const upb_MessageDef* m) {
   _upb_Message_Clear(msg, upb_MessageDef_MiniTable(m));
 }
 
-bool upb_Message_Next(const upb_msg* msg, const upb_MessageDef* m,
+bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
                       const upb_DefPool* ext_pool, const upb_FieldDef** out_f,
                       upb_MessageValue* out_val, size_t* iter) {
   size_t i = *iter;
@@ -295,7 +298,7 @@ bool upb_Message_Next(const upb_msg* msg, const upb_MessageDef* m,
   return false;
 }
 
-bool _upb_Message_DiscardUnknown(upb_msg* msg, const upb_MessageDef* m,
+bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
                                  int depth) {
   size_t iter = kUpb_Message_Begin;
   const upb_FieldDef* f;
@@ -320,7 +323,7 @@ bool _upb_Message_DiscardUnknown(upb_msg* msg, const upb_MessageDef* m,
 
       while (upb_MapIterator_Next(map, &iter)) {
         upb_MessageValue map_val = upb_MapIterator_Value(map, iter);
-        if (!_upb_Message_DiscardUnknown((upb_msg*)map_val.msg_val, val_m,
+        if (!_upb_Message_DiscardUnknown((upb_Message*)map_val.msg_val, val_m,
                                          depth)) {
           ret = false;
         }
@@ -330,12 +333,14 @@ bool _upb_Message_DiscardUnknown(upb_msg* msg, const upb_MessageDef* m,
       size_t i, n = upb_Array_Size(arr);
       for (i = 0; i < n; i++) {
         upb_MessageValue elem = upb_Array_Get(arr, i);
-        if (!_upb_Message_DiscardUnknown((upb_msg*)elem.msg_val, subm, depth)) {
+        if (!_upb_Message_DiscardUnknown((upb_Message*)elem.msg_val, subm,
+                                         depth)) {
           ret = false;
         }
       }
     } else {
-      if (!_upb_Message_DiscardUnknown((upb_msg*)val.msg_val, subm, depth)) {
+      if (!_upb_Message_DiscardUnknown((upb_Message*)val.msg_val, subm,
+                                       depth)) {
         ret = false;
       }
     }
@@ -344,7 +349,7 @@ bool _upb_Message_DiscardUnknown(upb_msg* msg, const upb_MessageDef* m,
   return ret;
 }
 
-bool upb_Message_DiscardUnknown(upb_msg* msg, const upb_MessageDef* m,
+bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
                                 int maxdepth) {
   return _upb_Message_DiscardUnknown(msg, m, maxdepth);
 }

@@ -70,7 +70,7 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByNumber(PyObject* _self,
   const upb_MiniTable* l = upb_MessageDef_MiniTable(m);
   const upb_FileDef* file = upb_MessageDef_File(m);
   const upb_DefPool* symtab = upb_FileDef_Pool(file);
-  const upb_extreg* reg = upb_DefPool_ExtensionRegistry(symtab);
+  const upb_ExtensionRegistry* reg = upb_DefPool_ExtensionRegistry(symtab);
   int64_t number = PyLong_AsLong(arg);
   const upb_MiniTable_Extension* ext =
       (upb_MiniTable_Extension*)_upb_extreg_get(reg, l, number);
@@ -92,7 +92,7 @@ static int PyUpb_ExtensionDict_Contains(PyObject* _self, PyObject* key) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
   const upb_FieldDef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
   if (!f) return -1;
-  upb_msg* msg = PyUpb_CMessage_GetIfReified(self->msg);
+  upb_Message* msg = PyUpb_CMessage_GetIfReified(self->msg);
   if (!msg) return 0;
   if (upb_FieldDef_IsRepeated(f)) {
     upb_MessageValue val = upb_Message_Get(msg, f);
@@ -104,8 +104,8 @@ static int PyUpb_ExtensionDict_Contains(PyObject* _self, PyObject* key) {
 
 static Py_ssize_t PyUpb_ExtensionDict_Length(PyObject* _self) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
-  upb_msg* msg = PyUpb_CMessage_GetIfReified(self->msg);
-  return msg ? upb_msg_extcount(msg) : 0;
+  upb_Message* msg = PyUpb_CMessage_GetIfReified(self->msg);
+  return msg ? upb_Message_ExtensionCount(msg) : 0;
 }
 
 static PyObject* PyUpb_ExtensionDict_Subscript(PyObject* _self, PyObject* key) {
@@ -190,7 +190,7 @@ static void PyUpb_ExtensionIterator_Dealloc(void* _self) {
 
 PyObject* PyUpb_ExtensionIterator_IterNext(PyObject* _self) {
   PyUpb_ExtensionIterator* self = (PyUpb_ExtensionIterator*)_self;
-  upb_msg* msg = PyUpb_CMessage_GetIfReified(self->msg);
+  upb_Message* msg = PyUpb_CMessage_GetIfReified(self->msg);
   if (!msg) return NULL;
   const upb_MessageDef* m = PyUpb_CMessage_GetMsgdef(self->msg);
   const upb_DefPool* symtab = upb_FileDef_Pool(upb_MessageDef_File(m));

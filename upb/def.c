@@ -206,7 +206,7 @@ struct upb_DefPool {
   upb_strtable syms;  /* full_name -> packed def ptr */
   upb_strtable files; /* file_name -> upb_FileDef* */
   upb_inttable exts;  /* upb_MiniTable_Extension* -> upb_FieldDef* */
-  upb_extreg* extreg;
+  upb_ExtensionRegistry* extreg;
   size_t bytes_loaded;
 };
 
@@ -1072,7 +1072,7 @@ upb_DefPool* upb_DefPool_New(void) {
     goto err;
   }
 
-  s->extreg = upb_extreg_new(s->arena);
+  s->extreg = upb_ExtensionRegistry_New(s->arena);
   if (!s->extreg) goto err;
   return s;
 
@@ -3162,7 +3162,8 @@ bool _upb_DefPool_registerlayout(upb_DefPool* s, const char* filename,
                              s->arena);
 }
 
-const upb_extreg* upb_DefPool_ExtensionRegistry(const upb_DefPool* s) {
+const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
+    const upb_DefPool* s) {
   return s->extreg;
 }
 

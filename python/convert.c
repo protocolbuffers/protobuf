@@ -66,7 +66,7 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
       return ret;
     }
     case kUpb_CType_Message:
-      return PyUpb_CMessage_Get((upb_msg*)val.msg_val,
+      return PyUpb_CMessage_Get((upb_Message*)val.msg_val,
                                 upb_FieldDef_MessageSubDef(f), arena);
     default:
       PyErr_Format(PyExc_SystemError,
@@ -242,7 +242,7 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
   }
 }
 
-bool PyUpb_Message_IsEqual(const upb_msg* msg1, const upb_msg* msg2,
+bool PyUpb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
                            const upb_MessageDef* m);
 
 // -----------------------------------------------------------------------------
@@ -341,10 +341,11 @@ bool PyUpb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
   return true;
 }
 
-bool PyUpb_Message_IsEqual(const upb_msg* msg1, const upb_msg* msg2,
+bool PyUpb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
                            const upb_MessageDef* m) {
   if (msg1 == msg2) return true;
-  if (upb_msg_extcount(msg1) != upb_msg_extcount(msg2)) return false;
+  if (upb_Message_ExtensionCount(msg1) != upb_Message_ExtensionCount(msg2))
+    return false;
 
   // Compare messages field-by-field.  This is slightly tricky, because while
   // we can iterate over normal fields in a predictable order, the extension
@@ -392,8 +393,8 @@ bool PyUpb_Message_IsEqual(const upb_msg* msg1, const upb_msg* msg2,
   if (upb_Message_Next(msg2, m, NULL, &f2, &val2, &iter2)) return false;
 
   size_t usize1, usize2;
-  const char* uf1 = upb_Message_Getunknown(msg1, &usize1);
-  const char* uf2 = upb_Message_Getunknown(msg2, &usize2);
+  const char* uf1 = upb_Message_GetUnknown(msg1, &usize1);
+  const char* uf2 = upb_Message_GetUnknown(msg2, &usize2);
   // 100 is arbitrary, we're trying to prevent stack overflow but it's not
   // obvious how deep we should allow here.
   return upb_Message_UnknownFieldsAreEqual(uf1, usize1, uf2, usize2, 100) ==

@@ -48,11 +48,12 @@
 typedef struct upb_Decoder {
   const char* end;          /* Can read up to 16 bytes slop beyond this. */
   const char* limit_ptr;    /* = end + UPB_MIN(limit, 0) */
-  upb_msg* unknown_msg;     /* If non-NULL, add unknown data at buffer flip. */
+  upb_Message* unknown_msg; /* If non-NULL, add unknown data at buffer flip. */
   const char* unknown;      /* Start of unknown data. */
-  const upb_extreg* extreg; /* For looking up extensions during the parse. */
-  int limit;                /* Submessage limit relative to end. */
-  int depth;                /* Tracks recursion depth to bound stack usage. */
+  const upb_ExtensionRegistry*
+      extreg;         /* For looking up extensions during the parse. */
+  int limit;          /* Submessage limit relative to end. */
+  int depth;          /* Tracks recursion depth to bound stack usage. */
   uint32_t end_group; /* field number of END_GROUP tag, else DECODE_NOGROUP */
   uint16_t options;
   bool missing_required;
@@ -102,7 +103,8 @@ non_ascii:
 }
 
 const char* decode_checkrequired(upb_Decoder* d, const char* ptr,
-                                 const upb_msg* msg, const upb_MiniTable* l);
+                                 const upb_Message* msg,
+                                 const upb_MiniTable* l);
 
 /* x86-64 pointers always have the high 16 bits matching. So we can shift
  * left 8 and right 8 without loss of information. */
@@ -121,8 +123,8 @@ const char* decode_isdonefallback_inl(upb_Decoder* d, const char* ptr,
     /* Need to copy remaining data into patch buffer. */
     UPB_ASSERT(overrun < 16);
     if (d->unknown_msg) {
-      if (!_upb_msg_addunknown(d->unknown_msg, d->unknown, ptr - d->unknown,
-                               &d->arena)) {
+      if (!_upb_Message_AddUnknown(d->unknown_msg, d->unknown, ptr - d->unknown,
+                                   &d->arena)) {
         *status = kUpb_DecodeStatus_OutOfMemory;
         return NULL;
       }
@@ -161,7 +163,7 @@ bool decode_isdone(upb_Decoder* d, const char** ptr) {
 #if UPB_FASTTABLE
 UPB_INLINE
 const char* fastdecode_tagdispatch(upb_Decoder* d, const char* ptr,
-                                   upb_msg* msg, intptr_t table,
+                                   upb_Message* msg, intptr_t table,
                                    uint64_t hasbits, uint64_t tag) {
   const upb_MiniTable* table_p = decode_totablep(table);
   uint8_t mask = table;

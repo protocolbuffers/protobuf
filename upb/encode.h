@@ -26,7 +26,7 @@
  */
 
 /*
- * upb_Encode: parsing into a upb_msg using a upb_MiniTable.
+ * upb_Encode: parsing into a upb_Message using a upb_MiniTable.
  */
 
 #ifndef UPB_ENCODE_H_

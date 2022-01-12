@@ -46,8 +46,8 @@
 
 // The standard set of arguments passed to each parsing function.
 // Thanks to x86-64 calling conventions, these will stay in registers.
-#define UPB_PARSE_PARAMS                                         \
-  upb_Decoder *d, const char *ptr, upb_msg *msg, intptr_t table, \
+#define UPB_PARSE_PARAMS                                             \
+  upb_Decoder *d, const char *ptr, upb_Message *msg, intptr_t table, \
       uint64_t hasbits, uint64_t data
 
 #define UPB_PARSE_ARGS d, ptr, msg, table, hasbits, data
@@ -275,16 +275,16 @@ static fastdecode_nextret fastdecode_nextrepeated(upb_Decoder* d, void* dst,
 }
 
 UPB_FORCEINLINE
-static void* fastdecode_fieldmem(upb_msg* msg, uint64_t data) {
+static void* fastdecode_fieldmem(upb_Message* msg, uint64_t data) {
   size_t ofs = data >> 48;
   return (char*)msg + ofs;
 }
 
 UPB_FORCEINLINE
-static void* fastdecode_getfield(upb_Decoder* d, const char* ptr, upb_msg* msg,
-                                 uint64_t* data, uint64_t* hasbits,
-                                 fastdecode_arr* farr, int valbytes,
-                                 upb_card card) {
+static void* fastdecode_getfield(upb_Decoder* d, const char* ptr,
+                                 upb_Message* msg, uint64_t* data,
+                                 uint64_t* hasbits, fastdecode_arr* farr,
+                                 int valbytes, upb_card card) {
   switch (card) {
     case CARD_s: {
       uint8_t hasbit_index = *data >> 24;
@@ -648,14 +648,14 @@ TAGBYTES(p)
 /* string fields **************************************************************/
 
 typedef const char* fastdecode_copystr_func(struct upb_Decoder* d,
-                                            const char* ptr, upb_msg* msg,
+                                            const char* ptr, upb_Message* msg,
                                             const upb_MiniTable* table,
                                             uint64_t hasbits,
                                             upb_StringView* dst);
 
 UPB_NOINLINE
 static const char* fastdecode_verifyutf8(upb_Decoder* d, const char* ptr,
-                                         upb_msg* msg, intptr_t table,
+                                         upb_Message* msg, intptr_t table,
                                          uint64_t hasbits, uint64_t data) {
   upb_StringView* dst = (upb_StringView*)data;
   if (!decode_verifyutf8_inl(dst->data, dst->size)) {
@@ -699,7 +699,7 @@ static const char* fastdecode_verifyutf8(upb_Decoder* d, const char* ptr,
 
 UPB_NOINLINE
 static const char* fastdecode_longstring_utf8(struct upb_Decoder* d,
-                                              const char* ptr, upb_msg* msg,
+                                              const char* ptr, upb_Message* msg,
                                               intptr_t table, uint64_t hasbits,
                                               uint64_t data) {
   upb_StringView* dst = (upb_StringView*)data;
@@ -707,11 +707,9 @@ static const char* fastdecode_longstring_utf8(struct upb_Decoder* d,
 }
 
 UPB_NOINLINE
-static const char* fastdecode_longstring_noutf8(struct upb_Decoder* d,
-                                                const char* ptr, upb_msg* msg,
-                                                intptr_t table,
-                                                uint64_t hasbits,
-                                                uint64_t data) {
+static const char* fastdecode_longstring_noutf8(
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
+    uint64_t hasbits, uint64_t data) {
   upb_StringView* dst = (upb_StringView*)data;
   FASTDECODE_LONGSTRING(d, ptr, msg, table, hasbits, dst, false);
 }
@@ -926,8 +924,8 @@ TAGBYTES(r)
 /* message fields *************************************************************/
 
 UPB_INLINE
-upb_msg* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* l,
-                            int msg_ceil_bytes) {
+upb_Message* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* l,
+                                int msg_ceil_bytes) {
   size_t size = l->size + sizeof(upb_Message_Internal);
   char* msg_data;
   if (UPB_LIKELY(msg_ceil_bytes > 0 &&
@@ -947,7 +945,7 @@ upb_msg* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* l,
 
 typedef struct {
   intptr_t table;
-  upb_msg* msg;
+  upb_Message* msg;
 } fastdecode_submsgdata;
 
 UPB_FORCEINLINE
@@ -970,7 +968,7 @@ static const char* fastdecode_tosubmsg(upb_Decoder* d, const char* ptr,
     return fastdecode_err(d, kUpb_DecodeStatus_MaxDepthExceeded);         \
   }                                                                       \
                                                                           \
-  upb_msg** dst;                                                          \
+  upb_Message** dst;                                                      \
   uint32_t submsg_idx = (data >> 16) & 0xff;                              \
   const upb_MiniTable* tablep = decode_totablep(table);                   \
   const upb_MiniTable* subtablep = tablep->subs[submsg_idx].submsg;       \
@@ -982,7 +980,7 @@ static const char* fastdecode_tosubmsg(upb_Decoder* d, const char* ptr,
   }                                                                       \
                                                                           \
   dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, &farr,          \
-                            sizeof(upb_msg*), card);                      \
+                            sizeof(upb_Message*), card);                  \
                                                                           \
   if (card == CARD_s) {                                                   \
     *(uint32_t*)msg |= hasbits;                                           \
@@ -991,7 +989,7 @@ static const char* fastdecode_tosubmsg(upb_Decoder* d, const char* ptr,
                                                                           \
   again:                                                                  \
   if (card == CARD_r) {                                                   \
-    dst = fastdecode_resizearr(d, dst, &farr, sizeof(upb_msg*));          \
+    dst = fastdecode_resizearr(d, dst, &farr, sizeof(upb_Message*));      \
   }                                                                       \
                                                                           \
   submsg.msg = *dst;                                                      \
@@ -1009,7 +1007,7 @@ static const char* fastdecode_tosubmsg(upb_Decoder* d, const char* ptr,
                                                                           \
   if (card == CARD_r) {                                                   \
     fastdecode_nextret ret = fastdecode_nextrepeated(                     \
-        d, dst, &ptr, &farr, data, tagbytes, sizeof(upb_msg*));           \
+        d, dst, &ptr, &farr, data, tagbytes, sizeof(upb_Message*));       \
     switch (ret.next) {                                                   \
       case FD_NEXT_SAMEFIELD:                                             \
         dst = ret.dst;                                                    \

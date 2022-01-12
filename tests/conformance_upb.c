@@ -85,7 +85,7 @@ typedef struct {
   const upb_DefPool* symtab;
 } ctx;
 
-bool parse_proto(upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
+bool parse_proto(upb_Message* msg, const upb_MessageDef* m, const ctx* c) {
   upb_StringView proto =
       conformance_ConformanceRequest_protobuf_payload(c->request);
   if (upb_decode(proto.data, proto.size, msg, upb_MessageDef_MiniTable(m),
@@ -99,7 +99,7 @@ bool parse_proto(upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
   }
 }
 
-void serialize_proto(const upb_msg* msg, const upb_MessageDef* m,
+void serialize_proto(const upb_Message* msg, const upb_MessageDef* m,
                      const ctx* c) {
   size_t len;
   char* data = upb_Encode(msg, upb_MessageDef_MiniTable(m), c->arena, &len);
@@ -113,7 +113,8 @@ void serialize_proto(const upb_msg* msg, const upb_MessageDef* m,
   }
 }
 
-void serialize_text(const upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
+void serialize_text(const upb_Message* msg, const upb_MessageDef* m,
+                    const ctx* c) {
   size_t len;
   size_t len2;
   int opts = 0;
@@ -131,7 +132,7 @@ void serialize_text(const upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
       c->response, upb_StringView_FromDataAndSize(data, len));
 }
 
-bool parse_json(upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
+bool parse_json(upb_Message* msg, const upb_MessageDef* m, const ctx* c) {
   upb_StringView json = conformance_ConformanceRequest_json_payload(c->request);
   upb_Status status;
   int opts = 0;
@@ -157,7 +158,8 @@ bool parse_json(upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
   }
 }
 
-void serialize_json(const upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
+void serialize_json(const upb_Message* msg, const upb_MessageDef* m,
+                    const ctx* c) {
   size_t len;
   size_t len2;
   int opts = 0;
@@ -185,7 +187,7 @@ void serialize_json(const upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
       c->response, upb_StringView_FromDataAndSize(data, len));
 }
 
-bool parse_input(upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
+bool parse_input(upb_Message* msg, const upb_MessageDef* m, const ctx* c) {
   switch (conformance_ConformanceRequest_payload_case(c->request)) {
     case conformance_ConformanceRequest_payload_protobuf_payload:
       return parse_proto(msg, m, c);
@@ -203,7 +205,8 @@ bool parse_input(upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
   }
 }
 
-void write_output(const upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
+void write_output(const upb_Message* msg, const upb_MessageDef* m,
+                  const ctx* c) {
   switch (conformance_ConformanceRequest_requested_output_format(c->request)) {
     case conformance_UNSPECIFIED:
       fprintf(stderr, "conformance_upb: Unspecified output format.\n");
@@ -227,7 +230,7 @@ void write_output(const upb_msg* msg, const upb_MessageDef* m, const ctx* c) {
 }
 
 void DoTest(const ctx* c) {
-  upb_msg* msg;
+  upb_Message* msg;
   upb_StringView name = conformance_ConformanceRequest_message_type(c->request);
   const upb_MessageDef* m =
       upb_DefPool_FindMessageByNameWithSize(c->symtab, name.data, name.size);
@@ -256,8 +259,8 @@ void DoTest(const ctx* c) {
   }
 }
 
-void debug_print(const char* label, const upb_msg* msg, const upb_MessageDef* m,
-                 const ctx* c) {
+void debug_print(const char* label, const upb_Message* msg,
+                 const upb_MessageDef* m, const ctx* c) {
   char buf[512];
   upb_text_encode(msg, m, c->symtab, UPB_TXTENC_SINGLELINE, buf, sizeof(buf));
   fprintf(stderr, "%s: %s\n", label, buf);

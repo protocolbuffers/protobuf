@@ -53,15 +53,15 @@ typedef struct {
   upb_Arena* arena;
 } jsonenc;
 
-static void jsonenc_msg(jsonenc* e, const upb_msg* msg,
+static void jsonenc_msg(jsonenc* e, const upb_Message* msg,
                         const upb_MessageDef* m);
 static void jsonenc_scalar(jsonenc* e, upb_MessageValue val,
                            const upb_FieldDef* f);
-static void jsonenc_msgfield(jsonenc* e, const upb_msg* msg,
+static void jsonenc_msgfield(jsonenc* e, const upb_Message* msg,
                              const upb_MessageDef* m);
-static void jsonenc_msgfields(jsonenc* e, const upb_msg* msg,
+static void jsonenc_msgfields(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m, bool first);
-static void jsonenc_value(jsonenc* e, const upb_msg* msg,
+static void jsonenc_value(jsonenc* e, const upb_Message* msg,
                           const upb_MessageDef* m);
 
 UPB_NORETURN static void jsonenc_err(jsonenc* e, const char* msg) {
@@ -138,7 +138,7 @@ static void jsonenc_nanos(jsonenc* e, int32_t nanos) {
   jsonenc_printf(e, ".%.*" PRId32, digits, nanos);
 }
 
-static void jsonenc_timestamp(jsonenc* e, const upb_msg* msg,
+static void jsonenc_timestamp(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m) {
   const upb_FieldDef* seconds_f =
       upb_MessageDef_FindFieldByNumberWithSize(m, 1);
@@ -181,7 +181,7 @@ static void jsonenc_timestamp(jsonenc* e, const upb_msg* msg,
   jsonenc_putstr(e, "Z\"");
 }
 
-static void jsonenc_duration(jsonenc* e, const upb_msg* msg,
+static void jsonenc_duration(jsonenc* e, const upb_Message* msg,
                              const upb_MessageDef* m) {
   const upb_FieldDef* seconds_f =
       upb_MessageDef_FindFieldByNumberWithSize(m, 1);
@@ -327,7 +327,7 @@ static void jsonenc_double(jsonenc* e, const char* fmt, double val) {
   }
 }
 
-static void jsonenc_wrapper(jsonenc* e, const upb_msg* msg,
+static void jsonenc_wrapper(jsonenc* e, const upb_Message* msg,
                             const upb_MessageDef* m) {
   const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
   upb_MessageValue val = upb_Message_Get(msg, val_f);
@@ -371,7 +371,7 @@ badurl:
                UPB_STRINGVIEW_ARGS(type_url));
 }
 
-static void jsonenc_any(jsonenc* e, const upb_msg* msg,
+static void jsonenc_any(jsonenc* e, const upb_Message* msg,
                         const upb_MessageDef* m) {
   const upb_FieldDef* type_url_f =
       upb_MessageDef_FindFieldByNumberWithSize(m, 1);
@@ -381,7 +381,7 @@ static void jsonenc_any(jsonenc* e, const upb_msg* msg,
   const upb_MessageDef* any_m = jsonenc_getanymsg(e, type_url);
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   upb_Arena* arena = jsonenc_arena(e);
-  upb_msg* any = upb_Message_New(any_m, arena);
+  upb_Message* any = upb_Message_New(any_m, arena);
 
   if (upb_decode(value.data, value.size, any, any_layout, arena) !=
       kUpb_DecodeStatus_Ok) {
@@ -432,7 +432,7 @@ static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
   }
 }
 
-static void jsonenc_fieldmask(jsonenc* e, const upb_msg* msg,
+static void jsonenc_fieldmask(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m) {
   const upb_FieldDef* paths_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
   const upb_Array* paths = upb_Message_Get(msg, paths_f).array_val;
@@ -451,7 +451,7 @@ static void jsonenc_fieldmask(jsonenc* e, const upb_msg* msg,
   jsonenc_putstr(e, "\"");
 }
 
-static void jsonenc_struct(jsonenc* e, const upb_msg* msg,
+static void jsonenc_struct(jsonenc* e, const upb_Message* msg,
                            const upb_MessageDef* m) {
   const upb_FieldDef* fields_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
   const upb_Map* fields = upb_Message_Get(msg, fields_f).map_val;
@@ -478,7 +478,7 @@ static void jsonenc_struct(jsonenc* e, const upb_msg* msg,
   jsonenc_putstr(e, "}");
 }
 
-static void jsonenc_listvalue(jsonenc* e, const upb_msg* msg,
+static void jsonenc_listvalue(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m) {
   const upb_FieldDef* values_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
   const upb_MessageDef* values_m = upb_FieldDef_MessageSubDef(values_f);
@@ -501,7 +501,7 @@ static void jsonenc_listvalue(jsonenc* e, const upb_msg* msg,
   jsonenc_putstr(e, "]");
 }
 
-static void jsonenc_value(jsonenc* e, const upb_msg* msg,
+static void jsonenc_value(jsonenc* e, const upb_Message* msg,
                           const upb_MessageDef* m) {
   /* TODO(haberman): do we want a reflection method to get oneof case? */
   size_t iter = kUpb_Message_Begin;
@@ -534,7 +534,7 @@ static void jsonenc_value(jsonenc* e, const upb_msg* msg,
   }
 }
 
-static void jsonenc_msgfield(jsonenc* e, const upb_msg* msg,
+static void jsonenc_msgfield(jsonenc* e, const upb_Message* msg,
                              const upb_MessageDef* m) {
   switch (upb_MessageDef_WellKnownType(m)) {
     case kUpb_WellKnown_Unspecified:
@@ -711,7 +711,7 @@ static void jsonenc_fieldval(jsonenc* e, const upb_FieldDef* f,
   }
 }
 
-static void jsonenc_msgfields(jsonenc* e, const upb_msg* msg,
+static void jsonenc_msgfields(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m, bool first) {
   upb_MessageValue val;
   const upb_FieldDef* f;
@@ -735,7 +735,7 @@ static void jsonenc_msgfields(jsonenc* e, const upb_msg* msg,
   }
 }
 
-static void jsonenc_msg(jsonenc* e, const upb_msg* msg,
+static void jsonenc_msg(jsonenc* e, const upb_Message* msg,
                         const upb_MessageDef* m) {
   jsonenc_putstr(e, "{");
   jsonenc_msgfields(e, msg, m, true);
@@ -753,7 +753,7 @@ static size_t jsonenc_nullz(jsonenc* e, size_t size) {
   return ret;
 }
 
-size_t upb_JsonEncode(const upb_msg* msg, const upb_MessageDef* m,
+size_t upb_JsonEncode(const upb_Message* msg, const upb_MessageDef* m,
                       const upb_DefPool* ext_pool, int options, char* buf,
                       size_t size, upb_Status* status) {
   jsonenc e;
