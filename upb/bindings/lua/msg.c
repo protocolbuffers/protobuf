@@ -989,7 +989,7 @@ static int lupb_Encode(lua_State* L) {
   char* result;
 
   arena = lupb_Arena_pushnew(L);
-  result = upb_EncodeEx(msg, (const void*)layout, options, arena, &size);
+  result = upb_Encode(msg, (const void*)layout, options, arena, &size);
 
   if (!result) {
     lua_pushstring(L, "Error encoding protobuf.");

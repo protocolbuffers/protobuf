@@ -562,8 +562,8 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
   *size = (e->limit - e->ptr) - pre_len;
 }
 
-char* upb_EncodeEx(const void* msg, const upb_MiniTable* l, int options,
-                   upb_Arena* arena, size_t* size) {
+char* upb_Encode(const void* msg, const upb_MiniTable* l, int options,
+                 upb_Arena* arena, size_t* size) {
   upb_encstate e;
   unsigned depth = (unsigned)options >> 16;
 

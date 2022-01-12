@@ -443,3 +443,4 @@ s/\bupb_extreg\b/upb_ExtensionRegistry/g;
 s/upb_extreg_new/upb_ExtensionRegistry_New/g;
 s/upb_msg\b/upb_Message/g;
 s/_upb_decode\b/upb_Decode/g;
+s/upb_EncodeEx\b/upb_Encode/g;

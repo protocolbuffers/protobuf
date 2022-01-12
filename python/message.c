@@ -1426,7 +1426,7 @@ PyObject* PyUpb_CMessage_SerializeInternal(PyObject* _self, PyObject* args,
   int options = UPB_ENCODE_MAXDEPTH(UINT32_MAX);
   if (check_required) options |= kUpb_Encode_CheckRequired;
   if (deterministic) options |= kUpb_Encode_Deterministic;
-  char* pb = upb_EncodeEx(self->ptr.msg, layout, options, arena, &size);
+  char* pb = upb_Encode(self->ptr.msg, layout, options, arena, &size);
   PyObject* ret = NULL;
 
   if (!pb) {

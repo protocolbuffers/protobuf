@@ -102,7 +102,7 @@ bool parse_proto(upb_Message* msg, const upb_MessageDef* m, const ctx* c) {
 void serialize_proto(const upb_Message* msg, const upb_MessageDef* m,
                      const ctx* c) {
   size_t len;
-  char* data = upb_Encode(msg, upb_MessageDef_MiniTable(m), c->arena, &len);
+  char* data = upb_Encode(msg, upb_MessageDef_MiniTable(m), 0, c->arena, &len);
   if (data) {
     conformance_ConformanceResponse_set_protobuf_payload(
         c->response, upb_StringView_FromDataAndSize(data, len));
