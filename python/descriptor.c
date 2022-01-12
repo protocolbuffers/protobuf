@@ -169,7 +169,9 @@ static PyObject* PyUpb_DescriptorBase_CopyToProto(PyObject* _self,
   PyObject* serialized =
       PyUpb_DescriptorBase_GetSerializedProto(_self, func, layout);
   if (!serialized) return NULL;
-  return PyUpb_CMessage_MergeFromString(py_proto, serialized);
+  PyObject* ret = PyUpb_CMessage_MergeFromString(py_proto, serialized);
+  Py_DECREF(serialized);
+  return ret;
 }
 
 static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {

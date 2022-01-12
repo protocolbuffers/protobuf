@@ -192,11 +192,10 @@ PyObject* PyUpb_Forbidden_New(PyObject* cls, PyObject* args, PyObject* kwds);
 // function can work for any type.
 static inline void PyUpb_Dealloc(void* self) {
   PyTypeObject* tp = Py_TYPE(self);
+  assert(PyType_GetFlags(tp) & Py_TPFLAGS_HEAPTYPE);
   freefunc tp_free = PyType_GetSlot(tp, Py_tp_free);
   tp_free(self);
-  if (PyType_GetFlags(tp) & Py_TPFLAGS_HEAPTYPE) {
-    Py_DECREF(tp);
-  }
+  Py_DECREF(tp);
 }
 
 // Equivalent to the Py_NewRef() function introduced in Python 3.10.  If/when we

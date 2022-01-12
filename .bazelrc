@@ -14,7 +14,7 @@ build:asan --copt=-fsanitize=address --linkopt=-fsanitize=address
 # know of an easy way to do that.
 #
 # We also have to disable pymalloc to avoid triggering Valgrind.
-build:valgrind --run_under='valgrind --leak-check=full --track-origins=yes --trace-children=yes --show-possibly-lost=no --errors-for-leak-kinds=definite --error-exitcode=1' --action_env=PYTHONMALLOC=malloc
+build:valgrind --run_under='valgrind --leak-check=full --track-origins=yes --trace-children=yes --show-leak-kinds=all --error-exitcode=1 --num-callers=500 ' --action_env=PYTHONMALLOC=malloc
 
 build:ubsan --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 # Workaround for the fact that Bazel links with $CC, not $CXX

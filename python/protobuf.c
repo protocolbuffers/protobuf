@@ -335,7 +335,7 @@ PyMODINIT_FUNC PyInit__message(void) {
 
   // Temporary: an cookie we can use in the tests to ensure we are testing upb
   // and not another protobuf library on the system.
-  PyModule_AddObject(m, "_IS_UPB", Py_True);
+  PyModule_AddIntConstant(m, "_IS_UPB", 1);
 
   return m;
 }

@@ -184,7 +184,7 @@ static PyObject* PyUpb_ExtensionIterator_New(PyObject* _ext_dict) {
 
 static void PyUpb_ExtensionIterator_Dealloc(void* _self) {
   PyUpb_ExtensionIterator* self = (PyUpb_ExtensionIterator*)_self;
-  Py_DECREF(&self->msg);
+  Py_DECREF(self->msg);
   PyUpb_Dealloc(_self);
 }
 

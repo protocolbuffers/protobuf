@@ -27,8 +27,6 @@ from google.protobuf.internal import descriptor_pool_test
 import unittest
 import copy
 
-print(unittest)
-
 descriptor_pool_test.AddDescriptorTest.testAddTypeError.__unittest_expecting_failure__ = True
 descriptor_pool_test.AddDescriptorTest.testEnum.__unittest_expecting_failure__ = True
 descriptor_pool_test.AddDescriptorTest.testFile.__unittest_expecting_failure__ = True

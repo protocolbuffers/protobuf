@@ -135,7 +135,10 @@ static bool PyUpb_DescriptorPool_TryLoadFileProto(PyUpb_DescriptorPool* self,
     return false;
   }
   if (proto == Py_None) return true;
-  return PyUpb_DescriptorPool_DoAdd((PyObject*)self, proto) != NULL;
+  PyObject* ret = PyUpb_DescriptorPool_DoAdd((PyObject*)self, proto);
+  bool ok = ret != NULL;
+  Py_XDECREF(ret);
+  return ok;
 }
 
 static bool PyUpb_DescriptorPool_TryLoadSymbol(PyUpb_DescriptorPool* self,
@@ -246,13 +249,14 @@ done:
 
 static PyObject* PyUpb_DescriptorPool_DoAdd(PyObject* _self,
                                             PyObject* file_desc) {
-  PyObject* subargs = PyTuple_New(0);
   if (!PyUpb_CMessage_Check(file_desc)) return NULL;
   const upb_MessageDef* m = PyUpb_CMessage_GetMsgdef(file_desc);
   const char* file_proto_name = "google.protobuf.FileDescriptorProto";
   if (strcmp(upb_MessageDef_FullName(m), file_proto_name) != 0) {
     return PyErr_Format(PyExc_TypeError, "Can only add FileDescriptorProto");
   }
+  PyObject* subargs = PyTuple_New(0);
+  if (!subargs) return NULL;
   PyObject* serialized =
       PyUpb_CMessage_SerializeToString(file_desc, subargs, NULL);
   Py_DECREF(subargs);
