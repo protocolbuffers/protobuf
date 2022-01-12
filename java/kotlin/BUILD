@@ -1,6 +1,5 @@
 load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test", "kt_jvm_binary")
 load("@rules_java//java:defs.bzl", "java_proto_library")
-load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
 
@@ -257,22 +256,4 @@ kt_jvm_test(
         "@maven//:junit_junit",
     ],
     test_class = "com.google.protobuf.kotlin.Proto3Test",
-)
-
-java_export(
-    name = "kotlin_mvn",
-    maven_coordinates = "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_VERSION,
-    pom_template = "pom_template.xml",
-    runtime_deps = [":shared_runtime"],
-)
-
-filegroup(
-    name = "release",
-    srcs = [
-        ":kotlin_mvn-docs",
-        ":kotlin_mvn-maven-source",
-        ":kotlin_mvn-pom",
-        ":kotlin_mvn-project",
-    ],
-    visibility = ["//java:__pkg__"],
 )

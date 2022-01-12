@@ -10,7 +10,7 @@
   <artifactId>{artifactId}</artifactId>
   <packaging>{type}</packaging>
 
-  <name>Protocol Buffers [Kotlin]</name>
+  <name>Protocol Buffers [Kotlin-Core]</name>
   <description>
     Kotlin core Protocol Buffers library. Protocol Buffers are a way of encoding structured data in an
     efficient yet extensible format.
