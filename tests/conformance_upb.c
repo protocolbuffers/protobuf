@@ -124,9 +124,9 @@ void serialize_text(const upb_Message* msg, const upb_MessageDef* m,
     opts |= UPB_TXTENC_SKIPUNKNOWN;
   }
 
-  len = upb_text_encode(msg, m, c->symtab, opts, NULL, 0);
+  len = upb_TextEncode(msg, m, c->symtab, opts, NULL, 0);
   data = upb_Arena_Malloc(c->arena, len + 1);
-  len2 = upb_text_encode(msg, m, c->symtab, opts, data, len + 1);
+  len2 = upb_TextEncode(msg, m, c->symtab, opts, data, len + 1);
   UPB_ASSERT(len == len2);
   conformance_ConformanceResponse_set_text_payload(
       c->response, upb_StringView_FromDataAndSize(data, len));
@@ -262,7 +262,7 @@ void DoTest(const ctx* c) {
 void debug_print(const char* label, const upb_Message* msg,
                  const upb_MessageDef* m, const ctx* c) {
   char buf[512];
-  upb_text_encode(msg, m, c->symtab, UPB_TXTENC_SINGLELINE, buf, sizeof(buf));
+  upb_TextEncode(msg, m, c->symtab, UPB_TXTENC_SINGLELINE, buf, sizeof(buf));
   fprintf(stderr, "%s: %s\n", label, buf);
 }
 

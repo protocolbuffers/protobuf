@@ -907,13 +907,13 @@ static int lupb_msg_tostring(lua_State* L) {
   lua_getiuservalue(L, 1, LUPB_MSGDEF_INDEX);
   m = lupb_MessageDef_check(L, -1);
 
-  size = upb_text_encode(msg, m, NULL, 0, buf, sizeof(buf));
+  size = upb_TextEncode(msg, m, NULL, 0, buf, sizeof(buf));
 
   if (size < sizeof(buf)) {
     lua_pushlstring(L, buf, size);
   } else {
     char* ptr = malloc(size + 1);
-    upb_text_encode(msg, m, NULL, 0, ptr, size + 1);
+    upb_TextEncode(msg, m, NULL, 0, ptr, size + 1);
     lua_pushlstring(L, ptr, size);
     free(ptr);
   }
@@ -1070,13 +1070,13 @@ static int lupb_textencode(lua_State* L) {
   char buf[1024];
   size_t size;
 
-  size = upb_text_encode(msg, m, NULL, options, buf, sizeof(buf));
+  size = upb_TextEncode(msg, m, NULL, options, buf, sizeof(buf));
 
   if (size < sizeof(buf)) {
     lua_pushlstring(L, buf, size);
   } else {
     char* ptr = malloc(size + 1);
-    upb_text_encode(msg, m, NULL, options, ptr, size + 1);
+    upb_TextEncode(msg, m, NULL, options, ptr, size + 1);
     lua_pushlstring(L, ptr, size);
     free(ptr);
   }

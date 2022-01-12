@@ -445,9 +445,9 @@ size_t txtenc_nullz(txtenc* e, size_t size) {
   return ret;
 }
 
-size_t upb_text_encode(const upb_Message* msg, const upb_MessageDef* m,
-                       const upb_DefPool* ext_pool, int options, char* buf,
-                       size_t size) {
+size_t upb_TextEncode(const upb_Message* msg, const upb_MessageDef* m,
+                      const upb_DefPool* ext_pool, int options, char* buf,
+                      size_t size) {
   txtenc e;
 
   e.buf = buf;

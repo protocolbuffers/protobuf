@@ -680,13 +680,12 @@ static PyObject* PyUpb_CMessage_ToString(PyUpb_CMessage* self) {
   const upb_DefPool* symtab = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
   char buf[1024];
   int options = UPB_TXTENC_SKIPUNKNOWN;
-  size_t size = upb_text_encode(msg, msgdef, symtab, options, buf, sizeof(buf));
+  size_t size = upb_TextEncode(msg, msgdef, symtab, options, buf, sizeof(buf));
   if (size < sizeof(buf)) {
     return PyUnicode_FromStringAndSize(buf, size);
   } else {
     char* buf2 = malloc(size + 1);
-    size_t size2 =
-        upb_text_encode(msg, msgdef, symtab, options, buf2, size + 1);
+    size_t size2 = upb_TextEncode(msg, msgdef, symtab, options, buf2, size + 1);
     assert(size == size2);
     PyObject* ret = PyUnicode_FromStringAndSize(buf2, size2);
     free(buf2);
