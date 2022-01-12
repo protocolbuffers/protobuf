@@ -442,3 +442,4 @@ s/upb_msg_extcount/upb_Message_ExtensionCount/g;
 s/\bupb_extreg\b/upb_ExtensionRegistry/g;
 s/upb_extreg_new/upb_ExtensionRegistry_New/g;
 s/upb_msg\b/upb_Message/g;
+s/_upb_decode\b/upb_Decode/g;

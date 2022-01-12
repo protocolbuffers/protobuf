@@ -1057,10 +1057,10 @@ static upb_DecodeStatus decode_top(struct upb_Decoder* d, const char* buf,
   return kUpb_DecodeStatus_Ok;
 }
 
-upb_DecodeStatus _upb_decode(const char* buf, size_t size, void* msg,
-                             const upb_MiniTable* l,
-                             const upb_ExtensionRegistry* extreg, int options,
-                             upb_Arena* arena) {
+upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
+                            const upb_MiniTable* l,
+                            const upb_ExtensionRegistry* extreg, int options,
+                            upb_Arena* arena) {
   upb_Decoder state;
   unsigned depth = (unsigned)options >> 16;
 

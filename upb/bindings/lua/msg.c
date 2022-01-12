@@ -962,8 +962,8 @@ static int lupb_decode(lua_State* L) {
   buf = upb_Arena_Malloc(arena, len);
   memcpy(buf, pb, len);
 
-  upb_DecodeStatus status = _upb_decode(buf, len, msg, layout, NULL,
-                                        kUpb_DecodeOption_AliasString, arena);
+  upb_DecodeStatus status = upb_Decode(buf, len, msg, layout, NULL,
+                                       kUpb_DecodeOption_AliasString, arena);
 
   if (status != kUpb_DecodeStatus_Ok) {
     lua_pushstring(L, "Error decoding protobuf.");

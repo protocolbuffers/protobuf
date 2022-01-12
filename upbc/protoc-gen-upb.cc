@@ -418,7 +418,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message,
           UPB_INLINE $0* $0_parse(const char* buf, size_t size, upb_Arena* arena) {
             $0* ret = $0_new(arena);
             if (!ret) return NULL;
-            if (upb_decode(buf, size, ret, &$1, arena) != kUpb_DecodeStatus_Ok) {
+            if (upb_Decode(buf, size, ret, &$1, NULL, 0, arena) != kUpb_DecodeStatus_Ok) {
               return NULL;
             }
             return ret;
@@ -428,7 +428,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message,
                                      int options, upb_Arena* arena) {
             $0* ret = $0_new(arena);
             if (!ret) return NULL;
-            if (_upb_decode(buf, size, ret, &$1, extreg, options, arena) !=
+            if (upb_Decode(buf, size, ret, &$1, extreg, options, arena) !=
                 kUpb_DecodeStatus_Ok) {
               return NULL;
             }

@@ -88,8 +88,8 @@ typedef struct {
 bool parse_proto(upb_Message* msg, const upb_MessageDef* m, const ctx* c) {
   upb_StringView proto =
       conformance_ConformanceRequest_protobuf_payload(c->request);
-  if (upb_decode(proto.data, proto.size, msg, upb_MessageDef_MiniTable(m),
-                 c->arena) == kUpb_DecodeStatus_Ok) {
+  if (upb_Decode(proto.data, proto.size, msg, upb_MessageDef_MiniTable(m), NULL,
+                 0, c->arena) == kUpb_DecodeStatus_Ok) {
     return true;
   } else {
     static const char msg[] = "Parse error";

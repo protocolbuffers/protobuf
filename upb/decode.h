@@ -80,16 +80,10 @@ typedef enum {
   kUpb_DecodeStatus_MissingRequired = 5,
 } upb_DecodeStatus;
 
-upb_DecodeStatus _upb_decode(const char* buf, size_t size, upb_Message* msg,
-                             const upb_MiniTable* l,
-                             const upb_ExtensionRegistry* extreg, int options,
-                             upb_Arena* arena);
-
-UPB_INLINE
-upb_DecodeStatus upb_decode(const char* buf, size_t size, upb_Message* msg,
-                            const upb_MiniTable* l, upb_Arena* arena) {
-  return _upb_decode(buf, size, msg, l, NULL, 0, arena);
-}
+upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
+                            const upb_MiniTable* l,
+                            const upb_ExtensionRegistry* extreg, int options,
+                            upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */

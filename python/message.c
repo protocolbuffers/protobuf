@@ -1153,7 +1153,7 @@ PyObject* PyUpb_CMessage_MergeFromString(PyObject* _self, PyObject* arg) {
   int options =
       UPB_DECODE_MAXDEPTH(state->allow_oversize_protos ? UINT32_MAX : 100);
   upb_DecodeStatus status =
-      _upb_decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
+      upb_Decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
   Py_XDECREF(bytes);
   if (status != kUpb_DecodeStatus_Ok) {
     PyErr_Format(state->decode_error_class, "Error parsing message");
