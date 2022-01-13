@@ -13,7 +13,6 @@ filegroup(
     name = "release",
     srcs = [
         "//java/core:release", # contains lite.
-        "//java/kotlin:release", # contains kotlin lite.
         "//java/util:release",
     ]
 )

@@ -66,7 +66,7 @@ kt_jvm_test(
 proto_library(
     name = "example_extensible_message_proto",
     srcs = ["src/test/proto/com/google/protobuf/example_extensible_message.proto"],
-    visibility = ["//visibility:public"],
+    visibility = ["//java:__subpackages__"],
 )
 
 java_proto_library(

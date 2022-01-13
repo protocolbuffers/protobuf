@@ -33,6 +33,7 @@ package com.google.protobuf.kotlin
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.ByteString
 import java.lang.IndexOutOfBoundsException
+import java.nio.Buffer
 import java.nio.ByteBuffer
 import kotlin.test.assertFailsWith
 import org.junit.Test
@@ -90,7 +91,7 @@ class ByteStringsTest {
   @Test
   fun byteBufferToByteStringRespectsPositionAndLimit() {
     val buffer = ByteBuffer.wrap("abc".toByteArray(Charsets.UTF_8))
-    buffer.position(1)
+    (buffer as java.nio.Buffer).position(1)
     buffer.limit(2)
     assertThat(buffer.toByteString()).isEqualTo(ByteString.copyFromUtf8("b"))
   }

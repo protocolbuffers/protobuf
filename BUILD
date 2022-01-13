@@ -1326,13 +1326,13 @@ cc_binary(
 java_proto_library(
     name = "java_test_protos",
     deps = [":generic_test_protos"],
-    visibility = ["//visibility:public"],
+    visibility = ["//java:__subpackages__"],
 )
 
 java_lite_proto_library(
     name = "java_lite_test_protos",
     deps = [":generic_test_protos"],
-    visibility = ["//visibility:public"],
+    visibility = ["//java:__subpackages__"],
 )
 
 java_proto_library(
@@ -1449,7 +1449,7 @@ genrule(
         "OptionalGroup_extension_liteKt.kt",
         "RepeatedGroup_extension_liteKt.kt",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//java:__subpackages__"],
     cmd = "$(location //:protoc) " +
           "--kotlin_out=lite:$(@D) -Isrc/ " +
           "$(locations src/google/protobuf/unittest_lite.proto) && " +
@@ -1497,7 +1497,7 @@ genrule(
         "OptionalGroup_extensionKt.kt",
         "RepeatedGroup_extensionKt.kt",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//java:__subpackages__"],
     cmd = "$(location //:protoc) " +
           "--kotlin_out=shared,immutable:$(@D) -Isrc/ " +
           "$(location src/google/protobuf/unittest.proto) && " +
@@ -1538,7 +1538,7 @@ genrule(
         "TestAllTypesProto3LiteKt.kt",
         "TestEmptyMessageProto3LiteKt.kt",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//java:__subpackages__"],
     cmd = "$(location //:protoc) " +
           "--kotlin_out=lite:$(@D) -Isrc/ " +
           "$(location src/google/protobuf/unittest_proto3_lite.proto) && " +
@@ -1560,7 +1560,7 @@ genrule(
         "TestAllTypesProto3Kt.kt",
         "TestEmptyMessageProto3Kt.kt",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//java:__subpackages__"],
     cmd = "$(location //:protoc) " +
           "--kotlin_out=shared,immutable:$(@D) -Isrc/ " +
           "$(location src/google/protobuf/unittest_proto3.proto) && " +
