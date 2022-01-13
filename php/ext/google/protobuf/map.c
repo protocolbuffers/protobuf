@@ -329,7 +329,7 @@ PHP_METHOD(MapField, offsetExists) {
 }
 
 /**
- * MapField::offsetGet()
+ * MapField::offsetGet(): mixed
  *
  * Implements the ArrayAccess interface. Invoked when PHP code calls:
  *
@@ -453,7 +453,8 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_construct, 0, 0, 2)
   ZEND_ARG_INFO(0, value_class)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetGet, 0, 0, 1)
+
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_offsetGet, 0, 0, IS_MIXED, 1)
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
 
@@ -573,7 +574,7 @@ PHP_METHOD(MapFieldIter, rewind) {
 }
 
 /**
- * MapFieldIter::current()
+ * MapFieldIter::current(): mixed
  *
  * Implements the Iterator interface. Returns the current value.
  */
@@ -626,6 +627,12 @@ PHP_METHOD(MapFieldIter, valid) {
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_rewind, 0, 0, IS_VOID, 0)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_current, 0, 0, IS_MIXED, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_key, 0, 0, IS_MIXED, 0)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_next, 0, 0, IS_VOID, 0)
 ZEND_END_ARG_INFO()
 
@@ -634,8 +641,8 @@ ZEND_END_ARG_INFO()
 
 static zend_function_entry map_field_iter_methods[] = {
   PHP_ME(MapFieldIter, rewind,      arginfo_rewind, ZEND_ACC_PUBLIC)
-  PHP_ME(MapFieldIter, current,     arginfo_void,   ZEND_ACC_PUBLIC)
-  PHP_ME(MapFieldIter, key,         arginfo_void,   ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, current,     arginfo_current,   ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, key,         arginfo_key,   ZEND_ACC_PUBLIC)
   PHP_ME(MapFieldIter, next,        arginfo_next,   ZEND_ACC_PUBLIC)
   PHP_ME(MapFieldIter, valid,       arginfo_valid,  ZEND_ACC_PUBLIC)
   ZEND_FE_END

@@ -309,7 +309,7 @@ PHP_METHOD(RepeatedField, offsetExists) {
 }
 
 /**
- * RepeatedField::offsetGet()
+ * RepeatedField::offsetGet(): mixed
  *
  * Implements the ArrayAccess interface. Invoked when PHP code calls:
  *
@@ -459,7 +459,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_append, 0, 0, 1)
   ZEND_ARG_INFO(0, newval)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetGet, 0, 0, 1)
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_offsetGet, 0, 0, IS_MIXED, 1)
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
 
@@ -575,7 +575,7 @@ PHP_METHOD(RepeatedFieldIter, rewind) {
 }
 
 /**
- * RepeatedFieldIter::current()
+ * RepeatedFieldIter::current(): mixed
  *
  * Implements the Iterator interface. Returns the current value.
  */
@@ -598,7 +598,7 @@ PHP_METHOD(RepeatedFieldIter, current) {
 }
 
 /**
- * RepeatedFieldIter::key()
+ * RepeatedFieldIter::key(): mixed
  *
  * Implements the Iterator interface. Returns the current key.
  */
@@ -628,6 +628,12 @@ PHP_METHOD(RepeatedFieldIter, valid) {
   RETURN_BOOL(intern->position < upb_array_size(field->array));
 }
 
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_current, 0, 0, IS_MIXED, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_key, 0, 0, IS_MIXED, 0)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_next, 0, 0, IS_VOID, 0)
 ZEND_END_ARG_INFO()
 
@@ -639,8 +645,8 @@ ZEND_END_ARG_INFO()
 
 static zend_function_entry repeated_field_iter_methods[] = {
   PHP_ME(RepeatedFieldIter, rewind,      arginfo_rewind, ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedFieldIter, current,     arginfo_void,   ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedFieldIter, key,         arginfo_void,   ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, current,     arginfo_current,   ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, key,         arginfo_key,   ZEND_ACC_PUBLIC)
   PHP_ME(RepeatedFieldIter, next,        arginfo_next,   ZEND_ACC_PUBLIC)
   PHP_ME(RepeatedFieldIter, valid,       arginfo_valid,  ZEND_ACC_PUBLIC)
   ZEND_FE_END
