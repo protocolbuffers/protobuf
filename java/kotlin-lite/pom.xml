@@ -94,7 +94,6 @@
                     <include>DslList.kt</include>
                     <include>DslMap.kt</include>
                     <include>DslProxy.kt</include>
-                    <include>ExtendableMessageLiteExtensions.kt</include>
                     <include>ExtensionList.kt</include>
                     <include>OnlyForUseByGeneratedProtoCode.kt</include>
                     <include>ProtoDslMarker.kt</include>
@@ -118,14 +117,6 @@
                   <includes>
                     <include>TestUtilLite.java</include>
                   </includes>
-                </resource>
-                <resource>
-                  <directory>${basedir}/../kotlin/src/test/kotlin/com/google/protobuf</directory>
-                  <excludes>
-                    <exclude>ExtendableMessageExtensionsTest.kt</exclude>
-                    <exclude>Proto2Test.kt</exclude>
-                    <exclude>ProtoUtil.java</exclude>
-                  </excludes>
                 </resource>
               </resources>
             </configuration>
@@ -223,8 +214,8 @@
             <goals> <goal>compile</goal> </goals>
             <configuration>
               <sourceDirs>
-                <sourceDir>${generated.sources.dir}</sourceDir>
                 <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
+                <sourceDir>${generated.sources.dir}</sourceDir>
               </sourceDirs>
             </configuration>
           </execution>
