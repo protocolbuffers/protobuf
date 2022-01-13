@@ -536,15 +536,16 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/wrappers_test.proto                 \
   java/internal/BUILD                                                              \
   java/internal/testing.bzl                                                        \
+  java/kotlin/BUILD                                                                \
   java/kotlin/generate-sources-build.xml                                           \
   java/kotlin/generate-test-sources-build.xml                                      \
   java/kotlin/pom.xml                                                              \
+  java/kotlin/pom_template.xml                                                     \
   java/kotlin/src/main/kotlin/com/google/protobuf/ByteStrings.kt                   \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslList.kt                       \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslMap.kt                        \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslProxy.kt                      \
   java/kotlin/src/main/kotlin/com/google/protobuf/ExtendableMessageExtensions.kt   \
-  java/kotlin/src/main/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt\
   java/kotlin/src/main/kotlin/com/google/protobuf/ExtensionList.kt                 \
   java/kotlin/src/main/kotlin/com/google/protobuf/OnlyForUseByGeneratedProtoCode.kt\
   java/kotlin/src/main/kotlin/com/google/protobuf/ProtoDslMarker.kt                \
@@ -560,13 +561,20 @@ java_EXTRA_DIST=                                                                
   java/kotlin/src/test/proto/com/google/protobuf/evil_names_proto3.proto           \
   java/kotlin/src/test/proto/com/google/protobuf/example_extensible_message.proto  \
   java/kotlin/src/test/proto/com/google/protobuf/multiple_files_proto3.proto       \
+  java/kotlin-lite/BUILD                                                           \
   java/kotlin-lite/generate-sources-build.xml                                      \
   java/kotlin-lite/generate-test-sources-build.xml                                 \
   java/kotlin-lite/lite.awk                                                        \
   java/kotlin-lite/pom.xml                                                         \
+  java/kotlin-lite/pom_template.xml                                                \
   java/kotlin-lite/process-lite-sources-build.xml                                  \
+  java/kotlin-lite/src/main/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt\
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/ExtendableMessageLiteExtensionsTest.kt\
+  java/kotlin-lite/src/test/kotlin/com/google/protobuf/Proto3LiteTest.kt           \
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/Proto2LiteTest.kt           \
+  java/kotlin-lite/src/test/proto/com/google/protobuf/evil_names_proto2.proto      \
+  java/kotlin-lite/src/test/proto/com/google/protobuf/evil_names_proto3.proto      \
+  java/kotlin-lite/src/test/proto/com/google/protobuf/multiple_files_proto3.proto  \
   java/lite.md                                                                     \
   java/lite/BUILD                                                                  \
   java/lite/generate-sources-build.xml                                             \
