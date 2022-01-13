@@ -1,6 +1,6 @@
 #include <google/protobuf/stubs/time.h>
 
-#include <ctime>
+#include <chrono>
 
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -262,10 +262,10 @@ bool DateTimeToSeconds(const DateTime& time, int64* seconds) {
 }
 
 void GetCurrentTime(int64* seconds, int32* nanos) {
-  // TODO(xiaofeng): Improve the accuracy of this implementation (or just
-  // remove this method from protobuf).
-  *seconds = time(nullptr);
-  *nanos = 0;
+  auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
+  auto secs = std::chrono::duration_cast<std::chrono::seconds>(now);
+  *seconds = secs.count();
+  *nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(now - secs).count();
 }
 
 std::string FormatTime(int64 seconds, int32 nanos) {
