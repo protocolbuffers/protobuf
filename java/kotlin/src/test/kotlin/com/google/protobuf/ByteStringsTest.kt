@@ -92,7 +92,7 @@ class ByteStringsTest {
   fun byteBufferToByteStringRespectsPositionAndLimit() {
     val buffer = ByteBuffer.wrap("abc".toByteArray(Charsets.UTF_8))
     (buffer as java.nio.Buffer).position(1)
-    buffer.limit(2)
+    (buffer as java.nio.Buffer).limit(2)
     assertThat(buffer.toByteString()).isEqualTo(ByteString.copyFromUtf8("b"))
   }
 }
