@@ -8,6 +8,7 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.errorprone:error_prone_annotations:2.3.2",
     "com.google.j2objc:j2objc-annotations:1.3",
     "com.google.guava:guava:30.1.1-jre",
+    "com.google.guava:guava-testlib:30.1.1-jre",
     "com.google.truth:truth:1.1.2",
     "junit:junit:4.12",
     "org.easymock:easymock:3.2",
@@ -73,7 +74,7 @@ def protobuf_deps():
             strip_prefix = "rules_jvm_external-4.1",
             urls = ["https://github.com/bazelbuild/rules_jvm_external/archive/4.1.zip"],
         )
-    
+
     if not native.existing_rule("rules_pkg"):
         http_archive(
             name = "rules_pkg",
@@ -82,4 +83,11 @@ def protobuf_deps():
                 "https://github.com/bazelbuild/rules_pkg/releases/download/0.5.1/rules_pkg-0.5.1.tar.gz",
             ],
             sha256 = "a89e203d3cf264e564fcb96b6e06dd70bc0557356eb48400ce4b5d97c2c3720d",
+        )
+
+    if not native.existing_rule("io_bazel_rules_kotlin"):
+        http_archive(
+            name = "io_bazel_rules_kotlin",
+            urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.5.0-beta-4/rules_kotlin_release.tgz"],
+            sha256 = "6cbd4e5768bdfae1598662e40272729ec9ece8b7bded8f0d2c81c8ff96dc139d",
         )
