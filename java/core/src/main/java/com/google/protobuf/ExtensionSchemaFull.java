@@ -497,7 +497,7 @@ final class ExtensionSchemaFull extends ExtensionSchema<FieldDescriptor> {
   Object findExtensionByNumber(
       ExtensionRegistryLite extensionRegistry, MessageLite defaultInstance, int number) {
     return ((ExtensionRegistry) extensionRegistry)
-        .findExtensionByNumber(((Message) defaultInstance).getDescriptorForType(), number);
+        .findImmutableExtensionByNumber(((Message) defaultInstance).getDescriptorForType(), number);
   }
 
   @Override

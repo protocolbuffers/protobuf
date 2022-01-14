@@ -48,7 +48,7 @@ using protobuf_unittest::TestAllTypes;
 
 class DefaultFieldComparatorTest : public ::testing::Test {
  protected:
-  void SetUp() { descriptor_ = TestAllTypes::descriptor(); }
+  void SetUp() override { descriptor_ = TestAllTypes::descriptor(); }
 
   const Descriptor* descriptor_;
   DefaultFieldComparator comparator_;

@@ -717,7 +717,7 @@ void MessageGenerator::GenerateMainParseLoop(io::Printer* printer, bool use_pars
     const FieldDescriptor* field = fields_by_number()[i];
     internal::WireFormatLite::WireType wt =
         internal::WireFormat::WireTypeForFieldType(field->type());
-    uint32 tag = internal::WireFormatLite::MakeTag(field->number(), wt);
+    uint32_t tag = internal::WireFormatLite::MakeTag(field->number(), wt);
     // Handle both packed and unpacked repeated fields with the same Read*Array call;
     // the two generated cases are the packed and unpacked tags.
     // TODO(jonskeet): Check that is_packable is equivalent to

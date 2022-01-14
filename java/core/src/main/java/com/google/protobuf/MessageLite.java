@@ -28,9 +28,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// TODO(kenton):  Use generics?  E.g. Builder<BuilderType extends Builder>, then
-//   mergeFrom*() could return BuilderType for better type-safety.
-
 package com.google.protobuf;
 
 import java.io.IOException;

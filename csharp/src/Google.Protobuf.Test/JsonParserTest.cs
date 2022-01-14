@@ -35,6 +35,7 @@ using Google.Protobuf.TestProtos;
 using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
 using ProtobufTestMessages.Proto2;
+using ProtobufTestMessages.Proto3;
 using System;
 using UnitTest.Issues.TestProtos;
 
@@ -551,13 +552,9 @@ namespace Google.Protobuf
         }
 
         [Test]
-        // Skip these test cases in .NET 5 because floating point parsing supports bigger values.
-        // These big values won't throw an error in the test.
-#if !NET5_0
         [TestCase("1.7977e308")]
         [TestCase("-1.7977e308")]
         [TestCase("1e309")]
-#endif
         [TestCase("1,0")]
         [TestCase("1.0.0")]
         [TestCase("+1")]
@@ -922,10 +919,10 @@ namespace Google.Protobuf
         }
 
         [Test]
-        [TestCase("\"FOREIGN_BAR\"", ForeignEnum.ForeignBar)]
-        [TestCase("5", ForeignEnum.ForeignBar)]
-        [TestCase("100", (ForeignEnum)100)]
-        public void EnumValid(string value, ForeignEnum expectedValue)
+        [TestCase("\"FOREIGN_BAR\"", TestProtos.ForeignEnum.ForeignBar)]
+        [TestCase("5", TestProtos.ForeignEnum.ForeignBar)]
+        [TestCase("100", (TestProtos.ForeignEnum)100)]
+        public void EnumValid(string value, TestProtos.ForeignEnum expectedValue)
         {
             string json = "{ \"singleForeignEnum\": " + value + " }";
             var parsed = TestAllTypes.Parser.ParseJson(json);
@@ -1024,6 +1021,129 @@ namespace Google.Protobuf
         internal static string WrapInQuotes(string text)
         {
             return '"' + text + '"';
+        }
+
+        [Test]
+        public void ParseAllNullValues()
+        {
+            string json = @"{
+  ""optionalInt32"": null,
+  ""optionalInt64"": null,
+  ""optionalUint32"": null,
+  ""optionalUint64"": null,
+  ""optionalSint32"": null,
+  ""optionalSint64"": null,
+  ""optionalFixed32"": null,
+  ""optionalFixed64"": null,
+  ""optionalSfixed32"": null,
+  ""optionalSfixed64"": null,
+  ""optionalFloat"": null,
+  ""optionalDouble"": null,
+  ""optionalBool"": null,
+  ""optionalString"": null,
+  ""optionalBytes"": null,
+  ""optionalNestedEnum"": null,
+  ""optionalNestedMessage"": null,
+  ""repeatedInt32"": null,
+  ""repeatedInt64"": null,
+  ""repeatedUint32"": null,
+  ""repeatedUint64"": null,
+  ""repeatedSint32"": null,
+  ""repeatedSint64"": null,
+  ""repeatedFixed32"": null,
+  ""repeatedFixed64"": null,
+  ""repeatedSfixed32"": null,
+  ""repeatedSfixed64"": null,
+  ""repeatedFloat"": null,
+  ""repeatedDouble"": null,
+  ""repeatedBool"": null,
+  ""repeatedString"": null,
+  ""repeatedBytes"": null,
+  ""repeatedNestedEnum"": null,
+  ""repeatedNestedMessage"": null,
+  ""mapInt32Int32"": null,
+  ""mapBoolBool"": null,
+  ""mapStringNestedMessage"": null
+}";
+
+            TestAllTypesProto3 message = new TestAllTypesProto3();
+
+            message.OptionalInt32 = 1;
+            message.OptionalInt64 = 1;
+            message.OptionalUint32 = 1;
+            message.OptionalUint64 = 1;
+            message.OptionalSint32 = 1;
+            message.OptionalSint64 = 1;
+            message.OptionalFixed32 = 1;
+            message.OptionalFixed64 = 1;
+            message.OptionalSfixed32 = 1;
+            message.OptionalSfixed64 = 1;
+            message.OptionalFloat = 1;
+            message.OptionalDouble = 1;
+            message.OptionalBool = true;
+            message.OptionalString = "1";
+            message.OptionalBytes = ByteString.CopyFrom(new byte[] { 1 });
+            message.OptionalNestedEnum = TestAllTypesProto3.Types.NestedEnum.Bar;
+            message.OptionalNestedMessage = new TestAllTypesProto3.Types.NestedMessage();
+            message.RepeatedInt32.Add(1);
+            message.RepeatedInt64.Add(1);
+            message.RepeatedUint32.Add(1);
+            message.RepeatedUint64.Add(1);
+            message.RepeatedSint32.Add(1);
+            message.RepeatedSint64.Add(1);
+            message.RepeatedFixed32.Add(1);
+            message.RepeatedFixed64.Add(1);
+            message.RepeatedSfixed32.Add(1);
+            message.RepeatedSfixed64.Add(1);
+            message.RepeatedFloat.Add(1);
+            message.RepeatedDouble.Add(1);
+            message.RepeatedBool.Add(true);
+            message.RepeatedString.Add("1");
+            message.RepeatedBytes.Add(ByteString.CopyFrom(new byte[] { 1 }));
+            message.RepeatedNestedEnum.Add(TestAllTypesProto3.Types.NestedEnum.Bar);
+            message.RepeatedNestedMessage.Add(new TestAllTypesProto3.Types.NestedMessage());
+            message.MapInt32Int32.Add(1, 1);
+            message.MapBoolBool.Add(true, true);
+            message.MapStringNestedMessage.Add(" ", new TestAllTypesProto3.Types.NestedMessage());
+
+            JsonParser.Default.Merge(message, json);
+
+            Assert.AreEqual(0, message.OptionalInt32);
+            Assert.AreEqual(0, message.OptionalInt64);
+            Assert.AreEqual(0, message.OptionalUint32);
+            Assert.AreEqual(0, message.OptionalUint64);
+            Assert.AreEqual(0, message.OptionalSint32);
+            Assert.AreEqual(0, message.OptionalSint64);
+            Assert.AreEqual(0, message.OptionalFixed32);
+            Assert.AreEqual(0, message.OptionalFixed64);
+            Assert.AreEqual(0, message.OptionalSfixed32);
+            Assert.AreEqual(0, message.OptionalSfixed64);
+            Assert.AreEqual(0, message.OptionalFloat);
+            Assert.AreEqual(0, message.OptionalDouble);
+            Assert.AreEqual(false, message.OptionalBool);
+            Assert.AreEqual("", message.OptionalString);
+            Assert.AreEqual(ByteString.Empty, message.OptionalBytes);
+            Assert.AreEqual(TestAllTypesProto3.Types.NestedEnum.Foo, message.OptionalNestedEnum);
+            Assert.AreEqual(null, message.OptionalNestedMessage);
+            Assert.AreEqual(0, message.RepeatedInt32.Count);
+            Assert.AreEqual(0, message.RepeatedInt64.Count);
+            Assert.AreEqual(0, message.RepeatedUint32.Count);
+            Assert.AreEqual(0, message.RepeatedUint64.Count);
+            Assert.AreEqual(0, message.RepeatedSint32.Count);
+            Assert.AreEqual(0, message.RepeatedSint64.Count);
+            Assert.AreEqual(0, message.RepeatedFixed32.Count);
+            Assert.AreEqual(0, message.RepeatedFixed64.Count);
+            Assert.AreEqual(0, message.RepeatedSfixed32.Count);
+            Assert.AreEqual(0, message.RepeatedFloat.Count);
+            Assert.AreEqual(0, message.RepeatedDouble.Count);
+            Assert.AreEqual(0, message.RepeatedBool.Count);
+            Assert.AreEqual(0, message.RepeatedString.Count);
+            Assert.AreEqual(0, message.RepeatedBytes.Count);
+            Assert.AreEqual(0, message.RepeatedNestedEnum.Count);
+            Assert.AreEqual(0, message.RepeatedNestedMessage.Count);
+            Assert.AreEqual(0, message.MapInt32Int32.Count);
+            Assert.AreEqual(0, message.MapBoolBool.Count);
+            Assert.AreEqual(0, message.MapStringNestedMessage.Count);
         }
     }
 }

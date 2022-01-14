@@ -93,7 +93,7 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
       : filename_(filename),
         multi_file_error_collector_(multi_file_error_collector),
         had_errors_(false) {}
-  ~SingleFileErrorCollector() {}
+  ~SingleFileErrorCollector() override {}
 
   bool had_errors() { return had_errors_; }
 

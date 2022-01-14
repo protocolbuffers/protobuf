@@ -32,13 +32,15 @@
 #define GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__
 
 #include <type_traits>
-#include <google/protobuf/parse_context.h>
+
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_entry_lite.h>
-#include <google/protobuf/port.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/wire_format_lite.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -48,6 +50,10 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+#ifndef NDEBUG
+void MapFieldLiteNotDestructed(void* map_field_lite);
+#endif
 
 // This class provides access to map field using generated api. It is used for
 // internal generated message implementation only. Users should never use this
@@ -63,10 +69,28 @@ class MapFieldLite {
   typedef Map<Key, T> MapType;
   typedef EntryType EntryTypeTrait;
 
-  constexpr MapFieldLite() {}
-
+  constexpr MapFieldLite() : map_() {}
   explicit MapFieldLite(Arena* arena) : map_(arena) {}
 
+#ifdef NDEBUG
+  void Destruct() { map_.~Map(); }
+  ~MapFieldLite() {}
+#else
+  void Destruct() {
+    // We want to destruct the map in such a way that we can verify
+    // that we've done that, but also be sure that we've deallocated
+    // everything (as opposed to leaving an allocation behind with no
+    // data in it, as would happen if a vector was resize'd to zero.
+    // Map::Swap with an empty map accomplishes that.
+    decltype(map_) swapped_map(map_.arena());
+    map_.InternalSwap(swapped_map);
+  }
+  ~MapFieldLite() {
+    if (map_.arena() == nullptr && !map_.empty()) {
+      MapFieldLiteNotDestructed(this);
+    }
+  }
+#endif
   // Accessors
   const Map<Key, T>& GetMap() const { return map_; }
   Map<Key, T>* MutableMap() { return &map_; }
@@ -116,7 +140,11 @@ class MapFieldLite {
  private:
   typedef void DestructorSkippable_;
 
-  Map<Key, T> map_;
+  // map_ is inside an anonymous union so we can explicitly control its
+  // destruction
+  union {
+    Map<Key, T> map_;
+  };
 
   friend class ::PROTOBUF_NAMESPACE_ID::Arena;
 };
@@ -174,6 +202,13 @@ struct MapEntryToMapField<
       kKeyFieldType, kValueFieldType>
       MapFieldType;
 };
+
+#ifndef NDEBUG
+inline PROTOBUF_NOINLINE void MapFieldLiteNotDestructed(void* map_field_lite) {
+  bool proper_destruct = false;
+  GOOGLE_CHECK(proper_destruct) << map_field_lite;
+}
+#endif
 
 }  // namespace internal
 }  // namespace protobuf

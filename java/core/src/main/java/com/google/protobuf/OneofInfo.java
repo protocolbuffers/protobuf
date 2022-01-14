@@ -35,6 +35,7 @@ import java.lang.reflect.Field;
 /** Information for a oneof within a protobuf message. */
 // TODO(nathanmittler): make this private once all of experimental code is migrated to protobuf.
 @ExperimentalApi
+@CheckReturnValue
 final class OneofInfo {
   private final int id;
   private final Field caseField;

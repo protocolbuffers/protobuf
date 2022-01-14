@@ -37,6 +37,7 @@
 
 #include <map>
 #include <string>
+
 #include <google/protobuf/compiler/java/java_field.h>
 
 namespace google {

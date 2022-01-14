@@ -2,11 +2,13 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
+load("@rules_pkg//:pkg.bzl", "pkg_zip")
+load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_files")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
-
+load(":protobuf_release.bzl", "package_naming")
 licenses(["notice"])
 
 exports_files(["LICENSE"])
@@ -26,7 +28,6 @@ ZLIB_DEPS = ["@zlib//:zlib"]
 ################################################################################
 
 MSVC_COPTS = [
-    "/DHAVE_PTHREAD",
     "/wd4018",  # -Wno-sign-compare
     "/wd4065",  # switch statement contains 'default' but no 'case' labels
     "/wd4146",  # unary minus operator applied to unsigned type, result still unsigned
@@ -46,7 +47,6 @@ MSVC_COPTS = [
 COPTS = select({
     ":msvc": MSVC_COPTS,
     "//conditions:default": [
-        "-DHAVE_PTHREAD",
         "-DHAVE_ZLIB",
         "-Wmissing-field-initializers",
         "-Woverloaded-virtual",
@@ -65,10 +65,28 @@ create_compiler_config_setting(
     ],
 )
 
+# Android NDK builds can specify different crosstool_top flags to choose which
+# STL they use for C++. We need these multiple variants to catch all of those
+# versions of crosstool_top and reliably detect Android.
+#
+# For more info on the various crosstool_tops used by NDK Bazel builds, see:
+# https://docs.bazel.build/versions/master/android-ndk.html#configuring-the-stl
+
 config_setting(
     name = "android",
     values = {
         "crosstool_top": "//external:android/crosstool",
+    },
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+config_setting(
+    name = "android-stlport",
+    values = {
+        "crosstool_top": "@androidndk//:toolchain-stlport",
     },
     visibility = [
         # Public, but Protobuf only visibility.
@@ -98,11 +116,24 @@ config_setting(
     ],
 )
 
+config_setting(
+    name = "android-default",
+    values = {
+        "crosstool_top": "@androidndk//:default_crosstool",
+    },
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
 # Android and MSVC builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
     ":android": [],
+    ":android-stlport": [],
     ":android-libcpp": [],
     ":android-gnu-libstdcpp": [],
+    ":android-default": [],
     ":msvc": [
         # Suppress linker warnings about files with no symbols defined.
         "-ignore:4221",
@@ -147,6 +178,7 @@ cc_library(
         "src/google/protobuf/message_lite.cc",
         "src/google/protobuf/parse_context.cc",
         "src/google/protobuf/repeated_field.cc",
+        "src/google/protobuf/repeated_ptr_field.cc",
         "src/google/protobuf/stubs/bytestream.cc",
         "src/google/protobuf/stubs/common.cc",
         "src/google/protobuf/stubs/int128.cc",
@@ -488,6 +520,70 @@ cc_binary(
     deps = [":protoc_lib"],
 )
 
+
+################################################################################
+# Generates protoc release artifacts.
+################################################################################
+
+genrule(
+    name = "protoc_readme",
+    visibility = ["//visibility:private"],
+    cmd = """
+echo "Protocol Buffers - Google's data interchange format
+Copyright 2008 Google Inc.
+https://developers.google.com/protocol-buffers/
+This package contains a precompiled binary version of the protocol buffer
+compiler (protoc). This binary is intended for users who want to use Protocol
+Buffers in languages other than C++ but do not want to compile protoc
+themselves. To install, simply place this binary somewhere in your PATH.
+If you intend to use the included well known types then don't forget to
+copy the contents of the 'include' directory somewhere as well, for example
+into '/usr/local/include/'.
+Please refer to our official github site for more installation instructions:
+  https://github.com/protocolbuffers/protobuf" > $@
+    """,
+    outs = ["readme.txt"],
+)
+
+# plugin.proto is excluded from this list because it belongs in a nested folder (protobuf/compiler/plugin.proto)
+pkg_files(
+    name = "wkt_protos_files",
+    srcs =  [value[0] for value in WELL_KNOWN_PROTO_MAP.values() if not value[0].endswith("plugin.proto")],
+    visibility = ["//visibility:private"],
+    prefix = "include/google/protobuf",
+)
+
+pkg_files(
+    name = "compiler_plugin_protos_files",
+    srcs =  ["src/google/protobuf/compiler/plugin.proto"],
+    visibility = ["//visibility:private"],
+    prefix = "include/google/protobuf/compiler",
+)
+
+pkg_files(
+    name = "protoc_files",
+    srcs =  [":protoc"],
+    attributes = pkg_attributes(mode = "0555"),
+    visibility = ["//visibility:private"],
+    prefix = "bin/",
+)
+
+package_naming(
+    name = "protoc_pkg_naming",
+)
+
+pkg_zip(
+    name = "protoc_release",
+    package_file_name = "protoc-{version}-{platform}.zip",
+    package_variables = ":protoc_pkg_naming",
+    srcs = [
+        ":protoc_files",
+        ":wkt_protos_files",
+        ":compiler_plugin_protos_files",
+        "readme.txt",
+    ],
+)
+
 ################################################################################
 # Tests
 ################################################################################
@@ -560,6 +656,8 @@ RELATIVE_TEST_PROTOS = [
 TEST_PROTOS = ["src/" + s for s in RELATIVE_TEST_PROTOS]
 
 GENERIC_RELATIVE_TEST_PROTOS = [
+    "google/protobuf/map_proto2_unittest.proto",
+    "google/protobuf/map_unittest.proto",
     "google/protobuf/unittest.proto",
     "google/protobuf/unittest_arena.proto",
     "google/protobuf/unittest_custom_options.proto",
@@ -953,7 +1051,6 @@ py_proto_library(
     protoc = ":protoc",
     py_libs = [
         ":python_srcs",
-        "@six//:six",
     ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
@@ -1087,7 +1184,7 @@ proto_library(
     name = "generated_protos_proto",
     srcs = [
         "src/google/protobuf/unittest_import_public.proto",
-        "unittest_gen.proto",
+        "unittest_gen_import.proto",
     ],
 )
 
@@ -1095,7 +1192,7 @@ py_proto_library(
     name = "generated_protos_py",
     srcs = [
         "src/google/protobuf/unittest_import_public.proto",
-        "unittest_gen.proto",
+        "unittest_gen_import.proto",
     ],
     default_runtime = "",
     protoc = ":protoc",
@@ -1225,6 +1322,19 @@ cc_binary(
 #     ],
 # )
 
+
+java_proto_library(
+    name = "java_test_protos",
+    deps = [":generic_test_protos"],
+    visibility = ["//java:__subpackages__"],
+)
+
+java_lite_proto_library(
+    name = "java_lite_test_protos",
+    deps = [":generic_test_protos"],
+    visibility = ["//java:__subpackages__"],
+)
+
 java_proto_library(
     name = "test_messages_proto2_java_proto",
     visibility = [
@@ -1318,3 +1428,146 @@ filegroup(
     srcs = glob(["**/*.bzl"]),
     visibility = ["//visibility:public"],
 )
+
+# Kotlin proto rules
+
+genrule(
+    name = "gen_kotlin_unittest_lite",
+    srcs = [
+        "src/google/protobuf/unittest_lite.proto",
+        "src/google/protobuf/unittest_import_lite.proto",
+        "src/google/protobuf/unittest_import_public_lite.proto",
+        "src/google/protobuf/map_lite_unittest.proto",
+    ],
+    outs = [
+        "TestAllTypesLiteKt.kt",
+        "ForeignMessageLiteKt.kt",
+        "TestAllExtensionsLiteKt.kt",
+        "TestEmptyMessageLiteKt.kt",
+        "TestEmptyMessageWithExtensionsLiteKt.kt",
+        "TestMapLiteKt.kt",
+        "OptionalGroup_extension_liteKt.kt",
+        "RepeatedGroup_extension_liteKt.kt",
+    ],
+    visibility = ["//java:__subpackages__"],
+    cmd = "$(location //:protoc) " +
+          "--kotlin_out=lite:$(@D) -Isrc/ " +
+          "$(locations src/google/protobuf/unittest_lite.proto) && " +
+          "$(location //:protoc) " +
+          "--kotlin_out=lite:$(@D) -Isrc/ " +
+          "$(locations src/google/protobuf/map_lite_unittest.proto) && " +
+          "cp $(@D)/com/google/protobuf/TestAllTypesLiteKt.kt " +
+          "$(location TestAllTypesLiteKt.kt) && " +
+          "cp $(@D)/com/google/protobuf/ForeignMessageLiteKt.kt " +
+          "$(location ForeignMessageLiteKt.kt) && " +
+          "cp $(@D)/com/google/protobuf/TestAllExtensionsLiteKt.kt " +
+          "$(location TestAllExtensionsLiteKt.kt) && " +
+          "cp $(@D)/com/google/protobuf/TestAllTypesLiteKt.kt " +
+          "$(location TestAllTypesLiteKt.kt) && " +
+          "cp $(@D)/com/google/protobuf/TestEmptyMessageLiteKt.kt " +
+          "$(location TestEmptyMessageLiteKt.kt) && " +
+          "cp $(@D)/com/google/protobuf/TestEmptyMessageWithExtensionsLiteKt.kt " +
+          "$(location TestEmptyMessageWithExtensionsLiteKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestMapLiteKt.kt " +
+          "$(location TestMapLiteKt.kt) && " +
+          "cp $(@D)/com/google/protobuf/OptionalGroup_extension_liteKt.kt " +
+          "$(location OptionalGroup_extension_liteKt.kt) && " +
+          "cp $(@D)/com/google/protobuf/RepeatedGroup_extension_liteKt.kt " +
+          "$(location RepeatedGroup_extension_liteKt.kt)",
+    tools = [":protoc"],
+)
+
+genrule(
+    name = "gen_kotlin_unittest",
+    srcs = [
+        "src/google/protobuf/unittest.proto",
+        "src/google/protobuf/unittest_import.proto",
+        "src/google/protobuf/unittest_import_public.proto",
+        "src/google/protobuf/map_proto2_unittest.proto",
+    ],
+    outs = [
+        "TestAllTypesKt.kt",
+        "ForeignMessageKt.kt",
+        "TestAllExtensionsKt.kt",
+        "TestEmptyMessageKt.kt",
+        "TestEmptyMessageWithExtensionsKt.kt",
+        "TestIntIntMapKt.kt",
+        "TestEnumMapKt.kt",
+        "TestMapsKt.kt",
+        "OptionalGroup_extensionKt.kt",
+        "RepeatedGroup_extensionKt.kt",
+    ],
+    visibility = ["//java:__subpackages__"],
+    cmd = "$(location //:protoc) " +
+          "--kotlin_out=shared,immutable:$(@D) -Isrc/ " +
+          "$(location src/google/protobuf/unittest.proto) && " +
+          "$(location //:protoc) " +
+          "--kotlin_out=shared,immutable:$(@D) -Isrc/ " + 
+          "$(location src/google/protobuf/map_proto2_unittest.proto) && " +
+          "cp $(@D)/protobuf_unittest/TestAllTypesKt.kt " +
+          "$(location TestAllTypesKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/ForeignMessageKt.kt " +
+          "$(location ForeignMessageKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestAllExtensionsKt.kt " +
+          "$(location TestAllExtensionsKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestEmptyMessageKt.kt " +
+          "$(location TestEmptyMessageKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestEmptyMessageWithExtensionsKt.kt " +
+          "$(location TestEmptyMessageWithExtensionsKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestIntIntMapKt.kt " +
+          "$(location TestIntIntMapKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestEnumMapKt.kt " +
+          "$(location TestEnumMapKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/TestMapsKt.kt " +
+          "$(location TestMapsKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/OptionalGroup_extensionKt.kt " +
+          "$(location OptionalGroup_extensionKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/RepeatedGroup_extensionKt.kt " +
+          "$(location RepeatedGroup_extensionKt.kt)",
+    tools = ["//:protoc"],
+)
+
+genrule(
+    name = "gen_kotlin_proto3_unittest_lite",
+    srcs = [
+        "src/google/protobuf/unittest_proto3_lite.proto",
+        "src/google/protobuf/unittest_import.proto",
+        "src/google/protobuf/unittest_import_public.proto",
+    ],
+    outs = [
+        "TestAllTypesProto3LiteKt.kt",
+        "TestEmptyMessageProto3LiteKt.kt",
+    ],
+    visibility = ["//java:__subpackages__"],
+    cmd = "$(location //:protoc) " +
+          "--kotlin_out=lite:$(@D) -Isrc/ " +
+          "$(location src/google/protobuf/unittest_proto3_lite.proto) && " +
+          "cp $(@D)/proto3_lite_unittest/TestAllTypesKt.kt " +
+          "$(location TestAllTypesProto3LiteKt.kt) && " +
+          "cp $(@D)/proto3_lite_unittest/TestEmptyMessageKt.kt " +
+          "$(location TestEmptyMessageProto3LiteKt.kt)",
+    tools = ["//:protoc"],
+)
+
+genrule(
+    name = "gen_kotlin_proto3_unittest",
+    srcs = [
+        "src/google/protobuf/unittest_proto3.proto",
+        "src/google/protobuf/unittest_import.proto",
+        "src/google/protobuf/unittest_import_public.proto",
+    ],
+    outs = [
+        "TestAllTypesProto3Kt.kt",
+        "TestEmptyMessageProto3Kt.kt",
+    ],
+    visibility = ["//java:__subpackages__"],
+    cmd = "$(location //:protoc) " +
+          "--kotlin_out=shared,immutable:$(@D) -Isrc/ " +
+          "$(location src/google/protobuf/unittest_proto3.proto) && " +
+          "cp $(@D)/proto3_unittest/TestAllTypesKt.kt " +
+          "$(location TestAllTypesProto3Kt.kt) && " +
+          "cp $(@D)/proto3_unittest/TestEmptyMessageKt.kt " +
+          "$(location TestEmptyMessageProto3Kt.kt)",
+    tools = ["//:protoc"],
+)
+

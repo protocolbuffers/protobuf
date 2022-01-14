@@ -33,8 +33,8 @@
 #include <cstdint>
 
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/util/internal/utility.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/util/internal/utility.h>
 
 namespace google {
 namespace protobuf {

@@ -91,6 +91,8 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_helpers.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_pyi_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.cc
@@ -117,6 +119,7 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/php/php_generator.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_pyi_generator.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.h
 )
 

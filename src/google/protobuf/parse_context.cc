@@ -36,9 +36,10 @@
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/wire_format_lite.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {

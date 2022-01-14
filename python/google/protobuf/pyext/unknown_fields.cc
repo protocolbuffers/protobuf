@@ -274,13 +274,13 @@ static PyObject* GetData(PyUnknownFieldRef* self, void *closure) {
   PyObject* data = NULL;
   switch (field->type()) {
     case UnknownField::TYPE_VARINT:
-      data = PyLong_FromLong(field->varint());
+      data = PyLong_FromUnsignedLongLong(field->varint());
       break;
     case UnknownField::TYPE_FIXED32:
-      data = PyLong_FromLong(field->fixed32());
+      data = PyLong_FromUnsignedLong(field->fixed32());
       break;
     case UnknownField::TYPE_FIXED64:
-      data = PyLong_FromLong(field->fixed64());
+      data = PyLong_FromUnsignedLongLong(field->fixed64());
       break;
     case UnknownField::TYPE_LENGTH_DELIMITED:
       data = PyBytes_FromStringAndSize(field->length_delimited().data(),

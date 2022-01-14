@@ -38,6 +38,7 @@ import java.io.IOException;
  * such as serialization/deserialization.
  */
 @ExperimentalApi
+@CheckReturnValue
 interface Schema<T> {
   /** Writes the given message to the target {@link Writer}. */
   void writeTo(T message, Writer writer) throws IOException;

@@ -387,17 +387,10 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
    * (For repeated fields, this checks if the object is the right type to be one element of the
    * field.)
    *
-   * @throws IllegalArgumentException The value is not of the right type.
+   * @throws IllegalArgumentException the value is not of the right type
    */
   private void verifyType(final T descriptor, final Object value) {
     if (!isValidType(descriptor.getLiteType(), value)) {
-      // TODO(kenton):  When chaining calls to setField(), it can be hard to
-      //   tell from the stack trace which exact call failed, since the whole
-      //   chain is considered one line of code.  It would be nice to print
-      //   more information here, e.g. naming the field.  We used to do that.
-      //   But we can't now that FieldSet doesn't use descriptors.  Maybe this
-      //   isn't a big deal, though, since it would only really apply when using
-      //   reflection and generally people don't chain reflection setters.
       throw new IllegalArgumentException(
           String.format(
               "Wrong object type used with protocol message reflection.\n"
@@ -427,10 +420,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       case BYTE_STRING:
         return value instanceof ByteString || value instanceof byte[];
       case ENUM:
-        // TODO(kenton):  Caller must do type checking here, I guess.
         return (value instanceof Integer || value instanceof Internal.EnumLite);
       case MESSAGE:
-        // TODO(kenton):  Caller must do type checking here, I guess.
         return (value instanceof MessageLite) || (value instanceof LazyField);
     }
     return false;
@@ -458,32 +449,34 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return true;
   }
 
-  @SuppressWarnings("unchecked")
   private static <T extends FieldDescriptorLite<T>> boolean isInitialized(
       final Map.Entry<T, Object> entry) {
     final T descriptor = entry.getKey();
     if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
       if (descriptor.isRepeated()) {
-        for (final MessageLite element : (List<MessageLite>) entry.getValue()) {
-          if (!element.isInitialized()) {
+        for (final Object element : (List<?>) entry.getValue()) {
+          if (!isMessageFieldValueInitialized(element)) {
             return false;
           }
         }
       } else {
-        Object value = entry.getValue();
-        if (value instanceof MessageLite) {
-          if (!((MessageLite) value).isInitialized()) {
-            return false;
-          }
-        } else if (value instanceof LazyField) {
-          return true;
-        } else {
-          throw new IllegalArgumentException(
-              "Wrong object type used with protocol message reflection.");
-        }
+        return isMessageFieldValueInitialized(entry.getValue());
       }
     }
     return true;
+  }
+
+  private static boolean isMessageFieldValueInitialized(Object value) {
+    if (value instanceof MessageLiteOrBuilder) {
+      // Message fields cannot have builder values in FieldSet, but can in FieldSet.Builder, and
+      // this method is used by FieldSet.Builder.isInitialized.
+      return ((MessageLiteOrBuilder) value).isInitialized();
+    } else if (value instanceof LazyField) {
+      return true;
+    } else {
+      throw new IllegalArgumentException(
+          "Wrong object type used with protocol message reflection.");
+    }
   }
 
   /**
@@ -554,18 +547,15 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     }
   }
 
-  // TODO(kenton):  Move static parsing and serialization methods into some
-  //   other class.  Probably WireFormat.
-
   /**
    * Read a field of any primitive type for immutable messages from a CodedInputStream. Enums,
    * groups, and embedded messages are not handled by this method.
    *
-   * @param input The stream from which to read.
-   * @param type Declared type of the field.
-   * @param checkUtf8 When true, check that the input is valid utf8.
-   * @return An object representing the field's value, of the exact type which would be returned by
-   *     {@link Message#getField(Descriptors.FieldDescriptor)} for this field.
+   * @param input the stream from which to read
+   * @param type declared type of the field
+   * @param checkUtf8 When true, check that the input is valid UTF-8
+   * @return an object representing the field's value, of the exact type which would be returned by
+   *     {@link Message#getField(Descriptors.FieldDescriptor)} for this field
    */
   public static Object readPrimitiveField(
       CodedInputStream input, final WireFormat.FieldType type, boolean checkUtf8)
@@ -737,7 +727,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         for (final Object element : valueList) {
           dataSize += computeElementSizeNoTag(type, element);
         }
-        output.writeRawVarint32(dataSize);
+        output.writeUInt32NoTag(dataSize);
         // Write the data itself, without any tags.
         for (final Object element : valueList) {
           writeElementNoTag(output, type, element);
@@ -903,7 +893,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         }
         return dataSize
             + CodedOutputStream.computeTagSize(number)
-            + CodedOutputStream.computeRawVarint32Size(dataSize);
+            + CodedOutputStream.computeUInt32SizeNoTag(dataSize);
       } else {
         int size = 0;
         for (final Object element : (List<?>) value) {
@@ -1081,8 +1071,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
         // Wrap the contents in a new list so that the caller cannot change
         // the list's contents after setting it.
-        final List newList = new ArrayList();
-        newList.addAll((List) value);
+        final List newList = new ArrayList((List) value);
         for (final Object element : newList) {
           verifyType(descriptor, element);
           hasNestedBuilders = hasNestedBuilders || element instanceof MessageLite.Builder;

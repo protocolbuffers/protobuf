@@ -82,6 +82,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Schema used for standard messages. */
+@CheckReturnValue
 final class MessageSchema<T> implements Schema<T> {
   private static final int INTS_PER_FIELD = 3;
   private static final int OFFSET_BITS = 20;
@@ -4875,6 +4876,7 @@ final class MessageSchema<T> implements Schema<T> {
    * group (endGroup != 0), parsing ends when a tag == endGroup is encountered and the position
    * after that tag is returned.
    */
+  @CanIgnoreReturnValue
   int parseProto2Message(
       T message, byte[] data, int position, int limit, int endGroup, Registers registers)
       throws IOException {
@@ -5184,6 +5186,7 @@ final class MessageSchema<T> implements Schema<T> {
   }
 
   /** Parses a proto3 message and returns the limit if parsing is successful. */
+  @CanIgnoreReturnValue
   private int parseProto3Message(
       T message, byte[] data, int position, int limit, Registers registers) throws IOException {
     final sun.misc.Unsafe unsafe = UNSAFE;

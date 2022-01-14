@@ -463,6 +463,12 @@ message TestOneofParsingLite {
   }
 }
 
+message TestMessageSetLite {
+  option message_set_wire_format = true;
+
+  extensions 100 to max;
+}
+
 // The following four messages are set up to test for wire compatibility between
 // packed and non-packed repeated fields. We use the field number 2048, because
 // that is large enough to require a 3-byte varint for the tag.

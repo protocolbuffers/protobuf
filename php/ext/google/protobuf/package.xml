@@ -10,11 +10,11 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2021-10-04</date>
- <time>13:03:51</time>
+ <date>2022-01-11</date>
+ <time>00:58:50</time>
  <version>
-  <release>3.18.1</release>
-  <api>3.18.1</api>
+  <release>3.19.3</release>
+  <api>3.19.3</api>
  </version>
  <stability>
   <release>stable</release>
@@ -22,7 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- * No new changes in 3.18.1
+ * No new changes in 3.19.3
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -1094,6 +1094,96 @@ G  A release.
    </stability>
    <date>2021-10-04</date>
    <time>13:03:51</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.19.0RC1</release>
+    <api>3.19.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2021-10-15</date>
+   <time>13:38:38</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.19.0RC2</release>
+    <api>3.19.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2021-10-18</date>
+   <time>15:36:35</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.19.0</release>
+    <api>3.19.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2021-10-19</date>
+   <time>11:06:24</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.19.1</release>
+    <api>3.19.1</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2021-10-28</date>
+   <time>20:01:12</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.19.2</release>
+    <api>3.19.2</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2022-01-05</date>
+   <time>17:01:38</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.19.3</release>
+    <api>3.19.3</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2022-01-11</date>
+   <time>00:58:50</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
    </notes>

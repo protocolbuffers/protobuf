@@ -1426,7 +1426,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   examples/pubspec.yaml                  \
   protobuf.bzl                           \
   protobuf_deps.bzl                      \
-  third_party/six.BUILD                  \
   third_party/zlib.BUILD                 \
   util/python/BUILD                      \
   internal.bzl

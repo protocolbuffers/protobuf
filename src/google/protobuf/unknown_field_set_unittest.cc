@@ -50,6 +50,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/wire_format.h>
+#include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/time.h>
@@ -62,7 +63,7 @@ using internal::WireFormat;
 
 class UnknownFieldSetTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     descriptor_ = unittest::TestAllTypes::descriptor();
     TestUtil::SetAllFields(&all_fields_);
     all_fields_.SerializeToString(&all_fields_data_);
@@ -130,12 +131,12 @@ TEST_F(UnknownFieldSetTest, AllFieldsPresent) {
     }
   }
 
-  std::unordered_set<uint32> unknown_tags;
+  std::unordered_set<uint32_t> unknown_tags;
   for (int i = 0; i < unknown_fields_->field_count(); i++) {
     unknown_tags.insert(unknown_fields_->field(i).number());
   }
 
-  for (uint32 t : unknown_tags) {
+  for (uint32_t t : unknown_tags) {
     EXPECT_NE(descriptor_->FindFieldByNumber(t), nullptr);
   }
 
@@ -200,8 +201,9 @@ TEST_F(UnknownFieldSetTest, SerializeFastAndSlowAreEquivalent) {
   slow_buffer.resize(size);
   fast_buffer.resize(size);
 
-  uint8* target = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&fast_buffer));
-  uint8* result = WireFormat::SerializeUnknownFieldsToArray(
+  uint8_t* target =
+      reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&fast_buffer));
+  uint8_t* result = WireFormat::SerializeUnknownFieldsToArray(
       empty_message_.unknown_fields(), target);
   EXPECT_EQ(size, result - target);
 
@@ -646,6 +648,7 @@ TEST_F(UnknownFieldSetTest, DeleteByNumber) {
                       MAKE_VECTOR(kExpectedFieldNumbers5));
 }
 #undef MAKE_VECTOR
+
 }  // namespace
 
 }  // namespace protobuf

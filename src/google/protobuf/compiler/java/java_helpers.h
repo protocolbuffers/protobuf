@@ -38,10 +38,10 @@
 #include <cstdint>
 #include <string>
 
-#include <google/protobuf/compiler/java/java_context.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/compiler/java/java_context.h>
+#include <google/protobuf/descriptor.pb.h>
 
 namespace google {
 namespace protobuf {
@@ -151,6 +151,21 @@ inline bool IsDescriptorProto(const Descriptor* descriptor) {
 // fields.
 std::string GetOneofStoredType(const FieldDescriptor* field);
 
+// We use either the proto1 enums if the enum is generated, otherwise fall back
+// to use integers.
+enum class Proto1EnumRepresentation {
+  kEnum,
+  kInteger,
+};
+
+// Returns which representation we should use.
+inline Proto1EnumRepresentation GetProto1EnumRepresentation(
+    const EnumDescriptor* descriptor) {
+  if (descriptor->containing_type() != nullptr) {
+    return Proto1EnumRepresentation::kEnum;
+  }
+  return Proto1EnumRepresentation::kInteger;
+}
 
 // Whether we should generate multiple java files for messages.
 inline bool MultipleJavaFiles(const FileDescriptor* descriptor,

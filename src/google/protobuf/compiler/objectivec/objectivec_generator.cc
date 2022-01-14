@@ -110,6 +110,9 @@ bool ObjectiveCGenerator::GenerateAll(
       //   - Comments start with "#".
       //   - A comment can go on a line after a expected package/prefix pair.
       //     (i.e. - "package=prefix # comment")
+      //   - For files that do NOT have a proto package (not recommended), an
+      //     entry can be made as "no_package:PATH=prefix", where PATH is the
+      //     path for the .proto file.
       //
       // There is no validation that the prefixes are good prefixes, it is
       // assumed that they are when you create the file.

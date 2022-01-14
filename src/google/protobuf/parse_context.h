@@ -38,15 +38,16 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/port.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/implicit_weak_message.h>
 #include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/metadata_lite.h>
-#include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/strutil.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 
@@ -197,6 +198,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return ptr > limit_end_ &&
            (next_chunk_ == nullptr || ptr - buffer_end_ > limit_);
   }
+  bool AliasingEnabled() const { return aliasing_ != kNoAliasing; }
   int BytesUntilLimit(const char* ptr) const {
     return limit_ + static_cast<int>(buffer_end_ - ptr);
   }
@@ -370,6 +372,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   friend class ImplicitWeakMessage;
 };
 
+using LazyEagerVerifyFnType = const char* (*)(const char* ptr,
+                                              ParseContext* ctx);
+
 // ParseContext holds all data that is global to the entire parse. Most
 // importantly it contains the input stream, but also recursion depth and also
 // stores the end group tag, in case a parser ended on a endgroup, to verify
@@ -398,6 +403,18 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   const Data& data() const { return data_; }
 
   const char* ParseMessage(MessageLite* msg, const char* ptr);
+
+  // Spawns a child parsing context that inherits key properties. New context
+  // inherits the following:
+  // --depth_, data_, check_required_fields_, lazy_parse_mode_
+  // The spanwed context always disables aliasing (different input).
+  template <typename... T>
+  ParseContext Spawn(const char** start, T&&... args) {
+    ParseContext spawned(depth_, false, start, std::forward<T>(args)...);
+    // Transfer key context states.
+    spawned.data_ = data_;
+    return spawned;
+  }
 
   // This overload supports those few cases where ParseMessage is called
   // on a class that is not actually a proto message.

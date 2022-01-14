@@ -49,7 +49,7 @@ class ImmutableExtensionLiteGenerator : public ExtensionGenerator {
  public:
   explicit ImmutableExtensionLiteGenerator(const FieldDescriptor* descriptor,
                                            Context* context);
-  virtual ~ImmutableExtensionLiteGenerator();
+  ~ImmutableExtensionLiteGenerator() override;
 
   void Generate(io::Printer* printer) override;
 

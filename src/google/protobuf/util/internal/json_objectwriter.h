@@ -28,16 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_JSON_OBJECTWRITER_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_JSON_OBJECTWRITER_H__
 
 #include <cstdint>
 #include <memory>
 #include <string>
 
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/util/internal/structured_objectwriter.h>
 
 // clang-format off
 #include <google/protobuf/port_def.inc>
@@ -111,7 +111,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
       }
     }
   }
-  virtual ~JsonObjectWriter();
+  ~JsonObjectWriter() override;
 
   // ObjectWriter methods.
   JsonObjectWriter* StartObject(StringPiece name) override;
@@ -275,4 +275,4 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_JSON_OBJECTWRITER_H__
