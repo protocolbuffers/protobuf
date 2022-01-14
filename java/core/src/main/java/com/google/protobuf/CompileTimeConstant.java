@@ -28,20 +28,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-<<<<<<<< HEAD:java/kotlin-lite/src/test/proto/com/google/protobuf/multiple_files_proto3.proto
-syntax = "proto3";
-
-package protobuf.kotlin.generator;
-
-option java_package = "com.google.protobuf.kotlin.generator";
-option java_multiple_files = true;
-
-enum NestedEnum { FOO = 0; }
-
-message MultipleFilesMessageA {}
-
-message MultipleFilesMessageB {}
-========
 package com.google.protobuf;
 
 import static java.lang.annotation.RetentionPolicy.CLASS;
@@ -59,4 +45,3 @@ import java.lang.annotation.Target;
 @Retention(CLASS)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @interface CompileTimeConstant {}
->>>>>>>> refs/tags/sync-piper:java/core/src/main/java/com/google/protobuf/CompileTimeConstant.java
