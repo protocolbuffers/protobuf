@@ -54,6 +54,7 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
+
 #include <atomic>
 #include <map>
 #include <memory>
@@ -66,6 +67,8 @@
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/port.h>
+
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 // TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
@@ -217,10 +220,8 @@ class PROTOBUF_EXPORT LazyDescriptor {
  private:
   void Once(const ServiceDescriptor* service);
 
-  union {
-    const Descriptor* descriptor_;
-    const char* lazy_name_;
-  };
+  const Descriptor* descriptor_;
+  // The once_ flag is followed by a NUL terminated string for the type name.
   internal::once_flag* once_;
 };
 
@@ -924,6 +925,8 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   const std::string* all_names_;
   const FileDescriptor* file_;
 
+  // The once_flag is followed by a NUL terminated string for the type name and
+  // enum default value (or empty string if no default enum).
   internal::once_flag* type_once_;
   static void TypeOnceInit(const FieldDescriptor* to_init);
   void InternalTypeOnceInit() const;
@@ -935,7 +938,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   union {
     mutable const Descriptor* message_type;
     mutable const EnumDescriptor* enum_type;
-    const char* lazy_type_name;
   } type_descriptor_;
   const FieldOptions* options_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
@@ -952,7 +954,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
     bool default_value_bool_;
 
     mutable const EnumValueDescriptor* default_value_enum_;
-    const char* lazy_default_value_enum_name_;
     const std::string* default_value_string_;
     mutable std::atomic<const Message*> default_generated_instance_;
   };
@@ -1336,6 +1337,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
 
   // Look up a MethodDescriptor by name.
   const MethodDescriptor* FindMethodByName(ConstStringParam name) const;
+
   // See Descriptor::CopyTo().
   void CopyTo(ServiceDescriptorProto* proto) const;
 
@@ -1474,11 +1476,10 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MethodDescriptor);
 };
 
-
 // Describes a whole .proto file.  To get the FileDescriptor for a compiled-in
 // file, get the descriptor for something defined in that file and call
 // descriptor->file().  Use DescriptorPool to construct your own descriptors.
-class PROTOBUF_EXPORT FileDescriptor {
+class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
  public:
   typedef FileDescriptorProto Proto;
 
@@ -1615,31 +1616,8 @@ class PROTOBUF_EXPORT FileDescriptor {
                          SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef FileOptions OptionsType;
-
-  const std::string* name_;
-  const std::string* package_;
-  const DescriptorPool* pool_;
-
-  // Data required to do lazy initialization.
-  struct PROTOBUF_EXPORT LazyInitData {
-#ifndef SWIG
-    internal::once_flag once;
-#endif
-    const char** dependencies_names;
-  };
-
-  LazyInitData* dependencies_once_;
-  static void DependenciesOnceInit(const FileDescriptor* to_init);
-  void InternalDependenciesOnceInit() const;
-
-  // These are arranged to minimize padding on 64-bit.
-  int dependency_count_;
-  int public_dependency_count_;
-  int weak_dependency_count_;
-  int message_type_count_;
-  int enum_type_count_;
-  int service_count_;
 
   bool is_placeholder_;
   // Indicates the FileDescriptor is completed building. Used to verify
@@ -1650,6 +1628,25 @@ class PROTOBUF_EXPORT FileDescriptor {
   uint8_t syntax_;
   // This one is here to fill the padding.
   int extension_count_;
+
+  const std::string* name_;
+  const std::string* package_;
+  const DescriptorPool* pool_;
+
+  // dependencies_once_ contain a once_flag followed by N NUL terminated
+  // strings. Dependencies that do not need to be loaded will be empty. ie just
+  // {'\0'}
+  internal::once_flag* dependencies_once_;
+  static void DependenciesOnceInit(const FileDescriptor* to_init);
+  void InternalDependenciesOnceInit() const;
+
+  // These are arranged to minimize padding on 64-bit.
+  int dependency_count_;
+  int public_dependency_count_;
+  int weak_dependency_count_;
+  int message_type_count_;
+  int enum_type_count_;
+  int service_count_;
 
   mutable const FileDescriptor** dependencies_;
   int* public_dependencies_;
@@ -1973,7 +1970,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class ServiceDescriptor;
   friend class MethodDescriptor;
   friend class FileDescriptor;
-  friend class StreamDescriptor;
   friend class DescriptorBuilder;
   friend class FileDescriptorTables;
 

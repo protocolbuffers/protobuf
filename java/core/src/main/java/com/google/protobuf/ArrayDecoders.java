@@ -43,6 +43,7 @@ import java.io.IOException;
  * IndexOutOfBoundsException and convert it to protobuf's InvalidProtocolBufferException when
  * crossing protobuf public API boundaries.
  */
+@CheckReturnValue
 final class ArrayDecoders {
   /**
    * A helper used to return multiple values in a Java function. Java doesn't natively support

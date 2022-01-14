@@ -36,9 +36,9 @@
 
 #include <vector>
 
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/descriptor.pb.h>
 
 namespace google {
 namespace protobuf {
@@ -199,7 +199,12 @@ void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
     return;
   }
 
-  printer->Print(" * @deprecated\n");
+  SourceLocation location;
+  field->GetSourceLocation(&location);
+  printer->Print(" * @deprecated $name$ is deprecated.\n", "name",
+                 field->full_name());
+  printer->Print(" *     See $file$;l=$line$\n", "file", field->file()->name(),
+                 "line", std::to_string(location.start_line));
 }
 
 void WriteFieldAccessorDocComment(io::Printer* printer,

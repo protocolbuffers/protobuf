@@ -33,11 +33,13 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_extension.h>
+
 #include <map>
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/descriptor.pb.h>
+
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/descriptor.pb.h>
 
 namespace google {
 namespace protobuf {
@@ -164,7 +166,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
   }
 
   format(
-      "PROTOBUF_ATTRIBUTE_INIT_PRIORITY "
+      "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
       "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
       "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
       "  $scoped_name$($constant_name$, $1$);\n",
@@ -175,7 +177,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
       ShouldVerify(descriptor_->message_type(), options_, scc_analyzer_) &&
       ShouldVerify(descriptor_->containing_type(), options_, scc_analyzer_)) {
     format(
-        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY "
+        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
         "::$proto_ns$::internal::RegisterExtensionVerify< $extendee$,\n"
         "    $1$, $number$> $2$_$name$_register;\n",
         ClassName(descriptor_->message_type(), true),

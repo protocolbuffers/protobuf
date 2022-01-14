@@ -38,10 +38,10 @@
 #include <limits>
 #include <map>
 
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/compiler/cpp/cpp_names.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/compiler/cpp/cpp_names.h>
 
 namespace google {
 namespace protobuf {
@@ -88,7 +88,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
   variables_["nested_name"] = descriptor_->name();
   variables_["resolved_name"] = ResolveKeyword(descriptor_->name());
   variables_["prefix"] =
-      (descriptor_->containing_type() == NULL) ? "" : classname_ + "_";
+      (descriptor_->containing_type() == nullptr) ? "" : classname_ + "_";
 }
 
 EnumGenerator::~EnumGenerator() {}
@@ -405,7 +405,7 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
         descriptor_->value_count());
   }
 
-  if (descriptor_->containing_type() != NULL) {
+  if (descriptor_->containing_type() != nullptr) {
     std::string parent = ClassName(descriptor_->containing_type(), false);
     // Before C++17, we must define the static constants which were
     // declared in the header, to give the linker a place to put them.

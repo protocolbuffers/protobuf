@@ -66,20 +66,20 @@ bool FileExists(const std::string& path) {
 class MockErrorCollector : public MultiFileErrorCollector {
  public:
   MockErrorCollector() {}
-  ~MockErrorCollector() {}
+  ~MockErrorCollector() override {}
 
   std::string text_;
   std::string warning_text_;
 
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
-                const std::string& message) {
+                const std::string& message) override {
     strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
 
   void AddWarning(const std::string& filename, int line, int column,
-                  const std::string& message) {
+                  const std::string& message) override {
     strings::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n", filename, line,
                               column, message);
   }
@@ -91,14 +91,14 @@ class MockErrorCollector : public MultiFileErrorCollector {
 class MockSourceTree : public SourceTree {
  public:
   MockSourceTree() {}
-  ~MockSourceTree() {}
+  ~MockSourceTree() override {}
 
   void AddFile(const std::string& name, const char* contents) {
     files_[name] = contents;
   }
 
   // implements SourceTree -------------------------------------------
-  io::ZeroCopyInputStream* Open(const std::string& filename) {
+  io::ZeroCopyInputStream* Open(const std::string& filename) override {
     const char* contents = FindPtrOrNull(files_, filename);
     if (contents == NULL) {
       return NULL;
@@ -107,7 +107,7 @@ class MockSourceTree : public SourceTree {
     }
   }
 
-  std::string GetLastErrorMessage() { return "File not found."; }
+  std::string GetLastErrorMessage() override { return "File not found."; }
 
  private:
   std::unordered_map<std::string, const char*> files_;
@@ -262,7 +262,7 @@ TEST_F(ImporterTest, LiteRuntimeImport) {
 
 class DiskSourceTreeTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     dirnames_.push_back(TestTempDir() + "/test_proto2_import_path_1");
     dirnames_.push_back(TestTempDir() + "/test_proto2_import_path_2");
 
@@ -274,7 +274,7 @@ class DiskSourceTreeTest : public testing::Test {
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     for (int i = 0; i < dirnames_.size(); i++) {
       if (FileExists(dirnames_[i])) {
         File::DeleteRecursively(dirnames_[i], NULL, NULL);

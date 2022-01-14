@@ -55,12 +55,13 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/compiler/python/python_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/descriptor.pb.h>
 
 namespace google {
 namespace protobuf {
@@ -68,16 +69,6 @@ namespace compiler {
 namespace python {
 
 namespace {
-
-
-// Returns the Python module name expected for a given .proto filename.
-std::string ModuleName(const std::string& filename) {
-  std::string basename = StripProto(filename);
-  ReplaceCharacters(&basename, "-", '_');
-  ReplaceCharacters(&basename, "/", '.');
-  return basename + "_pb2";
-}
-
 // Returns the alias we assign to the module of the given .proto filename
 // when importing. See testPackageInitializationImport in
 // net/proto2/python/internal/reflection_test.py
@@ -92,61 +83,6 @@ std::string ModuleAlias(const std::string& filename) {
   return module_name;
 }
 
-// Keywords reserved by the Python language.
-const char* const kKeywords[] = {
-    "False",  "None",     "True",  "and",    "as",       "assert",
-    "async",  "await",    "break", "class",  "continue", "def",
-    "del",    "elif",     "else",  "except", "finally",  "for",
-    "from",   "global",   "if",    "import", "in",       "is",
-    "lambda", "nonlocal", "not",   "or",     "pass",     "raise",
-    "return", "try",      "while", "with",   "yield",    "print",
-};
-const char* const* kKeywordsEnd =
-    kKeywords + (sizeof(kKeywords) / sizeof(kKeywords[0]));
-
-bool ContainsPythonKeyword(const std::string& module_name) {
-  std::vector<std::string> tokens = Split(module_name, ".");
-  for (int i = 0; i < tokens.size(); ++i) {
-    if (std::find(kKeywords, kKeywordsEnd, tokens[i]) != kKeywordsEnd) {
-      return true;
-    }
-  }
-  return false;
-}
-
-inline bool IsPythonKeyword(const std::string& name) {
-  return (std::find(kKeywords, kKeywordsEnd, name) != kKeywordsEnd);
-}
-
-std::string ResolveKeyword(const std::string& name) {
-  if (IsPythonKeyword(name)) {
-    return "globals()['" + name + "']";
-  }
-  return name;
-}
-
-// Returns the name of all containing types for descriptor,
-// in order from outermost to innermost, followed by descriptor's
-// own name.  Each name is separated by |separator|.
-template <typename DescriptorT>
-std::string NamePrefixedWithNestedTypes(const DescriptorT& descriptor,
-                                        const std::string& separator) {
-  std::string name = descriptor.name();
-  const Descriptor* parent = descriptor.containing_type();
-  if (parent != nullptr) {
-    std::string prefix = NamePrefixedWithNestedTypes(*parent, separator);
-    if (separator == "." && IsPythonKeyword(name)) {
-      return "getattr(" + prefix + ", '" + name + "')";
-    } else {
-      return prefix + separator + name;
-    }
-  }
-  if (separator == ".") {
-    name = ResolveKeyword(name);
-  }
-  return name;
-}
-
 // Name of the class attribute where we store the Python
 // descriptor.Descriptor instance for the generated class.
 // Must stay consistent with the _DESCRIPTOR_KEY constant
@@ -158,12 +94,6 @@ inline bool HasTopLevelEnums(const FileDescriptor* file) {
   return file->enum_type_count() > 0;
 }
 
-// Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor* file) {
-  return file->service_count() > 0 && file->options().py_generic_services();
-}
-
-// Prints the common boilerplate needed at the top of every .py
 // file output by this generator.
 void PrintTopBoilerplate(io::Printer* printer, const FileDescriptor* file,
                          bool descriptor_proto) {
@@ -324,11 +254,8 @@ bool Generator::Generate(const FileDescriptor* file,
   //   to have any mutable members.  Then it is implicitly thread-safe.
   MutexLock lock(&mutex_);
   file_ = file;
-  std::string module_name = ModuleName(file->name());
-  std::string filename = module_name;
-  ReplaceCharacters(&filename, ".", '/');
-  filename += ".py";
 
+  std::string filename = GetFileName(file, ".py");
   pure_python_workable_ = !cpp_generated_lib_linked;
   if (HasPrefixString(file->name(), "google/protobuf/")) {
     pure_python_workable_ = true;

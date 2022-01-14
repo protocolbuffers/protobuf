@@ -62,11 +62,11 @@ public final class Timestamps {
   // Timestamp for "9999-12-31T23:59:59Z"
   static final long TIMESTAMP_SECONDS_MAX = 253402300799L;
 
-  static final long NANOS_PER_SECOND = 1000000000;
-  static final long NANOS_PER_MILLISECOND = 1000000;
-  static final long NANOS_PER_MICROSECOND = 1000;
-  static final long MILLIS_PER_SECOND = 1000;
-  static final long MICROS_PER_SECOND = 1000000;
+  static final int NANOS_PER_SECOND = 1000000000;
+  static final int NANOS_PER_MILLISECOND = 1000000;
+  static final int NANOS_PER_MICROSECOND = 1000;
+  static final int MILLIS_PER_SECOND = 1000;
+  static final int MICROS_PER_SECOND = 1000000;
 
   /** A constant holding the minimum valid {@link Timestamp}, {@code 0001-01-01T00:00:00Z}. */
   public static final Timestamp MIN_VALUE =
@@ -230,8 +230,8 @@ public final class Timestamps {
    *
    * <p>Example of accepted format: "1972-01-01T10:00:20.021-05:00"
    *
-   * @return A Timestamp parsed from the string.
-   * @throws ParseException if parsing fails.
+   * @return a Timestamp parsed from the string
+   * @throws ParseException if parsing fails
    */
   public static Timestamp parse(String value) throws ParseException {
     int dayOffset = value.indexOf('T');
@@ -281,7 +281,10 @@ public final class Timestamps {
     try {
       return normalizedTimestamp(seconds, nanos);
     } catch (IllegalArgumentException e) {
-      throw new ParseException("Failed to parse timestamp: timestamp is out of range.", 0);
+      ParseException ex = new ParseException(
+          "Failed to parse timestamp " + value + " Timestamp is out of range.", 0);
+      ex.initCause(e);
+      throw ex;
     }
   }
 
@@ -353,7 +356,7 @@ public final class Timestamps {
   /**
    * Convert a Timestamp to the number of milliseconds elapsed from the epoch.
    *
-   * <p>The result will be rounded down to the nearest millisecond. E.g., if the timestamp
+   * <p>The result will be rounded down to the nearest millisecond. For instance, if the timestamp
    * represents "1969-12-31T23:59:59.999999999Z", it will be rounded to -1 millisecond.
    */
   @SuppressWarnings("GoodTime") // this is a legacy conversion API

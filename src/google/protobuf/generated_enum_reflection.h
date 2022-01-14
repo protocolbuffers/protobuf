@@ -39,16 +39,18 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_ENUM_REFLECTION_H__
 #define GOOGLE_PROTOBUF_GENERATED_ENUM_REFLECTION_H__
 
+
 #include <string>
 
-#include <google/protobuf/generated_enum_util.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/generated_enum_util.h>
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {

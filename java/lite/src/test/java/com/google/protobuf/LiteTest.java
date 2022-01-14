@@ -1345,6 +1345,7 @@ public class LiteTest {
   }
 
   @Test
+  @SuppressWarnings("ProtoNewBuilderMergeFrom")
   public void testBuilderMergeFromNull() throws Exception {
     try {
       TestAllTypesLite.newBuilder().mergeFrom((TestAllTypesLite) null);
@@ -1899,6 +1900,7 @@ public class LiteTest {
   }
 
   @Test
+  @SuppressWarnings("ProtoNewBuilderMergeFrom")
   public void testMergeFromNoLazyFieldSharing() throws Exception {
     TestAllTypesLite.Builder sourceBuilder =
         TestAllTypesLite.newBuilder().setOptionalLazyMessage(NestedMessage.newBuilder().setBb(1));

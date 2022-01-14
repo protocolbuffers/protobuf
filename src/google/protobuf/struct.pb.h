@@ -23,7 +23,6 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
-#include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
@@ -46,14 +45,6 @@ PROTOBUF_NAMESPACE_CLOSE
 
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fstruct_2eproto {
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTableField entries[]
-    PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
-    PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[4]
-    PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
-  static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
   static const uint32_t offsets[];
 };
 PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fstruct_2eproto;
@@ -239,7 +230,6 @@ class PROTOBUF_EXPORT Struct final :
                        bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -406,9 +396,6 @@ class PROTOBUF_EXPORT Value final :
   protected:
   explicit Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -663,9 +650,6 @@ class PROTOBUF_EXPORT ListValue final :
   protected:
   explicit ListValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                        bool is_message_owned = false);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -904,11 +888,7 @@ inline void Value::set_allocated_string_value(std::string* string_value) {
   }
   if (string_value != nullptr) {
     set_has_string_value();
-    kind_.string_value_.UnsafeSetDefault(string_value);
-    ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaForAllocation();
-    if (arena != nullptr) {
-      arena->Own(string_value);
-    }
+    kind_.string_value_.InitAllocated(string_value, GetArenaForAllocation());
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.string_value)
 }
@@ -973,7 +953,7 @@ inline ::PROTOBUF_NAMESPACE_ID::Struct* Value::release_struct_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.struct_value)
   if (_internal_has_struct_value()) {
     clear_has_kind();
-      ::PROTOBUF_NAMESPACE_ID::Struct* temp = kind_.struct_value_;
+    ::PROTOBUF_NAMESPACE_ID::Struct* temp = kind_.struct_value_;
     if (GetArenaForAllocation() != nullptr) {
       temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
     }
@@ -1047,7 +1027,7 @@ inline ::PROTOBUF_NAMESPACE_ID::ListValue* Value::release_list_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.list_value)
   if (_internal_has_list_value()) {
     clear_has_kind();
-      ::PROTOBUF_NAMESPACE_ID::ListValue* temp = kind_.list_value_;
+    ::PROTOBUF_NAMESPACE_ID::ListValue* temp = kind_.list_value_;
     if (GetArenaForAllocation() != nullptr) {
       temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
     }

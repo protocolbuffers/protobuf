@@ -40,6 +40,7 @@
 #include <string>
 #include <google/protobuf/compiler/code_generator.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -54,7 +55,7 @@ namespace cpp {
 class PROTOC_EXPORT CppGenerator : public CodeGenerator {
  public:
   CppGenerator();
-  ~CppGenerator();
+  ~CppGenerator() override;
 
   enum class Runtime {
     kGoogle3,     // Use the internal google3 runtime.

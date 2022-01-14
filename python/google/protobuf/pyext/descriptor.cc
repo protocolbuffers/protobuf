@@ -1394,7 +1394,7 @@ static int SetHasOptions(PyFileDescriptor *self, PyObject *value,
   return CheckCalledFromGeneratedFile("has_options");
 }
 
-static PyObject* GetDebugString(PyFileDescriptor *self) {
+static PyObject* GetDebugString(PyFileDescriptor* self) {
   return PyString_FromCppString(_GetDescriptor(self)->DebugString());
 }
 
@@ -1443,12 +1443,22 @@ static PyGetSetDef Getters[] = {
   {NULL}
 };
 
-static PyMethodDef Methods[] = {
-  { "GetDebugString", (PyCFunction)GetDebugString, METH_NOARGS, },
-  { "GetOptions", (PyCFunction)GetOptions, METH_NOARGS, },
-  { "CopyToProto", (PyCFunction)CopyToProto, METH_O, },
-  {NULL}
-};
+static PyMethodDef Methods[] = {{
+                                    "GetDebugString",
+                                    (PyCFunction)GetDebugString,
+                                    METH_NOARGS,
+                                },
+                                {
+                                    "GetOptions",
+                                    (PyCFunction)GetOptions,
+                                    METH_NOARGS,
+                                },
+                                {
+                                    "CopyToProto",
+                                    (PyCFunction)CopyToProto,
+                                    METH_O,
+                                },
+                                {NULL}};
 
 }  // namespace file_descriptor
 
@@ -1814,6 +1824,14 @@ static PyObject* GetOutputType(PyBaseDescriptor *self, void *closure) {
   return PyMessageDescriptor_FromDescriptor(output_type);
 }
 
+static PyObject* GetClientStreaming(PyBaseDescriptor* self, void* closure) {
+  return PyBool_FromLong(_GetDescriptor(self)->client_streaming() ? 1 : 0);
+}
+
+static PyObject* GetServerStreaming(PyBaseDescriptor* self, void* closure) {
+  return PyBool_FromLong(_GetDescriptor(self)->server_streaming() ? 1 : 0);
+}
+
 static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
@@ -1823,15 +1841,18 @@ static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
 }
 
 static PyGetSetDef Getters[] = {
-  { "name", (getter)GetName, NULL, "Name", NULL},
-  { "full_name", (getter)GetFullName, NULL, "Full name", NULL},
-  { "index", (getter)GetIndex, NULL, "Index", NULL},
-  { "containing_service", (getter)GetContainingService, NULL,
-    "Containing service", NULL},
-  { "input_type", (getter)GetInputType, NULL, "Input type", NULL},
-  { "output_type", (getter)GetOutputType, NULL, "Output type", NULL},
-  {NULL}
-};
+    {"name", (getter)GetName, NULL, "Name", NULL},
+    {"full_name", (getter)GetFullName, NULL, "Full name", NULL},
+    {"index", (getter)GetIndex, NULL, "Index", NULL},
+    {"containing_service", (getter)GetContainingService, NULL,
+     "Containing service", NULL},
+    {"input_type", (getter)GetInputType, NULL, "Input type", NULL},
+    {"output_type", (getter)GetOutputType, NULL, "Output type", NULL},
+    {"client_streaming", (getter)GetClientStreaming, NULL, "Client streaming",
+     NULL},
+    {"server_streaming", (getter)GetServerStreaming, NULL, "Server streaming",
+     NULL},
+    {NULL}};
 
 static PyMethodDef Methods[] = {
   { "GetOptions", (PyCFunction)GetOptions, METH_NOARGS, },

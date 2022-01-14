@@ -53,6 +53,7 @@
 #endif
 #include <ctype.h>
 #include <errno.h>
+
 #include <fstream>
 #include <iostream>
 
@@ -87,6 +88,7 @@
 #include <google/protobuf/stubs/stl_util.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -294,7 +296,7 @@ class CommandLineInterface::ErrorPrinter
         tree_(tree),
         found_errors_(false),
         found_warnings_(false) {}
-  ~ErrorPrinter() {}
+  ~ErrorPrinter() override {}
 
   // implements MultiFileErrorCollector ------------------------------
   void AddError(const std::string& filename, int line, int column,
@@ -434,7 +436,7 @@ class CommandLineInterface::MemoryOutputStream
                      const std::string& filename,
                      const std::string& insertion_point,
                      const google::protobuf::GeneratedCodeInfo& info);
-  virtual ~MemoryOutputStream();
+  ~MemoryOutputStream() override;
 
   // implements ZeroCopyOutputStream ---------------------------------
   bool Next(void** data, int* size) override {

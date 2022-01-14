@@ -218,11 +218,11 @@ public class ParseExceptionsTest {
   public void messageBuilder_mergeDelimitedFrom_InputStream_malformed() throws Exception {
     byte[] body = new byte[80];
     CodedOutputStream cos = CodedOutputStream.newInstance(body);
-    cos.writeRawVarint32(90); // Greater than bytes in stream
+    cos.writeUInt32NoTag(90); // Greater than bytes in stream
     cos.writeTag(DescriptorProto.ENUM_TYPE_FIELD_NUMBER, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    cos.writeRawVarint32(98); // Nested message with size larger than parent
+    cos.writeUInt32NoTag(98); // Nested message with size larger than parent
     cos.writeTag(1000, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    cos.writeRawVarint32(100); // Unknown field with size larger than parent
+    cos.writeUInt32NoTag(100); // Unknown field with size larger than parent
     ByteArrayInputStream bais = new ByteArrayInputStream(body);
     try {
       DescriptorProto.parseDelimitedFrom(bais);

@@ -50,21 +50,21 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/any.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/io/strtod.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/hash.h>
@@ -72,6 +72,7 @@
 #undef PACKAGE  // autoheader #defines this.  :(
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -89,11 +90,17 @@ class Symbol {
     ENUM_VALUE_OTHER_PARENT,
     SERVICE,
     METHOD,
-    PACKAGE,
+    FULL_PACKAGE,
+    SUB_PACKAGE,
     QUERY_KEY
   };
 
-  Symbol() : ptr_(nullptr) {}
+  Symbol() {
+    static constexpr internal::SymbolBase null_symbol{};
+    static_assert(null_symbol.symbol_type_ == NULL_SYMBOL, "");
+    // Initialize with a sentinel to make sure `ptr_` is never null.
+    ptr_ = &null_symbol;
+  }
 
   // Every object we store derives from internal::SymbolBase, where we store the
   // symbol type enum.
@@ -113,15 +120,16 @@ class Symbol {
   DEFINE_MEMBERS(EnumDescriptor, ENUM, enum_descriptor)
   DEFINE_MEMBERS(ServiceDescriptor, SERVICE, service_descriptor)
   DEFINE_MEMBERS(MethodDescriptor, METHOD, method_descriptor)
+  DEFINE_MEMBERS(FileDescriptor, FULL_PACKAGE, file_descriptor)
 
-  // We use a special node for FileDescriptor.
+  // We use a special node for subpackage FileDescriptor.
   // It is potentially added to the table with multiple different names, so we
   // need a separate place to put the name.
-  struct Package : internal::SymbolBase {
-    const std::string* name;
+  struct Subpackage : internal::SymbolBase {
+    int name_size;
     const FileDescriptor* file;
   };
-  DEFINE_MEMBERS(Package, PACKAGE, package_file_descriptor)
+  DEFINE_MEMBERS(Subpackage, SUB_PACKAGE, sub_package_file_descriptor)
 
   // Enum values have two different parents.
   // We use two different identitied for the same object to determine the two
@@ -161,15 +169,14 @@ class Symbol {
   DEFINE_MEMBERS(QueryKey, QUERY_KEY, query_key);
 #undef DEFINE_MEMBERS
 
-  Type type() const {
-    return ptr_ == nullptr ? NULL_SYMBOL
-                           : static_cast<Type>(ptr_->symbol_type_);
-  }
+  Type type() const { return static_cast<Type>(ptr_->symbol_type_); }
   bool IsNull() const { return type() == NULL_SYMBOL; }
   bool IsType() const { return type() == MESSAGE || type() == ENUM; }
   bool IsAggregate() const {
-    return type() == MESSAGE || type() == PACKAGE || type() == ENUM ||
-           type() == SERVICE;
+    return IsType() || IsPackage() || type() == SERVICE;
+  }
+  bool IsPackage() const {
+    return type() == FULL_PACKAGE || type() == SUB_PACKAGE;
   }
 
   const FileDescriptor* GetFile() const {
@@ -188,8 +195,10 @@ class Symbol {
         return service_descriptor()->file();
       case METHOD:
         return method_descriptor()->service()->file();
-      case PACKAGE:
-        return package_file_descriptor()->file;
+      case FULL_PACKAGE:
+        return file_descriptor();
+      case SUB_PACKAGE:
+        return sub_package_file_descriptor()->file;
       default:
         return nullptr;
     }
@@ -211,8 +220,11 @@ class Symbol {
         return service_descriptor()->full_name();
       case METHOD:
         return method_descriptor()->full_name();
-      case PACKAGE:
-        return *package_file_descriptor()->name;
+      case FULL_PACKAGE:
+        return file_descriptor()->package();
+      case SUB_PACKAGE:
+        return StringPiece(sub_package_file_descriptor()->file->package())
+            .substr(0, sub_package_file_descriptor()->name_size);
       case QUERY_KEY:
         return query_key()->name;
       default:
@@ -560,8 +572,6 @@ struct PointerStringPairHash {
 };
 
 
-const Symbol kNullSymbol;
-
 struct SymbolByFullNameHash {
   size_t operator()(Symbol s) const {
     return HASH_FXN<StringPiece>{}(s.full_name());
@@ -855,14 +865,6 @@ class TableArena {
     return p;
   }
 
-  static void OperatorDelete(void* p, size_t s) {
-#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
-    ::operator delete(p, s);
-#else
-    ::operator delete(p);
-#endif
-  }
-
   struct OutOfLineAlloc {
     void* ptr;
     uint32_t size;
@@ -932,7 +934,9 @@ class TableArena {
     void operator()(T* p) {
       p->~T();
     }
-    void operator()(OutOfLineAlloc* p) { OperatorDelete(p->ptr, p->size); }
+    void operator()(OutOfLineAlloc* p) {
+      internal::SizedDelete(p->ptr, p->size);
+    }
   };
 
   static uint32_t SizeToRawTag(size_t n) { return (RoundUp(n) / 8) - 1; }
@@ -975,7 +979,7 @@ class TableArena {
       return p;
     }
 
-    void Destroy() { OperatorDelete(this, memory_used()); }
+    void Destroy() { internal::SizedDelete(this, memory_used()); }
 
     void PrependTo(Block*& list) {
       next = list;
@@ -1167,13 +1171,13 @@ class DescriptorPool::Tables {
   template <typename Type>
   Type* AllocateArray(int count);
 
+  // Allocate some bytes which will be reclaimed when the pool is
+  // destroyed.
+  void* AllocateBytes(int size);
+
   // Allocate a string which will be destroyed when the pool is destroyed.
   // The string is initialized to the given value for convenience.
   const std::string* AllocateString(StringPiece value);
-
-  // Copy the input into a NUL terminated string whose lifetime is managed by
-  // the pool.
-  const char* Strdup(StringPiece value);
 
   // Allocates an array of strings which will be destroyed when the pool is
   // destroyed. The array is initialized with the input values.
@@ -1235,13 +1239,9 @@ class DescriptorPool::Tables {
     int pending_extensions_before_checkpoint;
   };
   std::vector<CheckPoint> checkpoints_;
-  std::vector<const char*> symbols_after_checkpoint_;
-  std::vector<const char*> files_after_checkpoint_;
+  std::vector<Symbol> symbols_after_checkpoint_;
+  std::vector<const FileDescriptor*> files_after_checkpoint_;
   std::vector<DescriptorIntPair> extensions_after_checkpoint_;
-
-  // Allocate some bytes which will be reclaimed when the pool is
-  // destroyed.
-  void* AllocateBytes(int size);
 };
 
 // Contains tables specific to a particular file.  These tables are not
@@ -1401,13 +1401,11 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint() {
 
   for (size_t i = checkpoint.pending_symbols_before_checkpoint;
        i < symbols_after_checkpoint_.size(); i++) {
-    Symbol::QueryKey name;
-    name.name = symbols_after_checkpoint_[i];
-    symbols_by_name_.erase(Symbol(&name));
+    symbols_by_name_.erase(symbols_after_checkpoint_[i]);
   }
   for (size_t i = checkpoint.pending_files_before_checkpoint;
        i < files_after_checkpoint_.size(); i++) {
-    files_by_name_.erase(files_after_checkpoint_[i]);
+    files_by_name_.erase(files_after_checkpoint_[i]->name());
   }
   for (size_t i = checkpoint.pending_extensions_before_checkpoint;
        i < extensions_after_checkpoint_.size(); i++) {
@@ -1430,7 +1428,7 @@ inline Symbol DescriptorPool::Tables::FindSymbol(StringPiece key) const {
   Symbol::QueryKey name;
   name.name = key;
   auto it = symbols_by_name_.find(Symbol(&name));
-  return it == symbols_by_name_.end() ? kNullSymbol : *it;
+  return it == symbols_by_name_.end() ? Symbol() : *it;
 }
 
 inline Symbol FileDescriptorTables::FindNestedSymbol(
@@ -1439,7 +1437,7 @@ inline Symbol FileDescriptorTables::FindNestedSymbol(
   query.name = name;
   query.parent = parent;
   auto it = symbols_by_parent_.find(Symbol(&query));
-  return it == symbols_by_parent_.end() ? kNullSymbol : *it;
+  return it == symbols_by_parent_.end() ? Symbol() : *it;
 }
 
 Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
@@ -1656,7 +1654,7 @@ bool DescriptorPool::Tables::AddSymbol(const std::string& full_name,
                                        Symbol symbol) {
   GOOGLE_DCHECK_EQ(full_name, symbol.full_name());
   if (symbols_by_name_.insert(symbol).second) {
-    symbols_after_checkpoint_.push_back(full_name.c_str());
+    symbols_after_checkpoint_.push_back(symbol);
     return true;
   } else {
     return false;
@@ -1673,7 +1671,7 @@ bool FileDescriptorTables::AddAliasUnderParent(const void* parent,
 
 bool DescriptorPool::Tables::AddFile(const FileDescriptor* file) {
   if (InsertIfNotPresent(&files_by_name_, file->name(), file)) {
-    files_after_checkpoint_.push_back(file->name().c_str());
+    files_after_checkpoint_.push_back(file);
     return true;
   } else {
     return false;
@@ -1765,13 +1763,6 @@ Type* DescriptorPool::Tables::AllocateArray(int count) {
 const std::string* DescriptorPool::Tables::AllocateString(
     StringPiece value) {
   return arena_.Create<std::string>(value);
-}
-
-const char* DescriptorPool::Tables::Strdup(StringPiece value) {
-  char* p = AllocateArray<char>(static_cast<int>(value.size() + 1));
-  memcpy(p, value.data(), value.size());
-  p[value.size()] = 0;
-  return p;
 }
 
 template <typename... In>
@@ -2469,7 +2460,7 @@ bool DescriptorPool::IsSubSymbolOfBuiltType(StringPiece name) const {
     Symbol symbol = tables_->FindSymbol(prefix);
     // If the symbol type is anything other than PACKAGE, then its complete
     // definition is already known.
-    if (!symbol.IsNull() && symbol.type() != Symbol::PACKAGE) {
+    if (!symbol.IsNull() && !symbol.IsPackage()) {
       return true;
     }
   }
@@ -3532,7 +3523,6 @@ void MethodDescriptor::DebugString(
   comment_printer.AddPostComment(contents);
 }
 
-
 // Location methods ===============================================
 
 bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
@@ -3918,7 +3908,6 @@ class DescriptorBuilder {
                     ServiceDescriptor* result);
   void BuildMethod(const MethodDescriptorProto& proto,
                    const ServiceDescriptor* parent, MethodDescriptor* result);
-
   void LogUnusedDependency(const FileDescriptorProto& proto,
                            const FileDescriptor* result);
 
@@ -3941,7 +3930,6 @@ class DescriptorBuilder {
                         const ServiceDescriptorProto& proto);
   void CrossLinkMethod(MethodDescriptor* method,
                        const MethodDescriptorProto& proto);
-
   // Must be run only after cross-linking.
   void InterpretOptions();
 
@@ -4331,7 +4319,7 @@ Symbol DescriptorBuilder::FindSymbol(const std::string& name, bool build_it) {
     return result;
   }
 
-  if (result.type() == Symbol::PACKAGE) {
+  if (result.IsPackage()) {
     // Arg, this is overcomplicated.  The symbol is a package name.  It could
     // be that the package was defined in multiple files.  result.GetFile()
     // returns the first file we saw that used this package.  We've determined
@@ -4350,7 +4338,7 @@ Symbol DescriptorBuilder::FindSymbol(const std::string& name, bool build_it) {
 
   possible_undeclared_dependency_ = file;
   possible_undeclared_dependency_name_ = name;
-  return kNullSymbol;
+  return Symbol();
 }
 
 Symbol DescriptorBuilder::LookupSymbolNoPlaceholder(
@@ -4478,7 +4466,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
   StringPiece placeholder_name;
   const std::string* placeholder_package;
 
-  if (!ValidateQualifiedName(name)) return kNullSymbol;
+  if (!ValidateQualifiedName(name)) return Symbol();
   if (name[0] == '.') {
     // Fully-qualified.
     placeholder_full_name = name.substr(1);
@@ -4654,13 +4642,17 @@ void DescriptorBuilder::AddPackage(const std::string& name,
   Symbol existing_symbol = tables_->FindSymbol(name);
   // It's OK to redefine a package.
   if (existing_symbol.IsNull()) {
-    auto* package = tables_->AllocateArray<Symbol::Package>(1);
-    // If the name is the package name, then it is already in the arena.
-    // If not, copy it there. It came from the call to AddPackage below.
-    package->name =
-        &name == &file->package() ? &name : tables_->AllocateString(name);
-    package->file = file;
-    tables_->AddSymbol(*package->name, Symbol(package));
+    if (&name == &file->package()) {
+      // It is the toplevel package name, so insert the descriptor directly.
+      tables_->AddSymbol(file->package(), Symbol(file));
+    } else {
+      auto* package = tables_->AllocateArray<Symbol::Subpackage>(1);
+      // If the name is the package name, then it is already in the arena.
+      // If not, copy it there. It came from the call to AddPackage below.
+      package->name_size = static_cast<int>(name.size());
+      package->file = file;
+      tables_->AddSymbol(name, Symbol(package));
+    }
     // Also add parent package, if any.
     std::string::size_type dot_pos = name.find_last_of('.');
     if (dot_pos == std::string::npos) {
@@ -4671,13 +4663,14 @@ void DescriptorBuilder::AddPackage(const std::string& name,
       AddPackage(name.substr(0, dot_pos), proto, file);
       ValidateSymbolName(name.substr(dot_pos + 1), name, proto);
     }
-  } else if (existing_symbol.type() != Symbol::PACKAGE) {
+  } else if (!existing_symbol.IsPackage()) {
     // Symbol seems to have been defined in a different file.
+    const FileDescriptor* other_file = existing_symbol.GetFile();
     AddError(name, proto, DescriptorPool::ErrorCollector::NAME,
              "\"" + name +
                  "\" is already defined (as something other than "
                  "a package) in file \"" +
-                 existing_symbol.GetFile()->name() + "\".");
+                 (other_file == nullptr ? "null" : other_file->name()) + "\".");
   }
 }
 
@@ -4695,6 +4688,7 @@ void DescriptorBuilder::ValidateSymbolName(const std::string& name,
           (character < '0' || '9' < character) && (character != '_')) {
         AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
                  "\"" + name + "\" is not a valid identifier.");
+        return;
       }
     }
   }
@@ -4996,6 +4990,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   for (int i = 0; i < proto.weak_dependency_size(); ++i) {
     weak_deps.insert(proto.weak_dependency(i));
   }
+
+  bool need_lazy_deps = false;
   for (int i = 0; i < proto.dependency_size(); i++) {
     if (!seen_dependencies.insert(proto.dependency(i)).second) {
       AddTwiceListedError(proto, i);
@@ -5036,19 +5032,30 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
 
     result->dependencies_[i] = dependency;
     if (pool_->lazily_build_dependencies_ && !dependency) {
-      if (result->dependencies_once_ == nullptr) {
-        result->dependencies_once_ =
-            tables_->Create<FileDescriptor::LazyInitData>();
-        result->dependencies_once_->dependencies_names =
-            tables_->AllocateArray<const char*>(proto.dependency_size());
-        if (proto.dependency_size() > 0) {
-          std::fill_n(result->dependencies_once_->dependencies_names,
-                      proto.dependency_size(), nullptr);
-        }
+      need_lazy_deps = true;
+    }
+  }
+  if (need_lazy_deps) {
+    int total_char_size = 0;
+    for (int i = 0; i < proto.dependency_size(); i++) {
+      if (result->dependencies_[i] == nullptr) {
+        total_char_size += static_cast<int>(proto.dependency(i).size());
       }
+      ++total_char_size;  // For NUL char
+    }
 
-      result->dependencies_once_->dependencies_names[i] =
-          tables_->Strdup(proto.dependency(i));
+    void* data = tables_->AllocateBytes(
+        static_cast<int>(sizeof(internal::once_flag) + total_char_size));
+    result->dependencies_once_ = ::new (data) internal::once_flag{};
+    char* name_data = reinterpret_cast<char*>(result->dependencies_once_ + 1);
+
+    for (int i = 0; i < proto.dependency_size(); i++) {
+      if (result->dependencies_[i] == nullptr) {
+        memcpy(name_data, proto.dependency(i).c_str(),
+               proto.dependency(i).size());
+        name_data += proto.dependency(i).size();
+      }
+      *name_data++ = '\0';
     }
   }
 
@@ -5595,7 +5602,6 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                     FieldDescriptorProto::kOptionsFieldNumber,
                     "google.protobuf.FieldOptions");
   }
-
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 }
@@ -6214,12 +6220,18 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
       if (is_lazy) {
         // Save the symbol names for later for lookup, and allocate the once
         // object needed for the accessors.
-        std::string name = proto.type_name();
-        field->type_once_ = tables_->Create<internal::once_flag>();
-        field->type_descriptor_.lazy_type_name = tables_->Strdup(name);
-        field->lazy_default_value_enum_name_ =
-            proto.has_default_value() ? tables_->Strdup(proto.default_value())
-                                      : nullptr;
+        const std::string& name = proto.type_name();
+
+        int name_sizes = static_cast<int>(name.size() + 1 +
+                                          proto.default_value().size() + 1);
+
+        field->type_once_ = ::new (tables_->AllocateBytes(static_cast<int>(
+            sizeof(internal::once_flag) + name_sizes))) internal::once_flag{};
+        char* names = reinterpret_cast<char*>(field->type_once_ + 1);
+
+        memcpy(names, name.c_str(), name.size() + 1);
+        memcpy(names + name.size() + 1, proto.default_value().c_str(),
+               proto.default_value().size() + 1);
 
         // AddFieldByNumber and AddExtension are done later in this function,
         // and can/must be done if the field type was not found. The related
@@ -6466,7 +6478,6 @@ void DescriptorBuilder::CrossLinkMethod(MethodDescriptor* method,
     method->output_type_.Set(output_type.descriptor());
   }
 }
-
 // -------------------------------------------------------------------
 
 #define VALIDATE_OPTIONS_FROM_ARRAY(descriptor, array_name, type) \
@@ -6660,7 +6671,7 @@ void DescriptorBuilder::ValidateFieldOptions(
     return;
   }
   // Only message type fields may be lazy.
-  if (field->options().lazy()) {
+  if (field->options().lazy() || field->options().unverified_lazy()) {
     if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                "[lazy = true] can only be specified for submessage fields.");
@@ -7218,11 +7229,9 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
         new UnknownFieldSet());
     switch ((*iter)->type()) {
       case FieldDescriptor::TYPE_MESSAGE: {
-        io::StringOutputStream outstr(
-            parent_unknown_fields->AddLengthDelimited((*iter)->number()));
-        io::CodedOutputStream out(&outstr);
-        internal::WireFormat::SerializeUnknownFields(*unknown_fields, &out);
-        GOOGLE_CHECK(!out.HadError())
+        std::string* outstr =
+            parent_unknown_fields->AddLengthDelimited((*iter)->number());
+        GOOGLE_CHECK(unknown_fields->SerializeToString(outstr))
             << "Unexpected failure while serializing option submessage "
             << debug_msg_name << "\".";
         break;
@@ -7880,8 +7889,11 @@ Symbol DescriptorPool::CrossLinkOnDemandHelper(StringPiece name,
 void FieldDescriptor::InternalTypeOnceInit() const {
   GOOGLE_CHECK(file()->finished_building_ == true);
   const EnumDescriptor* enum_type = nullptr;
+  const char* lazy_type_name = reinterpret_cast<const char*>(type_once_ + 1);
+  const char* lazy_default_value_enum_name =
+      lazy_type_name + strlen(lazy_type_name) + 1;
   Symbol result = file()->pool()->CrossLinkOnDemandHelper(
-      type_descriptor_.lazy_type_name, type_ == FieldDescriptor::TYPE_ENUM);
+      lazy_type_name, type_ == FieldDescriptor::TYPE_ENUM);
   if (result.type() == Symbol::MESSAGE) {
     type_ = FieldDescriptor::TYPE_MESSAGE;
     type_descriptor_.message_type = result.descriptor();
@@ -7891,16 +7903,16 @@ void FieldDescriptor::InternalTypeOnceInit() const {
   }
 
   if (enum_type) {
-    if (lazy_default_value_enum_name_) {
+    if (lazy_default_value_enum_name[0] != '\0') {
       // Have to build the full name now instead of at CrossLink time,
       // because enum_type may not be known at the time.
       std::string name = enum_type->full_name();
       // Enum values reside in the same scope as the enum type.
       std::string::size_type last_dot = name.find_last_of('.');
       if (last_dot != std::string::npos) {
-        name = name.substr(0, last_dot) + "." + lazy_default_value_enum_name_;
+        name = name.substr(0, last_dot) + "." + lazy_default_value_enum_name;
       } else {
-        name = lazy_default_value_enum_name_;
+        name = lazy_default_value_enum_name;
       }
       Symbol result = file()->pool()->CrossLinkOnDemandHelper(name, true);
       default_value_enum_ = result.enum_value_descriptor();
@@ -7957,10 +7969,12 @@ const std::string& FieldDescriptor::PrintableNameForExtension() const {
 
 void FileDescriptor::InternalDependenciesOnceInit() const {
   GOOGLE_CHECK(finished_building_ == true);
-  auto* names = dependencies_once_->dependencies_names;
+  const char* names_ptr = reinterpret_cast<const char*>(dependencies_once_ + 1);
   for (int i = 0; i < dependency_count(); i++) {
-    if (names[i]) {
-      dependencies_[i] = pool_->FindFileByName(names[i]);
+    const char* name = names_ptr;
+    names_ptr += strlen(name) + 1;
+    if (name[0] != '\0') {
+      dependencies_[i] = pool_->FindFileByName(name);
     }
   }
 }
@@ -7973,7 +7987,7 @@ const FileDescriptor* FileDescriptor::dependency(int index) const {
   if (dependencies_once_) {
     // Do once init for all indices, as it's unlikely only a single index would
     // be called, and saves on internal::call_once allocations.
-    internal::call_once(dependencies_once_->once,
+    internal::call_once(*dependencies_once_,
                         FileDescriptor::DependenciesOnceInit, this);
   }
   return dependencies_[index];
@@ -7986,7 +8000,6 @@ const Descriptor* MethodDescriptor::input_type() const {
 const Descriptor* MethodDescriptor::output_type() const {
   return output_type_.Get(service());
 }
-
 
 namespace internal {
 void LazyDescriptor::Set(const Descriptor* descriptor) {
@@ -8002,8 +8015,11 @@ void LazyDescriptor::SetLazy(StringPiece name,
   GOOGLE_CHECK(file && file->pool_);
   GOOGLE_CHECK(file->pool_->lazily_build_dependencies_);
   GOOGLE_CHECK(!file->finished_building_);
-  once_ = file->pool_->tables_->Create<internal::once_flag>();
-  lazy_name_ = file->pool_->tables_->Strdup(name);
+  once_ = ::new (file->pool_->tables_->AllocateBytes(static_cast<int>(
+      sizeof(internal::once_flag) + name.size() + 1))) internal::once_flag{};
+  char* lazy_name = reinterpret_cast<char*>(once_ + 1);
+  memcpy(lazy_name, name.data(), name.size());
+  lazy_name[name.size()] = 0;
 }
 
 void LazyDescriptor::Once(const ServiceDescriptor* service) {
@@ -8011,8 +8027,9 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
     internal::call_once(*once_, [&] {
       auto* file = service->file();
       GOOGLE_CHECK(file->finished_building_);
+      const char* lazy_name = reinterpret_cast<const char*>(once_ + 1);
       descriptor_ =
-          file->pool_->CrossLinkOnDemandHelper(lazy_name_, false).descriptor();
+          file->pool_->CrossLinkOnDemandHelper(lazy_name, false).descriptor();
     });
   }
 }

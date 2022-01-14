@@ -37,6 +37,7 @@
 
 #include <map>
 #include <string>
+
 #include <google/protobuf/compiler/java/java_field.h>
 
 namespace google {
@@ -101,7 +102,7 @@ class ImmutablePrimitiveOneofFieldGenerator
   ImmutablePrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor,
                                         int messageBitIndex,
                                         int builderBitIndex, Context* context);
-  ~ImmutablePrimitiveOneofFieldGenerator();
+  ~ImmutablePrimitiveOneofFieldGenerator() override;
 
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;

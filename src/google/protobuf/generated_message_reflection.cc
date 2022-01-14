@@ -39,19 +39,18 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/stubs/mutex.h>
+#include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map_field_inl.h>
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/stubs/strutil.h>
 
 
 // clang-format off
@@ -258,7 +257,7 @@ bool Reflection::IsLazyExtension(const Message& message,
 }
 
 bool Reflection::IsLazilyVerifiedLazyField(const FieldDescriptor* field) const {
-  return field->options().lazy();
+  return field->options().lazy() || field->options().unverified_lazy();
 }
 
 bool Reflection::IsEagerlyVerifiedLazyField(
@@ -278,6 +277,14 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
   size_t total_size = schema_.GetObjectSize();
 
   total_size += GetUnknownFields(message).SpaceUsedExcludingSelfLong();
+
+  // If this message owns an arena, add any unused space that's been allocated.
+  auto* arena = Arena::InternalHelper<Message>::GetArenaForAllocation(&message);
+  if (arena != nullptr &&
+      Arena::InternalHelper<Message>::GetOwningArena(&message) == nullptr &&
+      Arena::InternalHelper<Message>::IsMessageOwnedArena(arena)) {
+    total_size += arena->SpaceAllocated() - arena->SpaceUsed();
+  }
 
   if (schema_.HasExtensionSet()) {
     total_size += GetExtensionSet(message).SpaceUsedExcludingSelfLong();
@@ -524,21 +531,27 @@ void SwapFieldHelper::SwapInlinedStrings(const Reflection* r, Message* lhs,
   Arena* rhs_arena = rhs->GetArenaForAllocation();
   auto* lhs_string = r->MutableRaw<InlinedStringField>(lhs, field);
   auto* rhs_string = r->MutableRaw<InlinedStringField>(rhs, field);
-  const uint32 index = r->schema_.InlinedStringIndex(field);
-  uint32* lhs_state = &r->MutableInlinedStringDonatedArray(lhs)[index / 32];
-  uint32* rhs_state = &r->MutableInlinedStringDonatedArray(rhs)[index / 32];
-  const uint32 mask = ~(static_cast<uint32>(1) << (index % 32));
+  uint32_t index = r->schema_.InlinedStringIndex(field);
+  GOOGLE_DCHECK_GT(index, 0);
+  uint32_t* lhs_array = r->MutableInlinedStringDonatedArray(lhs);
+  uint32_t* rhs_array = r->MutableInlinedStringDonatedArray(rhs);
+  uint32_t* lhs_state = &lhs_array[index / 32];
+  uint32_t* rhs_state = &rhs_array[index / 32];
+  bool lhs_arena_dtor_registered = (lhs_array[0] & 0x1u) == 0;
+  bool rhs_arena_dtor_registered = (rhs_array[0] & 0x1u) == 0;
+  const uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
   if (unsafe_shallow_swap || lhs_arena == rhs_arena) {
-    lhs_string->Swap(rhs_string, /*default_value=*/nullptr, lhs_arena,
-                     r->IsInlinedStringDonated(*lhs, field),
-                     r->IsInlinedStringDonated(*rhs, field),
-                     /*donating_states=*/lhs_state, rhs_state, mask);
+    InlinedStringField::InternalSwap(lhs_string, lhs_arena,
+                                     lhs_arena_dtor_registered, lhs, rhs_string,
+                                     rhs_arena, rhs_arena_dtor_registered, rhs);
   } else {
     const std::string temp = lhs_string->Get();
     lhs_string->Set(nullptr, rhs_string->Get(), lhs_arena,
-                    r->IsInlinedStringDonated(*lhs, field), lhs_state, mask);
+                    r->IsInlinedStringDonated(*lhs, field), lhs_state, mask,
+                    lhs);
     rhs_string->Set(nullptr, temp, rhs_arena,
-                    r->IsInlinedStringDonated(*rhs, field), rhs_state, mask);
+                    r->IsInlinedStringDonated(*rhs, field), rhs_state, mask,
+                    rhs);
   }
 }
 
@@ -877,8 +890,8 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
   };
 
   GOOGLE_DCHECK(!oneof_descriptor->is_synthetic());
-  uint32 oneof_case_lhs = GetOneofCase(*lhs, oneof_descriptor);
-  uint32 oneof_case_rhs = GetOneofCase(*rhs, oneof_descriptor);
+  uint32_t oneof_case_lhs = GetOneofCase(*lhs, oneof_descriptor);
+  uint32_t oneof_case_rhs = GetOneofCase(*rhs, oneof_descriptor);
 
   LocalVarWrapper temp;
   MessageWrapper lhs_wrapper, rhs_wrapper;
@@ -1030,6 +1043,13 @@ void Reflection::SwapFieldsImpl(
         // may depend on the information in has bits.
         if (!field->is_repeated()) {
           SwapBit(message1, message2, field);
+          if (field->options().ctype() == FieldOptions::STRING &&
+              IsInlined(field)) {
+            GOOGLE_DCHECK(!unsafe_shallow_swap ||
+                   message1->GetArenaForAllocation() ==
+                       message2->GetArenaForAllocation());
+            SwapInlinedStringDonated(message1, message2, field);
+          }
         }
       }
     }
@@ -1096,8 +1116,8 @@ void Reflection::UnsafeArenaSwap(Message* lhs, Message* rhs) const {
   // Swapping bits need to happen after swapping fields, because the latter may
   // depend on the has bit information.
   if (schema_.HasHasbits()) {
-    uint32* lhs_has_bits = MutableHasBits(lhs);
-    uint32* rhs_has_bits = MutableHasBits(rhs);
+    uint32_t* lhs_has_bits = MutableHasBits(lhs);
+    uint32_t* rhs_has_bits = MutableHasBits(rhs);
 
     int fields_with_has_bits = 0;
     for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -1112,6 +1132,32 @@ void Reflection::UnsafeArenaSwap(Message* lhs, Message* rhs) const {
 
     for (int i = 0; i < has_bits_size; i++) {
       std::swap(lhs_has_bits[i], rhs_has_bits[i]);
+    }
+  }
+
+  if (schema_.HasInlinedString()) {
+    uint32_t* lhs_donated_array = MutableInlinedStringDonatedArray(lhs);
+    uint32_t* rhs_donated_array = MutableInlinedStringDonatedArray(rhs);
+    int inlined_string_count = 0;
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      const FieldDescriptor* field = descriptor_->field(i);
+      if (field->is_extension() || field->is_repeated() ||
+          schema_.InRealOneof(field) ||
+          field->options().ctype() != FieldOptions::STRING ||
+          !IsInlined(field)) {
+        continue;
+      }
+      inlined_string_count++;
+    }
+
+    int donated_array_size = inlined_string_count == 0
+                                 ? 0
+                                 // One extra bit for the arena dtor tracking.
+                                 : (inlined_string_count + 1 + 31) / 32;
+    GOOGLE_CHECK_EQ((lhs_donated_array[0] & 0x1u) == 0,
+             (rhs_donated_array[0] & 0x1u) == 0);
+    for (int i = 0; i < donated_array_size; i++) {
+      std::swap(lhs_donated_array[i], rhs_donated_array[i]);
     }
   }
 
@@ -1654,12 +1700,14 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
       case FieldOptions::STRING: {
         if (IsInlined(field)) {
           const uint32_t index = schema_.InlinedStringIndex(field);
+          GOOGLE_DCHECK_GT(index, 0);
           uint32_t* states =
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
           MutableField<InlinedStringField>(message, field)
               ->Set(nullptr, value, message->GetArenaForAllocation(),
-                    IsInlinedStringDonated(*message, field), states, mask);
+                    IsInlinedStringDonated(*message, field), states, mask,
+                    message);
           break;
         }
 
@@ -2458,7 +2506,7 @@ const uint32_t* Reflection::GetInlinedStringDonatedArray(
 }
 
 uint32_t* Reflection::MutableInlinedStringDonatedArray(Message* message) const {
-  GOOGLE_DCHECK(schema_.HasHasbits());
+  GOOGLE_DCHECK(schema_.HasInlinedString());
   return GetPointerAtOffset<uint32_t>(message,
                                       schema_.InlinedStringDonatedOffset());
 }
@@ -2466,8 +2514,48 @@ uint32_t* Reflection::MutableInlinedStringDonatedArray(Message* message) const {
 // Simple accessors for manipulating _inlined_string_donated_;
 bool Reflection::IsInlinedStringDonated(const Message& message,
                                         const FieldDescriptor* field) const {
-  return IsIndexInHasBitSet(GetInlinedStringDonatedArray(message),
-                            schema_.InlinedStringIndex(field));
+  uint32_t index = schema_.InlinedStringIndex(field);
+  GOOGLE_DCHECK_GT(index, 0);
+  return IsIndexInHasBitSet(GetInlinedStringDonatedArray(message), index);
+}
+
+inline void SetInlinedStringDonated(uint32_t index, uint32_t* array) {
+  array[index / 32] |= (static_cast<uint32_t>(1) << (index % 32));
+}
+
+inline void ClearInlinedStringDonated(uint32_t index, uint32_t* array) {
+  array[index / 32] &= ~(static_cast<uint32_t>(1) << (index % 32));
+}
+
+void Reflection::SwapInlinedStringDonated(Message* lhs, Message* rhs,
+                                          const FieldDescriptor* field) const {
+  Arena* lhs_arena = lhs->GetArenaForAllocation();
+  Arena* rhs_arena = rhs->GetArenaForAllocation();
+  // If arenas differ, inined string fields are swapped by copying values.
+  // Donation status should not be swapped.
+  if (lhs_arena != rhs_arena) {
+    return;
+  }
+  bool lhs_donated = IsInlinedStringDonated(*lhs, field);
+  bool rhs_donated = IsInlinedStringDonated(*rhs, field);
+  if (lhs_donated == rhs_donated) {
+    return;
+  }
+  // If one is undonated, both must have already registered ArenaDtor.
+  uint32_t* lhs_array = MutableInlinedStringDonatedArray(lhs);
+  uint32_t* rhs_array = MutableInlinedStringDonatedArray(rhs);
+  GOOGLE_CHECK_EQ(lhs_array[0] & 0x1u, 0u);
+  GOOGLE_CHECK_EQ(rhs_array[0] & 0x1u, 0u);
+  // Swap donation status bit.
+  uint32_t index = schema_.InlinedStringIndex(field);
+  GOOGLE_DCHECK_GT(index, 0);
+  if (rhs_donated) {
+    SetInlinedStringDonated(index, lhs_array);
+    ClearInlinedStringDonated(index, rhs_array);
+  } else {  // lhs_donated
+    ClearInlinedStringDonated(index, lhs_array);
+    SetInlinedStringDonated(index, rhs_array);
+  }
 }
 
 // Simple accessors for manipulating has_bits_.
@@ -2632,6 +2720,7 @@ void Reflection::ClearOneof(Message* message,
         default:
           break;
       }
+    } else {
     }
 
     *MutableOneofCase(message, oneof_descriptor) = 0;
@@ -3027,10 +3116,8 @@ void UnknownFieldSetSerializer(const uint8_t* base, uint32_t offset,
   const void* ptr = base + offset;
   const InternalMetadata* metadata = static_cast<const InternalMetadata*>(ptr);
   if (metadata->have_unknown_fields()) {
-    internal::WireFormat::SerializeUnknownFields(
-        metadata->unknown_fields<UnknownFieldSet>(
-            UnknownFieldSet::default_instance),
-        output);
+    metadata->unknown_fields<UnknownFieldSet>(UnknownFieldSet::default_instance)
+        .SerializeToCodedStream(output);
   }
 }
 

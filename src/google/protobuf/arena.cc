@@ -38,12 +38,15 @@
 #include <typeinfo>
 
 #include <google/protobuf/arena_impl.h>
+#include <google/protobuf/arenaz_sampler.h>
+#include <google/protobuf/port.h>
 
 #include <google/protobuf/stubs/mutex.h>
 #ifdef ADDRESS_SANITIZER
 #include <sanitizer/asan_interface.h>
 #endif  // ADDRESS_SANITIZER
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -91,11 +94,7 @@ class GetDeallocator {
     if (dealloc_) {
       dealloc_(mem.ptr, mem.size);
     } else {
-#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
-      ::operator delete(mem.ptr, mem.size);
-#else
-      ::operator delete(mem.ptr);
-#endif
+      internal::SizedDelete(mem.ptr, mem.size);
     }
     *space_allocated_ += mem.size;
   }
@@ -105,18 +104,22 @@ class GetDeallocator {
   size_t* space_allocated_;
 };
 
-SerialArena::SerialArena(Block* b, void* owner) : space_allocated_(b->size) {
+SerialArena::SerialArena(Block* b, void* owner, ThreadSafeArenaStats* stats)
+    : space_allocated_(b->size) {
   owner_ = owner;
   head_ = b;
   ptr_ = b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize);
   limit_ = b->Pointer(b->size & static_cast<size_t>(-8));
+  arena_stats_ = stats;
 }
 
-SerialArena* SerialArena::New(Memory mem, void* owner) {
+SerialArena* SerialArena::New(Memory mem, void* owner,
+                              ThreadSafeArenaStats* stats) {
   GOOGLE_DCHECK_LE(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize, mem.size);
-
+  ThreadSafeArenaStats::RecordAllocateStats(
+      stats, /*requested=*/mem.size, /*allocated=*/mem.size, /*wasted=*/0);
   auto b = new (mem.ptr) Block{nullptr, mem.size};
-  return new (b->Pointer(kBlockHeaderSize)) SerialArena(b, owner);
+  return new (b->Pointer(kBlockHeaderSize)) SerialArena(b, owner, stats);
 }
 
 template <typename Deallocator>
@@ -151,7 +154,14 @@ void SerialArena::AllocateNewBlock(size_t n, const AllocationPolicy* policy) {
   head_->start = reinterpret_cast<CleanupNode*>(limit_);
 
   // Record how much used in this block.
-  space_used_ += ptr_ - head_->Pointer(kBlockHeaderSize);
+  size_t used = ptr_ - head_->Pointer(kBlockHeaderSize);
+  size_t wasted = head_->size - used;
+  space_used_ += used;
+
+  // TODO(sbenza): Evaluate if pushing unused space into the cached blocks is a
+  // win. In preliminary testing showed increased memory savings as expected,
+  // but with a CPU regression. The regression might have been an artifact of
+  // the microbenchmark.
 
   auto mem = AllocateMemory(policy, head_->size, n);
   // We don't want to emit an expensive RMW instruction that requires
@@ -159,6 +169,8 @@ void SerialArena::AllocateNewBlock(size_t n, const AllocationPolicy* policy) {
   // regular add.
   auto relaxed = std::memory_order_relaxed;
   space_allocated_.store(space_allocated_.load(relaxed) + mem.size, relaxed);
+  ThreadSafeArenaStats::RecordAllocateStats(arena_stats_, /*requested=*/n,
+                                            /*allocated=*/mem.size, wasted);
   head_ = new (mem.ptr) Block{head_, mem.size};
   ptr_ = head_->Pointer(kBlockHeaderSize);
   limit_ = head_->Pointer(head_->size);
@@ -312,10 +324,12 @@ void ThreadSafeArena::Init() {
 #ifndef NDEBUG
   GOOGLE_CHECK_EQ(was_message_owned, IsMessageOwned());
 #endif  // NDEBUG
+  arena_stats_ = Sample();
 }
 
 void ThreadSafeArena::SetInitialBlock(void* mem, size_t size) {
-  SerialArena* serial = SerialArena::New({mem, size}, &thread_cache());
+  SerialArena* serial = SerialArena::New({mem, size}, &thread_cache(),
+                                         arena_stats_.MutableStats());
   serial->set_next(NULL);
   threads_.store(serial, std::memory_order_relaxed);
   CacheSerialArena(serial);
@@ -334,6 +348,10 @@ ThreadSafeArena::~ThreadSafeArena() {
   ArenaMetricsCollector* collector = p ? p->metrics_collector : nullptr;
 
   if (alloc_policy_.is_user_owned_initial_block()) {
+#ifdef ADDRESS_SANITIZER
+    // Unpoison the initial block, now that it's going back to the user.
+    ASAN_UNPOISON_MEMORY_REGION(mem.ptr, mem.size);
+#endif  // ADDRESS_SANITIZER
     space_allocated += mem.size;
   } else {
     GetDeallocator(alloc_policy_.get(), &space_allocated)(mem);
@@ -360,6 +378,7 @@ uint64_t ThreadSafeArena::Reset() {
   // Discard all blocks except the special block (if present).
   size_t space_allocated = 0;
   auto mem = Free(&space_allocated);
+  arena_stats_.RecordReset();
 
   AllocationPolicy* policy = alloc_policy_.get();
   if (policy) {
@@ -474,7 +493,8 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(void* me) {
     // This thread doesn't have any SerialArena, which also means it doesn't
     // have any blocks yet.  So we'll allocate its first block now.
     serial = SerialArena::New(
-        AllocateMemory(alloc_policy_.get(), 0, kSerialArenaSize), me);
+        AllocateMemory(alloc_policy_.get(), 0, kSerialArenaSize), me,
+        arena_stats_.MutableStats());
 
     SerialArena* head = threads_.load(std::memory_order_relaxed);
     do {
@@ -497,6 +517,12 @@ void* Arena::AllocateAlignedNoHook(size_t n) {
 PROTOBUF_FUNC_ALIGN(32)
 void* Arena::AllocateAlignedWithHook(size_t n, const std::type_info* type) {
   return impl_.AllocateAligned(n, type);
+}
+
+PROTOBUF_FUNC_ALIGN(32)
+void* Arena::AllocateAlignedWithHookForArray(size_t n,
+                                             const std::type_info* type) {
+  return impl_.AllocateAligned<internal::AllocationClient::kArray>(n, type);
 }
 
 PROTOBUF_FUNC_ALIGN(32)

@@ -83,7 +83,7 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
                                io::ErrorCollector* wrapped_collector)
       : source_locations_(source_locations),
         wrapped_collector_(wrapped_collector) {}
-  ~MockValidationErrorCollector() {}
+  ~MockValidationErrorCollector() override {}
 
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, const std::string& element_name,

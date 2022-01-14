@@ -43,10 +43,11 @@ are:
 __author__ = 'petar@google.com (Petar Petrov)'
 
 import collections.abc
+import copy
+import pickle
 
 
-class BaseContainer(object):
-
+class BaseContainer:
   """Base container class."""
 
   # Minimizes memory usage and disallows assignment to other attributes.
@@ -75,8 +76,7 @@ class BaseContainer(object):
     # The concrete classes should define __eq__.
     return not self == other
 
-  def __hash__(self):
-    raise TypeError('unhashable object')
+  __hash__ = None
 
   def __repr__(self):
     return repr(self._values)
@@ -111,7 +111,7 @@ class RepeatedScalarFieldContainer(BaseContainer):
       type_checker: A type_checkers.ValueChecker instance to run on elements
       inserted into this container.
     """
-    super(RepeatedScalarFieldContainer, self).__init__(message_listener)
+    super().__init__(message_listener)
     self._type_checker = type_checker
 
   def append(self, value):
@@ -165,34 +165,18 @@ class RepeatedScalarFieldContainer(BaseContainer):
 
   def __setitem__(self, key, value):
     """Sets the item on the specified position."""
-    if isinstance(key, slice):  # PY3
+    if isinstance(key, slice):
       if key.step is not None:
         raise ValueError('Extended slices not supported')
-      self.__setslice__(key.start, key.stop, value)
+      self._values[key] = map(self._type_checker.CheckValue, value)
+      self._message_listener.Modified()
     else:
       self._values[key] = self._type_checker.CheckValue(value)
       self._message_listener.Modified()
 
-  def __getslice__(self, start, stop):
-    """Retrieves the subset of items from between the specified indices."""
-    return self._values[start:stop]
-
-  def __setslice__(self, start, stop, values):
-    """Sets the subset of items from between the specified indices."""
-    new_values = []
-    for value in values:
-      new_values.append(self._type_checker.CheckValue(value))
-    self._values[start:stop] = new_values
-    self._message_listener.Modified()
-
   def __delitem__(self, key):
     """Deletes the item at the specified position."""
     del self._values[key]
-    self._message_listener.Modified()
-
-  def __delslice__(self, start, stop):
-    """Deletes the subset of items from between the specified indices."""
-    del self._values[start:stop]
     self._message_listener.Modified()
 
   def __eq__(self, other):
@@ -204,6 +188,16 @@ class RepeatedScalarFieldContainer(BaseContainer):
       return other._values == self._values
     # We are presumably comparing against some other sequence type.
     return other == self._values
+
+  def __deepcopy__(self, unused_memo=None):
+    clone = RepeatedScalarFieldContainer(
+        copy.deepcopy(self._message_listener), self._type_checker)
+    clone.MergeFrom(self)
+    return clone
+
+  def __reduce__(self, **kwargs):
+    raise pickle.PickleError('Can\'t pickle repeated scalar fields, convert '
+                             'to list first')
 
 
 class RepeatedCompositeFieldContainer(BaseContainer):
@@ -228,7 +222,7 @@ class RepeatedCompositeFieldContainer(BaseContainer):
         that should be present in this container.  We'll use the
         _concrete_class field of this descriptor when the client calls add().
     """
-    super(RepeatedCompositeFieldContainer, self).__init__(message_listener)
+    super().__init__(message_listener)
     self._message_descriptor = message_descriptor
 
   def add(self, **kwargs):
@@ -292,18 +286,9 @@ class RepeatedCompositeFieldContainer(BaseContainer):
     self.__delitem__(key)
     return value
 
-  def __getslice__(self, start, stop):
-    """Retrieves the subset of items from between the specified indices."""
-    return self._values[start:stop]
-
   def __delitem__(self, key):
     """Deletes the item at the specified position."""
     del self._values[key]
-    self._message_listener.Modified()
-
-  def __delslice__(self, start, stop):
-    """Deletes the subset of items from between the specified indices."""
-    del self._values[start:stop]
     self._message_listener.Modified()
 
   def __eq__(self, other):
@@ -516,8 +501,7 @@ class MessageMap(collections.abc.MutableMapping):
     return self._entry_descriptor._concrete_class
 
 
-class _UnknownField(object):
-
+class _UnknownField:
   """A parsed unknown field."""
 
   # Disallows assignment to other attributes.
@@ -542,12 +526,11 @@ class _UnknownField(object):
             self._data == other._data)
 
 
-class UnknownFieldRef(object):
+class UnknownFieldRef:  # pylint: disable=missing-class-docstring
 
   def __init__(self, parent, index):
     self._parent = parent
     self._index = index
-    return
 
   def _check_valid(self):
     if not self._parent:
@@ -576,8 +559,7 @@ class UnknownFieldRef(object):
     return self._parent._internal_get(self._index)._data
 
 
-class UnknownFieldSet(object):
-
+class UnknownFieldSet:
   """UnknownField container"""
 
   # Disallows assignment to other attributes.
