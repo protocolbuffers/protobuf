@@ -105,6 +105,7 @@
                     <include>CodedInputStreamReader.java</include>
                     <include>CodedOutputStream.java</include>
                     <include>CodedOutputStreamWriter.java</include>
+                    <include>CompileTimeConstant.java</include>
                     <include>DoubleArrayList.java</include>
                     <include>ExperimentalApi.java</include>
                     <include>ExtensionLite.java</include>
@@ -119,6 +120,7 @@
                     <include>FloatArrayList.java</include>
                     <include>GeneratedMessageInfoFactory.java</include>
                     <include>GeneratedMessageLite.java</include>
+                    <include>InlineMe.java</include>
                     <include>IntArrayList.java</include>
                     <include>Internal.java</include>
                     <include>InvalidProtocolBufferException.java</include>
