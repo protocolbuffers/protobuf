@@ -73,6 +73,7 @@ struct GeneratorOptions {
     kImportCommonJsStrict,  // require() with no global export
     kImportBrowser,         // no import statements
     kImportEs6,             // import { member } from ''
+    kImportTypescript,      // import { member } from ''
   } import_style;
 
   GeneratorOptions()
@@ -93,7 +94,11 @@ struct GeneratorOptions {
 
   // Returns the file name extension to use for generated code.
   std::string GetFileNameExtension() const {
-    return import_style == kImportClosure ? extension : "_pb.js";
+    return import_style == kImportClosure 
+        ? extension 
+        : import_style == kImportTypescript 
+            ? "_pb.ts" 
+            : "_pb.js";
   }
 
   enum OutputMode {
@@ -247,6 +252,8 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                                     bool use_default) const;
 
   // Generate definition for one class.
+  void GenerateTypescriptClass(const GeneratorOptions& options, io::Printer* printer,
+      const Descriptor* desc) const;
   void GenerateClass(const GeneratorOptions& options, io::Printer* printer,
                      const Descriptor* desc) const;
   void GenerateClassConstructor(const GeneratorOptions& options,

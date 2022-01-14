@@ -2016,12 +2016,14 @@ void Generator::GenerateTypescriptClass(const GeneratorOptions& options, io::Pri
         }
 
         FieldDescriptor* field = desc->field(i);
-        std::string name = JSIdent(options, field, false, false, false);
+        std::string identifier = JSIdent(options, field, false, false, false);
         std::string index = JSFieldIndex(field);
         std::string type = JSFieldTypeAnnotation(options, field,
             /* is_setter_argument = */ false,
             /* force_present = */ false,
             /* singular_if_not_packed = */ false);
+
+        GenerateClassField(options, printer, desc->field(i));
 
         // Getter
         {
@@ -2029,14 +2031,14 @@ void Generator::GenerateTypescriptClass(const GeneratorOptions& options, io::Pri
                 "get $name$(): $type$ {\n"
                 "    return ",
 
-                "name", name,
+                "name", identifier,
                 "type", type,
             );
             printer->Annotate("gettername", field);
 
             GenerateFieldValueExpression(printer, "this", field, /* use_default = */ false);
 
-            printer->Print("};\n");
+            printer->Print("};\n\n");
         }
 
         // Setter
@@ -2046,11 +2048,28 @@ void Generator::GenerateTypescriptClass(const GeneratorOptions& options, io::Pri
                 "    jspb.Message.setField(this, $index$, value);"
                 "};\n\n",
 
-                "name", name,
+                "name", identifier,
                 "index", index,
                 "type", type,
             );
             printer->Annotate("settername", field);
+
+            GenerateFieldValueExpression(printer, "this", field, /* use_default = */ false);
+
+            printer->Print("};\n\n");
+
+
+            printer->Print(
+                "$class$.prototype.$settername$ = function(value) {\n"
+                "  return jspb.Message.setProto3$typetag$Field(this, $index$, "
+                "value);"
+                "\n"
+                "};\n"
+                "\n"
+                "\n",
+                "class", GetMessagePath(options, field->containing_type()),
+                "settername", "set" + JSGetterName(options, field), "typetag",
+                JSTypeTag(field), "index", JSFieldIndex(field));
         }
     }
 
@@ -2065,62 +2084,8 @@ void Generator::GenerateTypescriptClass(const GeneratorOptions& options, io::Pri
 
     //Close class
     printer->Outdent();
-    printer->Print("}\n\n");
+    printer->Print("}\n");
 
-    // Print enums and nested messages
-    if (desc->enum_type_count() > 0 || desc->nested_type_count() > 0) {
-        printer->Print(
-            "export namespace $className$ {",
-
-            "className", desc->name()
-        );
-        printer->Indent();
-
-        // Print enums
-        for (int i = 0; i < desc->enum_type_count(); i++) {
-            EnumDescriptor* enumdesc = desc->enum_type(i);
-
-            printer->Print(
-                "export enum $name$ {\n",
-                "name", enumdesc->name(),
-                );
-            printer->Annotate("name", enumdesc);
-            printer->Indent();
-
-            std::set<std::string> used_name;
-            std::vector<int> valid_index;
-            for (int i = 0; i < enumdesc->value_count(); i++) {
-                if (enumdesc->options().allow_alias() && !used_name.insert(ToEnumCase(enumdesc->value(i)->name())).second) {
-                    continue;
-                }
-
-                valid_index.push_back(i);
-            }
-
-            for (auto i : valid_index) {
-                const EnumValueDescriptor* value = enumdesc->value(i);
-
-                printer->Print(
-                    "$name$ = $value$,\n",
-
-                    "name", ToEnumCase(value->name()),
-                    "value", StrCat(value->number()),
-                    );
-                printer->Annotate("name", value);
-            }
-
-            printer->Outdent();
-            printer->Print("}\n\n");
-        }
-
-        // Print nested classes
-        for (int i = 0; i < desc->nested_type_count(); i++) {
-            GenerateTypesciptClass(options, printer, desc->nested_type(i));
-        }
-
-        printer->Outdent();
-        printer->Print("}\n\n");
-    }
 
 
 
