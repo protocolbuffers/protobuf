@@ -1,3 +1,64 @@
+Unreleased changes
+
+C++
+  * Check for parsing error before verifying UTF8
+  * Implement pbarenaz for profiling proto arenas
+  * Add UnknownFieldSet::SerializeToString and SerializeToCodedStream
+  * Determine if ArenaDtor related code generation is necessary in one place
+  * Always invoke BackUp() on ZeroCopyOutputStream to provide a flush
+    opportunity to implementations
+  * Implement on demand register ArenaDtor for InlinedStringField
+  * Template CodedOutputStream constructor to allow devirtualized
+    initialization
+  * Declare ZeroCopy*Stream classes to be 'future final'
+  * Change Repeated*Field to reuse memory when using arenas
+  * Fix MergeSorted bug for arena-owned repeated string fields
+  * Rework allocations to power-of-two byte sizes
+  * Add UnsafeSetAllocated to be used for oneof string fields
+  * Make Arena::AllocateAligned() a public function
+  * Introduce CreateString() and CreateArenaString() for cleaner semantics
+  * Make TaggedPtr Set...() calls explicitly spell out the content type
+  * Assert a maximum map alignment for allocated values
+  * Implement strong qualified tags for TaggedPtr
+  * Speed up table handling for descriptors
+
+Java
+  * Report original exceptions when parsing JSON
+  * Add `ByteString.fromHex(String)`
+  * Add `ByteString.empty()`
+  * Loosen indexing type requirements to allow valid __index__()
+    implementations rather than only PyLongObjects
+  * Add more info to @deprecated javadoc for set/get/has methods
+  * UnknownFieldSet.Builder is now reusable. Its build method can be called
+    more than once
+  * Do not log/report the same descriptor symbol multiple times if it contains
+    more than one invalid character
+  * add @CheckReturnValue to some protobuf types
+  * Add `@InlineMe` to deprecated protobuf APIs
+  * When oneof case is the same and the field type is Message, merge the
+    subfield. (previously it was replaced.)
+  * Fix bugs in {FieldSet,FieldSet.Builder}.isInitialized()
+  * Flush CodedOutputStream also flushes underlying OutputStream
+  * Move CodedOutputStream flush of underlying OutputStream to flush() rather
+    than doFlush()
+  * Implement DynamicMessage.Builder.get{RepeatedField,Field}Builder
+
+Kotlin
+  * Enhancements to support for Any protobuf
+
+Python
+  * protoc is now able to generate python stub (.pyi) by --gen_pyi
+  * Pure python repeated scalar fields will not able to pickle. Convert to list
+    first
+  * path info is added for python JSON parse errors
+  * Added python JSON parse recursion limit (default 100)
+  * Adds client_streaming and server_streaming fields to MethodDescriptor
+  * Timestamp.ToDatetime() now accepts an optional tzinfo parameter. If
+    specified, the function returns a timezone-aware datetime in the given time
+    zone. If omitted or None, the function returns a timezone-naive UTC
+    datetime (as previously)
+  * Fix the deepcopy bug caused by not copying message_listener
+
 2022-01-10 version 3.19.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Python
