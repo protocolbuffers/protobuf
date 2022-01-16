@@ -246,8 +246,8 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
 
   // Fails, because required fields are missing.
   EXPECT_EQ(kUpb_DecodeStatus_MissingRequired,
-            _upb_decode(NULL, 0, test_msg, &upb_test_TestRequiredFields_msginit,
-                        NULL, kUpb_DecodeOption_CheckRequired, arena.ptr()));
+            upb_Decode(NULL, 0, test_msg, &upb_test_TestRequiredFields_msginit,
+                       NULL, kUpb_DecodeOption_CheckRequired, arena.ptr()));
 
   upb_test_TestRequiredFields_set_required_int32(test_msg, 1);
   size_t size;
@@ -259,9 +259,9 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   // Fails, but the code path is slightly different because the serialized
   // payload is not empty.
   EXPECT_EQ(kUpb_DecodeStatus_MissingRequired,
-            _upb_decode(serialized, size, test_msg,
-                        &upb_test_TestRequiredFields_msginit, NULL,
-                        kUpb_DecodeOption_CheckRequired, arena.ptr()));
+            upb_Decode(serialized, size, test_msg,
+                       &upb_test_TestRequiredFields_msginit, NULL,
+                       kUpb_DecodeOption_CheckRequired, arena.ptr()));
 
   empty_msg = upb_test_EmptyMessage_new(arena.ptr());
   upb_test_TestRequiredFields_set_required_int32(test_msg, 1);
@@ -270,8 +270,8 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
 
   // Succeeds, because required fields are present (though not in the input).
   EXPECT_EQ(kUpb_DecodeStatus_Ok,
-            _upb_decode(NULL, 0, test_msg, &upb_test_TestRequiredFields_msginit,
-                        NULL, kUpb_DecodeOption_CheckRequired, arena.ptr()));
+            upb_Decode(NULL, 0, test_msg, &upb_test_TestRequiredFields_msginit,
+                       NULL, kUpb_DecodeOption_CheckRequired, arena.ptr()));
 
   // Serialize a complete payload.
   serialized =
@@ -288,9 +288,9 @@ TEST(MessageTest, DecodeRequiredFieldsTopLevelMessage) {
   upb_test_TestRequiredFields_set_optional_message(
       test_msg2, upb_test_TestRequiredFields_new(arena.ptr()));
   EXPECT_EQ(kUpb_DecodeStatus_Ok,
-            _upb_decode(serialized, size, test_msg2,
-                        &upb_test_TestRequiredFields_msginit, NULL,
-                        kUpb_DecodeOption_CheckRequired, arena.ptr()));
+            upb_Decode(serialized, size, test_msg2,
+                       &upb_test_TestRequiredFields_msginit, NULL,
+                       kUpb_DecodeOption_CheckRequired, arena.ptr()));
 }
 
 TEST(MessageTest, DecodeRequiredFieldsSubMessage) {

@@ -198,7 +198,7 @@ static void encode_fixedarray(upb_encstate* e, const upb_Array* arr,
   }
 }
 
-static void encode_message(upb_encstate* e, const upb_msg* msg,
+static void encode_message(upb_encstate* e, const upb_Message* msg,
                            const upb_MiniTable* m, size_t* size);
 
 static void encode_scalar(upb_encstate* e, const void* _field_mem,
@@ -284,7 +284,7 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
   encode_tag(e, f->number, wire_type);
 }
 
-static void encode_array(upb_encstate* e, const upb_msg* msg,
+static void encode_array(upb_encstate* e, const upb_Message* msg,
                          const upb_MiniTable_Sub* subs,
                          const upb_MiniTable_Field* f) {
   const upb_Array* arr = *UPB_PTR_AT(msg, f->offset, upb_Array*);
@@ -404,7 +404,7 @@ static void encode_mapentry(upb_encstate* e, uint32_t number,
   encode_tag(e, number, kUpb_WireType_Delimited);
 }
 
-static void encode_map(upb_encstate* e, const upb_msg* msg,
+static void encode_map(upb_encstate* e, const upb_Message* msg,
                        const upb_MiniTable_Sub* subs,
                        const upb_MiniTable_Field* f) {
   const upb_Map* map = *UPB_PTR_AT(msg, f->offset, const upb_Map*);
@@ -436,7 +436,7 @@ static void encode_map(upb_encstate* e, const upb_msg* msg,
   }
 }
 
-static bool encode_shouldencode(upb_encstate* e, const upb_msg* msg,
+static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
                                 const upb_MiniTable_Sub* subs,
                                 const upb_MiniTable_Field* f) {
   if (f->presence == 0) {
@@ -474,7 +474,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_msg* msg,
   }
 }
 
-static void encode_field(upb_encstate* e, const upb_msg* msg,
+static void encode_field(upb_encstate* e, const upb_Message* msg,
                          const upb_MiniTable_Sub* subs,
                          const upb_MiniTable_Field* field) {
   switch (upb_FieldMode_Get(field)) {
@@ -510,7 +510,7 @@ static void encode_msgset_item(upb_encstate* e,
   encode_tag(e, 1, kUpb_WireType_StartGroup);
 }
 
-static void encode_message(upb_encstate* e, const upb_msg* msg,
+static void encode_message(upb_encstate* e, const upb_Message* msg,
                            const upb_MiniTable* m, size_t* size) {
   size_t pre_len = e->limit - e->ptr;
 
@@ -525,7 +525,7 @@ static void encode_message(upb_encstate* e, const upb_msg* msg,
 
   if ((e->options & kUpb_Encode_SkipUnknown) == 0) {
     size_t unknown_size;
-    const char* unknown = upb_Message_Getunknown(msg, &unknown_size);
+    const char* unknown = upb_Message_GetUnknown(msg, &unknown_size);
 
     if (unknown) {
       encode_bytes(e, unknown, unknown_size);
@@ -562,8 +562,8 @@ static void encode_message(upb_encstate* e, const upb_msg* msg,
   *size = (e->limit - e->ptr) - pre_len;
 }
 
-char* upb_EncodeEx(const void* msg, const upb_MiniTable* l, int options,
-                   upb_Arena* arena, size_t* size) {
+char* upb_Encode(const void* msg, const upb_MiniTable* l, int options,
+                 upb_Arena* arena, size_t* size) {
   upb_encstate e;
   unsigned depth = (unsigned)options >> 16;
 

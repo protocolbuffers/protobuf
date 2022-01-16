@@ -44,9 +44,10 @@
 extern "C" {
 #endif
 
-/** upb_msg *******************************************************************/
+/** upb_Message
+ * *******************************************************************/
 
-typedef void upb_msg;
+typedef void upb_Message;
 
 /* For users these are opaque. They can be obtained from
  * upb_MessageDef_MiniTable() but users cannot access any of the members. */
@@ -55,34 +56,34 @@ typedef struct upb_MiniTable upb_MiniTable;
 
 /* Adds unknown data (serialized protobuf data) to the given message.  The data
  * is copied into the message instance. */
-void upb_msg_addunknown(upb_msg* msg, const char* data, size_t len,
-                        upb_Arena* arena);
+void upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
+                            upb_Arena* arena);
 
 /* Returns a reference to the message's unknown data. */
-const char* upb_Message_Getunknown(const upb_msg* msg, size_t* len);
+const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
 
 /* Returns the number of extensions present in this message. */
-size_t upb_msg_extcount(const upb_msg* msg);
+size_t upb_Message_ExtensionCount(const upb_Message* msg);
 
-/** upb_extreg
- * *******************************************************************/
+/** upb_ExtensionRegistry *****************************************************/
 
 /* Extension registry: a dynamic data structure that stores a map of:
  *   (upb_MiniTable, number) -> extension info
  *
- * upb_decode() uses upb_extreg to look up extensions while parsing binary
- * format.
+ * upb_decode() uses upb_ExtensionRegistry to look up extensions while parsing
+ * binary format.
  *
- * upb_extreg is part of the mini-table (msglayout) family of objects. Like all
- * mini-table objects, it is suitable for reflection-less builds that do not
- * want to expose names into the binary.
+ * upb_ExtensionRegistry is part of the mini-table (msglayout) family of
+ * objects. Like all mini-table objects, it is suitable for reflection-less
+ * builds that do not want to expose names into the binary.
  *
- * Unlike most mini-table types, upb_extreg requires dynamic memory allocation
- * and dynamic initialization:
+ * Unlike most mini-table types, upb_ExtensionRegistry requires dynamic memory
+ * allocation and dynamic initialization:
  * * If reflection is being used, then upb_DefPool will construct an appropriate
- *   upb_extreg automatically.
+ *   upb_ExtensionRegistry automatically.
  * * For a mini-table only build, the user must manually construct the
- *   upb_extreg and populate it with all of the extensions the user cares about.
+ *   upb_ExtensionRegistry and populate it with all of the extensions the user
+ * cares about.
  * * A third alternative is to manually unpack relevant extensions after the
  *   main parse is complete, similar to how Any works. This is perhaps the
  *   nicest solution from the perspective of reducing dependencies, avoiding
@@ -96,16 +97,16 @@ size_t upb_msg_extcount(const upb_msg* msg);
  * extensions from a generated module and pass the extension registry to the
  * binary decoder.
  *
- * A upb_DefPool provides a upb_extreg, so any users who use reflection do not
- * need to populate a upb_extreg directly.
+ * A upb_DefPool provides a upb_ExtensionRegistry, so any users who use
+ * reflection do not need to populate a upb_ExtensionRegistry directly.
  */
 
-struct upb_extreg;
-typedef struct upb_extreg upb_extreg;
+struct upb_ExtensionRegistry;
+typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
 
-/* Creates a upb_extreg in the given arena.  The arena must outlive any use of
- * the extreg. */
-upb_extreg* upb_extreg_new(upb_Arena* arena);
+/* Creates a upb_ExtensionRegistry in the given arena.  The arena must outlive
+ * any use of the extreg. */
+upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -206,7 +206,7 @@ struct upb_DefPool {
   upb_strtable syms;  /* full_name -> packed def ptr */
   upb_strtable files; /* file_name -> upb_FileDef* */
   upb_inttable exts;  /* upb_MiniTable_Extension* -> upb_FieldDef* */
-  upb_extreg* extreg;
+  upb_ExtensionRegistry* extreg;
   size_t bytes_loaded;
 };
 
@@ -405,8 +405,7 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
   return &e->values[i];
 }
 
-/* upb_EnumValueDef
- * *************************************************************/
+/* upb_EnumValueDef ***********************************************************/
 
 const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
     const upb_EnumValueDef* e) {
@@ -1048,8 +1047,7 @@ const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
   return NULL;
 }
 
-/* upb_DefPool
- * *****************************************************************/
+/* upb_DefPool ****************************************************************/
 
 void upb_DefPool_Free(upb_DefPool* s) {
   upb_Arena_Free(s->arena);
@@ -1072,7 +1070,7 @@ upb_DefPool* upb_DefPool_New(void) {
     goto err;
   }
 
-  s->extreg = upb_extreg_new(s->arena);
+  s->extreg = upb_ExtensionRegistry_New(s->arena);
   if (!s->extreg) goto err;
   return s;
 
@@ -3162,7 +3160,8 @@ bool _upb_DefPool_registerlayout(upb_DefPool* s, const char* filename,
                              s->arena);
 }
 
-const upb_extreg* upb_DefPool_ExtensionRegistry(const upb_DefPool* s) {
+const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
+    const upb_DefPool* s) {
   return s->extreg;
 }
 

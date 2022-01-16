@@ -435,3 +435,13 @@ s/\bLookupEnum\b/FindEnumByName/g;
 s/\bLookupFile\b/FindFileByName/g;
 
 s/PyObject_HEAD[^;]/PyObject_HEAD;/g;
+
+s/upb_msg_addunknown/upb_Message_AddUnknown/g;
+s/upb_Message_Getunknown/upb_Message_GetUnknown/g;
+s/upb_msg_extcount/upb_Message_ExtensionCount/g;
+s/\bupb_extreg\b/upb_ExtensionRegistry/g;
+s/upb_extreg_new/upb_ExtensionRegistry_New/g;
+s/upb_msg\b/upb_Message/g;
+s/_upb_decode\b/upb_Decode/g;
+s/upb_EncodeEx\b/upb_Encode/g;
+s/upb_text_encode/upb_TextEncode/g;

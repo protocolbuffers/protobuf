@@ -116,7 +116,7 @@ struct upb_Decoder;
 struct upb_MiniTable;
 
 typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
-                                     upb_msg* msg, intptr_t table,
+                                     upb_Message* msg, intptr_t table,
                                      uint64_t hasbits, uint64_t data);
 
 typedef struct {
@@ -213,26 +213,28 @@ UPB_INLINE uint64_t upb_MiniTable_requiredmask(const upb_MiniTable* l) {
   return ((1ULL << n) - 1) << 1;
 }
 
-/** upb_extreg ****************************************************************/
+/** upb_ExtensionRegistry
+ * ****************************************************************/
 
 /* Adds the given extension info for message type |l| and field number |num|
  * into the registry. Returns false if this message type and field number were
  * already in the map, or if memory allocation fails. */
-bool _upb_extreg_add(upb_extreg* r, const upb_MiniTable_Extension** e,
-                     size_t count);
+bool _upb_extreg_add(upb_ExtensionRegistry* r,
+                     const upb_MiniTable_Extension** e, size_t count);
 
 /* Looks up the extension (if any) defined for message type |l| and field
  * number |num|.  If an extension was found, copies the field info into |*ext|
  * and returns true. Otherwise returns false. */
-const upb_MiniTable_Extension* _upb_extreg_get(const upb_extreg* r,
+const upb_MiniTable_Extension* _upb_extreg_get(const upb_ExtensionRegistry* r,
                                                const upb_MiniTable* l,
                                                uint32_t num);
 
-/** upb_msg *******************************************************************/
+/** upb_Message
+ * *******************************************************************/
 
-/* Internal members of a upb_msg that track unknown fields and/or extensions.
- * We can change this without breaking binary compatibility.  We put these
- * before the user's data.  The user's upb_msg* points after the
+/* Internal members of a upb_Message that track unknown fields and/or
+ * extensions. We can change this without breaking binary compatibility.  We put
+ * these before the user's data.  The user's upb_Message* points after the
  * upb_Message_Internal. */
 
 typedef struct {
@@ -271,41 +273,42 @@ UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* l) {
   return l->size + sizeof(upb_Message_Internal);
 }
 
-UPB_INLINE upb_msg* _upb_Message_New_inl(const upb_MiniTable* l, upb_Arena* a) {
+UPB_INLINE upb_Message* _upb_Message_New_inl(const upb_MiniTable* l,
+                                             upb_Arena* a) {
   size_t size = upb_msg_sizeof(l);
   void* mem = upb_Arena_Malloc(a, size);
-  upb_msg* msg;
+  upb_Message* msg;
   if (UPB_UNLIKELY(!mem)) return NULL;
-  msg = UPB_PTR_AT(mem, sizeof(upb_Message_Internal), upb_msg);
+  msg = UPB_PTR_AT(mem, sizeof(upb_Message_Internal), upb_Message);
   memset(mem, 0, size);
   return msg;
 }
 
 /* Creates a new messages with the given layout on the given arena. */
-upb_msg* _upb_Message_New(const upb_MiniTable* l, upb_Arena* a);
+upb_Message* _upb_Message_New(const upb_MiniTable* l, upb_Arena* a);
 
-UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(upb_msg* msg) {
+UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(upb_Message* msg) {
   ptrdiff_t size = sizeof(upb_Message_Internal);
   return (upb_Message_Internal*)((char*)msg - size);
 }
 
 /* Clears the given message. */
-void _upb_Message_Clear(upb_msg* msg, const upb_MiniTable* l);
+void _upb_Message_Clear(upb_Message* msg, const upb_MiniTable* l);
 
 /* Discards the unknown fields for this message only. */
-void _upb_Message_DiscardUnknown_shallow(upb_msg* msg);
+void _upb_Message_DiscardUnknown_shallow(upb_Message* msg);
 
 /* Adds unknown data (serialized protobuf data) to the given message.  The data
  * is copied into the message instance. */
-bool _upb_msg_addunknown(upb_msg* msg, const char* data, size_t len,
-                         upb_Arena* arena);
+bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
+                             upb_Arena* arena);
 
 /** upb_Message_Extension
  * ***************************************************************/
 
 /* The internal representation of an extension is self-describing: it contains
  * enough information that we can serialize it to binary format without needing
- * to look it up in a upb_extreg.
+ * to look it up in a upb_ExtensionRegistry.
  *
  * This representation allocates 16 bytes to data on 64-bit platforms.  This is
  * rather wasteful for scalars (in the extreme case of bool, it wastes 15
@@ -324,33 +327,35 @@ typedef struct {
  * message instance. This logically replaces any previously-added extension with
  * this number */
 upb_Message_Extension* _upb_Message_Getorcreateext(
-    upb_msg* msg, const upb_MiniTable_Extension* ext, upb_Arena* arena);
+    upb_Message* msg, const upb_MiniTable_Extension* ext, upb_Arena* arena);
 
 /* Returns an array of extensions for this message. Note: the array is
  * ordered in reverse relative to the order of creation. */
-const upb_Message_Extension* _upb_Message_Getexts(const upb_msg* msg,
+const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
                                                   size_t* count);
 
 /* Returns an extension for the given field number, or NULL if no extension
  * exists for this field number. */
 const upb_Message_Extension* _upb_Message_Getext(
-    const upb_msg* msg, const upb_MiniTable_Extension* ext);
+    const upb_Message* msg, const upb_MiniTable_Extension* ext);
 
-void _upb_Message_Clearext(upb_msg* msg, const upb_MiniTable_Extension* ext);
+void _upb_Message_Clearext(upb_Message* msg,
+                           const upb_MiniTable_Extension* ext);
 
-void _upb_Message_Clearext(upb_msg* msg, const upb_MiniTable_Extension* ext);
+void _upb_Message_Clearext(upb_Message* msg,
+                           const upb_MiniTable_Extension* ext);
 
 /** Hasbit access *************************************************************/
 
-UPB_INLINE bool _upb_hasbit(const upb_msg* msg, size_t idx) {
+UPB_INLINE bool _upb_hasbit(const upb_Message* msg, size_t idx) {
   return (*UPB_PTR_AT(msg, idx / 8, const char) & (1 << (idx % 8))) != 0;
 }
 
-UPB_INLINE void _upb_sethas(const upb_msg* msg, size_t idx) {
+UPB_INLINE void _upb_sethas(const upb_Message* msg, size_t idx) {
   (*UPB_PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
 }
 
-UPB_INLINE void _upb_clearhas(const upb_msg* msg, size_t idx) {
+UPB_INLINE void _upb_clearhas(const upb_Message* msg, size_t idx) {
   (*UPB_PTR_AT(msg, idx / 8, char)) &= (char)(~(1 << (idx % 8)));
 }
 
@@ -359,24 +364,24 @@ UPB_INLINE size_t _upb_Message_Hasidx(const upb_MiniTable_Field* f) {
   return f->presence;
 }
 
-UPB_INLINE bool _upb_hasbit_field(const upb_msg* msg,
+UPB_INLINE bool _upb_hasbit_field(const upb_Message* msg,
                                   const upb_MiniTable_Field* f) {
   return _upb_hasbit(msg, _upb_Message_Hasidx(f));
 }
 
-UPB_INLINE void _upb_sethas_field(const upb_msg* msg,
+UPB_INLINE void _upb_sethas_field(const upb_Message* msg,
                                   const upb_MiniTable_Field* f) {
   _upb_sethas(msg, _upb_Message_Hasidx(f));
 }
 
-UPB_INLINE void _upb_clearhas_field(const upb_msg* msg,
+UPB_INLINE void _upb_clearhas_field(const upb_Message* msg,
                                     const upb_MiniTable_Field* f) {
   _upb_clearhas(msg, _upb_Message_Hasidx(f));
 }
 
 /** Oneof case access *********************************************************/
 
-UPB_INLINE uint32_t* _upb_oneofcase(upb_msg* msg, size_t case_ofs) {
+UPB_INLINE uint32_t* _upb_oneofcase(upb_Message* msg, size_t case_ofs) {
   return UPB_PTR_AT(msg, case_ofs, uint32_t);
 }
 
@@ -389,18 +394,18 @@ UPB_INLINE size_t _upb_oneofcase_ofs(const upb_MiniTable_Field* f) {
   return ~(ptrdiff_t)f->presence;
 }
 
-UPB_INLINE uint32_t* _upb_oneofcase_field(upb_msg* msg,
+UPB_INLINE uint32_t* _upb_oneofcase_field(upb_Message* msg,
                                           const upb_MiniTable_Field* f) {
   return _upb_oneofcase(msg, _upb_oneofcase_ofs(f));
 }
 
-UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_msg* msg,
+UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
                                             const upb_MiniTable_Field* f) {
   return _upb_getoneofcase(msg, _upb_oneofcase_ofs(f));
 }
 
-UPB_INLINE bool _upb_has_submsg_nohasbit(const upb_msg* msg, size_t ofs) {
-  return *UPB_PTR_AT(msg, ofs, const upb_msg*) != NULL;
+UPB_INLINE bool _upb_has_submsg_nohasbit(const upb_Message* msg, size_t ofs) {
+  return *UPB_PTR_AT(msg, ofs, const upb_Message*) != NULL;
 }
 
 /** upb_Array *****************************************************************/
@@ -683,12 +688,12 @@ UPB_INLINE void _upb_Map_Clear(upb_Map* map) {
 
 /* Message map operations, these get the map from the message first. */
 
-UPB_INLINE size_t _upb_msg_map_size(const upb_msg* msg, size_t ofs) {
+UPB_INLINE size_t _upb_msg_map_size(const upb_Message* msg, size_t ofs) {
   upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
   return map ? _upb_Map_Size(map) : 0;
 }
 
-UPB_INLINE bool _upb_msg_map_get(const upb_msg* msg, size_t ofs,
+UPB_INLINE bool _upb_msg_map_get(const upb_Message* msg, size_t ofs,
                                  const void* key, size_t key_size, void* val,
                                  size_t val_size) {
   upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
@@ -696,14 +701,14 @@ UPB_INLINE bool _upb_msg_map_get(const upb_msg* msg, size_t ofs,
   return _upb_Map_Get(map, key, key_size, val, val_size);
 }
 
-UPB_INLINE void* _upb_msg_map_next(const upb_msg* msg, size_t ofs,
+UPB_INLINE void* _upb_msg_map_next(const upb_Message* msg, size_t ofs,
                                    size_t* iter) {
   upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
   if (!map) return NULL;
   return _upb_map_next(map, iter);
 }
 
-UPB_INLINE bool _upb_msg_map_set(upb_msg* msg, size_t ofs, const void* key,
+UPB_INLINE bool _upb_msg_map_set(upb_Message* msg, size_t ofs, const void* key,
                                  size_t key_size, void* val, size_t val_size,
                                  upb_Arena* arena) {
   upb_Map** map = UPB_PTR_AT(msg, ofs, upb_Map*);
@@ -713,14 +718,14 @@ UPB_INLINE bool _upb_msg_map_set(upb_msg* msg, size_t ofs, const void* key,
   return _upb_Map_Set(*map, key, key_size, val, val_size, arena);
 }
 
-UPB_INLINE bool _upb_msg_map_delete(upb_msg* msg, size_t ofs, const void* key,
-                                    size_t key_size) {
+UPB_INLINE bool _upb_msg_map_delete(upb_Message* msg, size_t ofs,
+                                    const void* key, size_t key_size) {
   upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
   if (!map) return false;
   return _upb_Map_Delete(map, key, key_size);
 }
 
-UPB_INLINE void _upb_msg_map_clear(upb_msg* msg, size_t ofs) {
+UPB_INLINE void _upb_msg_map_clear(upb_Message* msg, size_t ofs) {
   upb_Map* map = *UPB_PTR_AT(msg, ofs, upb_Map*);
   if (!map) return;
   _upb_Map_Clear(map);

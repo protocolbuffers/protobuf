@@ -46,38 +46,40 @@ typedef union {
   uint32_t uint32_val;
   uint64_t uint64_val;
   const upb_Map* map_val;
-  const upb_msg* msg_val;
+  const upb_Message* msg_val;
   const upb_Array* array_val;
   upb_StringView str_val;
 } upb_MessageValue;
 
 typedef union {
   upb_Map* map;
-  upb_msg* msg;
+  upb_Message* msg;
   upb_Array* array;
 } upb_MutableMessageValue;
 
 upb_MessageValue upb_FieldDef_Default(const upb_FieldDef* f);
 
-/** upb_msg *******************************************************************/
+/** upb_Message
+ * *******************************************************************/
 
 /* Creates a new message of the given type in the given arena. */
-upb_msg* upb_Message_New(const upb_MessageDef* m, upb_Arena* a);
+upb_Message* upb_Message_New(const upb_MessageDef* m, upb_Arena* a);
 
 /* Returns the value associated with this field. */
-upb_MessageValue upb_Message_Get(const upb_msg* msg, const upb_FieldDef* f);
+upb_MessageValue upb_Message_Get(const upb_Message* msg, const upb_FieldDef* f);
 
 /* Returns a mutable pointer to a map, array, or submessage value.  If the given
  * arena is non-NULL this will construct a new object if it was not previously
  * present.  May not be called for primitive fields. */
-upb_MutableMessageValue upb_Message_Mutable(upb_msg* msg, const upb_FieldDef* f,
+upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
+                                            const upb_FieldDef* f,
                                             upb_Arena* a);
 
 /* May only be called for fields where upb_FieldDef_HasPresence(f) == true. */
-bool upb_Message_Has(const upb_msg* msg, const upb_FieldDef* f);
+bool upb_Message_Has(const upb_Message* msg, const upb_FieldDef* f);
 
 /* Returns the field that is set in the oneof, or NULL if none are set. */
-const upb_FieldDef* upb_Message_WhichOneof(const upb_msg* msg,
+const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
                                            const upb_OneofDef* o);
 
 /* Sets the given field to the given value.  For a msg/array/map/string, the
@@ -85,14 +87,14 @@ const upb_FieldDef* upb_Message_WhichOneof(const upb_msg* msg,
  * the same arena or a different arena that outlives it).
  *
  * Returns false if allocation fails. */
-bool upb_Message_Set(upb_msg* msg, const upb_FieldDef* f, upb_MessageValue val,
-                     upb_Arena* a);
+bool upb_Message_Set(upb_Message* msg, const upb_FieldDef* f,
+                     upb_MessageValue val, upb_Arena* a);
 
 /* Clears any field presence and sets the value back to its default. */
-void upb_Message_ClearField(upb_msg* msg, const upb_FieldDef* f);
+void upb_Message_ClearField(upb_Message* msg, const upb_FieldDef* f);
 
 /* Clear all data and unknown fields. */
-void upb_Message_Clear(upb_msg* msg, const upb_MessageDef* m);
+void upb_Message_Clear(upb_Message* msg, const upb_MessageDef* m);
 
 /* Iterate over present fields.
  *
@@ -109,12 +111,12 @@ void upb_Message_Clear(upb_msg* msg, const upb_MessageDef* m);
  */
 
 #define kUpb_Message_Begin -1
-bool upb_Message_Next(const upb_msg* msg, const upb_MessageDef* m,
+bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
                       const upb_DefPool* ext_pool, const upb_FieldDef** f,
                       upb_MessageValue* val, size_t* iter);
 
 /* Clears all unknown field data from this message and all submessages. */
-bool upb_Message_DiscardUnknown(upb_msg* msg, const upb_MessageDef* m,
+bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
                                 int maxdepth);
 
 /** upb_Array *****************************************************************/
