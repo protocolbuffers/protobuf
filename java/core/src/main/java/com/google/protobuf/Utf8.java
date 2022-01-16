@@ -626,8 +626,6 @@ final class Utf8 {
       }
 
       // "\uFFFD" is UTF-8 default replacement string, which illegal byte sequences get replaced with.
-      // We use indexOf(String) since indexOf(char) was intrinsified only in OpenJDK 16,
-      // see https://bugs.openjdk.java.net/browse/JDK-8173585.
       if (!s.contains("\uFFFD")) {
         return s;
       }
