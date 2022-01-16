@@ -77,9 +77,9 @@
  * Lua level       |  +------------lupb_Message
  * ----------------|-----------------|------------------------------------------
  * upb level       |                 |
- *                 |            +----V------------------------------+
+ *                 |            +----V----------------------------------+
  *                 +->upb_Arena | upb_Message  ...(empty arena storage) |
- *                              +-----------------------------------+
+ *                              +---------------------------------------+
  *
  * If the user creates a reference between two objects that have different
  * arenas, we need to fuse the two arenas together, so that the blocks will
@@ -89,16 +89,15 @@
  *                 |                                                   |
  *                 V                           +-----+                 V
  *            lupb_Arena                +-weak-|cache|-weak-+     lupb_Arena
- *                 |  ^                 |      +-----+      |        ^   |
- *                 |  |                 V                   V        |   |
- * Lua level       |  +------------lupb_Message              lupb_Message----+ |
- * ----------------|-----------------|-------------------------|---------|------
- * upb level       |                 |                         |         |
- *                 |            +----V----+               +----V----+    V
- *                 +->upb_Arena | upb_Message |               | upb_Message |
- * upb_Arena
- *                              +------|--+               +--^------+
- *                                     +---------------------+
+ *                 |  ^                 |      +-----+      |        ^  |
+ *                 |  |                 V                   V        |  |
+ * Lua level       |  +------------lupb_Message        lupb_Message--+  |
+ * ----------------|-----------------|----------------------|-----------|------
+ * upb level       |                 |                      |           |
+ *                 |            +----V--------+        +----V--------+  V
+ *                 +->upb_Arena | upb_Message |        | upb_Message | upb_Arena
+ *                              +------|------+        +--^----------+
+ *                                     +------------------+
  * Key invariants:
  *   1. every wrapper references the arena that contains it.
  *   2. every fused arena includes all arenas that own upb objects reachable
