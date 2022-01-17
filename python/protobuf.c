@@ -302,7 +302,7 @@ const char* PyUpb_GetStrData(PyObject* obj) {
   }
 }
 
-const char* PyUpb_CheckStrData(PyObject* obj) {
+const char* PyUpb_VerifyStrData(PyObject* obj) {
   const char* ret = PyUpb_GetStrData(obj);
   if (ret) return ret;
   PyErr_Format(PyExc_TypeError, "Expected string: %S", obj);
