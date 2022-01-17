@@ -358,8 +358,10 @@ const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
                                               const char* name);
 const upb_ServiceDef* upb_DefPool_FindServiceByName(const upb_DefPool* s,
                                                     const char* name);
-const upb_FileDef* upb_DefPool_FindFileByNameforsym(const upb_DefPool* s,
-                                                    const char* name);
+const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
+    const upb_DefPool* s, const char* name, size_t size);
+const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
+                                                        const char* name);
 const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
                                                       const char* name,
                                                       size_t len);

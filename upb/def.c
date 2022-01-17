@@ -1159,8 +1159,13 @@ const upb_ServiceDef* upb_DefPool_FindServiceByName(const upb_DefPool* s,
   return symtab_lookup(s, name, UPB_DEFTYPE_SERVICE);
 }
 
-const upb_FileDef* upb_DefPool_FindFileByNameforsym(const upb_DefPool* s,
-                                                    const char* name) {
+const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
+    const upb_DefPool* s, const char* name, size_t size) {
+  return symtab_lookup2(s, name, size, UPB_DEFTYPE_SERVICE);
+}
+
+const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
+                                                        const char* name) {
   upb_value v;
   // TODO(haberman): non-extension fields and oneofs.
   if (upb_strtable_lookup(&s->syms, name, &v)) {
