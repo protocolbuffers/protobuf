@@ -406,6 +406,11 @@ static PyObject* PyUpb_DescriptorPool_FindFieldByName(PyObject* _self,
   if (child) {
     const upb_MessageDef* parent =
         upb_DefPool_FindMessageByNameWithSize(self->symtab, name, parent_size);
+    if (parent == NULL && self->db) {
+      if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
+      parent = upb_DefPool_FindMessageByNameWithSize(self->symtab, name,
+                                                     parent_size);
+    }
     if (parent) {
       f = upb_MessageDef_FindFieldByName(parent, child);
     }
