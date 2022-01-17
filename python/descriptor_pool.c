@@ -310,7 +310,7 @@ static PyObject* PyUpb_DescriptorPool_FindFileByName(PyObject* _self,
                                                      PyObject* arg) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
 
-  const char* name = PyUpb_GetStrData(arg);
+  const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
   const upb_FileDef* file = upb_DefPool_FindFileByName(self->symtab, name);
@@ -335,7 +335,7 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByName(PyObject* _self,
                                                           PyObject* arg) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
 
-  const char* name = PyUpb_GetStrData(arg);
+  const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
   const upb_FieldDef* field =
@@ -361,7 +361,7 @@ static PyObject* PyUpb_DescriptorPool_FindMessageTypeByName(PyObject* _self,
                                                             PyObject* arg) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
 
-  const char* name = PyUpb_GetStrData(arg);
+  const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
   const upb_MessageDef* m = upb_DefPool_FindMessageByName(self->symtab, name);
@@ -397,7 +397,7 @@ static PyObject* PyUpb_DescriptorPool_FindFieldByName(PyObject* _self,
                                                       PyObject* arg) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
 
-  const char* name = PyUpb_GetStrData(arg);
+  const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
   size_t parent_size;
@@ -433,7 +433,7 @@ static PyObject* PyUpb_DescriptorPool_FindEnumTypeByName(PyObject* _self,
                                                          PyObject* arg) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
 
-  const char* name = PyUpb_GetStrData(arg);
+  const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
   const upb_EnumDef* e = upb_DefPool_FindEnumByName(self->symtab, name);
@@ -458,7 +458,7 @@ static PyObject* PyUpb_DescriptorPool_FindOneofByName(PyObject* _self,
                                                       PyObject* arg) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
 
-  const char* name = PyUpb_GetStrData(arg);
+  const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
   size_t parent_size;
@@ -485,7 +485,7 @@ static PyObject* PyUpb_DescriptorPool_FindServiceByName(PyObject* _self,
                                                         PyObject* arg) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
 
-  const char* name = PyUpb_GetStrData(arg);
+  const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
   const upb_ServiceDef* s = upb_DefPool_FindServiceByName(self->symtab, name);
@@ -504,7 +504,7 @@ static PyObject* PyUpb_DescriptorPool_FindMethodByName(PyObject* _self,
                                                        PyObject* arg) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
 
-  const char* name = PyUpb_GetStrData(arg);
+  const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
   size_t parent_size;
   const char* child = PyUpb_DescriptorPool_SplitSymbolName(name, &parent_size);
@@ -530,7 +530,7 @@ static PyObject* PyUpb_DescriptorPool_FindFileContainingSymbol(PyObject* _self,
                                                                PyObject* arg) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
 
-  const char* name = PyUpb_GetStrData(arg);
+  const char* name = PyUpb_VerifyStrData(arg);
   if (!name) return NULL;
 
   const upb_FileDef* f =
