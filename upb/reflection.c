@@ -36,24 +36,24 @@
 static size_t get_field_size(const upb_MiniTable_Field* f) {
   static unsigned char sizes[] = {
       0,                      /* 0 */
-      8,                      /* upb_FieldType_Double */
-      4,                      /* upb_FieldType_Float */
-      8,                      /* upb_FieldType_Int64 */
-      8,                      /* upb_FieldType_UInt64 */
-      4,                      /* upb_FieldType_Int32 */
-      8,                      /* upb_FieldType_Fixed64 */
-      4,                      /* upb_FieldType_Fixed32 */
-      1,                      /* upb_FieldType_Bool */
-      sizeof(upb_StringView), /* upb_FieldType_String */
-      sizeof(void*),          /* upb_FieldType_Group */
-      sizeof(void*),          /* upb_FieldType_Message */
-      sizeof(upb_StringView), /* upb_FieldType_Bytes */
-      4,                      /* upb_FieldType_UInt32 */
-      4,                      /* upb_FieldType_Enum */
-      4,                      /* upb_FieldType_SFixed32 */
-      8,                      /* upb_FieldType_SFixed64 */
-      4,                      /* upb_FieldType_SInt32 */
-      8,                      /* upb_FieldType_SInt64 */
+      8,                      /* kUpb_FieldTypeDouble */
+      4,                      /* kUpb_FieldTypeFloat */
+      8,                      /* kUpb_FieldTypeInt64 */
+      8,                      /* kUpb_FieldTypeUInt64 */
+      4,                      /* kUpb_FieldTypeInt32 */
+      8,                      /* kUpb_FieldTypeFixed64 */
+      4,                      /* kUpb_FieldTypeFixed32 */
+      1,                      /* kUpb_FieldTypeBool */
+      sizeof(upb_StringView), /* kUpb_FieldTypeString */
+      sizeof(void*),          /* kUpb_FieldTypeGroup */
+      sizeof(void*),          /* kUpb_FieldTypeMessage */
+      sizeof(upb_StringView), /* kUpb_FieldTypeBytes */
+      4,                      /* kUpb_FieldTypeUInt32 */
+      4,                      /* kUpb_FieldTypeEnum */
+      4,                      /* kUpb_FieldTypeSFixed32 */
+      8,                      /* kUpb_FieldTypeSFixed64 */
+      4,                      /* kUpb_FieldTypeSInt32 */
+      8,                      /* kUpb_FieldTypeSInt64 */
   };
   return upb_IsRepeatedOrMap(f) ? sizeof(void*) : sizes[f->descriptortype];
 }
@@ -121,8 +121,8 @@ bool upb_Message_Has(const upb_Message* msg, const upb_FieldDef* f) {
     } else if (field->presence > 0) {
       return _upb_hasbit_field(msg, field);
     } else {
-      UPB_ASSERT(field->descriptortype == upb_FieldType_Message ||
-                 field->descriptortype == upb_FieldType_Group);
+      UPB_ASSERT(field->descriptortype == kUpb_FieldTypeMessage ||
+                 field->descriptortype == kUpb_FieldTypeGroup);
       return _upb_Message_Getraw(msg, f).msg_val != NULL;
     }
   }

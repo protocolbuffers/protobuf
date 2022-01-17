@@ -472,34 +472,34 @@ const char* upb_FieldDef_FullName(const upb_FieldDef* f) {
 
 upb_CType upb_FieldDef_CType(const upb_FieldDef* f) {
   switch (f->type_) {
-    case upb_FieldType_Double:
+    case kUpb_FieldTypeDouble:
       return kUpb_CType_Double;
-    case upb_FieldType_Float:
+    case kUpb_FieldTypeFloat:
       return kUpb_CType_Float;
-    case upb_FieldType_Int64:
-    case upb_FieldType_SInt64:
-    case upb_FieldType_SFixed64:
+    case kUpb_FieldTypeInt64:
+    case kUpb_FieldTypeSInt64:
+    case kUpb_FieldTypeSFixed64:
       return kUpb_CType_Int64;
-    case upb_FieldType_Int32:
-    case upb_FieldType_SFixed32:
-    case upb_FieldType_SInt32:
+    case kUpb_FieldTypeInt32:
+    case kUpb_FieldTypeSFixed32:
+    case kUpb_FieldTypeSInt32:
       return kUpb_CType_Int32;
-    case upb_FieldType_UInt64:
-    case upb_FieldType_Fixed64:
+    case kUpb_FieldTypeUInt64:
+    case kUpb_FieldTypeFixed64:
       return kUpb_CType_UInt64;
-    case upb_FieldType_UInt32:
-    case upb_FieldType_Fixed32:
+    case kUpb_FieldTypeUInt32:
+    case kUpb_FieldTypeFixed32:
       return kUpb_CType_UInt32;
-    case upb_FieldType_Enum:
+    case kUpb_FieldTypeEnum:
       return kUpb_CType_Enum;
-    case upb_FieldType_Bool:
+    case kUpb_FieldTypeBool:
       return kUpb_CType_Bool;
-    case upb_FieldType_String:
+    case kUpb_FieldTypeString:
       return kUpb_CType_String;
-    case upb_FieldType_Bytes:
+    case kUpb_FieldTypeBytes:
       return kUpb_CType_Bytes;
-    case upb_FieldType_Group:
-    case upb_FieldType_Message:
+    case kUpb_FieldTypeGroup:
+    case kUpb_FieldTypeMessage:
       return kUpb_CType_Message;
   }
   UPB_UNREACHABLE();
@@ -1381,11 +1381,11 @@ static uint8_t map_descriptortype(const upb_FieldDef* f) {
   uint8_t type = upb_FieldDef_Type(f);
   /* See TableDescriptorType() in upbc/generator.cc for details and
    * rationale of these exceptions. */
-  if (type == upb_FieldType_String && f->file->syntax == kUpb_Syntax_Proto2) {
-    return upb_FieldType_Bytes;
-  } else if (type == upb_FieldType_Enum &&
+  if (type == kUpb_FieldTypeString && f->file->syntax == kUpb_Syntax_Proto2) {
+    return kUpb_FieldTypeBytes;
+  } else if (type == kUpb_FieldTypeEnum &&
              f->sub.enumdef->file->syntax == kUpb_Syntax_Proto3) {
-    return upb_FieldType_Int32;
+    return kUpb_FieldTypeInt32;
   }
   return type;
 }
@@ -2188,9 +2188,9 @@ static void create_fielddef(
 
   if (has_type) {
     switch (f->type_) {
-      case upb_FieldType_Message:
-      case upb_FieldType_Group:
-      case upb_FieldType_Enum:
+      case kUpb_FieldTypeMessage:
+      case kUpb_FieldTypeGroup:
+      case kUpb_FieldTypeEnum:
         if (!has_type_name) {
           symtab_errf(ctx, "field of type %d requires type name (%s)",
                       (int)f->type_, full_name);
@@ -2272,7 +2272,7 @@ static void create_fielddef(
     }
   }
 
-  if (f->type_ < upb_FieldType_Double || f->type_ > upb_FieldType_SInt64) {
+  if (f->type_ < kUpb_FieldTypeDouble || f->type_ > kUpb_FieldTypeSInt64) {
     symtab_errf(ctx, "invalid type for field %s (%d)", f->full_name, f->type_);
   }
 
@@ -2660,11 +2660,11 @@ static void resolve_subdef(symtab_addctx* ctx, const char* prefix,
       switch (type) {
         case UPB_DEFTYPE_ENUM:
           f->sub.enumdef = def;
-          f->type_ = upb_FieldType_Enum;
+          f->type_ = kUpb_FieldTypeEnum;
           break;
         case UPB_DEFTYPE_MSG:
           f->sub.msgdef = def;
-          f->type_ = upb_FieldType_Message;  // It appears there is no way of
+          f->type_ = kUpb_FieldTypeMessage;  // It appears there is no way of
                                              // this being a group.
           break;
         default:
@@ -2672,13 +2672,13 @@ static void resolve_subdef(symtab_addctx* ctx, const char* prefix,
                       f->full_name);
       }
     }
-    case upb_FieldType_Message:
-    case upb_FieldType_Group:
+    case kUpb_FieldTypeMessage:
+    case kUpb_FieldTypeGroup:
       UPB_ASSERT(has_name);
       f->sub.msgdef =
           symtab_resolve(ctx, f->full_name, prefix, name, UPB_DEFTYPE_MSG);
       break;
-    case upb_FieldType_Enum:
+    case kUpb_FieldTypeEnum:
       UPB_ASSERT(has_name);
       f->sub.enumdef =
           symtab_resolve(ctx, f->full_name, prefix, name, UPB_DEFTYPE_ENUM);
@@ -2790,7 +2790,7 @@ static void resolve_msgdef(symtab_addctx* ctx, upb_MessageDef* m) {
   m->in_message_set = false;
   if (m->nested_ext_count == 1) {
     const upb_FieldDef* ext = &m->nested_exts[0];
-    if (ext->type_ == upb_FieldType_Message &&
+    if (ext->type_ == kUpb_FieldTypeMessage &&
         ext->label_ == kUpb_Label_Optional && ext->sub.msgdef == m &&
         google_protobuf_MessageOptions_message_set_wire_format(
             ext->msgdef->opts)) {

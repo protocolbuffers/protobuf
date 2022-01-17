@@ -1639,24 +1639,24 @@ bool PyUpb_InitDescriptor(PyObject* m) {
   return PyUpb_SetIntAttr(field_desc, "LABEL_OPTIONAL", kUpb_Label_Optional) &&
          PyUpb_SetIntAttr(field_desc, "LABEL_REPEATED", kUpb_Label_Repeated) &&
          PyUpb_SetIntAttr(field_desc, "LABEL_REQUIRED", kUpb_Label_Required) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_BOOL", upb_FieldType_Bool) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_BYTES", upb_FieldType_Bytes) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_DOUBLE", upb_FieldType_Double) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_ENUM", upb_FieldType_Enum) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_FIXED32", upb_FieldType_Fixed32) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_FIXED64", upb_FieldType_Fixed64) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_FLOAT", upb_FieldType_Float) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_GROUP", upb_FieldType_Group) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_INT32", upb_FieldType_Int32) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_INT64", upb_FieldType_Int64) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_MESSAGE", upb_FieldType_Message) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_BOOL", kUpb_FieldTypeBool) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_BYTES", kUpb_FieldTypeBytes) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_DOUBLE", kUpb_FieldTypeDouble) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_ENUM", kUpb_FieldTypeEnum) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_FIXED32", kUpb_FieldTypeFixed32) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_FIXED64", kUpb_FieldTypeFixed64) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_FLOAT", kUpb_FieldTypeFloat) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_GROUP", kUpb_FieldTypeGroup) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_INT32", kUpb_FieldTypeInt32) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_INT64", kUpb_FieldTypeInt64) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_MESSAGE", kUpb_FieldTypeMessage) &&
          PyUpb_SetIntAttr(field_desc, "TYPE_SFIXED32",
-                          upb_FieldType_SFixed32) &&
+                          kUpb_FieldTypeSFixed32) &&
          PyUpb_SetIntAttr(field_desc, "TYPE_SFIXED64",
-                          upb_FieldType_SFixed64) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_SINT32", upb_FieldType_SInt32) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_SINT64", upb_FieldType_SInt64) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_STRING", upb_FieldType_String) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_UINT32", upb_FieldType_UInt32) &&
-         PyUpb_SetIntAttr(field_desc, "TYPE_UINT64", upb_FieldType_UInt64);
+                          kUpb_FieldTypeSFixed64) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_SINT32", kUpb_FieldTypeSInt32) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_SINT64", kUpb_FieldTypeSInt64) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_STRING", kUpb_FieldTypeString) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_UINT32", kUpb_FieldTypeUInt32) &&
+         PyUpb_SetIntAttr(field_desc, "TYPE_UINT64", kUpb_FieldTypeUInt64);
 }

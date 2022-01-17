@@ -276,24 +276,24 @@ typedef enum {
 
 /* Descriptor types, as defined in descriptor.proto. */
 typedef enum {
-  upb_FieldType_Double = 1,
-  upb_FieldType_Float = 2,
-  upb_FieldType_Int64 = 3,
-  upb_FieldType_UInt64 = 4,
-  upb_FieldType_Int32 = 5,
-  upb_FieldType_Fixed64 = 6,
-  upb_FieldType_Fixed32 = 7,
-  upb_FieldType_Bool = 8,
-  upb_FieldType_String = 9,
-  upb_FieldType_Group = 10,
-  upb_FieldType_Message = 11,
-  upb_FieldType_Bytes = 12,
-  upb_FieldType_UInt32 = 13,
-  upb_FieldType_Enum = 14,
-  upb_FieldType_SFixed32 = 15,
-  upb_FieldType_SFixed64 = 16,
-  upb_FieldType_SInt32 = 17,
-  upb_FieldType_SInt64 = 18
+  kUpb_FieldTypeDouble = 1,
+  kUpb_FieldTypeFloat = 2,
+  kUpb_FieldTypeInt64 = 3,
+  kUpb_FieldTypeUInt64 = 4,
+  kUpb_FieldTypeInt32 = 5,
+  kUpb_FieldTypeFixed64 = 6,
+  kUpb_FieldTypeFixed32 = 7,
+  kUpb_FieldTypeBool = 8,
+  kUpb_FieldTypeString = 9,
+  kUpb_FieldTypeGroup = 10,
+  kUpb_FieldTypeMessage = 11,
+  kUpb_FieldTypeBytes = 12,
+  kUpb_FieldTypeUInt32 = 13,
+  kUpb_FieldTypeEnum = 14,
+  kUpb_FieldTypeSFixed32 = 15,
+  kUpb_FieldTypeSFixed64 = 16,
+  kUpb_FieldTypeSInt32 = 17,
+  kUpb_FieldTypeSInt64 = 18
 } upb_FieldType;
 
 #define kUpb_Map_Begin ((size_t)-1)

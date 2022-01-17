@@ -108,8 +108,8 @@ UPB_INLINE bool upb_IsRepeatedOrMap(const upb_MiniTable_Field* field) {
 }
 
 UPB_INLINE bool upb_IsSubMessage(const upb_MiniTable_Field* field) {
-  return field->descriptortype == upb_FieldType_Message ||
-         field->descriptortype == upb_FieldType_Group;
+  return field->descriptortype == kUpb_FieldTypeMessage ||
+         field->descriptortype == kUpb_FieldTypeGroup;
 }
 
 struct upb_Decoder;

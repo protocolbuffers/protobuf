@@ -333,6 +333,7 @@ s/_upb_be_swap32/_upb_BigEndian_Swap32/g;
 s/_upb_be_swap64/_upb_BigEndian_Swap64/g;
 s/_upb_lg2ceil/_upb_Log2Ceiling/g;
 s/_upb_lg2ceilsize/_upb_Log2CeilingSize/g;
+s/upb_FieldType_/kUpb_FieldType/g;
 
 s/upb_msgval/upb_MessageValue/g;
 s/upb_mutmsgval/upb_MutableMessageValue/g;
