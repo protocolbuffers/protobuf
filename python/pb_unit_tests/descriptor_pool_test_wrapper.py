@@ -31,8 +31,6 @@ import copy
 # In the new extension we simply don't define them at all.
 descriptor_pool_test.AddDescriptorTest.testAddTypeError.__unittest_expecting_failure__ = True
 
-#descriptor_pool_test.CreateDescriptorPoolTest.testFindFieldByName.__unittest_expecting_failure__ = True
-descriptor_pool_test.CreateDescriptorPoolTest.testFindService.__unittest_expecting_failure__ = True
 descriptor_pool_test.CreateDescriptorPoolTest.testFindTypeErrors.__unittest_expecting_failure__ = True
 descriptor_pool_test.SecondaryDescriptorFromDescriptorDB.testErrorCollector.__unittest_expecting_failure__ = True
 

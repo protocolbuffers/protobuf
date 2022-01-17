@@ -489,11 +489,41 @@ static PyObject* PyUpb_DescriptorPool_FindServiceByName(PyObject* _self,
   if (!name) return NULL;
 
   const upb_ServiceDef* s = upb_DefPool_FindServiceByName(self->symtab, name);
+  if (s == NULL && self->db) {
+    if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
+    s = upb_DefPool_FindServiceByName(self->symtab, name);
+  }
   if (s == NULL) {
-    return PyErr_Format(PyExc_KeyError, "Couldn't find enum %.200s", name);
+    return PyErr_Format(PyExc_KeyError, "Couldn't find service %.200s", name);
   }
 
   return PyUpb_ServiceDescriptor_Get(s);
+}
+
+static PyObject* PyUpb_DescriptorPool_FindMethodByName(PyObject* _self,
+                                                       PyObject* arg) {
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+
+  const char* name = PyUpb_GetStrData(arg);
+  if (!name) return NULL;
+  size_t parent_size;
+  const char* child = PyUpb_DescriptorPool_SplitSymbolName(name, &parent_size);
+
+  if (!child) goto err;
+  const upb_ServiceDef* parent =
+      upb_DefPool_FindServiceByNameWithSize(self->symtab, name, parent_size);
+  if (parent == NULL && self->db) {
+    if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
+    parent = upb_DefPool_FindServiceByNameWithSize(self->symtab, name,
+                                                    parent_size);
+  }
+  if (!parent) goto err;
+  const upb_MethodDef* m = upb_ServiceDef_FindMethodByName(parent, child);
+  if (!m) goto err;
+  return PyUpb_MethodDescriptor_Get(m);
+
+err:
+  return PyErr_Format(PyExc_KeyError, "Couldn't find method %.200s", name);
 }
 
 static PyObject* PyUpb_DescriptorPool_FindFileContainingSymbol(PyObject* _self,
@@ -503,10 +533,11 @@ static PyObject* PyUpb_DescriptorPool_FindFileContainingSymbol(PyObject* _self,
   const char* name = PyUpb_GetStrData(arg);
   if (!name) return NULL;
 
-  const upb_FileDef* f = upb_DefPool_FindFileByNameforsym(self->symtab, name);
+  const upb_FileDef* f =
+      upb_DefPool_FindFileContainingSymbol(self->symtab, name);
   if (f == NULL && self->db) {
     if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
-    f = upb_DefPool_FindFileByNameforsym(self->symtab, name);
+    f = upb_DefPool_FindFileContainingSymbol(self->symtab, name);
   }
   if (f == NULL) {
     return PyErr_Format(PyExc_KeyError, "Couldn't find symbol %.200s", name);
@@ -567,8 +598,8 @@ static PyMethodDef PyUpb_DescriptorPool_Methods[] = {
      "Searches for oneof descriptor by full name."},
     {"FindServiceByName", PyUpb_DescriptorPool_FindServiceByName, METH_O,
      "Searches for service descriptor by full name."},
-    //{ "Find, PyUpb_DescriptorPool_Find, METH_O,
-    //  "Searches for method descriptor by full name." },
+    {"FindMethodByName", PyUpb_DescriptorPool_FindMethodByName, METH_O,
+     "Searches for method descriptor by full name."},
     {"FindFileContainingSymbol", PyUpb_DescriptorPool_FindFileContainingSymbol,
      METH_O, "Gets the FileDescriptor containing the specified symbol."},
     {"FindExtensionByNumber", PyUpb_DescriptorPool_FindExtensionByNumber,
