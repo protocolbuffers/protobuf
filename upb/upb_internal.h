@@ -55,4 +55,16 @@ struct upb_Arena {
   mem_block *freelist, *freelist_tail;
 };
 
+// Encodes a float or double that is round-trippable, but as short as possible.
+// These routines are not fully optimal (not guaranteed to be shortest), but are
+// short-ish and match the implementation that has been used in protobuf since
+// the beginning.
+//
+// The given buffer size must be at least kUpb_RoundTripBufferSize.
+enum {
+  kUpb_RoundTripBufferSize = 32
+};
+void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size);
+void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
+
 #endif /* UPB_INT_H_ */

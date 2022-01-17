@@ -35,11 +35,10 @@ message_test.MessageTest.testExtendInt32WithNothing_proto3.__unittest_expecting_
 message_test.MessageTest.testExtendStringWithNothing_proto2.__unittest_expecting_failure__ = True
 message_test.MessageTest.testExtendStringWithNothing_proto3.__unittest_expecting_failure__ = True
 
-# Our float printing suffers from not having dtoa().
+# Python/C++ customizes the C++ TextFormat to always print trailing ".0" for
+# floats. upb doesn't do this, it matches C++ TextFormat.
 message_test.MessageTest.testFloatPrinting_proto2.__unittest_expecting_failure__ = True
 message_test.MessageTest.testFloatPrinting_proto3.__unittest_expecting_failure__ = True
-message_test.MessageTest.testHighPrecisionDoublePrinting_proto2.__unittest_expecting_failure__ = True
-message_test.MessageTest.testHighPrecisionDoublePrinting_proto3.__unittest_expecting_failure__ = True
 
 # For these tests we are throwing the correct error, only the text of the error
 # message is a mismatch.  For technical reasons around the limited API, matching

@@ -26,6 +26,7 @@
  */
 
 #include <errno.h>
+#include <float.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -325,4 +326,38 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   }
   r2->parent = r1;
   return true;
+}
+
+/* Miscellaneous utilities ****************************************************/
+
+static void upb_FixLocale(char* p) {
+  /* printf() is dependent on locales; sadly there is no easy and portable way
+   * to avoid this. This little post-processing step will translate 1,2 -> 1.2
+   * since JSON needs the latter. Arguably a hack, but it is simple and the
+   * alternatives are far more complicated, platform-dependent, and/or larger
+   * in code size. */
+  for (; *p; p++) {
+    if (*p == ',') *p = '.';
+  }
+}
+
+
+void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size) {
+  assert(size >= kUpb_RoundTripBufferSize);
+  snprintf(buf, size, "%.*g", DBL_DIG, val);
+  if (strtod(buf, NULL) != val) {
+    snprintf(buf, size, "%.*g", DBL_DIG + 2, val);
+    assert(strtod(buf, NULL) == val);
+  }
+  upb_FixLocale(buf);
+}
+
+void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
+  assert(size >= kUpb_RoundTripBufferSize);
+  snprintf(buf, size, "%.*g", FLT_DIG, val);
+  if (strtof(buf, NULL) != val) {
+    snprintf(buf, size, "%.*g", FLT_DIG + 3, val);
+    assert(strtof(buf, NULL) == val);
+  }
+  upb_FixLocale(buf);
 }

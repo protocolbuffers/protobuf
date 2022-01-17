@@ -38,6 +38,7 @@
 
 #include "upb/decode.h"
 #include "upb/reflection.h"
+#include "upb/upb_internal.h"
 
 /* Must be last. */
 #include "upb/port_def.inc"
@@ -305,7 +306,7 @@ static void jsonenc_string(jsonenc* e, upb_StringView str) {
   jsonenc_putstr(e, "\"");
 }
 
-static void jsonenc_double(jsonenc* e, const char* fmt, double val) {
+static bool upb_JsonEncode_HandleSpecialDoubles(jsonenc* e, double val) {
   if (val == INFINITY) {
     jsonenc_putstr(e, "\"Infinity\"");
   } else if (val == -INFINITY) {
@@ -313,18 +314,23 @@ static void jsonenc_double(jsonenc* e, const char* fmt, double val) {
   } else if (val != val) {
     jsonenc_putstr(e, "\"NaN\"");
   } else {
-    char* p = e->ptr;
-    jsonenc_printf(e, fmt, val);
-
-    /* printf() is dependent on locales; sadly there is no easy and portable way
-     * to avoid this. This little post-processing step will translate 1,2 -> 1.2
-     * since JSON needs the latter. Arguably a hack, but it is simple and the
-     * alternatives are far more complicated, platform-dependent, and/or larger
-     * in code size. */
-    for (char* end = e->ptr; p < end; p++) {
-      if (*p == ',') *p = '.';
-    }
+    return false;
   }
+  return true;
+}
+
+static void upb_JsonEncode_Double(jsonenc* e, double val) {
+  if (upb_JsonEncode_HandleSpecialDoubles(e, val)) return;
+  char buf[32];
+  _upb_EncodeRoundTripDouble(val, buf, sizeof(buf));
+  jsonenc_putstr(e, buf);
+}
+
+static void upb_JsonEncode_Float(jsonenc* e, float val) {
+  if (upb_JsonEncode_HandleSpecialDoubles(e, val)) return;
+  char buf[32];
+  _upb_EncodeRoundTripFloat(val, buf, sizeof(buf));
+  jsonenc_putstr(e, buf);
 }
 
 static void jsonenc_wrapper(jsonenc* e, const upb_Message* msg,
@@ -517,7 +523,7 @@ static void jsonenc_value(jsonenc* e, const upb_Message* msg,
       jsonenc_putstr(e, "null");
       break;
     case 2:
-      jsonenc_double(e, "%.17g", val.double_val);
+      upb_JsonEncode_Double(e, val.double_val);
       break;
     case 3:
       jsonenc_string(e, val.str_val);
@@ -582,10 +588,10 @@ static void jsonenc_scalar(jsonenc* e, upb_MessageValue val,
       jsonenc_putstr(e, val.bool_val ? "true" : "false");
       break;
     case kUpb_CType_Float:
-      jsonenc_double(e, "%.9g", val.float_val);
+      upb_JsonEncode_Float(e, val.float_val);
       break;
     case kUpb_CType_Double:
-      jsonenc_double(e, "%.17g", val.double_val);
+      upb_JsonEncode_Double(e, val.double_val);
       break;
     case kUpb_CType_Int32:
       jsonenc_printf(e, "%" PRId32, val.int32_val);
