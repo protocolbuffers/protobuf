@@ -207,5 +207,6 @@ static inline PyObject* PyUpb_NewRef(PyObject* obj) {
 }
 
 const char* PyUpb_GetStrData(PyObject* obj);
+const char* PyUpb_CheckStrData(PyObject* obj);
 
 #endif  // PYUPB_PROTOBUF_H__
