@@ -31,8 +31,6 @@ descriptor_test.GeneratedDescriptorTest.testDescriptor.__unittest_expecting_fail
 descriptor_test.MakeDescriptorTest.testCamelcaseName.__unittest_expecting_failure__ = True
 descriptor_test.MakeDescriptorTest.testJsonName.__unittest_expecting_failure__ = True
 descriptor_test.NewDescriptorTest.testImmutableCppDescriptor.__unittest_expecting_failure__ = True
-descriptor_test.NewDescriptorTest.testNestedOptions.__unittest_expecting_failure__ = True
-descriptor_test.NewDescriptorTest.testSimpleCustomOptions.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(module=descriptor_test, verbosity=2)

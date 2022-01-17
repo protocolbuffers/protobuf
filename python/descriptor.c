@@ -533,7 +533,7 @@ static PyObject* PyUpb_Descriptor_GetEnumValuesByName(PyObject* _self,
       // bang for the buck.
       const upb_EnumValueDef* ev = upb_EnumDef_Value(e, j);
       const char* name = upb_EnumValueDef_Name(ev);
-      PyObject* val = PyLong_FromLong(upb_EnumValueDef_Number(ev));
+      PyObject* val = PyUpb_EnumValueDescriptor_Get(ev);
       if (!val || PyDict_SetItemString(ret, name, val) < 0) {
         Py_XDECREF(val);
         Py_DECREF(ret);
