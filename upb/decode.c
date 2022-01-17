@@ -83,13 +83,13 @@ static const uint8_t desctype_to_mapsize[] = {
     8,                  /* SINT64 */
 };
 
-static const unsigned FIXED32_OK_MASK = (1 << kUpb_FieldTypeFloat) |
-                                        (1 << kUpb_FieldTypeFixed32) |
-                                        (1 << kUpb_FieldTypeSFixed32);
+static const unsigned FIXED32_OK_MASK = (1 << kUpb_FieldType_Float) |
+                                        (1 << kUpb_FieldType_Fixed32) |
+                                        (1 << kUpb_FieldType_SFixed32);
 
-static const unsigned FIXED64_OK_MASK = (1 << kUpb_FieldTypeDouble) |
-                                        (1 << kUpb_FieldTypeFixed64) |
-                                        (1 << kUpb_FieldTypeSFixed64);
+static const unsigned FIXED64_OK_MASK = (1 << kUpb_FieldType_Double) |
+                                        (1 << kUpb_FieldType_Fixed64) |
+                                        (1 << kUpb_FieldType_SFixed64);
 
 /* Three fake field types for MessageSet. */
 #define TYPE_MSGSET_ITEM 19
@@ -275,22 +275,22 @@ static void decode_munge_int32(wireval* val) {
 
 static void decode_munge(int type, wireval* val) {
   switch (type) {
-    case kUpb_FieldTypeBool:
+    case kUpb_FieldType_Bool:
       val->bool_val = val->uint64_val != 0;
       break;
-    case kUpb_FieldTypeSInt32: {
+    case kUpb_FieldType_SInt32: {
       uint32_t n = val->uint64_val;
       val->uint32_val = (n >> 1) ^ -(int32_t)(n & 1);
       break;
     }
-    case kUpb_FieldTypeSInt64: {
+    case kUpb_FieldType_SInt64: {
       uint64_t n = val->uint64_val;
       val->uint64_val = (n >> 1) ^ -(int64_t)(n & 1);
       break;
     }
-    case kUpb_FieldTypeInt32:
-    case kUpb_FieldTypeUInt32:
-    case kUpb_FieldTypeEnum:
+    case kUpb_FieldType_Int32:
+    case kUpb_FieldType_UInt32:
+    case kUpb_FieldType_Enum:
       decode_munge_int32(val);
       break;
   }
@@ -572,7 +572,7 @@ static const char* decode_toarray(upb_Decoder* d, const char* ptr,
       *UPB_PTR_AT(_upb_array_ptr(arr), arr->len * sizeof(void*), upb_Message*) =
           submsg;
       arr->len++;
-      if (UPB_UNLIKELY(field->descriptortype == kUpb_FieldTypeGroup)) {
+      if (UPB_UNLIKELY(field->descriptortype == kUpb_FieldType_Group)) {
         return decode_togroup(d, ptr, submsg, subs, field);
       } else {
         return decode_tosubmsg(d, ptr, submsg, subs, field, val->size);
@@ -620,8 +620,8 @@ static const char* decode_tomap(upb_Decoder* d, const char* ptr,
   /* Parse map entry. */
   memset(&ent, 0, sizeof(ent));
 
-  if (entry->fields[1].descriptortype == kUpb_FieldTypeMessage ||
-      entry->fields[1].descriptortype == kUpb_FieldTypeGroup) {
+  if (entry->fields[1].descriptortype == kUpb_FieldType_Message ||
+      entry->fields[1].descriptortype == kUpb_FieldType_Group) {
     /* Create proactively to handle the case where it doesn't appear. */
     ent.v.val =
         upb_value_ptr(_upb_Message_New(entry->subs[0].submsg, &d->arena));
@@ -666,7 +666,7 @@ static const char* decode_tomsg(upb_Decoder* d, const char* ptr,
         submsg = decode_newsubmsg(d, subs, field);
         *submsgp = submsg;
       }
-      if (UPB_UNLIKELY(type == kUpb_FieldTypeGroup)) {
+      if (UPB_UNLIKELY(type == kUpb_FieldType_Group)) {
         ptr = decode_togroup(d, ptr, submsg, subs, field);
       } else {
         ptr = decode_tosubmsg(d, ptr, submsg, subs, field, val->size);
@@ -863,7 +863,7 @@ static const char* decode_wireval(upb_Decoder* d, const char* ptr,
     }
     case kUpb_WireType_StartGroup:
       val->uint32_val = field->number;
-      if (field->descriptortype == kUpb_FieldTypeGroup) {
+      if (field->descriptortype == kUpb_FieldType_Group) {
         *op = OP_SUBMSG;
       } else if (field->descriptortype == TYPE_MSGSET_ITEM) {
         *op = OP_MSGSET_ITEM;

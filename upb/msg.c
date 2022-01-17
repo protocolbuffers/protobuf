@@ -334,30 +334,30 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
   int (*compar)(const void*, const void*);
 
   switch (key_type) {
-    case kUpb_FieldTypeInt64:
-    case kUpb_FieldTypeSFixed64:
-    case kUpb_FieldTypeSInt64:
+    case kUpb_FieldType_Int64:
+    case kUpb_FieldType_SFixed64:
+    case kUpb_FieldType_SInt64:
       compar = _upb_mapsorter_cmpi64;
       break;
-    case kUpb_FieldTypeUInt64:
-    case kUpb_FieldTypeFixed64:
+    case kUpb_FieldType_UInt64:
+    case kUpb_FieldType_Fixed64:
       compar = _upb_mapsorter_cmpu64;
       break;
-    case kUpb_FieldTypeInt32:
-    case kUpb_FieldTypeSInt32:
-    case kUpb_FieldTypeSFixed32:
-    case kUpb_FieldTypeEnum:
+    case kUpb_FieldType_Int32:
+    case kUpb_FieldType_SInt32:
+    case kUpb_FieldType_SFixed32:
+    case kUpb_FieldType_Enum:
       compar = _upb_mapsorter_cmpi32;
       break;
-    case kUpb_FieldTypeUInt32:
-    case kUpb_FieldTypeFixed32:
+    case kUpb_FieldType_UInt32:
+    case kUpb_FieldType_Fixed32:
       compar = _upb_mapsorter_cmpu32;
       break;
-    case kUpb_FieldTypeBool:
+    case kUpb_FieldType_Bool:
       compar = _upb_mapsorter_cmpbool;
       break;
-    case kUpb_FieldTypeString:
-    case kUpb_FieldTypeBytes:
+    case kUpb_FieldType_String:
+    case kUpb_FieldType_Bytes:
       compar = _upb_mapsorter_cmpstr;
       break;
     default:
