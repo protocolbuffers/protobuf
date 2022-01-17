@@ -926,8 +926,9 @@ __attribute__((flatten)) static PyObject* PyUpb_CMessage_GetAttr(
   // to pick up class attributes.  But we have to special-case "Extensions"
   // which affirmatively returns AttributeError when a message is not
   // extendable.
+  const char* name;
   if (PyErr_ExceptionMatches(PyExc_AttributeError) &&
-      strcmp(PyUpb_GetStrData(attr), "Extensions") != 0) {
+      (name = PyUpb_GetStrData(attr)) && strcmp(name, "Extensions") != 0) {
     PyErr_Clear();
     return PyUpb_MessageMeta_GetAttr((PyObject*)Py_TYPE(_self), attr);
   }
@@ -1720,6 +1721,7 @@ void PyUpb_MessageMeta_AddFieldNumber(PyObject* self, const upb_FieldDef* f) {
 static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
                                                   PyObject* name) {
   const char* name_buf = PyUpb_GetStrData(name);
+  if (!name_buf) return NULL;
   const upb_MessageDef* msgdef = PyUpb_MessageMeta_GetMsgdef(self);
   const upb_FileDef* filedef = upb_MessageDef_File(msgdef);
   const upb_DefPool* symtab = upb_FileDef_Pool(filedef);
