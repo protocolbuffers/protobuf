@@ -216,39 +216,39 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
   }
 
   switch (f->descriptortype) {
-    case upb_FieldType_Double:
+    case kUpb_FieldType_Double:
       CASE(double, double, kUpb_WireType_64Bit, val);
-    case upb_FieldType_Float:
+    case kUpb_FieldType_Float:
       CASE(float, float, kUpb_WireType_32Bit, val);
-    case upb_FieldType_Int64:
-    case upb_FieldType_UInt64:
+    case kUpb_FieldType_Int64:
+    case kUpb_FieldType_UInt64:
       CASE(uint64_t, varint, kUpb_WireType_Varint, val);
-    case upb_FieldType_UInt32:
+    case kUpb_FieldType_UInt32:
       CASE(uint32_t, varint, kUpb_WireType_Varint, val);
-    case upb_FieldType_Int32:
-    case upb_FieldType_Enum:
+    case kUpb_FieldType_Int32:
+    case kUpb_FieldType_Enum:
       CASE(int32_t, varint, kUpb_WireType_Varint, (int64_t)val);
-    case upb_FieldType_SFixed64:
-    case upb_FieldType_Fixed64:
+    case kUpb_FieldType_SFixed64:
+    case kUpb_FieldType_Fixed64:
       CASE(uint64_t, fixed64, kUpb_WireType_64Bit, val);
-    case upb_FieldType_Fixed32:
-    case upb_FieldType_SFixed32:
+    case kUpb_FieldType_Fixed32:
+    case kUpb_FieldType_SFixed32:
       CASE(uint32_t, fixed32, kUpb_WireType_32Bit, val);
-    case upb_FieldType_Bool:
+    case kUpb_FieldType_Bool:
       CASE(bool, varint, kUpb_WireType_Varint, val);
-    case upb_FieldType_SInt32:
+    case kUpb_FieldType_SInt32:
       CASE(int32_t, varint, kUpb_WireType_Varint, encode_zz32(val));
-    case upb_FieldType_SInt64:
+    case kUpb_FieldType_SInt64:
       CASE(int64_t, varint, kUpb_WireType_Varint, encode_zz64(val));
-    case upb_FieldType_String:
-    case upb_FieldType_Bytes: {
+    case kUpb_FieldType_String:
+    case kUpb_FieldType_Bytes: {
       upb_StringView view = *(upb_StringView*)field_mem;
       encode_bytes(e, view.data, view.size);
       encode_varint(e, view.size);
       wire_type = kUpb_WireType_Delimited;
       break;
     }
-    case upb_FieldType_Group: {
+    case kUpb_FieldType_Group: {
       size_t size;
       void* submsg = *(void**)field_mem;
       const upb_MiniTable* subm = subs[f->submsg_index].submsg;
@@ -262,7 +262,7 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
       e->depth++;
       break;
     }
-    case upb_FieldType_Message: {
+    case kUpb_FieldType_Message: {
       size_t size;
       void* submsg = *(void**)field_mem;
       const upb_MiniTable* subm = subs[f->submsg_index].submsg;
@@ -311,36 +311,36 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
 #define TAG(wire_type) (packed ? 0 : (f->number << 3 | wire_type))
 
   switch (f->descriptortype) {
-    case upb_FieldType_Double:
+    case kUpb_FieldType_Double:
       encode_fixedarray(e, arr, sizeof(double), TAG(kUpb_WireType_64Bit));
       break;
-    case upb_FieldType_Float:
+    case kUpb_FieldType_Float:
       encode_fixedarray(e, arr, sizeof(float), TAG(kUpb_WireType_32Bit));
       break;
-    case upb_FieldType_SFixed64:
-    case upb_FieldType_Fixed64:
+    case kUpb_FieldType_SFixed64:
+    case kUpb_FieldType_Fixed64:
       encode_fixedarray(e, arr, sizeof(uint64_t), TAG(kUpb_WireType_64Bit));
       break;
-    case upb_FieldType_Fixed32:
-    case upb_FieldType_SFixed32:
+    case kUpb_FieldType_Fixed32:
+    case kUpb_FieldType_SFixed32:
       encode_fixedarray(e, arr, sizeof(uint32_t), TAG(kUpb_WireType_32Bit));
       break;
-    case upb_FieldType_Int64:
-    case upb_FieldType_UInt64:
+    case kUpb_FieldType_Int64:
+    case kUpb_FieldType_UInt64:
       VARINT_CASE(uint64_t, *ptr);
-    case upb_FieldType_UInt32:
+    case kUpb_FieldType_UInt32:
       VARINT_CASE(uint32_t, *ptr);
-    case upb_FieldType_Int32:
-    case upb_FieldType_Enum:
+    case kUpb_FieldType_Int32:
+    case kUpb_FieldType_Enum:
       VARINT_CASE(int32_t, (int64_t)*ptr);
-    case upb_FieldType_Bool:
+    case kUpb_FieldType_Bool:
       VARINT_CASE(bool, *ptr);
-    case upb_FieldType_SInt32:
+    case kUpb_FieldType_SInt32:
       VARINT_CASE(int32_t, encode_zz32(*ptr));
-    case upb_FieldType_SInt64:
+    case kUpb_FieldType_SInt64:
       VARINT_CASE(int64_t, encode_zz64(*ptr));
-    case upb_FieldType_String:
-    case upb_FieldType_Bytes: {
+    case kUpb_FieldType_String:
+    case kUpb_FieldType_Bytes: {
       const upb_StringView* start = _upb_array_constptr(arr);
       const upb_StringView* ptr = start + arr->len;
       do {
@@ -351,7 +351,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
       } while (ptr != start);
       return;
     }
-    case upb_FieldType_Group: {
+    case kUpb_FieldType_Group: {
       const void* const* start = _upb_array_constptr(arr);
       const void* const* ptr = start + arr->len;
       const upb_MiniTable* subm = subs[f->submsg_index].submsg;
@@ -366,7 +366,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
       e->depth++;
       return;
     }
-    case upb_FieldType_Message: {
+    case kUpb_FieldType_Message: {
       const void* const* start = _upb_array_constptr(arr);
       const void* const* ptr = start + arr->len;
       const upb_MiniTable* subm = subs[f->submsg_index].submsg;

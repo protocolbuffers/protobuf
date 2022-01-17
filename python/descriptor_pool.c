@@ -514,8 +514,8 @@ static PyObject* PyUpb_DescriptorPool_FindMethodByName(PyObject* _self,
       upb_DefPool_FindServiceByNameWithSize(self->symtab, name, parent_size);
   if (parent == NULL && self->db) {
     if (!PyUpb_DescriptorPool_TryLoadSymbol(self, arg)) return NULL;
-    parent = upb_DefPool_FindServiceByNameWithSize(self->symtab, name,
-                                                    parent_size);
+    parent =
+        upb_DefPool_FindServiceByNameWithSize(self->symtab, name, parent_size);
   }
   if (!parent) goto err;
   const upb_MethodDef* m = upb_ServiceDef_FindMethodByName(parent, child);
