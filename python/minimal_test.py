@@ -113,7 +113,10 @@ class TestMessageExtension(unittest.TestCase):
         int32_array.append(123)
         self.assertEqual(0, msg.ByteSize())
 
-#TestMessageExtension.test_descriptor_pool.__unittest_expecting_failure__ = True
+    def testFloatPrinting(self):
+        message = unittest_pb2.TestAllTypes()
+        message.optional_float = -0.0
+        self.assertEqual(str(message), 'optional_float: -0\n')
 
 class OversizeProtosTest(unittest.TestCase):
   def setUp(self):
