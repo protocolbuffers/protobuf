@@ -629,15 +629,12 @@ final class Utf8 {
         // 2) The byte array slice is valid UTF-8 and contains encodings for "\uFFFD".
         // To rule out (1), we encode s and compare it to the byte array slice.
         // If the byte array slice was invalid UTF-8, then we would get a different sequence of bytes.
-
-        // TODO(amirhadadi): When targeting Java 9, replace with Arrays.equals that accepts from and to indexes
-        // to avoid copying the byte array slice.
         if (Arrays.equals(s.getBytes(Internal.UTF_8), Arrays.copyOfRange(bytes, index, index + size))) {
           return s;
         }
 
         throw InvalidProtocolBufferException.invalidUtf8();
-      } catch (final IndexOutOfBoundsException e) {
+      } catch (IndexOutOfBoundsException e) {
         throw new ArrayIndexOutOfBoundsException(
                 String.format("buffer length=%d, index=%d, size=%d", bytes.length, index, size));
       }
