@@ -598,7 +598,7 @@ PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* _self, PyObject* args,
 
 static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
                                                          PyObject* value) {
-  if (!PyUpb_CMessage_Check(value)) return NULL;
+  if (!PyUpb_CMessage_Verify(value)) return NULL;
   PyObject* py_msg = PyUpb_RepeatedCompositeContainer_AppendNew(_self);
   if (!py_msg) return NULL;
   PyObject* none = PyUpb_CMessage_MergeFrom(py_msg, value);

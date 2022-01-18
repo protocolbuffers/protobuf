@@ -232,7 +232,7 @@ bool PyUpb_CMessage_TryCheck(PyObject* self) {
   return Py_TYPE(type) == state->message_meta_type;
 }
 
-bool PyUpb_CMessage_Check(PyObject* self) {
+bool PyUpb_CMessage_Verify(PyObject* self) {
   if (!PyUpb_CMessage_TryCheck(self)) {
     PyErr_Format(PyExc_TypeError, "Expected a message object, but got %R.",
                  self);
@@ -1395,7 +1395,7 @@ PyObject* PyUpb_CMessage_SerializeInternal(PyObject* _self, PyObject* args,
                                            PyObject* kwargs,
                                            bool check_required) {
   PyUpb_CMessage* self = (void*)_self;
-  if (!PyUpb_CMessage_Check((PyObject*)self)) return NULL;
+  if (!PyUpb_CMessage_Verify((PyObject*)self)) return NULL;
   static const char* kwlist[] = {"deterministic", NULL};
   int deterministic = 0;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", (char**)(kwlist),

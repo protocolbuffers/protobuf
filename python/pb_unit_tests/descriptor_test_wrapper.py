@@ -26,10 +26,18 @@
 from google.protobuf.internal import descriptor_test
 import unittest
 
-descriptor_test.DescriptorCopyToProtoTest.testCopyToProto_TypeError.__unittest_expecting_failure__ = True
+# Our behavior here matches pure-Python, which does not allow
+# foo.enum_values_by_name.get([]).  We reject it because we return a true
+# dict (like pure Python), which does not allow hashing by a list.
 descriptor_test.GeneratedDescriptorTest.testDescriptor.__unittest_expecting_failure__ = True
+
+# These fail because they attempt to add fields with conflicting JSON names.
+# We don't want to support this going forward.
 descriptor_test.MakeDescriptorTest.testCamelcaseName.__unittest_expecting_failure__ = True
 descriptor_test.MakeDescriptorTest.testJsonName.__unittest_expecting_failure__ = True
+
+# We pass this test, but the error message is slightly different.
+# Our error message is better.
 descriptor_test.NewDescriptorTest.testImmutableCppDescriptor.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':

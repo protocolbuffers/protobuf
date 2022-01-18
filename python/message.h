@@ -50,7 +50,7 @@ PyObject* PyUpb_CMessage_Get(upb_Message* u_msg, const upb_MessageDef* m,
 
 // Verifies that a Python object is a message.  Sets a TypeError exception and
 // returns false on failure.
-bool PyUpb_CMessage_Check(PyObject* self);
+bool PyUpb_CMessage_Verify(PyObject* self);
 
 // Gets the upb_Message* for this message object if the message is reified.
 // Otherwise returns NULL.

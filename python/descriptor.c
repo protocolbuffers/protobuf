@@ -165,7 +165,18 @@ oom:
 static PyObject* PyUpb_DescriptorBase_CopyToProto(PyObject* _self,
                                                   PyUpb_ToProto_Func* func,
                                                   const upb_MiniTable* layout,
+                                                  const char* expected_type,
                                                   PyObject* py_proto) {
+  if (!PyUpb_CMessage_Verify(py_proto)) return NULL;
+  const upb_MessageDef* m = PyUpb_CMessage_GetMsgdef(py_proto);
+  const char* type = upb_MessageDef_FullName(m);
+  if (strcmp(type, expected_type) != 0) {
+    PyErr_Format(
+        PyExc_TypeError,
+        "CopyToProto: message is of incorrect type '%s' (expected '%s'", type,
+        expected_type);
+    return NULL;
+  }
   PyObject* serialized =
       PyUpb_DescriptorBase_GetSerializedProto(_self, func, layout);
   if (!serialized) return NULL;
@@ -319,7 +330,8 @@ static PyObject* PyUpb_Descriptor_CopyToProto(PyObject* _self,
                                               PyObject* py_proto) {
   return PyUpb_DescriptorBase_CopyToProto(
       _self, (PyUpb_ToProto_Func*)&upb_MessageDef_ToProto,
-      &google_protobuf_DescriptorProto_msginit, py_proto);
+      &google_protobuf_DescriptorProto_msginit,
+      "google.protobuf.DescriptorProto", py_proto);
 }
 
 static PyObject* PyUpb_Descriptor_EnumValueName(PyObject* _self,
@@ -728,7 +740,8 @@ static PyObject* PyUpb_EnumDescriptor_CopyToProto(PyObject* _self,
                                                   PyObject* py_proto) {
   return PyUpb_DescriptorBase_CopyToProto(
       _self, (PyUpb_ToProto_Func*)&upb_EnumDef_ToProto,
-      &google_protobuf_EnumDescriptorProto_msginit, py_proto);
+      &google_protobuf_EnumDescriptorProto_msginit,
+      "google.protobuf.EnumDescriptorProto", py_proto);
 }
 
 static PyGetSetDef PyUpb_EnumDescriptor_Getters[] = {
@@ -1248,7 +1261,8 @@ static PyObject* PyUpb_FileDescriptor_CopyToProto(PyObject* _self,
                                                   PyObject* py_proto) {
   return PyUpb_DescriptorBase_CopyToProto(
       _self, (PyUpb_ToProto_Func*)&upb_FileDef_ToProto,
-      &google_protobuf_FileDescriptorProto_msginit, py_proto);
+      &google_protobuf_FileDescriptorProto_msginit,
+      "google.protobuf.FileDescriptorProto", py_proto);
 }
 
 static PyGetSetDef PyUpb_FileDescriptor_Getters[] = {
@@ -1354,7 +1368,8 @@ static PyObject* PyUpb_MethodDescriptor_CopyToProto(PyObject* _self,
                                                     PyObject* py_proto) {
   return PyUpb_DescriptorBase_CopyToProto(
       _self, (PyUpb_ToProto_Func*)&upb_MethodDef_ToProto,
-      &google_protobuf_MethodDescriptorProto_msginit, py_proto);
+      &google_protobuf_MethodDescriptorProto_msginit,
+      "google.protobuf.MethodDescriptorProto", py_proto);
 }
 
 static PyGetSetDef PyUpb_MethodDescriptor_Getters[] = {
@@ -1559,7 +1574,8 @@ static PyObject* PyUpb_ServiceDescriptor_CopyToProto(PyObject* _self,
                                                      PyObject* py_proto) {
   return PyUpb_DescriptorBase_CopyToProto(
       _self, (PyUpb_ToProto_Func*)&upb_ServiceDef_ToProto,
-      &google_protobuf_ServiceDescriptorProto_msginit, py_proto);
+      &google_protobuf_ServiceDescriptorProto_msginit,
+      "google.protobuf.ServiceDescriptorProto", py_proto);
 }
 
 static PyObject* PyUpb_ServiceDescriptor_FindMethodByName(PyObject* _self,
