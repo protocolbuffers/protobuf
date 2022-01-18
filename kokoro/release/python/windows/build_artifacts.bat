@@ -14,6 +14,15 @@ set OLD_PATH=C:\Program Files (x86)\MSBuild\14.0\bin\;%PATH%
 
 REM Fetch multibuild
 git clone https://github.com/matthew-brett/multibuild.git
+REM Pin multibuild scripts at a known commit to avoid potentially unwanted future changes from
+REM silently creeping in (see https://github.com/protocolbuffers/protobuf/issues/9180).
+REM IMPORTANT: always pin multibuild at the same commit for:
+REM - linux/build_artifacts.sh
+REM - linux/build_artifacts.sh
+REM - windows/build_artifacts.bat
+cd multibuild
+git checkout b89bb903e94308be79abefa4f436bf123ebb1313
+cd ..
 
 REM Install zlib
 mkdir zlib

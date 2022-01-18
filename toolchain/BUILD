@@ -63,7 +63,7 @@ cc_toolchain_config(
         "-I/usr/powerpc64le-linux-gnu/include/c++/8/powerpc64le-linux-gnu/",
         "-I/usr/powerpc64le-linux-gnu/include/c++/8/"
     ],
-    extra_include = "/usr/include"
+    extra_include = "/usr/include",
     linker_path = "/usr/bin/ld",
     target_cpu = "ppc64",
     target_full_name = "powerpc64le-linux-gnu",
@@ -150,9 +150,8 @@ cc_toolchain_config(
     bit_flag = "-m32",
     cpp_flag = "-lstdc++",
     extra_compiler_flags = [
-        "-I/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++",
-        "-I/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++/i686-w64-mingw32",
-        "-I/usr/i686-w64-mingw32/include",
+        "-isystem/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++",
+        "-isystem/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++/i686-w64-mingw32",
         "-fsjlj-exceptions",
     ],
     extra_include = "/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include",
@@ -172,9 +171,8 @@ cc_toolchain_config(
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
     extra_compiler_flags = [
-        "-I/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/",
-        "-I/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/x86_64-w64-mingw32",
-        "-I/usr/x86_64-w64-mingw32/include"
+        "-isystem/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/",
+        "-isystem/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/x86_64-w64-mingw32",
     ],
     extra_include = "/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include",
     extra_linker_flags = [
