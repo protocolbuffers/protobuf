@@ -249,7 +249,7 @@ done:
 
 static PyObject* PyUpb_DescriptorPool_DoAdd(PyObject* _self,
                                             PyObject* file_desc) {
-  if (!PyUpb_CMessage_Check(file_desc)) return NULL;
+  if (!PyUpb_CMessage_Verify(file_desc)) return NULL;
   const upb_MessageDef* m = PyUpb_CMessage_GetMsgdef(file_desc);
   const char* file_proto_name = "google.protobuf.FileDescriptorProto";
   if (strcmp(upb_MessageDef_FullName(m), file_proto_name) != 0) {
