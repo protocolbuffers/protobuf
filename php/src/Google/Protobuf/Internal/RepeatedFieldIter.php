@@ -71,7 +71,8 @@ class RepeatedFieldIter implements \Iterator
      *
      * @return void
      */
-    public function rewind(): void
+    #[\ReturnTypeWillChange]
+    public function rewind()
     {
         $this->position = 0;
     }
@@ -103,7 +104,8 @@ class RepeatedFieldIter implements \Iterator
      *
      * @return void
      */
-    public function next(): void
+    #[\ReturnTypeWillChange]
+    public function next()
     {
         ++$this->position;
     }

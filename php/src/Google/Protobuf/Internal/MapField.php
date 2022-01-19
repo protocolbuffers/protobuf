@@ -154,7 +154,8 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException Invalid type for value.
      * @throws \ErrorException Non-existing key.
      */
-    public function offsetSet($key, $value): void
+    #[\ReturnTypeWillChange]
+    public function offsetSet($key, $value)
     {
         $this->checkKey($this->key_type, $key);
 
@@ -212,7 +213,8 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @return void
      * @throws \ErrorException Invalid type for key.
      */
-    public function offsetUnset($key): void
+    #[\ReturnTypeWillChange]
+    public function offsetUnset($key)
     {
         $this->checkKey($this->key_type, $key);
         unset($this->container[$key]);

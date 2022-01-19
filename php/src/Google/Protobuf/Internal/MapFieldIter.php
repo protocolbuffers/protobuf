@@ -68,7 +68,8 @@ class MapFieldIter implements \Iterator
      *
      * @return void
      */
-    public function rewind(): void
+    #[\ReturnTypeWillChange]
+    public function rewind()
     {
         reset($this->container);
     }
@@ -119,7 +120,8 @@ class MapFieldIter implements \Iterator
      *
      * @return void
      */
-    public function next(): void
+    #[\ReturnTypeWillChange]
+    public function next()
     {
         next($this->container);
     }

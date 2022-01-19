@@ -140,7 +140,8 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException Non-existing index.
      * @throws \ErrorException Incorrect type of the element.
      */
-    public function offsetSet($offset, $value): void
+    #[\ReturnTypeWillChange]
+    public function offsetSet($offset, $value)
     {
         switch ($this->type) {
             case GPBType::SFIXED32:
@@ -211,7 +212,8 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException The element to be removed is not at the end of the
      * RepeatedField.
      */
-    public function offsetUnset($offset): void
+    #[\ReturnTypeWillChange]
+    public function offsetUnset($offset)
     {
         $count = count($this->container);
         if (!is_numeric($offset) || $count === 0 || $offset !== $count - 1) {
