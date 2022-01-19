@@ -79,45 +79,37 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
 static bool PyUpb_GetInt64(PyObject* obj, int64_t* val) {
   // We require that the value is either an integer or has an __index__
   // conversion.
-  if (!PyIndex_Check(obj)) {
-    PyErr_Format(PyExc_TypeError, "Expected integer: %S", obj);
-    return false;
-  }
+  obj = PyNumber_Index(obj);
+  if (!obj) return false;
   // If the value is already a Python long, PyLong_AsLongLong() retrieves it.
   // Otherwise is converts to integer using __int__.
   *val = PyLong_AsLongLong(obj);
-  if (!PyErr_Occurred()) return true;
-  if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
-    // Rewrite OverflowError -> ValueError.
-    // But don't rewrite other errors such as TypeError.
+  bool ok = true;
+  if (PyErr_Occurred()) {
+    assert(PyErr_ExceptionMatches(PyExc_OverflowError));
     PyErr_Clear();
     PyErr_Format(PyExc_ValueError, "Value out of range: %S", obj);
+    ok = false;
   }
-  return false;
+  Py_DECREF(obj);
+  return ok;
 }
 
 static bool PyUpb_GetUint64(PyObject* obj, uint64_t* val) {
   // We require that the value is either an integer or has an __index__
   // conversion.
-  if (!PyIndex_Check(obj)) {
-    PyErr_Format(PyExc_TypeError, "Expected integer: %S", obj);
-    return false;
+  obj = PyNumber_Index(obj);
+  if (!obj) return false;
+  *val = PyLong_AsUnsignedLongLong(obj);
+  bool ok = true;
+  if (PyErr_Occurred()) {
+    assert(PyErr_ExceptionMatches(PyExc_OverflowError));
+    PyErr_Clear();
+    PyErr_Format(PyExc_ValueError, "Value out of range: %S", obj);
+    ok = false;
   }
-  if (PyLong_Check(obj)) {
-    *val = PyLong_AsUnsignedLongLong(obj);
-  } else if (PyIndex_Check(obj)) {
-    PyObject* casted = PyNumber_Long(obj);
-    if (!casted) return false;
-    *val = PyLong_AsUnsignedLongLong(casted);
-    Py_DECREF(casted);
-  } else {
-    PyErr_Format(PyExc_TypeError, "Expected integer: %S", obj);
-    return false;
-  }
-  if (!PyErr_Occurred()) return true;
-  PyErr_Clear();
-  PyErr_Format(PyExc_ValueError, "Value out of range: %S", obj);
-  return false;
+  Py_DECREF(obj);
+  return ok;
 }
 
 static bool PyUpb_GetInt32(PyObject* obj, int32_t* val) {
