@@ -84,7 +84,7 @@ const zval *get_generated_pool();
 #define zend_ce_countable spl_ce_Countable
 #endif
 
-// In PHP 8.1, mismatched tentative return types emit a depracation notice.
+// In PHP 8.1, mismatched tentative return types emit a deprecation notice.
 // https://wiki.php.net/rfc/internal_method_return_types
 //
 // When compiling for earlier php versions, the return type is dropped.
