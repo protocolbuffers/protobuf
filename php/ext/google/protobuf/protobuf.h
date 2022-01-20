@@ -82,6 +82,8 @@ const zval *get_generated_pool();
 // PHP 7.2.0.
 #if PHP_VERSION_ID < 70200
 #define zend_ce_countable spl_ce_Countable
+#define ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(name, return_reference, required_num_args, class_name, allow_null) \
+        ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
 #endif
 
 // In PHP 8.1, mismatched tentative return types emit a deprecation notice.
@@ -92,6 +94,16 @@ const zval *get_generated_pool();
 #define ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
         ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
 #define IS_MIXED 16
+#endif
+
+#if PHP_VERSION_ID < 70100
+#define IS_VOID 99
+#endif
+
+#ifndef IS_MIXED
+#define IS_MIXED 99
+#define IS_BOOL 99
+#define IS_LONG 99
 #endif
 
 ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
