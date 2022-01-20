@@ -1,4 +1,4 @@
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test", "kt_jvm_binary")
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
@@ -50,8 +50,8 @@ test_suite(
     ],
 )
 
-kt_jvm_test(
-    name = "bytestring_test",
+kt_jvm_library(
+    name = "bytestring_test_library",
     srcs = ["src/test/kotlin/com/google/protobuf/ByteStringsTest.kt"],
     deps = [
         ":bytestring_lib",
@@ -60,6 +60,11 @@ kt_jvm_test(
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
+)
+
+java_test(
+    name = "bytestring_test",
+    runtime_deps = [":bytestring_test_library"],
     test_class = "com.google.protobuf.kotlin.ByteStringsTest",
 )
 
@@ -74,8 +79,8 @@ java_proto_library(
     deps = [":example_extensible_message_proto"],
 )
 
-kt_jvm_test(
-    name = "shared_tests",
+kt_jvm_library(
+    name = "shared_tests_library",
     srcs = [
         "src/test/kotlin/com/google/protobuf/DslListTest.kt",
         "src/test/kotlin/com/google/protobuf/DslMapTest.kt",
@@ -91,11 +96,16 @@ kt_jvm_test(
         "@maven//:com_google_guava_guava_testlib",
         "@maven//:junit_junit",
     ],
+)
+
+java_test(
+    name = "shared_tests",
+    runtime_deps = [":shared_tests_library"],
     test_class = "com.google.protobuf.kotlin.DslListTest",
 )
 
-kt_jvm_test(
-    name = "test_extensions",
+kt_jvm_library(
+    name = "test_extensions_library",
     srcs = ["src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt"],
     deps = [
         ":example_extensible_message_java_proto",
@@ -107,6 +117,11 @@ kt_jvm_test(
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
+)
+
+java_test(
+    name = "test_extensions",
+    runtime_deps = [":test_extensions_library"],
     test_class = "com.google.protobuf.kotlin.ExtendableMessageExtensionsTest",
 )
 
@@ -234,8 +249,8 @@ kt_jvm_library(
     ],
 )
 
-kt_jvm_test(
-    name = "proto2_test",
+kt_jvm_library(
+    name = "proto2_test_library",
     srcs = ["src/test/kotlin/com/google/protobuf/Proto2Test.kt"],
     deps = [
         ":kotlin_unittest",
@@ -243,11 +258,16 @@ kt_jvm_test(
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
+)
+
+java_test(
+    name = "proto2_test",
+    runtime_deps = [":proto2_test_library"],
     test_class = "com.google.protobuf.kotlin.Proto2Test",
 )
 
-kt_jvm_test(
-    name = "proto3_test",
+kt_jvm_library(
+    name = "proto3_test_library",
     srcs = ["src/test/kotlin/com/google/protobuf/Proto3Test.kt"],
     deps = [
         ":kotlin_proto3_unittest",
@@ -255,5 +275,10 @@ kt_jvm_test(
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
+)
+
+java_test(
+    name = "proto3_test",
+    runtime_deps = [":proto3_test_library"],
     test_class = "com.google.protobuf.kotlin.Proto3Test",
 )
