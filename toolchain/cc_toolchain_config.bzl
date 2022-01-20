@@ -47,7 +47,7 @@ def _impl(ctx):
       ),
       tool_path(
           name = "ar",
-          path = "/usr/bin/llvm-ar",
+          path = "/usr/local/bin/llvm-ar",
       ),
       tool_path(
           name = "compat-ld",
