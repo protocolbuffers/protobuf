@@ -35,9 +35,9 @@
 #include <set>
 #include <sstream>
 
+#include "gtest/gtest.h"
 #include "tests/test_cpp.upb.h"
 #include "tests/test_cpp.upbdefs.h"
-#include "tests/upb_test.h"
 #include "upb/def.h"
 #include "upb/def.hpp"
 #include "upb/json_decode.h"
@@ -47,7 +47,7 @@
 // Must be last.
 #include "upb/port_def.inc"
 
-void TestIteration() {
+TEST(Cpp, Iteration) {
   upb::SymbolTable symtab;
   upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(symtab.ptr()));
 
@@ -57,17 +57,17 @@ void TestIteration() {
     UPB_UNUSED(field);
     field_count++;
   }
-  ASSERT(field_count == md.field_count());
+  EXPECT_EQ(field_count, md.field_count());
 
   int oneof_count = 0;
   for (auto oneof : md.oneofs()) {
     UPB_UNUSED(oneof);
     oneof_count++;
   }
-  ASSERT(oneof_count == md.oneof_count());
+  EXPECT_EQ(oneof_count, md.oneof_count());
 }
 
-void TestArena() {
+TEST(Cpp, Arena) {
   int n = 100000;
 
   struct Decrementer {
@@ -89,7 +89,7 @@ void TestArena() {
     // Test a large allocation.
     upb_Arena_Malloc(arena.ptr(), 1000000);
   }
-  ASSERT(n == 0);
+  EXPECT_EQ(0, n);
 
   {
     // Test fuse.
@@ -103,7 +103,7 @@ void TestArena() {
   }
 }
 
-void TestInlinedArena() {
+TEST(Cpp, InlinedArena) {
   int n = 100000;
 
   struct Decrementer {
@@ -125,36 +125,26 @@ void TestInlinedArena() {
     // Test a large allocation.
     upb_Arena_Malloc(arena.ptr(), 1000000);
   }
-  ASSERT(n == 0);
+  EXPECT_EQ(0, n);
 }
 
-void TestDefault() {
+TEST(Cpp, Default) {
   upb::SymbolTable symtab;
   upb::Arena arena;
   upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(symtab.ptr()));
   upb_test_TestMessage* msg = upb_test_TestMessage_new(arena.ptr());
   size_t size = upb_JsonEncode(msg, md.ptr(), NULL, 0, NULL, 0, NULL);
-  ASSERT(size == 2);  // "{}"
+  EXPECT_EQ(2, size);  // "{}"
 }
 
-void TestJsonNull() {
+TEST(Cpp, JsonNull) {
   upb::SymbolTable symtab;
   upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(symtab.ptr()));
   upb::FieldDefPtr i32_f = md.FindFieldByName("i32");
   upb::FieldDefPtr str_f = md.FindFieldByName("str");
-  ASSERT(i32_f && str_f);
-  ASSERT(i32_f.default_value().int32_val == 5);
-  ASSERT(strcmp(str_f.default_value().str_val.data, "abc") == 0);
-  ASSERT(str_f.default_value().str_val.size == 3);
-}
-
-extern "C" {
-
-int run_tests() {
-  TestIteration();
-  TestArena();
-  TestDefault();
-
-  return 0;
-}
+  ASSERT_TRUE(i32_f);
+  ASSERT_TRUE(str_f);
+  EXPECT_EQ(5, i32_f.default_value().int32_val);
+  EXPECT_EQ(0, strcmp(str_f.default_value().str_val.data, "abc"));
+  EXPECT_EQ(3, str_f.default_value().str_val.size);
 }

@@ -38,22 +38,6 @@ load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 
 licenses(["notice"])
 
-cc_library(
-    name = "upb_test",
-    testonly = 1,
-    srcs = [
-        "testmain.cc",
-    ],
-    hdrs = [
-        "upb_test.h",
-    ],
-    copts = UPB_DEFAULT_CPPOPTS,
-    deps = [
-        "//:port",
-        "//:upb",
-    ],
-)
-
 proto_library(
     name = "test_proto",
     testonly = 1,
@@ -68,13 +52,12 @@ upb_proto_library(
 
 cc_test(
     name = "test_generated_code",
-    srcs = ["test_generated_code.c"],
-    copts = UPB_DEFAULT_COPTS,
+    srcs = ["test_generated_code.cc"],
     deps = [
         ":empty_upbdefs_proto",
         ":test_messages_proto3_proto_upb",
         ":test_upb_proto",
-        ":upb_test",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -119,11 +102,11 @@ cc_test(
     deps = [
         ":test_cpp_upb_proto",
         ":test_cpp_upb_proto_reflection",
-        ":upb_test",
         "//:json",
         "//:port",
         "//:reflection",
         "//:upb",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -132,10 +115,10 @@ cc_test(
     srcs = ["test_table.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
-        ":upb_test",
         "//:port",
         "//:table",
         "//:upb",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
