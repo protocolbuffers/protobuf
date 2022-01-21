@@ -131,10 +131,10 @@ cc_test(
     srcs = ["test_table.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
-        ":upb_test",
         "//:port",
         "//:table",
         "//:upb",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 

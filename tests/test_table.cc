@@ -38,7 +38,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "tests/upb_test.h"
+#include "gtest/gtest.h"
 #include "upb/table_internal.h"
 #include "upb/upb.hpp"
 
@@ -365,296 +365,7 @@ double get_usertime() {
   return usage.ru_utime.tv_sec + (usage.ru_utime.tv_usec / 1000000.0);
 }
 
-/* num_entries must be a power of 2. */
-void test_strtable(const vector<std::string>& keys, uint32_t num_to_insert) {
-  /* Initialize structures. */
-  std::map<std::string, int32_t> m;
-  typedef upb::TypedStrTable<int32_t> Table;
-  Table table;
-  std::set<std::string> all;
-  for (size_t i = 0; i < num_to_insert; i++) {
-    const std::string& key = keys[i];
-    all.insert(key);
-    table.Insert(key, key[0]);
-    m[key] = key[0];
-  }
-
-  /* Test correctness. */
-  for (uint32_t i = 0; i < keys.size(); i++) {
-    const std::string& key = keys[i];
-    std::pair<bool, int32_t> found = table.Lookup(key);
-    if (m.find(key) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(found.first);
-      ASSERT(found.second == key[0]);
-      ASSERT(m[key] == key[0]);
-    } else {
-      ASSERT(!found.first);
-    }
-  }
-
-  for (Table::iterator it = table.begin(); it != table.end(); ++it) {
-    std::set<std::string>::iterator i = all.find((*it).first);
-    ASSERT(i != all.end());
-    all.erase(i);
-  }
-  ASSERT(all.empty());
-
-  // Test iteration with resizes.
-
-  for (int i = 0; i < 10; i++) {
-    for (Table::iterator it = table.begin(); it != table.end(); ++it) {
-      // Even if we invalidate the iterator it should only return real elements.
-      ASSERT((*it).second == m[(*it).first]);
-
-      // Force a resize even though the size isn't changing.
-      // Also forces the table size to grow so some new buckets end up empty.
-      int new_lg2 = table.table_.table_.t.size_lg2 + 1;
-      // Don't use more than 64k tables, to avoid exhausting memory.
-      new_lg2 = UPB_MIN(new_lg2, 16);
-      table.Resize(new_lg2);
-    }
-  }
-}
-
-/* num_entries must be a power of 2. */
-void test_inttable(int32_t* keys, uint16_t num_entries, const char* desc) {
-  /* Initialize structures. */
-  typedef upb::TypedIntTable<uint32_t> Table;
-  Table table;
-  uint32_t largest_key = 0;
-  std::map<uint32_t, uint32_t> m;
-  std::unordered_map<uint32_t, uint32_t> hm;
-  for (size_t i = 0; i < num_entries; i++) {
-    int32_t key = keys[i];
-    largest_key = UPB_MAX((int32_t)largest_key, key);
-    table.Insert(key, key * 2);
-    m[key] = key * 2;
-    hm[key] = key * 2;
-  }
-
-  /* Test correctness. */
-  for (uint32_t i = 0; i <= largest_key; i++) {
-    std::pair<bool, uint32_t> found = table.Lookup(i);
-    if (m.find(i) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(found.first);
-      ASSERT(found.second == i * 2);
-      ASSERT(m[i] == i * 2);
-      ASSERT(hm[i] == i * 2);
-    } else {
-      ASSERT(!found.first);
-    }
-  }
-
-  for (uint16_t i = 0; i < num_entries; i += 2) {
-    std::pair<bool, uint32_t> found = table.Remove(keys[i]);
-    ASSERT(found.first == (m.erase(keys[i]) == 1));
-    if (found.first) ASSERT(found.second == (uint32_t)keys[i] * 2);
-    hm.erase(keys[i]);
-    m.erase(keys[i]);
-  }
-
-  ASSERT(table.count() == hm.size());
-
-  /* Test correctness. */
-  for (uint32_t i = 0; i <= largest_key; i++) {
-    std::pair<bool, uint32_t> found = table.Lookup(i);
-    if (m.find(i) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(found.first);
-      ASSERT(found.second == i * 2);
-      ASSERT(m[i] == i * 2);
-      ASSERT(hm[i] == i * 2);
-    } else {
-      ASSERT(!found.first);
-    }
-  }
-
-  // Test replace.
-  for (uint32_t i = 0; i <= largest_key; i++) {
-    bool replaced = table.Replace(i, i * 3);
-    if (m.find(i) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(replaced);
-      m[i] = i * 3;
-      hm[i] = i * 3;
-    } else {
-      ASSERT(!replaced);
-    }
-  }
-
-  // Compact and test correctness again.
-  table.Compact();
-  for (uint32_t i = 0; i <= largest_key; i++) {
-    std::pair<bool, uint32_t> found = table.Lookup(i);
-    if (m.find(i) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(found.first);
-      ASSERT(found.second == i * 3);
-      ASSERT(m[i] == i * 3);
-      ASSERT(hm[i] == i * 3);
-    } else {
-      ASSERT(!found.first);
-    }
-  }
-
-  if (!benchmark) {
-    return;
-  }
-
-  printf("%s\n", desc);
-
-  /* Test performance. We only test lookups for keys that are known to exist. */
-  uint16_t* rand_order = new uint16_t[num_entries];
-  for (uint16_t i = 0; i < num_entries; i++) {
-    rand_order[i] = i;
-  }
-  for (uint16_t i = num_entries - 1; i >= 1; i--) {
-    uint16_t rand_i = (random() / (double)RAND_MAX) * i;
-    ASSERT(rand_i <= i);
-    uint16_t tmp = rand_order[rand_i];
-    rand_order[rand_i] = rand_order[i];
-    rand_order[i] = tmp;
-  }
-
-  uintptr_t x = 0;
-  const int mask = num_entries - 1;
-  int time_mask = 0xffff;
-
-  printf("upb_inttable(seq): ");
-  fflush(stdout);
-  double before = get_usertime();
-  unsigned int i;
-
-#define MAYBE_BREAK                                                          \
-  if ((i & time_mask) == 0 && (get_usertime() - before) > CPU_TIME_PER_TEST) \
-    break;
-  for (i = 0; true; i++) {
-    MAYBE_BREAK;
-    int32_t key = keys[i & mask];
-    upb_value v;
-    bool ok = upb_inttable_lookup(&table.table_.table_, key, &v);
-    x += (uintptr_t)ok;
-  }
-  double total = get_usertime() - before;
-  printf("%ld/s\n", (long)(i / total));
-  double upb_seq_i = i / 100;  // For later percentage calcuation.
-
-  printf("upb_inttable(rand): ");
-  fflush(stdout);
-  before = get_usertime();
-  for (i = 0; true; i++) {
-    MAYBE_BREAK;
-    int32_t key = keys[rand_order[i & mask]];
-    upb_value v;
-    bool ok = upb_inttable_lookup(&table.table_.table_, key, &v);
-    x += (uintptr_t)ok;
-  }
-  total = get_usertime() - before;
-  printf("%ld/s\n", (long)(i / total));
-  double upb_rand_i = i / 100;  // For later percentage calculation.
-
-  printf("std::map<int32_t, int32_t>(seq): ");
-  fflush(stdout);
-  before = get_usertime();
-  for (i = 0; true; i++) {
-    MAYBE_BREAK;
-    int32_t key = keys[i & mask];
-    x += m[key];
-  }
-  total = get_usertime() - before;
-  printf("%ld/s (%0.1f%% of upb)\n", (long)(i / total), i / upb_seq_i);
-
-  printf("std::map<int32_t, int32_t>(rand): ");
-  fflush(stdout);
-  before = get_usertime();
-  for (i = 0; true; i++) {
-    MAYBE_BREAK;
-    int32_t key = keys[rand_order[i & mask]];
-    x += m[key];
-  }
-  total = get_usertime() - before;
-  printf("%ld/s (%0.1f%% of upb)\n", (long)(i / total), i / upb_rand_i);
-
-  printf("std::unordered_map<uint32_t, uint32_t>(seq): ");
-  fflush(stdout);
-  before = get_usertime();
-  for (i = 0; true; i++) {
-    MAYBE_BREAK;
-    int32_t key = keys[rand_order[i & mask]];
-    x += hm[key];
-  }
-  total = get_usertime() - before;
-  printf("%ld/s (%0.1f%% of upb)\n", (long)(i / total), i / upb_seq_i);
-
-  printf("std::unordered_map<uint32_t, uint32_t>(rand): ");
-  fflush(stdout);
-  before = get_usertime();
-  for (i = 0; true; i++) {
-    MAYBE_BREAK;
-    int32_t key = keys[rand_order[i & mask]];
-    x += hm[key];
-  }
-  total = get_usertime() - before;
-  if (x == INT_MAX) abort();
-  printf("%ld/s (%0.1f%% of upb)\n\n", (long)(i / total), i / upb_rand_i);
-  delete[] rand_order;
-}
-
-/*
- * This test can't pass right now because the table can't store a value of
- * (uint64_t)-1.
- */
-void test_int64_max_value() {
-  /*
-    typedef upb::TypedIntTable<uint64_t> Table;
-    Table table;
-    uintptr_t uint64_max = (uint64_t)-1;
-    table.Insert(1, uint64_max);
-    std::pair<bool, uint64_t> found = table.Lookup(1);
-    ASSERT(found.first);
-    ASSERT(found.second == uint64_max);
-  */
-}
-
-int32_t* get_contiguous_keys(int32_t num) {
-  int32_t* buf = new int32_t[num];
-  for (int32_t i = 0; i < num; i++) buf[i] = i;
-  return buf;
-}
-
-void test_delete() {
-  upb::Arena arena;
-  upb_inttable t;
-  upb_inttable_init(&t, arena.ptr());
-  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
-  upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr());
-  upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr());
-  upb_inttable_compact(&t, arena.ptr());
-  upb_inttable_remove(&t, 0, NULL);
-  upb_inttable_remove(&t, 2, NULL);
-  upb_inttable_remove(&t, 4, NULL);
-
-  upb_inttable_iter iter;
-  for (upb_inttable_begin(&iter, &t); !upb_inttable_done(&iter);
-       upb_inttable_next(&iter)) {
-    ASSERT(false);
-  }
-}
-
-void test_init() {
-  for (int i = 0; i < 2048; i++) {
-    /* Tests that the size calculations in init() (lg2 size for target load)
-     * work for all expected sizes. */
-    upb::Arena arena;
-    upb_strtable t;
-    upb_strtable_init(&t, i, arena.ptr());
-  }
-}
-
-extern "C" {
-
-int run_tests(int argc, char* argv[]) {
-  for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "benchmark") == 0) benchmark = true;
-  }
-
+TEST(Table, StringTable) {
   vector<std::string> keys;
   keys.push_back("google.protobuf.FileDescriptorSet");
   keys.push_back("google.protobuf.FileDescriptorProto");
@@ -675,35 +386,194 @@ int run_tests(int argc, char* argv[]) {
   keys.push_back("google.protobuf.UninterpretedOption");
   keys.push_back("google.protobuf.UninterpretedOption.NamePart");
 
+  /* Initialize structures. */
+  std::map<std::string, int32_t> m;
+  typedef upb::TypedStrTable<int32_t> Table;
+  Table table;
+  std::set<std::string> all;
+  for (const auto& key : keys) {
+    all.insert(key);
+    table.Insert(key, key[0]);
+    m[key] = key[0];
+  }
+
+  /* Test correctness. */
+  for (const auto& key : keys) {
+    std::pair<bool, int32_t> found = table.Lookup(key);
+    if (m.find(key) != m.end()) { /* Assume map implementation is correct. */
+      EXPECT_TRUE(found.first);
+      EXPECT_EQ(found.second, key[0]);
+      EXPECT_EQ(m[key], key[0]);
+    } else {
+      EXPECT_FALSE(found.first);
+    }
+  }
+
+  for (Table::iterator it = table.begin(); it != table.end(); ++it) {
+    std::set<std::string>::iterator i = all.find((*it).first);
+    EXPECT_NE(i, all.end());
+    all.erase(i);
+  }
+  EXPECT_TRUE(all.empty());
+
+  // Test iteration with resizes.
+
   for (int i = 0; i < 10; i++) {
-    test_strtable(keys, 18);
+    for (Table::iterator it = table.begin(); it != table.end(); ++it) {
+      // Even if we invalidate the iterator it should only return real elements.
+      EXPECT_EQ((*it).second, m[(*it).first]);
+
+      // Force a resize even though the size isn't changing.
+      // Also forces the table size to grow so some new buckets end up empty.
+      int new_lg2 = table.table_.table_.t.size_lg2 + 1;
+      // Don't use more than 64k tables, to avoid exhausting memory.
+      new_lg2 = UPB_MIN(new_lg2, 16);
+      table.Resize(new_lg2);
+    }
   }
-
-  int32_t* keys1 = get_contiguous_keys(8);
-  test_inttable(keys1, 8, "Table size: 8, keys: 1-8 ====");
-  delete[] keys1;
-
-  int32_t* keys2 = get_contiguous_keys(64);
-  test_inttable(keys2, 64, "Table size: 64, keys: 1-64 ====\n");
-  delete[] keys2;
-
-  int32_t* keys3 = get_contiguous_keys(512);
-  test_inttable(keys3, 512, "Table size: 512, keys: 1-512 ====\n");
-  delete[] keys3;
-
-  int32_t* keys4 = new int32_t[64];
-  for (int32_t i = 0; i < 64; i++) {
-    if (i < 32)
-      keys4[i] = i + 1;
-    else
-      keys4[i] = 10101 + i;
-  }
-  test_inttable(keys4, 64, "Table size: 64, keys: 1-32 and 10133-10164 ====\n");
-  delete[] keys4;
-
-  test_delete();
-  test_int64_max_value();
-
-  return 0;
 }
+
+class IntTableTest : public testing::TestWithParam<int> {
+  void SetUp() override {
+    if (GetParam() > 0) {
+      for (int i = 0; i < GetParam(); i++) {
+        keys_.push_back(i + 1);
+      }
+    } else {
+      for (int32_t i = 0; i < 64; i++) {
+        if (i < 32)
+          keys_.push_back(i + 1);
+        else
+          keys_.push_back(10101 + i);
+      }
+    }
+  }
+
+ protected:
+  std::vector<int32_t> keys_;
+};
+
+TEST_P(IntTableTest, TestIntTable) {
+  /* Initialize structures. */
+  typedef upb::TypedIntTable<uint32_t> Table;
+  Table table;
+  uint32_t largest_key = 0;
+  std::map<uint32_t, uint32_t> m;
+  std::unordered_map<uint32_t, uint32_t> hm;
+  for (const auto& key: keys_) {
+    largest_key = UPB_MAX((int32_t)largest_key, key);
+    table.Insert(key, key * 2);
+    m[key] = key * 2;
+    hm[key] = key * 2;
+  }
+
+  /* Test correctness. */
+  for (uint32_t i = 0; i <= largest_key; i++) {
+    std::pair<bool, uint32_t> found = table.Lookup(i);
+    if (m.find(i) != m.end()) { /* Assume map implementation is correct. */
+      EXPECT_TRUE(found.first);
+      EXPECT_EQ(found.second, i * 2);
+      EXPECT_EQ(m[i], i * 2);
+      EXPECT_EQ(hm[i], i * 2);
+    } else {
+      EXPECT_FALSE(found.first);
+    }
+  }
+
+  for (size_t i = 0; i < keys_.size(); i += 2) {
+    std::pair<bool, uint32_t> found = table.Remove(keys_[i]);
+    EXPECT_EQ(found.first, m.erase(keys_[i]) == 1);
+    if (found.first) EXPECT_EQ(found.second, (uint32_t)keys_[i] * 2);
+    hm.erase(keys_[i]);
+    m.erase(keys_[i]);
+  }
+
+  EXPECT_EQ(table.count(), hm.size());
+
+  /* Test correctness. */
+  for (uint32_t i = 0; i <= largest_key; i++) {
+    std::pair<bool, uint32_t> found = table.Lookup(i);
+    if (m.find(i) != m.end()) { /* Assume map implementation is correct. */
+      EXPECT_TRUE(found.first);
+      EXPECT_EQ(found.second, i * 2);
+      EXPECT_EQ(m[i], i * 2);
+      EXPECT_EQ(hm[i], i * 2);
+    } else {
+      EXPECT_FALSE(found.first);
+    }
+  }
+
+  // Test replace.
+  for (uint32_t i = 0; i <= largest_key; i++) {
+    bool replaced = table.Replace(i, i * 3);
+    if (m.find(i) != m.end()) { /* Assume map implementation is correct. */
+      EXPECT_TRUE(replaced);
+      m[i] = i * 3;
+      hm[i] = i * 3;
+    } else {
+      EXPECT_FALSE(replaced);
+    }
+  }
+
+  // Compact and test correctness again.
+  table.Compact();
+  for (uint32_t i = 0; i <= largest_key; i++) {
+    std::pair<bool, uint32_t> found = table.Lookup(i);
+    if (m.find(i) != m.end()) { /* Assume map implementation is correct. */
+      EXPECT_TRUE(found.first);
+      EXPECT_EQ(found.second, i * 3);
+      EXPECT_EQ(m[i], i * 3);
+      EXPECT_EQ(hm[i], i * 3);
+    } else {
+      EXPECT_FALSE(found.first);
+    }
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(IntTableParams, IntTableTest,
+                         testing::Values(8, 64, 512, -32));
+
+/*
+ * This test can't pass right now because the table can't store a value of
+ * (uint64_t)-1.
+ */
+TEST(Table, MaxValue) {
+  /*
+    typedef upb::TypedIntTable<uint64_t> Table;
+    Table table;
+    uintptr_t uint64_max = (uint64_t)-1;
+    table.Insert(1, uint64_max);
+    std::pair<bool, uint64_t> found = table.Lookup(1);
+    ASSERT(found.first);
+    ASSERT(found.second == uint64_max);
+  */
+}
+
+TEST(Table, Delete) {
+  upb::Arena arena;
+  upb_inttable t;
+  upb_inttable_init(&t, arena.ptr());
+  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
+  upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr());
+  upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr());
+  upb_inttable_compact(&t, arena.ptr());
+  upb_inttable_remove(&t, 0, NULL);
+  upb_inttable_remove(&t, 2, NULL);
+  upb_inttable_remove(&t, 4, NULL);
+
+  upb_inttable_iter iter;
+  for (upb_inttable_begin(&iter, &t); !upb_inttable_done(&iter);
+       upb_inttable_next(&iter)) {
+    ASSERT_TRUE(false);
+  }
+}
+
+TEST(Table, Init) {
+  for (int i = 0; i < 2048; i++) {
+    /* Tests that the size calculations in init() (lg2 size for target load)
+     * work for all expected sizes. */
+    upb::Arena arena;
+    upb_strtable t;
+    upb_strtable_init(&t, i, arena.ptr());
+  }
 }
