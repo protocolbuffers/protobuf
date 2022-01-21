@@ -38,22 +38,6 @@ load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 
 licenses(["notice"])
 
-cc_library(
-    name = "upb_test",
-    testonly = 1,
-    srcs = [
-        "testmain.cc",
-    ],
-    hdrs = [
-        "upb_test.h",
-    ],
-    copts = UPB_DEFAULT_CPPOPTS,
-    deps = [
-        "//:port",
-        "//:upb",
-    ],
-)
-
 proto_library(
     name = "test_proto",
     testonly = 1,
