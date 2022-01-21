@@ -483,7 +483,9 @@ TEST_P(IntTableTest, TestIntTable) {
   for (size_t i = 0; i < keys_.size(); i += 2) {
     std::pair<bool, uint32_t> found = table.Remove(keys_[i]);
     EXPECT_EQ(found.first, m.erase(keys_[i]) == 1);
-    if (found.first) EXPECT_EQ(found.second, (uint32_t)keys_[i] * 2);
+    if (found.first) {
+      EXPECT_EQ(found.second, (uint32_t)keys_[i] * 2);
+    }
     hm.erase(keys_[i]);
     m.erase(keys_[i]);
   }
