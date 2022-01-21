@@ -68,13 +68,13 @@ upb_proto_library(
 
 cc_test(
     name = "test_generated_code",
-    srcs = ["test_generated_code.c"],
-    copts = UPB_DEFAULT_COPTS,
+    srcs = ["test_generated_code.cc"],
     deps = [
         ":empty_upbdefs_proto",
         ":test_messages_proto3_proto_upb",
         ":test_upb_proto",
-        ":upb_test",
+        #":upb_test",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
