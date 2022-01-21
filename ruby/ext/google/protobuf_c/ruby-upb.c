@@ -2624,7 +2624,7 @@ static uint64_t WyhashMix(uint64_t v0, uint64_t v1) {
   return low ^ high;
 }
 
-static uint64_t Wyhash(const void* data, size_t len, uint64_t seed,
+uint64_t Wyhash(const void* data, size_t len, uint64_t seed,
                        const uint64_t salt[]) {
   const uint8_t* ptr = (const uint8_t*)data;
   uint64_t starting_length = (uint64_t)len;

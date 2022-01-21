@@ -786,6 +786,10 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
 extern "C" {
 #endif
 
+uint64_t Wyhash(const void* data, size_t len, uint64_t seed,
+                       const uint64_t salt[]);
+extern const uint64_t kWyhashSalt[5];
+
 /* upb_value ******************************************************************/
 
 typedef struct {
