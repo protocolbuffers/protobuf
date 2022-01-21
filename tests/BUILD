@@ -73,7 +73,6 @@ cc_test(
         ":empty_upbdefs_proto",
         ":test_messages_proto3_proto_upb",
         ":test_upb_proto",
-        #":upb_test",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -119,11 +118,11 @@ cc_test(
     deps = [
         ":test_cpp_upb_proto",
         ":test_cpp_upb_proto_reflection",
-        ":upb_test",
         "//:json",
         "//:port",
         "//:reflection",
         "//:upb",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
