@@ -120,8 +120,10 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @return object The stored element at given index.
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
+     * @todo need to add return type mixed (require update php version to 8.0)
      */
-    public function offsetGet($offset): object
+    #[\ReturnTypeWillChange]
+    public function offsetGet($offset)
     {
         return $this->container[$offset];
     }

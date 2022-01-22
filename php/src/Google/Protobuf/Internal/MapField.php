@@ -133,8 +133,10 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @return object The stored element at given key.
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
+     * @todo need to add return type mixed (require update php version to 8.0)
      */
-    public function offsetGet($key): object
+    #[\ReturnTypeWillChange]
+    public function offsetGet($key)
     {
         return $this->container[$key];
     }

@@ -82,8 +82,10 @@ class RepeatedFieldIter implements \Iterator
      * Return the element at the current position.
      *
      * @return object The element at the current position.
+     * @todo need to add return type mixed (require update php version to 8.0)
      */
-    public function current(): object
+    #[\ReturnTypeWillChange]
+    public function current()
     {
         return $this->container[$this->position];
     }
@@ -92,8 +94,10 @@ class RepeatedFieldIter implements \Iterator
      * Return the current position.
      *
      * @return integer The current position.
+     * @todo need to add return type mixed (require update php version to 8.0)
      */
-    public function key(): int
+    #[\ReturnTypeWillChange]
+    public function key()
     {
         return $this->position;
     }
