@@ -6494,6 +6494,11 @@ static uint8_t map_descriptortype(const upb_FieldDef* f) {
   return type;
 }
 
+static bool IsProto2Enum(const upb_FieldDef* f) {
+  return upb_FieldDef_CType(f) == kUpb_CType_Enum &&
+         f->sub.enumdef->file->syntax == kUpb_Syntax_Proto2;
+}
+
 static void fill_fieldlayout(upb_MiniTable_Field* field,
                              const upb_FieldDef* f) {
   field->number = upb_FieldDef_Number(f);
@@ -6557,9 +6562,7 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
     const upb_FieldDef* f = &m->fields[i];
     if (upb_FieldDef_IsSubMessage(f)) {
       sublayout_count++;
-    }
-    if (upb_FieldDef_CType(f) == kUpb_CType_Enum &&
-        f->sub.enumdef->file->syntax == kUpb_Syntax_Proto2) {
+    } else if (IsProto2Enum(f)) {
       sublayout_count++;
     }
   }
@@ -6607,6 +6610,8 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
 
     if (upb_FieldDef_CType(val) == kUpb_CType_Message) {
       subs[0].submsg = upb_FieldDef_MessageSubDef(val)->layout;
+    } else if (IsProto2Enum(val)) {
+      subs[0].subenum = upb_FieldDef_EnumSubDef(val)->layout;
     }
 
     upb_FieldDef* fielddefs = (upb_FieldDef*)&m->fields[0];
