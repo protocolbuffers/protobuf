@@ -86,6 +86,15 @@ const zval *get_generated_pool();
         ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
 #endif
 
+// polyfill for ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX, which changes between 7.1 and 7.2
+#if PHP_VERSION_ID < 70200
+#define PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
+        ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, /*class_name*/ 0, allow_null)
+#else
+#define PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
+        ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null)
+#endif
+
 // In PHP 8.1, mismatched tentative return types emit a deprecation notice.
 // https://wiki.php.net/rfc/internal_method_return_types
 //
@@ -93,16 +102,21 @@ const zval *get_generated_pool();
 #if PHP_VERSION_ID < 80100
 #define ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
         ZEND_BEGIN_ARG_INFO_EX(name, return_reference, required_num_args, allow_null)
-#define IS_MIXED 16
 #endif
 
-#if PHP_VERSION_ID < 70100
+#ifndef IS_VOID
 #define IS_VOID 99
 #endif
 
 #ifndef IS_MIXED
 #define IS_MIXED 99
-#define IS_BOOL 99
+#endif
+
+#ifndef _IS_BOOL
+#define _IS_BOOL 99
+#endif
+
+#ifndef IS_LONG
 #define IS_LONG 99
 #endif
 
