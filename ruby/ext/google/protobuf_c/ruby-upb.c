@@ -5210,8 +5210,8 @@ struct upb_MessageDef {
   upb_strtable ntof;
 
   /* All nested defs.
-   * MEM: We could save some space here by putting nested defs in a contigous
-   * region and calculating counts from offets or vice-versa. */
+   * MEM: We could save some space here by putting nested defs in a contiguous
+   * region and calculating counts from offsets or vice-versa. */
   const upb_FieldDef* fields;
   const upb_OneofDef* oneofs;
   const upb_ExtensionRange* ext_ranges;
