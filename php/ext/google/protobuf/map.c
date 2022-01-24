@@ -640,11 +640,11 @@ PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_valid, 0, 0, _IS_BOOL, 0)
 ZEND_END_ARG_INFO()
 
 static zend_function_entry map_field_iter_methods[] = {
-  PHP_ME(MapFieldIter, rewind,      arginfo_rewind, ZEND_ACC_PUBLIC)
-  PHP_ME(MapFieldIter, current,     arginfo_current,   ZEND_ACC_PUBLIC)
-  PHP_ME(MapFieldIter, key,         arginfo_key,   ZEND_ACC_PUBLIC)
-  PHP_ME(MapFieldIter, next,        arginfo_next,   ZEND_ACC_PUBLIC)
-  PHP_ME(MapFieldIter, valid,       arginfo_valid,  ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, rewind,      arginfo_rewind,  ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, current,     arginfo_current, ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, key,         arginfo_key,     ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, next,        arginfo_next,    ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, valid,       arginfo_valid,   ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
