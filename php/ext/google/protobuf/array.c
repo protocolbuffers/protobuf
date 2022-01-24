@@ -459,30 +459,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_append, 0, 0, 1)
   ZEND_ARG_INFO(0, newval)
 ZEND_END_ARG_INFO()
 
-#if PHP_VERSION_ID < 70200
-ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetExists, 0, 0, 1)
-  ZEND_ARG_INFO(0, index)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetGet, 0, 0, 1)
-  ZEND_ARG_INFO(0, index)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetSet, 0, 0, 2)
-  ZEND_ARG_INFO(0, index)
-  ZEND_ARG_INFO(0, newval)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetUnset, 0, 0, 1)
-  ZEND_ARG_INFO(0, index)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO(arginfo_count, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO(arginfo_getIterator, 0)
-ZEND_END_ARG_INFO()
-#else
 PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetExists, 0, 0, _IS_BOOL, 0)
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
@@ -505,7 +481,6 @@ ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_getIterator, 0, 0, Traversable, 0)
 ZEND_END_ARG_INFO()
-#endif
 
 static zend_function_entry repeated_field_methods[] = {
   PHP_ME(RepeatedField, __construct,  arginfo_construct,    ZEND_ACC_PUBLIC)
