@@ -31,8 +31,7 @@
 #include "upb/port_def.inc"
 #include "upb/table_internal.h"
 
-/** upb_Message
- * *******************************************************************/
+/** upb_Message ***************************************************************/
 
 static const size_t overhead = sizeof(upb_Message_InternalData);
 
@@ -368,8 +367,7 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
   return true;
 }
 
-/** upb_ExtensionRegistry
- * ****************************************************************/
+/** upb_ExtensionRegistry *****************************************************/
 
 struct upb_ExtensionRegistry {
   upb_Arena* arena;

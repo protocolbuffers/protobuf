@@ -63,7 +63,7 @@ typedef struct {
   uint16_t submsg_index;  // undefined if descriptortype != MESSAGE/GROUP/ENUM
   uint8_t descriptortype;
   uint8_t mode; /* upb_FieldMode | upb_LabelFlags |
-                   (upb_FieldRep << upb_FieldRep_Shift) */
+                   (upb_FieldRep << kUpb_FieldRep_Shift) */
 } upb_MiniTable_Field;
 
 typedef enum {
@@ -82,21 +82,14 @@ enum upb_LabelFlags {
 
 /* Representation in the message.  Derivable from descriptortype and mode, but
  * fast access helps the serializer. */
-enum upb_FieldRep {
-  upb_FieldRep_1Byte = 0,
-  upb_FieldRep_4Byte = 1,
-  upb_FieldRep_8Byte = 2,
-  upb_FieldRep_StringView = 3,
-
-#if UINTPTR_MAX == 0xffffffff
-  upb_FieldRep_Pointer = upb_FieldRep_4Byte,
-#else
-  upb_FieldRep_Pointer = upb_FieldRep_8Byte,
-#endif
-
-  upb_FieldRep_Shift =
-      6, /* Bit offset of the rep in upb_MiniTable_Field.mode */
-};
+typedef enum {
+  kUpb_FieldRep_1Byte = 0,
+  kUpb_FieldRep_4Byte = 1,
+  kUpb_FieldRep_Pointer = 2,
+  kUpb_FieldRep_StringView = 3,
+  kUpb_FieldRep_8Byte = 4,
+  kUpb_FieldRep_Shift = 5,  // Bit offset of the rep in upb_MiniTable_Field.mode
+} upb_FieldRep;
 
 UPB_INLINE upb_FieldMode upb_FieldMode_Get(const upb_MiniTable_Field* field) {
   return (upb_FieldMode)(field->mode & 3);
@@ -213,8 +206,7 @@ UPB_INLINE uint64_t upb_MiniTable_requiredmask(const upb_MiniTable* l) {
   return ((1ULL << n) - 1) << 1;
 }
 
-/** upb_ExtensionRegistry
- * ****************************************************************/
+/** upb_ExtensionRegistry *****************************************************/
 
 /* Adds the given extension info for message type |l| and field number |num|
  * into the registry. Returns false if this message type and field number were
@@ -229,8 +221,7 @@ const upb_MiniTable_Extension* _upb_extreg_get(const upb_ExtensionRegistry* r,
                                                const upb_MiniTable* l,
                                                uint32_t num);
 
-/** upb_Message
- * *******************************************************************/
+/** upb_Message ***************************************************************/
 
 /* Internal members of a upb_Message that track unknown fields and/or
  * extensions. We can change this without breaking binary compatibility.  We put
@@ -303,8 +294,7 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg);
 bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
                              upb_Arena* arena);
 
-/** upb_Message_Extension
- * ***************************************************************/
+/** upb_Message_Extension *****************************************************/
 
 /* The internal representation of an extension is self-describing: it contains
  * enough information that we can serialize it to binary format without needing
@@ -761,8 +751,7 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
   }
 }
 
-/** _upb_mapsorter
- * *************************************************************/
+/** _upb_mapsorter ************************************************************/
 
 /* _upb_mapsorter sorts maps and provides ordered iteration over the entries.
  * Since maps can be recursive (map values can be messages which contain other

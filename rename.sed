@@ -105,9 +105,9 @@ s/upb_enumdef_containingtype/upb_EnumDef_ContainingType/g;
 s/upb_enumdef_default/upb_EnumDef_Default/g;
 s/upb_enumdef_valuecount/upb_EnumDef_ValueCount/g;
 s/upb_enumdef_value/upb_EnumDef_Value/g;
-s/upb_enumdef_lookupnamez/upb_EnumDef_FindValueByName/g;
-s/upb_enumdef_lookupname/upb_EnumDef_FindValueByNameWithSize/g;
-s/upb_enumdef_lookupnum/upb_EnumDef_FindValueByNumber/g;
+s/upb_enumdef_ntoiz\b/upb_EnumDef_FindValueByName/g;
+s/upb_enumdef_ntoi\b/upb_EnumDef_FindValueByNameWithSize/g;
+s/upb_enumdef_iton\b/upb_EnumDef_FindValueByNumber/g;
 s/upb_enumdef_checknum/upb_EnumDef_CheckNumber/g;
 s/upb_enumdef/upb_EnumDef/g;
 

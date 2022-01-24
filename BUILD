@@ -108,6 +108,25 @@ cc_library(
 )
 
 cc_library(
+    name = "mini_table",
+    srcs = ["upb/mini_table.c", "upb/internal/mini_table.h"],
+    hdrs = ["upb/mini_table.h"],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [":upb"],
+)
+
+cc_test(
+    name = "mini_table_test",
+    srcs = ["upb/mini_table_test.cc"],
+    deps = [
+        ":mini_table",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_absl//absl/container:flat_hash_set",
+    ],
+)
+
+cc_library(
     name = "fastdecode",
     srcs = [
         "upb/decode.h",
