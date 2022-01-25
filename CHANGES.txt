@@ -1,3 +1,14 @@
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * JSON will now output shorter strings for double and float fields when possible
+    without losing precision.
+  * Encoding and decoding of binary format will now work properly on big-endian
+    systems.
+  * UTF-8 verification was fixed to properly reject surrogate code points.
+  * Unknown enums for proto2 protos now properly implement proto2's behavior of
+    putting such values in unknown fields.
+
 2022-01-10 version 3.19.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Python
