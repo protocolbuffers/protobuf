@@ -139,6 +139,10 @@ static void jsonenc_nanos(jsonenc* e, int32_t nanos) {
   jsonenc_printf(e, ".%.*" PRId32, digits, nanos);
 }
 
+static int64_t safe_mod(int64_t value, int64_t divisor) {
+  return (value%divisor + divisor)%divisor;
+}	
+
 static void jsonenc_timestamp(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m) {
   const upb_FieldDef* seconds_f =
@@ -162,20 +166,21 @@ static void jsonenc_timestamp(jsonenc* e, const upb_Message* msg,
    * Fliegel, H. F., and Van Flandern, T. C., "A Machine Algorithm for
    *   Processing Calendar Dates," Communications of the Association of
    *   Computing Machines, vol. 11 (1968), p. 657.  */
-  L = (int)(seconds / 86400) + 68569 + 2440588;
+  L = seconds / 86400.0 + 68569 + 2440588;
   N = 4 * L / 146097;
   L = L - (146097 * N + 3) / 4;
   I = 4000 * (L + 1) / 1461001;
   L = L - 1461 * I / 4 + 31;
   J = 80 * L / 2447;
   K = L - 2447 * J / 80;
+
   L = J / 11;
   J = J + 2 - 12 * L;
   I = 100 * (N - 49) + I + L;
 
-  sec = seconds % 60;
-  min = (seconds / 60) % 60;
-  hour = (seconds / 3600) % 24;
+  sec = safe_mod(seconds, 60);
+  min = safe_mod((seconds / 60), 60);
+  hour = safe_mod((seconds / 3600), 24);
 
   jsonenc_printf(e, "\"%04d-%02d-%02dT%02d:%02d:%02d", I, J, K, hour, min, sec);
   jsonenc_nanos(e, nanos);
