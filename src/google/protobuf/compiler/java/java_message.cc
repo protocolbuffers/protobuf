@@ -433,7 +433,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
         // TODO(dweis): Remove EnumLite when we want to break compatibility with
         // 3.x users
         "    implements com.google.protobuf.Internal.EnumLite,\n"
-        "        com.google.protobuf.AbstractMessage.InternalOneOfEnum {\n");
+        "        com.google.protobuf.AbstractMessageLite.InternalOneOfEnum {\n");
     printer->Indent();
     for (int j = 0; j < (oneof)->field_count(); j++) {
       const FieldDescriptor* field = (oneof)->field(j);
