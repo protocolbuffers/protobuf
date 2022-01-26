@@ -538,8 +538,8 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
      * other. */
     size_t ext_count;
     const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &ext_count);
-    const upb_Message_Extension* end = ext + ext_count;
     if (ext_count) {
+      const upb_Message_Extension* end = ext + ext_count;
       for (; ext != end; ext++) {
         if (UPB_UNLIKELY(m->ext == upb_ExtMode_IsMessageSet)) {
           encode_msgset_item(e, ext);
