@@ -33,56 +33,58 @@
 #include "upb/msg_internal.h"
 #include "upb/upb.hpp"
 
+class StringAppender {
+ public:
+  StringAppender(upb_MtDataEncoder* e, std::string* str) : str_(str) {
+    e->end = buf_ + sizeof(buf_);
+  }
+
+  template <class T>
+  bool operator()(T&& func) {
+    char* end = func(buf_);
+    if (!end) return false;
+    str_->append(buf_, end - buf_);
+    return true;
+  }
+
+ private:
+  char buf_[kUpb_MtDataEncoder_MinSize];
+  std::string* str_;
+};
+
 // We can consider putting these in a standard upb .hpp header.
-
-static void EncodeField(upb_FieldType type, uint64_t modifiers,
-                        std::string* str) {
-  char buf[16];
-  char* end =
-      upb_MiniTable_EncodeField(type, modifiers, buf, buf + sizeof(buf));
-  assert(end);
-  str->append(buf, end - buf);
+bool StartMessage(upb_MtDataEncoder* e, uint64_t msg_mod, std::string* out) {
+  StringAppender appender(e, out);
+  return appender([=](char* buf) {
+    return upb_MtDataEncoder_StartMessage(e, buf, msg_mod);
+  });
 }
 
-static void EncodeSkip(uint32_t skip, std::string* str) {
-  char buf[16];
-  char* end = upb_MiniTable_EncodeSkip(skip, buf, buf + sizeof(buf));
-  assert(end);
-  str->append(buf, end - buf);
+bool PutField(upb_MtDataEncoder* e, upb_FieldType type, uint32_t field_num,
+              uint64_t field_mod, std::string* out) {
+  StringAppender appender(e, out);
+  return appender([=](char* buf) {
+    return upb_MtDataEncoder_PutField(e, buf, type, field_num, field_mod);
+  });
 }
 
-static void StartOneofs(std::string* str) {
-  char buf[16];
-  char* end = upb_MiniTable_StartOneofs(buf, buf + sizeof(buf));
-  assert(end);
-  str->append(buf, end - buf);
+bool StartOneof(upb_MtDataEncoder* e, std::string* out) {
+  StringAppender appender(e, out);
+  return appender([=](char* buf) { return upb_MtDataEncoder_StartOneof(e, buf); });
 }
 
-static void EncodeOneofField(uint32_t field_num, std::string* str) {
-  char buf[16];
-  char* end =
-      upb_MiniTable_EncodeOneofField(field_num, buf, buf + sizeof(buf));
-  assert(end);
-  str->append(buf, end - buf);
-}
-
-static void EncodeOneofFieldSeparator(std::string* str) {
-  char buf[16];
-  char* end = upb_MiniTable_EncodeOneofFieldSeparator(buf, buf + sizeof(buf));
-  assert(end);
-  str->append(buf, end - buf);
-}
-
-static void EncodeOneofSeparator(std::string* str) {
-  char buf[16];
-  char* end = upb_MiniTable_EncodeOneofSeparator(buf, buf + sizeof(buf));
-  assert(end);
-  str->append(buf, end - buf);
+bool PutOneofField(upb_MtDataEncoder* e, uint32_t field_num, std::string* out) {
+  StringAppender appender(e, out);
+  return appender([=](char* buf) {
+    return upb_MtDataEncoder_PutOneofField(e, buf, field_num);
+  });
 }
 
 TEST(MiniTable, Empty) {
   upb::Arena arena;
-  upb_MiniTable* table = upb_MiniTable_Build(NULL, 0, arena.ptr());
+  upb::Status status;
+  upb_MiniTable* table =
+      upb_MiniTable_Build(NULL, 0, arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(0, table->field_count);
   EXPECT_EQ(0, table->required_count);
@@ -91,19 +93,24 @@ TEST(MiniTable, Empty) {
 TEST(MiniTable, AllScalarTypes) {
   upb::Arena arena;
   std::string input;
+  upb_MtDataEncoder e;
+  ASSERT_TRUE(StartMessage(&e, 0, &input));
+  int count = 0;
   for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
-    EncodeField(i, &input);
+    ASSERT_TRUE(PutField(&e, static_cast<upb_FieldType>(i), i, 0, &input));
+    count++;
   }
   fprintf(stderr, "YO: %s\n", input.c_str());
   upb::Status status;
   upb_MiniTable* table = upb_MiniTable_Build(input.data(), input.size(),
                                              arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(16, table->field_count);
+  EXPECT_EQ(count, table->field_count);
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {
     const upb_MiniTable_Field* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
+    EXPECT_EQ(i + kUpb_FieldType_Double, f->descriptortype);
     EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);
@@ -114,30 +121,25 @@ TEST(MiniTable, AllScalarTypes) {
 TEST(MiniTable, AllRepeatedTypes) {
   upb::Arena arena;
   std::string input;
-  const size_t base = kUpb_EncodedType_RepeatedBase;
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_Double));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_Float));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_Fixed32));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_Fixed64));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_SFixed32));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_SFixed64));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_Int32));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_UInt32));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_SInt32));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_Int64));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_UInt64));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_SInt64));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_Enum));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_Bool));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_Bytes));
-  input.push_back(upb_ToBase92(base + kUpb_EncodedType_String));
-  upb_MiniTable* table = upb_MiniTable_Build(input.data(), input.size(), arena.ptr());
+  upb_MtDataEncoder e;
+  ASSERT_TRUE(StartMessage(&e, 0, &input));
+  int count = 0;
+  for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
+    ASSERT_TRUE(PutField(&e, static_cast<upb_FieldType>(i), i,
+                         kUpb_FieldModifier_IsRepeated, &input));
+    count++;
+  }
+  fprintf(stderr, "YO: %s\n", input.c_str());
+  upb::Status status;
+  upb_MiniTable* table = upb_MiniTable_Build(input.data(), input.size(),
+                                             arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(16, table->field_count);
+  EXPECT_EQ(count, table->field_count);
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {
     const upb_MiniTable_Field* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
+    EXPECT_EQ(i + kUpb_FieldType_Double, f->descriptortype);
     EXPECT_EQ(kUpb_FieldMode_Array, f->mode & kUpb_FieldMode_Mask);
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);
@@ -146,4 +148,65 @@ TEST(MiniTable, AllRepeatedTypes) {
 }
 
 TEST(MiniTable, Skips) {
+  upb::Arena arena;
+  std::string input;
+  upb_MtDataEncoder e;
+  ASSERT_TRUE(StartMessage(&e, 0, &input));
+  int count = 0;
+  std::vector<int> field_numbers;
+  for (int i = 0; i < 25; i++) {
+    int field_number = 1 << i;
+    field_numbers.push_back(field_number);
+    ASSERT_TRUE(PutField(&e, kUpb_FieldType_Float, field_number, 0, &input));
+    count++;
+  }
+  fprintf(stderr, "YO: %s, %zu\n", input.c_str(), input.size());
+  upb::Status status;
+  upb_MiniTable* table = upb_MiniTable_Build(input.data(), input.size(),
+                                             arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  EXPECT_EQ(count, table->field_count);
+  absl::flat_hash_set<size_t> offsets;
+  for (size_t i = 0; i < field_numbers.size(); i++) {
+    const upb_MiniTable_Field* f = &table->fields[i];
+    EXPECT_EQ(field_numbers[i], f->number);
+    EXPECT_EQ(kUpb_FieldType_Float, f->descriptortype);
+    EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
+    EXPECT_TRUE(offsets.insert(f->offset).second);
+    EXPECT_TRUE(f->offset < table->size);
+  }
+  EXPECT_EQ(0, table->required_count);
+}
+
+TEST(MiniTable, AllScalarTypesOneof) {
+  upb::Arena arena;
+  std::string input;
+  upb_MtDataEncoder e;
+  ASSERT_TRUE(StartMessage(&e, 0, &input));
+  int count = 0;
+  for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
+    ASSERT_TRUE(PutField(&e, static_cast<upb_FieldType>(i), i, 0, &input));
+    count++;
+  }
+  ASSERT_TRUE(StartOneof(&e, &input));
+  for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
+    ASSERT_TRUE(PutOneofField(&e, i, &input));
+  }
+  fprintf(stderr, "YO: %s\n", input.c_str());
+  upb::Status status;
+  upb_MiniTable* table = upb_MiniTable_Build(input.data(), input.size(),
+                                             arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  EXPECT_EQ(count, table->field_count);
+  absl::flat_hash_set<size_t> offsets;
+  for (int i = 0; i < 16; i++) {
+    const upb_MiniTable_Field* f = &table->fields[i];
+    EXPECT_EQ(i + 1, f->number);
+    EXPECT_EQ(i + kUpb_FieldType_Double, f->descriptortype);
+    EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
+    // For a oneof all fields have the same offset.
+    EXPECT_EQ(table->fields[0].offset, f->offset);
+    EXPECT_TRUE(f->offset < table->size);
+  }
+  EXPECT_EQ(0, table->required_count);
 }

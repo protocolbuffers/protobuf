@@ -52,11 +52,12 @@ typedef enum {
 typedef enum {
   kUpb_FieldModifier_IsRepeated = 1,
   kUpb_FieldModifier_IsPacked = 2,
+  kUpb_FieldModifier_IsProto3Singular = 4,
+  kUpb_FieldModifier_IsRequired = 8,
 } kUpb_FieldModifier;
 
 typedef struct {
-  char* buf;
-  char* end;
+  char* end;  // Limit of the buffer passed as a parameter.
   // Aliased to internal-only members in .cc.
   char internal[32];
 } upb_MtDataEncoder;
@@ -65,13 +66,37 @@ typedef struct {
 // is guaranteed to succeed (as long as field number order is maintained).
 #define kUpb_MtDataEncoder_MinSize 16
 
-// Note: For the main field list, fields *must* be in field number order.
-// For the oneof field list, order doesn't matter.
-char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, uint64_t msg_mod);
-char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, upb_FieldType type,
-                                 uint32_t field_num, uint64_t field_mod);
-char* upb_MiniTable_StartOneof(upb_MtDataEncoder* e);
-char* upb_MiniTable_PutOneofField(upb_MtDataEncoder* e, uint32_t field_num);
+// Encodes field/oneof information for a given message.  The sequence of calls
+// should look like:
+//
+//   upb_MtDataEncoder e;
+//   char buf[256];
+//   char* ptr = buf;
+//   e.end = ptr + sizeof(buf);
+//   ptr = upb_MtDataEncoder_StartMessage(&e, ptr);
+//   // Fields *must* be in field number order.
+//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
+//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
+//   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
+//
+//   // If oneofs are present.  Oneofs must be encoded after regular fields.
+//   ptr = upb_MiniTable_StartOneof(&e, ptr)
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//
+//   ptr = upb_MiniTable_StartOneof(&e, ptr);
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
+//
+// Oneofs must be encoded after all regular fields.
+char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* buf,
+                                     uint64_t msg_mod);
+char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* buf,
+                                 upb_FieldType type, uint32_t field_num,
+                                 uint64_t field_mod);
+char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* buf);
+char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* buf,
+                                      uint32_t field_num);
 
 // Builds a mini table from the data encoded in the buffer [data, len]. If any
 // errors occur, returns NULL and sets a status message. In the success case,
