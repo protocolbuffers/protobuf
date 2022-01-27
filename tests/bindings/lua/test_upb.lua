@@ -831,6 +831,14 @@ function test_gc()
   end
 end
 
+function test_b9440()
+  local m = upb_test.HelloRequest()
+  m.id = 8
+  assert_equal(8, m.id)
+  m.version = "1"
+  assert_equal(8, m.id)
+end
+
 local stats = lunit.main()
 
 if stats.failed > 0 or stats.errors > 0 then
