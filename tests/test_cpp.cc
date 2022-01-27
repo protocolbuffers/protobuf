@@ -38,6 +38,8 @@
 #include "gtest/gtest.h"
 #include "tests/test_cpp.upb.h"
 #include "tests/test_cpp.upbdefs.h"
+#include "google/protobuf/timestamp.upb.h"
+#include "google/protobuf/timestamp.upbdefs.h"
 #include "upb/def.h"
 #include "upb/def.hpp"
 #include "upb/json_decode.h"
@@ -147,4 +149,34 @@ TEST(Cpp, JsonNull) {
   EXPECT_EQ(5, i32_f.default_value().int32_val);
   EXPECT_EQ(0, strcmp(str_f.default_value().str_val.data, "abc"));
   EXPECT_EQ(3, str_f.default_value().str_val.size);
+}
+
+TEST(Cpp, TimestampEncoder) {
+  upb::SymbolTable symtab;
+  upb::Arena arena;
+  upb::MessageDefPtr md(google_protobuf_Timestamp_getmsgdef(symtab.ptr()));
+  google_protobuf_Timestamp* timestamp_upb = google_protobuf_Timestamp_new(arena.ptr());
+  google_protobuf_Timestamp* timestamp_upb_decoded = google_protobuf_Timestamp_new(arena.ptr());
+
+
+  long timestamps[] = {
+    253402300799,	// 9999-12-31T23:59:59Z
+    1641006000,		// 2022-01-01T03:00:00Z
+    0,			// 1970-01-01T00:00:00Z
+    -31525200,		// 1969-01-01T03:00:00Z
+    -2208988800,	// 1900-01-01T00:00:00Z
+    -62135596800,	// 0000-01-01T00:00:00Z
+  };
+
+  for(long timestamp: timestamps) {
+    google_protobuf_Timestamp_set_seconds(timestamp_upb, timestamp);
+
+    char* json = new char[300];
+    size_t size = upb_JsonEncode(timestamp_upb, md.ptr(), NULL, 0, json, 300, NULL);
+    bool result = upb_JsonDecode(json, size, timestamp_upb_decoded, md.ptr(), NULL, 0, arena.ptr(), NULL);
+    const long timestamp_decoded = google_protobuf_Timestamp_seconds(timestamp_upb_decoded); 
+
+    ASSERT_TRUE(result);
+    EXPECT_EQ(timestamp, timestamp_decoded);
+  }
 }
