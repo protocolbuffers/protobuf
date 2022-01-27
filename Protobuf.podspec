@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
   s.version  = '3.19.3'
   s.summary  = 'Protocol Buffers v.3 runtime library for Objective-C.'
   s.homepage = 'https://github.com/protocolbuffers/protobuf'
-  s.license  = '3-Clause BSD License'
+  s.license  = 'BSD-3-Clause'
   s.authors  = { 'The Protocol Buffers contributors' => 'protobuf@googlegroups.com' }
   s.cocoapods_version = '>= 1.0'
 
