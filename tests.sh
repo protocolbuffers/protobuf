@@ -496,6 +496,8 @@ build_php() {
   use_php $1
   pushd php
   rm -rf vendor
+  php -v
+  php -m
   composer update
   composer test
   popd
@@ -505,6 +507,8 @@ build_php() {
 test_php_c() {
   pushd php
   rm -rf vendor
+  php -v
+  php -m
   composer update
   composer test_c
   popd
@@ -572,7 +576,9 @@ build_php_multirequest() {
 
 build_php8.0_all() {
   build_php 8.0
+  build_php 8.1
   build_php_c 8.0
+  build_php_c 8.1
 }
 
 build_php_all_32() {
