@@ -1,3 +1,8 @@
+2022-01-28 version 3.19.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Python
+  * Make libprotobuf symbols local on OSX to fix issue #9395 (#9435)
+
 2022-01-10 version 3.19.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Python
