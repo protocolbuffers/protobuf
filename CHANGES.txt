@@ -3,6 +3,10 @@
   Python
   * Make libprotobuf symbols local on OSX to fix issue #9395 (#9435)
 
+  PHP
+  * Fixed a data loss bug that could occur when the number of `optional`
+    fields in a message is an exact multiple of 32. (#9440).
+    
 2022-01-10 version 3.19.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Python
