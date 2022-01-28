@@ -94,7 +94,7 @@ $ cd java
 $ mvn install
 ```
 
-Assuing that completes successfully,
+Assuming that completes successfully,
 
 ```
 $ cd ../benchmarks
