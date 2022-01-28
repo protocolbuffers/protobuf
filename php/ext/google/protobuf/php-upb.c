@@ -5968,7 +5968,7 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
   }
 
   /* Account for space used by hasbits. */
-  l->size = div_round_up(hasbit, 8);
+  l->size = div_round_up(hasbit + 1, 8);
 
   /* Allocate non-oneof fields. */
   for (upb_msg_field_begin(&it, m); !upb_msg_field_done(&it);
