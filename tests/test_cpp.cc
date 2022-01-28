@@ -171,8 +171,8 @@ TEST(Cpp, TimestampEncoder) {
   for(long timestamp: timestamps) {
     google_protobuf_Timestamp_set_seconds(timestamp_upb, timestamp);
 
-    char json[23];
-    size_t size = upb_JsonEncode(timestamp_upb, md.ptr(), NULL, 0, json, 23, NULL);
+    char json[128];
+    size_t size = upb_JsonEncode(timestamp_upb, md.ptr(), NULL, 0, json, sizeof(json), NULL);
     bool result = upb_JsonDecode(json, size, timestamp_upb_decoded, md.ptr(), NULL, 0, arena.ptr(), NULL);
     const long timestamp_decoded = google_protobuf_Timestamp_seconds(timestamp_upb_decoded); 
 
