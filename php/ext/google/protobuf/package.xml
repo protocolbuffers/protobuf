@@ -10,11 +10,11 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2022-01-11</date>
- <time>00:58:50</time>
+ <date>2022-01-28</date>
+ <time>00:03:40</time>
  <version>
-  <release>3.19.3</release>
-  <api>3.19.3</api>
+  <release>3.19.4</release>
+  <api>3.19.4</api>
  </version>
  <stability>
   <release>stable</release>
@@ -22,7 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
  <notes>
- * No new changes in 3.19.3
+ * Fixed a data loss bug that could occur when the number of optional fields in a message is an exact multiple of 32. (#9440).
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -1185,6 +1185,21 @@ G  A release.
    <date>2022-01-11</date>
    <time>00:58:50</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.19.4</release>
+    <api>3.19.4</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2022-01-28</date>
+   <time>00:03:40</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
    </notes>
   </release>

@@ -9,6 +9,19 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Unknown enums for proto2 protos now properly implement proto2's behavior of
     putting such values in unknown fields.
 
+2022-01-28 version 3.19.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Python
+  * Make libprotobuf symbols local on OSX to fix issue #9395 (#9435)
+
+  Ruby
+  * Fixed a data loss bug that could occur when the number of `optional`
+    fields in a message is an exact multiple of 32. (#9440).
+
+  PHP
+  * Fixed a data loss bug that could occur when the number of `optional`
+    fields in a message is an exact multiple of 32. (#9440).
+
 2022-01-10 version 3.19.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Python
