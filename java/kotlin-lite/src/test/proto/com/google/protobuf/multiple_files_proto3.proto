@@ -28,7 +28,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-<<<<<<<< HEAD:java/kotlin-lite/src/test/proto/com/google/protobuf/multiple_files_proto3.proto
 syntax = "proto3";
 
 package protobuf.kotlin.generator;
@@ -41,17 +40,3 @@ enum NestedEnum { FOO = 0; }
 message MultipleFilesMessageA {}
 
 message MultipleFilesMessageB {}
-========
-syntax = "proto2";
-
-package dynamic_message_test;
-
-option java_package = "dynamicmessagetest";
-option java_outer_classname = "DynamicMessageTestProto";
-
-message EmptyMessage {}
-
-message MessageWithMapFields {
-  map<string, EmptyMessage> string_message_map = 1;
-}
->>>>>>>> refs/tags/sync-piper:java/core/src/test/proto/com/google/protobuf/dynamic_message_test.proto
