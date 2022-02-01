@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_ARENASTRING_H__
 #define GOOGLE_PROTOBUF_ARENASTRING_H__
 
+#include <algorithm>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -39,7 +40,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/explicitly_constructed.h>
 
+// must be last:
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -50,11 +53,13 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-
-template <typename T>
-class ExplicitlyConstructed;
+class EpsCopyInputStream;
 
 class SwapFieldHelper;
+
+// Declared in message_lite.h
+PROTOBUF_EXPORT extern ExplicitlyConstructedArenaString
+    fixed_address_empty_string;
 
 // Lazy string instance to support string fields with non-empty default.
 // These are initialized on the first call to .get().
@@ -92,25 +97,102 @@ class PROTOBUF_EXPORT LazyString {
 template <typename T>
 class TaggedPtr {
  public:
+  // Bit flags qualifying string properties. We can use up to 3 bits as
+  // ptr_ is guaranteed and enforced to be aligned on 8 byte boundaries.
+  enum Flags {
+    kArenaBit = 0x1,      // ptr is arena allocated
+    kAllocatedBit = 0x2,  // ptr is heap allocated
+    kMutableBit = 0x4,    // ptr contents are fully mutable
+    kMask = 0x7           // Bit mask
+  };
+
+  // Composed logical types
+  enum Type {
+    // Default strings are immutable and never owned.
+    kDefault = 0,
+
+    // Allocated strings are mutable and (as the name implies) owned.
+    // A heap allocated string must be deleted.
+    kAllocated = kAllocatedBit | kMutableBit,
+
+    // Mutable arena strings are strings where the string instance is owned
+    // by the arena, but the string contents itself are owned by the string
+    // instance. Mutable arena string instances need to be destroyed which is
+    // typically done through a cleanup action added to the arena owning it.
+    kMutableArena = kArenaBit | kMutableBit,
+
+    // Fixed size arena strings are strings where both the string instance and
+    // the string contents are fully owned by the arena. Fixed size arena
+    // strings are a platform and c++ library specific customization. Fixed
+    // size arena strings are immutable, with the exception of custom internal
+    // updates to the content that fit inside the existing capacity.
+    // Fixed size arena strings must never be deleted or destroyed.
+    kFixedSizeArena = kArenaBit,
+  };
+
   TaggedPtr() = default;
-  explicit constexpr TaggedPtr(const ExplicitlyConstructed<std::string>* ptr)
-      : ptr_(const_cast<ExplicitlyConstructed<std::string>*>(ptr)) {}
+  explicit constexpr TaggedPtr(ExplicitlyConstructedArenaString* ptr)
+      : ptr_(ptr) {}
 
-  void SetTagged(T* p) {
-    Set(p);
-    ptr_ = reinterpret_cast<void*>(as_int() | 1);
+  // Sets the value to `p`, tagging the value as being a 'default' value.
+  // See documentation for kDefault for more info.
+  inline const T* SetDefault(const T* p) {
+    return TagAs(kDefault, const_cast<T*>(p));
   }
-  void Set(T* p) { ptr_ = p; }
-  T* Get() const { return reinterpret_cast<T*>(as_int() & -2); }
-  bool IsTagged() const { return as_int() & 1; }
 
-  // Returned value is only safe to dereference if IsTagged() == false.
-  // It is safe to compare.
-  T* UnsafeGet() const { return static_cast<T*>(ptr_); }
+  // Sets the value to `p`, tagging the value as a heap allocated value.
+  // Allocated strings are mutable and (as the name implies) owned.
+  // `p` must not be null
+  inline T* SetAllocated(T* p) { return TagAs(kAllocated, p); }
 
-  bool IsNull() { return ptr_ == nullptr; }
+  // Sets the value to `p`, tagging the value as a fixed size arena string.
+  // See documentation for kFixedSizeArena for more info.
+  // `p` must not be null
+  inline T* SetFixedSizeArena(T* p) { return TagAs(kFixedSizeArena, p); }
+
+  // Sets the value to `p`, tagging the value as a mutable arena string.
+  // See documentation for kMutableArena for more info.
+  // `p` must not be null
+  inline T* SetMutableArena(T* p) { return TagAs(kMutableArena, p); }
+
+  // Returns true if the contents of the current string are fully mutable.
+  inline bool IsMutable() const { return as_int() & kMutableBit; }
+
+  // Returns true if the current string is an immutable default value.
+  inline bool IsDefault() const { return (as_int() & kMask) == kDefault; }
+
+  // Returns true if the current string is a heap allocated mutable value.
+  inline bool IsAllocated() const { return as_int() & kAllocatedBit; }
+
+  // Returns true if the current string is an arena allocated value.
+  // This means it's either a mutable or fixed size arena string.
+  inline bool IsArena() const { return as_int() & kArenaBit; }
+
+  // Returns true if the current string is a fixed size arena allocated value.
+  inline bool IsFixedSizeArena() const {
+    return (as_int() & kMask) == kFixedSizeArena;
+  }
+
+  // Returns the contained string pointer.
+  inline T* Get() const { return reinterpret_cast<T*>(as_int() & ~kMask); }
+
+  // Returns true if the contained pointer is null, indicating some error.
+  // The Null value is only used during parsing for temporary values.
+  // A persisted ArenaStringPtr value is never null.
+  inline bool IsNull() { return ptr_ == nullptr; }
 
  private:
+  static inline void assert_aligned(const void* p) {
+    GOOGLE_DCHECK_EQ(reinterpret_cast<uintptr_t>(p) & kMask, 0UL);
+  }
+
+  inline T* TagAs(Type type, T* p) {
+    GOOGLE_DCHECK(type == kDefault || p != nullptr);
+    assert_aligned(p);
+    ptr_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(p) | type);
+    return p;
+  }
+
   uintptr_t as_int() const { return reinterpret_cast<uintptr_t>(ptr_); }
   void* ptr_;
 };
@@ -118,66 +200,29 @@ class TaggedPtr {
 static_assert(std::is_trivial<TaggedPtr<std::string>>::value,
               "TaggedPtr must be trivial");
 
-// This class encapsulates a pointer to a std::string with or without a donated
-// buffer, tagged by bottom bit. It is a high-level wrapper that almost directly
-// corresponds to the interface required by string fields in generated
-// code. It replaces the old std::string* pointer in such cases.
+// This class encapsulates a pointer to a std::string with or without arena
+// owned contents, tagged by the bottom bits of the string pointer. It is a
+// high-level wrapper that almost directly corresponds to the interface required
+// by string fields in generated code. It replaces the old std::string* pointer
+// in such cases.
 //
-// The object has different but similar code paths for when the default value is
-// the empty string and when it is a non-empty string.
-// The empty string is handled different throughout the library and there is a
-// single global instance of it we can share.
+// The string pointer is tagged to be either a default, externally owned value,
+// a mutable heap allocated value, or an arena allocated value. The object uses
+// a single global instance of an empty string that is used as the initial
+// default value. Fields that have empty default values directly use this global
+// default. Fields that have non empty default values are supported through
+// lazily initialized default values managed by the LazyString class.
 //
-// For fields with an empty string default value, there are three distinct
-// states:
-//
-// - Pointer set to 'String' tag (LSB is 0), equal to
-//   &GetEmptyStringAlreadyInited(): field is set to its default value. Points
-//   to a true std::string*, but we do not own that std::string* (it's a
-//   globally shared instance).
-//
-// - Pointer set to 'String' tag (LSB is 0), but not equal to the global empty
-//   string: field points to a true std::string* instance that we own. This
-//   instance is either on the heap or on the arena (i.e. registered on
-//   free()/destructor-call list) as appropriate.
-//
-// - Pointer set to 'DonatedString' tag (LSB is 1): points to a std::string
-//   instance with a buffer on the arena (arena is never nullptr in this case).
-//
-// For fields with a non-empty string default value, there are three distinct
-// states:
-//
-// - Pointer set to 'String' tag (LSB is 0), equal to `nullptr`:
-//   Field is in "default" mode and does not point to any actual instance.
-//   Methods that might need to create an instance of the object will pass a
-//   `const LazyString&` for it.
-//
-// - Pointer set to 'String' tag (LSB is 0), but not equal to `nullptr`:
-//   field points to a true std::string* instance that we own. This instance is
-//   either on the heap or on the arena (i.e. registered on
-//   free()/destructor-call list) as appropriate.
-//
-// - Pointer set to 'DonatedString' tag (LSB is 1): points to a std::string
-//   instance with a buffer on the arena (arena is never nullptr in this case).
-//
-// Generated code and reflection code both ensure that ptr_ is never null for
-// fields with an empty default.
+// Generated code and reflection code both ensure that ptr_ is never null.
 // Because ArenaStringPtr is used in oneof unions, its constructor is a NOP and
-// so the field is always manually initialized via method calls.
+// the field is always manually initialized via method calls.
 //
-// Side-note: why pass information about the default on every API call? Because
-// we don't want to hold it in a member variable, or else this would go into
-// every proto message instance. This would be a huge waste of space, since the
-// default instance pointer is typically a global (static class field). We want
-// the generated code to be as efficient as possible, and if we take
-// the default value information as a parameter that's in practice taken from a
-// static class field, and compare ptr_ to the default value, we end up with a
-// single "cmp %reg, GLOBAL" in the resulting machine code. (Note that this also
-// requires the String tag to be 0 so we can avoid the mask before comparing.)
+// See TaggedPtr for more information about the types of string values being
+// held, and the mutable and ownership invariants for each type.
 struct PROTOBUF_EXPORT ArenaStringPtr {
   ArenaStringPtr() = default;
   explicit constexpr ArenaStringPtr(
-      const ExplicitlyConstructed<std::string>* default_value)
+      ExplicitlyConstructedArenaString* default_value)
       : tagged_ptr_(default_value) {}
 
   // Some methods below are overloaded on a `default_value` and on tags.
@@ -282,11 +327,23 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   void ClearToDefault(const LazyString& default_value, ::google::protobuf::Arena* arena);
 
   // Called from generated code / reflection runtime only. Resets value to point
-  // to a default string pointer, with the semantics that this
-  // ArenaStringPtr does not own the pointed-to memory. Disregards initial value
-  // of ptr_ (so this is the *ONLY* safe method to call after construction or
-  // when reinitializing after becoming the active field in a oneof union).
-  inline void UnsafeSetDefault(const std::string* default_value);
+  // to a default string pointer, with the semantics that this ArenaStringPtr
+  // does not own the pointed-to memory. Disregards initial value of ptr_ (so
+  // this is the *ONLY* safe method to call after construction or when
+  // reinitializing after becoming the active field in a oneof union).
+  // This function allows an explicit default value other than the default
+  // global empty string. This is used in unit tests and by fields with
+  // explicit non-empty default string values using null defaults.
+  inline void InitDefault();
+  inline void InitDefault(const std::string* str);
+
+  // Called from generated code / reflection runtime only. Resets the value of
+  // this instances to the heap allocated value in `str`. `str` must not be
+  // null. Invokes `arena->Own(str)` to transfer ownership into the arena if
+  // `arena` is not null, else, `str` will be owned by ArenaStringPtr. This
+  // function should only be used to initialize a ArenaStringPtr or on an
+  // instance known to not carry any heap allocated value.
+  inline void InitAllocated(std::string* str, Arena* arena);
 
   // Returns a mutable pointer, but doesn't initialize the string to the
   // default value.
@@ -311,18 +368,24 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // tag tests.
   std::string* UnsafeMutablePointer() PROTOBUF_RETURNS_NONNULL;
 
-  inline bool IsDefault(const std::string* default_value) const {
-    // Relies on the fact that kPtrTagString == 0, so if IsString(), ptr_ is the
-    // actual std::string pointer (and if !IsString(), ptr_ will never be equal
-    // to any aligned |default_value| pointer). The key is that we want to avoid
-    // masking in the fastpath const-pointer Get() case for non-arena code.
-    return tagged_ptr_.UnsafeGet() == default_value;
-  }
+  // Returns true if this instances holds an immutable default value.
+  inline bool IsDefault() const { return tagged_ptr_.IsDefault(); }
 
  private:
+  template <typename... Args>
+  inline std::string* NewString(Arena* arena, Args&&... args) {
+    if (arena == nullptr) {
+      auto* s = new std::string(std::forward<Args>(args)...);
+      return tagged_ptr_.SetAllocated(s);
+    } else {
+      auto* s = Arena::Create<std::string>(arena, std::forward<Args>(args)...);
+      return tagged_ptr_.SetMutableArena(s);
+    }
+  }
+
   TaggedPtr<std::string> tagged_ptr_;
 
-  bool IsDonatedString() const { return false; }
+  bool IsFixedSizeArena() const { return false; }
 
   // Swaps tagged pointer without debug hardening. This is to allow python
   // protobuf to maintain pointer stability even in DEBUG builds.
@@ -332,6 +395,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   }
 
   friend class ::google::protobuf::internal::SwapFieldHelper;
+  friend class TcParser;
 
   // Slow paths.
 
@@ -346,32 +410,49 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Destroys the non-default string value out-of-line
   void DestroyNoArenaSlowPath();
 
+  friend class EpsCopyInputStream;
 };
 
-inline void ArenaStringPtr::UnsafeSetDefault(const std::string* value) {
-  tagged_ptr_.Set(const_cast<std::string*>(value));
+inline void ArenaStringPtr::InitDefault() {
+  tagged_ptr_ = TaggedPtr<std::string>(&fixed_address_empty_string);
+}
+
+inline void ArenaStringPtr::InitDefault(const std::string* str) {
+  tagged_ptr_.SetDefault(str);
+}
+
+inline void ArenaStringPtr::InitAllocated(std::string* str, Arena* arena) {
+  if (arena != nullptr) {
+    tagged_ptr_.SetMutableArena(str);
+    arena->Own(str);
+  } else {
+    tagged_ptr_.SetAllocated(str);
+  }
 }
 
 // Make sure rhs_arena allocated rhs, and lhs_arena allocated lhs.
 inline PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(  //
-    const std::string* default_value,                             //
+    const std::string*,                                           //
     ArenaStringPtr* rhs, Arena* rhs_arena,                        //
     ArenaStringPtr* lhs, Arena* lhs_arena) {
   // Silence unused variable warnings in release buildls.
-  (void)default_value;
   (void)rhs_arena;
   (void)lhs_arena;
   std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  auto force_realloc = [default_value](ArenaStringPtr* p, Arena* arena) {
-    if (p->IsDefault(default_value)) return;
+  auto force_realloc = [](ArenaStringPtr* p, Arena* arena) {
+    if (p->IsDefault()) return;
     std::string* old_value = p->tagged_ptr_.Get();
     std::string* new_value =
-        p->IsDonatedString()
+        p->IsFixedSizeArena()
             ? Arena::Create<std::string>(arena, *old_value)
             : Arena::Create<std::string>(arena, std::move(*old_value));
-    if (arena == nullptr) delete old_value;
-    p->tagged_ptr_.Set(new_value);
+    if (arena == nullptr) {
+      delete old_value;
+      p->tagged_ptr_.SetAllocated(new_value);
+    } else {
+      p->tagged_ptr_.SetMutableArena(new_value);
+    }
   };
   // Because, at this point, tagged_ptr_ has been swapped, arena should also be
   // swapped.
@@ -386,28 +467,31 @@ inline void ArenaStringPtr::ClearNonDefaultToEmpty() {
 }
 
 inline std::string* ArenaStringPtr::MutableNoArenaNoDefault(
-    const std::string* default_value) {
+    const std::string* /* default_value */) {
   // VERY IMPORTANT for performance and code size: this will reduce to a member
   // variable load, a pointer check (against |default_value|, in practice a
   // static global) and a branch to the slowpath (which calls operator new and
   // the ctor). DO NOT add any tagged-pointer operations here.
-  if (IsDefault(default_value)) {
+  GOOGLE_DCHECK(!tagged_ptr_.IsArena());
+  if (IsDefault()) {
     return SetAndReturnNewString();
   } else {
     return UnsafeMutablePointer();
   }
 }
 
-inline void ArenaStringPtr::DestroyNoArena(const std::string* default_value) {
-  if (!IsDefault(default_value)) {
+inline void ArenaStringPtr::DestroyNoArena(
+    const std::string* /* default_value */) {
+  GOOGLE_DCHECK(!tagged_ptr_.IsArena());
+  if (!IsDefault()) {
     DestroyNoArenaSlowPath();
   }
 }
 
 inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
-  GOOGLE_DCHECK(!tagged_ptr_.IsTagged());
-  GOOGLE_DCHECK(tagged_ptr_.UnsafeGet() != nullptr);
-  return tagged_ptr_.UnsafeGet();
+  GOOGLE_DCHECK(tagged_ptr_.IsMutable());
+  GOOGLE_DCHECK(tagged_ptr_.Get() != nullptr);
+  return tagged_ptr_.Get();
 }
 
 

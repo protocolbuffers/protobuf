@@ -52,6 +52,7 @@ using type_info = ::type_info;
 #include <google/protobuf/arena_impl.h>
 #include <google/protobuf/port.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -80,10 +81,11 @@ class ReflectionTester;  // defined in test_util.h
 
 namespace internal {
 
-struct ArenaStringPtr;  // defined in arenastring.h
-class InlinedStringField;  // defined in inlined_string_field.h
-class LazyField;        // defined in lazy_field.h
-class EpsCopyInputStream;  // defined in parse_context.h
+struct ArenaTestPeer;        // defined in arena_test_util.h
+class InternalMetadata;      // defined in metadata_lite.h
+class LazyField;             // defined in lazy_field.h
+class EpsCopyInputStream;    // defined in parse_context.h
+class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
@@ -313,6 +315,20 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                              static_cast<Args&&>(args)...);
   }
 
+  // Allocates memory with the specific size and alignment.
+  void* AllocateAligned(size_t size, size_t align = 8) {
+    if (align <= 8) {
+      return AllocateAlignedNoHook(internal::AlignUpTo8(size));
+    } else {
+      // We are wasting space by over allocating align - 8 bytes. Compared
+      // to a dedicated function that takes current alignment in consideration.
+      // Such a scheme would only waste (align - 8)/2 bytes on average, but
+      // requires a dedicated function in the outline arena allocation
+      // functions. Possibly re-evaluate tradeoffs later.
+      return internal::AlignTo(AllocateAlignedNoHook(size + align - 8), align);
+    }
+  }
+
   // Create an array of object type T on the arena *without* invoking the
   // constructor of T. If `arena` is null, then the return value should be freed
   // with `delete[] x;` (or `::operator delete[](x);`).
@@ -529,6 +545,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     return impl_.IsMessageOwned();
   }
 
+  void ReturnArrayMemory(void* p, size_t size) {
+    impl_.ReturnArrayMemory(p, size);
+  }
+
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE static T* CreateMessageInternal(Arena* arena,
                                                          Args&&... args) {
@@ -619,7 +639,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     // 8 AlignUpTo can be elided.
     const size_t n = sizeof(T) * num_elements;
     return static_cast<T*>(
-        AllocateAlignedWithHook(n, alignof(T), RTTI_TYPE_ID(T)));
+        AllocateAlignedWithHookForArray(n, alignof(T), RTTI_TYPE_ID(T)));
   }
 
   template <typename T, typename... Args>
@@ -762,17 +782,18 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     return nullptr;
   }
 
-  // For friends of arena.
-  void* AllocateAligned(size_t n, size_t align = 8) {
+  void* AllocateAlignedWithHookForArray(size_t n, size_t align,
+                                        const std::type_info* type) {
     if (align <= 8) {
-      return AllocateAlignedNoHook(internal::AlignUpTo8(n));
+      return AllocateAlignedWithHookForArray(internal::AlignUpTo8(n), type);
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
       // Such a scheme would only waste (align - 8)/2 bytes on average, but
       // requires a dedicated function in the outline arena allocation
       // functions. Possibly re-evaluate tradeoffs later.
-      return internal::AlignTo(AllocateAlignedNoHook(n + align - 8), align);
+      return internal::AlignTo(
+          AllocateAlignedWithHookForArray(n + align - 8, type), align);
     }
   }
 
@@ -783,7 +804,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
-      // Such a schemee would only waste (align - 8)/2 bytes on average, but
+      // Such a scheme would only waste (align - 8)/2 bytes on average, but
       // requires a dedicated function in the outline arena allocation
       // functions. Possibly re-evaluate tradeoffs later.
       return internal::AlignTo(AllocateAlignedWithHook(n + align - 8, type),
@@ -793,18 +814,22 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   void* AllocateAlignedNoHook(size_t n);
   void* AllocateAlignedWithHook(size_t n, const std::type_info* type);
+  void* AllocateAlignedWithHookForArray(size_t n, const std::type_info* type);
   std::pair<void*, internal::SerialArena::CleanupNode*>
   AllocateAlignedWithCleanup(size_t n, const std::type_info* type);
 
   template <typename Type>
   friend class internal::GenericTypeHandler;
-  friend struct internal::ArenaStringPtr;  // For AllocateAligned.
-  friend class internal::InlinedStringField;  // For AllocateAligned.
+  friend class internal::InternalMetadata;  // For user_arena().
   friend class internal::LazyField;        // For CreateMaybeMessage.
   friend class internal::EpsCopyInputStream;  // For parser performance
   friend class MessageLite;
   template <typename Key, typename T>
   friend class Map;
+  template <typename>
+  friend class RepeatedField;                   // For ReturnArrayMemory
+  friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
+  friend struct internal::ArenaTestPeer;
 };
 
 // Defined above for supporting environments without RTTI.

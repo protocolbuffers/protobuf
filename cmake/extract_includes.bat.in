@@ -41,6 +41,8 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\php\php_gene
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.h" include\google\protobuf\compiler\plugin.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.pb.h" include\google\protobuf\compiler\plugin.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\python\python_generator.h" include\google\protobuf\compiler\python\python_generator.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\python\python_pyi_generator.h" include\google\protobuf\compiler\python\python_pyi_generator.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\python\python_helpers.h" include\google\protobuf\compiler\python\python_helpers.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\ruby\ruby_generator.h" include\google\protobuf\compiler\ruby\ruby_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\descriptor.h" include\google\protobuf\descriptor.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\descriptor.pb.h" include\google\protobuf\descriptor.pb.h

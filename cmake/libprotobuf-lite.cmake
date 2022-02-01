@@ -2,9 +2,9 @@ set(libprotobuf_lite_files
   ${protobuf_source_dir}/src/google/protobuf/any_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/arena.cc
   ${protobuf_source_dir}/src/google/protobuf/arenastring.cc
+  ${protobuf_source_dir}/src/google/protobuf/arenaz_sampler.cc
   ${protobuf_source_dir}/src/google/protobuf/extension_set.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_enum_util.cc
-  ${protobuf_source_dir}/src/google/protobuf/generated_message_table_driven_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_tctable_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_util.cc
   ${protobuf_source_dir}/src/google/protobuf/implicit_weak_message.cc
@@ -38,15 +38,13 @@ set(libprotobuf_lite_includes
   ${protobuf_source_dir}/src/google/protobuf/arena.h
   ${protobuf_source_dir}/src/google/protobuf/arena_impl.h
   ${protobuf_source_dir}/src/google/protobuf/arenastring.h
+  ${protobuf_source_dir}/src/google/protobuf/arenaz_sampler.h
   ${protobuf_source_dir}/src/google/protobuf/explicitly_constructed.h
   ${protobuf_source_dir}/src/google/protobuf/extension_set.h
   ${protobuf_source_dir}/src/google/protobuf/extension_set_inl.h
   ${protobuf_source_dir}/src/google/protobuf/generated_enum_util.h
-  ${protobuf_source_dir}/src/google/protobuf/generated_message_table_driven.h
-  ${protobuf_source_dir}/src/google/protobuf/generated_message_table_driven_lite.h
   ${protobuf_source_dir}/src/google/protobuf/generated_message_tctable_decl.h
   ${protobuf_source_dir}/src/google/protobuf/generated_message_tctable_impl.h
-  ${protobuf_source_dir}/src/google/protobuf/generated_message_tctable_impl.inc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_util.h
   ${protobuf_source_dir}/src/google/protobuf/has_bits.h
   ${protobuf_source_dir}/src/google/protobuf/implicit_weak_message.h

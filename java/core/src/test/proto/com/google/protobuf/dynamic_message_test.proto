@@ -28,20 +28,30 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package com.google.protobuf;
+<<<<<<<< HEAD:java/kotlin-lite/src/test/proto/com/google/protobuf/multiple_files_proto3.proto
+syntax = "proto3";
 
-/**
- * A prerun for a test suite that allows running the full protocol buffer tests in a mode that
- * disables the optimization for not using {@link RepeatedFieldBuilder} and {@link
- * SingleFieldBuilder} until they are requested. This allows us to run all the tests through both
- * code paths and ensures that both code paths produce identical results.
- *
- * @author jonp@google.com (Jon Perlow)
- */
-public class ForceFieldBuildersPreRun implements Runnable {
+package protobuf.kotlin.generator;
 
-  @Override
-  public void run() {
-    GeneratedMessage.enableAlwaysUseFieldBuildersForTesting();
-  }
+option java_package = "com.google.protobuf.kotlin.generator";
+option java_multiple_files = true;
+
+enum NestedEnum { FOO = 0; }
+
+message MultipleFilesMessageA {}
+
+message MultipleFilesMessageB {}
+========
+syntax = "proto2";
+
+package dynamic_message_test;
+
+option java_package = "dynamicmessagetest";
+option java_outer_classname = "DynamicMessageTestProto";
+
+message EmptyMessage {}
+
+message MessageWithMapFields {
+  map<string, EmptyMessage> string_message_map = 1;
 }
+>>>>>>>> refs/tags/sync-piper:java/core/src/test/proto/com/google/protobuf/dynamic_message_test.proto

@@ -40,9 +40,9 @@
 #include <memory>
 #include <string>
 
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
-#include <google/protobuf/descriptor.h>
 
 namespace google {
 namespace protobuf {
@@ -158,11 +158,10 @@ class FieldGenerator {
   // Generate a manual destructor invocation for use when the message is on an
   // arena. The code that this method generates will be executed inside a
   // shared-for-the-whole-message-class method registered with
-  // OwnDestructor(). The method should return |true| if it generated any code
-  // that requires a call; this allows the message generator to eliminate the
-  // OwnDestructor() registration if no fields require it.
-  virtual bool GenerateArenaDestructorCode(io::Printer* printer) const {
-    return false;
+  // OwnDestructor().
+  virtual void GenerateArenaDestructorCode(io::Printer* printer) const {
+    GOOGLE_CHECK(NeedsArenaDestructor() == ArenaDtorNeeds::kNone)
+        << descriptor_->cpp_type_name();
   }
 
   // Generate initialization code for private members declared by
@@ -186,6 +185,10 @@ class FieldGenerator {
   virtual void GenerateIsInitialized(io::Printer* printer) const {}
 
   virtual bool IsInlined() const { return false; }
+
+  virtual ArenaDtorNeeds NeedsArenaDestructor() const {
+    return ArenaDtorNeeds::kNone;
+  }
 
   void SetHasBitIndex(int32_t has_bit_index);
   void SetInlinedStringIndex(int32_t inlined_string_index);

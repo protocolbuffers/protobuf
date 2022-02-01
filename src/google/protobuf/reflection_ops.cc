@@ -38,12 +38,13 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/unknown_field_set.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -182,7 +183,9 @@ void ReflectionOps::Clear(Message* message) {
     reflection->ClearField(message, field);
   }
 
-  reflection->MutableUnknownFields(message)->Clear();
+  if (reflection->GetInternalMetadata(*message).have_unknown_fields()) {
+    reflection->MutableUnknownFields(message)->Clear();
+  }
 }
 
 bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,

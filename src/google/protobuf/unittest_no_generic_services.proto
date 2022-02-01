@@ -31,6 +31,7 @@
 // Author: kenton@google.com (Kenton Varda)
 
 syntax = "proto2";
+
 package protobuf_unittest.no_generic_services_test;
 
 
@@ -41,14 +42,12 @@ message TestMessage {
   extensions 1000 to max;
 }
 
-enum TestEnum {
-  FOO = 1;
-}
+enum TestEnum { FOO = 1; }
 
 extend TestMessage {
   optional int32 test_extension = 1000;
 }
 
 service TestService {
-  rpc Foo(TestMessage) returns(TestMessage);
+  rpc Foo(TestMessage) returns (TestMessage);
 }

@@ -38,13 +38,13 @@
 #include <map>
 #include <string>
 
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/wire_format.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_doc_comment.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
@@ -308,6 +308,15 @@ void ImmutableMessageFieldLiteGenerator::GenerateKotlinDslMembers(
       "public fun ${$has$kt_capitalized_name$$}$(): kotlin.Boolean {\n"
       "  return $kt_dsl_builder$.${$has$capitalized_name$$}$()\n"
       "}\n");
+  GenerateKotlinOrNull(printer);
+}
+
+void ImmutableMessageFieldLiteGenerator::GenerateKotlinOrNull(io::Printer* printer) const {
+  if (descriptor_->has_optional_keyword()) {
+    printer->Print(variables_,
+                   "public val $classname$Kt.Dsl.$name$OrNull: $kt_type$?\n"
+                   "  get() = $kt_dsl_builder$.$name$OrNull\n");
+  }
 }
 
 void ImmutableMessageFieldLiteGenerator::GenerateFieldInfo(

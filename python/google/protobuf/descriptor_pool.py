@@ -1213,6 +1213,8 @@ class DescriptorPool(object):
         containing_service=None,
         input_type=input_type,
         output_type=output_type,
+        client_streaming=method_proto.client_streaming,
+        server_streaming=method_proto.server_streaming,
         options=_OptionsOrNone(method_proto),
         # pylint: disable=protected-access
         create_key=descriptor._internal_create_key)

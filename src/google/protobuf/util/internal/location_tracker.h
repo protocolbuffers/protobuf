@@ -28,13 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_LOCATION_TRACKER_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_LOCATION_TRACKER_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_LOCATION_TRACKER_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_LOCATION_TRACKER_H__
 
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -66,4 +67,4 @@ class PROTOBUF_EXPORT LocationTrackerInterface {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_LOCATION_TRACKER_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_LOCATION_TRACKER_H__

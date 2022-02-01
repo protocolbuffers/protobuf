@@ -35,6 +35,7 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {

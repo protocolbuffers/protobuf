@@ -70,7 +70,7 @@ const FieldDescriptor* GetFieldDescriptor(const Message& message,
   std::vector<std::string> field_path =
       Split(field_name, ".", true);
   const Descriptor* descriptor = message.GetDescriptor();
-  const FieldDescriptor* field = NULL;
+  const FieldDescriptor* field = nullptr;
   for (int i = 0; i < field_path.size(); i++) {
     field = descriptor->FindFieldByName(field_path[i]);
     descriptor = field->message_type();
@@ -1034,9 +1034,9 @@ TEST(MessageDifferencerTest,
       desc->FindFieldByName("optional_int64");
   const FieldDescriptor* default_int64_desc =
       desc->FindFieldByName("default_int64");
-  ASSERT_TRUE(optional_int32_desc != NULL);
-  ASSERT_TRUE(optional_int64_desc != NULL);
-  ASSERT_TRUE(default_int64_desc != NULL);
+  ASSERT_TRUE(optional_int32_desc != nullptr);
+  ASSERT_TRUE(optional_int64_desc != nullptr);
+  ASSERT_TRUE(default_int64_desc != nullptr);
   msg1.set_optional_int32(0);
   msg2.set_optional_int64(0);
   msg1.set_default_int64(default_int64_desc->default_value_int64());
@@ -1860,11 +1860,10 @@ static const char* const kIgnoredFields[] = {"rm.b", "rm.m.b"};
 
 class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
  public:
-  virtual bool IsIgnored(
-      const Message& message1, const Message& message2,
-      const FieldDescriptor* field,
-      const std::vector<util::MessageDifferencer::SpecificField>&
-          parent_fields) {
+  bool IsIgnored(const Message& message1, const Message& message2,
+                 const FieldDescriptor* field,
+                 const std::vector<util::MessageDifferencer::SpecificField>&
+                     parent_fields) override {
     std::string name = "";
     for (int i = 0; i < parent_fields.size(); ++i) {
       name += parent_fields[i].field->name() + ".";
@@ -1907,8 +1906,8 @@ class ValueProductMapKeyComparator
     : public util::MessageDifferencer::MapKeyComparator {
  public:
   typedef util::MessageDifferencer::SpecificField SpecificField;
-  virtual bool IsMatch(const Message& message1, const Message& message2,
-                       const std::vector<SpecificField>& parent_fields) const {
+  bool IsMatch(const Message& message1, const Message& message2,
+               const std::vector<SpecificField>& parent_fields) const override {
     const Reflection* reflection1 = message1.GetReflection();
     const Reflection* reflection2 = message2.GetReflection();
     // FieldDescriptor for item.ra
@@ -1968,8 +1967,8 @@ class OffsetByOneMapKeyComparator
     : public util::MessageDifferencer::MapKeyComparator {
  public:
   typedef util::MessageDifferencer::SpecificField SpecificField;
-  virtual bool IsMatch(const Message& message1, const Message& message2,
-                       const std::vector<SpecificField>& parent_fields) const {
+  bool IsMatch(const Message& message1, const Message& message2,
+               const std::vector<SpecificField>& parent_fields) const override {
     return parent_fields.back().index + 1 == parent_fields.back().new_index;
   }
 };
@@ -2366,11 +2365,10 @@ class ParentSavingFieldComparator : public util::FieldComparator {
  public:
   ParentSavingFieldComparator() {}
 
-  virtual ComparisonResult Compare(const Message& message_1,
-                                   const Message& message_2,
-                                   const FieldDescriptor* field, int index_1,
-                                   int index_2,
-                                   const util::FieldContext* field_context) {
+  ComparisonResult Compare(const Message& message_1, const Message& message_2,
+                           const FieldDescriptor* field, int index_1,
+                           int index_2,
+                           const util::FieldContext* field_context) override {
     if (field_context) parent_fields_ = *(field_context->parent_fields());
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       return RECURSE;
@@ -2423,7 +2421,7 @@ class ComparisonTest : public testing::Test {
     unknown2_ = empty2_.mutable_unknown_fields();
   }
 
-  ~ComparisonTest() {}
+  ~ComparisonTest() override {}
 
   void SetSpecialFieldOption(const Message& message,
                              util::MessageDifferencer* d) {
@@ -3403,12 +3401,11 @@ class LengthMapKeyComparator
     : public util::MessageDifferencer::MapKeyComparator {
  public:
   typedef util::MessageDifferencer::SpecificField SpecificField;
-  virtual bool IsMatch(const Message& message1, const Message& message2,
-                       const std::vector<SpecificField>& parent_fields) const {
+  bool IsMatch(const Message& message1, const Message& message2,
+               const std::vector<SpecificField>& parent_fields) const override {
     const Reflection* reflection1 = message1.GetReflection();
     const Reflection* reflection2 = message2.GetReflection();
-    const FieldDescriptor* key_field =
-        message1.GetDescriptor()->map_key();
+    const FieldDescriptor* key_field = message1.GetDescriptor()->map_key();
     return reflection1->GetString(message1, key_field).size() ==
            reflection2->GetString(message2, key_field).size();
   }
@@ -3452,7 +3449,7 @@ class MatchingTest : public testing::Test {
  protected:
   MatchingTest() {}
 
-  ~MatchingTest() {}
+  ~MatchingTest() override {}
 
   std::string RunWithResult(MessageDifferencer* differencer,
                             const Message& msg1, const Message& msg2,
@@ -3717,7 +3714,7 @@ TEST_F(MatchingTest, MatchingWorksWithExtensions) {
   const FieldDescriptor* nested_key;
   descriptor = msg1.GetDescriptor()->file();
   desc = descriptor->FindExtensionByName("repeated_nested_message_extension");
-  ASSERT_FALSE(desc == NULL);
+  ASSERT_FALSE(desc == nullptr);
   nested_key = desc->message_type()->FindFieldByName("bb");
 
   MessageDifferencer differencer;

@@ -28,14 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_TYPE_INFO_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_TYPE_INFO_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_TYPE_INFO_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_TYPE_INFO_H__
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/type.pb.h>
-#include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/statusor.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/status.h>
 
 // Must be included last.
@@ -94,4 +94,4 @@ class PROTOBUF_EXPORT TypeInfo {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_TYPE_INFO_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_TYPE_INFO_H__

@@ -2726,8 +2726,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
       @Override
       public com.google.protobuf.Message.Builder getRepeatedBuilder(Builder builder, int index) {
-        throw new UnsupportedOperationException(
-            "Nested builder not supported for map fields.");
+        throw new UnsupportedOperationException("Map fields cannot be repeated");
       }
     }
 

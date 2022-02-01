@@ -158,6 +158,7 @@
 #include <google/protobuf/stubs/port.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -848,6 +849,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   bool had_error_ = false;
   bool aliasing_enabled_ = false;  // See EnableAliasing().
   bool is_serialization_deterministic_;
+  bool skip_check_consistency = false;
 
   uint8_t* EnsureSpaceFallback(uint8_t* ptr);
   inline uint8_t* Next();
@@ -1067,10 +1069,18 @@ inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<8>(const void* data,
 //   delete coded_output;
 class PROTOBUF_EXPORT CodedOutputStream {
  public:
-  // Create an CodedOutputStream that writes to the given ZeroCopyOutputStream.
-  explicit CodedOutputStream(ZeroCopyOutputStream* stream)
-      : CodedOutputStream(stream, true) {}
-  CodedOutputStream(ZeroCopyOutputStream* stream, bool do_eager_refresh);
+  // Creates a CodedOutputStream that writes to the given `stream`.
+  // The provided stream must publicly derive from `ZeroCopyOutputStream`.
+  template <class Stream, class = typename std::enable_if<std::is_base_of<
+                              ZeroCopyOutputStream, Stream>::value>::type>
+  explicit CodedOutputStream(Stream* stream);
+
+  // Creates a CodedOutputStream that writes to the given `stream`, and does
+  // an 'eager initialization' of the internal state if `eager_init` is true.
+  // The provided stream must publicly derive from `ZeroCopyOutputStream`.
+  template <class Stream, class = typename std::enable_if<std::is_base_of<
+                              ZeroCopyOutputStream, Stream>::value>::type>
+  CodedOutputStream(Stream* stream, bool eager_init);
 
   // Destroy the CodedOutputStream and position the underlying
   // ZeroCopyOutputStream immediately after the last byte written.
@@ -1233,7 +1243,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // remains live until all of the data has been consumed from the stream.
   void EnableAliasing(bool enabled) { impl_.EnableAliasing(enabled); }
 
-  // Indicate to the serializer whether the user wants derministic
+  // Indicate to the serializer whether the user wants deterministic
   // serialization. The default when this is not called comes from the global
   // default, controlled by SetDefaultSerializationDeterministic.
   //
@@ -1276,6 +1286,9 @@ class PROTOBUF_EXPORT CodedOutputStream {
   EpsCopyOutputStream* EpsCopy() { return &impl_; }
 
  private:
+  template <class Stream>
+  void InitEagerly(Stream* stream);
+
   EpsCopyOutputStream impl_;
   uint8_t* cur_;
   int64_t start_count_;
@@ -1618,6 +1631,31 @@ inline bool CodedInputStream::Skip(int count) {
   }
 
   return SkipFallback(count, original_buffer_size);
+}
+
+template <class Stream, class>
+inline CodedOutputStream::CodedOutputStream(Stream* stream)
+    : impl_(stream, IsDefaultSerializationDeterministic(), &cur_),
+      start_count_(stream->ByteCount()) {
+  InitEagerly(stream);
+}
+
+template <class Stream, class>
+inline CodedOutputStream::CodedOutputStream(Stream* stream, bool eager_init)
+    : impl_(stream, IsDefaultSerializationDeterministic(), &cur_),
+      start_count_(stream->ByteCount()) {
+  if (eager_init) {
+    InitEagerly(stream);
+  }
+}
+
+template <class Stream>
+inline void CodedOutputStream::InitEagerly(Stream* stream) {
+  void* data;
+  int size;
+  if (PROTOBUF_PREDICT_TRUE(stream->Next(&data, &size) && size > 0)) {
+    cur_ = impl_.SetInitialBuffer(data, size);
+  }
 }
 
 inline uint8_t* CodedOutputStream::WriteVarint32ToArray(uint32_t value,

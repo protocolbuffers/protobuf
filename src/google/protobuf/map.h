@@ -37,6 +37,7 @@
 #ifndef GOOGLE_PROTOBUF_MAP_H__
 #define GOOGLE_PROTOBUF_MAP_H__
 
+
 #include <functional>
 #include <initializer_list>
 #include <iterator>
@@ -58,12 +59,14 @@
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_enum_util.h>
 #include <google/protobuf/map_type_handler.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/stubs/hash.h>
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -115,6 +118,11 @@ class MapAllocator {
   MapAllocator(const MapAllocator<X>& allocator)  // NOLINT(runtime/explicit)
       : arena_(allocator.arena()) {}
 
+  // MapAllocator does not support alignments beyond 8. Technically we should
+  // support up to std::max_align_t, but this fails with ubsan and tcmalloc
+  // debug allocation logic which assume 8 as default alignment.
+  static_assert(alignof(value_type) <= 8, "");
+
   pointer allocate(size_type n, const void* /* hint */ = nullptr) {
     // If arena is not given, malloc needs to be called which doesn't
     // construct element object.
@@ -128,12 +136,7 @@ class MapAllocator {
 
   void deallocate(pointer p, size_type n) {
     if (arena_ == nullptr) {
-#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
-      ::operator delete(p, n * sizeof(value_type));
-#else
-      (void)n;
-      ::operator delete(p);
-#endif
+      internal::SizedDelete(p, n * sizeof(value_type));
     }
   }
 
@@ -334,7 +337,7 @@ inline size_t SpaceUsedInValues(const void*) { return 0; }
 // std::pair as value_type, we use this class which provides us more control of
 // its process of construction and destruction.
 template <typename Key, typename T>
-struct MapPair {
+struct PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG MapPair {
   using first_type = const Key;
   using second_type = T;
 
