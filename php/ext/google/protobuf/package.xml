@@ -22,7 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
  <notes>
- * Fixed a data loss bug that could occur when the number of optional fields in a message is an exact multiple of 32. (#9440).
+ * See github.com/protocolbuffers/protobuf/releases for release notes.
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
