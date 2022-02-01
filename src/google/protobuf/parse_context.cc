@@ -36,9 +36,10 @@
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/wire_format_lite.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -388,12 +389,13 @@ const char* StringParser(const char* begin, const char* end, void* object,
 }
 
 // Defined in wire_format_lite.cc
-void PrintUTF8ErrorLog(const char* field_name, const char* operation_str,
+void PrintUTF8ErrorLog(StringPiece message_name,
+                       StringPiece field_name, const char* operation_str,
                        bool emit_stacktrace);
 
 bool VerifyUTF8(StringPiece str, const char* field_name) {
   if (!IsStructurallyValidUTF8(str)) {
-    PrintUTF8ErrorLog(field_name, "parsing", false);
+    PrintUTF8ErrorLog("", field_name, "parsing", false);
     return false;
   }
   return true;

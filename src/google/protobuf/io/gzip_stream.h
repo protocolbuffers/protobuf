@@ -49,6 +49,7 @@
 #include <google/protobuf/port.h>
 #include <zlib.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -56,7 +57,8 @@ namespace protobuf {
 namespace io {
 
 // A ZeroCopyInputStream that reads compressed data through zlib
-class PROTOBUF_EXPORT GzipInputStream : public ZeroCopyInputStream {
+class PROTOBUF_EXPORT GzipInputStream PROTOBUF_FUTURE_FINAL
+    : public ZeroCopyInputStream {
  public:
   // Format key for constructor
   enum Format {
@@ -104,7 +106,8 @@ class PROTOBUF_EXPORT GzipInputStream : public ZeroCopyInputStream {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GzipInputStream);
 };
 
-class PROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
+class PROTOBUF_EXPORT GzipOutputStream PROTOBUF_FUTURE_FINAL
+    : public ZeroCopyOutputStream {
  public:
   // Format key for constructor
   enum Format {

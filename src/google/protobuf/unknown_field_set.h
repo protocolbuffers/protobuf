@@ -38,6 +38,7 @@
 #ifndef GOOGLE_PROTOBUF_UNKNOWN_FIELD_SET_H__
 #define GOOGLE_PROTOBUF_UNKNOWN_FIELD_SET_H__
 
+
 #include <assert.h>
 
 #include <string>
@@ -45,12 +46,13 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/message_lite.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/message_lite.h>
+#include <google/protobuf/parse_context.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -172,6 +174,9 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   template <typename MessageType>
   bool MergeFromMessage(const MessageType& message);
 
+  // Serialization.
+  bool SerializeToString(std::string* output) const;
+  bool SerializeToCodedStream(io::CodedOutputStream* output) const;
   static const UnknownFieldSet& default_instance();
 
  private:
@@ -258,15 +263,6 @@ class PROTOBUF_EXPORT UnknownField {
   inline void set_length_delimited(const std::string& value);
   inline std::string* mutable_length_delimited();
   inline UnknownFieldSet* mutable_group();
-
-  // Serialization API.
-  // These methods can take advantage of the underlying implementation and may
-  // archieve a better performance than using getters to retrieve the data and
-  // do the serialization yourself.
-  void SerializeLengthDelimitedNoTag(io::CodedOutputStream* output) const {
-    output->SetCur(InternalSerializeLengthDelimitedNoTag(output->Cur(),
-                                                         output->EpsCopy()));
-  }
 
   inline size_t GetLengthDelimitedSize() const;
   uint8_t* InternalSerializeLengthDelimitedNoTag(

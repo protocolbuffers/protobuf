@@ -391,6 +391,12 @@ message TestParsingMergeLite {
   }
 }
 
+// Test that the correct exception is thrown by parseFrom in a corner case
+// involving merging, extensions, and required fields.
+message TestMergeExceptionLite {
+  optional TestAllExtensionsLite all_extensions = 1;
+}
+
 // TestEmptyMessageLite is used to test unknown fields support in lite mode.
 message TestEmptyMessageLite {}
 
@@ -461,6 +467,12 @@ message TestOneofParsingLite {
         [ctype = STRING_PIECE, default = "default StringPiece"];
     V2EnumLite oneof_enum = 9;
   }
+}
+
+message TestMessageSetLite {
+  option message_set_wire_format = true;
+
+  extensions 100 to max;
 }
 
 // The following four messages are set up to test for wire compatibility between

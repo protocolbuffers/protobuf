@@ -101,7 +101,7 @@ public class Utf8Test {
       int codePoint;
       do {
         codePoint = rnd.nextInt(maxCodePoint);
-      } while (Utf8Utils.isSurrogate(codePoint));
+      } while (Character.isSurrogate((char) codePoint));
       sb.appendCodePoint(codePoint);
     }
     return sb.toString();

@@ -22,7 +22,7 @@ function run_test() {
   dotnet restore src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
   dotnet build -c Release src/Google.Protobuf/Google.Protobuf.csproj
   dotnet build -c Release src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
-  dotnet run -c Release -f netcoreapp2.1 -p src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
+  dotnet run -c Release -f netcoreapp3.1 -p src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
 }
 
 set -ex

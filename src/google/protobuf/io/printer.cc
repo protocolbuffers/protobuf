@@ -66,8 +66,11 @@ Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter,
       annotation_collector_(annotation_collector) {}
 
 Printer::~Printer() {
-  // Only BackUp() if we have called Next() at least once and never failed.
-  if (buffer_size_ > 0 && !failed_) {
+  // Only BackUp() if we invoked Next() at least once, and we have never failed.
+  // Note that we always call `Backup`, i.e. we call BackUp(0) as some output
+  // streams have buffered output, and BackUp() serves as a flush event in such
+  // implementations.
+  if (buffer_ != nullptr && !failed_) {
     output_->BackUp(buffer_size_);
   }
 }

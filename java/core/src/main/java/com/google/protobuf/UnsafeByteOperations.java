@@ -35,7 +35,7 @@ import java.nio.ByteBuffer;
 
 /**
  * Provides a number of unsafe byte operations to be used by advanced applications with high
- * performance requirements. These methods are referred to as "unsafe" due to the fact that they
+ * performance requirements. These methods are referred to as "unsafe" because they
  * potentially expose the backing buffer of a {@link ByteString} to the application.
  *
  * <p><strong>DISCLAIMER:</strong> The methods in this class should only be called if it is

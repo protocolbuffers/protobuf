@@ -55,8 +55,8 @@
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/util/field_comparator.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/util/field_comparator.h>
 
 // Always include as last one, otherwise it can break compilation
 #include <google/protobuf/port_def.inc>
@@ -331,9 +331,14 @@ void MessageDifferencer::set_message_field_comparison(
   message_field_comparison_ = comparison;
 }
 
+MessageDifferencer::MessageFieldComparison
+MessageDifferencer::message_field_comparison() const {
+  return message_field_comparison_;
+}
+
 void MessageDifferencer::set_scope(Scope scope) { scope_ = scope; }
 
-MessageDifferencer::Scope MessageDifferencer::scope() { return scope_; }
+MessageDifferencer::Scope MessageDifferencer::scope() const { return scope_; }
 
 void MessageDifferencer::set_float_comparison(FloatComparison comparison) {
   default_field_comparator_.set_float_comparison(
@@ -347,7 +352,7 @@ void MessageDifferencer::set_repeated_field_comparison(
 }
 
 MessageDifferencer::RepeatedFieldComparison
-MessageDifferencer::repeated_field_comparison() {
+MessageDifferencer::repeated_field_comparison() const {
   return repeated_field_comparison_;
 }
 

@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
-    <VersionPrefix>3.18.1</VersionPrefix>
+    <VersionPrefix>3.19.4</VersionPrefix>
     <!-- C# 7.2 is required for Span/BufferWriter/ReadOnlySequence -->
     <LangVersion>7.2</LangVersion>
     <Authors>Google Inc.</Authors>
@@ -15,12 +15,14 @@
     <PackageTags>Protocol;Buffers;Binary;Serialization;Format;Google;proto;proto3</PackageTags>
     <PackageReleaseNotes>C# proto3 support</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/protocolbuffers/protobuf</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/protocolbuffers/protobuf/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/protocolbuffers/protobuf.git</RepositoryUrl>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <!-- Include PDB in the built .nupkg -->
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
@@ -43,7 +45,7 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Memory" Version="4.5.3"/>
-    <!-- Needed for netcoreapp2.1 to work correctly. .NET is not able to load the assembly without this -->
+    <!-- Needed for netcoreapp3.1 to work correctly. .NET is not able to load the assembly without this -->
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2"/>
   </ItemGroup>
 

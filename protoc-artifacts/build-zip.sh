@@ -16,6 +16,7 @@ release page. If the target is protoc, well-known type .proto files will also be
 included. Each invocation will create 8 zip packages:
   dist/<TARGET>-<VERSION_NUMBER>-win32.zip
   dist/<TARGET>-<VERSION_NUMBER>-win64.zip
+  dist/<TARGET>-<VERSION_NUMBER>-osx-aarch_64.zip
   dist/<TARGET>-<VERSION_NUMBER>-osx-x86_64.zip
   dist/<TARGET>-<VERSION_NUMBER>-linux-x86_32.zip
   dist/<TARGET>-<VERSION_NUMBER>-linux-x86_64.zip
@@ -33,6 +34,7 @@ VERSION_NUMBER=$2
 declare -a FILE_NAMES=( \
   win32.zip windows-x86_32.exe \
   win64.zip windows-x86_64.exe \
+  osx-aarch_64.zip osx-aarch_64.exe \
   osx-x86_64.zip osx-x86_64.exe \
   linux-x86_32.zip linux-x86_32.exe \
   linux-x86_64.zip linux-x86_64.exe \

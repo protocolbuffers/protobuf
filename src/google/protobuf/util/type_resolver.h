@@ -40,6 +40,7 @@
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/status.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {

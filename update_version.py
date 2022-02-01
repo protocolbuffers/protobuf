@@ -241,6 +241,24 @@ def UpdateJava():
   RewriteXml('protoc-artifacts/pom.xml',
     lambda document : ReplaceText(
       Find(document.documentElement, 'version'), GetFullVersion()))
+  
+  RewriteTextFile('java/README.md',
+    lambda line : re.sub(
+      r'<version>.*</version>',
+      '<version>%s</version>' % GetFullVersion(),
+      line))
+
+  RewriteTextFile('java/README.md',
+    lambda line : re.sub(
+      r'implementation \'com.google.protobuf:protobuf-java:.*\'',
+      'implementation \'com.google.protobuf:protobuf-java:%s\'' % GetFullVersion(),
+      line))
+
+  RewriteTextFile('java/lite.md',
+    lambda line : re.sub(
+      r'<version>.*</version>',
+      '<version>%s</version>' % GetFullVersion(),
+      line))
 
 
 def UpdateJavaScript():

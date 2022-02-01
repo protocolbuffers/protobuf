@@ -59,6 +59,7 @@ from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf import descriptor_pb2
+from google.protobuf import descriptor
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 from google.protobuf import text_format
@@ -1147,16 +1148,32 @@ class MessageTest(unittest.TestCase):
     m.repeated_string.extend(MessageTest.TestIterable(['3', '4']))
     self.assertSequenceEqual(['', '1', '2', '3', '4'], m.repeated_string)
 
+  class TestIndex(object):
+    """This index object mimics the behavior of numpy.int64 and other types."""
+
+    def __init__(self, value=None):
+      self.value = value
+
+    def __index__(self):
+      return self.value
+
+  def testRepeatedIndexingWithIntIndex(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_int32.extend([1, 2, 3])
+    self.assertEqual(1, msg.repeated_int32[MessageTest.TestIndex(0)])
+
+  def testRepeatedIndexingWithNegative1IntIndex(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_int32.extend([1, 2, 3])
+    self.assertEqual(3, msg.repeated_int32[MessageTest.TestIndex(-1)])
+
+  def testRepeatedIndexingWithNegative1Int(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_int32.extend([1, 2, 3])
+    self.assertEqual(3, msg.repeated_int32[-1])
+
   def testPickleRepeatedScalarContainer(self, message_module):
-    # TODO(tibell): The pure-Python implementation support pickling of
-    #   scalar containers in *some* cases. For now the cpp2 version
-    #   throws an exception to avoid a segfault. Investigate if we
-    #   want to support pickling of these fields.
-    #
-    # For more information see: https://b2.corp.google.com/u/0/issues/18677897
-    if (api_implementation.Type() != 'cpp' or
-        api_implementation.Version() == 2):
-      return
+    # Pickle repeated scalar container is not supported.
     m = message_module.TestAllTypes()
     with self.assertRaises(pickle.PickleError) as _:
       pickle.dumps(m.repeated_int32, pickle.HIGHEST_PROTOCOL)
@@ -1657,6 +1674,26 @@ class Proto3Test(unittest.TestCase):
     self.assertFalse(msg.optional_nested_message.HasField('bb'))
 
     self.assertEqual(msg.WhichOneof('_optional_int32'), None)
+
+    # Test has presence:
+    for field in test_proto3_optional_pb2.TestProto3Optional.DESCRIPTOR.fields:
+      self.assertTrue(field.has_presence)
+    for field in unittest_pb2.TestAllTypes.DESCRIPTOR.fields:
+      if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+        self.assertFalse(field.has_presence)
+      else:
+        self.assertTrue(field.has_presence)
+    proto3_descriptor = unittest_proto3_arena_pb2.TestAllTypes.DESCRIPTOR
+    repeated_field = proto3_descriptor.fields_by_name['repeated_int32']
+    self.assertFalse(repeated_field.has_presence)
+    singular_field = proto3_descriptor.fields_by_name['optional_int32']
+    self.assertFalse(singular_field.has_presence)
+    optional_field = proto3_descriptor.fields_by_name['proto3_optional_int32']
+    self.assertTrue(optional_field.has_presence)
+    message_field = proto3_descriptor.fields_by_name['optional_nested_message']
+    self.assertTrue(message_field.has_presence)
+    oneof_field = proto3_descriptor.fields_by_name['oneof_uint32']
+    self.assertTrue(oneof_field.has_presence)
 
   def testAssignUnknownEnum(self):
     """Assigning an unknown enum value is allowed and preserves the value."""

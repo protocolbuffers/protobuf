@@ -992,6 +992,7 @@ public class MapTest {
   }
 
   @Test
+  @SuppressWarnings("ProtoNewBuilderMergeFrom")
   public void testUnknownEnumValues() throws Exception {
     TestMap.Builder builder =
         TestMap.newBuilder()

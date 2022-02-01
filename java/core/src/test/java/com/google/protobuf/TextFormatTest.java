@@ -69,8 +69,6 @@ import org.junit.runners.JUnit4;
 
 /**
  * Test case for {@link TextFormat}.
- *
- * <p>TODO(wenboz): ExtensionTest and rest of text_format_unittest.cc.
  */
 @RunWith(JUnit4.class)
 public class TextFormatTest {

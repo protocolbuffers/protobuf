@@ -54,8 +54,8 @@ namespace objectivec {
 bool PROTOC_EXPORT UseProtoPackageAsDefaultPrefix();
 void PROTOC_EXPORT SetUseProtoPackageAsDefaultPrefix(bool on_or_off);
 // Get/Set the path to a file to load as exceptions when
-// `UseProtoPackageAsDefaultPrefixUseProtoPackageAsDefaultPrefix()` is `true`.
-// And empty string means there should be no exceptions loaded.
+// `UseProtoPackageAsDefaultPrefix()` is `true`. An empty string means there
+// should be no exceptions.
 std::string PROTOC_EXPORT GetProtoPackagePrefixExceptionList();
 void PROTOC_EXPORT SetProtoPackagePrefixExceptionList(
     const std::string& file_path);
@@ -263,7 +263,7 @@ class PROTOC_EXPORT TextFormatDecodeData {
   TextFormatDecodeData(const TextFormatDecodeData&) = delete;
   TextFormatDecodeData& operator=(const TextFormatDecodeData&) = delete;
 
-  void AddString(int32 key, const std::string& input_for_decode,
+  void AddString(int32_t key, const std::string& input_for_decode,
                  const std::string& desired_output);
   size_t num_entries() const { return entries_.size(); }
   std::string Data() const;
@@ -272,7 +272,7 @@ class PROTOC_EXPORT TextFormatDecodeData {
                                          const std::string& desired_output);
 
  private:
-  typedef std::pair<int32, std::string> DataEntry;
+  typedef std::pair<int32_t, std::string> DataEntry;
   std::vector<DataEntry> entries_;
 };
 

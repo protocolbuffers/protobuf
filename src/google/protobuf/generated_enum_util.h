@@ -31,11 +31,13 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
 #define GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
 
+
 #include <type_traits>
 
-#include <google/protobuf/message_lite.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/message_lite.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG

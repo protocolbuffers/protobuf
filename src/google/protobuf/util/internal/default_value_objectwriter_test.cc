@@ -57,7 +57,7 @@ class BaseDefaultValueObjectWriterTest
         &mock_));
   }
 
-  virtual ~BaseDefaultValueObjectWriterTest() {}
+  ~BaseDefaultValueObjectWriterTest() override {}
 
   TypeInfoTestHelper helper_;
   MockObjectWriter mock_;
@@ -71,7 +71,7 @@ class DefaultValueObjectWriterTest : public BaseDefaultValueObjectWriterTest {
  protected:
   DefaultValueObjectWriterTest()
       : BaseDefaultValueObjectWriterTest(DefaultValueTest::descriptor()) {}
-  virtual ~DefaultValueObjectWriterTest() {}
+  ~DefaultValueObjectWriterTest() override {}
 };
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,

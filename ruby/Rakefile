@@ -80,6 +80,14 @@ if RUBY_PLATFORM == "java"
   end
 
 else
+  unless ENV['IN_DOCKER'] == 'true'
+    # We need utf8_range in-tree.
+    FileUtils.mkdir_p("ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/utf8_range.h", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/utf8_range.c", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/LICENSE", "ext/google/protobuf_c/third_party/utf8_range")
+  end
+
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
     unless RUBY_PLATFORM =~ /darwin/
       # TODO: also set "no_native to true" for mac if possible. As is,
@@ -93,7 +101,7 @@ else
     ext.cross_platform = [
       'x86-mingw32', 'x64-mingw32',
       'x86_64-linux', 'x86-linux',
-      'universal-darwin'
+      'x86_64-darwin', 'arm64-darwin',
     ]
   end
 
@@ -117,7 +125,7 @@ else
     ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux'].each do |plat|
       RakeCompilerDock.sh <<-"EOT", platform: plat
         bundle && \
-        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.0.0:2.7.0:2.6.0:2.5.0:2.4.0:2.3.0
+        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.0.0:2.7.0:2.6.0:2.5.0
       EOT
     end
   end
@@ -125,7 +133,7 @@ else
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=3.0.0:2.7.0:2.6.0:2.5.1:2.4.0:2.3.0"
+      system "rake cross native gem RUBY_CC_VERSION=3.0.0:2.7.0:2.6.0:2.5.1"
     end
   else
     task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']

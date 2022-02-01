@@ -40,19 +40,37 @@ are:
     includes groups and nested messages.
 """
 
-__author__ = 'petar@google.com (Petar Petrov)'
-
 import collections.abc
+import copy
+import pickle
+from typing import (
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    MutableMapping,
+    MutableSequence,
+    NoReturn,
+    Optional,
+    Sequence,
+    TypeVar,
+    Union,
+    overload,
+)
 
 
-class BaseContainer(object):
+_T = TypeVar('_T')
+_K = TypeVar('_K')
+_V = TypeVar('_V')
 
+
+class BaseContainer(Sequence[_T]):
   """Base container class."""
 
   # Minimizes memory usage and disallows assignment to other attributes.
   __slots__ = ['_message_listener', '_values']
 
-  def __init__(self, message_listener):
+  def __init__(self, message_listener: Any) -> None:
     """
     Args:
       message_listener: A MessageListener implementation.
@@ -62,26 +80,33 @@ class BaseContainer(object):
     self._message_listener = message_listener
     self._values = []
 
+  @overload
+  def __getitem__(self, key: int) -> _T:
+    ...
+
+  @overload
+  def __getitem__(self, key: slice) -> List[_T]:
+    ...
+
   def __getitem__(self, key):
     """Retrieves item by the specified key."""
     return self._values[key]
 
-  def __len__(self):
+  def __len__(self) -> int:
     """Returns the number of elements in the container."""
     return len(self._values)
 
-  def __ne__(self, other):
+  def __ne__(self, other: Any) -> bool:
     """Checks if another instance isn't equal to this one."""
     # The concrete classes should define __eq__.
     return not self == other
 
-  def __hash__(self):
-    raise TypeError('unhashable object')
+  __hash__ = None
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return repr(self._values)
 
-  def sort(self, *args, **kwargs):
+  def sort(self, *args, **kwargs) -> None:
     # Continue to support the old sort_function keyword argument.
     # This is expected to be a rare occurrence, so use LBYL to avoid
     # the overhead of actually catching KeyError.
@@ -89,20 +114,26 @@ class BaseContainer(object):
       kwargs['cmp'] = kwargs.pop('sort_function')
     self._values.sort(*args, **kwargs)
 
-  def reverse(self):
+  def reverse(self) -> None:
     self._values.reverse()
 
 
+# TODO(slebedev): Remove this. BaseContainer does *not* conform to
+# MutableSequence, only its subclasses do.
 collections.abc.MutableSequence.register(BaseContainer)
 
 
-class RepeatedScalarFieldContainer(BaseContainer):
+class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
   """Simple, type-checked, list-like container for holding repeated scalars."""
 
   # Disallows assignment to other attributes.
   __slots__ = ['_type_checker']
 
-  def __init__(self, message_listener, type_checker):
+  def __init__(
+      self,
+      message_listener: Any,
+      type_checker: Any,
+  ) -> None:
     """Args:
 
       message_listener: A MessageListener implementation. The
@@ -111,24 +142,23 @@ class RepeatedScalarFieldContainer(BaseContainer):
       type_checker: A type_checkers.ValueChecker instance to run on elements
       inserted into this container.
     """
-    super(RepeatedScalarFieldContainer, self).__init__(message_listener)
+    super().__init__(message_listener)
     self._type_checker = type_checker
 
-  def append(self, value):
+  def append(self, value: _T) -> None:
     """Appends an item to the list. Similar to list.append()."""
     self._values.append(self._type_checker.CheckValue(value))
     if not self._message_listener.dirty:
       self._message_listener.Modified()
 
-  def insert(self, key, value):
+  def insert(self, key: int, value: _T) -> None:
     """Inserts the item at the specified position. Similar to list.insert()."""
     self._values.insert(key, self._type_checker.CheckValue(value))
     if not self._message_listener.dirty:
       self._message_listener.Modified()
 
-  def extend(self, elem_seq):
+  def extend(self, elem_seq: Iterable[_T]) -> None:
     """Extends by appending the given iterable. Similar to list.extend()."""
-
     if elem_seq is None:
       return
     try:
@@ -145,57 +175,52 @@ class RepeatedScalarFieldContainer(BaseContainer):
       self._values.extend(new_values)
     self._message_listener.Modified()
 
-  def MergeFrom(self, other):
+  def MergeFrom(
+      self,
+      other: Union['RepeatedScalarFieldContainer[_T]', Iterable[_T]],
+  ) -> None:
     """Appends the contents of another repeated field of the same type to this
     one. We do not check the types of the individual fields.
     """
-    self._values.extend(other._values)
+    self._values.extend(other)
     self._message_listener.Modified()
 
-  def remove(self, elem):
+  def remove(self, elem: _T):
     """Removes an item from the list. Similar to list.remove()."""
     self._values.remove(elem)
     self._message_listener.Modified()
 
-  def pop(self, key=-1):
+  def pop(self, key: Optional[int] = -1) -> _T:
     """Removes and returns an item at a given index. Similar to list.pop()."""
     value = self._values[key]
     self.__delitem__(key)
     return value
 
-  def __setitem__(self, key, value):
+  @overload
+  def __setitem__(self, key: int, value: _T) -> None:
+    ...
+
+  @overload
+  def __setitem__(self, key: slice, value: Iterable[_T]) -> None:
+    ...
+
+  def __setitem__(self, key, value) -> None:
     """Sets the item on the specified position."""
-    if isinstance(key, slice):  # PY3
+    if isinstance(key, slice):
       if key.step is not None:
         raise ValueError('Extended slices not supported')
-      self.__setslice__(key.start, key.stop, value)
+      self._values[key] = map(self._type_checker.CheckValue, value)
+      self._message_listener.Modified()
     else:
       self._values[key] = self._type_checker.CheckValue(value)
       self._message_listener.Modified()
 
-  def __getslice__(self, start, stop):
-    """Retrieves the subset of items from between the specified indices."""
-    return self._values[start:stop]
-
-  def __setslice__(self, start, stop, values):
-    """Sets the subset of items from between the specified indices."""
-    new_values = []
-    for value in values:
-      new_values.append(self._type_checker.CheckValue(value))
-    self._values[start:stop] = new_values
-    self._message_listener.Modified()
-
-  def __delitem__(self, key):
+  def __delitem__(self, key: Union[int, slice]) -> None:
     """Deletes the item at the specified position."""
     del self._values[key]
     self._message_listener.Modified()
 
-  def __delslice__(self, start, stop):
-    """Deletes the subset of items from between the specified indices."""
-    del self._values[start:stop]
-    self._message_listener.Modified()
-
-  def __eq__(self, other):
+  def __eq__(self, other: Any) -> bool:
     """Compares the current instance with another one."""
     if self is other:
       return True
@@ -205,15 +230,28 @@ class RepeatedScalarFieldContainer(BaseContainer):
     # We are presumably comparing against some other sequence type.
     return other == self._values
 
+  def __deepcopy__(
+      self,
+      unused_memo: Any = None,
+  ) -> 'RepeatedScalarFieldContainer[_T]':
+    clone = RepeatedScalarFieldContainer(
+        copy.deepcopy(self._message_listener), self._type_checker)
+    clone.MergeFrom(self)
+    return clone
 
-class RepeatedCompositeFieldContainer(BaseContainer):
+  def __reduce__(self, **kwargs) -> NoReturn:
+    raise pickle.PickleError(
+        "Can't pickle repeated scalar fields, convert to list first")
 
+
+# TODO(slebedev): Constrain T to be a subtype of Message.
+class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
   """Simple, list-like container for holding repeated composite fields."""
 
   # Disallows assignment to other attributes.
   __slots__ = ['_message_descriptor']
 
-  def __init__(self, message_listener, message_descriptor):
+  def __init__(self, message_listener: Any, message_descriptor: Any) -> None:
     """
     Note that we pass in a descriptor instead of the generated directly,
     since at the time we construct a _RepeatedCompositeFieldContainer we
@@ -228,10 +266,10 @@ class RepeatedCompositeFieldContainer(BaseContainer):
         that should be present in this container.  We'll use the
         _concrete_class field of this descriptor when the client calls add().
     """
-    super(RepeatedCompositeFieldContainer, self).__init__(message_listener)
+    super().__init__(message_listener)
     self._message_descriptor = message_descriptor
 
-  def add(self, **kwargs):
+  def add(self, **kwargs: Any) -> _T:
     """Adds a new element at the end of the list and returns it. Keyword
     arguments may be used to initialize the element.
     """
@@ -242,7 +280,7 @@ class RepeatedCompositeFieldContainer(BaseContainer):
       self._message_listener.Modified()
     return new_element
 
-  def append(self, value):
+  def append(self, value: _T) -> None:
     """Appends one element by copying the message."""
     new_element = self._message_descriptor._concrete_class()
     new_element._SetListener(self._message_listener)
@@ -251,7 +289,7 @@ class RepeatedCompositeFieldContainer(BaseContainer):
     if not self._message_listener.dirty:
       self._message_listener.Modified()
 
-  def insert(self, key, value):
+  def insert(self, key: int, value: _T) -> None:
     """Inserts the item at the specified position by copying."""
     new_element = self._message_descriptor._concrete_class()
     new_element._SetListener(self._message_listener)
@@ -260,7 +298,7 @@ class RepeatedCompositeFieldContainer(BaseContainer):
     if not self._message_listener.dirty:
       self._message_listener.Modified()
 
-  def extend(self, elem_seq):
+  def extend(self, elem_seq: Iterable[_T]) -> None:
     """Extends by appending the given sequence of elements of the same type
 
     as this one, copying each individual message.
@@ -275,38 +313,47 @@ class RepeatedCompositeFieldContainer(BaseContainer):
       values.append(new_element)
     listener.Modified()
 
-  def MergeFrom(self, other):
+  def MergeFrom(
+      self,
+      other: Union['RepeatedCompositeFieldContainer[_T]', Iterable[_T]],
+  ) -> None:
     """Appends the contents of another repeated field of the same type to this
     one, copying each individual message.
     """
-    self.extend(other._values)
+    self.extend(other)
 
-  def remove(self, elem):
+  def remove(self, elem: _T) -> None:
     """Removes an item from the list. Similar to list.remove()."""
     self._values.remove(elem)
     self._message_listener.Modified()
 
-  def pop(self, key=-1):
+  def pop(self, key: Optional[int] = -1) -> _T:
     """Removes and returns an item at a given index. Similar to list.pop()."""
     value = self._values[key]
     self.__delitem__(key)
     return value
 
-  def __getslice__(self, start, stop):
-    """Retrieves the subset of items from between the specified indices."""
-    return self._values[start:stop]
+  @overload
+  def __setitem__(self, key: int, value: _T) -> None:
+    ...
 
-  def __delitem__(self, key):
+  @overload
+  def __setitem__(self, key: slice, value: Iterable[_T]) -> None:
+    ...
+
+  def __setitem__(self, key, value):
+    # This method is implemented to make RepeatedCompositeFieldContainer
+    # structurally compatible with typing.MutableSequence. It is
+    # otherwise unsupported and will always raise an error.
+    raise TypeError(
+        f'{self.__class__.__name__} object does not support item assignment')
+
+  def __delitem__(self, key: Union[int, slice]) -> None:
     """Deletes the item at the specified position."""
     del self._values[key]
     self._message_listener.Modified()
 
-  def __delslice__(self, start, stop):
-    """Deletes the subset of items from between the specified indices."""
-    del self._values[start:stop]
-    self._message_listener.Modified()
-
-  def __eq__(self, other):
+  def __eq__(self, other: Any) -> bool:
     """Compares the current instance with another one."""
     if self is other:
       return True
@@ -316,16 +363,20 @@ class RepeatedCompositeFieldContainer(BaseContainer):
     return self._values == other._values
 
 
-class ScalarMap(collections.abc.MutableMapping):
-
+class ScalarMap(MutableMapping[_K, _V]):
   """Simple, type-checked, dict-like container for holding repeated scalars."""
 
   # Disallows assignment to other attributes.
   __slots__ = ['_key_checker', '_value_checker', '_values', '_message_listener',
                '_entry_descriptor']
 
-  def __init__(self, message_listener, key_checker, value_checker,
-               entry_descriptor):
+  def __init__(
+      self,
+      message_listener: Any,
+      key_checker: Any,
+      value_checker: Any,
+      entry_descriptor: Any,
+  ) -> None:
     """
     Args:
       message_listener: A MessageListener implementation.
@@ -343,7 +394,7 @@ class ScalarMap(collections.abc.MutableMapping):
     self._entry_descriptor = entry_descriptor
     self._values = {}
 
-  def __getitem__(self, key):
+  def __getitem__(self, key: _K) -> _V:
     try:
       return self._values[key]
     except KeyError:
@@ -352,11 +403,19 @@ class ScalarMap(collections.abc.MutableMapping):
       self._values[key] = val
       return val
 
-  def __contains__(self, item):
+  def __contains__(self, item: _K) -> bool:
     # We check the key's type to match the strong-typing flavor of the API.
     # Also this makes it easier to match the behavior of the C++ implementation.
     self._key_checker.CheckValue(item)
     return item in self._values
+
+  @overload
+  def get(self, key: _K) -> Optional[_V]:
+    ...
+
+  @overload
+  def get(self, key: _K, default: _T) -> Union[_V, _T]:
+    ...
 
   # We need to override this explicitly, because our defaultdict-like behavior
   # will make the default implementation (from our base class) always insert
@@ -367,30 +426,30 @@ class ScalarMap(collections.abc.MutableMapping):
     else:
       return default
 
-  def __setitem__(self, key, value):
+  def __setitem__(self, key: _K, value: _V) -> _T:
     checked_key = self._key_checker.CheckValue(key)
     checked_value = self._value_checker.CheckValue(value)
     self._values[checked_key] = checked_value
     self._message_listener.Modified()
 
-  def __delitem__(self, key):
+  def __delitem__(self, key: _K) -> None:
     del self._values[key]
     self._message_listener.Modified()
 
-  def __len__(self):
+  def __len__(self) -> int:
     return len(self._values)
 
-  def __iter__(self):
+  def __iter__(self) -> Iterator[_K]:
     return iter(self._values)
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return repr(self._values)
 
-  def MergeFrom(self, other):
+  def MergeFrom(self, other: 'ScalarMap[_K, _V]') -> None:
     self._values.update(other._values)
     self._message_listener.Modified()
 
-  def InvalidateIterators(self):
+  def InvalidateIterators(self) -> None:
     # It appears that the only way to reliably invalidate iterators to
     # self._values is to ensure that its size changes.
     original = self._values
@@ -398,24 +457,28 @@ class ScalarMap(collections.abc.MutableMapping):
     original[None] = None
 
   # This is defined in the abstract base, but we can do it much more cheaply.
-  def clear(self):
+  def clear(self) -> None:
     self._values.clear()
     self._message_listener.Modified()
 
-  def GetEntryClass(self):
+  def GetEntryClass(self) -> Any:
     return self._entry_descriptor._concrete_class
 
 
-class MessageMap(collections.abc.MutableMapping):
-
+class MessageMap(MutableMapping[_K, _V]):
   """Simple, type-checked, dict-like container for with submessage values."""
 
   # Disallows assignment to other attributes.
   __slots__ = ['_key_checker', '_values', '_message_listener',
                '_message_descriptor', '_entry_descriptor']
 
-  def __init__(self, message_listener, message_descriptor, key_checker,
-               entry_descriptor):
+  def __init__(
+      self,
+      message_listener: Any,
+      message_descriptor: Any,
+      key_checker: Any,
+      entry_descriptor: Any,
+  ) -> None:
     """
     Args:
       message_listener: A MessageListener implementation.
@@ -433,7 +496,7 @@ class MessageMap(collections.abc.MutableMapping):
     self._entry_descriptor = entry_descriptor
     self._values = {}
 
-  def __getitem__(self, key):
+  def __getitem__(self, key: _K) -> _V:
     key = self._key_checker.CheckValue(key)
     try:
       return self._values[key]
@@ -442,10 +505,9 @@ class MessageMap(collections.abc.MutableMapping):
       new_element._SetListener(self._message_listener)
       self._values[key] = new_element
       self._message_listener.Modified()
-
       return new_element
 
-  def get_or_create(self, key):
+  def get_or_create(self, key: _K) -> _V:
     """get_or_create() is an alias for getitem (ie. map[key]).
 
     Args:
@@ -459,6 +521,14 @@ class MessageMap(collections.abc.MutableMapping):
     """
     return self[key]
 
+  @overload
+  def get(self, key: _K) -> Optional[_V]:
+    ...
+
+  @overload
+  def get(self, key: _K, default: _T) -> Union[_V, _T]:
+    ...
+
   # We need to override this explicitly, because our defaultdict-like behavior
   # will make the default implementation (from our base class) always insert
   # the key.
@@ -468,28 +538,28 @@ class MessageMap(collections.abc.MutableMapping):
     else:
       return default
 
-  def __contains__(self, item):
+  def __contains__(self, item: _K) -> bool:
     item = self._key_checker.CheckValue(item)
     return item in self._values
 
-  def __setitem__(self, key, value):
+  def __setitem__(self, key: _K, value: _V) -> NoReturn:
     raise ValueError('May not set values directly, call my_map[key].foo = 5')
 
-  def __delitem__(self, key):
+  def __delitem__(self, key: _K) -> None:
     key = self._key_checker.CheckValue(key)
     del self._values[key]
     self._message_listener.Modified()
 
-  def __len__(self):
+  def __len__(self) -> int:
     return len(self._values)
 
-  def __iter__(self):
+  def __iter__(self) -> Iterator[_K]:
     return iter(self._values)
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return repr(self._values)
 
-  def MergeFrom(self, other):
+  def MergeFrom(self, other: 'MessageMap[_K, _V]') -> None:
     # pylint: disable=protected-access
     for key in other._values:
       # According to documentation: "When parsing from the wire or when merging,
@@ -500,7 +570,7 @@ class MessageMap(collections.abc.MutableMapping):
     # self._message_listener.Modified() not required here, because
     # mutations to submessages already propagate.
 
-  def InvalidateIterators(self):
+  def InvalidateIterators(self) -> None:
     # It appears that the only way to reliably invalidate iterators to
     # self._values is to ensure that its size changes.
     original = self._values
@@ -508,16 +578,15 @@ class MessageMap(collections.abc.MutableMapping):
     original[None] = None
 
   # This is defined in the abstract base, but we can do it much more cheaply.
-  def clear(self):
+  def clear(self) -> None:
     self._values.clear()
     self._message_listener.Modified()
 
-  def GetEntryClass(self):
+  def GetEntryClass(self) -> Any:
     return self._entry_descriptor._concrete_class
 
 
-class _UnknownField(object):
-
+class _UnknownField:
   """A parsed unknown field."""
 
   # Disallows assignment to other attributes.
@@ -542,12 +611,11 @@ class _UnknownField(object):
             self._data == other._data)
 
 
-class UnknownFieldRef(object):
+class UnknownFieldRef:  # pylint: disable=missing-class-docstring
 
   def __init__(self, parent, index):
     self._parent = parent
     self._index = index
-    return
 
   def _check_valid(self):
     if not self._parent:
@@ -576,8 +644,7 @@ class UnknownFieldRef(object):
     return self._parent._internal_get(self._index)._data
 
 
-class UnknownFieldSet(object):
-
+class UnknownFieldSet:
   """UnknownField container"""
 
   # Disallows assignment to other attributes.

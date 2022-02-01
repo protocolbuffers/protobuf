@@ -4,7 +4,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-bom</artifactId>
-  <version>3.18.1</version>
+  <version>3.19.4</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [BOM]</name>
@@ -29,7 +29,7 @@
 
   <licenses>
     <license>
-      <name>3-Clause BSD License</name>
+      <name>BSD-3-Clause</name>
       <url>https://opensource.org/licenses/BSD-3-Clause</url>
     </license>
   </licenses>

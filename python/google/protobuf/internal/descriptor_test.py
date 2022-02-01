@@ -51,6 +51,28 @@ TEST_EMPTY_MESSAGE_DESCRIPTOR_ASCII = """
 name: 'TestEmptyMessage'
 """
 
+TEST_FILE_DESCRIPTOR_DEBUG = """syntax = "proto2";
+
+package protobuf_unittest;
+
+message NestedMessage {
+  enum ForeignEnum {
+    FOREIGN_FOO = 4;
+    FOREIGN_BAR = 5;
+    FOREIGN_BAZ = 6;
+  }
+  optional int32 bb = 1;
+}
+
+message ResponseMessage {
+}
+
+service Service {
+  rpc CallMethod(.protobuf_unittest.NestedMessage) returns (.protobuf_unittest.ResponseMessage);
+}
+
+"""
+
 
 warnings.simplefilter('error', DeprecationWarning)
 
@@ -120,6 +142,13 @@ class DescriptorTest(unittest.TestCase):
 
   def testContainingServiceFixups(self):
     self.assertEqual(self.my_service, self.my_method.containing_service)
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'GetDebugString is only available with the cpp implementation',
+  )
+  def testGetDebugString(self):
+    self.assertEqual(self.my_file.GetDebugString(), TEST_FILE_DESCRIPTOR_DEBUG)
 
   def testGetOptions(self):
     self.assertEqual(self.my_enum.GetOptions(),
@@ -523,6 +552,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertIn(field_descriptor, {field_descriptor: None})
     self.assertEqual(None, field_descriptor.extension_scope)
     self.assertEqual(None, field_descriptor.enum_type)
+    self.assertTrue(field_descriptor.has_presence)
     if api_implementation.Type() == 'cpp':
       # For test coverage only
       self.assertEqual(field_descriptor.id, field_descriptor.id)

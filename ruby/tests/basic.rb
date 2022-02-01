@@ -71,6 +71,14 @@ module BasicTest
       TestMessage.encode(msg)
     end
 
+    def test_issue_9440
+      msg = HelloRequest.new
+      msg.id = 8
+      assert_equal 8, msg.id
+      msg.version = '1'
+      assert_equal 8, msg.id
+    end
+
     def test_has_field
       m = TestSingularFields.new
       assert !m.has_singular_msg?
@@ -619,6 +627,22 @@ module BasicTest
       assert_raise(FrozenErrorType) { m.map_string_msg['bar'] = proto_module::TestMessage2.new }
       assert_raise(FrozenErrorType) { m.map_string_int32.delete('a') }
       assert_raise(FrozenErrorType) { m.map_string_int32.clear }
+    end
+
+    def test_map_length
+      m = proto_module::MapMessage.new
+      assert_equal 0, m.map_string_int32.length
+      assert_equal 0, m.map_string_msg.length
+      assert_equal 0, m.map_string_int32.size
+      assert_equal 0, m.map_string_msg.size
+
+      m.map_string_int32['a'] = 1
+      m.map_string_int32['b'] = 2
+      m.map_string_msg['a'] = proto_module::TestMessage2.new
+      assert_equal 2, m.map_string_int32.length
+      assert_equal 1, m.map_string_msg.length
+      assert_equal 2, m.map_string_int32.size
+      assert_equal 1, m.map_string_msg.size
     end
   end
 end

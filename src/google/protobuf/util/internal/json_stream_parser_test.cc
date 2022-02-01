@@ -85,7 +85,7 @@ using ParseErrorType =
 class JsonStreamParserTest : public ::testing::Test {
  protected:
   JsonStreamParserTest() : mock_(), ow_(&mock_) {}
-  virtual ~JsonStreamParserTest() {}
+  ~JsonStreamParserTest() override {}
 
   util::Status RunTest(StringPiece json, int split,
                        std::function<void(JsonStreamParser*)> setup) {

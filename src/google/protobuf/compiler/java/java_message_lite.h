@@ -37,6 +37,7 @@
 
 #include <map>
 #include <string>
+
 #include <google/protobuf/compiler/java/java_field.h>
 #include <google/protobuf/compiler/java/java_message.h>
 
@@ -48,7 +49,7 @@ namespace java {
 class ImmutableMessageLiteGenerator : public MessageGenerator {
  public:
   ImmutableMessageLiteGenerator(const Descriptor* descriptor, Context* context);
-  virtual ~ImmutableMessageLiteGenerator();
+  ~ImmutableMessageLiteGenerator() override;
 
   void Generate(io::Printer* printer) override;
   void GenerateInterface(io::Printer* printer) override;
@@ -70,6 +71,7 @@ class ImmutableMessageLiteGenerator : public MessageGenerator {
   void GenerateConstructor(io::Printer* printer);
   void GenerateDynamicMethodNewBuildMessageInfo(io::Printer* printer);
   void GenerateKotlinExtensions(io::Printer* printer) const;
+  void GenerateKotlinOrNull(io::Printer* printer) const;
 
   Context* context_;
   ClassNameResolver* name_resolver_;

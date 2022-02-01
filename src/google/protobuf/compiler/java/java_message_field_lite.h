@@ -62,7 +62,7 @@ class ImmutableMessageFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   explicit ImmutableMessageFieldLiteGenerator(const FieldDescriptor* descriptor,
                                               int messageBitIndex,
                                               Context* context);
-  ~ImmutableMessageFieldLiteGenerator();
+  ~ImmutableMessageFieldLiteGenerator() override;
 
   // implements ImmutableFieldLiteGenerator
   // ------------------------------------
@@ -85,6 +85,7 @@ class ImmutableMessageFieldLiteGenerator : public ImmutableFieldLiteGenerator {
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableMessageFieldLiteGenerator);
+  void GenerateKotlinOrNull(io::Printer* printer) const;
 };
 
 class ImmutableMessageOneofFieldLiteGenerator
@@ -93,7 +94,7 @@ class ImmutableMessageOneofFieldLiteGenerator
   ImmutableMessageOneofFieldLiteGenerator(const FieldDescriptor* descriptor,
                                           int messageBitIndex,
                                           Context* context);
-  ~ImmutableMessageOneofFieldLiteGenerator();
+  ~ImmutableMessageOneofFieldLiteGenerator() override;
 
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;

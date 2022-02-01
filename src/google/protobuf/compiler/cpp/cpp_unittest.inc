@@ -95,7 +95,7 @@ void DoNothing() {}
 class MockErrorCollector : public MultiFileErrorCollector {
  public:
   MockErrorCollector() {}
-  ~MockErrorCollector() {}
+  ~MockErrorCollector() override {}
 
   std::string text_;
 
@@ -126,7 +126,7 @@ TEST(GENERATED_DESCRIPTOR_TEST_NAME, IdenticalDescriptors) {
   const FileDescriptor* parsed_descriptor =
       importer.Import(TestUtil::MaybeTranslatePath(UNITTEST_PROTO_PATH));
   EXPECT_EQ("", error_collector.text_);
-  ASSERT_TRUE(parsed_descriptor != NULL);
+  ASSERT_TRUE(parsed_descriptor != nullptr);
 
   // Test that descriptors are generated correctly by converting them to
   // FileDescriptorProtos and comparing.
@@ -147,7 +147,7 @@ TEST(GENERATED_DESCRIPTOR_TEST_NAME, EnormousDescriptor) {
   const Descriptor* generated_descriptor =
     ::protobuf_unittest::TestEnormousDescriptor::descriptor();
 
-  EXPECT_TRUE(generated_descriptor != NULL);
+  EXPECT_TRUE(generated_descriptor != nullptr);
 }
 #endif
 
@@ -249,11 +249,11 @@ TEST(GENERATED_MESSAGE_TEST_NAME, StringDefaults) {
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, ReleaseString) {
-  // Check that release_foo() starts out NULL, and gives us a value
+  // Check that release_foo() starts out nullptr, and gives us a value
   // that we can delete after it's been set.
   UNITTEST::TestAllTypes message;
 
-  EXPECT_EQ(NULL, message.release_default_string());
+  EXPECT_EQ(nullptr, message.release_default_string());
   EXPECT_FALSE(message.has_default_string());
   EXPECT_EQ("hello", message.default_string());
 
@@ -261,30 +261,30 @@ TEST(GENERATED_MESSAGE_TEST_NAME, ReleaseString) {
   EXPECT_TRUE(message.has_default_string());
   std::unique_ptr<std::string> str(message.release_default_string());
   EXPECT_FALSE(message.has_default_string());
-  ASSERT_TRUE(str != NULL);
+  ASSERT_TRUE(str != nullptr);
   EXPECT_EQ("blah", *str);
 
-  EXPECT_EQ(NULL, message.release_default_string());
+  EXPECT_EQ(nullptr, message.release_default_string());
   EXPECT_FALSE(message.has_default_string());
   EXPECT_EQ("hello", message.default_string());
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, ReleaseMessage) {
-  // Check that release_foo() starts out NULL, and gives us a value
+  // Check that release_foo() starts out nullptr, and gives us a value
   // that we can delete after it's been set.
   UNITTEST::TestAllTypes message;
 
-  EXPECT_EQ(NULL, message.release_optional_nested_message());
+  EXPECT_EQ(nullptr, message.release_optional_nested_message());
   EXPECT_FALSE(message.has_optional_nested_message());
 
   message.mutable_optional_nested_message()->set_bb(1);
   std::unique_ptr<UNITTEST::TestAllTypes::NestedMessage> nest(
       message.release_optional_nested_message());
   EXPECT_FALSE(message.has_optional_nested_message());
-  ASSERT_TRUE(nest != NULL);
+  ASSERT_TRUE(nest != nullptr);
   EXPECT_EQ(1, nest->bb());
 
-  EXPECT_EQ(NULL, message.release_optional_nested_message());
+  EXPECT_EQ(nullptr, message.release_optional_nested_message());
   EXPECT_FALSE(message.has_optional_nested_message());
 }
 
@@ -297,7 +297,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SetAllocatedString) {
   message.set_optional_string(kHello);
   EXPECT_TRUE(message.has_optional_string());
 
-  message.set_allocated_optional_string(NULL);
+  message.set_allocated_optional_string(nullptr);
   EXPECT_FALSE(message.has_optional_string());
   EXPECT_EQ("", message.optional_string());
 
@@ -315,7 +315,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SetAllocatedMessage) {
   message.mutable_optional_nested_message()->set_bb(1);
   EXPECT_TRUE(message.has_optional_nested_message());
 
-  message.set_allocated_optional_nested_message(NULL);
+  message.set_allocated_optional_nested_message(nullptr);
   EXPECT_FALSE(message.has_optional_nested_message());
   EXPECT_EQ(&UNITTEST::TestAllTypes::NestedMessage::default_instance(),
             &message.optional_nested_message());
@@ -323,7 +323,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SetAllocatedMessage) {
   message.mutable_optional_nested_message()->set_bb(1);
   UNITTEST::TestAllTypes::NestedMessage* nest =
       message.release_optional_nested_message();
-  ASSERT_TRUE(nest != NULL);
+  ASSERT_TRUE(nest != nullptr);
   EXPECT_FALSE(message.has_optional_nested_message());
 
   message.set_allocated_optional_nested_message(nest);
@@ -531,6 +531,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructor) {
   // None set.
   {
     UNITTEST::TestAllTypes message1;
+    // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
     UNITTEST::TestAllTypes message2(message1);
 
     EXPECT_FALSE(message1.has_optional_string());
@@ -879,77 +880,81 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestEmbedOptimizedForSize) {
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, TestSpaceUsed) {
-  UNITTEST::TestAllTypes message1;
+  // Allocate explicitly on the heap to prevent arena creation.
+  std::unique_ptr<UNITTEST::TestAllTypes> message1(
+    Arena::CreateMessage<UNITTEST::TestAllTypes>(nullptr));
   // sizeof provides a lower bound on SpaceUsedLong().
-  EXPECT_LE(sizeof(UNITTEST::TestAllTypes), message1.SpaceUsedLong());
-  const size_t empty_message_size = message1.SpaceUsedLong();
+  EXPECT_LE(sizeof(UNITTEST::TestAllTypes), message1->SpaceUsedLong());
+  const size_t empty_message_size = message1->SpaceUsedLong();
 
   // Setting primitive types shouldn't affect the space used.
-  message1.set_optional_int32(123);
-  message1.set_optional_int64(12345);
-  message1.set_optional_uint32(123);
-  message1.set_optional_uint64(12345);
-  EXPECT_EQ(empty_message_size, message1.SpaceUsedLong());
+  message1->set_optional_int32(123);
+  message1->set_optional_int64(12345);
+  message1->set_optional_uint32(123);
+  message1->set_optional_uint64(12345);
+  EXPECT_EQ(empty_message_size, message1->SpaceUsedLong());
 
   // On some STL implementations, setting the string to a small value should
   // only increase SpaceUsedLong() by the size of a string object, though this
   // is not true everywhere.
-  message1.set_optional_string("abc");
-  EXPECT_LE(empty_message_size + message1.optional_string().size(),
-            message1.SpaceUsedLong());
+  message1->set_optional_string("abc");
+  EXPECT_LE(empty_message_size + message1->optional_string().size(),
+            message1->SpaceUsedLong());
 
   // Setting a string to a value larger than the string object itself should
   // increase SpaceUsedLong(), because it cannot store the value internally.
-  message1.set_optional_string(std::string(sizeof(std::string) + 1, 'x'));
-  int min_expected_increase = message1.optional_string().capacity();
+  message1->set_optional_string(std::string(sizeof(std::string) + 1, 'x'));
+  int min_expected_increase = message1->optional_string().capacity();
   EXPECT_LE(empty_message_size + min_expected_increase,
-            message1.SpaceUsedLong());
+            message1->SpaceUsedLong());
 
-  size_t previous_size = message1.SpaceUsedLong();
+  size_t previous_size = message1->SpaceUsedLong();
   // Adding an optional message should increase the size by the size of the
   // nested message type. NestedMessage is simple enough (1 int field) that it
   // is equal to sizeof(NestedMessage)
-  message1.mutable_optional_nested_message();
+  message1->mutable_optional_nested_message();
   ASSERT_EQ(sizeof(UNITTEST::TestAllTypes::NestedMessage),
-            message1.optional_nested_message().SpaceUsedLong());
+            message1->optional_nested_message().SpaceUsedLong());
   EXPECT_EQ(previous_size +
             sizeof(UNITTEST::TestAllTypes::NestedMessage),
-            message1.SpaceUsedLong());
+            message1->SpaceUsedLong());
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, TestOneofSpaceUsed) {
-  UNITTEST::TestOneof2 message1;
-  EXPECT_LE(sizeof(UNITTEST::TestOneof2), message1.SpaceUsedLong());
+  // Allocate explicitly on the heap to prevent arena creation.
+  std::unique_ptr<UNITTEST::TestOneof2> message1(
+    Arena::CreateMessage<UNITTEST::TestOneof2>(nullptr));
+  EXPECT_LE(sizeof(UNITTEST::TestOneof2), message1->SpaceUsedLong());
 
-  const size_t empty_message_size = message1.SpaceUsedLong();
+  const size_t empty_message_size = message1->SpaceUsedLong();
   // Setting primitive types shouldn't affect the space used.
-  message1.set_foo_int(123);
-  message1.set_bar_int(12345);
-  EXPECT_EQ(empty_message_size, message1.SpaceUsedLong());
+  message1->set_foo_int(123);
+  message1->set_bar_int(12345);
+  EXPECT_EQ(empty_message_size, message1->SpaceUsedLong());
 
   // Setting a string in oneof to a small value should only increase
   // SpaceUsedLong() by the size of a string object.
-  message1.set_foo_string("abc");
-  EXPECT_LE(empty_message_size + sizeof(std::string), message1.SpaceUsedLong());
+  message1->set_foo_string("abc");
+  EXPECT_LE(empty_message_size + sizeof(std::string), message1->SpaceUsedLong());
 
   // Setting a string in oneof to a value larger than the string object itself
   // should increase SpaceUsedLong(), because it cannot store the value
   // internally.
-  message1.set_foo_string(std::string(sizeof(std::string) + 1, 'x'));
+  message1->set_foo_string(std::string(sizeof(std::string) + 1, 'x'));
   int min_expected_increase =
-      message1.foo_string().capacity() + sizeof(std::string);
+      message1->foo_string().capacity() + sizeof(std::string);
   EXPECT_LE(empty_message_size + min_expected_increase,
-            message1.SpaceUsedLong());
+            message1->SpaceUsedLong());
 
   // Setting a message in oneof should delete the other fields and increase the
   // size by the size of the nested message type. NestedMessage is simple enough
   // that it is equal to sizeof(NestedMessage). It may be backed by LazyField,
   // increasing space used by LazyField and backing Cord.
-  message1.mutable_foo_message();
+  message1->mutable_foo_message();
   ASSERT_EQ(sizeof(UNITTEST::TestOneof2::NestedMessage),
-            message1.foo_message().SpaceUsedLong());
+            message1->foo_message().SpaceUsedLong());
   EXPECT_LE(empty_message_size + sizeof(UNITTEST::TestOneof2::NestedMessage),
-            message1.SpaceUsedLong());
+            message1->SpaceUsedLong());
 }
 
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
@@ -1065,14 +1070,13 @@ TEST(GENERATED_ENUM_TEST_NAME, MinAndMax) {
   EXPECT_EQ(12589235, UNITTEST::TestSparseEnum_ARRAYSIZE);
 
   // Make sure we can take the address of _MIN, _MAX and _ARRAYSIZE.
-  void* null_pointer = 0;  // NULL may be integer-type, not pointer-type.
-  EXPECT_NE(null_pointer, &UNITTEST::TestAllTypes::NestedEnum_MIN);
-  EXPECT_NE(null_pointer, &UNITTEST::TestAllTypes::NestedEnum_MAX);
-  EXPECT_NE(null_pointer, &UNITTEST::TestAllTypes::NestedEnum_ARRAYSIZE);
+  EXPECT_NE(nullptr, &UNITTEST::TestAllTypes::NestedEnum_MIN);
+  EXPECT_NE(nullptr, &UNITTEST::TestAllTypes::NestedEnum_MAX);
+  EXPECT_NE(nullptr, &UNITTEST::TestAllTypes::NestedEnum_ARRAYSIZE);
 
-  EXPECT_NE(null_pointer, &UNITTEST::ForeignEnum_MIN);
-  EXPECT_NE(null_pointer, &UNITTEST::ForeignEnum_MAX);
-  EXPECT_NE(null_pointer, &UNITTEST::ForeignEnum_ARRAYSIZE);
+  EXPECT_NE(nullptr, &UNITTEST::ForeignEnum_MIN);
+  EXPECT_NE(nullptr, &UNITTEST::ForeignEnum_MAX);
+  EXPECT_NE(nullptr, &UNITTEST::ForeignEnum_ARRAYSIZE);
 
   // Make sure we can use _MIN and _MAX as switch cases.
   switch (UNITTEST::SPARSE_A) {
@@ -1146,14 +1150,14 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
   class MockTestService : public UNITTEST::TestService {
    public:
     MockTestService()
-      : called_(false),
-        method_(""),
-        controller_(NULL),
-        request_(NULL),
-        response_(NULL),
-        done_(NULL) {}
+        : called_(false),
+          method_(""),
+          controller_(nullptr),
+          request_(nullptr),
+          response_(nullptr),
+          done_(nullptr) {}
 
-    ~MockTestService() {}
+    ~MockTestService() override {}
 
     void Reset() { called_ = false; }
 
@@ -1194,16 +1198,16 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
   class MockRpcChannel : public RpcChannel {
    public:
     MockRpcChannel()
-      : called_(false),
-        method_(NULL),
-        controller_(NULL),
-        request_(NULL),
-        response_(NULL),
-        done_(NULL),
-        destroyed_(NULL) {}
+        : called_(false),
+          method_(nullptr),
+          controller_(nullptr),
+          request_(nullptr),
+          response_(nullptr),
+          done_(nullptr),
+          destroyed_(nullptr) {}
 
-    ~MockRpcChannel() {
-      if (destroyed_ != NULL) *destroyed_ = true;
+    ~MockRpcChannel() override {
+      if (destroyed_ != nullptr) *destroyed_ = true;
     }
 
     void Reset() { called_ = false; }
@@ -1269,8 +1273,8 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
       done_(::google::protobuf::NewPermanentCallback(&DoNothing)) {}
 
   void SetUp() override {
-    ASSERT_TRUE(foo_ != NULL);
-    ASSERT_TRUE(bar_ != NULL);
+    ASSERT_TRUE(foo_ != nullptr);
+    ASSERT_TRUE(bar_ != nullptr);
   }
 
   const ServiceDescriptor* descriptor_;
@@ -1585,21 +1589,21 @@ TEST_F(OneofTest, SetString) {
 }
 
 TEST_F(OneofTest, ReleaseString) {
-  // Check that release_foo() starts out NULL, and gives us a value
+  // Check that release_foo() starts out nullptr, and gives us a value
   // that we can delete after it's been set.
   UNITTEST::TestOneof2 message;
 
-  EXPECT_EQ(NULL, message.release_foo_string());
+  EXPECT_EQ(nullptr, message.release_foo_string());
   EXPECT_FALSE(message.has_foo_string());
 
   message.set_foo_string("blah");
   EXPECT_TRUE(message.has_foo_string());
   std::unique_ptr<std::string> str(message.release_foo_string());
   EXPECT_FALSE(message.has_foo_string());
-  ASSERT_TRUE(str != NULL);
+  ASSERT_TRUE(str != nullptr);
   EXPECT_EQ("blah", *str);
 
-  EXPECT_EQ(NULL, message.release_foo_string());
+  EXPECT_EQ(nullptr, message.release_foo_string());
   EXPECT_FALSE(message.has_foo_string());
 }
 
@@ -1612,7 +1616,7 @@ TEST_F(OneofTest, SetAllocatedString) {
   message.set_foo_string(kHello);
   EXPECT_TRUE(message.has_foo_string());
 
-  message.set_allocated_foo_string(NULL);
+  message.set_allocated_foo_string(nullptr);
   EXPECT_FALSE(message.has_foo_string());
   EXPECT_EQ("", message.foo_string());
 
@@ -1632,7 +1636,7 @@ TEST_F(OneofTest, ArenaSetAllocatedString) {
   message->set_foo_string(kHello);
   EXPECT_TRUE(message->has_foo_string());
 
-  message->set_allocated_foo_string(NULL);
+  message->set_allocated_foo_string(nullptr);
   EXPECT_FALSE(message->has_foo_string());
   EXPECT_EQ("", message->foo_string());
 
@@ -1659,11 +1663,11 @@ TEST_F(OneofTest, SetMessage) {
 }
 
 TEST_F(OneofTest, ReleaseMessage) {
-  // Check that release_foo() starts out NULL, and gives us a value
+  // Check that release_foo() starts out nullptr, and gives us a value
   // that we can delete after it's been set.
   UNITTEST::TestOneof2 message;
 
-  EXPECT_EQ(NULL, message.release_foo_message());
+  EXPECT_EQ(nullptr, message.release_foo_message());
   EXPECT_FALSE(message.has_foo_message());
 
   message.mutable_foo_message()->set_qux_int(1);
@@ -1671,10 +1675,10 @@ TEST_F(OneofTest, ReleaseMessage) {
   std::unique_ptr<UNITTEST::TestOneof2_NestedMessage> mes(
       message.release_foo_message());
   EXPECT_FALSE(message.has_foo_message());
-  ASSERT_TRUE(mes != NULL);
+  ASSERT_TRUE(mes != nullptr);
   EXPECT_EQ(1, mes->qux_int());
 
-  EXPECT_EQ(NULL, message.release_foo_message());
+  EXPECT_EQ(nullptr, message.release_foo_message());
   EXPECT_FALSE(message.has_foo_message());
 }
 
@@ -1687,14 +1691,14 @@ TEST_F(OneofTest, SetAllocatedMessage) {
   message.mutable_foo_message()->set_qux_int(1);
   EXPECT_TRUE(message.has_foo_message());
 
-  message.set_allocated_foo_message(NULL);
+  message.set_allocated_foo_message(nullptr);
   EXPECT_FALSE(message.has_foo_message());
   EXPECT_EQ(&message.foo_message(),
             &UNITTEST::TestOneof2_NestedMessage::default_instance());
 
   message.mutable_foo_message()->set_qux_int(1);
   UNITTEST::TestOneof2_NestedMessage* mes = message.release_foo_message();
-  ASSERT_TRUE(mes != NULL);
+  ASSERT_TRUE(mes != nullptr);
   EXPECT_FALSE(message.has_foo_message());
 
   message.set_allocated_foo_message(mes);

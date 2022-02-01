@@ -74,10 +74,22 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * implementation must either *always* check its required fields, or *never*
      * check its required fields, regardless of whether or not the message has
      * been parsed.
+     * As of 2021, lazy does no correctness checks on the byte stream during
+     * parsing.  This may lead to crashes if and when an invalid byte stream is
+     * finally parsed upon access.
+     * TODO(b/211906113):  Enable validation on lazy fields.
      *
      * Generated from protobuf field <code>optional bool lazy = 5 [default = false];</code>
      */
     protected $lazy = null;
+    /**
+     * unverified_lazy does no correctness checks on the byte stream. This should
+     * only be used where lazy with verification is prohibitive for performance
+     * reasons.
+     *
+     * Generated from protobuf field <code>optional bool unverified_lazy = 15 [default = false];</code>
+     */
+    protected $unverified_lazy = null;
     /**
      * Is this field deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
@@ -153,6 +165,14 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *           implementation must either *always* check its required fields, or *never*
      *           check its required fields, regardless of whether or not the message has
      *           been parsed.
+     *           As of 2021, lazy does no correctness checks on the byte stream during
+     *           parsing.  This may lead to crashes if and when an invalid byte stream is
+     *           finally parsed upon access.
+     *           TODO(b/211906113):  Enable validation on lazy fields.
+     *     @type bool $unverified_lazy
+     *           unverified_lazy does no correctness checks on the byte stream. This should
+     *           only be used where lazy with verification is prohibitive for performance
+     *           reasons.
      *     @type bool $deprecated
      *           Is this field deprecated?
      *           Depending on the target platform, this can emit Deprecated annotations
@@ -334,6 +354,10 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * implementation must either *always* check its required fields, or *never*
      * check its required fields, regardless of whether or not the message has
      * been parsed.
+     * As of 2021, lazy does no correctness checks on the byte stream during
+     * parsing.  This may lead to crashes if and when an invalid byte stream is
+     * finally parsed upon access.
+     * TODO(b/211906113):  Enable validation on lazy fields.
      *
      * Generated from protobuf field <code>optional bool lazy = 5 [default = false];</code>
      * @return bool
@@ -378,6 +402,10 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * implementation must either *always* check its required fields, or *never*
      * check its required fields, regardless of whether or not the message has
      * been parsed.
+     * As of 2021, lazy does no correctness checks on the byte stream during
+     * parsing.  This may lead to crashes if and when an invalid byte stream is
+     * finally parsed upon access.
+     * TODO(b/211906113):  Enable validation on lazy fields.
      *
      * Generated from protobuf field <code>optional bool lazy = 5 [default = false];</code>
      * @param bool $var
@@ -387,6 +415,46 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->lazy = $var;
+
+        return $this;
+    }
+
+    /**
+     * unverified_lazy does no correctness checks on the byte stream. This should
+     * only be used where lazy with verification is prohibitive for performance
+     * reasons.
+     *
+     * Generated from protobuf field <code>optional bool unverified_lazy = 15 [default = false];</code>
+     * @return bool
+     */
+    public function getUnverifiedLazy()
+    {
+        return isset($this->unverified_lazy) ? $this->unverified_lazy : false;
+    }
+
+    public function hasUnverifiedLazy()
+    {
+        return isset($this->unverified_lazy);
+    }
+
+    public function clearUnverifiedLazy()
+    {
+        unset($this->unverified_lazy);
+    }
+
+    /**
+     * unverified_lazy does no correctness checks on the byte stream. This should
+     * only be used where lazy with verification is prohibitive for performance
+     * reasons.
+     *
+     * Generated from protobuf field <code>optional bool unverified_lazy = 15 [default = false];</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setUnverifiedLazy($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->unverified_lazy = $var;
 
         return $this;
     }
