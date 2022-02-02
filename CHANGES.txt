@@ -23,7 +23,6 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Fix initialization bug in doc comment line numbers
 
   Kotlin
-  * Enhancements to Kotlin support for Any protobuf.
   * Add orNull extensions for optional message fields in Kotlin.
 
   Python

@@ -1049,14 +1049,8 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidTimestamp(self):
     message = json_format_proto3_pb2.TestTimestamp()
     text = '{"value": "10000-01-01T00:00:00.00Z"}'
-<<<<<<< HEAD
-    self.assertRaisesRegex(
-        json_format.ParseError,
-        'Failed to parse value field: '
-=======
     self.assertRaisesRegexp(
         json_format.ParseError, 'Failed to parse value field: '
->>>>>>> refs/tags/sync-piper
         'time data \'10000-01-01T00:00:00\' does not match'
         ' format \'%Y-%m-%dT%H:%M:%S\' at TestTimestamp.value.',
         json_format.Parse, text, message)
@@ -1095,16 +1089,9 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidOneof(self):
     message = json_format_proto3_pb2.TestOneof()
     text = '{"oneofInt32Value": 1, "oneofStringValue": "2"}'
-<<<<<<< HEAD
-    self.assertRaisesRegex(
-        json_format.ParseError,
-        'Message type "proto3.TestOneof"'
-        ' should not have multiple "oneof_value" oneof fields.',
-=======
     self.assertRaisesRegexp(
         json_format.ParseError, 'Message type "proto3.TestOneof"'
         ' should not have multiple "oneof_value" oneof fields at "TestOneof".',
->>>>>>> refs/tags/sync-piper
         json_format.Parse, text, message)
 
   def testInvalidListValue(self):
@@ -1167,18 +1154,6 @@ class JsonFormatTest(JsonFormatBase):
         'value',
         json_format.Parse, text, message)
     text = '{"value": 1234}'
-<<<<<<< HEAD
-    self.assertRaisesRegex(
-        json_format.ParseError,
-        '@type is missing when parsing any message.',
-        json_format.Parse, text, message)
-    text = '{"@type": "type.googleapis.com/MessageNotExist", "value": 1234}'
-    self.assertRaisesRegex(
-        TypeError,
-        'Can not find message descriptor by type_url: '
-        'type.googleapis.com/MessageNotExist.',
-        json_format.Parse, text, message)
-=======
     self.assertRaisesRegex(json_format.ParseError,
                            '@type is missing when parsing any message at Any',
                            json_format.Parse, text, message)
@@ -1187,7 +1162,6 @@ class JsonFormatTest(JsonFormatBase):
         json_format.ParseError, 'Can not find message descriptor by type_url: '
         'type.googleapis.com/MessageNotExist at Any', json_format.Parse, text,
         message)
->>>>>>> refs/tags/sync-piper
     # Only last part is to be used: b/25630112
     text = (r'{"@type": "incorrect.googleapis.com/google.protobuf.Int32Value",'
             r'"value": 1234}')
