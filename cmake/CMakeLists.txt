@@ -41,6 +41,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
 endif()
 
 # Options
+option(protobuf_INSTALL "Install protobuf binaries and files" ON)
 if(WITH_PROTOC)
   set(protobuf_PROTOC_EXE ${WITH_PROTOC} CACHE FILEPATH "Protocol Buffer Compiler executable" FORCE)
 endif()
@@ -214,9 +215,7 @@ if (MSVC)
   add_definitions(/utf-8)
   # MSVC warning suppressions
   add_definitions(
-    /wd4018 # 'expression' : signed/unsigned mismatch
     /wd4065 # switch statement contains 'default' but no 'case' labels
-    /wd4146 # unary minus operator applied to unsigned type, result still unsigned
     /wd4244 # 'conversion' conversion from 'type1' to 'type2', possible loss of data
     /wd4251 # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
     /wd4267 # 'var' : conversion from 'size_t' to 'type', possible loss of data
@@ -305,7 +304,9 @@ if (protobuf_BUILD_CONFORMANCE)
   include(conformance.cmake)
 endif (protobuf_BUILD_CONFORMANCE)
 
-include(install.cmake)
+if (protobuf_INSTALL)
+  include(install.cmake)
+endif (protobuf_INSTALL)
 
 if (protobuf_BUILD_EXAMPLES)
   include(examples.cmake)

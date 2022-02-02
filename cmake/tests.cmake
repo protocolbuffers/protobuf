@@ -224,6 +224,11 @@ if(MINGW)
 endif()
 
 add_executable(tests ${tests_files} ${common_test_files} ${tests_proto_files} ${lite_test_proto_files})
+if (MSVC)
+  target_compile_options(tests PRIVATE
+    /wd4146 # unary minus operator applied to unsigned type, result still unsigned
+  )
+endif()
 target_link_libraries(tests libprotoc libprotobuf gmock_main)
 
 set(test_plugin_files
