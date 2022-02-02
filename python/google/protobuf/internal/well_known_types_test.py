@@ -266,7 +266,7 @@ class TimeUtilTest(TimeUtilTestBase):
     message.FromDatetime(naive_end_of_time)
     self.assertEqual(naive_end_of_time, message.ToDatetime())
 
-   def testDatetimeConversionWithTimezone(self):
+  def testDatetimeConversionWithTimezone(self):
     class TZ(datetime.tzinfo):
 
       def utcoffset(self, _):

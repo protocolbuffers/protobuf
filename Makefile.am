@@ -442,7 +442,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/ExtensionRegistryFactoryTest.java    \
   java/core/src/test/java/com/google/protobuf/FieldPresenceTest.java               \
   java/core/src/test/java/com/google/protobuf/FloatArrayListTest.java              \
-  java/core/src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java        \
   java/core/src/test/java/com/google/protobuf/GeneratedMessageTest.java            \
   java/core/src/test/java/com/google/protobuf/IntArrayListTest.java                \
   java/core/src/test/java/com/google/protobuf/IsValidUtf8Test.java                 \
