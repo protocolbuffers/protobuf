@@ -308,6 +308,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/CodedInputStreamReader.java          \
   java/core/src/main/java/com/google/protobuf/CodedOutputStream.java               \
   java/core/src/main/java/com/google/protobuf/CodedOutputStreamWriter.java         \
+  java/core/src/main/java/com/google/protobuf/CompileTimeConstant.java             \
   java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java    \
   java/core/src/main/java/com/google/protobuf/Descriptors.java                     \
   java/core/src/main/java/com/google/protobuf/DiscardUnknownFieldsParser.java      \
@@ -331,6 +332,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/GeneratedMessageInfoFactory.java     \
   java/core/src/main/java/com/google/protobuf/GeneratedMessageLite.java            \
   java/core/src/main/java/com/google/protobuf/GeneratedMessageV3.java              \
+  java/core/src/main/java/com/google/protobuf/InlineMe.java                        \
   java/core/src/main/java/com/google/protobuf/IntArrayList.java                    \
   java/core/src/main/java/com/google/protobuf/Internal.java                        \
   java/core/src/main/java/com/google/protobuf/InvalidProtocolBufferException.java  \

@@ -48,7 +48,6 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import well_known_types
 from google.protobuf import descriptor
 from google.protobuf import text_format
-from google3.pyglib import datelib
 from google.protobuf.internal import _parameterized
 
 

@@ -73,10 +73,6 @@ int TagSize(uint32_t field_number) {
   return 2;
 }
 
-const char* CodedTagType(int tag_size) {
-  return tag_size == 1 ? "uint8_t" : "uint16_t";
-}
-
 std::string FieldParseFunctionName(
     const TailCallTableInfo::FieldEntryInfo& entry, const Options& options);
 

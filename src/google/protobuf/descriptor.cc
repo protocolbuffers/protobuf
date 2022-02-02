@@ -256,7 +256,8 @@ class FlatAllocation {
 
   template <typename U>
   bool Init() {
-    if (std::is_trivially_constructible<U>::value) return true;
+    // Skip for the `char` block. No need to zero initialize it.
+    if (std::is_same<U, char>::value) return true;
     for (int i = 0, size = Size<U>(); i < size; ++i) {
       ::new (data() + BeginOffset<U>() + sizeof(U) * i) U{};
     }
