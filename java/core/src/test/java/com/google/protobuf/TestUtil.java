@@ -260,8 +260,8 @@ public final class TestUtil {
       TestRequired.newBuilder().setA(1).setB(2).setC(3).build();
 
   /** Helper to convert a String to ByteString. */
-  static ByteString toBytes(String str) {
-    return ByteString.copyFrom(str.getBytes(Internal.UTF_8));
+  public static ByteString toBytes(String str) {
+    return ByteString.copyFromUtf8(str);
   }
 
   // BEGIN FULL-RUNTIME
@@ -2776,7 +2776,7 @@ public final class TestUtil {
     }
 
     /** Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes. */
-    private Descriptors.FieldDescriptor f(String name) {
+    Descriptors.FieldDescriptor f(String name) {
       Descriptors.FieldDescriptor result;
       if (extensionRegistry == null) {
         result = baseDescriptor.findFieldByName(name);
@@ -3758,7 +3758,9 @@ public final class TestUtil {
 
   /** @param filePath The path relative to {@link #getTestDataDir}. */
   public static String readTextFromFile(String filePath) {
-    return readBytesFromFile(filePath).toStringUtf8();
+    return readBytesFromFile(filePath)
+        .toStringUtf8()
+        .replace(System.getProperty("line.separator"), "\n");
   }
 
   private static File getTestDataDir() {
@@ -3770,8 +3772,19 @@ public final class TestUtil {
     } catch (IOException e) {
       throw new RuntimeException("Couldn't get canonical name of working directory.", e);
     }
+
+    String srcRootCheck = "src/google/protobuf";
+
+    // If we're running w/ Bazel on Windows, we're not in a sandbox, so we
+    // we must change our source root check condition to find the true test data dir.
+    String testBinaryName = System.getenv("TEST_BINARY");
+    if (testBinaryName != null && testBinaryName.endsWith(".exe")) {
+      srcRootCheck = srcRootCheck + "/descriptor.cc";
+    }
+
     while (ancestor != null && ancestor.exists()) {
-      if (new File(ancestor, "src/google/protobuf").exists()) {
+      // Identify the true source root.
+      if (new File(ancestor, srcRootCheck).exists()) {
         return new File(ancestor, "src/google/protobuf/testdata");
       }
       ancestor = ancestor.getParentFile();
@@ -3802,8 +3815,7 @@ public final class TestUtil {
 
   private static ByteString readBytesFromResource(String name) {
     try {
-      return ByteString.copyFrom(
-          com.google.common.io.ByteStreams.toByteArray(TestUtil.class.getResourceAsStream(name)));
+      return ByteString.readFrom(TestUtil.class.getResourceAsStream(name));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

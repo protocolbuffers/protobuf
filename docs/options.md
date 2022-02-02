@@ -93,8 +93,8 @@ with info about your project (name and website) so we can add an entry for you.
    * Website: https://github.com/protobuf-c/protobuf-c
    * Extensions: 1019
 
-1. ScalePB
-   * Website: http://trueaccord.github.io/ScalaPB/
+1. ScalaPB
+   * Website: https://scalapb.github.io/
    * Extensions: 1020
 
 1. protoc-gen-bq-schema
@@ -205,3 +205,98 @@ with info about your project (name and website) so we can add an entry for you.
    * Website: https://github.com/envoyproxy/protoc-gen-validate
    * Extensions: 1071
 
+1. Protokt
+   * Website: https://github.com/open-toast/protokt
+   * Extensions: 1072
+
+1. Dart port of protocol buffers
+   * Website https://github.com/dart-lang/protobuf
+   * Extensions: 1073
+
+1. Ocaml-protoc-plugin
+   * Website: https://github.com/issuu/ocaml-protoc-plugin
+   * Extensions: 1074
+
+1. Analyze Re Graphene
+   * Website: https://analyzere.com
+   * Extensions: 1075
+
+1. Wire since and until
+   * Website: https://square.github.io/wire/
+   * Extensions: 1076, 1077
+
+1. Bazel, Failure Details
+   * Website: https://github.com/bazelbuild/bazel
+   * Extensions: 1078
+
+1. grpc-graphql-gateway
+   * Website: https://github.com/ysugimoto/grpc-graphql-gateway
+   * Extensions: 1079
+
+1. Cloudstate
+   * Website: https://cloudstate.io
+   * Extensions: 1080-1084
+
+1. SummaFT protoc-plugins
+   * Website: https://summaft.com/
+   * Extensions: 1085
+
+1. ADLINK EdgeSDK
+   * Website: https://www.adlinktech.com/en/Edge-SDK-IoT
+   * Extensions: 1086
+
+1. Wire wire_package
+   * Website: https://square.github.io/wire/
+   * Extensions: 1087
+
+1. Confluent Schema Registry
+   * Website: https://github.com/confluentinc/schema-registry
+   * Extensions: 1088
+
+1. ScalaPB Validate
+   * Website: https://scalapb.github.io/docs/validation
+   * Extension: 1089
+
+1. Astounding (Currently Private)
+   * Website: https://github.com/PbPipes/Astounding
+   * Extension: 1090
+
+1. Protoc-gen-psql
+   * Website: https://github.com/Intrinsec/protoc-gen-psql
+   * Extension: 1091-1101
+
+1. Protoc-gen-sanitize
+   * Website: https://github.com/Intrinsec/protoc-gen-sanitize
+   * Extension: 1102-1106
+
+1. Coach Client Connect (planned release in March 2021)
+   * Website: https://www.coachclientconnect.com
+   * Extension: 1107
+
+1. Kratos API Errors
+   * Website: https://go-kratos.dev
+   * Extension: 1108
+
+1. Glitchdot (Currently Private)
+   * Website: https://go.glitchdot.com
+   * Extension: 1109
+
+1. eigr/protocol
+   * Website: https://eigr.io
+   * Extension: 1110-1114
+
+1. Container Object Storage Interface (COSI)
+   * Website: https://github.com/kubernetes-sigs/container-object-storage-interface-spec
+   * Extension: 1115-1124
+
+1. Protoc-gen-jsonschema
+   * Website: https://github.com/chrusty/protoc-gen-jsonschema
+   * Extension: 1125-1129
+
+1. Protoc-gen-checker
+   * Website: https://github.com/Intrinsec/protoc-gen-checker
+   * Extension: 1130-1139
+
+1. Protoc-gen-go-svc
+   * Website: https://github.com/dane/protoc-gen-go-svc
+   * Extension: 1140

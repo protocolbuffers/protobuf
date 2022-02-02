@@ -34,6 +34,7 @@
 
 #include <google/protobuf/field_mask.pb.h>
 #include <google/protobuf/timestamp.pb.h>
+#include <google/protobuf/type.pb.h>
 #include <google/protobuf/wrappers.pb.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -53,6 +54,7 @@
 #include <google/protobuf/util/internal/type_info_test_helper.h>
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/message_differencer.h>
+#include <google/protobuf/util/type_resolver_util.h>
 #include <google/protobuf/stubs/bytestream.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <gtest/gtest.h>
@@ -62,6 +64,7 @@ namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
+
 
 using proto_util_converter::testing::AnyM;
 using proto_util_converter::testing::AnyOut;
@@ -89,12 +92,6 @@ std::string GetTypeUrl(const Descriptor* descriptor) {
   return std::string(kTypeServiceBaseUrl) + "/" + descriptor->full_name();
 }
 }  // namespace
-
-#if __cplusplus >= 201103L
-using std::get;
-#else
-using std::tr1::get;
-#endif
 
 class BaseProtoStreamObjectWriterTest
     : public ::testing::TestWithParam<testing::TypeInfoSource> {
@@ -168,8 +165,8 @@ class BaseProtoStreamObjectWriterTest
 
 MATCHER_P(HasObjectLocation, expected,
           "Verifies the expected object location") {
-  std::string actual = get<0>(arg).ToString();
-  if (actual.compare(expected) == 0) return true;
+  std::string actual = std::get<0>(arg).ToString();
+  if (actual == expected) return true;
   *result_listener << "actual location is: " << actual;
   return false;
 }
@@ -278,10 +275,11 @@ TEST_P(ProtoStreamObjectWriterTest, ConflictingJsonName) {
   CheckOutput(message2);
 }
 
+
 TEST_P(ProtoStreamObjectWriterTest, IntEnumValuesAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_KIDS);
+  book.set_type(proto_util_converter::testing::Book::KIDS);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -317,7 +315,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsRejected) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithSameCaseIsAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -337,7 +335,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithSameCaseIsAccepted) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -357,7 +355,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithDifferentCaseIsAccepted) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithoutUnderscoreAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -377,7 +375,7 @@ TEST_P(ProtoStreamObjectWriterTest, EnumValuesWithoutUnderscoreAreAccepted) {
 TEST_P(ProtoStreamObjectWriterTest, EnumValuesInCamelCaseAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -398,7 +396,7 @@ TEST_P(ProtoStreamObjectWriterTest,
        EnumValuesInCamelCaseRemoveDashAndUnderscoreAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_ACTION_AND_ADVENTURE);
+  book.set_type(proto_util_converter::testing::Book::ACTION_AND_ADVENTURE);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -420,7 +418,7 @@ TEST_P(ProtoStreamObjectWriterTest,
        EnumValuesInCamelCaseWithNameNotUppercaseAreAccepted) {
   Book book;
   book.set_title("Some Book");
-  book.set_type(proto_util_converter::testing::Book_Type_arts_and_photography);
+  book.set_type(proto_util_converter::testing::Book::arts_and_photography);
   Author* robert = book.mutable_author();
   robert->set_name("robert");
 
@@ -690,6 +688,61 @@ TEST_P(ProtoStreamObjectWriterTest, ImplicitMessageList) {
       ->StartObject("author")
       ->RenderString("name", "outer")
       ->RenderBool("alive", true)
+      ->StartObject("friend")
+      ->RenderString("name", "first")
+      ->EndObject()
+      ->StartObject("friend")
+      ->RenderString("name", "second")
+      ->EndObject()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(expected);
+}
+
+TEST_P(ProtoStreamObjectWriterTest, DisableImplicitMessageList) {
+  options_.disable_implicit_message_list = true;
+  options_.suppress_implicit_message_list_error = true;
+  ResetProtoWriter();
+
+  Book expected;
+  // The repeated friend field of the author is empty.
+  expected.mutable_author();
+
+  EXPECT_CALL(listener_, InvalidValue(_, _, _)).Times(0);
+
+  ow_->StartObject("")
+      ->StartObject("author")
+      ->StartObject("friend")
+      ->RenderString("name", "first")
+      ->EndObject()
+      ->StartObject("friend")
+      ->RenderString("name", "second")
+      ->EndObject()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(expected);
+}
+
+TEST_P(ProtoStreamObjectWriterTest,
+       DisableImplicitMessageListWithoutErrorSuppressed) {
+  options_.disable_implicit_message_list = true;
+  ResetProtoWriter();
+
+  Book expected;
+  // The repeated friend field of the author is empty.
+  expected.mutable_author();
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(
+          _, StringPiece("friend"),
+          StringPiece(
+              "Starting an object in a repeated field but the parent object "
+              "is not a list")))
+      .With(Args<0>(HasObjectLocation("author")))
+      .Times(2);
+
+  ow_->StartObject("")
+      ->StartObject("author")
       ->StartObject("friend")
       ->RenderString("name", "first")
       ->EndObject()
@@ -1002,7 +1055,10 @@ TEST_P(ProtoStreamObjectWriterTest,
   Proto3Message expected;
   EXPECT_CALL(
       listener_,
-      InvalidValue(_, StringPiece("TYPE_ENUM"),
+      InvalidValue(_,
+                   StringPiece(
+                       "type.googleapis.com/"
+                       "proto_util_converter.testing.Proto3Message.NestedEnum"),
                    StringPiece("\"someunknownvalueyouwillneverknow\"")))
       .With(Args<0>(HasObjectLocation("enum_value")));
   ow_->StartObject("")
@@ -1714,6 +1770,45 @@ TEST_P(ProtoStreamObjectWriterStructTest, OptionStructIntAsStringsTest) {
       ->RenderBool("k2", true)
       ->RenderInt64("k3", -222222222)
       ->RenderUint64("k4", 33333333)
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(struct_type);
+}
+
+TEST_P(ProtoStreamObjectWriterStructTest, Struct32BitIntsAndFloatsTest) {
+  StructType struct_type;
+  google::protobuf::Struct* s = struct_type.mutable_object();
+  s->mutable_fields()->operator[]("k1").set_number_value(1.5);
+  s->mutable_fields()->operator[]("k2").set_number_value(100);
+  s->mutable_fields()->operator[]("k3").set_number_value(100);
+  ResetProtoWriter();
+
+  ow_->StartObject("")
+      ->StartObject("object")
+      ->RenderFloat("k1", 1.5)
+      ->RenderInt32("k2", 100)
+      ->RenderUint32("k3", 100)
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(struct_type);
+}
+
+TEST_P(ProtoStreamObjectWriterStructTest,
+       Struct32BitIntsAndFloatsAsStringsTest) {
+  StructType struct_type;
+  google::protobuf::Struct* s = struct_type.mutable_object();
+  s->mutable_fields()->operator[]("k1").set_string_value("1.5");
+  s->mutable_fields()->operator[]("k2").set_string_value("100");
+  s->mutable_fields()->operator[]("k3").set_string_value("100");
+
+  options_.struct_integers_as_strings = true;
+  ResetProtoWriter();
+
+  ow_->StartObject("")
+      ->StartObject("object")
+      ->RenderFloat("k1", 1.5)
+      ->RenderInt32("k2", 100)
+      ->RenderUint32("k3", 100)
       ->EndObject()
       ->EndObject();
   CheckOutput(struct_type);
@@ -2498,7 +2593,7 @@ TEST_P(ProtoStreamObjectWriterFieldMaskTest, SimpleFieldMaskTest) {
   CheckOutput(expected);
 }
 
-TEST_P(ProtoStreamObjectWriterFieldMaskTest, MutipleMasksInCompactForm) {
+TEST_P(ProtoStreamObjectWriterFieldMaskTest, MultipleMasksInCompactForm) {
   FieldMaskTest expected;
   expected.set_id("1");
   expected.mutable_single_mask()->add_paths("camel_case1");

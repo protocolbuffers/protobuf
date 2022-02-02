@@ -139,9 +139,20 @@ function doTestSignedValue(readValue,
     assertEquals(inputValues[i], readValue.call(decoder));
   }
 
-  // Encoding values outside the valid range should assert.
-  assertThrows(function() {writeValue.call(encoder, lowerLimit * 1.1);});
-  assertThrows(function() {writeValue.call(encoder, upperLimit * 1.1);});
+  // Encoding values outside the valid range should assert, except for doubles
+  // whose range runs all the way to infinity.
+  var pastLowerLimit = lowerLimit * 1.1;
+  var pastUpperLimit = upperLimit * 1.1;
+  if (pastLowerLimit !== -Infinity) {
+    expect(function() {
+      writeValue.call(encoder, lowerLimit * 1.1);
+    }).toThrow();
+  }
+  if (pastUpperLimit !== Infinity) {
+    expect(function() {
+      writeValue.call(encoder, upperLimit * 1.1);
+    }).toThrow();
+  }
 }
 
 describe('binaryDecoderTest', function() {
@@ -213,7 +224,6 @@ describe('binaryDecoderTest', function() {
 
   /**
    * Verifies that misuse of the decoder class triggers assertions.
-   * @suppress {checkTypes|visibility}
    */
   it('testDecodeErrors', function() {
     // Reading a value past the end of the stream should trigger an assertion.

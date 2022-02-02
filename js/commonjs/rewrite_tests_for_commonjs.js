@@ -80,6 +80,8 @@ lineReader.on('line', function(line) {
   if (isRequire) {
     if (module) {  // Skip goog.require() lines before the first directive.
       var fullSym = isRequire[1];
+      // Skip lines importing from jspb.*, these are handled by the header above.
+      if (fullSym.match(/^jspb\./)) return;
       var sym = tryStripPrefix(fullSym, pkg);
       console.log("googleProtobuf.exportSymbol('" + fullSym + "', " + module + sym + ', global);');
     }

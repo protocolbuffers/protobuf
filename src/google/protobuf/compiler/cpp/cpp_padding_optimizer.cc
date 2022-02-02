@@ -118,7 +118,8 @@ class FieldGroup {
 //
 // OTHER these fields are initialized one-by-one.
 void PaddingOptimizer::OptimizeLayout(
-    std::vector<const FieldDescriptor*>* fields, const Options& options) {
+    std::vector<const FieldDescriptor*>* fields, const Options& options,
+    MessageSCCAnalyzer* scc_analyzer) {
   // The sorted numeric order of Family determines the declaration order in the
   // memory layout.
   enum Family {
@@ -147,7 +148,7 @@ void PaddingOptimizer::OptimizeLayout(
       f = STRING;
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       f = MESSAGE;
-      if (IsLazy(field, options)) {
+      if (IsLazy(field, options, scc_analyzer)) {
         f = LAZY_MESSAGE;
       }
     } else if (CanInitializeByZeroing(field)) {

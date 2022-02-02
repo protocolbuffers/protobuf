@@ -32,13 +32,15 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-#include "conformance.pb.h"
-#include <google/protobuf/test_messages_proto3.pb.h>
-#include <google/protobuf/test_messages_proto2.pb.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/type_resolver_util.h>
+#include <google/protobuf/stubs/status.h>
+#include "conformance.pb.h"
+#include <google/protobuf/test_messages_proto2.pb.h>
+#include <google/protobuf/test_messages_proto3.pb.h>
+#include <google/protobuf/stubs/status.h>
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
@@ -51,41 +53,14 @@ using google::protobuf::util::BinaryToJsonString;
 using google::protobuf::util::JsonParseOptions;
 using google::protobuf::util::JsonToBinaryString;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
-using google::protobuf::util::Status;
 using google::protobuf::util::TypeResolver;
-using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
+using protobuf_test_messages::proto2::TestAllTypesProto2;
 using std::string;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
 
 const char* kFailures[] = {
-#if !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-    "Required.Proto2.ProtobufInput."
-    "PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE",
-    "Required.Proto2.ProtobufInput."
-    "PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE",
-    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.BOOL",
-    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.ENUM",
-    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.INT32",
-    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.INT64",
-    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.SINT32",
-    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.SINT64",
-    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT32",
-    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT64",
-    "Required.Proto3.ProtobufInput."
-    "PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE",
-    "Required.Proto3.ProtobufInput."
-    "PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE",
-    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.BOOL",
-    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.ENUM",
-    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.INT32",
-    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.INT64",
-    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.SINT32",
-    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.SINT64",
-    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.UINT32",
-    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.UINT64",
-#endif
 };
 
 static string GetTypeUrl(const Descriptor* message) {
@@ -97,6 +72,10 @@ bool verbose = false;
 TypeResolver* type_resolver;
 string* type_url;
 
+namespace google {
+namespace protobuf {
+
+using util::Status;
 
 bool CheckedRead(int fd, void *buf, size_t len) {
   size_t ofs = 0;
@@ -106,7 +85,7 @@ bool CheckedRead(int fd, void *buf, size_t len) {
     if (bytes_read == 0) return false;
 
     if (bytes_read < 0) {
-      GOOGLE_LOG(FATAL) << "Error reading from test runner: " <<  strerror(errno);
+      GOOGLE_LOG(FATAL) << "Error reading from test runner: " << strerror(errno);
     }
 
     len -= bytes_read;
@@ -124,6 +103,8 @@ void CheckedWrite(int fd, const void *buf, size_t len) {
 
 void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
   Message *test_message;
+  google::protobuf::LinkMessageReflection<TestAllTypesProto2>();
+  google::protobuf::LinkMessageReflection<TestAllTypesProto3>();
   const Descriptor *descriptor = DescriptorPool::generated_pool()->FindMessageTypeByName(
       request.message_type());
   if (!descriptor) {
@@ -148,12 +129,12 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       options.ignore_unknown_fields =
           (request.test_category() ==
               conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST);
-      Status status = JsonToBinaryString(type_resolver, *type_url,
-                                         request.json_payload(), &proto_binary,
-                                         options);
+      util::Status status =
+          JsonToBinaryString(type_resolver, *type_url, request.json_payload(),
+                             &proto_binary, options);
       if (!status.ok()) {
         response->set_parse_error(string("Parse error: ") +
-                                  status.error_message().as_string());
+                                  std::string(status.message()));
         return;
       }
 
@@ -178,8 +159,7 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       break;
 
     default:
-      GOOGLE_LOG(FATAL) << "unknown payload type: "
-                        << request.payload_case();
+      GOOGLE_LOG(FATAL) << "unknown payload type: " << request.payload_case();
       break;
   }
 
@@ -195,19 +175,21 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       break;
 
     case conformance::PROTOBUF: {
-      GOOGLE_CHECK(test_message->SerializeToString(response->mutable_protobuf_payload()));
+      GOOGLE_CHECK(test_message->SerializeToString(
+          response->mutable_protobuf_payload()));
       break;
     }
 
     case conformance::JSON: {
       string proto_binary;
       GOOGLE_CHECK(test_message->SerializeToString(&proto_binary));
-      Status status = BinaryToJsonString(type_resolver, *type_url, proto_binary,
-                                         response->mutable_json_payload());
+      util::Status status =
+          BinaryToJsonString(type_resolver, *type_url, proto_binary,
+                             response->mutable_json_payload());
       if (!status.ok()) {
         response->set_serialize_error(
             string("Failed to serialize JSON output: ") +
-            status.error_message().as_string());
+            std::string(status.message()));
         return;
       }
       break;
@@ -217,13 +199,13 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       TextFormat::Printer printer;
       printer.SetHideUnknownFields(!request.print_unknown_fields());
       GOOGLE_CHECK(printer.PrintToString(*test_message,
-                                         response->mutable_text_payload()));
+                                  response->mutable_text_payload()));
       break;
     }
 
     default:
       GOOGLE_LOG(FATAL) << "Unknown output format: "
-                        << request.requested_output_format();
+                 << request.requested_output_format();
   }
 }
 
@@ -269,12 +251,15 @@ bool DoTestIo() {
   return true;
 }
 
+}  // namespace protobuf
+}  // namespace google
+
 int main() {
   type_resolver = NewTypeResolverForDescriptorPool(
       kTypeUrlPrefix, DescriptorPool::generated_pool());
   type_url = new string(GetTypeUrl(TestAllTypesProto3::descriptor()));
   while (1) {
-    if (!DoTestIo()) {
+    if (!google::protobuf::DoTestIo()) {
       fprintf(stderr, "conformance-cpp: received EOF from test runner "
                       "after %d tests, exiting\n", test_count);
       return 0;

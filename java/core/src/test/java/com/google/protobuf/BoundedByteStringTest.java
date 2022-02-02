@@ -30,24 +30,30 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /**
  * This class tests {@link BoundedByteString}, which extends {@link LiteralByteString}, by
  * inheriting the tests from {@link LiteralByteStringTest}. The only method which is strange enough
  * that it needs to be overridden here is {@link #testToString()}.
- *
- * @author carlanton@google.com (Carl Haverl)
  */
+@RunWith(JUnit4.class)
 public class BoundedByteStringTest extends LiteralByteStringTest {
 
   @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     classUnderTest = "BoundedByteString";
     byte[] sourceBytes = ByteStringTest.getTestBytes(2341, 11337766L);
     int from = 100;
@@ -59,40 +65,39 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testToString() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
     ByteString chopped = unicode.substring(2, unicode.size() - 6);
-    assertEquals(
-        classUnderTest + ".substring() must have the expected type",
-        classUnderTest,
-        getActualClassName(chopped));
+    assertWithMessage("%s.substring() must have the expected type", classUnderTest)
+        .that(classUnderTest)
+        .isEqualTo(getActualClassName(chopped));
 
     String roundTripString = chopped.toString(UTF_8);
-    assertEquals(
-        classUnderTest + " unicode bytes must match",
-        testString.substring(2, testString.length() - 6),
-        roundTripString);
+    assertWithMessage("%s unicode bytes must match", classUnderTest)
+        .that(testString.substring(2, testString.length() - 6))
+        .isEqualTo(roundTripString);
   }
 
   @Override
+  @Test
   public void testCharsetToString() {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
     ByteString chopped = unicode.substring(2, unicode.size() - 6);
-    assertEquals(
-        classUnderTest + ".substring() must have the expected type",
-        classUnderTest,
-        getActualClassName(chopped));
+    assertWithMessage("%s.substring() must have the expected type", classUnderTest)
+        .that(classUnderTest)
+        .isEqualTo(getActualClassName(chopped));
 
     String roundTripString = chopped.toString(Internal.UTF_8);
-    assertEquals(
-        classUnderTest + " unicode bytes must match",
-        testString.substring(2, testString.length() - 6),
-        roundTripString);
+    assertWithMessage("%s unicode bytes must match", classUnderTest)
+        .that(testString.substring(2, testString.length() - 6))
+        .isEqualTo(roundTripString);
   }
 
   @Override
+  @Test
   public void testJavaSerialization() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(out);
@@ -102,7 +107,7 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
     InputStream in = new ByteArrayInputStream(pickled);
     ObjectInputStream ois = new ObjectInputStream(in);
     Object o = ois.readObject();
-    assertTrue("Didn't get a ByteString back", o instanceof ByteString);
-    assertEquals("Should get an equal ByteString back", stringUnderTest, o);
+    assertWithMessage("Didn't get a ByteString back").that(o).isInstanceOf(ByteString.class);
+    assertWithMessage("Should get an equal ByteString back").that(stringUnderTest).isEqualTo(o);
   }
 }

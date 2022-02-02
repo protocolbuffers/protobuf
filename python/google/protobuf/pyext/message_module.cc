@@ -28,14 +28,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include <google/protobuf/message_lite.h>
+#include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/proto_api.h>
-
-#include <google/protobuf/message_lite.h>
 
 namespace {
 
@@ -47,6 +48,15 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   google::protobuf::Message* GetMutableMessagePointer(PyObject* msg) const override {
     return google::protobuf::python::PyMessage_GetMutableMessagePointer(msg);
   }
+  const google::protobuf::Descriptor* MessageDescriptor_AsDescriptor(
+      PyObject* desc) const override {
+    return google::protobuf::python::PyMessageDescriptor_AsDescriptor(desc);
+  }
+  const google::protobuf::EnumDescriptor* EnumDescriptor_AsDescriptor(
+      PyObject* enum_desc) const override {
+    return google::protobuf::python::PyEnumDescriptor_AsDescriptor(enum_desc);
+  }
+
   const google::protobuf::DescriptorPool* GetDefaultDescriptorPool() const override {
     return google::protobuf::python::GetDefaultDescriptorPool()->pool;
   }
@@ -54,6 +64,19 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   google::protobuf::MessageFactory* GetDefaultMessageFactory() const override {
     return google::protobuf::python::GetDefaultDescriptorPool()
         ->py_message_factory->message_factory;
+  }
+  PyObject* NewMessage(const google::protobuf::Descriptor* descriptor,
+                       PyObject* py_message_factory) const override {
+    return google::protobuf::python::PyMessage_New(descriptor, py_message_factory);
+  }
+  PyObject* NewMessageOwnedExternally(
+      google::protobuf::Message* msg, PyObject* py_message_factory) const override {
+    return google::protobuf::python::PyMessage_NewMessageOwnedExternally(
+        msg, py_message_factory);
+  }
+  PyObject* DescriptorPool_FromPool(
+      const google::protobuf::DescriptorPool* pool) const override {
+    return google::protobuf::python::PyDescriptorPool_FromPool(pool);
   }
 };
 
@@ -73,7 +96,6 @@ static PyMethodDef ModuleMethods[] = {
     // DO NOT USE: For migration and testing only.
     {NULL, NULL}};
 
-#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                      "_message",
                                      module_docstring,
@@ -83,39 +105,30 @@ static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                      NULL,
                                      NULL,
                                      NULL};
-#define INITFUNC PyInit__message
-#define INITFUNC_ERRORVAL NULL
-#else  // Python 2
-#define INITFUNC init_message
-#define INITFUNC_ERRORVAL
-#endif
 
-PyMODINIT_FUNC INITFUNC() {
+PyMODINIT_FUNC PyInit__message() {
   PyObject* m;
-#if PY_MAJOR_VERSION >= 3
   m = PyModule_Create(&_module);
-#else
-  m = Py_InitModule3("_message", ModuleMethods, module_docstring);
-#endif
   if (m == NULL) {
-    return INITFUNC_ERRORVAL;
+    return NULL;
   }
 
   if (!google::protobuf::python::InitProto2MessageModule(m)) {
     Py_DECREF(m);
-    return INITFUNC_ERRORVAL;
+    return NULL;
   }
 
   // Adds the C++ API
-  if (PyObject* api =
-          PyCapsule_New(new ApiImplementation(),
-                        google::protobuf::python::PyProtoAPICapsuleName(), NULL)) {
+  if (PyObject* api = PyCapsule_New(
+          new ApiImplementation(), google::protobuf::python::PyProtoAPICapsuleName(),
+          [](PyObject* o) {
+            delete (ApiImplementation*)PyCapsule_GetPointer(
+                o, google::protobuf::python::PyProtoAPICapsuleName());
+          })) {
     PyModule_AddObject(m, "proto_API", api);
   } else {
-    return INITFUNC_ERRORVAL;
+    return NULL;
   }
 
-#if PY_MAJOR_VERSION >= 3
   return m;
-#endif
 }

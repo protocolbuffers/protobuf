@@ -1,6 +1,25 @@
 # Define custom utilities
 # Test for OSX with [ -n "$IS_OSX" ]
 
+function remove_travis_ve_pip {
+    # Removing the system virtualenv or pip can be very problematic for
+    # macOS on Kokoro, so just leave them be.
+    :;
+}
+
+function install_pip {
+    check_python
+    PIP_CMD="sudo $PYTHON_EXE -m pip${pip_args:+ $pip_args}"
+    $PIP_CMD install --upgrade pip
+}
+
+function install_virtualenv {
+    check_python
+    check_pip
+    $PIP_CMD install --upgrade virtualenv
+    VIRTUALENV_CMD="$PYTHON_EXE -m virtualenv"
+}
+
 function pre_build {
     # Any stuff that you need to do before you start building the wheels
     # Runs in the root directory of this repository.

@@ -779,7 +779,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [message.repeatedSfixed64Array addValue:210 + i * 100];
     [message.repeatedFloatArray addValue:211 + i * 100];
     [message.repeatedDoubleArray addValue:212 + i * 100];
-    [message.repeatedBoolArray addValue:(i % 2)];
+    [message.repeatedBoolArray addValue:(BOOL)(i % 2)];
     NSString *string = [[NSString alloc] initWithFormat:@"%d", 215 + i * 100];
     [message.repeatedStringArray addObject:string];
     [string release];

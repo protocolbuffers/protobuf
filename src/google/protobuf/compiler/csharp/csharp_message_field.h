@@ -51,19 +51,19 @@ class MessageFieldGenerator : public FieldGeneratorBase {
   MessageFieldGenerator(const MessageFieldGenerator&) = delete;
   MessageFieldGenerator& operator=(const MessageFieldGenerator&) = delete;
 
-  virtual void GenerateCodecCode(io::Printer* printer);
-  virtual void GenerateCloningCode(io::Printer* printer);
-  virtual void GenerateFreezingCode(io::Printer* printer);
-  virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateMergingCode(io::Printer* printer);
-  virtual void GenerateParsingCode(io::Printer* printer);
-  virtual void GenerateSerializationCode(io::Printer* printer);
-  virtual void GenerateSerializedSizeCode(io::Printer* printer);
-  virtual void GenerateExtensionCode(io::Printer* printer);
+  virtual void GenerateCodecCode(io::Printer* printer) override;
+  virtual void GenerateCloningCode(io::Printer* printer) override;
+  virtual void GenerateFreezingCode(io::Printer* printer) override;
+  virtual void GenerateMembers(io::Printer* printer) override;
+  virtual void GenerateMergingCode(io::Printer* printer) override;
+  virtual void GenerateParsingCode(io::Printer* printer) override;
+  virtual void GenerateSerializationCode(io::Printer* printer) override;
+  virtual void GenerateSerializedSizeCode(io::Printer* printer) override;
+  virtual void GenerateExtensionCode(io::Printer* printer) override;
 
-  virtual void WriteHash(io::Printer* printer);
-  virtual void WriteEquals(io::Printer* printer);
-  virtual void WriteToString(io::Printer* printer);
+  virtual void WriteHash(io::Printer* printer) override;
+  virtual void WriteEquals(io::Printer* printer) override;
+  virtual void WriteToString(io::Printer* printer) override;
 };
 
 class MessageOneofFieldGenerator : public MessageFieldGenerator {
@@ -77,11 +77,11 @@ class MessageOneofFieldGenerator : public MessageFieldGenerator {
   MessageOneofFieldGenerator& operator=(const MessageOneofFieldGenerator&) =
       delete;
 
-  virtual void GenerateCloningCode(io::Printer* printer);
-  virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateMergingCode(io::Printer* printer);
-  virtual void WriteToString(io::Printer* printer);
-  virtual void GenerateParsingCode(io::Printer* printer);
+  virtual void GenerateCloningCode(io::Printer* printer) override;
+  virtual void GenerateMembers(io::Printer* printer) override;
+  virtual void GenerateMergingCode(io::Printer* printer) override;
+  virtual void WriteToString(io::Printer* printer) override;
+  virtual void GenerateParsingCode(io::Printer* printer) override;
 };
 
 }  // namespace csharp

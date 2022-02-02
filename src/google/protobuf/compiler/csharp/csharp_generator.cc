@@ -48,26 +48,25 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+Generator::Generator() {}
+Generator::~Generator() {}
+
+uint64_t Generator::GetSupportedFeatures() const {
+  return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL;
+}
+
 void GenerateFile(const FileDescriptor* file, io::Printer* printer,
                   const Options* options) {
   ReflectionClassGenerator reflectionClassGenerator(file, options);
   reflectionClassGenerator.Generate(printer);
 }
 
-bool Generator::Generate(
-    const FileDescriptor* file,
-    const string& parameter,
-    GeneratorContext* generator_context,
-    string* error) const {
-
-  std::vector<std::pair<string, string> > options;
+bool Generator::Generate(const FileDescriptor* file,
+                         const std::string& parameter,
+                         GeneratorContext* generator_context,
+                         std::string* error) const {
+  std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
-
-  // We only support proto3 - but we make an exception for descriptor.proto.
-  if (file->syntax() != FileDescriptor::SYNTAX_PROTO3 && !IsDescriptorProto(file)) {
-    *error = "C# code generation only supports proto3 syntax";
-    return false;
-  }
 
   struct Options cli_options;
 
@@ -87,7 +86,7 @@ bool Generator::Generate(
     }
   }
 
-  string filename_error = "";
+  std::string filename_error = "";
   std::string filename = GetOutputFile(file,
       cli_options.file_extension,
       cli_options.base_namespace_specified,

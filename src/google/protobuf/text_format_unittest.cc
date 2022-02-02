@@ -36,14 +36,16 @@
 
 #include <math.h>
 #include <stdlib.h>
+
+#include <atomic>
 #include <limits>
 #include <memory>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
+#include <google/protobuf/any.pb.h>
 #include <google/protobuf/map_unittest.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/test_util2.h>
@@ -54,18 +56,22 @@
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
-
-
-#include <google/protobuf/stubs/substitute.h>
+#include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/mathlimits.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/substitute.h>
 
 
 #include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
+
+namespace internal {
+// Controls insertion of DEBUG_STRING_SILENT_MARKER.
+extern PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
+}  // namespace internal
 
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace text_format_unittest {
@@ -348,14 +354,46 @@ TEST_F(TextFormatTest, PrintUnknownMessage) {
   UnknownFieldSet unknown_fields;
   EXPECT_TRUE(unknown_fields.ParseFromString(data));
   EXPECT_TRUE(TextFormat::PrintUnknownFieldsToString(unknown_fields, &text));
-  EXPECT_EQ(
-      "44: \"abc\"\n"
-      "44: \"def\"\n"
-      "44: \"\"\n"
-      "48 {\n"
-      "  1: 123\n"
-      "}\n",
-      text);
+  // Field 44 and 48 can be printed in any order.
+  EXPECT_THAT(text, testing::HasSubstr("44: \"abc\"\n"
+                                       "44: \"def\"\n"
+                                       "44: \"\"\n"));
+  EXPECT_THAT(text, testing::HasSubstr("48 {\n"
+                                       "  1: 123\n"
+                                       "}\n"));
+}
+
+TEST_F(TextFormatTest, PrintDeeplyNestedUnknownMessage) {
+  // Create a deeply nested message.
+  static constexpr int kNestingDepth = 25000;
+  static constexpr int kUnknownFieldNumber = 1;
+  std::vector<int> lengths;
+  lengths.reserve(kNestingDepth);
+  lengths.push_back(0);
+  for (int i = 0; i < kNestingDepth - 1; ++i) {
+    lengths.push_back(
+        internal::WireFormatLite::TagSize(
+            kUnknownFieldNumber, internal::WireFormatLite::TYPE_BYTES) +
+        internal::WireFormatLite::LengthDelimitedSize(lengths.back()));
+  }
+  std::string serialized;
+  {
+    io::StringOutputStream zero_copy_stream(&serialized);
+    io::CodedOutputStream coded_stream(&zero_copy_stream);
+    for (int i = kNestingDepth - 1; i >= 0; --i) {
+      internal::WireFormatLite::WriteTag(
+          kUnknownFieldNumber,
+          internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, &coded_stream);
+      coded_stream.WriteVarint32(lengths[i]);
+    }
+  }
+
+  // Parse the data and verify that we can print it without overflowing the
+  // stack.
+  unittest::TestEmptyMessage message;
+  ASSERT_TRUE(message.ParseFromString(serialized));
+  std::string text;
+  EXPECT_TRUE(TextFormat::PrintToString(message, &text));
 }
 
 TEST_F(TextFormatTest, PrintMessageWithIndent) {
@@ -478,7 +516,7 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinterRegisterSameFieldTwice) {
 TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
   protobuf_unittest::TestAllTypes message;
   TextFormat::Printer printer;
-  // NULL printer.
+  // nullptr printer.
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(
       message.GetDescriptor()->FindFieldByName("optional_int32"),
       static_cast<const TextFormat::FieldValuePrinter*>(nullptr)));
@@ -487,7 +525,7 @@ TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
       static_cast<const TextFormat::FastFieldValuePrinter*>(nullptr)));
   // Because registration fails, the ownership of this printer is never taken.
   TextFormat::FieldValuePrinter my_field_printer;
-  // NULL field
+  // nullptr field
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(nullptr, &my_field_printer));
 }
 
@@ -537,6 +575,54 @@ TEST_F(TextFormatTest, CustomPrinterForComments) {
       "}\n"
       "repeated_import_message {  # ImportMessage: 1\n"
       "  d: 44  # x2c\n"
+      "}\n",
+      text);
+}
+
+class CustomMessageContentFieldValuePrinter
+    : public TextFormat::FastFieldValuePrinter {
+ public:
+  bool PrintMessageContent(
+      const Message& message, int field_index, int field_count,
+      bool single_line_mode,
+      TextFormat::BaseTextGenerator* generator) const override {
+    if (message.ByteSizeLong() > 0) {
+      generator->PrintString(
+          strings::Substitute("# REDACTED, $0 bytes\n", message.ByteSizeLong()));
+    }
+    return true;
+  }
+};
+
+TEST_F(TextFormatTest, CustomPrinterForMessageContent) {
+  protobuf_unittest::TestAllTypes message;
+  message.mutable_optional_nested_message();
+  message.mutable_optional_import_message()->set_d(42);
+  message.add_repeated_nested_message();
+  message.add_repeated_nested_message();
+  message.add_repeated_import_message()->set_d(43);
+  message.add_repeated_import_message()->set_d(44);
+  TextFormat::Printer printer;
+  CustomMessageContentFieldValuePrinter my_field_printer;
+  printer.SetDefaultFieldValuePrinter(
+      new CustomMessageContentFieldValuePrinter());
+  std::string text;
+  printer.PrintToString(message, &text);
+  EXPECT_EQ(
+      "optional_nested_message {\n"
+      "}\n"
+      "optional_import_message {\n"
+      "  # REDACTED, 2 bytes\n"
+      "}\n"
+      "repeated_nested_message {\n"
+      "}\n"
+      "repeated_nested_message {\n"
+      "}\n"
+      "repeated_import_message {\n"
+      "  # REDACTED, 2 bytes\n"
+      "}\n"
+      "repeated_import_message {\n"
+      "  # REDACTED, 2 bytes\n"
       "}\n",
       text);
 }
@@ -639,7 +725,7 @@ TEST_F(TextFormatTest, CompactRepeatedFieldPrinter) {
       text);
 }
 
-// Print strings into multiple line, with indention. Use this to test
+// Print strings into multiple line, with indentation. Use this to test
 // BaseTextGenerator::Indent and BaseTextGenerator::Outdent.
 class MultilineStringPrinter : public TextFormat::FastFieldValuePrinter {
  public:
@@ -728,8 +814,8 @@ TEST_F(TextFormatExtensionsTest, ParseExtensions) {
 
 TEST_F(TextFormatTest, ParseEnumFieldFromNumber) {
   // Create a parse string with a numerical value for an enum field.
-  std::string parse_string = strings::Substitute("optional_nested_enum: $0",
-                                                 unittest::TestAllTypes::BAZ);
+  std::string parse_string =
+      strings::Substitute("optional_nested_enum: $0", unittest::TestAllTypes::BAZ);
   EXPECT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
   EXPECT_TRUE(proto_.has_optional_nested_enum());
   EXPECT_EQ(unittest::TestAllTypes::BAZ, proto_.optional_nested_enum());
@@ -778,7 +864,7 @@ TEST_F(TextFormatTest, ParseUnknownEnumFieldProto3) {
 }
 
 TEST_F(TextFormatTest, ParseStringEscape) {
-  // Create a parse string with escpaed characters in it.
+  // Create a parse string with escaped characters in it.
   std::string parse_string =
       "optional_string: " + kEscapeTestStringEscaped + "\n";
 
@@ -990,26 +1076,24 @@ static std::string RemoveRedundantZeros(std::string text) {
 TEST_F(TextFormatTest, PrintExotic) {
   unittest::TestAllTypes message;
 
-  // Note:  In C, a negative integer literal is actually the unary negation
-  //   operator being applied to a positive integer literal, and
-  //   9223372036854775808 is outside the range of int64.  However, it is not
-  //   outside the range of uint64.  Confusingly, this means that everything
-  //   works if we make the literal unsigned, even though we are negating it.
-  message.add_repeated_int64(-PROTOBUF_ULONGLONG(9223372036854775808));
-  message.add_repeated_uint64(PROTOBUF_ULONGLONG(18446744073709551615));
+  message.add_repeated_int64(int64_t{-9223372036854775807} - 1);
+  message.add_repeated_uint64(uint64_t{18446744073709551615u});
   message.add_repeated_double(123.456);
   message.add_repeated_double(1.23e21);
   message.add_repeated_double(1.23e-18);
   message.add_repeated_double(std::numeric_limits<double>::infinity());
   message.add_repeated_double(-std::numeric_limits<double>::infinity());
   message.add_repeated_double(std::numeric_limits<double>::quiet_NaN());
+  message.add_repeated_double(-std::numeric_limits<double>::quiet_NaN());
+  message.add_repeated_double(std::numeric_limits<double>::signaling_NaN());
+  message.add_repeated_double(-std::numeric_limits<double>::signaling_NaN());
   message.add_repeated_string(std::string("\000\001\a\b\f\n\r\t\v\\\'\"", 12));
 
   // Fun story:  We used to use 1.23e22 instead of 1.23e21 above, but this
   //   seemed to trigger an odd case on MinGW/GCC 3.4.5 where GCC's parsing of
   //   the value differed from strtod()'s parsing.  That is to say, the
   //   following assertion fails on MinGW:
-  //     assert(1.23e22 == strtod("1.23e22", NULL));
+  //     assert(1.23e22 == strtod("1.23e22", nullptr));
   //   As a result, SimpleDtoa() would print the value as
   //   "1.2300000000000001e+22" to make sure strtod() produce the exact same
   //   result.  Our goal is to test runtime parsing, not compile-time parsing,
@@ -1024,6 +1108,9 @@ TEST_F(TextFormatTest, PrintExotic) {
       "repeated_double: 1.23e-18\n"
       "repeated_double: inf\n"
       "repeated_double: -inf\n"
+      "repeated_double: nan\n"
+      "repeated_double: nan\n"
+      "repeated_double: nan\n"
       "repeated_double: nan\n"
       "repeated_string: "
       "\"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\'\\\"\"\n",
@@ -1155,32 +1242,19 @@ TEST_F(TextFormatTest, ParseExotic) {
 
   ASSERT_EQ(2, message.repeated_int32_size());
   EXPECT_EQ(-1, message.repeated_int32(0));
-  // Note:  In C, a negative integer literal is actually the unary negation
-  //   operator being applied to a positive integer literal, and 2147483648 is
-  //   outside the range of int32.  However, it is not outside the range of
-  //   uint32.  Confusingly, this means that everything works if we make the
-  //   literal unsigned, even though we are negating it.
-  EXPECT_EQ(-2147483648u, message.repeated_int32(1));
+  EXPECT_EQ(-2147483648, message.repeated_int32(1));
 
   ASSERT_EQ(2, message.repeated_int64_size());
   EXPECT_EQ(-1, message.repeated_int64(0));
-  // Note:  In C, a negative integer literal is actually the unary negation
-  //   operator being applied to a positive integer literal, and
-  //   9223372036854775808 is outside the range of int64.  However, it is not
-  //   outside the range of uint64.  Confusingly, this means that everything
-  //   works if we make the literal unsigned, even though we are negating it.
-  EXPECT_EQ(-PROTOBUF_ULONGLONG(9223372036854775808),
-            message.repeated_int64(1));
+  EXPECT_EQ(int64_t{-9223372036854775807} - 1, message.repeated_int64(1));
 
   ASSERT_EQ(2, message.repeated_uint32_size());
   EXPECT_EQ(4294967295u, message.repeated_uint32(0));
   EXPECT_EQ(2147483648u, message.repeated_uint32(1));
 
   ASSERT_EQ(2, message.repeated_uint64_size());
-  EXPECT_EQ(PROTOBUF_ULONGLONG(18446744073709551615),
-            message.repeated_uint64(0));
-  EXPECT_EQ(PROTOBUF_ULONGLONG(9223372036854775808),
-            message.repeated_uint64(1));
+  EXPECT_EQ(uint64_t{18446744073709551615u}, message.repeated_uint64(0));
+  EXPECT_EQ(uint64_t{9223372036854775808u}, message.repeated_uint64(1));
 
   ASSERT_EQ(13, message.repeated_double_size());
   EXPECT_EQ(123.0, message.repeated_double(0));
@@ -1198,8 +1272,8 @@ TEST_F(TextFormatTest, ParseExotic) {
             -std::numeric_limits<double>::infinity());
   EXPECT_EQ(message.repeated_double(10),
             -std::numeric_limits<double>::infinity());
-  EXPECT_TRUE(MathLimits<double>::IsNaN(message.repeated_double(11)));
-  EXPECT_TRUE(MathLimits<double>::IsNaN(message.repeated_double(12)));
+  EXPECT_TRUE(std::isnan(message.repeated_double(11)));
+  EXPECT_TRUE(std::isnan(message.repeated_double(12)));
 
   // Note:  Since these string literals have \0's in them, we must explicitly
   // pass their sizes to string's constructor.
@@ -1324,9 +1398,8 @@ class TextFormatParserTest : public testing::Test {
     parser_.RecordErrorsTo(&error_collector);
     EXPECT_EQ(expected_result, parser_.ParseFromString(input, proto))
         << input << " -> " << proto->DebugString();
-    EXPECT_EQ(
-        StrCat(line) + ":" + StrCat(col) + ": " + message + "\n",
-        error_collector.text_);
+    EXPECT_EQ(StrCat(line, ":", col, ": ", message, "\n"),
+              error_collector.text_);
     parser_.RecordErrorsTo(nullptr);
   }
 
@@ -1341,12 +1414,18 @@ class TextFormatParserTest : public testing::Test {
   }
 
   void ExpectLocation(TextFormat::ParseInfoTree* tree, const Descriptor* d,
-                      const std::string& field_name, int index, int line,
-                      int column) {
-    TextFormat::ParseLocation location =
+                      const std::string& field_name, int index, int start_line,
+                      int start_column, int end_line, int end_column) {
+    TextFormat::ParseLocationRange range =
+        tree->GetLocationRange(d->FindFieldByName(field_name), index);
+    EXPECT_EQ(start_line, range.start.line);
+    EXPECT_EQ(start_column, range.start.column);
+    EXPECT_EQ(end_line, range.end.line);
+    EXPECT_EQ(end_column, range.end.column);
+    TextFormat::ParseLocation start_location =
         tree->GetLocation(d->FindFieldByName(field_name), index);
-    EXPECT_EQ(line, location.line);
-    EXPECT_EQ(column, location.column);
+    EXPECT_EQ(start_line, start_location.line);
+    EXPECT_EQ(start_column, start_location.column);
   }
 
   // An error collector which simply concatenates all its errors into a big
@@ -1361,7 +1440,7 @@ class TextFormatParserTest : public testing::Test {
     // implements ErrorCollector -------------------------------------
     void AddError(int line, int column, const std::string& message) {
       strings::SubstituteAndAppend(&text_, "$0:$1: $2\n", line + 1, column + 1,
-                                   message);
+                                message);
     }
 
     void AddWarning(int line, int column, const std::string& message) {
@@ -1396,22 +1475,22 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
   ExpectSuccessAndTree(stringData, message.get(), &tree);
 
   // Verify that the tree has the correct positions.
-  ExpectLocation(&tree, d, "optional_int32", -1, 0, 0);
-  ExpectLocation(&tree, d, "optional_int64", -1, 1, 0);
-  ExpectLocation(&tree, d, "optional_double", -1, 2, 2);
+  ExpectLocation(&tree, d, "optional_int32", -1, 0, 0, 0, 17);
+  ExpectLocation(&tree, d, "optional_int64", -1, 1, 0, 1, 17);
+  ExpectLocation(&tree, d, "optional_double", -1, 2, 2, 2, 22);
 
-  ExpectLocation(&tree, d, "repeated_int32", 0, 3, 0);
-  ExpectLocation(&tree, d, "repeated_int32", 1, 4, 0);
+  ExpectLocation(&tree, d, "repeated_int32", 0, 3, 0, 3, 17);
+  ExpectLocation(&tree, d, "repeated_int32", 1, 4, 0, 4, 18);
 
-  ExpectLocation(&tree, d, "optional_nested_message", -1, 5, 0);
-  ExpectLocation(&tree, d, "repeated_nested_message", 0, 8, 0);
-  ExpectLocation(&tree, d, "repeated_nested_message", 1, 11, 0);
+  ExpectLocation(&tree, d, "optional_nested_message", -1, 5, 0, 7, 1);
+  ExpectLocation(&tree, d, "repeated_nested_message", 0, 8, 0, 10, 1);
+  ExpectLocation(&tree, d, "repeated_nested_message", 1, 11, 0, 13, 1);
 
-  // Check for fields not set. For an invalid field, the location returned
-  // should be -1, -1.
-  ExpectLocation(&tree, d, "repeated_int64", 0, -1, -1);
-  ExpectLocation(&tree, d, "repeated_int32", 6, -1, -1);
-  ExpectLocation(&tree, d, "some_unknown_field", -1, -1, -1);
+  // Check for fields not set. For an invalid field, the start and end locations
+  // returned should be -1, -1.
+  ExpectLocation(&tree, d, "repeated_int64", 0, -1, -1, -1, -1);
+  ExpectLocation(&tree, d, "repeated_int32", 6, -1, -1, -1, -1);
+  ExpectLocation(&tree, d, "some_unknown_field", -1, -1, -1, -1, -1);
 
   // Verify inside the nested message.
   const FieldDescriptor* nested_field =
@@ -1419,21 +1498,24 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
 
   TextFormat::ParseInfoTree* nested_tree =
       tree.GetTreeForNested(nested_field, -1);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 6, 2);
+  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 6, 2, 6,
+                 8);
 
   // Verify inside another nested message.
   nested_field = d->FindFieldByName("repeated_nested_message");
   nested_tree = tree.GetTreeForNested(nested_field, 0);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 9, 2);
+  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 9, 2, 9,
+                 8);
 
   nested_tree = tree.GetTreeForNested(nested_field, 1);
-  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 12, 2);
+  ExpectLocation(nested_tree, nested_field->message_type(), "bb", -1, 12, 2, 12,
+                 8);
 
-  // Verify a NULL tree for an unknown nested field.
+  // Verify a nullptr tree for an unknown nested field.
   TextFormat::ParseInfoTree* unknown_nested_tree =
       tree.GetTreeForNested(nested_field, 2);
 
-  EXPECT_EQ(NULL, unknown_nested_tree);
+  EXPECT_EQ(nullptr, unknown_nested_tree);
 }
 
 TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
@@ -1826,10 +1908,157 @@ TEST_F(TextFormatParserTest, SetRecursionLimit) {
 
   input = strings::Substitute(format, input);
   parser_.SetRecursionLimit(100);
-  ExpectMessage(input, "Message is too deep", 1, 908, &message, false);
+  ExpectMessage(input,
+                "Message is too deep, the parser exceeded the configured "
+                "recursion limit of 100.",
+                1, 908, &message, false);
 
   parser_.SetRecursionLimit(101);
   ExpectSuccessAndTree(input, &message, nullptr);
+}
+
+TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldValue) {
+  const char* format = "[$0]";
+  std::string input = "\"test_value\"";
+  for (int i = 0; i < 99; ++i) input = strings::Substitute(format, input);
+  std::string not_deep_input = StrCat("unknown_nested_array: ", input);
+
+  parser_.AllowUnknownField(true);
+  parser_.SetRecursionLimit(100);
+
+  unittest::NestedTestAllTypes message;
+  ExpectSuccessAndTree(not_deep_input, &message, nullptr);
+
+  input = strings::Substitute(format, input);
+  std::string deep_input = StrCat("unknown_nested_array: ", input);
+  ExpectMessage(
+      deep_input,
+      "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "
+      "field named \"unknown_nested_array\".\n1:123: Message is too deep, the "
+      "parser exceeded the configured recursion limit of 100.",
+      1, 21, &message, false);
+
+  parser_.SetRecursionLimit(101);
+  ExpectSuccessAndTree(deep_input, &message, nullptr);
+}
+
+TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
+  const char* format = "unknown_child: { $0 }";
+  std::string input;
+  for (int i = 0; i < 100; ++i) input = strings::Substitute(format, input);
+
+  parser_.AllowUnknownField(true);
+  parser_.SetRecursionLimit(100);
+
+  unittest::NestedTestAllTypes message;
+  ExpectSuccessAndTree(input, &message, nullptr);
+
+  input = strings::Substitute(format, input);
+  ExpectMessage(
+      input,
+      "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "
+      "field named \"unknown_child\".\n1:1716: Message is too deep, the parser "
+      "exceeded the configured recursion limit of 100.",
+      1, 14, &message, false);
+
+  parser_.SetRecursionLimit(101);
+  ExpectSuccessAndTree(input, &message, nullptr);
+}
+
+TEST_F(TextFormatParserTest, ParseAnyFieldWithAdditionalWhiteSpaces) {
+  Any any;
+  std::string parse_string =
+      "[type.googleapis.com/protobuf_unittest.TestAllTypes] \t :  \t {\n"
+      "  optional_int32: 321\n"
+      "  optional_string: \"teststr0\"\n"
+      "}\n";
+
+  ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &any));
+
+  TextFormat::Printer printer;
+  printer.SetExpandAny(true);
+  std::string text;
+  ASSERT_TRUE(printer.PrintToString(any, &text));
+  EXPECT_EQ(text,
+            "[type.googleapis.com/protobuf_unittest.TestAllTypes] {\n"
+            "  optional_int32: 321\n"
+            "  optional_string: \"teststr0\"\n"
+            "}\n");
+}
+
+TEST_F(TextFormatParserTest, ParseExtensionFieldWithAdditionalWhiteSpaces) {
+  unittest::TestAllExtensions proto;
+  std::string parse_string =
+      "[protobuf_unittest.optional_int32_extension]   : \t 101\n"
+      "[protobuf_unittest.optional_int64_extension] \t : 102\n";
+
+  ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
+
+  TextFormat::Printer printer;
+  std::string text;
+  ASSERT_TRUE(printer.PrintToString(proto, &text));
+  EXPECT_EQ(text,
+            "[protobuf_unittest.optional_int32_extension]: 101\n"
+            "[protobuf_unittest.optional_int64_extension]: 102\n");
+}
+
+TEST_F(TextFormatParserTest, ParseNormalFieldWithAdditionalWhiteSpaces) {
+  unittest::TestAllTypes proto;
+  std::string parse_string =
+      "repeated_int32  : \t 1\n"
+      "repeated_int32: 2\n"
+      "repeated_nested_message: {\n"
+      "  bb: 3\n"
+      "}\n"
+      "repeated_nested_message  : \t {\n"
+      "  bb: 4\n"
+      "}\n"
+      "repeated_nested_message     {\n"
+      "  bb: 5\n"
+      "}\n";
+
+  ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
+
+  TextFormat::Printer printer;
+  std::string text;
+  ASSERT_TRUE(printer.PrintToString(proto, &text));
+  EXPECT_EQ(text,
+            "repeated_int32: 1\n"
+            "repeated_int32: 2\n"
+            "repeated_nested_message {\n"
+            "  bb: 3\n"
+            "}\n"
+            "repeated_nested_message {\n"
+            "  bb: 4\n"
+            "}\n"
+            "repeated_nested_message {\n"
+            "  bb: 5\n"
+            "}\n");
+}
+
+TEST_F(TextFormatParserTest, ParseSkippedFieldWithAdditionalWhiteSpaces) {
+  protobuf_unittest::TestAllTypes proto;
+  TextFormat::Parser parser;
+  parser.AllowUnknownField(true);
+  EXPECT_TRUE(
+      parser.ParseFromString("optional_int32: 321\n"
+                             "unknown_field1   : \t 12345\n"
+                             "[somewhere.unknown_extension1]   {\n"
+                             "  unknown_field2 \t :   12345\n"
+                             "}\n"
+                             "[somewhere.unknown_extension2]    : \t {\n"
+                             "  unknown_field3     \t :   12345\n"
+                             "  [somewhere.unknown_extension3]    \t :   {\n"
+                             "    unknown_field4:   10\n"
+                             "  }\n"
+                             "  [somewhere.unknown_extension4] \t {\n"
+                             "  }\n"
+                             "}\n",
+                             &proto));
+  std::string text;
+  TextFormat::Printer printer;
+  ASSERT_TRUE(printer.PrintToString(proto, &text));
+  EXPECT_EQ(text, "optional_int32: 321\n");
 }
 
 class TextFormatMessageSetTest : public testing::Test {
@@ -1920,7 +2149,7 @@ TEST(TextFormatUnknownFieldTest, TestUnknownField) {
                              "  }\n"
                              ">",
                              &proto));
-  // Unmatched delimeters for message body
+  // Unmatched delimiters for message body
   EXPECT_FALSE(parser.ParseFromString("unknown_message: {>", &proto));
   // Unknown extension
   EXPECT_TRUE(
@@ -2021,7 +2250,151 @@ TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
   EXPECT_FALSE(parser.ParseFromString("unknown_field: 1", &proto));
 }
 
+class TextFormatSilentMarkerTest : public testing::Test {
+ public:
+  void SetUp() override {
+    google::protobuf::internal::enable_debug_text_format_marker = true;
+  }
+  void TearDown() override {
+    google::protobuf::internal::enable_debug_text_format_marker = false;
+  }
+};
+
+TEST_F(TextFormatSilentMarkerTest, NonMessageFieldAsFirstField) {
+  protobuf_unittest::TestAllTypes proto;
+  proto.set_optional_int32(1);
+  proto.mutable_optional_nested_message()->set_bb(2);
+
+  EXPECT_EQ(
+      "optional_int32: \t 1\n"
+      "optional_nested_message {\n"
+      "  bb: 2\n"
+      "}\n",
+      proto.DebugString());
+
+  EXPECT_EQ(
+      "optional_int32: \t 1 "
+      "optional_nested_message { bb: 2 }",
+      proto.ShortDebugString());
+}
+
+TEST_F(TextFormatSilentMarkerTest, MessageFieldAsFirstField) {
+  protobuf_unittest::TestAllTypes proto;
+  proto.mutable_optional_nested_message()->set_bb(2);
+  proto.add_repeated_int32(3);
+
+  EXPECT_EQ(
+      "optional_nested_message \t {\n"
+      "  bb: 2\n"
+      "}\n"
+      "repeated_int32: 3\n",
+      proto.DebugString());
+
+  EXPECT_EQ(
+      "optional_nested_message \t { bb: 2 } "
+      "repeated_int32: 3",
+      proto.ShortDebugString());
+}
+
+TEST_F(TextFormatSilentMarkerTest, UnknownFieldAsFirstField) {
+  unittest::TestEmptyMessage message;
+  UnknownFieldSet* unknown_fields = message.mutable_unknown_fields();
+
+  unknown_fields->AddVarint(5, 1);
+  unknown_fields->AddGroup(5)->AddVarint(10, 5);
+
+  EXPECT_EQ(
+      "5: \t 1\n"
+      "5 {\n"
+      "  10: 5\n"
+      "}\n",
+      message.DebugString());
+
+  EXPECT_EQ(
+      "5: \t 1 "
+      "5 { 10: 5 }",
+      message.ShortDebugString());
+
+  unknown_fields->Clear();
+  unknown_fields->AddGroup(5)->AddVarint(10, 5);
+  unknown_fields->AddVarint(5, 1);
+
+  EXPECT_EQ(
+      "5 \t {\n"
+      "  10: 5\n"
+      "}\n"
+      "5: 1\n",
+      message.DebugString());
+
+  EXPECT_EQ(
+      "5 \t { 10: 5 } "
+      "5: 1",
+      message.ShortDebugString());
+}
+
+TEST_F(TextFormatSilentMarkerTest, AnyFieldAsFirstField) {
+  protobuf_unittest::TestAllTypes proto;
+  proto.set_optional_string("teststr");
+  proto.set_optional_int32(432);
+  Any any;
+  any.PackFrom(proto);
+
+  EXPECT_EQ(
+      "[type.googleapis.com/protobuf_unittest.TestAllTypes] \t {\n"
+      "  optional_int32: 432\n"
+      "  optional_string: \"teststr\"\n"
+      "}\n",
+      any.DebugString());
+
+  EXPECT_EQ(
+      "[type.googleapis.com/protobuf_unittest.TestAllTypes]"
+      " \t { optional_int32: 432 optional_string: \"teststr\" }",
+      any.ShortDebugString());
+}
+
+TEST_F(TextFormatSilentMarkerTest, ExtensionFieldAsFirstField) {
+  unittest::TestAllExtensions proto;
+  proto.SetExtension(protobuf_unittest::optional_int32_extension, 101);
+  proto.SetExtension(protobuf_unittest::optional_int64_extension, 102);
+
+  EXPECT_EQ(
+      "[protobuf_unittest.optional_int32_extension]: \t 101\n"
+      "[protobuf_unittest.optional_int64_extension]: 102\n",
+      proto.DebugString());
+}
+
+TEST_F(TextFormatSilentMarkerTest, MapFieldAsFirstField) {
+  unittest::TestMap proto;
+  (*proto.mutable_map_int32_int32())[0] = 1;
+  (*proto.mutable_map_int64_int64())[2] = 3;
+
+  EXPECT_EQ(
+      "map_int32_int32 \t {\n  key: 0\n  value: 1\n}\n"
+      "map_int64_int64 {\n  key: 2\n  value: 3\n}\n",
+      proto.DebugString());
+}
+
+
+TEST(TextFormatFloatingPointTest, PreservesNegative0) {
+  proto3_unittest::TestAllTypes in_message;
+  in_message.set_optional_float(-0.0f);
+  in_message.set_optional_double(-0.0);
+  TextFormat::Printer printer;
+  std::string serialized;
+  EXPECT_TRUE(printer.PrintToString(in_message, &serialized));
+  proto3_unittest::TestAllTypes out_message;
+  TextFormat::Parser parser;
+  EXPECT_TRUE(parser.ParseFromString(serialized, &out_message));
+  EXPECT_EQ(in_message.optional_float(), out_message.optional_float());
+  EXPECT_EQ(std::signbit(in_message.optional_float()),
+            std::signbit(out_message.optional_float()));
+  EXPECT_EQ(in_message.optional_double(), out_message.optional_double());
+  EXPECT_EQ(std::signbit(in_message.optional_double()),
+            std::signbit(out_message.optional_double()));
+}
 
 }  // namespace text_format_unittest
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

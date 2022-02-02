@@ -32,18 +32,18 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/io/tokenizer.h>
+
 #include <limits.h>
 #include <math.h>
 
 #include <vector>
 
-#include <google/protobuf/io/tokenizer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -56,7 +56,7 @@ namespace {
 // Data-Driven Test Infrastructure
 
 // TODO(kenton):  This is copied from coded_stream_unittest.  This is
-//   temporary until these fetaures are integrated into gTest itself.
+//   temporary until these features are integrated into gTest itself.
 
 // TEST_1D and TEST_2D are macros I'd eventually like to see added to
 // gTest.  These macros can be used to declare tests which should be
@@ -127,7 +127,7 @@ class TestInputStream : public ZeroCopyInputStream {
   ~TestInputStream() {}
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) {
+  bool Next(const void** data, int* size) override {
     // We'll return empty buffers starting with the first buffer, and every
     // 3 and 5 buffers after that.
     if (counter_ % 3 == 0 || counter_ % 5 == 0) {
@@ -141,9 +141,9 @@ class TestInputStream : public ZeroCopyInputStream {
     }
   }
 
-  void BackUp(int count) { return array_stream_.BackUp(count); }
-  bool Skip(int count) { return array_stream_.Skip(count); }
-  int64 ByteCount() const { return array_stream_.ByteCount(); }
+  void BackUp(int count) override { return array_stream_.BackUp(count); }
+  bool Skip(int count) override { return array_stream_.Skip(count); }
+  int64_t ByteCount() const override { return array_stream_.ByteCount(); }
 
  private:
   ArrayInputStream array_stream_;
@@ -317,6 +317,45 @@ TEST_1D(TokenizerTest, FloatSuffix, kBlockSizes) {
   EXPECT_TRUE(error_collector.text_.empty());
 }
 
+SimpleTokenCase kWhitespaceTokenCases[] = {
+    {" ", Tokenizer::TYPE_WHITESPACE},
+    {"    ", Tokenizer::TYPE_WHITESPACE},
+    {"\t", Tokenizer::TYPE_WHITESPACE},
+    {"\v", Tokenizer::TYPE_WHITESPACE},
+    {"\t ", Tokenizer::TYPE_WHITESPACE},
+    {"\v\t", Tokenizer::TYPE_WHITESPACE},
+    {"   \t\r", Tokenizer::TYPE_WHITESPACE},
+    // Newlines:
+    {"\n", Tokenizer::TYPE_NEWLINE},
+};
+
+TEST_2D(TokenizerTest, Whitespace, kWhitespaceTokenCases, kBlockSizes) {
+  {
+    TestInputStream input(kWhitespaceTokenCases_case.input.data(),
+                          kWhitespaceTokenCases_case.input.size(),
+                          kBlockSizes_case);
+    TestErrorCollector error_collector;
+    Tokenizer tokenizer(&input, &error_collector);
+
+    EXPECT_FALSE(tokenizer.Next());
+  }
+  {
+    TestInputStream input(kWhitespaceTokenCases_case.input.data(),
+                          kWhitespaceTokenCases_case.input.size(),
+                          kBlockSizes_case);
+    TestErrorCollector error_collector;
+    Tokenizer tokenizer(&input, &error_collector);
+    tokenizer.set_report_whitespace(true);
+    tokenizer.set_report_newlines(true);
+
+    ASSERT_TRUE(tokenizer.Next());
+    EXPECT_EQ(tokenizer.current().text, kWhitespaceTokenCases_case.input);
+    EXPECT_EQ(tokenizer.current().type, kWhitespaceTokenCases_case.type);
+
+    EXPECT_FALSE(tokenizer.Next());
+  }
+}
+
 #endif
 
 // -------------------------------------------------------------------
@@ -325,10 +364,7 @@ TEST_1D(TokenizerTest, FloatSuffix, kBlockSizes) {
 // last token in "output" must have type TYPE_END.
 struct MultiTokenCase {
   std::string input;
-  Tokenizer::Token output[10];  // The compiler wants a constant array
-                                // size for initialization to work.  There
-                                // is no reason this can't be increased if
-                                // needed.
+  std::vector<Tokenizer::Token> output;
 };
 
 inline std::ostream& operator<<(std::ostream& out,
@@ -447,6 +483,81 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
   Tokenizer::Token token;
   do {
     token = kMultiTokenCases_case.output[i++];
+
+    SCOPED_TRACE(testing::Message() << "Token #" << i << ": " << token.text);
+
+    Tokenizer::Token previous = tokenizer.current();
+
+    // Next() should only return false when it hits the end token.
+    if (token.type != Tokenizer::TYPE_END) {
+      ASSERT_TRUE(tokenizer.Next());
+    } else {
+      ASSERT_FALSE(tokenizer.Next());
+    }
+
+    // Check that the previous token is set correctly.
+    EXPECT_EQ(previous.type, tokenizer.previous().type);
+    EXPECT_EQ(previous.text, tokenizer.previous().text);
+    EXPECT_EQ(previous.line, tokenizer.previous().line);
+    EXPECT_EQ(previous.column, tokenizer.previous().column);
+    EXPECT_EQ(previous.end_column, tokenizer.previous().end_column);
+
+    // Check that the token matches the expected one.
+    EXPECT_EQ(token.type, tokenizer.current().type);
+    EXPECT_EQ(token.text, tokenizer.current().text);
+    EXPECT_EQ(token.line, tokenizer.current().line);
+    EXPECT_EQ(token.column, tokenizer.current().column);
+    EXPECT_EQ(token.end_column, tokenizer.current().end_column);
+
+  } while (token.type != Tokenizer::TYPE_END);
+
+  // There should be no errors.
+  EXPECT_TRUE(error_collector.text_.empty());
+}
+
+MultiTokenCase kMultiWhitespaceTokenCases[] = {
+    // Test all token types at the same time.
+    {"foo 1 \t1.2  \n   +\v'bar'",
+     {
+         {Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3},
+         {Tokenizer::TYPE_WHITESPACE, " ", 0, 3, 4},
+         {Tokenizer::TYPE_INTEGER, "1", 0, 4, 5},
+         {Tokenizer::TYPE_WHITESPACE, " \t", 0, 5, 8},
+         {Tokenizer::TYPE_FLOAT, "1.2", 0, 8, 11},
+         {Tokenizer::TYPE_WHITESPACE, "  ", 0, 11, 13},
+         {Tokenizer::TYPE_NEWLINE, "\n", 0, 13, 0},
+         {Tokenizer::TYPE_WHITESPACE, "   ", 1, 0, 3},
+         {Tokenizer::TYPE_SYMBOL, "+", 1, 3, 4},
+         {Tokenizer::TYPE_WHITESPACE, "\v", 1, 4, 5},
+         {Tokenizer::TYPE_STRING, "'bar'", 1, 5, 10},
+         {Tokenizer::TYPE_END, "", 1, 10, 10},
+     }},
+
+};
+
+TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
+        kBlockSizes) {
+  // Set up the tokenizer.
+  TestInputStream input(kMultiWhitespaceTokenCases_case.input.data(),
+                        kMultiWhitespaceTokenCases_case.input.size(),
+                        kBlockSizes_case);
+  TestErrorCollector error_collector;
+  Tokenizer tokenizer(&input, &error_collector);
+  tokenizer.set_report_whitespace(true);
+  tokenizer.set_report_newlines(true);
+
+  // Before Next() is called, the initial token should always be TYPE_START.
+  EXPECT_EQ(Tokenizer::TYPE_START, tokenizer.current().type);
+  EXPECT_EQ("", tokenizer.current().text);
+  EXPECT_EQ(0, tokenizer.current().line);
+  EXPECT_EQ(0, tokenizer.current().column);
+  EXPECT_EQ(0, tokenizer.current().end_column);
+
+  // Loop through all expected tokens.
+  int i = 0;
+  Tokenizer::Token token;
+  do {
+    token = kMultiWhitespaceTokenCases_case.output[i++];
 
     SCOPED_TRACE(testing::Message() << "Token #" << i << ": " << token.text);
 
@@ -808,8 +919,11 @@ TEST_F(TokenizerTest, ParseString) {
   Tokenizer::ParseString("'\\ud852XX'", &output);
   EXPECT_EQ("\xed\xa1\x92XX", output);
   // Malformed escape: Demons may fly out of the nose.
-  Tokenizer::ParseString("\\u0", &output);
+  Tokenizer::ParseString("'\\u0'", &output);
   EXPECT_EQ("u0", output);
+  // Beyond the range of valid UTF-32 code units.
+  Tokenizer::ParseString("'\\U00110000\\U00200000\\UFFFFFFFF'", &output);
+  EXPECT_EQ("\\U00110000\\U00200000\\Uffffffff", output);
 
   // Test invalid strings that will never be tokenized as strings.
 #ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet

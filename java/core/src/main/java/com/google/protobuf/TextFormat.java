@@ -34,10 +34,12 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.MessageReflection.MergeTarget;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -56,6 +58,7 @@ public final class TextFormat {
   private TextFormat() {}
 
   private static final Logger logger = Logger.getLogger(TextFormat.class.getName());
+
 
   /**
    * Outputs a textual representation of the Protocol Message supplied into the parameter output.
@@ -113,8 +116,8 @@ public final class TextFormat {
   }
 
   /**
-   * Generates a human readable form of the field, useful for debugging and other purposes, with no
-   * newline characters.
+   * Generates a human readable form of the field, useful for debugging and other purposes, with
+   * no newline characters.
    *
    * @deprecated Use {@code printer().shortDebugString(FieldDescriptor, Object)}
    */
@@ -122,10 +125,10 @@ public final class TextFormat {
   public static String shortDebugString(final FieldDescriptor field, final Object value) {
     return printer().shortDebugString(field, value);
   }
-
+  //
   /**
-   * Generates a human readable form of the unknown fields, useful for debugging and other purposes,
-   * with no newline characters.
+   * Generates a human readable form of the unknown fields, useful for debugging and other
+   * purposes, with no newline characters.
    *
    * @deprecated Use {@code printer().shortDebugString(UnknownFieldSet)}
    */
@@ -137,7 +140,7 @@ public final class TextFormat {
   /**
    * Like {@code print()}, but writes directly to a {@code String} and returns it.
    *
-   * @deprecated Use {@link MessageOrBuilder#toString()}
+   * @deprecated Use {@code message.toString()}
    */
   @Deprecated
   public static String printToString(final MessageOrBuilder message) {
@@ -166,8 +169,8 @@ public final class TextFormat {
   }
 
   /**
-   * Same as {@code printToString()}, except that non-ASCII characters in string type fields are not
-   * escaped in backslash+octals.
+   * Same as {@code printToString()}, except that non-ASCII characters in string type fields are
+   * not escaped in backslash+octals.
    *
    * @deprecated Use {@code printer().escapingNonAscii(false).printToString(UnknownFieldSet)}
    */
@@ -175,20 +178,21 @@ public final class TextFormat {
   public static String printToUnicodeString(final UnknownFieldSet fields) {
     return printer().escapingNonAscii(false).printToString(fields);
   }
-
+  //
   /** @deprecated Use {@code printer().printField(FieldDescriptor, Object, Appendable)} */
   @Deprecated
   public static void printField(
-      final FieldDescriptor field, final Object value, final Appendable output) throws IOException {
+      final FieldDescriptor field, final Object value, final Appendable output)
+      throws IOException {
     printer().printField(field, value, output);
   }
-
+  //
   /** @deprecated Use {@code printer().printFieldToString(FieldDescriptor, Object)} */
   @Deprecated
   public static String printFieldToString(final FieldDescriptor field, final Object value) {
     return printer().printFieldToString(field, value);
   }
-
+  //
   /**
    * Outputs a unicode textual representation of the value of given field value.
    *
@@ -205,7 +209,8 @@ public final class TextFormat {
    */
   @Deprecated
   public static void printUnicodeFieldValue(
-      final FieldDescriptor field, final Object value, final Appendable output) throws IOException {
+      final FieldDescriptor field, final Object value, final Appendable output)
+      throws IOException {
     printer().escapingNonAscii(false).printFieldValue(field, value, output);
   }
 
@@ -285,13 +290,16 @@ public final class TextFormat {
   public static final class Printer {
 
     // Printer instance which escapes non-ASCII characters.
-    private static final Printer DEFAULT = new Printer(true);
+    private static final Printer DEFAULT = new Printer(true, TypeRegistry.getEmptyTypeRegistry());
 
     /** Whether to escape non ASCII characters with backslash and octal. */
     private final boolean escapeNonAscii;
 
-    private Printer(boolean escapeNonAscii) {
+    private final TypeRegistry typeRegistry;
+
+    private Printer(boolean escapeNonAscii, TypeRegistry typeRegistry) {
       this.escapeNonAscii = escapeNonAscii;
+      this.typeRegistry = typeRegistry;
     }
 
     /**
@@ -304,7 +312,20 @@ public final class TextFormat {
      *     with the escape mode set to the given parameter.
      */
     public Printer escapingNonAscii(boolean escapeNonAscii) {
-      return new Printer(escapeNonAscii);
+      return new Printer(escapeNonAscii, typeRegistry);
+    }
+
+    /**
+     * Creates a new {@link Printer} using the given typeRegistry. The new Printer clones all other
+     * configurations from the current {@link Printer}.
+     *
+     * @throws IllegalArgumentException if a registry is already set.
+     */
+    public Printer usingTypeRegistry(TypeRegistry typeRegistry) {
+      if (this.typeRegistry != TypeRegistry.getEmptyTypeRegistry()) {
+        throw new IllegalArgumentException("Only one typeRegistry is allowed.");
+      }
+      return new Printer(escapeNonAscii, typeRegistry);
     }
 
     /**
@@ -323,7 +344,64 @@ public final class TextFormat {
 
     private void print(final MessageOrBuilder message, final TextGenerator generator)
         throws IOException {
+      if (message.getDescriptorForType().getFullName().equals("google.protobuf.Any")
+          && printAny(message, generator)) {
+        return;
+      }
       printMessage(message, generator);
+    }
+
+    /**
+     * Attempt to print the 'google.protobuf.Any' message in a human-friendly format. Returns false
+     * if the message isn't a valid 'google.protobuf.Any' message (in which case the message should
+     * be rendered just like a regular message to help debugging).
+     */
+    private boolean printAny(final MessageOrBuilder message, final TextGenerator generator)
+        throws IOException {
+      Descriptor messageType = message.getDescriptorForType();
+      FieldDescriptor typeUrlField = messageType.findFieldByNumber(1);
+      FieldDescriptor valueField = messageType.findFieldByNumber(2);
+      if (typeUrlField == null
+          || typeUrlField.getType() != FieldDescriptor.Type.STRING
+          || valueField == null
+          || valueField.getType() != FieldDescriptor.Type.BYTES) {
+        // The message may look like an Any but isn't actually an Any message (might happen if the
+        // user tries to use DynamicMessage to construct an Any from incomplete Descriptor).
+        return false;
+      }
+      String typeUrl = (String) message.getField(typeUrlField);
+      // If type_url is not set, we will not be able to decode the content of the value, so just
+      // print out the Any like a regular message.
+      if (typeUrl.isEmpty()) {
+        return false;
+      }
+      Object value = message.getField(valueField);
+
+      Message.Builder contentBuilder = null;
+      try {
+        Descriptor contentType = typeRegistry.getDescriptorForTypeUrl(typeUrl);
+        if (contentType == null) {
+          return false;
+        }
+        contentBuilder = DynamicMessage.getDefaultInstance(contentType).newBuilderForType();
+        contentBuilder.mergeFrom((ByteString) value);
+      } catch (InvalidProtocolBufferException e) {
+        // The value of Any is malformed. We cannot print it out nicely, so fallback to printing out
+        // the type_url and value as bytes. Note that we fail open here to be consistent with
+        // text_format.cc, and also to allow a way for users to inspect the content of the broken
+        // message.
+        return false;
+      }
+      generator.print("[");
+      generator.print(typeUrl);
+      generator.print("] {");
+      generator.eol();
+      generator.indent();
+      print(contentBuilder, generator);
+      generator.outdent();
+      generator.print("}");
+      generator.eol();
+      return true;
     }
 
     public String printFieldToString(final FieldDescriptor field, final Object value) {
@@ -344,13 +422,93 @@ public final class TextFormat {
     private void printField(
         final FieldDescriptor field, final Object value, final TextGenerator generator)
         throws IOException {
-      if (field.isRepeated()) {
+      // Sort map field entries by key
+      if (field.isMapField()) {
+        List<MapEntryAdapter> adapters = new ArrayList<>();
+        for (Object entry : (List<?>) value) {
+          adapters.add(new MapEntryAdapter(entry, field));
+        }
+        Collections.sort(adapters);
+        for (MapEntryAdapter adapter : adapters) {
+          printSingleField(field, adapter.getEntry(), generator);
+        }
+      } else if (field.isRepeated()) {
         // Repeated field.  Print each element.
         for (Object element : (List<?>) value) {
           printSingleField(field, element, generator);
         }
       } else {
         printSingleField(field, value, generator);
+      }
+    }
+
+    /**
+     * An adapter class that can take a {@link MapEntry} and returns its key and entry.
+     */
+    private static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
+      private Object entry;
+
+      @SuppressWarnings({"rawtypes"})
+      private MapEntry mapEntry;
+
+
+      private final FieldDescriptor.JavaType fieldType;
+
+      public MapEntryAdapter(Object entry, FieldDescriptor fieldDescriptor) {
+        if (entry instanceof MapEntry) {
+          this.mapEntry = (MapEntry) entry;
+        } else {
+          this.entry = entry;
+        }
+        this.fieldType = extractFieldType(fieldDescriptor);
+      }
+
+      private static FieldDescriptor.JavaType extractFieldType(FieldDescriptor fieldDescriptor) {
+        return fieldDescriptor.getMessageType().getFields().get(0).getJavaType();
+      }
+
+      public Object getKey() {
+        if (mapEntry != null) {
+          return mapEntry.getKey();
+        }
+        return null;
+      }
+
+      public Object getEntry() {
+        if (mapEntry != null) {
+          return mapEntry;
+        }
+        return entry;
+      }
+
+      @Override
+      public int compareTo(MapEntryAdapter b) {
+        if (getKey() == null || b.getKey() == null) {
+          logger.info("Invalid key for map field.");
+          return -1;
+        }
+        switch (fieldType) {
+          case BOOLEAN:
+            return Boolean.valueOf((boolean) getKey()).compareTo((boolean) b.getKey());
+          case LONG:
+            return Long.valueOf((long) getKey()).compareTo((long) b.getKey());
+          case INT:
+            return Integer.valueOf((int) getKey()).compareTo((int) b.getKey());
+          case STRING:
+            String aString = (String) getKey();
+            String bString = (String) b.getKey();
+            if (aString == null && bString == null) {
+              return 0;
+            } else if (aString == null && bString != null) {
+              return -1;
+            } else if (aString != null && bString == null) {
+              return 1;
+            } else {
+              return aString.compareTo(bString);
+            }
+          default:
+            return 0;
+        }
       }
     }
 
@@ -566,9 +724,9 @@ public final class TextFormat {
           // Groups must be serialized with their original capitalization.
           generator.print(field.getMessageType().getName());
         } else {
-          generator.print(field.getName());
+            generator.print(field.getName());
+          }
         }
-      }
 
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
         generator.print(" {");
@@ -1382,6 +1540,7 @@ public final class TextFormat {
       FORBID_SINGULAR_OVERWRITES
     }
 
+    private final TypeRegistry typeRegistry;
     private final boolean allowUnknownFields;
     private final boolean allowUnknownEnumValues;
     private final boolean allowUnknownExtensions;
@@ -1389,11 +1548,13 @@ public final class TextFormat {
     private TextFormatParseInfoTree.Builder parseInfoTreeBuilder;
 
     private Parser(
+        TypeRegistry typeRegistry,
         boolean allowUnknownFields,
         boolean allowUnknownEnumValues,
         boolean allowUnknownExtensions,
         SingularOverwritePolicy singularOverwritePolicy,
         TextFormatParseInfoTree.Builder parseInfoTreeBuilder) {
+      this.typeRegistry = typeRegistry;
       this.allowUnknownFields = allowUnknownFields;
       this.allowUnknownEnumValues = allowUnknownEnumValues;
       this.allowUnknownExtensions = allowUnknownExtensions;
@@ -1414,6 +1575,18 @@ public final class TextFormat {
       private SingularOverwritePolicy singularOverwritePolicy =
           SingularOverwritePolicy.ALLOW_SINGULAR_OVERWRITES;
       private TextFormatParseInfoTree.Builder parseInfoTreeBuilder = null;
+      private TypeRegistry typeRegistry = TypeRegistry.getEmptyTypeRegistry();
+
+      /**
+       * Sets the TypeRegistry for resolving Any. If this is not set, TextFormat will not be able to
+       * parse Any unless Any is write as bytes.
+       *
+       * @throws IllegalArgumentException if a registry is already set.
+       */
+      public Builder setTypeRegistry(TypeRegistry typeRegistry) {
+        this.typeRegistry = typeRegistry;
+        return this;
+      }
 
       /**
        * Set whether this parser will allow unknown fields. By default, an exception is thrown if an
@@ -1452,6 +1625,7 @@ public final class TextFormat {
 
       public Parser build() {
         return new Parser(
+            typeRegistry,
             allowUnknownFields,
             allowUnknownEnumValues,
             allowUnknownExtensions,
@@ -1486,7 +1660,7 @@ public final class TextFormat {
         throws IOException {
       // Read the entire input to a String then parse that.
 
-      // If StreamTokenizer were not quite so crippled, or if there were a kind
+      // If StreamTokenizer was not so limited, or if there were a kind
       // of Reader that could read in chunks that match some particular regex,
       // or if we wanted to write a custom Reader to tokenize our stream, then
       // we would not have to read to one big String.  Alas, none of these is
@@ -1617,6 +1791,12 @@ public final class TextFormat {
       final Descriptor type = target.getDescriptorForType();
       ExtensionRegistry.ExtensionInfo extension = null;
 
+      if ("google.protobuf.Any".equals(type.getFullName()) && tokenizer.tryConsume("[")) {
+        mergeAnyFieldValue(tokenizer, extensionRegistry, target, parseTreeBuilder, unknownFields,
+            type);
+        return;
+      }
+
       if (tokenizer.tryConsume("[")) {
         // An extension.
         final StringBuilder name = new StringBuilder(tokenizer.consumeIdentifier());
@@ -1628,16 +1808,16 @@ public final class TextFormat {
         extension = target.findExtensionByName(extensionRegistry, name.toString());
 
         if (extension == null) {
-          String message =
-              (tokenizer.getPreviousLine() + 1)
-                  + ":"
-                  + (tokenizer.getPreviousColumn() + 1)
-                  + ":\t"
-                  + type.getFullName()
-                  + ".["
-                  + name
-                  + "]";
-          unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
+            String message =
+                (tokenizer.getPreviousLine() + 1)
+                    + ":"
+                    + (tokenizer.getPreviousColumn() + 1)
+                    + ":\t"
+                    + type.getFullName()
+                    + ".["
+                    + name
+                    + "]";
+            unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
         } else {
           if (extension.descriptor.getContainingType() != type) {
             throw tokenizer.parseExceptionPreviousToken(
@@ -1834,6 +2014,18 @@ public final class TextFormat {
           endToken = "}";
         }
 
+        // Try to parse human readable format of Any in the form: [type_url]: { ... }
+        if (field.getMessageType().getFullName().equals("google.protobuf.Any")
+            && tokenizer.tryConsume("[")) {
+          // Use Proto reflection here since depending on Any would intoduce a cyclic dependency
+          // (java_proto_library for any_java_proto depends on the protobuf_impl).
+          Message anyBuilder = DynamicMessage.getDefaultInstance(field.getMessageType());
+          MessageReflection.MergeTarget anyField = target.newMergeTargetForField(field, anyBuilder);
+          mergeAnyFieldValue(tokenizer, extensionRegistry, anyField, parseTreeBuilder,
+              unknownFields, field.getMessageType());
+          value = anyField.finish();
+          tokenizer.consume(endToken);
+        } else {
           Message defaultInstance = (extension == null) ? null : extension.defaultInstance;
           MessageReflection.MergeTarget subField =
               target.newMergeTargetForField(field, defaultInstance);
@@ -1846,6 +2038,8 @@ public final class TextFormat {
           }
 
           value = subField.finish();
+        }
+
       } else {
         switch (field.getType()) {
           case INT32:
@@ -1951,9 +2145,67 @@ public final class TextFormat {
       }
     }
 
+    private void mergeAnyFieldValue(
+        final Tokenizer tokenizer,
+        final ExtensionRegistry extensionRegistry,
+        MergeTarget target,
+        final TextFormatParseInfoTree.Builder parseTreeBuilder,
+        List<UnknownField> unknownFields,
+        Descriptor anyDescriptor)
+        throws ParseException {
+      // Try to parse human readable format of Any in the form: [type_url]: { ... }
+      StringBuilder typeUrlBuilder = new StringBuilder();
+      // Parse the type_url inside [].
+      while (true) {
+        typeUrlBuilder.append(tokenizer.consumeIdentifier());
+        if (tokenizer.tryConsume("]")) {
+          break;
+        }
+        if (tokenizer.tryConsume("/")) {
+          typeUrlBuilder.append("/");
+        } else if (tokenizer.tryConsume(".")) {
+          typeUrlBuilder.append(".");
+        } else {
+          throw tokenizer.parseExceptionPreviousToken("Expected a valid type URL.");
+        }
+      }
+      tokenizer.tryConsume(":");
+      final String anyEndToken;
+      if (tokenizer.tryConsume("<")) {
+        anyEndToken = ">";
+      } else {
+        tokenizer.consume("{");
+        anyEndToken = "}";
+      }
+      String typeUrl = typeUrlBuilder.toString();
+      Descriptor contentType = null;
+      try {
+        contentType = typeRegistry.getDescriptorForTypeUrl(typeUrl);
+      } catch (InvalidProtocolBufferException e) {
+        throw tokenizer.parseException("Invalid valid type URL. Found: " + typeUrl);
+      }
+      if (contentType == null) {
+        throw tokenizer.parseException(
+            "Unable to parse Any of type: "
+                + typeUrl
+                + ". Please make sure that the TypeRegistry contains the descriptors for the given"
+                + " types.");
+      }
+      Message.Builder contentBuilder =
+          DynamicMessage.getDefaultInstance(contentType).newBuilderForType();
+      MessageReflection.BuilderAdapter contentTarget =
+          new MessageReflection.BuilderAdapter(contentBuilder);
+      while (!tokenizer.tryConsume(anyEndToken)) {
+        mergeField(tokenizer, extensionRegistry, contentTarget, parseTreeBuilder, unknownFields);
+      }
+
+      target.setField(anyDescriptor.findFieldByName("type_url"), typeUrlBuilder.toString());
+      target.setField(
+          anyDescriptor.findFieldByName("value"), contentBuilder.build().toByteString());
+    }
 
     /** Skips the next field including the field's name and value. */
-    private void skipField(Tokenizer tokenizer) throws ParseException {
+    private static void skipField(Tokenizer tokenizer) throws ParseException {
       if (tokenizer.tryConsume("[")) {
         // Extension name.
         do {
@@ -1985,7 +2237,7 @@ public final class TextFormat {
     /**
      * Skips the whole body of a message including the beginning delimiter and the ending delimiter.
      */
-    private void skipFieldMessage(Tokenizer tokenizer) throws ParseException {
+    private static void skipFieldMessage(Tokenizer tokenizer) throws ParseException {
       final String delimiter;
       if (tokenizer.tryConsume("<")) {
         delimiter = ">";
@@ -2000,7 +2252,7 @@ public final class TextFormat {
     }
 
     /** Skips a field value. */
-    private void skipFieldValue(Tokenizer tokenizer) throws ParseException {
+    private static void skipFieldValue(Tokenizer tokenizer) throws ParseException {
       if (tokenizer.tryConsumeString()) {
         while (tokenizer.tryConsumeString()) {}
         return;
@@ -2104,6 +2356,9 @@ public final class TextFormat {
               case '"':
                 result[pos++] = '\"';
                 break;
+              case '?':
+                result[pos++] = '?';
+                break;
 
               case 'x':
                 // hex escape
@@ -2120,6 +2375,74 @@ public final class TextFormat {
                   code = code * 16 + digitValue(input.byteAt(i));
                 }
                 result[pos++] = (byte) code;
+                break;
+
+              case 'u':
+                // Unicode escape
+                ++i;
+                if (i + 3 < input.size()
+                    && isHex(input.byteAt(i))
+                    && isHex(input.byteAt(i + 1))
+                    && isHex(input.byteAt(i + 2))
+                    && isHex(input.byteAt(i + 3))) {
+                  char ch =
+                      (char)
+                          (digitValue(input.byteAt(i)) << 12
+                              | digitValue(input.byteAt(i + 1)) << 8
+                              | digitValue(input.byteAt(i + 2)) << 4
+                              | digitValue(input.byteAt(i + 3)));
+                              
+                  if (ch >= Character.MIN_SURROGATE && ch <= Character.MAX_SURROGATE) {
+                    throw new InvalidEscapeSequenceException(
+                        "Invalid escape sequence: '\\u' refers to a surrogate");
+                  }
+                  byte[] chUtf8 = Character.toString(ch).getBytes(Internal.UTF_8);
+                  System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
+                  pos += chUtf8.length;
+                  i += 3;
+                } else {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\u' with too few hex chars");
+                }
+                break;
+
+              case 'U':
+                // Unicode escape
+                ++i;
+                if (i + 7 >= input.size()) {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\U' with too few hex chars");
+                }
+                int codepoint = 0;
+                for (int offset = i; offset < i + 8; offset++) {
+                  byte b = input.byteAt(offset);
+                  if (!isHex(b)) {
+                    throw new InvalidEscapeSequenceException(
+                        "Invalid escape sequence: '\\U' with too few hex chars");
+                  }
+                  codepoint = (codepoint << 4) | digitValue(b);
+                }
+                if (!Character.isValidCodePoint(codepoint)) {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\U"
+                          + input.substring(i, i + 8).toStringUtf8()
+                          + "' is not a valid code point value");
+                }
+                Character.UnicodeBlock unicodeBlock = Character.UnicodeBlock.of(codepoint);
+                if (unicodeBlock.equals(Character.UnicodeBlock.LOW_SURROGATES)
+                    || unicodeBlock.equals(Character.UnicodeBlock.HIGH_SURROGATES)
+                    || unicodeBlock.equals(Character.UnicodeBlock.HIGH_PRIVATE_USE_SURROGATES)) {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\U"
+                          + input.substring(i, i + 8).toStringUtf8()
+                          + "' refers to a surrogate code unit");
+                }
+                int[] codepoints = new int[1];
+                codepoints[0] = codepoint;
+                byte[] chUtf8 = new String(codepoints, 0, 1).getBytes(Internal.UTF_8);
+                System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
+                pos += chUtf8.length;
+                i += 7;
                 break;
 
               default:

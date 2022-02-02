@@ -45,7 +45,6 @@ namespace Google.Protobuf.Reflection
         private MessageDescriptor extendeeType;
         private MessageDescriptor messageType;
         private FieldType fieldType;
-        private readonly string propertyName; // Annoyingly, needed in Crosslink.
         private IFieldAccessor accessor;
 
         /// <summary>
@@ -59,14 +58,51 @@ namespace Google.Protobuf.Reflection
         public OneofDescriptor ContainingOneof { get; }
 
         /// <summary>
+        /// Returns the oneof containing this field if it's a "real" oneof, or <c>null</c> if either this
+        /// field is not part of a oneof, or the oneof is synthetic.
+        /// </summary>
+        public OneofDescriptor RealContainingOneof => ContainingOneof?.IsSynthetic == false ? ContainingOneof : null;
+
+        /// <summary>
         /// The effective JSON name for this field. This is usually the lower-camel-cased form of the field name,
         /// but can be overridden using the <c>json_name</c> option in the .proto file.
         /// </summary>
         public string JsonName { get; }
 
+        /// <summary>
+        /// The name of the property in the <c>ContainingType.ClrType</c> class.
+        /// </summary>
+        public string PropertyName { get; }
+
+        /// <summary>
+        /// Indicates whether this field supports presence, either implicitly (e.g. due to it being a message
+        /// type field) or explicitly via Has/Clear members. If this returns true, it is safe to call
+        /// <see cref="IFieldAccessor.Clear(IMessage)"/> and <see cref="IFieldAccessor.HasValue(IMessage)"/>
+        /// on this field's accessor with a suitable message.
+        /// </summary>
+        public bool HasPresence =>
+            Extension != null ? !Extension.IsRepeated
+            : IsRepeated ? false
+            : IsMap ? false
+            : FieldType == FieldType.Message ? true
+            // This covers "real oneof members" and "proto3 optional fields"
+            : ContainingOneof != null ? true
+            : File.Syntax == Syntax.Proto2;
+
         internal FieldDescriptorProto Proto { get; }
 
-        internal Extension Extension { get; }
+        /// <summary>
+        /// Returns a clone of the underlying <see cref="FieldDescriptorProto"/> describing this field.
+        /// Note that a copy is taken every time this method is called, so clients using it frequently
+        /// (and not modifying it) may want to cache the returned value.
+        /// </summary>
+        /// <returns>A protobuf representation of this field descriptor.</returns>
+        public FieldDescriptorProto ToProto() => Proto.Clone();
+
+        /// <summary>
+        /// An extension identifier for this field, or <c>null</c> if this field isn't an extension.
+        /// </summary>
+        public Extension Extension { get; }
 
         internal FieldDescriptor(FieldDescriptorProto proto, FileDescriptor file,
                                  MessageDescriptor parent, int index, string propertyName, Extension extension)
@@ -99,7 +135,7 @@ namespace Google.Protobuf.Reflection
             // for later.
             // We could trust the generated code and check whether the type of the property is
             // a MapField, but that feels a tad nasty.
-            this.propertyName = propertyName;
+            PropertyName = propertyName;
             Extension = extension;
             JsonName =  Proto.JsonName == "" ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
         }
@@ -201,7 +237,26 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns <c>true</c> if this field is a packed, repeated field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsPacked => File.Proto.Syntax == "proto2" ? Proto.Options?.Packed ?? false : !Proto.Options.HasPacked || Proto.Options.Packed;
+        public bool IsPacked
+        {
+            get
+            {
+                if (File.Syntax != Syntax.Proto3)
+                {
+                    return Proto.Options?.Packed ?? false;
+                }
+                else
+                {
+                    // Packed by default with proto3
+                    return Proto.Options == null || !Proto.Options.HasPacked || Proto.Options.Packed;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> if this field extends another message type; <c>false</c> otherwise.
+        /// </summary>
+        public bool IsExtension => Proto.HasExtendee;
 
         /// <summary>
         /// Returns the type of the field.
@@ -277,27 +332,35 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this field.
         /// </summary>
-        //[Obsolete("CustomOptions are obsolete. Use GetOption")]
-        public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
+        [Obsolete("CustomOptions are obsolete. Use the GetOptions() method.")]
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
 
-        /* // uncomment this in the full proto2 support PR
         /// <summary>
-        /// Gets a single value enum option for this descriptor
+        /// The <c>FieldOptions</c>, defined in <c>descriptor.proto</c>.
+        /// If the options message is not present (i.e. there are no options), <c>null</c> is returned.
+        /// Custom options can be retrieved as extensions of the returned message.
+        /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
+        public FieldOptions GetOptions() => Proto.Options?.Clone();
+
+        /// <summary>
+        /// Gets a single value field option for this descriptor
+        /// </summary>
+         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public T GetOption<T>(Extension<FieldOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> clonable ? clonable.Clone() : value;
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
         }
 
         /// <summary>
-        /// Gets a repeated value enum option for this descriptor
+        /// Gets a repeated value field option for this descriptor
         /// </summary>
+         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public RepeatedField<T> GetOption<T>(RepeatedExtension<FieldOptions, T> extension)
         {
             return Proto.Options.GetExtension(extension).Clone();
         }
-        */
 
         /// <summary>
         /// Look up and cross-link all field types etc.
@@ -369,7 +432,7 @@ namespace Google.Protobuf.Reflection
 
             File.DescriptorPool.AddFieldByNumber(this);
 
-            if (ContainingType != null && ContainingType.Proto.HasOptions && ContainingType.Proto.Options.MessageSetWireFormat)
+            if (ContainingType != null && ContainingType.Proto.Options != null && ContainingType.Proto.Options.MessageSetWireFormat)
             {
                 throw new DescriptorValidationException(this, "MessageSet format is not supported.");
             }
@@ -378,26 +441,27 @@ namespace Google.Protobuf.Reflection
 
         private IFieldAccessor CreateAccessor()
         {
-            // If we're given no property name, that's because we really don't want an accessor.
-            // This could be because it's a map message, or it could be that we're loading a FileDescriptor dynamically.
-            // TODO: Support dynamic messages.
-            if (propertyName == null)
-            {
-                return null;
-            }
-
             if (Extension != null)
             {
                 return new ExtensionAccessor(this);
             }
-            var property = ContainingType.ClrType.GetProperty(propertyName);
+
+            // If we're given no property name, that's because we really don't want an accessor.
+            // This could be because it's a map message, or it could be that we're loading a FileDescriptor dynamically.
+            // TODO: Support dynamic messages.
+            if (PropertyName == null)
+            {
+                return null;
+            }
+
+            var property = ContainingType.ClrType.GetProperty(PropertyName);
             if (property == null)
             {
-                throw new DescriptorValidationException(this, $"Property {propertyName} not found in {ContainingType.ClrType}");
+                throw new DescriptorValidationException(this, $"Property {PropertyName} not found in {ContainingType.ClrType}");
             }
             return IsMap ? new MapFieldAccessor(property, this)
                 : IsRepeated ? new RepeatedFieldAccessor(property, this)
-                : (IFieldAccessor) new SingleFieldAccessor(property, this);
+                : (IFieldAccessor) new SingleFieldAccessor(ContainingType.ClrType, property, this);
         }
     }
 }

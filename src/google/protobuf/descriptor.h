@@ -54,14 +54,18 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
+#include <atomic>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
+
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
-
+#include <google/protobuf/port.h>
 #include <google/protobuf/port_def.inc>
 
 // TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
@@ -118,7 +122,7 @@ class Reflection;
 // Defined in descriptor.cc
 class DescriptorBuilder;
 class FileDescriptorTables;
-struct Symbol;
+class Symbol;
 
 // Defined in unknown_field_set.h.
 class UnknownField;
@@ -179,15 +183,14 @@ struct DebugStringOptions {
 // which is needed when a pool has lazily_build_dependencies_ set.
 // Must be instantiated as mutable in a descriptor.
 namespace internal {
+
 class PROTOBUF_EXPORT LazyDescriptor {
  public:
   // Init function to be called at init time of a descriptor containing
   // a LazyDescriptor.
   void Init() {
     descriptor_ = nullptr;
-    name_ = nullptr;
     once_ = nullptr;
-    file_ = nullptr;
   }
 
   // Sets the value of the descriptor if it is known during the descriptor
@@ -201,26 +204,39 @@ class PROTOBUF_EXPORT LazyDescriptor {
   // build time if the symbol wasn't found and building of the file containing
   // that type is delayed because lazily_build_dependencies_ is set on the pool.
   // Should not be called after Set() has been called.
-  void SetLazy(const std::string& name, const FileDescriptor* file);
+  void SetLazy(StringPiece name, const FileDescriptor* file);
 
   // Returns the current value of the descriptor, thread-safe. If SetLazy(...)
   // has been called, will do a one-time cross link of the type specified,
   // building the descriptor file that contains the type if necessary.
-  inline const Descriptor* Get() {
-    Once();
+  inline const Descriptor* Get(const ServiceDescriptor* service) {
+    Once(service);
     return descriptor_;
   }
 
  private:
-  static void OnceStatic(LazyDescriptor* lazy);
-  void OnceInternal();
-  void Once();
+  void Once(const ServiceDescriptor* service);
 
-  const Descriptor* descriptor_;
-  const std::string* name_;
+  union {
+    const Descriptor* descriptor_;
+    const char* lazy_name_;
+  };
   internal::once_flag* once_;
-  const FileDescriptor* file_;
 };
+
+class PROTOBUF_EXPORT SymbolBase {
+ private:
+  friend class google::protobuf::Symbol;
+  uint8_t symbol_type_;
+};
+
+// Some types have more than one SymbolBase because they have multiple
+// identities in the table. We can't have duplicate direct bases, so we use this
+// intermediate base to do so.
+// See BuildEnumValue for details.
+template <int N>
+class PROTOBUF_EXPORT SymbolBaseN : public SymbolBase {};
+
 }  // namespace internal
 
 // Describes a type of protocol message, or a particular group within a
@@ -228,7 +244,7 @@ class PROTOBUF_EXPORT LazyDescriptor {
 // Message::GetDescriptor().  Generated message classes also have a
 // static method called descriptor() which returns the type's descriptor.
 // Use DescriptorPool to construct your own descriptors.
-class PROTOBUF_EXPORT Descriptor {
+class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
  public:
   typedef DescriptorProto Proto;
 
@@ -264,7 +280,7 @@ class PROTOBUF_EXPORT Descriptor {
   // isn't, the result may be garbage.
   void CopyTo(DescriptorProto* proto) const;
 
-  // Write the contents of this decriptor in a human-readable form. Output
+  // Write the contents of this descriptor in a human-readable form. Output
   // will be suitable for re-parsing.
   std::string DebugString() const;
 
@@ -276,6 +292,36 @@ class PROTOBUF_EXPORT Descriptor {
   // only be the case if this descriptor comes from a DescriptorPool
   // with AllowUnknownDependencies() set.
   bool is_placeholder() const;
+
+  enum WellKnownType {
+    WELLKNOWNTYPE_UNSPECIFIED,  // Not a well-known type.
+
+    // Wrapper types.
+    WELLKNOWNTYPE_DOUBLEVALUE,  // google.protobuf.DoubleValue
+    WELLKNOWNTYPE_FLOATVALUE,   // google.protobuf.FloatValue
+    WELLKNOWNTYPE_INT64VALUE,   // google.protobuf.Int64Value
+    WELLKNOWNTYPE_UINT64VALUE,  // google.protobuf.UInt64Value
+    WELLKNOWNTYPE_INT32VALUE,   // google.protobuf.Int32Value
+    WELLKNOWNTYPE_UINT32VALUE,  // google.protobuf.UInt32Value
+    WELLKNOWNTYPE_STRINGVALUE,  // google.protobuf.StringValue
+    WELLKNOWNTYPE_BYTESVALUE,   // google.protobuf.BytesValue
+    WELLKNOWNTYPE_BOOLVALUE,    // google.protobuf.BoolValue
+
+    // Other well known types.
+    WELLKNOWNTYPE_ANY,        // google.protobuf.Any
+    WELLKNOWNTYPE_FIELDMASK,  // google.protobuf.FieldMask
+    WELLKNOWNTYPE_DURATION,   // google.protobuf.Duration
+    WELLKNOWNTYPE_TIMESTAMP,  // google.protobuf.Timestamp
+    WELLKNOWNTYPE_VALUE,      // google.protobuf.Value
+    WELLKNOWNTYPE_LISTVALUE,  // google.protobuf.ListValue
+    WELLKNOWNTYPE_STRUCT,     // google.protobuf.Struct
+
+    // New well-known types may be added in the future.
+    // Please make sure any switch() statements have a 'default' case.
+    __WELLKNOWNTYPE__DO_NOT_USE__ADD_DEFAULT_INSTEAD__,
+  };
+
+  WellKnownType well_known_type() const;
 
   // Field stuff -----------------------------------------------------
 
@@ -289,29 +335,33 @@ class PROTOBUF_EXPORT Descriptor {
   // exists.
   const FieldDescriptor* FindFieldByNumber(int number) const;
   // Looks up a field by name.  Returns nullptr if no such field exists.
-  const FieldDescriptor* FindFieldByName(const std::string& name) const;
+  const FieldDescriptor* FindFieldByName(ConstStringParam name) const;
 
   // Looks up a field by lowercased name (as returned by lowercase_name()).
   // This lookup may be ambiguous if multiple field names differ only by case,
   // in which case the field returned is chosen arbitrarily from the matches.
   const FieldDescriptor* FindFieldByLowercaseName(
-      const std::string& lowercase_name) const;
+      ConstStringParam lowercase_name) const;
 
   // Looks up a field by camel-case name (as returned by camelcase_name()).
   // This lookup may be ambiguous if multiple field names differ in a way that
   // leads them to have identical camel-case names, in which case the field
   // returned is chosen arbitrarily from the matches.
   const FieldDescriptor* FindFieldByCamelcaseName(
-      const std::string& camelcase_name) const;
+      ConstStringParam camelcase_name) const;
 
   // The number of oneofs in this message type.
   int oneof_decl_count() const;
+  // The number of oneofs in this message type, excluding synthetic oneofs.
+  // Real oneofs always come first, so iterating up to real_oneof_decl_cout()
+  // will yield all real oneofs.
+  int real_oneof_decl_count() const;
   // Get a oneof by index, where 0 <= index < oneof_decl_count().
   // These are returned in the order they were defined in the .proto file.
   const OneofDescriptor* oneof_decl(int index) const;
 
   // Looks up a oneof by name.  Returns nullptr if no such oneof exists.
-  const OneofDescriptor* FindOneofByName(const std::string& name) const;
+  const OneofDescriptor* FindOneofByName(ConstStringParam name) const;
 
   // Nested type stuff -----------------------------------------------
 
@@ -323,7 +373,7 @@ class PROTOBUF_EXPORT Descriptor {
 
   // Looks up a nested type by name.  Returns nullptr if no such nested type
   // exists.
-  const Descriptor* FindNestedTypeByName(const std::string& name) const;
+  const Descriptor* FindNestedTypeByName(ConstStringParam name) const;
 
   // Enum stuff ------------------------------------------------------
 
@@ -335,11 +385,11 @@ class PROTOBUF_EXPORT Descriptor {
 
   // Looks up an enum type by name.  Returns nullptr if no such enum type
   // exists.
-  const EnumDescriptor* FindEnumTypeByName(const std::string& name) const;
+  const EnumDescriptor* FindEnumTypeByName(ConstStringParam name) const;
 
   // Looks up an enum value by name, among all enum types in this message.
   // Returns nullptr if no such value exists.
-  const EnumValueDescriptor* FindEnumValueByName(const std::string& name) const;
+  const EnumValueDescriptor* FindEnumValueByName(ConstStringParam name) const;
 
   // Extensions ------------------------------------------------------
 
@@ -372,8 +422,30 @@ class PROTOBUF_EXPORT Descriptor {
   // Returns nullptr if no extension range contains the given number.
   const ExtensionRange* FindExtensionRangeContainingNumber(int number) const;
 
-  // The number of extensions -- extending *other* messages -- that were
-  // defined nested within this message type's scope.
+  // The number of extensions defined nested within this message type's scope.
+  // See doc:
+  // https://developers.google.com/protocol-buffers/docs/proto#nested-extensions
+  //
+  // Note that the extensions may be extending *other* messages.
+  //
+  // For example:
+  // message M1 {
+  //   extensions 1 to max;
+  // }
+  //
+  // message M2 {
+  //   extend M1 {
+  //     optional int32 foo = 1;
+  //   }
+  // }
+  //
+  // In this case,
+  // DescriptorPool::generated_pool()
+  //     ->FindMessageTypeByName("M2")
+  //     ->extension(0)
+  // will return "foo", even though "foo" is an extension of M1.
+  // To find all known extensions of a given message, instead use
+  // DescriptorPool::FindAllExtensions.
   int extension_count() const;
   // Get an extension by index, where 0 <= index < extension_count().
   // These are returned in the order they were defined in the .proto file.
@@ -381,17 +453,17 @@ class PROTOBUF_EXPORT Descriptor {
 
   // Looks up a named extension (which extends some *other* message type)
   // defined within this message type's scope.
-  const FieldDescriptor* FindExtensionByName(const std::string& name) const;
+  const FieldDescriptor* FindExtensionByName(ConstStringParam name) const;
 
   // Similar to FindFieldByLowercaseName(), but finds extensions defined within
   // this message type's scope.
   const FieldDescriptor* FindExtensionByLowercaseName(
-      const std::string& name) const;
+      ConstStringParam name) const;
 
   // Similar to FindFieldByCamelcaseName(), but finds extensions defined within
   // this message type's scope.
   const FieldDescriptor* FindExtensionByCamelcaseName(
-      const std::string& name) const;
+      ConstStringParam name) const;
 
   // Reserved fields -------------------------------------------------
 
@@ -421,7 +493,7 @@ class PROTOBUF_EXPORT Descriptor {
   const std::string& reserved_name(int index) const;
 
   // Returns true if the field name is reserved.
-  bool IsReservedName(const std::string& name) const;
+  bool IsReservedName(ConstStringParam name) const;
 
   // Source Location ---------------------------------------------------
 
@@ -430,7 +502,18 @@ class PROTOBUF_EXPORT Descriptor {
   // |*out_location| unchanged iff location information was not available.
   bool GetSourceLocation(SourceLocation* out_location) const;
 
+  // Maps --------------------------------------------------------------
+
+  // Returns the FieldDescriptor for the "key" field. If this isn't a map entry
+  // field, returns nullptr.
+  const FieldDescriptor* map_key() const;
+
+  // Returns the FieldDescriptor for the "value" field. If this isn't a map
+  // entry field, returns nullptr.
+  const FieldDescriptor* map_value() const;
+
  private:
+  friend class Symbol;
   typedef MessageOptions OptionsType;
 
   // Allows tests to test CopyTo(proto, true).
@@ -455,8 +538,26 @@ class PROTOBUF_EXPORT Descriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
-  const std::string* name_;
-  const std::string* full_name_;
+  // True if this is a placeholder for an unknown type.
+  bool is_placeholder_ : 1;
+  // True if this is a placeholder and the type name wasn't fully-qualified.
+  bool is_unqualified_placeholder_ : 1;
+  // Well known type.  Stored like this to conserve space.
+  uint8_t well_known_type_ : 5;
+
+  // This points to the last field _number_ that is part of the sequence
+  // starting at 1, where
+  //     `desc->field(i)->number() == i + 1`
+  // A value of `0` means no field matches. That is, there are no fields or the
+  // first field is not field `1`.
+  // Uses 16-bit to avoid extra padding. Unlikely to have more than 2^16
+  // sequentially numbered fields in a message.
+  uint16_t sequential_field_limit_;
+
+  int field_count_;
+
+  // all_names_ = [name, full_name]
+  const std::string* all_names_;
   const FileDescriptor* file_;
   const Descriptor* containing_type_;
   const MessageOptions* options_;
@@ -471,19 +572,14 @@ class PROTOBUF_EXPORT Descriptor {
   ReservedRange* reserved_ranges_;
   const std::string** reserved_names_;
 
-  int field_count_;
   int oneof_decl_count_;
+  int real_oneof_decl_count_;
   int nested_type_count_;
   int enum_type_count_;
   int extension_range_count_;
   int extension_count_;
   int reserved_range_count_;
   int reserved_name_count_;
-
-  // True if this is a placeholder for an unknown type.
-  bool is_placeholder_;
-  // True if this is a placeholder and the type name wasn't fully-qualified.
-  bool is_unqualified_placeholder_;
 
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<Descriptor>() and AllocateArray<Descriptor>() in descriptor.cc
@@ -495,6 +591,7 @@ class PROTOBUF_EXPORT Descriptor {
   friend class DescriptorPool;
   friend class EnumDescriptor;
   friend class FieldDescriptor;
+  friend class FileDescriptorTables;
   friend class OneofDescriptor;
   friend class MethodDescriptor;
   friend class FileDescriptor;
@@ -512,7 +609,7 @@ class PROTOBUF_EXPORT Descriptor {
 // - Given a DescriptorPool, call DescriptorPool::FindExtensionByNumber() or
 //   DescriptorPool::FindExtensionByPrintableName().
 // Use DescriptorPool to construct your own descriptors.
-class PROTOBUF_EXPORT FieldDescriptor {
+class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
  public:
   typedef FieldDescriptorProto Proto;
 
@@ -629,6 +726,19 @@ class PROTOBUF_EXPORT FieldDescriptor {
   bool is_map() const;       // shorthand for type() == TYPE_MESSAGE &&
                              // message_type()->options().map_entry()
 
+  // Returns true if this field was syntactically written with "optional" in the
+  // .proto file. Excludes singular proto3 fields that do not have a label.
+  bool has_optional_keyword() const;
+
+  // Returns true if this field tracks presence, ie. does the field
+  // distinguish between "unset" and "present with default value."
+  // This includes required, optional, and oneof fields. It excludes maps,
+  // repeated fields, and singular proto3 fields without "optional".
+  //
+  // For fields where has_presence() == true, the return value of
+  // Reflection::HasField() is semantically meaningful.
+  bool has_presence() const;
+
   // Index of this field within the message's field array, or the file or
   // extension scope's extensions array.
   int index() const;
@@ -642,16 +752,20 @@ class PROTOBUF_EXPORT FieldDescriptor {
 
   // Get the field default value if cpp_type() == CPPTYPE_INT32.  If no
   // explicit default was defined, the default is 0.
-  int32 default_value_int32() const;
+  int32_t default_value_int32_t() const;
+  int32_t default_value_int32() const { return default_value_int32_t(); }
   // Get the field default value if cpp_type() == CPPTYPE_INT64.  If no
   // explicit default was defined, the default is 0.
-  int64 default_value_int64() const;
+  int64_t default_value_int64_t() const;
+  int64_t default_value_int64() const { return default_value_int64_t(); }
   // Get the field default value if cpp_type() == CPPTYPE_UINT32.  If no
   // explicit default was defined, the default is 0.
-  uint32 default_value_uint32() const;
+  uint32_t default_value_uint32_t() const;
+  uint32_t default_value_uint32() const { return default_value_uint32_t(); }
   // Get the field default value if cpp_type() == CPPTYPE_UINT64.  If no
   // explicit default was defined, the default is 0.
-  uint64 default_value_uint64() const;
+  uint64_t default_value_uint64_t() const;
+  uint64_t default_value_uint64() const { return default_value_uint64_t(); }
   // Get the field default value if cpp_type() == CPPTYPE_FLOAT.  If no
   // explicit default was defined, the default is 0.0.
   float default_value_float() const;
@@ -677,6 +791,10 @@ class PROTOBUF_EXPORT FieldDescriptor {
   // If the field is a member of a oneof, this is the one, otherwise this is
   // nullptr.
   const OneofDescriptor* containing_oneof() const;
+
+  // If the field is a member of a non-synthetic oneof, returns the descriptor
+  // for the oneof, otherwise returns nullptr.
+  const OneofDescriptor* real_containing_oneof() const;
 
   // If the field is a member of a oneof, returns the index in that oneof.
   int index_in_oneof() const;
@@ -746,19 +864,19 @@ class PROTOBUF_EXPORT FieldDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef FieldOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
+  friend class Reflection;
 
   // Fill the json_name field of FieldDescriptorProto.
   void CopyJsonNameTo(FieldDescriptorProto* proto) const;
 
   // See Descriptor::DebugString().
-  enum PrintLabelFlag { PRINT_LABEL, OMIT_LABEL };
-  void DebugString(int depth, PrintLabelFlag print_label_flag,
-                   std::string* contents,
+  void DebugString(int depth, std::string* contents,
                    const DebugStringOptions& options) const;
 
   // formats the default value appropriately and returns it as a string.
@@ -776,49 +894,67 @@ class PROTOBUF_EXPORT FieldDescriptor {
   // Returns true if this is a map message type.
   bool is_map_message_type() const;
 
-  const std::string* name_;
-  const std::string* full_name_;
-  const std::string* lowercase_name_;
-  const std::string* camelcase_name_;
-  // If has_json_name_ is true, it's the value specified by the user.
-  // Otherwise, it has the same value as camelcase_name_.
-  const std::string* json_name_;
+  bool has_default_value_ : 1;
+  bool proto3_optional_ : 1;
+  // Whether the user has specified the json_name field option in the .proto
+  // file.
+  bool has_json_name_ : 1;
+  bool is_extension_ : 1;
+  bool is_oneof_ : 1;
+
+  // Actually a `Label` but stored as uint8_t to save space.
+  uint8_t label_ : 2;
+
+  // Actually a `Type`, but stored as uint8_t to save space.
+  mutable uint8_t type_;
+
+  // Logically:
+  //   all_names_ = [name, full_name, lower, camel, json]
+  // However:
+  //   duplicates will be omitted, so lower/camel/json might be in the same
+  //   position.
+  // We store the true offset for each name here, and the bit width must be
+  // large enough to account for the worst case where all names are present.
+  uint8_t lowercase_name_index_ : 2;
+  uint8_t camelcase_name_index_ : 2;
+  uint8_t json_name_index_ : 3;
+  // Sadly, `number_` located here to reduce padding. Unrelated to all_names_
+  // and its indices above.
+  int number_;
+  const std::string* all_names_;
   const FileDescriptor* file_;
+
   internal::once_flag* type_once_;
   static void TypeOnceInit(const FieldDescriptor* to_init);
   void InternalTypeOnceInit() const;
-  mutable Type type_;
-  Label label_;
-  bool has_default_value_;
-  // Whether the user has specified the json_name field option in the .proto
-  // file.
-  bool has_json_name_;
-  bool is_extension_;
-  int number_;
-  int index_in_oneof_;
   const Descriptor* containing_type_;
-  const OneofDescriptor* containing_oneof_;
-  const Descriptor* extension_scope_;
-  mutable const Descriptor* message_type_;
-  mutable const EnumDescriptor* enum_type_;
+  union {
+    const OneofDescriptor* containing_oneof;
+    const Descriptor* extension_scope;
+  } scope_;
+  union {
+    mutable const Descriptor* message_type;
+    mutable const EnumDescriptor* enum_type;
+    const char* lazy_type_name;
+  } type_descriptor_;
   const FieldOptions* options_;
-  const std::string* type_name_;
-  const std::string* default_value_enum_name_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<FieldDescriptor>() and AllocateArray<FieldDescriptor>() in
   // descriptor.cc and update them to initialize the field.
 
   union {
-    int32 default_value_int32_;
-    int64 default_value_int64_;
-    uint32 default_value_uint32_;
-    uint64 default_value_uint64_;
+    int32_t default_value_int32_t_;
+    int64_t default_value_int64_t_;
+    uint32_t default_value_uint32_t_;
+    uint64_t default_value_uint64_t_;
     float default_value_float_;
     double default_value_double_;
     bool default_value_bool_;
 
     mutable const EnumValueDescriptor* default_value_enum_;
+    const char* lazy_default_value_enum_name_;
     const std::string* default_value_string_;
+    mutable std::atomic<const Message*> default_generated_instance_;
   };
 
   static const CppType kTypeToCppTypeMap[MAX_TYPE + 1];
@@ -840,7 +976,7 @@ class PROTOBUF_EXPORT FieldDescriptor {
 
 
 // Describes a oneof defined in a message type.
-class PROTOBUF_EXPORT OneofDescriptor {
+class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
  public:
   typedef OneofDescriptorProto Proto;
 
@@ -849,6 +985,10 @@ class PROTOBUF_EXPORT OneofDescriptor {
 
   // Index of this oneof within the message's oneof array.
   int index() const;
+
+  // Returns whether this oneof was inserted by the compiler to wrap a proto3
+  // optional field. If this returns true, code generators should *not* emit it.
+  bool is_synthetic() const;
 
   // The .proto file in which this oneof was defined.  Never nullptr.
   const FileDescriptor* file() const;
@@ -880,6 +1020,7 @@ class PROTOBUF_EXPORT OneofDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef OneofOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -894,12 +1035,13 @@ class PROTOBUF_EXPORT OneofDescriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
-  const std::string* name_;
-  const std::string* full_name_;
-  const Descriptor* containing_type_;
   int field_count_;
-  const FieldDescriptor** fields_;
+
+  // all_names_ = [name, full_name]
+  const std::string* all_names_;
+  const Descriptor* containing_type_;
   const OneofOptions* options_;
+  const FieldDescriptor* fields_;
 
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<OneofDescriptor>() and AllocateArray<OneofDescriptor>()
@@ -915,7 +1057,7 @@ class PROTOBUF_EXPORT OneofDescriptor {
 // Describes an enum type defined in a .proto file.  To get the EnumDescriptor
 // for a generated enum type, call TypeName_descriptor().  Use DescriptorPool
 // to construct your own descriptors.
-class PROTOBUF_EXPORT EnumDescriptor {
+class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
  public:
   typedef EnumDescriptorProto Proto;
 
@@ -939,7 +1081,7 @@ class PROTOBUF_EXPORT EnumDescriptor {
   const EnumValueDescriptor* value(int index) const;
 
   // Looks up a value by name.  Returns nullptr if no such value exists.
-  const EnumValueDescriptor* FindValueByName(const std::string& name) const;
+  const EnumValueDescriptor* FindValueByName(ConstStringParam name) const;
   // Looks up a value by number.  Returns nullptr if no such value exists.  If
   // multiple values have this number, the first one defined is returned.
   const EnumValueDescriptor* FindValueByNumber(int number) const;
@@ -997,7 +1139,7 @@ class PROTOBUF_EXPORT EnumDescriptor {
   const std::string& reserved_name(int index) const;
 
   // Returns true if the field name is reserved.
-  bool IsReservedName(const std::string& name) const;
+  bool IsReservedName(ConstStringParam name) const;
 
   // Source Location ---------------------------------------------------
 
@@ -1007,11 +1149,15 @@ class PROTOBUF_EXPORT EnumDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef EnumOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
+
+  // Allow access to FindValueByNumberCreatingIfUnknown.
+  friend class descriptor_unittest::DescriptorTest;
 
   // Looks up a value by number.  If the value does not exist, dynamically
   // creates a new EnumValueDescriptor for that value, assuming that it was
@@ -1032,18 +1178,27 @@ class PROTOBUF_EXPORT EnumDescriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
-  const std::string* name_;
-  const std::string* full_name_;
+  // True if this is a placeholder for an unknown type.
+  bool is_placeholder_ : 1;
+  // True if this is a placeholder and the type name wasn't fully-qualified.
+  bool is_unqualified_placeholder_ : 1;
+
+  // This points to the last value _index_ that is part of the sequence starting
+  // with the first label, where
+  //   `enum->value(i)->number() == enum->value(0)->number() + i`
+  // We measure relative to the first label to adapt to enum labels starting at
+  // 0 or 1.
+  // Uses 16-bit to avoid extra padding. Unlikely to have more than 2^15
+  // sequentially numbered labels in an enum.
+  int16_t sequential_value_limit_;
+
+  int value_count_;
+
+  // all_names_ = [name, full_name]
+  const std::string* all_names_;
   const FileDescriptor* file_;
   const Descriptor* containing_type_;
   const EnumOptions* options_;
-
-  // True if this is a placeholder for an unknown type.
-  bool is_placeholder_;
-  // True if this is a placeholder and the type name wasn't fully-qualified.
-  bool is_unqualified_placeholder_;
-
-  int value_count_;
   EnumValueDescriptor* values_;
 
   int reserved_range_count_;
@@ -1060,6 +1215,7 @@ class PROTOBUF_EXPORT EnumDescriptor {
   friend class DescriptorBuilder;
   friend class Descriptor;
   friend class FieldDescriptor;
+  friend class FileDescriptorTables;
   friend class EnumValueDescriptor;
   friend class FileDescriptor;
   friend class DescriptorPool;
@@ -1072,7 +1228,8 @@ class PROTOBUF_EXPORT EnumDescriptor {
 // for its type, then use EnumDescriptor::FindValueByName() or
 // EnumDescriptor::FindValueByNumber().  Use DescriptorPool to construct
 // your own descriptors.
-class PROTOBUF_EXPORT EnumValueDescriptor {
+class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
+                                            private internal::SymbolBaseN<1> {
  public:
   typedef EnumValueDescriptorProto Proto;
 
@@ -1115,6 +1272,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef EnumValueOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1129,9 +1287,9 @@ class PROTOBUF_EXPORT EnumValueDescriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
-  const std::string* name_;
-  const std::string* full_name_;
   int number_;
+  // all_names_ = [name, full_name]
+  const std::string* all_names_;
   const EnumDescriptor* type_;
   const EnumValueOptions* options_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
@@ -1144,12 +1302,13 @@ class PROTOBUF_EXPORT EnumValueDescriptor {
   friend class EnumDescriptor;
   friend class DescriptorPool;
   friend class FileDescriptorTables;
+  friend class Reflection;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumValueDescriptor);
 };
 
 // Describes an RPC service. Use DescriptorPool to construct your own
 // descriptors.
-class PROTOBUF_EXPORT ServiceDescriptor {
+class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
  public:
   typedef ServiceDescriptorProto Proto;
 
@@ -1176,7 +1335,7 @@ class PROTOBUF_EXPORT ServiceDescriptor {
   const MethodDescriptor* method(int index) const;
 
   // Look up a MethodDescriptor by name.
-  const MethodDescriptor* FindMethodByName(const std::string& name) const;
+  const MethodDescriptor* FindMethodByName(ConstStringParam name) const;
   // See Descriptor::CopyTo().
   void CopyTo(ServiceDescriptorProto* proto) const;
 
@@ -1194,6 +1353,7 @@ class PROTOBUF_EXPORT ServiceDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef ServiceOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1208,8 +1368,8 @@ class PROTOBUF_EXPORT ServiceDescriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
-  const std::string* name_;
-  const std::string* full_name_;
+  // all_names_ = [name, full_name]
+  const std::string* all_names_;
   const FileDescriptor* file_;
   const ServiceOptions* options_;
   MethodDescriptor* methods_;
@@ -1231,7 +1391,7 @@ class PROTOBUF_EXPORT ServiceDescriptor {
 // a service, first get its ServiceDescriptor, then call
 // ServiceDescriptor::FindMethodByName().  Use DescriptorPool to construct your
 // own descriptors.
-class PROTOBUF_EXPORT MethodDescriptor {
+class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
  public:
   typedef MethodDescriptorProto Proto;
 
@@ -1280,6 +1440,7 @@ class PROTOBUF_EXPORT MethodDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef MethodOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1294,14 +1455,14 @@ class PROTOBUF_EXPORT MethodDescriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
-  const std::string* name_;
-  const std::string* full_name_;
+  bool client_streaming_;
+  bool server_streaming_;
+  // all_names_ = [name, full_name]
+  const std::string* all_names_;
   const ServiceDescriptor* service_;
   mutable internal::LazyDescriptor input_type_;
   mutable internal::LazyDescriptor output_type_;
   const MethodOptions* options_;
-  bool client_streaming_;
-  bool server_streaming_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<MethodDescriptor>() and AllocateArray<MethodDescriptor>() in
   // descriptor.cc and update them to initialize the field.
@@ -1396,26 +1557,27 @@ class PROTOBUF_EXPORT FileDescriptor {
   Syntax syntax() const;
   static const char* SyntaxName(Syntax syntax);
 
-  // Find a top-level message type by name.  Returns nullptr if not found.
-  const Descriptor* FindMessageTypeByName(const std::string& name) const;
+  // Find a top-level message type by name (not full_name).  Returns nullptr if
+  // not found.
+  const Descriptor* FindMessageTypeByName(ConstStringParam name) const;
   // Find a top-level enum type by name.  Returns nullptr if not found.
-  const EnumDescriptor* FindEnumTypeByName(const std::string& name) const;
+  const EnumDescriptor* FindEnumTypeByName(ConstStringParam name) const;
   // Find an enum value defined in any top-level enum by name.  Returns nullptr
   // if not found.
-  const EnumValueDescriptor* FindEnumValueByName(const std::string& name) const;
+  const EnumValueDescriptor* FindEnumValueByName(ConstStringParam name) const;
   // Find a service definition by name.  Returns nullptr if not found.
-  const ServiceDescriptor* FindServiceByName(const std::string& name) const;
+  const ServiceDescriptor* FindServiceByName(ConstStringParam name) const;
   // Find a top-level extension definition by name.  Returns nullptr if not
   // found.
-  const FieldDescriptor* FindExtensionByName(const std::string& name) const;
+  const FieldDescriptor* FindExtensionByName(ConstStringParam name) const;
   // Similar to FindExtensionByName(), but searches by lowercased-name.  See
   // Descriptor::FindFieldByLowercaseName().
   const FieldDescriptor* FindExtensionByLowercaseName(
-      const std::string& name) const;
+      ConstStringParam name) const;
   // Similar to FindExtensionByName(), but searches by camelcased-name.  See
   // Descriptor::FindFieldByCamelcaseName().
   const FieldDescriptor* FindExtensionByCamelcaseName(
-      const std::string& name) const;
+      ConstStringParam name) const;
 
   // See Descriptor::CopyTo().
   // Notes:
@@ -1458,28 +1620,38 @@ class PROTOBUF_EXPORT FileDescriptor {
   const std::string* name_;
   const std::string* package_;
   const DescriptorPool* pool_;
-  internal::once_flag* dependencies_once_;
+
+  // Data required to do lazy initialization.
+  struct PROTOBUF_EXPORT LazyInitData {
+#ifndef SWIG
+    internal::once_flag once;
+#endif
+    const char** dependencies_names;
+  };
+
+  LazyInitData* dependencies_once_;
   static void DependenciesOnceInit(const FileDescriptor* to_init);
   void InternalDependenciesOnceInit() const;
 
-  // These are arranged to minimze padding on 64-bit.
+  // These are arranged to minimize padding on 64-bit.
   int dependency_count_;
   int public_dependency_count_;
   int weak_dependency_count_;
   int message_type_count_;
   int enum_type_count_;
   int service_count_;
-  int extension_count_;
-  Syntax syntax_;
-  bool is_placeholder_;
 
+  bool is_placeholder_;
   // Indicates the FileDescriptor is completed building. Used to verify
   // that type accessor functions that can possibly build a dependent file
   // aren't called during the process of building the file.
   bool finished_building_;
+  // Actually a `Syntax` but stored as uint8_t to save space.
+  uint8_t syntax_;
+  // This one is here to fill the padding.
+  int extension_count_;
 
   mutable const FileDescriptor** dependencies_;
-  const std::string** dependencies_names_;
   int* public_dependencies_;
   int* weak_dependencies_;
   Descriptor* message_types_;
@@ -1578,28 +1750,28 @@ class PROTOBUF_EXPORT DescriptorPool {
 
   // Find a FileDescriptor in the pool by file name.  Returns nullptr if not
   // found.
-  const FileDescriptor* FindFileByName(const std::string& name) const;
+  const FileDescriptor* FindFileByName(ConstStringParam name) const;
 
   // Find the FileDescriptor in the pool which defines the given symbol.
   // If any of the Find*ByName() methods below would succeed, then this is
   // equivalent to calling that method and calling the result's file() method.
   // Otherwise this returns nullptr.
   const FileDescriptor* FindFileContainingSymbol(
-      const std::string& symbol_name) const;
+      ConstStringParam symbol_name) const;
 
   // Looking up descriptors ------------------------------------------
   // These find descriptors by fully-qualified name.  These will find both
   // top-level descriptors and nested descriptors.  They return nullptr if not
   // found.
 
-  const Descriptor* FindMessageTypeByName(const std::string& name) const;
-  const FieldDescriptor* FindFieldByName(const std::string& name) const;
-  const FieldDescriptor* FindExtensionByName(const std::string& name) const;
-  const OneofDescriptor* FindOneofByName(const std::string& name) const;
-  const EnumDescriptor* FindEnumTypeByName(const std::string& name) const;
-  const EnumValueDescriptor* FindEnumValueByName(const std::string& name) const;
-  const ServiceDescriptor* FindServiceByName(const std::string& name) const;
-  const MethodDescriptor* FindMethodByName(const std::string& name) const;
+  const Descriptor* FindMessageTypeByName(ConstStringParam name) const;
+  const FieldDescriptor* FindFieldByName(ConstStringParam name) const;
+  const FieldDescriptor* FindExtensionByName(ConstStringParam name) const;
+  const OneofDescriptor* FindOneofByName(ConstStringParam name) const;
+  const EnumDescriptor* FindEnumTypeByName(ConstStringParam name) const;
+  const EnumValueDescriptor* FindEnumValueByName(ConstStringParam name) const;
+  const ServiceDescriptor* FindServiceByName(ConstStringParam name) const;
+  const MethodDescriptor* FindMethodByName(ConstStringParam name) const;
 
   // Finds an extension of the given type by number.  The extendee must be
   // a member of this DescriptorPool or one of its underlays.
@@ -1612,7 +1784,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // or one of its underlays.  Returns nullptr if there is no known message
   // extension with the given printable name.
   const FieldDescriptor* FindExtensionByPrintableName(
-      const Descriptor* extendee, const std::string& printable_name) const;
+      const Descriptor* extendee, ConstStringParam printable_name) const;
 
   // Finds extensions of extendee. The extensions will be appended to
   // out in an undefined order. Only extensions defined directly in
@@ -1752,6 +1924,11 @@ class PROTOBUF_EXPORT DescriptorPool {
   // the underlay takes precedence.
   static DescriptorPool* internal_generated_pool();
 
+  // For internal use only:  Gets a non-const pointer to the generated
+  // descriptor database.
+  // Only used for testing.
+  static DescriptorDatabase* internal_generated_database();
+
   // For internal use only:  Changes the behavior of BuildFile() such that it
   // allows the file to make reference to message types declared in other files
   // which it did not officially declare as dependencies.
@@ -1761,7 +1938,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Delay the building of dependencies of a file descriptor until absolutely
   // necessary, like when message_type() is called on a field that is defined
   // in that dependency's file. This will cause functional issues if a proto
-  // or one of it's dependencies has errors. Should only be enabled for the
+  // or one of its dependencies has errors. Should only be enabled for the
   // generated_pool_ (because no descriptor build errors are guaranteed by
   // the compilation generation process), testing, or if a lack of descriptor
   // build errors can be guaranteed for a pool.
@@ -1780,11 +1957,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   // For internal (unit test) use only:  Returns true if a FileDescriptor has
   // been constructed for the given file, false otherwise.  Useful for testing
   // lazy descriptor initialization behavior.
-  bool InternalIsFileLoaded(const std::string& filename) const;
+  bool InternalIsFileLoaded(ConstStringParam filename) const;
 
   // Add a file to unused_import_track_files_. DescriptorBuilder will log
-  // warnings for those files if there is any unused import.
-  void AddUnusedImportTrackFile(const std::string& file_name);
+  // warnings or errors for those files if there is any unused import.
+  void AddUnusedImportTrackFile(ConstStringParam file_name,
+                                bool is_error = false);
   void ClearUnusedImportTrackFiles();
 
  private:
@@ -1802,16 +1980,22 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Return true if the given name is a sub-symbol of any non-package
   // descriptor that already exists in the descriptor pool.  (The full
   // definition of such types is already known.)
-  bool IsSubSymbolOfBuiltType(const std::string& name) const;
+  bool IsSubSymbolOfBuiltType(StringPiece name) const;
 
   // Tries to find something in the fallback database and link in the
   // corresponding proto file.  Returns true if successful, in which case
   // the caller should search for the thing again.  These are declared
   // const because they are called by (semantically) const methods.
-  bool TryFindFileInFallbackDatabase(const std::string& name) const;
-  bool TryFindSymbolInFallbackDatabase(const std::string& name) const;
+  bool TryFindFileInFallbackDatabase(StringPiece name) const;
+  bool TryFindSymbolInFallbackDatabase(StringPiece name) const;
   bool TryFindExtensionInFallbackDatabase(const Descriptor* containing_type,
                                           int field_number) const;
+
+  // This internal find extension method only check with its table and underlay
+  // descriptor_pool's table. It does not check with fallback DB and no
+  // additional proto file will be build in this method.
+  const FieldDescriptor* InternalFindExtensionByNumberNoLock(
+      const Descriptor* extendee, int number) const;
 
   // Like BuildFile() but called internally when the file has been loaded from
   // fallback_database_.  Declared const because it is called by (semantically)
@@ -1824,13 +2008,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   // symbol is defined if necessary. Will create a placeholder if the type
   // doesn't exist in the fallback database, or the file doesn't build
   // successfully.
-  Symbol CrossLinkOnDemandHelper(const std::string& name,
+  Symbol CrossLinkOnDemandHelper(StringPiece name,
                                  bool expecting_enum) const;
 
   // Create a placeholder FileDescriptor of the specified name
-  FileDescriptor* NewPlaceholderFile(const std::string& name) const;
-  FileDescriptor* NewPlaceholderFileWithMutexHeld(
-      const std::string& name) const;
+  FileDescriptor* NewPlaceholderFile(StringPiece name) const;
+  FileDescriptor* NewPlaceholderFileWithMutexHeld(StringPiece name) const;
 
   enum PlaceholderType {
     PLACEHOLDER_MESSAGE,
@@ -1838,9 +2021,9 @@ class PROTOBUF_EXPORT DescriptorPool {
     PLACEHOLDER_EXTENDABLE_MESSAGE
   };
   // Create a placeholder Descriptor of the specified name
-  Symbol NewPlaceholder(const std::string& name,
+  Symbol NewPlaceholder(StringPiece name,
                         PlaceholderType placeholder_type) const;
-  Symbol NewPlaceholderWithMutexHeld(const std::string& name,
+  Symbol NewPlaceholderWithMutexHeld(StringPiece name,
                                      PlaceholderType placeholder_type) const;
 
   // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
@@ -1862,7 +2045,10 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool allow_unknown_;
   bool enforce_weak_;
   bool disallow_enforce_utf8_;
-  std::set<std::string> unused_import_track_files_;
+
+  // Set of files to track for unused imports. The bool value when true means
+  // unused imports are treated as errors (and as warnings when false).
+  std::map<std::string, bool> unused_import_track_files_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DescriptorPool);
 };
@@ -1878,6 +2064,11 @@ class PROTOBUF_EXPORT DescriptorPool {
 #define PROTOBUF_DEFINE_STRING_ACCESSOR(CLASS, FIELD) \
   inline const std::string& CLASS::FIELD() const { return *FIELD##_; }
 
+// Name and full name are stored in a single array to save space.
+#define PROTOBUF_DEFINE_NAME_ACCESSOR(CLASS)                              \
+  inline const std::string& CLASS::name() const { return all_names_[0]; } \
+  inline const std::string& CLASS::full_name() const { return all_names_[1]; }
+
 // Arrays take an index parameter, obviously.
 #define PROTOBUF_DEFINE_ARRAY_ACCESSOR(CLASS, FIELD, TYPE) \
   inline TYPE CLASS::FIELD(int index) const { return FIELD##s_ + index; }
@@ -1885,13 +2076,13 @@ class PROTOBUF_EXPORT DescriptorPool {
 #define PROTOBUF_DEFINE_OPTIONS_ACCESSOR(CLASS, TYPE) \
   inline const TYPE& CLASS::options() const { return *options_; }
 
-PROTOBUF_DEFINE_STRING_ACCESSOR(Descriptor, name)
-PROTOBUF_DEFINE_STRING_ACCESSOR(Descriptor, full_name)
+PROTOBUF_DEFINE_NAME_ACCESSOR(Descriptor)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, file, const FileDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, containing_type, const Descriptor*)
 
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, field_count, int)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, oneof_decl_count, int)
+PROTOBUF_DEFINE_ACCESSOR(Descriptor, real_oneof_decl_count, int)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, nested_type_count, int)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, enum_type_count, int)
 
@@ -1914,40 +2105,30 @@ PROTOBUF_DEFINE_ACCESSOR(Descriptor, reserved_name_count, int)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(Descriptor, MessageOptions)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, is_placeholder, bool)
 
-PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, name)
-PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, full_name)
-PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, json_name)
-PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, lowercase_name)
-PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, camelcase_name)
+PROTOBUF_DEFINE_NAME_ACCESSOR(FieldDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, file, const FileDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, is_extension, bool)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, label, FieldDescriptor::Label)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, containing_type, const Descriptor*)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, containing_oneof,
-                         const OneofDescriptor*)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, index_in_oneof, int)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, extension_scope, const Descriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(FieldDescriptor, FieldOptions)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, has_default_value, bool)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, has_json_name, bool)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_int32, int32)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_int64, int64)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_uint32, uint32)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_uint64, uint64)
+PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_int32_t, int32_t)
+PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_int64_t, int64_t)
+PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_uint32_t, uint32_t)
+PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_uint64_t, uint64_t)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_float, float)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_double, double)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, default_value_bool, bool)
 PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, default_value_string)
 
-PROTOBUF_DEFINE_STRING_ACCESSOR(OneofDescriptor, name)
-PROTOBUF_DEFINE_STRING_ACCESSOR(OneofDescriptor, full_name)
+PROTOBUF_DEFINE_NAME_ACCESSOR(OneofDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(OneofDescriptor, containing_type, const Descriptor*)
 PROTOBUF_DEFINE_ACCESSOR(OneofDescriptor, field_count, int)
+PROTOBUF_DEFINE_ARRAY_ACCESSOR(OneofDescriptor, field, const FieldDescriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(OneofDescriptor, OneofOptions)
 
-PROTOBUF_DEFINE_STRING_ACCESSOR(EnumDescriptor, name)
-PROTOBUF_DEFINE_STRING_ACCESSOR(EnumDescriptor, full_name)
+PROTOBUF_DEFINE_NAME_ACCESSOR(EnumDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, file, const FileDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, containing_type, const Descriptor*)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, value_count, int)
@@ -1960,22 +2141,19 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, reserved_range,
                                const EnumDescriptor::ReservedRange*)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_name_count, int)
 
-PROTOBUF_DEFINE_STRING_ACCESSOR(EnumValueDescriptor, name)
-PROTOBUF_DEFINE_STRING_ACCESSOR(EnumValueDescriptor, full_name)
+PROTOBUF_DEFINE_NAME_ACCESSOR(EnumValueDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, type, const EnumDescriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(EnumValueDescriptor, EnumValueOptions)
 
-PROTOBUF_DEFINE_STRING_ACCESSOR(ServiceDescriptor, name)
-PROTOBUF_DEFINE_STRING_ACCESSOR(ServiceDescriptor, full_name)
+PROTOBUF_DEFINE_NAME_ACCESSOR(ServiceDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(ServiceDescriptor, file, const FileDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(ServiceDescriptor, method_count, int)
 PROTOBUF_DEFINE_ARRAY_ACCESSOR(ServiceDescriptor, method,
                                const MethodDescriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(ServiceDescriptor, ServiceOptions)
 
-PROTOBUF_DEFINE_STRING_ACCESSOR(MethodDescriptor, name)
-PROTOBUF_DEFINE_STRING_ACCESSOR(MethodDescriptor, full_name)
+PROTOBUF_DEFINE_NAME_ACCESSOR(MethodDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(MethodDescriptor, service, const ServiceDescriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(MethodDescriptor, MethodOptions)
 PROTOBUF_DEFINE_ACCESSOR(MethodDescriptor, client_streaming, bool)
@@ -2007,6 +2185,10 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(FileDescriptor, extension,
 
 // A few accessors differ from the macros...
 
+inline Descriptor::WellKnownType Descriptor::well_known_type() const {
+  return static_cast<Descriptor::WellKnownType>(well_known_type_);
+}
+
 inline bool Descriptor::IsExtensionNumber(int number) const {
   return FindExtensionRangeContainingNumber(number) != nullptr;
 }
@@ -2015,9 +2197,9 @@ inline bool Descriptor::IsReservedNumber(int number) const {
   return FindReservedRangeContainingNumber(number) != nullptr;
 }
 
-inline bool Descriptor::IsReservedName(const std::string& name) const {
+inline bool Descriptor::IsReservedName(ConstStringParam name) const {
   for (int i = 0; i < reserved_name_count(); i++) {
-    if (name == reserved_name(i)) {
+    if (name == static_cast<ConstStringParam>(reserved_name(i))) {
       return true;
     }
   }
@@ -2034,9 +2216,9 @@ inline bool EnumDescriptor::IsReservedNumber(int number) const {
   return FindReservedRangeContainingNumber(number) != nullptr;
 }
 
-inline bool EnumDescriptor::IsReservedName(const std::string& name) const {
+inline bool EnumDescriptor::IsReservedName(ConstStringParam name) const {
   for (int i = 0; i < reserved_name_count(); i++) {
-    if (name == reserved_name(i)) {
+    if (name == static_cast<ConstStringParam>(reserved_name(i))) {
       return true;
     }
   }
@@ -2049,11 +2231,41 @@ inline const std::string& EnumDescriptor::reserved_name(int index) const {
   return *reserved_names_[index];
 }
 
+inline const std::string& FieldDescriptor::lowercase_name() const {
+  return all_names_[lowercase_name_index_];
+}
+
+inline const std::string& FieldDescriptor::camelcase_name() const {
+  return all_names_[camelcase_name_index_];
+}
+
+inline const std::string& FieldDescriptor::json_name() const {
+  return all_names_[json_name_index_];
+}
+
+inline const OneofDescriptor* FieldDescriptor::containing_oneof() const {
+  return is_oneof_ ? scope_.containing_oneof : nullptr;
+}
+
+inline int FieldDescriptor::index_in_oneof() const {
+  GOOGLE_DCHECK(is_oneof_);
+  return static_cast<int>(this - scope_.containing_oneof->field(0));
+}
+
+inline const Descriptor* FieldDescriptor::extension_scope() const {
+  GOOGLE_CHECK(is_extension_);
+  return scope_.extension_scope;
+}
+
+inline FieldDescriptor::Label FieldDescriptor::label() const {
+  return static_cast<Label>(label_);
+}
+
 inline FieldDescriptor::Type FieldDescriptor::type() const {
   if (type_once_) {
     internal::call_once(*type_once_, &FieldDescriptor::TypeOnceInit, this);
   }
-  return type_;
+  return static_cast<Type>(type_);
 }
 
 inline bool FieldDescriptor::is_required() const {
@@ -2076,13 +2288,30 @@ inline bool FieldDescriptor::is_map() const {
   return type() == TYPE_MESSAGE && is_map_message_type();
 }
 
+inline bool FieldDescriptor::has_optional_keyword() const {
+  return proto3_optional_ ||
+         (file()->syntax() == FileDescriptor::SYNTAX_PROTO2 && is_optional() &&
+          !containing_oneof());
+}
+
+inline const OneofDescriptor* FieldDescriptor::real_containing_oneof() const {
+  auto* oneof = containing_oneof();
+  return oneof && !oneof->is_synthetic() ? oneof : nullptr;
+}
+
+inline bool FieldDescriptor::has_presence() const {
+  if (is_repeated()) return false;
+  return cpp_type() == CPPTYPE_MESSAGE || containing_oneof() ||
+         file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
+}
+
 // To save space, index() is computed by looking at the descriptor's position
 // in the parent's array of children.
 inline int FieldDescriptor::index() const {
   if (!is_extension_) {
     return static_cast<int>(this - containing_type()->fields_);
-  } else if (extension_scope_ != nullptr) {
-    return static_cast<int>(this - extension_scope_->extensions_);
+  } else if (extension_scope() != nullptr) {
+    return static_cast<int>(this - extension_scope()->extensions_);
   } else {
     return static_cast<int>(this - file_->extensions_);
   }
@@ -2102,6 +2331,10 @@ inline const FileDescriptor* OneofDescriptor::file() const {
 
 inline int OneofDescriptor::index() const {
   return static_cast<int>(this - containing_type_->oneof_decls_);
+}
+
+inline bool OneofDescriptor::is_synthetic() const {
+  return field_count() == 1 && field(0)->proto3_optional_;
 }
 
 inline int EnumDescriptor::index() const {
@@ -2172,12 +2405,8 @@ inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
   return dependency(weak_dependencies_[index]);
 }
 
-inline FileDescriptor::Syntax FileDescriptor::syntax() const { return syntax_; }
-
-// Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because fields_ is actually an array
-// of pointers rather than the usual array of objects.
-inline const FieldDescriptor* OneofDescriptor::field(int index) const {
-  return fields_[index];
+inline FileDescriptor::Syntax FileDescriptor::syntax() const {
+  return static_cast<Syntax>(syntax_);
 }
 
 }  // namespace protobuf

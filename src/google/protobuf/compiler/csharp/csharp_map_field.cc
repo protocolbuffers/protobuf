@@ -57,9 +57,9 @@ MapFieldGenerator::~MapFieldGenerator() {
 
 void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
   const FieldDescriptor* key_descriptor =
-      descriptor_->message_type()->FindFieldByName("key");
+      descriptor_->message_type()->map_key();
   const FieldDescriptor* value_descriptor =
-      descriptor_->message_type()->FindFieldByName("value");
+      descriptor_->message_type()->map_value();
   variables_["key_type_name"] = type_name(key_descriptor);
   variables_["value_type_name"] = type_name(value_descriptor);
   std::unique_ptr<FieldGeneratorBase> key_generator(
@@ -94,15 +94,27 @@ void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 }
 
 void MapFieldGenerator::GenerateParsingCode(io::Printer* printer) {
+  GenerateParsingCode(printer, true);
+}
+
+void MapFieldGenerator::GenerateParsingCode(io::Printer* printer, bool use_parse_context) {
   printer->Print(
     variables_,
-    "$name$_.AddEntriesFrom(input, _map_$name$_codec);\n");
+    use_parse_context
+    ? "$name$_.AddEntriesFrom(ref input, _map_$name$_codec);\n"
+    : "$name$_.AddEntriesFrom(input, _map_$name$_codec);\n");
 }
 
 void MapFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
+  GenerateSerializationCode(printer, true);
+}
+
+void MapFieldGenerator::GenerateSerializationCode(io::Printer* printer, bool use_write_context) {
   printer->Print(
     variables_,
-    "$name$_.WriteTo(output, _map_$name$_codec);\n");
+    use_write_context
+    ? "$name$_.WriteTo(ref output, _map_$name$_codec);\n"
+    : "$name$_.WriteTo(output, _map_$name$_codec);\n");
 }
 
 void MapFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

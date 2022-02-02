@@ -31,9 +31,12 @@
 #endregion
 
 using Google.Protobuf.Reflection;
+using System.Buffers;
 using System.Collections;
+using System;
 using System.IO;
 using System.Linq;
+using System.Security;
 
 namespace Google.Protobuf
 {
@@ -75,6 +78,15 @@ namespace Google.Protobuf
         /// <param name="input">Stream containing the data to merge, which must be protobuf-encoded binary data.</param>
         public static void MergeFrom(this IMessage message, Stream input) =>
             MergeFrom(message, input, false, null);
+
+        /// <summary>
+        /// Merges data from the given span into an existing message.
+        /// </summary>
+        /// <param name="message">The message to merge the data into.</param>
+        /// <param name="span">Span containing the data to merge, which must be protobuf-encoded binary data.</param>
+        [SecuritySafeCritical]
+        public static void MergeFrom(this IMessage message, ReadOnlySpan<byte> span) =>
+            MergeFrom(message, span, false, null);
 
         /// <summary>
         /// Merges length-delimited data from the given stream into an existing message.
@@ -127,7 +139,7 @@ namespace Google.Protobuf
             ProtoPreconditions.CheckNotNull(message, "message");
             ProtoPreconditions.CheckNotNull(output, "output");
             CodedOutputStream codedOutput = new CodedOutputStream(output);
-            codedOutput.WriteRawVarint32((uint)message.CalculateSize());
+            codedOutput.WriteLength(message.CalculateSize());
             message.WriteTo(codedOutput);
             codedOutput.Flush();
         }
@@ -144,13 +156,51 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Writes the given message data to the given buffer writer in protobuf encoding.
+        /// </summary>
+        /// <param name="message">The message to write to the stream.</param>
+        /// <param name="output">The stream to write to.</param>
+        [SecuritySafeCritical]
+        public static void WriteTo(this IMessage message, IBufferWriter<byte> output)
+        {
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
+            ProtoPreconditions.CheckNotNull(output, nameof(output));
+
+            WriteContext.Initialize(output, out WriteContext ctx);
+            WritingPrimitivesMessages.WriteRawMessage(ref ctx, message);
+            ctx.Flush();
+        }
+
+        /// <summary>
+        /// Writes the given message data to the given span in protobuf encoding.
+        /// The size of the destination span needs to fit the serialized size
+        /// of the message exactly, otherwise an exception is thrown.
+        /// </summary>
+        /// <param name="message">The message to write to the stream.</param>
+        /// <param name="output">The span to write to. Size must match size of the message exactly.</param>
+        [SecuritySafeCritical]
+        public static void WriteTo(this IMessage message, Span<byte> output)
+        {
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
+
+            WriteContext.Initialize(ref output, out WriteContext ctx);
+            WritingPrimitivesMessages.WriteRawMessage(ref ctx, message);
+            ctx.CheckNoSpaceLeft();
+        }
+
+        /// <summary>
         /// Checks if all required fields in a message have values set. For proto3 messages, this returns true
         /// </summary>
         public static bool IsInitialized(this IMessage message)
         {
-            if (message.Descriptor.File.Proto.Syntax != "proto2")
+            if (message.Descriptor.File.Syntax == Syntax.Proto3)
             {
                 return true;
+            }
+
+            if (!message.Descriptor.IsExtensionsInitialized(message))
+            {
+                return false;
             }
 
             return message.Descriptor
@@ -160,8 +210,16 @@ namespace Google.Protobuf
                 {
                     if (f.IsMap)
                     {
-                        var map = (IDictionary)f.Accessor.GetValue(message);
-                        return map.Values.OfType<IMessage>().All(IsInitialized);
+                        var valueField = f.MessageType.Fields[2];
+                        if (valueField.FieldType == FieldType.Message)
+                        {
+                            var map = (IDictionary)f.Accessor.GetValue(message);
+                            return map.Values.Cast<IMessage>().All(IsInitialized);
+                        }
+                        else
+                        {
+                            return true;
+                        }
                     }
                     else if (f.IsRepeated && f.FieldType == FieldType.Message || f.FieldType == FieldType.Group)
                     {
@@ -233,6 +291,26 @@ namespace Google.Protobuf
             codedInput.ExtensionRegistry = registry;
             message.MergeFrom(codedInput);
             codedInput.CheckReadEndOfStreamTag();
+        }
+
+        [SecuritySafeCritical]
+        internal static void MergeFrom(this IMessage message, ReadOnlySequence<byte> data, bool discardUnknownFields, ExtensionRegistry registry)
+        {
+            ParseContext.Initialize(data, out ParseContext ctx);
+            ctx.DiscardUnknownFields = discardUnknownFields;
+            ctx.ExtensionRegistry = registry;
+            ParsingPrimitivesMessages.ReadRawMessage(ref ctx, message);
+            ParsingPrimitivesMessages.CheckReadEndOfStreamTag(ref ctx.state);
+        }
+
+        [SecuritySafeCritical]
+        internal static void MergeFrom(this IMessage message, ReadOnlySpan<byte> data, bool discardUnknownFields, ExtensionRegistry registry)
+        {
+            ParseContext.Initialize(data, out ParseContext ctx);
+            ctx.DiscardUnknownFields = discardUnknownFields;
+            ctx.ExtensionRegistry = registry;
+            ParsingPrimitivesMessages.ReadRawMessage(ref ctx, message);
+            ParsingPrimitivesMessages.CheckReadEndOfStreamTag(ref ctx.state);
         }
 
         internal static void MergeDelimitedFrom(this IMessage message, Stream input, bool discardUnknownFields, ExtensionRegistry registry)

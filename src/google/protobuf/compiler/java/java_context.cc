@@ -35,7 +35,6 @@
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/strutil.h>
-
 #include <google/protobuf/stubs/map_util.h>
 
 namespace google {
@@ -109,6 +108,7 @@ void Context::InitializeFieldGeneratorInfoForMessage(
     InitializeFieldGeneratorInfoForMessage(message->nested_type(i));
   }
   std::vector<const FieldDescriptor*> fields;
+  fields.reserve(message->field_count());
   for (int i = 0; i < message->field_count(); ++i) {
     fields.push_back(message->field(i));
   }

@@ -32,6 +32,7 @@
  * @fileoverview This file contains helper code used by jspb.BinaryReader
  * and BinaryWriter.
  *
+ * @suppress {missingRequire} TODO(b/152540451): this shouldn't be needed
  * @author aappleby@google.com (Austin Appleby)
  */
 
@@ -117,7 +118,7 @@ jspb.utils.splitInt64 = function(value) {
 
 
 /**
- * Convers a signed Javascript integer into zigzag format, splits it into two
+ * Converts a signed Javascript integer into zigzag format, splits it into two
  * 32-bit halves, and stores it in the temp values above.
  * @param {number} value The number to split.
  */
@@ -201,7 +202,11 @@ jspb.utils.splitFloat32 = function(value) {
 
   exp = Math.floor(Math.log(value) / Math.LN2);
   mant = value * Math.pow(2, -exp);
-  mant = Math.round(mant * jspb.BinaryConstants.TWO_TO_23) & 0x7FFFFF;
+  mant = Math.round(mant * jspb.BinaryConstants.TWO_TO_23);
+  if (mant >= 0x1000000) {
+    ++exp;
+  }
+  mant = mant & 0x7FFFFF;
 
   jspb.utils.split64High = 0;
   jspb.utils.split64Low = ((sign << 31) | ((exp + 127) << 23) | mant) >>> 0;
@@ -255,8 +260,25 @@ jspb.utils.splitFloat64 = function(value) {
     return;
   }
 
-  var exp = Math.floor(Math.log(value) / Math.LN2);
-  if (exp == 1024) exp = 1023;
+  // Compute the least significant exponent needed to represent the magnitude of
+  // the value by repeadly dividing/multiplying by 2 until the magnitude
+  // crosses 2. While tempting to use log math to find the exponent, at the
+  // boundaries of precision, the result can be off by one.
+  var maxDoubleExponent = 1023;
+  var minDoubleExponent = -1022;
+  var x = value;
+  var exp = 0;
+  if (x >= 2) {
+    while (x >= 2 && exp < maxDoubleExponent) {
+      exp++;
+      x = x / 2;
+    }
+  } else {
+    while (x < 1 && exp > minDoubleExponent) {
+      x = x * 2;
+      exp--;
+    }
+  }
   var mant = value * Math.pow(2, -exp);
 
   var mantHigh = (mant * jspb.BinaryConstants.TWO_TO_20) & 0xFFFFF;
@@ -296,7 +318,7 @@ jspb.utils.splitHash64 = function(hash) {
  * @return {number}
  */
 jspb.utils.joinUint64 = function(bitsLow, bitsHigh) {
-  return bitsHigh * jspb.BinaryConstants.TWO_TO_32 + bitsLow;
+  return bitsHigh * jspb.BinaryConstants.TWO_TO_32 + (bitsLow >>> 0);
 };
 
 
@@ -322,6 +344,33 @@ jspb.utils.joinInt64 = function(bitsLow, bitsHigh) {
   return sign ? -result : result;
 };
 
+/**
+ * Converts split 64-bit values from standard two's complement encoding to
+ * zig-zag encoding. Invokes the provided function to produce final result.
+ *
+ * @param {number} bitsLow
+ * @param {number} bitsHigh
+ * @param {function(number, number): T} convert Conversion function to produce
+ *     the result value, takes parameters (lowBits, highBits).
+ * @return {T}
+ * @template T
+ */
+jspb.utils.toZigzag64 = function(bitsLow, bitsHigh, convert) {
+  // See
+  // https://engdoc.corp.google.com/eng/howto/protocolbuffers/developerguide/encoding.shtml?cl=head#types
+  // 64-bit math is: (n << 1) ^ (n >> 63)
+  //
+  // To do this in 32 bits, we can get a 32-bit sign-flipping mask from the
+  // high word.
+  // Then we can operate on each word individually, with the addition of the
+  // "carry" to get the most significant bit from the low word into the high
+  // word.
+  var signFlipMask = bitsHigh >> 31;
+  bitsHigh = (bitsHigh << 1 | bitsLow >>> 31) ^ signFlipMask;
+  bitsLow = (bitsLow << 1) ^ signFlipMask;
+  return convert(bitsLow, bitsHigh);
+};
+
 
 /**
  * Joins two 32-bit values into a 64-bit unsigned integer and applies zigzag
@@ -331,21 +380,33 @@ jspb.utils.joinInt64 = function(bitsLow, bitsHigh) {
  * @return {number}
  */
 jspb.utils.joinZigzag64 = function(bitsLow, bitsHigh) {
-  // Extract the sign bit and shift right by one.
-  var sign = bitsLow & 1;
-  bitsLow = ((bitsLow >>> 1) | (bitsHigh << 31)) >>> 0;
-  bitsHigh = bitsHigh >>> 1;
+  return jspb.utils.fromZigzag64(bitsLow, bitsHigh, jspb.utils.joinInt64);
+};
 
-  // Increment the split value if the sign bit was set.
-  if (sign) {
-    bitsLow = (bitsLow + 1) >>> 0;
-    if (bitsLow == 0) {
-      bitsHigh = (bitsHigh + 1) >>> 0;
-    }
-  }
 
-  var result = jspb.utils.joinUint64(bitsLow, bitsHigh);
-  return sign ? -result : result;
+/**
+ * Converts split 64-bit values from zigzag encoding to standard two's
+ * complement encoding. Invokes the provided function to produce final result.
+ *
+ * @param {number} bitsLow
+ * @param {number} bitsHigh
+ * @param {function(number, number): T} convert Conversion function to produce
+ *     the result value, takes parameters (lowBits, highBits).
+ * @return {T}
+ * @template T
+ */
+jspb.utils.fromZigzag64 = function(bitsLow, bitsHigh, convert) {
+  // 64 bit math is:
+  //   signmask = (zigzag & 1) ? -1 : 0;
+  //   twosComplement = (zigzag >> 1) ^ signmask;
+  //
+  // To work with 32 bit, we can operate on both but "carry" the lowest bit
+  // from the high word by shifting it up 31 bits to be the most significant bit
+  // of the low word.
+  var signFlipMask = -(bitsLow & 1);
+  bitsLow = ((bitsLow >>> 1) | (bitsHigh << 31)) ^ signFlipMask;
+  bitsHigh = (bitsHigh >>> 1) ^ signFlipMask;
+  return convert(bitsLow, bitsHigh);
 };
 
 
@@ -428,7 +489,6 @@ jspb.utils.joinHash64 = function(bitsLow, bitsHigh) {
   return String.fromCharCode(a, b, c, d, e, f, g, h);
 };
 
-
 /**
  * Individual digits for number->string conversion.
  * @const {!Array<string>}
@@ -438,6 +498,11 @@ jspb.utils.DIGITS = [
   '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
 ];
 
+/** @const @private {number} '0' */
+jspb.utils.ZERO_CHAR_CODE_ = 48;
+
+/** @const @private {number} 'a' */
+jspb.utils.A_CHAR_CODE_ = 97;
 
 /**
  * Losslessly converts a 64-bit unsigned integer in 32:32 split representation
@@ -450,7 +515,7 @@ jspb.utils.joinUnsignedDecimalString = function(bitsLow, bitsHigh) {
   // Skip the expensive conversion if the number is small enough to use the
   // built-in conversions.
   if (bitsHigh <= 0x1FFFFF) {
-    return '' + (jspb.BinaryConstants.TWO_TO_32 * bitsHigh + bitsLow);
+    return '' + jspb.utils.joinUint64(bitsLow, bitsHigh);
   }
 
   // What this code is doing is essentially converting the input number from
@@ -487,27 +552,20 @@ jspb.utils.joinUnsignedDecimalString = function(bitsLow, bitsHigh) {
     digitB %= base;
   }
 
-  // Convert base-1e7 digits to base-10, omitting leading zeroes.
-  var table = jspb.utils.DIGITS;
-  var start = false;
-  var result = '';
-
-  function emit(digit) {
-    var temp = base;
-    for (var i = 0; i < 7; i++) {
-      temp /= 10;
-      var decimalDigit = ((digit / temp) % 10) >>> 0;
-      if ((decimalDigit == 0) && !start) continue;
-      start = true;
-      result += table[decimalDigit];
+  // Convert base-1e7 digits to base-10, with optional leading zeroes.
+  function decimalFrom1e7(digit1e7, needLeadingZeros) {
+    var partial = digit1e7 ? String(digit1e7) : '';
+    if (needLeadingZeros) {
+      return '0000000'.slice(partial.length) + partial;
     }
+    return partial;
   }
 
-  if (digitC || start) emit(digitC);
-  if (digitB || start) emit(digitB);
-  if (digitA || start) emit(digitA);
-
-  return result;
+  return decimalFrom1e7(digitC, /*needLeadingZeros=*/ 0) +
+      decimalFrom1e7(digitB, /*needLeadingZeros=*/ digitC) +
+      // If the final 1e7 digit didn't need leading zeros, we would have
+      // returned via the trivial code path at the top.
+      decimalFrom1e7(digitA, /*needLeadingZeros=*/ 1);
 };
 
 
@@ -605,7 +663,7 @@ jspb.utils.decimalStringToHash64 = function(dec) {
 
   // For each decimal digit, set result to 10*result + digit.
   for (var i = 0; i < dec.length; i++) {
-    muladd(10, jspb.utils.DIGITS.indexOf(dec[i]));
+    muladd(10, dec.charCodeAt(i) - jspb.utils.ZERO_CHAR_CODE_);
   }
 
   // If there's a minus sign, convert into two's complement.
@@ -627,6 +685,28 @@ jspb.utils.splitDecimalString = function(value) {
   jspb.utils.splitHash64(jspb.utils.decimalStringToHash64(value));
 };
 
+/**
+ * @param {number} nibble A 4-bit integer.
+ * @return {string}
+ * @private
+ */
+jspb.utils.toHexDigit_ = function(nibble) {
+  return String.fromCharCode(
+      nibble < 10 ? jspb.utils.ZERO_CHAR_CODE_ + nibble :
+                    jspb.utils.A_CHAR_CODE_ - 10 + nibble);
+};
+
+/**
+ * @param {number} hexCharCode
+ * @return {number}
+ * @private
+ */
+jspb.utils.fromHexCharCode_ = function(hexCharCode) {
+  if (hexCharCode >= jspb.utils.A_CHAR_CODE_) {
+    return hexCharCode - jspb.utils.A_CHAR_CODE_ + 10;
+  }
+  return hexCharCode - jspb.utils.ZERO_CHAR_CODE_;
+};
 
 /**
  * Converts an 8-character hash string into its hexadecimal representation.
@@ -640,8 +720,8 @@ jspb.utils.hash64ToHexString = function(hash) {
 
   for (var i = 0; i < 8; i++) {
     var c = hash.charCodeAt(7 - i);
-    temp[i * 2 + 2] = jspb.utils.DIGITS[c >> 4];
-    temp[i * 2 + 3] = jspb.utils.DIGITS[c & 0xF];
+    temp[i * 2 + 2] = jspb.utils.toHexDigit_(c >> 4);
+    temp[i * 2 + 3] = jspb.utils.toHexDigit_(c & 0xF);
   }
 
   var result = temp.join('');
@@ -662,8 +742,8 @@ jspb.utils.hexStringToHash64 = function(hex) {
 
   var result = '';
   for (var i = 0; i < 8; i++) {
-    var hi = jspb.utils.DIGITS.indexOf(hex[i * 2 + 2]);
-    var lo = jspb.utils.DIGITS.indexOf(hex[i * 2 + 3]);
+    var hi = jspb.utils.fromHexCharCode_(hex.charCodeAt(i * 2 + 2));
+    var lo = jspb.utils.fromHexCharCode_(hex.charCodeAt(i * 2 + 3));
     result = String.fromCharCode(hi * 16 + lo) + result;
   }
 
@@ -926,7 +1006,7 @@ jspb.utils.debugBytesToTextFormat = function(byteSource) {
  * @return {string} Stringified scalar for text format.
  */
 jspb.utils.debugScalarToTextFormat = function(scalar) {
-  if (goog.isString(scalar)) {
+  if (typeof scalar === 'string') {
     return goog.string.quote(scalar);
   } else {
     return scalar.toString();

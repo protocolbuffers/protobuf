@@ -52,10 +52,12 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
   MessageFieldGenerator& operator=(const MessageFieldGenerator&) = delete;
 
   virtual ~MessageFieldGenerator();
-  virtual bool WantsHasProperty(void) const;
 
  public:
-  virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;
+  virtual void DetermineForwardDeclarations(
+      std::set<std::string>* fwd_decls) const override;
+  virtual void DetermineObjectiveCClassDefinitions(
+      std::set<std::string>* fwd_decls) const override;
 };
 
 class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
@@ -71,7 +73,10 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
   RepeatedMessageFieldGenerator operator=(const RepeatedMessageFieldGenerator&) = delete;
 
  public:
-  virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;
+  virtual void DetermineForwardDeclarations(
+      std::set<std::string>* fwd_decls) const override;
+  virtual void DetermineObjectiveCClassDefinitions(
+      std::set<std::string>* fwd_decls) const override;
 };
 
 }  // namespace objectivec

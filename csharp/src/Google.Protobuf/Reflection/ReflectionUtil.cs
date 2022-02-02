@@ -32,6 +32,7 @@
 
 using Google.Protobuf.Compatibility;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Google.Protobuf.Reflection
@@ -115,12 +116,17 @@ namespace Google.Protobuf.Reflection
         internal static Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method) =>
             GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageBool(method);
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
+        internal static Func<IMessage, bool> CreateIsInitializedCaller([DynamicallyAccessedMembers(GeneratedClrTypeInfo.MessageAccessibility)]Type msg) =>
+            ((IExtensionSetReflector)Activator.CreateInstance(typeof(ExtensionSetReflector<>).MakeGenericType(msg))).CreateIsInitializedCaller();
+
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
         /// the type that declares the method, and the second argument to the first parameter type of the method.
         /// </summary>
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
         internal static IExtensionReflectionHelper CreateExtensionHelper(Extension extension) =>
-            (IExtensionReflectionHelper)Activator.CreateInstance(typeof(ExtensionReflectionHelper<,>).MakeGenericType(extension.TargetType, extension.GetType().GenericTypeArguments[1]));
+            (IExtensionReflectionHelper)Activator.CreateInstance(typeof(ExtensionReflectionHelper<,>).MakeGenericType(extension.TargetType, extension.GetType().GenericTypeArguments[1]), extension);
 
         /// <summary>
         /// Creates a reflection helper for the given type arguments. Currently these are created on demand
@@ -128,6 +134,7 @@ namespace Google.Protobuf.Reflection
         /// they can be garbage collected. We could cache them by type if that proves to be important, but creating
         /// an object is pretty cheap.
         /// </summary>
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
         private static IReflectionHelper GetReflectionHelper(Type t1, Type t2) =>
             (IReflectionHelper) Activator.CreateInstance(typeof(ReflectionHelper<,>).MakeGenericType(t1, t2));
 
@@ -148,6 +155,11 @@ namespace Google.Protobuf.Reflection
             void SetExtension(IMessage message, object value);
             bool HasExtension(IMessage message);
             void ClearExtension(IMessage message);
+        }
+
+        private interface IExtensionSetReflector
+        {
+            Func<IMessage, bool> CreateIsInitializedCaller();
         }
 
         private class ReflectionHelper<T1, T2> : IReflectionHelper
@@ -222,7 +234,7 @@ namespace Google.Protobuf.Reflection
                 }
                 else if (extension is RepeatedExtension<T1, T3>)
                 {
-                    return extensionMessage.GetExtension(extension as RepeatedExtension<T1, T3>);
+                    return extensionMessage.GetOrInitializeExtension(extension as RepeatedExtension<T1, T3>);
                 }
                 else
                 {
@@ -297,6 +309,26 @@ namespace Google.Protobuf.Reflection
                 {
                     throw new InvalidCastException("The provided extension is not a valid extension identifier type");
                 }
+            }
+        }
+
+        private class ExtensionSetReflector<
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)]
+            T1> : IExtensionSetReflector where T1 : IExtendableMessage<T1>
+        {
+            public Func<IMessage, bool> CreateIsInitializedCaller()
+            {
+                var prop = typeof(T1).GetTypeInfo().GetDeclaredProperty("_Extensions");
+                var getFunc = (Func<T1, ExtensionSet<T1>>)prop.GetMethod.CreateDelegate(typeof(Func<T1, ExtensionSet<T1>>));
+                var initializedFunc = (Func<ExtensionSet<T1>, bool>)
+                    typeof(ExtensionSet<T1>)
+                        .GetTypeInfo()
+                        .GetDeclaredMethod("IsInitialized")
+                        .CreateDelegate(typeof(Func<ExtensionSet<T1>, bool>));
+                return (m) => {
+                    var set = getFunc((T1)m);
+                    return set == null || initializedFunc(set);
+                };
             }
         }
 

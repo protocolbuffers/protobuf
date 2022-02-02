@@ -46,7 +46,7 @@
 #endif
 
 // If the headers are imported into Objective-C++, we can run into an issue
-// where the defintion of NS_ENUM (really CF_ENUM) changes based on the C++
+// where the definition of NS_ENUM (really CF_ENUM) changes based on the C++
 // standard that is in effect.  If it isn't C++11 or higher, the definition
 // doesn't allow us to forward declare. We work around this one case by
 // providing a local definition. The default case has to use NS_ENUM for the
@@ -115,6 +115,11 @@
 // Meant to be used internally by generated code.
 #define GPB_METHOD_FAMILY_NONE __attribute__((objc_method_family(none)))
 
+// Prevent subclassing of generated proto classes.
+#ifndef GPB_FINAL
+#define GPB_FINAL __attribute__((objc_subclassing_restricted))
+#endif  // GPB_FINAL
+
 // ----------------------------------------------------------------------------
 // These version numbers are all internal to the ObjC Protobuf runtime; they
 // are used to ensure compatibility between the generated sources and the
@@ -127,7 +132,7 @@
 // Current library runtime version.
 // - Gets bumped when the runtime makes changes to the interfaces between the
 //   generated code and runtime (things added/removed, etc).
-#define GOOGLE_PROTOBUF_OBJC_VERSION 30002
+#define GOOGLE_PROTOBUF_OBJC_VERSION 30004
 
 // Minimum runtime version supported for compiling/running against.
 // - Gets changed when support for the older generated code is dropped.

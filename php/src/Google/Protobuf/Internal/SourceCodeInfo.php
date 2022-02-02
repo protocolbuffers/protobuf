@@ -16,7 +16,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.SourceCodeInfo</code>
  */
-final class SourceCodeInfo extends \Google\Protobuf\Internal\Message
+class SourceCodeInfo extends \Google\Protobuf\Internal\Message
 {
     /**
      * A Location identifies a piece of source code in a .proto file which
@@ -64,7 +64,6 @@ final class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
      */
     private $location;
-    private $has_location = false;
 
     /**
      * Constructor.
@@ -223,14 +222,8 @@ final class SourceCodeInfo extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\SourceCodeInfo\Location::class);
         $this->location = $arr;
-        $this->has_location = true;
 
         return $this;
-    }
-
-    public function hasLocation()
-    {
-        return $this->has_location;
     }
 
 }

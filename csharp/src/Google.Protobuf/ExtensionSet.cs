@@ -34,17 +34,18 @@ using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 
 namespace Google.Protobuf
 {
     /// <summary>
     /// Methods for managing <see cref="ExtensionSet{TTarget}"/>s with null checking.
     /// 
-    /// Most users will not use this class directly
+    /// Most users will not use this class directly and its API is experimental and subject to change.
     /// </summary>
     public static class ExtensionSet
     {
-        private static bool GetValue<TTarget>(ref ExtensionSet<TTarget> set, Extension extension, out IExtensionValue value) where TTarget : IExtendableMessage<TTarget>
+        private static bool TryGetValue<TTarget>(ref ExtensionSet<TTarget> set, Extension extension, out IExtensionValue value) where TTarget : IExtendableMessage<TTarget>
         {
             if (set == null)
             {
@@ -60,7 +61,7 @@ namespace Google.Protobuf
         public static TValue Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
-            if (GetValue(ref set, extension, out value))
+            if (TryGetValue(ref set, extension, out value))
             {
                 return ((ExtensionValue<TValue>)value).GetValue();
             }
@@ -76,7 +77,7 @@ namespace Google.Protobuf
         public static RepeatedField<TValue> Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
-            if (GetValue(ref set, extension, out value))
+            if (TryGetValue(ref set, extension, out value))
             {
                 return ((RepeatedExtensionValue<TValue>)value).GetValue();
             }
@@ -89,7 +90,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Gets the value of the specified repeated extension, registering it if it doesn't exist
         /// </summary>
-        public static RepeatedField<TValue> GetOrRegister<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
+        public static RepeatedField<TValue> GetOrInitialize<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
             if (set == null)
@@ -111,10 +112,12 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Sets the value of the specified extension
+        /// Sets the value of the specified extension. This will make a new instance of ExtensionSet if the set is null.
         /// </summary>
         public static void Set<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension, TValue value) where TTarget : IExtendableMessage<TTarget>
         {
+            ProtoPreconditions.CheckNotNullUnconstrained(value, nameof(value));
+
             IExtensionValue extensionValue;
             if (set == null)
             {
@@ -140,14 +143,7 @@ namespace Google.Protobuf
         public static bool Has<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
             IExtensionValue value;
-            if (GetValue(ref set, extension, out value))
-            {
-                return ((ExtensionValue<TValue>)value).HasValue;
-            }
-            else 
-            {
-                return false;
-            }
+            return TryGetValue(ref set, extension, out value);
         }
 
         /// <summary>
@@ -188,19 +184,36 @@ namespace Google.Protobuf
         /// </summary>
         public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, CodedInputStream stream) where TTarget : IExtendableMessage<TTarget>
         {
+            ParseContext.Initialize(stream, out ParseContext ctx);
+            try
+            {
+                return TryMergeFieldFrom<TTarget>(ref set, ref ctx);
+            }
+            finally
+            {
+                ctx.CopyStateTo(stream);
+            }
+        }
+
+        /// <summary>
+        /// Tries to merge a field from the coded input, returning true if the field was merged.
+        /// If the set is null or the field was not otherwise merged, this returns false.
+        /// </summary>
+        public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, ref ParseContext ctx) where TTarget : IExtendableMessage<TTarget>
+        {
             Extension extension;
-            int lastFieldNumber = WireFormat.GetTagFieldNumber(stream.LastTag);
-            
+            int lastFieldNumber = WireFormat.GetTagFieldNumber(ctx.LastTag);
+
             IExtensionValue extensionValue;
             if (set != null && set.ValuesByNumber.TryGetValue(lastFieldNumber, out extensionValue))
             {
-                extensionValue.MergeFrom(stream);
+                extensionValue.MergeFrom(ref ctx);
                 return true;
             }
-            else if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream, typeof(TTarget), out extension))
+            else if (ctx.ExtensionRegistry != null && ctx.ExtensionRegistry.ContainsInputField(ctx.LastTag, typeof(TTarget), out extension))
             {
                 IExtensionValue value = extension.CreateValue();
-                value.MergeFrom(stream);
+                value.MergeFrom(ref ctx);
                 set = (set ?? new ExtensionSet<TTarget>());
                 set.ValuesByNumber.Add(extension.FieldNumber, value);
                 return true;
@@ -332,10 +345,33 @@ namespace Google.Protobuf
         /// </summary>
         public void WriteTo(CodedOutputStream stream)
         {
+            
+            WriteContext.Initialize(stream, out WriteContext ctx);
+            try
+            {
+                WriteTo(ref ctx);
+            }
+            finally
+            {
+                ctx.CopyStateTo(stream);
+            }
+        }
+
+        /// <summary>
+        /// Writes the extension values in this set to the write context
+        /// </summary>
+        [SecuritySafeCritical]
+        public void WriteTo(ref WriteContext ctx)
+        {
             foreach (var value in ValuesByNumber.Values)
             {
-                value.WriteTo(stream);
+                value.WriteTo(ref ctx);
             }
+        }
+
+        internal bool IsInitialized()
+        {
+            return ValuesByNumber.Values.All(v => v.IsInitialized());
         }
     }
 }

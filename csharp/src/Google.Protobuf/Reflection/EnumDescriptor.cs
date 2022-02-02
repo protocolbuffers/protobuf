@@ -69,6 +69,14 @@ namespace Google.Protobuf.Reflection
         internal EnumDescriptorProto Proto { get { return proto; } }
 
         /// <summary>
+        /// Returns a clone of the underlying <see cref="EnumDescriptorProto"/> describing this enum.
+        /// Note that a copy is taken every time this method is called, so clients using it frequently
+        /// (and not modifying it) may want to cache the returned value.
+        /// </summary>
+        /// <returns>A protobuf representation of this enum descriptor.</returns>
+        public EnumDescriptorProto ToProto() => Proto.Clone();
+
+        /// <summary>
         /// The brief name of the descriptor's target.
         /// </summary>
         public override string Name { get { return proto.Name; } }
@@ -128,26 +136,34 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this enum.
         /// </summary>
-        //[Obsolete("CustomOptions are obsolete. Use GetOption")]
-        public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
+        [Obsolete("CustomOptions are obsolete. Use the GetOptions() method.")]
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
 
-        /* // uncomment this in the full proto2 support PR
+        /// <summary>
+        /// The <c>EnumOptions</c>, defined in <c>descriptor.proto</c>.
+        /// If the options message is not present (i.e. there are no options), <c>null</c> is returned.
+        /// Custom options can be retrieved as extensions of the returned message.
+        /// NOTE: A defensive copy is created each time this property is retrieved.
+        /// </summary>
+        public EnumOptions GetOptions() => Proto.Options?.Clone();
+
         /// <summary>
         /// Gets a single value enum option for this descriptor
         /// </summary>
+        [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public T GetOption<T>(Extension<EnumOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> clonable ? clonable.Clone() : value;
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
         }
 
         /// <summary>
         /// Gets a repeated value enum option for this descriptor
         /// </summary>
+        [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public RepeatedField<T> GetOption<T>(RepeatedExtension<EnumOptions, T> extension)
         {
             return Proto.Options.GetExtension(extension).Clone();
         }
-        */
     }
 }

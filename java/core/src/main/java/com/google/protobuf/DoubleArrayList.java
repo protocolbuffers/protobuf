@@ -46,7 +46,6 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
     implements DoubleList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final DoubleArrayList EMPTY_LIST = new DoubleArrayList(new double[0], 0);
-
   static {
     EMPTY_LIST.makeImmutable();
   }
@@ -142,6 +141,26 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
   }
 
   @Override
+  public int indexOf(Object element) {
+    if (!(element instanceof Double)) {
+      return -1;
+    }
+    double unboxedElement = (Double) element;
+    int numElems = size();
+    for (int i = 0; i < numElems; i++) {
+      if (array[i] == unboxedElement) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  @Override
+  public boolean contains(Object element) {
+    return indexOf(element) != -1;
+  }
+
+  @Override
   public int size() {
     return size;
   }
@@ -161,6 +180,12 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
   }
 
   @Override
+  public boolean add(Double element) {
+    addDouble(element);
+    return true;
+  }
+
+  @Override
   public void add(int index, Double element) {
     addDouble(index, element);
   }
@@ -168,7 +193,17 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
   /** Like {@link #add(Double)} but more efficient in that it doesn't box the element. */
   @Override
   public void addDouble(double element) {
-    addDouble(size, element);
+    ensureIsMutable();
+    if (size == array.length) {
+      // Resize to 1.5x the size
+      int length = ((size * 3) / 2) + 1;
+      double[] newArray = new double[length];
+
+      System.arraycopy(array, 0, newArray, 0, size);
+      array = newArray;
+    }
+
+    array[size++] = element;
   }
 
   /** Like {@link #add(int, Double)} but more efficient in that it doesn't box the element. */
@@ -230,20 +265,6 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
     size = newSize;
     modCount++;
     return true;
-  }
-
-  @Override
-  public boolean remove(Object o) {
-    ensureIsMutable();
-    for (int i = 0; i < size; i++) {
-      if (o.equals(array[i])) {
-        System.arraycopy(array, i + 1, array, i, size - i - 1);
-        size--;
-        modCount++;
-        return true;
-      }
-    }
-    return false;
   }
 
   @Override

@@ -33,10 +33,12 @@
 using Google.Protobuf.Compatibility;
 using Google.Protobuf.Reflection;
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
 
 namespace Google.Protobuf.Collections
 {
@@ -422,13 +424,35 @@ namespace Google.Protobuf.Collections
         /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
         public void AddEntriesFrom(CodedInputStream input, Codec codec)
         {
-            var adapter = new Codec.MessageAdapter(codec);
+            ParseContext.Initialize(input, out ParseContext ctx);
+            try
+            {
+                AddEntriesFrom(ref ctx, codec);
+            }
+            finally
+            {
+                ctx.CopyStateTo(input);
+            }
+        }
+
+        /// <summary>
+        /// Adds entries to the map from the given parse context.
+        /// </summary>
+        /// <remarks>
+        /// It is assumed that the input is initially positioned after the tag specified by the codec.
+        /// This method will continue reading entries from the input until the end is reached, or
+        /// a different tag is encountered.
+        /// </remarks>
+        /// <param name="ctx">Input to read from</param>
+        /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
+        [SecuritySafeCritical]
+        public void AddEntriesFrom(ref ParseContext ctx, Codec codec)
+        {
             do
             {
-                adapter.Reset();
-                input.ReadMessage(adapter);
-                this[adapter.Key] = adapter.Value;
-            } while (input.MaybeConsumeTag(codec.MapTag));
+                KeyValuePair<TKey, TValue> entry = ParsingPrimitivesMessages.ReadMapEntry(ref ctx, codec);
+                this[entry.Key] = entry.Value;
+            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, codec.MapTag));
         }
 
         /// <summary>
@@ -439,13 +463,33 @@ namespace Google.Protobuf.Collections
         /// <param name="codec">The codec to use for each entry.</param>
         public void WriteTo(CodedOutputStream output, Codec codec)
         {
-            var message = new Codec.MessageAdapter(codec);
+            WriteContext.Initialize(output, out WriteContext ctx);
+            try
+            {
+                WriteTo(ref ctx, codec);
+            }
+            finally
+            {
+                ctx.CopyStateTo(output);
+            }
+        }
+
+        /// <summary>
+        /// Writes the contents of this map to the given write context, using the specified codec
+        /// to encode each entry.
+        /// </summary>
+        /// <param name="ctx">The write context to write to.</param>
+        /// <param name="codec">The codec to use for each entry.</param>
+        [SecuritySafeCritical]
+        public void WriteTo(ref WriteContext ctx, Codec codec)
+        {
             foreach (var entry in list)
             {
-                message.Key = entry.Key;
-                message.Value = entry.Value;
-                output.WriteTag(codec.MapTag);
-                output.WriteMessage(message);
+                ctx.WriteTag(codec.MapTag);
+
+                WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, CalculateEntrySize(codec, entry));
+                codec.KeyCodec.WriteTagAndValue(ref ctx, entry.Key);
+                codec.ValueCodec.WriteTagAndValue(ref ctx, entry.Value);
             }
         }
 
@@ -460,16 +504,20 @@ namespace Google.Protobuf.Collections
             {
                 return 0;
             }
-            var message = new Codec.MessageAdapter(codec);
             int size = 0;
             foreach (var entry in list)
             {
-                message.Key = entry.Key;
-                message.Value = entry.Value;
+                int entrySize = CalculateEntrySize(codec, entry);
+
                 size += CodedOutputStream.ComputeRawVarint32Size(codec.MapTag);
-                size += CodedOutputStream.ComputeMessageSize(message);
+                size += CodedOutputStream.ComputeLengthSize(entrySize) + entrySize;
             }
             return size;
+        }
+
+        private static int CalculateEntrySize(Codec codec, KeyValuePair<TKey, TValue> entry)
+        {
+            return codec.KeyCodec.CalculateSizeWithTag(entry.Key) + codec.ValueCodec.CalculateSizeWithTag(entry.Value);
         }
 
         /// <summary>
@@ -609,76 +657,19 @@ namespace Google.Protobuf.Collections
             }
 
             /// <summary>
-            /// The tag used in the enclosing message to indicate map entries.
+            /// The key codec.
             /// </summary>
-            internal uint MapTag { get { return mapTag; } }
+            internal FieldCodec<TKey> KeyCodec => keyCodec;
 
             /// <summary>
-            /// A mutable message class, used for parsing and serializing. This
-            /// delegates the work to a codec, but implements the <see cref="IMessage"/> interface
-            /// for interop with <see cref="CodedInputStream"/> and <see cref="CodedOutputStream"/>.
-            /// This is nested inside Codec as it's tightly coupled to the associated codec,
-            /// and it's simpler if it has direct access to all its fields.
+            /// The value codec.
             /// </summary>
-            internal class MessageAdapter : IMessage
-            {
-                private static readonly byte[] ZeroLengthMessageStreamData = new byte[] { 0 };
+            internal FieldCodec<TValue> ValueCodec => valueCodec;
 
-                private readonly Codec codec;
-                internal TKey Key { get; set; }
-                internal TValue Value { get; set; }
-
-                internal MessageAdapter(Codec codec)
-                {
-                    this.codec = codec;
-                }
-
-                internal void Reset()
-                {
-                    Key = codec.keyCodec.DefaultValue;
-                    Value = codec.valueCodec.DefaultValue;
-                }
-
-                public void MergeFrom(CodedInputStream input)
-                {
-                    uint tag;
-                    while ((tag = input.ReadTag()) != 0)
-                    {
-                        if (tag == codec.keyCodec.Tag)
-                        {
-                            Key = codec.keyCodec.Read(input);
-                        }
-                        else if (tag == codec.valueCodec.Tag)
-                        {
-                            Value = codec.valueCodec.Read(input);
-                        }
-                        else 
-                        {
-                            input.SkipLastField();
-                        }
-                    }
-
-                    // Corner case: a map entry with a key but no value, where the value type is a message.
-                    // Read it as if we'd seen an input stream with no data (i.e. create a "default" message).
-                    if (Value == null)
-                    {
-                        Value = codec.valueCodec.Read(new CodedInputStream(ZeroLengthMessageStreamData));
-                    }
-                }
-
-                public void WriteTo(CodedOutputStream output)
-                {
-                    codec.keyCodec.WriteTagAndValue(output, Key);
-                    codec.valueCodec.WriteTagAndValue(output, Value);
-                }
-
-                public int CalculateSize()
-                {
-                    return codec.keyCodec.CalculateSizeWithTag(Key) + codec.valueCodec.CalculateSizeWithTag(Value);
-                }
-
-                MessageDescriptor IMessage.Descriptor { get { return null; } }
-            }
+            /// <summary>
+            /// The tag used in the enclosing message to indicate map entries.
+            /// </summary>
+            internal uint MapTag => mapTag;
         }
 
         private class MapView<T> : ICollection<T>, ICollection

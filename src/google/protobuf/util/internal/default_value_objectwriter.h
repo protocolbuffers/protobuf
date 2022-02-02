@@ -31,19 +31,21 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_DEFAULT_VALUE_OBJECTWRITER_H__
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_DEFAULT_VALUE_OBJECTWRITER_H__
 
+#include <cstdint>
+#include <functional>
 #include <memory>
 #include <stack>
 #include <vector>
 
-#include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/internal/datapiece.h>
 #include <google/protobuf/util/internal/object_writer.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/stubs/stringpiece.h>
+#include <google/protobuf/stubs/strutil.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -70,13 +72,10 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   // "b", "c" }.
   //
   // The Field* should point to the google::protobuf::Field of "c".
-  typedef ResultCallback2<bool /*return*/,
-                          const std::vector<std::string>& /*path of the field*/,
-                          const google::protobuf::Field* /*field*/>
+  typedef std::function<bool(
+      const std::vector<std::string>& /*path of the field*/,
+      const google::protobuf::Field* /*field*/)>
       FieldScrubCallBack;
-
-  // A unique pointer to a DefaultValueObjectWriter::FieldScrubCallBack.
-  typedef std::unique_ptr<FieldScrubCallBack> FieldScrubCallBackPtr;
 
   DefaultValueObjectWriter(TypeResolver* type_resolver,
                            const google::protobuf::Type& type,
@@ -97,16 +96,16 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
                                        bool value) override;
 
   DefaultValueObjectWriter* RenderInt32(StringPiece name,
-                                        int32 value) override;
+                                        int32_t value) override;
 
   DefaultValueObjectWriter* RenderUint32(StringPiece name,
-                                         uint32 value) override;
+                                         uint32_t value) override;
 
   DefaultValueObjectWriter* RenderInt64(StringPiece name,
-                                        int64 value) override;
+                                        int64_t value) override;
 
   DefaultValueObjectWriter* RenderUint64(StringPiece name,
-                                         uint64 value) override;
+                                         uint64_t value) override;
 
   DefaultValueObjectWriter* RenderDouble(StringPiece name,
                                          double value) override;
@@ -119,11 +118,10 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   DefaultValueObjectWriter* RenderBytes(StringPiece name,
                                         StringPiece value) override;
 
-  virtual DefaultValueObjectWriter* RenderNull(StringPiece name);
+  DefaultValueObjectWriter* RenderNull(StringPiece name) override;
 
-  // Register the callback for scrubbing of fields. Owership of
-  // field_scrub_callback pointer is also transferred to this class
-  void RegisterFieldScrubCallBack(FieldScrubCallBackPtr field_scrub_callback);
+  // Register the callback for scrubbing of fields.
+  void RegisterFieldScrubCallBack(FieldScrubCallBack field_scrub_callback);
 
   // If set to true, empty lists are suppressed from output when default values
   // are written.
@@ -154,7 +152,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
          NodeKind kind, const DataPiece& data, bool is_placeholder,
          const std::vector<std::string>& path, bool suppress_empty_list,
          bool preserve_proto_field_names, bool use_ints_for_enums,
-         FieldScrubCallBack* field_scrub_callback);
+         FieldScrubCallBack field_scrub_callback);
     virtual ~Node() {
       for (int i = 0; i < children_.size(); ++i) {
         delete children_[i];
@@ -204,7 +202,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     // Returns the Value Type of a map given the Type of the map entry and a
     // TypeInfo instance.
     const google::protobuf::Type* GetMapValueType(
-        const google::protobuf::Type& entry_type, const TypeInfo* typeinfo);
+        const google::protobuf::Type& found_type, const TypeInfo* typeinfo);
 
     // Calls WriteTo() on every child in children_.
     void WriteChildren(ObjectWriter* ow);
@@ -239,9 +237,8 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     // Whether to always print enums as ints
     bool use_ints_for_enums_;
 
-    // Pointer to function for determining whether a field needs to be scrubbed
-    // or not. This callback is owned by the creator of this node.
-    FieldScrubCallBack* field_scrub_callback_;
+    // Function for determining whether a field needs to be scrubbed or not.
+    FieldScrubCallBack field_scrub_callback_;
 
    private:
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Node);
@@ -255,7 +252,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
                               bool suppress_empty_list,
                               bool preserve_proto_field_names,
                               bool use_ints_for_enums,
-                              FieldScrubCallBack* field_scrub_callback);
+                              FieldScrubCallBack field_scrub_callback);
 
   // Creates a DataPiece containing the default value of the type of the field.
   static DataPiece CreateDefaultDataPieceForField(
@@ -317,9 +314,8 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   // Whether to always print enums as ints
   bool use_ints_for_enums_;
 
-  // Unique Pointer to function for determining whether a field needs to be
-  // scrubbed or not.
-  FieldScrubCallBackPtr field_scrub_callback_;
+  // Function for determining whether a field needs to be scrubbed or not.
+  FieldScrubCallBack field_scrub_callback_;
 
   ObjectWriter* ow_;
 

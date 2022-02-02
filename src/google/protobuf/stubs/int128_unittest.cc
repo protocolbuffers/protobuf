@@ -293,26 +293,20 @@ TEST(Int128, Multiply) {
   }
 
   // Verified with dc.
-  a = uint128(PROTOBUF_ULONGLONG(0xffffeeeeddddcccc),
-              PROTOBUF_ULONGLONG(0xbbbbaaaa99998888));
-  b = uint128(PROTOBUF_ULONGLONG(0x7777666655554444),
-              PROTOBUF_ULONGLONG(0x3333222211110000));
+  a = uint128(uint64_t{0xffffeeeeddddccccu}, uint64_t{0xbbbbaaaa99998888u});
+  b = uint128(uint64_t{0x7777666655554444u}, uint64_t{0x3333222211110000u});
   c = a * b;
-  EXPECT_EQ(uint128(PROTOBUF_ULONGLONG(0x530EDA741C71D4C3),
-                    PROTOBUF_ULONGLONG(0xBF25975319080000)),
-            c);
+  EXPECT_EQ(
+      uint128(uint64_t{0x530EDA741C71D4C3u}, uint64_t{0xBF25975319080000u}), c);
   EXPECT_EQ(0, c - b * a);
   EXPECT_EQ(a * a - b * b, (a + b) * (a - b));
 
   // Verified with dc.
-  a = uint128(PROTOBUF_ULONGLONG(0x0123456789abcdef),
-              PROTOBUF_ULONGLONG(0xfedcba9876543210));
-  b = uint128(PROTOBUF_ULONGLONG(0x02468ace13579bdf),
-              PROTOBUF_ULONGLONG(0xfdb97531eca86420));
+  a = uint128(uint64_t{0x0123456789abcdefu}, uint64_t{0xfedcba9876543210u});
+  b = uint128(uint64_t{0x02468ace13579bdfu}, uint64_t{0xfdb97531eca86420u});
   c = a * b;
-  EXPECT_EQ(uint128(PROTOBUF_ULONGLONG(0x97a87f4f261ba3f2),
-                    PROTOBUF_ULONGLONG(0x342d0bbf48948200)),
-            c);
+  EXPECT_EQ(
+      uint128(uint64_t{0x97a87f4f261ba3f2u}, uint64_t{0x342d0bbf48948200u}), c);
   EXPECT_EQ(0, c - b * a);
   EXPECT_EQ(a*a - b*b, (a+b) * (a-b));
 }
@@ -359,10 +353,8 @@ TEST(Int128, DivideAndMod) {
   EXPECT_EQ(0, q);
   EXPECT_EQ(0, r);
 
-  a = uint128(PROTOBUF_ULONGLONG(0x530eda741c71d4c3),
-              PROTOBUF_ULONGLONG(0xbf25975319080000));
-  q = uint128(PROTOBUF_ULONGLONG(0x4de2cab081),
-              PROTOBUF_ULONGLONG(0x14c34ab4676e4bab));
+  a = uint128(uint64_t{0x530eda741c71d4c3u}, uint64_t{0xbf25975319080000u});
+  q = uint128(uint64_t{0x4de2cab081u}, uint64_t{0x14c34ab4676e4babu});
   b = uint128(0x1110001);
   r = uint128(0x3eb455);
   ASSERT_EQ(a, q * b + r);  // Sanity-check.
@@ -400,8 +392,8 @@ TEST(Int128, DivideAndMod) {
 
   // Try a large remainder.
   b = a / 2 + 1;
-  uint128 expected_r(PROTOBUF_ULONGLONG(0x29876d3a0e38ea61),
-                     PROTOBUF_ULONGLONG(0xdf92cba98c83ffff));
+  uint128 expected_r(uint64_t{0x29876d3a0e38ea61u},
+                     uint64_t{0xdf92cba98c83ffffu});
   // Sanity checks.
   ASSERT_EQ(a / 2 - 1, expected_r);
   ASSERT_EQ(a, b + expected_r);
@@ -471,12 +463,12 @@ TEST(Int128, OStream) {
       {uint128(1, 0), std::ios::oct, 0, '_', "2000000000000000000000"},
       {uint128(1, 0), std::ios::hex, 0, '_', "10000000000000000"},
       // just the top bit
-      {uint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::dec, 0,
-       '_', "170141183460469231731687303715884105728"},
-      {uint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::oct, 0,
-       '_', "2000000000000000000000000000000000000000000"},
-      {uint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::hex, 0,
-       '_', "80000000000000000000000000000000"},
+      {uint128(uint64_t{0x8000000000000000u}, 0), std::ios::dec, 0, '_',
+       "170141183460469231731687303715884105728"},
+      {uint128(uint64_t{0x8000000000000000u}, 0), std::ios::oct, 0, '_',
+       "2000000000000000000000000000000000000000000"},
+      {uint128(uint64_t{0x8000000000000000u}, 0), std::ios::hex, 0, '_',
+       "80000000000000000000000000000000"},
       // maximum uint128 value
       {uint128(-1, -1), std::ios::dec, 0, '_',
        "340282366920938463463374607431768211455"},
@@ -515,3 +507,5 @@ TEST(Int128, OStream) {
 }
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

@@ -41,20 +41,20 @@ class TextFormatConformanceTestSuite : public ConformanceTestSuite {
   TextFormatConformanceTestSuite();
 
  private:
-  void RunSuiteImpl();
-  void RunValidTextFormatTest(const string& test_name, ConformanceLevel level,
-                              const string& input);
-  void RunValidTextFormatTestProto2(const string& test_name,
+  void RunSuiteImpl() override;
+  void RunValidTextFormatTest(const std::string& test_name,
+                              ConformanceLevel level, const std::string& input);
+  void RunValidTextFormatTestProto2(const std::string& test_name,
                                     ConformanceLevel level,
-                                    const string& input);
-  void RunValidTextFormatTestWithMessage(const string& test_name,
+                                    const std::string& input);
+  void RunValidTextFormatTestWithMessage(const std::string& test_name,
                                          ConformanceLevel level,
-                                         const string& input_text,
+                                         const std::string& input_text,
                                          const Message& prototype);
-  void RunValidUnknownTextFormatTest(const string& test_name,
+  void RunValidUnknownTextFormatTest(const std::string& test_name,
                                      const Message& message);
-  void ExpectParseFailure(const string& test_name, ConformanceLevel level,
-                          const string& input);
+  void ExpectParseFailure(const std::string& test_name, ConformanceLevel level,
+                          const std::string& input);
   bool ParseTextFormatResponse(const conformance::ConformanceResponse& response,
                                const ConformanceRequestSetting& setting,
                                Message* test_message);

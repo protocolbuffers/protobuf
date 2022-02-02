@@ -36,6 +36,7 @@
 
 #include <vector>
 
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -173,13 +174,11 @@ void WriteMessageDocComment(io::Printer* printer, const Descriptor* message) {
 }
 
 void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
-  // In theory we should have slightly different comments for setters, getters,
-  // etc., but in practice everyone already knows the difference between these
-  // so it's redundant information.
-
   // We start the comment with the main body based on the comments from the
-  // .proto file (if present). We then end with the field declaration, e.g.:
+  // .proto file (if present). We then continue with the field declaration,
+  // e.g.:
   //   optional string foo = 5;
+  // And then we end with the javadoc tags if applicable.
   // If the field is a group, the debug string might end with {.
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field);
@@ -187,6 +186,209 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
                  EscapeJavadoc(FirstLineOf(field->DebugString())));
   printer->Print(" */\n");
 }
+
+void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
+                            const FieldAccessorType type) {
+  if (!field->options().deprecated()) {
+    return;
+  }
+
+  // Lite codegen does not annotate set & clear methods with @Deprecated.
+  if (field->file()->options().optimize_for() == FileOptions::LITE_RUNTIME &&
+      (type == SETTER || type == CLEARER)) {
+    return;
+  }
+
+  printer->Print(" * @deprecated\n");
+}
+
+void WriteFieldAccessorDocComment(io::Printer* printer,
+                                  const FieldDescriptor* field,
+                                  const FieldAccessorType type,
+                                  const bool builder) {
+  printer->Print("/**\n");
+  WriteDocCommentBody(printer, field);
+  printer->Print(" * <code>$def$</code>\n", "def",
+                 EscapeJavadoc(FirstLineOf(field->DebugString())));
+  WriteDeprecatedJavadoc(printer, field, type);
+  switch (type) {
+    case HAZZER:
+      printer->Print(" * @return Whether the $name$ field is set.\n", "name",
+                     field->camelcase_name());
+      break;
+    case GETTER:
+      printer->Print(" * @return The $name$.\n", "name",
+                     field->camelcase_name());
+      break;
+    case SETTER:
+      printer->Print(" * @param value The $name$ to set.\n", "name",
+                     field->camelcase_name());
+      break;
+    case CLEARER:
+      // Print nothing
+      break;
+    // Repeated
+    case LIST_COUNT:
+      printer->Print(" * @return The count of $name$.\n", "name",
+                     field->camelcase_name());
+      break;
+    case LIST_GETTER:
+      printer->Print(" * @return A list containing the $name$.\n", "name",
+                     field->camelcase_name());
+      break;
+    case LIST_INDEXED_GETTER:
+      printer->Print(" * @param index The index of the element to return.\n");
+      printer->Print(" * @return The $name$ at the given index.\n", "name",
+                     field->camelcase_name());
+      break;
+    case LIST_INDEXED_SETTER:
+      printer->Print(" * @param index The index to set the value at.\n");
+      printer->Print(" * @param value The $name$ to set.\n", "name",
+                     field->camelcase_name());
+      break;
+    case LIST_ADDER:
+      printer->Print(" * @param value The $name$ to add.\n", "name",
+                     field->camelcase_name());
+      break;
+    case LIST_MULTI_ADDER:
+      printer->Print(" * @param values The $name$ to add.\n", "name",
+                     field->camelcase_name());
+      break;
+  }
+  if (builder) {
+    printer->Print(" * @return This builder for chaining.\n");
+  }
+  printer->Print(" */\n");
+}
+
+void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
+                                           const FieldDescriptor* field,
+                                           const FieldAccessorType type,
+                                           const bool builder) {
+  printer->Print("/**\n");
+  WriteDocCommentBody(printer, field);
+  printer->Print(" * <code>$def$</code>\n", "def",
+                 EscapeJavadoc(FirstLineOf(field->DebugString())));
+  WriteDeprecatedJavadoc(printer, field, type);
+  switch (type) {
+    case HAZZER:
+      // Should never happen
+      break;
+    case GETTER:
+      printer->Print(
+          " * @return The enum numeric value on the wire for $name$.\n", "name",
+          field->camelcase_name());
+      break;
+    case SETTER:
+      printer->Print(
+          " * @param value The enum numeric value on the wire for $name$ to "
+          "set.\n",
+          "name", field->camelcase_name());
+      break;
+    case CLEARER:
+      // Print nothing
+      break;
+    // Repeated
+    case LIST_COUNT:
+      // Should never happen
+      break;
+    case LIST_GETTER:
+      printer->Print(
+          " * @return A list containing the enum numeric values on the wire "
+          "for $name$.\n",
+          "name", field->camelcase_name());
+      break;
+    case LIST_INDEXED_GETTER:
+      printer->Print(" * @param index The index of the value to return.\n");
+      printer->Print(
+          " * @return The enum numeric value on the wire of $name$ at the "
+          "given index.\n",
+          "name", field->camelcase_name());
+      break;
+    case LIST_INDEXED_SETTER:
+      printer->Print(" * @param index The index to set the value at.\n");
+      printer->Print(
+          " * @param value The enum numeric value on the wire for $name$ to "
+          "set.\n",
+          "name", field->camelcase_name());
+      break;
+    case LIST_ADDER:
+      printer->Print(
+          " * @param value The enum numeric value on the wire for $name$ to "
+          "add.\n",
+          "name", field->camelcase_name());
+      break;
+    case LIST_MULTI_ADDER:
+      printer->Print(
+          " * @param values The enum numeric values on the wire for $name$ to "
+          "add.\n",
+          "name", field->camelcase_name());
+      break;
+  }
+  if (builder) {
+    printer->Print(" * @return This builder for chaining.\n");
+  }
+  printer->Print(" */\n");
+}
+
+void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
+                                             const FieldDescriptor* field,
+                                             const FieldAccessorType type,
+                                             const bool builder) {
+  printer->Print("/**\n");
+  WriteDocCommentBody(printer, field);
+  printer->Print(" * <code>$def$</code>\n", "def",
+                 EscapeJavadoc(FirstLineOf(field->DebugString())));
+  WriteDeprecatedJavadoc(printer, field, type);
+  switch (type) {
+    case HAZZER:
+      // Should never happen
+      break;
+    case GETTER:
+      printer->Print(" * @return The bytes for $name$.\n", "name",
+                     field->camelcase_name());
+      break;
+    case SETTER:
+      printer->Print(" * @param value The bytes for $name$ to set.\n", "name",
+                     field->camelcase_name());
+      break;
+    case CLEARER:
+      // Print nothing
+      break;
+    // Repeated
+    case LIST_COUNT:
+      // Should never happen
+      break;
+    case LIST_GETTER:
+      printer->Print(" * @return A list containing the bytes for $name$.\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_INDEXED_GETTER:
+      printer->Print(" * @param index The index of the value to return.\n");
+      printer->Print(" * @return The bytes of the $name$ at the given index.\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_INDEXED_SETTER:
+      printer->Print(" * @param index The index to set the value at.\n");
+      printer->Print(" * @param value The bytes of the $name$ to set.\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_ADDER:
+      printer->Print(" * @param value The bytes of the $name$ to add.\n",
+                     "name", field->camelcase_name());
+      break;
+    case LIST_MULTI_ADDER:
+      printer->Print(" * @param values The bytes of the $name$ to add.\n",
+                     "name", field->camelcase_name());
+      break;
+  }
+  if (builder) {
+    printer->Print(" * @return This builder for chaining.\n");
+  }
+  printer->Print(" */\n");
+}
+
+// Enum
 
 void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_) {
   printer->Print("/**\n");

@@ -35,6 +35,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -74,7 +75,8 @@ class FieldGenerator {
                           const Options& options)
       : descriptor_(descriptor), options_(options) {}
   virtual ~FieldGenerator();
-
+  virtual void GenerateSerializeWithCachedSizes(
+      io::Printer* printer) const final{};
   // Generate lines of code declaring members fields of the message class
   // needed to represent this field.  These are placed inside the message
   // class.
@@ -163,26 +165,11 @@ class FieldGenerator {
     return false;
   }
 
-  // Generate code that allocates the fields's default instance.
-  virtual void GenerateDefaultInstanceAllocator(
-      io::Printer* /*printer*/) const {}
-
-  // Generate lines to decode this field, which will be placed inside the
-  // message's MergeFromCodedStream() method.
-  virtual void GenerateMergeFromCodedStream(io::Printer* printer) const = 0;
-
-  // Returns true if this field's "MergeFromCodedStream" code needs the arena
-  // to be defined as a variable.
-  virtual bool MergeFromCodedStreamNeedsArena() const { return false; }
-
-  // Generate lines to decode this field from a packed value, which will be
-  // placed inside the message's MergeFromCodedStream() method.
-  virtual void GenerateMergeFromCodedStreamWithPacking(
-      io::Printer* printer) const;
-
-  // Generate lines to serialize this field, which are placed within the
-  // message's SerializeWithCachedSizes() method.
-  virtual void GenerateSerializeWithCachedSizes(io::Printer* printer) const = 0;
+  // Generate initialization code for private members declared by
+  // GeneratePrivateMembers(), specifically for the constexpr constructor.
+  // These go into the constructor's initializer list and must follow that
+  // syntax (eg `field_(args)`). Does not include `:` or `,` separators.
+  virtual void GenerateConstinitInitializer(io::Printer* printer) const {}
 
   // Generate lines to serialize this field directly to the array "target",
   // which are placed within the message's SerializeWithCachedSizesToArray()
@@ -194,12 +181,14 @@ class FieldGenerator {
   // are placed in the message's ByteSize() method.
   virtual void GenerateByteSize(io::Printer* printer) const = 0;
 
-  // Any tags about field layout decisions (such as inlining) to embed in the
-  // offset.
-  virtual uint32 CalculateFieldTag() const { return 0; }
+  // Generates lines to call IsInitialized() for eligible message fields. Non
+  // message fields won't need to override this function.
+  virtual void GenerateIsInitialized(io::Printer* printer) const {}
+
   virtual bool IsInlined() const { return false; }
 
-  void SetHasBitIndex(int32 has_bit_index);
+  void SetHasBitIndex(int32_t has_bit_index);
+  void SetInlinedStringIndex(int32_t inlined_string_index);
 
  protected:
   const FieldDescriptor* descriptor_;
@@ -222,6 +211,12 @@ class FieldGeneratorMap {
   void SetHasBitIndices(const std::vector<int>& has_bit_indices_) {
     for (int i = 0; i < descriptor_->field_count(); ++i) {
       field_generators_[i]->SetHasBitIndex(has_bit_indices_[i]);
+    }
+  }
+
+  void SetInlinedStringIndices(const std::vector<int>& inlined_string_indices) {
+    for (int i = 0; i < descriptor_->field_count(); ++i) {
+      field_generators_[i]->SetInlinedStringIndex(inlined_string_indices[i]);
     }
   }
 

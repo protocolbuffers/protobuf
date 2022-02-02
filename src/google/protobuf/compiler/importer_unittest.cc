@@ -44,9 +44,9 @@
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -74,14 +74,14 @@ class MockErrorCollector : public MultiFileErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
                 const std::string& message) {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line,
-                                 column, message);
+    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
+                              message);
   }
 
   void AddWarning(const std::string& filename, int line, int column,
                   const std::string& message) {
-    strings::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n", filename,
-                                 line, column, message);
+    strings::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n", filename, line,
+                              column, message);
   }
 };
 
@@ -463,13 +463,14 @@ TEST_F(DiskSourceTreeTest, DiskFileToVirtualFileCanonicalization) {
             source_tree_.DiskFileToVirtualFile("../../baz", &virtual_file,
                                                &shadowing_disk_file));
 
-  // "/foo" is not mapped (it should not be misintepreted as being under ".").
+  // "/foo" is not mapped (it should not be misinterpreted as being under ".").
   EXPECT_EQ(DiskSourceTree::NO_MAPPING,
             source_tree_.DiskFileToVirtualFile("/foo", &virtual_file,
                                                &shadowing_disk_file));
 
 #ifdef WIN32
-  // "C:\foo" is not mapped (it should not be misintepreted as being under ".").
+  // "C:\foo" is not mapped (it should not be misinterpreted as being under
+  // ".").
   EXPECT_EQ(DiskSourceTree::NO_MAPPING,
             source_tree_.DiskFileToVirtualFile("C:\\foo", &virtual_file,
                                                &shadowing_disk_file));

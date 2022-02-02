@@ -1,6 +1,4 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
-#
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
@@ -39,13 +37,7 @@ import re
 import string
 import textwrap
 
-import six
-
-# pylint: disable=g-import-not-at-top
-try:
-  import unittest2 as unittest  # PY26
-except ImportError:
-  import unittest
+import unittest
 
 from google.protobuf import any_pb2
 from google.protobuf import any_test_pb2
@@ -57,6 +49,7 @@ from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import any_test_pb2 as test_extend_any
 from google.protobuf.internal import message_set_extensions_pb2
+from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
 from google.protobuf import descriptor_pool
 from google.protobuf import text_format
@@ -97,7 +90,7 @@ class TextFormatBase(unittest.TestCase):
     text = text.replace('e+0','e+').replace('e+0','e+') \
                .replace('e-0','e-').replace('e-0','e-')
     # Floating point fields are printed with .0 suffix even if they are
-    # actualy integer numbers.
+    # actually integer numbers.
     text = re.compile(r'\.0$', re.MULTILINE).sub('', text)
     return text
 
@@ -125,9 +118,109 @@ class TextFormatMessageToStringTests(TextFormatBase):
         ' "\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""\n'
         'repeated_string: "\\303\\274\\352\\234\\237"\n')
 
+  def testPrintFloatPrecision(self, message_module):
+    message = message_module.TestAllTypes()
+
+    message.repeated_float.append(0.0)
+    message.repeated_float.append(0.8)
+    message.repeated_float.append(1.0)
+    message.repeated_float.append(1.2)
+    message.repeated_float.append(1.23)
+    message.repeated_float.append(1.234)
+    message.repeated_float.append(1.2345)
+    message.repeated_float.append(1.23456)
+    message.repeated_float.append(1.2e10)
+    message.repeated_float.append(1.23e10)
+    message.repeated_float.append(1.234e10)
+    message.repeated_float.append(1.2345e10)
+    message.repeated_float.append(1.23456e10)
+    message.repeated_float.append(float('NaN'))
+    message.repeated_float.append(float('inf'))
+    message.repeated_double.append(0.0)
+    message.repeated_double.append(0.8)
+    message.repeated_double.append(1.0)
+    message.repeated_double.append(1.2)
+    message.repeated_double.append(1.23)
+    message.repeated_double.append(1.234)
+    message.repeated_double.append(1.2345)
+    message.repeated_double.append(1.23456)
+    message.repeated_double.append(1.234567)
+    message.repeated_double.append(1.2345678)
+    message.repeated_double.append(1.23456789)
+    message.repeated_double.append(1.234567898)
+    message.repeated_double.append(1.2345678987)
+    message.repeated_double.append(1.23456789876)
+    message.repeated_double.append(1.234567898765)
+    message.repeated_double.append(1.2345678987654)
+    message.repeated_double.append(1.23456789876543)
+    message.repeated_double.append(1.2e100)
+    message.repeated_double.append(1.23e100)
+    message.repeated_double.append(1.234e100)
+    message.repeated_double.append(1.2345e100)
+    message.repeated_double.append(1.23456e100)
+    message.repeated_double.append(1.234567e100)
+    message.repeated_double.append(1.2345678e100)
+    message.repeated_double.append(1.23456789e100)
+    message.repeated_double.append(1.234567898e100)
+    message.repeated_double.append(1.2345678987e100)
+    message.repeated_double.append(1.23456789876e100)
+    message.repeated_double.append(1.234567898765e100)
+    message.repeated_double.append(1.2345678987654e100)
+    message.repeated_double.append(1.23456789876543e100)
+    # pylint: disable=g-long-ternary
+    self.CompareToGoldenText(
+        self.RemoveRedundantZeros(text_format.MessageToString(message)),
+        'repeated_float: 0\n'
+        'repeated_float: 0.8\n'
+        'repeated_float: 1\n'
+        'repeated_float: 1.2\n'
+        'repeated_float: 1.23\n'
+        'repeated_float: 1.234\n'
+        'repeated_float: 1.2345\n'
+        'repeated_float: 1.23456\n'
+        # Note that these don't use scientific notation.
+        'repeated_float: 12000000000\n'
+        'repeated_float: 12300000000\n'
+        'repeated_float: 12340000000\n'
+        'repeated_float: 12345000000\n'
+        'repeated_float: 12345600000\n'
+        'repeated_float: nan\n'
+        'repeated_float: inf\n'
+        'repeated_double: 0\n'
+        'repeated_double: 0.8\n'
+        'repeated_double: 1\n'
+        'repeated_double: 1.2\n'
+        'repeated_double: 1.23\n'
+        'repeated_double: 1.234\n'
+        'repeated_double: 1.2345\n'
+        'repeated_double: 1.23456\n'
+        'repeated_double: 1.234567\n'
+        'repeated_double: 1.2345678\n'
+        'repeated_double: 1.23456789\n'
+        'repeated_double: 1.234567898\n'
+        'repeated_double: 1.2345678987\n'
+        'repeated_double: 1.23456789876\n'
+        'repeated_double: 1.234567898765\n'
+        'repeated_double: 1.2345678987654\n'
+        'repeated_double: 1.23456789876543\n'
+        'repeated_double: 1.2e+100\n'
+        'repeated_double: 1.23e+100\n'
+        'repeated_double: 1.234e+100\n'
+        'repeated_double: 1.2345e+100\n'
+        'repeated_double: 1.23456e+100\n'
+        'repeated_double: 1.234567e+100\n'
+        'repeated_double: 1.2345678e+100\n'
+        'repeated_double: 1.23456789e+100\n'
+        'repeated_double: 1.234567898e+100\n'
+        'repeated_double: 1.2345678987e+100\n'
+        'repeated_double: 1.23456789876e+100\n'
+        'repeated_double: 1.234567898765e+100\n'
+        'repeated_double: 1.2345678987654e+100\n'
+        'repeated_double: 1.23456789876543e+100\n')
+
   def testPrintExoticUnicodeSubclass(self, message_module):
 
-    class UnicodeSub(six.text_type):
+    class UnicodeSub(str):
       pass
 
     message = message_module.TestAllTypes()
@@ -255,7 +348,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     message.repeated_string.append(u'\u00fc\t\ua71f')
     text = text_format.MessageToString(message, as_utf8=True)
     golden_unicode = u'repeated_string: "\u00fc\\t\ua71f"\n'
-    golden_text = golden_unicode if six.PY3 else golden_unicode.encode('utf-8')
+    golden_text = golden_unicode
     # MessageToString always returns a native str.
     self.CompareToGoldenText(text, golden_text)
     parsed_message = message_module.TestAllTypes()
@@ -294,8 +387,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     # 32-bit 1.2 is noisy when extended to 64-bit:
     #  >>> struct.unpack('f', struct.pack('f', 1.2))[0]
     #  1.2000000476837158
-    # TODO(jieluo): change to 1.2 with cl/241634942.
-    message.payload.optional_float = 1.2000000476837158
+    message.payload.optional_float = 1.2
     formatted_fields = ['optional_float: 1.2',
                         'optional_double: -3.45678901234568e-6',
                         'repeated_float: -5642', 'repeated_double: 7.89e-5']
@@ -316,7 +408,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
         'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
             *formatted_fields))
 
-    # Test default float_format has 8 valid digits.
+    # Test default float_format will automatic print shortest float.
     message.payload.optional_float = 1.2345678912
     message.payload.optional_double = 1.2345678912
     formatted_fields = ['optional_float: 1.2345679',
@@ -327,6 +419,17 @@ class TextFormatMessageToStringTests(TextFormatBase):
         self.RemoveRedundantZeros(text_message),
         'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
             *formatted_fields))
+
+    message.Clear()
+    message.payload.optional_float = 1.1000000000011
+    self.assertEqual(text_format.MessageToString(message),
+                     'payload {\n  optional_float: 1.1\n}\n')
+    message.payload.optional_float = 1.00000075e-36
+    self.assertEqual(text_format.MessageToString(message),
+                     'payload {\n  optional_float: 1.00000075e-36\n}\n')
+    message.payload.optional_float = 12345678912345e+11
+    self.assertEqual(text_format.MessageToString(message),
+                     'payload {\n  optional_float: 1.234568e+24\n}\n')
 
   def testMessageToString(self, message_module):
     message = message_module.ForeignMessage()
@@ -417,6 +520,35 @@ class TextFormatMessageToStringTests(TextFormatBase):
         '  type: TYPE_INT32\n'
         '  oneof_index: 0\n'
         '}\n'
+        'field {\n'
+        '  name: "map_field"\n'
+        '  number: 3\n'
+        '  label: LABEL_REPEATED\n'
+        '  type: TYPE_MESSAGE\n'
+        '  type_name: ".protobuf_unittest.TestMessageWithCustomOptions.'
+        'MapFieldEntry"\n'
+        '  options {\n'
+        '    [protobuf_unittest.field_opt1]: 12345\n'
+        '  }\n'
+        '}\n'
+        'nested_type {\n'
+        '  name: "MapFieldEntry"\n'
+        '  field {\n'
+        '    name: "key"\n'
+        '    number: 1\n'
+        '    label: LABEL_OPTIONAL\n'
+        '    type: TYPE_STRING\n'
+        '  }\n'
+        '  field {\n'
+        '    name: "value"\n'
+        '    number: 2\n'
+        '    label: LABEL_OPTIONAL\n'
+        '    type: TYPE_STRING\n'
+        '  }\n'
+        '  options {\n'
+        '    map_entry: true\n'
+        '  }\n'
+        '}\n'
         'enum_type {\n'
         '  name: "AnEnum"\n'
         '  value {\n'
@@ -449,6 +581,46 @@ class TextFormatMessageToStringTests(TextFormatBase):
     parsed_proto = descriptor_pb2.DescriptorProto()
     text_format.Parse(expected_text, parsed_proto)
     self.assertEqual(message_proto, parsed_proto)
+
+  def testPrintUnknownFieldsEmbeddedMessageInBytes(self, message_module):
+    inner_msg = message_module.TestAllTypes()
+    inner_msg.optional_int32 = 101
+    inner_msg.optional_double = 102.0
+    inner_msg.optional_string = u'hello'
+    inner_msg.optional_bytes = b'103'
+    inner_msg.optional_nested_message.bb = 105
+    inner_data = inner_msg.SerializeToString()
+    outer_message = message_module.TestAllTypes()
+    outer_message.optional_int32 = 101
+    outer_message.optional_bytes = inner_data
+    all_data = outer_message.SerializeToString()
+    empty_message = message_module.TestEmptyMessage()
+    empty_message.ParseFromString(all_data)
+
+    self.assertEqual('  1: 101\n'
+                     '  15 {\n'
+                     '    1: 101\n'
+                     '    12: 4636878028842991616\n'
+                     '    14: "hello"\n'
+                     '    15: "103"\n'
+                     '    18 {\n'
+                     '      1: 105\n'
+                     '    }\n'
+                     '  }\n',
+                     text_format.MessageToString(empty_message,
+                                                 indent=2,
+                                                 print_unknown_fields=True))
+    self.assertEqual('1: 101 '
+                     '15 { '
+                     '1: 101 '
+                     '12: 4636878028842991616 '
+                     '14: "hello" '
+                     '15: "103" '
+                     '18 { 1: 105 } '
+                     '}',
+                     text_format.MessageToString(empty_message,
+                                                 print_unknown_fields=True,
+                                                 as_one_line=True))
 
 
 @_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
@@ -618,16 +790,18 @@ class TextFormatParserTests(TextFormatBase):
   def testParseSingleWord(self, message_module):
     message = message_module.TestAllTypes()
     text = 'foo'
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        r'1:1 : Message type "\w+.TestAllTypes" has no field named '
-        r'"foo".'), text_format.Parse, text, message)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        (r'1:1 : Message type "\w+.TestAllTypes" has no field named '
+         r'"foo".'), text_format.Parse, text, message)
 
   def testParseUnknownField(self, message_module):
     message = message_module.TestAllTypes()
     text = 'unknown_field: 8\n'
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        r'1:1 : Message type "\w+.TestAllTypes" has no field named '
-        r'"unknown_field".'), text_format.Parse, text, message)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        (r'1:1 : Message type "\w+.TestAllTypes" has no field named '
+         r'"unknown_field".'), text_format.Parse, text, message)
     text = ('optional_int32: 123\n'
             'unknown_field: 8\n'
             'optional_nested_message { bb: 45 }')
@@ -638,19 +812,19 @@ class TextFormatParserTests(TextFormatBase):
   def testParseBadEnumValue(self, message_module):
     message = message_module.TestAllTypes()
     text = 'optional_nested_enum: BARR'
-    six.assertRaisesRegex(self, text_format.ParseError,
-                          (r'1:23 : \'optional_nested_enum: BARR\': '
-                           r'Enum type "\w+.TestAllTypes.NestedEnum" '
-                           r'has no value named BARR.'), text_format.Parse,
-                          text, message)
+    self.assertRaisesRegex(text_format.ParseError,
+                           (r'1:23 : \'optional_nested_enum: BARR\': '
+                            r'Enum type "\w+.TestAllTypes.NestedEnum" '
+                            r'has no value named BARR.'), text_format.Parse,
+                           text, message)
 
   def testParseBadIntValue(self, message_module):
     message = message_module.TestAllTypes()
     text = 'optional_int32: bork'
-    six.assertRaisesRegex(self, text_format.ParseError,
-                          ('1:17 : \'optional_int32: bork\': '
-                           'Couldn\'t parse integer: bork'),
-                          text_format.Parse, text, message)
+    self.assertRaisesRegex(text_format.ParseError,
+                           ('1:17 : \'optional_int32: bork\': '
+                            'Couldn\'t parse integer: bork'), text_format.Parse,
+                           text, message)
 
   def testParseStringFieldUnescape(self, message_module):
     message = message_module.TestAllTypes()
@@ -683,8 +857,8 @@ class TextFormatParserTests(TextFormatBase):
   def testParseMultipleOneof(self, message_module):
     m_string = '\n'.join(['oneof_uint32: 11', 'oneof_string: "foo"'])
     m2 = message_module.TestAllTypes()
-    with six.assertRaisesRegex(self, text_format.ParseError,
-                               ' is specified along with field '):
+    with self.assertRaisesRegex(text_format.ParseError,
+                                ' is specified along with field '):
       text_format.Parse(m_string, m2)
 
   # This example contains non-ASCII codepoint unicode data as literals
@@ -763,25 +937,34 @@ class TextFormatParserTests(TextFormatBase):
     message = message_module.TestAllTypes()
     text = ('optional_nested_message { bb: 1 } '
             'optional_nested_message { bb: 2 }')
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        r'1:59 : Message type "\w+.TestAllTypes" '
-        r'should not have multiple "optional_nested_message" fields.'),
-                          text_format.Parse, text,
-                          message)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        (r'1:59 : Message type "\w+.TestAllTypes" '
+         r'should not have multiple "optional_nested_message" fields.'),
+        text_format.Parse, text, message)
 
   def testParseDuplicateScalars(self, message_module):
     message = message_module.TestAllTypes()
     text = ('optional_int32: 42 ' 'optional_int32: 67')
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        r'1:36 : Message type "\w+.TestAllTypes" should not '
-        r'have multiple "optional_int32" fields.'), text_format.Parse, text,
-                          message)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        (r'1:36 : Message type "\w+.TestAllTypes" should not '
+         r'have multiple "optional_int32" fields.'), text_format.Parse, text,
+        message)
+
+  def testParseExistingScalarInMessage(self, message_module):
+    message = message_module.TestAllTypes(optional_int32=42)
+    text = 'optional_int32: 67'
+    self.assertRaisesRegex(text_format.ParseError,
+                           (r'Message type "\w+.TestAllTypes" should not '
+                            r'have multiple "optional_int32" fields.'),
+                           text_format.Parse, text, message)
 
 
 @_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMergeTests(TextFormatBase):
 
-  def testMergeDuplicateScalars(self, message_module):
+  def testMergeDuplicateScalarsInText(self, message_module):
     message = message_module.TestAllTypes()
     text = ('optional_int32: 42 ' 'optional_int32: 67')
     r = text_format.Merge(text, message)
@@ -795,6 +978,22 @@ class TextFormatMergeTests(TextFormatBase):
     r = text_format.Merge(text, message)
     self.assertTrue(r is message)
     self.assertEqual(2, message.optional_nested_message.bb)
+
+  def testReplaceScalarInMessage(self, message_module):
+    message = message_module.TestAllTypes(optional_int32=42)
+    text = 'optional_int32: 67'
+    r = text_format.Merge(text, message)
+    self.assertIs(r, message)
+    self.assertEqual(67, message.optional_int32)
+
+  def testReplaceMessageInMessage(self, message_module):
+    message = message_module.TestAllTypes(
+        optional_int32=42, optional_nested_message=dict())
+    self.assertTrue(message.HasField('optional_nested_message'))
+    text = 'optional_nested_message{ bb: 3 }'
+    r = text_format.Merge(text, message)
+    self.assertIs(r, message)
+    self.assertEqual(3, message.optional_nested_message.bb)
 
   def testMergeMultipleOneof(self, message_module):
     m_string = '\n'.join(['oneof_uint32: 11', 'oneof_string: "foo"'])
@@ -845,17 +1044,18 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
     all_data = message.SerializeToString()
     empty_message = unittest_pb2.TestEmptyMessage()
     empty_message.ParseFromString(all_data)
-    self.assertEqual('1: 101\n'
-                     '12: 4636878028842991616\n'
-                     '14: "hello"\n'
-                     '15: "103"\n'
-                     '16 {\n'
-                     '  17: 104\n'
-                     '}\n'
-                     '18 {\n'
-                     '  1: 105\n'
-                     '}\n',
+    self.assertEqual('  1: 101\n'
+                     '  12: 4636878028842991616\n'
+                     '  14: "hello"\n'
+                     '  15: "103"\n'
+                     '  16 {\n'
+                     '    17: 104\n'
+                     '  }\n'
+                     '  18 {\n'
+                     '    1: 105\n'
+                     '  }\n',
                      text_format.MessageToString(empty_message,
+                                                 indent=2,
                                                  print_unknown_fields=True))
     self.assertEqual('1: 101 '
                      '12: 4636878028842991616 '
@@ -989,6 +1189,54 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
         '  key: 111\n'
         '  value {\n'
         '    c: 5\n'
+        '  }\n'
+        '}\n')
+
+  def testDuplicateMapKey(self):
+    message = map_unittest_pb2.TestMap()
+    text = (
+        'map_uint64_uint64 {\n'
+        '  key: 123\n'
+        '  value: 17179869184\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "abc"\n'
+        '  value: "first"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 5\n'
+        '  }\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  key: 123\n'
+        '  value: 321\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "abc"\n'
+        '  value: "second"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    d: 5\n'
+        '  }\n'
+        '}\n')
+    text_format.Parse(text, message)
+    self.CompareToGoldenText(
+        text_format.MessageToString(message), 'map_uint64_uint64 {\n'
+        '  key: 123\n'
+        '  value: 321\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "abc"\n'
+        '  value: "second"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    d: 5\n'
         '  }\n'
         '}\n')
 
@@ -1166,14 +1414,14 @@ class Proto2Tests(TextFormatBase):
     # Can't parse field number without set allow_field_number=True.
     message = unittest_pb2.TestAllTypes()
     text = '34:1\n'
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        r'1:1 : Message type "\w+.TestAllTypes" has no field named '
-        r'"34".'), text_format.Parse, text, message)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        (r'1:1 : Message type "\w+.TestAllTypes" has no field named '
+         r'"34".'), text_format.Parse, text, message)
 
     # Can't parse if field number is not found.
     text = '1234:1\n'
-    six.assertRaisesRegex(
-        self,
+    self.assertRaisesRegex(
         text_format.ParseError,
         (r'1:1 : Message type "\w+.TestAllTypes" has no field named '
          r'"1234".'),
@@ -1260,13 +1508,13 @@ class Proto2Tests(TextFormatBase):
                  '    i:\n'  # Missing value.
                  '  }\n'
                  '}\n')
-    six.assertRaisesRegex(self,
-                          text_format.ParseError,
-                          'Invalid field value: }',
-                          text_format.Parse,
-                          malformed,
-                          message,
-                          allow_unknown_extension=True)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Invalid field value: }',
+        text_format.Parse,
+        malformed,
+        message,
+        allow_unknown_extension=True)
 
     message = unittest_mset_pb2.TestMessageSetContainer()
     malformed = ('message_set {\n'
@@ -1274,13 +1522,13 @@ class Proto2Tests(TextFormatBase):
                  '    str: "malformed string\n'  # Missing closing quote.
                  '  }\n'
                  '}\n')
-    six.assertRaisesRegex(self,
-                          text_format.ParseError,
-                          'Invalid field value: "',
-                          text_format.Parse,
-                          malformed,
-                          message,
-                          allow_unknown_extension=True)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Invalid field value: "',
+        text_format.Parse,
+        malformed,
+        message,
+        allow_unknown_extension=True)
 
     message = unittest_mset_pb2.TestMessageSetContainer()
     malformed = ('message_set {\n'
@@ -1288,13 +1536,13 @@ class Proto2Tests(TextFormatBase):
                  '    str: "malformed\n multiline\n string\n'
                  '  }\n'
                  '}\n')
-    six.assertRaisesRegex(self,
-                          text_format.ParseError,
-                          'Invalid field value: "',
-                          text_format.Parse,
-                          malformed,
-                          message,
-                          allow_unknown_extension=True)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Invalid field value: "',
+        text_format.Parse,
+        malformed,
+        message,
+        allow_unknown_extension=True)
 
     message = unittest_mset_pb2.TestMessageSetContainer()
     malformed = ('message_set {\n'
@@ -1302,28 +1550,28 @@ class Proto2Tests(TextFormatBase):
                  '    i: -5\n'
                  '  \n'  # Missing '>' here.
                  '}\n')
-    six.assertRaisesRegex(self,
-                          text_format.ParseError,
-                          '5:1 : \'}\': Expected ">".',
-                          text_format.Parse,
-                          malformed,
-                          message,
-                          allow_unknown_extension=True)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        '5:1 : \'}\': Expected ">".',
+        text_format.Parse,
+        malformed,
+        message,
+        allow_unknown_extension=True)
 
     # Don't allow unknown fields with allow_unknown_extension=True.
     message = unittest_mset_pb2.TestMessageSetContainer()
     malformed = ('message_set {\n'
                  '  unknown_field: true\n'
                  '}\n')
-    six.assertRaisesRegex(self,
-                          text_format.ParseError,
-                          ('2:3 : Message type '
-                           '"proto2_wireformat_unittest.TestMessageSet" has no'
-                           ' field named "unknown_field".'),
-                          text_format.Parse,
-                          malformed,
-                          message,
-                          allow_unknown_extension=True)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        ('2:3 : Message type '
+         '"proto2_wireformat_unittest.TestMessageSet" has no'
+         ' field named "unknown_field".'),
+        text_format.Parse,
+        malformed,
+        message,
+        allow_unknown_extension=True)
 
     # Parse known extension correctly.
     message = unittest_mset_pb2.TestMessageSetContainer()
@@ -1353,22 +1601,24 @@ class Proto2Tests(TextFormatBase):
   def testParseBadExtension(self):
     message = unittest_pb2.TestAllExtensions()
     text = '[unknown_extension]: 8\n'
-    six.assertRaisesRegex(self, text_format.ParseError,
-                          '1:2 : Extension "unknown_extension" not registered.',
-                          text_format.Parse, text, message)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        '1:2 : Extension "unknown_extension" not registered.',
+        text_format.Parse, text, message)
     message = unittest_pb2.TestAllTypes()
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        '1:2 : Message type "protobuf_unittest.TestAllTypes" does not have '
-        'extensions.'), text_format.Parse, text, message)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        ('1:2 : Message type "protobuf_unittest.TestAllTypes" does not have '
+         'extensions.'), text_format.Parse, text, message)
 
   def testParseNumericUnknownEnum(self):
     message = unittest_pb2.TestAllTypes()
     text = 'optional_nested_enum: 100'
-    six.assertRaisesRegex(self, text_format.ParseError,
-                          (r'1:23 : \'optional_nested_enum: 100\': '
-                           r'Enum type "\w+.TestAllTypes.NestedEnum" '
-                           r'has no value with number 100.'), text_format.Parse,
-                          text, message)
+    self.assertRaisesRegex(text_format.ParseError,
+                           (r'1:23 : \'optional_nested_enum: 100\': '
+                            r'Enum type "\w+.TestAllTypes.NestedEnum" '
+                            r'has no value with number 100.'),
+                           text_format.Parse, text, message)
 
   def testMergeDuplicateExtensionScalars(self):
     message = unittest_pb2.TestAllExtensions()
@@ -1382,30 +1632,32 @@ class Proto2Tests(TextFormatBase):
     message = unittest_pb2.TestAllExtensions()
     text = ('[protobuf_unittest.optional_int32_extension]: 42 '
             '[protobuf_unittest.optional_int32_extension]: 67')
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        '1:96 : Message type "protobuf_unittest.TestAllExtensions" '
-        'should not have multiple '
-        '"protobuf_unittest.optional_int32_extension" extensions.'),
-                          text_format.Parse, text, message)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        ('1:96 : Message type "protobuf_unittest.TestAllExtensions" '
+         'should not have multiple '
+         '"protobuf_unittest.optional_int32_extension" extensions.'),
+        text_format.Parse, text, message)
 
   def testParseDuplicateExtensionMessages(self):
     message = unittest_pb2.TestAllExtensions()
     text = ('[protobuf_unittest.optional_nested_message_extension]: {} '
             '[protobuf_unittest.optional_nested_message_extension]: {}')
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        '1:114 : Message type "protobuf_unittest.TestAllExtensions" '
-        'should not have multiple '
-        '"protobuf_unittest.optional_nested_message_extension" extensions.'),
-                          text_format.Parse, text, message)
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        ('1:114 : Message type "protobuf_unittest.TestAllExtensions" '
+         'should not have multiple '
+         '"protobuf_unittest.optional_nested_message_extension" extensions.'),
+        text_format.Parse, text, message)
 
   def testParseGroupNotClosed(self):
     message = unittest_pb2.TestAllTypes()
     text = 'RepeatedGroup: <'
-    six.assertRaisesRegex(self, text_format.ParseError, '1:16 : Expected ">".',
-                          text_format.Parse, text, message)
+    self.assertRaisesRegex(text_format.ParseError, '1:16 : Expected ">".',
+                           text_format.Parse, text, message)
     text = 'RepeatedGroup: {'
-    six.assertRaisesRegex(self, text_format.ParseError, '1:16 : Expected "}".',
-                          text_format.Parse, text, message)
+    self.assertRaisesRegex(text_format.ParseError, '1:16 : Expected "}".',
+                           text_format.Parse, text, message)
 
   def testParseEmptyGroup(self):
     message = unittest_pb2.TestAllTypes()
@@ -1678,6 +1930,24 @@ class Proto3Tests(unittest.TestCase):
     with self.assertRaises(text_format.ParseError) as e:
       text_format.Merge(text, message)
     self.assertEqual(str(e.exception), '3:11 : Expected "}".')
+
+  def testProto3Optional(self):
+    msg = test_proto3_optional_pb2.TestProto3Optional()
+    self.assertEqual(text_format.MessageToString(msg), '')
+    msg.optional_int32 = 0
+    msg.optional_float = 0.0
+    msg.optional_string = ''
+    msg.optional_nested_message.bb = 0
+    text = ('optional_int32: 0\n'
+            'optional_float: 0.0\n'
+            'optional_string: ""\n'
+            'optional_nested_message {\n'
+            '  bb: 0\n'
+            '}\n')
+    self.assertEqual(text_format.MessageToString(msg), text)
+    msg2 = test_proto3_optional_pb2.TestProto3Optional()
+    text_format.Parse(text, msg2)
+    self.assertEqual(text_format.MessageToString(msg2), text)
 
 
 class TokenizerTest(unittest.TestCase):
@@ -2127,6 +2397,31 @@ class WhitespaceTest(TextFormatBase):
                 optional_string: "value"
               }
             }"""))
+
+
+class OptionalColonMessageToStringTest(unittest.TestCase):
+
+  def testForcePrintOptionalColon(self):
+    packed_message = unittest_pb2.OneString()
+    packed_message.data = 'string'
+    message = any_test_pb2.TestAny()
+    message.any_value.Pack(packed_message)
+    output = text_format.MessageToString(
+        message,
+        force_colon=True)
+    expected = ('any_value: {\n'
+                '  [type.googleapis.com/protobuf_unittest.OneString]: {\n'
+                '    data: "string"\n'
+                '  }\n'
+                '}\n')
+    self.assertEqual(expected, output)
+
+  def testPrintShortFormatRepeatedFields(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_int32.append(1)
+    output = text_format.MessageToString(
+        message, use_short_repeated_primitives=True, force_colon=True)
+    self.assertEqual('repeated_int32: [1]\n', output)
 
 
 if __name__ == '__main__':

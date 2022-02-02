@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-#
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
@@ -34,10 +32,7 @@
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
-try:
-  import unittest2 as unittest  #PY26
-except ImportError:
-  import unittest
+import unittest
 
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
@@ -105,6 +100,23 @@ class MessageFactoryTest(unittest.TestCase):
     cls2 = factory.GetPrototype(pool.FindMessageTypeByName(
         'google.protobuf.python.internal.Factory2Message'))
     self.assertTrue(cls is cls2)
+
+  def testCreatePrototypeOverride(self):
+    class MyMessageFactory(message_factory.MessageFactory):
+
+      def CreatePrototype(self, descriptor):
+        cls = super(MyMessageFactory, self).CreatePrototype(descriptor)
+        cls.additional_field = 'Some value'
+        return cls
+
+    db = descriptor_database.DescriptorDatabase()
+    pool = descriptor_pool.DescriptorPool(db)
+    db.Add(self.factory_test1_fd)
+    db.Add(self.factory_test2_fd)
+    factory = MyMessageFactory()
+    cls = factory.GetPrototype(pool.FindMessageTypeByName(
+        'google.protobuf.python.internal.Factory2Message'))
+    self.assertTrue(hasattr(cls, 'additional_field'))
 
   def testGetMessages(self):
     # performed twice because multiple calls with the same input must be allowed

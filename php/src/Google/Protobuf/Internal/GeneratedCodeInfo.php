@@ -17,7 +17,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *
  * Generated from protobuf message <code>google.protobuf.GeneratedCodeInfo</code>
  */
-final class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
+class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
 {
     /**
      * An Annotation connects some span of text in generated code to an element
@@ -26,7 +26,6 @@ final class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;</code>
      */
     private $annotation;
-    private $has_annotation = false;
 
     /**
      * Constructor.
@@ -68,14 +67,8 @@ final class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\GeneratedCodeInfo\Annotation::class);
         $this->annotation = $arr;
-        $this->has_annotation = true;
 
         return $this;
-    }
-
-    public function hasAnnotation()
-    {
-        return $this->has_annotation;
     }
 
 }

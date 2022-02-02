@@ -84,12 +84,39 @@ class NoHeapChecker {
  private:
   class NewDeleteCapture {
    public:
-    // TOOD(xiaofeng): Implement this for opensource protobuf.
+    // TODO(xiaofeng): Implement this for opensource protobuf.
     void Hook() {}
     void Unhook() {}
     int alloc_count() { return 0; }
     int free_count() { return 0; }
   } capture_alloc;
+};
+
+// Owns the internal T only if it's not owned by an arena.
+// T needs to be arena constructible and destructor skippable.
+template <typename T>
+class ArenaHolder {
+ public:
+  explicit ArenaHolder(Arena* arena)
+      : field_(Arena::CreateMessage<T>(arena)),
+        owned_by_arena_(arena != nullptr) {
+    GOOGLE_DCHECK(google::protobuf::Arena::is_arena_constructable<T>::value);
+    GOOGLE_DCHECK(google::protobuf::Arena::is_destructor_skippable<T>::value);
+  }
+
+  ~ArenaHolder() {
+    if (!owned_by_arena_) {
+      delete field_;
+    }
+  }
+
+  T* get() { return field_; }
+  T* operator->() { return field_; }
+  T& operator*() { return *field_; }
+
+ private:
+  T* field_;
+  bool owned_by_arena_;
 };
 
 }  // namespace internal

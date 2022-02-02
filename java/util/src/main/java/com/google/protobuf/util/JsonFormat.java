@@ -88,6 +88,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Utility classes to convert protobuf messages to/from JSON format. The JSON
@@ -108,15 +109,22 @@ public class JsonFormat {
    */
   public static Printer printer() {
     return new Printer(
-        TypeRegistry.getEmptyTypeRegistry(), false, Collections.<FieldDescriptor>emptySet(),
-        false, false, false, false);
+        com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
+        TypeRegistry.getEmptyTypeRegistry(),
+        /* alwaysOutputDefaultValueFields */ false,
+        /* includingDefaultValueFields */ Collections.<FieldDescriptor>emptySet(),
+        /* preservingProtoFieldNames */ false,
+        /* omittingInsignificantWhitespace */ false,
+        /* printingEnumsAsInts */ false,
+        /* sortingMapKeys */ false);
   }
 
   /**
    * A Printer converts protobuf message to JSON format.
    */
   public static class Printer {
-    private final TypeRegistry registry;
+    private final com.google.protobuf.TypeRegistry registry;
+    private final TypeRegistry oldRegistry;
     // NOTE: There are 3 states for these *defaultValueFields variables:
     // 1) Default - alwaysOutput is false & including is empty set. Fields only output if they are
     //    set to non-default values.
@@ -133,7 +141,8 @@ public class JsonFormat {
     private final boolean sortingMapKeys;
 
     private Printer(
-        TypeRegistry registry,
+        com.google.protobuf.TypeRegistry registry,
+        TypeRegistry oldRegistry,
         boolean alwaysOutputDefaultValueFields,
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
@@ -141,6 +150,7 @@ public class JsonFormat {
         boolean printingEnumsAsInts,
         boolean sortingMapKeys) {
       this.registry = registry;
+      this.oldRegistry = oldRegistry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
@@ -150,17 +160,41 @@ public class JsonFormat {
     }
 
     /**
-     * Creates a new {@link Printer} using the given registry. The new Printer
-     * clones all other configurations from the current {@link Printer}.
+     * Creates a new {@link Printer} using the given registry. The new Printer clones all other
+     * configurations from the current {@link Printer}.
      *
      * @throws IllegalArgumentException if a registry is already set.
      */
-    public Printer usingTypeRegistry(TypeRegistry registry) {
-      if (this.registry != TypeRegistry.getEmptyTypeRegistry()) {
+    public Printer usingTypeRegistry(TypeRegistry oldRegistry) {
+      if (this.oldRegistry != TypeRegistry.getEmptyTypeRegistry()
+          || this.registry != com.google.protobuf.TypeRegistry.getEmptyTypeRegistry()) {
+        throw new IllegalArgumentException("Only one registry is allowed.");
+      }
+      return new Printer(
+          com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
+          oldRegistry,
+          alwaysOutputDefaultValueFields,
+          includingDefaultValueFields,
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts,
+          sortingMapKeys);
+    }
+
+    /**
+     * Creates a new {@link Printer} using the given registry. The new Printer clones all other
+     * configurations from the current {@link Printer}.
+     *
+     * @throws IllegalArgumentException if a registry is already set.
+     */
+    public Printer usingTypeRegistry(com.google.protobuf.TypeRegistry registry) {
+      if (this.oldRegistry != TypeRegistry.getEmptyTypeRegistry()
+          || this.registry != com.google.protobuf.TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
       return new Printer(
           registry,
+          oldRegistry,
           alwaysOutputDefaultValueFields,
           includingDefaultValueFields,
           preservingProtoFieldNames,
@@ -179,6 +213,7 @@ public class JsonFormat {
       checkUnsetIncludingDefaultValueFields();
       return new Printer(
           registry,
+          oldRegistry,
           true,
           Collections.<FieldDescriptor>emptySet(),
           preservingProtoFieldNames,
@@ -197,8 +232,9 @@ public class JsonFormat {
       checkUnsetPrintingEnumsAsInts();
       return new Printer(
           registry,
+          oldRegistry,
           alwaysOutputDefaultValueFields,
-          Collections.<FieldDescriptor>emptySet(),
+          includingDefaultValueFields,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           true,
@@ -226,6 +262,7 @@ public class JsonFormat {
       checkUnsetIncludingDefaultValueFields();
       return new Printer(
           registry,
+          oldRegistry,
           false,
           Collections.unmodifiableSet(new HashSet<>(fieldsToAlwaysOutput)),
           preservingProtoFieldNames,
@@ -250,6 +287,7 @@ public class JsonFormat {
     public Printer preservingProtoFieldNames() {
       return new Printer(
           registry,
+          oldRegistry,
           alwaysOutputDefaultValueFields,
           includingDefaultValueFields,
           true,
@@ -279,6 +317,7 @@ public class JsonFormat {
     public Printer omittingInsignificantWhitespace() {
       return new Printer(
           registry,
+          oldRegistry,
           alwaysOutputDefaultValueFields,
           includingDefaultValueFields,
           preservingProtoFieldNames,
@@ -290,18 +329,18 @@ public class JsonFormat {
     /**
      * Create a new {@link Printer} that will sort the map keys in the JSON output.
      *
-     * Use of this modifier is discouraged, the generated JSON messages are equivalent
-     * with and without this option set, but there are some corner caseuse cases that
-     * demand a stable output, while order of map keys is otherwise arbitrary.
+     * <p>Use of this modifier is discouraged, the generated JSON messages are equivalent with and
+     * without this option set, but there are some corner use cases that demand a stable output,
+     * while order of map keys is otherwise arbitrary.
      *
-     * The generated order is not well-defined and should not be depended on, but
-     * it's stable.
+     * <p>The generated order is not well-defined and should not be depended on, but it's stable.
      *
-     * This new Printer clones all other configurations from the current {@link Printer}.
+     * <p>This new Printer clones all other configurations from the current {@link Printer}.
      */
     public Printer sortingMapKeys() {
       return new Printer(
           registry,
+          oldRegistry,
           alwaysOutputDefaultValueFields,
           includingDefaultValueFields,
           preservingProtoFieldNames,
@@ -322,6 +361,7 @@ public class JsonFormat {
       // mobile.
       new PrinterImpl(
               registry,
+              oldRegistry,
               alwaysOutputDefaultValueFields,
               includingDefaultValueFields,
               preservingProtoFieldNames,
@@ -354,37 +394,66 @@ public class JsonFormat {
    * Creates a {@link Parser} with default configuration.
    */
   public static Parser parser() {
-    return new Parser(TypeRegistry.getEmptyTypeRegistry(), false, Parser.DEFAULT_RECURSION_LIMIT);
+    return new Parser(
+        com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
+        TypeRegistry.getEmptyTypeRegistry(),
+        false,
+        Parser.DEFAULT_RECURSION_LIMIT);
   }
 
   /**
    * A Parser parses JSON to protobuf message.
    */
   public static class Parser {
-    private final TypeRegistry registry;
+    private final com.google.protobuf.TypeRegistry registry;
+    private final TypeRegistry oldRegistry;
     private final boolean ignoringUnknownFields;
     private final int recursionLimit;
 
     // The default parsing recursion limit is aligned with the proto binary parser.
     private static final int DEFAULT_RECURSION_LIMIT = 100;
 
-    private Parser(TypeRegistry registry, boolean ignoreUnknownFields, int recursionLimit) {
+    private Parser(
+        com.google.protobuf.TypeRegistry registry,
+        TypeRegistry oldRegistry,
+        boolean ignoreUnknownFields,
+        int recursionLimit) {
       this.registry = registry;
+      this.oldRegistry = oldRegistry;
       this.ignoringUnknownFields = ignoreUnknownFields;
       this.recursionLimit = recursionLimit;
     }
 
     /**
-     * Creates a new {@link Parser} using the given registry. The new Parser
-     * clones all other configurations from this Parser.
+     * Creates a new {@link Parser} using the given registry. The new Parser clones all other
+     * configurations from this Parser.
      *
      * @throws IllegalArgumentException if a registry is already set.
      */
-    public Parser usingTypeRegistry(TypeRegistry registry) {
-      if (this.registry != TypeRegistry.getEmptyTypeRegistry()) {
+    public Parser usingTypeRegistry(TypeRegistry oldRegistry) {
+      if (this.oldRegistry != TypeRegistry.getEmptyTypeRegistry()
+          || this.registry != com.google.protobuf.TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Parser(registry, ignoringUnknownFields, recursionLimit);
+      return new Parser(
+          com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
+          oldRegistry,
+          ignoringUnknownFields,
+          recursionLimit);
+    }
+
+    /**
+     * Creates a new {@link Parser} using the given registry. The new Parser clones all other
+     * configurations from this Parser.
+     *
+     * @throws IllegalArgumentException if a registry is already set.
+     */
+    public Parser usingTypeRegistry(com.google.protobuf.TypeRegistry registry) {
+      if (this.oldRegistry != TypeRegistry.getEmptyTypeRegistry()
+          || this.registry != com.google.protobuf.TypeRegistry.getEmptyTypeRegistry()) {
+        throw new IllegalArgumentException("Only one registry is allowed.");
+      }
+      return new Parser(registry, oldRegistry, ignoringUnknownFields, recursionLimit);
     }
 
     /**
@@ -392,7 +461,7 @@ public class JsonFormat {
      * encountered. The new Parser clones all other configurations from this Parser.
      */
     public Parser ignoringUnknownFields() {
-      return new Parser(this.registry, true, recursionLimit);
+      return new Parser(this.registry, oldRegistry, true, recursionLimit);
     }
 
     /**
@@ -404,7 +473,8 @@ public class JsonFormat {
     public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, ignoringUnknownFields, recursionLimit).merge(json, builder);
+      new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
+          .merge(json, builder);
     }
 
     /**
@@ -417,12 +487,13 @@ public class JsonFormat {
     public void merge(Reader json, Message.Builder builder) throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, ignoringUnknownFields, recursionLimit).merge(json, builder);
+      new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
+          .merge(json, builder);
     }
 
     // For testing only.
     Parser usingRecursionLimit(int recursionLimit) {
-      return new Parser(registry, ignoringUnknownFields, recursionLimit);
+      return new Parser(registry, oldRegistry, ignoringUnknownFields, recursionLimit);
     }
   }
 
@@ -451,11 +522,12 @@ public class JsonFormat {
      * Find a type by its full name. Returns null if it cannot be found in this {@link
      * TypeRegistry}.
      */
+    @Nullable
     public Descriptor find(String name) {
       return types.get(name);
     }
 
-    /* @Nullable */
+    @Nullable
     Descriptor getDescriptorForTypeUrl(String typeUrl) throws InvalidProtocolBufferException {
       return find(getTypeName(typeUrl));
     }
@@ -477,8 +549,8 @@ public class JsonFormat {
        */
       @CanIgnoreReturnValue
       public Builder add(Descriptor messageType) {
-        if (types == null) {
-          throw new IllegalStateException("A TypeRegistry.Builer can only be used once.");
+        if (built) {
+          throw new IllegalStateException("A TypeRegistry.Builder can only be used once.");
         }
         addFile(messageType.getFile());
         return this;
@@ -490,7 +562,7 @@ public class JsonFormat {
        */
       @CanIgnoreReturnValue
       public Builder add(Iterable<Descriptor> messageTypes) {
-        if (types == null) {
+        if (built) {
           throw new IllegalStateException("A TypeRegistry.Builder can only be used once.");
         }
         for (Descriptor type : messageTypes) {
@@ -504,10 +576,8 @@ public class JsonFormat {
        * one Builder.
        */
       public TypeRegistry build() {
-        TypeRegistry result = new TypeRegistry(types);
-        // Make sure the built {@link TypeRegistry} is immutable.
-        types = null;
-        return result;
+        built = true;
+        return new TypeRegistry(types);
       }
 
       private void addFile(FileDescriptor file) {
@@ -538,6 +608,7 @@ public class JsonFormat {
 
       private final Set<String> files = new HashSet<String>();
       private Map<String, Descriptor> types = new HashMap<String, Descriptor>();
+      private boolean built = false;
     }
   }
 
@@ -641,7 +712,8 @@ public class JsonFormat {
    * A Printer converts protobuf messages to JSON format.
    */
   private static final class PrinterImpl {
-    private final TypeRegistry registry;
+    private final com.google.protobuf.TypeRegistry registry;
+    private final TypeRegistry oldRegistry;
     private final boolean alwaysOutputDefaultValueFields;
     private final Set<FieldDescriptor> includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
@@ -658,7 +730,8 @@ public class JsonFormat {
     }
 
     PrinterImpl(
-        TypeRegistry registry,
+        com.google.protobuf.TypeRegistry registry,
+        TypeRegistry oldRegistry,
         boolean alwaysOutputDefaultValueFields,
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
@@ -667,6 +740,7 @@ public class JsonFormat {
         boolean printingEnumsAsInts,
         boolean sortingMapKeys) {
       this.registry = registry;
+      this.oldRegistry = oldRegistry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
@@ -807,7 +881,10 @@ public class JsonFormat {
       String typeUrl = (String) message.getField(typeUrlField);
       Descriptor type = registry.getDescriptorForTypeUrl(typeUrl);
       if (type == null) {
-        throw new InvalidProtocolBufferException("Cannot find type for url: " + typeUrl);
+        type = oldRegistry.getDescriptorForTypeUrl(typeUrl);
+        if (type == null) {
+          throw new InvalidProtocolBufferException("Cannot find type for url: " + typeUrl);
+        }
       }
       ByteString content = (ByteString) message.getField(valueField);
       Message contentMessage =
@@ -909,7 +986,7 @@ public class JsonFormat {
     }
 
     /** Prints a regular message with an optional type URL. */
-    private void print(MessageOrBuilder message, String typeUrl) throws IOException {
+    private void print(MessageOrBuilder message, @Nullable String typeUrl) throws IOException {
       generator.print("{" + blankOrNewLine);
       generator.indent();
 
@@ -1218,16 +1295,20 @@ public class JsonFormat {
   }
 
   private static class ParserImpl {
-    private final TypeRegistry registry;
-    private final JsonParser jsonParser;
+    private final com.google.protobuf.TypeRegistry registry;
+    private final TypeRegistry oldRegistry;
     private final boolean ignoringUnknownFields;
     private final int recursionLimit;
     private int currentDepth;
 
-    ParserImpl(TypeRegistry registry, boolean ignoreUnknownFields, int recursionLimit) {
+    ParserImpl(
+        com.google.protobuf.TypeRegistry registry,
+        TypeRegistry oldRegistry,
+        boolean ignoreUnknownFields,
+        int recursionLimit) {
       this.registry = registry;
+      this.oldRegistry = oldRegistry;
       this.ignoringUnknownFields = ignoreUnknownFields;
-      this.jsonParser = new JsonParser();
       this.recursionLimit = recursionLimit;
       this.currentDepth = 0;
     }
@@ -1236,7 +1317,7 @@ public class JsonFormat {
       try {
         JsonReader reader = new JsonReader(json);
         reader.setLenient(false);
-        merge(jsonParser.parse(reader), builder);
+        merge(JsonParser.parseReader(reader), builder);
       } catch (InvalidProtocolBufferException e) {
         throw e;
       } catch (JsonIOException e) {
@@ -1256,12 +1337,14 @@ public class JsonFormat {
       try {
         JsonReader reader = new JsonReader(new StringReader(json));
         reader.setLenient(false);
-        merge(jsonParser.parse(reader), builder);
+        merge(JsonParser.parseReader(reader), builder);
       } catch (InvalidProtocolBufferException e) {
         throw e;
       } catch (Exception e) {
         // We convert all exceptions from JSON parsing to our own exceptions.
-        throw new InvalidProtocolBufferException(e.getMessage());
+        InvalidProtocolBufferException toThrow = new InvalidProtocolBufferException(e.getMessage());
+        toThrow.initCause(e);
+        throw toThrow;
       }
     }
 
@@ -1448,7 +1531,10 @@ public class JsonFormat {
       String typeUrl = typeUrlElement.getAsString();
       Descriptor contentType = registry.getDescriptorForTypeUrl(typeUrl);
       if (contentType == null) {
-        throw new InvalidProtocolBufferException("Cannot resolve type: " + typeUrl);
+        contentType = oldRegistry.getDescriptorForTypeUrl(typeUrl);
+        if (contentType == null) {
+          throw new InvalidProtocolBufferException("Cannot resolve type: " + typeUrl);
+        }
       }
       builder.setField(typeUrlField, typeUrl);
       Message.Builder contentBuilder =
@@ -1476,7 +1562,7 @@ public class JsonFormat {
       try {
         Timestamp value = Timestamps.parse(json.getAsString());
         builder.mergeFrom(value.toByteString());
-      } catch (ParseException e) {
+      } catch (ParseException | UnsupportedOperationException e) {
         throw new InvalidProtocolBufferException("Failed to parse timestamp: " + json);
       }
     }
@@ -1486,7 +1572,7 @@ public class JsonFormat {
       try {
         Duration value = Durations.parse(json.getAsString());
         builder.mergeFrom(value.toByteString());
-      } catch (ParseException e) {
+      } catch (ParseException | UnsupportedOperationException e) {
         throw new InvalidProtocolBufferException("Failed to parse duration: " + json);
       }
     }
@@ -1817,6 +1903,7 @@ public class JsonFormat {
       }
     }
 
+    @Nullable
     private EnumValueDescriptor parseEnum(EnumDescriptor enumDescriptor, JsonElement json)
         throws InvalidProtocolBufferException {
       String value = json.getAsString();
@@ -1844,6 +1931,7 @@ public class JsonFormat {
       return result;
     }
 
+    @Nullable
     private Object parseFieldValue(FieldDescriptor field, JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
       if (json instanceof JsonNull) {
@@ -1859,6 +1947,14 @@ public class JsonFormat {
           return field.getEnumType().findValueByNumber(0);
         }
         return null;
+      } else if (json instanceof JsonObject) {
+        if (field.getType() != FieldDescriptor.Type.MESSAGE
+            && field.getType() != FieldDescriptor.Type.GROUP) {
+          // If the field type is primitive, but the json type is JsonObject rather than
+          // JsonElement, throw a type mismatch error.
+          throw new InvalidProtocolBufferException(
+              String.format("Invalid value: %s for expected type: %s", json, field.getType()));
+        }
       }
       switch (field.getType()) {
         case INT32:

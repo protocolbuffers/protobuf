@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import 'google/protobuf/any.proto';
+import 'google/protobuf/wrappers.proto';
 import 'google/protobuf/struct.proto';
 import 'proto/test_include.proto';
 import 'proto/test_no_namespace.proto';
@@ -32,6 +33,27 @@ message TestMessage {
   Sub optional_message = 17;
   bar.TestInclude optional_included_message = 18;
   TestMessage recursive = 19;
+
+  // True optional
+  optional int32 true_optional_int32 = 201;
+  optional int64 true_optional_int64 = 202;
+  optional uint32 true_optional_uint32 = 203;
+  optional uint64 true_optional_uint64 = 204;
+  optional sint32 true_optional_sint32 = 205;
+  optional sint64 true_optional_sint64 = 206;
+  optional fixed32 true_optional_fixed32 = 207;
+  optional fixed64 true_optional_fixed64 = 208;
+  optional sfixed32 true_optional_sfixed32 = 209;
+  optional sfixed64 true_optional_sfixed64 = 210;
+  optional float true_optional_float = 211;
+  optional double true_optional_double = 212;
+  optional bool true_optional_bool = 213;
+  optional string true_optional_string = 214;
+  optional bytes true_optional_bytes = 215;
+
+  optional TestEnum true_optional_enum = 216;
+  optional Sub true_optional_message = 217;
+  optional bar.TestInclude true_optional_included_message = 218;
 
   // Repeated
   repeated    int32 repeated_int32    = 31;
@@ -119,6 +141,15 @@ message TestMessage {
   }
 
   reserved 111;
+
+  // Test map with missing message value
+  map<string, TestMessage> map_string_message = 121;
+  map<string, google.protobuf.Any> map_string_any = 122;
+  map<string, google.protobuf.ListValue> map_string_list = 123;
+  map<string, google.protobuf.Struct> map_string_struct = 124;
+
+  // deprecated field
+  int32 deprecated_optional_int32 = 125 [deprecated=true];
 }
 
 enum TestEnum {
@@ -192,6 +223,10 @@ message TestRandomFieldOrder {
   string tag14 = 160;
 }
 
+message TestLargeFieldNumber {
+  int32 large_field_number = 536870911;
+}
+
 message TestReverseFieldOrder {
   repeated int32 a = 2;
   string b = 1;
@@ -206,4 +241,103 @@ enum testLowerCaseEnum {
 
 message TestAny {
   google.protobuf.Any any = 1;
+}
+
+message TestInt32Value {
+  google.protobuf.Int32Value field = 1;
+  repeated google.protobuf.Int32Value repeated_field = 2;
+  oneof oneof_fields {
+    google.protobuf.Int32Value oneof_field = 3;
+    int32 int32_field = 4;
+  }
+}
+
+message TestInt64Value {
+  google.protobuf.Int64Value field = 1;
+  repeated google.protobuf.Int64Value repeated_field = 2;
+  oneof oneof_fields {
+    google.protobuf.Int64Value oneof_field = 3;
+    int32 int32_field = 4;
+  }
+}
+
+message TestUInt32Value {
+  google.protobuf.UInt32Value field = 1;
+  repeated google.protobuf.UInt32Value repeated_field = 2;
+  oneof oneof_fields {
+    google.protobuf.UInt32Value oneof_field = 3;
+    int32 int32_field = 4;
+  }
+}
+
+message TestUInt64Value {
+  google.protobuf.UInt64Value field = 1;
+  repeated google.protobuf.UInt64Value repeated_field = 2;
+  oneof oneof_fields {
+    google.protobuf.UInt64Value oneof_field = 3;
+    int32 int32_field = 4;
+  }
+}
+
+message TestBoolValue {
+  google.protobuf.BoolValue field = 1;
+  repeated google.protobuf.BoolValue repeated_field = 2;
+  oneof oneof_fields {
+    google.protobuf.BoolValue oneof_field = 3;
+    int32 int32_field = 4;
+  }
+}
+
+message TestStringValue {
+  google.protobuf.StringValue field = 1;
+  repeated google.protobuf.StringValue repeated_field = 2;
+  oneof oneof_fields {
+    google.protobuf.StringValue oneof_field = 3;
+    int32 int32_field = 4;
+  }
+  map<int32, google.protobuf.StringValue> map_field = 5;
+}
+
+message TestBytesValue {
+  google.protobuf.BytesValue field = 1;
+  repeated google.protobuf.BytesValue repeated_field = 2;
+  oneof oneof_fields {
+    google.protobuf.BytesValue oneof_field = 3;
+    int32 int32_field = 4;
+  }
+}
+
+message Test32Fields {
+  optional uint32 id = 1;
+  optional uint32 random_name_a0 = 2;
+  optional uint32 random_name_a1 = 3;
+  optional uint32 random_name_a2 = 4;
+  optional uint32 random_name_a3 = 5;
+  optional uint32 random_name_a4 = 6;
+  optional uint32 random_name_a5 = 7;
+  optional uint32 random_name_a6 = 8;
+  optional uint32 random_name_a7 = 9;
+  optional uint32 random_name_a8 = 10;
+  optional uint32 random_name_a9 = 11;
+  optional uint32 random_name_b0 = 12;
+  optional uint32 random_name_b1 = 13;
+  optional uint32 random_name_b2 = 14;
+  optional uint32 random_name_b3 = 15;
+  optional uint32 random_name_b4 = 16;
+  optional uint32 random_name_b5 = 17;
+  optional uint32 random_name_b6 = 18;
+  optional uint32 random_name_b7 = 19;
+  optional uint32 random_name_b8 = 20;
+  optional uint32 random_name_b9 = 21;
+  optional uint32 random_name_c0 = 22;
+  optional uint32 random_name_c1 = 23;
+  optional uint32 random_name_c2 = 24;
+  optional uint32 random_name_c3 = 25;
+  optional uint32 random_name_c4 = 26;
+  optional uint32 random_name_c5 = 27;
+  optional uint32 random_name_c6 = 28;
+  optional uint32 random_name_c7 = 29;
+  optional uint32 random_name_c8 = 30;
+  optional uint32 random_name_c9 = 31;
+  optional string version = 32;
 }

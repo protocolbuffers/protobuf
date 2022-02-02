@@ -361,8 +361,8 @@ static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
       if (existingValue) {
         message = [existingValue retain];
       } else {
-        GPBDescriptor *decriptor = [extension.msgClass descriptor];
-        message = [[decriptor.messageClass alloc] init];
+        GPBDescriptor *descriptor = [extension.msgClass descriptor];
+        message = [[descriptor.messageClass alloc] init];
       }
 
       if (description->dataType == GPBDataTypeGroup) {

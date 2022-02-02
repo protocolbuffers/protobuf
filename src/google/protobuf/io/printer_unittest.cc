@@ -32,16 +32,16 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <vector>
-
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor.pb.h>
+
+#include <vector>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 
 namespace google {
 namespace protobuf {
@@ -573,7 +573,7 @@ TEST(Printer, WriteFailurePartial) {
   EXPECT_TRUE(printer.failed());
 
   // Buffer should contain the first 17 bytes written.
-  EXPECT_EQ("0123456789abcdef<", string(buffer, sizeof(buffer)));
+  EXPECT_EQ("0123456789abcdef<", std::string(buffer, sizeof(buffer)));
 }
 
 TEST(Printer, WriteFailureExact) {
@@ -595,7 +595,7 @@ TEST(Printer, WriteFailureExact) {
   EXPECT_TRUE(printer.failed());
 
   // Buffer should contain the first 16 bytes written.
-  EXPECT_EQ("0123456789abcdef", string(buffer, sizeof(buffer)));
+  EXPECT_EQ("0123456789abcdef", std::string(buffer, sizeof(buffer)));
 }
 
 TEST(Printer, FormatInternal) {

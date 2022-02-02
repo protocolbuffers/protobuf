@@ -232,13 +232,27 @@ jspb.BinaryEncoder.prototype.writeZigzagVarint64 = function(value) {
  * @param {string} value The integer to convert.
  */
 jspb.BinaryEncoder.prototype.writeZigzagVarint64String = function(value) {
-  // TODO(haberman): write lossless 64-bit zig-zag math.
-  this.writeZigzagVarint64(parseInt(value, 10));
+  this.writeZigzagVarintHash64(jspb.utils.decimalStringToHash64(value));
 };
 
 
 /**
- * Writes a 8-bit unsigned integer to the buffer. Numbers outside the range
+ * Writes a 64-bit hash string (8 characters @ 8 bits of data each) to the
+ * buffer as a zigzag varint.
+ * @param {string} hash The hash to write.
+ */
+jspb.BinaryEncoder.prototype.writeZigzagVarintHash64 = function(hash) {
+  var self = this;
+  jspb.utils.splitHash64(hash);
+  jspb.utils.toZigzag64(
+      jspb.utils.split64Low, jspb.utils.split64High, function(lo, hi) {
+        self.writeSplitVarint64(lo >>> 0, hi >>> 0);
+      });
+};
+
+
+/**
+ * Writes an 8-bit unsigned integer to the buffer. Numbers outside the range
  * [0,2^8) will be truncated.
  * @param {number} value The value to write.
  */
@@ -294,7 +308,7 @@ jspb.BinaryEncoder.prototype.writeUint64 = function(value) {
 
 
 /**
- * Writes a 8-bit integer to the buffer. Numbers outside the range
+ * Writes an 8-bit integer to the buffer. Numbers outside the range
  * [-2^7,2^7) will be truncated.
  * @param {number} value The value to write.
  */
@@ -368,8 +382,10 @@ jspb.BinaryEncoder.prototype.writeInt64String = function(value) {
  * @param {number} value The value to write.
  */
 jspb.BinaryEncoder.prototype.writeFloat = function(value) {
-  goog.asserts.assert((value >= -jspb.BinaryConstants.FLOAT32_MAX) &&
-                      (value <= jspb.BinaryConstants.FLOAT32_MAX));
+  goog.asserts.assert(
+      value === Infinity || value === -Infinity || isNaN(value) ||
+      ((value >= -jspb.BinaryConstants.FLOAT32_MAX) &&
+       (value <= jspb.BinaryConstants.FLOAT32_MAX)));
   jspb.utils.splitFloat32(value);
   this.writeUint32(jspb.utils.split64Low);
 };
@@ -381,8 +397,10 @@ jspb.BinaryEncoder.prototype.writeFloat = function(value) {
  * @param {number} value The value to write.
  */
 jspb.BinaryEncoder.prototype.writeDouble = function(value) {
-  goog.asserts.assert((value >= -jspb.BinaryConstants.FLOAT64_MAX) &&
-                      (value <= jspb.BinaryConstants.FLOAT64_MAX));
+  goog.asserts.assert(
+      value === Infinity || value === -Infinity || isNaN(value) ||
+      ((value >= -jspb.BinaryConstants.FLOAT64_MAX) &&
+       (value <= jspb.BinaryConstants.FLOAT64_MAX)));
   jspb.utils.splitFloat64(value);
   this.writeUint32(jspb.utils.split64Low);
   this.writeUint32(jspb.utils.split64High);
@@ -396,7 +414,7 @@ jspb.BinaryEncoder.prototype.writeDouble = function(value) {
  * @param {boolean|number} value The value to write.
  */
 jspb.BinaryEncoder.prototype.writeBool = function(value) {
-  goog.asserts.assert(goog.isBoolean(value) || goog.isNumber(value));
+  goog.asserts.assert(typeof value === 'boolean' || typeof value === 'number');
   this.buffer_.push(value ? 1 : 0);
 };
 

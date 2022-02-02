@@ -83,7 +83,7 @@ int LookUpEnumName(const EnumEntry* enums, const int* sorted_indices,
 bool InitializeEnumStrings(
     const EnumEntry* enums, const int* sorted_indices, size_t size,
     internal::ExplicitlyConstructed<std::string>* enum_strings) {
-  for (int i = 0; i < size; ++i) {
+  for (size_t i = 0; i < size; ++i) {
     enum_strings[i].Construct(enums[sorted_indices[i]].name);
     internal::OnShutdownDestroyString(enum_strings[i].get_mutable());
   }

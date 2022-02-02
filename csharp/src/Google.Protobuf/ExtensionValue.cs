@@ -32,20 +32,22 @@
 
 using Google.Protobuf.Collections;
 using System;
+using System.Linq;
 
 namespace Google.Protobuf
 {
     internal interface IExtensionValue : IEquatable<IExtensionValue>, IDeepCloneable<IExtensionValue>
     {
-        void MergeFrom(CodedInputStream input);
+        void MergeFrom(ref ParseContext ctx);
+
         void MergeFrom(IExtensionValue value);
-        void WriteTo(CodedOutputStream output);
+        void WriteTo(ref WriteContext ctx);
         int CalculateSize();
+        bool IsInitialized();
     }
 
     internal sealed class ExtensionValue<T> : IExtensionValue
     {
-        private bool hasValue;
         private T field;
         private FieldCodec<T> codec;
 
@@ -57,18 +59,13 @@ namespace Google.Protobuf
 
         public int CalculateSize()
         {
-            if (!hasValue)
-            {
-                return 0;
-            }
-            return codec.CalculateSizeWithTag(field);
+            return codec.CalculateUnconditionalSizeWithTag(field);
         }
 
         public IExtensionValue Clone()
         {
             return new ExtensionValue<T>(codec)
             {
-                hasValue = hasValue,
                 field = field is IDeepCloneable<T> ? (field as IDeepCloneable<T>).Clone() : field
             };
         }
@@ -80,7 +77,6 @@ namespace Google.Protobuf
 
             return other is ExtensionValue<T>
                 && codec.Equals((other as ExtensionValue<T>).codec)
-                && hasValue.Equals((other as ExtensionValue<T>).hasValue)
                 && Equals(field, (other as ExtensionValue<T>).field);
             // we check for equality in the codec since we could have equal field values however the values could be written in different ways
         }
@@ -90,17 +86,15 @@ namespace Google.Protobuf
             unchecked
             {
                 int hash = 17;
-                hash = hash * 31 + hasValue.GetHashCode();
                 hash = hash * 31 + field.GetHashCode();
                 hash = hash * 31 + codec.GetHashCode();
                 return hash;
             }
         }
 
-        public void MergeFrom(CodedInputStream input)
+        public void MergeFrom(ref ParseContext ctx)
         {
-            hasValue = true;
-            codec.ValueMerger(input, ref field);
+            codec.ValueMerger(ref ctx, ref field);
         }
 
         public void MergeFrom(IExtensionValue value)
@@ -108,23 +102,17 @@ namespace Google.Protobuf
             if (value is ExtensionValue<T>)
             {
                 var extensionValue = value as ExtensionValue<T>;
-                if (extensionValue.hasValue)
-                {
-                    hasValue |= codec.FieldMerger(ref field, extensionValue.field);
-                }
+                codec.FieldMerger(ref field, extensionValue.field);
             }
         }
 
-        public void WriteTo(CodedOutputStream output)
+        public void WriteTo(ref WriteContext ctx)
         {
-            if (hasValue)
+            ctx.WriteTag(codec.Tag);
+            codec.ValueWriter(ref ctx, field);
+            if (codec.EndTag != 0)
             {
-                output.WriteTag(codec.Tag);
-                codec.ValueWriter(output, field);
-                if (codec.EndTag != 0)
-                {
-                    output.WriteTag(codec.EndTag);
-                }
+                ctx.WriteTag(codec.EndTag);
             }
         }
 
@@ -132,11 +120,20 @@ namespace Google.Protobuf
 
         public void SetValue(T value)
         {
-            hasValue = true;
             field = value;
         }
 
-        public bool HasValue => hasValue;
+        public bool IsInitialized()
+        {
+            if (field is IMessage)
+            {
+                return (field as IMessage).IsInitialized();
+            }
+            else
+            {
+                return true;
+            }
+        }
     }
 
     internal sealed class RepeatedExtensionValue<T> : IExtensionValue
@@ -184,9 +181,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void MergeFrom(CodedInputStream input)
+        public void MergeFrom(ref ParseContext ctx)
         {
-            field.AddEntriesFrom(input, codec);
+            field.AddEntriesFrom(ref ctx, codec);
         }
 
         public void MergeFrom(IExtensionValue value)
@@ -197,11 +194,32 @@ namespace Google.Protobuf
             }
         }
 
-        public void WriteTo(CodedOutputStream output)
+        public void WriteTo(ref WriteContext ctx)
         {
-            field.WriteTo(output, codec);
+            field.WriteTo(ref ctx, codec);
         }
 
         public RepeatedField<T> GetValue() => field;
+
+        public bool IsInitialized()
+        {
+            for (int i = 0; i < field.Count; i++)
+            {
+                var element = field[i];
+                if (element is IMessage)
+                {
+                    if (!(element as IMessage).IsInitialized())
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return true;
+        }
     }
 }

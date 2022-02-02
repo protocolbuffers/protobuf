@@ -34,6 +34,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.primitives.Ints;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -45,11 +46,12 @@ import com.google.protobuf.Message;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Utility helper functions to work with {@link com.google.protobuf.FieldMask}.
  */
-public class FieldMaskUtil {
+public final class FieldMaskUtil {
   private static final String FIELD_PATH_SEPARATOR = ",";
   private static final String FIELD_PATH_SEPARATOR_REGEX = ",";
   private static final String FIELD_SEPARATOR_REGEX = "\\.";
@@ -83,7 +85,7 @@ public class FieldMaskUtil {
    */
   public static FieldMask fromString(String value) {
     // TODO(xiaofeng): Consider using com.google.common.base.Splitter here instead.
-    return fromStringList(null, Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
+    return fromStringList(Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
   }
 
   /**
@@ -103,14 +105,36 @@ public class FieldMaskUtil {
    */
   // TODO(xiaofeng): Consider renaming fromStrings()
   public static FieldMask fromStringList(Class<? extends Message> type, Iterable<String> paths) {
+    return fromStringList(Internal.getDefaultInstance(type).getDescriptorForType(), paths);
+  }
+
+  /**
+   * Constructs a FieldMask for a list of field paths in a certain type.
+   *
+   * @throws IllegalArgumentException if any of the field path is not valid.
+   */
+  public static FieldMask fromStringList(Descriptor descriptor, Iterable<String> paths) {
+    return fromStringList(Optional.of(descriptor), paths);
+  }
+
+  /**
+   * Constructs a FieldMask for a list of field paths in a certain type. Does not validate the given
+   * paths.
+   */
+  public static FieldMask fromStringList(Iterable<String> paths) {
+    return fromStringList(Optional.<Descriptor>absent(), paths);
+  }
+
+  private static FieldMask fromStringList(Optional<Descriptor> descriptor, Iterable<String> paths) {
     FieldMask.Builder builder = FieldMask.newBuilder();
     for (String path : paths) {
       if (path.isEmpty()) {
         // Ignore empty field paths.
         continue;
       }
-      if (type != null && !isValid(type, path)) {
-        throw new IllegalArgumentException(path + " is not a valid path for " + type);
+      if (descriptor.isPresent() && !isValid(descriptor.get(), path)) {
+        throw new IllegalArgumentException(
+            path + " is not a valid path for " + descriptor.get().getFullName());
       }
       builder.addPaths(path);
     }
@@ -207,10 +231,8 @@ public class FieldMaskUtil {
     return isValid(descriptor, path);
   }
 
-  /**
-   * Checks whether paths in a given fields mask are valid.
-   */
-  public static boolean isValid(Descriptor descriptor, String path) {
+  /** Checks whether paths in a given fields mask are valid. */
+  public static boolean isValid(@Nullable Descriptor descriptor, String path) {
     String[] parts = path.split(FIELD_SEPARATOR_REGEX);
     if (parts.length == 0) {
       return false;
@@ -249,6 +271,22 @@ public class FieldMaskUtil {
     FieldMaskTree maskTree = new FieldMaskTree(firstMask).mergeFromFieldMask(secondMask);
     for (FieldMask mask : otherMasks) {
       maskTree.mergeFromFieldMask(mask);
+    }
+    return maskTree.toFieldMask();
+  }
+
+  /**
+   * Subtracts {@code secondMask} and {@code otherMasks} from {@code firstMask}.
+   *
+   * <p>This method disregards proto structure. That is, if {@code firstMask} is "foo" and {@code
+   * secondMask} is "foo.bar", the response will always be "foo" without considering the internal
+   * proto structure of message "foo".
+   */
+  public static FieldMask subtract(
+      FieldMask firstMask, FieldMask secondMask, FieldMask... otherMasks) {
+    FieldMaskTree maskTree = new FieldMaskTree(firstMask).removeFromFieldMask(secondMask);
+    for (FieldMask mask : otherMasks) {
+      maskTree.removeFromFieldMask(mask);
     }
     return maskTree.toFieldMask();
   }
@@ -345,8 +383,8 @@ public class FieldMaskUtil {
   }
 
   /**
-   * Merges fields specified by a FieldMask from one message to another with the
-   * specified merge options.
+   * Merges fields specified by a FieldMask from one message to another with the specified merge
+   * options. The destination will remain unchanged if an empty FieldMask is provided.
    */
   public static void merge(
       FieldMask mask, Message source, Message.Builder destination, MergeOptions options) {
@@ -358,5 +396,15 @@ public class FieldMaskUtil {
    */
   public static void merge(FieldMask mask, Message source, Message.Builder destination) {
     merge(mask, source, destination, new MergeOptions());
+  }
+
+  /**
+   * Returns the result of keeping only the masked fields of the given proto.
+   */
+  @SuppressWarnings("unchecked")
+  public static <P extends Message> P trim(FieldMask mask, P source) {
+   Message.Builder destination = source.newBuilderForType();
+    merge(mask, source, destination);
+    return (P) destination.build();
   }
 }

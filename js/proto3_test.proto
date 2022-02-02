@@ -30,29 +30,48 @@
 
 syntax = "proto3";
 
-import "testbinary.proto";
-
 package jspb.test;
 
-message TestProto3 {
-  int32 optional_int32 = 1;
-  int64 optional_int64 = 2;
-  uint32 optional_uint32 = 3;
-  uint64 optional_uint64 = 4;
-  sint32 optional_sint32 = 5;
-  sint64 optional_sint64 = 6;
-  fixed32 optional_fixed32 = 7;
-  fixed64 optional_fixed64 = 8;
-  sfixed32 optional_sfixed32 = 9;
-  sfixed64 optional_sfixed64 = 10;
-  float optional_float = 11;
-  double optional_double = 12;
-  bool optional_bool = 13;
-  string optional_string = 14;
-  bytes optional_bytes = 15;
+import "testbinary.proto";
 
-  ForeignMessage optional_foreign_message = 19;
-  Proto3Enum optional_foreign_enum = 22;
+message TestProto3 {
+  int32 singular_int32 = 1;
+  int64 singular_int64 = 2;
+  uint32 singular_uint32 = 3;
+  uint64 singular_uint64 = 4;
+  sint32 singular_sint32 = 5;
+  sint64 singular_sint64 = 6;
+  fixed32 singular_fixed32 = 7;
+  fixed64 singular_fixed64 = 8;
+  sfixed32 singular_sfixed32 = 9;
+  sfixed64 singular_sfixed64 = 10;
+  float singular_float = 11;
+  double singular_double = 12;
+  bool singular_bool = 13;
+  string singular_string = 14;
+  bytes singular_bytes = 15;
+
+  ForeignMessage singular_foreign_message = 19;
+  Proto3Enum singular_foreign_enum = 22;
+
+  optional int32 optional_int32 = 121;
+  optional int64 optional_int64 = 122;
+  optional uint32 optional_uint32 = 123;
+  optional uint64 optional_uint64 = 124;
+  optional sint32 optional_sint32 = 125;
+  optional sint64 optional_sint64 = 126;
+  optional fixed32 optional_fixed32 = 127;
+  optional fixed64 optional_fixed64 = 128;
+  optional sfixed32 optional_sfixed32 = 129;
+  optional sfixed64 optional_sfixed64 = 130;
+  optional float optional_float = 131;
+  optional double optional_double = 132;
+  optional bool optional_bool = 133;
+  optional string optional_string = 134;
+  optional bytes optional_bytes = 135;
+
+  optional ForeignMessage optional_foreign_message = 136;
+  optional Proto3Enum optional_foreign_enum = 137;
 
   repeated int32 repeated_int32 = 31;
   repeated int64 repeated_int64 = 32;
@@ -72,7 +91,6 @@ message TestProto3 {
 
   repeated ForeignMessage repeated_foreign_message = 49;
   repeated Proto3Enum repeated_foreign_enum = 52;
-
 
   oneof oneof_field {
     uint32 oneof_uint32 = 111;

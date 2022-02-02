@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_POOL_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_POOL_H__
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <unordered_map>
@@ -54,10 +55,18 @@ struct CMessageClass;
 // "Methods" that interacts with this DescriptorPool are in the cdescriptor_pool
 // namespace.
 typedef struct PyDescriptorPool {
-  PyObject_HEAD
+  PyObject_HEAD;
 
   // The C++ pool containing Descriptors.
-  DescriptorPool* pool;
+  const DescriptorPool* pool;
+
+  // True if we should free the pointer above.
+  bool is_owned;
+
+  // True if this pool accepts new proto definitions.
+  // In this case it is allowed to const_cast<DescriptorPool*>(pool).
+  bool is_mutable;
+
 
   // The error collector to store error info. Can be NULL. This pointer is
   // owned.
@@ -116,15 +125,19 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg);
 
 }  // namespace cdescriptor_pool
 
-// Retrieve the global descriptor pool owned by the _message module.
+// Retrieves the global descriptor pool owned by the _message module.
 // This is the one used by pb2.py generated modules.
 // Returns a *borrowed* reference.
 // "Default" pool used to register messages from _pb2.py modules.
 PyDescriptorPool* GetDefaultDescriptorPool();
 
-// Retrieve the python descriptor pool owning a C++ descriptor pool.
+// Retrieves an existing python descriptor pool owning the C++ descriptor pool.
 // Returns a *borrowed* reference.
 PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool);
+
+// Wraps a C++ descriptor pool in a Python object, creates it if necessary.
+// Returns a new reference.
+PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool);
 
 // Initialize objects used by this module.
 bool InitDescriptorPool();

@@ -31,6 +31,8 @@
 #endregion
 
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Google.Protobuf.Compatibility;
 
@@ -50,56 +52,109 @@ namespace Google.Protobuf.Reflection
         private readonly Action<IMessage> clearDelegate;
         private readonly Func<IMessage, bool> hasDelegate;
 
-        internal SingleFieldAccessor(PropertyInfo property, FieldDescriptor descriptor) : base(property, descriptor)
+        internal SingleFieldAccessor(
+            [DynamicallyAccessedMembers(GeneratedClrTypeInfo.MessageAccessibility)]
+            Type messageType, PropertyInfo property, FieldDescriptor descriptor) : base(property, descriptor)
         {
             if (!property.CanWrite)
             {
                 throw new ArgumentException("Not all required properties/methods available");
             }
             setValueDelegate = ReflectionUtil.CreateActionIMessageObject(property.GetSetMethod());
-            if (descriptor.File.Proto.Syntax == "proto2")
+
+            // Note: this looks worrying in that we access the containing oneof, which isn't valid until cross-linking
+            // is complete... but field accessors aren't created until after cross-linking.
+            // The oneof itself won't be cross-linked yet, but that's okay: the oneof accessor is created
+            // earlier.
+
+            // Message fields always support presence, via null checks.
+            if (descriptor.FieldType == FieldType.Message)
             {
-                MethodInfo hasMethod = property.DeclaringType.GetRuntimeProperty("Has" + property.Name).GetMethod;
-                if (hasMethod == null) {
-                  throw new ArgumentException("Not all required properties/methods are available");
+                hasDelegate = message => GetValue(message) != null;
+                clearDelegate = message => SetValue(message, null);
+            }
+            // Oneof fields always support presence, via case checks.
+            // Note that clearing the field is a no-op unless that specific field is the current "case".
+            else if (descriptor.RealContainingOneof != null)
+            {
+                var oneofAccessor = descriptor.RealContainingOneof.Accessor;
+                hasDelegate = message => oneofAccessor.GetCaseFieldDescriptor(message) == descriptor;
+                clearDelegate = message =>
+                {
+                    // Clear on a field only affects the oneof itself if the current case is the field we're accessing.
+                    if (oneofAccessor.GetCaseFieldDescriptor(message) == descriptor)
+                    {
+                        oneofAccessor.Clear(message);
+                    }
+                };
+            }
+            // Primitive fields always support presence in proto2, and support presence in proto3 for optional fields.
+            else if (descriptor.File.Syntax == Syntax.Proto2 || descriptor.Proto.Proto3Optional)
+            {
+                MethodInfo hasMethod = messageType.GetRuntimeProperty("Has" + property.Name).GetMethod;
+                if (hasMethod == null)
+                {
+                    throw new ArgumentException("Not all required properties/methods are available");
                 }
                 hasDelegate = ReflectionUtil.CreateFuncIMessageBool(hasMethod);
-                MethodInfo clearMethod = property.DeclaringType.GetRuntimeMethod("Clear" + property.Name, ReflectionUtil.EmptyTypes);
-                if (clearMethod == null) {
-                  throw new ArgumentException("Not all required properties/methods are available");
+                MethodInfo clearMethod = messageType.GetRuntimeMethod("Clear" + property.Name, ReflectionUtil.EmptyTypes);
+                if (clearMethod == null)
+                {
+                    throw new ArgumentException("Not all required properties/methods are available");
                 }
                 clearDelegate = ReflectionUtil.CreateActionIMessage(clearMethod);
             }
+            // What's left?
+            // Primitive proto3 fields without the optional keyword, which aren't in oneofs.
             else
             {
-                hasDelegate = message => {
-                  throw new InvalidOperationException("HasValue is not implemented for proto3 fields");
-                };
-                var clrType = property.PropertyType;
+                hasDelegate = message => { throw new InvalidOperationException("Presence is not implemented for this field"); };
 
-                // TODO: Validate that this is a reasonable single field? (Should be a value type, a message type, or string/ByteString.)
-                object defaultValue =
-                    descriptor.FieldType == FieldType.Message ? null
-                    : clrType == typeof(string) ? ""
-                    : clrType == typeof(ByteString) ? ByteString.Empty
-                    : Activator.CreateInstance(clrType);
+                // While presence isn't supported, clearing still is; it's just setting to a default value.
+                object defaultValue = GetDefaultValue(descriptor);
                 clearDelegate = message => SetValue(message, defaultValue);
             }
         }
 
-        public override void Clear(IMessage message)
+        private static object GetDefaultValue(FieldDescriptor descriptor)
         {
-            clearDelegate(message);
+            switch (descriptor.FieldType)
+            {
+                case FieldType.Bool:
+                    return false;
+                case FieldType.Bytes:
+                    return ByteString.Empty;
+                case FieldType.String:
+                    return "";
+                case FieldType.Double:
+                    return 0.0;
+                case FieldType.SInt32:
+                case FieldType.Int32:
+                case FieldType.SFixed32:
+                case FieldType.Enum:
+                    return 0;
+                case FieldType.Fixed32:
+                case FieldType.UInt32:
+                    return (uint)0;
+                case FieldType.Fixed64:
+                case FieldType.UInt64:
+                    return 0UL;
+                case FieldType.SFixed64:
+                case FieldType.Int64:
+                case FieldType.SInt64:
+                    return 0L;
+                case FieldType.Float:
+                    return 0f;
+                case FieldType.Message:
+                case FieldType.Group: // Never expect to get this, but...
+                    return null;
+                default:
+                    throw new ArgumentException("Invalid field type");
+            }
         }
 
-        public override bool HasValue(IMessage message)
-        {
-            return hasDelegate(message);
-        }
-
-        public override void SetValue(IMessage message, object value)
-        {
-            setValueDelegate(message, value);
-        }
+        public override void Clear(IMessage message) => clearDelegate(message);
+        public override bool HasValue(IMessage message) => hasDelegate(message);
+        public override void SetValue(IMessage message, object value) => setValueDelegate(message, value);
     }
 }

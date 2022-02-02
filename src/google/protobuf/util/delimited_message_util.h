@@ -34,6 +34,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_DELIMITED_MESSAGE_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_DELIMITED_MESSAGE_UTIL_H__
 
+
 #include <ostream>
 
 #include <google/protobuf/message_lite.h>

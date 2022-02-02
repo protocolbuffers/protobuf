@@ -17,6 +17,7 @@
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_no_generic_services.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_optimize_for.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3_optional.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_well_known_types.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/any_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/cached_field_size_test.proto"/>
@@ -29,7 +30,6 @@
         <arg value="${test.proto.dir}/com/google/protobuf/map_initialization_order_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_lite_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_test.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/message_lite_extension_util_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/multiple_files_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/nested_builders_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/nested_extension.proto"/>

@@ -301,7 +301,7 @@ public final class UnknownFieldSetLite {
     return size;
   }
 
-  private static boolean equals(int[] tags1, int[] tags2, int count) {
+  private static boolean tagsEquals(int[] tags1, int[] tags2, int count) {
     for (int i = 0; i < count; ++i) {
       if (tags1[i] != tags2[i]) {
         return false;
@@ -310,7 +310,7 @@ public final class UnknownFieldSetLite {
     return true;
   }
 
-  private static boolean equals(Object[] objects1, Object[] objects2, int count) {
+  private static boolean objectsEquals(Object[] objects1, Object[] objects2, int count) {
     for (int i = 0; i < count; ++i) {
       if (!objects1[i].equals(objects2[i])) {
         return false;
@@ -335,8 +335,8 @@ public final class UnknownFieldSetLite {
 
     UnknownFieldSetLite other = (UnknownFieldSetLite) obj;
     if (count != other.count
-        || !equals(tags, other.tags, count)
-        || !equals(objects, other.objects, count)) {
+        || !tagsEquals(tags, other.tags, count)
+        || !objectsEquals(objects, other.objects, count)) {
       return false;
     }
 

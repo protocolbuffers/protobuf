@@ -29,7 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
-#include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -39,21 +39,21 @@ namespace objectivec {
 namespace {
 
 TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_RawStrings) {
-  string input_for_decode("abcdefghIJ");
-  string desired_output_for_decode;
-  string expected;
-  string result;
+  std::string input_for_decode("abcdefghIJ");
+  std::string desired_output_for_decode;
+  std::string expected;
+  std::string result;
 
   // Different data, can't transform.
 
   desired_output_for_decode = "zbcdefghIJ";
-  expected = string("\0zbcdefghIJ\0", 12);
+  expected = std::string("\0zbcdefghIJ\0", 12);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
 
   desired_output_for_decode = "abcdezghIJ";
-  expected = string("\0abcdezghIJ\0", 12);
+  expected = std::string("\0abcdezghIJ\0", 12);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
@@ -61,7 +61,7 @@ TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_RawStrings) {
   // Shortened data, can't transform.
 
   desired_output_for_decode = "abcdefghI";
-  expected = string("\0abcdefghI\0", 11);
+  expected = std::string("\0abcdefghI\0", 11);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
@@ -69,32 +69,32 @@ TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_RawStrings) {
   // Extra data, can't transform.
 
   desired_output_for_decode = "abcdefghIJz";
-  expected = string("\0abcdefghIJz\0", 13);
+  expected = std::string("\0abcdefghIJz\0", 13);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
 }
 
 TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_ByteCodes) {
-  string input_for_decode("abcdefghIJ");
-  string desired_output_for_decode;
-  string expected;
-  string result;
+  std::string input_for_decode("abcdefghIJ");
+  std::string desired_output_for_decode;
+  std::string expected;
+  std::string result;
 
   desired_output_for_decode = "abcdefghIJ";
-  expected = string("\x0A\x0", 2);
+  expected = std::string("\x0A\x0", 2);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
 
   desired_output_for_decode = "_AbcdefghIJ";
-  expected = string("\xCA\x0", 2);
+  expected = std::string("\xCA\x0", 2);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
 
   desired_output_for_decode = "ABCD__EfghI_j";
-  expected = string("\x64\x80\xC5\xA1\x0", 5);
+  expected = std::string("\x64\x80\xC5\xA1\x0", 5);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
@@ -105,7 +105,7 @@ TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_ByteCodes) {
       "longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000";
   desired_output_for_decode =
       "long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000";
-  expected = string("\x04\xA5\xA4\xA2\xBF\x1F\x0E\x84\x0", 9);
+  expected = std::string("\x04\xA5\xA4\xA2\xBF\x1F\x0E\x84\x0", 9);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
@@ -128,7 +128,7 @@ TEST(ObjCHelperDeathTest, TextFormatDecodeData_DecodeDataForString_Failures) {
 
   // Null char in the string.
 
-  string str_with_null_char("ab\0c", 4);
+  std::string str_with_null_char("ab\0c", 4);
   EXPECT_EXIT(
       TextFormatDecodeData::DecodeDataForString(str_with_null_char, "def"),
       ::testing::KilledBySignal(SIGABRT),
@@ -153,14 +153,14 @@ TEST(ObjCHelper, TextFormatDecodeData_RawStrings) {
 
   EXPECT_EQ(4, decode_data.num_entries());
 
-  uint8 expected_data[] = {
+  uint8_t expected_data[] = {
       0x4,
       0x1, 0x0, 'z', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 'J', 0x0,
       0x3, 0x0, 'a', 'b', 'c', 'd', 'e', 'z', 'g', 'h', 'I', 'J', 0x0,
       0x2, 0x0, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 0x0,
       0x4, 0x0, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 'J', 'z', 0x0,
   };
-  string expected((const char*)expected_data, sizeof(expected_data));
+  std::string expected((const char*)expected_data, sizeof(expected_data));
 
   EXPECT_EQ(expected, decode_data.Data());
 }
@@ -178,7 +178,7 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
 
   EXPECT_EQ(5, decode_data.num_entries());
 
-  uint8 expected_data[] = {
+  uint8_t expected_data[] = {
       0x5,
       // All as is (00 op)
       0x1,  0x0A, 0x0,
@@ -196,7 +196,7 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
       //   underscore, as is + 3 (00 op)
       0xE8, 0x07, 0x04, 0xA5, 0xA4, 0xA2, 0xBF, 0x1F, 0x0E, 0x84, 0x0,
   };
-  string expected((const char*)expected_data, sizeof(expected_data));
+  std::string expected((const char*)expected_data, sizeof(expected_data));
 
   EXPECT_EQ(expected, decode_data.Data());
 }
@@ -221,7 +221,7 @@ TEST(ObjCHelperDeathTest, TextFormatDecodeData_Failures) {
 
   // Null char in the string.
 
-  string str_with_null_char("ab\0c", 4);
+  std::string str_with_null_char("ab\0c", 4);
   EXPECT_EXIT(
       decode_data.AddString(1, str_with_null_char, "def"),
       ::testing::KilledBySignal(SIGABRT),
@@ -241,6 +241,133 @@ TEST(ObjCHelperDeathTest, TextFormatDecodeData_Failures) {
               "error: duplicate key \\(2\\) making TextFormat data, input:");
 }
 #endif  // PROTOBUF_HAS_DEATH_TEST
+
+class TestLineCollector : public LineConsumer {
+ public:
+  TestLineCollector(std::vector<std::string>* inout_lines,
+                    const std::string* reject_line = nullptr,
+                    bool skip_msg = false)
+    : lines_(inout_lines), reject_(reject_line), skip_msg_(skip_msg) {}
+
+  bool ConsumeLine(const StringPiece& line, std::string* out_error) override {
+    if (reject_ && *reject_ == line) {
+      if (!skip_msg_) {
+        *out_error = std::string("Rejected '") + *reject_ + "'";
+      }
+      return false;
+    }
+    if (lines_) {
+      lines_->emplace_back(line);
+    }
+    return true;
+  }
+
+ private:
+  std::vector<std::string>* lines_;
+  const std::string* reject_;
+  bool skip_msg_;
+};
+
+const int kBlockSizes[] = {-1, 1, 2, 5, 64};
+const int kBlockSizeCount = GOOGLE_ARRAYSIZE(kBlockSizes);
+
+TEST(ObjCHelper, ParseSimple_BasicsSuccess) {
+  const std::vector<std::pair<std::string, std::vector<std::string>>> tests = {
+    {"", {}},
+    {"a", {"a"}},
+    {"a c", {"a c"}},
+    {" a c ", {"a c"}},
+    {"\ta c ", {"a c"}},
+    {"abc\n", {"abc"}},
+    {"abc\nd f", {"abc", "d f"}},
+    {"\n abc \n def \n\n", {"abc", "def"}},
+  };
+
+  for (const auto& test : tests) {
+    for (int i = 0; i < kBlockSizeCount; i++) {
+      io::ArrayInputStream input(test.first.data(), test.first.size(), kBlockSizes[i]);
+      std::string err_str;
+      std::vector<std::string> lines;
+      TestLineCollector collector(&lines);
+      EXPECT_TRUE(ParseSimpleStream(input, "dummy", &collector, &err_str));
+      EXPECT_EQ(lines, test.second);
+      EXPECT_TRUE(err_str.empty());
+    }
+  }
+}
+
+TEST(ObjCHelper, ParseSimple_DropsComments) {
+  const std::vector<std::pair<std::string, std::vector<std::string>>> tests = {
+    {"# nothing", {}},
+    {"#", {}},
+    {"##", {}},
+    {"\n# nothing\n", {}},
+    {"a # same line", {"a"}},
+    {"a # same line\n", {"a"}},
+    {"a\n# line\nc", {"a", "c"}},
+    {"# n o t # h i n g #", {}},
+    {"## n o # t h i n g #", {}},
+    {"a# n o t # h i n g #", {"a"}},
+    {"a\n## n o # t h i n g #", {"a"}},
+  };
+
+  for (const auto& test : tests) {
+    for (int i = 0; i < kBlockSizeCount; i++) {
+      io::ArrayInputStream input(test.first.data(), test.first.size(), kBlockSizes[i]);
+      std::string err_str;
+      std::vector<std::string> lines;
+      TestLineCollector collector(&lines);
+      EXPECT_TRUE(ParseSimpleStream(input, "dummy", &collector, &err_str));
+      EXPECT_EQ(lines, test.second);
+      EXPECT_TRUE(err_str.empty());
+    }
+  }
+}
+
+TEST(ObjCHelper, ParseSimple_RejectLines) {
+  const std::vector<std::tuple<std::string, std::string, int>> tests = {
+    std::make_tuple("a\nb\nc", "a", 1),
+    std::make_tuple("a\nb\nc", "b", 2),
+    std::make_tuple("a\nb\nc", "c", 3),
+    std::make_tuple("a\nb\nc\n", "c", 3),
+  };
+
+  for (const auto& test : tests) {
+    for (int i = 0; i < kBlockSizeCount; i++) {
+      io::ArrayInputStream input(std::get<0>(test).data(), std::get<0>(test).size(),
+                                 kBlockSizes[i]);
+      std::string err_str;
+      TestLineCollector collector(nullptr, &std::get<1>(test));
+      EXPECT_FALSE(ParseSimpleStream(input, "dummy", &collector, &err_str));
+      std::string expected_err =
+        StrCat("error: dummy Line ", std::get<2>(test), ", Rejected '", std::get<1>(test), "'");
+      EXPECT_EQ(err_str, expected_err);
+    }
+  }
+}
+
+TEST(ObjCHelper, ParseSimple_RejectLinesNoMessage) {
+  const std::vector<std::tuple<std::string, std::string, int>> tests = {
+    std::make_tuple("a\nb\nc", "a", 1),
+    std::make_tuple("a\nb\nc", "b", 2),
+    std::make_tuple("a\nb\nc", "c", 3),
+    std::make_tuple("a\nb\nc\n", "c", 3),
+  };
+
+  for (const auto& test : tests) {
+    for (int i = 0; i < kBlockSizeCount; i++) {
+      io::ArrayInputStream input(std::get<0>(test).data(), std::get<0>(test).size(),
+                                 kBlockSizes[i]);
+      std::string err_str;
+      TestLineCollector collector(nullptr, &std::get<1>(test), true /* skip msg */);
+      EXPECT_FALSE(ParseSimpleStream(input, "dummy", &collector, &err_str));
+      std::string expected_err =
+        StrCat("error: dummy Line ", std::get<2>(test),
+               ", ConsumeLine failed without setting an error.");
+      EXPECT_EQ(err_str, expected_err);
+    }
+  }
+}
 
 // TODO(thomasvl): Should probably add some unittests for all the special cases
 // of name mangling (class name, field name, enum names).  Rather than doing
