@@ -36,8 +36,6 @@ import collections.abc as collections_abc
 import datetime
 import unittest
 
-import dateutil.tz
-
 from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
 from google.protobuf import field_mask_pb2
@@ -268,37 +266,25 @@ class TimeUtilTest(TimeUtilTestBase):
     message.FromDatetime(naive_end_of_time)
     self.assertEqual(naive_end_of_time, message.ToDatetime())
 
-  # Two hours after the Unix Epoch, around the world.
-  @_parameterized.named_parameters(
-      ('London', [1970, 1, 1, 2], dateutil.tz.UTC),
-      ('Tokyo', [1970, 1, 1, 11], dateutil.tz.gettz('Japan')),
-      ('LA', [1969, 12, 31, 18], dateutil.tz.gettz('US/Pacific')),
-  )
-  def testTimezoneAwareDatetimeConversion(self, date_parts, tzinfo):
-    original_datetime = datelib.CreateDatetime(*date_parts, tzinfo=tzinfo)
+   def testDatetimeConversionWithTimezone(self):
+    class TZ(datetime.tzinfo):
 
-    message = timestamp_pb2.Timestamp()
-    message.FromDatetime(original_datetime)
-    self.assertEqual(7200, message.seconds)
-    self.assertEqual(0, message.nanos)
+      def utcoffset(self, _):
+        return datetime.timedelta(hours=1)
 
-    # ToDatetime() with no parameters produces a naive UTC datetime, i.e. it not
-    # only loses the original timezone information (e.g. US/Pacific) as it's
-    # "normalised" to UTC, but also drops the information that the datetime
-    # represents a UTC one.
-    naive_datetime = message.ToDatetime()
-    self.assertEqual(datetime.datetime(1970, 1, 1, 2), naive_datetime)
-    self.assertIsNone(naive_datetime.tzinfo)
-    self.assertNotEqual(original_datetime, naive_datetime)  # not even for UTC!
+      def dst(self, _):
+        return datetime.timedelta(0)
 
-    # In contrast, ToDatetime(tzinfo=) produces an aware datetime in the given
-    # timezone.
-    aware_datetime = message.ToDatetime(tzinfo=tzinfo)
-    self.assertEqual(original_datetime, aware_datetime)
-    self.assertEqual(
-        datelib.CreateDatetime(1970, 1, 1, 2, tzinfo=dateutil.tz.UTC),
-        aware_datetime)
-    self.assertEqual(tzinfo, aware_datetime.tzinfo)
+      def tzname(self, _):
+        return 'UTC+1'
+
+    message1 = timestamp_pb2.Timestamp()
+    dt = datetime.datetime(1970, 1, 1, 1, tzinfo=TZ())
+    message1.FromDatetime(dt)
+    message2 = timestamp_pb2.Timestamp()
+    dt = datetime.datetime(1970, 1, 1, 0)
+    message2.FromDatetime(dt)
+    self.assertEqual(message1, message2)
 
   def testTimedeltaConversion(self):
     message = duration_pb2.Duration()
