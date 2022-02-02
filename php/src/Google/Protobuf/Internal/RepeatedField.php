@@ -39,6 +39,7 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
+use Traversable;
 
 /**
  * RepeatedField is used by generated protocol message classes to manipulate
@@ -121,6 +122,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->container[$offset];
@@ -138,6 +140,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException Non-existing index.
      * @throws \ErrorException Incorrect type of the element.
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         switch ($this->type) {
@@ -209,6 +212,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException The element to be removed is not at the end of the
      * RepeatedField.
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         $count = count($this->container);
@@ -230,7 +234,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @return bool True if the element at the given offset exists.
      * @throws \ErrorException Invalid type for index.
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->container[$offset]);
     }
@@ -238,7 +242,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * @ignore
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new RepeatedFieldIter($this->container);
     }
@@ -250,7 +254,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * @return integer The number of stored elements.
      */
-    public function count()
+    public function count(): int
     {
         return count($this->container);
     }
