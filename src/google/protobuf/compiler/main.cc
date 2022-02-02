@@ -77,7 +77,7 @@ int ProtobufMain(int argc, char* argv[]) {
   python::Generator py_generator;
   cli.RegisterGenerator("--python_out", "--python_opt", &py_generator,
                         "Generate Python source file.");
-  // Pyton pyi
+  // Python pyi
   python::PyiGenerator pyi_generator;
   cli.RegisterGenerator("--pyi_out", &pyi_generator,
                         "Generate python pyi stub.");

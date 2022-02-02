@@ -326,7 +326,7 @@ TailCallTableInfo::TailCallTableInfo(
       const EnumDescriptor* enum_type = field->enum_type();
       GOOGLE_CHECK_GT(enum_type->value_count(), 0) << enum_type->DebugString();
 
-      // Check if the enum values are a single, continguous range.
+      // Check if the enum values are a single, contiguous range.
       std::vector<int> enum_values;
       for (int i = 0, N = enum_type->value_count(); i < N; ++i) {
         enum_values.push_back(enum_type->value(i)->number());
