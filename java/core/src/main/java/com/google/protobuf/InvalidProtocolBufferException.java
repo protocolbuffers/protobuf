@@ -47,11 +47,11 @@ public class InvalidProtocolBufferException extends IOException {
     super(description);
   }
 
-  public InvalidProtocolBufferException(IOException e) {
+  public InvalidProtocolBufferException(Exception e) {
     super(e.getMessage(), e);
   }
 
-  public InvalidProtocolBufferException(String description, IOException e) {
+  public InvalidProtocolBufferException(String description, Exception e) {
     super(description, e);
   }
 
