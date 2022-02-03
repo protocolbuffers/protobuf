@@ -475,7 +475,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/Proto3LiteSchemaTest.java            \
   java/core/src/test/java/com/google/protobuf/Proto3MessageFactory.java            \
   java/core/src/test/java/com/google/protobuf/Proto3MessageLiteFactory.java        \
-  java/core/src/test/java/com/google/protobuf/Proto3MessageLiteInfoFactory.java    \
   java/core/src/test/java/com/google/protobuf/Proto3SchemaTest.java                \
   java/core/src/test/java/com/google/protobuf/ProtobufArrayListTest.java           \
   java/core/src/test/java/com/google/protobuf/RepeatedFieldBuilderV3Test.java      \
@@ -496,6 +495,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/TypeRegistryTest.java                \
   java/core/src/test/java/com/google/protobuf/UnknownEnumValueTest.java            \
   java/core/src/test/java/com/google/protobuf/UnknownFieldSetTest.java             \
+  java/core/src/test/java/com/google/protobuf/UnknownFieldSetPerformanceTest.java             \
   java/core/src/test/java/com/google/protobuf/UnmodifiableLazyStringListTest.java  \
   java/core/src/test/java/com/google/protobuf/Utf8Test.java                        \
   java/core/src/test/java/com/google/protobuf/WellKnownTypesTest.java              \
@@ -536,15 +536,16 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/wrappers_test.proto                 \
   java/internal/BUILD                                                              \
   java/internal/testing.bzl                                                        \
+  java/kotlin/BUILD                                                                \
   java/kotlin/generate-sources-build.xml                                           \
   java/kotlin/generate-test-sources-build.xml                                      \
   java/kotlin/pom.xml                                                              \
+  java/kotlin/pom_template.xml                                                     \
   java/kotlin/src/main/kotlin/com/google/protobuf/ByteStrings.kt                   \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslList.kt                       \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslMap.kt                        \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslProxy.kt                      \
   java/kotlin/src/main/kotlin/com/google/protobuf/ExtendableMessageExtensions.kt   \
-  java/kotlin/src/main/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt\
   java/kotlin/src/main/kotlin/com/google/protobuf/ExtensionList.kt                 \
   java/kotlin/src/main/kotlin/com/google/protobuf/OnlyForUseByGeneratedProtoCode.kt\
   java/kotlin/src/main/kotlin/com/google/protobuf/ProtoDslMarker.kt                \
@@ -560,13 +561,20 @@ java_EXTRA_DIST=                                                                
   java/kotlin/src/test/proto/com/google/protobuf/evil_names_proto3.proto           \
   java/kotlin/src/test/proto/com/google/protobuf/example_extensible_message.proto  \
   java/kotlin/src/test/proto/com/google/protobuf/multiple_files_proto3.proto       \
+  java/kotlin-lite/BUILD                                                           \
   java/kotlin-lite/generate-sources-build.xml                                      \
   java/kotlin-lite/generate-test-sources-build.xml                                 \
   java/kotlin-lite/lite.awk                                                        \
   java/kotlin-lite/pom.xml                                                         \
+  java/kotlin-lite/pom_template.xml                                                \
   java/kotlin-lite/process-lite-sources-build.xml                                  \
+  java/kotlin-lite/src/main/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt\
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/ExtendableMessageLiteExtensionsTest.kt\
+  java/kotlin-lite/src/test/kotlin/com/google/protobuf/Proto3LiteTest.kt           \
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/Proto2LiteTest.kt           \
+  java/kotlin-lite/src/test/proto/com/google/protobuf/evil_names_proto2.proto      \
+  java/kotlin-lite/src/test/proto/com/google/protobuf/evil_names_proto3.proto      \
+  java/kotlin-lite/src/test/proto/com/google/protobuf/multiple_files_proto3.proto  \
   java/lite.md                                                                     \
   java/lite/BUILD                                                                  \
   java/lite/generate-sources-build.xml                                             \
@@ -576,7 +584,6 @@ java_EXTRA_DIST=                                                                
   java/lite/pom_template.xml                                                       \
   java/lite/process-lite-sources-build.xml                                         \
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
-  java/lite/src/test/java/com/google/protobuf/Proto2MessageLiteInfoFactory.java    \
   java/BUILD                                                                       \
   java/pom.xml                                                                     \
   java/util/BUILD                                                                  \

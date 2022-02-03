@@ -42,7 +42,6 @@ import static java.lang.Character.isSurrogatePair;
 import static java.lang.Character.toCodePoint;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
 /**
  * A set of low-level, high-performance static utility methods related to the UTF-8 character
@@ -1387,7 +1386,7 @@ final class Utf8 {
       if (offset == limit) {
         // The entire byte sequence is ASCII.  Don't bother copying to a char[], JVMs using
         // compact strings will just turn it back into the same byte[].
-        return new String(bytes, index, size, StandardCharsets.US_ASCII);
+        return new String(bytes, index, size, Internal.US_ASCII);
       }
 
       // It's not all ASCII, at this point.  This may over-allocate, but we will truncate in the

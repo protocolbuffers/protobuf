@@ -38,22 +38,21 @@
 
 // Returns a Ruby wrapper object for the given map, which will be created if
 // one does not exist already.
-VALUE Map_GetRubyWrapper(upb_map *map, upb_fieldtype_t key_type,
-                         TypeInfo value_type, VALUE arena);
+VALUE Map_GetRubyWrapper(upb_Map *map, upb_CType key_type, TypeInfo value_type,
+                         VALUE arena);
 
-// Gets the underlying upb_map for this Ruby map object, which must have
+// Gets the underlying upb_Map for this Ruby map object, which must have
 // key/value type that match |field|. If this is not a map or the type doesn't
 // match, raises an exception.
-const upb_map *Map_GetUpbMap(VALUE val, const upb_fielddef *field,
-                             upb_arena *arena);
+const upb_Map *Map_GetUpbMap(VALUE val, const upb_FieldDef *field,
+                             upb_Arena *arena);
 
 // Implements #inspect for this map by appending its contents to |b|.
-void Map_Inspect(StringBuilder *b, const upb_map *map, upb_fieldtype_t key_type,
+void Map_Inspect(StringBuilder *b, const upb_Map *map, upb_CType key_type,
                  TypeInfo val_type);
 
 // Returns a new Hash object containing the contents of this Map.
-VALUE Map_CreateHash(const upb_map* map, upb_fieldtype_t key_type,
-                     TypeInfo val_info);
+VALUE Map_CreateHash(const upb_Map *map, upb_CType key_type, TypeInfo val_info);
 
 // Returns a deep copy of this Map object.
 VALUE Map_deep_copy(VALUE obj);

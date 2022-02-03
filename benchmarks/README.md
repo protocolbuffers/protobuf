@@ -87,7 +87,17 @@ To run all the benchmark dataset:
 
 ### Java:
 
+First build the Java binary in the usual way with Maven:
+
 ```
+$ cd java
+$ mvn install
+```
+
+Assuming that completes successfully,
+
+```
+$ cd ../benchmarks
 $ make java
 ```
 
