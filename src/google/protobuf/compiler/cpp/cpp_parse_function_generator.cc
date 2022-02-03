@@ -283,8 +283,7 @@ TailCallTableInfo::TailCallTableInfo(
   // Fill in mini table entries.
   for (const FieldDescriptor* field : ordered_fields) {
     field_entries.push_back(
-        {field, (HasHasbit(field) ? has_bit_indices[field->index()] : -1), 0, 0}
-    );
+        {field, (HasHasbit(field) ? has_bit_indices[field->index()] : -1)});
     auto& entry = field_entries.back();
 
     if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
