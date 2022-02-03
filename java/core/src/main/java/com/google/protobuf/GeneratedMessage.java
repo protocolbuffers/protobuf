@@ -359,7 +359,7 @@ public abstract class GeneratedMessage extends AbstractMessage
    * TODO(xiaofeng): remove this after b/29368482 is fixed. We need to move this
    * interface to AbstractMessage in order to versioning GeneratedMessage but
    * this move breaks binary compatibility for AppEngine. After AppEngine is
-   * fixed we can exlude this from google3.
+   * fixed we can exclude this from google3.
    */
   protected interface BuilderParent extends AbstractMessage.BuilderParent {}
 

@@ -567,7 +567,7 @@ TEST(NoFieldPresenceTest, OneofPresence) {
   message.Clear();
   message.set_oneof_string("test");
   message.clear_oneof_string();
-  EXPECT_EQ(0, message.ByteSize());
+  EXPECT_EQ(0, message.ByteSizeLong());
 }
 
 }  // namespace

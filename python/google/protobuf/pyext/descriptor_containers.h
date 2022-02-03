@@ -34,6 +34,7 @@
 // Mappings and Sequences of descriptors.
 // They implement containers like fields_by_name, EnumDescriptor.values...
 // See descriptor_containers.cc for more description.
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 namespace google {

@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <google/protobuf/compiler/cpp/cpp_map_field.h>
+
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
@@ -53,9 +54,9 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   (*variables)["full_name"] = descriptor->full_name();
 
   const FieldDescriptor* key =
-      descriptor->message_type()->FindFieldByName("key");
+      descriptor->message_type()->map_key();
   const FieldDescriptor* val =
-      descriptor->message_type()->FindFieldByName("value");
+      descriptor->message_type()->map_value();
   (*variables)["key_cpp"] = PrimitiveTypeName(options, key->cpp_type());
   switch (val->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
@@ -80,18 +81,14 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   } else {
     (*variables)["lite"] = "Lite";
   }
-
-  if (!IsProto3Field(descriptor) && val->type() == FieldDescriptor::TYPE_ENUM) {
-    const EnumValueDescriptor* default_value = val->default_value_enum();
-    (*variables)["default_enum_value"] = Int32ToString(default_value->number());
-  } else {
-    (*variables)["default_enum_value"] = "0";
-  }
 }
 
 MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
-                                     const Options& options)
-    : FieldGenerator(descriptor, options) {
+                                     const Options& options,
+                                     MessageSCCAnalyzer* scc_analyzer)
+    : FieldGenerator(descriptor, options),
+      has_required_fields_(
+          scc_analyzer->HasRequiredFields(descriptor->message_type())) {
   SetMessageVariables(descriptor, &variables_, options);
 }
 
@@ -104,8 +101,8 @@ void MapFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
       "    $map_classname$,\n"
       "    $key_cpp$, $val_cpp$,\n"
       "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-      "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$,\n"
-      "    $default_enum_value$ > $name$_;\n");
+      "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> "
+      "$name$_;\n");
 }
 
 void MapFieldGenerator::GenerateAccessorDeclarations(
@@ -135,7 +132,7 @@ void MapFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline const ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >&\n"
       "$classname$::$name$() const {\n"
-      "$annotate_accessor$"
+      "$annotate_get$"
       "  // @@protoc_insertion_point(field_map:$full_name$)\n"
       "  return _internal_$name$();\n"
       "}\n"
@@ -145,7 +142,7 @@ void MapFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >*\n"
       "$classname$::mutable_$name$() {\n"
-      "$annotate_accessor$"
+      "$annotate_mutable$"
       "  // @@protoc_insertion_point(field_mutable_map:$full_name$)\n"
       "  return _internal_mutable_$name$();\n"
       "}\n");
@@ -163,7 +160,7 @@ void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 
 void MapFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.Swap(&other->$name$_);\n");
+  format("$name$_.InternalSwap(&other->$name$_);\n");
 }
 
 void MapFieldGenerator::GenerateCopyConstructorCode(
@@ -210,9 +207,9 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   format("if (!this->_internal_$name$().empty()) {\n");
   format.Indent();
   const FieldDescriptor* key_field =
-      descriptor_->message_type()->FindFieldByName("key");
+      descriptor_->message_type()->map_key();
   const FieldDescriptor* value_field =
-      descriptor_->message_type()->FindFieldByName("value");
+      descriptor_->message_type()->map_value();
   const bool string_key = key_field->type() == FieldDescriptor::TYPE_STRING;
   const bool string_value = value_field->type() == FieldDescriptor::TYPE_STRING;
 
@@ -235,7 +232,10 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   if (utf8_check) {
     format(
         "struct Utf8Check {\n"
-        "  static void Check(ConstPtr p) {\n");
+        "  static void Check(ConstPtr p) {\n"
+        // p may be unused when GetUtf8CheckMode evaluates to kNone,
+        // thus disabling the validation.
+        "    (void)p;\n");
     format.Indent();
     format.Indent();
     if (string_key) {
@@ -294,6 +294,38 @@ void MapFieldGenerator::GenerateByteSize(io::Printer* printer) const {
       "  total_size += $map_classname$::Funcs::ByteSizeLong(it->first, "
       "it->second);\n"
       "}\n");
+}
+
+void MapFieldGenerator::GenerateIsInitialized(io::Printer* printer) const {
+  if (!has_required_fields_) return;
+
+  Formatter format(printer, variables_);
+  format(
+      "if (!::$proto_ns$::internal::AllAreInitialized($name$_)) return "
+      "false;\n");
+}
+
+void MapFieldGenerator::GenerateConstinitInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    format("$name$_(::$proto_ns$::internal::ConstantInitialized{})");
+  } else {
+    format("$name$_()");
+  }
+}
+
+bool MapFieldGenerator::GenerateArenaDestructorCode(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    // _this is the object being destructed (we are inside a static method
+    // here).
+    format("_this->$name$_. ~MapField();\n");
+    return true;
+  } else {
+    return false;
+  }
 }
 
 }  // namespace cpp

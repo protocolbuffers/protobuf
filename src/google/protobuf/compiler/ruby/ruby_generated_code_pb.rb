@@ -3,6 +3,8 @@
 
 require 'google/protobuf'
 
+require 'ruby_generated_code_proto2_import_pb'
+
 Google::Protobuf::DescriptorPool.generated_pool.build do
   add_file("ruby_generated_code.proto", :syntax => :proto3) do
     add_message "A.B.C.TestMessage" do
@@ -17,6 +19,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :optional_bytes, :bytes, 9
       optional :optional_enum, :enum, 10, "A.B.C.TestEnum"
       optional :optional_msg, :message, 11, "A.B.C.TestMessage"
+      optional :optional_proto2_submessage, :message, 12, "A.B.C.TestImportedMessage"
       repeated :repeated_int32, :int32, 21
       repeated :repeated_int64, :int64, 22
       repeated :repeated_uint32, :uint32, 23

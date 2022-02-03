@@ -31,6 +31,9 @@
 #include <google/protobuf/util/internal/utility.h>
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <limits>
 
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
@@ -41,7 +44,6 @@
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
-#include <google/protobuf/stubs/mathlimits.h>
 
 // clang-format off
 #include <google/protobuf/port_def.inc>
@@ -62,9 +64,9 @@ bool GetBoolOptionOrDefault(
   return GetBoolFromAny(opt->value());
 }
 
-int64 GetInt64OptionOrDefault(
+int64_t GetInt64OptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    StringPiece option_name, int64 default_value) {
+    StringPiece option_name, int64_t default_value) {
   const google::protobuf::Option* opt = FindOptionOrNull(options, option_name);
   if (opt == nullptr) {
     return default_value;
@@ -105,7 +107,7 @@ bool GetBoolFromAny(const google::protobuf::Any& any) {
   return b.value();
 }
 
-int64 GetInt64FromAny(const google::protobuf::Any& any) {
+int64_t GetInt64FromAny(const google::protobuf::Any& any) {
   google::protobuf::Int64Value i;
   ParseFromAny(any.value(), &i);
   return i.value();
@@ -178,7 +180,7 @@ const google::protobuf::Field* FindJsonFieldInTypeOrNull(
 }
 
 const google::protobuf::Field* FindFieldInTypeByNumberOrNull(
-    const google::protobuf::Type* type, int32 number) {
+    const google::protobuf::Type* type, int32_t number) {
   if (type != nullptr) {
     for (int i = 0; i < type->fields_size(); ++i) {
       const google::protobuf::Field& field = type->fields(i);
@@ -204,7 +206,7 @@ const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
 }
 
 const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
-    const google::protobuf::Enum* enum_type, int32 value) {
+    const google::protobuf::Enum* enum_type, int32_t value) {
   if (enum_type != nullptr) {
     for (int i = 0; i < enum_type->enumvalue_size(); ++i) {
       const google::protobuf::EnumValue& enum_value = enum_type->enumvalue(i);
@@ -269,7 +271,8 @@ std::string ToCamelCase(StringPiece input) {
       // 1) following a lowercase:   "...aB..."
       // 2) followed by a lowercase: "...ABc..."
       if (!result.empty() && is_cap &&
-          (!was_cap || (i + 1 < input.size() && ascii_islower(input[i + 1])))) {
+          (!was_cap ||
+           (i + 1 < input.size() && ascii_islower(input[i + 1])))) {
         first_word = false;
         result.push_back(input[i]);
       } else {
@@ -309,9 +312,9 @@ std::string ToSnakeCase(StringPiece input) {
       //    (e.g. "GoogleLAB" => "google_lab")
       // 4) Followed by a lowercase: "...ABc..." => "...a_bc..."
       //    (e.g. "GBike" => "g_bike")
-      if (was_not_underscore &&               //            case 1 out
-          (was_not_cap ||                     // case 2 in, case 3 out
-           (i + 1 < input.size() &&           //            case 3 out
+      if (was_not_underscore &&                     //            case 1 out
+          (was_not_cap ||                           // case 2 in, case 3 out
+           (i + 1 < input.size() &&                 //            case 3 out
             ascii_islower(input[i + 1])))) {  // case 4 in
         // We add an underscore for case 2 and case 4.
         result.push_back('_');
@@ -328,7 +331,7 @@ std::string ToSnakeCase(StringPiece input) {
   return result;
 }
 
-std::set<std::string>* well_known_types_ = NULL;
+std::set<std::string>* well_known_types_ = nullptr;
 PROTOBUF_NAMESPACE_ID::internal::once_flag well_known_types_init_;
 const char* well_known_types_name_array_[] = {
     "google.protobuf.Timestamp",   "google.protobuf.Duration",
@@ -377,15 +380,15 @@ bool IsMessageSetWireFormat(const google::protobuf::Type& type) {
 }
 
 std::string DoubleAsString(double value) {
-  if (MathLimits<double>::IsPosInf(value)) return "Infinity";
-  if (MathLimits<double>::IsNegInf(value)) return "-Infinity";
-  if (MathLimits<double>::IsNaN(value)) return "NaN";
+  if (value == std::numeric_limits<double>::infinity()) return "Infinity";
+  if (value == -std::numeric_limits<double>::infinity()) return "-Infinity";
+  if (std::isnan(value)) return "NaN";
 
   return SimpleDtoa(value);
 }
 
 std::string FloatAsString(float value) {
-  if (MathLimits<float>::IsFinite(value)) return SimpleFtoa(value);
+  if (std::isfinite(value)) return SimpleFtoa(value);
   return DoubleAsString(value);
 }
 
@@ -395,9 +398,7 @@ bool SafeStrToFloat(StringPiece str, float* value) {
     return false;
   }
 
-  if (MathLimits<double>::IsInf(double_value) ||
-      MathLimits<double>::IsNaN(double_value))
-    return false;
+  if (std::isinf(double_value) || std::isnan(double_value)) return false;
 
   // Fail if the value is not representable in float.
   if (double_value > std::numeric_limits<float>::max() ||

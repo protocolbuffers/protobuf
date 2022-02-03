@@ -33,9 +33,8 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_HASH_H__
 #define GOOGLE_PROTOBUF_STUBS_HASH_H__
 
-#include <string.h>
-#include <google/protobuf/stubs/common.h>
-
+#include <cstring>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -78,14 +77,14 @@ struct hash<bool> {
 };
 
 template <>
-struct hash<string> {
-  inline size_t operator()(const string& key) const {
+struct hash<std::string> {
+  inline size_t operator()(const std::string& key) const {
     return hash<const char*>()(key.c_str());
   }
 
   static const size_t bucket_size = 4;
   static const size_t min_buckets = 8;
-  inline bool operator()(const string& a, const string& b) const {
+  inline bool operator()(const std::string& a, const std::string& b) const {
     return a < b;
   }
 };
@@ -106,14 +105,6 @@ struct hash<std::pair<First, Second> > {
   inline bool operator()(const std::pair<First, Second>& a,
                            const std::pair<First, Second>& b) const {
     return a < b;
-  }
-};
-
-// Used by GCC/SGI STL only.  (Why isn't this provided by the standard
-// library?  :( )
-struct streq {
-  inline bool operator()(const char* a, const char* b) const {
-    return strcmp(a, b) == 0;
   }
 };
 

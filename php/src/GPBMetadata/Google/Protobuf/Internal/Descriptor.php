@@ -72,6 +72,7 @@ class Descriptor
             ->optional('oneof_index', \Google\Protobuf\Internal\GPBType::INT32, 9)
             ->optional('json_name', \Google\Protobuf\Internal\GPBType::STRING, 10)
             ->optional('options', \Google\Protobuf\Internal\GPBType::MESSAGE, 8, 'google.protobuf.internal.FieldOptions')
+            ->optional('proto3_optional', \Google\Protobuf\Internal\GPBType::BOOL, 17)
             ->finalizeToPool();
 
         $pool->addEnum('google.protobuf.internal.FieldDescriptorProto.Type', \Google\Protobuf\Internal\Type::class)

@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import junit.framework.TestCase;
 
 /**
@@ -45,45 +47,47 @@ public final class TestBadIdentifiersLite extends TestCase {
 
   public void testCompilation() {
     // If this compiles, it means the generation was correct.
-    TestBadIdentifiersProto.Deprecated.newBuilder();
-    TestBadIdentifiersProto.Override.newBuilder();
+    TestBadIdentifiersProto.Deprecated.Builder builder1 =
+        TestBadIdentifiersProto.Deprecated.newBuilder();
+    TestBadIdentifiersProto.Override.Builder builder2 =
+        TestBadIdentifiersProto.Override.newBuilder();
   }
 
   public void testConflictingFieldNames() throws Exception {
     TestBadIdentifiersProto.TestConflictingFieldNames message =
         TestBadIdentifiersProto.TestConflictingFieldNames.getDefaultInstance();
     // Make sure generated accessors are properly named.
-    assertEquals(0, message.getInt32Field1Count());
-    assertEquals(0, message.getEnumField2Count());
-    assertEquals(0, message.getStringField3Count());
-    assertEquals(0, message.getBytesField4Count());
-    assertEquals(0, message.getMessageField5Count());
+    assertThat(message.getInt32Field1Count()).isEqualTo(0);
+    assertThat(message.getEnumField2Count()).isEqualTo(0);
+    assertThat(message.getStringField3Count()).isEqualTo(0);
+    assertThat(message.getBytesField4Count()).isEqualTo(0);
+    assertThat(message.getMessageField5Count()).isEqualTo(0);
 
-    assertEquals(0, message.getInt32FieldCount11());
-    assertEquals(0, message.getEnumFieldCount12().getNumber());
-    assertEquals("", message.getStringFieldCount13());
-    assertEquals(ByteString.EMPTY, message.getBytesFieldCount14());
-    assertEquals(0, message.getMessageFieldCount15().getSerializedSize());
+    assertThat(message.getInt32FieldCount11()).isEqualTo(0);
+    assertThat(message.getEnumFieldCount12().getNumber()).isEqualTo(0);
+    assertThat(message.getStringFieldCount13()).isEmpty();
+    assertThat(message.getBytesFieldCount14()).isEqualTo(ByteString.EMPTY);
+    assertThat(message.getMessageFieldCount15().getSerializedSize()).isEqualTo(0);
 
-    assertEquals(0, message.getInt32Field21Count());
-    assertEquals(0, message.getEnumField22Count());
-    assertEquals(0, message.getStringField23Count());
-    assertEquals(0, message.getBytesField24Count());
-    assertEquals(0, message.getMessageField25Count());
+    assertThat(message.getInt32Field21Count()).isEqualTo(0);
+    assertThat(message.getEnumField22Count()).isEqualTo(0);
+    assertThat(message.getStringField23Count()).isEqualTo(0);
+    assertThat(message.getBytesField24Count()).isEqualTo(0);
+    assertThat(message.getMessageField25Count()).isEqualTo(0);
 
-    assertEquals(0, message.getInt32Field1List().size());
-    assertEquals(0, message.getInt32FieldList31());
+    assertThat(message.getInt32Field1List()).isEmpty();
+    assertThat(message.getInt32FieldList31()).isEqualTo(0);
 
-    assertEquals(0, message.getInt64FieldCount());
-    assertEquals(
-        0L,
-        message
-            .getExtension(TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldCount)
-            .longValue());
-    assertEquals(
-        0L,
-        message
-            .getExtension(TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldList)
-            .longValue());
+    assertThat(message.getInt64FieldCount()).isEqualTo(0);
+    assertThat(
+            message
+                .getExtension(TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldCount)
+                .longValue())
+        .isEqualTo(0L);
+    assertThat(
+            message
+                .getExtension(TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldList)
+                .longValue())
+        .isEqualTo(0L);
   }
 }

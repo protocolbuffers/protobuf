@@ -28,377 +28,326 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <ext/spl/spl_iterators.h>
+#include "array.h"
+
 #include <Zend/zend_API.h>
 #include <Zend/zend_interfaces.h>
 
+#include <ext/spl/spl_iterators.h>
+
+// This is not self-contained: it must be after other Zend includes.
+#include <Zend/zend_exceptions.h>
+
+#include "arena.h"
+#include "convert.h"
+#include "def.h"
+#include "message.h"
+#include "php-upb.h"
 #include "protobuf.h"
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetGet, 0, 0, 1)
-  ZEND_ARG_INFO(0, index)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetSet, 0, 0, 2)
-  ZEND_ARG_INFO(0, index)
-  ZEND_ARG_INFO(0, newval)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
-ZEND_END_ARG_INFO()
-
-static zend_function_entry repeated_field_methods[] = {
-  PHP_ME(RepeatedField, __construct,  NULL,              ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedField, append,       NULL,              ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedField, offsetExists, arginfo_offsetGet, ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedField, offsetGet,    arginfo_offsetGet, ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedField, offsetSet,    arginfo_offsetSet, ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedField, offsetUnset,  arginfo_offsetGet, ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedField, count,        arginfo_void,      ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedField, getIterator,  arginfo_void,      ZEND_ACC_PUBLIC)
-  ZEND_FE_END
-};
-
-static zend_function_entry repeated_field_iter_methods[] = {
-  PHP_ME(RepeatedFieldIter, rewind,      arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedFieldIter, current,     arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedFieldIter, key,         arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedFieldIter, next,        arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedFieldIter, valid,       arginfo_void, ZEND_ACC_PUBLIC)
-  ZEND_FE_END
-};
-
-// Forward declare static functions.
-
-static int repeated_field_array_init(zval *array, upb_fieldtype_t type,
-                                     uint size ZEND_FILE_LINE_DC);
-static void repeated_field_write_dimension(zval *object, zval *offset,
-                                           zval *value TSRMLS_DC);
-static int repeated_field_has_dimension(zval *object, zval *offset TSRMLS_DC);
-static HashTable *repeated_field_get_gc(zval *object, CACHED_VALUE **table,
-                                        int *n TSRMLS_DC);
-#if PHP_MAJOR_VERSION < 7
-static zend_object_value repeated_field_create(zend_class_entry *ce TSRMLS_DC);
-static zend_object_value repeated_field_iter_create(zend_class_entry *ce TSRMLS_DC);
-#else
-static zend_object *repeated_field_create(zend_class_entry *ce TSRMLS_DC);
-static zend_object *repeated_field_iter_create(zend_class_entry *ce TSRMLS_DC);
-#endif
+static void RepeatedFieldIter_make(zval *val, zval *repeated_field);
 
 // -----------------------------------------------------------------------------
-// RepeatedField creation/desctruction
+// RepeatedField
 // -----------------------------------------------------------------------------
 
-zend_class_entry* repeated_field_type;
-zend_class_entry* repeated_field_iter_type;
-zend_object_handlers* repeated_field_handlers;
-zend_object_handlers* repeated_field_iter_handlers;
+typedef struct {
+  zend_object std;
+  zval arena;
+  upb_array *array;
+  TypeInfo type;
+} RepeatedField;
 
-// Define object free method.
-PHP_PROTO_OBJECT_FREE_START(RepeatedField, repeated_field)
-#if PHP_MAJOR_VERSION < 7
-php_proto_zval_ptr_dtor(intern->array);
-#else
-php_proto_zval_ptr_dtor(&intern->array);
-#endif
-PHP_PROTO_OBJECT_FREE_END
+zend_class_entry *RepeatedField_class_entry;
+static zend_object_handlers RepeatedField_object_handlers;
 
-PHP_PROTO_OBJECT_DTOR_START(RepeatedField, repeated_field)
-PHP_PROTO_OBJECT_DTOR_END
+// PHP Object Handlers /////////////////////////////////////////////////////////
 
-// Define object create method.
-PHP_PROTO_OBJECT_CREATE_START(RepeatedField, repeated_field)
-#if PHP_MAJOR_VERSION < 7
-intern->array = NULL;
-#endif
-intern->type = 0;
-intern->msg_ce = NULL;
-PHP_PROTO_OBJECT_CREATE_END(RepeatedField, repeated_field)
-
-// Init class entry.
-PHP_PROTO_INIT_CLASS_START("Google\\Protobuf\\Internal\\RepeatedField",
-                           RepeatedField, repeated_field)
-zend_class_implements(repeated_field_type TSRMLS_CC, 3, spl_ce_ArrayAccess,
-                      zend_ce_aggregate, spl_ce_Countable);
-repeated_field_handlers->write_dimension = repeated_field_write_dimension;
-repeated_field_handlers->get_gc = repeated_field_get_gc;
-PHP_PROTO_INIT_CLASS_END
-
-// Define array element free function.
-#if PHP_MAJOR_VERSION < 7
-static inline void php_proto_array_string_release(void *value) {
-  zval_ptr_dtor(value);
+/**
+ * RepeatedField_create()
+ *
+ * PHP class entry function to allocate and initialize a new RepeatedField
+ * object.
+ */
+static zend_object* RepeatedField_create(zend_class_entry *class_type) {
+  RepeatedField *intern = emalloc(sizeof(RepeatedField));
+  zend_object_std_init(&intern->std, class_type);
+  intern->std.handlers = &RepeatedField_object_handlers;
+  Arena_Init(&intern->arena);
+  intern->array = NULL;
+  // Skip object_properties_init(), we don't allow derived classes.
+  return &intern->std;
 }
 
-static inline void php_proto_array_object_release(void *value) {
-  zval_ptr_dtor(value);
+/**
+ * RepeatedField_dtor()
+ *
+ * Object handler to destroy a RepeatedField. This releases all resources
+ * associated with the message. Note that it is possible to access a destroyed
+ * object from PHP in rare cases.
+ */
+static void RepeatedField_destructor(zend_object* obj) {
+  RepeatedField* intern = (RepeatedField*)obj;
+  ObjCache_Delete(intern->array);
+  zval_ptr_dtor(&intern->arena);
+  zend_object_std_dtor(&intern->std);
 }
-static inline void php_proto_array_default_release(void *value) {
-}
-#else
-static inline void php_proto_array_string_release(zval *value) {
-  void* ptr = Z_PTR_P(value);
-  zend_string* object = *(zend_string**)ptr;
-  zend_string_release(object);
-  efree(ptr);
-}
-static inline void php_proto_array_object_release(zval *value) {
-  zval_ptr_dtor(value);
-}
-static void php_proto_array_default_release(zval* value) {
-  void* ptr = Z_PTR_P(value);
-  efree(ptr);
-}
-#endif
 
-static int repeated_field_array_init(zval *array, upb_fieldtype_t type,
-                                     uint size ZEND_FILE_LINE_DC) {
-  PHP_PROTO_ALLOC_ARRAY(array);
+/**
+ * RepeatedField_compare_objects()
+ *
+ * Object handler for comparing two repeated field objects. Called whenever PHP
+ * code does:
+ *
+ *   $rf1 == $rf2
+ */
+static int RepeatedField_compare_objects(zval *rf1, zval *rf2) {
+  RepeatedField* intern1 = (RepeatedField*)Z_OBJ_P(rf1);
+  RepeatedField* intern2 = (RepeatedField*)Z_OBJ_P(rf2);
 
-  switch (type) {
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES:
-      zend_hash_init(Z_ARRVAL_P(array), size, NULL,
-                     php_proto_array_string_release, 0);
-      break;
-    case UPB_TYPE_MESSAGE:
-      zend_hash_init(Z_ARRVAL_P(array), size, NULL,
-                     php_proto_array_object_release, 0);
-      break;
-    default:
-      zend_hash_init(Z_ARRVAL_P(array), size, NULL,
-                     php_proto_array_default_release, 0);
+  return TypeInfo_Eq(intern1->type, intern2->type) &&
+                 ArrayEq(intern1->array, intern2->array, intern1->type)
+             ? 0
+             : 1;
+}
+
+/**
+ * RepeatedField_clone_obj()
+ *
+ * Object handler for cloning an object in PHP. Called when PHP code does:
+ *
+ *   $rf2 = clone $rf1;
+ */
+static zend_object *RepeatedField_clone_obj(PROTO_VAL *object) {
+  RepeatedField* intern = PROTO_VAL_P(object);
+  upb_arena *arena = Arena_Get(&intern->arena);
+  upb_array *clone = upb_array_new(arena, intern->type.type);
+  size_t n = upb_array_size(intern->array);
+  size_t i;
+
+  for (i = 0; i < n; i++) {
+    upb_msgval msgval = upb_array_get(intern->array, i);
+    upb_array_append(clone, msgval, arena);
   }
-  return SUCCESS;
+
+  zval ret;
+  RepeatedField_GetPhpWrapper(&ret, clone, intern->type, &intern->arena);
+  return Z_OBJ_P(&ret);
 }
 
-// -----------------------------------------------------------------------------
-// RepeatedField Handlers
-// -----------------------------------------------------------------------------
+static HashTable *RepeatedField_GetProperties(PROTO_VAL *object) {
+  return NULL;  // We do not have a properties table.
+}
 
-static void repeated_field_write_dimension(zval *object, zval *offset,
-                                           zval *value TSRMLS_DC) {
-  uint64_t index;
+static zval *RepeatedField_GetPropertyPtrPtr(PROTO_VAL *object,
+                                             PROTO_STR *member,
+                                             int type, void **cache_slot) {
+  return NULL;  // We don't offer direct references to our properties.
+}
 
-  RepeatedField *intern = UNBOX(RepeatedField, object);
-  HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
-  int size = native_slot_size(intern->type);
+// C Functions from array.h ////////////////////////////////////////////////////
 
-  unsigned char memory[NATIVE_SLOT_MAX_SIZE];
-  memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
+// These are documented in the header file.
 
-  if (!native_slot_set_by_array(intern->type, intern->msg_ce, memory,
-                                value TSRMLS_CC)) {
+void RepeatedField_GetPhpWrapper(zval *val, upb_array *arr, TypeInfo type,
+                                 zval *arena) {
+  if (!arr) {
+    ZVAL_NULL(val);
     return;
   }
 
-  if (!offset || Z_TYPE_P(offset) == IS_NULL) {
-    index = zend_hash_num_elements(PHP_PROTO_HASH_OF(intern->array));
-  } else {
-    if (protobuf_convert_to_uint64(offset, &index)) {
-      if (!zend_hash_index_exists(ht, index)) {
-        zend_error(E_USER_ERROR, "Element at %llu doesn't exist.\n",
-                   (long long unsigned int)index);
-        return;
+  if (!ObjCache_Get(arr, val)) {
+    RepeatedField *intern = emalloc(sizeof(RepeatedField));
+    zend_object_std_init(&intern->std, RepeatedField_class_entry);
+    intern->std.handlers = &RepeatedField_object_handlers;
+    ZVAL_COPY(&intern->arena, arena);
+    intern->array = arr;
+    intern->type = type;
+    // Skip object_properties_init(), we don't allow derived classes.
+    ObjCache_Add(intern->array, &intern->std);
+    ZVAL_OBJ(val, &intern->std);
+  }
+}
+
+upb_array *RepeatedField_GetUpbArray(zval *val, TypeInfo type,
+                                     upb_arena *arena) {
+  if (Z_ISREF_P(val)) {
+    ZVAL_DEREF(val);
+  }
+
+  if (Z_TYPE_P(val) == IS_ARRAY) {
+    // Auto-construct, eg. [1, 2, 3] -> upb_array([1, 2, 3]).
+    upb_array *arr = upb_array_new(arena, type.type);
+    HashTable *table = HASH_OF(val);
+    HashPosition pos;
+
+    zend_hash_internal_pointer_reset_ex(table, &pos);
+
+    while (true) {
+      zval *zv = zend_hash_get_current_data_ex(table, &pos);
+      upb_msgval val;
+
+      if (!zv) return arr;
+
+      if (!Convert_PhpToUpbAutoWrap(zv, &val, type, arena)) {
+        return NULL;
       }
-    } else {
-      return;
+
+      upb_array_append(arr, val, arena);
+      zend_hash_move_forward_ex(table, &pos);
     }
-  }
+  } else if (Z_TYPE_P(val) == IS_OBJECT &&
+             Z_OBJCE_P(val) == RepeatedField_class_entry) {
+    // Unwrap existing RepeatedField object to get the upb_array* inside.
+    RepeatedField *intern = (RepeatedField*)Z_OBJ_P(val);
 
-  if (intern->type == UPB_TYPE_MESSAGE) {
-    php_proto_zend_hash_index_update_zval(ht, index, *(zval**)memory);
-  } else {
-    php_proto_zend_hash_index_update_mem(ht, index, memory, size, NULL);
-  }
-}
-
-#if PHP_MAJOR_VERSION < 7
-static HashTable *repeated_field_get_gc(zval *object, zval ***table,
-                                        int *n TSRMLS_DC) {
-#else
-static HashTable *repeated_field_get_gc(zval *object, zval **table, int *n) {
-#endif
-  *table = NULL;
-  *n = 0;
-  RepeatedField *intern = UNBOX(RepeatedField, object);
-  return PHP_PROTO_HASH_OF(intern->array);
-}
-
-// -----------------------------------------------------------------------------
-// C RepeatedField Utilities
-// -----------------------------------------------------------------------------
-
-void *repeated_field_index_native(RepeatedField *intern, int index TSRMLS_DC) {
-  HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
-  void *value;
-
-  if (intern->type == UPB_TYPE_MESSAGE) {
-    if (php_proto_zend_hash_index_find_zval(ht, index, (void **)&value) ==
-        FAILURE) {
-      zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
-      return NULL;
+    if (!TypeInfo_Eq(intern->type, type)) {
+      php_error_docref(NULL, E_USER_ERROR,
+                       "Wrong type for this repeated field.");
     }
-  } else {
-    if (php_proto_zend_hash_index_find_mem(ht, index, (void **)&value) ==
-        FAILURE) {
-      zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
-      return NULL;
-    }
-  }
 
-  return value;
-}
-
-void repeated_field_push_native(RepeatedField *intern, void *value) {
-  HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
-  int size = native_slot_size(intern->type);
-  if (intern->type == UPB_TYPE_MESSAGE) {
-    php_proto_zend_hash_next_index_insert_zval(ht, value);
+    upb_arena_fuse(arena, Arena_Get(&intern->arena));
+    return intern->array;
   } else {
-    php_proto_zend_hash_next_index_insert_mem(ht, (void **)value, size, NULL);
+    php_error_docref(NULL, E_USER_ERROR, "Must be a repeated field");
+    return NULL;
   }
 }
 
-void repeated_field_create_with_field(
-    zend_class_entry *ce, const upb_fielddef *field,
-    CACHED_VALUE *repeated_field PHP_PROTO_TSRMLS_DC) {
-  upb_fieldtype_t type = upb_fielddef_type(field);
-  const zend_class_entry *msg_ce = field_type_class(field PHP_PROTO_TSRMLS_CC);
-  repeated_field_create_with_type(ce, type, msg_ce,
-                                  repeated_field PHP_PROTO_TSRMLS_CC);
-}
+bool ArrayEq(const upb_array *a1, const upb_array *a2, TypeInfo type) {
+  size_t i;
+  size_t n;
 
-void repeated_field_create_with_type(
-    zend_class_entry *ce, upb_fieldtype_t type, const zend_class_entry *msg_ce,
-    CACHED_VALUE *repeated_field PHP_PROTO_TSRMLS_DC) {
-  CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(CACHED_PTR_TO_ZVAL_PTR(repeated_field),
-                                   repeated_field_type);
+  if ((a1 == NULL) != (a2 == NULL)) return false;
+  if (a1 == NULL) return true;
 
-  RepeatedField *intern =
-      UNBOX(RepeatedField, CACHED_TO_ZVAL_PTR(*repeated_field));
-  intern->type = type;
-  intern->msg_ce = msg_ce;
-#if PHP_MAJOR_VERSION < 7
-  MAKE_STD_ZVAL(intern->array);
-  repeated_field_array_init(intern->array, intern->type, 0 ZEND_FILE_LINE_CC);
-#else
-  repeated_field_array_init(&intern->array, intern->type, 0 ZEND_FILE_LINE_CC);
-#endif
+  n = upb_array_size(a1);
+  if (n != upb_array_size(a2)) return false;
 
-  // TODO(teboring): Link class entry for message and enum
+  for (i = 0; i < n; i++) {
+    upb_msgval val1 = upb_array_get(a1, i);
+    upb_msgval val2 = upb_array_get(a2, i);
+    if (!ValueEq(val1, val2, type)) return false;
+  }
+
+  return true;
 }
 
 
-// -----------------------------------------------------------------------------
-// PHP RepeatedField Methods
-// -----------------------------------------------------------------------------
+// RepeatedField PHP methods ///////////////////////////////////////////////////
 
 /**
+ * RepeatedField::__construct()
+ *
  * Constructs an instance of RepeatedField.
  * @param long Type of the stored element.
- * @param string Message/Enum class name (message/enum fields only).
+ * @param string Message/Enum class.
  */
 PHP_METHOD(RepeatedField, __construct) {
-  long type;
+  RepeatedField *intern = (RepeatedField*)Z_OBJ_P(getThis());
+  upb_arena *arena = Arena_Get(&intern->arena);
+  zend_long type;
   zend_class_entry* klass = NULL;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|C", &type, &klass) ==
-      FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l|C", &type, &klass) != SUCCESS) {
     return;
   }
 
-  RepeatedField *intern = UNBOX(RepeatedField, getThis());
-  intern->type = to_fieldtype(type);
-  intern->msg_ce = klass;
+  intern->type.type = pbphp_dtype_to_type(type);
+  intern->type.desc = Descriptor_GetFromClassEntry(klass);
 
-#if PHP_MAJOR_VERSION < 7
-  MAKE_STD_ZVAL(intern->array);
-  repeated_field_array_init(intern->array, intern->type, 0 ZEND_FILE_LINE_CC);
-#else
-  repeated_field_array_init(&intern->array, intern->type, 0 ZEND_FILE_LINE_CC);
-#endif
-
-  if (intern->type == UPB_TYPE_MESSAGE && klass == NULL) {
-    zend_error(E_USER_ERROR, "Message type must have concrete class.");
+  if (intern->type.type == UPB_TYPE_MESSAGE && klass == NULL) {
+    php_error_docref(NULL, E_USER_ERROR,
+                     "Message/enum type must have concrete class.");
     return;
   }
 
-  // TODO(teboring): Consider enum.
+  intern->array = upb_array_new(arena, intern->type.type);
+  ObjCache_Add(intern->array, &intern->std);
 }
 
 /**
+ * RepeatedField::append()
+ *
  * Append element to the end of the repeated field.
  * @param object The element to be added.
  */
 PHP_METHOD(RepeatedField, append) {
-  zval *value;
+  RepeatedField *intern = (RepeatedField*)Z_OBJ_P(getThis());
+  upb_arena *arena = Arena_Get(&intern->arena);
+  zval *php_val;
+  upb_msgval msgval;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &value) ==
-      FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &php_val) != SUCCESS ||
+      !Convert_PhpToUpb(php_val, &msgval, intern->type, arena)) {
     return;
   }
-  repeated_field_write_dimension(getThis(), NULL, value TSRMLS_CC);
+
+  upb_array_append(intern->array, msgval, arena);
 }
 
 /**
- * Check whether the element at given index exists.
+ * RepeatedField::offsetExists(): bool
+ *
+ * Implements the ArrayAccess interface. Invoked when PHP code calls:
+ *
+ *   isset($arr[$idx]);
+ *   empty($arr[$idx]);
+ *
  * @param long The index to be checked.
  * @return bool True if the element at the given index exists.
  */
 PHP_METHOD(RepeatedField, offsetExists) {
-  long index;
+  RepeatedField *intern = (RepeatedField*)Z_OBJ_P(getThis());
+  zend_long index;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
-      FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &index) == FAILURE) {
     return;
   }
 
-  RepeatedField *intern = UNBOX(RepeatedField, getThis());
-
-  RETURN_BOOL(index >= 0 &&
-              index < zend_hash_num_elements(PHP_PROTO_HASH_OF(intern->array)));
+  RETURN_BOOL(index >= 0 && index < upb_array_size(intern->array));
 }
 
 /**
- * Return the element at the given index.
- * This will also be called for: $ele = $arr[0]
+ * RepeatedField::offsetGet(): mixed
+ *
+ * Implements the ArrayAccess interface. Invoked when PHP code calls:
+ *
+ *   $x = $arr[$idx];
+ *
  * @param long The index of the element to be fetched.
  * @return object The stored element at given index.
  * @exception Invalid type for index.
  * @exception Non-existing index.
  */
 PHP_METHOD(RepeatedField, offsetGet) {
-  long index;
-  void *memory;
+  RepeatedField *intern = (RepeatedField*)Z_OBJ_P(getThis());
+  zend_long index;
+  upb_msgval msgval;
+  zval ret;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
-      FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &index) == FAILURE) {
     return;
   }
 
-  RepeatedField *intern = UNBOX(RepeatedField, getThis());
-  HashTable *table = PHP_PROTO_HASH_OF(intern->array);
-
-  if (intern->type == UPB_TYPE_MESSAGE) {
-    if (php_proto_zend_hash_index_find_zval(table, index, (void **)&memory) ==
-        FAILURE) {
-      zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
-      return;
-    }
-  } else {
-    if (php_proto_zend_hash_index_find_mem(table, index, (void **)&memory) ==
-        FAILURE) {
-      zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
-      return;
-    }
+  if (index < 0 || index >= upb_array_size(intern->array)) {
+    zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
+    return;
   }
-  native_slot_get_by_array(intern->type, memory,
-                           ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
+
+  msgval = upb_array_get(intern->array, index);
+  Convert_UpbToPhp(msgval, &ret, intern->type, &intern->arena);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /**
- * Assign the element at the given index.
- * This will also be called for: $arr []= $ele and $arr[0] = ele
+ * RepeatedField::offsetSet(): void
+ *
+ * Implements the ArrayAccess interface. Invoked when PHP code calls:
+ *
+ *   $arr[$idx] = $x;
+ *   $arr []= $x;  // Append
+ *
  * @param long The index of the element to be assigned.
  * @param object The element to be assigned.
  * @exception Invalid type for index.
@@ -406,140 +355,347 @@ PHP_METHOD(RepeatedField, offsetGet) {
  * @exception Incorrect type of the element.
  */
 PHP_METHOD(RepeatedField, offsetSet) {
-  zval *index, *value;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zz", &index, &value) ==
-      FAILURE) {
+  RepeatedField *intern = (RepeatedField*)Z_OBJ_P(getThis());
+  upb_arena *arena = Arena_Get(&intern->arena);
+  size_t size = upb_array_size(intern->array);
+  zval *offset, *val;
+  int64_t index;
+  upb_msgval msgval;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "zz", &offset, &val) != SUCCESS) {
     return;
   }
-  repeated_field_write_dimension(getThis(), index, value TSRMLS_CC);
+
+  if (Z_TYPE_P(offset) == IS_NULL) {
+    index = size;
+  } else if (!Convert_PhpToInt64(offset, &index)) {
+    return;
+  }
+
+  if (!Convert_PhpToUpb(val, &msgval, intern->type, arena)) {
+    return;
+  }
+
+  if (index > size) {
+    zend_error(E_USER_ERROR, "Element at index %ld doesn't exist.\n", index);
+  } else if (index == size) {
+    upb_array_append(intern->array, msgval, Arena_Get(&intern->arena));
+  } else {
+    upb_array_set(intern->array, index, msgval);
+  }
 }
 
 /**
- * Remove the element at the given index.
- * This will also be called for: unset($arr)
+ * RepeatedField::offsetUnset(): void
+ *
+ * Implements the ArrayAccess interface. Invoked when PHP code calls:
+ *
+ *   unset($arr[$idx]);
+ *
  * @param long The index of the element to be removed.
  * @exception Invalid type for index.
  * @exception The element to be removed is not at the end of the RepeatedField.
  */
 PHP_METHOD(RepeatedField, offsetUnset) {
-  long index;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
-      FAILURE) {
-    return;
-  }
-
-  RepeatedField *intern = UNBOX(RepeatedField, getThis());
+  RepeatedField *intern = (RepeatedField*)Z_OBJ_P(getThis());
+  zend_long index;
+  zend_long size = upb_array_size(intern->array);
 
   // Only the element at the end of the array can be removed.
-  if (index == -1 ||
-      index != (zend_hash_num_elements(PHP_PROTO_HASH_OF(intern->array)) - 1)) {
-    zend_error(E_USER_ERROR, "Cannot remove element at %ld.\n", index);
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &index) != SUCCESS) {
     return;
   }
 
-  zend_hash_index_del(PHP_PROTO_HASH_OF(intern->array), index);
+  if (size == 0 || index != size - 1) {
+    php_error_docref(NULL, E_USER_ERROR, "Cannot remove element at %ld.\n",
+                     index);
+    return;
+  }
+
+  upb_array_resize(intern->array, size - 1, Arena_Get(&intern->arena));
 }
 
 /**
+ * RepeatedField::count(): int
+ *
+ * Implements the Countable interface. Invoked when PHP code calls:
+ *
+ *   $len = count($arr);
  * Return the number of stored elements.
  * This will also be called for: count($arr)
  * @return long The number of stored elements.
  */
 PHP_METHOD(RepeatedField, count) {
-  RepeatedField *intern = UNBOX(RepeatedField, getThis());
+  RepeatedField *intern = (RepeatedField*)Z_OBJ_P(getThis());
 
   if (zend_parse_parameters_none() == FAILURE) {
     return;
   }
 
-  RETURN_LONG(zend_hash_num_elements(PHP_PROTO_HASH_OF(intern->array)));
+  RETURN_LONG(upb_array_size(intern->array));
 }
 
 /**
- * Return the beginning iterator.
- * This will also be called for: foreach($arr)
+ * RepeatedField::getIterator(): Traversable
+ *
+ * Implements the IteratorAggregate interface. Invoked when PHP code calls:
+ *
+ *   foreach ($arr) {}
+ *
  * @return object Beginning iterator.
  */
 PHP_METHOD(RepeatedField, getIterator) {
-  CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(return_value,
-                                   repeated_field_iter_type);
-
-  RepeatedField *intern = UNBOX(RepeatedField, getThis());
-  RepeatedFieldIter *iter = UNBOX(RepeatedFieldIter, return_value);
-  iter->repeated_field = intern;
-  iter->position = 0;
+  zval ret;
+  RepeatedFieldIter_make(&ret, getThis());
+  RETURN_COPY_VALUE(&ret);
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_construct, 0, 0, 1)
+  ZEND_ARG_INFO(0, type)
+  ZEND_ARG_INFO(0, class)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_append, 0, 0, 1)
+  ZEND_ARG_INFO(0, newval)
+ZEND_END_ARG_INFO()
+
+PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetExists, 0, 0, _IS_BOOL, 0)
+  ZEND_ARG_INFO(0, index)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_offsetGet, 0, 0, IS_MIXED, 1)
+  ZEND_ARG_INFO(0, index)
+ZEND_END_ARG_INFO()
+
+PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetSet, 0, 2, IS_VOID, 0)
+  ZEND_ARG_INFO(0, index)
+  ZEND_ARG_INFO(0, newval)
+ZEND_END_ARG_INFO()
+
+PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_offsetUnset, 0, 0, IS_VOID, 0)
+  ZEND_ARG_INFO(0, index)
+ZEND_END_ARG_INFO()
+
+PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_count, 0, 0, IS_LONG, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_getIterator, 0, 0, Traversable, 0)
+ZEND_END_ARG_INFO()
+
+static zend_function_entry repeated_field_methods[] = {
+  PHP_ME(RepeatedField, __construct,  arginfo_construct,    ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedField, append,       arginfo_append,       ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedField, offsetExists, arginfo_offsetExists, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedField, offsetGet,    arginfo_offsetGet,    ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedField, offsetSet,    arginfo_offsetSet,    ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedField, offsetUnset,  arginfo_offsetUnset,  ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedField, count,        arginfo_count,        ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedField, getIterator,  arginfo_getIterator,  ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+
 // -----------------------------------------------------------------------------
-// RepeatedFieldIter creation/desctruction
+// PHP RepeatedFieldIter
 // -----------------------------------------------------------------------------
 
-// Define object free method.
-PHP_PROTO_OBJECT_FREE_START(RepeatedFieldIter, repeated_field_iter)
-PHP_PROTO_OBJECT_FREE_END
+typedef struct {
+  zend_object std;
+  zval repeated_field;
+  zend_long position;
+} RepeatedFieldIter;
 
-PHP_PROTO_OBJECT_DTOR_START(RepeatedFieldIter, repeated_field_iter)
-PHP_PROTO_OBJECT_DTOR_END
+zend_class_entry *RepeatedFieldIter_class_entry;
+static zend_object_handlers repeated_field_iter_object_handlers;
 
-// Define object create method.
-PHP_PROTO_OBJECT_CREATE_START(RepeatedFieldIter, repeated_field_iter)
-intern->repeated_field = NULL;
-intern->position = 0;
-PHP_PROTO_OBJECT_CREATE_END(RepeatedFieldIter, repeated_field_iter)
+/**
+ * RepeatedFieldIter_create()
+ *
+ * PHP class entry function to allocate and initialize a new RepeatedFieldIter
+ * object.
+ */
+zend_object* RepeatedFieldIter_create(zend_class_entry *class_type) {
+  RepeatedFieldIter *intern = emalloc(sizeof(RepeatedFieldIter));
+  zend_object_std_init(&intern->std, class_type);
+  intern->std.handlers = &repeated_field_iter_object_handlers;
+  ZVAL_NULL(&intern->repeated_field);
+  intern->position = 0;
+  // Skip object_properties_init(), we don't allow derived classes.
+  return &intern->std;
+}
 
-// Init class entry.
-PHP_PROTO_INIT_CLASS_START("Google\\Protobuf\\Internal\\RepeatedFieldIter",
-                           RepeatedFieldIter, repeated_field_iter)
-zend_class_implements(repeated_field_iter_type TSRMLS_CC, 1, zend_ce_iterator);
-PHP_PROTO_INIT_CLASS_END
+/**
+ * RepeatedFieldIter_dtor()
+ *
+ * Object handler to destroy a RepeatedFieldIter. This releases all resources
+ * associated with the message. Note that it is possible to access a destroyed
+ * object from PHP in rare cases.
+ */
+static void RepeatedFieldIter_dtor(zend_object* obj) {
+  RepeatedFieldIter* intern = (RepeatedFieldIter*)obj;
+  zval_ptr_dtor(&intern->repeated_field);
+  zend_object_std_dtor(&intern->std);
+}
 
-// -----------------------------------------------------------------------------
-// PHP RepeatedFieldIter Methods
-// -----------------------------------------------------------------------------
+/**
+ * RepeatedFieldIter_make()
+ *
+ * C function to create a RepeatedFieldIter.
+ */
+static void RepeatedFieldIter_make(zval *val, zval *repeated_field) {
+  RepeatedFieldIter *iter;
+  ZVAL_OBJ(val, RepeatedFieldIter_class_entry->create_object(
+                    RepeatedFieldIter_class_entry));
+  iter = (RepeatedFieldIter*)Z_OBJ_P(val);
+  ZVAL_COPY(&iter->repeated_field, repeated_field);
+}
 
+/*
+ * When a user writes:
+ *
+ *   foreach($arr as $key => $val) {}
+ *
+ * PHP's iterator protocol is:
+ *
+ *   $iter = $arr->getIterator();
+ *   for ($iter->rewind(); $iter->valid(); $iter->next()) {
+ *     $key = $iter->key();
+ *     $val = $iter->current();
+ *   }
+ */
+
+/**
+ * RepeatedFieldIter::rewind(): void
+ *
+ * Implements the Iterator interface. Sets the iterator to the first element.
+ */
 PHP_METHOD(RepeatedFieldIter, rewind) {
-  RepeatedFieldIter *intern = UNBOX(RepeatedFieldIter, getThis());
+  RepeatedFieldIter *intern = (RepeatedFieldIter*)Z_OBJ_P(getThis());
   intern->position = 0;
 }
 
+/**
+ * RepeatedFieldIter::current(): mixed
+ *
+ * Implements the Iterator interface. Returns the current value.
+ */
 PHP_METHOD(RepeatedFieldIter, current) {
-  RepeatedFieldIter *intern = UNBOX(RepeatedFieldIter, getThis());
-  RepeatedField *repeated_field = intern->repeated_field;
+  RepeatedFieldIter *intern = (RepeatedFieldIter*)Z_OBJ_P(getThis());
+  RepeatedField *field = (RepeatedField*)Z_OBJ_P(&intern->repeated_field);
+  upb_array *array = field->array;
+  zend_long index = intern->position;
+  upb_msgval msgval;
+  zval ret;
 
-  long index;
-  void *memory;
-
-  HashTable *table = PHP_PROTO_HASH_OF(repeated_field->array);
-
-  if (repeated_field->type == UPB_TYPE_MESSAGE) {
-    if (php_proto_zend_hash_index_find_zval(table, intern->position,
-                                            (void **)&memory) == FAILURE) {
-      zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
-      return;
-    }
-  } else {
-    if (php_proto_zend_hash_index_find_mem(table, intern->position,
-                                           (void **)&memory) == FAILURE) {
-      zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
-      return;
-    }
+  if (index < 0 || index >= upb_array_size(array)) {
+    zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
   }
-  native_slot_get_by_array(repeated_field->type, memory,
-                           ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
+
+  msgval = upb_array_get(array, index);
+
+  Convert_UpbToPhp(msgval, &ret, field->type, &field->arena);
+  RETURN_COPY_VALUE(&ret);
 }
 
+/**
+ * RepeatedFieldIter::key(): mixed
+ *
+ * Implements the Iterator interface. Returns the current key.
+ */
 PHP_METHOD(RepeatedFieldIter, key) {
-  RepeatedFieldIter *intern = UNBOX(RepeatedFieldIter, getThis());
+  RepeatedFieldIter *intern = (RepeatedFieldIter*)Z_OBJ_P(getThis());
   RETURN_LONG(intern->position);
 }
 
+/**
+ * RepeatedFieldIter::next(): void
+ *
+ * Implements the Iterator interface. Advances to the next element.
+ */
 PHP_METHOD(RepeatedFieldIter, next) {
-  RepeatedFieldIter *intern = UNBOX(RepeatedFieldIter, getThis());
+  RepeatedFieldIter *intern = (RepeatedFieldIter*)Z_OBJ_P(getThis());
   ++intern->position;
 }
 
+/**
+ * RepeatedFieldIter::valid(): bool
+ *
+ * Implements the Iterator interface. Returns true if this is a valid element.
+ */
 PHP_METHOD(RepeatedFieldIter, valid) {
-  RepeatedFieldIter *intern = UNBOX(RepeatedFieldIter, getThis());
-  RETURN_BOOL(zend_hash_num_elements(PHP_PROTO_HASH_OF(
-                  intern->repeated_field->array)) > intern->position);
+  RepeatedFieldIter *intern = (RepeatedFieldIter*)Z_OBJ_P(getThis());
+  RepeatedField *field = (RepeatedField*)Z_OBJ_P(&intern->repeated_field);
+  RETURN_BOOL(intern->position < upb_array_size(field->array));
+}
+
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_current, 0, 0, IS_MIXED, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_key, 0, 0, IS_MIXED, 0)
+ZEND_END_ARG_INFO()
+
+PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_next, 0, 0, IS_VOID, 0)
+ZEND_END_ARG_INFO()
+
+PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_valid, 0, 0, _IS_BOOL, 0)
+ZEND_END_ARG_INFO()
+
+PROTOBUF_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_rewind, 0, 0, IS_VOID, 0)
+ZEND_END_ARG_INFO()
+
+static zend_function_entry repeated_field_iter_methods[] = {
+  PHP_ME(RepeatedFieldIter, rewind,      arginfo_rewind,  ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, current,     arginfo_current, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, key,         arginfo_key,     ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, next,        arginfo_next,    ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, valid,       arginfo_valid,   ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+
+// -----------------------------------------------------------------------------
+// Module init.
+// -----------------------------------------------------------------------------
+
+/**
+ * Array_ModuleInit()
+ *
+ * Called when the C extension is loaded to register all types.
+ */
+void Array_ModuleInit() {
+  zend_class_entry tmp_ce;
+  zend_object_handlers *h;
+
+  // RepeatedField.
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\RepeatedField",
+                   repeated_field_methods);
+
+  RepeatedField_class_entry = zend_register_internal_class(&tmp_ce);
+  zend_class_implements(RepeatedField_class_entry, 3, zend_ce_arrayaccess,
+                        zend_ce_aggregate, zend_ce_countable);
+  RepeatedField_class_entry->ce_flags |= ZEND_ACC_FINAL;
+  RepeatedField_class_entry->create_object = RepeatedField_create;
+
+  h = &RepeatedField_object_handlers;
+  memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
+  h->dtor_obj = RepeatedField_destructor;
+#if PHP_VERSION_ID < 80000
+  h->compare_objects = RepeatedField_compare_objects;
+#else
+  h->compare = RepeatedField_compare_objects;
+#endif
+  h->clone_obj = RepeatedField_clone_obj;
+  h->get_properties = RepeatedField_GetProperties;
+  h->get_property_ptr_ptr = RepeatedField_GetPropertyPtrPtr;
+
+  // RepeatedFieldIter
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\RepeatedFieldIter",
+                   repeated_field_iter_methods);
+
+  RepeatedFieldIter_class_entry = zend_register_internal_class(&tmp_ce);
+  zend_class_implements(RepeatedFieldIter_class_entry, 1, zend_ce_iterator);
+  RepeatedFieldIter_class_entry->ce_flags |= ZEND_ACC_FINAL;
+  RepeatedFieldIter_class_entry->create_object = RepeatedFieldIter_create;
+
+  h = &repeated_field_iter_object_handlers;
+  memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
+  h->dtor_obj = RepeatedFieldIter_dtor;
 }

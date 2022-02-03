@@ -156,24 +156,33 @@
   GPBUnknownFieldSet* bizarroFields =
       [[[GPBUnknownFieldSet alloc] init] autorelease];
   NSUInteger count = [unknownFields_ countOfFields];
-  int32_t tags[count];
-  [unknownFields_ getTags:tags];
-  for (NSUInteger i = 0; i < count; ++i) {
-    int32_t tag = tags[i];
-    GPBUnknownField* field = [unknownFields_ getField:tag];
-    if (field.varintList.count == 0) {
-      // Original field is not a varint, so use a varint.
-      GPBUnknownField* varintField =
-          [[[GPBUnknownField alloc] initWithNumber:tag] autorelease];
-      [varintField addVarint:1];
-      [bizarroFields addField:varintField];
-    } else {
-      // Original field *is* a varint, so use something else.
-      GPBUnknownField* fixed32Field =
-          [[[GPBUnknownField alloc] initWithNumber:tag] autorelease];
-      [fixed32Field addFixed32:1];
-      [bizarroFields addField:fixed32Field];
+  int32_t *tags = malloc(count * sizeof(int32_t));
+  if (!tags) {
+    XCTFail(@"Failed to make scratch buffer for testing");
+    return [NSData data];
+  }
+  @try {
+    [unknownFields_ getTags:tags];
+    for (NSUInteger i = 0; i < count; ++i) {
+      int32_t tag = tags[i];
+      GPBUnknownField* field = [unknownFields_ getField:tag];
+      if (field.varintList.count == 0) {
+        // Original field is not a varint, so use a varint.
+        GPBUnknownField* varintField =
+            [[[GPBUnknownField alloc] initWithNumber:tag] autorelease];
+        [varintField addVarint:1];
+        [bizarroFields addField:varintField];
+      } else {
+        // Original field *is* a varint, so use something else.
+        GPBUnknownField* fixed32Field =
+            [[[GPBUnknownField alloc] initWithNumber:tag] autorelease];
+        [fixed32Field addFixed32:1];
+        [bizarroFields addField:fixed32Field];
+      }
     }
+  }
+  @finally {
+    free(tags);
   }
 
   return [bizarroFields data];

@@ -41,6 +41,52 @@
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestObjc.pbobjc.h"
 #import "google/protobuf/UnittestObjcOptions.pbobjc.h"
+#import "google/protobuf/UnittestImport.pbobjc.h"
+
+// Helper class to test KVO.
+@interface GPBKVOTestObserver : NSObject {
+  id observee_;
+  NSString *keyPath_;
+}
+
+@property (nonatomic) BOOL didObserve;
+- (id)initWithObservee:(id)observee keyPath:(NSString *)keyPath;
+@end
+
+@implementation GPBKVOTestObserver
+
+@synthesize didObserve;
+
+- (id)initWithObservee:(id)observee keyPath:(NSString *)keyPath {
+  if (self = [super init]) {
+    observee_ = [observee retain];
+    keyPath_ = [keyPath copy];
+    [observee_ addObserver:self forKeyPath:keyPath_ options:0 context:NULL];
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [observee_ removeObserver:self forKeyPath:keyPath_];
+  [observee_ release];
+  [keyPath_ release];
+  [super dealloc];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context
+{
+#pragma unused(object)
+#pragma unused(change)
+#pragma unused(context)
+  if ([keyPath isEqualToString:keyPath_]) {
+    self.didObserve = YES;
+  }
+}
+
+@end
 
 @interface MessageTests : GPBTestCase
 @end
@@ -337,6 +383,9 @@
 #endif  // DEBUG
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 - (void)testCoding {
   GPBMessage *original = [self mergeResult];
   NSData *data =
@@ -371,6 +420,8 @@
   // Intentionally doing a pointer comparison.
   XCTAssertNotEqual(unarchivedObject, original);
 }
+
+#pragma clang diagnostic pop
 
 - (void)testObjectReset {
   // Tests a failure where clearing out defaults values caused an over release.
@@ -429,6 +480,55 @@
   [self assertAllFieldsKVCMatch:message];
   [self assertAllFieldsSet:message repeatedCount:kGPBDefaultRepeatCount];
   [self assertAllFieldsKVCMatch:message];
+}
+
+- (void)testKVOBasic {
+  TestAllTypes *message = [TestAllTypes message];
+  GPBKVOTestObserver *observer =
+      [[[GPBKVOTestObserver alloc] initWithObservee:message
+                                            keyPath:@"optionalString"]
+       autorelease];
+  XCTAssertFalse(observer.didObserve);
+  message.defaultString = @"Hello";
+  XCTAssertFalse(observer.didObserve);
+  message.optionalString = @"Hello";
+  XCTAssertTrue(observer.didObserve);
+}
+
+- (void)testKVOAutocreate {
+  TestAllTypes *message = [TestAllTypes message];
+  GPBKVOTestObserver *autocreateObserver =
+      [[[GPBKVOTestObserver alloc] initWithObservee:message
+                                            keyPath:@"optionalImportMessage"]
+       autorelease];
+ GPBKVOTestObserver *innerFieldObserver =
+     [[[GPBKVOTestObserver alloc] initWithObservee:message
+                                           keyPath:@"optionalImportMessage.d"]
+      autorelease];
+  XCTAssertFalse(autocreateObserver.didObserve);
+  XCTAssertFalse(innerFieldObserver.didObserve);
+
+  int a = message.optionalImportMessage.d;
+  XCTAssertEqual(a, 0);
+
+  // Autocreation of fields is not observed by KVO when getting values.
+  XCTAssertFalse(autocreateObserver.didObserve);
+  XCTAssertFalse(innerFieldObserver.didObserve);
+
+  message.optionalImportMessage.d = 2;
+
+  // Autocreation of fields is not observed by KVO.
+  // This is undefined behavior. The library makes no guarantees with regards
+  // to KVO firing if an autocreation occurs as part of a setter.
+  // This test exists just to be aware if the behavior changes.
+  XCTAssertFalse(autocreateObserver.didObserve);
+
+  // Values set inside of an autocreated field are observed.
+  XCTAssertTrue(innerFieldObserver.didObserve);
+
+  // Explicit setting of a message field is observed.
+  message.optionalImportMessage = [ImportMessage message];
+  XCTAssertTrue(autocreateObserver.didObserve);
 }
 
 - (void)testDescription {
@@ -1131,10 +1231,10 @@
     XCTAssertNotNil(message.a.iArray);
     XCTAssertFalse([message hasA]);
     GPBInt32Array *iArray = [message.a.iArray retain];
-    XCTAssertEqual(iArray->_autocreator, message.a);  // Pointer comparision
+    XCTAssertEqual(iArray->_autocreator, message.a);  // Pointer comparison
     message.a.iArray = [GPBInt32Array arrayWithValue:1];
     XCTAssertTrue([message hasA]);
-    XCTAssertNotEqual(message.a.iArray, iArray);  // Pointer comparision
+    XCTAssertNotEqual(message.a.iArray, iArray);  // Pointer comparison
     XCTAssertNil(iArray->_autocreator);
     [iArray release];
   }
@@ -1148,10 +1248,10 @@
     GPBAutocreatedArray *strArray =
         (GPBAutocreatedArray *)[message.a.strArray retain];
     XCTAssertTrue([strArray isKindOfClass:[GPBAutocreatedArray class]]);
-    XCTAssertEqual(strArray->_autocreator, message.a);  // Pointer comparision
+    XCTAssertEqual(strArray->_autocreator, message.a);  // Pointer comparison
     message.a.strArray = [NSMutableArray arrayWithObject:@"foo"];
     XCTAssertTrue([message hasA]);
-    XCTAssertNotEqual(message.a.strArray, strArray);  // Pointer comparision
+    XCTAssertNotEqual(message.a.strArray, strArray);  // Pointer comparison
     XCTAssertNil(strArray->_autocreator);
     [strArray release];
   }
@@ -1348,11 +1448,11 @@
     XCTAssertNotNil(message.a.iToI);
     XCTAssertFalse([message hasA]);
     GPBInt32Int32Dictionary *iToI = [message.a.iToI retain];
-    XCTAssertEqual(iToI->_autocreator, message.a);  // Pointer comparision
+    XCTAssertEqual(iToI->_autocreator, message.a);  // Pointer comparison
     message.a.iToI = [[[GPBInt32Int32Dictionary alloc] init] autorelease];
     [message.a.iToI setInt32:6 forKey:7];
     XCTAssertTrue([message hasA]);
-    XCTAssertNotEqual(message.a.iToI, iToI);  // Pointer comparision
+    XCTAssertNotEqual(message.a.iToI, iToI);  // Pointer comparison
     XCTAssertNil(iToI->_autocreator);
     [iToI release];
   }
@@ -1366,11 +1466,11 @@
     GPBAutocreatedDictionary *strToStr =
         (GPBAutocreatedDictionary *)[message.a.strToStr retain];
     XCTAssertTrue([strToStr isKindOfClass:[GPBAutocreatedDictionary class]]);
-    XCTAssertEqual(strToStr->_autocreator, message.a);  // Pointer comparision
+    XCTAssertEqual(strToStr->_autocreator, message.a);  // Pointer comparison
     message.a.strToStr =
         [NSMutableDictionary dictionaryWithObject:@"abc" forKey:@"def"];
     XCTAssertTrue([message hasA]);
-    XCTAssertNotEqual(message.a.strToStr, strToStr);  // Pointer comparision
+    XCTAssertNotEqual(message.a.strToStr, strToStr);  // Pointer comparison
     XCTAssertNil(strToStr->_autocreator);
     [strToStr release];
   }
@@ -1918,7 +2018,7 @@
   aTime = Time_SomethingElse;
   Time_IsValidValue(aTime);
 
-  // This block confirms the names in the decriptors is what we wanted.
+  // This block confirms the names in the descriptors is what we wanted.
 
   GPBEnumDescriptor *descriptor;
   NSString *valueName;

@@ -52,6 +52,7 @@
  * Major caveat 3 - This class uses typed arrays and must not be used on older
  * browsers that do not support them.
  *
+ * @suppress {missingRequire} TODO(b/152540451): this shouldn't be needed
  * @author aappleby@google.com (Austin Appleby)
  */
 
@@ -748,7 +749,7 @@ jspb.BinaryWriter.prototype.writeDouble = function(field, value) {
  */
 jspb.BinaryWriter.prototype.writeBool = function(field, value) {
   if (value == null) return;
-  goog.asserts.assert(goog.isBoolean(value) || goog.isNumber(value));
+  goog.asserts.assert(typeof value === 'boolean' || typeof value === 'number');
   this.writeFieldHeader_(field, jspb.BinaryConstants.WireType.VARINT);
   this.encoder_.writeBool(value);
 };

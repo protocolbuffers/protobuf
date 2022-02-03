@@ -11,7 +11,7 @@ fi
 
 umask 0022
 pushd ruby
-bundle install && bundle exec rake gem:native
+bundle update && bundle exec rake gem:native
 ls pkg
 mv pkg/* $ARTIFACT_DIR
 popd

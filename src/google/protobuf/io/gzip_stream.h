@@ -80,10 +80,10 @@ class PROTOBUF_EXPORT GzipInputStream : public ZeroCopyInputStream {
   inline int ZlibErrorCode() const { return zerror_; }
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size);
-  void BackUp(int count);
-  bool Skip(int count);
-  int64_t ByteCount() const;
+  bool Next(const void** data, int* size) override;
+  void BackUp(int count) override;
+  bool Skip(int count) override;
+  int64_t ByteCount() const override;
 
  private:
   Format format_;
@@ -96,7 +96,7 @@ class PROTOBUF_EXPORT GzipInputStream : public ZeroCopyInputStream {
   void* output_buffer_;
   void* output_position_;
   size_t output_buffer_length_;
-  int64 byte_count_;
+  int64_t byte_count_;
 
   int Inflate(int flush);
   void DoNextOutput(const void** data, int* size);
@@ -167,9 +167,9 @@ class PROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
   bool Close();
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size);
-  void BackUp(int count);
-  int64_t ByteCount() const;
+  bool Next(void** data, int* size) override;
+  void BackUp(int count) override;
+  int64_t ByteCount() const override;
 
  private:
   ZeroCopyOutputStream* sub_stream_;

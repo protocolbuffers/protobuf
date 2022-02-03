@@ -164,8 +164,8 @@ void IoWin32Test::SetUp() {
   test_tmpdir.clear();
   wtest_tmpdir.clear();
   DWORD size = ::GetCurrentDirectoryW(MAX_PATH, working_directory);
-  EXPECT_GT(size, 0);
-  EXPECT_LT(size, MAX_PATH);
+  EXPECT_GT(size, 0U);
+  EXPECT_LT(size, static_cast<DWORD>(MAX_PATH));
 
   string tmp;
   bool ok = false;
@@ -372,7 +372,7 @@ TEST_F(IoWin32Test, MkdirTestNonAscii) {
   EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1").c_str(), nullptr));
   EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1\\" + kUtf16Text).c_str(), nullptr));
   // Ensure that we can create a very similarly named directory using mkdir.
-  // We don't attemp to delete and recreate the same directory, because on
+  // We don't attempt to delete and recreate the same directory, because on
   // Windows, deleting files and directories seems to be asynchronous.
   EXPECT_EQ(mkdir((test_tmpdir + "\\2").c_str(), 0644), 0);
   EXPECT_EQ(mkdir((test_tmpdir + "\\2\\" + kUtf8Text).c_str(), 0644), 0);
@@ -581,7 +581,7 @@ TEST_F(IoWin32Test, ExpandWildcardsFailsIfNoFileMatchesTest) {
 TEST_F(IoWin32Test, AsWindowsPathTest) {
   DWORD size = GetCurrentDirectoryW(0, nullptr);
   std::unique_ptr<wchar_t[]> cwd_str(new wchar_t[size]);
-  EXPECT_GT(GetCurrentDirectoryW(size, cwd_str.get()), 0);
+  EXPECT_GT(GetCurrentDirectoryW(size, cwd_str.get()), 0U);
   wstring cwd = wstring(L"\\\\?\\") + cwd_str.get();
 
   ASSERT_EQ(testonly_utf8_to_winpath("relative_mkdirtest"),

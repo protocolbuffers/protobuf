@@ -34,14 +34,8 @@
 
 #include <google/protobuf/generated_message_util.h>
 
+#include <atomic>
 #include <limits>
-
-#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-// We're only using this as a standard way for getting the thread id.
-// We're not using any thread functionality.
-#include <thread>  // NOLINT
-#endif             // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-
 #include <vector>
 
 #include <google/protobuf/io/coded_stream.h>
@@ -51,10 +45,13 @@
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
-#include <google/protobuf/stubs/mutex.h>
-#include <google/protobuf/port_def.inc>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
+
+// Must be included last
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_PRAGMA_INIT_SEG
 
 
 namespace google {
@@ -65,22 +62,33 @@ void DestroyMessage(const void* message) {
   static_cast<const MessageLite*>(message)->~MessageLite();
 }
 void DestroyString(const void* s) {
-  static_cast<const std::string*>(s)->~string();
+  static_cast<const std::string*>(s)->~basic_string();
 }
 
-ExplicitlyConstructed<std::string> fixed_address_empty_string;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY ExplicitlyConstructed<std::string>
+        fixed_address_empty_string{};  // NOLINT
 
 
+PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
 static bool InitProtobufDefaultsImpl() {
   fixed_address_empty_string.DefaultConstruct();
   OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
+
+
+  init_protobuf_defaults_state.store(true, std::memory_order_release);
   return true;
 }
 
-void InitProtobufDefaults() {
+void InitProtobufDefaultsSlow() {
   static bool is_inited = InitProtobufDefaultsImpl();
   (void)is_inited;
 }
+// Force the initialization of the empty string.
+// Normally, registration would do it, but we don't have any guarantee that
+// there is any object with reflection.
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY static std::true_type init_empty_string =
+    (InitProtobufDefaultsSlow(), std::true_type{});
 
 size_t StringSpaceUsedExcludingSelfLong(const std::string& str) {
   const void* start = &str;
@@ -111,93 +119,93 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_BOOL> {
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
     WireFormatLite::WriteBoolNoTag(Get<bool>(ptr), output);
   }
-  static uint8* SerializeToArray(const void* ptr, uint8* buffer) {
+  static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteBoolNoTagToArray(Get<Type>(ptr), buffer);
   }
 };
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_INT32> {
-  typedef int32 Type;
+  typedef int32_t Type;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteInt32NoTag(Get<int32>(ptr), output);
+    WireFormatLite::WriteInt32NoTag(Get<int32_t>(ptr), output);
   }
-  static uint8* SerializeToArray(const void* ptr, uint8* buffer) {
+  static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteInt32NoTagToArray(Get<Type>(ptr), buffer);
   }
 };
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_SINT32> {
-  typedef int32 Type;
+  typedef int32_t Type;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteSInt32NoTag(Get<int32>(ptr), output);
+    WireFormatLite::WriteSInt32NoTag(Get<int32_t>(ptr), output);
   }
-  static uint8* SerializeToArray(const void* ptr, uint8* buffer) {
+  static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteSInt32NoTagToArray(Get<Type>(ptr), buffer);
   }
 };
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_UINT32> {
-  typedef uint32 Type;
+  typedef uint32_t Type;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteUInt32NoTag(Get<uint32>(ptr), output);
+    WireFormatLite::WriteUInt32NoTag(Get<uint32_t>(ptr), output);
   }
-  static uint8* SerializeToArray(const void* ptr, uint8* buffer) {
+  static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteUInt32NoTagToArray(Get<Type>(ptr), buffer);
   }
 };
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_INT64> {
-  typedef int64 Type;
+  typedef int64_t Type;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteInt64NoTag(Get<int64>(ptr), output);
+    WireFormatLite::WriteInt64NoTag(Get<int64_t>(ptr), output);
   }
-  static uint8* SerializeToArray(const void* ptr, uint8* buffer) {
+  static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteInt64NoTagToArray(Get<Type>(ptr), buffer);
   }
 };
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_SINT64> {
-  typedef int64 Type;
+  typedef int64_t Type;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteSInt64NoTag(Get<int64>(ptr), output);
+    WireFormatLite::WriteSInt64NoTag(Get<int64_t>(ptr), output);
   }
-  static uint8* SerializeToArray(const void* ptr, uint8* buffer) {
+  static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteSInt64NoTagToArray(Get<Type>(ptr), buffer);
   }
 };
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_UINT64> {
-  typedef uint64 Type;
+  typedef uint64_t Type;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteUInt64NoTag(Get<uint64>(ptr), output);
+    WireFormatLite::WriteUInt64NoTag(Get<uint64_t>(ptr), output);
   }
-  static uint8* SerializeToArray(const void* ptr, uint8* buffer) {
+  static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteUInt64NoTagToArray(Get<Type>(ptr), buffer);
   }
 };
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_FIXED32> {
-  typedef uint32 Type;
+  typedef uint32_t Type;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteFixed32NoTag(Get<uint32>(ptr), output);
+    WireFormatLite::WriteFixed32NoTag(Get<uint32_t>(ptr), output);
   }
-  static uint8* SerializeToArray(const void* ptr, uint8* buffer) {
+  static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteFixed32NoTagToArray(Get<Type>(ptr), buffer);
   }
 };
 
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_FIXED64> {
-  typedef uint64 Type;
+  typedef uint64_t Type;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
-    WireFormatLite::WriteFixed64NoTag(Get<uint64>(ptr), output);
+    WireFormatLite::WriteFixed64NoTag(Get<uint64_t>(ptr), output);
   }
-  static uint8* SerializeToArray(const void* ptr, uint8* buffer) {
+  static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     return WireFormatLite::WriteFixed64NoTagToArray(Get<Type>(ptr), buffer);
   }
 };
@@ -209,12 +217,12 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_ENUM>
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_SFIXED32>
     : PrimitiveTypeHelper<WireFormatLite::TYPE_FIXED32> {
-  typedef int32 Type;
+  typedef int32_t Type;
 };
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_SFIXED64>
     : PrimitiveTypeHelper<WireFormatLite::TYPE_FIXED64> {
-  typedef int64 Type;
+  typedef int64_t Type;
 };
 template <>
 struct PrimitiveTypeHelper<WireFormatLite::TYPE_FLOAT>
@@ -235,7 +243,7 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_STRING> {
     output->WriteVarint32(value.size());
     output->WriteRawMaybeAliased(value.data(), value.size());
   }
-  static uint8* SerializeToArray(const void* ptr, uint8* buffer) {
+  static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     const Type& value = *static_cast<const Type*>(ptr);
     return io::CodedOutputStream::WriteStringWithSizeToArray(value, buffer);
   }
@@ -262,12 +270,12 @@ void SerializeTo(const void* ptr, O* output) {
 }
 
 template <typename O>
-void WriteTagTo(uint32 tag, O* output) {
+void WriteTagTo(uint32_t tag, O* output) {
   SerializeTo<WireFormatLite::TYPE_UINT32>(&tag, output);
 }
 
 template <typename O>
-void WriteLengthTo(uint32 length, O* output) {
+void WriteLengthTo(uint32_t length, O* output) {
   SerializeTo<WireFormatLite::TYPE_UINT32>(&length, output);
 }
 
@@ -281,7 +289,7 @@ struct OutputHelper<io::CodedOutputStream, type> {
 
 // Specialization for writing into a plain array
 struct ArrayOutput {
-  uint8* ptr;
+  uint8_t* ptr;
   bool is_deterministic;
 };
 
@@ -308,17 +316,17 @@ void SerializeMessageNoTable(const MessageLite* msg, ArrayOutput* output) {
 // Helper to branch to fast path if possible
 void SerializeMessageDispatch(const MessageLite& msg,
                               const FieldMetadata* field_table, int num_fields,
-                              int32 cached_size,
+                              int32_t /*cached_size*/,
                               io::CodedOutputStream* output) {
-  const uint8* base = reinterpret_cast<const uint8*>(&msg);
+  const uint8_t* base = reinterpret_cast<const uint8_t*>(&msg);
   SerializeInternal(base, field_table, num_fields, output);
 }
 
 // Helper to branch to fast path if possible
 void SerializeMessageDispatch(const MessageLite& msg,
                               const FieldMetadata* field_table, int num_fields,
-                              int32 cached_size, ArrayOutput* output) {
-  const uint8* base = reinterpret_cast<const uint8*>(&msg);
+                              int32_t /*cached_size*/, ArrayOutput* output) {
+  const uint8_t* base = reinterpret_cast<const uint8_t*>(&msg);
   output->ptr = SerializeInternalToArray(base, field_table, num_fields,
                                          output->is_deterministic, output->ptr);
 }
@@ -337,8 +345,9 @@ void SerializeMessageTo(const MessageLite* msg, const void* table_ptr,
     return;
   }
   const FieldMetadata* field_table = table->field_table;
-  const uint8* base = reinterpret_cast<const uint8*>(msg);
-  int cached_size = *reinterpret_cast<const int32*>(base + field_table->offset);
+  const uint8_t* base = reinterpret_cast<const uint8_t*>(msg);
+  int cached_size =
+      *reinterpret_cast<const int32_t*>(base + field_table->offset);
   WriteLengthTo(cached_size, output);
   int num_fields = table->num_fields - 1;
   SerializeMessageDispatch(*msg, field_table + 1, num_fields, cached_size,
@@ -357,8 +366,9 @@ void SerializeGroupTo(const MessageLite* msg, const void* table_ptr,
     return;
   }
   const FieldMetadata* field_table = table->field_table;
-  const uint8* base = reinterpret_cast<const uint8*>(msg);
-  int cached_size = *reinterpret_cast<const int32*>(base + field_table->offset);
+  const uint8_t* base = reinterpret_cast<const uint8_t*>(msg);
+  int cached_size =
+      *reinterpret_cast<const int32_t*>(base + field_table->offset);
   int num_fields = table->num_fields - 1;
   SerializeMessageDispatch(*msg, field_table + 1, num_fields, cached_size,
                            output);
@@ -502,7 +512,7 @@ struct PackedFieldHelper {
     if (array.empty()) return;
     WriteTagTo(md.tag, output);
     int cached_size =
-        Get<int>(static_cast<const uint8*>(field) + sizeof(RepeatedField<T>));
+        Get<int>(static_cast<const uint8_t*>(field) + sizeof(RepeatedField<T>));
     WriteLengthTo(cached_size, output);
     for (int i = 0; i < array.size(); i++) {
       SerializeTo<type>(&array[i], output);
@@ -513,7 +523,8 @@ struct PackedFieldHelper {
 template <>
 struct PackedFieldHelper<WireFormatLite::TYPE_STRING> {
   template <typename O>
-  static void Serialize(const void* field, const FieldMetadata& md, O* output) {
+  static void Serialize(const void* /*field*/, const FieldMetadata& md,
+                        O* /*output*/) {
     GOOGLE_LOG(FATAL) << "Not implemented field number " << md.tag << " with type "
                << md.type;
   }
@@ -581,12 +592,12 @@ bool IsNull<WireFormatLite::TYPE_BYTES>(const void* ptr) {
 
 template <>
 bool IsNull<WireFormatLite::TYPE_GROUP>(const void* ptr) {
-  return Get<const MessageLite*>(ptr) == NULL;
+  return Get<const MessageLite*>(ptr) == nullptr;
 }
 
 template <>
 bool IsNull<WireFormatLite::TYPE_MESSAGE>(const void* ptr) {
-  return Get<const MessageLite*>(ptr) == NULL;
+  return Get<const MessageLite*>(ptr) == nullptr;
 }
 
 
@@ -616,13 +627,13 @@ bool IsNull<FieldMetadata::kInlinedType>(const void* ptr) {
     OneOfFieldHelper<type>::Serialize(ptr, field_metadata, output);           \
     break
 
-void SerializeInternal(const uint8* base,
+void SerializeInternal(const uint8_t* base,
                        const FieldMetadata* field_metadata_table,
-                       int32 num_fields, io::CodedOutputStream* output) {
+                       int32_t num_fields, io::CodedOutputStream* output) {
   SpecialSerializer func = nullptr;
   for (int i = 0; i < num_fields; i++) {
     const FieldMetadata& field_metadata = field_metadata_table[i];
-    const uint8* ptr = base + field_metadata.offset;
+    const uint8_t* ptr = base + field_metadata.offset;
     switch (field_metadata.type) {
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_DOUBLE);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_FLOAT);
@@ -658,16 +669,16 @@ void SerializeInternal(const uint8* base,
   }
 }
 
-uint8* SerializeInternalToArray(const uint8* base,
-                                const FieldMetadata* field_metadata_table,
-                                int32 num_fields, bool is_deterministic,
-                                uint8* buffer) {
+uint8_t* SerializeInternalToArray(const uint8_t* base,
+                                  const FieldMetadata* field_metadata_table,
+                                  int32_t num_fields, bool is_deterministic,
+                                  uint8_t* buffer) {
   ArrayOutput array_output = {buffer, is_deterministic};
   ArrayOutput* output = &array_output;
   SpecialSerializer func = nullptr;
   for (int i = 0; i < num_fields; i++) {
     const FieldMetadata& field_metadata = field_metadata_table[i];
-    const uint8* ptr = base + field_metadata.offset;
+    const uint8_t* ptr = base + field_metadata.offset;
     switch (field_metadata.type) {
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_DOUBLE);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_FLOAT);
@@ -691,13 +702,13 @@ uint8* SerializeInternalToArray(const uint8* base,
       // Special cases
       case FieldMetadata::kSpecial: {
         io::ArrayOutputStream array_stream(array_output.ptr, INT_MAX);
-        io::CodedOutputStream output(&array_stream);
-        output.SetSerializationDeterministic(is_deterministic);
+        io::CodedOutputStream output_stream(&array_stream);
+        output_stream.SetSerializationDeterministic(is_deterministic);
         func = reinterpret_cast<SpecialSerializer>(
             const_cast<void*>(field_metadata.ptr));
         func(base, field_metadata.offset, field_metadata.tag,
-             field_metadata.has_offset, &output);
-        array_output.ptr += output.ByteCount();
+             field_metadata.has_offset, &output_stream);
+        array_output.ptr += output_stream.ByteCount();
       } break;
       default:
         // __builtin_unreachable()
@@ -708,18 +719,19 @@ uint8* SerializeInternalToArray(const uint8* base,
 }
 #undef SERIALIZERS_FOR_TYPE
 
-void ExtensionSerializer(const uint8* ptr, uint32 offset, uint32 tag,
-                         uint32 has_offset, io::CodedOutputStream* output) {
+void ExtensionSerializer(const MessageLite* extendee, const uint8_t* ptr,
+                         uint32_t offset, uint32_t tag, uint32_t has_offset,
+                         io::CodedOutputStream* output) {
   reinterpret_cast<const ExtensionSet*>(ptr + offset)
-      ->SerializeWithCachedSizes(tag, has_offset, output);
+      ->SerializeWithCachedSizes(extendee, tag, has_offset, output);
 }
 
-void UnknownFieldSerializerLite(const uint8* ptr, uint32 offset, uint32 tag,
-                                uint32 has_offset,
+void UnknownFieldSerializerLite(const uint8_t* ptr, uint32_t offset,
+                                uint32_t /*tag*/, uint32_t /*has_offset*/,
                                 io::CodedOutputStream* output) {
   output->WriteString(
-      reinterpret_cast<const InternalMetadataWithArenaLite*>(ptr + offset)
-          ->unknown_fields());
+      reinterpret_cast<const InternalMetadata*>(ptr + offset)
+          ->unknown_fields<std::string>(&internal::GetEmptyString));
 }
 
 MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {
@@ -728,7 +740,7 @@ MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {
     ret->CheckTypeAndMergeFrom(*message);
     return ret;
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -746,9 +758,11 @@ void GenericSwap(MessageLite* m1, MessageLite* m2) {
 MessageLite* GetOwnedMessageInternal(Arena* message_arena,
                                      MessageLite* submessage,
                                      Arena* submessage_arena) {
-  GOOGLE_DCHECK(submessage->GetArena() == submessage_arena);
+  GOOGLE_DCHECK(Arena::InternalHelper<MessageLite>::GetOwningArena(submessage) ==
+         submessage_arena);
   GOOGLE_DCHECK(message_arena != submessage_arena);
-  if (message_arena != NULL && submessage_arena == NULL) {
+  GOOGLE_DCHECK_EQ(submessage_arena, nullptr);
+  if (message_arena != nullptr && submessage_arena == nullptr) {
     message_arena->Own(submessage);
     return submessage;
   } else {
@@ -758,74 +772,8 @@ MessageLite* GetOwnedMessageInternal(Arena* message_arena,
   }
 }
 
-namespace {
-
-void InitSCC_DFS(SCCInfoBase* scc) {
-  if (scc->visit_status.load(std::memory_order_relaxed) !=
-      SCCInfoBase::kUninitialized)
-    return;
-  scc->visit_status.store(SCCInfoBase::kRunning, std::memory_order_relaxed);
-  // Each base is followed by an array of void*, containing first pointers to
-  // SCCInfoBase and then pointers-to-pointers to SCCInfoBase.
-  auto deps = reinterpret_cast<void**>(scc + 1);
-  auto strong_deps = reinterpret_cast<SCCInfoBase* const*>(deps);
-  for (int i = 0; i < scc->num_deps; ++i) {
-    if (strong_deps[i]) InitSCC_DFS(strong_deps[i]);
-  }
-  auto implicit_weak_deps =
-      reinterpret_cast<SCCInfoBase** const*>(deps + scc->num_deps);
-  for (int i = 0; i < scc->num_implicit_weak_deps; ++i) {
-    if (*implicit_weak_deps[i]) {
-      InitSCC_DFS(*implicit_weak_deps[i]);
-    }
-  }
-  scc->init_func();
-  // Mark done (note we use memory order release here), other threads could
-  // now see this as initialized and thus the initialization must have happened
-  // before.
-  scc->visit_status.store(SCCInfoBase::kInitialized, std::memory_order_release);
-}
-
-}  // namespace
-
-void InitSCCImpl(SCCInfoBase* scc) {
-  static WrappedMutex mu{GOOGLE_PROTOBUF_LINKER_INITIALIZED};
-  // Either the default in case no initialization is running or the id of the
-  // thread that is currently initializing.
-#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-  static std::atomic<std::thread::id> runner;
-  auto me = std::this_thread::get_id();
-#else
-  // This is a lightweight replacement for std::thread::id. std::thread does not
-  // work on Windows XP SP2 with the latest VC++ libraries, because it utilizes
-  // the Concurrency Runtime that is only supported on Windows XP SP3 and above.
-  static std::atomic_llong runner(-1);
-  auto me = ::GetCurrentThreadId();
-#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-
-  // This will only happen because the constructor will call InitSCC while
-  // constructing the default instance.
-  if (runner.load(std::memory_order_relaxed) == me) {
-    // Because we're in the process of constructing the default instance.
-    // We can be assured that we're already exploring this SCC.
-    GOOGLE_CHECK_EQ(scc->visit_status.load(std::memory_order_relaxed),
-             SCCInfoBase::kRunning);
-    return;
-  }
-  InitProtobufDefaults();
-  mu.Lock();
-  runner.store(me, std::memory_order_relaxed);
-  InitSCC_DFS(scc);
-
-#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-  runner.store(std::thread::id{}, std::memory_order_relaxed);
-#else
-  runner.store(-1, std::memory_order_relaxed);
-#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-
-  mu.Unlock();
-}
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

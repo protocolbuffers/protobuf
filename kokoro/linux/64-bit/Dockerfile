@@ -60,8 +60,6 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   nunit \
   # -- For all Java builds -- \
   maven \
-  # -- For java_jdk6 -- \
-  #   oops! not in jessie. too old? openjdk-6-jdk \
   # -- For java_jdk7 -- \
   openjdk-7-jdk \
   # -- For java_oracle7 -- \

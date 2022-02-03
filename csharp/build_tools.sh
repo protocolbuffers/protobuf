@@ -19,7 +19,6 @@ VERSION_NUMBER=$1
 declare -a FILE_NAMES=(          \
   windows_x86 windows-x86_32.exe \
   windows_x64 windows-x86_64.exe \
-  macosx_x86  osx-x86_32.exe     \
   macosx_x64  osx-x86_64.exe     \
   linux_x86   linux-x86_32.exe   \
   linux_x64   linux-x86_64.exe   \

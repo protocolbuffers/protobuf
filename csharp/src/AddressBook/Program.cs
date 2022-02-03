@@ -37,7 +37,7 @@ namespace Google.Protobuf.Examples.AddressBook
     /// <summary>
     /// Entry point. Repeatedly prompts user for an action to take, delegating actual behaviour
     /// to individual actions. Each action has its own Main method, so that it can be used as an
-    /// invidual complete program.
+    /// individual complete program.
     /// </summary>
     internal class Program
     {

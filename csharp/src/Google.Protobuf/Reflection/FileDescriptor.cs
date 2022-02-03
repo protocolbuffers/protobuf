@@ -250,6 +250,14 @@ namespace Google.Protobuf.Reflection
         internal FileDescriptorProto Proto { get; }
 
         /// <summary>
+        /// Returns a clone of the underlying <see cref="FileDescriptorProto"/> describing this file.
+        /// Note that a copy is taken every time this method is called, so clients using it frequently
+        /// (and not modifying it) may want to cache the returned value.
+        /// </summary>
+        /// <returns>A protobuf representation of this file descriptor.</returns>
+        public FileDescriptorProto ToProto() => Proto.Clone();
+
+        /// <summary>
         /// The syntax of the file
         /// </summary>
         public Syntax Syntax { get; }
@@ -282,6 +290,9 @@ namespace Google.Protobuf.Reflection
 
         /// <summary>
         /// Unmodifiable list of top-level extensions declared in this file.
+        /// Note that some extensions may be incomplete (FieldDescriptor.Extension may be null)
+        /// if this descriptor was generated using a version of protoc that did not fully
+        /// support extensions in C#.
         /// </summary>
         public ExtensionCollection Extensions { get; }
 
@@ -419,7 +430,8 @@ namespace Google.Protobuf.Reflection
             GeneratedClrTypeInfo generatedCodeInfo)
         {
             ExtensionRegistry registry = new ExtensionRegistry();
-            AddAllExtensions(dependencies, generatedCodeInfo, registry);
+            registry.AddRange(GetAllExtensions(dependencies, generatedCodeInfo));
+    
             FileDescriptorProto proto;
             try
             {
@@ -442,9 +454,9 @@ namespace Google.Protobuf.Reflection
             }
         }
 
-        private static void AddAllExtensions(FileDescriptor[] dependencies, GeneratedClrTypeInfo generatedInfo, ExtensionRegistry registry)
+        private static IEnumerable<Extension> GetAllExtensions(FileDescriptor[] dependencies, GeneratedClrTypeInfo generatedInfo)
         {
-            registry.AddRange(dependencies.SelectMany(GetAllDependedExtensions).Concat(GetAllGeneratedExtensions(generatedInfo)).ToArray());
+            return dependencies.SelectMany(GetAllDependedExtensions).Distinct(ExtensionRegistry.ExtensionComparer.Instance).Concat(GetAllGeneratedExtensions(generatedInfo));
         }
 
         private static IEnumerable<Extension> GetAllGeneratedExtensions(GeneratedClrTypeInfo generated)
@@ -456,6 +468,7 @@ namespace Google.Protobuf.Reflection
         {
             return descriptor.Extensions.UnorderedExtensions
                 .Select(s => s.Extension)
+                .Where(e => e != null)
                 .Concat(descriptor.Dependencies.Concat(descriptor.PublicDependencies).SelectMany(GetAllDependedExtensions))
                 .Concat(descriptor.MessageTypes.SelectMany(GetAllDependedExtensionsFromMessage));
         }
@@ -464,6 +477,7 @@ namespace Google.Protobuf.Reflection
         {
             return descriptor.Extensions.UnorderedExtensions
                 .Select(s => s.Extension)
+                .Where(e => e != null)
                 .Concat(descriptor.NestedTypes.SelectMany(GetAllDependedExtensionsFromMessage));
         }
 
@@ -475,10 +489,13 @@ namespace Google.Protobuf.Reflection
         /// dependencies must come before the descriptor which depends on them. (If A depends on B, and B
         /// depends on C, then the descriptors must be presented in the order C, B, A.) This is compatible
         /// with the order in which protoc provides descriptors to plugins.</param>
+        /// <param name="registry">The extension registry to use when parsing, or null if no extensions are required.</param>
         /// <returns>The file descriptors corresponding to <paramref name="descriptorData"/>.</returns>
-        public static IReadOnlyList<FileDescriptor> BuildFromByteStrings(IEnumerable<ByteString> descriptorData)
+        public static IReadOnlyList<FileDescriptor> BuildFromByteStrings(IEnumerable<ByteString> descriptorData, ExtensionRegistry registry)
         {
             ProtoPreconditions.CheckNotNull(descriptorData, nameof(descriptorData));
+
+            var parser = FileDescriptorProto.Parser.WithExtensionRegistry(registry);
 
             // TODO: See if we can build a single DescriptorPool instead of building lots of them.
             // This will all behave correctly, but it's less efficient than we'd like.
@@ -486,7 +503,7 @@ namespace Google.Protobuf.Reflection
             var descriptorsByName = new Dictionary<string, FileDescriptor>();
             foreach (var data in descriptorData)
             {
-                var proto = FileDescriptorProto.Parser.ParseFrom(data);
+                var proto = parser.ParseFrom(data);
                 var dependencies = new List<FileDescriptor>();
                 foreach (var dependencyName in proto.Dependency)
                 {
@@ -511,6 +528,18 @@ namespace Google.Protobuf.Reflection
             }
             return new ReadOnlyCollection<FileDescriptor>(descriptors);
         }
+
+        /// <summary>
+        /// Converts the given descriptor binary data into FileDescriptor objects.
+        /// Note: reflection using the returned FileDescriptors is not currently supported.
+        /// </summary>
+        /// <param name="descriptorData">The binary file descriptor proto data. Must not be null, and any
+        /// dependencies must come before the descriptor which depends on them. (If A depends on B, and B
+        /// depends on C, then the descriptors must be presented in the order C, B, A.) This is compatible
+        /// with the order in which protoc provides descriptors to plugins.</param>
+        /// <returns>The file descriptors corresponding to <paramref name="descriptorData"/>.</returns>
+        public static IReadOnlyList<FileDescriptor> BuildFromByteStrings(IEnumerable<ByteString> descriptorData) =>
+            BuildFromByteStrings(descriptorData, null);
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -541,12 +570,21 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this file.
         /// </summary>
-        [Obsolete("CustomOptions are obsolete. Use GetOption")]
-        public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
+        [Obsolete("CustomOptions are obsolete. Use the GetOptions() method.")]
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
+
+        /// <summary>
+        /// The <c>FileOptions</c>, defined in <c>descriptor.proto</c>.
+        /// If the options message is not present (i.e. there are no options), <c>null</c> is returned.
+        /// Custom options can be retrieved as extensions of the returned message.
+        /// NOTE: A defensive copy is created each time this property is retrieved.
+        /// </summary>
+        public FileOptions GetOptions() => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value file option for this descriptor
         /// </summary>
+        [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public T GetOption<T>(Extension<FileOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
@@ -556,6 +594,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Gets a repeated value file option for this descriptor
         /// </summary>
+        [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public RepeatedField<T> GetOption<T>(RepeatedExtension<FileOptions, T> extension)
         {
             return Proto.Options.GetExtension(extension).Clone();

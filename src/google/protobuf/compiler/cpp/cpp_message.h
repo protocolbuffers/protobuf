@@ -35,13 +35,16 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 
+#include <cstdint>
 #include <memory>
 #include <set>
 #include <string>
+
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_message_layout_helper.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
+#include <google/protobuf/compiler/cpp/cpp_parse_function_generator.h>
 
 namespace google {
 namespace protobuf {
@@ -82,17 +85,6 @@ class MessageGenerator {
 
   // Source file stuff.
 
-  // Generate extra fields
-  void GenerateExtraDefaultFields(io::Printer* printer);
-
-  // Generates code that creates default instances for fields.
-  void GenerateFieldDefaultInstances(io::Printer* printer);
-
-  // Generates code that initializes the message's default instance.  This
-  // is separate from allocating because all default instances must be
-  // allocated before any can be initialized.
-  void GenerateDefaultInstanceInitializer(io::Printer* printer);
-
   // Generate all non-inline methods for this class.
   void GenerateClassMethods(io::Printer* printer);
 
@@ -113,7 +105,7 @@ class MessageGenerator {
   bool GenerateParseTable(io::Printer* printer, size_t offset,
                           size_t aux_offset);
 
-  // Generate the field offsets array.  Returns the a pair of the total numer
+  // Generate the field offsets array.  Returns the a pair of the total number
   // of entries generated and the index of the first has_bit entry.
   std::pair<size_t, size_t> GenerateOffsets(io::Printer* printer);
   void GenerateSchema(io::Printer* printer, int offset, int has_offset);
@@ -135,15 +127,21 @@ class MessageGenerator {
   // Generate the arena-specific destructor code.
   void GenerateArenaDestructorCode(io::Printer* printer);
 
+  // Generate the constexpr constructor for constant initialization of the
+  // default instance.
+  void GenerateConstexprConstructor(io::Printer* printer);
+
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);
   void GenerateOneofClear(io::Printer* printer);
-  void GenerateMergeFromCodedStream(io::Printer* printer);
+  void GenerateVerify(io::Printer* printer);
   void GenerateSerializeWithCachedSizes(io::Printer* printer);
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer);
   void GenerateSerializeWithCachedSizesBody(io::Printer* printer);
+  void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* printer);
   void GenerateByteSize(io::Printer* printer);
   void GenerateMergeFrom(io::Printer* printer);
+  void GenerateClassSpecificMergeFrom(io::Printer* printer);
   void GenerateCopyFrom(io::Printer* printer);
   void GenerateSwap(io::Printer* printer);
   void GenerateIsInitialized(io::Printer* printer);
@@ -180,7 +178,12 @@ class MessageGenerator {
                                bool copy_constructor) const;
 
   size_t HasBitsSize() const;
-  std::vector<uint32> RequiredFieldsBitMask() const;
+  size_t InlinedStringDonatedSize() const;
+  int HasBitIndex(const FieldDescriptor* a) const;
+  int HasByteIndex(const FieldDescriptor* a) const;
+  int HasWordIndex(const FieldDescriptor* a) const;
+  bool SameHasByte(const FieldDescriptor* a, const FieldDescriptor* b) const;
+  std::vector<uint32_t> RequiredFieldsBitMask() const;
 
   const Descriptor* descriptor_;
   int index_in_file_messages_;
@@ -195,6 +198,13 @@ class MessageGenerator {
   std::vector<const FieldDescriptor*> optimized_order_;
   std::vector<int> has_bit_indices_;
   int max_has_bit_index_;
+
+  // A map from field index to inlined_string index. For non-inlined-string
+  // fields, the element is -1.
+  std::vector<int> inlined_string_indices_;
+  // The count of inlined_string fields in the message.
+  int max_inlined_string_index_;
+
   std::vector<const EnumGenerator*> enum_generators_;
   std::vector<const ExtensionGenerator*> extension_generators_;
   int num_required_fields_;
@@ -203,6 +213,7 @@ class MessageGenerator {
   bool table_driven_;
 
   std::unique_ptr<MessageLayoutHelper> message_layout_helper_;
+  std::unique_ptr<ParseFunctionGenerator> parse_function_generator_;
 
   MessageSCCAnalyzer* scc_analyzer_;
 

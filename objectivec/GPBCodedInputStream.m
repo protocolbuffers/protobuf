@@ -203,7 +203,7 @@ int64_t GPBCodedInputStreamReadSInt64(GPBCodedInputStreamState *state) {
 }
 
 BOOL GPBCodedInputStreamReadBool(GPBCodedInputStreamState *state) {
-  return ReadRawVarint32(state) != 0;
+  return ReadRawVarint64(state) != 0;
 }
 
 int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {

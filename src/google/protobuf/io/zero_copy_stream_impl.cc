@@ -103,7 +103,13 @@ FileInputStream::CopyingFileInputStream::CopyingFileInputStream(
       close_on_delete_(false),
       is_closed_(false),
       errno_(0),
-      previous_seek_failed_(false) {}
+      previous_seek_failed_(false) {
+#ifndef _WIN32
+  int flags = fcntl(file_, F_GETFL);
+  flags &= ~O_NONBLOCK;
+  fcntl(file_, F_SETFL, flags);
+#endif
+}
 
 FileInputStream::CopyingFileInputStream::~CopyingFileInputStream() {
   if (close_on_delete_) {
@@ -164,25 +170,14 @@ int FileInputStream::CopyingFileInputStream::Skip(int count) {
 
 // ===================================================================
 
-FileOutputStream::FileOutputStream(int file_descriptor, int block_size)
-    : copying_output_(file_descriptor), impl_(&copying_output_, block_size) {}
-
-FileOutputStream::~FileOutputStream() { impl_.Flush(); }
+FileOutputStream::FileOutputStream(int file_descriptor, int /*block_size*/)
+    : CopyingOutputStreamAdaptor(&copying_output_),
+      copying_output_(file_descriptor) {}
 
 bool FileOutputStream::Close() {
-  bool flush_succeeded = impl_.Flush();
+  bool flush_succeeded = Flush();
   return copying_output_.Close() && flush_succeeded;
 }
-
-bool FileOutputStream::Flush() { return impl_.Flush(); }
-
-bool FileOutputStream::Next(void** data, int* size) {
-  return impl_.Next(data, size);
-}
-
-void FileOutputStream::BackUp(int count) { impl_.BackUp(count); }
-
-int64_t FileOutputStream::ByteCount() const { return impl_.ByteCount(); }
 
 FileOutputStream::CopyingFileOutputStream::CopyingFileOutputStream(
     int file_descriptor)
@@ -190,6 +185,8 @@ FileOutputStream::CopyingFileOutputStream::CopyingFileOutputStream(
       close_on_delete_(false),
       is_closed_(false),
       errno_(0) {}
+
+FileOutputStream::~FileOutputStream() { Flush(); }
 
 FileOutputStream::CopyingFileOutputStream::~CopyingFileOutputStream() {
   if (close_on_delete_) {
@@ -219,7 +216,7 @@ bool FileOutputStream::CopyingFileOutputStream::Write(const void* buffer,
   GOOGLE_CHECK(!is_closed_);
   int total_written = 0;
 
-  const uint8* buffer_base = reinterpret_cast<const uint8*>(buffer);
+  const uint8_t* buffer_base = reinterpret_cast<const uint8_t*>(buffer);
 
   while (total_written < size) {
     int bytes;
@@ -341,12 +338,12 @@ bool ConcatenatingInputStream::Skip(int count) {
   while (stream_count_ > 0) {
     // Assume that ByteCount() can be used to find out how much we actually
     // skipped when Skip() fails.
-    int64 target_byte_count = streams_[0]->ByteCount() + count;
+    int64_t target_byte_count = streams_[0]->ByteCount() + count;
     if (streams_[0]->Skip(count)) return true;
 
     // Hit the end of the stream.  Figure out how many more bytes we still have
     // to skip.
-    int64 final_byte_count = streams_[0]->ByteCount();
+    int64_t final_byte_count = streams_[0]->ByteCount();
     GOOGLE_DCHECK_LT(final_byte_count, target_byte_count);
     count = target_byte_count - final_byte_count;
 

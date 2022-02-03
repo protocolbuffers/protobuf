@@ -51,11 +51,6 @@
 
 #include <google/protobuf/port_def.inc>
 
-// This declares an unsigned long long integer literal in a portable way.
-// (The original macro is way too big and ruins my formatting.)
-#undef ULL
-#define ULL(x) PROTOBUF_ULONGLONG(x)
-
 
 namespace google {
 namespace protobuf {
@@ -132,7 +127,7 @@ namespace {
 class CodedStreamTest : public testing::Test {
  protected:
   // Buffer used during most of the tests. This assumes tests run sequentially.
-  static const int kBufferSize = 1024 * 64;
+  static constexpr int kBufferSize = 1024 * 64;
   static uint8 buffer_[kBufferSize];
 };
 
@@ -168,24 +163,25 @@ VarintCase kVarintCases[] = {
     {{0xbe, 0xf7, 0x92, 0x84, 0x0b},
      5,  // 2961488830
      (0x3e << 0) | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
-         (ULL(0x0b) << 28)},
+         (uint64_t{0x0bu} << 28)},
 
     // 64-bit
     {{0xbe, 0xf7, 0x92, 0x84, 0x1b},
      5,  // 7256456126
      (0x3e << 0) | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
-         (ULL(0x1b) << 28)},
+         (uint64_t{0x1bu} << 28)},
     {{0x80, 0xe6, 0xeb, 0x9c, 0xc3, 0xc9, 0xa4, 0x49},
      8,  // 41256202580718336
      (0x00 << 0) | (0x66 << 7) | (0x6b << 14) | (0x1c << 21) |
-         (ULL(0x43) << 28) | (ULL(0x49) << 35) | (ULL(0x24) << 42) |
-         (ULL(0x49) << 49)},
+         (uint64_t{0x43u} << 28) | (uint64_t{0x49u} << 35) |
+         (uint64_t{0x24u} << 42) | (uint64_t{0x49u} << 49)},
     // 11964378330978735131
     {{0x9b, 0xa8, 0xf9, 0xc2, 0xbb, 0xd6, 0x80, 0x85, 0xa6, 0x01},
      10,
      (0x1b << 0) | (0x28 << 7) | (0x79 << 14) | (0x42 << 21) |
-         (ULL(0x3b) << 28) | (ULL(0x56) << 35) | (ULL(0x00) << 42) |
-         (ULL(0x05) << 49) | (ULL(0x26) << 56) | (ULL(0x01) << 63)},
+         (uint64_t{0x3bu} << 28) | (uint64_t{0x56u} << 35) |
+         (uint64_t{0x00u} << 42) | (uint64_t{0x05u} << 49) |
+         (uint64_t{0x26u} << 56) | (uint64_t{0x01u} << 63)},
 };
 
 TEST_2D(CodedStreamTest, ReadVarint32, kVarintCases, kBlockSizes) {
@@ -313,7 +309,7 @@ TEST_2D(CodedStreamTest, ReadVarint64, kVarintCases, kBlockSizes) {
 }
 
 TEST_2D(CodedStreamTest, WriteVarint32, kVarintCases, kBlockSizes) {
-  if (kVarintCases_case.value > ULL(0x00000000FFFFFFFF)) {
+  if (kVarintCases_case.value > uint64_t{0x00000000FFFFFFFFu}) {
     // Skip this test for the 64-bit values.
     return;
   }
@@ -500,8 +496,8 @@ VarintSizeCase kVarintSizeCases[] = {
     {128u, 2},
     {758923u, 3},
     {4000000000u, 5},
-    {ULL(41256202580718336), 8},
-    {ULL(11964378330978735131), 10},
+    {uint64_t{41256202580718336u}, 8},
+    {uint64_t{11964378330978735131u}, 10},
 };
 
 TEST_1D(CodedStreamTest, VarintSize32, kVarintSizeCases) {
@@ -569,8 +565,10 @@ Fixed32Case kFixed32Cases[] = {
 };
 
 Fixed64Case kFixed64Cases[] = {
-    {{0xef, 0xcd, 0xab, 0x90, 0x12, 0x34, 0x56, 0x78}, ULL(0x7856341290abcdef)},
-    {{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}, ULL(0x8877665544332211)},
+    {{0xef, 0xcd, 0xab, 0x90, 0x12, 0x34, 0x56, 0x78},
+     uint64_t{0x7856341290abcdefu}},
+    {{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88},
+     uint64_t{0x8877665544332211u}},
 };
 
 TEST_2D(CodedStreamTest, ReadLittleEndian32, kFixed32Cases, kBlockSizes) {
@@ -743,7 +741,7 @@ TEST_1D(CodedStreamTest, ReadStringReservesMemoryOnTotalLimit, kBlockSizes) {
 
   {
     CodedInputStream coded_input(&input);
-    coded_input.SetTotalBytesLimit(sizeof(kRawBytes), sizeof(kRawBytes));
+    coded_input.SetTotalBytesLimit(sizeof(kRawBytes));
     EXPECT_EQ(sizeof(kRawBytes), coded_input.BytesUntilTotalBytesLimit());
 
     std::string str;
@@ -866,7 +864,7 @@ TEST_F(CodedStreamTest, ReadStringNoReservationSizeIsOverTheTotalBytesLimit) {
 
   {
     CodedInputStream coded_input(&input);
-    coded_input.SetTotalBytesLimit(16, 16);
+    coded_input.SetTotalBytesLimit(16);
 
     std::string str;
     EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
@@ -888,7 +886,7 @@ TEST_F(CodedStreamTest,
   {
     CodedInputStream coded_input(&input);
     coded_input.PushLimit(sizeof(buffer_));
-    coded_input.SetTotalBytesLimit(16, 16);
+    coded_input.SetTotalBytesLimit(16);
 
     std::string str;
     EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
@@ -910,7 +908,7 @@ TEST_F(CodedStreamTest,
   {
     CodedInputStream coded_input(&input);
     coded_input.PushLimit(16);
-    coded_input.SetTotalBytesLimit(sizeof(buffer_), sizeof(buffer_));
+    coded_input.SetTotalBytesLimit(sizeof(buffer_));
     EXPECT_EQ(sizeof(buffer_), coded_input.BytesUntilTotalBytesLimit());
 
     std::string str;
@@ -1182,7 +1180,7 @@ TEST_F(CodedStreamTest, OverflowLimit) {
 TEST_F(CodedStreamTest, TotalBytesLimit) {
   ArrayInputStream input(buffer_, sizeof(buffer_));
   CodedInputStream coded_input(&input);
-  coded_input.SetTotalBytesLimit(16, -1);
+  coded_input.SetTotalBytesLimit(16);
   EXPECT_EQ(16, coded_input.BytesUntilTotalBytesLimit());
 
   std::string str;
@@ -1202,7 +1200,7 @@ TEST_F(CodedStreamTest, TotalBytesLimit) {
                       "A protocol message was rejected because it was too big",
                       errors[0]);
 
-  coded_input.SetTotalBytesLimit(32, -1);
+  coded_input.SetTotalBytesLimit(32);
   EXPECT_EQ(16, coded_input.BytesUntilTotalBytesLimit());
   EXPECT_TRUE(coded_input.ReadString(&str, 16));
   EXPECT_EQ(0, coded_input.BytesUntilTotalBytesLimit());
@@ -1215,7 +1213,7 @@ TEST_F(CodedStreamTest, TotalBytesLimitNotValidMessageEnd) {
   CodedInputStream coded_input(&input);
 
   // Set both total_bytes_limit and a regular limit at 16 bytes.
-  coded_input.SetTotalBytesLimit(16, -1);
+  coded_input.SetTotalBytesLimit(16);
   CodedInputStream::Limit limit = coded_input.PushLimit(16);
 
   // Read 16 bytes.
@@ -1344,3 +1342,5 @@ TEST_F(CodedStreamTest, InputOver2G) {
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

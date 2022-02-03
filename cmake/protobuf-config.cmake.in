@@ -11,11 +11,11 @@ function(protobuf_generate)
   include(CMakeParseArguments)
 
   set(_options APPEND_PATH)
-  set(_singleargs LANGUAGE OUT_VAR EXPORT_MACRO PROTOC_OUT_DIR)
+  set(_singleargs LANGUAGE OUT_VAR EXPORT_MACRO PROTOC_OUT_DIR PLUGIN)
   if(COMMAND target_sources)
     list(APPEND _singleargs TARGET)
   endif()
-  set(_multiargs PROTOS IMPORT_DIRS GENERATE_EXTENSIONS)
+  set(_multiargs PROTOS IMPORT_DIRS GENERATE_EXTENSIONS PROTOC_OPTIONS)
 
   cmake_parse_arguments(protobuf_generate "${_options}" "${_singleargs}" "${_multiargs}" "${ARGN}")
 
@@ -40,6 +40,10 @@ function(protobuf_generate)
 
   if(protobuf_generate_EXPORT_MACRO AND protobuf_generate_LANGUAGE STREQUAL cpp)
     set(_dll_export_decl "dllexport_decl=${protobuf_generate_EXPORT_MACRO}:")
+  endif()
+  
+  if(protobuf_generate_PLUGIN)
+      set(_plugin "--plugin=${protobuf_generate_PLUGIN}")
   endif()
 
   if(NOT protobuf_generate_GENERATE_EXTENSIONS)
@@ -77,8 +81,6 @@ function(protobuf_generate)
           list(APPEND _protobuf_include_path -I ${_abs_path})
       endif()
     endforeach()
-  else()
-    set(_protobuf_include_path -I ${CMAKE_CURRENT_SOURCE_DIR})
   endif()
 
   foreach(DIR ${protobuf_generate_IMPORT_DIRS})
@@ -89,12 +91,35 @@ function(protobuf_generate)
     endif()
   endforeach()
 
+  if(NOT _protobuf_include_path)
+    set(_protobuf_include_path -I ${CMAKE_CURRENT_SOURCE_DIR})
+  endif()
+
   set(_generated_srcs_all)
   foreach(_proto ${protobuf_generate_PROTOS})
     get_filename_component(_abs_file ${_proto} ABSOLUTE)
     get_filename_component(_abs_dir ${_abs_file} DIRECTORY)
-    get_filename_component(_basename ${_proto} NAME_WE)
-    file(RELATIVE_PATH _rel_dir ${CMAKE_CURRENT_SOURCE_DIR} ${_abs_dir})
+
+    get_filename_component(_file_full_name ${_proto} NAME)
+    string(FIND "${_file_full_name}" "." _file_last_ext_pos REVERSE)
+    string(SUBSTRING "${_file_full_name}" 0 ${_file_last_ext_pos} _basename)
+
+    set(_suitable_include_found FALSE)
+    foreach(DIR ${_protobuf_include_path})
+      if(NOT DIR STREQUAL "-I")
+        file(RELATIVE_PATH _rel_dir ${DIR} ${_abs_dir})
+        string(FIND "${_rel_dir}" "../" _is_in_parent_folder)
+        if (NOT ${_is_in_parent_folder} EQUAL 0)
+          set(_suitable_include_found TRUE)
+          break()
+        endif()
+      endif()
+    endforeach()
+
+    if(NOT _suitable_include_found)
+      message(SEND_ERROR "Error: protobuf_generate could not find any correct proto include directory.")
+      return()
+    endif()
 
     set(_generated_srcs)
     foreach(_ext ${protobuf_generate_GENERATE_EXTENSIONS})
@@ -105,9 +130,9 @@ function(protobuf_generate)
     add_custom_command(
       OUTPUT ${_generated_srcs}
       COMMAND  protobuf::protoc
-      ARGS --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${protobuf_generate_PROTOC_OUT_DIR} ${_protobuf_include_path} ${_abs_file}
+      ARGS ${protobuf_generate_PROTOC_OPTIONS} --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${protobuf_generate_PROTOC_OUT_DIR} ${_plugin} ${_protobuf_include_path} ${_abs_file}
       DEPENDS ${_abs_file} protobuf::protoc
-      COMMENT "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}"
+      COMMENT "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}. Custom options: ${protobuf_generate_PROTOC_OPTIONS}"
       VERBATIM )
   endforeach()
 
