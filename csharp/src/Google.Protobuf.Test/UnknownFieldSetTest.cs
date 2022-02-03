@@ -141,11 +141,8 @@ namespace Google.Protobuf
         [Test]
         public void TestClone_LengthDelimited()
         {
-            var destUnknownFieldSet = new UnknownFieldSet();
-
             var unknownVarintField = new UnknownField();
             unknownVarintField.AddVarint(99);
-            destUnknownFieldSet.AddOrReplaceField(997, unknownVarintField);
 
             var unknownLengthDelimitedField1 = new UnknownField();
             unknownLengthDelimitedField1.AddLengthDelimited(ByteString.CopyFromUtf8("some data"));
@@ -153,10 +150,13 @@ namespace Google.Protobuf
             var unknownLengthDelimitedField2 = new UnknownField();
             unknownLengthDelimitedField2.AddLengthDelimited(ByteString.CopyFromUtf8("some more data"));
 
+            var destUnknownFieldSet = new UnknownFieldSet();
+            destUnknownFieldSet.AddOrReplaceField(997, unknownVarintField);
             destUnknownFieldSet.AddOrReplaceField(999, unknownLengthDelimitedField1);
             destUnknownFieldSet.AddOrReplaceField(999, unknownLengthDelimitedField2);
 
             var clone = UnknownFieldSet.Clone(destUnknownFieldSet);
+
             Assert.IsTrue(clone.HasField(997));
             Assert.IsTrue(clone.HasField(999));
         }
