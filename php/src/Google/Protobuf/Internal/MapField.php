@@ -37,6 +37,8 @@
 
 namespace Google\Protobuf\Internal;
 
+use Traversable;
+
 /**
  * MapField is used by generated protocol message classes to manipulate map
  * fields. It can be used like native PHP array.
@@ -239,7 +241,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * @ignore
      */
-    public function getIterator(): MapFieldIter
+    public function getIterator(): Traversable
     {
         return new MapFieldIter($this->container, $this->key_type);
     }

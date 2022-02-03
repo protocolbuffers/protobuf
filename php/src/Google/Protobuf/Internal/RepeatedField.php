@@ -39,6 +39,7 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
+use Traversable;
 
 /**
  * RepeatedField is used by generated protocol message classes to manipulate
@@ -244,7 +245,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * @ignore
      */
-    public function getIterator(): RepeatedFieldIter
+    public function getIterator(): Traversable
     {
         return new RepeatedFieldIter($this->container);
     }

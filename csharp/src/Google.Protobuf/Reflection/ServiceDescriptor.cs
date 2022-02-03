@@ -73,6 +73,14 @@ namespace Google.Protobuf.Reflection
 
         internal ServiceDescriptorProto Proto { get { return proto; } }
 
+        /// <summary>
+        /// Returns a clone of the underlying <see cref="ServiceDescriptorProto"/> describing this service.
+        /// Note that a copy is taken every time this method is called, so clients using it frequently
+        /// (and not modifying it) may want to cache the returned value.
+        /// </summary>
+        /// <returns>A protobuf representation of this service descriptor.</returns>
+        public ServiceDescriptorProto ToProto() => Proto.Clone();
+
         /// <value>
         /// An unmodifiable list of methods in this service.
         /// </value>

@@ -2,6 +2,8 @@ test_suite(
     name = "tests",
     tests = [
         "//java/core:tests",
+        "//java/kotlin:tests",
+        "//java/kotlin-lite:tests",
         "//java/lite:tests",
         "//java/util:tests",
     ],

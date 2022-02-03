@@ -250,6 +250,14 @@ namespace Google.Protobuf.Reflection
         internal FileDescriptorProto Proto { get; }
 
         /// <summary>
+        /// Returns a clone of the underlying <see cref="FileDescriptorProto"/> describing this file.
+        /// Note that a copy is taken every time this method is called, so clients using it frequently
+        /// (and not modifying it) may want to cache the returned value.
+        /// </summary>
+        /// <returns>A protobuf representation of this file descriptor.</returns>
+        public FileDescriptorProto ToProto() => Proto.Clone();
+
+        /// <summary>
         /// The syntax of the file
         /// </summary>
         public Syntax Syntax { get; }

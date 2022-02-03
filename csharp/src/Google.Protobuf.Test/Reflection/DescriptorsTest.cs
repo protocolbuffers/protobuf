@@ -124,6 +124,7 @@ namespace Google.Protobuf.Reflection
             }
 
             Assert.AreEqual(10, file.SerializedData[0]);
+            TestDescriptorToProto(file.ToProto, file.Proto);
         }
 
         [Test]
@@ -231,6 +232,7 @@ namespace Google.Protobuf.Reflection
             {
                 Assert.AreEqual(i, messageType.EnumTypes[i].Index);
             }
+            TestDescriptorToProto(messageType.ToProto, messageType.Proto);
         }
 
         [Test]
@@ -294,6 +296,11 @@ namespace Google.Protobuf.Reflection
             // For a field in a regular onoef, ContainingOneof and RealContainingOneof should be the same.
             Assert.AreEqual("oneof_field", fieldInOneof.ContainingOneof.Name);
             Assert.AreSame(fieldInOneof.ContainingOneof, fieldInOneof.RealContainingOneof);
+
+            TestDescriptorToProto(primitiveField.ToProto, primitiveField.Proto);
+            TestDescriptorToProto(enumField.ToProto, enumField.Proto);
+            TestDescriptorToProto(foreignMessageField.ToProto, foreignMessageField.Proto);
+            TestDescriptorToProto(fieldInOneof.ToProto, fieldInOneof.Proto);
         }
 
         [Test]
@@ -338,6 +345,8 @@ namespace Google.Protobuf.Reflection
             {
                 Assert.AreEqual(i, enumType.Values[i].Index);
             }
+            TestDescriptorToProto(enumType.ToProto, enumType.Proto);
+            TestDescriptorToProto(nestedType.ToProto, nestedType.Proto);
         }
 
         [Test]
@@ -361,6 +370,7 @@ namespace Google.Protobuf.Reflection
             }
 
             CollectionAssert.AreEquivalent(expectedFields, descriptor.Fields);
+            TestDescriptorToProto(descriptor.ToProto, descriptor.Proto);
         }
 
         [Test]
@@ -370,6 +380,7 @@ namespace Google.Protobuf.Reflection
             Assert.IsNull(descriptor.Parser);
             Assert.IsNull(descriptor.ClrType);
             Assert.IsNull(descriptor.Fields[1].Accessor);
+            TestDescriptorToProto(descriptor.ToProto, descriptor.Proto);
         }
 
         // From TestFieldOrdering:
@@ -391,6 +402,7 @@ namespace Google.Protobuf.Reflection
         {
             var descriptor = Google.Protobuf.Reflection.FileDescriptor.DescriptorProtoFileDescriptor;
             Assert.AreEqual("google/protobuf/descriptor.proto", descriptor.Name);
+            TestDescriptorToProto(descriptor.ToProto, descriptor.Proto);
         }
 
         [Test]
@@ -452,6 +464,18 @@ namespace Google.Protobuf.Reflection
                     Assert.False(oneof.IsSynthetic);
                 }
             }
+        }
+
+        private static void TestDescriptorToProto(Func<IMessage> toProtoFunction, IMessage expectedProto)
+        {
+            var clone1 = toProtoFunction();
+            var clone2 = toProtoFunction();
+            Assert.AreNotSame(clone1, clone2);
+            Assert.AreNotSame(clone1, expectedProto);
+            Assert.AreNotSame(clone2, expectedProto);
+
+            Assert.AreEqual(clone1, clone2);
+            Assert.AreEqual(clone1, expectedProto);
         }
     }
 }
