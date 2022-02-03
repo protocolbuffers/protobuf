@@ -12,7 +12,7 @@
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_public.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_public_lite.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_lite.proto"/>
-        <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3_lite.proto"/>
         <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/evil_names_proto2.proto"/>
         <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/evil_names_proto3.proto"/>
         <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/example_extensible_message.proto"/>
@@ -25,7 +25,7 @@
       <arg value="--experimental_allow_proto3_optional"/>
       <arg value="${protobuf.source.dir}/google/protobuf/map_lite_unittest.proto"/>
       <arg value="${protobuf.source.dir}/google/protobuf/unittest_lite.proto"/>
-      <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
+      <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3_lite.proto"/>
       <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/evil_names_proto2.proto"/>
       <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/evil_names_proto3.proto"/>
       <arg value="${protobuf.basedir}/java/kotlin/${test.proto.dir}/com/google/protobuf/example_extensible_message.proto"/>

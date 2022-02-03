@@ -1,3 +1,53 @@
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * JSON will now output shorter strings for double and float fields when possible
+    without losing precision.
+  * Encoding and decoding of binary format will now work properly on big-endian
+    systems.
+  * UTF-8 verification was fixed to properly reject surrogate code points.
+  * Unknown enums for proto2 protos now properly implement proto2's behavior of
+    putting such values in unknown fields.
+
+2022-01-28 version 3.19.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Python
+  * Make libprotobuf symbols local on OSX to fix issue #9395 (#9435)
+
+  Ruby
+  * Fixed a data loss bug that could occur when the number of `optional`
+    fields in a message is an exact multiple of 32. (#9440).
+
+  PHP
+  * Fixed a data loss bug that could occur when the number of `optional`
+    fields in a message is an exact multiple of 32. (#9440).
+
+2022-01-10 version 3.19.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Python
+  * Fix missing Windows wheel for Python 3.10 on PyPI
+
+2022-01-05 version 3.19.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Java
+  * Improve performance characteristics of UnknownFieldSet parsing (#9371)
+  * This release addresses a Security Advisory for Java users
+   (https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-wrvw-hg22-4m67)
+
+2022-01-05 version 3.18.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Java
+  * Improve performance characteristics of UnknownFieldSet parsing (#9371)
+  * This release addresses a Security Advisory for Java users
+   (https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-wrvw-hg22-4m67)
+
+2022-01-05 version 3.16.1 (Java)
+
+  Java
+  * Improve performance characteristics of UnknownFieldSet parsing (#9371)
+  * This release addresses a Security Advisory for Java users
+   (https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-wrvw-hg22-4m67)
+
 2021-10-28 version 3.19.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Bazel

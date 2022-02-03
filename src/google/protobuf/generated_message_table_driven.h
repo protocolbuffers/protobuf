@@ -103,13 +103,11 @@ struct PROTOBUF_EXPORT FieldMetadata {
   };
   // C++ protobuf has 20 fundamental types, were we added Cord and StringPiece
   // and also distinguish the same types if they have different wire format.
-  enum {
-    kCordType = 19,
-    kStringPieceType = 20,
-    kInlinedType = 21,
-    kNumTypes = 21,
-    kSpecial = kNumTypes * kNumTypeClasses,
-  };
+  static constexpr auto kCordType = 19;
+  static constexpr auto kStringPieceType = 20;
+  static constexpr auto kInlinedType = 21;
+  static constexpr auto kNumTypes = 21;
+  static constexpr auto kSpecial = kNumTypes * kNumTypeClasses;
 
   static int CalculateType(int fundamental_type, FieldTypeClass type_class);
 };

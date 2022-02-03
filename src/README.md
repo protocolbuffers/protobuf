@@ -48,7 +48,7 @@ Buffer compiler (protoc) execute the following:
 
 
      ./configure
-     make
+     make -j$(nproc) # $(nproc) ensures it uses all cores for compilation
      make check
      sudo make install
      sudo ldconfig # refresh shared library cache.

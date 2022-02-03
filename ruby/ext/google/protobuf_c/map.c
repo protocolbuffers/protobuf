@@ -34,7 +34,7 @@
 #include "protobuf.h"
 
 // -----------------------------------------------------------------------------
-// Basic map operations on top of upb_map.
+// Basic map operations on top of upb_Map.
 //
 // Note that we roll our own `Map` container here because, as for
 // `RepeatedField`, we want a strongly-typed container. This is so that any user
@@ -48,8 +48,8 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  const upb_map *map;  // Can convert to mutable when non-frozen.
-  upb_fieldtype_t key_type;
+  const upb_Map* map;  // Can convert to mutable when non-frozen.
+  upb_CType key_type;
   TypeInfo value_type_info;
   VALUE value_type_class;
   VALUE arena;
@@ -62,9 +62,9 @@ static void Map_mark(void* _self) {
 }
 
 const rb_data_type_t Map_type = {
-  "Google::Protobuf::Map",
-  { Map_mark, RUBY_DEFAULT_FREE, NULL },
-  .flags = RUBY_TYPED_FREE_IMMEDIATELY,
+    "Google::Protobuf::Map",
+    {Map_mark, RUBY_DEFAULT_FREE, NULL},
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
 VALUE cMap;
@@ -84,8 +84,8 @@ static VALUE Map_alloc(VALUE klass) {
   return TypedData_Wrap_Struct(klass, &Map_type, self);
 }
 
-VALUE Map_GetRubyWrapper(upb_map* map, upb_fieldtype_t key_type,
-                         TypeInfo value_type, VALUE arena) {
+VALUE Map_GetRubyWrapper(upb_Map* map, upb_CType key_type, TypeInfo value_type,
+                         VALUE arena) {
   PBRUBY_ASSERT(map);
 
   VALUE val = ObjectCache_Get(map);
@@ -99,8 +99,8 @@ VALUE Map_GetRubyWrapper(upb_map* map, upb_fieldtype_t key_type,
     self->arena = arena;
     self->key_type = key_type;
     self->value_type_info = value_type;
-    if (self->value_type_info.type == UPB_TYPE_MESSAGE) {
-      const upb_msgdef *val_m = self->value_type_info.def.msgdef;
+    if (self->value_type_info.type == kUpb_CType_Message) {
+      const upb_MessageDef* val_m = self->value_type_info.def.msgdef;
       self->value_type_class = Descriptor_DefToClass(val_m);
     }
   }
@@ -108,9 +108,9 @@ VALUE Map_GetRubyWrapper(upb_map* map, upb_fieldtype_t key_type,
   return val;
 }
 
-static VALUE Map_new_this_type(Map *from) {
+static VALUE Map_new_this_type(Map* from) {
   VALUE arena_rb = Arena_new();
-  upb_map* map = upb_map_new(Arena_get(arena_rb), from->key_type,
+  upb_Map* map = upb_Map_New(Arena_get(arena_rb), from->key_type,
                              from->value_type_info.type);
   VALUE ret =
       Map_GetRubyWrapper(map, from->key_type, from->value_type_info, arena_rb);
@@ -125,22 +125,22 @@ static TypeInfo Map_keyinfo(Map* self) {
   return ret;
 }
 
-static upb_map *Map_GetMutable(VALUE _self) {
+static upb_Map* Map_GetMutable(VALUE _self) {
   rb_check_frozen(_self);
-  return (upb_map*)ruby_to_Map(_self)->map;
+  return (upb_Map*)ruby_to_Map(_self)->map;
 }
 
-VALUE Map_CreateHash(const upb_map* map, upb_fieldtype_t key_type,
+VALUE Map_CreateHash(const upb_Map* map, upb_CType key_type,
                      TypeInfo val_info) {
   VALUE hash = rb_hash_new();
-  size_t iter = UPB_MAP_BEGIN;
+  size_t iter = kUpb_Map_Begin;
   TypeInfo key_info = TypeInfo_from_type(key_type);
 
   if (!map) return hash;
 
-  while (upb_mapiter_next(map, &iter)) {
-    upb_msgval key = upb_mapiter_key(map, iter);
-    upb_msgval val = upb_mapiter_value(map, iter);
+  while (upb_MapIterator_Next(map, &iter)) {
+    upb_MessageValue key = upb_MapIterator_Key(map, iter);
+    upb_MessageValue val = upb_MapIterator_Value(map, iter);
     VALUE key_val = Convert_UpbToRuby(key, key_info, Qnil);
     VALUE val_val = Scalar_CreateHash(val, val_info);
     rb_hash_aset(hash, key_val, val_val);
@@ -152,25 +152,26 @@ VALUE Map_CreateHash(const upb_map* map, upb_fieldtype_t key_type,
 VALUE Map_deep_copy(VALUE obj) {
   Map* self = ruby_to_Map(obj);
   VALUE new_arena_rb = Arena_new();
-  upb_arena *arena = Arena_get(new_arena_rb);
-  upb_map* new_map =
-      upb_map_new(arena, self->key_type, self->value_type_info.type);
-  size_t iter = UPB_MAP_BEGIN;
-  while (upb_mapiter_next(self->map, &iter)) {
-    upb_msgval key = upb_mapiter_key(self->map, iter);
-    upb_msgval val = upb_mapiter_value(self->map, iter);
-    upb_msgval val_copy = Msgval_DeepCopy(val, self->value_type_info, arena);
-    upb_map_set(new_map, key, val_copy, arena);
+  upb_Arena* arena = Arena_get(new_arena_rb);
+  upb_Map* new_map =
+      upb_Map_New(arena, self->key_type, self->value_type_info.type);
+  size_t iter = kUpb_Map_Begin;
+  while (upb_MapIterator_Next(self->map, &iter)) {
+    upb_MessageValue key = upb_MapIterator_Key(self->map, iter);
+    upb_MessageValue val = upb_MapIterator_Value(self->map, iter);
+    upb_MessageValue val_copy =
+        Msgval_DeepCopy(val, self->value_type_info, arena);
+    upb_Map_Set(new_map, key, val_copy, arena);
   }
 
   return Map_GetRubyWrapper(new_map, self->key_type, self->value_type_info,
                             new_arena_rb);
 }
 
-const upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef* field,
-                             upb_arena* arena) {
-  const upb_fielddef* key_field = map_field_key(field);
-  const upb_fielddef* value_field = map_field_value(field);
+const upb_Map* Map_GetUpbMap(VALUE val, const upb_FieldDef* field,
+                             upb_Arena* arena) {
+  const upb_FieldDef* key_field = map_field_key(field);
+  const upb_FieldDef* value_field = map_field_value(field);
   TypeInfo value_type_info = TypeInfo_get(value_field);
   Map* self;
 
@@ -180,7 +181,7 @@ const upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef* field,
   }
 
   self = ruby_to_Map(val);
-  if (self->key_type != upb_fielddef_type(key_field)) {
+  if (self->key_type != upb_FieldDef_CType(key_field)) {
     rb_raise(cTypeError, "Map key type does not match field's key type");
   }
   if (self->value_type_info.type != value_type_info.type) {
@@ -194,16 +195,16 @@ const upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef* field,
   return self->map;
 }
 
-void Map_Inspect(StringBuilder* b, const upb_map* map, upb_fieldtype_t key_type,
+void Map_Inspect(StringBuilder* b, const upb_Map* map, upb_CType key_type,
                  TypeInfo val_type) {
   bool first = true;
   TypeInfo key_type_info = {key_type};
   StringBuilder_Printf(b, "{");
   if (map) {
-    size_t iter = UPB_MAP_BEGIN;
-    while (upb_mapiter_next(map, &iter)) {
-      upb_msgval key = upb_mapiter_key(map, iter);
-      upb_msgval val = upb_mapiter_value(map, iter);
+    size_t iter = kUpb_Map_Begin;
+    while (upb_MapIterator_Next(map, &iter)) {
+      upb_MessageValue key = upb_MapIterator_Key(map, iter);
+      upb_MessageValue val = upb_MapIterator_Value(map, iter);
       if (first) {
         first = false;
       } else {
@@ -219,10 +220,12 @@ void Map_Inspect(StringBuilder* b, const upb_map* map, upb_fieldtype_t key_type,
 
 static int merge_into_self_callback(VALUE key, VALUE val, VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  upb_arena *arena = Arena_get(self->arena);
-  upb_msgval key_val = Convert_RubyToUpb(key, "", Map_keyinfo(self), arena);
-  upb_msgval val_val = Convert_RubyToUpb(val, "", self->value_type_info, arena);
-  upb_map_set(Map_GetMutable(_self), key_val, val_val, arena);
+  upb_Arena* arena = Arena_get(self->arena);
+  upb_MessageValue key_val =
+      Convert_RubyToUpb(key, "", Map_keyinfo(self), arena);
+  upb_MessageValue val_val =
+      Convert_RubyToUpb(val, "", self->value_type_info, arena);
+  upb_Map_Set(Map_GetMutable(_self), key_val, val_val, arena);
   return ST_CONTINUE;
 }
 
@@ -234,9 +237,9 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
              RTYPEDDATA_TYPE(hashmap) == &Map_type) {
     Map* self = ruby_to_Map(_self);
     Map* other = ruby_to_Map(hashmap);
-    upb_arena *arena = Arena_get(self->arena);
-    upb_msg *self_msg = Map_GetMutable(_self);
-    size_t iter = UPB_MAP_BEGIN;
+    upb_Arena* arena = Arena_get(self->arena);
+    upb_Message* self_msg = Map_GetMutable(_self);
+    size_t iter = kUpb_Map_Begin;
 
     Arena_fuse(other->arena, arena);
 
@@ -246,10 +249,10 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
       rb_raise(rb_eArgError, "Attempt to merge Map with mismatching types");
     }
 
-    while (upb_mapiter_next(other->map, &iter)) {
-      upb_msgval key = upb_mapiter_key(other->map, iter);
-      upb_msgval val = upb_mapiter_value(other->map, iter);
-      upb_map_set(self_msg, key, val, arena);
+    while (upb_MapIterator_Next(other->map, &iter)) {
+      upb_MessageValue key = upb_MapIterator_Key(other->map, iter);
+      upb_MessageValue val = upb_MapIterator_Value(other->map, iter);
+      upb_Map_Set(self_msg, key, val, arena);
     }
   } else {
     rb_raise(rb_eArgError, "Unknown type merging into Map");
@@ -305,20 +308,20 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
 
   // Check that the key type is an allowed type.
   switch (self->key_type) {
-    case UPB_TYPE_INT32:
-    case UPB_TYPE_INT64:
-    case UPB_TYPE_UINT32:
-    case UPB_TYPE_UINT64:
-    case UPB_TYPE_BOOL:
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES:
+    case kUpb_CType_Int32:
+    case kUpb_CType_Int64:
+    case kUpb_CType_UInt32:
+    case kUpb_CType_UInt64:
+    case kUpb_CType_Bool:
+    case kUpb_CType_String:
+    case kUpb_CType_Bytes:
       // These are OK.
       break;
     default:
       rb_raise(rb_eArgError, "Invalid key type for map.");
   }
 
-  self->map = upb_map_new(Arena_get(self->arena), self->key_type,
+  self->map = upb_Map_New(Arena_get(self->arena), self->key_type,
                           self->value_type_info.type);
   ObjectCache_Add(self->map, _self);
 
@@ -339,11 +342,11 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
  */
 static VALUE Map_each(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  size_t iter = UPB_MAP_BEGIN;
+  size_t iter = kUpb_Map_Begin;
 
-  while (upb_mapiter_next(self->map, &iter)) {
-    upb_msgval key = upb_mapiter_key(self->map, iter);
-    upb_msgval val = upb_mapiter_value(self->map, iter);
+  while (upb_MapIterator_Next(self->map, &iter)) {
+    upb_MessageValue key = upb_MapIterator_Key(self->map, iter);
+    upb_MessageValue val = upb_MapIterator_Value(self->map, iter);
     VALUE key_val = Convert_UpbToRuby(key, Map_keyinfo(self), self->arena);
     VALUE val_val = Convert_UpbToRuby(val, self->value_type_info, self->arena);
     rb_yield_values(2, key_val, val_val);
@@ -360,11 +363,11 @@ static VALUE Map_each(VALUE _self) {
  */
 static VALUE Map_keys(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  size_t iter = UPB_MAP_BEGIN;
+  size_t iter = kUpb_Map_Begin;
   VALUE ret = rb_ary_new();
 
-  while (upb_mapiter_next(self->map, &iter)) {
-    upb_msgval key = upb_mapiter_key(self->map, iter);
+  while (upb_MapIterator_Next(self->map, &iter)) {
+    upb_MessageValue key = upb_MapIterator_Key(self->map, iter);
     VALUE key_val = Convert_UpbToRuby(key, Map_keyinfo(self), self->arena);
     rb_ary_push(ret, key_val);
   }
@@ -380,11 +383,11 @@ static VALUE Map_keys(VALUE _self) {
  */
 static VALUE Map_values(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  size_t iter = UPB_MAP_BEGIN;
+  size_t iter = kUpb_Map_Begin;
   VALUE ret = rb_ary_new();
 
-  while (upb_mapiter_next(self->map, &iter)) {
-    upb_msgval val = upb_mapiter_value(self->map, iter);
+  while (upb_MapIterator_Next(self->map, &iter)) {
+    upb_MessageValue val = upb_MapIterator_Value(self->map, iter);
     VALUE val_val = Convert_UpbToRuby(val, self->value_type_info, self->arena);
     rb_ary_push(ret, val_val);
   }
@@ -401,10 +404,11 @@ static VALUE Map_values(VALUE _self) {
  */
 static VALUE Map_index(VALUE _self, VALUE key) {
   Map* self = ruby_to_Map(_self);
-  upb_msgval key_upb = Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
-  upb_msgval val;
+  upb_MessageValue key_upb =
+      Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
+  upb_MessageValue val;
 
-  if (upb_map_get(self->map, key_upb, &val)) {
+  if (upb_Map_Get(self->map, key_upb, &val)) {
     return Convert_UpbToRuby(val, self->value_type_info, self->arena);
   } else {
     return Qnil;
@@ -421,11 +425,13 @@ static VALUE Map_index(VALUE _self, VALUE key) {
  */
 static VALUE Map_index_set(VALUE _self, VALUE key, VALUE val) {
   Map* self = ruby_to_Map(_self);
-  upb_arena *arena = Arena_get(self->arena);
-  upb_msgval key_upb = Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
-  upb_msgval val_upb = Convert_RubyToUpb(val, "", self->value_type_info, arena);
+  upb_Arena* arena = Arena_get(self->arena);
+  upb_MessageValue key_upb =
+      Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
+  upb_MessageValue val_upb =
+      Convert_RubyToUpb(val, "", self->value_type_info, arena);
 
-  upb_map_set(Map_GetMutable(_self), key_upb, val_upb, arena);
+  upb_Map_Set(Map_GetMutable(_self), key_upb, val_upb, arena);
 
   return val;
 }
@@ -439,9 +445,10 @@ static VALUE Map_index_set(VALUE _self, VALUE key, VALUE val) {
  */
 static VALUE Map_has_key(VALUE _self, VALUE key) {
   Map* self = ruby_to_Map(_self);
-  upb_msgval key_upb = Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
+  upb_MessageValue key_upb =
+      Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
 
-  if (upb_map_get(self->map, key_upb, NULL)) {
+  if (upb_Map_Get(self->map, key_upb, NULL)) {
     return Qtrue;
   } else {
     return Qfalse;
@@ -457,21 +464,22 @@ static VALUE Map_has_key(VALUE _self, VALUE key) {
  */
 static VALUE Map_delete(VALUE _self, VALUE key) {
   Map* self = ruby_to_Map(_self);
-  upb_msgval key_upb = Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
-  upb_msgval val_upb;
+  upb_MessageValue key_upb =
+      Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
+  upb_MessageValue val_upb;
   VALUE ret;
 
   rb_check_frozen(_self);
 
-  // TODO(haberman): make upb_map_delete() also capable of returning the deleted
+  // TODO(haberman): make upb_Map_Delete() also capable of returning the deleted
   // value.
-  if (upb_map_get(self->map, key_upb, &val_upb)) {
+  if (upb_Map_Get(self->map, key_upb, &val_upb)) {
     ret = Convert_UpbToRuby(val_upb, self->value_type_info, self->arena);
   } else {
     ret = Qnil;
   }
 
-  upb_map_delete(Map_GetMutable(_self), key_upb);
+  upb_Map_Delete(Map_GetMutable(_self), key_upb);
 
   return ret;
 }
@@ -483,7 +491,7 @@ static VALUE Map_delete(VALUE _self, VALUE key) {
  * Removes all entries from the map.
  */
 static VALUE Map_clear(VALUE _self) {
-  upb_map_clear(Map_GetMutable(_self));
+  upb_Map_Clear(Map_GetMutable(_self));
   return Qnil;
 }
 
@@ -495,7 +503,7 @@ static VALUE Map_clear(VALUE _self) {
  */
 static VALUE Map_length(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  return ULL2NUM(upb_map_size(self->map));
+  return ULL2NUM(upb_Map_Size(self->map));
 }
 
 /*
@@ -509,16 +517,16 @@ static VALUE Map_dup(VALUE _self) {
   Map* self = ruby_to_Map(_self);
   VALUE new_map_rb = Map_new_this_type(self);
   Map* new_self = ruby_to_Map(new_map_rb);
-  size_t iter = UPB_MAP_BEGIN;
-  upb_arena *arena = Arena_get(new_self->arena);
-  upb_map *new_map = Map_GetMutable(new_map_rb);
+  size_t iter = kUpb_Map_Begin;
+  upb_Arena* arena = Arena_get(new_self->arena);
+  upb_Map* new_map = Map_GetMutable(new_map_rb);
 
   Arena_fuse(self->arena, arena);
 
-  while (upb_mapiter_next(self->map, &iter)) {
-    upb_msgval key = upb_mapiter_key(self->map, iter);
-    upb_msgval val = upb_mapiter_value(self->map, iter);
-    upb_map_set(new_map, key, val, arena);
+  while (upb_MapIterator_Next(self->map, &iter)) {
+    upb_MessageValue key = upb_MapIterator_Key(self->map, iter);
+    upb_MessageValue val = upb_MapIterator_Value(self->map, iter);
+    upb_Map_Set(new_map, key, val, arena);
   }
 
   return new_map_rb;
@@ -559,18 +567,18 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
       self->value_type_class != other->value_type_class) {
     return Qfalse;
   }
-  if (upb_map_size(self->map) != upb_map_size(other->map)) {
+  if (upb_Map_Size(self->map) != upb_Map_Size(other->map)) {
     return Qfalse;
   }
 
   // For each member of self, check that an equal member exists at the same key
   // in other.
-  size_t iter = UPB_MAP_BEGIN;
-  while (upb_mapiter_next(self->map, &iter)) {
-    upb_msgval key = upb_mapiter_key(self->map, iter);
-    upb_msgval val = upb_mapiter_value(self->map, iter);
-    upb_msgval other_val;
-    if (!upb_map_get(other->map, key, &other_val)) {
+  size_t iter = kUpb_Map_Begin;
+  while (upb_MapIterator_Next(self->map, &iter)) {
+    upb_MessageValue key = upb_MapIterator_Key(self->map, iter);
+    upb_MessageValue val = upb_MapIterator_Value(self->map, iter);
+    upb_MessageValue other_val;
+    if (!upb_Map_Get(other->map, key, &other_val)) {
       // Not present in other map.
       return Qfalse;
     }
@@ -609,11 +617,11 @@ VALUE Map_hash(VALUE _self) {
   Map* self = ruby_to_Map(_self);
   uint64_t hash = 0;
 
-  size_t iter = UPB_MAP_BEGIN;
+  size_t iter = kUpb_Map_Begin;
   TypeInfo key_info = {self->key_type};
-  while (upb_mapiter_next(self->map, &iter)) {
-    upb_msgval key = upb_mapiter_key(self->map, iter);
-    upb_msgval val = upb_mapiter_value(self->map, iter);
+  while (upb_MapIterator_Next(self->map, &iter)) {
+    upb_MessageValue key = upb_MapIterator_Key(self->map, iter);
+    upb_MessageValue val = upb_MapIterator_Value(self->map, iter);
     hash = Msgval_GetHash(key, key_info, hash);
     hash = Msgval_GetHash(val, self->value_type_info, hash);
   }

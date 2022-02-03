@@ -196,7 +196,10 @@ final class LongArrayList extends AbstractProtobufList<Long>
     if (size == array.length) {
       // Resize to 1.5x the size
       int length = ((size * 3) / 2) + 1;
-      array = Arrays.copyOf(array, length);
+      long[] newArray = new long[length];
+
+      System.arraycopy(array, 0, newArray, 0, size);
+      array = newArray;
     }
 
     array[size++] = element;
@@ -215,10 +218,14 @@ final class LongArrayList extends AbstractProtobufList<Long>
     } else {
       // Resize to 1.5x the size
       int length = ((size * 3) / 2) + 1;
-      array = Arrays.copyOf(array, length);
+      long[] newArray = new long[length];
+
+      // Copy the first part directly
+      System.arraycopy(array, 0, newArray, 0, index);
 
       // Copy the rest shifted over by one to make room
-      System.arraycopy(array, index, array, index + 1, size - index);
+      System.arraycopy(array, index, newArray, index + 1, size - index);
+      array = newArray;
     }
 
     array[index] = element;

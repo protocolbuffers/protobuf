@@ -9,6 +9,7 @@ use Google\Protobuf\Internal\GPBType;
 use Bar\TestLegacyMessage;
 use Bar\TestLegacyMessage_NestedEnum;
 use Bar\TestLegacyMessage_NestedMessage;
+use Foo\Test32Fields;
 use Foo\TestEnum;
 use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
@@ -1848,5 +1849,14 @@ class GeneratedClassTest extends TestBase
         /* var_dump($m); */
 
         $this->assertTrue(true);
+    }
+
+    public function testIssue9440()
+    {
+        $m = new Test32Fields();
+        $m->setId(8);
+        $this->assertEquals(8, $m->getId());
+        $m->setVersion('1');
+        $this->assertEquals(8, $m->getId());
     }
 }

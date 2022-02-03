@@ -80,7 +80,14 @@ def _proto_gen_impl(ctx):
     source_dir = _SourceDir(ctx)
     gen_dir = _GenDir(ctx).rstrip("/")
     if source_dir:
-        import_flags = depset(direct=["-I" + source_dir, "-I" + gen_dir])
+        has_sources = any([src.is_source for src in srcs])
+        has_generated = any([not src.is_source for src in srcs])
+        import_flags = []
+        if has_sources:
+            import_flags += ["-I" + source_dir]
+        if has_generated:
+            import_flags += ["-I" + gen_dir]
+        import_flags = depset(direct=import_flags)
     else:
         import_flags = depset(direct=["-I."])
 

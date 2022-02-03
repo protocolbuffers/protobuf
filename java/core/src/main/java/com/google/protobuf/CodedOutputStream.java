@@ -42,7 +42,6 @@ import java.io.OutputStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -843,7 +842,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       length = Utf8.encodedLength(value);
     } catch (UnpairedSurrogateException e) {
       // TODO(dweis): Consider using nio Charset methods instead.
-      final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+      final byte[] bytes = value.getBytes(Internal.UTF_8);
       length = bytes.length;
     }
 
@@ -990,7 +989,8 @@ public abstract class CodedOutputStream extends ByteOutput {
     // Unfortunately there does not appear to be any way to tell Java to encode
     // UTF-8 directly into our buffer, so we have to let it create its own byte
     // array and then copy.
-    final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+    // TODO(dweis): Consider using nio Charset methods instead.
+    final byte[] bytes = value.getBytes(Internal.UTF_8);
     try {
       writeUInt32NoTag(bytes.length);
       writeLazy(bytes, 0, bytes.length);
