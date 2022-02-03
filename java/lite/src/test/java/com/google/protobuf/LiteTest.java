@@ -68,7 +68,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -1721,7 +1720,7 @@ public class LiteTest {
   public void testMergeFromStream_invalidBytes() throws Exception {
     TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder().setDefaultBool(true);
     try {
-      builder.mergeFrom(CodedInputStream.newInstance("Invalid bytes".getBytes(StandardCharsets.UTF_8)));
+      builder.mergeFrom(CodedInputStream.newInstance("Invalid bytes".getBytes(Internal.UTF_8)));
       assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }

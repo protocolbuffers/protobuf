@@ -37,9 +37,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/printer.h>
 
-#include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/testing/file.h>
 
 namespace google {
 namespace protobuf {
@@ -67,12 +65,12 @@ TEST(CSharpEnumValue, PascalCasedPrefixStripping) {
 
 TEST(DescriptorProtoHelpers, IsDescriptorProto) {
   EXPECT_TRUE(IsDescriptorProto(DescriptorProto::descriptor()->file()));
-  EXPECT_FALSE(IsDescriptorProto(Any::descriptor()->file()));
+  EXPECT_FALSE(IsDescriptorProto(google::protobuf::Any::descriptor()->file()));
 }
 
 TEST(DescriptorProtoHelpers, IsDescriptorOptionMessage) {
   EXPECT_TRUE(IsDescriptorOptionMessage(FileOptions::descriptor()));
-  EXPECT_FALSE(IsDescriptorOptionMessage(Any::descriptor()));
+  EXPECT_FALSE(IsDescriptorOptionMessage(google::protobuf::Any::descriptor()));
   EXPECT_FALSE(IsDescriptorOptionMessage(DescriptorProto::descriptor()));
 }
 

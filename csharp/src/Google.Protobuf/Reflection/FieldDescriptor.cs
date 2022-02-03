@@ -92,6 +92,14 @@ namespace Google.Protobuf.Reflection
         internal FieldDescriptorProto Proto { get; }
 
         /// <summary>
+        /// Returns a clone of the underlying <see cref="FieldDescriptorProto"/> describing this field.
+        /// Note that a copy is taken every time this method is called, so clients using it frequently
+        /// (and not modifying it) may want to cache the returned value.
+        /// </summary>
+        /// <returns>A protobuf representation of this field descriptor.</returns>
+        public FieldDescriptorProto ToProto() => Proto.Clone();
+
+        /// <summary>
         /// An extension identifier for this field, or <c>null</c> if this field isn't an extension.
         /// </summary>
         public Extension Extension { get; }
@@ -239,7 +247,8 @@ namespace Google.Protobuf.Reflection
                 }
                 else
                 {
-                    return !Proto.Options.HasPacked || Proto.Options.Packed;
+                    // Packed by default with proto3
+                    return Proto.Options == null || !Proto.Options.HasPacked || Proto.Options.Packed;
                 }
             }
         }
@@ -452,7 +461,7 @@ namespace Google.Protobuf.Reflection
             }
             return IsMap ? new MapFieldAccessor(property, this)
                 : IsRepeated ? new RepeatedFieldAccessor(property, this)
-                : (IFieldAccessor) new SingleFieldAccessor(property, this);
+                : (IFieldAccessor) new SingleFieldAccessor(ContainingType.ClrType, property, this);
         }
     }
 }

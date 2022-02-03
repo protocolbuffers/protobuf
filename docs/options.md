@@ -296,3 +296,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Protoc-gen-checker
    * Website: https://github.com/Intrinsec/protoc-gen-checker
    * Extension: 1130-1139
+
+1. Protoc-gen-go-svc
+   * Website: https://github.com/dane/protoc-gen-go-svc
+   * Extension: 1140
