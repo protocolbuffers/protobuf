@@ -1254,7 +1254,6 @@ class GeneratedClassTest extends TestBase
         $m = \Lower_enum_value\NotAllowed::PBnamespace;
         $m = \Lower_enum_value\NotAllowed::PBnew;
         $m = \Lower_enum_value\NotAllowed::PBor;
-        $m = \Lower_enum_value\NotAllowed::parent;
         $m = \Lower_enum_value\NotAllowed::PBprint;
         $m = \Lower_enum_value\NotAllowed::PBprivate;
         $m = \Lower_enum_value\NotAllowed::PBprotected;
@@ -1263,7 +1262,6 @@ class GeneratedClassTest extends TestBase
         $m = \Lower_enum_value\NotAllowed::PBrequire_once;
         $m = \Lower_enum_value\NotAllowed::PBreturn;
         $m = \Lower_enum_value\NotAllowed::PBstatic;
-        $m = \Lower_enum_value\NotAllowed::self;
         $m = \Lower_enum_value\NotAllowed::PBswitch;
         $m = \Lower_enum_value\NotAllowed::PBthrow;
         $m = \Lower_enum_value\NotAllowed::PBtrait;
@@ -1283,6 +1281,8 @@ class GeneratedClassTest extends TestBase
         $m = \Lower_enum_value\NotAllowed::null;
         $m = \Lower_enum_value\NotAllowed::void;
         $m = \Lower_enum_value\NotAllowed::iterable;
+        $m = \Lower_enum_value\NotAllowed::parent;
+        $m = \Lower_enum_value\NotAllowed::self;
 
         $m = \Upper_enum_value\NotAllowed::PBABSTRACT;
         $m = \Upper_enum_value\NotAllowed::PBAND;
@@ -1334,7 +1334,6 @@ class GeneratedClassTest extends TestBase
         $m = \Upper_enum_value\NotAllowed::PBNAMESPACE;
         $m = \Upper_enum_value\NotAllowed::PBNEW;
         $m = \Upper_enum_value\NotAllowed::PBOR;
-        $m = \Upper_enum_value\NotAllowed::PARENT;
         $m = \Upper_enum_value\NotAllowed::PBPRINT;
         $m = \Upper_enum_value\NotAllowed::PBPRIVATE;
         $m = \Upper_enum_value\NotAllowed::PBPROTECTED;
@@ -1342,7 +1341,6 @@ class GeneratedClassTest extends TestBase
         $m = \Upper_enum_value\NotAllowed::PBREQUIRE;
         $m = \Upper_enum_value\NotAllowed::PBREQUIRE_ONCE;
         $m = \Upper_enum_value\NotAllowed::PBRETURN;
-        $m = \Upper_enum_value\NotAllowed::SELF;
         $m = \Upper_enum_value\NotAllowed::PBSTATIC;
         $m = \Upper_enum_value\NotAllowed::PBSWITCH;
         $m = \Upper_enum_value\NotAllowed::PBTHROW;
@@ -1363,6 +1361,8 @@ class GeneratedClassTest extends TestBase
         $m = \Upper_enum_value\NotAllowed::NULL;
         $m = \Upper_enum_value\NotAllowed::VOID;
         $m = \Upper_enum_value\NotAllowed::ITERABLE;
+        $m = \Upper_enum_value\NotAllowed::PARENT;
+        $m = \Upper_enum_value\NotAllowed::SELF;
 
         $this->assertTrue(true);
     }
