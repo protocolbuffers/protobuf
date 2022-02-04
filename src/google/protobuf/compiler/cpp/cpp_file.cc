@@ -37,6 +37,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
@@ -385,6 +386,10 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
       "#include <algorithm>\n"  // for swap()
       "\n",
       CreateHeaderInclude(target_basename, file_));
+
+  if (!options_.transitive_pb_h) {
+    GenerateDependencyIncludes(printer);
+  }
 
   IncludeFile("net/proto2/io/public/coded_stream.h", printer);
   // TODO(gerbens) This is to include parse_context.h, we need a better way
@@ -1066,10 +1071,36 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* printer) {
 
   FlattenMessagesInFile(file_, &classes);  // All messages need forward decls.
 
+  std::vector<const FieldDescriptor*> fields;
+  if (!options_.transitive_pb_h || options_.proto_h) {
+    ListAllFields(file_, &fields);
+  }
+
+  if (!options_.transitive_pb_h) {
+    // Add forward declaration for all messages, enums, and extended messages
+    // defined outside the file
+    for (int i = 0; i < fields.size(); i++) {
+      const Descriptor* message_type = fields[i]->message_type();
+      if (message_type && message_type->file() != file_) {
+        classes.push_back(message_type);
+      }
+
+      const EnumDescriptor* enum_type = fields[i]->enum_type();
+      if (enum_type && enum_type->file() != file_) {
+        enums.push_back(enum_type);
+      }
+
+      if (fields[i]->is_extension()) {
+        const Descriptor* message_type = fields[i]->containing_type();
+        if (message_type && message_type->file() != file_) {
+          classes.push_back(message_type);
+        }
+      }
+    }
+  }
+
   if (options_.proto_h) {  // proto.h needs extra forward declarations.
     // All classes / enums referred to as field members
-    std::vector<const FieldDescriptor*> fields;
-    ListAllFields(file_, &fields);
     for (int i = 0; i < fields.size(); i++) {
       classes.push_back(fields[i]->containing_type());
       classes.push_back(fields[i]->message_type());
@@ -1081,7 +1112,9 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* printer) {
   // Calculate the set of files whose definitions we get through include.
   // No need to forward declare types that are defined in these.
   std::unordered_set<const FileDescriptor*> public_set;
-  PublicImportDFS(file_, &public_set);
+  if (options_.transitive_pb_h) {
+    PublicImportDFS(file_, &public_set);
+  }
 
   std::map<std::string, ForwardDeclarations> decls;
   for (int i = 0; i < classes.size(); i++) {
@@ -1268,20 +1301,40 @@ void FileGenerator::GenerateMetadataPragma(io::Printer* printer,
 
 void FileGenerator::GenerateDependencyIncludes(io::Printer* printer) {
   Formatter format(printer, variables_);
-  for (int i = 0; i < file_->dependency_count(); i++) {
-    std::string basename = StripProto(file_->dependency(i)->name());
+  std::queue<const FileDescriptor*> files_queue;
+  std::unordered_set<const FileDescriptor*> included_files;
+  files_queue.push(file_);
+  included_files.insert(file_);
 
-    // Do not import weak deps.
-    if (IsDepWeak(file_->dependency(i))) continue;
+  while (!files_queue.empty()) {
+    const FileDescriptor* file = files_queue.front();
+    files_queue.pop();
 
-    if (IsBootstrapProto(options_, file_)) {
-      GetBootstrapBasename(options_, basename, &basename);
+    for (int i = 0; i < file->dependency_count(); i++) {
+      // try figure out if this file have not been included yet
+      const FileDescriptor* dependency_file = file->dependency(i);
+      if (!options_.transitive_pb_h) {
+        auto [iter, is_inserted] = included_files.insert(dependency_file);
+        if (is_inserted) {
+          files_queue.push(dependency_file);
+        } else {
+          continue;
+        }
+      }
+
+      TProtoStringType basename = StripProto(dependency_file->name());
+
+      // Do not import weak deps.
+      if (IsDepWeak(dependency_file)) continue;
+
+      if (IsBootstrapProto(options_, file)) {
+        GetBootstrapBasename(options_, basename, &basename);
+      }
+
+      format("#include $1$\n",
+             CreateHeaderInclude(basename + ".pb.h", dependency_file));
     }
-
-    format("#include $1$\n",
-           CreateHeaderInclude(basename + ".pb.h", file_->dependency(i)));
-  }
-}
+  }}
 
 void FileGenerator::GenerateGlobalStateFunctionDeclarations(
     io::Printer* printer) {
