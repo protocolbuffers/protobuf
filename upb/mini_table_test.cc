@@ -206,7 +206,12 @@ TEST(MiniTable, AllScalarTypesOneof) {
     EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
     // For a oneof all fields have the same offset.
     EXPECT_EQ(table->fields[0].offset, f->offset);
+    // All presence fields should point to the same oneof case offset.
+    size_t case_ofs = _upb_oneofcase_ofs(f);
+    EXPECT_EQ(table->fields[0].presence, f->presence);
     EXPECT_TRUE(f->offset < table->size);
+    EXPECT_TRUE(case_ofs < table->size);
+    EXPECT_TRUE(case_ofs != f->offset);
   }
   EXPECT_EQ(0, table->required_count);
 }

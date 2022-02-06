@@ -326,8 +326,9 @@ enum PresenceClass {
   kNoPresence = 0,
   kHasbitPresence = 1,
   kRequiredPresence = 2,
-  // Negative values refer to a specific oneof with that number.
-  // Positive values >=3 indicate that this field is in a oneof, and specify
+  kOneofBase = 3,
+  // Negative values refer to a specific oneof with that number.  Positive
+  // values >= kOneofBase indicate that this field is in a oneof, and specify
   // the next field in this oneof's linked list.
 };
 
@@ -383,31 +384,34 @@ static bool upb_MiniTable_PushItem(upb_LayoutItemVector* vec,
 
 static bool upb_MiniTable_PushOneof(upb_LayoutItemVector* vec,
                                     upb_LayoutItem item) {
-  item.field_or_oneof = ~item.field_or_oneof;
   // Push oneof data.
-  item.is_case = false;
+  item.type = kUpb_LayoutItemType_OneofField;
   if (!upb_MiniTable_PushItem(vec, item)) return false;
 
   // Push oneof case.
   item.rep = kUpb_FieldRep_4Byte;  // Field Number.
-  item.is_case = true;
+  item.type = kUpb_LayoutItemType_OneofCase;
   return upb_MiniTable_PushItem(vec, item);
 }
 
 static bool upb_MiniTable_DecodeOneofs(const char** ptr, const char* end,
                                        upb_MiniTable* ret,
                                        upb_LayoutItemVector* vec) {
-  upb_LayoutItem item = {.rep = 0, .field_or_oneof = -1};
+  upb_LayoutItem item = {.rep = 0,
+                         .field_index = kUpb_LayoutItem_IndexSentinel};
   while (*ptr < end) {
     char ch = *(*ptr)++;
     if (ch == kUpb_EncodedValue_FieldSeparator) {
       // Field separator, no action needed.
     } else if (ch == kUpb_EncodedValue_OneofSeparator) {
       // End of oneof.
+      if (item.field_index == kUpb_LayoutItem_IndexSentinel) {
+        return false;  // Empty oneof.
+      }
+      item.field_index -= kOneofBase;
       if (!upb_MiniTable_PushOneof(vec, item)) return false;
-      item.field_or_oneof = -1;  // Move to next oneof.
+      item.field_index = kUpb_LayoutItem_IndexSentinel;  // Move to next oneof.
     } else {
-      const char* before = *ptr;
       uint32_t field_num = upb_MiniTable_DecodeBase92Varint(
           ptr, end, ch, upb_ToBase92(0), upb_ToBase92(63));
       upb_MiniTable_Field* f =
@@ -415,12 +419,14 @@ static bool upb_MiniTable_DecodeOneofs(const char** ptr, const char* end,
       if (!f) return false;
       // Oneof storage must be large enough to accommodate the largest member.
       item.rep = UPB_MAX(item.rep, f->mode >> kUpb_FieldRep_Shift);
-      f->offset = item.field_or_oneof;
-      item.field_or_oneof = f - ret->fields;
+      // Prepend this field to the linked list.
+      f->offset = item.field_index;
+      item.field_index = (f - ret->fields) + kOneofBase;
     }
   }
 
   // Push final oneof.
+  item.field_index -= kOneofBase;
   return upb_MiniTable_PushOneof(vec, item);
 }
 
@@ -436,21 +442,20 @@ int upb_MiniTable_CompareFields(const void* _a, const void* _b) {
   //
   // The main goal of this is to reduce space lost to padding.
   if (a->rep != b->rep) return UPB_COMPARE_INTEGERS(a->rep, b->rep);
-  if (a->is_case != b->is_case) {
-    return UPB_COMPARE_INTEGERS(a->is_case, b->is_case);
-  }
-  return UPB_COMPARE_INTEGERS(b->field_or_oneof, a->field_or_oneof);
+  if (a->type != b->type) return UPB_COMPARE_INTEGERS(a->type, b->type);
+  return UPB_COMPARE_INTEGERS(b->field_index, a->field_index);
 }
 
 #undef UPB_COMPARE_INTEGERS
 
 static bool upb_MiniTable_SortLayoutItems(upb_MiniTable* table,
                                           upb_LayoutItemVector* vec) {
-  // Add items for all fields that are not in a oneof.
+  // Add items for all non-oneof fields (oneofs were already added).
   int n = table->field_count;
   for (int i = 0; i < n; i++) {
-    upb_MiniTable_Field* f = (upb_MiniTable_Field*)&table->fields[i];
-    upb_LayoutItem item = {.field_or_oneof = i,
+    upb_MiniTable_Field* f = (void*)&table->fields[i];
+    if (f->offset >= kOneofBase) continue;
+    upb_LayoutItem item = {.field_index = i,
                            .rep = f->mode >> kUpb_FieldRep_Shift};
     if (!upb_MiniTable_PushItem(vec, item)) return false;
   }
@@ -571,13 +576,41 @@ size_t upb_MiniTable_Place(upb_MiniTable* table, upb_FieldRep rep) {
 static bool upb_MiniTable_AssignOffsets(upb_MiniTable* ret,
                                         upb_LayoutItemVector* vec) {
   upb_LayoutItem* end = vec->data + vec->size;
+
+  // Compute offsets.
   for (upb_LayoutItem* item = vec->data; item < end; item++) {
     item->offset = upb_MiniTable_Place(ret, item->rep);
   }
+
+  // Assign oneof case offsets.  We must do these first, since assigning
+  // actual offsets will overwrite the links of the linked list.
   for (upb_LayoutItem* item = vec->data; item < end; item++) {
-    if (item->field_or_oneof >= 0) {
-      upb_MiniTable_Field *f = (void *)&ret->fields[item->field_or_oneof];
-      f->offset = 
+    if (item->type != kUpb_LayoutItemType_OneofCase) continue;
+    upb_MiniTable_Field* f = (void*)&ret->fields[item->field_index];
+    while (true) {
+      f->presence = ~item->offset;
+      if (f->offset == kUpb_LayoutItem_IndexSentinel) break;
+      f = (void*)&ret->fields[f->offset - kOneofBase];
+    }
+  }
+
+  // Assign offsets.
+  for (upb_LayoutItem* item = vec->data; item < end; item++) {
+    upb_MiniTable_Field* f = (void*)&ret->fields[item->field_index];
+    switch (item->type) {
+      case kUpb_LayoutItemType_OneofField:
+        while (true) {
+          uint16_t next_offset = f->offset;
+          f->offset = item->offset;
+          if (next_offset == kUpb_LayoutItem_IndexSentinel) break;
+          f = (void*)&ret->fields[next_offset - kOneofBase];
+        }
+        break;
+      case kUpb_LayoutItemType_Field:
+        f->offset = item->offset;
+        break;
+      default:
+        break;
     }
   }
   return true;
