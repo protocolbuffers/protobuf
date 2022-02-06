@@ -296,12 +296,14 @@ static void check_int32_map_one_entry(
   EXPECT_EQ(
       1, protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_size(
              msg));
-  EXPECT_TRUE(protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_get(
-      msg, test_int32, &val));
+  EXPECT_TRUE(
+      protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_get(
+          msg, test_int32, &val));
   EXPECT_EQ(val, test_int32_2);
 
-  EXPECT_FALSE(protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_get(
-      msg, test_int32_3, &val));
+  EXPECT_FALSE(
+      protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_get(
+          msg, test_int32_3, &val));
 
   /* Test that iteration reveals a single k/v pair in the map. */
   iter = kUpb_Map_Begin;
