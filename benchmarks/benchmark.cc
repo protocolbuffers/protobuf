@@ -81,8 +81,8 @@ enum LoadDescriptorMode {
 // them dynamically.  Generally you would never want to do this, but we want to
 // simulate the cost we would pay if we were loading these types purely from
 // descriptors, with no mini-tales available.
-bool LoadDefInit_NoLayout(upb_DefPool *s, const _upb_DefPool_Init *init,
-                          size_t *bytes) {
+bool LoadDefInit_BuildLayout(upb_DefPool *s, const _upb_DefPool_Init *init,
+                             size_t *bytes) {
   _upb_DefPool_Init** deps = init->deps;
   google_protobuf_FileDescriptorProto* file;
   upb_Arena* arena;
@@ -97,7 +97,7 @@ bool LoadDefInit_NoLayout(upb_DefPool *s, const _upb_DefPool_Init *init,
   arena = upb_Arena_New();
 
   for (; *deps; deps++) {
-    if (!LoadDefInit_NoLayout(s, *deps, bytes))
+    if (!LoadDefInit_BuildLayout(s, *deps, bytes))
       goto err;
   }
 
@@ -143,7 +143,7 @@ static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
       bytes_per_iter = _upb_DefPool_BytesLoaded(symtab.ptr());
     } else {
       bytes_per_iter = 0;
-      LoadDefInit_NoLayout(
+      LoadDefInit_BuildLayout(
           symtab.ptr(),
           &google_ads_googleads_v7_services_google_ads_service_proto_upbdefinit,
           &bytes_per_iter);
