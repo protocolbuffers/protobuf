@@ -61,9 +61,7 @@ struct upb_Arena {
 // the beginning.
 //
 // The given buffer size must be at least kUpb_RoundTripBufferSize.
-enum {
-  kUpb_RoundTripBufferSize = 32
-};
+enum { kUpb_RoundTripBufferSize = 32 };
 void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size);
 void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
 
