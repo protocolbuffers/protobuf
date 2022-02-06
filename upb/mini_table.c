@@ -248,12 +248,11 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
   if (modifiers & kUpb_FieldModifier_IsRequired) {
     encoded_modifiers |= kUpb_EncodedFieldModifier_IsRequired;
   }
-  bool field_is_packed = modifiers & kUpb_FieldModifier_IsPacked;
-  bool msg_is_packed = in->msg_mod & kUpb_MessageModifier_DefaultIsPacked;
-  if (encoded_modifiers || field_is_packed != msg_is_packed) {
-    if (!field_is_packed) {
-      encoded_modifiers |= kUpb_EncodedFieldModifier_IsUnpacked;
-    }
+  if ((modifiers & kUpb_FieldModifier_IsPacked) !=
+      (in->msg_mod & kUpb_MessageModifier_DefaultIsPacked)) {
+    encoded_modifiers |= kUpb_EncodedFieldModifier_IsUnpacked;
+  }
+  if (encoded_modifiers) {
     ptr = upb_MtDataEncoder_PutBase92Varint(e, ptr, encoded_modifiers,
                                             kUpb_EncodedValue_MinModifier,
                                             kUpb_EncodedValue_MaxModifier);
@@ -571,13 +570,14 @@ size_t upb_MiniTable_Place(upb_MiniTable* table, upb_FieldRep rep) {
 
 static bool upb_MiniTable_AssignOffsets(upb_MiniTable* ret,
                                         upb_LayoutItemVector* vec) {
-  int n = vec->size;
-  for (int i = 0; i < n; i++) {
-    upb_LayoutItem* item = &vec->data[i];
+  upb_LayoutItem* end = vec->data + vec->size;
+  for (upb_LayoutItem* item = vec->data; item < end; item++) {
+    item->offset = upb_MiniTable_Place(ret, item->rep);
+  }
+  for (upb_LayoutItem* item = vec->data; item < end; item++) {
     if (item->field_or_oneof >= 0) {
-      upb_MiniTable_Field* f =
-          (upb_MiniTable_Field*)&ret->fields[item->field_or_oneof];
-      f->offset = upb_MiniTable_Place(ret, item->rep);
+      upb_MiniTable_Field *f = (void *)&ret->fields[item->field_or_oneof];
+      f->offset = 
     }
   }
   return true;
