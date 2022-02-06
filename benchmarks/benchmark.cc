@@ -81,8 +81,8 @@ enum LoadDescriptorMode {
 // them dynamically.  Generally you would never want to do this, but we want to
 // simulate the cost we would pay if we were loading these types purely from
 // descriptors, with no mini-tales available.
-bool LoadDefInit_BuildLayout(upb_DefPool *s, const _upb_DefPool_Init *init,
-                             size_t *bytes) {
+bool LoadDefInit_BuildLayout(upb_DefPool* s, const _upb_DefPool_Init* init,
+                             size_t* bytes) {
   _upb_DefPool_Init** deps = init->deps;
   google_protobuf_FileDescriptorProto* file;
   upb_Arena* arena;
@@ -97,8 +97,7 @@ bool LoadDefInit_BuildLayout(upb_DefPool *s, const _upb_DefPool_Init *init,
   arena = upb_Arena_New();
 
   for (; *deps; deps++) {
-    if (!LoadDefInit_BuildLayout(s, *deps, bytes))
-      goto err;
+    if (!LoadDefInit_BuildLayout(s, *deps, bytes)) goto err;
   }
 
   file = google_protobuf_FileDescriptorProto_parse_ex(
@@ -183,7 +182,8 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
 
     if (Mode == WithLayout) {
       protobuf::DynamicMessageFactory factory;
-      const protobuf::Descriptor* d = pool.FindMessageTypeByName("google.ads.googleads.v7.services.SearchGoogleAdsResponse");
+      const protobuf::Descriptor* d = pool.FindMessageTypeByName(
+          "google.ads.googleads.v7.services.SearchGoogleAdsResponse");
       if (!d) {
         printf("Failed to find descriptor.\n");
         exit(1);
