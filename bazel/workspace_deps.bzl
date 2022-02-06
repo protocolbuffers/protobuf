@@ -29,11 +29,14 @@ def upb_deps():
         ]
     )
 
+    rules_python_version = "740825b7f74930c62f44af95c9a4c1bd428d2c53" # Latest @ 2021-06-23
+
     maybe(
         http_archive,
         name = "rules_python",
-        url = "https://github.com/bazelbuild/rules_python/releases/download/0.1.0/rules_python-0.1.0.tar.gz",
-        sha256 = "b6d46438523a3ec0f3cead544190ee13223a52f6a6765a29eae7b7cc24cc83a0",
+        strip_prefix = "rules_python-{}".format(rules_python_version),
+        url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
+        sha256 = "09a3c4791c61b62c2cbc5b2cbea4ccc32487b38c7a2cc8f87a794d7a659cc742",
     )
 
     maybe(
