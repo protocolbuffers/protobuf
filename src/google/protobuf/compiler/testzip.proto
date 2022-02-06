@@ -1,0 +1,8 @@
+
+  syntax = "proto2";
+  option java_multiple_files = true;
+  option java_package = "test.jar";
+  option java_outer_classname = "Outer";
+  message Foo {}
+  message Bar {}
+
