@@ -177,6 +177,8 @@ py_wheel(
     deps = [
         ":extension_files",
         ":well_known_proto_pb2",
+        # TODO(haberman): currently this includes the unit tests.  We should
+        # filter these out so we are only distributing true source files.
         "@com_google_protobuf//:python_srcs",
     ],
 )
