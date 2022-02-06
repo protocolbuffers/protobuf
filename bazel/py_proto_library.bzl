@@ -23,8 +23,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Public rules for using upb protos:
-  - py_proto_library()
+"""An implementation of py_proto_library().
+
+We have to implement this ourselves because there is currently no reasonable
+py_proto_library() rule available for Bazel.
+
+Our py_proto_library() is similar to how a real py_proto_library() should work.
+But it hasn't been deeply tested or reviewed, and upb should not be in the
+business of vending py_proto_library(), so we keep it private to upb.
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
@@ -59,6 +65,8 @@ def _generate_output_file(ctx, src, extension):
     output_filename = paths.replace_extension(real_short_path, extension)
     ret = ctx.actions.declare_file(output_filename)
     return ret
+
+# py_proto_library() ###########################################################
 
 def _py_proto_library_rule_impl(ctx):
     #if len(ctx.attr.deps) != 1:
