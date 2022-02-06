@@ -162,7 +162,7 @@ static void jsonenc_timestamp(jsonenc* e, const upb_Message* msg,
    * Fliegel, H. F., and Van Flandern, T. C., "A Machine Algorithm for
    *   Processing Calendar Dates," Communications of the Association of
    *   Computing Machines, vol. 11 (1968), p. 657.  */
-  seconds += 62135596800; // Ensure seconds is positive. 
+  seconds += 62135596800;  // Ensure seconds is positive.
   L = (int)(seconds / 86400) - 719162 + 68569 + 2440588;
   N = 4 * L / 146097;
   L = L - (146097 * N + 3) / 4;

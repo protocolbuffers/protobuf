@@ -460,7 +460,7 @@ TEST_P(IntTableTest, TestIntTable) {
   uint32_t largest_key = 0;
   std::map<uint32_t, uint32_t> m;
   std::unordered_map<uint32_t, uint32_t> hm;
-  for (const auto& key: keys_) {
+  for (const auto& key : keys_) {
     largest_key = UPB_MAX((int32_t)largest_key, key);
     table.Insert(key, key * 2);
     m[key] = key * 2;
