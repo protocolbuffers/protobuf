@@ -33,6 +33,7 @@
 #include "benchmarks/descriptor_sv.pb.h"
 #include "google/ads/googleads/v7/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/dynamic_message.h"
 #include "upb/def.hpp"
 
 upb_StringView descriptor = benchmarks_descriptor_proto_upbdefinit.descriptor;
@@ -70,47 +71,89 @@ static void BM_ArenaInitialBlockOneAlloc(benchmark::State& state) {
 }
 BENCHMARK(BM_ArenaInitialBlockOneAlloc);
 
-static void BM_LoadDescriptor_Upb(benchmark::State& state) {
-  size_t bytes_per_iter = 0;
-  for (auto _ : state) {
-    upb::SymbolTable symtab;
-    upb_benchmark_DescriptorProto_getmsgdef(symtab.ptr());
-    bytes_per_iter = _upb_DefPool_BytesLoaded(symtab.ptr());
-  }
-  state.SetBytesProcessed(state.iterations() * bytes_per_iter);
-}
-BENCHMARK(BM_LoadDescriptor_Upb);
+enum LoadDescriptorMode {
+  NoLayout,
+  WithLayout,
+};
 
+// This function is mostly copied from upb/def.c, but it is modified to avoid
+// passing in the pre-generated mini-tables, in order to force upb to compute
+// them dynamically.  Generally you would never want to do this, but we want to
+// simulate the cost we would pay if we were loading these types purely from
+// descriptors, with no mini-tales available.
+bool LoadDefInit_BuildLayout(upb_DefPool* s, const _upb_DefPool_Init* init,
+                             size_t* bytes) {
+  _upb_DefPool_Init** deps = init->deps;
+  google_protobuf_FileDescriptorProto* file;
+  upb_Arena* arena;
+  upb_Status status;
+
+  upb_Status_Clear(&status);
+
+  if (upb_DefPool_FindFileByName(s, init->filename)) {
+    return true;
+  }
+
+  arena = upb_Arena_New();
+
+  for (; *deps; deps++) {
+    if (!LoadDefInit_BuildLayout(s, *deps, bytes)) goto err;
+  }
+
+  file = google_protobuf_FileDescriptorProto_parse_ex(
+      init->descriptor.data, init->descriptor.size, NULL,
+      kUpb_DecodeOption_AliasString, arena);
+  *bytes += init->descriptor.size;
+
+  if (!file) {
+    upb_Status_SetErrorFormat(
+        &status,
+        "Failed to parse compiled-in descriptor for file '%s'. This should "
+        "never happen.",
+        init->filename);
+    goto err;
+  }
+
+  // KEY DIFFERENCE: Here we pass in only the descriptor, and not the
+  // pre-generated minitables.
+  if (!upb_DefPool_AddFile(s, file, &status)) {
+    goto err;
+  }
+
+  upb_Arena_Free(arena);
+  return true;
+
+err:
+  fprintf(stderr,
+          "Error loading compiled-in descriptor for file '%s' (this should "
+          "never happen): %s\n",
+          init->filename, upb_Status_ErrorMessage(&status));
+  exit(1);
+}
+
+template <LoadDescriptorMode Mode>
 static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
   size_t bytes_per_iter = 0;
   for (auto _ : state) {
     upb::SymbolTable symtab;
-    google_ads_googleads_v7_services_SearchGoogleAdsRequest_getmsgdef(
-        symtab.ptr());
-    bytes_per_iter = _upb_DefPool_BytesLoaded(symtab.ptr());
+    if (Mode == NoLayout) {
+      google_ads_googleads_v7_services_SearchGoogleAdsRequest_getmsgdef(
+          symtab.ptr());
+      bytes_per_iter = _upb_DefPool_BytesLoaded(symtab.ptr());
+    } else {
+      bytes_per_iter = 0;
+      LoadDefInit_BuildLayout(
+          symtab.ptr(),
+          &google_ads_googleads_v7_services_google_ads_service_proto_upbdefinit,
+          &bytes_per_iter);
+    }
   }
   state.SetBytesProcessed(state.iterations() * bytes_per_iter);
 }
-BENCHMARK(BM_LoadAdsDescriptor_Upb);
+BENCHMARK_TEMPLATE(BM_LoadAdsDescriptor_Upb, NoLayout);
+BENCHMARK_TEMPLATE(BM_LoadAdsDescriptor_Upb, WithLayout);
 
-static void BM_LoadDescriptor_Proto2(benchmark::State& state) {
-  for (auto _ : state) {
-    protobuf::Arena arena;
-    protobuf::StringPiece input(descriptor.data, descriptor.size);
-    auto proto =
-        protobuf::Arena::CreateMessage<protobuf::FileDescriptorProto>(&arena);
-    protobuf::DescriptorPool pool;
-    bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(input) &&
-              pool.BuildFile(*proto) != nullptr;
-    if (!ok) {
-      printf("Failed to add file.\n");
-      exit(1);
-    }
-  }
-  state.SetBytesProcessed(state.iterations() * descriptor.size);
-}
-BENCHMARK(BM_LoadDescriptor_Proto2);
-
+template <LoadDescriptorMode Mode>
 static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
   extern _upb_DefPool_Init
       google_ads_googleads_v7_services_google_ads_service_proto_upbdefinit;
@@ -136,10 +179,22 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
       }
       bytes_per_iter += input.size();
     }
+
+    if (Mode == WithLayout) {
+      protobuf::DynamicMessageFactory factory;
+      const protobuf::Descriptor* d = pool.FindMessageTypeByName(
+          "google.ads.googleads.v7.services.SearchGoogleAdsResponse");
+      if (!d) {
+        printf("Failed to find descriptor.\n");
+        exit(1);
+      }
+      factory.GetPrototype(d);
+    }
   }
   state.SetBytesProcessed(state.iterations() * bytes_per_iter);
 }
-BENCHMARK(BM_LoadAdsDescriptor_Proto2);
+BENCHMARK_TEMPLATE(BM_LoadAdsDescriptor_Proto2, NoLayout);
+BENCHMARK_TEMPLATE(BM_LoadAdsDescriptor_Proto2, WithLayout);
 
 enum CopyStrings {
   Copy,
@@ -154,7 +209,6 @@ enum ArenaMode {
 
 template <ArenaMode AMode, CopyStrings Copy>
 static void BM_Parse_Upb_FileDesc(benchmark::State& state) {
-  size_t bytes = 0;
   for (auto _ : state) {
     upb_Arena* arena;
     if (AMode == InitBlock) {
@@ -170,7 +224,6 @@ static void BM_Parse_Upb_FileDesc(benchmark::State& state) {
       printf("Failed to parse.\n");
       exit(1);
     }
-    bytes += descriptor.size;
     upb_Arena_Free(arena);
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
@@ -223,7 +276,6 @@ using FileDescSV = ::upb_benchmark::sv::FileDescriptorProto;
 
 template <class P, ArenaMode AMode, CopyStrings kCopy>
 void BM_Parse_Proto2(benchmark::State& state) {
-  size_t bytes = 0;
   constexpr protobuf::MessageLite::ParseFlags kParseFlags =
       kCopy == Copy
           ? protobuf::MessageLite::ParseFlags::kMergePartial
@@ -237,7 +289,6 @@ void BM_Parse_Proto2(benchmark::State& state) {
       printf("Failed to parse.\n");
       exit(1);
     }
-    bytes += descriptor.size;
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
@@ -247,12 +298,10 @@ BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDesc, InitBlock, Copy);
 BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, InitBlock, Alias);
 
 static void BM_SerializeDescriptor_Proto2(benchmark::State& state) {
-  size_t bytes = 0;
   upb_benchmark::FileDescriptorProto proto;
   proto.ParseFromArray(descriptor.data, descriptor.size);
   for (auto _ : state) {
     proto.SerializePartialToArray(buf, sizeof(buf));
-    bytes += descriptor.size;
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
