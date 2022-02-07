@@ -816,11 +816,17 @@ module CommonTests
                                       :optional_enum => :B,
                                       :repeated_string => ["a", "b", "c"],
                                       :repeated_int32 => [42, 43, 44],
-                                      :repeated_enum => [:A, :B, :C, 100],
+                                      :repeated_enum => [:A, :B, :C],
                                       :repeated_msg => [proto_module::TestMessage2.new(:foo => 1),
                                                         proto_module::TestMessage2.new(:foo => 2)])
+    if proto_module == ::BasicTest
+      # For proto3 we can add an unknown enum value safely.
+      m.repeated_enum << 100
+    end
+
     data = proto_module::TestMessage.encode m
     m2 = proto_module::TestMessage.decode data
+
     assert_equal m, m2
 
     data = Google::Protobuf.encode m
