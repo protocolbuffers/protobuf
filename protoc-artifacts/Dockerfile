@@ -1,6 +1,7 @@
-FROM centos:6.9
+FROM centos:7
 
-RUN yum install -y git \
+RUN yum install -y gcc \
+                   git \
                    tar \
                    wget \
                    make \
@@ -27,13 +28,6 @@ ENV PATH $JAVA_HOME/bin:$PATH
 RUN wget -q http://apache.cs.utah.edu/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz -O - | \
     tar xz -C /var/local
 ENV PATH /var/local/apache-maven-3.3.9/bin:$PATH
-
-# Install GCC 4.8 to support -static-libstdc++
-RUN wget http://people.centos.org/tru/devtools-2/devtools-2.repo -P /etc/yum.repos.d && \
-    bash -c 'echo "enabled=1" >> /etc/yum.repos.d/devtools-2.repo' && \
-    bash -c "sed -e 's/\$basearch/i386/g' /etc/yum.repos.d/devtools-2.repo > /etc/yum.repos.d/devtools-i386-2.repo" && \
-    sed -e 's/testing-/testing-i386-/g' -i /etc/yum.repos.d/devtools-i386-2.repo && \
-    rpm --rebuilddb
 
 RUN yum install -y devtoolset-2-gcc \
                    devtoolset-2-gcc-c++ \
