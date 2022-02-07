@@ -69,9 +69,11 @@ def _generate_output_file(ctx, src, extension):
 # py_proto_library() ###########################################################
 
 def _py_proto_library_rule_impl(ctx):
-    #if len(ctx.attr.deps) != 1:
-    #    fail("only one deps dependency allowed.")
-    #dep = ctx.attr.deps[0]
+    # A real py_proto_library() should enforce this constraint.
+    # We don't bother for now, since it saves us some effort not to.
+    #
+    # if len(ctx.attr.deps) != 1:
+    #     fail("only one deps dependency allowed.")
 
     files = []
     for dep in ctx.attr.deps:
