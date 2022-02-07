@@ -80,17 +80,19 @@ bool PutOneofField(upb_MtDataEncoder* e, uint32_t field_num, std::string* out) {
   });
 }
 
-TEST(MiniTable, Empty) {
+class MiniTableTest : public testing::TestWithParam<upb_MiniTablePlatform> {};
+
+TEST_P(MiniTableTest, Empty) {
   upb::Arena arena;
   upb::Status status;
   upb_MiniTable* table =
-      upb_MiniTable_Build(NULL, 0, arena.ptr(), status.ptr());
+      upb_MiniTable_Build(NULL, 0, GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(0, table->field_count);
   EXPECT_EQ(0, table->required_count);
 }
 
-TEST(MiniTable, AllScalarTypes) {
+TEST_P(MiniTableTest, AllScalarTypes) {
   upb::Arena arena;
   std::string input;
   upb_MtDataEncoder e;
@@ -102,8 +104,8 @@ TEST(MiniTable, AllScalarTypes) {
   }
   fprintf(stderr, "YO: %s\n", input.c_str());
   upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(input.data(), input.size(),
-                                             arena.ptr(), status.ptr());
+  upb_MiniTable* table = upb_MiniTable_Build(
+      input.data(), input.size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(count, table->field_count);
   absl::flat_hash_set<size_t> offsets;
@@ -118,7 +120,7 @@ TEST(MiniTable, AllScalarTypes) {
   EXPECT_EQ(0, table->required_count);
 }
 
-TEST(MiniTable, AllRepeatedTypes) {
+TEST_P(MiniTableTest, AllRepeatedTypes) {
   upb::Arena arena;
   std::string input;
   upb_MtDataEncoder e;
@@ -131,8 +133,8 @@ TEST(MiniTable, AllRepeatedTypes) {
   }
   fprintf(stderr, "YO: %s\n", input.c_str());
   upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(input.data(), input.size(),
-                                             arena.ptr(), status.ptr());
+  upb_MiniTable* table = upb_MiniTable_Build(
+      input.data(), input.size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(count, table->field_count);
   absl::flat_hash_set<size_t> offsets;
@@ -147,7 +149,7 @@ TEST(MiniTable, AllRepeatedTypes) {
   EXPECT_EQ(0, table->required_count);
 }
 
-TEST(MiniTable, Skips) {
+TEST_P(MiniTableTest, Skips) {
   upb::Arena arena;
   std::string input;
   upb_MtDataEncoder e;
@@ -162,8 +164,8 @@ TEST(MiniTable, Skips) {
   }
   fprintf(stderr, "YO: %s, %zu\n", input.c_str(), input.size());
   upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(input.data(), input.size(),
-                                             arena.ptr(), status.ptr());
+  upb_MiniTable* table = upb_MiniTable_Build(
+      input.data(), input.size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(count, table->field_count);
   absl::flat_hash_set<size_t> offsets;
@@ -178,7 +180,7 @@ TEST(MiniTable, Skips) {
   EXPECT_EQ(0, table->required_count);
 }
 
-TEST(MiniTable, AllScalarTypesOneof) {
+TEST_P(MiniTableTest, AllScalarTypesOneof) {
   upb::Arena arena;
   std::string input;
   upb_MtDataEncoder e;
@@ -194,8 +196,8 @@ TEST(MiniTable, AllScalarTypesOneof) {
   }
   fprintf(stderr, "YO: %s\n", input.c_str());
   upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(input.data(), input.size(),
-                                             arena.ptr(), status.ptr());
+  upb_MiniTable* table = upb_MiniTable_Build(
+      input.data(), input.size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(count, table->field_count);
   absl::flat_hash_set<size_t> offsets;
@@ -215,3 +217,7 @@ TEST(MiniTable, AllScalarTypesOneof) {
   }
   EXPECT_EQ(0, table->required_count);
 }
+
+INSTANTIATE_TEST_SUITE_P(Platforms, MiniTableTest,
+                         testing::Values(kUpb_MiniTablePlatform_32Bit,
+                                         kUpb_MiniTablePlatform_64Bit));

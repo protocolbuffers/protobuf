@@ -30,6 +30,9 @@
 
 #include "upb/msg_internal.h"
 
+// Must be last.
+#include "upb/port_def.inc"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,16 +40,11 @@ extern "C" {
 const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number);
 
-/** upb_MiniTable *************************************************************/
-
-// Functions to encode a string in a format that can be loaded by
-// upb_MiniTable_Build().
-
 typedef enum {
   kUpb_MessageModifier_DefaultIsPacked = 1,
-  kUpb_MessageModifier_IsMessageSet = 2,
+  kUpb_MessageModifier_HasClosedEnums = 2,
   kUpb_MessageModifier_IsExtendable = 4,
-  kUpb_MessageModifier_HasClosedEnums = 8,
+  kUpb_MessageModifier_IsMapEntry = 8,
 } kUpb_MessageModifier;
 
 typedef enum {
@@ -55,6 +53,11 @@ typedef enum {
   kUpb_FieldModifier_IsProto3Singular = 4,
   kUpb_FieldModifier_IsRequired = 8,
 } kUpb_FieldModifier;
+
+/** upb_MtDataEncoder *********************************************************/
+
+// Functions to encode a string in a format that can be loaded by
+// upb_MiniTable_Build().
 
 typedef struct {
   char* end;  // Limit of the buffer passed as a parameter.
@@ -98,11 +101,22 @@ char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* buf);
 char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* buf,
                                       uint32_t field_num);
 
+
+/** upb_MiniTable *************************************************************/
+
+typedef enum {
+  kUpb_MiniTablePlatform_32Bit,
+  kUpb_MiniTablePlatform_64Bit,
+  kUpb_MiniTablePlatform_Native =
+      UPB_SIZE(kUpb_MiniTablePlatform_32Bit, kUpb_MiniTablePlatform_64Bit),
+} upb_MiniTablePlatform;
+
 // Builds a mini table from the data encoded in the buffer [data, len]. If any
 // errors occur, returns NULL and sets a status message. In the success case,
 // the caller must call upb_MiniTable_SetSub*() for all message or proto2 enum
 // fields to link the table to the appropriate sub-tables.
 upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
+                                   upb_MiniTablePlatform platform,
                                    upb_Arena* arena, upb_Status* status);
 void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
                                  const upb_MiniTable_Field* field,
@@ -118,11 +132,14 @@ void upb_MiniTable_SetSubEnum(upb_MiniTable* table,
 // when it is no longer in use.  The function will realloc() `*buf` as
 // necessary, updating `*size` accordingly.
 upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
+                                          upb_MiniTablePlatform platform,
                                           upb_Arena* arena, void** buf,
                                           size_t* buf_size, upb_Status* status);
 
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif  /* UPB_MINI_TABLE_H_ */
