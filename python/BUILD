@@ -169,16 +169,18 @@ py_wheel(
     abi = "abi3",
     distribution = "protobuf",
     python_tag = "cp36",
-    # TODO(haberman): we need to make this a select() that is calculated
-    # from the platform we are actually building on.
+    # TODO(https://github.com/protocolbuffers/upb/issues/502): we need to make
+    # this a select() that is calculated from the platform we are actually
+    # building on.
     platform = "manylinux2014_x86_64",
     version = "4.20.0",
     strip_path_prefixes = ["python/"],
     deps = [
         ":extension_files",
         ":well_known_proto_pb2",
-        # TODO(haberman): currently this includes the unit tests.  We should
-        # filter these out so we are only distributing true source files.
+        # TODO(https://github.com/protocolbuffers/upb/issues/503): currently
+        # this includes the unit tests.  We should filter these out so we are
+        # only distributing true source files.
         "@com_google_protobuf//:python_srcs",
     ],
 )
