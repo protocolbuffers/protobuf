@@ -330,7 +330,7 @@ build_objectivec_cocoapods_integration() {
 build_python() {
   internal_build_cpp
   cd python
-  python -m tox --skip-missing-interpreters
+  tox --skip-missing-interpreters
   cd ..
 }
 
@@ -338,7 +338,7 @@ build_python_version() {
   internal_build_cpp
   cd python
   envlist=$1
-  python -m tox -e $envlist
+  tox -e $envlist
   cd ..
 }
 
@@ -363,7 +363,7 @@ build_python_cpp() {
   export LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
-  python -m tox --skip-missing-interpreters
+  tox --skip-missing-interpreters
   cd ..
 }
 
