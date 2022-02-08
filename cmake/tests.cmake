@@ -255,3 +255,7 @@ add_custom_target(check
   COMMAND tests
   DEPENDS tests test_plugin
   WORKING_DIRECTORY ${protobuf_source_dir})
+
+add_test(NAME check
+  COMMAND tests
+  WORKING_DIRECTORY "${protobuf_source_dir}")

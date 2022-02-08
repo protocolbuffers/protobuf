@@ -297,6 +297,7 @@ if (protobuf_BUILD_TESTS OR protobuf_BUILD_CONFORMANCE OR protobuf_BUILD_EXAMPLE
 endif ()
 
 if (protobuf_BUILD_TESTS)
+  enable_testing()
   include(tests.cmake)
 endif (protobuf_BUILD_TESTS)
 
