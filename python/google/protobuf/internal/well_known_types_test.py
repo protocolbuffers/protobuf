@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-#
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
@@ -34,19 +32,9 @@
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
+import collections.abc as collections_abc
 import datetime
-
-try:
-  # Since python 3
-  import collections.abc as collections_abc
-except ImportError:
-  # Won't work after python 3.8
-  import collections as collections_abc
-
-try:
-  import unittest2 as unittest  #PY26
-except ImportError:
-  import unittest
+import unittest
 
 from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
@@ -307,82 +295,82 @@ class TimeUtilTest(TimeUtilTestBase):
 
   def testInvalidTimestamp(self):
     message = timestamp_pb2.Timestamp()
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'Failed to parse timestamp: missing valid timezone offset.',
         message.FromJsonString,
         '')
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'Failed to parse timestamp: invalid trailing data '
         '1970-01-01T00:00:01Ztrail.',
         message.FromJsonString,
         '1970-01-01T00:00:01Ztrail')
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'time data \'10000-01-01T00:00:00\' does not match'
         ' format \'%Y-%m-%dT%H:%M:%S\'',
         message.FromJsonString, '10000-01-01T00:00:00.00Z')
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'nanos 0123456789012 more than 9 fractional digits.',
         message.FromJsonString,
         '1970-01-01T00:00:00.0123456789012Z')
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         (r'Invalid timezone offset value: \+08.'),
         message.FromJsonString,
         '1972-01-01T01:00:00.01+08',)
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'year (0 )?is out of range',
         message.FromJsonString,
         '0000-01-01T00:00:00Z')
     message.seconds = 253402300800
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         OverflowError,
         'date value out of range',
         message.ToJsonString)
 
   def testInvalidDuration(self):
     message = duration_pb2.Duration()
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'Duration must end with letter "s": 1.',
         message.FromJsonString, '1')
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'Couldn\'t parse duration: 1...2s.',
         message.FromJsonString, '1...2s')
     text = '-315576000001.000000000s'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         r'Duration is not valid\: Seconds -315576000001 must be in range'
         r' \[-315576000000\, 315576000000\].',
         message.FromJsonString, text)
     text = '315576000001.000000000s'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         r'Duration is not valid\: Seconds 315576000001 must be in range'
         r' \[-315576000000\, 315576000000\].',
         message.FromJsonString, text)
     message.seconds = -315576000001
     message.nanos = 0
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         r'Duration is not valid\: Seconds -315576000001 must be in range'
         r' \[-315576000000\, 315576000000\].',
         message.ToJsonString)
     message.seconds = 0
     message.nanos = 999999999 + 1
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         r'Duration is not valid\: Nanos 1000000000 must be in range'
         r' \[-999999999\, 999999999\].',
         message.ToJsonString)
     message.seconds = -1
     message.nanos = 1
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         r'Duration is not valid\: Sign mismatch.',
         message.ToJsonString)
@@ -707,7 +695,7 @@ class FieldMaskTest(unittest.TestCase):
                      well_known_types._SnakeCaseToCamelCase('foo3_bar'))
 
     # No uppercase letter is allowed.
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'Fail to print FieldMask to Json string: Path name Foo must '
         'not contain uppercase letters.',
@@ -717,19 +705,19 @@ class FieldMaskTest(unittest.TestCase):
     #   1. "_" cannot be followed by another "_".
     #   2. "_" cannot be followed by a digit.
     #   3. "_" cannot appear as the last character.
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'Fail to print FieldMask to Json string: The character after a '
         '"_" must be a lowercase letter in path name foo__bar.',
         well_known_types._SnakeCaseToCamelCase,
         'foo__bar')
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'Fail to print FieldMask to Json string: The character after a '
         '"_" must be a lowercase letter in path name foo_3bar.',
         well_known_types._SnakeCaseToCamelCase,
         'foo_3bar')
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'Fail to print FieldMask to Json string: Trailing "_" in path '
         'name foo_bar_.',
@@ -743,7 +731,7 @@ class FieldMaskTest(unittest.TestCase):
                      well_known_types._CamelCaseToSnakeCase('FooBar'))
     self.assertEqual('foo3_bar',
                      well_known_types._CamelCaseToSnakeCase('foo3Bar'))
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         ValueError,
         'Fail to parse FieldMask: Path name foo_bar must not contain "_"s.',
         well_known_types._CamelCaseToSnakeCase,

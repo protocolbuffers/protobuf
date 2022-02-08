@@ -44,7 +44,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-const char* TcParserBase::GenericFallback(PROTOBUF_TC_PARAM_DECL) {
+const char* TcParser::GenericFallback(PROTOBUF_TC_PARAM_DECL) {
   return GenericFallbackImpl<Message, UnknownFieldSet>(PROTOBUF_TC_PARAM_PASS);
 }
 

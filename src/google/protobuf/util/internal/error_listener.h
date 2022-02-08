@@ -83,16 +83,16 @@ class PROTOBUF_EXPORT NoopErrorListener : public ErrorListener {
   NoopErrorListener() {}
   ~NoopErrorListener() override {}
 
-  void InvalidName(const LocationTrackerInterface& loc,
-                   StringPiece invalid_name,
-                   StringPiece message) override {}
+  void InvalidName(const LocationTrackerInterface& /*loc*/,
+                   StringPiece /* invalid_name */,
+                   StringPiece /* message */) override {}
 
-  void InvalidValue(const LocationTrackerInterface& loc,
-                    StringPiece type_name,
-                    StringPiece value) override {}
+  void InvalidValue(const LocationTrackerInterface& /*loc*/,
+                    StringPiece /* type_name */,
+                    StringPiece /* value */) override {}
 
-  void MissingField(const LocationTrackerInterface& loc,
-                    StringPiece missing_name) override {}
+  void MissingField(const LocationTrackerInterface& /* loc */,
+                    StringPiece /* missing_name */) override {}
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(NoopErrorListener);

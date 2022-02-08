@@ -816,11 +816,17 @@ module CommonTests
                                       :optional_enum => :B,
                                       :repeated_string => ["a", "b", "c"],
                                       :repeated_int32 => [42, 43, 44],
-                                      :repeated_enum => [:A, :B, :C, 100],
+                                      :repeated_enum => [:A, :B, :C],
                                       :repeated_msg => [proto_module::TestMessage2.new(:foo => 1),
                                                         proto_module::TestMessage2.new(:foo => 2)])
+    if proto_module == ::BasicTest
+      # For proto3 we can add an unknown enum value safely.
+      m.repeated_enum << 100
+    end
+
     data = proto_module::TestMessage.encode m
     m2 = proto_module::TestMessage.decode data
+
     assert_equal m, m2
 
     data = Google::Protobuf.encode m
@@ -1781,21 +1787,24 @@ module CommonTests
   def test_object_gc
     m = proto_module::TestMessage.new(optional_msg: proto_module::TestMessage2.new)
     m.optional_msg
-    GC.start(full_mark: true, immediate_sweep: true)
+    # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
+    GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
     m.optional_msg.inspect
   end
 
   def test_object_gc_freeze
     m = proto_module::TestMessage.new
     m.repeated_float.freeze
-    GC.start(full_mark: true)
+    # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
+    GC.start(full_mark: true) unless RUBY_PLATFORM == "java"
 
     # Make sure we remember that the object is frozen.
     # The wrapper object contains this information, so we need to ensure that
     # the previous GC did not collect it.
     assert m.repeated_float.frozen?
 
-    GC.start(full_mark: true, immediate_sweep: true)
+    # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
+    GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
     assert m.repeated_float.frozen?
   end
 end

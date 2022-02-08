@@ -60,19 +60,18 @@ set -x
 ruby --version | grep 'ruby 2.7.0'
 for v in 3.0.0 2.7.0 ; do
   ccache -c
-  rake -f "$CROSS_RUBY" cross-ruby VERSION="$v" HOST=x86_64-darwin11 MAKE="$MAKE"
+  rake -f "$CROSS_RUBY" cross-ruby VERSION="$v" HOST=x86_64-darwin MAKE="$MAKE"
+  rake -f "$CROSS_RUBY" cross-ruby VERSION="$v" HOST=aarch64-darwin MAKE="$MAKE"
 done
 set +x
 rvm use 2.5.0
 set -x
 ruby --version | grep 'ruby 2.5.0'
-for v in 2.6.0 2.5.1 2.4.0 2.3.0; do
+for v in 2.6.0 2.5.1; do
   ccache -c
-  rake -f "$CROSS_RUBY" cross-ruby VERSION="$v" HOST=x86_64-darwin11 MAKE="$MAKE"
+  rake -f "$CROSS_RUBY" cross-ruby VERSION="$v" HOST=x86_64-darwin MAKE="$MAKE"
+  rake -f "$CROSS_RUBY" cross-ruby VERSION="$v" HOST=aarch64-darwin MAKE="$MAKE"
 done
 set +x
 rvm use 2.7.0
 set -x
-
-sed 's/x86_64-darwin-11/universal-darwin/' ~/.rake-compiler/config.yml > "$CROSS_RUBY"
-mv "$CROSS_RUBY" ~/.rake-compiler/config.yml

@@ -45,7 +45,12 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-const char* TcParserBase::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
+#ifndef NDEBUG
+template void AlignFail<4>(uintptr_t);
+template void AlignFail<8>(uintptr_t);
+#endif
+
+const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
   return GenericFallbackImpl<MessageLite, std::string>(PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -53,7 +58,7 @@ namespace {
 
 // Offset returns the address `offset` bytes after `base`.
 inline void* Offset(void* base, uint32_t offset) {
-  return static_cast<uint8*>(base) + offset;
+  return static_cast<uint8_t*>(base) + offset;
 }
 
 // InvertPacked changes tag bits from the given wire type to length
@@ -70,29 +75,27 @@ inline PROTOBUF_ALWAYS_INLINE void InvertPacked(TcFieldData& data) {
 // Fixed fields
 //////////////////////////////////////////////////////////////////////////////
 
-template <uint32_t kPowerOf2>
 template <typename LayoutType, typename TagType>
-const char* TcParser<kPowerOf2>::SingularFixed(PROTOBUF_TC_PARAM_DECL) {
-  if (PROTOBUF_PREDICT_FALSE(static_cast<TagType>(data.coded_tag()) != 0)) {
+const char* TcParser::SingularFixed(PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     return table->fallback(PROTOBUF_TC_PARAM_PASS);
   }
   ptr += sizeof(TagType);  // Consume tag
   hasbits |= (uint64_t{1} << data.hasbit_idx());
   std::memcpy(Offset(msg, data.offset()), ptr, sizeof(LayoutType));
   ptr += sizeof(LayoutType);
-  // TailCall syncs any pending hasbits:
-  PROTOBUF_MUSTTAIL return TailCall(PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
 }
 
 template <typename LayoutType, typename TagType>
-const char* TcParserBase::RepeatedFixed(PROTOBUF_TC_PARAM_DECL) {
-  if (PROTOBUF_PREDICT_FALSE(static_cast<TagType>(data.coded_tag()) != 0)) {
+const char* TcParser::RepeatedFixed(PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     // Check if the field can be parsed as packed repeated:
     constexpr WireFormatLite::WireType fallback_wt =
         sizeof(LayoutType) == 4 ? WireFormatLite::WIRETYPE_FIXED32
                                 : WireFormatLite::WIRETYPE_FIXED64;
     InvertPacked<fallback_wt>(data);
-    if (static_cast<TagType>(data.coded_tag()) == 0) {
+    if (data.coded_tag<TagType>() == 0) {
       return PackedFixed<LayoutType, TagType>(PROTOBUF_TC_PARAM_PASS);
     } else {
       return table->fallback(PROTOBUF_TC_PARAM_PASS);
@@ -112,18 +115,18 @@ const char* TcParserBase::RepeatedFixed(PROTOBUF_TC_PARAM_DECL) {
     if (!ctx->DataAvailable(ptr)) break;
   } while (UnalignedLoad<TagType>(ptr) == expected_tag);
   field.AddNAlreadyReserved(idx - 1);
-  return Return(PROTOBUF_TC_PARAM_PASS);
+  return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
 }
 
 template <typename LayoutType, typename TagType>
-const char* TcParserBase::PackedFixed(PROTOBUF_TC_PARAM_DECL) {
-  if (PROTOBUF_PREDICT_FALSE(static_cast<TagType>(data.coded_tag()) != 0)) {
+const char* TcParser::PackedFixed(PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     // Try parsing as non-packed repeated:
     constexpr WireFormatLite::WireType fallback_wt =
         sizeof(LayoutType) == 4 ? WireFormatLite::WIRETYPE_FIXED32
                                 : WireFormatLite::WIRETYPE_FIXED64;
     InvertPacked<fallback_wt>(data);
-    if (static_cast<TagType>(data.coded_tag()) == 0) {
+    if (data.coded_tag<TagType>() == 0) {
       return RepeatedFixed<LayoutType, TagType>(PROTOBUF_TC_PARAM_PASS);
     } else {
       return table->fallback(PROTOBUF_TC_PARAM_PASS);
@@ -273,13 +276,29 @@ inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,
   }
 }
 
+template <typename FieldType,
+          TcParser::VarintDecode = TcParser::VarintDecode::kNoConversion>
+FieldType ZigZagDecodeHelper(uint64_t value) {
+  return static_cast<FieldType>(value);
+}
+
+template <>
+int32_t ZigZagDecodeHelper<int32_t, TcParser::VarintDecode::kZigZag>(
+    uint64_t value) {
+  return WireFormatLite::ZigZagDecode32(value);
+}
+
+template <>
+int64_t ZigZagDecodeHelper<int64_t, TcParser::VarintDecode::kZigZag>(
+    uint64_t value) {
+  return WireFormatLite::ZigZagDecode64(value);
+}
+
 }  // namespace
 
-template <uint32_t kPowerOf2>
-template <typename FieldType, typename TagType,
-          TcParserBase::VarintDecode zigzag>
-const char* TcParser<kPowerOf2>::SingularVarint(PROTOBUF_TC_PARAM_DECL) {
-  if (PROTOBUF_PREDICT_FALSE(static_cast<TagType>(data.coded_tag()) != 0)) {
+template <typename FieldType, typename TagType, TcParser::VarintDecode zigzag>
+const char* TcParser::SingularVarint(PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     return table->fallback(PROTOBUF_TC_PARAM_PASS);
   }
   ptr += sizeof(TagType);  // Consume tag
@@ -289,19 +308,17 @@ const char* TcParser<kPowerOf2>::SingularVarint(PROTOBUF_TC_PARAM_DECL) {
   if (ptr == nullptr) {
     return Error(PROTOBUF_TC_PARAM_PASS);
   }
-  RefAt<FieldType>(msg, data.offset()) = static_cast<FieldType>(
-      zigzag ? google::protobuf::internal::WireFormatLite::ZigZagDecode64(tmp) : tmp);
-  PROTOBUF_MUSTTAIL return TailCall(PROTOBUF_TC_PARAM_PASS);
+  RefAt<FieldType>(msg, data.offset()) =
+      ZigZagDecodeHelper<FieldType, zigzag>(tmp);
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
 }
 
-template <typename FieldType, typename TagType,
-          TcParserBase::VarintDecode zigzag>
-PROTOBUF_NOINLINE const char* TcParserBase::RepeatedVarint(
-    PROTOBUF_TC_PARAM_DECL) {
-  if (PROTOBUF_PREDICT_FALSE(static_cast<TagType>(data.coded_tag()) != 0)) {
+template <typename FieldType, typename TagType, TcParser::VarintDecode zigzag>
+PROTOBUF_NOINLINE const char* TcParser::RepeatedVarint(PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     // Try parsing as non-packed repeated:
     InvertPacked<WireFormatLite::WIRETYPE_VARINT>(data);
-    if (static_cast<TagType>(data.coded_tag()) == 0) {
+    if (data.coded_tag<TagType>() == 0) {
       return PackedVarint<FieldType, TagType, zigzag>(PROTOBUF_TC_PARAM_PASS);
     } else {
       return table->fallback(PROTOBUF_TC_PARAM_PASS);
@@ -316,22 +333,19 @@ PROTOBUF_NOINLINE const char* TcParserBase::RepeatedVarint(
     if (ptr == nullptr) {
       return Error(PROTOBUF_TC_PARAM_PASS);
     }
-    field.Add(zigzag ? google::protobuf::internal::WireFormatLite::ZigZagDecode64(tmp)
-                     : tmp);
+    field.Add(ZigZagDecodeHelper<FieldType, zigzag>(tmp));
     if (!ctx->DataAvailable(ptr)) {
       break;
     }
   } while (UnalignedLoad<TagType>(ptr) == expected_tag);
-  return Return(PROTOBUF_TC_PARAM_PASS);
+  return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
 }
 
-template <typename FieldType, typename TagType,
-          TcParserBase::VarintDecode zigzag>
-PROTOBUF_NOINLINE const char* TcParserBase::PackedVarint(
-    PROTOBUF_TC_PARAM_DECL) {
-  if (PROTOBUF_PREDICT_FALSE(static_cast<TagType>(data.coded_tag()) != 0)) {
+template <typename FieldType, typename TagType, TcParser::VarintDecode zigzag>
+PROTOBUF_NOINLINE const char* TcParser::PackedVarint(PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     InvertPacked<WireFormatLite::WIRETYPE_VARINT>(data);
-    if (static_cast<TagType>(data.coded_tag()) == 0) {
+    if (data.coded_tag<TagType>() == 0) {
       return RepeatedVarint<FieldType, TagType, zigzag>(PROTOBUF_TC_PARAM_PASS);
     } else {
       return table->fallback(PROTOBUF_TC_PARAM_PASS);
@@ -378,9 +392,9 @@ const char* SingularStringParserFallback(ArenaStringPtr* s, const char* ptr,
 
 }  // namespace
 
-template <typename TagType, TcParserBase::Utf8Type utf8>
-const char* TcParserBase::SingularString(PROTOBUF_TC_PARAM_DECL) {
-  if (PROTOBUF_PREDICT_FALSE(static_cast<TagType>(data.coded_tag()) != 0)) {
+template <typename TagType, TcParser::Utf8Type utf8>
+const char* TcParser::SingularString(PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     return table->fallback(PROTOBUF_TC_PARAM_PASS);
   }
   ptr += sizeof(TagType);
@@ -398,20 +412,20 @@ const char* TcParserBase::SingularString(PROTOBUF_TC_PARAM_DECL) {
 #ifdef NDEBUG
     case kUtf8ValidateOnly:
 #endif
-      return Return(PROTOBUF_TC_PARAM_PASS);
+      return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
     default:
       if (PROTOBUF_PREDICT_TRUE(IsStructurallyValidUTF8(field.Get()))) {
-        return Return(PROTOBUF_TC_PARAM_PASS);
+        return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
       }
       PrintUTF8ErrorLog("unknown", "parsing", false);
       return utf8 == kUtf8 ? Error(PROTOBUF_TC_PARAM_PASS)
-                           : Return(PROTOBUF_TC_PARAM_PASS);
+                           : ToParseLoop(PROTOBUF_TC_PARAM_PASS);
   }
 }
 
-template <typename TagType, TcParserBase::Utf8Type utf8>
-const char* TcParserBase::RepeatedString(PROTOBUF_TC_PARAM_DECL) {
-  if (PROTOBUF_PREDICT_FALSE(static_cast<TagType>(data.coded_tag()) != 0)) {
+template <typename TagType, TcParser::Utf8Type utf8>
+const char* TcParser::RepeatedString(PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     return table->fallback(PROTOBUF_TC_PARAM_PASS);
   }
   auto expected_tag = UnalignedLoad<TagType>(ptr);
@@ -431,7 +445,7 @@ const char* TcParserBase::RepeatedString(PROTOBUF_TC_PARAM_DECL) {
     }
     if (!ctx->DataAvailable(ptr)) break;
   } while (UnalignedLoad<TagType>(ptr) == expected_tag);
-  return Return(PROTOBUF_TC_PARAM_PASS);
+  return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
 }
 
 #define PROTOBUF_TCT_SOURCE

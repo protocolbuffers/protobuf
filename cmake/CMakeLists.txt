@@ -15,6 +15,10 @@ endif ()
 if(POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)
 endif()
+# MSVC runtime library flags are selected by an abstraction.
+if(POLICY CMP0091)
+  cmake_policy(SET CMP0091 NEW)
+endif()
 
 # Project
 project(protobuf C CXX)
@@ -37,6 +41,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
 endif()
 
 # Options
+option(protobuf_INSTALL "Install protobuf binaries and files" ON)
 if(WITH_PROTOC)
   set(protobuf_PROTOC_EXE ${WITH_PROTOC} CACHE FILEPATH "Protocol Buffer Compiler executable" FORCE)
 endif()
@@ -123,9 +128,6 @@ if (protobuf_DISABLE_RTTI)
 endif()
 
 find_package(Threads REQUIRED)
-if (CMAKE_USE_PTHREADS_INIT)
-  add_definitions(-DHAVE_PTHREAD)
-endif (CMAKE_USE_PTHREADS_INIT)
 
 set(_protobuf_FIND_ZLIB)
 if (protobuf_WITH_ZLIB)
@@ -176,20 +178,32 @@ if (protobuf_BUILD_SHARED_LIBS)
   set(protobuf_SHARED_OR_STATIC "SHARED")
 else (protobuf_BUILD_SHARED_LIBS)
   set(protobuf_SHARED_OR_STATIC "STATIC")
-  # In case we are building static libraries, link also the runtime library statically
-  # so that MSVCR*.DLL is not required at runtime.
-  # https://msdn.microsoft.com/en-us/library/2kzt1wy3.aspx
-  # This is achieved by replacing msvc option /MD with /MT and /MDd with /MTd
-  # http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime.3F
-  if (MSVC AND protobuf_MSVC_STATIC_RUNTIME)
-    foreach(flag_var
-        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-      if(${flag_var} MATCHES "/MD")
-        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-      endif(${flag_var} MATCHES "/MD")
-    endforeach(flag_var)
-  endif (MSVC AND protobuf_MSVC_STATIC_RUNTIME)
+  # The CMAKE_<LANG>_FLAGS(_<BUILD_TYPE>)? is meant to be user controlled.
+  # Prior to CMake 3.15, the MSVC runtime library was pushed into the same flags
+  # making programmatic control difficult.  Prefer the functionality in newer
+  # CMake versions when available.
+  if(CMAKE_VERSION VERSION_GREATER 3.15 OR CMAKE_VERSION VERSION_EQUAL 3.15)
+    if (protobuf_MSVC_STATIC_RUNTIME)
+        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
+    else()
+        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>DLL)
+    endif()
+  else()
+    # In case we are building static libraries, link also the runtime library statically
+    # so that MSVCR*.DLL is not required at runtime.
+    # https://msdn.microsoft.com/en-us/library/2kzt1wy3.aspx
+    # This is achieved by replacing msvc option /MD with /MT and /MDd with /MTd
+    # http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime.3F
+    if (MSVC AND protobuf_MSVC_STATIC_RUNTIME)
+      foreach(flag_var
+          CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+          CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+        if(${flag_var} MATCHES "/MD")
+          string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+        endif(${flag_var} MATCHES "/MD")
+      endforeach(flag_var)
+    endif (MSVC AND protobuf_MSVC_STATIC_RUNTIME)
+  endif()
 endif (protobuf_BUILD_SHARED_LIBS)
 
 if (MSVC)
@@ -197,11 +211,11 @@ if (MSVC)
     # Build with multiple processes
     add_definitions(/MP)
   endif()
+  # Set source file and execution character sets to UTF-8
+  add_definitions(/utf-8)
   # MSVC warning suppressions
   add_definitions(
-    /wd4018 # 'expression' : signed/unsigned mismatch
     /wd4065 # switch statement contains 'default' but no 'case' labels
-    /wd4146 # unary minus operator applied to unsigned type, result still unsigned
     /wd4244 # 'conversion' conversion from 'type1' to 'type2', possible loss of data
     /wd4251 # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
     /wd4267 # 'var' : conversion from 'size_t' to 'type', possible loss of data
@@ -290,7 +304,9 @@ if (protobuf_BUILD_CONFORMANCE)
   include(conformance.cmake)
 endif (protobuf_BUILD_CONFORMANCE)
 
-include(install.cmake)
+if (protobuf_INSTALL)
+  include(install.cmake)
+endif (protobuf_INSTALL)
 
 if (protobuf_BUILD_EXAMPLES)
   include(examples.cmake)

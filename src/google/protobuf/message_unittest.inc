@@ -39,6 +39,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cmath>
+#include <limits>
+
 #include <google/protobuf/message.h>
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -487,6 +490,8 @@ class RepeatedInputStream : public io::ZeroCopyInputStream {
 }  // namespace
 
 TEST(MESSAGE_TEST_NAME, TestParseMessagesCloseTo2G) {
+  constexpr int32_t kint32max = std::numeric_limits<int32_t>::max();
+
   // Create a message with a large std::string field.
   std::string value = std::string(64 * 1024 * 1024, 'x');
   UNITTEST::TestAllTypes message;
@@ -870,6 +875,22 @@ TEST(MESSAGE_TEST_NAME, CheckSerializationWhenInterleavedExtensions) {
   EXPECT_EQ(3, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_three));
   EXPECT_EQ(4, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_four));
   EXPECT_EQ(5, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_five));
+}
+
+TEST(MESSAGE_TEST_NAME, PreservesFloatingPointNegative0) {
+  UNITTEST::TestAllTypes in_message;
+  in_message.set_optional_float(-0.0f);
+  in_message.set_optional_double(-0.0);
+  std::string serialized;
+  EXPECT_TRUE(in_message.SerializeToString(&serialized));
+  UNITTEST::TestAllTypes out_message;
+  EXPECT_TRUE(out_message.ParseFromString(serialized));
+  EXPECT_EQ(in_message.optional_float(), out_message.optional_float());
+  EXPECT_EQ(std::signbit(in_message.optional_float()),
+            std::signbit(out_message.optional_float()));
+  EXPECT_EQ(in_message.optional_double(), out_message.optional_double());
+  EXPECT_EQ(std::signbit(in_message.optional_double()),
+            std::signbit(out_message.optional_double()));
 }
 
 }  // namespace protobuf

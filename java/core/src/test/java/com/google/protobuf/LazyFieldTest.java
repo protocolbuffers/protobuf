@@ -30,71 +30,79 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-/**
- * Unit test for {@link LazyField}.
- *
- * @author xiangl@google.com (Xiang Li)
- */
-public class LazyFieldTest extends TestCase {
+/** Unit test for {@link LazyField}. */
+@RunWith(JUnit4.class)
+public class LazyFieldTest {
+
+  @Test
   public void testHashCode() {
     MessageLite message = TestUtil.getAllSet();
     LazyField lazyField = createLazyFieldFromMessage(message);
-    assertEquals(message.hashCode(), lazyField.hashCode());
+    assertThat(message.hashCode()).isEqualTo(lazyField.hashCode());
     lazyField.getValue();
-    assertEquals(message.hashCode(), lazyField.hashCode());
+    assertThat(message.hashCode()).isEqualTo(lazyField.hashCode());
     changeValue(lazyField);
     // make sure two messages have different hash code
     assertNotEqual(message.hashCode(), lazyField.hashCode());
   }
 
+  @Test
   public void testHashCodeEx() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyField lazyField = createLazyFieldFromMessage(message);
-    assertEquals(message.hashCode(), lazyField.hashCode());
+    assertThat(message.hashCode()).isEqualTo(lazyField.hashCode());
     lazyField.getValue();
-    assertEquals(message.hashCode(), lazyField.hashCode());
+    assertThat(message.hashCode()).isEqualTo(lazyField.hashCode());
     changeValue(lazyField);
     // make sure two messages have different hash code
     assertNotEqual(message.hashCode(), lazyField.hashCode());
   }
 
+  @Test
   public void testGetValue() {
     MessageLite message = TestUtil.getAllSet();
     LazyField lazyField = createLazyFieldFromMessage(message);
-    assertEquals(message, lazyField.getValue());
+    assertThat(message).isEqualTo(lazyField.getValue());
     changeValue(lazyField);
     assertNotEqual(message, lazyField.getValue());
   }
 
+  @Test
   public void testGetValueEx() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyField lazyField = createLazyFieldFromMessage(message);
-    assertEquals(message, lazyField.getValue());
+    assertThat(message).isEqualTo(lazyField.getValue());
     changeValue(lazyField);
     assertNotEqual(message, lazyField.getValue());
   }
 
+  @Test
   public void testEqualsObject() {
     MessageLite message = TestUtil.getAllSet();
     LazyField lazyField = createLazyFieldFromMessage(message);
-    assertTrue(lazyField.equals(message));
+    assertThat(lazyField).isEqualTo(message);
     changeValue(lazyField);
-    assertFalse(lazyField.equals(message));
-    assertFalse(message.equals(lazyField.getValue()));
+    assertThat(lazyField).isNotEqualTo(message);
+    assertThat(message).isNotEqualTo(lazyField.getValue());
   }
 
-  @SuppressWarnings("EqualsIncompatibleType") // LazyField.equals() is not symmetric
+  @Test
+  @SuppressWarnings("TruthIncompatibleType") // LazyField.equals() is not symmetric
   public void testEqualsObjectEx() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyField lazyField = createLazyFieldFromMessage(message);
-    assertTrue(lazyField.equals(message));
+    assertThat(lazyField).isEqualTo(message);
     changeValue(lazyField);
-    assertFalse(lazyField.equals(message));
-    assertFalse(message.equals(lazyField.getValue()));
+    assertThat(lazyField).isNotEqualTo(message);
+    assertThat(message).isNotEqualTo(lazyField.getValue());
   }
 
   // Help methods.
@@ -113,6 +121,7 @@ public class LazyFieldTest extends TestCase {
   }
 
   private void assertNotEqual(Object unexpected, Object actual) {
-    assertFalse(unexpected == actual || (unexpected != null && unexpected.equals(actual)));
+    assertThat(unexpected).isNotSameInstanceAs(actual);
+    assertThat((unexpected != null && unexpected.equals(actual))).isFalse();
   }
 }

@@ -165,7 +165,7 @@ python_add_init: protoc_middleman protoc_middleman2
 		done                                                           \
 	done
 
-python_cpp_pkg_flags = `pkg-config --cflags --libs python`
+python_cpp_pkg_flags = `pkg-config --cflags --libs python3`
 
 lib_LTLIBRARIES = libbenchmark_messages.la
 libbenchmark_messages_la_SOURCES = python/python_benchmark_messages.cc
@@ -186,7 +186,7 @@ python-pure-python-benchmark: python_add_init
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/.libs >> python-pure-python-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'python\' >> python-pure-python-benchmark
 	@echo cp $(srcdir)/python/py_benchmark.py tmp >> python-pure-python-benchmark
-	@echo python tmp/py_benchmark.py '$$@' >> python-pure-python-benchmark
+	@echo python3 tmp/py_benchmark.py '$$@' >> python-pure-python-benchmark
 	@chmod +x python-pure-python-benchmark
 
 python-cpp-reflection-benchmark: python_add_init
@@ -196,7 +196,7 @@ python-cpp-reflection-benchmark: python_add_init
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/.libs >> python-cpp-reflection-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-reflection-benchmark
 	@echo cp $(srcdir)/python/py_benchmark.py tmp >> python-cpp-reflection-benchmark
-	@echo python tmp/py_benchmark.py '$$@' >> python-cpp-reflection-benchmark
+	@echo python3 tmp/py_benchmark.py '$$@' >> python-cpp-reflection-benchmark
 	@chmod +x python-cpp-reflection-benchmark
 
 python-cpp-generated-code-benchmark: python_add_init libbenchmark_messages.la
@@ -206,7 +206,7 @@ python-cpp-generated-code-benchmark: python_add_init libbenchmark_messages.la
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/.libs >> python-cpp-generated-code-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-generated-code-benchmark
 	@echo cp $(srcdir)/python/py_benchmark.py tmp >> python-cpp-generated-code-benchmark
-	@echo python tmp/py_benchmark.py --cpp_generated '$$@' >> python-cpp-generated-code-benchmark
+	@echo python3 tmp/py_benchmark.py --cpp_generated '$$@' >> python-cpp-generated-code-benchmark
 	@chmod +x python-cpp-generated-code-benchmark
 
 python-pure-python: python-pure-python-benchmark

@@ -49,18 +49,13 @@ public class ProtobufJavaService implements BasicLibraryService {
          * need to exist before we try to save a reference to them
          */
         RubyProtobuf.createProtobuf(ruby);
-        RubyBuilder.createRubyBuilder(ruby);
         RubyFileDescriptor.createRubyFileDescriptor(ruby);
         RubyEnumDescriptor.createRubyEnumDescriptor(ruby);
-        RubyEnumBuilderContext.createRubyEnumBuilderContext(ruby);
         RubyRepeatedField.createRubyRepeatedField(ruby);
         RubyFieldDescriptor.createRubyFieldDescriptor(ruby);
         RubyMap.createRubyMap(ruby);
         RubyOneofDescriptor.createRubyOneofDescriptor(ruby);
-        RubyOneofBuilderContext.createRubyOneofBuilderContext(ruby);
-        RubyMessageBuilderContext.createRubyMessageBuilderContext(ruby);
         RubyDescriptor.createRubyDescriptor(ruby);
-        RubyFileBuilderContext.createRubyFileBuilderContext(ruby);
         RubyDescriptorPool.createRubyDescriptorPool(ruby);
         return true;
     }

@@ -85,82 +85,29 @@ set(libprotoc_files
 )
 
 set(libprotoc_headers
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_enum.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_enum_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_extension.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/code_generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/command_line_interface.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_file.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_generator.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_helpers.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_map_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message_layout_helper.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_names.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_options.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_parse_function_generator.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_primitive_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_service.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_string_field.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_doc_comment.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_enum.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_enum_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_field_base.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_helpers.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_map_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_message.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_message_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_names.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_options.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_primitive_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_reflection_class.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_message_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_source_generator_base.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_wrapper_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_context.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_doc_comment.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_field_lite.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_lite.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_extension.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_extension_lite.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_file.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator_factory.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_helpers.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field_lite.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message_builder.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message_builder_lite.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message_field_lite.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message_lite.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_name_resolver.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_options.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_primitive_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_primitive_field_lite.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_service.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_shared_code_generator.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_string_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_string_field_lite.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_extension.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_file.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/importer.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_kotlin_generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_names.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/js/js_generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_generator.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_helpers.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_map_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_message.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_message_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_oneof.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/scc.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/parser.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/php/php_generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.pb.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.h
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -183,4 +130,3 @@ set_target_properties(libprotoc PROPERTIES
     OUTPUT_NAME ${LIB_PREFIX}protoc
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
 add_library(protobuf::libprotoc ALIAS libprotoc)
-

@@ -30,7 +30,7 @@
 
 package com.google.protobuf;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.protobuf.testing.Proto3Testing.Proto3Empty;
 import com.google.protobuf.testing.Proto3Testing.Proto3Message;
@@ -93,8 +93,8 @@ public abstract class AbstractProto3SchemaTest extends AbstractSchemaTest<Proto3
     byte[] data = output.toByteArray();
 
     Proto3Message merged = ExperimentalSerializationUtil.fromByteArray(data, Proto3Message.class);
-    assertEquals(789, merged.getFieldMessage10().getFieldInt643());
-    assertEquals(456, merged.getFieldMessage10().getFieldInt325());
+    assertThat(merged.getFieldMessage10().getFieldInt643()).isEqualTo(789);
+    assertThat(merged.getFieldMessage10().getFieldInt325()).isEqualTo(456);
   }
 
   @Test
@@ -124,8 +124,8 @@ public abstract class AbstractProto3SchemaTest extends AbstractSchemaTest<Proto3
     Proto3Empty empty =
         ExperimentalSerializationUtil.fromByteArray(
             expectedMessage.toByteArray(), Proto3Empty.class);
-    assertEquals(expectedMessage.getSerializedSize(), empty.getSerializedSize());
-    assertEquals(expectedMessage.toByteString(), empty.toByteString());
+    assertThat(empty.getSerializedSize()).isEqualTo(expectedMessage.getSerializedSize());
+    assertThat(empty.toByteString()).isEqualTo(expectedMessage.toByteString());
   }
 
   @Test
@@ -134,7 +134,7 @@ public abstract class AbstractProto3SchemaTest extends AbstractSchemaTest<Proto3
     // supported in proto3, e.g. groups.
     byte[] payload = new Proto2MessageFactory(10, 20, 2, 2).newMessage().toByteArray();
     Proto3Empty empty = ExperimentalSerializationUtil.fromByteArray(payload, Proto3Empty.class);
-    assertEquals(payload.length, empty.getSerializedSize());
+    assertThat(empty.getSerializedSize()).isEqualTo(payload.length);
   }
 
   @Test

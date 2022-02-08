@@ -181,32 +181,8 @@ final class RawMessageInfo implements MessageInfo {
     this.defaultInstance = defaultInstance;
     this.info = info;
     this.objects = objects;
-    int value;
-    try {
-      value = (int) info.charAt(0);
-    } catch (StringIndexOutOfBoundsException e) {
-      // This is a fix for issues
-      // that error out on a subset of phones on charAt(0) with an index out of bounds exception.
-      char[] infoChars = info.toCharArray();
-      info = new String(infoChars);
-      try {
-        value = (int) info.charAt(0);
-      } catch (StringIndexOutOfBoundsException e2) {
-        try {
-          char[] infoChars2 = new char[info.length()];
-          info.getChars(0, info.length(), infoChars2, 0);
-          info = new String(infoChars2);
-          value = (int) info.charAt(0);
-        } catch (StringIndexOutOfBoundsException | ArrayIndexOutOfBoundsException e3) {
-          throw new IllegalStateException(
-              String.format(
-                  "Failed parsing '%s' with charArray.length of %d", info, infoChars.length),
-              e3);
-        }
-      }
-    }
-    int position = 1;
-
+    int position = 0;
+    int value = (int) info.charAt(position++);
     if (value < 0xD800) {
       flags = value;
     } else {

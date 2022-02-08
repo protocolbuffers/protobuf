@@ -56,6 +56,14 @@ namespace Google.Protobuf.Reflection
         internal EnumValueDescriptorProto Proto { get { return proto; } }
 
         /// <summary>
+        /// Returns a clone of the underlying <see cref="EnumValueDescriptorProto"/> describing this enum value.
+        /// Note that a copy is taken every time this method is called, so clients using it frequently
+        /// (and not modifying it) may want to cache the returned value.
+        /// </summary>
+        /// <returns>A protobuf representation of this enum value descriptor.</returns>
+        public EnumValueDescriptorProto ToProto() => Proto.Clone();
+
+        /// <summary>
         /// Returns the name of the enum value described by this object.
         /// </summary>
         public override string Name { get { return proto.Name; } }

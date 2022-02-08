@@ -1,12 +1,12 @@
 # Application note: Field presence
 
-This application note explains the various presence tracking disciplines for protobuf fields. It also explains how to enable experimental support for explicit presence tracking for singular proto3 fields with basic types.
+This application note explains the various presence tracking disciplines for protobuf fields. It also explains the behaviour of explicit presence tracking for singular proto3 fields with basic types.
 
 ## Background
 
 _Field presence_ is the notion of whether a protobuf field has a value. There are two different manifestations of presence for protobufs: _no presence_, where the generated message API stores field values (only), and _explicit presence_, where the API also stores whether or not a field has been set.
 
-Historically, proto2 has mostly followed _explicit presence_, while proto3 exposes only _no presence_ semantics. Singular proto3 fields of basic types (numeric, string, bytes, and enums) which are defined with the `optional` label have _explicit presence_, like proto2 (this is an experimental feature added as of release 3.12, and must be enabled by passing a flag to `protoc`).
+Historically, proto2 has mostly followed _explicit presence_, while proto3 exposes only _no presence_ semantics. Singular proto3 fields of basic types (numeric, string, bytes, and enums) which are defined with the `optional` label have _explicit presence_, like proto2 (this feature is enabled by default as release 3.15).
 
 ### Presence disciplines
 
@@ -100,7 +100,7 @@ Repeated                                     | N/A        |
 Oneofs                                       | N/A        | ✔️
 Maps                                         | N/A        |
 
-Similar to proto2 APIs, proto3 does not track presence explicitly for repeated fields. Without the `optional` label, proto3 APIs do not track presence for basic types (numeric, string, bytes, and enums), either. (Note that `optional` for proto3 fields is only experimentally available as of release 3.12.) Oneof fields affirmatively expose presence, although the same set of hazzer methods may not generated as in proto2 APIs.
+Similar to proto2 APIs, proto3 does not track presence explicitly for repeated fields. Without the `optional` label, proto3 APIs do not track presence for basic types (numeric, string, bytes, and enums), either. Oneof fields affirmatively expose presence, although the same set of hazzer methods may not generated as in proto2 APIs.
 
 Under the _no presence_ discipline, the default value is synonymous with "not present" for purposes of serialization. To notionally "clear" a field (so it won't be serialized), an API user would set it to the default value.
 
@@ -198,10 +198,10 @@ If client A depends on _explicit presence_ for `foo`, then a "round trip" throug
 
 ## How to enable _explicit presence_ in proto3
 
-These are the general steps to use the experimental field tracking support for proto3:
+These are the general steps to use field tracking support for proto3:
 
 1.  Add an `optional` field to a `.proto` file.
-1.  Run `protoc` (from release 3.12 or later) with an extra flag to recognize `optional` (i.e,. explicit presence) in proto3 files.
+1.  Run `protoc` (at least v3.15, or v3.12 using `--experimental_allow_proto3_optional` flag).
 1.  Use the generated "hazzer" methods and "clear" methods in application code, instead of comparing or setting default values.
 
 ### `.proto` file changes
@@ -223,7 +223,7 @@ message MyMessage {
 
 ### `protoc` invocation
 
-To enable presence tracking for proto3 messages, pass the `--experimental_allow_proto3_optional` flag to protoc. Without this flag, the `optional` label is an error in files using proto3 syntax. This flag is available in protobuf release 3.12 or later (or at HEAD, if you are reading this application note from Git).
+Presence tracking for proto3 messages is enabled by default [since v3.15.0](https://github.com/protocolbuffers/protobuf/releases/tag/v3.15.0) release, formerly up until [v3.12.0](https://github.com/protocolbuffers/protobuf/releases/tag/v3.12.0) the `--experimental_allow_proto3_optional` flag was required when using presence tracking with protoc.
 
 ### Using the generated code
 

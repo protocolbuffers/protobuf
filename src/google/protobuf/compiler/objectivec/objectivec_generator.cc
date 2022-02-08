@@ -44,6 +44,28 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+namespace {
+
+// Convert a string with "yes"/"no" (case insensitive) to a boolean, returning
+// true/false for if the input string was a valid value. If the input string is
+// invalid, `result` is unchanged.
+bool StringToBool(const std::string& value, bool* result) {
+  std::string upper_value(value);
+  UpperString(&upper_value);
+  if (upper_value == "NO") {
+    *result = false;
+    return true;
+  }
+  if (upper_value == "YES") {
+    *result = true;
+    return true;
+  }
+
+  return false;
+}
+
+}  // namespace
+
 ObjectiveCGenerator::ObjectiveCGenerator() {}
 
 ObjectiveCGenerator::~ObjectiveCGenerator() {}
@@ -88,6 +110,9 @@ bool ObjectiveCGenerator::GenerateAll(
       //   - Comments start with "#".
       //   - A comment can go on a line after a expected package/prefix pair.
       //     (i.e. - "package=prefix # comment")
+      //   - For files that do NOT have a proto package (not recommended), an
+      //     entry can be made as "no_package:PATH=prefix", where PATH is the
+      //     path for the .proto file.
       //
       // There is no validation that the prefixes are good prefixes, it is
       // assumed that they are when you create the file.
@@ -100,6 +125,31 @@ bool ObjectiveCGenerator::GenerateAll(
                options[i].second, ";", true)) {
         generation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));
+      }
+    } else if (options[i].first == "prefixes_must_be_registered") {
+      // If objc prefix file option value must be registered to be used. This
+      // option has no meaning if an "expected_prefixes_path" isn't set. The
+      // available options are:
+      //   "no": They don't have to be registered.
+      //   "yes": They must be registered and an error will be raised if a files
+      //     tried to use a prefix that isn't registered.
+      // Default is "no".
+      if (!StringToBool(options[i].second,
+                        &generation_options.prefixes_must_be_registered)) {
+        *error = "error: Unknown value for prefixes_must_be_registered: " + options[i].second;
+        return false;
+      }
+    } else if (options[i].first == "require_prefixes") {
+      // If every file must have an objc prefix file option to be used. The
+      // available options are:
+      //   "no": Files can be generated without the prefix option.
+      //   "yes": Files must have the objc prefix option, and an error will be
+      //     raised if a files doesn't have one.
+      // Default is "no".
+      if (!StringToBool(options[i].second,
+                        &generation_options.require_prefixes)) {
+        *error = "error: Unknown value for require_prefixes: " + options[i].second;
+        return false;
       }
     } else if (options[i].first == "generate_for_named_framework") {
       // The name of the framework that protos are being generated for. This
@@ -146,12 +196,9 @@ bool ObjectiveCGenerator::GenerateAll(
       // is just what to do if that isn't set. The available options are:
       //   "no": Not prefixed (the existing mode).
       //   "yes": Make a prefix out of the proto package.
-      std::string upper_value(options[i].second);
-      UpperString(&upper_value);
-      if (upper_value == "NO") {
-        SetUseProtoPackageAsDefaultPrefix(false);
-      } else if (upper_value == "YES") {
-        SetUseProtoPackageAsDefaultPrefix(true);
+      bool value = false;
+      if (StringToBool(options[i].second, &value)) {
+        SetUseProtoPackageAsDefaultPrefix(value);
       } else {
         *error = "error: Unknown use_package_as_prefix: " + options[i].second;
         return false;

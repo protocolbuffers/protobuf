@@ -88,6 +88,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Utility classes to convert protobuf messages to/from JSON format. The JSON
@@ -521,10 +522,12 @@ public class JsonFormat {
      * Find a type by its full name. Returns null if it cannot be found in this {@link
      * TypeRegistry}.
      */
+    @Nullable
     public Descriptor find(String name) {
       return types.get(name);
     }
 
+    @Nullable
     Descriptor getDescriptorForTypeUrl(String typeUrl) throws InvalidProtocolBufferException {
       return find(getTypeName(typeUrl));
     }
@@ -546,7 +549,7 @@ public class JsonFormat {
        */
       @CanIgnoreReturnValue
       public Builder add(Descriptor messageType) {
-        if (types == null) {
+        if (built) {
           throw new IllegalStateException("A TypeRegistry.Builder can only be used once.");
         }
         addFile(messageType.getFile());
@@ -559,7 +562,7 @@ public class JsonFormat {
        */
       @CanIgnoreReturnValue
       public Builder add(Iterable<Descriptor> messageTypes) {
-        if (types == null) {
+        if (built) {
           throw new IllegalStateException("A TypeRegistry.Builder can only be used once.");
         }
         for (Descriptor type : messageTypes) {
@@ -573,10 +576,8 @@ public class JsonFormat {
        * one Builder.
        */
       public TypeRegistry build() {
-        TypeRegistry result = new TypeRegistry(types);
-        // Make sure the built {@link TypeRegistry} is immutable.
-        types = null;
-        return result;
+        built = true;
+        return new TypeRegistry(types);
       }
 
       private void addFile(FileDescriptor file) {
@@ -607,6 +608,7 @@ public class JsonFormat {
 
       private final Set<String> files = new HashSet<String>();
       private Map<String, Descriptor> types = new HashMap<String, Descriptor>();
+      private boolean built = false;
     }
   }
 
@@ -984,7 +986,7 @@ public class JsonFormat {
     }
 
     /** Prints a regular message with an optional type URL. */
-    private void print(MessageOrBuilder message, String typeUrl) throws IOException {
+    private void print(MessageOrBuilder message, @Nullable String typeUrl) throws IOException {
       generator.print("{" + blankOrNewLine);
       generator.indent();
 
@@ -1340,7 +1342,9 @@ public class JsonFormat {
         throw e;
       } catch (Exception e) {
         // We convert all exceptions from JSON parsing to our own exceptions.
-        throw new InvalidProtocolBufferException(e.getMessage());
+        InvalidProtocolBufferException toThrow = new InvalidProtocolBufferException(e.getMessage());
+        toThrow.initCause(e);
+        throw toThrow;
       }
     }
 
@@ -1558,7 +1562,7 @@ public class JsonFormat {
       try {
         Timestamp value = Timestamps.parse(json.getAsString());
         builder.mergeFrom(value.toByteString());
-      } catch (ParseException e) {
+      } catch (ParseException | UnsupportedOperationException e) {
         throw new InvalidProtocolBufferException("Failed to parse timestamp: " + json);
       }
     }
@@ -1568,7 +1572,7 @@ public class JsonFormat {
       try {
         Duration value = Durations.parse(json.getAsString());
         builder.mergeFrom(value.toByteString());
-      } catch (ParseException e) {
+      } catch (ParseException | UnsupportedOperationException e) {
         throw new InvalidProtocolBufferException("Failed to parse duration: " + json);
       }
     }
@@ -1899,6 +1903,7 @@ public class JsonFormat {
       }
     }
 
+    @Nullable
     private EnumValueDescriptor parseEnum(EnumDescriptor enumDescriptor, JsonElement json)
         throws InvalidProtocolBufferException {
       String value = json.getAsString();
@@ -1926,6 +1931,7 @@ public class JsonFormat {
       return result;
     }
 
+    @Nullable
     private Object parseFieldValue(FieldDescriptor field, JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
       if (json instanceof JsonNull) {

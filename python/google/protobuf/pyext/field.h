@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_FIELD_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_FIELD_H__
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 namespace google {

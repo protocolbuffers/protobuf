@@ -110,13 +110,14 @@ class MockGeneratorContext : public GeneratorContext {
 class GenerateAndTest {
  public:
   GenerateAndTest() {}
-  void Run(const FileDescriptor* proto_file, std::string file1, std::string file2) {
+  void Run(const FileDescriptor* proto_file, std::string file1,
+           std::string file2) {
     ASSERT_TRUE(proto_file != NULL) << TestSourceDir();
     ASSERT_TRUE(generator_.Generate(proto_file, parameter_,
                                     &context_, &error_));
     context_.ExpectFileMatches(file1, file2);
   }
-  void SetParameter(string parameter) {
+  void SetParameter(std::string parameter) {
     parameter_ = parameter;
   }
 

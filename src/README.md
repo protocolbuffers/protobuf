@@ -19,7 +19,7 @@ To build protobuf from source, the following tools are needed:
 
 On Ubuntu/Debian, you can install them with:
 
-    $ sudo apt-get install autoconf automake libtool curl make g++ unzip
+    sudo apt-get install autoconf automake libtool curl make g++ unzip
 
 On other platforms, please use the corresponding package managing tool to
 install them before proceeding.
@@ -48,7 +48,7 @@ Buffer compiler (protoc) execute the following:
 
 
      ./configure
-     make
+     make -j$(nproc) # $(nproc) ensures it uses all cores for compilation
      make check
      sudo make install
      sudo ldconfig # refresh shared library cache.

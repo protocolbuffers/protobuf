@@ -43,25 +43,26 @@ namespace internal {
 // corresponding random-access methods.
 class RandomAccessRepeatedFieldAccessor : public RepeatedFieldAccessor {
  public:
-  Iterator* BeginIterator(const Field* data) const override {
+  Iterator* BeginIterator(const Field* /*data*/) const override {
     return PositionToIterator(0);
   }
   Iterator* EndIterator(const Field* data) const override {
     return PositionToIterator(this->Size(data));
   }
-  Iterator* CopyIterator(const Field* data,
+  Iterator* CopyIterator(const Field* /*data*/,
                          const Iterator* iterator) const override {
     return const_cast<Iterator*>(iterator);
   }
-  Iterator* AdvanceIterator(const Field* data,
+  Iterator* AdvanceIterator(const Field* /*data*/,
                             Iterator* iterator) const override {
     return PositionToIterator(IteratorToPosition(iterator) + 1);
   }
-  bool EqualsIterator(const Field* data, const Iterator* a,
+  bool EqualsIterator(const Field* /*data*/, const Iterator* a,
                       const Iterator* b) const override {
     return a == b;
   }
-  void DeleteIterator(const Field* data, Iterator* iterator) const override {}
+  void DeleteIterator(const Field* /*data*/,
+                      Iterator* /*iterator*/) const override {}
   const Value* GetIteratorValue(const Field* data, const Iterator* iterator,
                                 Value* scratch_space) const override {
     return Get(data, static_cast<int>(IteratorToPosition(iterator)),
@@ -257,7 +258,7 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
   // Convert a MapEntry message stored in the underlying MapFieldBase to an
   // object that will be returned by this accessor.
   virtual const Value* ConvertFromEntry(const Message& value,
-                                        Value* scratch_space) const {
+                                        Value* /*scratch_space*/) const {
     return static_cast<const Value*>(&value);
   }
 };
@@ -285,7 +286,7 @@ class RepeatedFieldPrimitiveAccessor final : public RepeatedFieldWrapper<T> {
     return *static_cast<const T*>(value);
   }
   const Value* ConvertFromT(const T& value,
-                            Value* scratch_space) const override {
+                            Value* /*scratch_space*/) const override {
     return static_cast<const Value*>(&value);
   }
 };
@@ -325,7 +326,7 @@ class RepeatedPtrFieldStringAccessor final
     *result = *static_cast<const std::string*>(value);
   }
   const Value* ConvertFromT(const std::string& value,
-                            Value* scratch_space) const override {
+                            Value* /*scratch_space*/) const override {
     return static_cast<const Value*>(&value);
   }
 };
@@ -352,7 +353,7 @@ class RepeatedPtrFieldMessageAccessor final
     result->CopyFrom(*static_cast<const Message*>(value));
   }
   const Value* ConvertFromT(const Message& value,
-                            Value* scratch_space) const override {
+                            Value* /*scratch_space*/) const override {
     return static_cast<const Value*>(&value);
   }
 };

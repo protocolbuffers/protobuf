@@ -146,7 +146,7 @@ class GPBWire
                 return bcsub(bcmul(bcsub(0, $int64), 2), 1);
             }
         } else {
-            return ($int64 << 1) ^ ($int64 >> 63);
+            return ((int)$int64 << 1) ^ ((int)$int64 >> 63);
         }
     }
 

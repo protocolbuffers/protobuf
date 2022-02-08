@@ -402,8 +402,8 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   // implements GeneratorContext --------------------------------------
   io::ZeroCopyOutputStream* Open(const std::string& filename) override;
   io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename) override;
-  io::ZeroCopyOutputStream* OpenForInsert(const std::string& filename,
-                                          const std::string& insertion_point) override;
+  io::ZeroCopyOutputStream* OpenForInsert(
+      const std::string& filename, const std::string& insertion_point) override;
   io::ZeroCopyOutputStream* OpenForInsertWithGeneratedCodeInfo(
       const std::string& filename, const std::string& insertion_point,
       const google::protobuf::GeneratedCodeInfo& info) override;
@@ -1675,7 +1675,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     // file names (e.g. foo\*.proto), so we do it ourselves.
     switch (google::protobuf::io::win32::ExpandWildcards(
         value,
-        [this](const string& path) { this->input_files_.push_back(path); })) {
+        [this](const std::string& path) {
+          this->input_files_.push_back(path);
+        })) {
       case google::protobuf::io::win32::ExpandWildcardsResult::kSuccess:
         break;
       case google::protobuf::io::win32::ExpandWildcardsResult::
@@ -2423,8 +2425,8 @@ bool CommandLineInterface::WriteDescriptorSet(
     to_output.insert(parsed_files.begin(), parsed_files.end());
     for (int i = 0; i < parsed_files.size(); i++) {
       const FileDescriptor* file = parsed_files[i];
-      for (int i = 0; i < file->dependency_count(); i++) {
-        const FileDescriptor* dependency = file->dependency(i);
+      for (int j = 0; j < file->dependency_count(); j++) {
+        const FileDescriptor* dependency = file->dependency(j);
         // if the dependency isn't in parsed files, mark it as already seen
         if (to_output.find(dependency) == to_output.end()) {
           already_seen.insert(dependency);

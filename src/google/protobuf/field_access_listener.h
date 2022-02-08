@@ -32,215 +32,141 @@
 #define GOOGLE_PROTOBUF_FIELD_ACCESS_LISTENER_H__
 
 #include <cstddef>
-#include <functional>
-#include <string>
-#include <type_traits>
-#include <utility>
-#include <vector>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/arenastring.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/map.h>
-#include <google/protobuf/stubs/once.h>
-#include <google/protobuf/repeated_field.h>
+#include <google/protobuf/message_lite.h>
 
 
 namespace google {
 namespace protobuf {
-namespace internal {
-template <typename T>
-struct ResolvedType {
-  using type = T;
+
+// A default/no-op implementation of message hooks.
+//
+// See go/statically-dispatched-message-hooks for details.
+template <typename Proto>
+struct NoOpAccessListener {
+  // Number of fields are provided at compile time for the trackers to be able
+  // to have stack allocated bitmaps for the fields. This is useful for
+  // performance critical trackers. This is also to avoid cyclic dependencies
+  // if the number of fields is needed.
+  static constexpr int kFields = Proto::_kInternalFieldNumber;
+  // Default constructor is called during the static global initialization of
+  // the program.
+  // We provide a pointer to extract the name of the proto not to get cyclic
+  // dependencies on GetDescriptor() and OnGetMetadata() calls. If you want
+  // to differentiate the protos during the runtime before the start of the
+  // program, use this functor to get its name. We either way need it for
+  // LITE_RUNTIME protos as they don't have descriptors at all.
+  explicit NoOpAccessListener(StringPiece (*name_extractor)()) {}
+  // called repeatedly during serialization/deserialization/ByteSize of
+  // Reflection as:
+  //   AccessListener<MessageT>::OnSerialize(this);
+  static void OnSerialize(const MessageLite* msg) {}
+  static void OnDeserialize(const MessageLite* msg) {}
+  static void OnByteSize(const MessageLite* msg) {}
+  static void OnMergeFrom(const MessageLite* to, const MessageLite* from) {}
+
+  // NOTE: This function can be called pre-main. Make sure it does not make
+  // the state of the listener invalid.
+  static void OnGetMetadata() {}
+
+  // called from accessors as:
+  //   AccessListener<MessageT>::On$operation(this, &field_storage_);
+  // If you need to override this with type, in your hook implementation
+  // introduce
+  // template <int kFieldNum, typename T>
+  // static void On$operation(const MessageLite* msg,
+  //                          const T* field) {}
+  // And overloads for std::nullptr_t for incomplete types such as Messages,
+  // Maps. Extract them using reflection if you need. Consequently, second
+  // argument can be null pointer.
+  // For an example, see proto_hooks/testing/memory_test_field_listener.h
+  // And argument template deduction will deduce the type itself without
+  // changing the generated code.
+
+  // add_<field>(f)
+  template <int kFieldNum>
+  static void OnAdd(const MessageLite* msg, const void* field) {}
+
+  // add_<field>()
+  template <int kFieldNum>
+  static void OnAddMutable(const MessageLite* msg, const void* field) {}
+
+  // <field>() and <repeated_field>(i)
+  template <int kFieldNum>
+  static void OnGet(const MessageLite* msg, const void* field) {}
+
+  // clear_<field>()
+  template <int kFieldNum>
+  static void OnClear(const MessageLite* msg, const void* field) {}
+
+  // has_<field>()
+  template <int kFieldNum>
+  static void OnHas(const MessageLite* msg, const void* field) {}
+
+  // <repeated_field>()
+  template <int kFieldNum>
+  static void OnList(const MessageLite* msg, const void* field) {}
+
+  // mutable_<field>()
+  template <int kFieldNum>
+  static void OnMutable(const MessageLite* msg, const void* field) {}
+
+  // mutable_<repeated_field>()
+  template <int kFieldNum>
+  static void OnMutableList(const MessageLite* msg, const void* field) {}
+
+  // release_<field>()
+  template <int kFieldNum>
+  static void OnRelease(const MessageLite* msg, const void* field) {}
+
+  // set_<field>() and set_<repeated_field>(i)
+  template <int kFieldNum>
+  static void OnSet(const MessageLite* msg, const void* field) {}
+
+  // <repeated_field>_size()
+  template <int kFieldNum>
+  static void OnSize(const MessageLite* msg, const void* field) {}
+
+  static void OnHasExtension(const MessageLite* msg, int extension_tag,
+                             const void* field) {}
+  // TODO(b/190614678): Support clear in the proto compiler.
+  static void OnClearExtension(const MessageLite* msg, int extension_tag,
+                               const void* field) {}
+  static void OnExtensionSize(const MessageLite* msg, int extension_tag,
+                              const void* field) {}
+  static void OnGetExtension(const MessageLite* msg, int extension_tag,
+                             const void* field) {}
+  static void OnMutableExtension(const MessageLite* msg, int extension_tag,
+                                 const void* field) {}
+  static void OnSetExtension(const MessageLite* msg, int extension_tag,
+                             const void* field) {}
+  static void OnReleaseExtension(const MessageLite* msg, int extension_tag,
+                                 const void* field) {}
+  static void OnAddExtension(const MessageLite* msg, int extension_tag,
+                             const void* field) {}
+  static void OnAddMutableExtension(const MessageLite* msg, int extension_tag,
+                                    const void* field) {}
+  static void OnListExtension(const MessageLite* msg, int extension_tag,
+                              const void* field) {}
+  static void OnMutableListExtension(const MessageLite* msg, int extension_tag,
+                                     const void* field) {}
 };
-}  // namespace internal
-// Tracks the events of field accesses for all protos
-// that are built with --inject_field_listener_events. This is a global
-// interface which you must implement yourself and register with
-// RegisterListener() function. All events consist of Descriptors,
-// FieldAccessTypes and the underlying storage for tracking the memory which is
-// accessed where possible and makes sense. Users are responsible for the
-// implementations to be thread safe.
-class FieldAccessListener {
- public:
-  FieldAccessListener() = default;
-  virtual ~FieldAccessListener() = default;
-
-  // The memory annotations of the proto fields that are touched by the
-  // accessors. They are returned as if the operation completes.
-  struct DataAnnotation {
-    DataAnnotation() = default;
-    DataAnnotation(const void* other_address, size_t other_size)
-        : address(other_address), size(other_size) {}
-    const void* address = nullptr;
-    size_t size = 0;
-  };
-  using AddressInfo = std::vector<DataAnnotation>;
-  using AddressInfoExtractor = std::function<AddressInfo()>;
-
-  enum class FieldAccessType {
-    kAdd,          // add_<field>(f)
-    kAddMutable,   // add_<field>()
-    kGet,          // <field>() and <repeated_field>(i)
-    kClear,        // clear_<field>()
-    kHas,          // has_<field>()
-    kList,         // <repeated_field>()
-    kMutable,      // mutable_<field>()
-    kMutableList,  // mutable_<repeated_field>()
-    kRelease,      // release_<field>()
-    kSet,          // set_<field>() and set_<repeated_field>(i)
-    kSize,         // <repeated_field>_size()
-  };
-
-  static FieldAccessListener* GetListener();
-
-  // Registers the field listener, can be called only once, |listener| must
-  // outlive all proto accesses (in most cases, the lifetime of the program).
-  static void RegisterListener(FieldAccessListener* listener);
-
-  // All field accessors noted in FieldAccessType have this call.
-  // |extractor| extracts the address info from the field
-  virtual void OnFieldAccess(const AddressInfoExtractor& extractor,
-                             const FieldDescriptor* descriptor,
-                             FieldAccessType access_type) = 0;
-
-  // Side effect calls.
-  virtual void OnDeserializationAccess(const Message* message) = 0;
-  virtual void OnSerializationAccess(const Message* message) = 0;
-  virtual void OnReflectionAccess(const Descriptor* descriptor) = 0;
-  virtual void OnByteSizeAccess(const Message* message) = 0;
-  // We can probably add more if we need to, like {Merge,Copy}{From}Access.
-
-  // Extracts all the addresses from the underlying fields.
-  template <typename T>
-  AddressInfo ExtractFieldInfo(const T* field_value);
-
-
- private:
-  template <typename T>
-  AddressInfo ExtractFieldInfoSpecific(const T* field_value,
-                                       internal::ResolvedType<T>);
-
-  AddressInfo ExtractFieldInfoSpecific(const Message* field_value,
-                                       internal::ResolvedType<Message>);
-
-  AddressInfo ExtractFieldInfoSpecific(const std::string* field_value,
-                                       internal::ResolvedType<std::string>);
-
-  AddressInfo ExtractFieldInfoSpecific(
-      const internal::ArenaStringPtr* field_value,
-      internal::ResolvedType<internal::ArenaStringPtr>);
-
-  template <typename T>
-  AddressInfo ExtractFieldInfoSpecific(
-      const RepeatedField<T>* field_value,
-      internal::ResolvedType<RepeatedField<T>>);
-
-  template <typename T>
-  AddressInfo ExtractFieldInfoSpecific(
-      const RepeatedPtrField<T>* field_value,
-      internal::ResolvedType<RepeatedPtrField<T>>);
-
-  template <typename K, typename V>
-  AddressInfo ExtractFieldInfoSpecific(const Map<K, V>* field_value,
-                                       internal::ResolvedType<Map<K, V>>);
-
-  static internal::once_flag register_once_;
-  static FieldAccessListener* field_listener_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldAccessListener);
-};
-
-template <typename T>
-inline FieldAccessListener::AddressInfo FieldAccessListener::ExtractFieldInfo(
-    const T* field_value) {
-  return ExtractFieldInfoSpecific(field_value, internal::ResolvedType<T>());
-}
-
-
-template <typename T>
-inline FieldAccessListener::AddressInfo
-FieldAccessListener::ExtractFieldInfoSpecific(const T* field_value,
-                                              internal::ResolvedType<T>) {
-  static_assert(std::is_trivial<T>::value,
-                "This overload should be chosen only for trivial types");
-  return FieldAccessListener::AddressInfo{FieldAccessListener::DataAnnotation(
-      static_cast<const void*>(field_value), sizeof(*field_value))};
-}
-
-inline FieldAccessListener::AddressInfo
-FieldAccessListener::ExtractFieldInfoSpecific(
-    const std::string* field_value, internal::ResolvedType<std::string>) {
-  return FieldAccessListener::AddressInfo{FieldAccessListener::DataAnnotation(
-      static_cast<const void*>(field_value->c_str()), field_value->length())};
-}
-
-inline FieldAccessListener::AddressInfo
-FieldAccessListener::ExtractFieldInfoSpecific(
-    const internal::ArenaStringPtr* field_value,
-    internal::ResolvedType<internal::ArenaStringPtr>) {
-  return FieldAccessListener::ExtractFieldInfoSpecific(
-      field_value->GetPointer(), internal::ResolvedType<std::string>());
-}
-
-template <typename T>
-inline FieldAccessListener::AddressInfo
-FieldAccessListener::ExtractFieldInfoSpecific(
-    const RepeatedField<T>* field_value,
-    internal::ResolvedType<RepeatedField<T>>) {
-  // TODO(jianzhouzh): This can cause data races. Synchronize this if needed.
-  FieldAccessListener::AddressInfo address_info;
-  address_info.reserve(field_value->size());
-  for (int i = 0, ie = field_value->size(); i < ie; ++i) {
-    auto sub = ExtractFieldInfoSpecific(&field_value->Get(i),
-                                        internal::ResolvedType<T>());
-    address_info.insert(address_info.end(), sub.begin(), sub.end());
-  }
-  return address_info;
-}
-
-template <typename T>
-inline FieldAccessListener::AddressInfo
-FieldAccessListener::ExtractFieldInfoSpecific(
-    const RepeatedPtrField<T>* field_value,
-    internal::ResolvedType<RepeatedPtrField<T>>) {
-  FieldAccessListener::AddressInfo address_info;
-  // TODO(jianzhouzh): This can cause data races. Synchronize this if needed.
-  address_info.reserve(field_value->size());
-  for (int i = 0, ie = field_value->size(); i < ie; ++i) {
-    auto sub = ExtractFieldInfoSpecific(&field_value->Get(i),
-                                        internal::ResolvedType<T>());
-    address_info.insert(address_info.end(), sub.begin(), sub.end());
-  }
-  return address_info;
-}
-
-template <typename K, typename V>
-inline FieldAccessListener::AddressInfo
-FieldAccessListener::ExtractFieldInfoSpecific(
-    const Map<K, V>* field_value, internal::ResolvedType<Map<K, V>>) {
-  // TODO(jianzhouzh): This can cause data races. Synchronize this if needed.
-  FieldAccessListener::AddressInfo address_info;
-  address_info.reserve(field_value->size());
-  for (auto it = field_value->begin(); it != field_value->end(); ++it) {
-    auto sub_first =
-        ExtractFieldInfoSpecific(&it->first, internal::ResolvedType<K>());
-    auto sub_second =
-        ExtractFieldInfoSpecific(&it->second, internal::ResolvedType<V>());
-    address_info.insert(address_info.end(), sub_first.begin(), sub_first.end());
-    address_info.insert(address_info.end(), sub_second.begin(),
-                        sub_second.end());
-  }
-  return address_info;
-}
-
-inline FieldAccessListener::AddressInfo
-FieldAccessListener::ExtractFieldInfoSpecific(const Message* field_value,
-                                              internal::ResolvedType<Message>) {
-  // TODO(jianzhouzh): implement and adjust all annotations in the compiler.
-  return {};
-}
 
 }  // namespace protobuf
 }  // namespace google
+
+#ifndef REPLACE_PROTO_LISTENER_IMPL
+namespace google {
+namespace protobuf {
+template <class T>
+using AccessListener = NoOpAccessListener<T>;
+}  // namespace protobuf
+}  // namespace google
+#else
+// You can put your implementations of hooks/listeners here.
+// All hooks are subject to approval by protobuf-team@.
+
+#endif  // !REPLACE_PROTO_LISTENER_IMPL
 
 #endif  // GOOGLE_PROTOBUF_FIELD_ACCESS_LISTENER_H__

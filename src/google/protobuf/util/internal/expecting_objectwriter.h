@@ -93,7 +93,8 @@ class MockObjectWriter : public ObjectWriter {
               (override));
   MOCK_METHOD(ObjectWriter*, RenderString,
               (StringPiece, StringPiece), (override));
-  MOCK_METHOD(ObjectWriter*, RenderBytes, (StringPiece, StringPiece), (override));
+  MOCK_METHOD(ObjectWriter*, RenderBytes, (StringPiece, StringPiece),
+              (override));
   MOCK_METHOD(ObjectWriter*, RenderNull, (StringPiece), (override));
 };
 

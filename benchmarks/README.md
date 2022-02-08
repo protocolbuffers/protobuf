@@ -19,10 +19,8 @@ We are using [google/benchmark](https://github.com/google/benchmark) as the
 benchmark tool for testing cpp. This will be automatically made during build the
 cpp benchmark.
 
-The cpp protobuf performance can be improved by linking with [tcmalloc library](
-https://gperftools.github.io/gperftools/tcmalloc.html). For using tcmalloc, you
-need to build [gpertools](https://github.com/gperftools/gperftools) to generate
-libtcmallc.so library.
+The cpp protobuf performance can be improved by linking with
+[TCMalloc](https://google.github.io/tcmalloc).
 
 ### Java
 We're using maven to build the java benchmarks, which is the same as to build
@@ -89,7 +87,17 @@ To run all the benchmark dataset:
 
 ### Java:
 
+First build the Java binary in the usual way with Maven:
+
 ```
+$ cd java
+$ mvn install
+```
+
+Assuming that completes successfully,
+
+```
+$ cd ../benchmarks
 $ make java
 ```
 

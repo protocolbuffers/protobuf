@@ -88,6 +88,18 @@ build_cpp_distcheck() {
 }
 
 build_dist_install() {
+  # Create a symlink pointing to python2 and put it at the beginning of $PATH.
+  # This is necessary because the googletest build system involves a Python
+  # script that is not compatible with Python 3. More recent googletest
+  # versions have fixed this, but they have also removed the autotools build
+  # system support that we rely on. This is a temporary workaround to keep the
+  # googletest build working when the default python binary is Python 3.
+  mkdir tmp || true
+  pushd tmp
+  ln -s /usr/bin/python2 ./python
+  popd
+  PATH=$PWD/tmp:$PATH
+
   # Initialize any submodules.
   git submodule update --init --recursive
   ./autogen.sh
@@ -112,8 +124,8 @@ build_dist_install() {
   virtualenv --no-site-packages venv
   source venv/bin/activate
   pushd python
-  python setup.py clean build sdist
-  pip install dist/protobuf-*.tar.gz
+  python3 setup.py clean build sdist
+  pip3 install dist/protobuf-*.tar.gz
   popd
   deactivate
   rm -rf python/venv
@@ -192,7 +204,7 @@ use_java() {
   esac
 
   MAVEN_LOCAL_REPOSITORY=/var/maven_local_repository
-  MVN="$MVN -e -X -Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$MAVEN_LOCAL_REPOSITORY"
+  MVN="$MVN -e --quiet -Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$MAVEN_LOCAL_REPOSITORY"
 
   which java
   java -version
@@ -202,13 +214,20 @@ use_java() {
 # --batch-mode suppresses download progress output that spams the logs.
 MVN="mvn --batch-mode"
 
-build_java() {
+internal_build_java() {
   version=$1
   dir=java_$version
   # Java build needs `protoc`.
   internal_build_cpp
   cp -r java $dir
   cd $dir && $MVN clean
+  # Skip tests here - callers will decide what tests they want to run
+  $MVN install -pl core -Dmaven.test.skip=true
+}
+
+build_java() {
+  version=$1
+  internal_build_java $version
   # Skip the Kotlin tests on Oracle 7
   if [ "$version" == "oracle7" ]; then
     $MVN test -pl bom,lite,core,util
@@ -312,9 +331,9 @@ build_python() {
   internal_build_cpp
   cd python
   if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{27,33,34,35,36\}-python
+    envlist=py\{35,36\}-python
   else
-    envlist=py\{27,36\}-python
+    envlist=py\{36\}-python
   fi
   python -m tox -e $envlist
   cd ..
@@ -326,10 +345,6 @@ build_python_version() {
   envlist=$1
   python -m tox -e $envlist
   cd ..
-}
-
-build_python27() {
-  build_python_version py27-python
 }
 
 build_python33() {
@@ -360,15 +375,19 @@ build_python39() {
   build_python_version py39-python
 }
 
+build_python310() {
+  build_python_version py310-python
+}
+
 build_python_cpp() {
   internal_build_cpp
   export LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
   if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{27,33,34,35,36\}-cpp
+    envlist=py\{35,36\}-cpp
   else
-    envlist=py\{27,36\}-cpp
+    envlist=py\{36\}-cpp
   fi
   tox -e $envlist
   cd ..
@@ -382,10 +401,6 @@ build_python_cpp_version() {
   envlist=$1
   tox -e $envlist
   cd ..
-}
-
-build_python27_cpp() {
-  build_python_cpp_version py27-cpp
 }
 
 build_python33_cpp() {
@@ -416,6 +431,11 @@ build_python39_cpp() {
   build_python_cpp_version py39-cpp
 }
 
+build_python310_cpp() {
+  build_python_cpp_version py310-cpp
+}
+
+
 build_ruby23() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.3.8 && cd ..
@@ -441,9 +461,16 @@ build_ruby30() {
   cd ruby && bash travis-test.sh ruby-3.0.2 && cd ..
 }
 
-build_jruby() {
-  internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh jruby-9.2.11.1 && cd ..
+build_jruby92() {
+  internal_build_cpp                # For conformance tests.
+  internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
+  cd ruby && bash travis-test.sh jruby-9.2.19.0 && cd ..
+}
+
+build_jruby93() {
+  internal_build_cpp                # For conformance tests.
+  internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
+  cd ruby && bash travis-test.sh jruby-9.3.0.0 && cd ..
 }
 
 build_javascript() {
@@ -469,6 +496,8 @@ build_php() {
   use_php $1
   pushd php
   rm -rf vendor
+  php -v
+  php -m
   composer update
   composer test
   popd
@@ -478,6 +507,8 @@ build_php() {
 test_php_c() {
   pushd php
   rm -rf vendor
+  php -v
+  php -m
   composer update
   composer test_c
   popd
@@ -545,7 +576,9 @@ build_php_multirequest() {
 
 build_php8.0_all() {
   build_php 8.0
+  build_php 8.1
   build_php_c 8.0
+  build_php_c 8.1
 }
 
 build_php_all_32() {
@@ -598,7 +631,8 @@ Usage: $0 { cpp |
             ruby26 |
             ruby27 |
             ruby30 |
-            jruby |
+            jruby92 |
+            jruby93 |
             ruby_all |
             php_all |
             php_all_32 |

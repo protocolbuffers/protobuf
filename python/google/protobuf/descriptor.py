@@ -36,7 +36,6 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import threading
 import warnings
-import six
 
 from google.protobuf.internal import api_implementation
 
@@ -111,7 +110,7 @@ _Deprecated.count = 100
 _internal_create_key = object()
 
 
-class DescriptorBase(six.with_metaclass(DescriptorMetaclass)):
+class DescriptorBase(metaclass=DescriptorMetaclass):
 
   """Descriptors base class.
 
@@ -648,7 +647,7 @@ class EnumDescriptor(_NestedDescriptorBase):
     full_name (str): Full name of the type, including package name
       and any enclosing type(s).
 
-    values (list[EnumValueDescriptors]): List of the values
+    values (list[EnumValueDescriptor]): List of the values
       in this enum.
     values_by_name (dict(str, EnumValueDescriptor)): Same as :attr:`values`,
       but indexed by the "name" field of each EnumValueDescriptor.
@@ -952,7 +951,7 @@ class FileDescriptor(DescriptorBase):
     public_dependencies (list[FileDescriptor]): A subset of
       :attr:`dependencies`, which were declared as "public".
     message_types_by_name (dict(str, Descriptor)): Mapping from message names
-      to their :class:`Desctiptor`.
+      to their :class:`Descriptor`.
     enum_types_by_name (dict(str, EnumDescriptor)): Mapping from enum names to
       their :class:`EnumDescriptor`.
     extensions_by_name (dict(str, FieldDescriptor)): Mapping from extension

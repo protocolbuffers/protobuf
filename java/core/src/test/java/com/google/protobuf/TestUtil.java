@@ -3758,7 +3758,9 @@ public final class TestUtil {
 
   /** @param filePath The path relative to {@link #getTestDataDir}. */
   public static String readTextFromFile(String filePath) {
-    return readBytesFromFile(filePath).toStringUtf8().replace(System.getProperty("line.separator"), "\n");
+    return readBytesFromFile(filePath)
+        .toStringUtf8()
+        .replace(System.getProperty("line.separator"), "\n");
   }
 
   private static File getTestDataDir() {
@@ -3770,7 +3772,7 @@ public final class TestUtil {
     } catch (IOException e) {
       throw new RuntimeException("Couldn't get canonical name of working directory.", e);
     }
-    
+
     String srcRootCheck = "src/google/protobuf";
 
     // If we're running w/ Bazel on Windows, we're not in a sandbox, so we
@@ -3779,6 +3781,7 @@ public final class TestUtil {
     if (testBinaryName != null && testBinaryName.endsWith(".exe")) {
       srcRootCheck = srcRootCheck + "/descriptor.cc";
     }
+
     while (ancestor != null && ancestor.exists()) {
       // Identify the true source root.
       if (new File(ancestor, srcRootCheck).exists()) {
@@ -3812,8 +3815,7 @@ public final class TestUtil {
 
   private static ByteString readBytesFromResource(String name) {
     try {
-      return ByteString.copyFrom(
-          com.google.common.io.ByteStreams.toByteArray(TestUtil.class.getResourceAsStream(name)));
+      return ByteString.readFrom(TestUtil.class.getResourceAsStream(name));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

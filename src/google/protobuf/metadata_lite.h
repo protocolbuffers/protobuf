@@ -188,7 +188,7 @@ class InternalMetadata {
 
   template <typename T>
   PROTOBUF_NOINLINE void DeleteOutOfLineHelper() {
-    if (arena() == NULL) {
+    if (arena() == nullptr) {
       delete PtrValue<Container<T>>();
     }
   }

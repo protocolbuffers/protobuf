@@ -62,7 +62,7 @@ bool FieldMaskUtil::SnakeCaseToCamelCase(StringPiece input,
                                          std::string* output) {
   output->clear();
   bool after_underscore = false;
-  for (const char& input_char : input) {
+  for (char input_char : input) {
     if (input_char >= 'A' && input_char <= 'Z') {
       // The field name must not contain uppercase letters.
       return false;
@@ -385,8 +385,8 @@ void FieldMaskTree::RemovePath(const std::string& path,
       if (new_branch_node == nullptr) {
         new_branch_node = node;
       }
-      for (int i = 0; i < current_descriptor->field_count(); ++i) {
-        node->children[current_descriptor->field(i)->name()] = new Node();
+      for (int j = 0; j < current_descriptor->field_count(); ++j) {
+        node->children[current_descriptor->field(j)->name()] = new Node();
       }
     }
     if (ContainsKey(node->children, parts[i])) {

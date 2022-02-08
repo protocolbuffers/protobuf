@@ -73,6 +73,12 @@ std::string QualifiedExtensionName(const FieldDescriptor* d);
 // anyway, so normally this just returns field->name().
 std::string FieldName(const FieldDescriptor* field);
 
+// Requires that this field is in a oneof. Returns the (unqualified) case
+// constant for this field.
+std::string OneofCaseConstantName(const FieldDescriptor* field);
+// Returns the quafilied case constant for this field.
+std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field);
+
 // Get the (unqualified) name that should be used for this enum value in C++
 // code.
 std::string EnumValueName(const EnumValueDescriptor* enum_value);

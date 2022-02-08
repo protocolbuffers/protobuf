@@ -209,7 +209,7 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
         Arena::CreateMessage<MapFieldBaseStub>(&arena);
 
     // Trigger conversion to repeated field.
-    EXPECT_TRUE(map_field->MutableRepeatedField() != NULL);
+    EXPECT_TRUE(map_field->MutableRepeatedField() != nullptr);
 
     EXPECT_EQ(map_field->GetArenaForInternalRepeatedField(), &arena);
   }
@@ -308,7 +308,7 @@ class MapFieldStateTest
 
     EXPECT_EQ(map_size, map->size());
     if (is_repeated_null) {
-      EXPECT_TRUE(repeated_field == NULL);
+      EXPECT_TRUE(repeated_field == nullptr);
     } else {
       if (repeated_field == nullptr) {
         EXPECT_EQ(repeated_size, 0);

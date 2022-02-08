@@ -9,10 +9,10 @@ mergeable:
           - and:
             - must_include:
                 regex: 'release notes: yes'
-                message: 'Please include release notes: yes'
+                message: 'Include release notes: yes'
             - must_include:
                 regex: '^(autotools|bazel|c#|c\+\+|cleanup|cmake|conformance tests|integration|go|java|javascript|objective-c|php|protoc|python|ruby|kotlin)'
-                message: 'Please include at least a language label (e.g., c++, java, python). Or apply one of the following labels: autotools, bazel, cmake, cleanup, conformance tests, integration, protoc.'
+                message: 'at least a language label (e.g., c++, java, python). Or apply one of the following labels: autotools, bazel, cmake, cleanup, conformance tests, integration, protoc.'
           - must_include:
               regex: 'release notes: no'
-              message: 'Please include release notes: no'
+              message: 'Include release notes: no'

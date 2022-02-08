@@ -9,6 +9,7 @@ use Google\Protobuf\Internal\GPBType;
 use Bar\TestLegacyMessage;
 use Bar\TestLegacyMessage_NestedEnum;
 use Bar\TestLegacyMessage_NestedMessage;
+use Foo\Test32Fields;
 use Foo\TestEnum;
 use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
@@ -565,7 +566,7 @@ class GeneratedClassTest extends TestBase
         $m->setMapInt32Int32($dict);
         $this->assertSame(0, count($m->getMapInt32Int32()));
 
-        $dict = array(5 => 5, 6.1 => 6.1, "7" => "7");
+        $dict = array(5 => 5, 6 => 6.1, "7" => "7");
         $m->setMapInt32Int32($dict);
         $this->assertTrue($m->getMapInt32Int32() instanceof MapField);
         $this->assertSame(3, count($m->getMapInt32Int32()));
@@ -1848,5 +1849,14 @@ class GeneratedClassTest extends TestBase
         /* var_dump($m); */
 
         $this->assertTrue(true);
+    }
+
+    public function testIssue9440()
+    {
+        $m = new Test32Fields();
+        $m->setId(8);
+        $this->assertEquals(8, $m->getId());
+        $m->setVersion('1');
+        $this->assertEquals(8, $m->getId());
     }
 }

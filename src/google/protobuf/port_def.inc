@@ -52,6 +52,35 @@
 // GCC, and MSVC. Function-like macros are usable without an #ifdef guard.
 // Syntax macros (for example, attributes) are always defined, although
 // they may be empty.
+//
+// Some definitions rely on the NDEBUG macro and/or (in MSVC) _DEBUG:
+// - https://en.cppreference.com/w/c/error/assert
+// - https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros#microsoft-specific-predefined-macros
+//
+// References for predefined macros:
+// - Standard: https://en.cppreference.com/w/cpp/preprocessor/replace
+// - Clang: https://clang.llvm.org/docs/LanguageExtensions.html
+//          (see also GCC predefined macros)
+// - GCC: https://gcc.gnu.org/onlinedocs/cpp/Predefined-Macros.html
+// - MSVC: https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
+// - Interactive (Clang/GCC only): https://www.compiler-explorer.com/z/hc6jKd3sj
+//
+// References for attributes (and extension attributes):
+// - Standard: https://en.cppreference.com/w/cpp/language/attributes
+// - Clang: https://clang.llvm.org/docs/AttributeReference.html
+// - GCC: https://gcc.gnu.org/onlinedocs/gcc/Attribute-Syntax.html
+//        (see Clang attribute docs as well)
+//
+// References for standard C++ language conformance (and minimum versions):
+// - Clang: https://clang.llvm.org/cxx_status.html
+// - GCC: https://gcc.gnu.org/projects/cxx-status.html
+// - MSVC: https://docs.microsoft.com/en-us/cpp/overview/visual-cpp-language-conformance
+//
+// Historical release notes (which can help to determine minimum versions):
+// - Clang: https://releases.llvm.org/
+// - GCC: https://gcc.gnu.org/releases.html
+// - MSVC: https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-history
+//         https://docs.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes-history
 
 // Portable fallbacks for C++20 feature test macros:
 // https://en.cppreference.com/w/cpp/feature_test
@@ -99,6 +128,23 @@
 #  define PROTOBUF_GNUC_MIN(x, y) 0
 #endif
 
+// Portable check for MSVC minimum version:
+// https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
+#if defined(_MSC_VER)
+#define PROTOBUF_MSC_VER_MIN(x) (_MSC_VER >= x)
+#else
+#define PROTOBUF_MSC_VER_MIN(x) 0
+#endif
+
+// Portable check for minimum C++ language version:
+// https://en.cppreference.com/w/cpp/preprocessor/replace
+// https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
+#if !defined(_MSVC_LANG)
+#define PROTOBUF_CPLUSPLUS_MIN(x) (__cplusplus >= x)
+#else
+#define PROTOBUF_CPLUSPLUS_MIN(x) (_MSVC_LANG >= x)
+#endif
+
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.
@@ -107,17 +153,17 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3017003
+#define PROTOBUF_VERSION 3019004
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
 #endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3017000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3019000
 
 #ifdef PROTOBUF_MIN_PROTOC_VERSION
 #error PROTOBUF_MIN_PROTOC_VERSION was previously defined
 #endif
-#define PROTOBUF_MIN_PROTOC_VERSION 3017000
+#define PROTOBUF_MIN_PROTOC_VERSION 3019000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
@@ -183,10 +229,13 @@
 #ifdef PROTOBUF_TAILCALL
 #error PROTOBUF_TAILCALL was previously defined
 #endif
-#if __has_cpp_attribute(clang::musttail) && \
-  !defined(_ARCH_PPC) && !defined(__wasm__)
+#if __has_cpp_attribute(clang::musttail) &&                         \
+  !defined(__arm__) && !defined(_ARCH_PPC) && !defined(__wasm__) && \
+  !(defined(_MSC_VER) && defined(_M_IX86))
 #  ifndef PROTO2_OPENSOURCE
+// Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
+// Compilation fails on X86 Windows: https://github.com/llvm/llvm-project/issues/53271
 #  endif
 #define PROTOBUF_MUSTTAIL [[clang::musttail]]
 #define PROTOBUF_TAILCALL true
@@ -246,7 +295,12 @@
 #ifdef PROTOBUF_SECTION_VARIABLE
 #error PROTOBUF_SECTION_VARIABLE was previously defined
 #endif
-#define PROTOBUF_SECTION_VARIABLE(x)
+#if (__has_attribute(section) || defined(__GNUC__)) && defined(__ELF__)
+// Place a variable in the given ELF section.
+# define PROTOBUF_SECTION_VARIABLE(x) __attribute__((section(#x)))
+#else
+# define PROTOBUF_SECTION_VARIABLE(x)
+#endif
 
 #if defined(PROTOBUF_DEPRECATED)
 #error PROTOBUF_DEPRECATED was previously defined
@@ -304,7 +358,7 @@
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3017000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3019000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
@@ -348,7 +402,7 @@
 // choose 16 rather than some other number just in case the compiler would
 // be confused by an unaligned pointer.
 #define PROTOBUF_FIELD_OFFSET(TYPE, FIELD)                                \
-  static_cast< ::google::protobuf::uint32>(reinterpret_cast<const char*>(                   \
+  static_cast< ::uint32_t>(reinterpret_cast<const char*>(                   \
                              &reinterpret_cast<const TYPE*>(16)->FIELD) - \
                          reinterpret_cast<const char*>(16))
 #endif
@@ -397,20 +451,22 @@
 #error PROTOBUF_PREDICT_(TRUE|FALSE) was previously defined
 #endif
 #if PROTOBUF_GNUC_MIN(3, 0)
-# define PROTOBUF_PREDICT_TRUE(x) (__builtin_expect(!!(x), 1))
-# define PROTOBUF_PREDICT_FALSE(x) (__builtin_expect((x), 0))
+# define PROTOBUF_PREDICT_TRUE(x) (__builtin_expect(false || (x), true))
+# define PROTOBUF_PREDICT_FALSE(x) (__builtin_expect(false || (x), false))
 #else
 # define PROTOBUF_PREDICT_TRUE(x) (x)
 # define PROTOBUF_PREDICT_FALSE(x) (x)
 #endif
 
-#ifdef PROTOBUF_MUST_USE_RESULT
-#error PROTOBUF_MUST_USE_RESULT was previously defined
+#ifdef PROTOBUF_NODISCARD
+#error PROTOBUF_NODISCARD was previously defined
 #endif
-# define PROTOBUF_MUST_USE_RESULT
-
-#ifdef PROTOBUF_MUST_USE_EXTRACT_RESULT
-#error PROTOBUF_MUST_USE_EXTRACT_RESULT was previously defined
+#if __has_cpp_attribute(nodiscard)
+#define PROTOBUF_NODISCARD [[nodiscard]]
+#elif __has_attribute(warn_unused_result) || PROTOBUF_GNUC_MIN(4, 8)
+#define PROTOBUF_NODISCARD __attribute__((warn_unused_result))
+#else
+#define PROTOBUF_NODISCARD
 #endif
 
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -421,10 +477,22 @@
 #error PROTOBUF_FORCE_COPY_IN_SWAP was previously defined
 #endif
 
+#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+#error PROTOBUF_FORCE_COPY_IN_MOVE was previously defined
+#endif
+
+// Force copy the default string to a string field so that non-optimized builds
+// have harder-to-rely-on address stability.
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+#error PROTOBUF_FORCE_COPY_DEFAULT_STRING was previously defined
+#endif
+
 #ifdef PROTOBUF_FALLTHROUGH_INTENDED
 #error PROTOBUF_FALLTHROUGH_INTENDED was previously defined
 #endif
-#if __has_feature(cxx_attributes) && __has_warning("-Wimplicit-fallthrough")
+#if __has_cpp_attribute(fallthrough)
+#define PROTOBUF_FALLTHROUGH_INTENDED [[fallthrough]]
+#elif __has_feature(cxx_attributes) && __has_warning("-Wimplicit-fallthrough")
 #define PROTOBUF_FALLTHROUGH_INTENDED [[clang::fallthrough]]
 #elif PROTOBUF_GNUC_MIN(7, 0)
 #define PROTOBUF_FALLTHROUGH_INTENDED [[gnu::fallthrough]]
@@ -513,7 +581,8 @@
 // https://github.com/protocolbuffers/protobuf/issues/8310
 // Does not work yet with Visual Studio 2019 Update 16.10
 #define PROTOBUF_CONSTINIT constinit
-#elif __has_cpp_attribute(clang::require_constant_initialization)
+#elif !defined(_MSC_VER) && \
+    __has_cpp_attribute(clang::require_constant_initialization)
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #else
 #define PROTOBUF_CONSTINIT
@@ -541,7 +610,7 @@
 #ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY
 #error PROTOBUF_ATTRIBUTE_INIT_PRIORITY was previously defined
 #endif
-#if PROTOBUF_GNUC_MIN(3, 0) && (!defined(__APPLE__) || defined(__clang__))
+#if PROTOBUF_GNUC_MIN(3, 0) && (!defined(__APPLE__) || defined(__clang__)) && !((defined(sun) || defined(__sun)) && (defined(__SVR4) || defined(__svr4__)))
 #define PROTOBUF_ATTRIBUTE_INIT_PRIORITY __attribute__((init_priority((102))))
 #else
 #define PROTOBUF_ATTRIBUTE_INIT_PRIORITY
@@ -550,7 +619,7 @@
 #ifdef PROTOBUF_PRAGMA_INIT_SEG
 #error PROTOBUF_PRAGMA_INIT_SEG was previously defined
 #endif
-#if _MSC_VER
+#ifdef _MSC_VER
 #define PROTOBUF_PRAGMA_INIT_SEG __pragma(init_seg(lib))
 #else
 #define PROTOBUF_PRAGMA_INIT_SEG
@@ -559,10 +628,15 @@
 #ifdef PROTOBUF_ATTRIBUTE_WEAK
 #error PROTOBUF_ATTRIBUTE_WEAK was previously defined
 #endif
-#if __has_attribute(weak) && !defined(__MINGW32__)
+#if __has_attribute(weak) && \
+    !defined(__APPLE__) && \
+    (!defined(_WIN32) || __clang_major__ < 9) && \
+    !defined(__MINGW32__)
 #define PROTOBUF_ATTRIBUTE_WEAK __attribute__((weak))
+#define PROTOBUF_HAVE_ATTRIBUTE_WEAK 1
 #else
 #define PROTOBUF_ATTRIBUTE_WEAK
+#define PROTOBUF_HAVE_ATTRIBUTE_WEAK 0
 #endif
 
 // Macros to detect sanitizers.
@@ -586,15 +660,55 @@
 #    define PROTOBUF_MSAN 1
 #  endif
 #elif PROTOBUF_GNUC_MIN(3, 0)
-#  define PROTOBUF_ASAN __SANITIZE_ADDRESS__
-#  define PROTOBUF_TSAN __SANITIZE_THREAD__
+// Double-guard is needed for -Wundef:
+#  ifdef __SANITIZE_ADDRESS__
+#  if    __SANITIZE_ADDRESS__
+#    define PROTOBUF_ASAN 1
+#  endif
+#  endif
+#  ifdef __SANITIZE_THREAD__
+#  if    __SANITIZE_THREAD__
+#    define PROTOBUF_TSAN 1
+#  endif
+#  endif
 #endif
+
+// Tail call table-driven parsing can be enabled by defining
+// PROTOBUF_EXPERIMENTAL_USE_TAIL_CALL_TABLE_PARSER at compilation time. Note
+// that this macro is for small-scale testing only, and is not supported.
+#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED
+#error PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED was previously declared
+#endif
+#if defined(PROTOBUF_EXPERIMENTAL_USE_TAIL_CALL_TABLE_PARSER)
+#define PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED 1
+// Selectively use static member functions instead of templates:
+#ifndef PROTOBUF_TC_STATIC_PARSE_SINGULAR1
+#  define PROTOBUF_TC_STATIC_PARSE_SINGULAR1 1
+#endif
+#ifndef PROTOBUF_TC_STATIC_PARSE_SINGULAR2
+#  define PROTOBUF_TC_STATIC_PARSE_SINGULAR2 0
+#endif
+#ifndef PROTOBUF_TC_STATIC_PARSE_REPEATED1
+#  define PROTOBUF_TC_STATIC_PARSE_REPEATED1 0
+#endif
+#ifndef PROTOBUF_TC_STATIC_PARSE_REPEATED2
+#  define PROTOBUF_TC_STATIC_PARSE_REPEATED2 0
+#endif
+#endif
+
+#define PROTOBUF_TC_PARAM_DECL                                 \
+  ::google::protobuf::MessageLite *msg, const char *ptr,                 \
+      ::google::protobuf::internal::ParseContext *ctx,                   \
+      const ::google::protobuf::internal::TcParseTableBase *table,       \
+      uint64_t hasbits, ::google::protobuf::internal::TcFieldData data
 
 #ifdef PROTOBUF_UNUSED
 #error PROTOBUF_UNUSED was previously defined
 #endif
-#if __has_cpp_attribute(unused) || \
-    (PROTOBUF_GNUC_MIN(3, 0) && !defined(__clang__))
+#if __has_cpp_attribute(maybe_unused) || \
+    (PROTOBUF_MSC_VER_MIN(1911) && PROTOBUF_CPLUSPLUS_MIN(201703L))
+#define PROTOBUF_UNUSED [[maybe_unused]]
+#elif __has_attribute(unused) || PROTOBUF_GNUC_MIN(3, 0)
 #define PROTOBUF_UNUSED __attribute__((__unused__))
 #else
 #define PROTOBUF_UNUSED
@@ -672,7 +786,7 @@
 #endif
 
 // Silence some MSVC warnings in all our code.
-#if _MSC_VER
+#ifdef _MSC_VER
 #pragma warning(push)
 // For non-trivial unions
 #pragma warning(disable : 4582)
@@ -681,6 +795,10 @@
 #pragma warning(disable : 4073)
 // To silence the fact that we will pop this push from another file
 #pragma warning(disable : 5031)
+// Conditional expression is constant
+#pragma warning(disable: 4127)
+// decimal digit terminates octal escape sequence
+#pragma warning(disable: 4125)
 #endif
 
 // We don't want code outside port_def doing complex testing, so
@@ -706,4 +824,3 @@
 #  undef __has_builtin
 #  undef PROTOBUF_has_builtin_DEFINED_
 #endif
-#undef PROTOBUF_GNUC_MIN

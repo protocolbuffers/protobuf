@@ -78,7 +78,8 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
   void GenerateParsingDoneCode(io::Printer* printer) const override;
   void GenerateSerializationCode(io::Printer* printer) const override;
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
-  void GenerateFieldBuilderInitializationCode(io::Printer* printer) const override;
+  void GenerateFieldBuilderInitializationCode(
+      io::Printer* printer) const override;
   void GenerateEqualsCode(io::Printer* printer) const override;
   void GenerateHashCode(io::Printer* printer) const override;
   void GenerateKotlinDslMembers(io::Printer* printer) const override;

@@ -214,9 +214,9 @@ bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
                   reflection->GetMapData(message, field);
               if (map_field->IsMapValid()) {
                 MapIterator it(const_cast<Message*>(&message), field);
-                MapIterator end(const_cast<Message*>(&message), field);
-                for (map_field->MapBegin(&it), map_field->MapEnd(&end);
-                     it != end; ++it) {
+                MapIterator end_map(const_cast<Message*>(&message), field);
+                for (map_field->MapBegin(&it), map_field->MapEnd(&end_map);
+                     it != end_map; ++it) {
                   if (!it.GetValueRef().GetMessageValue().IsInitialized()) {
                     return false;
                   }
