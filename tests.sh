@@ -330,12 +330,7 @@ build_objectivec_cocoapods_integration() {
 build_python() {
   internal_build_cpp
   cd python
-  if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{35,36\}-python
-  else
-    envlist=py\{36\}-python
-  fi
-  python -m tox -e $envlist
+  python -m tox --skip-missing-interpreters
   cd ..
 }
 
@@ -345,18 +340,6 @@ build_python_version() {
   envlist=$1
   python -m tox -e $envlist
   cd ..
-}
-
-build_python33() {
-  build_python_version py33-python
-}
-
-build_python34() {
-  build_python_version py34-python
-}
-
-build_python35() {
-  build_python_version py35-python
 }
 
 build_python37() {
@@ -380,12 +363,7 @@ build_python_cpp() {
   export LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
-  if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{35,36\}-cpp
-  else
-    envlist=py\{36\}-cpp
-  fi
-  tox -e $envlist
+  python -m tox --skip-missing-interpreters
   cd ..
 }
 
@@ -397,18 +375,6 @@ build_python_cpp_version() {
   envlist=$1
   tox -e $envlist
   cd ..
-}
-
-build_python33_cpp() {
-  build_python_cpp_version py33-cpp
-}
-
-build_python34_cpp() {
-  build_python_cpp_version py34-cpp
-}
-
-build_python35_cpp() {
-  build_python_cpp_version py35-cpp
 }
 
 build_python37_cpp() {
