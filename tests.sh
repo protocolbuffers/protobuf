@@ -359,10 +359,6 @@ build_python35() {
   build_python_version py35-python
 }
 
-build_python36() {
-  build_python_version py36-python
-}
-
 build_python37() {
   build_python_version py37-python
 }
@@ -413,10 +409,6 @@ build_python34_cpp() {
 
 build_python35_cpp() {
   build_python_cpp_version py35-cpp
-}
-
-build_python36_cpp() {
-  build_python_cpp_version py36-cpp
 }
 
 build_python37_cpp() {
