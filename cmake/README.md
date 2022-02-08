@@ -212,11 +212,11 @@ Testing
 To run unit-tests, first you must compile protobuf as described above.
 Then run:
 
-     C:\Path\to\build\protobuf\release>cmake --build . --target check
+     C:\Path\to\protobuf\cmake\build\release>ctest --progress --output-on-failure
 
-Or you may want to use the tool you've configured:
+You can also build the `check` target (not idiomatic CMake usage, though):
 
-     C:\Path\to\build\protobuf\release>nmake check
+     C:\Path\to\protobuf\cmake\build\release>cmake --build . --target check
 
 or
 
@@ -235,7 +235,7 @@ You should see output similar to:
      [==========] 1546 tests from 165 test cases ran. (2529 ms total)
      [  PASSED  ] 1546 tests.
 
-To run specific tests:
+To run specific tests, you need to pass some command line arguments to the test program itself:
 
      C:\Path\to\build\protobuf\release>tests.exe --gtest_filter=AnyTest*
      Running main() from gmock_main.cc
