@@ -116,7 +116,7 @@ build_dist_install() {
 
   # Try to install Java
   pushd java
-  use_java jdk8
+  use_java jdk11
   $MVN install
   popd
 
@@ -189,6 +189,10 @@ build_golang() {
 use_java() {
   version=$1
   case "$version" in
+    jdk11)
+      export PATH=/usr/lib/jvm/java-11-openjdk-amd64/bin:$PATH
+      export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+      ;;
     jdk8)
       export PATH=/usr/lib/jvm/java-8-openjdk-amd64/bin:$PATH
       export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
@@ -268,7 +272,7 @@ build_java_linkage_monitor() {
   # Linkage Monitor checks compatibility with other Google libraries
   # https://github.com/GoogleCloudPlatform/cloud-opensource-java/tree/master/linkage-monitor
 
-  use_java jdk8
+  use_java jdk11
   internal_build_cpp
 
   # Linkage Monitor uses $HOME/.m2 local repository
