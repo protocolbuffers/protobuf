@@ -69,7 +69,7 @@ const char* const kValidConstantNames[] = {
     "false", "null",  "void", "iterable", "parent",
     "self"
 };
-const int kReservedNamesSize = 77;
+const int kReservedNamesSize = 79;
 const int kValidConstantNamesSize = 11;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
