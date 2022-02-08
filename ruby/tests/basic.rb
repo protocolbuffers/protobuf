@@ -71,6 +71,14 @@ module BasicTest
       TestMessage.encode(msg)
     end
 
+    def test_issue_9440
+      msg = HelloRequest.new
+      msg.id = 8
+      assert_equal 8, msg.id
+      msg.version = '1'
+      assert_equal 8, msg.id
+    end
+
     def test_has_field
       m = TestSingularFields.new
       assert !m.has_singular_msg?

@@ -49,6 +49,7 @@
 // because the Python API is based on C, and does not play well with C++
 // inheritance.
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <google/protobuf/descriptor.h>

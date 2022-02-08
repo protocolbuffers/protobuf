@@ -49,7 +49,7 @@
 #include <chrono>
 #include <thread>
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 #include <sys/socket.h>
 #include <unistd.h>
 #endif
@@ -764,7 +764,7 @@ TEST_F(IoTest, FileIo) {
   }
 }
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 // This tests the FileInputStream with a non blocking file. It opens a pipe in
 // non blocking mode, then starts reading it. The writing thread starts writing
 // 100ms after that.

@@ -153,7 +153,7 @@ void MapFieldGenerator::FinishInitialization(void) {
   // Use the array_comment support in RepeatedFieldGenerator to output what the
   // values in the map are.
   const FieldDescriptor* value_descriptor =
-      descriptor_->message_type()->FindFieldByName("value");
+      descriptor_->message_type()->map_value();
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_ENUM) {
     variables_["array_comment"] =
         "// |" + variables_["name"] + "| values are |" + value_field_generator_->variable("storage_type") + "|\n";
@@ -164,7 +164,7 @@ void MapFieldGenerator::DetermineForwardDeclarations(
     std::set<std::string>* fwd_decls) const {
   RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls);
   const FieldDescriptor* value_descriptor =
-      descriptor_->message_type()->FindFieldByName("value");
+      descriptor_->message_type()->map_value();
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_MESSAGE) {
     const std::string& value_storage_type =
         value_field_generator_->variable("storage_type");
@@ -176,7 +176,7 @@ void MapFieldGenerator::DetermineObjectiveCClassDefinitions(
     std::set<std::string>* fwd_decls) const {
   // Class name is already in "storage_type".
   const FieldDescriptor* value_descriptor =
-      descriptor_->message_type()->FindFieldByName("value");
+      descriptor_->message_type()->map_value();
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_MESSAGE) {
     fwd_decls->insert(ObjCClassDeclaration(
         value_field_generator_->variable("storage_type")));

@@ -47,6 +47,9 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+// Set the default objc class prefix that should be used. This method is used only
+// when default_objc_class_prefix is passed through objc_opt.
+void PROTOC_EXPORT SetDefaultObjcClassPrefix(const std::string& objc_class_prefix);
 // Get/Set if the proto package should be used to make the default prefix for
 // symbols. This will then impact most of the type naming apis below. It is done
 // as a global to not break any other generator reusing the methods since they
@@ -54,8 +57,8 @@ namespace objectivec {
 bool PROTOC_EXPORT UseProtoPackageAsDefaultPrefix();
 void PROTOC_EXPORT SetUseProtoPackageAsDefaultPrefix(bool on_or_off);
 // Get/Set the path to a file to load as exceptions when
-// `UseProtoPackageAsDefaultPrefixUseProtoPackageAsDefaultPrefix()` is `true`.
-// And empty string means there should be no exceptions loaded.
+// `UseProtoPackageAsDefaultPrefix()` is `true`. An empty string means there
+// should be no exceptions.
 std::string PROTOC_EXPORT GetProtoPackagePrefixExceptionList();
 void PROTOC_EXPORT SetProtoPackagePrefixExceptionList(
     const std::string& file_path);
@@ -68,6 +71,7 @@ struct Options {
   std::string generate_for_named_framework;
   std::string named_framework_to_proto_path_mappings_path;
   std::string runtime_import_prefix;
+  std::string default_objc_class_prefix;
   bool prefixes_must_be_registered;
   bool require_prefixes;
 };

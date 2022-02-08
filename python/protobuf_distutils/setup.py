@@ -46,7 +46,7 @@ setup(
     packages=find_packages(),
     maintainer='protobuf@googlegroups.com',
     maintainer_email='protobuf@googlegroups.com',
-    license='3-Clause BSD License',
+    license='BSD-3-Clause',
     classifiers=[
         "Framework :: Setuptools Plugin",
         "Operating System :: OS Independent",

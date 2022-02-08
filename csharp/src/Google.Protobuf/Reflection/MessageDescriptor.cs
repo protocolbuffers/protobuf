@@ -33,6 +33,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 #if NET35
@@ -150,6 +151,14 @@ namespace Google.Protobuf.Reflection
 
         internal DescriptorProto Proto { get; }
 
+        /// <summary>
+        /// Returns a clone of the underlying <see cref="DescriptorProto"/> describing this message.
+        /// Note that a copy is taken every time this method is called, so clients using it frequently
+        /// (and not modifying it) may want to cache the returned value.
+        /// </summary>
+        /// <returns>A protobuf representation of this message descriptor.</returns>
+        public DescriptorProto ToProto() => Proto.Clone();
+
         internal bool IsExtensionsInitialized(IMessage message)
         {
             if (Proto.ExtensionRange.Count == 0)
@@ -182,6 +191,7 @@ namespace Google.Protobuf.Reflection
         /// a wrapper type, and handle the result appropriately.
         /// </para>
         /// </remarks>
+        [DynamicallyAccessedMembers(GeneratedClrTypeInfo.MessageAccessibility)]
         public Type ClrType { get; }
 
         /// <summary>

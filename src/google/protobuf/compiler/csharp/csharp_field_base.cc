@@ -61,7 +61,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
     part_tag_size /= 2;
   }
   uint tag = internal::WireFormat::MakeTag(descriptor_);
-  uint8 tag_array[5];
+  uint8_t tag_array[5];
   io::CodedOutputStream::WriteTagToArray(tag, tag_array);
   std::string tag_bytes = StrCat(tag_array[0]);
   for (int i = 1; i < part_tag_size; i++) {

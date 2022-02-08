@@ -83,14 +83,14 @@ struct Options {
   bool is_descriptor = false;
   bool aggregate_metadata = false;
   bool gen_c_wkt = false;
-  std::set<string> aggregate_metadata_prefixes;
+  std::set<std::string> aggregate_metadata_prefixes;
 };
 
 namespace {
 
 // Forward decls.
 std::string PhpName(const std::string& full_name, const Options& options);
-std::string IntToString(int32 value);
+std::string IntToString(int32_t value);
 std::string FilenameToClassname(const std::string& filename);
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options);
@@ -430,7 +430,7 @@ std::string GeneratedServiceFileName(const ServiceDescriptor* service,
   return result + ".php";
 }
 
-std::string IntToString(int32 value) {
+std::string IntToString(int32_t value) {
   std::ostringstream os;
   os << value;
   return os.str();
@@ -741,8 +741,8 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   // Type check.
   if (field->is_map()) {
     const Descriptor* map_entry = field->message_type();
-    const FieldDescriptor* key = map_entry->FindFieldByName("key");
-    const FieldDescriptor* value = map_entry->FindFieldByName("value");
+    const FieldDescriptor* key = map_entry->map_key();
+    const FieldDescriptor* value = map_entry->map_value();
     printer->Print(
         "$arr = GPBUtil::checkMapField($var, "
         "\\Google\\Protobuf\\Internal\\GPBType::^key_type^, "
@@ -889,9 +889,9 @@ void GenerateMessageToPool(const std::string& name_prefix,
     const FieldDescriptor* field = message->field(i);
     if (field->is_map()) {
       const FieldDescriptor* key =
-          field->message_type()->FindFieldByName("key");
+          field->message_type()->map_key();
       const FieldDescriptor* val =
-          field->message_type()->FindFieldByName("value");
+          field->message_type()->map_value();
       printer->Print(
           "->map('^field^', \\Google\\Protobuf\\Internal\\GPBType::^key^, "
           "\\Google\\Protobuf\\Internal\\GPBType::^value^, ^number^^other^)\n",

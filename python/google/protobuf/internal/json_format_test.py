@@ -100,7 +100,7 @@ class JsonFormatBase(unittest.TestCase):
 
   def CheckError(self, text, error_message):
     message = json_format_proto3_pb2.TestMessage()
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         error_message,
         json_format.Parse, text, message)
@@ -813,7 +813,7 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse('{"messageValue": {}}', parsed_message)
     self.assertTrue(parsed_message.HasField('message_value'))
     # Null is not allowed to be used as an element in repeated field.
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         'Failed to parse repeatedInt32Value field: '
         'null is not allowed to be used as an element in a repeated field.',
@@ -901,7 +901,7 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse(text, message)
     # Proto2 does not accept unknown enums.
     message = unittest_pb2.TestAllTypes()
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         'Failed to parse optionalNestedEnum field: Invalid enum value 12345 '
         'for enum type protobuf_unittest.TestAllTypes.NestedEnum.',
@@ -1015,28 +1015,28 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidMap(self):
     message = json_format_proto3_pb2.TestMap()
     text = '{"int32Map": {"null": 2, "2": 3}}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         'Failed to parse int32Map field: invalid literal',
         json_format.Parse, text, message)
     text = '{"int32Map": {1: 2, "2": 3}}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         (r'Failed to load JSON: Expecting property name'
          r'( enclosed in double quotes)?: line 1'),
         json_format.Parse, text, message)
     text = '{"boolMap": {"null": 1}}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         'Failed to parse boolMap field: Expected "true" or "false", not null.',
         json_format.Parse, text, message)
     text = r'{"stringMap": {"a": 3, "\u0061": 2}}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         'Failed to load JSON: duplicate key a',
         json_format.Parse, text, message)
     text = r'{"stringMap": 0}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         'Failed to parse stringMap field: Map field string_map must be '
         'in a dict which is 0.',
@@ -1045,31 +1045,31 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidTimestamp(self):
     message = json_format_proto3_pb2.TestTimestamp()
     text = '{"value": "10000-01-01T00:00:00.00Z"}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         'Failed to parse value field: '
         'time data \'10000-01-01T00:00:00\' does not match'
         ' format \'%Y-%m-%dT%H:%M:%S\'.',
         json_format.Parse, text, message)
     text = '{"value": "1970-01-01T00:00:00.0123456789012Z"}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         'nanos 0123456789012 more than 9 fractional digits.',
         json_format.Parse, text, message)
     text = '{"value": "1972-01-01T01:00:00.01+08"}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         (r'Invalid timezone offset value: \+08.'),
         json_format.Parse, text, message)
     # Time smaller than minimum time.
     text = '{"value": "0000-01-01T00:00:00Z"}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         'Failed to parse value field: year (0 )?is out of range.',
         json_format.Parse, text, message)
     # Time bigger than maximum time.
     message.value.seconds = 253402300800
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         OverflowError,
         'date value out of range',
         json_format.MessageToJson, message)
@@ -1086,7 +1086,7 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidOneof(self):
     message = json_format_proto3_pb2.TestOneof()
     text = '{"oneofInt32Value": 1, "oneofStringValue": "2"}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         'Message type "proto3.TestOneof"'
         ' should not have multiple "oneof_value" oneof fields.',
@@ -1095,7 +1095,7 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidListValue(self):
     message = json_format_proto3_pb2.TestListValue()
     text = '{"value": 1234}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         r'Failed to parse value field: ListValue must be in \[\] which is 1234',
         json_format.Parse, text, message)
@@ -1103,7 +1103,7 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidStruct(self):
     message = json_format_proto3_pb2.TestStruct()
     text = '{"value": 1234}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         'Failed to parse value field: Struct must be in a dict which is 1234',
         json_format.Parse, text, message)
@@ -1111,7 +1111,7 @@ class JsonFormatTest(JsonFormatBase):
   def testTimestampInvalidStringValue(self):
     message = json_format_proto3_pb2.TestTimestamp()
     text = '{"value": {"foo": 123}}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         r"Timestamp JSON value not a string: {u?'foo': 123}", json_format.Parse,
         text, message)
@@ -1119,7 +1119,7 @@ class JsonFormatTest(JsonFormatBase):
   def testDurationInvalidStringValue(self):
     message = json_format_proto3_pb2.TestDuration()
     text = '{"value": {"foo": 123}}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         r"Duration JSON value not a string: {u?'foo': 123}", json_format.Parse,
         text, message)
@@ -1127,7 +1127,7 @@ class JsonFormatTest(JsonFormatBase):
   def testFieldMaskInvalidStringValue(self):
     message = json_format_proto3_pb2.TestFieldMask()
     text = '{"value": {"foo": 123}}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         r"FieldMask JSON value not a string: {u?'foo': 123}", json_format.Parse,
         text, message)
@@ -1135,17 +1135,17 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidAny(self):
     message = any_pb2.Any()
     text = '{"@type": "type.googleapis.com/google.protobuf.Int32Value"}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         KeyError,
         'value',
         json_format.Parse, text, message)
     text = '{"value": 1234}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         '@type is missing when parsing any message.',
         json_format.Parse, text, message)
     text = '{"@type": "type.googleapis.com/MessageNotExist", "value": 1234}'
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         TypeError,
         'Can not find message descriptor by type_url: '
         'type.googleapis.com/MessageNotExist.',
@@ -1233,7 +1233,7 @@ class JsonFormatTest(JsonFormatBase):
       def __repr__(self):
         return 'v'
     message = json_format_proto3_pb2.TestValue()
-    self.assertRaisesRegexp(
+    self.assertRaisesRegex(
         json_format.ParseError,
         r"Value v has unexpected type <class '.*\.UnknownClass'>.",
         json_format.ParseDict,

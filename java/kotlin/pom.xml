@@ -4,14 +4,14 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.18.1</version>
+    <version>3.19.4</version>
   </parent>
 
   <artifactId>protobuf-kotlin</artifactId>
 
-  <name>Protocol Buffers [Core]</name>
+  <name>Protocol Buffers [Kotlin-Core]</name>
   <description>
-    Core Protocol Buffers library. Protocol Buffers are a way of encoding structured data in an
+    Kotlin core Protocol Buffers library. Protocol Buffers are a way of encoding structured data in an
     efficient yet extensible format.
   </description>
 

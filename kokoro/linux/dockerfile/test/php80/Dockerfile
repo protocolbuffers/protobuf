@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM debian:stretch
 
 # Install dependencies.  We start with the basic ones require to build protoc
 # and the C++ build
@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install php dependencies
 RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
-  php5 \
+  php \
   libcurl4-openssl-dev \
   libgmp-dev \
   libgmp3-dev \
@@ -89,6 +89,34 @@ RUN wget -O phpunit https://phar.phpunit.de/phpunit-9.phar \
   && chmod +x phpunit \
   && cp phpunit /usr/local/php-8.0/bin \
   && mv phpunit /usr/local/php-8.0-zts/bin
+
+# php 8.1
+RUN cd php-src \
+  && git checkout php-8.1.2 \
+  && ./buildconf --force
+RUN cd php-src \
+  && ./configure \
+  --enable-bcmath \
+  --enable-mbstring \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-8.1 \
+  && make \
+  && make install \
+  && make clean
+RUN cd php-src \
+  && ./configure \
+  --enable-bcmath \
+  --enable-mbstring \
+  --enable-maintainer-zts \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-8.1-zts \
+  && make \
+  && make install \
+  && make clean
 
 # Install php dependencies
 RUN apt-get clean && apt-get update && apt-get install -y --force-yes \

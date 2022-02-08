@@ -755,7 +755,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
   printer->Print(
       variables_,
-      "public val $kt_name$: "
+      "$kt_deprecation$public val $kt_name$: "
       "com.google.protobuf.kotlin.DslList"
       "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  @kotlin.OptIn"

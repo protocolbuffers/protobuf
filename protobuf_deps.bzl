@@ -2,6 +2,18 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+PROTOBUF_MAVEN_ARTIFACTS = [
+    "com.google.code.findbugs:jsr305:3.0.2",
+    "com.google.code.gson:gson:2.8.9",
+    "com.google.errorprone:error_prone_annotations:2.3.2",
+    "com.google.j2objc:j2objc-annotations:1.3",
+    "com.google.guava:guava:30.1.1-jre",
+    "com.google.guava:guava-testlib:30.1.1-jre",
+    "com.google.truth:truth:1.1.2",
+    "junit:junit:4.12",
+    "org.easymock:easymock:3.2",
+]
+
 def protobuf_deps():
     """Loads common dependencies needed to compile the protobuf library."""
 
@@ -18,7 +30,7 @@ def protobuf_deps():
     if not native.existing_rule("zlib"):
         http_archive(
             name = "zlib",
-            build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
+            build_file = Label("//:third_party/zlib.BUILD"),
             sha256 = "629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff",
             strip_prefix = "zlib-1.2.11",
             urls = ["https://github.com/madler/zlib/archive/v1.2.11.tar.gz"],
@@ -56,9 +68,26 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_jvm_external"):
-       http_archive(
+        http_archive(
             name = "rules_jvm_external",
             sha256 = "f36441aa876c4f6427bfb2d1f2d723b48e9d930b62662bf723ddfb8fc80f0140",
             strip_prefix = "rules_jvm_external-4.1",
             urls = ["https://github.com/bazelbuild/rules_jvm_external/archive/4.1.zip"],
+        )
+
+    if not native.existing_rule("rules_pkg"):
+        http_archive(
+            name = "rules_pkg",
+            urls = [
+                "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.5.1/rules_pkg-0.5.1.tar.gz",
+                "https://github.com/bazelbuild/rules_pkg/releases/download/0.5.1/rules_pkg-0.5.1.tar.gz",
+            ],
+            sha256 = "a89e203d3cf264e564fcb96b6e06dd70bc0557356eb48400ce4b5d97c2c3720d",
+        )
+
+    if not native.existing_rule("io_bazel_rules_kotlin"):
+        http_archive(
+            name = "io_bazel_rules_kotlin",
+            urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.5.0-beta-4/rules_kotlin_release.tgz"],
+            sha256 = "6cbd4e5768bdfae1598662e40272729ec9ece8b7bded8f0d2c81c8ff96dc139d",
         )

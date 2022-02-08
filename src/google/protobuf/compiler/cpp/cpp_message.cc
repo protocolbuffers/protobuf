@@ -276,8 +276,8 @@ void CollectMapInfo(const Options& options, const Descriptor* descriptor,
                     std::map<std::string, std::string>* variables) {
   GOOGLE_CHECK(IsMapEntryMessage(descriptor));
   std::map<std::string, std::string>& vars = *variables;
-  const FieldDescriptor* key = descriptor->FindFieldByName("key");
-  const FieldDescriptor* val = descriptor->FindFieldByName("value");
+  const FieldDescriptor* key = descriptor->map_key();
+  const FieldDescriptor* val = descriptor->map_value();
   vars["key_cpp"] = PrimitiveTypeName(options, key->cpp_type());
   switch (val->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
