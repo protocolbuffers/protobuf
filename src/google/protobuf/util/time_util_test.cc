@@ -222,7 +222,7 @@ TEST(TestUtilTest, TimestampIntegerConversion) {
 }
 
 TEST(TimeUtilTest, TimeTConversion) {
-  time_t value = time(NULL);
+  time_t value = time(nullptr);
   EXPECT_EQ(value,
             TimeUtil::TimestampToTimeT(TimeUtil::TimeTToTimestamp(value)));
   EXPECT_EQ(

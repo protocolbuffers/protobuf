@@ -48,9 +48,10 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import well_known_types
 from google.protobuf import descriptor
 from google.protobuf import text_format
+from google.protobuf.internal import _parameterized
 
 
-class TimeUtilTestBase(unittest.TestCase):
+class TimeUtilTestBase(_parameterized.TestCase):
 
   def CheckTimestampConversion(self, message, text):
     self.assertEqual(text, message.ToJsonString())
@@ -233,23 +234,36 @@ class TimeUtilTest(TimeUtilTestBase):
     message.FromNanoseconds(-1999)
     self.assertEqual(-1, message.ToMicroseconds())
 
-  def testDatetimeConverison(self):
+  def testTimezoneNaiveDatetimeConversion(self):
     message = timestamp_pb2.Timestamp()
-    dt = datetime.datetime(1970, 1, 1)
-    message.FromDatetime(dt)
-    self.assertEqual(dt, message.ToDatetime())
+    naive_utc_epoch = datetime.datetime(1970, 1, 1)
+    message.FromDatetime(naive_utc_epoch)
+    self.assertEqual(0, message.seconds)
+    self.assertEqual(0, message.nanos)
+
+    self.assertEqual(naive_utc_epoch, message.ToDatetime())
+
+    naive_epoch_morning = datetime.datetime(1970, 1, 1, 8, 0, 0, 1)
+    message.FromDatetime(naive_epoch_morning)
+    self.assertEqual(8 * 3600, message.seconds)
+    self.assertEqual(1000, message.nanos)
+
+    self.assertEqual(naive_epoch_morning, message.ToDatetime())
 
     message.FromMilliseconds(1999)
+    self.assertEqual(1, message.seconds)
+    self.assertEqual(999_000_000, message.nanos)
+
     self.assertEqual(datetime.datetime(1970, 1, 1, 0, 0, 1, 999000),
                      message.ToDatetime())
 
-    dt = datetime.datetime(2555, 2, 22, 1, 2, 3, 456789)
-    message.FromDatetime(dt)
-    self.assertEqual(dt, message.ToDatetime())
+    naive_future = datetime.datetime(2555, 2, 22, 1, 2, 3, 456789)
+    message.FromDatetime(naive_future)
+    self.assertEqual(naive_future, message.ToDatetime())
 
-    dt = datetime.datetime.max
-    message.FromDatetime(dt)
-    self.assertEqual(dt, message.ToDatetime())
+    naive_end_of_time = datetime.datetime.max
+    message.FromDatetime(naive_end_of_time)
+    self.assertEqual(naive_end_of_time, message.ToDatetime())
 
   def testDatetimeConversionWithTimezone(self):
     class TZ(datetime.tzinfo):

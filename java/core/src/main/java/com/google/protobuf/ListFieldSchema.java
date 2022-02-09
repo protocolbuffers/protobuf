@@ -38,6 +38,7 @@ import java.util.List;
 /**
  * Utility class that aids in properly manipulating list fields for either the lite or full runtime.
  */
+@CheckReturnValue
 abstract class ListFieldSchema {
   // Disallow construction.
   private ListFieldSchema() {}

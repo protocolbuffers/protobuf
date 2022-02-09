@@ -55,7 +55,7 @@ namespace compiler {
 namespace {
 char* portable_strdup(const char* s) {
   char* ns = (char*)malloc(strlen(s) + 1);
-  if (ns != NULL) {
+  if (ns != nullptr) {
     strcpy(ns, s);
   }
   return ns;
@@ -309,7 +309,7 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   GOOGLE_CHECK(pipe(stdin_pipe) != -1);
   GOOGLE_CHECK(pipe(stdout_pipe) != -1);
 
-  char* argv[2] = {portable_strdup(program.c_str()), NULL};
+  char* argv[2] = {portable_strdup(program.c_str()), nullptr};
 
   child_pid_ = fork();
   if (child_pid_ == -1) {
@@ -386,7 +386,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
       FD_SET(child_stdin_, &write_fds);
     }
 
-    if (select(max_fd + 1, &read_fds, &write_fds, NULL, NULL) < 0) {
+    if (select(max_fd + 1, &read_fds, &write_fds, nullptr, nullptr) < 0) {
       if (errno == EINTR) {
         // Interrupted by signal.  Try again.
         continue;

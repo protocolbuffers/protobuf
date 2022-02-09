@@ -69,13 +69,13 @@ namespace {
 class MockErrorCollector : public MultiFileErrorCollector {
  public:
   MockErrorCollector() {}
-  ~MockErrorCollector() {}
+  ~MockErrorCollector() override {}
 
   std::string text_;
 
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
-                const std::string& message) {
+                const std::string& message) override {
     strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
@@ -113,7 +113,7 @@ class MockGeneratorContext : public GeneratorContext {
 
   // implements GeneratorContext --------------------------------------
 
-  virtual io::ZeroCopyOutputStream* Open(const std::string& filename) {
+  io::ZeroCopyOutputStream* Open(const std::string& filename) override {
     auto& map_slot = files_[filename];
     map_slot.reset(new std::string);
     return new io::StringOutputStream(map_slot.get());
@@ -137,9 +137,9 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
   // of the data to compare to.
   std::map<std::string, std::string> vpath_map;
   std::map<std::string, std::string> rpath_map;
-  rpath_map["third_party/protobuf/src/google/protobuf/test_messages_proto2"] =
+  rpath_map["third_party/protobuf/test_messages_proto2"] =
       "net/proto2/z_generated_example/test_messages_proto2";
-  rpath_map["third_party/protobuf/src/google/protobuf/test_messages_proto3"] =
+  rpath_map["third_party/protobuf/test_messages_proto3"] =
       "net/proto2/z_generated_example/test_messages_proto3";
   rpath_map["net/proto2/internal/proto2_weak"] =
       "net/proto2/z_generated_example/proto2_weak";

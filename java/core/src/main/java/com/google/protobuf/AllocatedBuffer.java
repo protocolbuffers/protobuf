@@ -38,6 +38,7 @@ import java.nio.ByteBuffer;
  * A buffer that was allocated by a {@link BufferAllocator}. For every buffer, it is guaranteed that
  * at least one of {@link #hasArray()} or {@link #hasNioBuffer()} will be {@code true}.
  */
+@CheckReturnValue
 @ExperimentalApi
 abstract class AllocatedBuffer {
   /**
@@ -106,6 +107,7 @@ abstract class AllocatedBuffer {
    * @return This buffer
    * @throws IllegalArgumentException If the preconditions on {@code position} do not hold
    */
+  @CanIgnoreReturnValue
   public abstract AllocatedBuffer position(int position);
 
   /**

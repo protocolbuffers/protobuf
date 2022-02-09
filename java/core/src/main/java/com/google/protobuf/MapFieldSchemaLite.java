@@ -33,6 +33,7 @@ package com.google.protobuf;
 import com.google.protobuf.MapEntryLite.Metadata;
 import java.util.Map;
 
+@CheckReturnValue
 class MapFieldSchemaLite implements MapFieldSchema {
 
   @Override

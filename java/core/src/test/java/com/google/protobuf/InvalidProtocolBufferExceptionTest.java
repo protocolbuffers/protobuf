@@ -30,18 +30,20 @@
 
 package com.google.protobuf;
 
-/**
- * A prerun for a test suite that allows running the full protocol buffer tests in a mode that
- * disables the optimization for not using {@link RepeatedFieldBuilder} and {@link
- * SingleFieldBuilder} until they are requested. This allows us to run all the tests through both
- * code paths and ensures that both code paths produce identical results.
- *
- * @author jonp@google.com (Jon Perlow)
- */
-public class ForceFieldBuildersPreRun implements Runnable {
+import static com.google.common.truth.Truth.assertThat;
 
-  @Override
-  public void run() {
-    GeneratedMessage.enableAlwaysUseFieldBuildersForTesting();
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+@RunWith(JUnit4.class)
+public class InvalidProtocolBufferExceptionTest {
+
+  @Test
+  public void testWrapRuntimeException() {
+    ArrayIndexOutOfBoundsException root = new ArrayIndexOutOfBoundsException();
+    InvalidProtocolBufferException wrapper = new InvalidProtocolBufferException(root);
+    assertThat(wrapper).hasCauseThat().isEqualTo(root);
   }
+
 }

@@ -55,11 +55,10 @@ namespace {
 class TestGenerator : public CodeGenerator {
  public:
   TestGenerator() {}
-  ~TestGenerator() {}
+  ~TestGenerator() override {}
 
-  virtual bool Generate(const FileDescriptor* file,
-                        const std::string& parameter, GeneratorContext* context,
-                        std::string* error) const {
+  bool Generate(const FileDescriptor* file, const std::string& parameter,
+                GeneratorContext* context, std::string* error) const override {
     TryInsert("test_pb2.py", "imports", context);
     TryInsert("test_pb2.py", "module_scope", context);
     TryInsert("test_pb2.py", "class_scope:foo.Bar", context);
@@ -77,37 +76,6 @@ class TestGenerator : public CodeGenerator {
   }
 };
 
-// This test verifies that all the expected insertion points exist.  It does
-// not verify that they are correctly-placed; that would require actually
-// compiling the output which is a bit more than I care to do for this test.
-TEST(PythonPluginTest, PluginTest) {
-  GOOGLE_CHECK_OK(File::SetContents(TestTempDir() + "/test.proto",
-                             "syntax = \"proto2\";\n"
-                             "package foo;\n"
-                             "message Bar {\n"
-                             "  message Baz {}\n"
-                             "}\n",
-                             true));
-
-  compiler::CommandLineInterface cli;
-  cli.SetInputsAreProtoPathRelative(true);
-
-  python::Generator python_generator;
-  TestGenerator test_generator;
-  cli.RegisterGenerator("--python_out", &python_generator, "");
-  cli.RegisterGenerator("--test_out", &test_generator, "");
-
-  std::string proto_path = "-I" + TestTempDir();
-  std::string python_out = "--python_out=" + TestTempDir();
-  std::string test_out = "--test_out=" + TestTempDir();
-
-  const char* argv[] = {"protoc", proto_path.c_str(), python_out.c_str(),
-                        test_out.c_str(), "test.proto"};
-
-  EXPECT_EQ(0, cli.Run(5, argv));
-}
-
-// This test verifies that the generated Python output uses regular imports (as
 // opposed to importlib) in the usual case where the .proto file paths do not
 // not contain any Python keywords.
 TEST(PythonPluginTest, ImportTest) {

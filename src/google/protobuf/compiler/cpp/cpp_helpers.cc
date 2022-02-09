@@ -44,10 +44,10 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/compiler/cpp/cpp_options.h>
-#include <google/protobuf/compiler/cpp/cpp_names.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/compiler/cpp/cpp_names.h>
+#include <google/protobuf/compiler/cpp/cpp_options.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -451,6 +451,14 @@ std::string FieldName(const FieldDescriptor* field) {
     result.append("_");
   }
   return result;
+}
+
+std::string FieldMemberName(const FieldDescriptor* field) {
+  if (field->real_containing_oneof() == nullptr) {
+    return StrCat(FieldName(field), "_");
+  }
+  return StrCat(field->containing_oneof()->name(), "_.", FieldName(field),
+                      "_");
 }
 
 std::string OneofCaseConstantName(const FieldDescriptor* field) {
@@ -1147,7 +1155,6 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
   return UsingImplicitWeakFields(field->file(), options) &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
          !field->is_required() && !field->is_map() && !field->is_extension() &&
-         !field->real_containing_oneof() &&
          !IsWellKnownMessage(field->message_type()->file()) &&
          field->message_type()->file()->name() !=
              "net/proto2/proto/descriptor.proto" &&
@@ -1264,7 +1271,7 @@ bool GetBootstrapBasename(const Options& options, const std::string& basename,
 
   std::unordered_map<std::string, std::string> bootstrap_mapping{
       {"net/proto2/proto/descriptor",
-       "net/proto2/internal/descriptor"},
+       "third_party/protobuf/descriptor"},
       {"net/proto2/compiler/proto/plugin",
        "net/proto2/compiler/proto/plugin"},
       {"net/proto2/compiler/proto/profile",
@@ -1297,7 +1304,7 @@ bool MaybeBootstrap(const Options& options, GeneratorContext* generator_context,
     *basename = bootstrap_basename;
     return false;
   } else {
-    std::string forward_to_basename = bootstrap_basename;
+    const std::string& forward_to_basename = bootstrap_basename;
 
     // Generate forwarding headers and empty .pb.cc.
     {
@@ -1486,8 +1493,9 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
   return FileOptions::SPEED;
 }
 
-bool EnableMessageOwnedArena(const Descriptor* desc) {
+bool EnableMessageOwnedArena(const Descriptor* desc, const Options& options) {
   (void)desc;
+  (void)options;
   return false;
 }
 

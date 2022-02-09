@@ -37,6 +37,7 @@ import java.util.Map;
 /** A reader of fields from a serialized protobuf message. */
 // TODO(nathanmittler): Refactor to allow the reader to allocate properly sized lists.
 @ExperimentalApi
+@CheckReturnValue
 interface Reader {
   /** Value used to indicate that the end of input has been reached. */
   int READ_DONE = Integer.MAX_VALUE;

@@ -72,7 +72,7 @@ INSTANTIATE_TEST_SUITE_P(ArenaString, SingleArena, testing::Bool());
 TEST_P(SingleArena, GetSet) {
   auto arena = GetArena();
   ArenaStringPtr field;
-  field.UnsafeSetDefault(empty_default);
+  field.InitDefault(empty_default);
   EXPECT_EQ("", field.Get());
   field.Set(empty_default, "Test short", arena.get());
   EXPECT_EQ("Test short", field.Get());
@@ -86,7 +86,7 @@ TEST_P(SingleArena, MutableAccessor) {
   auto arena = GetArena();
   ArenaStringPtr field;
   const std::string* empty_default = &internal::GetEmptyString();
-  field.UnsafeSetDefault(empty_default);
+  field.InitDefault(empty_default);
 
   std::string* mut = field.Mutable(EmptyDefault{}, arena.get());
   EXPECT_EQ(mut, field.Mutable(EmptyDefault{}, arena.get()));
@@ -102,7 +102,7 @@ TEST_P(SingleArena, NullDefault) {
   auto arena = GetArena();
 
   ArenaStringPtr field;
-  field.UnsafeSetDefault(nullptr);
+  field.InitDefault(nullptr);
   std::string* mut = field.Mutable(nonempty_default, arena.get());
   EXPECT_EQ(mut, field.Mutable(nonempty_default, arena.get()));
   EXPECT_EQ(mut, &field.Get());
@@ -131,9 +131,9 @@ INSTANTIATE_TEST_SUITE_P(ArenaString, DualArena,
 TEST_P(DualArena, Swap) {
   auto lhs_arena = GetLhsArena();
   ArenaStringPtr lhs;
-  lhs.UnsafeSetDefault(empty_default);
+  lhs.InitDefault(empty_default);
   ArenaStringPtr rhs;
-  rhs.UnsafeSetDefault(empty_default);
+  rhs.InitDefault(empty_default);
 
   {
     auto rhs_arena = GetRhsArena();

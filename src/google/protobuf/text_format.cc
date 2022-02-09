@@ -44,22 +44,21 @@
 #include <limits>
 #include <vector>
 
-#include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/any.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/any.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -276,6 +275,7 @@ class TextFormat::Parser::ParserImpl {
         allow_partial_(allow_partial),
         initial_recursion_limit_(recursion_limit),
         recursion_limit_(recursion_limit),
+        had_silent_marker_(false),
         had_errors_(false) {
     // For backwards-compatibility with proto1, we need to allow the 'f' suffix
     // for floats.
@@ -429,10 +429,11 @@ class TextFormat::Parser::ParserImpl {
       std::string prefix_and_full_type_name =
           StrCat(prefix, full_type_name);
       DO(ConsumeBeforeWhitespace("]"));
-      TryConsumeWhitespace(prefix_and_full_type_name, "Any");
+      TryConsumeWhitespace();
       // ':' is optional between message labels and values.
-      TryConsumeBeforeWhitespace(":");
-      TryConsumeWhitespace(prefix_and_full_type_name, "Any");
+      if (TryConsumeBeforeWhitespace(":")) {
+        TryConsumeWhitespace();
+      }
       std::string serialized_value;
       const Descriptor* value_descriptor =
           finder_ ? finder_->FindAnyType(*message, prefix, full_type_name)
@@ -462,7 +463,7 @@ class TextFormat::Parser::ParserImpl {
       // Extension.
       DO(ConsumeFullTypeName(&field_name));
       DO(ConsumeBeforeWhitespace("]"));
-      TryConsumeWhitespace(message->GetTypeName(), "Extension");
+      TryConsumeWhitespace();
 
       field = finder_ ? finder_->FindExtension(message, field_name)
                       : DefaultFinderFindExtension(message, field_name);
@@ -482,7 +483,7 @@ class TextFormat::Parser::ParserImpl {
       }
     } else {
       DO(ConsumeIdentifierBeforeWhitespace(&field_name));
-      TryConsumeWhitespace(message->GetTypeName(), "Normal");
+      TryConsumeWhitespace();
 
       int32_t field_number;
       if (allow_field_number_ && safe_strto32(field_name, &field_number)) {
@@ -551,7 +552,7 @@ class TextFormat::Parser::ParserImpl {
       // If there is no ":" or there is a "{" or "<" after ":", this field has
       // to be a message or the input is ill-formed.
       if (TryConsumeBeforeWhitespace(":")) {
-        TryConsumeWhitespace(message->GetTypeName(), "Unknown/Reserved");
+        TryConsumeWhitespace();
         if (!LookingAt("{") && !LookingAt("<")) {
           return SkipFieldValue();
         }
@@ -587,7 +588,9 @@ class TextFormat::Parser::ParserImpl {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // ':' is optional here.
       bool consumed_semicolon = TryConsumeBeforeWhitespace(":");
-      TryConsumeWhitespace(message->GetTypeName(), "Normal");
+      if (consumed_semicolon) {
+        TryConsumeWhitespace();
+      }
       if (consumed_semicolon && field->options().weak() &&
           LookingAtType(io::Tokenizer::TYPE_STRING)) {
         // we are getting a bytes string for a weak field.
@@ -602,7 +605,7 @@ class TextFormat::Parser::ParserImpl {
     } else {
       // ':' is required here.
       DO(ConsumeBeforeWhitespace(":"));
-      TryConsumeWhitespace(message->GetTypeName(), "Normal");
+      TryConsumeWhitespace();
     }
 
     if (field->is_repeated() && TryConsume("[")) {
@@ -653,15 +656,15 @@ class TextFormat::Parser::ParserImpl {
 
   // Skips the next field including the field's name and value.
   bool SkipField() {
+    std::string field_name;
     if (TryConsume("[")) {
       // Extension name or type URL.
-      DO(ConsumeTypeUrlOrFullTypeName());
+      DO(ConsumeTypeUrlOrFullTypeName(&field_name));
       DO(ConsumeBeforeWhitespace("]"));
     } else {
-      std::string field_name;
       DO(ConsumeIdentifierBeforeWhitespace(&field_name));
     }
-    TryConsumeWhitespace("Unknown/Reserved", "n/a");
+    TryConsumeWhitespace();
 
     // Try to guess the type of this field.
     // If this field is not a message, there should be a ":" between the
@@ -670,7 +673,7 @@ class TextFormat::Parser::ParserImpl {
     // If there is no ":" or there is a "{" or "<" after ":", this field has
     // to be a message or the input is ill-formed.
     if (TryConsumeBeforeWhitespace(":")) {
-      TryConsumeWhitespace("Unknown/Reserved", "n/a");
+      TryConsumeWhitespace();
       if (!LookingAt("{") && !LookingAt("<")) {
         DO(SkipFieldValue());
       } else {
@@ -1018,11 +1021,21 @@ class TextFormat::Parser::ParserImpl {
     return true;
   }
 
-  bool ConsumeTypeUrlOrFullTypeName() {
-    std::string discarded;
-    DO(ConsumeIdentifier(&discarded));
-    while (TryConsume(".") || TryConsume("/")) {
-      DO(ConsumeIdentifier(&discarded));
+  bool ConsumeTypeUrlOrFullTypeName(std::string* name) {
+    DO(ConsumeIdentifier(name));
+    while (true) {
+      std::string connector;
+      if (TryConsume(".")) {
+        connector = ".";
+      } else if (TryConsume("/")) {
+        connector = "/";
+      } else {
+        break;
+      }
+      std::string part;
+      DO(ConsumeIdentifier(&part));
+      *name += connector;
+      *name += part;
     }
     return true;
   }
@@ -1264,13 +1277,15 @@ class TextFormat::Parser::ParserImpl {
     return result;
   }
 
-  bool TryConsumeWhitespace(const std::string& message_type,
-                            const char* field_type) {
+  bool TryConsumeWhitespace() {
+    had_silent_marker_ = false;
     if (LookingAtType(io::Tokenizer::TYPE_WHITESPACE)) {
+      if (tokenizer_.current().text == " " DEBUG_STRING_SILENT_MARKER) {
+        had_silent_marker_ = true;
+      }
       tokenizer_.Next();
       return true;
     }
-
     return false;
   }
 
@@ -1311,6 +1326,7 @@ class TextFormat::Parser::ParserImpl {
   const bool allow_partial_;
   const int initial_recursion_limit_;
   int recursion_limit_;
+  bool had_silent_marker_;
   bool had_errors_;
 };
 
@@ -1342,10 +1358,10 @@ class TextFormat::Printer::TextGenerator
         indent_level_(initial_indent_level),
         initial_indent_level_(initial_indent_level) {}
 
-  ~TextGenerator() {
+  ~TextGenerator() override {
     // Only BackUp() if we're sure we've successfully called Next() at least
     // once.
-    if (!failed_ && buffer_size_ > 0) {
+    if (!failed_) {
       output_->BackUp(buffer_size_);
     }
   }
@@ -1640,7 +1656,6 @@ bool TextFormat::Parser::MergeFromString(ConstStringParam input,
   return Merge(&input_stream, output);
 }
 
-
 bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* /* input */,
                                         Message* output,
                                         ParserImpl* parser_impl) {
@@ -1688,7 +1703,6 @@ bool TextFormat::Parser::ParseFieldValueFromString(const std::string& input,
                                               Message* output) {
   return Parser().MergeFromString(input, output);
 }
-
 
 #undef DO
 

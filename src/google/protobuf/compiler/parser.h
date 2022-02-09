@@ -42,10 +42,10 @@
 #include <string>
 #include <utility>
 
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/descriptor.pb.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -281,9 +281,6 @@ class PROTOBUF_EXPORT Parser {
                         std::vector<std::string>* detached_comments) const;
 
    private:
-    // Indexes of parent and current location in the parent
-    // SourceCodeInfo.location repeated field. For top-level elements,
-    // parent_index_ is -1.
     Parser* parser_;
     SourceCodeInfo* source_code_info_;
     SourceCodeInfo::Location* location_;
@@ -433,7 +430,6 @@ class PROTOBUF_EXPORT Parser {
   bool ParseServiceMethod(MethodDescriptorProto* method,
                           const LocationRecorder& method_location,
                           const FileDescriptorProto* containing_file);
-
 
   // Parse options of a single method or stream.
   bool ParseMethodOptions(const LocationRecorder& parent_location,

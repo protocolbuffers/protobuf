@@ -31,10 +31,13 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
+import dynamicmessagetest.DynamicMessageTestProto.EmptyMessage;
+import dynamicmessagetest.DynamicMessageTestProto.MessageWithMapFields;
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
@@ -42,6 +45,7 @@ import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -334,5 +338,53 @@ public class DynamicMessageTest {
     builder.setField(repeatedEnumField, enumDescriptor.getValues());
     DynamicMessage message = builder.build();
     assertThat(message.getField(repeatedEnumField)).isEqualTo(enumDescriptor.getValues());
+  }
+
+  @Test
+  public void testBuilderGetFieldBuilder_mapField_throwsUnsupportedOperationException() {
+    final DynamicMessage.Builder builder =
+        DynamicMessage.newBuilder(MessageWithMapFields.getDescriptor());
+    final FieldDescriptor mapField =
+        MessageWithMapFields.getDescriptor().findFieldByName("string_message_map");
+
+    Message.Builder entryBuilder = builder.newBuilderForField(mapField);
+    entryBuilder.setField(entryBuilder.getDescriptorForType().findFieldByNumber(1), "foo");
+    entryBuilder.setField(
+        entryBuilder.getDescriptorForType().findFieldByNumber(2),
+        EmptyMessage.getDefaultInstance());
+    builder.addRepeatedField(mapField, entryBuilder.build());
+
+    assertThrows(
+        UnsupportedOperationException.class,
+        new ThrowingRunnable() {
+          @Override
+          public void run() throws Throwable {
+            builder.getFieldBuilder(mapField);
+          }
+        });
+  }
+
+  @Test
+  public void testBuilderGetRepeatedFieldBuilder_mapField_throwsUnsupportedOperationException() {
+    final DynamicMessage.Builder builder =
+        DynamicMessage.newBuilder(MessageWithMapFields.getDescriptor());
+    final FieldDescriptor mapField =
+        MessageWithMapFields.getDescriptor().findFieldByName("string_message_map");
+
+    Message.Builder entryBuilder = builder.newBuilderForField(mapField);
+    entryBuilder.setField(entryBuilder.getDescriptorForType().findFieldByNumber(1), "foo");
+    entryBuilder.setField(
+        entryBuilder.getDescriptorForType().findFieldByNumber(2),
+        EmptyMessage.getDefaultInstance());
+    builder.addRepeatedField(mapField, entryBuilder.build());
+
+    assertThrows(
+        UnsupportedOperationException.class,
+        new ThrowingRunnable() {
+          @Override
+          public void run() throws Throwable {
+            builder.getFieldBuilder(mapField);
+          }
+        });
   }
 }

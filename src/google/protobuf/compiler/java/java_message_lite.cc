@@ -40,6 +40,11 @@
 #include <memory>
 #include <vector>
 
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/wire_format.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_doc_comment.h>
 #include <google/protobuf/compiler/java/java_enum_lite.h>
@@ -50,11 +55,6 @@
 #include <google/protobuf/compiler/java/java_message_builder_lite.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 
 namespace google {
 namespace protobuf {
@@ -779,7 +779,7 @@ void ImmutableMessageLiteGenerator::GenerateKotlinDsl(
 void ImmutableMessageLiteGenerator::GenerateKotlinMembers(
     io::Printer* printer) const {
   printer->Print(
-      "@kotlin.jvm.JvmSynthetic\n"
+      "@kotlin.jvm.JvmName(\"-initialize$camelcase_name$\")\n"
       "public inline fun $camelcase_name$(block: $message_kt$.Dsl.() -> "
       "kotlin.Unit): "
       "$message$ =\n"
@@ -808,7 +808,7 @@ void ImmutableMessageLiteGenerator::GenerateTopLevelKotlinMembers(
       "kotlin.Unit): "
       "$message$ =\n"
       "  $message_kt$.Dsl._create(this.toBuilder()).apply { block() "
-      "}._build()\n",
+      "}._build()\n\n",
       "message", name_resolver_->GetClassName(descriptor_, true), "message_kt",
       name_resolver_->GetKotlinExtensionsClassName(descriptor_));
 
@@ -816,6 +816,27 @@ void ImmutableMessageLiteGenerator::GenerateTopLevelKotlinMembers(
     if (IsMapEntry(descriptor_->nested_type(i))) continue;
     ImmutableMessageLiteGenerator(descriptor_->nested_type(i), context_)
         .GenerateTopLevelKotlinMembers(printer);
+  }
+
+  GenerateKotlinOrNull(printer);
+}
+
+void ImmutableMessageLiteGenerator::GenerateKotlinOrNull(io::Printer* printer) const {
+  // Generate getFieldOrNull getters for all optional message fields.
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    if (field->has_optional_keyword() &&
+        GetJavaType(field) == JAVATYPE_MESSAGE) {
+      printer->Print(
+          "val $full_classname$OrBuilder.$camelcase_name$OrNull: "
+          "$full_name$?\n"
+          "  get() = if (has$name$()) get$name$() else null\n\n",
+          "full_classname", name_resolver_->GetClassName(descriptor_, true),
+          "camelcase_name", context_->GetFieldGeneratorInfo(field)->name,
+          "full_name",
+          name_resolver_->GetImmutableClassName(field->message_type()), "name",
+          context_->GetFieldGeneratorInfo(field)->capitalized_name);
+    }
   }
 }
 
@@ -954,7 +975,8 @@ void ImmutableMessageLiteGenerator::GenerateKotlinExtensions(
 
   printer->Print(
       "@kotlin.jvm.JvmSynthetic\n"
-      "public operator fun <E> com.google.protobuf.kotlin.ExtensionList<E, "
+      "public operator fun <E> "
+      "com.google.protobuf.kotlin.ExtensionList<E, "
       "$message$>.set(index: Int, value: "
       "E) {\n"
       "  _builder.setExtension(this.extension, index, value)\n"

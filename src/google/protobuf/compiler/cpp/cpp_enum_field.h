@@ -37,6 +37,7 @@
 
 #include <map>
 #include <string>
+
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 
 namespace google {
@@ -47,7 +48,7 @@ namespace cpp {
 class EnumFieldGenerator : public FieldGenerator {
  public:
   EnumFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
-  ~EnumFieldGenerator();
+  ~EnumFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -71,7 +72,7 @@ class EnumOneofFieldGenerator : public EnumFieldGenerator {
  public:
   EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
                           const Options& options);
-  ~EnumOneofFieldGenerator();
+  ~EnumOneofFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
@@ -87,7 +88,7 @@ class RepeatedEnumFieldGenerator : public FieldGenerator {
  public:
   RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
                              const Options& options);
-  ~RepeatedEnumFieldGenerator();
+  ~RepeatedEnumFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const override;

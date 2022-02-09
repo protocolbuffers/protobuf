@@ -40,15 +40,17 @@
 
 #include <string>
 #include <vector>
+
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -137,8 +139,8 @@ struct ReflectionSchema {
   uint32_t GetFieldOffset(const FieldDescriptor* field) const {
     if (InRealOneof(field)) {
       size_t offset =
-          static_cast<size_t>(field->containing_type()->field_count() +
-                              field->containing_oneof()->index());
+          static_cast<size_t>(field->containing_type()->field_count()) +
+          field->containing_oneof()->index();
       return OffsetValue(offsets_[offset], field->type());
     } else {
       return GetFieldOffsetNonOneof(field);

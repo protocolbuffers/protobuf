@@ -68,6 +68,9 @@ public final class TextFormat {
    * @deprecated Use {@code printer().print(MessageOrBuilder, Appendable)}
    */
   @Deprecated
+  @InlineMe(
+      replacement = "TextFormat.printer().print(message, output)",
+      imports = "com.google.protobuf.TextFormat")
   public static void print(final MessageOrBuilder message, final Appendable output)
       throws IOException {
     printer().print(message, output);
@@ -90,6 +93,9 @@ public final class TextFormat {
    * @deprecated Use {@code printer().escapingNonAscii(false).print(MessageOrBuilder, Appendable)}
    */
   @Deprecated
+  @InlineMe(
+      replacement = "TextFormat.printer().escapingNonAscii(false).print(message, output)",
+      imports = "com.google.protobuf.TextFormat")
   public static void printUnicode(final MessageOrBuilder message, final Appendable output)
       throws IOException {
     printer().escapingNonAscii(false).print(message, output);
@@ -143,6 +149,9 @@ public final class TextFormat {
    * @deprecated Use {@code message.toString()}
    */
   @Deprecated
+  @InlineMe(
+      replacement = "TextFormat.printer().printToString(message)",
+      imports = "com.google.protobuf.TextFormat")
   public static String printToString(final MessageOrBuilder message) {
     return printer().printToString(message);
   }
@@ -164,6 +173,9 @@ public final class TextFormat {
    * @deprecated Use {@code printer().escapingNonAscii(false).printToString(MessageOrBuilder)}
    */
   @Deprecated
+  @InlineMe(
+      replacement = "TextFormat.printer().escapingNonAscii(false).printToString(message)",
+      imports = "com.google.protobuf.TextFormat")
   public static String printToUnicodeString(final MessageOrBuilder message) {
     return printer().escapingNonAscii(false).printToString(message);
   }
@@ -225,6 +237,9 @@ public final class TextFormat {
    * @throws IOException if there is an exception writing to the output
    */
   @Deprecated
+  @InlineMe(
+      replacement = "TextFormat.printer().printFieldValue(field, value, output)",
+      imports = "com.google.protobuf.TextFormat")
   public static void printFieldValue(
       final FieldDescriptor field, final Object value, final Appendable output) throws IOException {
     printer().printFieldValue(field, value, output);

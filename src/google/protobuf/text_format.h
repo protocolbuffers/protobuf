@@ -38,17 +38,19 @@
 #ifndef GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
+
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/message_lite.h>
-#include <google/protobuf/port.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG

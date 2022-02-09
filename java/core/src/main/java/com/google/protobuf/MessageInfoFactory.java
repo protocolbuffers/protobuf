@@ -32,6 +32,7 @@ package com.google.protobuf;
 
 /** A factory that creates {@link MessageInfo} instances for message types. */
 @ExperimentalApi
+@CheckReturnValue
 interface MessageInfoFactory {
   /** Whether the message class is supported by this factory. */
   boolean isSupported(Class<?> clazz);

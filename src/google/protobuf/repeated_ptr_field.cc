@@ -32,14 +32,15 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/repeated_field.h>
-
 #include <algorithm>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/implicit_weak_message.h>
+#include <google/protobuf/repeated_field.h>
+#include <google/protobuf/port.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -56,8 +57,8 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   }
   Rep* old_rep = rep_;
   Arena* arena = GetArena();
-  new_size = std::max(internal::kRepeatedFieldLowerClampLimit,
-                      std::max(total_size_ * 2, new_size));
+  new_size = internal::CalculateReserveSize<void*, kRepHeaderSize>(total_size_,
+                                                                   new_size);
   GOOGLE_CHECK_LE(static_cast<int64_t>(new_size),
            static_cast<int64_t>(
                (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
@@ -69,25 +70,24 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   } else {
     rep_ = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
   }
-#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
   const int old_total_size = total_size_;
-#endif
   total_size_ = new_size;
-  if (old_rep && old_rep->allocated_size > 0) {
-    memcpy(rep_->elements, old_rep->elements,
-           old_rep->allocated_size * sizeof(rep_->elements[0]));
+  if (old_rep) {
+    if (old_rep->allocated_size > 0) {
+      memcpy(rep_->elements, old_rep->elements,
+             old_rep->allocated_size * sizeof(rep_->elements[0]));
+    }
     rep_->allocated_size = old_rep->allocated_size;
-  } else {
-    rep_->allocated_size = 0;
-  }
-  if (arena == nullptr) {
-#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
+
     const size_t old_size =
         old_total_size * sizeof(rep_->elements[0]) + kRepHeaderSize;
-    ::operator delete(static_cast<void*>(old_rep), old_size);
-#else
-    ::operator delete(static_cast<void*>(old_rep));
-#endif
+    if (arena == nullptr) {
+      internal::SizedDelete(old_rep, old_size);
+    } else {
+      arena_->ReturnArrayMemory(old_rep, old_size);
+    }
+  } else {
+    rep_->allocated_size = 0;
   }
   return &rep_->elements[current_size_];
 }
@@ -106,14 +106,9 @@ void RepeatedPtrFieldBase::DestroyProtos() {
   for (int i = 0; i < n; i++) {
     delete static_cast<MessageLite*>(elements[i]);
   }
-#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
   const size_t size = total_size_ * sizeof(elements[0]) + kRepHeaderSize;
-  ::operator delete(static_cast<void*>(rep_), size);
+  internal::SizedDelete(rep_, size);
   rep_ = nullptr;
-#else
-  ::operator delete(static_cast<void*>(rep_));
-  rep_ = nullptr;
-#endif
 }
 
 void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {

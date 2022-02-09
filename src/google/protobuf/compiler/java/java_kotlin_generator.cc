@@ -30,11 +30,11 @@
 
 #include <google/protobuf/compiler/java/java_kotlin_generator.h>
 
+#include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/java/java_file.h>
+#include <google/protobuf/compiler/java/java_generator.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_options.h>
-#include <google/protobuf/compiler/java/java_generator.h>
-#include <google/protobuf/compiler/code_generator.h>
 
 namespace google {
 namespace protobuf {
@@ -63,11 +63,13 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
     if (option.first == "output_list_file") {
       file_options.output_list_file = option.second;
     } else if (option.first == "immutable") {
+      // Note: the option is considered always set regardless of the input.
       file_options.generate_immutable_code = true;
     } else if (option.first == "mutable") {
       *error = "Mutable not supported by Kotlin generator";
       return false;
     } else if (option.first == "shared") {
+      // Note: the option is considered always set regardless of the input.
       file_options.generate_shared_code = true;
     } else if (option.first == "lite") {
       file_options.enforce_lite = true;
@@ -81,23 +83,17 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
     }
   }
 
-  // By default we generate immutable code and shared code for immutable API.
-  if (!file_options.generate_immutable_code &&
-      !file_options.generate_shared_code) {
-    file_options.generate_immutable_code = true;
-    file_options.generate_shared_code = true;
-  }
+  // We only support generation of immutable code so we do it.
+  file_options.generate_immutable_code = true;
+  file_options.generate_shared_code = true;
 
   std::vector<std::string> all_files;
   std::vector<std::string> all_annotations;
 
-  std::unique_ptr<FileGenerator> file_generator;
-  if (file_options.generate_immutable_code) {
-    file_generator.reset(
+  std::unique_ptr<FileGenerator> file_generator(
         new FileGenerator(file, file_options, /* immutable_api = */ true));
-  }
 
-  if (!file_generator->Validate(error)) {
+  if (!file_generator || !file_generator->Validate(error)) {
     return false;
   }
 

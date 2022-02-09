@@ -54,6 +54,7 @@ import org.junit.runners.JUnit4;
 public class UnknownEnumValueTest {
 
   @Test
+  @SuppressWarnings("ProtoNewBuilderMergeFrom")
   public void testUnknownEnumValues() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.setOptionalNestedEnumValue(4321);

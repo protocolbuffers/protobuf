@@ -144,8 +144,8 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(self.my_service, self.my_method.containing_service)
 
   @unittest.skipIf(
-    api_implementation.Type() != 'cpp',
-    'GetDebugString is only available with the cpp implementation',
+      api_implementation.Type() != 'cpp',
+      'GetDebugString is only available with the cpp implementation',
   )
   def testGetDebugString(self):
     self.assertEqual(self.my_file.GetDebugString(), TEST_FILE_DESCRIPTOR_DEBUG)
@@ -552,6 +552,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertIn(field_descriptor, {field_descriptor: None})
     self.assertEqual(None, field_descriptor.extension_scope)
     self.assertEqual(None, field_descriptor.enum_type)
+    self.assertTrue(field_descriptor.has_presence)
     if api_implementation.Type() == 'cpp':
       # For test coverage only
       self.assertEqual(field_descriptor.id, field_descriptor.id)

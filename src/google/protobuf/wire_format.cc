@@ -40,21 +40,21 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/message_lite.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/unknown_field_set.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 const size_t kMapEntryTagByteSize = 2;
@@ -1125,10 +1125,11 @@ static uint8_t* SerializeMapValueRefWithCachedSizes(
     case FieldDescriptor::TYPE_BYTES:
       target = stream->WriteString(2, value.GetStringValue(), target);
       break;
-    case FieldDescriptor::TYPE_MESSAGE:
-      target = WireFormatLite::InternalWriteMessage(2, value.GetMessageValue(),
+    case FieldDescriptor::TYPE_MESSAGE: {
+      auto& msg = value.GetMessageValue();
+      target = WireFormatLite::InternalWriteMessage(2, msg, msg.GetCachedSize(),
                                                     target, stream);
-      break;
+    } break;
     case FieldDescriptor::TYPE_GROUP:
       target = WireFormatLite::InternalWriteGroup(2, value.GetMessageValue(),
                                                   target, stream);
@@ -1320,6 +1321,16 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     return target;
   }
 
+  auto get_message_from_field = [&message, &map_entries, message_reflection](
+                                    const FieldDescriptor* field, int j) {
+    if (!field->is_repeated()) {
+      return &message_reflection->GetMessage(message, field);
+    }
+    if (!map_entries.empty()) {
+      return map_entries[j];
+    }
+    return &message_reflection->GetRepeatedMessage(message, field, j);
+  };
   for (int j = 0; j < count; j++) {
     target = stream->EnsureSpace(target);
     switch (field->type()) {
@@ -1353,22 +1364,17 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       HANDLE_PRIMITIVE_TYPE(BOOL, bool, Bool, Bool)
 #undef HANDLE_PRIMITIVE_TYPE
 
-#define HANDLE_TYPE(TYPE, TYPE_METHOD, CPPTYPE_METHOD)                         \
-  case FieldDescriptor::TYPE_##TYPE:                                           \
-    target = WireFormatLite::InternalWrite##TYPE_METHOD(                       \
-        field->number(),                                                       \
-        field->is_repeated()                                                   \
-            ? (map_entries.empty()                                             \
-                   ? message_reflection->GetRepeated##CPPTYPE_METHOD(message,  \
-                                                                     field, j) \
-                   : *map_entries[j])                                          \
-            : message_reflection->Get##CPPTYPE_METHOD(message, field),         \
-        target, stream);                                                       \
-    break;
+      case FieldDescriptor::TYPE_GROUP: {
+        auto* msg = get_message_from_field(field, j);
+        target = WireFormatLite::InternalWriteGroup(field->number(), *msg,
+                                                    target, stream);
+      } break;
 
-      HANDLE_TYPE(GROUP, Group, Message)
-      HANDLE_TYPE(MESSAGE, Message, Message)
-#undef HANDLE_TYPE
+      case FieldDescriptor::TYPE_MESSAGE: {
+        auto* msg = get_message_from_field(field, j);
+        target = WireFormatLite::InternalWriteMessage(
+            field->number(), *msg, msg->GetCachedSize(), target, stream);
+      } break;
 
       case FieldDescriptor::TYPE_ENUM: {
         const EnumValueDescriptor* value =
@@ -1432,9 +1438,10 @@ uint8_t* WireFormat::InternalSerializeMessageSetItem(
   target = WireFormatLite::WriteUInt32ToArray(
       WireFormatLite::kMessageSetTypeIdNumber, field->number(), target);
   // Write message.
+  auto& msg = message_reflection->GetMessage(message, field);
   target = WireFormatLite::InternalWriteMessage(
-      WireFormatLite::kMessageSetMessageNumber,
-      message_reflection->GetMessage(message, field), target, stream);
+      WireFormatLite::kMessageSetMessageNumber, msg, msg.GetCachedSize(),
+      target, stream);
   // End group.
   target = stream->EnsureSpace(target);
   target = io::CodedOutputStream::WriteTagToArray(

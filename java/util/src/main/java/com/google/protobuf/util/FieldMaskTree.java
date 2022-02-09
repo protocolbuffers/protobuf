@@ -44,10 +44,11 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 /**
- * A tree representation of a FieldMask. Each leaf node in this tree represent
- * a field path in the FieldMask.
+ * A tree representation of a FieldMask. Each leaf node in this tree represent a field path in the
+ * FieldMask.
  *
  * <p>For example, FieldMask "foo.bar,foo.baz,bar.baz" as a tree will be:
+ *
  * <pre>
  *   [root] -+- foo -+- bar
  *           |       |
@@ -56,10 +57,9 @@ import java.util.logging.Logger;
  *           +- bar --- baz
  * </pre>
  *
- * <p>By representing FieldMasks with this tree structure we can easily convert
- * a FieldMask to a canonical form, merge two FieldMasks, calculate the
- * intersection to two FieldMasks and traverse all fields specified by the
- * FieldMask in a message tree.
+ * <p>By representing FieldMasks with this tree structure we can easily convert a FieldMask to a
+ * canonical form, merge two FieldMasks, calculate the intersection to two FieldMasks and traverse
+ * all fields specified by the FieldMask in a message tree.
  */
 final class FieldMaskTree {
   private static final Logger logger = Logger.getLogger(FieldMaskTree.class.getName());
@@ -72,14 +72,10 @@ final class FieldMaskTree {
 
   private final Node root = new Node();
 
-  /**
-   * Creates an empty FieldMaskTree.
-   */
+  /** Creates an empty FieldMaskTree. */
   FieldMaskTree() {}
 
-  /**
-   * Creates a FieldMaskTree for a given FieldMask.
-   */
+  /** Creates a FieldMaskTree for a given FieldMask. */
   FieldMaskTree(FieldMask mask) {
     mergeFromFieldMask(mask);
   }
@@ -143,11 +139,10 @@ final class FieldMaskTree {
    *   When removing a field path from the tree:
    *   <li>All sub-paths will be removed. That is, after removing "foo.bar" from the tree,
    *       "foo.bar.baz" will be removed.
-   *   <li>If all children of a node has been removed, the node itself will be removed as well.
+   *   <li>If all children of a node have been removed, the node itself will be removed as well.
    *       That is, if "foo" only has one child "bar" and "foo.bar" only has one child "baz",
-   *       removing "foo.bar.barz" would remove both "foo" and "foo.bar".
-   *       If "foo" has both "bar" and "qux" as children, removing "foo.bar" would leave the path
-   *       "foo.qux" intact.
+   *       removing "foo.bar.barz" would remove both "foo" and "foo.bar". If "foo" has both "bar"
+   *       and "qux" as children, removing "foo.bar" would leave the path "foo.qux" intact.
    *   <li>If the field path to remove is a non-exist sub-path, nothing will be changed.
    * </ul>
    */
@@ -195,9 +190,7 @@ final class FieldMaskTree {
     return this;
   }
 
-  /**
-   * Converts this tree to a FieldMask.
-   */
+  /** Converts this tree to a FieldMask. */
   FieldMask toFieldMask() {
     if (root.children.isEmpty()) {
       return FieldMask.getDefaultInstance();
@@ -219,9 +212,7 @@ final class FieldMaskTree {
     }
   }
 
-  /**
-   * Adds the intersection of this tree with the given {@code path} to {@code output}.
-   */
+  /** Adds the intersection of this tree with the given {@code path} to {@code output}. */
   void intersectFieldPath(String path, FieldMaskTree output) {
     if (root.children.isEmpty()) {
       return;
@@ -262,21 +253,18 @@ final class FieldMaskTree {
     if (root.children.isEmpty()) {
       return;
     }
-    merge(root, "", source, destination, options);
+    merge(root, source, destination, options);
   }
 
   /** Merges all fields specified by a sub-tree from {@code source} to {@code destination}. */
   private static void merge(
-      Node node,
-      String path,
-      Message source,
-      Message.Builder destination,
-      FieldMaskUtil.MergeOptions options) {
+      Node node, Message source, Message.Builder destination, FieldMaskUtil.MergeOptions options) {
     if (source.getDescriptorForType() != destination.getDescriptorForType()) {
       throw new IllegalArgumentException(
           String.format(
               "source (%s) and destination (%s) descriptor must be equal",
-              source.getDescriptorForType(), destination.getDescriptorForType()));
+              source.getDescriptorForType().getFullName(),
+              destination.getDescriptorForType().getFullName()));
     }
 
     Descriptor descriptor = source.getDescriptorForType();
@@ -304,9 +292,8 @@ final class FieldMaskTree {
           // so we don't create unnecessary empty messages.
           continue;
         }
-        String childPath = path.isEmpty() ? entry.getKey() : path + "." + entry.getKey();
         Message.Builder childBuilder = ((Message) destination.getField(field)).toBuilder();
-        merge(entry.getValue(), childPath, (Message) source.getField(field), childBuilder, options);
+        merge(entry.getValue(), (Message) source.getField(field), childBuilder, options);
         destination.setField(field, childBuilder.buildPartial());
         continue;
       }
@@ -331,9 +318,7 @@ final class FieldMaskTree {
               destination.setField(
                   field,
                   ((Message) destination.getField(field))
-                      .toBuilder()
-                      .mergeFrom((Message) source.getField(field))
-                      .build());
+                      .toBuilder().mergeFrom((Message) source.getField(field)).build());
             }
           }
         } else {

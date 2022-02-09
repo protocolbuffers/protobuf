@@ -37,6 +37,7 @@
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/message_lite.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {

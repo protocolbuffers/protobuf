@@ -43,6 +43,7 @@ import java.io.IOException;
  * IndexOutOfBoundsException and convert it to protobuf's InvalidProtocolBufferException when
  * crossing protobuf public API boundaries.
  */
+@CheckReturnValue
 final class ArrayDecoders {
   /**
    * A helper used to return multiple values in a Java function. Java doesn't natively support
@@ -548,7 +549,6 @@ final class ArrayDecoders {
   }
 
   /** Decodes a packed sint64 field. Returns the position after all read values. */
-  @SuppressWarnings("unchecked")
   static int decodePackedSInt64List(
       byte[] data, int position, ProtobufList<?> list, Registers registers) throws IOException {
     final LongArrayList output = (LongArrayList) list;

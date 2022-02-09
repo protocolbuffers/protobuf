@@ -224,7 +224,7 @@ public abstract class AbstractMessage
   }
 
   /**
-   * Compares two set of fields. This method is used to implement {@link
+   * Compares two sets of fields. This method is used to implement {@link
    * AbstractMessage#equals(Object)} and {@link AbstractMutableMessage#equals(Object)}. It takes
    * special care of bytes fields because immutable messages and mutable messages use different Java
    * type to represent a bytes field and this method should be able to compare immutable messages,
@@ -242,8 +242,8 @@ public abstract class AbstractMessage
       Object value2 = b.get(descriptor);
       if (descriptor.getType() == FieldDescriptor.Type.BYTES) {
         if (descriptor.isRepeated()) {
-          List list1 = (List) value1;
-          List list2 = (List) value2;
+          List<?> list1 = (List) value1;
+          List<?> list2 = (List) value2;
           if (list1.size() != list2.size()) {
             return false;
           }
@@ -383,8 +383,6 @@ public abstract class AbstractMessage
       //   them to insure that they don't change after verification (since
       //   the Message interface itself cannot enforce immutability of
       //   implementations).
-      // TODO(kenton):  Provide a function somewhere called makeDeepCopy()
-      //   which allows people to make secure deep copies of messages.
 
       for (final Map.Entry<FieldDescriptor, Object> entry : allFields.entrySet()) {
         final FieldDescriptor field = entry.getKey();
@@ -567,17 +565,6 @@ public abstract class AbstractMessage
     public BuilderType mergeFrom(
         final InputStream input, final ExtensionRegistryLite extensionRegistry) throws IOException {
       return (BuilderType) super.mergeFrom(input, extensionRegistry);
-    }
-
-    @Override
-    public boolean mergeDelimitedFrom(final InputStream input) throws IOException {
-      return super.mergeDelimitedFrom(input);
-    }
-
-    @Override
-    public boolean mergeDelimitedFrom(
-        final InputStream input, final ExtensionRegistryLite extensionRegistry) throws IOException {
-      return super.mergeDelimitedFrom(input, extensionRegistry);
     }
   }
 
