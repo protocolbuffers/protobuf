@@ -215,5 +215,10 @@ _build/
 .idea
 *.iml
 
+# Eclipse
+**/.settings
+**/.project
+**/.classpath
+
 # BenchmarkDotNet
 BenchmarkDotNet.Artifacts/
