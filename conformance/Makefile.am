@@ -126,6 +126,7 @@ other_language_protoc_outputs =                                \
   Google/Protobuf/FloatValue.php                               \
   Google/Protobuf/Int32Value.php                               \
   Google/Protobuf/Int64Value.php                               \
+  Google/Protobuf/JsonSerializeOptions.php                     \
   Google/Protobuf/ListValue.php                                \
   Google/Protobuf/NullValue.php                                \
   Google/Protobuf/StringValue.php                              \

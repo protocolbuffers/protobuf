@@ -801,6 +801,7 @@ PHP_METHOD(Message, serializeToJsonString) {
         options |= UPB_JSONENC_EMITDEFAULTS;
       }
     }
+    zend_string_release(emit_defaults_str);
 
     zend_string *preserve_names_str = zend_string_init(JSONENC_PRESERVE_PROTO_FIELD_NAMES, strlen(JSONENC_PRESERVE_PROTO_FIELD_NAMES), 0);
     if (opt_names = zend_hash_find(table, preserve_names_str)) {
@@ -811,6 +812,7 @@ PHP_METHOD(Message, serializeToJsonString) {
         options |= UPB_JSONENC_PROTONAMES;
       }
     }
+    zend_string_release(preserve_names_str);
   }
 
   upb_status_clear(&status);

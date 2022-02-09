@@ -941,6 +941,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/MethodOptions_IdempotencyLevel.php \
   php/src/Google/Protobuf/Internal/SourceCodeInfo_Location.php        \
   php/src/Google/Protobuf/Internal/UninterpretedOption_NamePart.php   \
+  php/src/Google/Protobuf/JsonSerializeOptions.php                    \
   php/src/Google/Protobuf/ListValue.php                               \
   php/src/Google/Protobuf/Method.php                                  \
   php/src/Google/Protobuf/Mixin.php                                   \
