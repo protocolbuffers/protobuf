@@ -554,6 +554,7 @@ java_EXTRA_DIST=                                                                
   java/kotlin/src/main/kotlin/com/google/protobuf/OnlyForUseByGeneratedProtoCode.kt\
   java/kotlin/src/main/kotlin/com/google/protobuf/ProtoDslMarker.kt                \
   java/kotlin/src/main/kotlin/com/google/protobuf/UnmodifiableCollections.kt       \
+  java/kotlin/src/test/kotlin/com/google/protobuf/AniesTest.kt                     \
   java/kotlin/src/test/kotlin/com/google/protobuf/ByteStringsTest.kt               \
   java/kotlin/src/test/kotlin/com/google/protobuf/DslListTest.kt                   \
   java/kotlin/src/test/kotlin/com/google/protobuf/DslMapTest.kt                    \
