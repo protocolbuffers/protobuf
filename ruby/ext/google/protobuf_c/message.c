@@ -959,7 +959,7 @@ static VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
  * format) under the interpretration given by this message class's definition
  * and returns a message object with the corresponding field values.
  * @param options [Hash] options for the decoder
- *  max_recursion_depth: set to maximum decoding depth for message (default is 64)
+ *  recursion_limit: set to maximum decoding depth for message (default is 64)
  */
 static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
   VALUE data = argv[0];
@@ -975,7 +975,7 @@ static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
       rb_raise(rb_eArgError, "Expected hash arguments.");
     }
 
-    VALUE depth = rb_hash_lookup(hash_args, ID2SYM(rb_intern("max_recursion_depth")));
+    VALUE depth = rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
 
     if (depth != Qnil && TYPE(depth) == T_FIXNUM) {
       options |= UPB_DECODE_MAXDEPTH(FIX2INT(depth));
@@ -1070,7 +1070,7 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
  * Encodes the given message object to its serialized form in protocol buffers
  * wire format.
  * @param options [Hash] options for the encoder
- *  max_recursion_depth: set to maximum encoding depth for message (default is 64)
+ *  recursion_limit: set to maximum encoding depth for message (default is 64)
  */
 static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
   Message* msg = ruby_to_Message(argv[0]);
@@ -1091,7 +1091,7 @@ static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
     if (TYPE(hash_args) != T_HASH) {
       rb_raise(rb_eArgError, "Expected hash arguments.");
     }
-    VALUE depth = rb_hash_lookup(hash_args, ID2SYM(rb_intern("max_recursion_depth")));
+    VALUE depth = rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
 
     if (depth != Qnil && TYPE(depth) == T_FIXNUM) {
       options |= UPB_DECODE_MAXDEPTH(FIX2INT(depth));

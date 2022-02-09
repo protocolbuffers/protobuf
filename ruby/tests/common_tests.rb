@@ -1245,7 +1245,7 @@ module CommonTests
     struct = struct_from_ruby(JSON.parse(json))
     assert_equal json, struct.to_json
 
-    assert_raise(RuntimeError, "Maximum recursion depth exceeded during encoding") do
+    assert_raise(RuntimeError, "Recursion limit exceeded during encoding") do
       struct = Google::Protobuf::Struct.new
       struct.fields["foobar"] = Google::Protobuf::Value.new(struct_value: struct)
       Google::Protobuf::Struct.encode(struct)

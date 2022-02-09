@@ -467,7 +467,7 @@ public class RubyMessage extends RubyObject {
      * Encodes the given message object to its serialized form in protocol buffers
      * wire format.
      * @param options [Hash] options for the encoder
-     *  max_recursion_depth: set to maximum encoding depth for message (default is 64)
+     *  recursion_limit: set to maximum encoding depth for message (default is 64)
      */
     @JRubyMethod(required = 1, optional = 1, meta = true)
     public static IRubyObject encode(ThreadContext context, IRubyObject recv, IRubyObject[] args) {
@@ -475,17 +475,17 @@ public class RubyMessage extends RubyObject {
             throw context.runtime.newArgumentError("Tried to encode a " + args[0].getMetaClass() + " message with " + recv);
         }
         RubyMessage message = (RubyMessage) args[0];
-        int maxRecursionDepthInt = SINK_MAXIMUM_NESTING;
+        int recursionLimitInt = SINK_MAXIMUM_NESTING;
 
         if (args.length > 1) {
             RubyHash options = (RubyHash) args[1];
-            IRubyObject maxRecursionDepth = options.fastARef(context.runtime.newSymbol("max_recursion_depth"));
+            IRubyObject recursionLimit = options.fastARef(context.runtime.newSymbol("recursion_limit"));
 
-            if (maxRecursionDepth != null) {
-                maxRecursionDepthInt = ((RubyNumeric) maxRecursionDepth).getIntValue();
+            if (recursionLimit != null) {
+                recursionLimitInt = ((RubyNumeric) recursionLimit).getIntValue();
             }
         }
-        return context.runtime.newString(new ByteList(message.build(context, 0, maxRecursionDepthInt).toByteArray()));
+        return context.runtime.newString(new ByteList(message.build(context, 0, recursionLimitInt).toByteArray()));
     }
 
     /*
@@ -496,7 +496,7 @@ public class RubyMessage extends RubyObject {
      * format) under the interpretation given by this message class's definition
      * and returns a message object with the corresponding field values.
      * @param options [Hash] options for the decoder
-     *  max_recursion_depth: set to maximum decoding depth for message (default is 100)
+     *  recursion_limit: set to maximum decoding depth for message (default is 100)
      */
     @JRubyMethod(required = 1, optional = 1, meta = true)
     public static IRubyObject decode(ThreadContext context, IRubyObject recv, IRubyObject[] args) {
@@ -510,9 +510,9 @@ public class RubyMessage extends RubyObject {
                 throw context.runtime.newArgumentError("Expected hash arguments.");
             }
 
-            IRubyObject maxRecursionDepth = ((RubyHash) args[1]).fastARef(context.runtime.newSymbol("max_recursion_depth"));
-            if (maxRecursionDepth != null) {
-                input.setRecursionLimit(((RubyNumeric) maxRecursionDepth).getIntValue());
+            IRubyObject recursionLimit = ((RubyHash) args[1]).fastARef(context.runtime.newSymbol("recursion_limit"));
+            if (recursionLimit != null) {
+                input.setRecursionLimit(((RubyNumeric) recursionLimit).getIntValue());
             }
         }
 
@@ -664,9 +664,9 @@ public class RubyMessage extends RubyObject {
         return ret;
     }
 
-    protected DynamicMessage build(ThreadContext context, int depth, int maxRecursionDepth) {
-        if (depth >= maxRecursionDepth) {
-            throw context.runtime.newRuntimeError("Maximum recursion depth exceeded during encoding.");
+    protected DynamicMessage build(ThreadContext context, int depth, int recursionLimit) {
+        if (depth >= recursionLimit) {
+            throw context.runtime.newRuntimeError("Recursion limit exceeded during encoding.");
         }
 
         // Handle the typical case where the fields.keySet contain the fieldDescriptors
@@ -676,7 +676,7 @@ public class RubyMessage extends RubyObject {
             if (value instanceof RubyMap) {
                 builder.clearField(fieldDescriptor);
                 RubyDescriptor mapDescriptor = (RubyDescriptor) getDescriptorForField(context, fieldDescriptor);
-                for (DynamicMessage kv : ((RubyMap) value).build(context, mapDescriptor, depth, maxRecursionDepth)) {
+                for (DynamicMessage kv : ((RubyMap) value).build(context, mapDescriptor, depth, recursionLimit)) {
                     builder.addRepeatedField(fieldDescriptor, kv);
                 }
 
@@ -685,7 +685,7 @@ public class RubyMessage extends RubyObject {
 
                 builder.clearField(fieldDescriptor);
                 for (int i = 0; i < repeatedField.size(); i++) {
-                    Object item = convert(context, fieldDescriptor, repeatedField.get(i), depth, maxRecursionDepth,
+                    Object item = convert(context, fieldDescriptor, repeatedField.get(i), depth, recursionLimit,
                         /*isDefaultValueForBytes*/ false);
                     builder.addRepeatedField(fieldDescriptor, item);
                 }
@@ -707,7 +707,7 @@ public class RubyMessage extends RubyObject {
                     fieldDescriptor.getFullName().equals("google.protobuf.FieldDescriptorProto.default_value")) {
                     isDefaultStringForBytes = true;
                 }
-                builder.setField(fieldDescriptor, convert(context, fieldDescriptor, value, depth, maxRecursionDepth, isDefaultStringForBytes));
+                builder.setField(fieldDescriptor, convert(context, fieldDescriptor, value, depth, recursionLimit, isDefaultStringForBytes));
             }
         }
 
@@ -727,7 +727,7 @@ public class RubyMessage extends RubyObject {
                 builder.clearField(fieldDescriptor);
                 RubyDescriptor mapDescriptor = (RubyDescriptor) getDescriptorForField(context,
                     fieldDescriptor);
-                for (DynamicMessage kv : ((RubyMap) value).build(context, mapDescriptor, depth, maxRecursionDepth)) {
+                for (DynamicMessage kv : ((RubyMap) value).build(context, mapDescriptor, depth, recursionLimit)) {
                     builder.addRepeatedField(fieldDescriptor, kv);
                 }
             }
@@ -839,7 +839,7 @@ public class RubyMessage extends RubyObject {
     // convert a ruby object to protobuf type, skip type check since it is checked on the way in
     private Object convert(ThreadContext context,
                            FieldDescriptor fieldDescriptor,
-                           IRubyObject value, int depth, int maxRecursionDepth,
+                           IRubyObject value, int depth, int recursionLimit,
                            boolean isDefaultStringForBytes) {
         Object val = null;
         switch (fieldDescriptor.getType()) {
@@ -881,7 +881,7 @@ public class RubyMessage extends RubyObject {
                 }
                 break;
             case MESSAGE:
-                val = ((RubyMessage) value).build(context, depth + 1, maxRecursionDepth);
+                val = ((RubyMessage) value).build(context, depth + 1, recursionLimit);
                 break;
             case ENUM:
                 EnumDescriptor enumDescriptor = fieldDescriptor.getEnumType();
