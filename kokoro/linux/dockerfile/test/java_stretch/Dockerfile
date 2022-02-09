@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y \
   maven \
   openjdk-11-jdk \
   # Python dependencies
+  python2 \
   python3-setuptools \
   python3-pip \
   virtualenv \
