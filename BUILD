@@ -28,9 +28,7 @@ ZLIB_DEPS = ["@zlib//:zlib"]
 ################################################################################
 
 MSVC_COPTS = [
-    "/wd4018",  # -Wno-sign-compare
     "/wd4065",  # switch statement contains 'default' but no 'case' labels
-    "/wd4146",  # unary minus operator applied to unsigned type, result still unsigned
     "/wd4244",  # 'conversion' conversion from 'type1' to 'type2', possible loss of data
     "/wd4251",  # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
     "/wd4267",  # 'var' : conversion from 'size_t' to 'type', possible loss of data
@@ -48,7 +46,6 @@ COPTS = select({
     ":msvc": MSVC_COPTS,
     "//conditions:default": [
         "-DHAVE_ZLIB",
-        "-Wmissing-field-initializers",
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
     ],
@@ -163,7 +160,6 @@ cc_library(
         "src/google/protobuf/arenastring.cc",
         "src/google/protobuf/extension_set.cc",
         "src/google/protobuf/generated_enum_util.cc",
-        "src/google/protobuf/generated_message_table_driven_lite.cc",
         "src/google/protobuf/generated_message_tctable_lite.cc",
         "src/google/protobuf/generated_message_util.cc",
         "src/google/protobuf/implicit_weak_message.cc",
@@ -225,7 +221,6 @@ cc_library(
         "src/google/protobuf/field_mask.pb.cc",
         "src/google/protobuf/generated_message_bases.cc",
         "src/google/protobuf/generated_message_reflection.cc",
-        "src/google/protobuf/generated_message_table_driven.cc",
         "src/google/protobuf/generated_message_tctable_full.cc",
         "src/google/protobuf/io/gzip_stream.cc",
         "src/google/protobuf/io/printer.cc",
@@ -501,6 +496,8 @@ cc_library(
         "src/google/protobuf/compiler/plugin.cc",
         "src/google/protobuf/compiler/plugin.pb.cc",
         "src/google/protobuf/compiler/python/python_generator.cc",
+        "src/google/protobuf/compiler/python/python_helpers.cc",
+        "src/google/protobuf/compiler/python/python_pyi_generator.cc",
         "src/google/protobuf/compiler/ruby/ruby_generator.cc",
         "src/google/protobuf/compiler/subprocess.cc",
         "src/google/protobuf/compiler/zip_writer.cc",

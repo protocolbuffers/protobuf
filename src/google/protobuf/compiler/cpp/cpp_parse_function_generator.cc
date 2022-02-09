@@ -92,8 +92,7 @@ bool IsFieldEligibleForFastParsing(
     return false;
   }
   switch (field->type()) {
-    // Strings, enums, and groups are not handled on the fast path.
-    case FieldDescriptor::TYPE_STRING:
+    // Groups are not handled on the fast path.
     case FieldDescriptor::TYPE_GROUP:
       return false;
 
@@ -109,6 +108,7 @@ bool IsFieldEligibleForFastParsing(
       break;
 
       // Some bytes fields can be handled on fast path.
+    case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
       if (field->options().ctype() != FieldOptions::STRING ||
           !field->default_value_string().empty() ||
@@ -237,15 +237,15 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
         }
         break;
 
-        // TODO(b/209516305): add TYPE_STRING once field names are available.
-      case FieldDescriptor::TYPE_BYTES:
-        if (IsStringInlined(field, options)) {
-          // TODO(b/198211897): support InilnedStringField.
-          handled = false;
-        } else {
-          handled = true;
-        }
-        break;
+        case FieldDescriptor::TYPE_BYTES:
+        case FieldDescriptor::TYPE_STRING:
+          if (IsStringInlined(field, options)) {
+            // TODO(b/198211897): support InilnedStringField.
+            handled = false;
+          } else {
+            handled = true;
+          }
+          break;
 
       case FieldDescriptor::TYPE_MESSAGE:
         // TODO(b/210762816): support remaining field types.
@@ -777,9 +777,9 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
     } else {
       format(
           "{$1$,\n"
-          " {$2$, $3$, $4$, PROTOBUF_FIELD_OFFSET($classname$, $5$_)}},\n",
+          " {$2$, $3$, $4$, PROTOBUF_FIELD_OFFSET($classname$, $5$)}},\n",
           info.func_name, info.coded_tag, info.hasbit_idx, info.aux_idx,
-          FieldName(info.field));
+          FieldMemberName(info.field));
     }
   }
 }
@@ -1003,7 +1003,7 @@ void ParseFunctionGenerator::GenerateArenaString(Formatter& format,
                 "::" + MakeDefaultName(field) + ".get()";
   format(
       "if (arena != nullptr) {\n"
-      "  ptr = ctx->ReadArenaString(ptr, &$msg$$name$_, arena");
+      "  ptr = ctx->ReadArenaString(ptr, &$msg$$field$, arena");
   if (IsStringInlined(field, options_)) {
     GOOGLE_DCHECK(!inlined_string_indices_.empty());
     int inlined_string_index = inlined_string_indices_[field->index()];
@@ -1022,10 +1022,9 @@ void ParseFunctionGenerator::GenerateArenaString(Formatter& format,
       ");\n"
       "} else {\n"
       "  ptr = ::_pbi::InlineGreedyStringParser("
-      "$msg$$name$_.MutableNoArenaNoDefault(&$1$), ptr, ctx);\n"
+      "$msg$$field$.MutableNoCopy(nullptr), ptr, ctx);\n"
       "}\n"
-      "const std::string* str = &$msg$$name$_.Get(); (void)str;\n",
-      default_string);
+      "const std::string* str = &$msg$$field$.Get(); (void)str;\n");
 }
 
 void ParseFunctionGenerator::GenerateStrings(Formatter& format,
@@ -1134,13 +1133,13 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
             format(
                 "auto object = "
                 "::$proto_ns$::internal::InitEnumParseWrapper<"
-                "$unknown_fields_type$>(&$msg$$name$_, $1$_IsValid, "
+                "$unknown_fields_type$>(&$msg$$field$, $1$_IsValid, "
                 "$2$, &$msg$_internal_metadata_);\n"
                 "ptr = ctx->ParseMessage(&object, ptr);\n",
                 QualifiedClassName(val->enum_type(), options_),
                 field->number());
           } else {
-            format("ptr = ctx->ParseMessage(&$msg$$name$_, ptr);\n");
+            format("ptr = ctx->ParseMessage(&$msg$$field$, ptr);\n");
           }
         } else if (IsLazy(field, options_, scc_analyzer_)) {
           bool eager_verify =
@@ -1157,19 +1156,19 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
             format(
                 "if (!$msg$_internal_has_$name$()) {\n"
                 "  $msg$clear_$1$();\n"
-                "  $msg$$1$_.$name$_ = ::$proto_ns$::Arena::CreateMessage<\n"
+                "  $msg$$field$ = ::$proto_ns$::Arena::CreateMessage<\n"
                 "      ::$proto_ns$::internal::LazyField>("
                 "$msg$GetArenaForAllocation());\n"
                 "  $msg$set_has_$name$();\n"
                 "}\n"
-                "auto* lazy_field = $msg$$1$_.$name$_;\n",
+                "auto* lazy_field = $msg$$field$;\n",
                 field->containing_oneof()->name());
           } else if (HasHasbit(field)) {
             format(
                 "_Internal::set_has_$name$(&$has_bits$);\n"
-                "auto* lazy_field = &$msg$$name$_;\n");
+                "auto* lazy_field = &$msg$$field$;\n");
           } else {
-            format("auto* lazy_field = &$msg$$name$_;\n");
+            format("auto* lazy_field = &$msg$$field$;\n");
           }
           format(
               "::$proto_ns$::internal::LazyFieldParseHelper<\n"
@@ -1192,7 +1191,7 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
                 "ptr);\n");
           } else {
             format(
-                "ptr = ctx->ParseMessage($msg$$name$_.AddWeak("
+                "ptr = ctx->ParseMessage($msg$$field$.AddWeak("
                 "reinterpret_cast<const ::$proto_ns$::MessageLite*>($1$ptr_)"
                 "), ptr);\n",
                 QualifiedDefaultInstanceName(field->message_type(), options_));
@@ -1291,7 +1290,7 @@ void ParseFunctionGenerator::GenerateFieldBody(
             format("_Internal::set_has_$name$(&$has_bits$);\n");
           }
           format(
-              "$msg$$name$_ = ::$proto_ns$::internal::ReadVarint$1$$2$(&ptr);\n"
+              "$msg$$field$ = ::$proto_ns$::internal::ReadVarint$1$$2$(&ptr);\n"
               "CHK_(ptr);\n",
               zigzag, size);
         }
@@ -1438,6 +1437,8 @@ void ParseFunctionGenerator::GenerateFieldSwitch(
   format.Indent();
 
   for (const auto* field : fields) {
+    // Set abbreviated form instead of field_member.
+    format.Set("field", FieldMemberName(field));
     PrintFieldComment(format, field);
     format("case $1$:\n", field->number());
     format.Indent();

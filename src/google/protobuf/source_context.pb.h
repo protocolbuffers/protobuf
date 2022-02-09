@@ -225,7 +225,7 @@ template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void SourceContext::set_file_name(ArgT0&& arg0, ArgT... args) {
  
- file_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+ file_name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
 inline std::string* SourceContext::mutable_file_name() {
@@ -238,15 +238,15 @@ inline const std::string& SourceContext::_internal_file_name() const {
 }
 inline void SourceContext::_internal_set_file_name(const std::string& value) {
   
-  file_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
+  file_name_.Set(value, GetArenaForAllocation());
 }
 inline std::string* SourceContext::_internal_mutable_file_name() {
   
-  return file_name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+  return file_name_.Mutable(GetArenaForAllocation());
 }
 inline std::string* SourceContext::release_file_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
-  return file_name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  return file_name_.Release();
 }
 inline void SourceContext::set_allocated_file_name(std::string* file_name) {
   if (file_name != nullptr) {
@@ -254,11 +254,10 @@ inline void SourceContext::set_allocated_file_name(std::string* file_name) {
   } else {
     
   }
-  file_name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), file_name,
-      GetArenaForAllocation());
+  file_name_.SetAllocated(file_name, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (file_name_.IsDefault()) {
-    file_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+    file_name_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)

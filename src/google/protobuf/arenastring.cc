@@ -30,6 +30,7 @@
 
 #include <google/protobuf/arenastring.h>
 
+#include <cstddef>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -109,13 +110,7 @@ std::string* ArenaStringPtr::SetAndReturnNewString() {
   return new_string;
 }
 
-void ArenaStringPtr::DestroyNoArenaSlowPath() {
-  GOOGLE_DCHECK(tagged_ptr_.IsAllocated());
-  delete UnsafeMutablePointer();
-}
-
-void ArenaStringPtr::Set(const std::string*, ConstStringParam value,
-                         ::google::protobuf::Arena* arena) {
+void ArenaStringPtr::Set(ConstStringParam value, Arena* arena) {
   if (IsDefault()) {
     // If we're not on an arena, skip straight to a true string to avoid
     // possible copy cost later.
@@ -125,8 +120,8 @@ void ArenaStringPtr::Set(const std::string*, ConstStringParam value,
     UnsafeMutablePointer()->assign(value.data(), value.length());
   }
 }
-void ArenaStringPtr::Set(const std::string*, std::string&& value,
-                         ::google::protobuf::Arena* arena) {
+
+void ArenaStringPtr::Set(std::string&& value, Arena* arena) {
   if (IsDefault()) {
     NewString(arena, std::move(value));
   } else if (IsFixedSizeArena()) {
@@ -139,47 +134,26 @@ void ArenaStringPtr::Set(const std::string*, std::string&& value,
   }
 }
 
-void ArenaStringPtr::Set(EmptyDefault, ConstStringParam value,
-                         ::google::protobuf::Arena* arena) {
-  Set(&GetEmptyStringAlreadyInited(), value, arena);
-}
-
-void ArenaStringPtr::Set(EmptyDefault, std::string&& value,
-                         ::google::protobuf::Arena* arena) {
-  Set(&GetEmptyStringAlreadyInited(), std::move(value), arena);
-}
-
-void ArenaStringPtr::Set(NonEmptyDefault, ConstStringParam value,
-                         ::google::protobuf::Arena* arena) {
-  Set(nullptr, value, arena);
-}
-
-void ArenaStringPtr::Set(NonEmptyDefault, std::string&& value,
-                         ::google::protobuf::Arena* arena) {
-  Set(nullptr, std::move(value), arena);
-}
-
-std::string* ArenaStringPtr::Mutable(EmptyDefault, ::google::protobuf::Arena* arena) {
-  if (!IsFixedSizeArena() && !IsDefault()) {
-    return UnsafeMutablePointer();
+std::string* ArenaStringPtr::Mutable(Arena* arena) {
+  if (tagged_ptr_.IsMutable()) {
+    return tagged_ptr_.Get();
   } else {
     return MutableSlow(arena);
   }
 }
 
 std::string* ArenaStringPtr::Mutable(const LazyString& default_value,
-                                     ::google::protobuf::Arena* arena) {
-  if (!IsFixedSizeArena() && !IsDefault()) {
-    return UnsafeMutablePointer();
+                                     Arena* arena) {
+  if (tagged_ptr_.IsMutable()) {
+    return tagged_ptr_.Get();
   } else {
     return MutableSlow(arena, default_value);
   }
 }
 
-std::string* ArenaStringPtr::MutableNoCopy(const std::string*,
-                                           ::google::protobuf::Arena* arena) {
-  if (!IsFixedSizeArena() && !IsDefault()) {
-    return UnsafeMutablePointer();
+std::string* ArenaStringPtr::MutableNoCopy(Arena* arena) {
+  if (tagged_ptr_.IsMutable()) {
+    return tagged_ptr_.Get();
   } else {
     GOOGLE_DCHECK(IsDefault());
     // Allocate empty. The contents are not relevant.
@@ -194,45 +168,24 @@ std::string* ArenaStringPtr::MutableSlow(::google::protobuf::Arena* arena,
   return NewString(arena, lazy_default.get()...);
 }
 
-std::string* ArenaStringPtr::Release(const std::string* default_value,
-                                     ::google::protobuf::Arena* arena) {
-  if (IsDefault()) {
-    return nullptr;
-  } else {
-    return ReleaseNonDefault(default_value, arena);
+std::string* ArenaStringPtr::Release() {
+  if (IsDefault()) return nullptr;
+
+  std::string* released = tagged_ptr_.Get();
+  if (!tagged_ptr_.IsAllocated()) {
+    released = tagged_ptr_.IsMutable() ? new std::string(std::move(*released))
+                                       : new std::string(*released);
   }
+  InitDefault();
+  return released;
 }
 
-std::string* ArenaStringPtr::ReleaseNonDefault(const std::string* default_value,
-                                               ::google::protobuf::Arena* arena) {
-  GOOGLE_DCHECK(!IsDefault());
-
-  if (!IsFixedSizeArena()) {
-    std::string* released;
-    if (arena != nullptr) {
-      released = new std::string;
-      released->swap(*UnsafeMutablePointer());
-    } else {
-      released = UnsafeMutablePointer();
-    }
-    tagged_ptr_.SetDefault(default_value);
-    return released;
-  } else /* IsFixedSizeArena() */ {
-    GOOGLE_DCHECK(arena != nullptr);
-    std::string* released = new std::string(Get());
-    tagged_ptr_.SetDefault(default_value);
-    return released;
-  }
-}
-
-void ArenaStringPtr::SetAllocated(const std::string* default_value,
-                                  std::string* value, ::google::protobuf::Arena* arena) {
+void ArenaStringPtr::SetAllocated(std::string* value, Arena* arena) {
   // Release what we have first.
-  if (arena == nullptr && !IsDefault()) {
-    delete UnsafeMutablePointer();
-  }
+  Destroy();
+
   if (value == nullptr) {
-    tagged_ptr_.SetDefault(default_value);
+    InitDefault();
   } else {
 #ifndef NDEBUG
     // On debug builds, copy the string so the address differs.  delete will
@@ -246,21 +199,10 @@ void ArenaStringPtr::SetAllocated(const std::string* default_value,
   }
 }
 
-void ArenaStringPtr::Destroy(const std::string*, ::google::protobuf::Arena* arena) {
-  if (arena == nullptr) {
-    GOOGLE_DCHECK(!IsFixedSizeArena());
-    if (!IsDefault()) {
-      delete UnsafeMutablePointer();
-    }
+void ArenaStringPtr::Destroy() {
+  if (tagged_ptr_.IsAllocated()) {
+    delete tagged_ptr_.Get();
   }
-}
-
-void ArenaStringPtr::Destroy(EmptyDefault, ::google::protobuf::Arena* arena) {
-  Destroy(&GetEmptyStringAlreadyInited(), arena);
-}
-
-void ArenaStringPtr::Destroy(NonEmptyDefault, ::google::protobuf::Arena* arena) {
-  Destroy(nullptr, arena);
 }
 
 void ArenaStringPtr::ClearToEmpty() {

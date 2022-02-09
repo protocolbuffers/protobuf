@@ -137,8 +137,9 @@ static void Dealloc(PyObject* pself) {
     reinterpret_cast<CMessage*>(self->parent)->unknown_field_set = nullptr;
   }
   Py_CLEAR(self->parent);
+  auto* py_type = Py_TYPE(pself);
   self->~PyUnknownFields();
-  Py_TYPE(pself)->tp_free(pself);
+  py_type->tp_free(pself);
 }
 
 static PySequenceMethods SqMethods = {

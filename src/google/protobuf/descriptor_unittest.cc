@@ -66,6 +66,8 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+using ::testing::AnyOf;
+
 namespace google {
 namespace protobuf {
 
@@ -1307,7 +1309,8 @@ TEST_F(StylizedFieldNamesTest, CamelcaseName) {
 
 TEST_F(StylizedFieldNamesTest, FindByLowercaseName) {
   EXPECT_EQ(message_->field(0), message_->FindFieldByLowercaseName("foo_foo"));
-  EXPECT_EQ(message_->field(1), message_->FindFieldByLowercaseName("foobar"));
+  EXPECT_THAT(message_->FindFieldByLowercaseName("foobar"),
+              AnyOf(message_->field(1), message_->field(4)));
   EXPECT_EQ(message_->field(2), message_->FindFieldByLowercaseName("foobaz"));
   EXPECT_TRUE(message_->FindFieldByLowercaseName("FooBar") == nullptr);
   EXPECT_TRUE(message_->FindFieldByLowercaseName("fooBaz") == nullptr);
@@ -1316,8 +1319,8 @@ TEST_F(StylizedFieldNamesTest, FindByLowercaseName) {
 
   EXPECT_EQ(message_->extension(0),
             message_->FindExtensionByLowercaseName("bar_foo"));
-  EXPECT_EQ(message_->extension(1),
-            message_->FindExtensionByLowercaseName("barbar"));
+  EXPECT_THAT(message_->FindExtensionByLowercaseName("barbar"),
+              AnyOf(message_->extension(1), message_->extension(4)));
   EXPECT_EQ(message_->extension(2),
             message_->FindExtensionByLowercaseName("barbaz"));
   EXPECT_TRUE(message_->FindExtensionByLowercaseName("BarBar") == nullptr);
@@ -1327,7 +1330,8 @@ TEST_F(StylizedFieldNamesTest, FindByLowercaseName) {
 
   EXPECT_EQ(file_->extension(0),
             file_->FindExtensionByLowercaseName("baz_foo"));
-  EXPECT_EQ(file_->extension(1), file_->FindExtensionByLowercaseName("bazbar"));
+  EXPECT_THAT(file_->FindExtensionByLowercaseName("bazbar"),
+              AnyOf(file_->extension(1), file_->extension(4)));
   EXPECT_EQ(file_->extension(2), file_->FindExtensionByLowercaseName("bazbaz"));
   EXPECT_TRUE(file_->FindExtensionByLowercaseName("BazBar") == nullptr);
   EXPECT_TRUE(file_->FindExtensionByLowercaseName("bazBaz") == nullptr);
@@ -1335,7 +1339,8 @@ TEST_F(StylizedFieldNamesTest, FindByLowercaseName) {
 }
 
 TEST_F(StylizedFieldNamesTest, FindByCamelcaseName) {
-  EXPECT_EQ(message_->field(0), message_->FindFieldByCamelcaseName("fooFoo"));
+  EXPECT_THAT(message_->FindFieldByCamelcaseName("fooFoo"),
+              AnyOf(message_->field(0), message_->field(3)));
   EXPECT_EQ(message_->field(1), message_->FindFieldByCamelcaseName("fooBar"));
   EXPECT_EQ(message_->field(2), message_->FindFieldByCamelcaseName("fooBaz"));
   EXPECT_TRUE(message_->FindFieldByCamelcaseName("foo_foo") == nullptr);
@@ -1343,8 +1348,8 @@ TEST_F(StylizedFieldNamesTest, FindByCamelcaseName) {
   EXPECT_TRUE(message_->FindFieldByCamelcaseName("barFoo") == nullptr);
   EXPECT_TRUE(message_->FindFieldByCamelcaseName("nosuchfield") == nullptr);
 
-  EXPECT_EQ(message_->extension(0),
-            message_->FindExtensionByCamelcaseName("barFoo"));
+  EXPECT_THAT(message_->FindExtensionByCamelcaseName("barFoo"),
+              AnyOf(message_->extension(0), message_->extension(3)));
   EXPECT_EQ(message_->extension(1),
             message_->FindExtensionByCamelcaseName("barBar"));
   EXPECT_EQ(message_->extension(2),
@@ -1354,7 +1359,8 @@ TEST_F(StylizedFieldNamesTest, FindByCamelcaseName) {
   EXPECT_TRUE(message_->FindExtensionByCamelcaseName("fooFoo") == nullptr);
   EXPECT_TRUE(message_->FindExtensionByCamelcaseName("nosuchfield") == nullptr);
 
-  EXPECT_EQ(file_->extension(0), file_->FindExtensionByCamelcaseName("bazFoo"));
+  EXPECT_THAT(file_->FindExtensionByCamelcaseName("bazFoo"),
+              AnyOf(file_->extension(0), file_->extension(3)));
   EXPECT_EQ(file_->extension(1), file_->FindExtensionByCamelcaseName("bazBar"));
   EXPECT_EQ(file_->extension(2), file_->FindExtensionByCamelcaseName("bazBaz"));
   EXPECT_TRUE(file_->FindExtensionByCamelcaseName("baz_foo") == nullptr);

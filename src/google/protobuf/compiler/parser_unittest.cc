@@ -2466,7 +2466,9 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
 //   *output_field to the descriptor of the field, and *output_index to -1.
 // Returns true if the path was valid, false otherwise.  A gTest failure is
 // recorded before returning false.
-bool FollowPath(const Message& root, const int* path_begin, const int* path_end,
+bool FollowPath(const Message& root,
+                RepeatedField<int>::const_iterator path_begin,
+                RepeatedField<int>::const_iterator path_end,
                 const Message** output_message,
                 const FieldDescriptor** output_field, int* output_index) {
   if (path_begin == path_end) {

@@ -259,7 +259,9 @@ public final class Internal {
 
   /** Helper method for implementing {@link Message#equals(Object)} for bytes field. */
   public static boolean equals(List<byte[]> a, List<byte[]> b) {
-    if (a.size() != b.size()) return false;
+    if (a.size() != b.size()) {
+      return false;
+    }
     for (int i = 0; i < a.size(); ++i) {
       if (!Arrays.equals(a.get(i), b.get(i))) {
         return false;

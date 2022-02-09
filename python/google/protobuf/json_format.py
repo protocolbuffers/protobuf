@@ -95,7 +95,8 @@ def MessageToJson(
     sort_keys=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
-    float_precision=None):
+    float_precision=None,
+    ensure_ascii=True):
   """Converts protobuf message to JSON format.
 
   Args:
@@ -114,6 +115,8 @@ def MessageToJson(
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
         default.
     float_precision: If set, use this to specify float field valid digits.
+    ensure_ascii: If True, strings with non-ASCII characters are escaped.
+        If False, Unicode strings are returned unchanged.
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
@@ -124,7 +127,7 @@ def MessageToJson(
       use_integers_for_enums,
       descriptor_pool,
       float_precision=float_precision)
-  return printer.ToJsonString(message, indent, sort_keys)
+  return printer.ToJsonString(message, indent, sort_keys, ensure_ascii)
 
 
 def MessageToDict(
@@ -190,9 +193,10 @@ class _Printer(object):
     else:
       self.float_format = None
 
-  def ToJsonString(self, message, indent, sort_keys):
+  def ToJsonString(self, message, indent, sort_keys, ensure_ascii):
     js = self._MessageToJsonObject(message)
-    return json.dumps(js, indent=indent, sort_keys=sort_keys)
+    return json.dumps(
+        js, indent=indent, sort_keys=sort_keys, ensure_ascii=ensure_ascii)
 
   def _MessageToJsonObject(self, message):
     """Converts message to an object according to Proto3 JSON Specification."""

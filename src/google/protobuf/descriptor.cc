@@ -49,7 +49,6 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/any.h>
@@ -58,6 +57,7 @@
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
@@ -256,7 +256,8 @@ class FlatAllocation {
 
   template <typename U>
   bool Init() {
-    if (std::is_trivially_constructible<U>::value) return true;
+    // Skip for the `char` block. No need to zero initialize it.
+    if (std::is_same<U, char>::value) return true;
     for (int i = 0, size = Size<U>(); i < size; ++i) {
       ::new (data() + BeginOffset<U>() + sizeof(U) * i) U{};
     }
@@ -1299,10 +1300,6 @@ class FileDescriptorTables {
   bool AddFieldByNumber(FieldDescriptor* field);
   bool AddEnumValueByNumber(EnumValueDescriptor* value);
 
-  // Adds the field to the lowercase_name and camelcase_name maps.  Never
-  // fails because we allow duplicates; the first field by the name wins.
-  void AddFieldByStylizedNames(const FieldDescriptor* field);
-
   // Populates p->first->locations_by_path_ from p->second.
   // Unusual signature dictated by internal::call_once.
   static void BuildLocationsByPath(
@@ -1329,12 +1326,13 @@ class FileDescriptorTables {
   void FieldsByCamelcaseNamesLazyInitInternal() const;
 
   SymbolsByParentSet symbols_by_parent_;
-  mutable FieldsByNameMap fields_by_lowercase_name_;
-  std::unique_ptr<FieldsByNameMap> fields_by_lowercase_name_tmp_;
   mutable internal::once_flag fields_by_lowercase_name_once_;
-  mutable FieldsByNameMap fields_by_camelcase_name_;
-  std::unique_ptr<FieldsByNameMap> fields_by_camelcase_name_tmp_;
   mutable internal::once_flag fields_by_camelcase_name_once_;
+  // Make these fields atomic to avoid race conditions with
+  // GetEstimatedOwnedMemoryBytesSize. Once the pointer is set the map won't
+  // change anymore.
+  mutable std::atomic<const FieldsByNameMap*> fields_by_lowercase_name_{};
+  mutable std::atomic<const FieldsByNameMap*> fields_by_camelcase_name_{};
   FieldsByNumberSet fields_by_number_;  // Not including extensions.
   EnumValuesByNumberSet enum_values_by_number_;
   mutable EnumValuesByNumberSet unknown_enum_values_by_number_
@@ -1372,11 +1370,12 @@ DescriptorPool::Tables::Tables() {
 
 DescriptorPool::Tables::~Tables() { GOOGLE_DCHECK(checkpoints_.empty()); }
 
-FileDescriptorTables::FileDescriptorTables()
-    : fields_by_lowercase_name_tmp_(new FieldsByNameMap()),
-      fields_by_camelcase_name_tmp_(new FieldsByNameMap()) {}
+FileDescriptorTables::FileDescriptorTables() {}
 
-FileDescriptorTables::~FileDescriptorTables() {}
+FileDescriptorTables::~FileDescriptorTables() {
+  delete fields_by_lowercase_name_.load(std::memory_order_acquire);
+  delete fields_by_camelcase_name_.load(std::memory_order_acquire);
+}
 
 inline const FileDescriptorTables& FileDescriptorTables::GetEmptyInstance() {
   static auto file_descriptor_tables =
@@ -1519,13 +1518,14 @@ void FileDescriptorTables::FieldsByLowercaseNamesLazyInitStatic(
 }
 
 void FileDescriptorTables::FieldsByLowercaseNamesLazyInitInternal() const {
+  auto* map = new FieldsByNameMap;
   for (Symbol symbol : symbols_by_parent_) {
     const FieldDescriptor* field = symbol.field_descriptor();
     if (!field) continue;
-    PointerStringPair lowercase_key(FindParentForFieldsByMap(field),
-                                    field->lowercase_name().c_str());
-    InsertIfNotPresent(&fields_by_lowercase_name_, lowercase_key, field);
+    (*map)[{FindParentForFieldsByMap(field), field->lowercase_name().c_str()}] =
+        field;
   }
+  fields_by_lowercase_name_.store(map, std::memory_order_release);
 }
 
 inline const FieldDescriptor* FileDescriptorTables::FindFieldByLowercaseName(
@@ -1533,8 +1533,9 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByLowercaseName(
   internal::call_once(
       fields_by_lowercase_name_once_,
       &FileDescriptorTables::FieldsByLowercaseNamesLazyInitStatic, this);
-  return FindPtrOrNull(fields_by_lowercase_name_,
-                            PointerStringPair(parent, lowercase_name));
+  return FindPtrOrNull(
+      *fields_by_lowercase_name_.load(std::memory_order_acquire),
+      PointerStringPair(parent, lowercase_name));
 }
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
@@ -1543,13 +1544,14 @@ void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
 }
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitInternal() const {
+  auto* map = new FieldsByNameMap;
   for (Symbol symbol : symbols_by_parent_) {
     const FieldDescriptor* field = symbol.field_descriptor();
     if (!field) continue;
-    PointerStringPair camelcase_key(FindParentForFieldsByMap(field),
-                                    field->camelcase_name().c_str());
-    InsertIfNotPresent(&fields_by_camelcase_name_, camelcase_key, field);
+    (*map)[{FindParentForFieldsByMap(field), field->camelcase_name().c_str()}] =
+        field;
   }
+  fields_by_camelcase_name_.store(map, std::memory_order_release);
 }
 
 inline const FieldDescriptor* FileDescriptorTables::FindFieldByCamelcaseName(
@@ -1557,8 +1559,9 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByCamelcaseName(
   internal::call_once(
       fields_by_camelcase_name_once_,
       FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic, this);
-  return FindPtrOrNull(fields_by_camelcase_name_,
-                            PointerStringPair(parent, camelcase_name));
+  return FindPtrOrNull(
+      *fields_by_camelcase_name_.load(std::memory_order_acquire),
+      PointerStringPair(parent, camelcase_name));
 }
 
 inline const EnumValueDescriptor* FileDescriptorTables::FindEnumValueByNumber(
@@ -1618,8 +1621,8 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     // EnumDescriptor (it's not a part of the enum as originally defined), but
     // we do insert it into the table so that we can return the same pointer
     // later.
-    std::string enum_value_name = StringPrintf("UNKNOWN_ENUM_VALUE_%s_%d",
-                                               parent->name().c_str(), number);
+    std::string enum_value_name = StringPrintf(
+        "UNKNOWN_ENUM_VALUE_%s_%d", parent->name().c_str(), number);
     auto* pool = DescriptorPool::generated_pool();
     auto* tables = const_cast<DescriptorPool::Tables*>(pool->tables_.get());
     internal::FlatAllocator alloc;
@@ -1688,39 +1691,7 @@ bool DescriptorPool::Tables::AddFile(const FileDescriptor* file) {
   }
 }
 
-void FileDescriptorTables::FinalizeTables() {
-  // Clean up the temporary maps used by AddFieldByStylizedNames().
-  fields_by_lowercase_name_tmp_ = nullptr;
-  fields_by_camelcase_name_tmp_ = nullptr;
-}
-
-void FileDescriptorTables::AddFieldByStylizedNames(
-    const FieldDescriptor* field) {
-  const void* parent = FindParentForFieldsByMap(field);
-
-  // We want fields_by_{lower,camel}case_name_ to be lazily built, but
-  // cross-link order determines which entry will be present in the case of a
-  // conflict. So we use the temporary maps that get destroyed after
-  // BuildFileImpl() to detect the conflicts, and only store the conflicts in
-  // the map that will persist. We will then lazily populate the rest of the
-  // entries from fields_by_number_.
-
-  PointerStringPair lowercase_key(parent, field->lowercase_name().c_str());
-  if (!InsertIfNotPresent(fields_by_lowercase_name_tmp_.get(),
-                               lowercase_key, field)) {
-    InsertIfNotPresent(
-        &fields_by_lowercase_name_, lowercase_key,
-        FindPtrOrNull(*fields_by_lowercase_name_tmp_, lowercase_key));
-  }
-
-  PointerStringPair camelcase_key(parent, field->camelcase_name().c_str());
-  if (!InsertIfNotPresent(fields_by_camelcase_name_tmp_.get(),
-                               camelcase_key, field)) {
-    InsertIfNotPresent(
-        &fields_by_camelcase_name_, camelcase_key,
-        FindPtrOrNull(*fields_by_camelcase_name_tmp_, camelcase_key));
-  }
-}
+void FileDescriptorTables::FinalizeTables() {}
 
 bool FileDescriptorTables::AddFieldByNumber(FieldDescriptor* field) {
   // Skip fields that are at the start of the sequence.
@@ -6269,9 +6240,6 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
   if (field->options_ == nullptr) {
     field->options_ = &FieldOptions::default_instance();
   }
-
-  // Add the field to the lowercase-name and camelcase-name tables.
-  file_tables_->AddFieldByStylizedNames(field);
 
   if (proto.has_extendee()) {
     Symbol extendee =

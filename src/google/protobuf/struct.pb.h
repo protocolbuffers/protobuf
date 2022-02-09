@@ -828,7 +828,7 @@ inline void Value::set_has_string_value() {
 }
 inline void Value::clear_string_value() {
   if (_internal_has_string_value()) {
-    kind_.string_value_.Destroy(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+    kind_.string_value_.Destroy();
     clear_has_kind();
   }
 }
@@ -843,7 +843,7 @@ inline void Value::set_string_value(ArgT0&& arg0, ArgT... args) {
     set_has_string_value();
     kind_.string_value_.InitDefault();
   }
-  kind_.string_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  kind_.string_value_.Set( static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
 inline std::string* Value::mutable_string_value() {
@@ -863,7 +863,7 @@ inline void Value::_internal_set_string_value(const std::string& value) {
     set_has_string_value();
     kind_.string_value_.InitDefault();
   }
-  kind_.string_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
+  kind_.string_value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Value::_internal_mutable_string_value() {
   if (!_internal_has_string_value()) {
@@ -871,14 +871,13 @@ inline std::string* Value::_internal_mutable_string_value() {
     set_has_string_value();
     kind_.string_value_.InitDefault();
   }
-  return kind_.string_value_.Mutable(
-      ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+  return kind_.string_value_.Mutable(      GetArenaForAllocation());
 }
 inline std::string* Value::release_string_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)
   if (_internal_has_string_value()) {
     clear_has_kind();
-    return kind_.string_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+    return kind_.string_value_.Release();
   } else {
     return nullptr;
   }

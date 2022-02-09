@@ -413,27 +413,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   template <typename T>
   class InternalHelper {
-   public:
+   private:
     // Provides access to protected GetOwningArena to generated messages.
     static Arena* GetOwningArena(const T* p) { return p->GetOwningArena(); }
 
-    // Provides access to protected GetArenaForAllocation to generated messages.
-    static Arena* GetArenaForAllocation(const T* p) {
-      return GetArenaForAllocationInternal(
-          p, std::is_convertible<T*, MessageLite*>());
-    }
-
-    // Creates message-owned arena.
-    static Arena* CreateMessageOwnedArena() {
-      return new Arena(internal::MessageOwned{});
-    }
-
-    // Checks whether the given arena is message-owned.
-    static bool IsMessageOwnedArena(Arena* arena) {
-      return arena->IsMessageOwned();
-    }
-
-   private:
     static Arena* GetArenaForAllocationInternal(
         const T* p, std::true_type /*is_derived_from<MessageLite>*/) {
       return p->GetArenaForAllocation();
@@ -515,6 +498,29 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     friend class Arena;
     friend class TestUtil::ReflectionTester;
   };
+
+  // Provides access to protected GetOwningArena to generated messages.  For
+  // internal use only.
+  template <typename T>
+  static Arena* InternalGetOwningArena(const T* p) {
+    return InternalHelper<T>::GetOwningArena(p);
+  }
+
+  // Provides access to protected GetArenaForAllocation to generated messages.
+  // For internal use only.
+  template <typename T>
+  static Arena* InternalGetArenaForAllocation(const T* p) {
+    return InternalHelper<T>::GetArenaForAllocationInternal(
+        p, std::is_convertible<T*, MessageLite*>());
+  }
+
+  // Creates message-owned arena.  For internal use only.
+  static Arena* InternalCreateMessageOwnedArena() {
+    return new Arena(internal::MessageOwned{});
+  }
+
+  // Checks whether this arena is message-owned.  For internal use only.
+  bool InternalIsMessageOwnedArena() { return IsMessageOwned(); }
 
   // Helper typetraits that indicates support for arenas in a type T at compile
   // time. This is public only to allow construction of higher-level templated

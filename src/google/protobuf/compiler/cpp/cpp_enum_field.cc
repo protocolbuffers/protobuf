@@ -91,7 +91,7 @@ void EnumFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
-      "  return static_cast< $type$ >($name$_);\n"
+      "  return static_cast< $type$ >($field$);\n"
       "}\n"
       "inline $type$ $classname$::$name$() const {\n"
       "$annotate_get$"
@@ -104,7 +104,7 @@ void EnumFieldGenerator::GenerateInlineAccessorDefinitions(
   }
   format(
       "  $set_hasbit$\n"
-      "  $name$_ = value;\n"
+      "  $field$ = value;\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n"
       "  _internal_set_$name$(value);\n"
@@ -115,7 +115,7 @@ void EnumFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void EnumFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_ = $default$;\n");
+  format("$field$ = $default$;\n");
 }
 
 void EnumFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
@@ -125,7 +125,7 @@ void EnumFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 
 void EnumFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("swap($name$_, other->$name$_);\n");
+  format("swap($field$, other->$field$);\n");
 }
 
 void EnumFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
@@ -177,7 +177,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
       "  if (_internal_has_$name$()) {\n"
-      "    return static_cast< $type$ >($field_member$);\n"
+      "    return static_cast< $type$ >($field$);\n"
       "  }\n"
       "  return static_cast< $type$ >($default$);\n"
       "}\n"
@@ -195,7 +195,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "  }\n"
-      "  $field_member$ = value;\n"
+      "  $field$ = value;\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n"
       "  _internal_set_$name$(value);\n"
@@ -206,7 +206,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void EnumOneofFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$field_member$ = $default$;\n");
+  format("$field$ = $default$;\n");
 }
 
 void EnumOneofFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
@@ -264,7 +264,7 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$(int index) const {\n"
-      "  return static_cast< $type$ >($name$_.Get(index));\n"
+      "  return static_cast< $type$ >($field$.Get(index));\n"
       "}\n"
       "inline $type$ $classname$::$name$(int index) const {\n"
       "$annotate_get$"
@@ -276,7 +276,7 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
     format("  assert($type$_IsValid(value));\n");
   }
   format(
-      "  $name$_.Set(index, value);\n"
+      "  $field$.Set(index, value);\n"
       "$annotate_set$"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
@@ -285,7 +285,7 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
     format("  assert($type$_IsValid(value));\n");
   }
   format(
-      "  $name$_.Add(value);\n"
+      "  $field$.Add(value);\n"
       "}\n"
       "inline void $classname$::add_$name$($type$ value) {\n"
       "  _internal_add_$name$(value);\n"
@@ -296,11 +296,11 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "$classname$::$name$() const {\n"
       "$annotate_list$"
       "  // @@protoc_insertion_point(field_list:$full_name$)\n"
-      "  return $name$_;\n"
+      "  return $field$;\n"
       "}\n"
       "inline ::$proto_ns$::RepeatedField<int>*\n"
       "$classname$::_internal_mutable_$name$() {\n"
-      "  return &$name$_;\n"
+      "  return &$field$;\n"
       "}\n"
       "inline ::$proto_ns$::RepeatedField<int>*\n"
       "$classname$::mutable_$name$() {\n"
@@ -313,19 +313,19 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
 void RepeatedEnumFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.Clear();\n");
+  format("$field$.Clear();\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.MergeFrom(from.$name$_);\n");
+  format("$field$.MergeFrom(from.$field$);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSwappingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.InternalSwap(&other->$name$_);\n");
+  format("$field$.InternalSwap(&other->$field$);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateConstructorCode(
@@ -344,7 +344,7 @@ void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizesToArray(
         "_$name$_cached_byte_size_.load(std::memory_order_relaxed);\n"
         "  if (byte_size > 0) {\n"
         "    target = stream->WriteEnumPacked(\n"
-        "        $number$, $name$_, byte_size, target);\n"
+        "        $number$, $field$, byte_size, target);\n"
         "  }\n"
         "}\n");
   } else {
@@ -375,7 +375,8 @@ void RepeatedEnumFieldGenerator::GenerateByteSize(io::Printer* printer) const {
     format(
         "if (data_size > 0) {\n"
         "  total_size += $tag_size$ +\n"
-        "    ::_pbi::WireFormatLite::Int32Size(static_cast<$int32$>(data_size));\n"
+        "    "
+        "::_pbi::WireFormatLite::Int32Size(static_cast<$int32$>(data_size));\n"
         "}\n"
         "int cached_size = ::_pbi::ToCachedSize(data_size);\n"
         "_$name$_cached_byte_size_.store(cached_size,\n"

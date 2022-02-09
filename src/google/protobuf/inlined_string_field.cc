@@ -55,8 +55,7 @@ std::string* InlinedStringField::Mutable(const LazyString& /*default_value*/,
   return MutableSlow(arena, donated, donating_states, mask, msg);
 }
 
-std::string* InlinedStringField::Mutable(ArenaStringPtr::EmptyDefault,
-                                         Arena* arena, bool donated,
+std::string* InlinedStringField::Mutable(Arena* arena, bool donated,
                                          uint32_t* donating_states,
                                          uint32_t mask, MessageLite* msg) {
   if (arena == nullptr || !donated) {
@@ -83,27 +82,28 @@ void InlinedStringField::SetAllocated(const std::string* default_value,
   SetAllocatedNoArena(default_value, value);
 }
 
-void InlinedStringField::Set(const std::string* default_value,
-                             std::string&& value, Arena* arena, bool donated,
+void InlinedStringField::Set(std::string&& value, Arena* arena, bool donated,
                              uint32_t* donating_states, uint32_t mask,
                              MessageLite* msg) {
   (void)donating_states;
   (void)mask;
   (void)msg;
-  SetNoArena(default_value, std::move(value));
+  SetNoArena(std::move(value));
 }
 
-std::string* InlinedStringField::Release(const std::string* default_value,
-                                         Arena* arena, bool donated) {
-  if (arena == nullptr && !donated) {
-    return ReleaseNonDefaultNoArena(default_value);
-  }
-  return ReleaseNonDefault(default_value, arena);
+std::string* InlinedStringField::Release() {
+  auto* released = new std::string(std::move(*get_mutable()));
+  get_mutable()->clear();
+  return released;
 }
 
-std::string* InlinedStringField::ReleaseNonDefault(
-    const std::string* default_value, Arena* arena) {
-  return ReleaseNonDefaultNoArena(default_value);
+std::string* InlinedStringField::Release(Arena* arena, bool donated) {
+  // We can not steal donated arena strings.
+  std::string* released = (arena != nullptr && donated)
+                              ? new std::string(*get_mutable())
+                              : new std::string(std::move(*get_mutable()));
+  get_mutable()->clear();
+  return released;
 }
 
 void InlinedStringField::ClearToDefault(const LazyString& default_value,
