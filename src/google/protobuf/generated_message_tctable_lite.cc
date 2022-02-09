@@ -46,8 +46,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-const uint32_t TcParser::kMtSmallScanSize;
-
 using FieldEntry = TcParseTableBase::FieldEntry;
 
 //////////////////////////////////////////////////////////////////////////////
