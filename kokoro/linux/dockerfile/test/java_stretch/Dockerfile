@@ -26,9 +26,10 @@ RUN apt-get update && apt-get install -y \
   # Java dependencies
   maven \
   openjdk-11-jdk \
-  # Python dependencies
+  # Required for the gtest build.
   python2 \
+  # Python dependencies
   python3-setuptools \
   python3-pip \
-  virtualenv \
+  python3-venv \
   && apt-get clean
