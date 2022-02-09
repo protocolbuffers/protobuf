@@ -53,8 +53,6 @@ template void AlignFail<4>(uintptr_t);
 template void AlignFail<8>(uintptr_t);
 #endif
 
-const uint32_t TcParser::kMtSmallScanSize;
-
 const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
   return GenericFallbackImpl<MessageLite, std::string>(PROTOBUF_TC_PARAM_PASS);
 }
