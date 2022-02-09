@@ -316,13 +316,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       };
 
   /**
-<<<<<<< HEAD
-   * Returns a {@link Comparator} which compares {@link ByteString}-s lexicographically
-   * as sequences of unsigned byte values between 0 and 255, inclusive.
-=======
    * Returns a {@link Comparator} which compares {@link ByteString}-s lexicographically as sequences
    * of unsigned bytes (i.e. values between 0 and 255, inclusive).
->>>>>>> refs/tags/sync-piper
    *
    * <p>For example, {@code (byte) -1} is considered to be greater than {@code (byte) 1} because it
    * is interpreted as an unsigned value, {@code 255}:
