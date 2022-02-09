@@ -121,7 +121,7 @@ build_dist_install() {
   popd
 
   # Try to install Python
-  virtualenv --no-site-packages venv
+  python3 -m venv venv
   source venv/bin/activate
   pushd python
   python3 setup.py clean build sdist
