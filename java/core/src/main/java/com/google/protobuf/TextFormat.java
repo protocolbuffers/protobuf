@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 
 /**
  * Provide text parsing and formatting support for proto2 instances. The implementation largely
- * follows google/protobuf/text_format.cc.
+ * follows text_format.cc.
  *
  * @author wenboz@google.com Wenbo Zhu
  * @author kenton@google.com Kenton Varda
@@ -2307,7 +2307,7 @@ public final class TextFormat {
    * Un-escape a byte sequence as escaped using {@link #escapeBytes(ByteString)}. Two-digit hex
    * escapes (starting with "\x") are also recognized.
    */
-  public static ByteString unescapeBytes(final CharSequence charString)
+  public static ByteString unescapeBytes(CharSequence charString)
       throws InvalidEscapeSequenceException {
     // First convert the Java character sequence to UTF-8 bytes.
     ByteString input = ByteString.copyFromUtf8(charString.toString());
@@ -2444,9 +2444,10 @@ public final class TextFormat {
                           + "' is not a valid code point value");
                 }
                 Character.UnicodeBlock unicodeBlock = Character.UnicodeBlock.of(codepoint);
-                if (unicodeBlock.equals(Character.UnicodeBlock.LOW_SURROGATES)
+                if (unicodeBlock != null
+                        && (unicodeBlock.equals(Character.UnicodeBlock.LOW_SURROGATES)
                     || unicodeBlock.equals(Character.UnicodeBlock.HIGH_SURROGATES)
-                    || unicodeBlock.equals(Character.UnicodeBlock.HIGH_PRIVATE_USE_SURROGATES)) {
+                    || unicodeBlock.equals(Character.UnicodeBlock.HIGH_PRIVATE_USE_SURROGATES))) {
                   throw new InvalidEscapeSequenceException(
                       "Invalid escape sequence: '\\U"
                           + input.substring(i, i + 8).toStringUtf8()

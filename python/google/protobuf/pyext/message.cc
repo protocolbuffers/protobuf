@@ -1002,7 +1002,7 @@ int DeleteRepeatedField(
     }
   }
 
-  Arena* arena = Arena::InternalHelper<Message>::GetArenaForAllocation(message);
+  Arena* arena = Arena::InternalGetArenaForAllocation(message);
   GOOGLE_DCHECK_EQ(arena, nullptr)
       << "python protobuf is expected to be allocated from heap";
   // Remove items, starting from the end.

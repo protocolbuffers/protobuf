@@ -55,10 +55,8 @@ const char kTypeGoogleProdComPrefix[] = "type.googleprod.com/";
 bool AnyMetadata::InternalPackFrom(Arena* arena, const MessageLite& message,
                                    StringPiece type_url_prefix,
                                    StringPiece type_name) {
-  type_url_->Set(&::google::protobuf::internal::GetEmptyString(),
-                 GetTypeUrl(type_name, type_url_prefix), arena);
-  return message.SerializeToString(
-      value_->Mutable(ArenaStringPtr::EmptyDefault{}, arena));
+  type_url_->Set(GetTypeUrl(type_name, type_url_prefix), arena);
+  return message.SerializeToString(value_->Mutable(arena));
 }
 
 bool AnyMetadata::InternalUnpackTo(StringPiece type_name,

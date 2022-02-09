@@ -88,11 +88,11 @@ TEST(IsEntryForFieldNumTest, Matcher) {
 }  // namespace
 
 class FindFieldEntryTest : public ::testing::Test {
- protected:
+ public:
   // Calls the private `FindFieldEntry` function.
   template <size_t kFastTableSizeLog2, size_t kNumEntries, size_t kNumFieldAux,
             size_t kNameTableSize>
-  const TcParseTableBase::FieldEntry* FindFieldEntry(
+  static const TcParseTableBase::FieldEntry* FindFieldEntry(
       const TcParseTable<kFastTableSizeLog2, kNumEntries, kNumFieldAux,
                          kNameTableSize>& table,
       uint32_t tag) {
@@ -102,7 +102,7 @@ class FindFieldEntryTest : public ::testing::Test {
   // Calls the private `FieldName` function.
   template <size_t kFastTableSizeLog2, size_t kNumEntries, size_t kNumFieldAux,
             size_t kNameTableSize>
-  StringPiece FieldName(
+  static StringPiece FieldName(
       const TcParseTable<kFastTableSizeLog2, kNumEntries, kNumFieldAux,
                          kNameTableSize>& table,
       const TcParseTableBase::FieldEntry* entry) {
@@ -112,7 +112,7 @@ class FindFieldEntryTest : public ::testing::Test {
   // Calls the private `MessageName` function.
   template <size_t kFastTableSizeLog2, size_t kNumEntries, size_t kNumFieldAux,
             size_t kNameTableSize>
-  StringPiece MessageName(
+  static StringPiece MessageName(
       const TcParseTable<kFastTableSizeLog2, kNumEntries, kNumFieldAux,
                          kNameTableSize>& table) {
     return TcParser::MessageName(&table.header);
@@ -293,196 +293,197 @@ TEST_F(FindFieldEntryTest, EmptyMessage) {
   EXPECT_THAT(MessageName(table), Eq("MessageName"));
 }
 
-TEST_F(FindFieldEntryTest, BigMessage) {
-  // Make a monster with lots of field numbers
-  // clang-format off
-  const TcParseTable<5, 134, 5, 2176> test_all_types_table = {
-      // header:
-      {
-          0, 0, 0, 0,  // has_bits_offset, extensions
-          418, 248,    // max_field_number, fast_idx_mask
-          14, 1,       // num_sequential_fields, sequential_fields_start
-          135,         // num_field_entries
-          5,           // num_aux_entries
-          offsetof(decltype(test_all_types_table), aux_entries),
-          nullptr,     // default instance
-          nullptr,     // fallback function
-      },
-      {{
-          // tail-call table
-      }},
-      {{// field numbers
-        1,   2,   3,   4,   5,   6,   7,   8,   9,  10,
-       11,  12,  13,  14,  15,  18,  19,  21,  22,  24,
-       25,  27,  31,  32,  33,  34,  35,  36,  37,  38,
-       39,  40,  41,  42,  43,  44,  45,  48,  49,  51,
-       52,  54,  55,  56,  57,  58,  59,  60,  61,  62,
-       63,  64,  65,  66,  67,  68,  69,  70,  71,  72,
-       73,  74,  75,  76,  77,  78,  79,  80,  81,  82,
-       83,  84,  85,  86,  87,  88,  89,  90,  91,  92,
-       93,  94,  95,  96,  97,  98,  99, 100, 101, 102,
-      111, 112, 113, 114, 115, 116, 117, 118, 119, 201,
-      241, 242, 243, 244, 245, 246, 247, 248, 249, 250,
-      251, 252, 253, 254, 255, 321, 322, 401, 402, 403,
-      404, 405, 406, 407, 408, 409, 410, 411, 412, 413,
-      414, 415, 416, 417}},
+// Make a monster with lots of field numbers
+// clang-format off
+const TcParseTable<5, 134, 5, 2176> test_all_types_table = {
+    // header:
+    {
+        0, 0, 0, 0,  // has_bits_offset, extensions
+        418, 248,    // max_field_number, fast_idx_mask
+        14, 1,       // num_sequential_fields, sequential_fields_start
+        135,         // num_field_entries
+        5,           // num_aux_entries
+        offsetof(decltype(test_all_types_table), aux_entries),
+        nullptr,     // default instance
+        nullptr,     // fallback function
+    },
     {{
-        // "mini" table
+        // tail-call table
     }},
-    {{  // auxiliary entries (not used in this test)
-        {-1, 4},
-        {-1, 4},
-        {-1, 4},
-        {-1, 4},
-        {-1, 4},
-      }}, {{  // name lengths
-        "\1"  // message name
-        "\16\16\17\17\17\17\20\20\21\21\16\17\15\17\16\27\30\24\25\25"
-        "\15\21\16\16\17\17\17\17\20\20\21\21\16\17\15\17\16\27\30\24"
-        "\25\25\15\17\17\21\21\21\21\23\23\25\25\17\20\15\21\20\31\32"
-        "\26\27\14\14\15\15\15\15\16\16\17\17\14\15\13\22\16\16\17\17"
-        "\17\17\20\20\21\21\16\17\15\24\14\24\14\13\12\14\13\14\12\4"
-        "\15\15\16\16\16\16\17\17\20\20\15\16\14\16\15\25\25\12\13\14"
-        "\15\13\15\12\12\13\14\14\14\16\16\15\15\16\0"
-          // names
-        "M"
-        "optional_int32"
-        "optional_int64"
-        "optional_uint32"
-        "optional_uint64"
-        "optional_sint32"
-        "optional_sint64"
-        "optional_fixed32"
-        "optional_fixed64"
-        "optional_sfixed32"
-        "optional_sfixed64"
-        "optional_float"
-        "optional_double"
-        "optional_bool"
-        "optional_string"
-        "optional_bytes"
-        "optional_nested_message"
-        "optional_foreign_message"
-        "optional_nested_enum"
-        "optional_foreign_enum"
-        "optional_string_piece"
-        "optional_cord"
-        "recursive_message"
-        "repeated_int32"
-        "repeated_int64"
-        "repeated_uint32"
-        "repeated_uint64"
-        "repeated_sint32"
-        "repeated_sint64"
-        "repeated_fixed32"
-        "repeated_fixed64"
-        "repeated_sfixed32"
-        "repeated_sfixed64"
-        "repeated_float"
-        "repeated_double"
-        "repeated_bool"
-        "repeated_string"
-        "repeated_bytes"
-        "repeated_nested_message"
-        "repeated_foreign_message"
-        "repeated_nested_enum"
-        "repeated_foreign_enum"
-        "repeated_string_piece"
-        "repeated_cord"
-        "map_int32_int32"
-        "map_int64_int64"
-        "map_uint32_uint32"
-        "map_uint64_uint64"
-        "map_sint32_sint32"
-        "map_sint64_sint64"
-        "map_fixed32_fixed32"
-        "map_fixed64_fixed64"
-        "map_sfixed32_sfixed32"
-        "map_sfixed64_sfixed64"
-        "map_int32_float"
-        "map_int32_double"
-        "map_bool_bool"
-        "map_string_string"
-        "map_string_bytes"
-        "map_string_nested_message"
-        "map_string_foreign_message"
-        "map_string_nested_enum"
-        "map_string_foreign_enum"
-        "packed_int32"
-        "packed_int64"
-        "packed_uint32"
-        "packed_uint64"
-        "packed_sint32"
-        "packed_sint64"
-        "packed_fixed32"
-        "packed_fixed64"
-        "packed_sfixed32"
-        "packed_sfixed64"
-        "packed_float"
-        "packed_double"
-        "packed_bool"
-        "packed_nested_enum"
-        "unpacked_int32"
-        "unpacked_int64"
-        "unpacked_uint32"
-        "unpacked_uint64"
-        "unpacked_sint32"
-        "unpacked_sint64"
-        "unpacked_fixed32"
-        "unpacked_fixed64"
-        "unpacked_sfixed32"
-        "unpacked_sfixed64"
-        "unpacked_float"
-        "unpacked_double"
-        "unpacked_bool"
-        "unpacked_nested_enum"
-        "oneof_uint32"
-        "oneof_nested_message"
-        "oneof_string"
-        "oneof_bytes"
-        "oneof_bool"
-        "oneof_uint64"
-        "oneof_float"
-        "oneof_double"
-        "oneof_enum"
-        "data"
-        "default_int32"
-        "default_int64"
-        "default_uint32"
-        "default_uint64"
-        "default_sint32"
-        "default_sint64"
-        "default_fixed32"
-        "default_fixed64"
-        "default_sfixed32"
-        "default_sfixed64"
-        "default_float"
-        "default_double"
-        "default_bool"
-        "default_string"
-        "default_bytes"
-        "optional_lazy_message"
-        "repeated_lazy_message"
-        "fieldname1"
-        "field_name2"
-        "_field_name3"
-        "field__name4_"
-        "field0name5"
-        "field_0_name6"
-        "fieldName7"
-        "FieldName8"
-        "field_Name9"
-        "Field_Name10"
-        "FIELD_NAME11"
-        "FIELD_name12"
-        "__field_name13"
-        "__Field_name14"
-        "field__name15"
-        "field__Name16"
-        "field_name17__"
-    }},
-  };
-  // clang-format on
+    {{// field numbers
+      1,   2,   3,   4,   5,   6,   7,   8,   9,  10,
+     11,  12,  13,  14,  15,  18,  19,  21,  22,  24,
+     25,  27,  31,  32,  33,  34,  35,  36,  37,  38,
+     39,  40,  41,  42,  43,  44,  45,  48,  49,  51,
+     52,  54,  55,  56,  57,  58,  59,  60,  61,  62,
+     63,  64,  65,  66,  67,  68,  69,  70,  71,  72,
+     73,  74,  75,  76,  77,  78,  79,  80,  81,  82,
+     83,  84,  85,  86,  87,  88,  89,  90,  91,  92,
+     93,  94,  95,  96,  97,  98,  99, 100, 101, 102,
+    111, 112, 113, 114, 115, 116, 117, 118, 119, 201,
+    241, 242, 243, 244, 245, 246, 247, 248, 249, 250,
+    251, 252, 253, 254, 255, 321, 322, 401, 402, 403,
+    404, 405, 406, 407, 408, 409, 410, 411, 412, 413,
+    414, 415, 416, 417}},
+  {{
+      // "mini" table
+  }},
+  {{  // auxiliary entries (not used in this test)
+      {-1, 4},
+      {-1, 4},
+      {-1, 4},
+      {-1, 4},
+      {-1, 4},
+    }}, {{  // name lengths
+      "\1"  // message name
+      "\16\16\17\17\17\17\20\20\21\21\16\17\15\17\16\27\30\24\25\25"
+      "\15\21\16\16\17\17\17\17\20\20\21\21\16\17\15\17\16\27\30\24"
+      "\25\25\15\17\17\21\21\21\21\23\23\25\25\17\20\15\21\20\31\32"
+      "\26\27\14\14\15\15\15\15\16\16\17\17\14\15\13\22\16\16\17\17"
+      "\17\17\20\20\21\21\16\17\15\24\14\24\14\13\12\14\13\14\12\4"
+      "\15\15\16\16\16\16\17\17\20\20\15\16\14\16\15\25\25\12\13\14"
+      "\15\13\15\12\12\13\14\14\14\16\16\15\15\16\0"
+        // names
+      "M"
+      "optional_int32"
+      "optional_int64"
+      "optional_uint32"
+      "optional_uint64"
+      "optional_sint32"
+      "optional_sint64"
+      "optional_fixed32"
+      "optional_fixed64"
+      "optional_sfixed32"
+      "optional_sfixed64"
+      "optional_float"
+      "optional_double"
+      "optional_bool"
+      "optional_string"
+      "optional_bytes"
+      "optional_nested_message"
+      "optional_foreign_message"
+      "optional_nested_enum"
+      "optional_foreign_enum"
+      "optional_string_piece"
+      "optional_cord"
+      "recursive_message"
+      "repeated_int32"
+      "repeated_int64"
+      "repeated_uint32"
+      "repeated_uint64"
+      "repeated_sint32"
+      "repeated_sint64"
+      "repeated_fixed32"
+      "repeated_fixed64"
+      "repeated_sfixed32"
+      "repeated_sfixed64"
+      "repeated_float"
+      "repeated_double"
+      "repeated_bool"
+      "repeated_string"
+      "repeated_bytes"
+      "repeated_nested_message"
+      "repeated_foreign_message"
+      "repeated_nested_enum"
+      "repeated_foreign_enum"
+      "repeated_string_piece"
+      "repeated_cord"
+      "map_int32_int32"
+      "map_int64_int64"
+      "map_uint32_uint32"
+      "map_uint64_uint64"
+      "map_sint32_sint32"
+      "map_sint64_sint64"
+      "map_fixed32_fixed32"
+      "map_fixed64_fixed64"
+      "map_sfixed32_sfixed32"
+      "map_sfixed64_sfixed64"
+      "map_int32_float"
+      "map_int32_double"
+      "map_bool_bool"
+      "map_string_string"
+      "map_string_bytes"
+      "map_string_nested_message"
+      "map_string_foreign_message"
+      "map_string_nested_enum"
+      "map_string_foreign_enum"
+      "packed_int32"
+      "packed_int64"
+      "packed_uint32"
+      "packed_uint64"
+      "packed_sint32"
+      "packed_sint64"
+      "packed_fixed32"
+      "packed_fixed64"
+      "packed_sfixed32"
+      "packed_sfixed64"
+      "packed_float"
+      "packed_double"
+      "packed_bool"
+      "packed_nested_enum"
+      "unpacked_int32"
+      "unpacked_int64"
+      "unpacked_uint32"
+      "unpacked_uint64"
+      "unpacked_sint32"
+      "unpacked_sint64"
+      "unpacked_fixed32"
+      "unpacked_fixed64"
+      "unpacked_sfixed32"
+      "unpacked_sfixed64"
+      "unpacked_float"
+      "unpacked_double"
+      "unpacked_bool"
+      "unpacked_nested_enum"
+      "oneof_uint32"
+      "oneof_nested_message"
+      "oneof_string"
+      "oneof_bytes"
+      "oneof_bool"
+      "oneof_uint64"
+      "oneof_float"
+      "oneof_double"
+      "oneof_enum"
+      "data"
+      "default_int32"
+      "default_int64"
+      "default_uint32"
+      "default_uint64"
+      "default_sint32"
+      "default_sint64"
+      "default_fixed32"
+      "default_fixed64"
+      "default_sfixed32"
+      "default_sfixed64"
+      "default_float"
+      "default_double"
+      "default_bool"
+      "default_string"
+      "default_bytes"
+      "optional_lazy_message"
+      "repeated_lazy_message"
+      "fieldname1"
+      "field_name2"
+      "_field_name3"
+      "field__name4_"
+      "field0name5"
+      "field_0_name6"
+      "fieldName7"
+      "FieldName8"
+      "field_Name9"
+      "Field_Name10"
+      "FIELD_NAME11"
+      "FIELD_name12"
+      "__field_name13"
+      "__Field_name14"
+      "field__name15"
+      "field__Name16"
+      "field_name17__"
+  }},
+};
+// clang-format on
+
+TEST_F(FindFieldEntryTest, BigMessage) {
   EXPECT_THAT(MessageName(test_all_types_table), Eq("M"));
   for (int field_num :
        {1, 12, 31, 42, 57, 68, 79, 90, 101, 119, 249, 402, 412}) {

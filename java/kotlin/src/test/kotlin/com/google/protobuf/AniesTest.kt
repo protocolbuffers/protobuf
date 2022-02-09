@@ -28,32 +28,43 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/inlined_string_field.h>
+package com.google.protobuf.kotlin
 
-#include <algorithm>
-#include <cstdlib>
-#include <cstring>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
+import com.google.common.truth.Truth.assertThat
+import com.google.protobuf.Any as ProtoAny
+import com.google.protobuf.InvalidProtocolBufferException
+import protobuf_unittest.UnittestProto.BoolMessage
+import protobuf_unittest.UnittestProto.Int32Message
+import protobuf_unittest.int32Message
+import kotlin.test.assertFailsWith
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/arenastring.h>
-#include <gtest/gtest.h>
-#include <google/protobuf/stubs/strutil.h>
+/** Tests for extension methods on [ProtoAny]. */
+@RunWith(JUnit4::class)
+class AniesTest {
+  companion object {
+    val anAny = ProtoAny.pack(int32Message { data = 5 })
+  }
 
+  @Test
+  fun isA_Positive() {
+    assertThat(anAny.isA<Int32Message>()).isTrue()
+  }
 
-namespace google {
-namespace protobuf {
+  @Test
+  fun isA_Negative() {
+    assertThat(anAny.isA<BoolMessage>()).isFalse()
+  }
 
-using internal::ArenaStringPtr;
-using internal::InlinedStringField;
+  @Test
+  fun unpackValid() {
+    assertThat(anAny.unpack<Int32Message>().data).isEqualTo(5)
+  }
 
-namespace {
-}  // namespace
-}  // namespace protobuf
-}  // namespace google
+  @Test
+  fun unpackInvalid() {
+    assertFailsWith<InvalidProtocolBufferException> { anAny.unpack<BoolMessage>() }
+  }
+}

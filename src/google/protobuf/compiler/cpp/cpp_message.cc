@@ -1240,12 +1240,13 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
       } else {
         format(
             "inline int $classname$::_internal_$name$_size() const {\n"
-            "  return $name$_$1$.size();\n"
+            "  return $1$$2$.size();\n"
             "}\n"
             "inline int $classname$::$name$_size() const {\n"
             "$annotate_size$"
             "  return _internal_$name$_size();\n"
             "}\n",
+            FieldMemberName(field),
             IsImplicitWeakField(field, options_, scc_analyzer_) &&
                     field->message_type()
                 ? ".weak"
@@ -1391,8 +1392,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   if (EnableMessageOwnedArena(descriptor_, options_)) {
     format(
         "inline $classname$() : $classname$("
-        "::$proto_ns$::Arena::InternalHelper<$classname$>::\n"
-        "    CreateMessageOwnedArena(), true) {}\n");
+        "::$proto_ns$::Arena::InternalCreateMessageOwnedArena(), true) {}\n");
   } else {
     format("inline $classname$() : $classname$(nullptr) {}\n");
   }

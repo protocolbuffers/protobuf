@@ -170,6 +170,13 @@ public class TextFormatTest {
     assertThat(javaText).isEqualTo(ALL_FIELDS_SET_TEXT);
   }
 
+  @Test
+  // https://github.com/protocolbuffers/protobuf/issues/9447
+  public void testCharacterNotInUnicodeBlock() throws TextFormat.InvalidEscapeSequenceException {
+    ByteString actual = TextFormat.unescapeBytes("\\U000358da");
+    assertThat(actual.size()).isEqualTo(4);
+  }
+
   /** Print TestAllTypes as Builder and compare with golden file. */
   @Test
   public void testPrintMessageBuilder() throws Exception {

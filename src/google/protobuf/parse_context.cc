@@ -30,7 +30,6 @@
 
 #include <google/protobuf/parse_context.h>
 
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/arenastring.h>
@@ -51,8 +50,8 @@ namespace {
 // Only call if at start of tag.
 bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth) {
   constexpr int kSlopBytes = EpsCopyInputStream::kSlopBytes;
-  GOOGLE_DCHECK(overrun >= 0);
-  GOOGLE_DCHECK(overrun <= kSlopBytes);
+  GOOGLE_DCHECK_GE(overrun, 0);
+  GOOGLE_DCHECK_LE(overrun, kSlopBytes);
   auto ptr = begin + overrun;
   auto end = begin + kSlopBytes;
   while (ptr < end) {
@@ -181,17 +180,17 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
   // if (ptr < limit_end_) return {ptr, false};
   GOOGLE_DCHECK(limit_end_ == buffer_end_ + (std::min)(0, limit_));
   // At this point we know the following assertion holds.
-  GOOGLE_DCHECK(limit_ > 0);
+  GOOGLE_DCHECK_GT(limit_, 0);
   GOOGLE_DCHECK(limit_end_ == buffer_end_);  // because limit_ > 0
   const char* p;
   do {
     // We are past the end of buffer_end_, in the slop region.
-    GOOGLE_DCHECK(overrun >= 0);
+    GOOGLE_DCHECK_GE(overrun, 0);
     p = NextBuffer(overrun, depth);
     if (p == nullptr) {
       // We are at the end of the stream
       if (PROTOBUF_PREDICT_FALSE(overrun != 0)) return {nullptr, true};
-      GOOGLE_DCHECK(limit_ > 0);
+      GOOGLE_DCHECK_GT(limit_, 0);
       limit_end_ = buffer_end_;
       // Distinguish ending on a pushed limit or ending on end-of-stream.
       SetEndOfStream();

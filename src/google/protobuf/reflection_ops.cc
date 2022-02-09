@@ -423,16 +423,16 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
 
 void GenericSwap(Message* lhs, Message* rhs) {
 #ifndef PROTOBUF_FORCE_COPY_IN_SWAP
-  GOOGLE_DCHECK(Arena::InternalHelper<Message>::GetOwningArena(lhs) !=
-         Arena::InternalHelper<Message>::GetOwningArena(rhs));
-  GOOGLE_DCHECK(Arena::InternalHelper<Message>::GetOwningArena(lhs) != nullptr ||
-         Arena::InternalHelper<Message>::GetOwningArena(rhs) != nullptr);
+  GOOGLE_DCHECK(Arena::InternalGetOwningArena(lhs) !=
+         Arena::InternalGetOwningArena(rhs));
+  GOOGLE_DCHECK(Arena::InternalGetOwningArena(lhs) != nullptr ||
+         Arena::InternalGetOwningArena(rhs) != nullptr);
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
   // At least one of these must have an arena, so make `rhs` point to it.
-  Arena* arena = Arena::InternalHelper<Message>::GetOwningArena(rhs);
+  Arena* arena = Arena::InternalGetOwningArena(rhs);
   if (arena == nullptr) {
     std::swap(lhs, rhs);
-    arena = Arena::InternalHelper<Message>::GetOwningArena(rhs);
+    arena = Arena::InternalGetOwningArena(rhs);
   }
 
   // Improve efficiency by placing the temporary on an arena so that messages

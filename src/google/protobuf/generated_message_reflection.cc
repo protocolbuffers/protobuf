@@ -280,10 +280,9 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
   total_size += GetUnknownFields(message).SpaceUsedExcludingSelfLong();
 
   // If this message owns an arena, add any unused space that's been allocated.
-  auto* arena = Arena::InternalHelper<Message>::GetArenaForAllocation(&message);
-  if (arena != nullptr &&
-      Arena::InternalHelper<Message>::GetOwningArena(&message) == nullptr &&
-      Arena::InternalHelper<Message>::IsMessageOwnedArena(arena)) {
+  auto* arena = Arena::InternalGetArenaForAllocation(&message);
+  if (arena != nullptr && Arena::InternalGetOwningArena(&message) == nullptr &&
+      arena->InternalIsMessageOwnedArena()) {
     total_size += arena->SpaceAllocated() - arena->SpaceUsed();
   }
 
@@ -354,31 +353,26 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (field->options().ctype()) {
             default:  // TODO(kenton):  Support other string reps.
-            case FieldOptions::STRING: {
+            case FieldOptions::STRING:
               if (IsInlined(field)) {
                 const std::string* ptr =
                     &GetField<InlinedStringField>(message, field).GetNoArena();
                 total_size += StringSpaceUsedExcludingSelfLong(*ptr);
-                break;
-              }
-
-              const std::string* ptr =
-                  GetField<ArenaStringPtr>(message, field).GetPointer();
-
-              // Initially, the string points to the default value stored
-              // in the prototype. Only count the string if it has been
-              // changed from the default value.
-              // Except oneof fields, those never point to a default instance,
-              // and there is no default instance to point to.
-              if (schema_.InRealOneof(field) ||
-                  ptr != DefaultRaw<ArenaStringPtr>(field).GetPointer()) {
-                // string fields are represented by just a pointer, so also
-                // include sizeof(string) as well.
-                total_size +=
-                    sizeof(*ptr) + StringSpaceUsedExcludingSelfLong(*ptr);
+              } else {
+                // Initially, the string points to the default value stored
+                // in the prototype. Only count the string if it has been
+                // changed from the default value.
+                // Except oneof fields, those never point to a default instance,
+                // and there is no default instance to point to.
+                const auto& str = GetField<ArenaStringPtr>(message, field);
+                if (!str.IsDefault() || schema_.InRealOneof(field)) {
+                  // string fields are represented by just a pointer, so also
+                  // include sizeof(string) as well.
+                  total_size += sizeof(std::string) +
+                                StringSpaceUsedExcludingSelfLong(str.Get());
+                }
               }
               break;
-            }
           }
           break;
         }
@@ -486,8 +480,7 @@ class SwapFieldHelper {
   static void SwapStringField(const Reflection* r, Message* lhs, Message* rhs,
                               const FieldDescriptor* field);
 
-  static void SwapArenaStringPtr(const std::string* default_ptr,
-                                 ArenaStringPtr* lhs, Arena* lhs_arena,
+  static void SwapArenaStringPtr(ArenaStringPtr* lhs, Arena* lhs_arena,
                                  ArenaStringPtr* rhs, Arena* rhs_arena);
 
   template <bool unsafe_shallow_swap>
@@ -551,12 +544,11 @@ void SwapFieldHelper::SwapInlinedStrings(const Reflection* r, Message* lhs,
                                      rhs_arena, rhs_arena_dtor_registered, rhs);
   } else {
     const std::string temp = lhs_string->Get();
-    lhs_string->Set(nullptr, rhs_string->Get(), lhs_arena,
+    lhs_string->Set(rhs_string->Get(), lhs_arena,
                     r->IsInlinedStringDonated(*lhs, field), lhs_state, mask,
                     lhs);
-    rhs_string->Set(nullptr, temp, rhs_arena,
-                    r->IsInlinedStringDonated(*rhs, field), rhs_state, mask,
-                    rhs);
+    rhs_string->Set(temp, rhs_arena, r->IsInlinedStringDonated(*rhs, field),
+                    rhs_state, mask, rhs);
   }
 }
 
@@ -570,8 +562,7 @@ void SwapFieldHelper::SwapNonInlinedStrings(const Reflection* r, Message* lhs,
     ArenaStringPtr::UnsafeShallowSwap(lhs_string, rhs_string);
   } else {
     SwapFieldHelper::SwapArenaStringPtr(
-        r->DefaultRaw<ArenaStringPtr>(field).GetPointer(),  //
-        lhs_string, lhs->GetArenaForAllocation(),           //
+        lhs_string, lhs->GetArenaForAllocation(),  //
         rhs_string, rhs->GetArenaForAllocation());
   }
 }
@@ -595,28 +586,27 @@ void SwapFieldHelper::SwapStringField(const Reflection* r, Message* lhs,
   }
 }
 
-void SwapFieldHelper::SwapArenaStringPtr(const std::string* default_ptr,
-                                         ArenaStringPtr* lhs, Arena* lhs_arena,
+void SwapFieldHelper::SwapArenaStringPtr(ArenaStringPtr* lhs, Arena* lhs_arena,
                                          ArenaStringPtr* rhs,
                                          Arena* rhs_arena) {
   if (lhs_arena == rhs_arena) {
-    ArenaStringPtr::InternalSwap(default_ptr, lhs, lhs_arena, rhs, rhs_arena);
+    ArenaStringPtr::InternalSwap(lhs, lhs_arena, rhs, rhs_arena);
   } else if (lhs->IsDefault() && rhs->IsDefault()) {
     // Nothing to do.
   } else if (lhs->IsDefault()) {
-    lhs->Set(default_ptr, rhs->Get(), lhs_arena);
+    lhs->Set(rhs->Get(), lhs_arena);
     // rhs needs to be destroyed before overwritten.
-    rhs->Destroy(default_ptr, rhs_arena);
-    rhs->InitDefault(default_ptr);
+    rhs->Destroy();
+    rhs->InitDefault();
   } else if (rhs->IsDefault()) {
-    rhs->Set(default_ptr, lhs->Get(), rhs_arena);
+    rhs->Set(lhs->Get(), rhs_arena);
     // lhs needs to be destroyed before overwritten.
-    lhs->Destroy(default_ptr, lhs_arena);
-    lhs->InitDefault(default_ptr);
+    lhs->Destroy();
+    lhs->InitDefault();
   } else {
     std::string temp = lhs->Get();
-    lhs->Set(default_ptr, rhs->Get(), lhs_arena);
-    rhs->Set(default_ptr, std::move(temp), rhs_arena);
+    lhs->Set(rhs->Get(), lhs_arena);
+    rhs->Set(std::move(temp), rhs_arena);
   }
 }
 
@@ -1266,20 +1256,17 @@ void Reflection::ClearField(Message* message,
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (field->options().ctype()) {
             default:  // TODO(kenton):  Support other string reps.
-            case FieldOptions::STRING: {
+            case FieldOptions::STRING:
               if (IsInlined(field)) {
                 // Currently, string with default value can't be inlined. So we
                 // don't have to handle default value here.
                 MutableRaw<InlinedStringField>(message, field)->ClearToEmpty();
-                break;
+              } else {
+                auto* str = MutableRaw<ArenaStringPtr>(message, field);
+                str->Destroy();
+                str->InitDefault();
               }
-              const std::string* default_ptr =
-                  DefaultRaw<ArenaStringPtr>(field).GetPointer();
-              MutableRaw<ArenaStringPtr>(message, field)
-                  ->SetAllocated(default_ptr, nullptr,
-                                 message->GetArenaForAllocation());
               break;
-            }
           }
           break;
         }
@@ -1658,17 +1645,13 @@ std::string Reflection::GetString(const Message& message,
     }
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
-      case FieldOptions::STRING: {
+      case FieldOptions::STRING:
         if (IsInlined(field)) {
           return GetField<InlinedStringField>(message, field).GetNoArena();
+        } else {
+          const auto& str = GetField<ArenaStringPtr>(message, field);
+          return str.IsDefault() ? field->default_value_string() : str.Get();
         }
-
-        if (auto* value =
-                GetField<ArenaStringPtr>(message, field).GetPointer()) {
-          return *value;
-        }
-        return field->default_value_string();
-      }
     }
   }
 }
@@ -1687,17 +1670,13 @@ const std::string& Reflection::GetStringReference(const Message& message,
     }
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
-      case FieldOptions::STRING: {
+      case FieldOptions::STRING:
         if (IsInlined(field)) {
           return GetField<InlinedStringField>(message, field).GetNoArena();
+        } else {
+          const auto& str = GetField<ArenaStringPtr>(message, field);
+          return str.IsDefault() ? field->default_value_string() : str.Get();
         }
-
-        if (auto* value =
-                GetField<ArenaStringPtr>(message, field).GetPointer()) {
-          return *value;
-        }
-        return field->default_value_string();
-      }
     }
   }
 }
@@ -1720,7 +1699,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
           MutableField<InlinedStringField>(message, field)
-              ->Set(nullptr, value, message->GetArenaForAllocation(),
+              ->Set(value, message->GetArenaForAllocation(),
                     IsInlinedStringDonated(*message, field), states, mask,
                     message);
           break;
@@ -1730,18 +1709,12 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
         // We just need to pass some arbitrary default string to make it work.
         // This allows us to not have the real default accessible from
         // reflection.
-        const std::string* default_ptr =
-            schema_.InRealOneof(field)
-                ? nullptr
-                : DefaultRaw<ArenaStringPtr>(field).GetPointer();
         if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
           ClearOneof(message, field->containing_oneof());
-          MutableField<ArenaStringPtr>(message, field)
-              ->InitDefault(default_ptr);
+          MutableField<ArenaStringPtr>(message, field)->InitDefault();
         }
         MutableField<ArenaStringPtr>(message, field)
-            ->Set(default_ptr, std::move(value),
-                  message->GetArenaForAllocation());
+            ->Set(std::move(value), message->GetArenaForAllocation());
         break;
       }
     }
@@ -2721,8 +2694,7 @@ void Reflection::ClearOneof(Message* message,
               // We just need to pass some arbitrary default string to make it
               // work. This allows us to not have the real default accessible
               // from reflection.
-              MutableField<ArenaStringPtr>(message, field)
-                  ->Destroy(nullptr, message->GetArenaForAllocation());
+              MutableField<ArenaStringPtr>(message, field)->Destroy();
               break;
             }
           }
