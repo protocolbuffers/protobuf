@@ -64,9 +64,9 @@ import java.nio.ByteBuffer;
  * <em>Well Formed UTF-8 Byte Sequences</em>.
  *
  * <p>This class supports decoding of partial byte sequences, so that the bytes in a complete UTF-8
- * byte sequences can be stored in multiple segments. Methods typically return {@link #MALFORMED} if
- * the partial byte sequence is definitely not well-formed, {@link #COMPLETE} if it is well-formed
- * in the absence of additional input, or if the byte sequence apparently terminated in the middle
+ * byte sequence can be stored in multiple segments. Methods typically return {@link #MALFORMED} if
+ * the partial byte sequence is definitely not well-formed; {@link #COMPLETE} if it is well-formed
+ * in the absence of additional input; or, if the byte sequence apparently terminated in the middle
  * of a character, an opaque integer "state" value containing enough information to decode the
  * character when passed to a subsequent invocation of a partial decoding method.
  *

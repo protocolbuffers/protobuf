@@ -98,8 +98,8 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
-  void GenerateConstructorCode(io::Printer* printer) const override;
-  void GenerateCopyConstructorCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override {}
+  void GenerateCopyConstructorCode(io::Printer* printer) const override {}
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;

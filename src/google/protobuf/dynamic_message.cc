@@ -417,11 +417,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
           case FieldOptions::STRING:
             if (!field->is_repeated()) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
-              if (field->default_value_string().empty()) {
-                asp->InitDefault();
-              } else {
-                asp->InitDefault(nullptr);
-              }
+              asp->InitDefault();
             } else {
               new (field_ptr)
                   RepeatedPtrField<std::string>(GetArenaForAllocation());
@@ -522,13 +518,7 @@ DynamicMessage::~DynamicMessage() {
           switch (field->options().ctype()) {
             default:
             case FieldOptions::STRING: {
-              // Oneof string fields are never set as a default instance.
-              // We just need to pass some arbitrary default string to make it
-              // work. This allows us to not have the real default accessible
-              // from reflection.
-              const std::string* default_value = nullptr;
-              reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(
-                  default_value, nullptr);
+              reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
               break;
             }
           }
@@ -582,13 +572,7 @@ DynamicMessage::~DynamicMessage() {
       switch (field->options().ctype()) {
         default:  // TODO(kenton):  Support other string reps.
         case FieldOptions::STRING: {
-          const std::string* default_value =
-              reinterpret_cast<const ArenaStringPtr*>(
-                  type_info_->prototype->OffsetToPointer(
-                      type_info_->offsets[i]))
-                  ->GetPointer();
-          reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(default_value,
-                                                                nullptr);
+          reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
           break;
         }
       }

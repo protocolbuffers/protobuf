@@ -48,6 +48,10 @@ namespace internal {
 
 using FieldEntry = TcParseTableBase::FieldEntry;
 
+//////////////////////////////////////////////////////////////////////////////
+// Template instantiations:
+//////////////////////////////////////////////////////////////////////////////
+
 #ifndef NDEBUG
 template void AlignFail<4>(uintptr_t);
 template void AlignFail<8>(uintptr_t);
@@ -56,6 +60,86 @@ template void AlignFail<8>(uintptr_t);
 const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
   return GenericFallbackImpl<MessageLite, std::string>(PROTOBUF_TC_PARAM_PASS);
 }
+
+//////////////////////////////////////////////////////////////////////////////
+// Core fast parsing implementation:
+//////////////////////////////////////////////////////////////////////////////
+
+class TcParser::ScopedArenaSwap final {
+ public:
+  ScopedArenaSwap(MessageLite* msg, ParseContext* ctx)
+      : ctx_(ctx), saved_(ctx->data().arena) {
+    ctx_->data().arena = msg->GetArenaForAllocation();
+  }
+  ScopedArenaSwap(const ScopedArenaSwap&) = delete;
+  ~ScopedArenaSwap() { ctx_->data().arena = saved_; }
+
+ private:
+  ParseContext* const ctx_;
+  Arena* const saved_;
+};
+
+PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
+    MessageLite* msg, const char* ptr, ParseContext* ctx,
+    const TcParseTableBase* table) {
+  ScopedArenaSwap saved(msg, ctx);
+  const uint32_t has_bits_offset = table->has_bits_offset;
+  while (!ctx->Done(&ptr)) {
+    uint64_t hasbits = 0;
+    if (has_bits_offset) hasbits = RefAt<uint32_t>(msg, has_bits_offset);
+    ptr = TagDispatch(msg, ptr, ctx, table, hasbits, {});
+    if (ptr == nullptr) break;
+    if (ctx->LastTag() != 1) break;  // Ended on terminating tag
+  }
+  return ptr;
+}
+
+  // Dispatch to the designated parse function
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
+    PROTOBUF_TC_PARAM_DECL) {
+  const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
+  const size_t idx = coded_tag & table->fast_idx_mask;
+  PROTOBUF_ASSUME((idx & 7) == 0);
+  auto* fast_entry = table->fast_entry(idx >> 3);
+  data = fast_entry->bits;
+  data.data ^= coded_tag;
+  PROTOBUF_MUSTTAIL return fast_entry->target(PROTOBUF_TC_PARAM_PASS);
+}
+
+// We can only safely call from field to next field if the call is optimized
+// to a proper tail call. Otherwise we blow through stack. Clang and gcc
+// reliably do this optimization in opt mode, but do not perform this in debug
+// mode. Luckily the structure of the algorithm is such that it's always
+// possible to just return and use the enclosing parse loop as a trampoline.
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToTagDispatch(
+    PROTOBUF_TC_PARAM_DECL) {
+  constexpr bool always_return = !PROTOBUF_TAILCALL;
+  if (always_return || !ctx->DataAvailable(ptr)) {
+    PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
+  }
+  PROTOBUF_MUSTTAIL return TagDispatch(PROTOBUF_TC_PARAM_PASS);
+}
+
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
+    PROTOBUF_TC_PARAM_DECL) {
+  (void)data;
+  (void)ctx;
+  SyncHasbits(msg, hasbits, table);
+  return ptr;
+}
+
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::Error(
+    PROTOBUF_TC_PARAM_DECL) {
+  (void)data;
+  (void)ctx;
+  (void)ptr;
+  SyncHasbits(msg, hasbits, table);
+  return nullptr;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Core mini parsing implementation:
+//////////////////////////////////////////////////////////////////////////////
 
 // Returns the address of the field for `tag` in the table's field entries.
 // Returns nullptr if the field was not found.
@@ -886,6 +970,17 @@ void PrintUTF8ErrorLog(StringPiece message_name,
                        StringPiece field_name, const char* operation_str,
                        bool emit_stacktrace);
 
+void TcParser::ReportFastUtf8Error(uint16_t coded_tag,
+                                   const TcParseTableBase* table) {
+  if (coded_tag > 127) {
+    coded_tag = (coded_tag & 0x7f) + ((coded_tag & 0xff00) >> 1);
+  }
+  uint32_t field_num = coded_tag >> 3;
+  const auto* entry = FindFieldEntry(table, field_num);
+  PrintUTF8ErrorLog(MessageName(table), FieldName(table, entry), "parsing",
+                    false);
+}
+
 namespace {
 
 PROTOBUF_NOINLINE
@@ -893,8 +988,7 @@ const char* SingularStringParserFallback(ArenaStringPtr* s, const char* ptr,
                                          EpsCopyInputStream* stream) {
   int size = ReadSize(&ptr);
   if (!ptr) return nullptr;
-  return stream->ReadString(
-      ptr, size, s->MutableNoArenaNoDefault(&GetEmptyStringAlreadyInited()));
+  return stream->ReadString(ptr, size, s->MutableNoCopy(nullptr));
 }
 
 }  // namespace
@@ -905,6 +999,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
   }
+  auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
   hasbits |= (uint64_t{1} << data.hasbit_idx());
   auto& field = RefAt<ArenaStringPtr>(msg, data.offset());
@@ -925,7 +1020,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
       if (PROTOBUF_PREDICT_TRUE(IsStructurallyValidUTF8(field.Get()))) {
         return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
       }
-      PrintUTF8ErrorLog("", "unknown", "parsing", false);
+      ReportFastUtf8Error(saved_tag, table);
       return utf8 == kUtf8 ? Error(PROTOBUF_TC_PARAM_PASS)
                            : ToParseLoop(PROTOBUF_TC_PARAM_PASS);
   }
@@ -971,11 +1066,19 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
     if (ptr == nullptr) {
       return Error(PROTOBUF_TC_PARAM_PASS);
     }
-    if (utf8 != kNoUtf8) {
-      if (PROTOBUF_PREDICT_FALSE(!IsStructurallyValidUTF8(*str))) {
-        PrintUTF8ErrorLog("", "unknown", "parsing", false);
+    switch (utf8) {
+      case kNoUtf8:
+#ifdef NDEBUG
+      case kUtf8ValidateOnly:
+#endif
+        break;
+      default:
+        if (PROTOBUF_PREDICT_TRUE(IsStructurallyValidUTF8(*str))) {
+          break;
+        }
+        ReportFastUtf8Error(expected_tag, table);
         if (utf8 == kUtf8) return Error(PROTOBUF_TC_PARAM_PASS);
-      }
+        break;
     }
     if (!ctx->DataAvailable(ptr)) break;
   } while (UnalignedLoad<TagType>(ptr) == expected_tag);
@@ -1058,11 +1161,10 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
   uint16_t current_kind = current_entry->type_card & field_layout::kFkMask;
   uint16_t current_rep = current_entry->type_card & field_layout::kRepMask;
   if (current_kind == field_layout::kFkString) {
-    Arena* arena = ctx->data().arena;
     switch (current_rep) {
       case field_layout::kRepAString: {
         auto& field = RefAt<ArenaStringPtr>(msg, current_entry->offset);
-        field.Destroy(ArenaStringPtr::EmptyDefault{}, arena);
+        field.Destroy();
         break;
       }
       case field_layout::kRepSString:
@@ -1383,22 +1485,27 @@ const char* TcParser::MpPackedVarint(PROTOBUF_TC_PARAM_DECL) {
   return Error(PROTOBUF_TC_PARAM_PASS);
 }
 
-namespace {
-
-inline bool MpVerifyUtf8(StringPiece wire_bytes, const FieldEntry& entry,
-                         uint16_t xform_val) {
+bool TcParser::MpVerifyUtf8(StringPiece wire_bytes,
+                            const TcParseTableBase* table,
+                            const FieldEntry& entry, uint16_t xform_val) {
   if (xform_val == field_layout::kTvUtf8) {
-    return VerifyUTF8(wire_bytes, "unknown");
+    if (!IsStructurallyValidUTF8(wire_bytes)) {
+      PrintUTF8ErrorLog(MessageName(table), FieldName(table, &entry), "parsing",
+                        false);
+      return false;
+    }
+    return true;
   }
 #ifndef NDEBUG
   if (xform_val == field_layout::kTvUtf8Debug) {
-    VerifyUTF8(wire_bytes, "unknown");
+    if (!IsStructurallyValidUTF8(wire_bytes)) {
+      PrintUTF8ErrorLog(MessageName(table), FieldName(table, &entry), "parsing",
+                        false);
+    }
   }
 #endif  // NDEBUG
   return true;
 }
-
-}  // namespace
 
 const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
@@ -1413,18 +1520,6 @@ const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
     PROTOBUF_MUSTTAIL return MpRepeatedString(PROTOBUF_TC_PARAM_PASS);
   }
   const uint16_t xform_val = type_card & field_layout::kTvMask;
-
-  // TODO(b/209516305): handle UTF-8 fields once field names are available.
-  if (
-#ifdef NDEBUG
-      xform_val == field_layout::kTvUtf8
-#else
-      xform_val != 0
-#endif
-  ) {
-    PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
-  }
-
   const uint16_t rep = type_card & field_layout::kRepMask;
   if (rep == field_layout::kRepIString) {
     // TODO(b/198211897): support InilnedStringField.
@@ -1444,19 +1539,16 @@ const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   Arena* arena = ctx->data().arena;
   switch (rep) {
     case field_layout::kRepAString: {
-      const std::string* default_value =
-          RefAt<ArenaStringPtr>(table->default_instance, entry.offset)
-              .tagged_ptr_.Get();
       auto& field = RefAt<ArenaStringPtr>(msg, entry.offset);
       if (need_init) field.InitDefault();
       if (arena) {
         ptr = ctx->ReadArenaString(ptr, &field, arena);
       } else {
-        std::string* str = field.MutableNoCopy(default_value, nullptr);
+        std::string* str = field.MutableNoCopy(nullptr);
         ptr = InlineGreedyStringParser(str, ptr, ctx);
       }
       if (!ptr) break;
-      is_valid = MpVerifyUtf8(field.Get(), entry, xform_val);
+      is_valid = MpVerifyUtf8(field.Get(), table, entry, xform_val);
       break;
     }
 
@@ -1482,18 +1574,6 @@ const char* TcParser::MpRepeatedString(PROTOBUF_TC_PARAM_DECL) {
 
   const uint16_t rep = type_card & field_layout::kRepMask;
   const uint16_t xform_val = type_card & field_layout::kTvMask;
-
-  // TODO(b/209516305): handle UTF-8 fields once field names are available.
-  if (
-#ifdef NDEBUG
-      xform_val == field_layout::kTvUtf8
-#else
-      xform_val != 0
-#endif
-  ) {
-    PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
-  }
-
   switch (rep) {
     case field_layout::kRepSString: {
       auto& field = RefAt<RepeatedPtrField<std::string>>(msg, entry.offset);
@@ -1503,8 +1583,9 @@ const char* TcParser::MpRepeatedString(PROTOBUF_TC_PARAM_DECL) {
         ptr = ptr2;
         std::string* str = field.Add();
         ptr = InlineGreedyStringParser(str, ptr, ctx);
-        if (PROTOBUF_PREDICT_FALSE(ptr == nullptr ||
-                                   !MpVerifyUtf8(*str, entry, xform_val))) {
+        if (PROTOBUF_PREDICT_FALSE(
+                ptr == nullptr ||
+                !MpVerifyUtf8(*str, table, entry, xform_val))) {
           return Error(PROTOBUF_TC_PARAM_PASS);
         }
         if (!ctx->DataAvailable(ptr)) break;

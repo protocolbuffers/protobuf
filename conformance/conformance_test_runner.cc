@@ -141,6 +141,9 @@ void UsageError() {
           "                              strictly conforming to protobuf\n");
   fprintf(stderr,
           "                              spec.\n");
+  fprintf(stderr,
+          "  --output_dir                <dirname> Directory to write\n"
+          "                              output files.\n");
   exit(1);
 }
 
@@ -208,6 +211,9 @@ int ForkPipeRunner::Run(
         suite->SetVerbose(true);
       } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
         suite->SetEnforceRecommended(true);
+      } else if (strcmp(argv[arg], "--output_dir") == 0) {
+        if (++arg == argc) UsageError();
+        suite->SetOutputDir(argv[arg]);
       } else if (argv[arg][0] == '-') {
         bool recognized_flag = false;
         for (ConformanceTestSuite* suite : suites) {

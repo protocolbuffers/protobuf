@@ -265,45 +265,9 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* GenericFallback(PROTOBUF_TC_PARAM_DECL);
   static const char* GenericFallbackLite(PROTOBUF_TC_PARAM_DECL);
 
-  // Dispatch to the designated parse function
-  inline PROTOBUF_ALWAYS_INLINE static const char* TagDispatch(
-      PROTOBUF_TC_PARAM_DECL) {
-    const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
-    const size_t idx = coded_tag & table->fast_idx_mask;
-    PROTOBUF_ASSUME((idx & 7) == 0);
-    auto* fast_entry = table->fast_entry(idx >> 3);
-    data = fast_entry->bits;
-    data.data ^= coded_tag;
-    PROTOBUF_MUSTTAIL return fast_entry->target(PROTOBUF_TC_PARAM_PASS);
-  }
-
-  // We can only safely call from field to next field if the call is optimized
-  // to a proper tail call. Otherwise we blow through stack. Clang and gcc
-  // reliably do this optimization in opt mode, but do not perform this in debug
-  // mode. Luckily the structure of the algorithm is such that it's always
-  // possible to just return and use the enclosing parse loop as a trampoline.
-  static const char* ToTagDispatch(PROTOBUF_TC_PARAM_DECL) {
-    constexpr bool always_return = !PROTOBUF_TAILCALL;
-    if (always_return || !ctx->DataAvailable(ptr)) {
-      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
-    }
-    PROTOBUF_MUSTTAIL return TagDispatch(PROTOBUF_TC_PARAM_PASS);
-  }
-
-  PROTOBUF_NOINLINE static const char* ParseLoop(
-      MessageLite* msg, const char* ptr, ParseContext* ctx,
-      const TcParseTableBase* table) {
-    ScopedArenaSwap saved(msg, ctx);
-    const uint32_t has_bits_offset = table->has_bits_offset;
-    while (!ctx->Done(&ptr)) {
-      uint64_t hasbits = 0;
-      if (has_bits_offset) hasbits = RefAt<uint32_t>(msg, has_bits_offset);
-      ptr = TagDispatch(msg, ptr, ctx, table, hasbits, {});
-      if (ptr == nullptr) break;
-      if (ctx->LastTag() != 1) break;  // Ended on terminating tag
-    }
-    return ptr;
-  }
+  static const char* ParseLoop(MessageLite* msg, const char* ptr,
+                               ParseContext* ctx,
+                               const TcParseTableBase* table);
 
   // Functions referenced by generated fast tables (numeric types):
   //   F: fixed      V: varint     Z: zigzag
@@ -424,16 +388,6 @@ class PROTOBUF_EXPORT TcParser final {
     return *target;
   }
 
-  static inline PROTOBUF_ALWAYS_INLINE void SyncHasbits(
-      MessageLite* msg, uint64_t hasbits, const TcParseTableBase* table) {
-    const uint32_t has_bits_offset = table->has_bits_offset;
-    if (has_bits_offset) {
-      // Only the first 32 has-bits are updated. Nothing above those is stored,
-      // but e.g. messages without has-bits update the upper bits.
-      RefAt<uint32_t>(msg, has_bits_offset) = static_cast<uint32_t>(hasbits);
-    }
-  }
-
   // Mini parsing:
   //
   // This function parses a field from incoming data based on metadata stored in
@@ -453,38 +407,24 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename TagType>
   static inline const char* RepeatedParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
 
-  static inline PROTOBUF_ALWAYS_INLINE const char* ToParseLoop(
-      PROTOBUF_TC_PARAM_DECL) {
-    (void)data;
-    (void)ctx;
-    SyncHasbits(msg, hasbits, table);
-    return ptr;
+  static inline PROTOBUF_ALWAYS_INLINE void SyncHasbits(
+      MessageLite* msg, uint64_t hasbits, const TcParseTableBase* table) {
+    const uint32_t has_bits_offset = table->has_bits_offset;
+    if (has_bits_offset) {
+      // Only the first 32 has-bits are updated. Nothing above those is stored,
+      // but e.g. messages without has-bits update the upper bits.
+      RefAt<uint32_t>(msg, has_bits_offset) = static_cast<uint32_t>(hasbits);
+    }
   }
 
-  static inline PROTOBUF_ALWAYS_INLINE const char* Error(
-      PROTOBUF_TC_PARAM_DECL) {
-    (void)data;
-    (void)ctx;
-    (void)ptr;
-    SyncHasbits(msg, hasbits, table);
-    return nullptr;
-  }
+  static const char* TagDispatch(PROTOBUF_TC_PARAM_DECL);
+  static const char* ToTagDispatch(PROTOBUF_TC_PARAM_DECL);
+  static const char* ToParseLoop(PROTOBUF_TC_PARAM_DECL);
+  static const char* Error(PROTOBUF_TC_PARAM_DECL);
 
   static const char* FastUnknownEnumFallback(PROTOBUF_TC_PARAM_DECL);
 
-  class ScopedArenaSwap final {
-   public:
-    ScopedArenaSwap(MessageLite* msg, ParseContext* ctx)
-        : ctx_(ctx), saved_(ctx->data().arena) {
-      ctx_->data().arena = msg->GetArenaForAllocation();
-    }
-    ScopedArenaSwap(const ScopedArenaSwap&) = delete;
-    ~ScopedArenaSwap() { ctx_->data().arena = saved_; }
-
-   private:
-    ParseContext* const ctx_;
-    Arena* const saved_;
-  };
+  class ScopedArenaSwap;
 
   template <class MessageBaseT, class UnknownFieldsT>
   static const char* GenericFallbackImpl(PROTOBUF_TC_PARAM_DECL) {
@@ -554,6 +494,14 @@ class PROTOBUF_EXPORT TcParser final {
                           const TcParseTableBase::FieldEntry& entry,
                           uint32_t field_num, ParseContext* ctx,
                           MessageLite* msg);
+
+  // UTF-8 validation:
+  static void ReportFastUtf8Error(uint16_t coded_tag,
+                                  const TcParseTableBase* table);
+  static bool MpVerifyUtf8(StringPiece wire_bytes,
+                           const TcParseTableBase* table,
+                           const TcParseTableBase::FieldEntry& entry,
+                           uint16_t xform_val);
 
   // For FindFieldEntry tests:
   friend class FindFieldEntryTest;

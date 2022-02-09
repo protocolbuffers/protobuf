@@ -1574,7 +1574,7 @@ template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void StringValue::set_value(ArgT0&& arg0, ArgT... args) {
  
- value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+ value_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.StringValue.value)
 }
 inline std::string* StringValue::mutable_value() {
@@ -1587,15 +1587,15 @@ inline const std::string& StringValue::_internal_value() const {
 }
 inline void StringValue::_internal_set_value(const std::string& value) {
   
-  value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
+  value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* StringValue::_internal_mutable_value() {
   
-  return value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+  return value_.Mutable(GetArenaForAllocation());
 }
 inline std::string* StringValue::release_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.StringValue.value)
-  return value_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  return value_.Release();
 }
 inline void StringValue::set_allocated_value(std::string* value) {
   if (value != nullptr) {
@@ -1603,11 +1603,10 @@ inline void StringValue::set_allocated_value(std::string* value) {
   } else {
     
   }
-  value_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value,
-      GetArenaForAllocation());
+  value_.SetAllocated(value, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (value_.IsDefault()) {
-    value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+    value_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.StringValue.value)
@@ -1629,7 +1628,7 @@ template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void BytesValue::set_value(ArgT0&& arg0, ArgT... args) {
  
- value_.SetBytes(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+ value_.SetBytes(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.BytesValue.value)
 }
 inline std::string* BytesValue::mutable_value() {
@@ -1642,15 +1641,15 @@ inline const std::string& BytesValue::_internal_value() const {
 }
 inline void BytesValue::_internal_set_value(const std::string& value) {
   
-  value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
+  value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* BytesValue::_internal_mutable_value() {
   
-  return value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+  return value_.Mutable(GetArenaForAllocation());
 }
 inline std::string* BytesValue::release_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.BytesValue.value)
-  return value_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  return value_.Release();
 }
 inline void BytesValue::set_allocated_value(std::string* value) {
   if (value != nullptr) {
@@ -1658,11 +1657,10 @@ inline void BytesValue::set_allocated_value(std::string* value) {
   } else {
     
   }
-  value_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value,
-      GetArenaForAllocation());
+  value_.SetAllocated(value, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (value_.IsDefault()) {
-    value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+    value_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.BytesValue.value)

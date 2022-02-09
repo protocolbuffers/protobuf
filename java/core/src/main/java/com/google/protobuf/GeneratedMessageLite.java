@@ -692,7 +692,7 @@ public abstract class GeneratedMessageLite<
       // The wire format for MessageSet is:
       //   message MessageSet {
       //     repeated group Item = 1 {
-      //       required int32 typeId = 2;
+      //       required uint32 typeId = 2;
       //       required bytes message = 3;
       //     }
       //   }

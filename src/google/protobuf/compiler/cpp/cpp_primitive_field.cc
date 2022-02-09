@@ -150,7 +150,7 @@ void PrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
-      "  return $name$_;\n"
+      "  return $field$;\n"
       "}\n"
       "inline $type$ $classname$::$name$() const {\n"
       "$annotate_get$"
@@ -159,7 +159,7 @@ void PrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline void $classname$::_internal_set_$name$($type$ value) {\n"
       "  $set_hasbit$\n"
-      "  $name$_ = value;\n"
+      "  $field$ = value;\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n"
       "  _internal_set_$name$(value);\n"
@@ -170,7 +170,7 @@ void PrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void PrimitiveFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_ = $default$;\n");
+  format("$field$ = $default$;\n");
 }
 
 void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
@@ -180,7 +180,7 @@ void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("swap($name$_, other->$name$_);\n");
+  format("swap($field$, other->$field$);\n");
 }
 
 void PrimitiveFieldGenerator::GenerateConstructorCode(
@@ -249,7 +249,7 @@ void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
       "  if (_internal_has_$name$()) {\n"
-      "    return $field_member$;\n"
+      "    return $field$;\n"
       "  }\n"
       "  return $default$;\n"
       "}\n"
@@ -258,7 +258,7 @@ void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "  }\n"
-      "  $field_member$ = value;\n"
+      "  $field$ = value;\n"
       "}\n"
       "inline $type$ $classname$::$name$() const {\n"
       "$annotate_get$"
@@ -275,7 +275,7 @@ void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
 void PrimitiveOneofFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$field_member$ = $default$;\n");
+  format("$field$ = $default$;\n");
 }
 
 void PrimitiveOneofFieldGenerator::GenerateSwappingCode(
@@ -344,7 +344,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$(int index) const {\n"
-      "  return $name$_.Get(index);\n"
+      "  return $field$.Get(index);\n"
       "}\n"
       "inline $type$ $classname$::$name$(int index) const {\n"
       "$annotate_get$"
@@ -353,11 +353,11 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline void $classname$::set_$name$(int index, $type$ value) {\n"
       "$annotate_set$"
-      "  $name$_.Set(index, value);\n"
+      "  $field$.Set(index, value);\n"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
       "inline void $classname$::_internal_add_$name$($type$ value) {\n"
-      "  $name$_.Add(value);\n"
+      "  $field$.Add(value);\n"
       "}\n"
       "inline void $classname$::add_$name$($type$ value) {\n"
       "  _internal_add_$name$(value);\n"
@@ -366,7 +366,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline const ::$proto_ns$::RepeatedField< $type$ >&\n"
       "$classname$::_internal_$name$() const {\n"
-      "  return $name$_;\n"
+      "  return $field$;\n"
       "}\n"
       "inline const ::$proto_ns$::RepeatedField< $type$ >&\n"
       "$classname$::$name$() const {\n"
@@ -376,7 +376,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline ::$proto_ns$::RepeatedField< $type$ >*\n"
       "$classname$::_internal_mutable_$name$() {\n"
-      "  return &$name$_;\n"
+      "  return &$field$;\n"
       "}\n"
       "inline ::$proto_ns$::RepeatedField< $type$ >*\n"
       "$classname$::mutable_$name$() {\n"
@@ -389,30 +389,19 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
 void RepeatedPrimitiveFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.Clear();\n");
+  format("$field$.Clear();\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.MergeFrom(from.$name$_);\n");
+  format("$field$.MergeFrom(from.$field$);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSwappingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.InternalSwap(&other->$name$_);\n");
-}
-
-void RepeatedPrimitiveFieldGenerator::GenerateConstructorCode(
-    io::Printer* printer) const {
-  // Not needed for repeated fields.
-}
-
-void RepeatedPrimitiveFieldGenerator::GenerateCopyConstructorCode(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format("$name$_.CopyFrom(from.$name$_);\n");
+  format("$field$.InternalSwap(&other->$field$);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
@@ -456,7 +445,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
   if (fixed_size == -1) {
     format(
         "size_t data_size = ::_pbi::WireFormatLite::\n"
-        "  $declared_type$Size(this->$name$_);\n");
+        "  $declared_type$Size(this->$field$);\n");
   } else {
     format(
         "unsigned int count = static_cast<unsigned "

@@ -416,7 +416,7 @@ void Value::set_allocated_struct_value(::PROTOBUF_NAMESPACE_ID::Struct* struct_v
   clear_kind();
   if (struct_value) {
     ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-      ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper<::PROTOBUF_NAMESPACE_ID::Struct>::GetOwningArena(struct_value);
+      ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(struct_value);
     if (message_arena != submessage_arena) {
       struct_value = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, struct_value, submessage_arena);
@@ -431,7 +431,7 @@ void Value::set_allocated_list_value(::PROTOBUF_NAMESPACE_ID::ListValue* list_va
   clear_kind();
   if (list_value) {
     ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-      ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper<::PROTOBUF_NAMESPACE_ID::ListValue>::GetOwningArena(list_value);
+      ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(list_value);
     if (message_arena != submessage_arena) {
       list_value = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, list_value, submessage_arena);
@@ -519,7 +519,7 @@ void Value::clear_kind() {
       break;
     }
     case kStringValue: {
-      kind_.string_value_.Destroy(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+      kind_.string_value_.Destroy();
       break;
     }
     case kBoolValue: {
