@@ -544,6 +544,7 @@ java_EXTRA_DIST=                                                                
   java/kotlin/generate-test-sources-build.xml                                      \
   java/kotlin/pom.xml                                                              \
   java/kotlin/pom_template.xml                                                     \
+  java/kotlin/src/main/kotlin/com/google/protobuf/Anies.kt                         \
   java/kotlin/src/main/kotlin/com/google/protobuf/ByteStrings.kt                   \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslList.kt                       \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslMap.kt                        \
