@@ -26,7 +26,7 @@ use python c++ implementation.
 Installation
 ============
 
-1) Make sure you have Python 3.5 or newer.  If in doubt, run:
+1) Make sure you have Python 3.7 or newer.  If in doubt, run:
 
        $ python -V
 
