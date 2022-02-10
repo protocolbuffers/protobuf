@@ -97,10 +97,10 @@ SourceContext::SourceContext(const SourceContext& from)
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   file_name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    file_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+    file_name_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_file_name().empty()) {
-    file_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_file_name(), 
+    file_name_.Set(from._internal_file_name(), 
       GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
@@ -109,7 +109,7 @@ SourceContext::SourceContext(const SourceContext& from)
 inline void SourceContext::SharedCtor() {
 file_name_.InitDefault();
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  file_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), "", GetArenaForAllocation());
+  file_name_.Set("", GetArenaForAllocation());
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
@@ -124,7 +124,7 @@ SourceContext::~SourceContext() {
 
 inline void SourceContext::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  file_name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  file_name_.Destroy();
 }
 
 void SourceContext::SetCachedSize(int size) const {
@@ -264,7 +264,6 @@ void SourceContext::InternalSwap(SourceContext* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       &file_name_, lhs_arena,
       &other->file_name_, rhs_arena
   );

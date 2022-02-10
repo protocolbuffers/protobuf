@@ -82,6 +82,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   // FOO_EXPORT is a macro which should expand to __declspec(dllexport) or
   // __declspec(dllimport) depending on what is being compiled.
   //
+  // If the proto_h option is passed to the compiler, we will generate all
+  // classes and enums so that they can be forward-declared from files that
+  // need them from imports.
+  //
+  // If the lite option is passed to the compiler, we will generate the
+  // current files and all transitive dependencies using the LITE runtime.
   Options file_options;
 
   file_options.opensource_runtime = opensource_runtime_;
@@ -111,6 +117,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
         file_options.num_cc_files =
             strto32(options[i].second.c_str(), nullptr, 10);
       }
+    } else if (options[i].first == "proto_h") {
+      file_options.proto_h = true;
     } else if (options[i].first == "annotate_accessor") {
       file_options.annotate_accessor = true;
     } else if (options[i].first == "inject_field_listener_events") {

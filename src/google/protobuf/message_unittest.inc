@@ -419,6 +419,29 @@ TEST(MESSAGE_TEST_NAME, ParseStrictlyBoundedStream) {
   TestUtil::ExpectAllFieldsSet(p.child().payload());
 }
 
+TEST(MESSAGE_TEST_NAME, AllSetMethodsOnStringField) {
+  UNITTEST::TestAllTypes msg;
+
+
+  msg.set_optional_string("Asciiz");
+  EXPECT_EQ(msg.optional_string(), "Asciiz");
+
+  msg.set_optional_string("Length delimited", 6);
+  EXPECT_EQ(msg.optional_string(), "Length");
+
+  std::string value = "std::string value 1";
+  msg.set_optional_string(value);
+  EXPECT_EQ(msg.optional_string(), "std::string value 1");
+
+  value = "std::string value 2";
+  msg.set_optional_string(std::cref(value));
+  EXPECT_EQ(msg.optional_string(), "std::string value 2");
+
+  value = "std::string value 3";
+  msg.set_optional_string(std::move(value));
+  EXPECT_EQ(msg.optional_string(), "std::string value 3");
+}
+
 TEST(MESSAGE_TEST_NAME, SuccessAfterParsingFailure) {
   UNITTEST::NestedTestAllTypes o, p, q;
   constexpr int kDepth = 5;

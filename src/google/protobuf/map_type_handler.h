@@ -580,12 +580,12 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::IsInitialized(
   template <typename Type>                                                    \
   inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Merge(  \
       const MapEntryAccessorType& from, TypeOnMemory* to, Arena* arena) {     \
-    to->Set(&internal::GetEmptyStringAlreadyInited(), from, arena);           \
+    to->Set(from, arena);                                                     \
   }                                                                           \
   template <typename Type>                                                    \
   void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::DeleteNoArena( \
       TypeOnMemory& value) {                                                  \
-    value.DestroyNoArena(&internal::GetEmptyStringAlreadyInited());           \
+    value.Destroy();                                                          \
   }                                                                           \
   template <typename Type>                                                    \
   constexpr auto                                                              \
@@ -598,7 +598,7 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::IsInitialized(
                                  Type>::MapEntryAccessorType*                 \
   MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::EnsureMutable(      \
       TypeOnMemory* value, Arena* arena) {                                    \
-    return value->Mutable(ArenaStringPtr::EmptyDefault{}, arena);             \
+    return value->Mutable(arena);                                             \
   }                                                                           \
   template <typename Type>                                                    \
   inline const typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,      \

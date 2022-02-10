@@ -1,11 +1,5 @@
 setlocal
 
-if %PYTHON%==C:\python36_32bit set generator=Visual Studio 14
-if %PYTHON%==C:\python36_32bit set vcplatform=Win32
-
-if %PYTHON%==C:\python36 set generator=Visual Studio 14 Win64
-if %PYTHON%==C:\python36 set vcplatform=x64
-
 if %PYTHON%==C:\python37_32bit set generator=Visual Studio 14
 if %PYTHON%==C:\python37_32bit set vcplatform=Win32
 

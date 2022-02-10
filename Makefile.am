@@ -544,6 +544,7 @@ java_EXTRA_DIST=                                                                
   java/kotlin/generate-test-sources-build.xml                                      \
   java/kotlin/pom.xml                                                              \
   java/kotlin/pom_template.xml                                                     \
+  java/kotlin/src/main/kotlin/com/google/protobuf/Anies.kt                         \
   java/kotlin/src/main/kotlin/com/google/protobuf/ByteStrings.kt                   \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslList.kt                       \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslMap.kt                        \
@@ -553,6 +554,7 @@ java_EXTRA_DIST=                                                                
   java/kotlin/src/main/kotlin/com/google/protobuf/OnlyForUseByGeneratedProtoCode.kt\
   java/kotlin/src/main/kotlin/com/google/protobuf/ProtoDslMarker.kt                \
   java/kotlin/src/main/kotlin/com/google/protobuf/UnmodifiableCollections.kt       \
+  java/kotlin/src/test/kotlin/com/google/protobuf/AniesTest.kt                     \
   java/kotlin/src/test/kotlin/com/google/protobuf/ByteStringsTest.kt               \
   java/kotlin/src/test/kotlin/com/google/protobuf/DslListTest.kt                   \
   java/kotlin/src/test/kotlin/com/google/protobuf/DslMapTest.kt                    \

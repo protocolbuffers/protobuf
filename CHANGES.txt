@@ -21,6 +21,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Report original exceptions when parsing JSON
   * Add more info to @deprecated javadoc for set/get/has methods
   * Fix initialization bug in doc comment line numbers
+  * Fix comments for message set wire format.
 
   Kotlin
   * Add orNull extensions for optional message fields in Kotlin.
@@ -46,6 +47,8 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
     zone. If omitted or None, the function returns a timezone-naive UTC datetime
     (as previously).
   * Adds client_streaming and server_streaming fields to MethodDescriptor.
+  * Add "ensure_ascii" parameter to json_format.MessageToJson. This allows smaller
+    JSON serializations with UTF-8 or other non-ASCII encodings.
 
   Compiler
   * Migrate IsDefault(const std::string*) and UnsafeSetDefault(const std::string*)
@@ -63,6 +66,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Do not log/report the same descriptor symbol multiple times if it contains
     more than one invalid character.
   * Add UnknownFieldSet::SerializeToString and SerializeToCodedStream.
+  * Remove explicit default pointers and deprecated API from protocol compiler
 
   Arenas
   * Change Repeated*Field to reuse memory when using arenas.
@@ -80,6 +84,10 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Generate narrower code
   * Fix https://github.com/protocolbuffers/protobuf/issues/9378 by removing
     shadowed _cached_size_ field
+  * Remove GetPointer() and explicit nullptr defaults.
+  * add proto_h flag for speeding up large builds
+  * Add missing overload for reference wrapped fields.
+
 
 2022-01-28 version 3.19.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 

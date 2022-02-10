@@ -118,7 +118,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 	target_link_libraries(libprotobuf log)
 endif()
 target_include_directories(libprotobuf PUBLIC ${protobuf_source_dir}/src)
-if(MSVC AND protobuf_BUILD_SHARED_LIBS)
+if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotobuf
     PUBLIC  PROTOBUF_USE_DLLS
     PRIVATE LIBPROTOBUF_EXPORTS)

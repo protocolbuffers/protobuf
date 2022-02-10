@@ -159,7 +159,7 @@ class DescriptorPool
                     if (is_null($subdesc)) {
                         trigger_error(
                             'proto not added: ' . $proto
-                            . " for " . $desc->getFullName(), E_ERROR);
+                            . " for " . $desc->getFullName(), E_USER_ERROR);
                     }
                     $field->setMessageType($subdesc);
                     break;

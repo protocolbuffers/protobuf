@@ -1,32 +1,42 @@
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/../third_party/googletest/CMakeLists.txt")
-  message(FATAL_ERROR
-          "Cannot find third_party/googletest directory that's needed to "
-          "build tests. If you use git, make sure you have cloned submodules:\n"
-          "  git submodule update --init --recursive\n"
-          "If instead you want to skip tests, run cmake with:\n"
-          "  cmake -Dprotobuf_BUILD_TESTS=OFF\n")
-endif()
+option(protobuf_USE_EXTERNAL_GTEST "Use external Google Test (i.e. not the one in third_party/googletest)" OFF)
 
 option(protobuf_ABSOLUTE_TEST_PLUGIN_PATH
   "Using absolute test_plugin path in tests" ON)
 mark_as_advanced(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
 
-set(googlemock_source_dir "${protobuf_source_dir}/third_party/googletest/googlemock")
-set(googletest_source_dir "${protobuf_source_dir}/third_party/googletest/googletest")
-include_directories(
-  ${googlemock_source_dir}
-  ${googletest_source_dir}
-  ${googletest_source_dir}/include
-  ${googlemock_source_dir}/include
-)
+if (protobuf_USE_EXTERNAL_GTEST)
+  find_package(GTest REQUIRED)
+else()
+  if (NOT EXISTS "${PROJECT_SOURCE_DIR}/../third_party/googletest/CMakeLists.txt")
+    message(FATAL_ERROR
+            "Cannot find third_party/googletest directory that's needed to "
+            "build tests. If you use git, make sure you have cloned submodules:\n"
+            "  git submodule update --init --recursive\n"
+            "If instead you want to skip tests, run cmake with:\n"
+            "  cmake -Dprotobuf_BUILD_TESTS=OFF\n")
+  endif()
 
-add_library(gmock STATIC
-  "${googlemock_source_dir}/src/gmock-all.cc"
-  "${googletest_source_dir}/src/gtest-all.cc"
-)
-target_link_libraries(gmock ${CMAKE_THREAD_LIBS_INIT})
-add_library(gmock_main STATIC "${googlemock_source_dir}/src/gmock_main.cc")
-target_link_libraries(gmock_main gmock)
+  set(googlemock_source_dir "${protobuf_source_dir}/third_party/googletest/googlemock")
+  set(googletest_source_dir "${protobuf_source_dir}/third_party/googletest/googletest")
+  include_directories(
+    ${googlemock_source_dir}
+    ${googletest_source_dir}
+    ${googletest_source_dir}/include
+    ${googlemock_source_dir}/include
+  )
+
+  add_library(gmock STATIC
+    "${googlemock_source_dir}/src/gmock-all.cc"
+    "${googletest_source_dir}/src/gtest-all.cc"
+  )
+  target_link_libraries(gmock ${CMAKE_THREAD_LIBS_INIT})
+  add_library(gmock_main STATIC "${googlemock_source_dir}/src/gmock_main.cc")
+  target_link_libraries(gmock_main gmock)
+
+  add_library(GTest::gmock ALIAS gmock)
+  add_library(GTest::gmock_main ALIAS gmock_main)
+endif()
+
 
 set(lite_test_protos
   google/protobuf/map_lite_unittest.proto
@@ -229,7 +239,7 @@ if (MSVC)
     /wd4146 # unary minus operator applied to unsigned type, result still unsigned
   )
 endif()
-target_link_libraries(tests libprotoc libprotobuf gmock_main)
+target_link_libraries(tests libprotoc libprotobuf GTest::gmock_main)
 
 set(test_plugin_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
@@ -239,21 +249,25 @@ set(test_plugin_files
 )
 
 add_executable(test_plugin ${test_plugin_files})
-target_link_libraries(test_plugin libprotoc libprotobuf gmock)
+target_link_libraries(test_plugin libprotoc libprotobuf GTest::gmock)
 
 set(lite_test_files
   ${protobuf_source_dir}/src/google/protobuf/lite_unittest.cc
 )
 add_executable(lite-test ${lite_test_files} ${common_lite_test_files} ${lite_test_proto_files})
-target_link_libraries(lite-test libprotobuf-lite gmock_main)
+target_link_libraries(lite-test libprotobuf-lite GTest::gmock_main)
 
 set(lite_arena_test_files
   ${protobuf_source_dir}/src/google/protobuf/lite_arena_unittest.cc
 )
 add_executable(lite-arena-test ${lite_arena_test_files} ${common_lite_test_files} ${lite_test_proto_files})
-target_link_libraries(lite-arena-test libprotobuf-lite gmock_main)
+target_link_libraries(lite-arena-test libprotobuf-lite GTest::gmock_main)
 
 add_custom_target(check
   COMMAND tests
   DEPENDS tests test_plugin
   WORKING_DIRECTORY ${protobuf_source_dir})
+
+add_test(NAME check
+  COMMAND tests
+  WORKING_DIRECTORY "${protobuf_source_dir}")

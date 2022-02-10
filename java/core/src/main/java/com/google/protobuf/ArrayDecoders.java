@@ -45,14 +45,15 @@ import java.io.IOException;
  */
 @CheckReturnValue
 final class ArrayDecoders {
+
+  private ArrayDecoders() {
+  }
+
   /**
    * A helper used to return multiple values in a Java function. Java doesn't natively support
    * returning multiple values in a function. Creating a new Object to hold the return values will
    * be too expensive. Instead, we pass a Registers instance to functions that want to return
    * multiple values and let the function set the return value in this Registers instance instead.
-   *
-   * <p>TODO(xiaofeng): This could be merged into CodedInputStream or CodedInputStreamReader which
-   * is already being passed through all the parsing routines.
    */
   static final class Registers {
     public int int1;
