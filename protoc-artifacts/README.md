@@ -128,6 +128,8 @@ target directory layout:
       + osx
         + x86_64
           protoc.exe
+        + aarch_64
+          protoc.exe
         + x86_32
           protoc.exe
       + windows

@@ -17,6 +17,7 @@
 #   linux  windows x86_64   Requires: x86_64-w64-mingw32-gcc
 #   macos  osx     x86_32
 #   macos  osx     x86_64
+#   macos  osx     aarch_64
 #   mingw  windows x86_32
 #   mingw  windows x86_64
 #
@@ -125,6 +126,8 @@ checkArch ()
       assertEq $format "i386" $LINENO
     elif [[ "$ARCH" == x86_64 ]]; then
       assertEq $format "x86_64" $LINENO
+    elif [[ "$ARCH" == aarch_64 ]]; then
+      assertEq $format "arm64" $LINENO
     else
       fail "Unsupported arch: $ARCH"
     fi
@@ -251,6 +254,10 @@ elif [[ "$(uname)" == Darwin* ]]; then
   CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.7"
   if [[ "$ARCH" == x86_64 ]]; then
     CXXFLAGS="$CXXFLAGS -m64"
+  elif [[ "$ARCH" == aarch_64 ]]; then
+    CONFIGURE_ARGS="$CONFIGURE_ARGS --host=aarch64-apple-darwin"
+    CXXFLAGS="$CXXFLAGS -m64 -arch arm64"
+    LDFLAGS="$LDFLAGS -arch arm64"
   elif [[ "$ARCH" == x86_32 ]]; then
     CXXFLAGS="$CXXFLAGS -m32"
   else
