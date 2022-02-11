@@ -121,6 +121,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @return object The stored element at given index.
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
+     * @todo need to add return type mixed (require update php version to 8.0)
      */
     #[\ReturnTypeWillChange]
     public function offsetGet($offset)
@@ -139,6 +140,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
      * @throws \ErrorException Incorrect type of the element.
+     * @todo need to add return type void (require update php version to 7.1)
      */
     #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
@@ -211,6 +213,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException The element to be removed is not at the end of the
      * RepeatedField.
+     * @todo need to add return type void (require update php version to 7.1)
      */
     #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
