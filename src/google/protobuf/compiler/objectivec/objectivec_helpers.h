@@ -47,6 +47,10 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+// Get/Set the path to a file to load for objc class prefix lookups.
+std::string PROTOC_EXPORT GetPrefixToProtoPackageMappingsPath();
+void PROTOC_EXPORT SetPrefixToProtoPackageMappingsPath(
+    const std::string& file_path);
 // Get/Set if the proto package should be used to make the default prefix for
 // symbols. This will then impact most of the type naming apis below. It is done
 // as a global to not break any other generator reusing the methods since they
