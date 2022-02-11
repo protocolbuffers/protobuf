@@ -190,6 +190,21 @@ bool ObjectiveCGenerator::GenerateAll(
       // header search path since the generate #import will be more complete.
       generation_options.runtime_import_prefix =
           StripSuffixString(options[i].second, "/");
+    } else if (options[i].first == "prefix_to_proto_package_mappings_path") {
+      // Path to use for when loading the objc class prefix mappings to use.
+      // The `objc_class_prefix` file option is always honored first if one is present.
+      // This option also has precedent over the use_package_as_prefix option.
+      //
+      // The format of the file is:
+      //   - An entry is a line of "package=prefix".
+      //   - Comments start with "#".
+      //   - A comment can go on a line after a expected package/prefix pair.
+      //     (i.e. - "package=prefix # comment")
+      //   - For files that do NOT have a proto package (not recommended), an
+      //     entry can be made as "no_package:PATH=prefix", where PATH is the
+      //     path for the .proto file.
+      //
+      SetPrefixToProtoPackageMappingsPath(options[i].second);
     } else if (options[i].first == "use_package_as_prefix") {
       // Controls how the symbols should be prefixed to avoid symbols
       // collisions. The objc_class_prefix file option is always honored, this
