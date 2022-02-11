@@ -3,6 +3,10 @@ load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
 
+exports_files([
+  "src/test/kotlin/com/google/protobuf/Proto3Test.kt",
+])
+
 # Kotlin generated protos depend on this and only this.
 kt_jvm_library(
     name = "shared_runtime",
