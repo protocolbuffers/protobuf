@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
   build-essential \
   bzip2 \
   ccache \
+  cmake \
   curl \
   gcc \
   git \
@@ -21,6 +22,7 @@ RUN apt-get update && apt-get install -y \
   libtool \
   make \
   parallel \
+  pkg-config \
   time \
   wget \
   # Java dependencies
@@ -29,6 +31,7 @@ RUN apt-get update && apt-get install -y \
   # Required for the gtest build.
   python2 \
   # Python dependencies
+  python3-dev \
   python3-setuptools \
   python3-pip \
   python3-venv \
