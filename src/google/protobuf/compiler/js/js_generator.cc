@@ -460,7 +460,7 @@ bool IgnoreOneof(const OneofDescriptor* oneof) {
 
 std::string JSIdent(const GeneratorOptions& options,
                     const FieldDescriptor* field, bool is_upper_camel,
-                    bool is_map, bool drop_list) {
+                    bool is_map, bool drop_list, bool mantain_proto_fieldnames = true) {
   std::string result;
   if (field->type() == FieldDescriptor::TYPE_GROUP) {
     result = is_upper_camel
@@ -470,12 +470,14 @@ std::string JSIdent(const GeneratorOptions& options,
     result = is_upper_camel ? ToUpperCamel(ParseLowerUnderscore(field->name()))
                             : ToLowerCamel(ParseLowerUnderscore(field->name()));
   }
-  if (is_map || field->is_map()) {
-    // JSPB-style or proto3-style map.
-    result += "Map";
-  } else if (!drop_list && field->is_repeated()) {
-    // Repeated field.
-    result += "List";
+  if(!mantain_proto_fieldnames) {
+    if (is_map || field->is_map()) {
+      // JSPB-style or proto3-style map.
+      result += "Map";
+    } else if (!drop_list && field->is_repeated()) {
+      // Repeated field.
+      result += "List";
+    }
   }
   return result;
 }
@@ -485,7 +487,8 @@ std::string JSObjectFieldName(const GeneratorOptions& options,
   std::string name = JSIdent(options, field,
                              /* is_upper_camel = */ false,
                              /* is_map = */ false,
-                             /* drop_list = */ false);
+                             /* drop_list = */ false,
+                             /* preserve_fieldnames = */ options.mantain_proto_fieldnames);
   if (IsReserved(name)) {
     name = "pb_" + name;
   }
@@ -3474,6 +3477,8 @@ bool GeneratorOptions::ParseFromOptions(
       namespace_prefix = options[i].second;
     } else if (options[i].first == "library") {
       library = options[i].second;
+    } else if (options[i].first == "mantain_proto_fieldnames") {
+      mantain_proto_fieldnames = true;
     } else if (options[i].first == "import_style") {
       if (options[i].second == "closure") {
         import_style = kImportClosure;
