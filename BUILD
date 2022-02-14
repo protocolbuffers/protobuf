@@ -1485,6 +1485,7 @@ genrule(
     outs = [
         "TestAllTypesKt.kt",
         "ForeignMessageKt.kt",
+        "Int32MessageKt.kt",
         "TestAllExtensionsKt.kt",
         "TestEmptyMessageKt.kt",
         "TestEmptyMessageWithExtensionsKt.kt",
@@ -1505,6 +1506,8 @@ genrule(
           "$(location TestAllTypesKt.kt) && " +
           "cp $(@D)/protobuf_unittest/ForeignMessageKt.kt " +
           "$(location ForeignMessageKt.kt) && " +
+          "cp $(@D)/protobuf_unittest/Int32MessageKt.kt " +
+          "$(location Int32MessageKt.kt) && " +
           "cp $(@D)/protobuf_unittest/TestAllExtensionsKt.kt " +
           "$(location TestAllExtensionsKt.kt) && " +
           "cp $(@D)/protobuf_unittest/TestEmptyMessageKt.kt " +
@@ -1566,5 +1569,18 @@ genrule(
           "cp $(@D)/proto3_unittest/TestEmptyMessageKt.kt " +
           "$(location TestEmptyMessageProto3Kt.kt)",
     tools = ["//:protoc"],
+)
+
+genrule(
+  name = "gen_kotlin_any",
+  srcs = ["src/google/protobuf/any.proto"],
+  outs = ["AnyKt.kt"],
+  visibility = ["//java:__subpackages__"],
+  cmd = "$(location //:protoc) " +
+        "--kotlin_out=shared,immutable:$(@D) -Isrc/ " +
+        "$(location src/google/protobuf/any.proto) && " +
+        "cp $(@D)/com/google/protobuf/AnyKt.kt " +
+        "$(location AnyKt.kt)",
+  tools = ["//:protoc"],
 )
 
