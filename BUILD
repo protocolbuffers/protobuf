@@ -1530,7 +1530,7 @@ genrule(
 genrule(
     name = "gen_kotlin_proto3_unittest_lite",
     srcs = [
-        "src/google/protobuf/unittest_proto3_lite.proto",
+        "src/google/protobuf/unittest_proto3.proto",
         "src/google/protobuf/unittest_import.proto",
         "src/google/protobuf/unittest_import_public.proto",
     ],
@@ -1541,10 +1541,10 @@ genrule(
     visibility = ["//java:__subpackages__"],
     cmd = "$(location //:protoc) " +
           "--kotlin_out=lite:$(@D) -Isrc/ " +
-          "$(location src/google/protobuf/unittest_proto3_lite.proto) && " +
-          "cp $(@D)/proto3_lite_unittest/TestAllTypesKt.kt " +
+          "$(location src/google/protobuf/unittest_proto3.proto) && " +
+          "cp $(@D)/proto3_unittest/TestAllTypesKt.kt " +
           "$(location TestAllTypesProto3LiteKt.kt) && " +
-          "cp $(@D)/proto3_lite_unittest/TestEmptyMessageKt.kt " +
+          "cp $(@D)/proto3_unittest/TestEmptyMessageKt.kt " +
           "$(location TestEmptyMessageProto3LiteKt.kt)",
     tools = ["//:protoc"],
 )
