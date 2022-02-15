@@ -57,7 +57,7 @@
 #include <fstream>
 #include <iostream>
 
-#include <limits.h>  //For PATH_MAX
+#include <limits.h>  // For PATH_MAX
 
 #include <memory>
 
@@ -69,7 +69,6 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/compiler/subprocess.h>
 #include <google/protobuf/compiler/zip_writer.h>
 #include <google/protobuf/compiler/plugin.pb.h>
@@ -82,6 +81,7 @@
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/stubs/map_util.h>
@@ -1676,8 +1676,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     // On Windows, the shell (typically cmd.exe) does not expand wildcards in
     // file names (e.g. foo\*.proto), so we do it ourselves.
     switch (google::protobuf::io::win32::ExpandWildcards(
-        value,
-        [this](const std::string& path) {
+        value, [this](const std::string& path) {
           this->input_files_.push_back(path);
         })) {
       case google::protobuf::io::win32::ExpandWildcardsResult::kSuccess:
@@ -2590,7 +2589,8 @@ void FormatFreeFieldNumbers(const std::string& name,
         StringAppendF(&output, " %d", next_free_number);
       } else {
         // Range
-        StringAppendF(&output, " %d-%d", next_free_number, i->first - 1);
+        StringAppendF(&output, " %d-%d", next_free_number,
+                              i->first - 1);
       }
     }
     next_free_number = i->second;

@@ -853,11 +853,15 @@ static void DeallocMapIterator(PyObject* _self) {
 
 PyTypeObject MapIterator_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".MapIterator",                 //  tp_name
-    sizeof(MapIterator),            //  tp_basicsize
-    0,                              //  tp_itemsize
-    DeallocMapIterator,             //  tp_dealloc
-    0,                              //  tp_print
+    ".MapIterator",       //  tp_name
+    sizeof(MapIterator),  //  tp_basicsize
+    0,                    //  tp_itemsize
+    DeallocMapIterator,   //  tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                        //  tp_getattr
     nullptr,                        //  tp_setattr
     nullptr,                        //  tp_compare

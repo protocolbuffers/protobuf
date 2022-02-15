@@ -87,8 +87,8 @@ namespace {
 
 
 // Creates a heap allocated std::string value.
-inline TaggedPtr<std::string> CreateString(ConstStringParam value) {
-  TaggedPtr<std::string> res;
+inline TaggedStringPtr CreateString(ConstStringParam value) {
+  TaggedStringPtr res;
   res.SetAllocated(new std::string(value.data(), value.length()));
   return res;
 }
@@ -96,8 +96,8 @@ inline TaggedPtr<std::string> CreateString(ConstStringParam value) {
 #if !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
 
 // Creates an arena allocated std::string value.
-TaggedPtr<std::string> CreateArenaString(Arena& arena, ConstStringParam s) {
-  TaggedPtr<std::string> res;
+TaggedStringPtr CreateArenaString(Arena& arena, ConstStringParam s) {
+  TaggedStringPtr res;
   res.SetMutableArena(Arena::Create<std::string>(&arena, s.data(), s.length()));
   return res;
 }

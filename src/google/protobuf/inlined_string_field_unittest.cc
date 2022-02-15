@@ -53,6 +53,8 @@ namespace protobuf {
 using internal::ArenaStringPtr;
 using internal::InlinedStringField;
 
+static std::string WrapString(const char* value) { return value; }
+
 namespace {
 }  // namespace
 }  // namespace protobuf

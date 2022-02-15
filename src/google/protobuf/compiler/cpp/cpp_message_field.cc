@@ -61,10 +61,10 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = FieldMessageTypeName(descriptor, options);
   (*variables)["casted_member"] = ReinterpretCast(
-      (*variables)["type"] + "*", (*variables)["field_member"], implicit_weak);
+      (*variables)["type"] + "*", (*variables)["field"], implicit_weak);
   (*variables)["casted_member_const"] =
       ReinterpretCast("const " + (*variables)["type"] + "&",
-                      "*" + (*variables)["field_member"], implicit_weak);
+                      "*" + (*variables)["field"], implicit_weak);
   (*variables)["type_default_instance"] =
       QualifiedDefaultInstanceName(descriptor->message_type(), options);
   (*variables)["type_default_instance_ptr"] = ReinterpretCast(
@@ -435,7 +435,7 @@ void MessageFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
     // care when handling them.
     format("if (this != internal_default_instance()) ");
   }
-  format("delete $name$_;\n");
+  format("delete $field$;\n");
 }
 
 void MessageFieldGenerator::GenerateConstructorCode(
@@ -443,7 +443,7 @@ void MessageFieldGenerator::GenerateConstructorCode(
   GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
-  format("$name$_ = nullptr;\n");
+  format("$field$ = nullptr;\n");
 }
 
 void MessageFieldGenerator::GenerateCopyConstructorCode(
@@ -453,9 +453,9 @@ void MessageFieldGenerator::GenerateCopyConstructorCode(
   Formatter format(printer, variables_);
   format(
       "if (from._internal_has_$name$()) {\n"
-      "  $name$_ = new $type$(*from.$name$_);\n"
+      "  $field$ = new $type$(*from.$field$);\n"
       "} else {\n"
-      "  $name$_ = nullptr;\n"
+      "  $field$ = nullptr;\n"
       "}\n");
 }
 

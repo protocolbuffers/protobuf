@@ -412,6 +412,10 @@ class FlatAllocatorImpl {
 
     const auto push_name = [&](std::string new_name) {
       for (size_t i = 0; i < names.size(); ++i) {
+        // Do not compare the full_name. It is unlikely to match, except in
+        // custom json_name. We are not taking this into account in
+        // PlanFieldNames so better to not try it.
+        if (i == 1) continue;
         if (names[i] == new_name) return i;
       }
       names.push_back(std::move(new_name));

@@ -227,13 +227,6 @@ struct ReflectionSchema {
     return false;
   }
 
-  // Returns true if the field's accessor is called by any external code (aka,
-  // non proto library code).
-  bool IsFieldUsed(const FieldDescriptor* field) const {
-    (void)field;
-    return true;
-  }
-
   bool IsFieldStripped(const FieldDescriptor* field) const {
     (void)field;
     return false;
@@ -271,9 +264,9 @@ struct ReflectionSchema {
     if (type == FieldDescriptor::TYPE_MESSAGE ||
         type == FieldDescriptor::TYPE_STRING ||
         type == FieldDescriptor::TYPE_BYTES) {
-      return v & 0x7FFFFFFEu;
+      return v & 0xFFFFFFFEu;
     }
-    return v & 0x7FFFFFFFu;
+    return v;
   }
 
   static bool Inlined(uint32_t v, FieldDescriptor::Type type) {

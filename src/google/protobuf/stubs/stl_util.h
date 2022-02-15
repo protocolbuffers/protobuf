@@ -37,7 +37,8 @@
 
 #include <algorithm>
 
-#include <google/protobuf/port_def.inc>
+// Must be last.
+#include <google/protobuf/port_def.inc>  // NOLINT
 
 namespace google {
 namespace protobuf {
@@ -84,6 +85,6 @@ inline char* string_as_array(std::string* str) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include <google/protobuf/port_undef.inc>  // NOLINT
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STL_UTIL_H__

@@ -87,39 +87,43 @@ static PyTypeObject _CFieldProperty_Type = {
     sizeof(PyMessageFieldProperty),         // tp_basicsize
     0,                                      // tp_itemsize
     nullptr,                                // tp_dealloc
-    0,                                      // tp_print
-    nullptr,                                // tp_getattr
-    nullptr,                                // tp_setattr
-    nullptr,                                // tp_compare
-    (reprfunc)field::Repr,                  // tp_repr
-    nullptr,                                // tp_as_number
-    nullptr,                                // tp_as_sequence
-    nullptr,                                // tp_as_mapping
-    nullptr,                                // tp_hash
-    nullptr,                                // tp_call
-    nullptr,                                // tp_str
-    nullptr,                                // tp_getattro
-    nullptr,                                // tp_setattro
-    nullptr,                                // tp_as_buffer
-    Py_TPFLAGS_DEFAULT,                     // tp_flags
-    "Field property of a Message",          // tp_doc
-    nullptr,                                // tp_traverse
-    nullptr,                                // tp_clear
-    nullptr,                                // tp_richcompare
-    0,                                      // tp_weaklistoffset
-    nullptr,                                // tp_iter
-    nullptr,                                // tp_iternext
-    nullptr,                                // tp_methods
-    nullptr,                                // tp_members
-    field::Getters,                         // tp_getset
-    nullptr,                                // tp_base
-    nullptr,                                // tp_dict
-    (descrgetfunc)field::DescrGet,          // tp_descr_get
-    (descrsetfunc)field::DescrSet,          // tp_descr_set
-    0,                                      // tp_dictoffset
-    nullptr,                                // tp_init
-    nullptr,                                // tp_alloc
-    nullptr,                                // tp_new
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
+    nullptr,                        // tp_getattr
+    nullptr,                        // tp_setattr
+    nullptr,                        // tp_compare
+    (reprfunc)field::Repr,          // tp_repr
+    nullptr,                        // tp_as_number
+    nullptr,                        // tp_as_sequence
+    nullptr,                        // tp_as_mapping
+    nullptr,                        // tp_hash
+    nullptr,                        // tp_call
+    nullptr,                        // tp_str
+    nullptr,                        // tp_getattro
+    nullptr,                        // tp_setattro
+    nullptr,                        // tp_as_buffer
+    Py_TPFLAGS_DEFAULT,             // tp_flags
+    "Field property of a Message",  // tp_doc
+    nullptr,                        // tp_traverse
+    nullptr,                        // tp_clear
+    nullptr,                        // tp_richcompare
+    0,                              // tp_weaklistoffset
+    nullptr,                        // tp_iter
+    nullptr,                        // tp_iternext
+    nullptr,                        // tp_methods
+    nullptr,                        // tp_members
+    field::Getters,                 // tp_getset
+    nullptr,                        // tp_base
+    nullptr,                        // tp_dict
+    (descrgetfunc)field::DescrGet,  // tp_descr_get
+    (descrsetfunc)field::DescrSet,  // tp_descr_set
+    0,                              // tp_dictoffset
+    nullptr,                        // tp_init
+    nullptr,                        // tp_alloc
+    nullptr,                        // tp_new
 };
 PyTypeObject* CFieldProperty_Type = &_CFieldProperty_Type;
 

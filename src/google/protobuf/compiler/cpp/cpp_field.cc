@@ -103,7 +103,7 @@ std::string GenerateTemplateForOneofString(const FieldDescriptor* descriptor,
   return strings::Substitute(
       StrCat("_internal_has_", field_name, "() ? ", field_pointer, " : ",
                    default_value_pointer),
-      field_member, MakeDefaultName(descriptor));
+      field_member, MakeDefaultFieldName(descriptor));
 }
 
 std::string GenerateTemplateForSingleString(const FieldDescriptor* descriptor,
@@ -115,7 +115,7 @@ std::string GenerateTemplateForSingleString(const FieldDescriptor* descriptor,
   if (descriptor->options().ctype() == google::protobuf::FieldOptions::STRING) {
     return strings::Substitute(
         "$0.IsDefault() ? &$1.get() : $0.UnsafeGetPointer()", field_member,
-        MakeDefaultName(descriptor));
+        MakeDefaultFieldName(descriptor));
   }
 
   return StrCat("&", field_member);
@@ -150,7 +150,7 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
       google::protobuf::FileOptions::LITE_RUNTIME) {
     return;
   }
-  std::string field_member = (*variables)["field_member"];
+  std::string field_member = (*variables)["field"];
   const google::protobuf::OneofDescriptor* oneof_member =
       descriptor->real_containing_oneof();
   const std::string proto_ns = (*variables)["proto_ns"];
@@ -241,11 +241,6 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["number"] = StrCat(descriptor->number());
   (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
   (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
-  // TODO(b/218325252): convert all usages of "field_member" to "field" and
-  // remove this. The former may unnecessarily cause line breaks in protoc code.
-  // Note that the length of variables has no effect on the generated code. It
-  // only affects the readability of code template in protoc.
-  (*variables)["field_member"] = FieldMemberName(descriptor);
   (*variables)["field"] = FieldMemberName(descriptor);
 
   (*variables)["tag_size"] = StrCat(

@@ -46,7 +46,8 @@ function doTest(request) {
       return response;
     }
 
-    if (request.getRequestedOutputFormat() == conformance.WireFormat.TEXT_FORMAT) {
+    if (request.getRequestedOutputFormat() ==
+        conformance.WireFormat.TEXT_FORMAT) {
       response.setSkipped('Text format is not supported as output format.');
       return response;
     }

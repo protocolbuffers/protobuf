@@ -339,6 +339,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   // Functions referenced by generated fast tables (string types):
   //   B: bytes      S: string     U: UTF-8 string
+  //   (empty): ArenaStringPtr     i: InlinedString
   //   S: singular   R: repeated
   //   1/2: tag length (bytes)
   static const char* FastBS1(PROTOBUF_TC_PARAM_DECL);
@@ -354,14 +355,25 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* FastUR1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastUR2(PROTOBUF_TC_PARAM_DECL);
 
+  static const char* FastBiS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastBiS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSiS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSiS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastUiS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastUiS2(PROTOBUF_TC_PARAM_DECL);
+
   // Functions referenced by generated fast tables (message types):
-  //   M: message
+  //   M: message    G: group
   //   S: singular   R: repeated
   //   1/2: tag length (bytes)
   static const char* FastMS1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastMS2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastMR1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastMR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGR2(PROTOBUF_TC_PARAM_DECL);
 
   template <typename T>
   static inline T& RefAt(void* x, size_t offset) {
@@ -402,9 +414,9 @@ class PROTOBUF_EXPORT TcParser final {
  private:
   friend class GeneratedTcTableLiteTest;
 
-  template <typename TagType>
+  template <typename TagType, bool group_coding>
   static inline const char* SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
-  template <typename TagType>
+  template <typename TagType, bool group_coding>
   static inline const char* RepeatedParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
 
   static inline PROTOBUF_ALWAYS_INLINE void SyncHasbits(
@@ -496,7 +508,7 @@ class PROTOBUF_EXPORT TcParser final {
                           MessageLite* msg);
 
   // UTF-8 validation:
-  static void ReportFastUtf8Error(uint16_t coded_tag,
+  static void ReportFastUtf8Error(uint32_t decoded_tag,
                                   const TcParseTableBase* table);
   static bool MpVerifyUtf8(StringPiece wire_bytes,
                            const TcParseTableBase* table,

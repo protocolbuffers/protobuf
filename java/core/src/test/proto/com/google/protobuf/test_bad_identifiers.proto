@@ -32,6 +32,7 @@
 
 // This file tests that various identifiers work as field and type names even
 // though the same identifiers are used internally by the java code generator.
+// LINT: LEGACY_NAMES
 
 syntax = "proto2";
 
@@ -41,8 +42,9 @@ option java_generic_services = true;  // auto-added
 option java_package = "com.google.protobuf";
 option java_outer_classname = "TestBadIdentifiersProto";
 
-// Message with field names using underscores that conflict with accessors in the base message class in java.
-// See kForbiddenWordList in src/google/protobuf/compiler/java/java_helpers.cc
+// Message with field names using underscores that conflict with accessors in
+// the base message class in java. See kForbiddenWordList in
+// src/google/protobuf/compiler/java/java_helpers.cc
 message ForbiddenWordsUnderscoreMessage {
   // java.lang.Object
   optional bool class = 1;
@@ -55,13 +57,15 @@ message ForbiddenWordsUnderscoreMessage {
   optional bool all_fields = 5;
   optional bool descriptor_for_type = 6;
   optional bool initialization_error_string = 7;
-  optional bool unknown_fields = 8;
+  // TODO(b/219045204): re-enable
+  // optional bool unknown_fields = 8;
   // obsolete. kept for backwards compatibility of generated code
   optional bool cached_size = 9;
 }
 
-// Message with field names using leading underscores that conflict with accessors in the base message class in java.
-// See kForbiddenWordList in src/google/protobuf/compiler/java/java_helpers.cc
+// Message with field names using leading underscores that conflict with
+// accessors in the base message class in java. See kForbiddenWordList in
+// src/google/protobuf/compiler/java/java_helpers.cc
 message ForbiddenWordsLeadingUnderscoreMessage {
   // java.lang.Object
   optional bool _class = 1;
@@ -74,13 +78,15 @@ message ForbiddenWordsLeadingUnderscoreMessage {
   optional bool _all_fields = 5;
   optional bool _descriptor_for_type = 6;
   optional bool _initialization_error_string = 7;
-  optional bool _unknown_fields = 8;
+  // TODO(b/219045204): re-enable
+  // optional bool _unknown_fields = 8;
   // obsolete. kept for backwards compatibility of generated code
   optional bool _cached_size = 9;
 }
 
-// Message with field names in camel case that conflict with accessors in the base message class in java.
-// See kForbiddenWordList in src/google/protobuf/compiler/java/java_helpers.cc
+// Message with field names in camel case that conflict with accessors in the
+// base message class in java. See kForbiddenWordList in
+// src/google/protobuf/compiler/java/java_helpers.cc
 message ForbiddenWordsCamelMessage {
   // java.lang.Object
   optional bool class = 1;
@@ -93,7 +99,8 @@ message ForbiddenWordsCamelMessage {
   optional bool initializationErrorString = 5;
   optional bool descriptorForType = 6;
   optional bool allFields = 7;
-  optional bool unknownFields = 8;
+  // TODO(b/219045204): re-enable
+  // optional bool unknownFields = 8;
   // obsolete. kept for backwards compatibility of generated code
   optional bool cachedSize = 9;
 }
@@ -166,7 +173,8 @@ message Double {
 }
 
 service TestConflictingMethodNames {
-  rpc Override(ForbiddenWordsUnderscoreMessage) returns (ForbiddenWordsUnderscoreMessage);
+  rpc Override(ForbiddenWordsUnderscoreMessage)
+      returns (ForbiddenWordsUnderscoreMessage);
 }
 
 message TestConflictingFieldNames {
@@ -187,10 +195,10 @@ message TestConflictingFieldNames {
   optional bytes bytes_field_count = 14;
   optional ForbiddenWordsUnderscoreMessage message_field_count = 15;
 
-  repeated int32 Int32Field = 21;          // NO_PROTO3
-  repeated TestEnum EnumField = 22;        // NO_PROTO3
-  repeated string StringField = 23;        // NO_PROTO3
-  repeated bytes BytesField = 24;          // NO_PROTO3
+  repeated int32 Int32Field = 21;                              // NO_PROTO3
+  repeated TestEnum EnumField = 22;                            // NO_PROTO3
+  repeated string StringField = 23;                            // NO_PROTO3
+  repeated bytes BytesField = 24;                              // NO_PROTO3
   repeated ForbiddenWordsUnderscoreMessage MessageField = 25;  // NO_PROTO3
 
   // This field conflicts with "int32_field" as they both generate
