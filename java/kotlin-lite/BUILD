@@ -1,5 +1,6 @@
 load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_java//java:defs.bzl", "java_lite_proto_library")
+load("//:protobuf.bzl", "internal_gen_kt_protos")
 
 java_lite_proto_library(
     name = "example_extensible_message_java_proto_lite",
@@ -47,9 +48,21 @@ java_lite_proto_library(
     deps = ["//java/kotlin:evil_names_proto2"],
 )
 
+internal_gen_kt_protos(
+    name = "gen_evil_names_proto2_lite",
+    deps = ["//java/kotlin:evil_names_proto2"],
+    lite = True,
+)
+
 java_lite_proto_library(
     name = "evil_names_proto3_java_proto_lite",
     deps = ["//java/kotlin:evil_names_proto3"],
+)
+
+internal_gen_kt_protos(
+    name = "gen_evil_names_proto3_lite",
+    deps = ["//java/kotlin:evil_names_proto3"],
+    lite = True,
 )
 
 java_lite_proto_library(
@@ -57,64 +70,9 @@ java_lite_proto_library(
     deps = ["//java/kotlin:multiple_files_proto3"],
 )
 
-genrule(
+internal_gen_kt_protos(
     name = "gen_kotlin_proto3_java_multiple_files_lite",
-    srcs = ["src/test/proto/com/google/protobuf/multiple_files_proto3.proto"],
-    outs = [
-        "MultipleFilesMessageALiteKt.kt",
-        "MultipleFilesMessageBLiteKt.kt",
-        "MultipleFilesProto3LiteKt.kt",
-    ],
-    cmd = "$(location //:protoc) " +
-          "--kotlin_out=lite:$(@D) " +
-          "$(location src/test/proto/com/google/protobuf/multiple_files_proto3.proto) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/MultipleFilesMessageAKt.kt " +
-          "$(location MultipleFilesMessageALiteKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/MultipleFilesMessageBKt.kt " +
-          "$(location MultipleFilesMessageBLiteKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/MultipleFilesProto3Kt.kt " +
-          "$(location MultipleFilesProto3LiteKt.kt)",
-    tools = ["//:protoc"],
-)
-
-genrule(
-    name = "gen_evil_names_proto2_lite",
-    srcs = ["src/test/proto/com/google/protobuf/evil_names_proto2.proto"],
-    outs = [
-        "EvilNamesProto2LiteKt.kt",
-        "HardKeywordsAllTypesProto2LiteKt.kt",
-        "InterfaceKt.kt",
-    ],
-    cmd = "$(location //:protoc) " +
-          "--kotlin_out=lite:$(@D) " +
-          "$(location src/test/proto/com/google/protobuf/evil_names_proto2.proto) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/EvilNamesProto2Kt.kt " +
-          "$(location EvilNamesProto2LiteKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/HardKeywordsAllTypesProto2Kt.kt " +
-          "$(location HardKeywordsAllTypesProto2LiteKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/InterfaceKt.kt " +
-          "$(location InterfaceKt.kt)",
-    tools = ["//:protoc"],
-)
-
-genrule(
-    name = "gen_evil_names_proto3_lite",
-    srcs = ["src/test/proto/com/google/protobuf/evil_names_proto3.proto"],
-    outs = [
-        "ClassKt.kt",
-        "EvilNamesProto3Kt.kt",
-        "HardKeywordsAllTypesProto3Kt.kt",
-    ],
-    cmd = "$(location //:protoc) " +
-          "--kotlin_out=lite:$(@D) " +
-          "$(location src/test/proto/com/google/protobuf/evil_names_proto3.proto) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/ClassKt.kt " +
-          "$(location ClassKt.kt) && " + 
-          "cp $(@D)/com/google/protobuf/kotlin/generator/EvilNamesProto3Kt.kt " +
-          "$(location EvilNamesProto3Kt.kt) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/HardKeywordsAllTypesProto3Kt.kt " +
-          "$(location HardKeywordsAllTypesProto3Kt.kt)",
-    tools = ["//:protoc"],
+    deps = ["//java/kotlin:multiple_files_proto3"],
 )
 
 kt_jvm_library(
