@@ -53,6 +53,7 @@ enum NotAllowed {
   namespace = 47;
   new = 48;
   or = 49;
+  parent = 77;
   print = 50;
   private = 51;
   protected = 52;
@@ -60,6 +61,7 @@ enum NotAllowed {
   require = 54;
   require_once = 55;
   return = 56;
+  self = 78;
   static = 57;
   switch = 58;
   throw = 59;

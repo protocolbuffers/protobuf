@@ -57,6 +57,8 @@ namespace  {
 // - alignof(std::string)
 #ifdef __STDCPP_DEFAULT_NEW_ALIGNMENT__
 constexpr size_t kNewAlign = __STDCPP_DEFAULT_NEW_ALIGNMENT__;
+#elif (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) < 40900
+constexpr size_t kNewAlign = alignof(::max_align_t);
 #else
 constexpr size_t kNewAlign = alignof(std::max_align_t);
 #endif
@@ -85,8 +87,8 @@ namespace {
 
 
 // Creates a heap allocated std::string value.
-inline TaggedPtr<std::string> CreateString(ConstStringParam value) {
-  TaggedPtr<std::string> res;
+inline TaggedStringPtr CreateString(ConstStringParam value) {
+  TaggedStringPtr res;
   res.SetAllocated(new std::string(value.data(), value.length()));
   return res;
 }
@@ -94,8 +96,8 @@ inline TaggedPtr<std::string> CreateString(ConstStringParam value) {
 #if !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
 
 // Creates an arena allocated std::string value.
-TaggedPtr<std::string> CreateArenaString(Arena& arena, ConstStringParam s) {
-  TaggedPtr<std::string> res;
+TaggedStringPtr CreateArenaString(Arena& arena, ConstStringParam s) {
+  TaggedStringPtr res;
   res.SetMutableArena(Arena::Create<std::string>(&arena, s.data(), s.length()));
   return res;
 }

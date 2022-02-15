@@ -367,12 +367,16 @@ static PyMethodDef Methods[] = {
 }  // namespace extension_dict
 
 PyTypeObject ExtensionDict_Type = {
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)     //
-    FULL_MODULE_NAME ".ExtensionDict",         // tp_name
-    sizeof(ExtensionDict),                     // tp_basicsize
-    0,                                         //  tp_itemsize
-    (destructor)extension_dict::dealloc,       //  tp_dealloc
-    0,                                         //  tp_print
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)  //
+    FULL_MODULE_NAME ".ExtensionDict",      // tp_name
+    sizeof(ExtensionDict),                  // tp_basicsize
+    0,                                      //  tp_itemsize
+    (destructor)extension_dict::dealloc,    //  tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                                   //  tp_getattr
     nullptr,                                   //  tp_setattr
     nullptr,                                   //  tp_compare
@@ -439,37 +443,41 @@ PyTypeObject ExtensionIterator_Type = {
     sizeof(extension_dict::ExtensionIterator),  //  tp_basicsize
     0,                                          //  tp_itemsize
     extension_dict::DeallocExtensionIterator,   //  tp_dealloc
-    0,                                          //  tp_print
-    nullptr,                                    //  tp_getattr
-    nullptr,                                    //  tp_setattr
-    nullptr,                                    //  tp_compare
-    nullptr,                                    //  tp_repr
-    nullptr,                                    //  tp_as_number
-    nullptr,                                    //  tp_as_sequence
-    nullptr,                                    //  tp_as_mapping
-    nullptr,                                    //  tp_hash
-    nullptr,                                    //  tp_call
-    nullptr,                                    //  tp_str
-    nullptr,                                    //  tp_getattro
-    nullptr,                                    //  tp_setattro
-    nullptr,                                    //  tp_as_buffer
-    Py_TPFLAGS_DEFAULT,                         //  tp_flags
-    "A scalar map iterator",                    //  tp_doc
-    nullptr,                                    //  tp_traverse
-    nullptr,                                    //  tp_clear
-    nullptr,                                    //  tp_richcompare
-    0,                                          //  tp_weaklistoffset
-    PyObject_SelfIter,                          //  tp_iter
-    IterNext,                                   //  tp_iternext
-    nullptr,                                    //  tp_methods
-    nullptr,                                    //  tp_members
-    nullptr,                                    //  tp_getset
-    nullptr,                                    //  tp_base
-    nullptr,                                    //  tp_dict
-    nullptr,                                    //  tp_descr_get
-    nullptr,                                    //  tp_descr_set
-    0,                                          //  tp_dictoffset
-    nullptr,                                    //  tp_init
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
+    nullptr,                  //  tp_getattr
+    nullptr,                  //  tp_setattr
+    nullptr,                  //  tp_compare
+    nullptr,                  //  tp_repr
+    nullptr,                  //  tp_as_number
+    nullptr,                  //  tp_as_sequence
+    nullptr,                  //  tp_as_mapping
+    nullptr,                  //  tp_hash
+    nullptr,                  //  tp_call
+    nullptr,                  //  tp_str
+    nullptr,                  //  tp_getattro
+    nullptr,                  //  tp_setattro
+    nullptr,                  //  tp_as_buffer
+    Py_TPFLAGS_DEFAULT,       //  tp_flags
+    "A scalar map iterator",  //  tp_doc
+    nullptr,                  //  tp_traverse
+    nullptr,                  //  tp_clear
+    nullptr,                  //  tp_richcompare
+    0,                        //  tp_weaklistoffset
+    PyObject_SelfIter,        //  tp_iter
+    IterNext,                 //  tp_iternext
+    nullptr,                  //  tp_methods
+    nullptr,                  //  tp_members
+    nullptr,                  //  tp_getset
+    nullptr,                  //  tp_base
+    nullptr,                  //  tp_dict
+    nullptr,                  //  tp_descr_get
+    nullptr,                  //  tp_descr_set
+    0,                        //  tp_dictoffset
+    nullptr,                  //  tp_init
 };
 }  // namespace python
 }  // namespace protobuf

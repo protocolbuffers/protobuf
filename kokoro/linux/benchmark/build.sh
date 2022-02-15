@@ -1,18 +1,18 @@
 #!/bin/bash
 #
+# This is the top-level script we give to Kokoro as the entry point for
+# running the "pull request" project:
+#
+# This script selects a specific Dockerfile (for building a Docker image) and
+# a script to run inside that image.  Then we delegate to the general
+# build_and_run_docker.sh script.
+
 # Change to repo root
 cd $(dirname $0)/../../..
 
-set -ex
-
-# Install openJDK 11 (required by the java benchmarks)
-sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 78BD65473CB3BD13
-sudo add-apt-repository ppa:openjdk-r/ppa
-sudo apt-get update
-sudo apt-get install -y openjdk-11-jdk-headless
-
-# use java 11
-sudo update-java-alternatives --set /usr/lib/jvm/java-1.11.0-openjdk-amd64
-java -version
-
-./tests.sh benchmark
+export DOCKERHUB_ORGANIZATION=protobuftesting
+export DOCKERFILE_DIR=kokoro/linux/dockerfile/test/java_stretch
+export DOCKER_RUN_SCRIPT=kokoro/linux/pull_request_in_docker.sh
+export OUTPUT_DIR=testoutput
+export TEST_SET="benchmark"
+./kokoro/linux/build_and_run_docker.sh

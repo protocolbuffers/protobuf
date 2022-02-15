@@ -129,8 +129,9 @@ struct alignas(uint64_t) TcParseTableBase {
   uint32_t extension_range_high;
   uint32_t max_field_number;
   uint8_t fast_idx_mask;
-  uint8_t num_sequential_fields;
-  uint16_t sequential_fields_start;
+  uint16_t lookup_table_offset;
+  uint32_t skipmap32;
+  uint32_t field_entries_offset;
   uint16_t num_field_entries;
 
   uint16_t num_aux_entries;
@@ -150,8 +151,9 @@ struct alignas(uint64_t) TcParseTableBase {
       uint16_t has_bits_offset, uint16_t extension_offset,
       uint32_t extension_range_low, uint32_t extension_range_high,
       uint32_t max_field_number, uint8_t fast_idx_mask,
-      uint8_t num_sequential_fields, uint16_t sequential_fields_start,
-      uint16_t num_field_entries, uint16_t num_aux_entries, uint32_t aux_offset,
+      uint16_t lookup_table_offset, uint32_t skipmap32,
+      uint32_t field_entries_offset, uint16_t num_field_entries,
+      uint16_t num_aux_entries, uint32_t aux_offset,
       const MessageLite* default_instance, TailCallParseFunc fallback)
       : has_bits_offset(has_bits_offset),
         extension_offset(extension_offset),
@@ -159,8 +161,9 @@ struct alignas(uint64_t) TcParseTableBase {
         extension_range_high(extension_range_high),
         max_field_number(max_field_number),
         fast_idx_mask(fast_idx_mask),
-        num_sequential_fields(num_sequential_fields),
-        sequential_fields_start(sequential_fields_start),
+        lookup_table_offset(lookup_table_offset),
+        skipmap32(skipmap32),
+        field_entries_offset(field_entries_offset),
         num_field_entries(num_field_entries),
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
@@ -179,16 +182,10 @@ struct alignas(uint64_t) TcParseTableBase {
     return reinterpret_cast<const FastFieldEntry*>(this + 1) + idx;
   }
 
-  // Returns a begin/end iterator (pointer) for the field numbers array.
-  // The field numbers are a parallel array to the `FieldEntry` array. Note that
-  // not all numbers may be valid fields; in these cases, the corresponding
-  // field entry will have a field kind of `field_layout::kFkNone`.
-  const uint32_t* field_numbers_begin() const {
-    return reinterpret_cast<const uint32_t*>(
-        fast_entry((fast_idx_mask >> 3) + 1));
-  }
-  const uint32_t* field_numbers_end() const {
-    return field_numbers_begin() + num_field_entries;
+  // Returns a begin iterator (pointer) to the start of the field lookup table.
+  const uint16_t* field_lookup_begin() const {
+    return reinterpret_cast<const uint16_t*>(reinterpret_cast<uintptr_t>(this) +
+                                             lookup_table_offset);
   }
 
   // Field entry for all fields.
@@ -201,7 +198,8 @@ struct alignas(uint64_t) TcParseTableBase {
 
   // Returns a begin iterator (pointer) to the start of the field entries array.
   const FieldEntry* field_entries_begin() const {
-    return reinterpret_cast<const FieldEntry*>(field_numbers_end());
+    return reinterpret_cast<const FieldEntry*>(
+        reinterpret_cast<uintptr_t>(this) + field_entries_offset);
   }
 
   // Auxiliary entries for field types that need extra information.
@@ -248,7 +246,8 @@ static_assert(sizeof(TcParseTableBase::FieldEntry) <= 16,
               "Field entry is too big.");
 
 template <size_t kFastTableSizeLog2, size_t kNumFieldEntries = 0,
-          size_t kNumFieldAux = 0, size_t kNameTableSize = 0>
+          size_t kNumFieldAux = 0, size_t kNameTableSize = 0,
+          size_t kFieldLookupSize = 2>
 struct TcParseTable {
   TcParseTableBase header;
 
@@ -261,8 +260,9 @@ struct TcParseTable {
   std::array<TcParseTableBase::FastFieldEntry, (1 << kFastTableSizeLog2)>
       fast_entries;
 
+  // Just big enough to find all the field entries.
+  std::array<uint16_t, kFieldLookupSize> field_lookup_table;
   // Entries for all fields:
-  std::array<uint32_t, kNumFieldEntries> field_numbers;
   std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
   std::array<TcParseTableBase::FieldAux, kNumFieldAux> aux_entries;
   std::array<char, kNameTableSize> field_names;
@@ -273,24 +273,26 @@ struct TcParseTable {
 // However, different implementations have different sizeof(std::array<T, 0>).
 // Skipping the member makes offset computations portable.
 template <size_t kFastTableSizeLog2, size_t kNumFieldEntries,
-          size_t kNameTableSize>
-struct TcParseTable<kFastTableSizeLog2, kNumFieldEntries, 0, kNameTableSize> {
+          size_t kNameTableSize, size_t kFieldLookupSize>
+struct TcParseTable<kFastTableSizeLog2, kNumFieldEntries, 0, kNameTableSize,
+                    kFieldLookupSize> {
   TcParseTableBase header;
   std::array<TcParseTableBase::FastFieldEntry, (1 << kFastTableSizeLog2)>
       fast_entries;
-  std::array<uint32_t, kNumFieldEntries> field_numbers;
+  std::array<uint16_t, kFieldLookupSize> field_lookup_table;
   std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
   std::array<char, kNameTableSize> field_names;
 };
 
 // Partial specialization: if there are no fields at all, then we can save space
 // by skipping the field numbers and entries.
-template <size_t kNameTableSize>
-struct TcParseTable<0, 0, 0, kNameTableSize> {
+template <size_t kNameTableSize, size_t kFieldLookupSize>
+struct TcParseTable<0, 0, 0, kNameTableSize, kFieldLookupSize> {
   TcParseTableBase header;
   // N.B.: the fast entries are sized by log2, so 2**0 fields = 1 entry.
   // The fast parsing loop will always use this entry, so it must be present.
   std::array<TcParseTableBase::FastFieldEntry, 1> fast_entries;
+  std::array<uint16_t, kFieldLookupSize> field_lookup_table;
   std::array<char, kNameTableSize> field_names;
 };
 

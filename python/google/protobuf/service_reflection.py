@@ -133,7 +133,7 @@ class _ServiceBuilder(object):
     """
     self.descriptor = service_descriptor
 
-  def BuildService(self, cls):
+  def BuildService(builder, cls):
     """Constructs the service class.
 
     Args:
@@ -143,18 +143,26 @@ class _ServiceBuilder(object):
     # CallMethod needs to operate with an instance of the Service class. This
     # internal wrapper function exists only to be able to pass the service
     # instance to the method that does the real CallMethod work.
-    def _WrapCallMethod(srvc, method_descriptor,
-                        rpc_controller, request, callback):
-      return self._CallMethod(srvc, method_descriptor,
-                       rpc_controller, request, callback)
-    self.cls = cls
+    # Making sure to use exact argument names from the abstract interface in
+    # service.py to match the type signature
+    def _WrapCallMethod(self, method_descriptor, rpc_controller, request, done):
+      return builder._CallMethod(self, method_descriptor, rpc_controller,
+                                 request, done)
+
+    def _WrapGetRequestClass(self, method_descriptor):
+      return builder._GetRequestClass(method_descriptor)
+
+    def _WrapGetResponseClass(self, method_descriptor):
+      return builder._GetResponseClass(method_descriptor)
+
+    builder.cls = cls
     cls.CallMethod = _WrapCallMethod
-    cls.GetDescriptor = staticmethod(lambda: self.descriptor)
-    cls.GetDescriptor.__doc__ = "Returns the service descriptor."
-    cls.GetRequestClass = self._GetRequestClass
-    cls.GetResponseClass = self._GetResponseClass
-    for method in self.descriptor.methods:
-      setattr(cls, method.name, self._GenerateNonImplementedMethod(method))
+    cls.GetDescriptor = staticmethod(lambda: builder.descriptor)
+    cls.GetDescriptor.__doc__ = 'Returns the service descriptor.'
+    cls.GetRequestClass = _WrapGetRequestClass
+    cls.GetResponseClass = _WrapGetResponseClass
+    for method in builder.descriptor.methods:
+      setattr(cls, method.name, builder._GenerateNonImplementedMethod(method))
 
   def _CallMethod(self, srvc, method_descriptor,
                   rpc_controller, request, callback):

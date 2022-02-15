@@ -511,9 +511,10 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
       format(
           "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 std::true_type "
           "$1$::_init_inline_$2$_ = "
-          "($3$._instance.$2$_.Init(), std::true_type{});\n",
+          "($3$._instance.$4$.Init(), std::true_type{});\n",
           ClassName(generator->descriptor_), FieldName(field),
-          DefaultInstanceName(generator->descriptor_, options_));
+          DefaultInstanceName(generator->descriptor_, options_),
+          FieldMemberName(field));
     }
   }
 

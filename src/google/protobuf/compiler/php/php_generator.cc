@@ -48,28 +48,29 @@ const std::string kDescriptorMetadataFile =
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {
-    "abstract",     "and",        "array",      "as",         "break",
-    "callable",     "case",       "catch",      "class",      "clone",
-    "const",        "continue",   "declare",    "default",    "die",
-    "do",           "echo",       "else",       "elseif",     "empty",
-    "enddeclare",   "endfor",     "endforeach", "endif",      "endswitch",
-    "endwhile",     "eval",       "exit",       "extends",    "final",
-    "finally",      "fn",         "for",        "foreach",    "function",
-    "global",       "goto",       "if",         "implements", "include",
-    "include_once", "instanceof", "insteadof",  "interface",  "isset",
-    "list",         "match",      "namespace",  "new",        "or",
-    "print",        "private",    "protected",  "public",     "require",
-    "require_once", "return",     "static",     "switch",     "throw",
-    "trait",        "try",        "unset",      "use",        "var",
-    "while",        "xor",        "yield",      "int",        "float",
-    "bool",         "string",     "true",       "false",      "null",
-    "void",         "iterable"};
+    "abstract",     "and",          "array",      "as",         "break",
+    "callable",     "case",         "catch",      "class",      "clone",
+    "const",        "continue",     "declare",    "default",    "die",
+    "do",           "echo",         "else",       "elseif",     "empty",
+    "enddeclare",   "endfor",       "endforeach", "endif",      "endswitch",
+    "endwhile",     "eval",         "exit",       "extends",    "final",
+    "finally",      "fn",           "for",        "foreach",    "function",
+    "global",       "goto",         "if",         "implements", "include",
+    "include_once", "instanceof",   "insteadof",  "interface",  "isset",
+    "list",         "match",        "namespace",  "new",        "or",
+    "parent",       "print",        "private",    "protected",  "public",
+    "require",      "require_once", "return",     "self",       "static",
+    "switch",       "throw",        "trait",      "try",        "unset",
+    "use",          "var",          "while",      "xor",        "yield",
+    "int",          "float",        "bool",       "string",     "true",
+    "false",        "null",         "void",       "iterable"};
 const char* const kValidConstantNames[] = {
     "int",   "float", "bool", "string",   "true",
-    "false", "null",  "void", "iterable",
+    "false", "null",  "void", "iterable", "parent",
+    "self"
 };
-const int kReservedNamesSize = 77;
-const int kValidConstantNamesSize = 9;
+const int kReservedNamesSize = 79;
+const int kValidConstantNamesSize = 11;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;
@@ -1114,7 +1115,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
   std::map<const FileDescriptor*, int> dependency_count;
   std::set<const FileDescriptor*> nodes_without_dependency;
   FileDescriptorSet sorted_file_set;
-  
+
   AnalyzeDependencyForFile(
       file, &nodes_without_dependency, &deps, &dependency_count);
 
@@ -2065,7 +2066,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       break;
     default:
       break;
-  } 
+  }
 
   printer->Print(
       "  ZEND_FE_END\n"

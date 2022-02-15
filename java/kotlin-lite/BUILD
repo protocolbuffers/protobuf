@@ -168,7 +168,7 @@ java_test(
 
 kt_jvm_library(
     name = "proto3_test_lite_library",
-    srcs = ["src/test/kotlin/com/google/protobuf/Proto3LiteTest.kt"],
+    srcs = ["//java/kotlin:src/test/kotlin/com/google/protobuf/Proto3Test.kt"],
     deps = [
         ":kotlin_proto3_unittest_lite",
         "//java/core:test_util_lite",
@@ -180,5 +180,5 @@ kt_jvm_library(
 java_test(
     name = "proto3_test_lite",
     runtime_deps = [":proto3_test_lite_library"],
-    test_class = "com.google.protobuf.kotlin.Proto3LiteTest",
+    test_class = "com.google.protobuf.kotlin.Proto3Test",
 )

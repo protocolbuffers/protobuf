@@ -454,11 +454,15 @@ static bool allow_oversize_protos = false;
 
 static PyTypeObject _CMessageClass_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".MessageMeta",                       // tp_name
-    sizeof(CMessageClass),                // tp_basicsize
-    0,                                    // tp_itemsize
-    message_meta::Dealloc,                // tp_dealloc
-    0,                                    // tp_print
+    ".MessageMeta",         // tp_name
+    sizeof(CMessageClass),  // tp_basicsize
+    0,                      // tp_itemsize
+    message_meta::Dealloc,  // tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr, /* tp_print */
+#else
+    0, /* tp_vectorcall_offset */
+#endif
     nullptr,                              // tp_getattr
     nullptr,                              // tp_setattr
     nullptr,                              // tp_compare
@@ -2735,20 +2739,24 @@ static CMessageClass _CMessage_Type = {{{
     sizeof(CMessage),               // tp_basicsize
     0,                              //  tp_itemsize
     (destructor)cmessage::Dealloc,  //  tp_dealloc
-    0,                              //  tp_print
-    nullptr,                        //  tp_getattr
-    nullptr,                        //  tp_setattr
-    nullptr,                        //  tp_compare
-    (reprfunc)cmessage::ToStr,      //  tp_repr
-    nullptr,                        //  tp_as_number
-    nullptr,                        //  tp_as_sequence
-    nullptr,                        //  tp_as_mapping
-    PyObject_HashNotImplemented,    //  tp_hash
-    nullptr,                        //  tp_call
-    (reprfunc)cmessage::ToStr,      //  tp_str
-    cmessage::GetAttr,              //  tp_getattro
-    nullptr,                        //  tp_setattro
-    nullptr,                        //  tp_as_buffer
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
+    nullptr,                      //  tp_getattr
+    nullptr,                      //  tp_setattr
+    nullptr,                      //  tp_compare
+    (reprfunc)cmessage::ToStr,    //  tp_repr
+    nullptr,                      //  tp_as_number
+    nullptr,                      //  tp_as_sequence
+    nullptr,                      //  tp_as_mapping
+    PyObject_HashNotImplemented,  //  tp_hash
+    nullptr,                      //  tp_call
+    (reprfunc)cmessage::ToStr,    //  tp_str
+    cmessage::GetAttr,            //  tp_getattro
+    nullptr,                      //  tp_setattro
+    nullptr,                      //  tp_as_buffer
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE |
         Py_TPFLAGS_HAVE_VERSION_TAG,     //  tp_flags
     "A ProtocolMessage",                 //  tp_doc

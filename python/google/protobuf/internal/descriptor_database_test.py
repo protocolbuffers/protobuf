@@ -100,7 +100,7 @@ class DescriptorDatabaseTest(unittest.TestCase):
     self.assertEqual(file_desc_proto2, db.FindFileContainingSymbol(
         'protobuf_unittest.TestAllTypes.none_field'))
 
-    with self.assertRaisesRegexp(KeyError, r'\'protobuf_unittest\.NoneMessage\''):
+    with self.assertRaisesRegex(KeyError, r'\'protobuf_unittest\.NoneMessage\''):
       db.FindFileContainingSymbol('protobuf_unittest.NoneMessage')
 
   def testConflictRegister(self):

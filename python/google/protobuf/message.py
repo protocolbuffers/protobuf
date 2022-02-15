@@ -194,6 +194,9 @@ class Message(object):
     """Parse serialized protocol buffer data into this message.
 
     Like :func:`MergeFromString()`, except we clear the object first.
+
+    Raises:
+      message.DecodeError if the input cannot be parsed.
     """
     self.Clear()
     return self.MergeFromString(serialized)

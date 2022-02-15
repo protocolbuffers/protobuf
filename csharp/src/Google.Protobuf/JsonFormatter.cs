@@ -233,7 +233,14 @@ namespace Google.Protobuf
                     writer.Write(PropertySeparator);
                 }
 
-                WriteString(writer, accessor.Descriptor.JsonName);
+                if (settings.PreserveProtoFieldNames)
+                {
+                    WriteString(writer, accessor.Descriptor.Name);
+                }
+                else
+                {
+                    WriteString(writer, accessor.Descriptor.JsonName);
+                }
                 writer.Write(NameValueSeparator);
                 WriteValue(writer, value);
 
@@ -816,6 +823,11 @@ namespace Google.Protobuf
             /// </summary>
             public bool FormatEnumsAsIntegers { get; }
 
+            /// <summary>
+            /// Whether to use the original proto field names as defined in the .proto file. Defaults to false.
+            /// </summary>
+            public bool PreserveProtoFieldNames { get; }
+
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object with the specified formatting of default values
@@ -832,7 +844,7 @@ namespace Google.Protobuf
             /// </summary>
             /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc) should be formatted; <c>false</c> otherwise.</param>
             /// <param name="typeRegistry">The <see cref="TypeRegistry"/> to use when formatting <see cref="Any"/> messages.</param>
-            public Settings(bool formatDefaultValues, TypeRegistry typeRegistry) : this(formatDefaultValues, typeRegistry, false)
+            public Settings(bool formatDefaultValues, TypeRegistry typeRegistry) : this(formatDefaultValues, typeRegistry, false, false)
             {
             }
 
@@ -842,32 +854,41 @@ namespace Google.Protobuf
             /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc) should be formatted; <c>false</c> otherwise.</param>
             /// <param name="typeRegistry">The <see cref="TypeRegistry"/> to use when formatting <see cref="Any"/> messages. TypeRegistry.Empty will be used if it is null.</param>
             /// <param name="formatEnumsAsIntegers"><c>true</c> to format the enums as integers; <c>false</c> to format enums as enum names.</param>
+            /// <param name="preserveProtoFieldNames"><c>true</c> to preserve proto field names; <c>false</c> to convert them to lowerCamelCase.</param>
             private Settings(bool formatDefaultValues,
                             TypeRegistry typeRegistry,
-                            bool formatEnumsAsIntegers)
+                            bool formatEnumsAsIntegers,
+                            bool preserveProtoFieldNames)
             {
                 FormatDefaultValues = formatDefaultValues;
                 TypeRegistry = typeRegistry ?? TypeRegistry.Empty;
                 FormatEnumsAsIntegers = formatEnumsAsIntegers;
+                PreserveProtoFieldNames = preserveProtoFieldNames;
             }
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object with the specified formatting of default values and the current settings.
             /// </summary>
             /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc) should be formatted; <c>false</c> otherwise.</param>
-            public Settings WithFormatDefaultValues(bool formatDefaultValues) => new Settings(formatDefaultValues, TypeRegistry, FormatEnumsAsIntegers);
+            public Settings WithFormatDefaultValues(bool formatDefaultValues) => new Settings(formatDefaultValues, TypeRegistry, FormatEnumsAsIntegers, PreserveProtoFieldNames);
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object with the specified type registry and the current settings.
             /// </summary>
             /// <param name="typeRegistry">The <see cref="TypeRegistry"/> to use when formatting <see cref="Any"/> messages.</param>
-            public Settings WithTypeRegistry(TypeRegistry typeRegistry) => new Settings(FormatDefaultValues, typeRegistry, FormatEnumsAsIntegers);
+            public Settings WithTypeRegistry(TypeRegistry typeRegistry) => new Settings(FormatDefaultValues, typeRegistry, FormatEnumsAsIntegers, PreserveProtoFieldNames);
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object with the specified enums formatting option and the current settings.
             /// </summary>
             /// <param name="formatEnumsAsIntegers"><c>true</c> to format the enums as integers; <c>false</c> to format enums as enum names.</param>
-            public Settings WithFormatEnumsAsIntegers(bool formatEnumsAsIntegers) => new Settings(FormatDefaultValues, TypeRegistry, formatEnumsAsIntegers);
+            public Settings WithFormatEnumsAsIntegers(bool formatEnumsAsIntegers) => new Settings(FormatDefaultValues, TypeRegistry, formatEnumsAsIntegers, PreserveProtoFieldNames);
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified field name formatting option and the current settings.
+            /// </summary>
+            /// <param name="preserveProtoFieldNames"><c>true</c> to preserve proto field names; <c>false</c> to convert them to lowerCamelCase.</param>
+            public Settings WithPreserveProtoFieldNames(bool preserveProtoFieldNames) => new Settings(FormatDefaultValues, TypeRegistry, FormatEnumsAsIntegers, preserveProtoFieldNames);
         }
 
         // Effectively a cache of mapping from enum values to the original name as specified in the proto file,

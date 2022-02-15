@@ -51,6 +51,7 @@ struct TailCallTableInfo {
   TailCallTableInfo(const Descriptor* descriptor, const Options& options,
                     const std::vector<const FieldDescriptor*>& ordered_fields,
                     const std::vector<int>& has_bit_indices,
+                    const std::vector<int>& inlined_string_indices,
                     MessageSCCAnalyzer* scc_analyzer);
 
   // Fields parsed by the table fast-path.
@@ -67,6 +68,7 @@ struct TailCallTableInfo {
   struct FieldEntryInfo {
     const FieldDescriptor* field;
     int hasbit_idx;
+    int inlined_string_idx;
     uint16_t aux_idx;
     // True for enums entirely covered by the start/length fields of FieldAux:
     bool is_enum_range;

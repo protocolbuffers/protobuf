@@ -1901,7 +1901,7 @@ public class JsonFormat {
       return json.getAsString();
     }
 
-    private ByteString parseBytes(JsonElement json) throws InvalidProtocolBufferException {
+    private ByteString parseBytes(JsonElement json) {
       try {
         return ByteString.copyFrom(BaseEncoding.base64().decode(json.getAsString()));
       } catch (IllegalArgumentException e) {

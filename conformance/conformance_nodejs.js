@@ -41,8 +41,14 @@ function doTest(request) {
   var response = new conformance.ConformanceResponse();
 
   try {
-    if (request.getRequestedOutputFormat() === conformance.WireFormat.JSON) {
+    if (request.getRequestedOutputFormat() == conformance.WireFormat.JSON) {
       response.setSkipped("JSON not supported.");
+      return response;
+    }
+
+    if (request.getRequestedOutputFormat() ==
+        conformance.WireFormat.TEXT_FORMAT) {
+      response.setSkipped('Text format is not supported as output format.');
       return response;
     }
 
@@ -67,7 +73,7 @@ function doTest(request) {
         } else {
           throw "Protobuf request doesn\'t have specific payload type";
         }
-      }
+      } break;
 
       case conformance.ConformanceRequest.PayloadCase.JSON_PAYLOAD:
         response.setSkipped("JSON not supported.");

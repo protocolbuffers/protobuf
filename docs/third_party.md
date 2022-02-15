@@ -201,3 +201,4 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
     * [intellij-protolint: A protobuf linter for JetBrains IDEs](https://github.com/yoheimuta/intellij-protolint)
     * [vim-protolint: A protobuf linter for Vim](https://github.com/yoheimuta/vim-protolint)
 * [super-linter: Protocol Buffer lint as GitHub Action](https://github.com/github/super-linter)
+* [protoc-gen-fieldmask - A plugin to generate static type fieldmask paths](https://github.com/idodod/protoc-gen-fieldmask)

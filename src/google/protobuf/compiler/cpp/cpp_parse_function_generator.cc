@@ -73,10 +73,6 @@ int TagSize(uint32_t field_number) {
   return 2;
 }
 
-const char* CodedTagType(int tag_size) {
-  return tag_size == 1 ? "uint8_t" : "uint16_t";
-}
-
 std::string FieldParseFunctionName(
     const TailCallTableInfo::FieldEntryInfo& entry, const Options& options);
 
@@ -91,11 +87,12 @@ bool IsFieldEligibleForFastParsing(
       IsLazy(field, options, scc_analyzer)) {
     return false;
   }
-  switch (field->type()) {
-    // Groups are not handled on the fast path.
-    case FieldDescriptor::TYPE_GROUP:
-      return false;
 
+  // We will check for a valid auxiliary index range later. However, we might
+  // want to change the value we check for inlined string fields.
+  int aux_idx = entry.aux_idx;
+
+  switch (field->type()) {
     case FieldDescriptor::TYPE_ENUM:
       // If enum values are not validated at parse time, then this field can be
       // handled on the fast path like an int32.
@@ -110,10 +107,15 @@ bool IsFieldEligibleForFastParsing(
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
-      if (field->options().ctype() != FieldOptions::STRING ||
-          !field->default_value_string().empty() ||
-          IsStringInlined(field, options)) {
+      if (field->options().ctype() != FieldOptions::STRING) {
         return false;
+      }
+      if (IsStringInlined(field, options)) {
+        GOOGLE_CHECK(!field->is_repeated());
+        // For inlined strings, the donation state index is stored in the
+        // `aux_idx` field of the fast parsing info. We need to check the range
+        // of that value instead of the auxiliary index.
+        aux_idx = entry.inlined_string_idx;
       }
       break;
 
@@ -130,7 +132,7 @@ bool IsFieldEligibleForFastParsing(
 
   // If the field needs auxiliary data, then the aux index is needed. This
   // must fit in a uint8_t.
-  if (entry.aux_idx > std::numeric_limits<uint8_t>::max()) {
+  if (aux_idx > std::numeric_limits<uint8_t>::max()) {
     return false;
   }
 
@@ -191,7 +193,12 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
     // If this field does not have presence, then it can set an out-of-bounds
     // bit (tailcall parsing uses a uint64_t for hasbits, but only stores 32).
     info.hasbit_idx = HasHasbit(field) ? entry.hasbit_idx : 63;
-    info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
+    if (IsStringInlined(field, options)) {
+      GOOGLE_CHECK(!field->is_repeated());
+      info.aux_idx = static_cast<uint8_t>(entry.inlined_string_idx);
+    } else {
+      info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
+    }
   }
   return result;
 }
@@ -248,6 +255,7 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
           break;
 
       case FieldDescriptor::TYPE_MESSAGE:
+      case FieldDescriptor::TYPE_GROUP:
         // TODO(b/210762816): support remaining field types.
         if (field->is_map() || IsWeak(field, options) ||
             IsImplicitWeakField(field, options, scc_analyzer) ||
@@ -273,7 +281,9 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
 TailCallTableInfo::TailCallTableInfo(
     const Descriptor* descriptor, const Options& options,
     const std::vector<const FieldDescriptor*>& ordered_fields,
-    const std::vector<int>& has_bit_indices, MessageSCCAnalyzer* scc_analyzer) {
+    const std::vector<int>& has_bit_indices,
+    const std::vector<int>& inlined_string_indices,
+    MessageSCCAnalyzer* scc_analyzer) {
   int oneof_count = descriptor->real_oneof_decl_count();
   // If this message has any oneof fields, store the case offset in the first
   // auxiliary entry.
@@ -284,6 +294,22 @@ TailCallTableInfo::TailCallTableInfo(
     aux_entries.push_back(StrCat(
         "_fl::Offset{offsetof(", ClassName(descriptor), ", _oneof_case_)}"));
   }
+
+  int inlined_string_count = 0;
+  for (const FieldDescriptor* field : ordered_fields) {
+    if (IsString(field, options) && IsStringInlined(field, options)) {
+      ++inlined_string_count;
+    }
+  }
+  // If this message has any inlined string fields, store the donation state
+  // offset in the second auxiliary entry.
+  if (inlined_string_count > 0) {
+    aux_entries.resize(2);  // pad if necessary
+    aux_entries[1] =
+        StrCat("_fl::Offset{offsetof(", ClassName(descriptor),
+                     ", _inlined_string_donated_)}");
+  }
+
   // Fill in mini table entries.
   for (const FieldDescriptor* field : ordered_fields) {
     field_entries.push_back(
@@ -326,7 +352,7 @@ TailCallTableInfo::TailCallTableInfo(
       const EnumDescriptor* enum_type = field->enum_type();
       GOOGLE_CHECK_GT(enum_type->value_count(), 0) << enum_type->DebugString();
 
-      // Check if the enum values are a single, continguous range.
+      // Check if the enum values are a single, contiguous range.
       std::vector<int> enum_values;
       for (int i = 0, N = enum_type->value_count(); i < N; ++i) {
         enum_values.push_back(enum_type->value(i)->number());
@@ -348,6 +374,19 @@ TailCallTableInfo::TailCallTableInfo(
         aux_entries.push_back(
             StrCat(QualifiedClassName(enum_type, options), "_IsValid"));
       }
+    } else if ((field->type() == FieldDescriptor::TYPE_STRING ||
+                field->type() == FieldDescriptor::TYPE_BYTES) &&
+               IsStringInlined(field, options)) {
+      GOOGLE_CHECK(!field->is_repeated());
+      // Inlined strings have an extra marker to represent their donation state.
+      int idx = inlined_string_indices[field->index()];
+      // For mini parsing, the donation state index is stored as an `offset`
+      // auxiliary entry.
+      entry.aux_idx = aux_entries.size();
+      aux_entries.push_back(StrCat("_fl::Offset{", idx, "}"));
+      // For fast table parsing, the donation state index is stored instead of
+      // the aux_idx (this will limit the range to 8 bits).
+      entry.inlined_string_idx = idx;
     }
   }
 
@@ -407,7 +446,8 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       num_hasbits_(max_has_bit_index) {
   if (should_generate_tctable()) {
     tc_table_info_.reset(new TailCallTableInfo(
-        descriptor_, options_, ordered_fields_, has_bit_indices, scc_analyzer));
+        descriptor_, options_, ordered_fields_, has_bit_indices,
+        inlined_string_indices, scc_analyzer));
   }
   SetCommonVars(options_, &variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
@@ -532,6 +572,31 @@ void ParseFunctionGenerator::GenerateTailcallFallbackFunction(
       "}\n");
 }
 
+struct SkipEntry16 {
+  uint16_t skipmap;
+  uint16_t field_entry_offset;
+};
+struct SkipEntryBlock {
+  uint32_t first_fnum;
+  std::vector<SkipEntry16> entries;
+};
+struct NumToEntryTable {
+  uint32_t skipmap32;  // for fields #1 - #32
+  std::vector<SkipEntryBlock> blocks;
+  // Compute the number of uint16_t required to represent this table.
+  int size16() const {
+    int size = 2;  // for the termination field#
+    for (const auto& block : blocks) {
+      // 2 for the field#, 1 for a count of skip entries, 2 for each entry.
+      size += 3 + block.entries.size() * 2;
+    }
+    return size;
+  }
+};
+
+static NumToEntryTable MakeNumToEntryTable(
+    const std::vector<const FieldDescriptor*>& field_descriptors);
+
 void ParseFunctionGenerator::GenerateDataDecls(io::Printer* printer) {
   if (!should_generate_tctable()) {
     return;
@@ -542,11 +607,13 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* printer) {
     format("#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
     format.Indent();
   }
+  auto field_num_to_entry_table = MakeNumToEntryTable(ordered_fields_);
   format(
-      "static const ::$proto_ns$::internal::TcParseTable<$1$, $2$, $3$, $4$> "
-      "_table_;\n",
+      "static const ::$proto_ns$::internal::"
+      "TcParseTable<$1$, $2$, $3$, $4$, $5$> _table_;\n",
       tc_table_info_->table_size_log2, ordered_fields_.size(),
-      tc_table_info_->aux_entries.size(), CalculateFieldNamesSize());
+      tc_table_info_->aux_entries.size(), CalculateFieldNamesSize(),
+      field_num_to_entry_table.size16());
   if (should_generate_guarded_tctable()) {
     format.Outdent();
     format("#endif  // PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
@@ -614,6 +681,68 @@ void ParseFunctionGenerator::GenerateLoopingParseFunction(Formatter& format) {
       "}\n");
 }
 
+static NumToEntryTable MakeNumToEntryTable(
+    const std::vector<const FieldDescriptor*>& field_descriptors) {
+  NumToEntryTable num_to_entry_table;
+  num_to_entry_table.skipmap32 = static_cast<uint32_t>(-1);
+
+  // skip_entry_block is the current block of SkipEntries that we're
+  // appending to.  cur_block_first_fnum is the number of the first
+  // field represented by the block.
+  uint16_t field_entry_index = 0;
+  uint16_t N = field_descriptors.size();
+  // First, handle field numbers 1-32, which affect only the initial
+  // skipmap32 and don't generate additional skip-entry blocks.
+  for (; field_entry_index != N; ++field_entry_index) {
+    auto* field_descriptor = field_descriptors[field_entry_index];
+    if (field_descriptor->number() > 32) break;
+    auto skipmap32_index = field_descriptor->number() - 1;
+    num_to_entry_table.skipmap32 -= 1 << skipmap32_index;
+  }
+  // If all the field numbers were less than or equal to 32, we will have
+  // no further entries to process, and we are already done.
+  if (field_entry_index == N) return num_to_entry_table;
+
+  SkipEntryBlock* block = nullptr;
+  bool start_new_block = true;
+  // To determine sparseness, track the field number corresponding to
+  // the start of the most recent skip entry.
+  uint32_t last_skip_entry_start = 0;
+  for (; field_entry_index != N; ++field_entry_index) {
+    auto* field_descriptor = field_descriptors[field_entry_index];
+    uint32_t fnum = field_descriptor->number();
+    GOOGLE_CHECK_GT(fnum, last_skip_entry_start);
+    if (start_new_block == false) {
+      // If the next field number is within 15 of the last_skip_entry_start, we
+      // continue writing just to that entry.  If it's between 16 and 31 more,
+      // then we just extend the current block by one. If it's more than 31
+      // more, we have to add empty skip entries in order to continue using the
+      // existing block.  Obviously it's just 32 more, it doesn't make sense to
+      // start a whole new block, since new blocks mean having to write out
+      // their starting field number, which is 32 bits, as well as the size of
+      // the additional block, which is 16... while an empty SkipEntry16 only
+      // costs 32 bits.  So if it was 48 more, it's a slight space win; we save
+      // 16 bits, but probably at the cost of slower run time.  We're choosing
+      // 96 for now.
+      if (fnum - last_skip_entry_start > 96) start_new_block = true;
+    }
+    if (start_new_block) {
+      num_to_entry_table.blocks.push_back(SkipEntryBlock{fnum});
+      block = &num_to_entry_table.blocks.back();
+      start_new_block = false;
+    }
+
+    auto skip_entry_num = (fnum - block->first_fnum) / 16;
+    auto skip_entry_index = (fnum - block->first_fnum) % 16;
+    while (skip_entry_num >= block->entries.size())
+      block->entries.push_back({0xFFFF, field_entry_index});
+    block->entries[skip_entry_num].skipmap -= 1 << (skip_entry_index);
+
+    last_skip_entry_start = fnum - skip_entry_index;
+  }
+  return num_to_entry_table;
+}
+
 void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
   GOOGLE_CHECK(should_generate_tctable());
   // All entries without a fast-path parsing function need a fallback.
@@ -635,12 +764,15 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
   // maps, weak fields, lazy, more than 1 extension range. In the cases
   // the table is sufficient we can use a generic routine, that just handles
   // unknown fields and potentially an extension range.
+  auto field_num_to_entry_table = MakeNumToEntryTable(ordered_fields_);
   format(
       "PROTOBUF_ATTRIBUTE_INIT_PRIORITY1\n"
-      "const ::_pbi::TcParseTable<$1$, $2$, $3$, $4$> $classname$::_table_ = "
+      "const ::_pbi::TcParseTable<$1$, $2$, $3$, $4$, $5$> "
+      "$classname$::_table_ = "
       "{\n",
       tc_table_info_->table_size_log2, ordered_fields_.size(),
-      tc_table_info_->aux_entries.size(), CalculateFieldNamesSize());
+      tc_table_info_->aux_entries.size(), CalculateFieldNamesSize(),
+      field_num_to_entry_table.size16());
   {
     auto table_scope = format.ScopedIndent();
     format("{\n");
@@ -663,28 +795,16 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
       format("$1$, $2$,  // max_field_number, fast_idx_mask\n",
              (ordered_fields_.empty() ? 0 : ordered_fields_.back()->number()),
              (((1 << tc_table_info_->table_size_log2) - 1) << 3));
-
-      // Determine the sequential fields that can be looked up by index:
-      uint16_t num_sequential_fields = 0;
-      uint16_t sequential_fields_start = 0;
-      if (!ordered_fields_.empty() &&
-          ordered_fields_.front()->number() <=
-              std::numeric_limits<uint16_t>::max()) {
-        sequential_fields_start = ordered_fields_[0]->number();
-        const FieldDescriptor* previous_field = ordered_fields_[0];
-        const int N = std::min(ordered_fields_.size(),
-                               size_t{std::numeric_limits<uint8_t>::max()} + 1);
-        for (int i = 1; i < N; ++i) {
-          const FieldDescriptor* current_field = ordered_fields_[i];
-          if (current_field->number() > previous_field->number() + 1) {
-            break;
-          }
-          ++num_sequential_fields;
-          previous_field = current_field;
-        }
+      format(
+          "offsetof(decltype(_table_), field_lookup_table),\n"
+          "$1$,  // skipmap\n",
+          field_num_to_entry_table.skipmap32);
+      if (ordered_fields_.empty()) {
+        format(
+            "offsetof(decltype(_table_), field_names),  // no field_entries\n");
+      } else {
+        format("offsetof(decltype(_table_), field_entries),\n");
       }
-      format("$1$, $2$,  // num_sequential_fields, sequential_fields_start\n",
-             num_sequential_fields, sequential_fields_start);
 
       format(
           "$1$,  // num_field_entries\n"
@@ -708,32 +828,41 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
       auto fast_scope = format.ScopedIndent();
       GenerateFastFieldEntries(format);
     }
+    format("}}, {{\n");
+    {
+      // field_lookup_table[]
+      auto field_lookup_scope = format.ScopedIndent();
+      int line_entries = 0;
+      for (int i = 0, N = field_num_to_entry_table.blocks.size(); i < N; ++i) {
+        SkipEntryBlock& entry_block = field_num_to_entry_table.blocks[i];
+        format("$1$, $2$, $3$,\n", entry_block.first_fnum & 65535,
+               entry_block.first_fnum / 65536, entry_block.entries.size());
+        for (auto se16 : entry_block.entries) {
+          if (line_entries == 0) {
+            format("$1$, $2$,", se16.skipmap, se16.field_entry_offset);
+            ++line_entries;
+          } else if (line_entries < 5) {
+            format(" $1$, $2$,", se16.skipmap, se16.field_entry_offset);
+            ++line_entries;
+          } else {
+            format(" $1$, $2$,\n", se16.skipmap, se16.field_entry_offset);
+            line_entries = 0;
+          }
+        }
+      }
+      if (line_entries) format("\n");
+      format("65535, 65535\n");
+    }
     if (ordered_fields_.empty()) {
       GOOGLE_LOG_IF(DFATAL, !tc_table_info_->aux_entries.empty())
           << "Invalid message: " << descriptor_->full_name() << " has "
           << tc_table_info_->aux_entries.size()
           << " auxiliary field entries, but no fields";
-      format("}},\n"
-             "// no field_numbers, field_entries, or aux_entries\n"
-             "{{\n");
+      format(
+          "}},\n"
+          "// no field_entries, or aux_entries\n"
+          "{{\n");
     } else {
-      format("}}, {{\n");
-      {
-        // field_numbers[]
-        auto field_number_scope = format.ScopedIndent();
-        for (int i = 0, N = ordered_fields_.size(); i < N; ++i) {
-          const FieldDescriptor* field = ordered_fields_[i];
-          if (i > 0) {
-            if (i % 10 == 0) {
-              format(",\n");
-            } else {
-              format(", ");
-            }
-          }
-          format("$1$", field->number());
-        }
-        format("\n");
-      }
       format("}}, {{\n");
       {
         // field_entries[]
@@ -759,7 +888,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
     }  // ordered_fields_.empty()
     {
       // field_names[]
-      auto field_scope = format.ScopedIndent();
+      auto field_name_scope = format.ScopedIndent();
       GenerateFieldNames(format);
     }
     format("}},\n");
@@ -995,12 +1124,6 @@ void ParseFunctionGenerator::GenerateArenaString(Formatter& format,
   if (HasHasbit(field)) {
     format("_Internal::set_has_$1$(&$has_bits$);\n", FieldName(field));
   }
-  std::string default_string =
-      field->default_value_string().empty()
-          ? "::" + ProtobufNamespace(options_) +
-                "::internal::GetEmptyStringAlreadyInited()"
-          : QualifiedClassName(field->containing_type(), options_) +
-                "::" + MakeDefaultName(field) + ".get()";
   format(
       "if (arena != nullptr) {\n"
       "  ptr = ctx->ReadArenaString(ptr, &$msg$$field$, arena");
@@ -1008,13 +1131,8 @@ void ParseFunctionGenerator::GenerateArenaString(Formatter& format,
     GOOGLE_DCHECK(!inlined_string_indices_.empty());
     int inlined_string_index = inlined_string_indices_[field->index()];
     GOOGLE_DCHECK_GT(inlined_string_index, 0);
-    format(
-        ", $msg$_internal_$name$_donated()"
-        ", &$msg$_inlined_string_donated_[$1$]"
-        ", ~0x$2$u"
-        ", $this$",
-        inlined_string_index / 32,
-        strings::Hex(1u << (inlined_string_index % 32), strings::ZERO_PAD_8));
+    format(", &$msg$_inlined_string_donated_[0], $1$, $this$",
+           inlined_string_index);
   } else {
     GOOGLE_DCHECK(field->default_value_string().empty());
   }
@@ -1309,7 +1427,7 @@ void ParseFunctionGenerator::GenerateFieldBody(
           format("_Internal::set_has_$name$(&$has_bits$);\n");
         }
         format(
-            "$msg$$name$_ = "
+            "$msg$$field$ = "
             "::$proto_ns$::internal::UnalignedLoad<$primitive_type$>(ptr);\n"
             "ptr += sizeof($primitive_type$);\n");
       }
@@ -1437,7 +1555,6 @@ void ParseFunctionGenerator::GenerateFieldSwitch(
   format.Indent();
 
   for (const auto* field : fields) {
-    // Set abbreviated form instead of field_member.
     format.Set("field", FieldMemberName(field));
     PrintFieldComment(format, field);
     format("case $1$:\n", field->number());
@@ -1543,6 +1660,9 @@ std::string FieldParseFunctionName(
 
     case FieldDescriptor::TYPE_BYTES:
       name.append("B");
+      if (IsStringInlined(field, options)) {
+        name.append("i");
+      }
       break;
     case FieldDescriptor::TYPE_STRING:
       switch (GetUtf8CheckMode(field, options)) {
@@ -1560,10 +1680,16 @@ std::string FieldParseFunctionName(
                       << static_cast<int>(GetUtf8CheckMode(field, options));
           return "";
       }
+      if (IsStringInlined(field, options)) {
+        name.append("i");
+      }
       break;
 
     case FieldDescriptor::TYPE_MESSAGE:
       name.append("M");
+      break;
+    case FieldDescriptor::TYPE_GROUP:
+      name.append("G");
       break;
 
     default:

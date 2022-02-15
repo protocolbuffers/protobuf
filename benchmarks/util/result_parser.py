@@ -61,7 +61,7 @@ def __parse_cpp_result(filename):
     return
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
-  with open(filename, "rb") as f:
+  with open(filename, encoding="utf-8") as f:
     results = json.loads(f.read())
     for benchmark in results["benchmarks"]:
       data_filename = "".join(
@@ -96,7 +96,7 @@ def __parse_synthetic_result(filename):
     return
   if filename[0] != "/":
     filename = os.path.dirname(os.path.abspath(__file__)) + "/" + filename
-  with open(filename, "rb") as f:
+  with open(filename, encoding="utf-8") as f:
     results = json.loads(f.read())
     for benchmark in results["benchmarks"]:
       __results.append({
@@ -126,7 +126,7 @@ def __parse_python_result(filename):
     return
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
-  with open(filename, "rb") as f:
+  with open(filename, encoding="utf-8") as f:
     results_list = json.loads(f.read())
     for results in results_list:
       for result in results:
@@ -176,7 +176,7 @@ def __parse_java_result(filename):
     return
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
-  with open(filename, "rb") as f:
+  with open(filename, encoding="utf-8") as f:
     results = json.loads(f.read())
     for result in results:
       total_weight = 0
@@ -212,7 +212,7 @@ def __parse_go_result(filename):
     return
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
-  with open(filename, "rb") as f:
+  with open(filename, encoding="utf-8") as f:
     for line in f:
       result_list = re.split(r"[\ \t]+", line)
       if result_list[0][:9] != "Benchmark":
@@ -252,7 +252,7 @@ def __parse_custom_result(filename, language):
     return
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
-  with open(filename, "rb") as f:
+  with open(filename, encoding="utf-8") as f:
     results = json.loads(f.read())
     for result in results:
       _, avg_size = __get_data_size(result["filename"])

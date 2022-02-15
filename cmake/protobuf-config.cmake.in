@@ -11,7 +11,7 @@ function(protobuf_generate)
   include(CMakeParseArguments)
 
   set(_options APPEND_PATH)
-  set(_singleargs LANGUAGE OUT_VAR EXPORT_MACRO PROTOC_OUT_DIR PLUGIN)
+  set(_singleargs LANGUAGE OUT_VAR EXPORT_MACRO PROTOC_OUT_DIR PLUGIN PLUGIN_OPTIONS)
   if(COMMAND target_sources)
     list(APPEND _singleargs TARGET)
   endif()
@@ -39,9 +39,18 @@ function(protobuf_generate)
   endif()
 
   if(protobuf_generate_EXPORT_MACRO AND protobuf_generate_LANGUAGE STREQUAL cpp)
-    set(_dll_export_decl "dllexport_decl=${protobuf_generate_EXPORT_MACRO}:")
+    set(_dll_export_decl "dllexport_decl=${protobuf_generate_EXPORT_MACRO}")
   endif()
-  
+
+  foreach(_option ${_dll_export_decl} ${protobuf_generate_PLUGIN_OPTIONS})
+    # append comma - not using CMake lists and string replacement as users
+    # might have semicolons in options
+    if(_plugin_options)
+      set( _plugin_options "${_plugin_options},")
+    endif()
+    set(_plugin_options "${_plugin_options}${_option}")
+  endforeach()
+
   if(protobuf_generate_PLUGIN)
       set(_plugin "--plugin=${protobuf_generate_PLUGIN}")
   endif()
@@ -127,12 +136,20 @@ function(protobuf_generate)
     endforeach()
     list(APPEND _generated_srcs_all ${_generated_srcs})
 
+    set(_comment "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}")
+    if(protobuf_generate_PROTOC_OPTIONS)
+      set(_comment "${_comment}, protoc-options: ${protobuf_generate_PROTOC_OPTIONS}")
+    endif()
+    if(_plugin_options)
+      set(_comment "${_comment}, plugin-options: ${_plugin_options}")
+    endif()
+
     add_custom_command(
       OUTPUT ${_generated_srcs}
-      COMMAND  protobuf::protoc
-      ARGS ${protobuf_generate_PROTOC_OPTIONS} --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${protobuf_generate_PROTOC_OUT_DIR} ${_plugin} ${_protobuf_include_path} ${_abs_file}
+      COMMAND protobuf::protoc
+      ARGS ${protobuf_generate_PROTOC_OPTIONS} --${protobuf_generate_LANGUAGE}_out ${_plugin_options}:${protobuf_generate_PROTOC_OUT_DIR} ${_plugin} ${_protobuf_include_path} ${_abs_file}
       DEPENDS ${_abs_file} protobuf::protoc
-      COMMENT "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}. Custom options: ${protobuf_generate_PROTOC_OPTIONS}"
+      COMMENT ${_comment}
       VERBATIM )
   endforeach()
 

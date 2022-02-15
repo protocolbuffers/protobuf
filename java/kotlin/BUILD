@@ -3,6 +3,10 @@ load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
 
+exports_files([
+  "src/test/kotlin/com/google/protobuf/Proto3Test.kt",
+])
+
 # Kotlin generated protos depend on this and only this.
 kt_jvm_library(
     name = "shared_runtime",
@@ -35,7 +39,10 @@ kt_jvm_library(
 
 kt_jvm_library(
     name = "full_extensions",
-    srcs = ["src/main/kotlin/com/google/protobuf/ExtendableMessageExtensions.kt"],
+    srcs = [
+      "src/main/kotlin/com/google/protobuf/Anies.kt",
+      "src/main/kotlin/com/google/protobuf/ExtendableMessageExtensions.kt",
+    ],
     deps = ["//java/core"],
 )
 
@@ -106,11 +113,15 @@ java_test(
 
 kt_jvm_library(
     name = "test_extensions_library",
-    srcs = ["src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt"],
+    srcs = [
+      "src/test/kotlin/com/google/protobuf/AniesTest.kt",
+      "src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt",
+    ],
     deps = [
         ":example_extensible_message_java_proto",
         ":full_extensions",
-        "//java/lite",
+        "//java/core:core",
+        ":kotlin_unittest",
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
         "@com_github_jetbrains_kotlin//:kotlin-test",
@@ -221,6 +232,7 @@ kt_jvm_library(
     name = "kotlin_unittest",
     srcs = [
         ":gen_evil_names_proto2",
+        "//:gen_kotlin_any",
         "//:gen_kotlin_unittest",
     ],
     deps = [

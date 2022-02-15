@@ -30,6 +30,7 @@
 
 #include <google/protobuf/pyext/unknown_fields.h>
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <set>
 #include <memory>
@@ -155,11 +156,15 @@ static PySequenceMethods SqMethods = {
 
 PyTypeObject PyUnknownFields_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".PyUnknownFields",           // tp_name
-    sizeof(PyUnknownFields),      // tp_basicsize
-    0,                            //  tp_itemsize
-    unknown_fields::Dealloc,      //  tp_dealloc
-    0,                            //  tp_print
+    ".PyUnknownFields",       // tp_name
+    sizeof(PyUnknownFields),  // tp_basicsize
+    0,                        //  tp_itemsize
+    unknown_fields::Dealloc,  //  tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                      //  tp_getattr
     nullptr,                      //  tp_setattr
     nullptr,                      //  tp_compare
@@ -219,7 +224,7 @@ const UnknownField* GetUnknownField(PyUnknownFieldRef* self) {
                  "The parent message might be cleared.");
     return nullptr;
   }
-  ssize_t total_size = fields->field_count();
+  Py_ssize_t total_size = fields->field_count();
   if (self->index >= total_size) {
     PyErr_Format(PyExc_ValueError,
                  "UnknownField does not exist. "
@@ -312,11 +317,15 @@ static PyGetSetDef Getters[] = {
 
 PyTypeObject PyUnknownFieldRef_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".PyUnknownFieldRef",         // tp_name
-    sizeof(PyUnknownFieldRef),    //  tp_basicsize
-    0,                            //  tp_itemsize
-    unknown_field::Dealloc,       //  tp_dealloc
-    0,                            //  tp_print
+    ".PyUnknownFieldRef",       // tp_name
+    sizeof(PyUnknownFieldRef),  //  tp_basicsize
+    0,                          //  tp_itemsize
+    unknown_field::Dealloc,     //  tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                      //  tp_getattr
     nullptr,                      //  tp_setattr
     nullptr,                      //  tp_compare

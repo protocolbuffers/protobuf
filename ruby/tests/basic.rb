@@ -644,5 +644,19 @@ module BasicTest
       assert_equal 2, m.map_string_int32.size
       assert_equal 1, m.map_string_msg.size
     end
+
+    def test_string_with_singleton_class_enabled
+      str = 'foobar'
+      # NOTE: Accessing a singleton class of an object changes its low level class representation
+      #       as far as the C API's CLASS_OF() method concerned, exposing the issue
+      str.singleton_class
+      m = proto_module::TestMessage.new(
+        optional_string: str,
+        optional_bytes: str
+      )
+
+      assert_equal str, m.optional_string
+      assert_equal str, m.optional_bytes
+    end
   end
 end

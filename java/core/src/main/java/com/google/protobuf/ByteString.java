@@ -305,16 +305,14 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
           ByteIterator latterBytes = latter.iterator();
 
           while (formerBytes.hasNext() && latterBytes.hasNext()) {
-            // Note: This code was copied from com.google.common.primitives.UnsignedBytes#compare,
-            // as Guava libraries cannot be used in the {@code com.google.protobuf} package.
             int result =
-                Integer.compare(toInt(formerBytes.nextByte()), toInt(latterBytes.nextByte()));
+                Integer.valueOf(toInt(formerBytes.nextByte()))
+                    .compareTo(toInt(latterBytes.nextByte()));
             if (result != 0) {
               return result;
             }
           }
-
-          return Integer.compare(former.size(), latter.size());
+          return Integer.valueOf(former.size()).compareTo(Integer.valueOf(latter.size()));
         }
       };
 
