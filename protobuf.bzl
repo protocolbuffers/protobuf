@@ -391,6 +391,70 @@ internal_gen_well_known_protos_java = rule(
     },
 )
 
+def _internal_gen_kt_protos(ctx):
+    args = ctx.actions.args()
+
+    deps = [d[ProtoInfo] for d in ctx.attr.deps]
+
+    srcjar = ctx.actions.declare_file("{}.srcjar".format(ctx.attr.name))
+    if ctx.attr.lite:
+        out = "lite:%s" % srcjar.path
+    else:
+        out = srcjar
+
+    args.add("--kotlin_out", out)
+
+    descriptors = depset(
+        transitive = [dep.transitive_descriptor_sets for dep in deps],
+    )
+    args.add_joined(
+        "--descriptor_set_in",
+        descriptors,
+        join_with = ctx.configuration.host_path_separator,
+    )
+
+    for dep in deps:
+        if "." == dep.proto_source_root:
+            args.add_all([src.path for src in dep.direct_sources])
+        else:
+            source_root = dep.proto_source_root
+            offset = len(source_root) + 1  # + '/'.
+            args.add_all([src.path[offset:] for src in dep.direct_sources])
+
+    ctx.actions.run(
+        executable = ctx.executable._protoc,
+        inputs = descriptors,
+        outputs = [srcjar],
+        arguments = [args],
+        use_default_shell_env = True,
+    )
+
+    return [
+        DefaultInfo(
+            files = depset([srcjar]),
+        ),
+    ]
+
+internal_gen_kt_protos = rule(
+    implementation = _internal_gen_kt_protos,
+    attrs = {
+        "deps": attr.label_list(
+            mandatory = True,
+            providers = [ProtoInfo],
+        ),
+        "lite": attr.bool(
+            default = False,
+        ),
+        "_protoc": attr.label(
+            executable = True,
+            cfg = "exec",
+            default = "//:protoc",
+        ),
+    },
+)
+
+
+
 def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
     """Macro to copy files to a different directory and then create a filegroup.
 
