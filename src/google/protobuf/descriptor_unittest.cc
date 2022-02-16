@@ -865,6 +865,22 @@ TEST_F(DescriptorTest, FieldNamesDedup) {
               ElementsAre("fieldname7"));
 }
 
+TEST_F(DescriptorTest, FieldNameDedupJsonEqFull) {
+  // Test a regression where json_name == full_name
+  FileDescriptorProto proto;
+  proto.set_name("file");
+  auto* message = AddMessage(&proto, "Name1");
+  auto* field =
+      AddField(message, "Name2", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+               FieldDescriptorProto::TYPE_INT32);
+  field->set_json_name("Name1.Name2");
+  auto* file = pool_.BuildFile(proto);
+  EXPECT_EQ(file->message_type(0)->name(), "Name1");
+  EXPECT_EQ(file->message_type(0)->field(0)->name(), "Name2");
+  EXPECT_EQ(file->message_type(0)->field(0)->full_name(), "Name1.Name2");
+  EXPECT_EQ(file->message_type(0)->field(0)->json_name(), "Name1.Name2");
+}
+
 TEST_F(DescriptorTest, FieldsByIndex) {
   ASSERT_EQ(4, message_->field_count());
   EXPECT_EQ(foo_, message_->field(0));

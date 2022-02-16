@@ -2167,6 +2167,34 @@ class Proto3Test(unittest.TestCase):
       for key in int32_foreign_iter:
         pass
 
+  def testModifyMapEntryWhileIterating(self):
+    msg = map_unittest_pb2.TestMap()
+
+    msg.map_string_string['abc'] = '123'
+    msg.map_string_string['def'] = '456'
+    msg.map_string_string['ghi'] = '789'
+
+    msg.map_int32_foreign_message[5].c = 5
+    msg.map_int32_foreign_message[6].c = 6
+    msg.map_int32_foreign_message[7].c = 7
+
+    string_string_keys = list(msg.map_string_string.keys())
+    int32_foreign_keys = list(msg.map_int32_foreign_message.keys())
+
+    keys = []
+    for key in msg.map_string_string:
+      keys.append(key)
+      msg.map_string_string[key] = '000'
+    self.assertEqual(keys, string_string_keys)
+    self.assertEqual(keys, list(msg.map_string_string.keys()))
+
+    keys = []
+    for key in msg.map_int32_foreign_message:
+      keys.append(key)
+      msg.map_int32_foreign_message[key].c = 0
+    self.assertEqual(keys, int32_foreign_keys)
+    self.assertEqual(keys, list(msg.map_int32_foreign_message.keys()))
+
   def testSubmessageMap(self):
     msg = map_unittest_pb2.TestMap()
 

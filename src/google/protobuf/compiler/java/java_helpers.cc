@@ -40,9 +40,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/compiler/java/java_names.h>
@@ -83,7 +83,8 @@ const char* kForbiddenWordList[] = {
     "AllFields",
     "DescriptorForType",
     "InitializationErrorString",
-    "UnknownFields",
+    // TODO(b/219045204): re-enable
+    // "UnknownFields",
     // obsolete. kept for backwards compatibility of generated code
     "CachedSize",
 };

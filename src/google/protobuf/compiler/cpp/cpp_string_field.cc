@@ -58,8 +58,8 @@ void SetStringVariables(const FieldDescriptor* descriptor,
   (*variables)["default"] = DefaultValue(options, descriptor);
   (*variables)["default_length"] =
       StrCat(descriptor->default_value_string().length());
-  std::string default_variable_string = MakeDefaultName(descriptor);
-  (*variables)["default_variable_name"] = default_variable_string;
+  (*variables)["default_variable_name"] = MakeDefaultName(descriptor);
+  (*variables)["default_variable_field"] = MakeDefaultFieldName(descriptor);
 
   if (descriptor->default_value_string().empty()) {
     (*variables)["default_string"] = kNS + "GetEmptyStringAlreadyInited()";
@@ -67,8 +67,8 @@ void SetStringVariables(const FieldDescriptor* descriptor,
     (*variables)["lazy_variable_args"] = "";
   } else {
     (*variables)["lazy_variable"] =
-        QualifiedClassName(descriptor->containing_type(), options) +
-        "::" + default_variable_string;
+        StrCat(QualifiedClassName(descriptor->containing_type(), options),
+                     "::", MakeDefaultFieldName(descriptor));
 
     (*variables)["default_string"] = (*variables)["lazy_variable"] + ".get()";
     (*variables)["default_value"] = "nullptr";
@@ -205,7 +205,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
   if (!descriptor_->default_value_string().empty()) {
     format(
         "  if ($field$.IsDefault()) return "
-        "$default_variable_name$.get();\n");
+        "$default_variable_field$.get();\n");
   }
   format(
       "  return _internal_$name$();\n"
@@ -345,7 +345,7 @@ void StringFieldGenerator::GenerateNonInlineAccessorDefinitions(
   if (!descriptor_->default_value_string().empty()) {
     format(
         "const ::$proto_ns$::internal::LazyString "
-        "$classname$::$default_variable_name$"
+        "$classname$::$default_variable_field$"
         "{{{$default$, $default_length$}}, {nullptr}};\n");
   }
 }
@@ -430,12 +430,12 @@ void StringFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
     return;
   }
   GOOGLE_DCHECK(!inlined_);
-  format("$name$_.InitDefault();\n");
+  format("$field$.InitDefault();\n");
   if (IsString(descriptor_, options_) &&
       descriptor_->default_value_string().empty()) {
     format(
         "#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING\n"
-        "  $name$_.Set(\"\", GetArenaForAllocation());\n"
+        "  $field$.Set(\"\", GetArenaForAllocation());\n"
         "#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING\n");
   }
 }
@@ -445,7 +445,7 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
   Formatter format(printer, variables_);
   GenerateConstructorCode(printer);
   if (inlined_) {
-    format("new (&$name$_) ::$proto_ns$::internal::InlinedStringField();\n");
+    format("new (&$field$) ::_pbi::InlinedStringField();\n");
   }
 
   if (HasHasbit(descriptor_)) {

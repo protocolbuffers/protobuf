@@ -39,8 +39,8 @@ import sys
 import os
 from google.protobuf import json_format
 from google.protobuf import message
-from google.protobuf import test_messages_proto3_pb2
-from google.protobuf import test_messages_proto2_pb2
+from google3.third_party.protobuf import test_messages_proto3_pb2
+from google3.third_party.protobuf import test_messages_proto2_pb2
 from google.protobuf import text_format
 import conformance_pb2
 

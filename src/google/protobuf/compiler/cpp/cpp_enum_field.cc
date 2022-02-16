@@ -130,13 +130,13 @@ void EnumFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
 
 void EnumFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_ = $default$;\n");
+  format("$field$ = $default$;\n");
 }
 
 void EnumFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_ = from.$name$_;\n");
+  format("$field$ = from.$field$;\n");
 }
 
 void EnumFieldGenerator::GenerateSerializeWithCachedSizesToArray(
@@ -216,7 +216,7 @@ void EnumOneofFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
 void EnumOneofFieldGenerator::GenerateConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$ns$::_$classname$_default_instance_.$name$_ = $default$;\n");
+  format("$ns$::_$classname$_default_instance_.$field$ = $default$;\n");
 }
 
 // ===================================================================
