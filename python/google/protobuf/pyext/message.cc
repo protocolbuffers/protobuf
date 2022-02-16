@@ -1934,7 +1934,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
         "Error parsing message as the message exceeded the protobuf limit "
         "with type '%s'",
         self->GetMessageClass()->message_descriptor->full_name().c_str());
-    return NULL;
+    return nullptr;
   }
 
   // ctx has an explicit limit set (length of string_view), so we have to

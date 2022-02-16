@@ -432,12 +432,12 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
     return -1;
   }
 
-  self->version++;
-
   if (v) {
     // Set item to v.
-    reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
-                                       map_key, &value);
+    if (reflection->InsertOrLookupMapValue(
+            message, self->parent_field_descriptor, map_key, &value)) {
+      self->version++;
+    }
 
     if (!PythonToMapValueRef(self, v, reflection->SupportsUnknownEnumValues(),
                              &value)) {
@@ -448,6 +448,7 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
     // Delete key from map.
     if (reflection->DeleteMapValue(message, self->parent_field_descriptor,
                                    map_key)) {
+      self->version++;
       return 0;
     } else {
       PyErr_Format(PyExc_KeyError, "Key not present in map");

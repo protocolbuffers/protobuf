@@ -118,13 +118,15 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 	target_link_libraries(libprotobuf log)
 endif()
 target_include_directories(libprotobuf PUBLIC ${protobuf_source_dir}/src)
-if(MSVC AND protobuf_BUILD_SHARED_LIBS)
+if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotobuf
     PUBLIC  PROTOBUF_USE_DLLS
     PRIVATE LIBPROTOBUF_EXPORTS)
 endif()
 set_target_properties(libprotobuf PROPERTIES
     VERSION ${protobuf_VERSION}
+    # Use only the first SO version component for compatibility with Makefile emitted SONAME.
+    SOVERSION 30
     OUTPUT_NAME ${LIB_PREFIX}protobuf
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
 add_library(protobuf::libprotobuf ALIAS libprotobuf)
