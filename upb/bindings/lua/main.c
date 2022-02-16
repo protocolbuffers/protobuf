@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 
   signal(SIGINT, sighandler);
   ret = ret || lua_pcall(L, 1, LUA_MULTRET, 0) ||
-        luaL_dofile(L, "tests/bindings/lua/test_upb.lua");
+        luaL_dofile(L, "upb/bindings/lua/test_upb.lua");
   signal(SIGINT, SIG_DFL);
 
   if (ret) {

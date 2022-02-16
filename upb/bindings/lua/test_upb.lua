@@ -29,7 +29,7 @@
 
 local upb = require "lupb"
 local lunit = require "lunit"
-local upb_test = require "tests.bindings.lua.test_pb"
+local upb_test = require "upb.bindings.lua.test_pb"
 local test_messages_proto3 = require "google.protobuf.test_messages_proto3_pb"
 local test_messages_proto2 = require "google.protobuf.test_messages_proto2_pb"
 local descriptor = require "google.protobuf.descriptor_pb"
