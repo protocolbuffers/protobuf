@@ -121,6 +121,9 @@ class BuildFileFunctions(object):
     # self._add_deps(kwargs)
     pass
 
+  def cc_fuzz_test(self, **kwargs):
+    pass
+
   def py_library(self, **kwargs):
     pass
 
@@ -311,6 +314,7 @@ converter = Converter()
 def GetDict(obj):
   ret = {}
   ret["UPB_DEFAULT_COPTS"] = []  # HACK
+  ret["UPB_DEFAULT_CPPOPTS"] = []  # HACK
   for k in dir(obj):
     if not k.startswith("_"):
       ret[k] = getattr(obj, k);

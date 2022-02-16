@@ -26,6 +26,8 @@
 load(
     "//bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
+    "UPB_DEFAULT_CPPOPTS",
+    "make_shell_script",
     "upb_amalgamation",  # copybara:strip_for_google3
 )
 load(
@@ -35,6 +37,7 @@ load(
     "upb_proto_library_copts",
     "upb_proto_reflection_library",
 )
+load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 
 licenses(["notice"])
 
@@ -219,6 +222,47 @@ cc_library(
     ],
 )
 
+# Tests ########################################################################
+
+cc_test(
+    name = "test_generated_code",
+    srcs = ["upb/test_generated_code.cc"],
+    deps = [
+        ":empty_upbdefs_proto",
+        ":test_messages_proto3_proto_upb",
+        ":test_upb_proto",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+proto_library(
+    name = "test_proto",
+    testonly = 1,
+    srcs = ["upb/test.proto"],
+)
+
+upb_proto_library(
+    name = "test_upb_proto",
+    testonly = 1,
+    deps = [":test_proto"],
+)
+
+proto_library(
+    name = "empty_proto",
+    srcs = ["upb/empty.proto"],
+)
+
+upb_proto_reflection_library(
+    name = "empty_upbdefs_proto",
+    testonly = 1,
+    deps = [":empty_proto"],
+)
+
+upb_proto_library(
+    name = "test_messages_proto3_proto_upb",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+)
 cc_test(
     name = "msg_test",
     srcs = ["upb/msg_test.cc"],
@@ -238,6 +282,121 @@ proto_library(
 upb_proto_reflection_library(
     name = "msg_test_upb_proto_reflection",
     deps = [":msg_test_proto"],
+)
+
+proto_library(
+    name = "test_cpp_proto",
+    srcs = ["upb/test_cpp.proto"],
+    deps = ["@com_google_protobuf//:timestamp_proto"]
+)
+
+upb_proto_library(
+    name = "test_cpp_upb_proto",
+    deps = ["test_cpp_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "test_cpp_upb_proto_reflection",
+    deps = ["test_cpp_proto"],
+)
+
+cc_test(
+    name = "test_cpp",
+    srcs = ["upb/test_cpp.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    deps = [
+        ":test_cpp_upb_proto",
+        ":test_cpp_upb_proto_reflection",
+        "//:json",
+        "//:port",
+        "//:reflection",
+        "//:upb",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "test_table",
+    srcs = ["upb/test_table.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    deps = [
+        "//:port",
+        "//:table",
+        "//:upb",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_fuzz_test(
+    name = "file_descriptor_parsenew_fuzzer",
+    srcs = ["upb/file_descriptor_parsenew_fuzzer.cc"],
+    deps = [
+        "//:descriptor_upb_proto",
+        "//:upb",
+    ],
+)
+
+upb_proto_library(
+    name = "conformance_proto_upb",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:conformance_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "conformance_proto_upbdefs",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:conformance_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "test_messages_proto2_upbdefs",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:test_messages_proto2_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "test_messages_proto3_upbdefs",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+)
+
+cc_binary(
+    name = "conformance_upb",
+    testonly = 1,
+    srcs = ["upb/conformance_upb.c"],
+    copts = UPB_DEFAULT_COPTS,
+    data = ["upb/conformance_upb_failures.txt"],
+    deps = [
+        ":conformance_proto_upb",
+        ":conformance_proto_upbdefs",
+        ":test_messages_proto2_upbdefs",
+        ":test_messages_proto3_upbdefs",
+        "//:json",
+        "//:port",
+        "//:reflection",
+        "//:textformat",
+        "//:upb",
+    ],
+)
+
+make_shell_script(
+    name = "gen_test_conformance_upb",
+    out = "test_conformance_upb.sh",
+    contents = "external/com_google_protobuf/conformance_test_runner " +
+               " --enforce_recommended " +
+               " --failure_list ./upb/conformance_upb_failures.txt" +
+               " ./conformance_upb",
+)
+
+sh_test(
+    name = "test_conformance_upb",
+    srcs = ["test_conformance_upb.sh"],
+    data = [
+        "upb/conformance_upb_failures.txt",
+        ":conformance_upb",
+        "@com_google_protobuf//:conformance_test_runner",
+    ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
 )
 
 # Internal C/C++ libraries #####################################################
@@ -346,7 +505,7 @@ exports_files(
         "third_party/lunit/console.lua",
         "third_party/lunit/lunit.lua",
     ],
-    visibility = ["//tests/bindings/lua:__pkg__"],
+    visibility = ["//upb/bindings/lua:__pkg__"],
 )
 
 filegroup(

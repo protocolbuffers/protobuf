@@ -38,12 +38,12 @@
 #include "google/protobuf/timestamp.upb.h"
 #include "google/protobuf/timestamp.upbdefs.h"
 #include "gtest/gtest.h"
-#include "tests/test_cpp.upb.h"
-#include "tests/test_cpp.upbdefs.h"
 #include "upb/def.h"
 #include "upb/def.hpp"
 #include "upb/json_decode.h"
 #include "upb/json_encode.h"
+#include "upb/test_cpp.upb.h"
+#include "upb/test_cpp.upbdefs.h"
 #include "upb/upb.h"
 
 // Must be last.
