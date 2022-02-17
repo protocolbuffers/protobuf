@@ -1066,7 +1066,7 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
 
   if (size <= 16) {
     memset(&state.patch, 0, 32);
-    memcpy(&state.patch, buf, size);
+    if (size) memcpy(&state.patch, buf, size);
     buf = state.patch;
     state.end = buf + size;
     state.limit = 0;
