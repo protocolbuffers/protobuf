@@ -36,7 +36,6 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
@@ -47,6 +46,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/status.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/time.h>
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/field_mask_utility.h>
@@ -1098,11 +1098,11 @@ const std::string FormatNanos(uint32_t nanos, bool with_trailing_zeros) {
     return with_trailing_zeros ? ".000" : "";
   }
 
-  const char* format = (nanos % 1000 != 0)      ? "%.9f"
-                       : (nanos % 1000000 != 0) ? "%.6f"
-                                                : "%.3f";
-  std::string formatted =
-      StringPrintf(format, static_cast<double>(nanos) / kNanosPerSecond);
+  const int precision = (nanos % 1000 != 0)      ? 9
+                        : (nanos % 1000000 != 0) ? 6
+                                                 : 3;
+  std::string formatted = StringPrintf(
+      "%.*f", precision, static_cast<double>(nanos) / kNanosPerSecond);
   // remove the leading 0 before decimal.
   return formatted.substr(1);
 }

@@ -1515,8 +1515,6 @@ class RepeatedPtrIterator {
   using iterator = RepeatedPtrIterator<Element>;
   using iterator_category = std::random_access_iterator_tag;
   using value_type = typename std::remove_const<Element>::type;
-  using const_iterator = RepeatedPtrIterator<const value_type>;
-  using nonconst_iterator = RepeatedPtrIterator<value_type>;
   using difference_type = std::ptrdiff_t;
   using pointer = Element*;
   using reference = Element&;

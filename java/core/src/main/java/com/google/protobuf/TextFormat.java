@@ -2406,7 +2406,7 @@ public final class TextFormat {
                               | digitValue(input.byteAt(i + 1)) << 8
                               | digitValue(input.byteAt(i + 2)) << 4
                               | digitValue(input.byteAt(i + 3)));
-                              
+
                   if (ch >= Character.MIN_SURROGATE && ch <= Character.MAX_SURROGATE) {
                     throw new InvalidEscapeSequenceException(
                         "Invalid escape sequence: '\\u' refers to a surrogate");

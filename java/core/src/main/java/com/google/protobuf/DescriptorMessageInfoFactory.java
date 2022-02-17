@@ -63,29 +63,30 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   private static final DescriptorMessageInfoFactory instance = new DescriptorMessageInfoFactory();
 
   /**
-   * Names that should be avoided (in UpperCamelCase format).
-   * Using them causes the compiler to generate accessors whose names
-   * collide with methods defined in base classes.
+   * Names that should be avoided (in UpperCamelCase format). Using them causes the compiler to
+   * generate accessors whose names collide with methods defined in base classes.
    *
-   * Keep this list in sync with kForbiddenWordList in
+   * <p>Keep this list in sync with kForbiddenWordList in
    * src/google/protobuf/compiler/java/java_helpers.cc
    */
   private static final Set<String> specialFieldNames =
-      new HashSet<>(Arrays.asList(
-        // java.lang.Object:
-        "Class",
-        // com.google.protobuf.MessageLiteOrBuilder:
-        "DefaultInstanceForType",
-        // com.google.protobuf.MessageLite:
-        "ParserForType",
-        "SerializedSize",
-        // com.google.protobuf.MessageOrBuilder:
-        "AllFields",
-        "DescriptorForType",
-        "InitializationErrorString",
-        "UnknownFields",
-        // obsolete. kept for backwards compatibility of generated code
-        "CachedSize"));
+      new HashSet<>(
+          Arrays.asList(
+              // java.lang.Object:
+              "Class",
+              // com.google.protobuf.MessageLiteOrBuilder:
+              "DefaultInstanceForType",
+              // com.google.protobuf.MessageLite:
+              "ParserForType",
+              "SerializedSize",
+              // com.google.protobuf.MessageOrBuilder:
+              "AllFields",
+              "DescriptorForType",
+              "InitializationErrorString",
+              // TODO(b/219045204): re-enable
+              // "UnknownFields",
+              // obsolete. kept for backwards compatibility of generated code
+              "CachedSize"));
 
   // Disallow construction - it's a singleton.
   private DescriptorMessageInfoFactory() {}
@@ -148,6 +149,8 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
    *
    * <p>This class is thread-safe.
    */
+  // <p>The code is adapted from the C++ implementation:
+  // https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/compiler/java/java_helpers.h
   static class IsInitializedCheckAnalyzer {
 
     private final Map<Descriptor, Boolean> resultCache =
@@ -630,7 +633,8 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
       // For example:
       //     proto field name = "class"
       //     java field name = "class__"
-      //     accessor method name = "getClass_()"  (so that it does not clash with Object.getClass())
+      //     accessor method name = "getClass_()"  (so that it does not clash with
+      // Object.getClass())
       suffix = "__";
     } else {
       // For other proto field names,
@@ -652,7 +656,8 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   /**
    * Converts a snake case string into lower camel case.
    *
-   * <p>Some examples:</p>
+   * <p>Some examples:
+   *
    * <pre>
    *     snakeCaseToLowerCamelCase("foo_bar") => "fooBar"
    *     snakeCaseToLowerCamelCase("foo") => "foo"
@@ -668,7 +673,8 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   /**
    * Converts a snake case string into upper camel case.
    *
-   * <p>Some examples:</p>
+   * <p>Some examples:
+   *
    * <pre>
    *     snakeCaseToUpperCamelCase("foo_bar") => "FooBar"
    *     snakeCaseToUpperCamelCase("foo") => "Foo"
@@ -684,10 +690,11 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   /**
    * Converts a snake case string into camel case.
    *
-   * <p>For better readability, prefer calling either
-   * {@link #snakeCaseToLowerCamelCase(String)} or {@link #snakeCaseToUpperCamelCase(String)}.</p>
+   * <p>For better readability, prefer calling either {@link #snakeCaseToLowerCamelCase(String)} or
+   * {@link #snakeCaseToUpperCamelCase(String)}.
    *
-   * <p>Some examples:</p>
+   * <p>Some examples:
+   *
    * <pre>
    *     snakeCaseToCamelCase("foo_bar", false) => "fooBar"
    *     snakeCaseToCamelCase("foo_bar", true) => "FooBar"
@@ -697,16 +704,15 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
    *     snakeCaseToCamelCase("fooBar", false) => "fooBar"
    * </pre>
    *
-   * <p>This implementation of this method must exactly match the corresponding
-   * function in the protocol compiler.  Specifically, the
-   * {@code UnderscoresToCamelCase} function in
-   * {@code src/google/protobuf/compiler/java/java_helpers.cc}.</p>
+   * <p>This implementation of this method must exactly match the corresponding function in the
+   * protocol compiler. Specifically, the {@code UnderscoresToCamelCase} function in {@code
+   * src/google/protobuf/compiler/java/java_helpers.cc}.
    *
    * @param snakeCase the string in snake case to convert
-   * @param capFirst true if the first letter of the returned string should be uppercase.
-   *                 false if the first letter of the returned string should be lowercase.
-   * @return the string converted to camel case, with an uppercase or lowercase first
-   *         character depending on if {@code capFirst} is true or false, respectively
+   * @param capFirst true if the first letter of the returned string should be uppercase. false if
+   *     the first letter of the returned string should be lowercase.
+   * @return the string converted to camel case, with an uppercase or lowercase first character
+   *     depending on if {@code capFirst} is true or false, respectively
    */
   private static String snakeCaseToCamelCase(String snakeCase, boolean capFirst) {
     StringBuilder sb = new StringBuilder(snakeCase.length() + 1);

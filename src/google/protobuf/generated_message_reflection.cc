@@ -75,7 +75,6 @@ using google::protobuf::internal::RepeatedPtrFieldBase;
 using google::protobuf::internal::StringSpaceUsedExcludingSelfLong;
 using google::protobuf::internal::WrappedMutex;
 
-
 namespace google {
 namespace protobuf {
 

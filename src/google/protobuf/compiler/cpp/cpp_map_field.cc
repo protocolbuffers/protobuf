@@ -126,7 +126,7 @@ void MapFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline const ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >&\n"
       "$classname$::_internal_$name$() const {\n"
-      "  return $name$_.GetMap();\n"
+      "  return $field$.GetMap();\n"
       "}\n"
       "inline const ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >&\n"
       "$classname$::$name$() const {\n"
@@ -136,7 +136,7 @@ void MapFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >*\n"
       "$classname$::_internal_mutable_$name$() {\n"
-      "  return $name$_.MutableMap();\n"
+      "  return $field$.MutableMap();\n"
       "}\n"
       "inline ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >*\n"
       "$classname$::mutable_$name$() {\n"
@@ -148,17 +148,17 @@ void MapFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void MapFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.Clear();\n");
+  format("$field$.Clear();\n");
 }
 
 void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.MergeFrom(from.$name$_);\n");
+  format("$field$.MergeFrom(from.$field$);\n");
 }
 
 void MapFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.InternalSwap(&other->$name$_);\n");
+  format("$field$.InternalSwap(&other->$field$);\n");
 }
 
 void MapFieldGenerator::GenerateCopyConstructorCode(
@@ -267,7 +267,7 @@ void MapFieldGenerator::GenerateIsInitialized(io::Printer* printer) const {
 
   Formatter format(printer, variables_);
   format(
-      "if (!::$proto_ns$::internal::AllAreInitialized($name$_)) return "
+      "if (!::$proto_ns$::internal::AllAreInitialized($field$)) return "
       "false;\n");
 }
 
@@ -285,7 +285,7 @@ void MapFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
-  format("$name$_.Destruct();\n");
+  format("$field$.Destruct();\n");
 }
 
 void MapFieldGenerator::GenerateArenaDestructorCode(
@@ -296,7 +296,7 @@ void MapFieldGenerator::GenerateArenaDestructorCode(
 
   Formatter format(printer, variables_);
   // _this is the object being destructed (we are inside a static method here).
-  format("_this->$name$_.Destruct();\n");
+  format("_this->$field$.Destruct();\n");
 }
 
 ArenaDtorNeeds MapFieldGenerator::NeedsArenaDestructor() const {

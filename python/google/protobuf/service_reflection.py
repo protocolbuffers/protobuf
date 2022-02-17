@@ -145,19 +145,20 @@ class _ServiceBuilder(object):
     # instance to the method that does the real CallMethod work.
     # Making sure to use exact argument names from the abstract interface in
     # service.py to match the type signature
-    def _WrapCallMethod(self, method_descriptor,
-                        rpc_controller, request, done):
-      return builder._CallMethod(self, method_descriptor,
-                       rpc_controller, request, done)
+    def _WrapCallMethod(self, method_descriptor, rpc_controller, request, done):
+      return builder._CallMethod(self, method_descriptor, rpc_controller,
+                                 request, done)
+
     def _WrapGetRequestClass(self, method_descriptor):
       return builder._GetRequestClass(method_descriptor)
+
     def _WrapGetResponseClass(self, method_descriptor):
       return builder._GetResponseClass(method_descriptor)
 
     builder.cls = cls
     cls.CallMethod = _WrapCallMethod
     cls.GetDescriptor = staticmethod(lambda: builder.descriptor)
-    cls.GetDescriptor.__doc__ = "Returns the service descriptor."
+    cls.GetDescriptor.__doc__ = 'Returns the service descriptor.'
     cls.GetRequestClass = _WrapGetRequestClass
     cls.GetResponseClass = _WrapGetResponseClass
     for method in builder.descriptor.methods:

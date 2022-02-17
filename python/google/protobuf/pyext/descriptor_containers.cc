@@ -550,12 +550,16 @@ PyTypeObject DescriptorMapping_Type = {
     sizeof(PyContainer),                                         // tp_basicsize
     0,                                                           // tp_itemsize
     nullptr,                                                     // tp_dealloc
-    0,                                                           // tp_pkrint
-    nullptr,                                                     // tp_getattr
-    nullptr,                                                     // tp_setattr
-    nullptr,                                                     // tp_compare
-    (reprfunc)ContainerRepr,                                     // tp_repr
-    nullptr,                                                     // tp_as_number
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
+    nullptr,                   // tp_getattr
+    nullptr,                   // tp_setattr
+    nullptr,                   // tp_compare
+    (reprfunc)ContainerRepr,   // tp_repr
+    nullptr,                   // tp_as_number
     &MappingSequenceMethods,   // tp_as_sequence
     &MappingMappingMethods,    // tp_as_mapping
     nullptr,                   // tp_hash
@@ -730,10 +734,14 @@ static PyMappingMethods SeqMappingMethods = {
 
 PyTypeObject DescriptorSequence_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) "DescriptorSequence",  // tp_name
-    sizeof(PyContainer),       // tp_basicsize
-    0,                         // tp_itemsize
-    nullptr,                   // tp_dealloc
-    0,                         // tp_print
+    sizeof(PyContainer),  // tp_basicsize
+    0,                    // tp_itemsize
+    nullptr,              // tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                   // tp_getattr
     nullptr,                   // tp_setattr
     nullptr,                   // tp_compare
@@ -875,25 +883,29 @@ static PyTypeObject ContainerIterator_Type = {
     sizeof(PyContainerIterator),                             // tp_basicsize
     0,                                                       // tp_itemsize
     (destructor)Iterator_Dealloc,                            // tp_dealloc
-    0,                                                       // tp_print
-    nullptr,                                                 // tp_getattr
-    nullptr,                                                 // tp_setattr
-    nullptr,                                                 // tp_compare
-    nullptr,                                                 // tp_repr
-    nullptr,                                                 // tp_as_number
-    nullptr,                                                 // tp_as_sequence
-    nullptr,                                                 // tp_as_mapping
-    nullptr,                                                 // tp_hash
-    nullptr,                                                 // tp_call
-    nullptr,                                                 // tp_str
-    nullptr,                                                 // tp_getattro
-    nullptr,                                                 // tp_setattro
-    nullptr,                                                 // tp_as_buffer
-    Py_TPFLAGS_DEFAULT,                                      // tp_flags
-    nullptr,                                                 // tp_doc
-    nullptr,                                                 // tp_traverse
-    nullptr,                                                 // tp_clear
-    nullptr,                                                 // tp_richcompare
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
+    nullptr,                      // tp_getattr
+    nullptr,                      // tp_setattr
+    nullptr,                      // tp_compare
+    nullptr,                      // tp_repr
+    nullptr,                      // tp_as_number
+    nullptr,                      // tp_as_sequence
+    nullptr,                      // tp_as_mapping
+    nullptr,                      // tp_hash
+    nullptr,                      // tp_call
+    nullptr,                      // tp_str
+    nullptr,                      // tp_getattro
+    nullptr,                      // tp_setattro
+    nullptr,                      // tp_as_buffer
+    Py_TPFLAGS_DEFAULT,           // tp_flags
+    nullptr,                      // tp_doc
+    nullptr,                      // tp_traverse
+    nullptr,                      // tp_clear
+    nullptr,                      // tp_richcompare
     0,                            // tp_weaklistoffset
     PyObject_SelfIter,            // tp_iter
     (iternextfunc)Iterator_Next,  // tp_iternext

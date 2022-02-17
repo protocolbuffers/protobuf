@@ -37,7 +37,6 @@ else()
   add_library(GTest::gmock_main ALIAS gmock_main)
 endif()
 
-
 set(lite_test_protos
   google/protobuf/map_lite_unittest.proto
   google/protobuf/unittest_import_lite.proto

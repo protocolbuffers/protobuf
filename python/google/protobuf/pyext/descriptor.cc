@@ -416,11 +416,15 @@ static PyGetSetDef Getters[] = {
 
 PyTypeObject PyBaseDescriptor_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".DescriptorBase",                        // tp_name
-    sizeof(PyBaseDescriptor),                 // tp_basicsize
-    0,                                        // tp_itemsize
-    (destructor)Dealloc,                      // tp_dealloc
-    0,                                        // tp_print
+    ".DescriptorBase",         // tp_name
+    sizeof(PyBaseDescriptor),  // tp_basicsize
+    0,                         // tp_itemsize
+    (destructor)Dealloc,       // tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                                  // tp_getattr
     nullptr,                                  // tp_setattr
     nullptr,                                  // tp_compare
@@ -686,11 +690,15 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject PyMessageDescriptor_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".MessageDescriptor",                // tp_name
-    sizeof(PyBaseDescriptor),            // tp_basicsize
-    0,                                   // tp_itemsize
-    nullptr,                             // tp_dealloc
-    0,                                   // tp_print
+    ".MessageDescriptor",      // tp_name
+    sizeof(PyBaseDescriptor),  // tp_basicsize
+    0,                         // tp_itemsize
+    nullptr,                   // tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                             // tp_getattr
     nullptr,                             // tp_setattr
     nullptr,                             // tp_compare
@@ -1012,11 +1020,15 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject PyFieldDescriptor_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".FieldDescriptor",                  // tp_name
-    sizeof(PyBaseDescriptor),            // tp_basicsize
-    0,                                   // tp_itemsize
-    nullptr,                             // tp_dealloc
-    0,                                   // tp_print
+    ".FieldDescriptor",        // tp_name
+    sizeof(PyBaseDescriptor),  // tp_basicsize
+    0,                         // tp_itemsize
+    nullptr,                   // tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                             // tp_getattr
     nullptr,                             // tp_setattr
     nullptr,                             // tp_compare
@@ -1168,11 +1180,15 @@ static PyGetSetDef Getters[] = {
 
 PyTypeObject PyEnumDescriptor_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".EnumDescriptor",                   // tp_name
-    sizeof(PyBaseDescriptor),            // tp_basicsize
-    0,                                   // tp_itemsize
-    nullptr,                             // tp_dealloc
-    0,                                   // tp_print
+    ".EnumDescriptor",         // tp_name
+    sizeof(PyBaseDescriptor),  // tp_basicsize
+    0,                         // tp_itemsize
+    nullptr,                   // tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                             // tp_getattr
     nullptr,                             // tp_setattr
     nullptr,                             // tp_compare
@@ -1289,11 +1305,15 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject PyEnumValueDescriptor_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".EnumValueDescriptor",              // tp_name
-    sizeof(PyBaseDescriptor),            // tp_basicsize
-    0,                                   // tp_itemsize
-    nullptr,                             // tp_dealloc
-    0,                                   // tp_print
+    ".EnumValueDescriptor",    // tp_name
+    sizeof(PyBaseDescriptor),  // tp_basicsize
+    0,                         // tp_itemsize
+    nullptr,                   // tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                             // tp_getattr
     nullptr,                             // tp_setattr
     nullptr,                             // tp_compare
@@ -1478,40 +1498,44 @@ PyTypeObject PyFileDescriptor_Type = {
     sizeof(PyFileDescriptor),              // tp_basicsize
     0,                                     // tp_itemsize
     (destructor)file_descriptor::Dealloc,  // tp_dealloc
-    0,                                     // tp_print
-    nullptr,                               // tp_getattr
-    nullptr,                               // tp_setattr
-    nullptr,                               // tp_compare
-    nullptr,                               // tp_repr
-    nullptr,                               // tp_as_number
-    nullptr,                               // tp_as_sequence
-    nullptr,                               // tp_as_mapping
-    nullptr,                               // tp_hash
-    nullptr,                               // tp_call
-    nullptr,                               // tp_str
-    nullptr,                               // tp_getattro
-    nullptr,                               // tp_setattro
-    nullptr,                               // tp_as_buffer
-    Py_TPFLAGS_DEFAULT,                    // tp_flags
-    "A File Descriptor",                   // tp_doc
-    nullptr,                               // tp_traverse
-    nullptr,                               // tp_clear
-    nullptr,                               // tp_richcompare
-    0,                                     // tp_weaklistoffset
-    nullptr,                               // tp_iter
-    nullptr,                               // tp_iternext
-    file_descriptor::Methods,              // tp_methods
-    nullptr,                               // tp_members
-    file_descriptor::Getters,              // tp_getset
-    &descriptor::PyBaseDescriptor_Type,    // tp_base
-    nullptr,                               // tp_dict
-    nullptr,                               // tp_descr_get
-    nullptr,                               // tp_descr_set
-    0,                                     // tp_dictoffset
-    nullptr,                               // tp_init
-    nullptr,                               // tp_alloc
-    nullptr,                               // tp_new
-    PyObject_GC_Del,                       // tp_free
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
+    nullptr,                             // tp_getattr
+    nullptr,                             // tp_setattr
+    nullptr,                             // tp_compare
+    nullptr,                             // tp_repr
+    nullptr,                             // tp_as_number
+    nullptr,                             // tp_as_sequence
+    nullptr,                             // tp_as_mapping
+    nullptr,                             // tp_hash
+    nullptr,                             // tp_call
+    nullptr,                             // tp_str
+    nullptr,                             // tp_getattro
+    nullptr,                             // tp_setattro
+    nullptr,                             // tp_as_buffer
+    Py_TPFLAGS_DEFAULT,                  // tp_flags
+    "A File Descriptor",                 // tp_doc
+    nullptr,                             // tp_traverse
+    nullptr,                             // tp_clear
+    nullptr,                             // tp_richcompare
+    0,                                   // tp_weaklistoffset
+    nullptr,                             // tp_iter
+    nullptr,                             // tp_iternext
+    file_descriptor::Methods,            // tp_methods
+    nullptr,                             // tp_members
+    file_descriptor::Getters,            // tp_getset
+    &descriptor::PyBaseDescriptor_Type,  // tp_base
+    nullptr,                             // tp_dict
+    nullptr,                             // tp_descr_get
+    nullptr,                             // tp_descr_set
+    0,                                   // tp_dictoffset
+    nullptr,                             // tp_init
+    nullptr,                             // tp_alloc
+    nullptr,                             // tp_new
+    PyObject_GC_Del,                     // tp_free
 };
 
 PyObject* PyFileDescriptor_FromDescriptor(
@@ -1635,11 +1659,15 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject PyOneofDescriptor_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".OneofDescriptor",                  // tp_name
-    sizeof(PyBaseDescriptor),            // tp_basicsize
-    0,                                   // tp_itemsize
-    nullptr,                             // tp_dealloc
-    0,                                   // tp_print
+    ".OneofDescriptor",        // tp_name
+    sizeof(PyBaseDescriptor),  // tp_basicsize
+    0,                         // tp_itemsize
+    nullptr,                   // tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                             // tp_getattr
     nullptr,                             // tp_setattr
     nullptr,                             // tp_compare
@@ -1753,11 +1781,15 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject PyServiceDescriptor_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".ServiceDescriptor",                // tp_name
-    sizeof(PyBaseDescriptor),            // tp_basicsize
-    0,                                   // tp_itemsize
-    nullptr,                             // tp_dealloc
-    0,                                   // tp_print
+    ".ServiceDescriptor",      // tp_name
+    sizeof(PyBaseDescriptor),  // tp_basicsize
+    0,                         // tp_itemsize
+    nullptr,                   // tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                             // tp_getattr
     nullptr,                             // tp_setattr
     nullptr,                             // tp_compare
@@ -1877,11 +1909,15 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject PyMethodDescriptor_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".MethodDescriptor",                 // tp_name
-    sizeof(PyBaseDescriptor),            // tp_basicsize
-    0,                                   // tp_itemsize
-    nullptr,                             // tp_dealloc
-    0,                                   // tp_print
+    ".MethodDescriptor",       // tp_name
+    sizeof(PyBaseDescriptor),  // tp_basicsize
+    0,                         // tp_itemsize
+    nullptr,                   // tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                             // tp_getattr
     nullptr,                             // tp_setattr
     nullptr,                             // tp_compare
