@@ -1,0 +1,20 @@
+name: Check ClangFormat
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  check_clang_format:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run ClangFormat
+        run: find . | grep -E '\.(c|h|cc)$' | grep -E -v '^./(third_party|cmake)' | xargs clang-format -i
+      - name: Check for differences
+        run: git diff --exit-code
