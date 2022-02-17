@@ -32,6 +32,7 @@
 
 #include <unordered_map>
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <google/protobuf/descriptor.pb.h>
@@ -689,11 +690,15 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject PyDescriptorPool_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".DescriptorPool",                        // tp_name
-    sizeof(PyDescriptorPool),                 // tp_basicsize
-    0,                                        // tp_itemsize
-    cdescriptor_pool::Dealloc,                // tp_dealloc
-    0,                                        // tp_print
+    ".DescriptorPool",          // tp_name
+    sizeof(PyDescriptorPool),   // tp_basicsize
+    0,                          // tp_itemsize
+    cdescriptor_pool::Dealloc,  // tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                                  // tp_getattr
     nullptr,                                  // tp_setattr
     nullptr,                                  // tp_compare

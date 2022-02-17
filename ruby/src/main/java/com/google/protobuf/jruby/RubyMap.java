@@ -389,7 +389,7 @@ public class RubyMap extends RubyObject {
         return newMap;
     }
 
-    protected List<DynamicMessage> build(ThreadContext context, RubyDescriptor descriptor, int depth) {
+    protected List<DynamicMessage> build(ThreadContext context, RubyDescriptor descriptor, int depth, int recursionLimit) {
         List<DynamicMessage> list = new ArrayList<DynamicMessage>();
         RubyClass rubyClass = (RubyClass) descriptor.msgclass(context);
         FieldDescriptor keyField = descriptor.getField("key");
@@ -398,7 +398,7 @@ public class RubyMap extends RubyObject {
             RubyMessage mapMessage = (RubyMessage) rubyClass.newInstance(context, Block.NULL_BLOCK);
             mapMessage.setField(context, keyField, key);
             mapMessage.setField(context, valueField, table.get(key));
-            list.add(mapMessage.build(context, depth + 1));
+            list.add(mapMessage.build(context, depth + 1, recursionLimit));
         }
         return list;
     }

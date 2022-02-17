@@ -2,6 +2,11 @@ load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
+load("//:protobuf.bzl", "internal_gen_kt_protos")
+
+exports_files([
+  "src/test/kotlin/com/google/protobuf/Proto3Test.kt",
+])
 
 # Kotlin generated protos depend on this and only this.
 kt_jvm_library(
@@ -35,7 +40,10 @@ kt_jvm_library(
 
 kt_jvm_library(
     name = "full_extensions",
-    srcs = ["src/main/kotlin/com/google/protobuf/ExtendableMessageExtensions.kt"],
+    srcs = [
+      "src/main/kotlin/com/google/protobuf/Anies.kt",
+      "src/main/kotlin/com/google/protobuf/ExtendableMessageExtensions.kt",
+    ],
     deps = ["//java/core"],
 )
 
@@ -106,11 +114,15 @@ java_test(
 
 kt_jvm_library(
     name = "test_extensions_library",
-    srcs = ["src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt"],
+    srcs = [
+      "src/test/kotlin/com/google/protobuf/AniesTest.kt",
+      "src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt",
+    ],
     deps = [
         ":example_extensible_message_java_proto",
         ":full_extensions",
-        "//java/lite",
+        "//java/core:core",
+        ":kotlin_unittest",
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
         "@com_github_jetbrains_kotlin//:kotlin-test",
@@ -131,6 +143,16 @@ proto_library(
     visibility = ["//:__subpackages__"],
 )
 
+java_proto_library(
+    name = "evil_names_proto2_java_proto",
+    deps = [":evil_names_proto2"],
+)
+
+internal_gen_kt_protos(
+    name = "gen_evil_names_proto2",
+    deps = [":evil_names_proto2"],
+)
+
 proto_library(
     name = "evil_names_proto3",
     srcs = ["src/test/proto/com/google/protobuf/evil_names_proto3.proto"],
@@ -138,12 +160,12 @@ proto_library(
 )
 
 java_proto_library(
-    name = "evil_names_proto2_java_proto",
-    deps = [":evil_names_proto2"],
+    name = "evil_names_proto3_java_proto",
+    deps = [":evil_names_proto3"],
 )
 
-java_proto_library(
-    name = "evil_names_proto3_java_proto",
+internal_gen_kt_protos(
+    name = "gen_evil_names_proto3",
     deps = [":evil_names_proto3"],
 )
 
@@ -153,68 +175,14 @@ proto_library(
     visibility = ["//:__subpackages__"],
 )
 
-java_proto_library( name = "multiple_files_proto3_java_proto",
+java_proto_library(
+    name = "multiple_files_proto3_java_proto",
     deps = [":multiple_files_proto3"],
 )
 
-genrule(
+internal_gen_kt_protos(
     name = "gen_kotlin_proto3_java_multiple_files",
-    srcs = ["src/test/proto/com/google/protobuf/multiple_files_proto3.proto"],
-    outs = [
-        "MultipleFilesMessageAKt.kt",
-        "MultipleFilesMessageBKt.kt",
-        "MultipleFilesProto3Kt.kt",
-    ],
-    cmd = "$(location //:protoc) " +
-          "--kotlin_out=shared,immutable:$(@D) " +
-          "$(location src/test/proto/com/google/protobuf/multiple_files_proto3.proto) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/MultipleFilesMessageAKt.kt " +
-          "$(location MultipleFilesMessageAKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/MultipleFilesMessageBKt.kt " +
-          "$(location MultipleFilesMessageBKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/MultipleFilesProto3Kt.kt " +
-          "$(location MultipleFilesProto3Kt.kt)",
-    tools = ["//:protoc"],
-)
-
-genrule(
-    name = "gen_evil_names_proto2",
-    srcs = ["src/test/proto/com/google/protobuf/evil_names_proto2.proto"],
-    outs = [
-        "EvilNamesProto2Kt.kt",
-        "HardKeywordsAllTypesProto2Kt.kt",
-        "InterfaceKt.kt",
-    ],
-    cmd = "$(location //:protoc) " +
-          "--kotlin_out=shared,immutable:$(@D) " +
-          "$(location src/test/proto/com/google/protobuf/evil_names_proto2.proto) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/EvilNamesProto2Kt.kt " +
-          "$(location EvilNamesProto2Kt.kt) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/HardKeywordsAllTypesProto2Kt.kt " +
-          "$(location HardKeywordsAllTypesProto2Kt.kt) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/InterfaceKt.kt " +
-          "$(location InterfaceKt.kt)",
-    tools = ["//:protoc"],
-)
-
-genrule(
-    name = "gen_evil_names_proto3",
-    srcs = ["src/test/proto/com/google/protobuf/evil_names_proto3.proto"],
-    outs = [
-        "ClassKt.kt",
-        "EvilNamesProto3Kt.kt",
-        "HardKeywordsAllTypesProto3Kt.kt",
-    ],
-    cmd = "$(location //:protoc) " +
-          "--kotlin_out=shared,immutable:$(@D) " +
-          "$(location src/test/proto/com/google/protobuf/evil_names_proto3.proto) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/ClassKt.kt " +
-          "$(location ClassKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/EvilNamesProto3Kt.kt " +
-          "$(location EvilNamesProto3Kt.kt) && " +
-          "cp $(@D)/com/google/protobuf/kotlin/generator/HardKeywordsAllTypesProto3Kt.kt " +
-          "$(location HardKeywordsAllTypesProto3Kt.kt)",
-    tools = ["//:protoc"],
+    deps = [":multiple_files_proto3"],
 )
 
 kt_jvm_library(
@@ -228,6 +196,7 @@ kt_jvm_library(
         "//java/core:core",
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
+        ":well_known_protos_kotlin",
         "//:java_test_protos",
     ],
 )
@@ -281,4 +250,16 @@ java_test(
     name = "proto3_test",
     runtime_deps = [":proto3_test_library"],
     test_class = "com.google.protobuf.kotlin.Proto3Test",
+)
+
+kt_jvm_library(
+    name = "well_known_protos_kotlin",
+    srcs = [
+        "//:gen_well_known_protos_kotlin",
+    ],
+    deps = [
+         "//java/core",
+         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
+         ":shared_runtime",
+    ],
 )

@@ -432,12 +432,12 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
     return -1;
   }
 
-  self->version++;
-
   if (v) {
     // Set item to v.
-    reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
-                                       map_key, &value);
+    if (reflection->InsertOrLookupMapValue(
+            message, self->parent_field_descriptor, map_key, &value)) {
+      self->version++;
+    }
 
     if (!PythonToMapValueRef(self, v, reflection->SupportsUnknownEnumValues(),
                              &value)) {
@@ -448,6 +448,7 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
     // Delete key from map.
     if (reflection->DeleteMapValue(message, self->parent_field_descriptor,
                                    map_key)) {
+      self->version++;
       return 0;
     } else {
       PyErr_Format(PyExc_KeyError, "Key not present in map");
@@ -853,11 +854,15 @@ static void DeallocMapIterator(PyObject* _self) {
 
 PyTypeObject MapIterator_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".MapIterator",                 //  tp_name
-    sizeof(MapIterator),            //  tp_basicsize
-    0,                              //  tp_itemsize
-    DeallocMapIterator,             //  tp_dealloc
-    0,                              //  tp_print
+    ".MapIterator",       //  tp_name
+    sizeof(MapIterator),  //  tp_basicsize
+    0,                    //  tp_itemsize
+    DeallocMapIterator,   //  tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
     nullptr,                        //  tp_getattr
     nullptr,                        //  tp_setattr
     nullptr,                        //  tp_compare

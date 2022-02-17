@@ -135,6 +135,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @return object The stored element at given key.
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
+     * @todo need to add return type mixed (require update php version to 8.0)
      */
     #[\ReturnTypeWillChange]
     public function offsetGet($key)
@@ -153,6 +154,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @throws \ErrorException Invalid type for key.
      * @throws \ErrorException Invalid type for value.
      * @throws \ErrorException Non-existing key.
+     * @todo need to add return type void (require update php version to 7.1)
      */
     #[\ReturnTypeWillChange]
     public function offsetSet($key, $value)
@@ -212,6 +214,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @param object $key The key of the element to be removed.
      * @return void
      * @throws \ErrorException Invalid type for key.
+     * @todo need to add return type void (require update php version to 7.1)
      */
     #[\ReturnTypeWillChange]
     public function offsetUnset($key)

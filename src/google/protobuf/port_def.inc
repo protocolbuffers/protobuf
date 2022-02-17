@@ -157,17 +157,17 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3018001
+#define PROTOBUF_VERSION 3019004
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
 #endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3018000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3019000
 
 #ifdef PROTOBUF_MIN_PROTOC_VERSION
 #error PROTOBUF_MIN_PROTOC_VERSION was previously defined
 #endif
-#define PROTOBUF_MIN_PROTOC_VERSION 3018000
+#define PROTOBUF_MIN_PROTOC_VERSION 3019000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
@@ -233,11 +233,14 @@
 #ifdef PROTOBUF_TAILCALL
 #error PROTOBUF_TAILCALL was previously defined
 #endif
-#if __has_cpp_attribute(clang::musttail) && \
-  !defined(__arm__) && !defined(_ARCH_PPC) && !defined(__wasm__)
+#if __has_cpp_attribute(clang::musttail) && !defined(__arm__) && \
+    !defined(_ARCH_PPC) && !defined(__wasm__) &&                 \
+    !(defined(_MSC_VER) && defined(_M_IX86))
 #  ifndef PROTO2_OPENSOURCE
 // Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
+// Compilation fails on X86 Windows:
+// https://github.com/llvm/llvm-project/issues/53271
 #  endif
 #define PROTOBUF_MUSTTAIL [[clang::musttail]]
 #define PROTOBUF_TAILCALL true
@@ -360,7 +363,7 @@
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3018000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3019000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
@@ -663,7 +666,7 @@
 #ifdef PROTOBUF_PRAGMA_INIT_SEG
 #error PROTOBUF_PRAGMA_INIT_SEG was previously defined
 #endif
-#if _MSC_VER
+#ifdef _MSC_VER
 #define PROTOBUF_PRAGMA_INIT_SEG __pragma(init_seg(lib))
 #else
 #define PROTOBUF_PRAGMA_INIT_SEG
@@ -832,7 +835,7 @@
 #endif
 
 // Silence some MSVC warnings in all our code.
-#if _MSC_VER
+#ifdef _MSC_VER
 #pragma warning(push)
 // For non-trivial unions
 #pragma warning(disable : 4582)

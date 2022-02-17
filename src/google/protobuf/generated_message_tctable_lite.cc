@@ -46,8 +46,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-const uint32_t TcParser::kMtSmallScanSize;
-
 using FieldEntry = TcParseTableBase::FieldEntry;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -139,9 +137,54 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::Error(
   return nullptr;
 }
 
+// On the fast path, a (matching) 1-byte tag already has the decoded value.
+static uint32_t FastDecodeTag(uint8_t coded_tag) {
+  return coded_tag;
+}
+
+// On the fast path, a (matching) 2-byte tag always needs to be decoded.
+static uint32_t FastDecodeTag(uint16_t coded_tag) {
+  uint32_t result = coded_tag;
+  result += static_cast<int8_t>(coded_tag);
+  return result >> 1;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Core mini parsing implementation:
 //////////////////////////////////////////////////////////////////////////////
+
+// Field lookup table layout:
+//
+// Because it consists of a series of variable-length segments, the lookuup
+// table is organized within an array of uint16_t, and each element is either
+// a uint16_t or a uint32_t stored little-endian as a pair of uint16_t.
+//
+// Its fundamental building block maps 16 contiguously ascending field numbers
+// to their locations within the field entry table:
+
+struct SkipEntry16 {
+  uint16_t skipmap;
+  uint16_t field_entry_offset;
+};
+
+// The skipmap is a bitfield of which of those field numbers do NOT have a
+// field entry.  The lowest bit of the skipmap corresponds to the lowest of
+// the 16 field numbers, so if a proto had only fields 1, 2, 3, and 7, the
+// skipmap would contain 0b11111111'10111000.
+//
+// The field lookup table begins with a single 32-bit skipmap that maps the
+// field numbers 1 through 32.  This is because the majority of proto
+// messages only contain fields numbered 1 to 32.
+//
+// The rest of the lookup table is a repeated series of
+// { 32-bit field #,  #SkipEntry16s,  {SkipEntry16...} }
+// That is, the next thing is a pair of uint16_t that form the next
+// lowest field number that the lookup table handles.  If this number is -1,
+// that is the end of the table.  Then there is a uint16_t that is
+// the number of contiguous SkipEntry16 entries that follow, and then of
+// course the SkipEntry16s themselves.
+
+// Originally developed and tested at https://godbolt.org/z/vbc7enYcf
 
 // Returns the address of the field for `tag` in the table's field entries.
 // Returns nullptr if the field was not found.
@@ -149,52 +192,66 @@ const TcParseTableBase::FieldEntry* TcParser::FindFieldEntry(
     const TcParseTableBase* table, uint32_t field_num) {
   const FieldEntry* const field_entries = table->field_entries_begin();
 
-  // Most messages have fields numbered sequentially. If the decoded tag is
-  // within that range, we can look up the field by index.
-  const uint32_t sequential_start = table->sequential_fields_start;
-  uint32_t adjusted_field_num = field_num - sequential_start;
-  const uint32_t num_sequential = table->num_sequential_fields;
-  if (PROTOBUF_PREDICT_TRUE(adjusted_field_num < num_sequential)) {
-    return field_entries + adjusted_field_num;
-  }
+  uint32_t fstart = 1;
+  uint32_t adj_fnum = field_num - fstart;
 
-  // Check if this field is larger than the max in the table. This is often an
-  // extension.
-  if (field_num > table->max_field_number) {
-    return nullptr;
-  }
-
-  // Otherwise, scan the next few field numbers, skipping the first
-  // `num_sequential` entries.
-  const uint32_t* const field_num_begin = table->field_numbers_begin();
-  const uint32_t small_scan_limit =
-      std::min(num_sequential + kMtSmallScanSize,
-               static_cast<uint32_t>(table->num_field_entries));
-  for (uint32_t i = num_sequential; i < small_scan_limit; ++i) {
-    if (field_num <= field_num_begin[i]) {
-      if (PROTOBUF_PREDICT_FALSE(field_num != field_num_begin[i])) {
-        // Field number mismatch.
-        return nullptr;
-      }
-      return field_entries + i;
+  if (PROTOBUF_PREDICT_TRUE(adj_fnum < 32)) {
+    uint32_t skipmap = table->skipmap32;
+    uint32_t skipbit = 1 << adj_fnum;
+    if (PROTOBUF_PREDICT_FALSE(skipmap & skipbit)) return nullptr;
+    skipmap &= skipbit - 1;
+#if (__GNUC__ || __clang__) && __POPCNT__
+    // Note: here and below, skipmap typically has very few set bits
+    // (31 in the worst case, but usually zero) so a loop isn't that
+    // bad, and a compiler-generated popcount is typically only
+    // worthwhile if the processor itself has hardware popcount support.
+    adj_fnum -= __builtin_popcount(skipmap);
+#else
+    while (skipmap) {
+      --adj_fnum;
+      skipmap &= skipmap - 1;
     }
+#endif
+    return field_entries + adj_fnum;
   }
-
-  // Finally, look up with binary search.
-  const uint32_t* const field_num_end = table->field_numbers_end();
-  auto it = std::lower_bound(field_num_begin + small_scan_limit, field_num_end,
-                             field_num);
-  if (it == field_num_end) {
-    // The only reason for binary search failing is if there was nothing to
-    // search.
-    GOOGLE_DCHECK_EQ(field_num_begin + small_scan_limit, field_num_end) << field_num;
-    return nullptr;
+  const uint16_t* lookup_table = table->field_lookup_begin();
+  for (;;) {
+#ifdef PROTOBUF_LITTLE_ENDIAN
+    memcpy(&fstart, lookup_table, sizeof(fstart));
+#else
+    fstart = lookup_table[0] | (lookup_table[1] << 16);
+#endif
+    lookup_table += sizeof(fstart) / sizeof(*lookup_table);
+    uint32_t num_skip_entries = *lookup_table++;
+    if (field_num < fstart) return nullptr;
+    adj_fnum = field_num - fstart;
+    uint32_t skip_num = adj_fnum / 16;
+    if (PROTOBUF_PREDICT_TRUE(skip_num < num_skip_entries)) {
+      // for each group of 16 fields we have:
+      // a bitmap of 16 bits
+      // a 16-bit field-entry offset for the first of them.
+      auto* skip_data = lookup_table + (adj_fnum / 16) * (sizeof(SkipEntry16) /
+                                                          sizeof(uint16_t));
+      SkipEntry16 se = {skip_data[0], skip_data[1]};
+      adj_fnum &= 15;
+      uint32_t skipmap = se.skipmap;
+      uint16_t skipbit = 1 << adj_fnum;
+      if (PROTOBUF_PREDICT_FALSE(skipmap & skipbit)) return nullptr;
+      skipmap &= skipbit - 1;
+      adj_fnum += se.field_entry_offset;
+#if (__GNUC__ || __clang__) && __POPCNT__
+      adj_fnum -= __builtin_popcount(skipmap);
+#else
+      while (skipmap) {
+        --adj_fnum;
+        skipmap &= skipmap - 1;
+      }
+#endif
+      return field_entries + adj_fnum;
+    }
+    lookup_table +=
+        num_skip_entries * (sizeof(SkipEntry16) / sizeof(*lookup_table));
   }
-  if (PROTOBUF_PREDICT_FALSE(*it != field_num)) {
-    // Field number mismatch.
-    return nullptr;
-  }
-  return field_entries + (it - field_num_begin);
 }
 
 // Field names are stored in a format of:
@@ -300,12 +357,13 @@ inline PROTOBUF_ALWAYS_INLINE void InvertPacked(TcFieldData& data) {
 // Message fields
 //////////////////////////////////////////////////////////////////////////////
 
-template <typename TagType>
+template <typename TagType, bool group_coding>
 inline PROTOBUF_ALWAYS_INLINE
 const char* TcParser::SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
   }
+  auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
   hasbits |= (uint64_t{1} << data.hasbit_idx());
   auto& field = RefAt<MessageLite*>(msg, data.offset());
@@ -315,25 +373,39 @@ const char* TcParser::SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL) {
     field = default_instance->New(ctx->data().arena);
   }
   SyncHasbits(msg, hasbits, table);
+  if (group_coding) {
+    return ctx->ParseGroup(field, ptr, FastDecodeTag(saved_tag));
+  }
   return ctx->ParseMessage(field, ptr);
 }
 
 const char* TcParser::FastMS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t>(
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 const char* TcParser::FastMS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t>(
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
-template <typename TagType>
+const char* TcParser::FastGS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, true>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastGS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, true>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+template <typename TagType, bool group_coding>
 inline PROTOBUF_ALWAYS_INLINE
 const char* TcParser::RepeatedParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL) {
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
   }
+  auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
   SyncHasbits(msg, hasbits, table);
   const MessageLite* default_instance =
@@ -341,16 +413,29 @@ const char* TcParser::RepeatedParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL) {
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
   MessageLite* submsg =
       field.Add<GenericTypeHandler<MessageLite>>(default_instance);
+  if (group_coding) {
+    return ctx->ParseGroup(submsg, ptr, FastDecodeTag(saved_tag));
+  }
   return ctx->ParseMessage(submsg, ptr);
 }
 
 const char* TcParser::FastMR1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t>(
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
 const char* TcParser::FastMR2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t>(
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, false>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastGR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, true>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastGR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -972,12 +1057,9 @@ void PrintUTF8ErrorLog(StringPiece message_name,
                        StringPiece field_name, const char* operation_str,
                        bool emit_stacktrace);
 
-void TcParser::ReportFastUtf8Error(uint16_t coded_tag,
+void TcParser::ReportFastUtf8Error(uint32_t decoded_tag,
                                    const TcParseTableBase* table) {
-  if (coded_tag > 127) {
-    coded_tag = (coded_tag & 0x7f) + ((coded_tag & 0xff00) >> 1);
-  }
-  uint32_t field_num = coded_tag >> 3;
+  uint32_t field_num = decoded_tag >> 3;
   const auto* entry = FindFieldEntry(table, field_num);
   PrintUTF8ErrorLog(MessageName(table), FieldName(table, entry), "parsing",
                     false);
@@ -1022,7 +1104,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
       if (PROTOBUF_PREDICT_TRUE(IsStructurallyValidUTF8(field.Get()))) {
         return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
       }
-      ReportFastUtf8Error(saved_tag, table);
+      ReportFastUtf8Error(FastDecodeTag(saved_tag), table);
       return utf8 == kUtf8 ? Error(PROTOBUF_TC_PARAM_PASS)
                            : ToParseLoop(PROTOBUF_TC_PARAM_PASS);
   }
@@ -1053,6 +1135,27 @@ const char* TcParser::FastUS2(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_TC_PARAM_PASS);
 }
 
+// Inlined string variants:
+
+const char* TcParser::FastBiS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+}
+const char* TcParser::FastBiS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+}
+const char* TcParser::FastSiS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+}
+const char* TcParser::FastSiS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+}
+const char* TcParser::FastUiS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+}
+const char* TcParser::FastUiS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+}
+
 template <typename TagType, TcParser::Utf8Type utf8>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
     PROTOBUF_TC_PARAM_DECL) {
@@ -1078,7 +1181,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
         if (PROTOBUF_PREDICT_TRUE(IsStructurallyValidUTF8(*str))) {
           break;
         }
-        ReportFastUtf8Error(expected_tag, table);
+        ReportFastUtf8Error(FastDecodeTag(expected_tag), table);
         if (utf8 == kUtf8) return Error(PROTOBUF_TC_PARAM_PASS);
         break;
     }
@@ -1615,15 +1718,30 @@ const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   if (card == field_layout::kFcRepeated) {
     PROTOBUF_MUSTTAIL return MpRepeatedMessage(PROTOBUF_TC_PARAM_PASS);
   }
-  // Check for wire type mismatch:
-  // TODO(b/210762816): support groups.
-  if ((data.tag() & 7) != WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-    PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
-  }
-  // Lazy and implicit weak fields are handled by generated code:
-  // TODO(b/210762816): support these.
-  if ((type_card & field_layout::kRepMask) != field_layout::kRepMessage) {
-    PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
+
+  const uint32_t decoded_tag = data.tag();
+  const uint32_t decoded_wiretype = decoded_tag & 7;
+  const uint16_t rep = type_card & field_layout::kRepMask;
+  const bool is_group = rep == field_layout::kRepGroup;
+
+  // Validate wiretype:
+  switch (rep) {
+    case field_layout::kRepMessage:
+      if (decoded_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+        goto fallback;
+      }
+      break;
+    case field_layout::kRepGroup:
+      if (decoded_wiretype != WireFormatLite::WIRETYPE_START_GROUP) {
+        goto fallback;
+      }
+      break;
+    default: {
+    fallback:
+      // Lazy and implicit weak fields are handled by generated code:
+      // TODO(b/210762816): support these.
+      PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
+    }
   }
 
   const bool is_oneof = card == field_layout::kFcOneof;
@@ -1640,6 +1758,9 @@ const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
     field = default_instance->New(ctx->data().arena);
   }
   SyncHasbits(msg, hasbits, table);
+  if (is_group) {
+    return ctx->ParseGroup(field, ptr, decoded_tag);
+  }
   return ctx->ParseMessage(field, ptr);
 }
 
@@ -1648,16 +1769,29 @@ const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
   const uint16_t type_card = entry.type_card;
   GOOGLE_DCHECK_EQ(type_card & field_layout::kFcMask,
             static_cast<uint16_t>(field_layout::kFcRepeated));
+  const uint32_t decoded_tag = data.tag();
+  const uint32_t decoded_wiretype = decoded_tag & 7;
+  const uint16_t rep = type_card & field_layout::kRepMask;
+  const bool is_group = rep == field_layout::kRepGroup;
 
-  // Check for wire type mismatch:
-  // TODO(b/210762816): support groups.
-  if ((data.tag() & 7) != WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-    PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
-  }
-  // Implicit weak fields are handled by generated code:
-  // TODO(b/210762816): support these.
-  if ((type_card & field_layout::kRepMask) != field_layout::kRepMessage) {
-    PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
+  // Validate wiretype:
+  switch (rep) {
+    case field_layout::kRepMessage:
+      if (decoded_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+        goto fallback;
+      }
+      break;
+    case field_layout::kRepGroup:
+      if (decoded_wiretype != WireFormatLite::WIRETYPE_START_GROUP) {
+        goto fallback;
+      }
+      break;
+    default: {
+    fallback:
+      // Lazy and implicit weak fields are handled by generated code:
+      // TODO(b/210762816): support these.
+      PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
+    }
   }
 
   SyncHasbits(msg, hasbits, table);
@@ -1666,6 +1800,9 @@ const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, entry.offset);
   MessageLite* value =
       field.Add<GenericTypeHandler<MessageLite>>(default_instance);
+  if (is_group) {
+    return ctx->ParseGroup(value, ptr, decoded_tag);
+  }
   return ctx->ParseMessage(value, ptr);
 }
 

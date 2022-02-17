@@ -1117,7 +1117,7 @@ public class JsonFormatTest {
                 + "  \"value\": \"12345\"\n"
                 + "}");
     assertRoundTripEquals(anyMessage, registry);
-    anyMessage = Any.pack(UInt64Value.newBuilder().setValue(12345).build());
+    anyMessage = Any.pack(UInt64Value.of(12345));
     assertThat(printer.print(anyMessage))
         .isEqualTo(
             "{\n"
@@ -1125,7 +1125,7 @@ public class JsonFormatTest {
                 + "  \"value\": \"12345\"\n"
                 + "}");
     assertRoundTripEquals(anyMessage, registry);
-    anyMessage = Any.pack(FloatValue.newBuilder().setValue(12345).build());
+    anyMessage = Any.pack(FloatValue.of(12345));
     assertThat(printer.print(anyMessage))
         .isEqualTo(
             "{\n"
@@ -1133,7 +1133,7 @@ public class JsonFormatTest {
                 + "  \"value\": 12345.0\n"
                 + "}");
     assertRoundTripEquals(anyMessage, registry);
-    anyMessage = Any.pack(DoubleValue.newBuilder().setValue(12345).build());
+    anyMessage = Any.pack(DoubleValue.of(12345));
     assertThat(printer.print(anyMessage))
         .isEqualTo(
             "{\n"
@@ -1340,7 +1340,7 @@ public class JsonFormatTest {
     }
   }
 
-    @Test
+  @Test
   public void testParserRejectTrailingComma() throws Exception {
     try {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -1350,20 +1350,16 @@ public class JsonFormatTest {
       // Expected.
     }
 
-    // TODO(xiaofeng): GSON allows trailing comma in arrays even after I set
-    // the JsonReader to non-lenient mode. If we want to enforce strict JSON
-    // compliance, we might want to switch to a different JSON parser or
-    // implement one by ourselves.
-    // try {
-    //   TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    //   JsonFormat.merge(
-    //       "{\n"
-    //       + "  \"repeatedInt32\": [12345,]\n"
-    //       + "}", builder);
-    //   fail("Exception is expected.");
-    // } catch (IOException e) {
-    //   // Expected.
-    // }
+    try {
+      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+      mergeFromJson(
+         "{\n"
+         + "  \"repeatedInt32\": [12345,]\n"
+         + "}", builder);
+      assertWithMessage("IOException expected.").fail();
+     } catch (IOException e) {
+       // Expected.
+     }
   }
 
   @Test

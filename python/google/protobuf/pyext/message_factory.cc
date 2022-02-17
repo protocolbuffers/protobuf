@@ -30,6 +30,7 @@
 
 #include <unordered_map>
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <google/protobuf/dynamic_message.h>
@@ -252,20 +253,24 @@ PyTypeObject PyMessageFactory_Type = {
     sizeof(PyMessageFactory),  // tp_basicsize
     0,                         // tp_itemsize
     message_factory::Dealloc,  // tp_dealloc
-    0,                         // tp_print
-    nullptr,                   // tp_getattr
-    nullptr,                   // tp_setattr
-    nullptr,                   // tp_compare
-    nullptr,                   // tp_repr
-    nullptr,                   // tp_as_number
-    nullptr,                   // tp_as_sequence
-    nullptr,                   // tp_as_mapping
-    nullptr,                   // tp_hash
-    nullptr,                   // tp_call
-    nullptr,                   // tp_str
-    nullptr,                   // tp_getattro
-    nullptr,                   // tp_setattro
-    nullptr,                   // tp_as_buffer
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
+    nullptr,  // tp_getattr
+    nullptr,  // tp_setattr
+    nullptr,  // tp_compare
+    nullptr,  // tp_repr
+    nullptr,  // tp_as_number
+    nullptr,  // tp_as_sequence
+    nullptr,  // tp_as_mapping
+    nullptr,  // tp_hash
+    nullptr,  // tp_call
+    nullptr,  // tp_str
+    nullptr,  // tp_getattro
+    nullptr,  // tp_setattro
+    nullptr,  // tp_as_buffer
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,  // tp_flags
     "A static Message Factory",                                     // tp_doc
     message_factory::GcTraverse,  // tp_traverse

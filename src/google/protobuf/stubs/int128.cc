@@ -173,12 +173,13 @@ std::ostream& operator<<(std::ostream& o, const uint128& b) {
 
   // Add the requisite padding.
   std::streamsize width = o.width(0);
-  if (width > rep.size()) {
+  auto repSize = static_cast<std::streamsize>(rep.size());
+  if (width > repSize) {
     if ((flags & std::ios::adjustfield) == std::ios::left) {
-      rep.append(width - rep.size(), o.fill());
+      rep.append(width - repSize, o.fill());
     } else {
-      rep.insert(static_cast<std::string::size_type>(0),
-                 width - rep.size(), o.fill());
+      rep.insert(static_cast<std::string::size_type>(0), width - repSize,
+                 o.fill());
     }
   }
 

@@ -953,13 +953,35 @@ static VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
 
 /*
  * call-seq:
- *     MessageClass.decode(data) => message
+ *     MessageClass.decode(data, options) => message
  *
  * Decodes the given data (as a string containing bytes in protocol buffers wire
  * format) under the interpretration given by this message class's definition
  * and returns a message object with the corresponding field values.
+ * @param options [Hash] options for the decoder
+ *  recursion_limit: set to maximum decoding depth for message (default is 64)
  */
-static VALUE Message_decode(VALUE klass, VALUE data) {
+static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
+  VALUE data = argv[0];
+  int options = 0;
+
+  if (argc < 1 || argc > 2) {
+    rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
+  }
+
+  if (argc == 2) {
+    VALUE hash_args = argv[1];
+    if (TYPE(hash_args) != T_HASH) {
+      rb_raise(rb_eArgError, "Expected hash arguments.");
+    }
+
+    VALUE depth = rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
+
+    if (depth != Qnil && TYPE(depth) == T_FIXNUM) {
+      options |= UPB_DECODE_MAXDEPTH(FIX2INT(depth));
+    }
+  }
+
   if (TYPE(data) != T_STRING) {
     rb_raise(rb_eArgError, "Expected string for binary protobuf data.");
   }
@@ -969,7 +991,7 @@ static VALUE Message_decode(VALUE klass, VALUE data) {
 
   upb_DecodeStatus status = upb_Decode(
       RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
-      upb_MessageDef_MiniTable(msg->msgdef), NULL, 0, Arena_get(msg->arena));
+      upb_MessageDef_MiniTable(msg->msgdef), NULL, options, Arena_get(msg->arena));
 
   if (status != kUpb_DecodeStatus_Ok) {
     rb_raise(cParseError, "Error occurred during parsing");
@@ -1043,24 +1065,43 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
 
 /*
  * call-seq:
- *     MessageClass.encode(msg) => bytes
+ *     MessageClass.encode(msg, options) => bytes
  *
  * Encodes the given message object to its serialized form in protocol buffers
  * wire format.
+ * @param options [Hash] options for the encoder
+ *  recursion_limit: set to maximum encoding depth for message (default is 64)
  */
-static VALUE Message_encode(VALUE klass, VALUE msg_rb) {
-  Message* msg = ruby_to_Message(msg_rb);
+static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
+  Message* msg = ruby_to_Message(argv[0]);
+  int options = 0;
   const char* data;
   size_t size;
 
-  if (CLASS_OF(msg_rb) != klass) {
+  if (CLASS_OF(argv[0]) != klass) {
     rb_raise(rb_eArgError, "Message of wrong type.");
   }
 
-  upb_Arena* arena = upb_Arena_New();
+  if (argc < 1 || argc > 2) {
+    rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
+  }
 
-  data = upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->msgdef), 0, arena,
-                    &size);
+  if (argc == 2) {
+    VALUE hash_args = argv[1];
+    if (TYPE(hash_args) != T_HASH) {
+      rb_raise(rb_eArgError, "Expected hash arguments.");
+    }
+    VALUE depth = rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
+
+    if (depth != Qnil && TYPE(depth) == T_FIXNUM) {
+      options |= UPB_DECODE_MAXDEPTH(FIX2INT(depth));
+    }
+  }
+
+  upb_Arena *arena = upb_Arena_New();
+
+  data = upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->msgdef),
+                    options, arena, &size);
 
   if (data) {
     VALUE ret = rb_str_new(data, size);
@@ -1186,8 +1227,8 @@ VALUE build_class_from_descriptor(VALUE descriptor) {
   rb_define_method(klass, "to_s", Message_inspect, 0);
   rb_define_method(klass, "[]", Message_index, 1);
   rb_define_method(klass, "[]=", Message_index_set, 2);
-  rb_define_singleton_method(klass, "decode", Message_decode, 1);
-  rb_define_singleton_method(klass, "encode", Message_encode, 1);
+  rb_define_singleton_method(klass, "decode", Message_decode, -1);
+  rb_define_singleton_method(klass, "encode", Message_encode, -1);
   rb_define_singleton_method(klass, "decode_json", Message_decode_json, -1);
   rb_define_singleton_method(klass, "encode_json", Message_encode_json, -1);
   rb_define_singleton_method(klass, "descriptor", Message_descriptor, 0);

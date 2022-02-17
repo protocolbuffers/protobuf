@@ -667,7 +667,7 @@ class EnumDescriptor(_NestedDescriptorBase):
     full_name (str): Full name of the type, including package name
       and any enclosing type(s).
 
-    values (list[EnumValueDescriptors]): List of the values
+    values (list[EnumValueDescriptor]): List of the values
       in this enum.
     values_by_name (dict(str, EnumValueDescriptor)): Same as :attr:`values`,
       but indexed by the "name" field of each EnumValueDescriptor.

@@ -423,7 +423,7 @@ class Message
                 }
                 break;
             case GPBType::GROUP:
-                trigger_error("Not implemented.", E_ERROR);
+                trigger_error("Not implemented.", E_USER_ERROR);
                 break;
             case GPBType::MESSAGE:
                 if ($field->isMap()) {

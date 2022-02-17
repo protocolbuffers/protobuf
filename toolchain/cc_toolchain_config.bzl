@@ -108,7 +108,7 @@ def _impl(ctx):
       enabled = (ctx.attr.sysroot != ""),
       flag_sets = [
           flag_set(
-              actions = all_link_actions,
+              actions = all_link_actions + all_compile_actions,
               flag_groups = [
                   flag_group(
                       flags = [

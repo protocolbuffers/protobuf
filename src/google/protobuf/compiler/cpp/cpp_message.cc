@@ -1082,7 +1082,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
       // We maintain the invariant that for a submessage x, has_x() returning
       // true implies that x_ is not null. By giving this information to the
       // compiler, we allow it to eliminate unnecessary null checks later on.
-      format("  PROTOBUF_ASSUME(!value || $name$_ != nullptr);\n");
+      format("  PROTOBUF_ASSUME(!value || $field$ != nullptr);\n");
     }
 
     format(
@@ -1097,13 +1097,13 @@ void MessageGenerator::GenerateSingularFieldHasBits(
     if (IsLazy(field, options_, scc_analyzer_)) {
       format(
           "inline bool $classname$::_internal_has_$name$() const {\n"
-          "  return !$name$_.IsCleared();\n"
+          "  return !$field$.IsCleared();\n"
           "}\n");
     } else {
       format(
           "inline bool $classname$::_internal_has_$name$() const {\n"
           "  return this != internal_default_instance() "
-          "&& $name$_ != nullptr;\n"
+          "&& $field$ != nullptr;\n"
           "}\n");
     }
     format(
@@ -2219,7 +2219,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
       // Don't use the top bit because that is for unused fields.
       format("::_pbi::kInvalidFieldOffsetTag");
     } else {
-      format("PROTOBUF_FIELD_OFFSET($classtype$, $1$_)", FieldName(field));
+      format("PROTOBUF_FIELD_OFFSET($classtype$, $1$)", FieldMemberName(field));
     }
 
     // Some information about a field is in the pdproto profile. The profile is
@@ -2227,11 +2227,6 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
     // offset of the field, so that the information is available when
     // reflectively accessing the field at run time.
     //
-    // Embed whether the field is used to the MSB of the offset.
-    if (!IsFieldUsed(field, options_)) {
-      format(" | 0x80000000u  // unused\n");
-    }
-
     // Embed whether the field is eagerly verified lazy or inlined string to the
     // LSB of the offset.
     if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
@@ -2420,16 +2415,16 @@ void MessageGenerator::GenerateConstructorBody(io::Printer* printer,
   std::string pod_template;
   if (copy_constructor) {
     pod_template =
-        "::memcpy(&$first$_, &from.$first$_,\n"
-        "  static_cast<size_t>(reinterpret_cast<char*>(&$last$_) -\n"
-        "  reinterpret_cast<char*>(&$first$_)) + sizeof($last$_));\n";
+        "::memcpy(&$first$, &from.$first$,\n"
+        "  static_cast<size_t>(reinterpret_cast<char*>(&$last$) -\n"
+        "  reinterpret_cast<char*>(&$first$)) + sizeof($last$));\n";
   } else {
     pod_template =
         "::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(\n"
-        "    reinterpret_cast<char*>(&$first$_) - "
+        "    reinterpret_cast<char*>(&$first$) - "
         "reinterpret_cast<char*>(this)),\n"
-        "    0, static_cast<size_t>(reinterpret_cast<char*>(&$last$_) -\n"
-        "    reinterpret_cast<char*>(&$first$_)) + sizeof($last$_));\n";
+        "    0, static_cast<size_t>(reinterpret_cast<char*>(&$last$) -\n"
+        "    reinterpret_cast<char*>(&$first$)) + sizeof($last$));\n";
   }
 
   for (int i = 0; i < optimized_order_.size(); ++i) {
@@ -2445,9 +2440,9 @@ void MessageGenerator::GenerateConstructorBody(io::Printer* printer,
     if (it != runs.end() && it->second > 1) {
       // Use a memset, then skip run_length fields.
       const size_t run_length = it->second;
-      const std::string first_field_name = FieldName(field);
+      const std::string first_field_name = FieldMemberName(field);
       const std::string last_field_name =
-          FieldName(optimized_order_[i + run_length - 1]);
+          FieldMemberName(optimized_order_[i + run_length - 1]);
 
       format.Set("first", first_field_name);
       format.Set("last", last_field_name);
@@ -2814,10 +2809,10 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
             .GenerateMessageClearingCode(printer);
       } else {
         format(
-            "::memset(&$1$_, 0, static_cast<size_t>(\n"
-            "    reinterpret_cast<char*>(&$2$_) -\n"
-            "    reinterpret_cast<char*>(&$1$_)) + sizeof($2$_));\n",
-            FieldName(memset_start), FieldName(memset_end));
+            "::memset(&$1$, 0, static_cast<size_t>(\n"
+            "    reinterpret_cast<char*>(&$2$) -\n"
+            "    reinterpret_cast<char*>(&$1$)) + sizeof($2$));\n",
+            FieldMemberName(memset_start), FieldMemberName(memset_end));
       }
     }
 
@@ -2971,20 +2966,20 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
       if (it != runs.end() && it->second > 1) {
         // Use a memswap, then skip run_length fields.
         const size_t run_length = it->second;
-        const std::string first_field_name = FieldName(field);
+        const std::string first_field_name = FieldMemberName(field);
         const std::string last_field_name =
-            FieldName(optimized_order_[i + run_length - 1]);
+            FieldMemberName(optimized_order_[i + run_length - 1]);
 
         format.Set("first", first_field_name);
         format.Set("last", last_field_name);
 
         format(
             "::PROTOBUF_NAMESPACE_ID::internal::memswap<\n"
-            "    PROTOBUF_FIELD_OFFSET($classname$, $last$_)\n"
-            "    + sizeof($classname$::$last$_)\n"
-            "    - PROTOBUF_FIELD_OFFSET($classname$, $first$_)>(\n"
-            "        reinterpret_cast<char*>(&$first$_),\n"
-            "        reinterpret_cast<char*>(&other->$first$_));\n");
+            "    PROTOBUF_FIELD_OFFSET($classname$, $last$)\n"
+            "    + sizeof($classname$::$last$)\n"
+            "    - PROTOBUF_FIELD_OFFSET($classname$, $first$)>(\n"
+            "        reinterpret_cast<char*>(&$first$),\n"
+            "        reinterpret_cast<char*>(&other->$first$));\n");
 
         i += run_length - 1;
         // ++i at the top of the loop.
