@@ -486,6 +486,20 @@ inline std::string MakeDefaultName(const FieldDescriptor* field) {
          "_";
 }
 
+// Semantically distinct from MakeDefaultName in that it gives the C++ code
+// referencing a default field from the message scope, rather than just the
+// variable name.
+// For example, declarations of default variables should always use just
+// MakeDefaultName to produce code like:
+// Type _i_give_permission_to_break_this_code_default_field_;
+//
+// Code that references these should use MakeDefaultFieldName, in case the field
+// exists at some nested level like:
+// internal_container_._i_give_permission_to_break_this_code_default_field_;
+inline std::string MakeDefaultFieldName(const FieldDescriptor* field) {
+  return MakeDefaultName(field);
+}
+
 bool IsAnyMessage(const FileDescriptor* descriptor, const Options& options);
 bool IsAnyMessage(const Descriptor* descriptor, const Options& options);
 

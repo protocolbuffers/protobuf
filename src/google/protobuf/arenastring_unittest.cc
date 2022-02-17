@@ -55,8 +55,6 @@ namespace protobuf {
 
 using internal::ArenaStringPtr;
 
-using EmptyDefault = ArenaStringPtr::EmptyDefault;
-
 const internal::LazyString nonempty_default{{{"default", 7}}, {nullptr}};
 const std::string* empty_default = &internal::GetEmptyString();
 
