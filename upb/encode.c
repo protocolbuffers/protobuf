@@ -550,12 +550,14 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
     }
   }
 
-  const upb_MiniTable_Field* f = &m->fields[m->field_count];
-  const upb_MiniTable_Field* first = &m->fields[0];
-  while (f != first) {
-    f--;
-    if (encode_shouldencode(e, msg, m->subs, f)) {
-      encode_field(e, msg, m->subs, f);
+  if (m->field_count) {
+    const upb_MiniTable_Field* f = &m->fields[m->field_count];
+    const upb_MiniTable_Field* first = &m->fields[0];
+    while (f != first) {
+      f--;
+      if (encode_shouldencode(e, msg, m->subs, f)) {
+        encode_field(e, msg, m->subs, f);
+      }
     }
   }
 
