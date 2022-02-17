@@ -316,7 +316,7 @@ namespace Google.Protobuf
                 else
                 {
                     var sourceField = field.Accessor.GetValue(source);
-                    if (field.FieldType == FieldType.Message)
+                    if (field.FieldType == FieldType.Message && !field.MessageType.IsWrapperType)
                     {
                         if (options.ReplaceMessageFields)
                         {

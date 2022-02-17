@@ -432,5 +432,33 @@ namespace Google.Protobuf
             Assert.IsNotNull(destination.Payload);
         }
 
+        [Test]
+        public void MergeWrapperFields()
+        {
+            // Instantiate a destination with wrapper-based field types.
+            var destination = new TestWellKnownTypes()
+            {
+                StringField = "Hello",
+                Int32Field = 12,
+                Int64Field = 24,
+                BoolField = null,
+            };
+
+            // Set up a targeted update.
+            var source = new TestWellKnownTypes()
+            {
+                StringField = "Hi",
+                Int64Field = null
+            };
+
+            Merge(new FieldMaskTree().AddFieldPath("string_field").AddFieldPath("int64_field"),
+                source, destination, new FieldMask.MergeOptions(), false);
+
+            // Make sure only the targeted fields were updated.
+            Assert.AreEqual("Hi", destination.StringField);
+            Assert.AreEqual(12, destination.Int32Field);
+            Assert.Null(destination.Int64Field);
+            Assert.Null(destination.BoolField);
+        }
     }
 }
