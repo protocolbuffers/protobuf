@@ -47,9 +47,9 @@ register_toolchains("@system_python//:python_toolchain")
 
 http_archive(
     name = "rules_fuzzing",
-    sha256 = "e1b54211f7cee604194db080a8765220d3ef5db2a873fded429ce13e74d93a6b",
-    strip_prefix = "rules_fuzzing-4bafba51ffd9d418d236adb61de36fda1a90e764",
-    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/4bafba51ffd9d418d236adb61de36fda1a90e764.zip"],
+    sha256 = "23bb074064c6f488d12044934ab1b0631e8e6898d5cf2f6bde087adb01111573",
+    strip_prefix = "rules_fuzzing-0.3.1",
+    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.3.1.zip"],
 )
 
 load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")

@@ -1,5 +1,0 @@
-This directory contains code that interfaces upb with external C/C++
-libraries.  Right now this is:
-
- * upb/bindings/lua:
-     a Lua extension that exposes upb to Lua programs via the Lua C API.

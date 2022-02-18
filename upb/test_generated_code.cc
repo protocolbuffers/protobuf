@@ -32,7 +32,7 @@
 
 #include "gtest/gtest.h"
 #include "src/google/protobuf/test_messages_proto3.upb.h"
-#include "tests/test.upb.h"
+#include "upb/test.upb.h"
 #include "upb/upb.hpp"
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))

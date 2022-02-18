@@ -23,8 +23,29 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 py_binary(
     name = "amalgamate",
     srcs = ["amalgamate.py"],
     visibility = ["//:__pkg__"],
+)
+
+# py_proto_library() is private rule, only intended for internal use by upb.
+# Hopefully py_proto_library() will eventually be availble in rules_proto or
+# another upstream package.
+bzl_library(
+    name = "py_proto_library_bzl",
+    srcs = ["py_proto_library.bzl"],
+)
+
+bzl_library(
+    name = "upb_proto_library_bzl",
+    srcs = ["upb_proto_library.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@bazel_skylib//lib:paths",
+        "@bazel_tools//tools/cpp:toolchain_utils.bzl",
+        "@rules_proto//proto:defs",
+    ],
 )
