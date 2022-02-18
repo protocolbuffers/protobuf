@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/cpp/cpp_generator.h>
+#include <google/protobuf/compiler/cpp/generator.h>
 #include <google/protobuf/compiler/java/java_generator.h>
 #include <google/protobuf/compiler/java/java_kotlin_generator.h>
 #include <google/protobuf/compiler/js/js_generator.h>

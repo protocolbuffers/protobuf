@@ -1,21 +1,21 @@
 set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/code_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/command_line_interface.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_enum.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_enum_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_extension.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_file.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_helpers.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_map_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_parse_function_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_primitive_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_service.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_string_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/enum.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/enum_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/extension.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/file.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/helpers.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/map_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/message.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/message_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/padding_optimizer.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/parse_function_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/primitive_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/service.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/string_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_doc_comment.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_enum.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_enum_field.cc
@@ -102,10 +102,10 @@ set(libprotoc_files
 set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/code_generator.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/command_line_interface.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_file.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_generator.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_helpers.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_names.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/file.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/helpers.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/names.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_doc_comment.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_generator.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_names.h

@@ -21,10 +21,10 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\arena_impl.h" include
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\arenastring.h" include\google\protobuf\arenastring.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\code_generator.h" include\google\protobuf\compiler\code_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\command_line_interface.h" include\google\protobuf\compiler\command_line_interface.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\cpp_file.h" include\google\protobuf\compiler\cpp\cpp_file.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\cpp_generator.h" include\google\protobuf\compiler\cpp\cpp_generator.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\cpp_helpers.h" include\google\protobuf\compiler\cpp\cpp_helpers.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\cpp_names.h" include\google\protobuf\compiler\cpp\cpp_names.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\file.h" include\google\protobuf\compiler\cpp\file.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\generator.h" include\google\protobuf\compiler\cpp\generator.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\helpers.h" include\google\protobuf\compiler\cpp\helpers.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\names.h" include\google\protobuf\compiler\cpp\names.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_doc_comment.h" include\google\protobuf\compiler\csharp\csharp_doc_comment.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_generator.h" include\google\protobuf\compiler\csharp\csharp_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_names.h" include\google\protobuf\compiler\csharp\csharp_names.h
