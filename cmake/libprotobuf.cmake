@@ -125,7 +125,6 @@ if(protobuf_BUILD_SHARED_LIBS)
 endif()
 set_target_properties(libprotobuf PROPERTIES
     VERSION ${protobuf_VERSION}
-    # Use only the first SO version component for compatibility with Makefile emitted SONAME.
     SOVERSION 30
     OUTPUT_NAME ${LIB_PREFIX}protobuf
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
