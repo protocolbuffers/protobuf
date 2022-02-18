@@ -498,7 +498,7 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
 #if defined(_WIN32)
   if (ret == 0 && sb.st_mode & S_IFDIR) {
     last_error_message_ = "Input file is a directory.";
-    return NULL;
+    return nullptr;
   }
 #else
   if (ret == 0 && S_ISDIR(sb.st_mode)) {

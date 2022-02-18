@@ -1739,8 +1739,8 @@ TEST_F(RepeatedFieldIteratorTest, ConstIteration) {
   EXPECT_EQ(1, *iter++);
   EXPECT_EQ(2, *iter);
   ++iter;
-  EXPECT_TRUE(proto_array_.end() == iter);
-  EXPECT_EQ(2, *(proto_array_.end() - 1));
+  EXPECT_TRUE(const_proto_array.end() == iter);
+  EXPECT_EQ(2, *(const_proto_array.end() - 1));
 }
 
 TEST_F(RepeatedFieldIteratorTest, Mutation) {
@@ -1784,6 +1784,7 @@ TEST_F(RepeatedPtrFieldIteratorTest, ConstIteration) {
   const RepeatedPtrField<std::string>& const_proto_array = proto_array_;
   RepeatedPtrField<std::string>::const_iterator iter =
       const_proto_array.begin();
+  iter - const_proto_array.cbegin();
   EXPECT_EQ("foo", *iter);
   ++iter;
   EXPECT_EQ("bar", *(iter++));
