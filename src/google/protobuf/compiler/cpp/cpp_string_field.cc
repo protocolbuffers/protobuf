@@ -530,9 +530,11 @@ void StringFieldGenerator::GenerateConstinitInitializer(
     return;
   }
   if (descriptor_->default_value_string().empty()) {
-    format("$name$_(&::$proto_ns$::internal::fixed_address_empty_string)");
+    format(
+        "$name$_(&::_pbi::fixed_address_empty_string, "
+        "::_pbi::ConstantInitialized{})");
   } else {
-    format("$name$_(nullptr)");
+    format("$name$_(nullptr, ::_pbi::ConstantInitialized{})");
   }
 }
 

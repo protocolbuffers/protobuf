@@ -34,6 +34,7 @@
 
 #include <google/protobuf/descriptor_database.h>
 
+#include <algorithm>
 #include <set>
 
 #include <google/protobuf/descriptor.pb.h>
@@ -1026,6 +1027,22 @@ bool MergedDescriptorDatabase::FindAllExtensionNumbers(
   return success;
 }
 
+
+bool MergedDescriptorDatabase::FindAllFileNames(
+    std::vector<std::string>* output) {
+  bool implemented = false;
+  for (DescriptorDatabase* source : sources_) {
+    std::vector<std::string> source_output;
+    if (source->FindAllFileNames(&source_output)) {
+      output->reserve(output->size() + source_output.size());
+      for (auto& source : source_output) {
+        output->push_back(std::move(source));
+      }
+      implemented = true;
+    }
+  }
+  return implemented;
+}
 
 }  // namespace protobuf
 }  // namespace google

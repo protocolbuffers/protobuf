@@ -87,6 +87,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Remove GetPointer() and explicit nullptr defaults.
   * add proto_h flag for speeding up large builds
   * Add missing overload for reference wrapped fields.
+  * Add MergedDescriptorDatabase::FindAllFileNames()
 
 
 2022-01-28 version 3.19.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)

@@ -228,8 +228,8 @@ static_assert(std::is_trivial<TaggedStringPtr>::value,
 // held, and the mutable and ownership invariants for each type.
 struct PROTOBUF_EXPORT ArenaStringPtr {
   ArenaStringPtr() = default;
-  explicit constexpr ArenaStringPtr(
-      ExplicitlyConstructedArenaString* default_value)
+  constexpr ArenaStringPtr(ExplicitlyConstructedArenaString* default_value,
+                           ConstantInitialized)
       : tagged_ptr_(default_value) {}
 
   // Called from generated code / reflection runtime only. Resets value to point

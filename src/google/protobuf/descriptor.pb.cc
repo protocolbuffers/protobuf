@@ -42,9 +42,9 @@ constexpr FileDescriptorProto::FileDescriptorProto(
   , extension_()
   , public_dependency_()
   , weak_dependency_()
-  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , package_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , syntax_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , package_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , syntax_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , options_(nullptr)
   , source_code_info_(nullptr){}
 struct FileDescriptorProtoDefaultTypeInternal {
@@ -93,7 +93,7 @@ constexpr DescriptorProto::DescriptorProto(
   , oneof_decl_()
   , reserved_range_()
   , reserved_name_()
-  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , options_(nullptr){}
 struct DescriptorProtoDefaultTypeInternal {
   constexpr DescriptorProtoDefaultTypeInternal()
@@ -118,11 +118,11 @@ struct ExtensionRangeOptionsDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
 constexpr FieldDescriptorProto::FieldDescriptorProto(
     ::_pbi::ConstantInitialized)
-  : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , extendee_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , type_name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , default_value_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , json_name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  : name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , extendee_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , type_name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , default_value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , json_name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , options_(nullptr)
   , number_(0)
   , oneof_index_(0)
@@ -142,7 +142,7 @@ struct FieldDescriptorProtoDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
 constexpr OneofDescriptorProto::OneofDescriptorProto(
     ::_pbi::ConstantInitialized)
-  : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  : name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , options_(nullptr){}
 struct OneofDescriptorProtoDefaultTypeInternal {
   constexpr OneofDescriptorProtoDefaultTypeInternal()
@@ -171,7 +171,7 @@ constexpr EnumDescriptorProto::EnumDescriptorProto(
   : value_()
   , reserved_range_()
   , reserved_name_()
-  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , options_(nullptr){}
 struct EnumDescriptorProtoDefaultTypeInternal {
   constexpr EnumDescriptorProtoDefaultTypeInternal()
@@ -184,7 +184,7 @@ struct EnumDescriptorProtoDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
 constexpr EnumValueDescriptorProto::EnumValueDescriptorProto(
     ::_pbi::ConstantInitialized)
-  : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  : name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , options_(nullptr)
   , number_(0){}
 struct EnumValueDescriptorProtoDefaultTypeInternal {
@@ -199,7 +199,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 constexpr ServiceDescriptorProto::ServiceDescriptorProto(
     ::_pbi::ConstantInitialized)
   : method_()
-  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , options_(nullptr){}
 struct ServiceDescriptorProtoDefaultTypeInternal {
   constexpr ServiceDescriptorProtoDefaultTypeInternal()
@@ -212,9 +212,9 @@ struct ServiceDescriptorProtoDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
 constexpr MethodDescriptorProto::MethodDescriptorProto(
     ::_pbi::ConstantInitialized)
-  : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , input_type_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , output_type_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  : name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , input_type_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , output_type_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , options_(nullptr)
   , client_streaming_(false)
   , server_streaming_(false){}
@@ -230,16 +230,16 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 constexpr FileOptions::FileOptions(
     ::_pbi::ConstantInitialized)
   : uninterpreted_option_()
-  , java_package_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , java_outer_classname_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , go_package_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , objc_class_prefix_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , csharp_namespace_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , swift_prefix_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , php_class_prefix_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , php_namespace_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , php_metadata_namespace_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , ruby_package_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , java_package_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , java_outer_classname_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , go_package_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , objc_class_prefix_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , csharp_namespace_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , swift_prefix_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , php_class_prefix_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , php_namespace_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , php_metadata_namespace_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , ruby_package_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , java_multiple_files_(false)
   , java_generate_equals_and_hash_(false)
   , java_string_check_utf8_(false)
@@ -366,7 +366,7 @@ struct MethodOptionsDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
 constexpr UninterpretedOption_NamePart::UninterpretedOption_NamePart(
     ::_pbi::ConstantInitialized)
-  : name_part_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  : name_part_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , is_extension_(false){}
 struct UninterpretedOption_NamePartDefaultTypeInternal {
   constexpr UninterpretedOption_NamePartDefaultTypeInternal()
@@ -380,9 +380,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 constexpr UninterpretedOption::UninterpretedOption(
     ::_pbi::ConstantInitialized)
   : name_()
-  , identifier_value_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , string_value_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , aggregate_value_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , identifier_value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , string_value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , aggregate_value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , positive_int_value_(uint64_t{0u})
   , negative_int_value_(int64_t{0})
   , double_value_(0){}
@@ -402,8 +402,8 @@ constexpr SourceCodeInfo_Location::SourceCodeInfo_Location(
   , span_()
   , _span_cached_byte_size_(0)
   , leading_detached_comments_()
-  , leading_comments_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , trailing_comments_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
+  , leading_comments_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , trailing_comments_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
 struct SourceCodeInfo_LocationDefaultTypeInternal {
   constexpr SourceCodeInfo_LocationDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -429,7 +429,7 @@ constexpr GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
     ::_pbi::ConstantInitialized)
   : path_()
   , _path_cached_byte_size_(0)
-  , source_file_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , source_file_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , begin_(0)
   , end_(0){}
 struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {

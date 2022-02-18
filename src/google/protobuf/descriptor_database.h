@@ -381,6 +381,10 @@ class PROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
                                std::vector<int>* output) override;
 
 
+  // This function is best-effort. Returns true if at least one underlying
+  // DescriptorDatabase returns true.
+  bool FindAllFileNames(std::vector<std::string>* output) override;
+
  private:
   std::vector<DescriptorDatabase*> sources_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MergedDescriptorDatabase);

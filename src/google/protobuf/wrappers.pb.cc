@@ -107,7 +107,7 @@ struct BoolValueDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 BoolValueDefaultTypeInternal _BoolValue_default_instance_;
 constexpr StringValue::StringValue(
     ::_pbi::ConstantInitialized)
-  : value_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
+  : value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
 struct StringValueDefaultTypeInternal {
   constexpr StringValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -119,7 +119,7 @@ struct StringValueDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StringValueDefaultTypeInternal _StringValue_default_instance_;
 constexpr BytesValue::BytesValue(
     ::_pbi::ConstantInitialized)
-  : value_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
+  : value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
 struct BytesValueDefaultTypeInternal {
   constexpr BytesValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}

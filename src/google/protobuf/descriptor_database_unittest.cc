@@ -799,6 +799,13 @@ TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
   }
 }
 
+TEST_F(MergedDescriptorDatabaseTest, FindAllFileNames) {
+  std::vector<std::string> files;
+  EXPECT_TRUE(forward_merged_.FindAllFileNames(&files));
+  EXPECT_THAT(files, ::testing::UnorderedElementsAre("foo.proto", "bar.proto",
+                                                     "baz.proto", "baz.proto"));
+}
+
 
 }  // anonymous namespace
 }  // namespace protobuf

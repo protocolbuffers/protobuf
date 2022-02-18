@@ -26,7 +26,7 @@ constexpr Type::Type(
   : fields_()
   , oneofs_()
   , options_()
-  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , source_context_(nullptr)
   , syntax_(0)
 {}
@@ -42,10 +42,10 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 constexpr Field::Field(
     ::_pbi::ConstantInitialized)
   : options_()
-  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , type_url_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , json_name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , default_value_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , type_url_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , json_name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , default_value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , kind_(0)
 
   , cardinality_(0)
@@ -66,7 +66,7 @@ constexpr Enum::Enum(
     ::_pbi::ConstantInitialized)
   : enumvalue_()
   , options_()
-  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , source_context_(nullptr)
   , syntax_(0)
 {}
@@ -82,7 +82,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 constexpr EnumValue::EnumValue(
     ::_pbi::ConstantInitialized)
   : options_()
-  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , number_(0){}
 struct EnumValueDefaultTypeInternal {
   constexpr EnumValueDefaultTypeInternal()
@@ -95,7 +95,7 @@ struct EnumValueDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDefaultTypeInternal _EnumValue_default_instance_;
 constexpr Option::Option(
     ::_pbi::ConstantInitialized)
-  : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  : name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , value_(nullptr){}
 struct OptionDefaultTypeInternal {
   constexpr OptionDefaultTypeInternal()

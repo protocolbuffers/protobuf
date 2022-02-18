@@ -26,8 +26,8 @@ constexpr Api::Api(
   : methods_()
   , options_()
   , mixins_()
-  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , version_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , version_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , source_context_(nullptr)
   , syntax_(0)
 {}
@@ -43,9 +43,9 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 constexpr Method::Method(
     ::_pbi::ConstantInitialized)
   : options_()
-  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , request_type_url_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , response_type_url_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , request_type_url_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , response_type_url_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , request_streaming_(false)
   , response_streaming_(false)
   , syntax_(0)
@@ -61,8 +61,8 @@ struct MethodDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDefaultTypeInternal _Method_default_instance_;
 constexpr Mixin::Mixin(
     ::_pbi::ConstantInitialized)
-  : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , root_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
+  : name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , root_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
 struct MixinDefaultTypeInternal {
   constexpr MixinDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
