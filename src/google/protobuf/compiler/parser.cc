@@ -221,12 +221,8 @@ bool Parser::Consume(const char* text, const char* error) {
 }
 
 bool Parser::Consume(const char* text) {
-  if (TryConsume(text)) {
-    return true;
-  } else {
-    AddError("Expected \"" + std::string(text) + "\".");
-    return false;
-  }
+  std::string error = "Expected \"" + std::string(text) + "\".";
+  return Consume(text, error.c_str());
 }
 
 bool Parser::ConsumeIdentifier(std::string* output, const char* error) {
