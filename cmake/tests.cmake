@@ -157,7 +157,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/plugin_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/parser_unittest.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_plugin_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/python/plugin_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/descriptor_database_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/descriptor_unittest.cc

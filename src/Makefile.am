@@ -93,8 +93,8 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/php/php_generator.h                   \
   google/protobuf/compiler/plugin.h                              \
   google/protobuf/compiler/plugin.pb.h                           \
-  google/protobuf/compiler/python/python_generator.h             \
-  google/protobuf/compiler/python/python_pyi_generator.h         \
+  google/protobuf/compiler/python/generator.h                    \
+  google/protobuf/compiler/python/pyi_generator.h                \
   google/protobuf/compiler/ruby/ruby_generator.h                 \
   google/protobuf/descriptor.h                                   \
   google/protobuf/descriptor.pb.h                                \
@@ -470,10 +470,10 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/php/php_generator.cc                \
   google/protobuf/compiler/plugin.cc                           \
   google/protobuf/compiler/plugin.pb.cc                        \
-  google/protobuf/compiler/python/python_generator.cc          \
-  google/protobuf/compiler/python/python_helpers.cc            \
-  google/protobuf/compiler/python/python_helpers.h             \
-  google/protobuf/compiler/python/python_pyi_generator.cc      \
+  google/protobuf/compiler/python/generator.cc                 \
+  google/protobuf/compiler/python/helpers.cc                   \
+  google/protobuf/compiler/python/helpers.h                    \
+  google/protobuf/compiler/python/pyi_generator.cc             \
   google/protobuf/compiler/ruby/ruby_generator.cc              \
   google/protobuf/compiler/scc.h                               \
   google/protobuf/compiler/subprocess.cc                       \
@@ -758,7 +758,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/mock_code_generator.h               \
   google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc \
   google/protobuf/compiler/parser_unittest.cc                  \
-  google/protobuf/compiler/python/python_plugin_unittest.cc    \
+  google/protobuf/compiler/python/plugin_unittest.cc           \
   google/protobuf/compiler/ruby/ruby_generator_unittest.cc     \
   google/protobuf/descriptor_database_unittest.cc              \
   google/protobuf/descriptor_unittest.cc                       \

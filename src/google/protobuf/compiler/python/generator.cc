@@ -42,7 +42,7 @@
 // performance-minded Python code leverage the fast C++ implementation
 // directly.
 
-#include <google/protobuf/compiler/python/python_generator.h>
+#include <google/protobuf/compiler/python/generator.h>
 
 #include <algorithm>
 #include <limits>
@@ -54,8 +54,8 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/compiler/python/python_helpers.h>
-#include <google/protobuf/compiler/python/python_pyi_generator.h>
+#include <google/protobuf/compiler/python/helpers.h>
+#include <google/protobuf/compiler/python/pyi_generator.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.h>
