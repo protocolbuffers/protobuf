@@ -146,6 +146,10 @@ typedef enum {
   upb_ExtMode_IsMessageSet = 2,   // MessageSet message.
   upb_ExtMode_IsMessageSet_ITEM =
       3,  // MessageSet item (temporary only, see decode.c)
+
+  // During table building we steal a bit to indicate that the message is a map
+  // entry.  *Only* used during table building!
+  upb_ExtMode_IsMapEntry = 4,
 } upb_ExtMode;
 
 /* MessageSet wire format is:

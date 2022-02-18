@@ -81,6 +81,11 @@ target_link_libraries(upb
   fastdecode
   port
   /third_party/utf8_range)
+add_library(mini_table
+  ../upb/mini_table.c
+  ../upb/mini_table.h)
+target_link_libraries(mini_table
+  upb)
 add_library(fastdecode
   ../upb/decode.h
   ../upb/decode_internal.h

@@ -266,20 +266,20 @@ std::string SizeLg2(const protobuf::FieldDescriptor* field) {
 std::string SizeRep(const protobuf::FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
-      return "upb_FieldRep_Pointer";
+      return "kUpb_FieldRep_Pointer";
     case protobuf::FieldDescriptor::CPPTYPE_ENUM:
     case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
     case protobuf::FieldDescriptor::CPPTYPE_INT32:
     case protobuf::FieldDescriptor::CPPTYPE_UINT32:
-      return "upb_FieldRep_4Byte";
+      return "kUpb_FieldRep_4Byte";
     case protobuf::FieldDescriptor::CPPTYPE_BOOL:
-      return "upb_FieldRep_1Byte";
+      return "kUpb_FieldRep_1Byte";
     case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
     case protobuf::FieldDescriptor::CPPTYPE_INT64:
     case protobuf::FieldDescriptor::CPPTYPE_UINT64:
-      return "upb_FieldRep_8Byte";
+      return "kUpb_FieldRep_8Byte";
     case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return "upb_FieldRep_StringView";
+      return "kUpb_FieldRep_StringView";
     default:
       fprintf(stderr, "Unexpected type");
       abort();
@@ -1136,10 +1136,10 @@ void WriteField(const protobuf::FieldDescriptor* field,
   std::string rep;
   if (field->is_map()) {
     mode = "kUpb_FieldMode_Map";
-    rep = "upb_FieldRep_Pointer";
+    rep = "kUpb_FieldRep_Pointer";
   } else if (field->is_repeated()) {
     mode = "kUpb_FieldMode_Array";
-    rep = "upb_FieldRep_Pointer";
+    rep = "kUpb_FieldRep_Pointer";
   } else {
     mode = "kUpb_FieldMode_Scalar";
     rep = SizeRep(field);
@@ -1153,7 +1153,7 @@ void WriteField(const protobuf::FieldDescriptor* field,
     absl::StrAppend(&mode, " | upb_LabelFlags_IsExtension");
   }
 
-  output("{$0, $1, $2, $3, $4, $5 | ($6 << upb_FieldRep_Shift)}",
+  output("{$0, $1, $2, $3, $4, $5 | ($6 << kUpb_FieldRep_Shift)}",
          field->number(), offset, presence, submsg_index,
          TableDescriptorType(field), mode, rep);
 }

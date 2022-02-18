@@ -1397,35 +1397,35 @@ static void fill_fieldlayout(upb_MiniTable_Field* field,
 
   if (upb_FieldDef_IsMap(f)) {
     field->mode =
-        kUpb_FieldMode_Map | (upb_FieldRep_Pointer << upb_FieldRep_Shift);
+        kUpb_FieldMode_Map | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift);
   } else if (upb_FieldDef_IsRepeated(f)) {
     field->mode =
-        kUpb_FieldMode_Array | (upb_FieldRep_Pointer << upb_FieldRep_Shift);
+        kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift);
   } else {
     /* Maps descriptor type -> elem_size_lg2.  */
     static const uint8_t sizes[] = {
         -1,                      /* invalid descriptor type */
-        upb_FieldRep_8Byte,      /* DOUBLE */
-        upb_FieldRep_4Byte,      /* FLOAT */
-        upb_FieldRep_8Byte,      /* INT64 */
-        upb_FieldRep_8Byte,      /* UINT64 */
-        upb_FieldRep_4Byte,      /* INT32 */
-        upb_FieldRep_8Byte,      /* FIXED64 */
-        upb_FieldRep_4Byte,      /* FIXED32 */
-        upb_FieldRep_1Byte,      /* BOOL */
-        upb_FieldRep_StringView, /* STRING */
-        upb_FieldRep_Pointer,    /* GROUP */
-        upb_FieldRep_Pointer,    /* MESSAGE */
-        upb_FieldRep_StringView, /* BYTES */
-        upb_FieldRep_4Byte,      /* UINT32 */
-        upb_FieldRep_4Byte,      /* ENUM */
-        upb_FieldRep_4Byte,      /* SFIXED32 */
-        upb_FieldRep_8Byte,      /* SFIXED64 */
-        upb_FieldRep_4Byte,      /* SINT32 */
-        upb_FieldRep_8Byte,      /* SINT64 */
+        kUpb_FieldRep_8Byte,      /* DOUBLE */
+        kUpb_FieldRep_4Byte,      /* FLOAT */
+        kUpb_FieldRep_8Byte,      /* INT64 */
+        kUpb_FieldRep_8Byte,      /* UINT64 */
+        kUpb_FieldRep_4Byte,      /* INT32 */
+        kUpb_FieldRep_8Byte,      /* FIXED64 */
+        kUpb_FieldRep_4Byte,      /* FIXED32 */
+        kUpb_FieldRep_1Byte,      /* BOOL */
+        kUpb_FieldRep_StringView, /* STRING */
+        kUpb_FieldRep_Pointer,    /* GROUP */
+        kUpb_FieldRep_Pointer,    /* MESSAGE */
+        kUpb_FieldRep_StringView, /* BYTES */
+        kUpb_FieldRep_4Byte,      /* UINT32 */
+        kUpb_FieldRep_4Byte,      /* ENUM */
+        kUpb_FieldRep_4Byte,      /* SFIXED32 */
+        kUpb_FieldRep_8Byte,      /* SFIXED64 */
+        kUpb_FieldRep_4Byte,      /* SINT32 */
+        kUpb_FieldRep_8Byte,      /* SINT64 */
     };
     field->mode = kUpb_FieldMode_Scalar |
-                  (sizes[field->descriptortype] << upb_FieldRep_Shift);
+                  (sizes[field->descriptortype] << kUpb_FieldRep_Shift);
   }
 
   if (upb_FieldDef_IsPacked(f)) {

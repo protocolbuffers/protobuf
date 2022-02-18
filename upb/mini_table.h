@@ -119,11 +119,19 @@ upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
                                    upb_MiniTablePlatform platform,
                                    upb_Arena* arena, upb_Status* status);
 void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
-                                 const upb_MiniTable_Field* field,
+                                 upb_MiniTable_Field* field,
                                  const upb_MiniTable* sub);
 void upb_MiniTable_SetSubEnum(upb_MiniTable* table,
-                              const upb_MiniTable_Field* field,
+                              upb_MiniTable_Field* field,
                               const upb_MiniTable_Enum* sub);
+
+// Special-case functions for MessageSet layout and map entries.
+upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
+                                             upb_Arena* arena);
+upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
+                                           upb_FieldType value_type,
+                                           upb_MiniTablePlatform platform,
+                                           upb_Arena* arena);
 
 // Like upb_MiniTable_Build(), but the user provides a buffer of layout data so
 // it can be reused from call to call, avoiding repeated realloc()/free().
