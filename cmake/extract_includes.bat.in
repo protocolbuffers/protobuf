@@ -19,6 +19,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\api.pb.h" include\goo
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\arena.h" include\google\protobuf\arena.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\arena_impl.h" include\google\protobuf\arena_impl.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\arenastring.h" include\google\protobuf\arenastring.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\arenaz_sampler.h" include\google\protobuf\arenaz_sampler.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\code_generator.h" include\google\protobuf\compiler\code_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\command_line_interface.h" include\google\protobuf\compiler\command_line_interface.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\cpp_file.h" include\google\protobuf\compiler\cpp\cpp_file.h

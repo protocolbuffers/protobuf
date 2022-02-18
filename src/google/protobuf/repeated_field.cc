@@ -55,6 +55,16 @@ template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<float>;
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<double>;
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedPtrField<std::string>;
 
+namespace internal {
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<bool>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<int32_t>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<uint32_t>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<int64_t>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<uint64_t>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<float>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<double>;
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 

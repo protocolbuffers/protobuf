@@ -60,7 +60,7 @@ class ScopedPythonPtr {
   // This function must be called with a reference that you own.
   //   this->reset(this->get()) is wrong!
   //   this->reset(this->release()) is OK.
-  PyObjectStruct* reset(PyObjectStruct* p = NULL) {
+  PyObjectStruct* reset(PyObjectStruct* p = nullptr) {
     Py_XDECREF(ptr_);
     ptr_ = p;
     return ptr_;

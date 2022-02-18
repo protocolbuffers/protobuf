@@ -576,32 +576,23 @@ template <class T>
 bool CheckAndGetInteger(PyObject* arg, T* value) {
   // This effectively defines an integer as "an object that can be cast as
   // an integer and can be used as an ordinal number".
-  // This definition includes everything that implements numbers.Integral
+  // This definition includes everything with a valid __index__() implementation
   // and shouldn't cast the net too wide.
-  if (PROTOBUF_PREDICT_FALSE(!PyIndex_Check(arg))) {
-    FormatTypeError(arg, "int, long");
+  if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
+      PROTOBUF_PREDICT_FALSE(!PyIndex_Check(arg))) {
+    FormatTypeError(arg, "int");
     return false;
   }
 
-  // Now we have an integral number so we can safely use PyLong_ functions.
-  // We need to treat the signed and unsigned cases differently in case arg is
-  // holding a value above the maximum for signed longs.
+  PyObject* arg_py_int = PyNumber_Index(arg);
+  if (PyErr_Occurred()) {
+    // Propagate existing error.
+    return false;
+  }
+
   if (std::numeric_limits<T>::min() == 0) {
     // Unsigned case.
-    unsigned PY_LONG_LONG ulong_result;
-    if (PyLong_Check(arg)) {
-      ulong_result = PyLong_AsUnsignedLongLong(arg);
-    } else {
-      // Unlike PyLong_AsLongLong, PyLong_AsUnsignedLongLong is very
-      // picky about the exact type.
-      PyObject* casted = PyNumber_Long(arg);
-      if (PROTOBUF_PREDICT_FALSE(casted == nullptr)) {
-        // Propagate existing error.
-        return false;
-      }
-      ulong_result = PyLong_AsUnsignedLongLong(casted);
-      Py_DECREF(casted);
-    }
+    unsigned PY_LONG_LONG ulong_result = PyLong_AsUnsignedLongLong(arg_py_int);
     if (VerifyIntegerCastAndRange<T, unsigned PY_LONG_LONG>(arg,
                                                             ulong_result)) {
       *value = static_cast<T>(ulong_result);
@@ -610,30 +601,13 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
     }
   } else {
     // Signed case.
-    PY_LONG_LONG long_result;
-    PyNumberMethods *nb;
-    if ((nb = arg->ob_type->tp_as_number) != nullptr && nb->nb_int != nullptr) {
-      // PyLong_AsLongLong requires it to be a long or to have an __int__()
-      // method.
-      long_result = PyLong_AsLongLong(arg);
-    } else {
-      // Valid subclasses of numbers.Integral should have a __long__() method
-      // so fall back to that.
-      PyObject* casted = PyNumber_Long(arg);
-      if (PROTOBUF_PREDICT_FALSE(casted == nullptr)) {
-        // Propagate existing error.
-        return false;
-      }
-      long_result = PyLong_AsLongLong(casted);
-      Py_DECREF(casted);
-    }
+    PY_LONG_LONG long_result = PyLong_AsLongLong(arg);
     if (VerifyIntegerCastAndRange<T, PY_LONG_LONG>(arg, long_result)) {
       *value = static_cast<T>(long_result);
     } else {
       return false;
     }
   }
-
   return true;
 }
 
@@ -646,8 +620,9 @@ template bool CheckAndGetInteger<uint64>(PyObject*, uint64*);
 
 bool CheckAndGetDouble(PyObject* arg, double* value) {
   *value = PyFloat_AsDouble(arg);
-  if (PROTOBUF_PREDICT_FALSE(*value == -1 && PyErr_Occurred())) {
-    FormatTypeError(arg, "int, long, float");
+  if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
+      PROTOBUF_PREDICT_FALSE(*value == -1 && PyErr_Occurred())) {
+    FormatTypeError(arg, "int, float");
     return false;
   }
   return true;
@@ -664,8 +639,9 @@ bool CheckAndGetFloat(PyObject* arg, float* value) {
 
 bool CheckAndGetBool(PyObject* arg, bool* value) {
   long long_value = PyLong_AsLong(arg);  // NOLINT
-  if (long_value == -1 && PyErr_Occurred()) {
-    FormatTypeError(arg, "int, long, bool");
+  if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
+      (long_value == -1 && PyErr_Occurred())) {
+    FormatTypeError(arg, "int, bool");
     return false;
   }
   *value = static_cast<bool>(long_value);

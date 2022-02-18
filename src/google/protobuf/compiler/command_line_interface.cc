@@ -197,7 +197,7 @@ bool TryCreateParentDirectory(const std::string& prefix,
 bool GetProtocAbsolutePath(std::string* path) {
 #ifdef _WIN32
   char buffer[MAX_PATH];
-  int len = GetModuleFileNameA(NULL, buffer, MAX_PATH);
+  int len = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
 #elif defined(__APPLE__)
   char buffer[PATH_MAX];
   int len = 0;
@@ -212,7 +212,7 @@ bool GetProtocAbsolutePath(std::string* path) {
   char buffer[PATH_MAX];
   size_t len = PATH_MAX;
   int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
-  if (sysctl(mib, 4, &buffer, &len, NULL, 0) != 0) {
+  if (sysctl(mib, 4, &buffer, &len, nullptr, 0) != 0) {
     len = 0;
   }
 #else
@@ -2307,7 +2307,7 @@ bool CommandLineInterface::GeneratePluginOutput(
     if (!output_file.insertion_point().empty()) {
       std::string filename = output_file.name();
       // Open a file for insert.
-      // We reset current_output to NULL first so that the old file is closed
+      // We reset current_output to nullptr first so that the old file is closed
       // before the new one is opened.
       current_output.reset();
       current_output.reset(
@@ -2316,7 +2316,7 @@ bool CommandLineInterface::GeneratePluginOutput(
               output_file.generated_code_info()));
     } else if (!output_file.name().empty()) {
       // Starting a new file.  Open it.
-      // We reset current_output to NULL first so that the old file is closed
+      // We reset current_output to nullptr first so that the old file is closed
       // before the new one is opened.
       current_output.reset();
       current_output.reset(generator_context->Open(output_file.name()));
