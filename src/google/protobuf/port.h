@@ -57,6 +57,13 @@ inline void SizedArrayDelete(void* p, size_t size) {
   ::operator delete[](p);
 #endif
 }
+
+// Tag type used to invoke the constinit constructor overload of some classes.
+// Such constructors are internal implementation details of the library.
+struct ConstantInitialized {
+  explicit ConstantInitialized() = default;
+};
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

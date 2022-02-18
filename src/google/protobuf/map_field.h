@@ -338,7 +338,8 @@ class PROTOBUF_EXPORT MapFieldBase {
   // It uses a linker initialized mutex, so it is not compatible with regular
   // runtime instances.
   // Except in MSVC, where we can't have a constinit mutex.
-  explicit constexpr MapFieldBase(ConstantInitialized)
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr MapFieldBase(ConstantInitialized)
       : arena_(nullptr),
         repeated_field_(nullptr),
         mutex_(GOOGLE_PROTOBUF_LINKER_INITIALIZED),
@@ -497,7 +498,8 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   // This constructor is for constant initialized global instances.
   // It uses a linker initialized mutex, so it is not compatible with regular
   // runtime instances.
-  explicit constexpr TypeDefinedMapFieldBase(ConstantInitialized tag)
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr TypeDefinedMapFieldBase(ConstantInitialized tag)
       : MapFieldBase(tag) {}
   explicit TypeDefinedMapFieldBase(Arena* arena) : MapFieldBase(arena) {}
 
@@ -567,7 +569,8 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   // This constructor is for constant initialized global instances.
   // It uses a linker initialized mutex, so it is not compatible with regular
   // runtime instances.
-  explicit constexpr MapField(ConstantInitialized tag)
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr MapField(ConstantInitialized tag)
       : TypeDefinedMapFieldBase<Key, T>(tag), impl_() {}
   explicit MapField(Arena* arena)
       : TypeDefinedMapFieldBase<Key, T>(arena), impl_(arena) {}

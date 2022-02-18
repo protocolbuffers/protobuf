@@ -24,7 +24,7 @@ PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 constexpr Version::Version(
     ::_pbi::ConstantInitialized)
-  : suffix_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  : suffix_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , major_(0)
   , minor_(0)
   , patch_(0){}
@@ -41,7 +41,7 @@ constexpr CodeGeneratorRequest::CodeGeneratorRequest(
     ::_pbi::ConstantInitialized)
   : file_to_generate_()
   , proto_file_()
-  , parameter_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , parameter_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , compiler_version_(nullptr){}
 struct CodeGeneratorRequestDefaultTypeInternal {
   constexpr CodeGeneratorRequestDefaultTypeInternal()
@@ -54,9 +54,9 @@ struct CodeGeneratorRequestDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
 constexpr CodeGeneratorResponse_File::CodeGeneratorResponse_File(
     ::_pbi::ConstantInitialized)
-  : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , insertion_point_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , content_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  : name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , insertion_point_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , content_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , generated_code_info_(nullptr){}
 struct CodeGeneratorResponse_FileDefaultTypeInternal {
   constexpr CodeGeneratorResponse_FileDefaultTypeInternal()
@@ -70,7 +70,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 constexpr CodeGeneratorResponse::CodeGeneratorResponse(
     ::_pbi::ConstantInitialized)
   : file_()
-  , error_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , error_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , supported_features_(uint64_t{0u}){}
 struct CodeGeneratorResponseDefaultTypeInternal {
   constexpr CodeGeneratorResponseDefaultTypeInternal()

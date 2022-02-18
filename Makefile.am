@@ -575,11 +575,7 @@ java_EXTRA_DIST=                                                                
   java/kotlin-lite/process-lite-sources-build.xml                                  \
   java/kotlin-lite/src/main/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt\
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/ExtendableMessageLiteExtensionsTest.kt\
-  java/kotlin-lite/src/test/kotlin/com/google/protobuf/Proto3LiteTest.kt           \
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/Proto2LiteTest.kt           \
-  java/kotlin-lite/src/test/proto/com/google/protobuf/evil_names_proto2.proto      \
-  java/kotlin-lite/src/test/proto/com/google/protobuf/evil_names_proto3.proto      \
-  java/kotlin-lite/src/test/proto/com/google/protobuf/multiple_files_proto3.proto  \
   java/lite.md                                                                     \
   java/lite/BUILD                                                                  \
   java/lite/generate-sources-build.xml                                             \

@@ -27,8 +27,8 @@ namespace _pbi = _pb::internal;
 PROTOBUF_NAMESPACE_OPEN
 constexpr Any::Any(
     ::_pbi::ConstantInitialized)
-  : type_url_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , value_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  : type_url_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
+  , value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , _any_metadata_(&type_url_, &value_){}
 struct AnyDefaultTypeInternal {
   constexpr AnyDefaultTypeInternal()

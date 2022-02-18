@@ -84,12 +84,6 @@ namespace internal {
 
 class SwapFieldHelper;
 
-// Tag type used to invoke the constinit constructor overload of some classes.
-// Such constructors are internal implementation details of the library.
-struct ConstantInitialized {
-  explicit ConstantInitialized() = default;
-};
-
 // See parse_context.h for explanation
 class ParseContext;
 
