@@ -32,36 +32,36 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_context.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_doc_comment.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_field_lite.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_lite.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_extension.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_extension_lite.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_file.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator_factory.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_helpers.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_kotlin_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field_lite.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message_builder.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message_builder_lite.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message_field_lite.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message_lite.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_name_resolver.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_primitive_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_primitive_field_lite.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_service.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_shared_code_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_string_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_string_field_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/context.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/doc_comment.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/enum.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/enum_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/enum_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/enum_field_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/enum_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/extension.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/extension_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/file.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/generator_factory.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/helpers.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/kotlin_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/map_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/map_field_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/message.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/message_builder.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/message_builder_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/message_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/message_field_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/message_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/name_resolver.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/primitive_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/primitive_field_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/service.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/shared_code_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/string_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/string_field_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/js_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types_embed.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum.cc
@@ -110,9 +110,9 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_generator.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_names.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_options.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_kotlin_generator.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_names.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/kotlin_generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/names.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/js_generator.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_generator.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_helpers.h
