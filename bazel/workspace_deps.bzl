@@ -1,5 +1,8 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+
+# Any users of upb must define the protobuf repo must depend explicitly on
+# protobuf prior to loading and calling upb_deps().
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 def upb_deps():
