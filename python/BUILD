@@ -36,6 +36,8 @@ load(
     "py_wheel",
 )
 
+licenses(["notice"])
+
 cc_binary(
     name = "message",
     srcs = [
@@ -68,16 +70,19 @@ cc_binary(
     # the module.
     linkopts = select({
         "@platforms//os:linux": ["-Wl,--version-script,$(location :version_script.lds)"],
-        "@platforms//os:macos": ["-Wl,-exported_symbol", "-Wl,_PyInit__message"],
+        "@platforms//os:macos": [
+            "-Wl,-exported_symbol",
+            "-Wl,_PyInit__message",
+        ],
     }),
     linkshared = True,
     linkstatic = True,
     deps = [
         ":version_script.lds",
+        "//:descriptor_upb_proto_reflection",
         "//:reflection",
         "//:textformat",
         "//:upb",
-        "//:descriptor_upb_proto_reflection",
         "//upb/util:compare",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
@@ -90,11 +95,11 @@ cc_binary(
     srcs = [
         "api_implementation.c",
     ],
+    linkshared = True,
+    linkstatic = True,
     # Enable once linker script is available.
     #copts = ["-fvisibility=hidden"],
     deps = ["@system_python//:python_headers"],
-    linkshared = True,
-    linkstatic = True,
 )
 
 # Copy the extensions into the location recognized by Python.
@@ -136,14 +141,14 @@ py_test(
     srcs = [
         "minimal_test.py",
     ],
-    deps = [
-        "//python:message_ext",
-        "@com_google_protobuf//:python_srcs",
-        "@com_google_protobuf//:python_common_test_protos",
-        "@com_google_protobuf//:python_specific_test_protos",
-    ],
     imports = ["."],
     legacy_create_init = False,
+    deps = [
+        "//python:message_ext",
+        "@com_google_protobuf//:python_common_test_protos",
+        "@com_google_protobuf//:python_specific_test_protos",
+        "@com_google_protobuf//:python_srcs",
+    ],
 )
 
 py_proto_library(
@@ -168,13 +173,13 @@ py_wheel(
     name = "binary_wheel",
     abi = "abi3",
     distribution = "protobuf",
-    python_tag = "cp36",
     # TODO(https://github.com/protocolbuffers/upb/issues/502): we need to make
     # this a select() that is calculated from the platform we are actually
     # building on.
     platform = "manylinux2014_x86_64",
-    version = "4.20.0",
+    python_tag = "cp36",
     strip_path_prefixes = ["python/"],
+    version = "4.20.0",
     deps = [
         ":extension_files",
         ":well_known_proto_pb2",
