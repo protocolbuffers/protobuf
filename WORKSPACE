@@ -1,9 +1,25 @@
 workspace(name = "upb")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//bazel:workspace_deps.bzl", "upb_deps")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("//bazel:workspace_defs.bzl", "system_python")
 
+git_repository(
+    name = "com_google_protobuf",
+    commit = "2f91da585e96a7efe43505f714f03c7716a94ecb",
+    remote = "https://github.com/protocolbuffers/protobuf.git",
+    #strip_prefix = "protobuf-3.19.1",
+    patches = [
+        "//bazel:protobuf.patch",
+    ],
+    patch_cmds = [
+        "rm python/google/protobuf/__init__.py",
+        "rm python/google/protobuf/pyext/__init__.py",
+        "rm python/google/protobuf/internal/__init__.py",
+    ]
+)
+
+load("//bazel:workspace_deps.bzl", "upb_deps")
 upb_deps()
 
 http_archive(

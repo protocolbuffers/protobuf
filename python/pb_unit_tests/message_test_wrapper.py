@@ -46,8 +46,12 @@ message_test.MessageTest.testFloatPrinting_proto3.__unittest_expecting_failure__
 message_test.Proto3Test.testCopyFromBadType.__unittest_expecting_failure__ = True
 message_test.Proto3Test.testMergeFromBadType.__unittest_expecting_failure__ = True
 
+message_test.MessageTest.testPickleRepeatedScalarContainer_proto2.__unittest_expecting_failure__ = True
+message_test.MessageTest.testPickleRepeatedScalarContainer_proto3.__unittest_expecting_failure__ = True
 message_test.Proto2Test.testPythonicInit.__unittest_expecting_failure__ = True
 message_test.Proto2Test.test_documentation.__unittest_expecting_failure__ = True
+message_test.Proto3Test.testModifyMapEntryWhileIterating.__unittest_expecting_failure__ = True
+message_test.Proto3Test.testProto3Optional.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(module=message_test, verbosity=2)

@@ -40,5 +40,7 @@ descriptor_test.MakeDescriptorTest.testJsonName.__unittest_expecting_failure__ =
 # Our error message is better.
 descriptor_test.NewDescriptorTest.testImmutableCppDescriptor.__unittest_expecting_failure__ = True
 
+descriptor_test.DescriptorTest.testGetDebugString.__unittest_expecting_failure__ = True
+
 if __name__ == '__main__':
   unittest.main(module=descriptor_test, verbosity=2)
