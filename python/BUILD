@@ -36,7 +36,7 @@ load(
     "py_wheel",
 )
 
-license(["notice"])
+licenses(["notice"])
 
 cc_binary(
     name = "message",

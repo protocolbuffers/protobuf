@@ -4,7 +4,7 @@ load(
     "upb_proto_reflection_library",
 )
 
-license(["notice"])
+licenses(["notice"])
 
 # Def to Proto
 
