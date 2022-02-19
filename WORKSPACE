@@ -1,9 +1,9 @@
 workspace(name = "upb")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//bazel:workspace_deps.bzl", "upb_deps")
 load("//bazel:workspace_defs.bzl", "system_python")
 
-load("//bazel:workspace_deps.bzl", "upb_deps")
 upb_deps()
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
