@@ -1,5 +1,6 @@
-
 load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
+
+licenses(["notice"])
 
 cc_fuzz_test(
     name = "file_descriptor_parsenew_fuzzer",
