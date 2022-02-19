@@ -216,8 +216,10 @@ static void upb_util_FindUnsetInMessage(upb_FindContext* ctx,
         // Append the contents of the stack to the out array, then
         // NULL-terminate.
         upb_FieldPathVector_Reserve(ctx, &ctx->out_fields, ctx->stack.size + 2);
-        memcpy(&ctx->out_fields.path[ctx->out_fields.size], ctx->stack.path,
-               ctx->stack.size * sizeof(*ctx->stack.path));
+        if (ctx->stack.size) {
+          memcpy(&ctx->out_fields.path[ctx->out_fields.size], ctx->stack.path,
+                 ctx->stack.size * sizeof(*ctx->stack.path));
+        }
         ctx->out_fields.size += ctx->stack.size;
         ctx->out_fields.path[ctx->out_fields.size++] =
             (upb_FieldPathEntry){.field = f};

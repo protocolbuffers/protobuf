@@ -1,3 +1,4 @@
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
@@ -11,14 +12,10 @@ def upb_deps():
     )
 
     maybe(
-        http_archive,
+        git_repository,
         name = "com_google_protobuf",
-        sha256 = "87407cd28e7a9c95d9f61a098a53cf031109d451a7763e7dd1253abf8b4df422",
-        strip_prefix = "protobuf-3.19.1",
-        urls = [
-            "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.19.1.tar.gz",
-            "https://github.com/protocolbuffers/protobuf/archive/v3.19.1.tar.gz",
-        ],
+        commit = "2f91da585e96a7efe43505f714f03c7716a94ecb",
+        remote = "https://github.com/protocolbuffers/protobuf.git",
         patches = [
             "//bazel:protobuf.patch",
         ],
@@ -44,13 +41,4 @@ def upb_deps():
         name = "bazel_skylib",
         strip_prefix = "bazel-skylib-main",
         urls = ["https://github.com/bazelbuild/bazel-skylib/archive/main.tar.gz"],
-    )
-
-    maybe(
-        http_archive,
-        name = "zlib",
-        build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
-        sha256 = "629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff",
-        strip_prefix = "zlib-1.2.11",
-        url = "https://github.com/madler/zlib/archive/v1.2.11.tar.gz",
     )

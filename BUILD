@@ -37,7 +37,6 @@ load(
     "upb_proto_library_copts",
     "upb_proto_reflection_library",
 )
-load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 
 licenses(["notice"])
 
@@ -343,15 +342,6 @@ cc_test(
         "//:table",
         "//:upb",
         "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_fuzz_test(
-    name = "file_descriptor_parsenew_fuzzer",
-    srcs = ["upb/file_descriptor_parsenew_fuzzer.cc"],
-    deps = [
-        "//:descriptor_upb_proto",
-        "//:upb",
     ],
 )
 

@@ -6,6 +6,9 @@ load("//bazel:workspace_defs.bzl", "system_python")
 
 upb_deps()
 
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+protobuf_deps()
+
 http_archive(
     name = "lua",
     build_file = "//bazel:lua.BUILD",
