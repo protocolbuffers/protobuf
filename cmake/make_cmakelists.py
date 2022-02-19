@@ -217,6 +217,9 @@ class WorkspaceFileFunctions(object):
   def upb_deps(self):
     pass
 
+  def protobuf_deps(self):
+    pass
+
   def rules_fuzzing_dependencies(self):
     pass
 
