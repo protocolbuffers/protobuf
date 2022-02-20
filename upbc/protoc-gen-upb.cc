@@ -312,7 +312,7 @@ bool HasNonZeroDefault(const protobuf::FieldDescriptor* field) {
       return field->default_value_enum()->number() != 0;
   }
   ABSL_ASSERT(false);
-  return "XXX";
+  return false;
 }
 
 std::string FieldDefault(const protobuf::FieldDescriptor* field) {
