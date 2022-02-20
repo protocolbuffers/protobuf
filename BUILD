@@ -113,9 +113,9 @@ cc_library(
     name = "fastdecode",
     srcs = [
         "upb/decode.h",
-        "upb/decode_internal.h",
         "upb/decode_fast.c",
         "upb/decode_fast.h",
+        "upb/decode_internal.h",
         "upb/msg.h",
         "upb/msg_internal.h",
         "upb/upb_internal.h",
@@ -262,31 +262,34 @@ upb_proto_library(
     testonly = 1,
     deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
 )
+
 cc_test(
     name = "msg_test",
     srcs = ["upb/msg_test.cc"],
     deps = [
-        "@com_google_googletest//:gtest_main",
-        ":msg_test_upb_proto_reflection",
         ":json",
+        ":msg_test_upb_proto_reflection",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
 proto_library(
     name = "msg_test_proto",
+    testonly = 1,
     srcs = ["upb/msg_test.proto"],
     deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
 )
 
 upb_proto_reflection_library(
     name = "msg_test_upb_proto_reflection",
+    testonly = 1,
     deps = [":msg_test_proto"],
 )
 
 proto_library(
     name = "test_cpp_proto",
     srcs = ["upb/test_cpp.proto"],
-    deps = ["@com_google_protobuf//:timestamp_proto"]
+    deps = ["@com_google_protobuf//:timestamp_proto"],
 )
 
 upb_proto_library(
