@@ -190,6 +190,7 @@ cc_library(
     name = "textformat",
     srcs = [
         "upb/text_encode.c",
+        "upb/upb_internal.h",
     ],
     hdrs = [
         "upb/text_encode.h",
@@ -207,6 +208,7 @@ cc_library(
     srcs = [
         "upb/json_decode.c",
         "upb/json_encode.c",
+        "upb/upb_internal.h",
     ],
     hdrs = [
         "upb/json_decode.h",
