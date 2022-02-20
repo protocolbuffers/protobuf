@@ -112,6 +112,7 @@ target_link_libraries(reflection
   upb)
 add_library(textformat
   ../upb/text_encode.c
+  ../upb/upb_internal.h
   ../upb/text_encode.h)
 target_link_libraries(textformat
   port
@@ -119,6 +120,7 @@ target_link_libraries(textformat
 add_library(json
   ../upb/json_decode.c
   ../upb/json_encode.c
+  ../upb/upb_internal.h
   ../upb/json_decode.h
   ../upb/json_encode.h)
 target_link_libraries(json
