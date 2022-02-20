@@ -92,17 +92,11 @@ UPB_INLINE bool upb_StringView_IsEqual(upb_StringView a, upb_StringView b) {
 
 /** upb_*Int* conversion routines ********************************************/
 
-UPB_INLINE int32_t upb_Int32_FromI(int v) {
-  return (int32_t)v;
-}
+UPB_INLINE int32_t upb_Int32_FromI(int v) { return (int32_t)v; }
 
-UPB_INLINE int64_t upb_Int64_FromLL(long long v) {
-  return (int64_t)v;
-}
+UPB_INLINE int64_t upb_Int64_FromLL(long long v) { return (int64_t)v; }
 
-UPB_INLINE uint32_t upb_UInt32_FromU(unsigned v) {
-  return (uint32_t)v;
-}
+UPB_INLINE uint32_t upb_UInt32_FromU(unsigned v) { return (uint32_t)v; }
 
 UPB_INLINE uint64_t upb_UInt64_FromULL(unsigned long long v) {
   return (uint64_t)v;
