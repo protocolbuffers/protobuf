@@ -304,6 +304,16 @@ upb_proto_reflection_library(
     deps = ["test_cpp_proto"],
 )
 
+upb_proto_library(
+    name = "timestamp_upb_proto",
+    deps = ["@com_google_protobuf//:timestamp_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "timestamp_upb_proto_reflection",
+    deps = ["@com_google_protobuf//:timestamp_proto"],
+)
+
 cc_test(
     name = "test_cpp",
     srcs = ["upb/test_cpp.cc"],
@@ -311,6 +321,8 @@ cc_test(
     deps = [
         ":test_cpp_upb_proto",
         ":test_cpp_upb_proto_reflection",
+        ":timestamp_upb_proto",
+        ":timestamp_upb_proto_reflection",
         "//:json",
         "//:port",
         "//:reflection",
