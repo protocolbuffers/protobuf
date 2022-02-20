@@ -421,7 +421,7 @@ class FileLayout {
       const protobuf::OneofDescriptor* oneof = m->oneof_decl(i);
       e.StartOneof();
       for (int j = 0; j < oneof->field_count(); j++) {
-        const protobuf::FieldDescriptor* f = oneof->field(i);
+        const protobuf::FieldDescriptor* f = oneof->field(j);
         e.PutOneofField(f->number());
       }
     }
@@ -429,6 +429,9 @@ class FileLayout {
     upb::Status status;
     upb_MiniTable* ret = upb_MiniTable_Build(str.data(), str.size(), platform_,
                                              arena_.ptr(), status.ptr());
+    if (!ret) {
+      fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
+    }
     assert(ret);
     return ret;
   }

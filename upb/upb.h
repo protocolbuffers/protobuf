@@ -228,7 +228,7 @@ UPB_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
   void* ret = upb_Arena_Malloc(a, size);
 
   if (ret && oldsize > 0) {
-    memcpy(ret, ptr, oldsize);
+    memcpy(ret, ptr, UPB_MIN(oldsize, size));
   }
 
   return ret;

@@ -134,7 +134,7 @@ class MessageLayout {
   Size size_;
   int hasbit_count_;
   int hasbit_bytes_;
-  int required_count_;
+  int required_count_ = 0;
 };
 
 // Returns fields in order of "hotness", eg. how frequently they appear in

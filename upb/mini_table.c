@@ -138,7 +138,7 @@ static char* upb_MtDataEncoder_Put(upb_MtDataEncoder* e, char* ptr, char ch) {
 
 static char* upb_MtDataEncoder_PutBase92Varint(upb_MtDataEncoder* e, char* ptr,
                                                uint32_t val, int min, int max) {
-  int shift = _upb_Log2Ceiling(max - min + 1);
+  int shift = _upb_Log2Ceiling(upb_FromBase92(max) - upb_FromBase92(min) + 1);
   uint32_t mask = (1 << shift) - 1;
   do {
     uint32_t bits = val & mask;
@@ -338,7 +338,7 @@ static const char* upb_MiniTable_DecodeBase92Varint(upb_MtDecoder* d,
       return ptr;
     }
     ch = *ptr++;
-    shift += _upb_Log2Ceiling(max - min);
+    shift += _upb_Log2Ceiling(upb_FromBase92(max) - upb_FromBase92(min));
   }
 }
 
@@ -550,22 +550,19 @@ static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d, uint32_t sub_count) {
 }
 
 static void upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr) {
-  d->table = upb_Arena_Malloc(d->arena, sizeof(*d->table));
-
   // Buffer length is an upper bound on the number of fields. We will return
   // what we don't use.
   size_t first_size = d->end - ptr;
   d->fields = upb_Arena_Malloc(d->arena, sizeof(*d->fields) * first_size);
-  if (!d->fields) {
-    upb_MtDecoder_ErrorFormat(d, "Out of memory");
-    UPB_UNREACHABLE();
-  }
+  upb_MtDecoder_CheckOutOfMemory(d, d->fields);
+
   d->table->field_count = 0;
   d->table->fields = d->fields;
 
   uint64_t msg_modifiers = 0;
   uint32_t last_field_number = 0;
   uint32_t sub_count = 0;
+  bool saw_skip = false;
 
   while (ptr < d->end) {
     char ch = *ptr++;
@@ -581,6 +578,10 @@ static void upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr) {
       ptr = upb_MtDecoder_DecodeOneofs(d, ptr);
     } else if (kUpb_EncodedValue_MinSkip <= ch &&
                ch <= kUpb_EncodedValue_MaxSkip) {
+      if (!saw_skip) {
+        d->table->dense_below = d->table->field_count;
+        saw_skip = true;
+      }
       uint32_t skip;
       ptr = upb_MiniTable_DecodeBase92Varint(d, ptr, ch,
                                              kUpb_EncodedValue_MinSkip,
@@ -590,7 +591,12 @@ static void upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr) {
     }
   }
 
+  if (!saw_skip) {
+    d->table->dense_below = d->table->field_count;
+  }
+
   // Return unused memory from fields array.
+  assert(d->table->field_count <= first_size);
   upb_Arena_Realloc(d->arena, d->fields, sizeof(*d->fields) * first_size,
                     sizeof(*d->fields) * d->table->field_count);
   upb_MtDecoder_AllocateSubs(d, sub_count);
@@ -766,12 +772,22 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
           },
       .arena = arena,
       .status = status,
+      .table = upb_Arena_Malloc(arena, sizeof(*decoder.table)),
   };
 
   if (UPB_SETJMP(decoder.err)) {
     decoder.table = NULL;
     goto done;
   }
+
+  upb_MtDecoder_CheckOutOfMemory(&decoder, decoder.table);
+
+  decoder.table->size = 0;
+  decoder.table->field_count = 0;
+  decoder.table->ext = upb_ExtMode_NonExtendable;
+  decoder.table->dense_below = 0;
+  decoder.table->table_mask = 0;
+  decoder.table->required_count = 0;
 
   upb_MtDecoder_Parse(&decoder, data);
   upb_MtDecoder_AssignHasbits(decoder.table);
@@ -833,6 +849,8 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
   ret->dense_below = 2;
   ret->table_mask = 0;
   ret->required_count = 0;
+  ret->subs = subs;
+  ret->fields = fields;
   return ret;
 }
 
@@ -851,7 +869,7 @@ void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
                                  upb_MiniTable_Field* field,
                                  const upb_MiniTable* sub) {
   assert((uintptr_t)table->fields <= (uintptr_t)field &&
-         (uintptr_t)field < table->fields + table->field_count);
+         (uintptr_t)field < (uintptr_t)(table->fields + table->field_count));
   if (sub->ext & upb_ExtMode_IsMapEntry) {
     field->mode =
         (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift) | kUpb_FieldMode_Map;
@@ -864,7 +882,7 @@ void upb_MiniTable_SetSubEnum(upb_MiniTable* table,
                               upb_MiniTable_Field* field,
                               const upb_MiniTable_Enum* sub) {
   assert((uintptr_t)table->fields <= (uintptr_t)field &&
-         (uintptr_t)field < table->fields + table->field_count);
+         (uintptr_t)field < (uintptr_t)(table->fields + table->field_count));
   upb_MiniTable_Sub* table_sub = (void*)&table->subs[field->submsg_index];
   table_sub->subenum = sub;
 }
