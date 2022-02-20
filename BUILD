@@ -112,7 +112,10 @@ cc_library(
 cc_library(
     name = "mini_table",
     srcs = ["upb/mini_table.c"],
-    hdrs = ["upb/mini_table.h"],
+    hdrs = [
+        "upb/mini_table.h",
+        "upb/mini_table.hpp",
+    ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [":upb"],
