@@ -202,3 +202,4 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
     * [vim-protolint: A protobuf linter for Vim](https://github.com/yoheimuta/vim-protolint)
 * [super-linter: Protocol Buffer lint as GitHub Action](https://github.com/github/super-linter)
 * [protoc-gen-fieldmask - A plugin to generate static type fieldmask paths](https://github.com/idodod/protoc-gen-fieldmask)
+* [protoc-gen-validate - A plugin to generate message validators](https://github.com/envoyproxy/protoc-gen-validate)
