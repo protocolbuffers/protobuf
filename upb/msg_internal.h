@@ -50,6 +50,18 @@
 extern "C" {
 #endif
 
+/** upb_*Int* conversion routines ********************************************/
+
+UPB_INLINE int32_t _upb_Int32_FromI(int v) { return (int32_t)v; }
+
+UPB_INLINE int64_t _upb_Int64_FromLL(long long v) { return (int64_t)v; }
+
+UPB_INLINE uint32_t _upb_UInt32_FromU(unsigned v) { return (uint32_t)v; }
+
+UPB_INLINE uint64_t _upb_UInt64_FromULL(unsigned long long v) {
+  return (uint64_t)v;
+}
+
 /** upb_MiniTable *************************************************************/
 
 /* upb_MiniTable represents the memory layout of a given upb_MessageDef.  The
