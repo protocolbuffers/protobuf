@@ -25,6 +25,8 @@
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
+licenses(["notice"])
+
 py_binary(
     name = "amalgamate",
     srcs = ["amalgamate.py"],

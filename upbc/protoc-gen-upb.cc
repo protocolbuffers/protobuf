@@ -313,7 +313,7 @@ bool HasNonZeroDefault(const protobuf::FieldDescriptor* field) {
       return field->default_value_enum()->number() != 0;
   }
   ABSL_ASSERT(false);
-  return "XXX";
+  return false;
 }
 
 std::string FieldDefault(const protobuf::FieldDescriptor* field) {
@@ -324,13 +324,17 @@ std::string FieldDefault(const protobuf::FieldDescriptor* field) {
       return absl::Substitute("upb_StringView_FromString(\"$0\")",
                               absl::CEscape(field->default_value_string()));
     case protobuf::FieldDescriptor::CPPTYPE_INT32:
-      return absl::StrCat(field->default_value_int32());
+      return absl::Substitute("_upb_Int32_FromI($0)",
+                              field->default_value_int32());
     case protobuf::FieldDescriptor::CPPTYPE_INT64:
-      return absl::StrCat(field->default_value_int64());
+      return absl::Substitute("_upb_Int64_FromLL($0ll)",
+                              field->default_value_int64());
     case protobuf::FieldDescriptor::CPPTYPE_UINT32:
-      return absl::StrCat(field->default_value_uint32());
+      return absl::Substitute("_upb_UInt32_FromU($0u)",
+                              field->default_value_uint32());
     case protobuf::FieldDescriptor::CPPTYPE_UINT64:
-      return absl::StrCat(field->default_value_uint64());
+      return absl::Substitute("_upb_UInt64_FromULL($0ull)",
+                              field->default_value_uint64());
     case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
       return absl::StrCat(field->default_value_float());
     case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:

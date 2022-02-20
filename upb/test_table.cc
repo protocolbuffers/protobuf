@@ -354,7 +354,6 @@ class TypedIntTable {
 
 }  // namespace upb
 
-bool benchmark = false;
 #define CPU_TIME_PER_TEST 0.5
 
 using std::vector;
