@@ -35,7 +35,9 @@
 #include "upb/test.upb.h"
 #include "upb/upb.hpp"
 
+#if !defined(MIN)
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
+#endif
 
 const char test_str[] = "abcdefg";
 const char test_str2[] = "12345678910";
