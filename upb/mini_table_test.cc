@@ -147,7 +147,7 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   upb::Status status;
   upb_MiniTable* table = upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
-  ASSERT_NE(nullptr, table);
+  ASSERT_NE(nullptr, table) << status.error_message();
   EXPECT_EQ(count, table->field_count);
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {

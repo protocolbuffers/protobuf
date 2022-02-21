@@ -225,6 +225,17 @@ UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
 
 UPB_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
                                    size_t size) {
+  _upb_ArenaHead* h = (_upb_ArenaHead*)a;
+  char* ch_ptr = (char*)ptr;
+  oldsize = UPB_ALIGN_MALLOC(size);
+  size = UPB_ALIGN_MALLOC(size);
+  if (ch_ptr + oldsize == h->ptr) {
+    if (h->end - ch_ptr >= size) {
+      h->ptr = ch_ptr + size;
+      return ptr;
+    }
+  }
+
   void* ret = upb_Arena_Malloc(a, size);
 
   if (ret && oldsize > 0) {
