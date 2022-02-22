@@ -137,7 +137,9 @@ cc_library(
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
+        "upb/decode.h",
         "upb/decode_fast.h",
+        "upb/encode.h",
         "upb/msg.h",
         "upb/msg_internal.h",
         "upb/port_def.inc",
@@ -148,6 +150,22 @@ cc_library(
     deps = [
         ":table",
         ":upb",
+    ],
+)
+
+cc_library(
+    name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    hdrs = [
+        "upb/def.h",
+        "upb/port_def.inc",
+        "upb/port_undef.inc",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":descriptor_upb_proto",
+        ":reflection",
+        ":table",
     ],
 )
 
