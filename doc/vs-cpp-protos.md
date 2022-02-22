@@ -56,12 +56,12 @@ no dangling pointers by performing automatic copies in some cases (for example
 `a->set_allocated_b(b)`, where `a` and `b` are on different arenas).
 
 C++'s arena object itself `google::protobuf::Arena` is **thread-safe** by
-design, which allows users to allocate from multiple threads simultaneously with
-no synchronization.  The user can supply an initial block of memory to the
-arena, and can choose some parameters to control the arena block size.  The user
-can also supply block alloc/dealloc functions, but the alloc function is
-expected to always return some memory.  The C++ library in general does not
-attempt to handle out of memory conditions.
+design, which allows users to allocate from multiple threads simultaneously
+without external synchronization.  The user can supply an initial block of
+memory to the arena, and can choose some parameters to control the arena block
+size.  The user can also supply block alloc/dealloc functions, but the alloc
+function is expected to always return some memory.  The C++ library in general
+does not attempt to handle out of memory conditions.
 
 ### upb
 
@@ -92,9 +92,8 @@ message with one that may be on a different arena.
   unpredictability into the library.  upb benefits from having a much simpler
   and more predictable design.
 * Some of the complexity in C++'s hybrid model arises from the fact that arenas
-  were added after
-  the fact.  Designing for a hybrid model from the outset would likely yield a
-  simpler result
+  were added after the fact.  Designing for a hybrid model from the outset
+  would likely yield a simpler result.
 * Unique ownership does support some usage patterns that arenas cannot directly
   accommodate.  For example, you can reparent a message and the child will precisely
   follow the lifetime of its new parent.  An arena would require you to either
@@ -107,14 +106,15 @@ message with one that may be on a different arena.
   is far more accessible than it was in 2014 (when C++ introduced a thread-safe
   arena).  We now have more tools at our disposal to ensure that we do not trigger
   data races in a thread-compatible arena like upb.
-* A thread-compatible arena has a far simpler implementation.  The C++ thread-safe
+* Thread-compatible arenas are more performant.
+* Thread-compatible arenas have a far simpler implementation.  The C++ thread-safe
   arena relies on thread-local variables, which introduce complications on some
   platforms.  It also requires far more subtle reasoning for correctness and
-  performance, and likely cannot match the performance of a thread-compatible arena.
+  performance.
 
 **fuse vs. no fuse**
-* The `upb_Arena_Fuse()` operation is a key part of how we can support reparenting
-  of messages when the parent may be on a different arena.  Without this, we have
+* The `upb_Arena_Fuse()` operation is a key part of how upb supports reparenting
+  of messages when the parent may be on a different arena.  Without this, upb has
   no way of supporting `foo.bar = bar` in dynamic languages without performing a
   deep copy.
 * A downside of `upb_Arena_Fuse()` is that passing an arena to a function can allow
@@ -180,6 +180,11 @@ down by generated code vs core library in the future).
 | C++ (lite)      | 187Ki   | 2.8Ki   | 1.25Ki |
 | C++ (code size) | 904Ki   | 6.1Ki   | 1.88Ki |
 | C++ (full)      | 983Ki   | 6.1Ki   | 1.88Ki |
+
+"C++ (code size)" refers to protos compiled with `optimize_for = CODE_SIZE`, a mode
+in which generated code contains reflection only, in an attempt to make the
+generated code size smaller (however it requires the full runtime instead
+of the lite runtime).
 
 ## Bifurcated vs. Optional Reflection
 
