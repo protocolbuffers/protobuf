@@ -275,6 +275,7 @@ cc_test(
         ":msg_test_upb_proto",
         ":msg_test_upb_proto_reflection",
         ":reflection",
+        ":test_messages_proto3_proto_upb",
         ":upb",
         "@com_google_googletest//:gtest_main",
     ],
