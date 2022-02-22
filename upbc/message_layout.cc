@@ -43,8 +43,9 @@ MessageLayout::Size MessageLayout::Place(
   offset.AlignUp(size_and_align.align);
   size_ = offset;
   size_.Add(size_and_align.size);
-  // maxalign_.MaxFrom(size_and_align.align);
-  maxalign_.MaxFrom(size_and_align.size);
+  ABSL_ASSERT(IsPowerOfTwo(size_and_align.align.size32));
+  ABSL_ASSERT(IsPowerOfTwo(size_and_align.align.size64));
+  maxalign_.MaxFrom(size_and_align.align);
   return offset;
 }
 

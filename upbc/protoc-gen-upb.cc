@@ -375,30 +375,66 @@ class FilePlatformLayout {
   FilePlatformLayout(const protobuf::FileDescriptor* fd,
                      upb_MiniTablePlatform platform)
       : platform_(platform) {
-    ComputeLayout(fd);
+    BuildMiniTables(fd);
+    BuildExtensions(fd);
   }
 
-  upb_MiniTable* GetTable(const protobuf::Descriptor* m) const {
+  upb_MiniTable* GetMiniTable(const protobuf::Descriptor* m) const {
     auto it = table_map_.find(m);
     assert(it != table_map_.end());
     return it->second;
   }
 
+  const upb_MiniTable_Extension* GetExtension(
+      const protobuf::FieldDescriptor* fd) const {
+    auto it = extension_map_.find(fd);
+    assert(it != extension_map_.end());
+    return it->second;
+  }
+
  private:
-  void ComputeLayout(const protobuf::FileDescriptor* fd) {
+  void BuildMiniTables(const protobuf::FileDescriptor* fd) {
     for (const auto& m : SortedMessages(fd)) {
       table_map_[m] = MakeMiniTable(m);
     }
     for (const auto& m : SortedMessages(fd)) {
-      upb_MiniTable* mt = GetTable(m);
+      upb_MiniTable* mt = GetMiniTable(m);
       for (const auto& f : FieldNumberOrder(m)) {
         if (f->message_type() && f->message_type()->file() == f->file()) {
           upb_MiniTable_Field* mt_f = FindField(mt, f->number());
-          upb_MiniTable* sub_mt = GetTable(f->message_type());
+          upb_MiniTable* sub_mt = GetMiniTable(f->message_type());
           upb_MiniTable_SetSubMessage(mt, mt_f, sub_mt);
         }
         // TODO: proto2 enums.
       }
+    }
+  }
+
+  void BuildExtensions(const protobuf::FileDescriptor* fd) {
+    auto sorted = SortedExtensions(fd);
+    upb::MtDataEncoder e;
+    e.StartMessage(0);
+    for (const auto& f : sorted) {
+      fprintf(stderr, "Field number: %d\n", (int)f->number());
+      e.PutField(static_cast<upb_FieldType>(f->type()), f->number(),
+                 GetFieldModifiers(f));
+    }
+    upb::Status status;
+    size_t ext_count;
+    upb_MiniTable_Extension* exts =
+        upb_MiniTable_BuildExtensions(e.data().data(), e.data().size(),
+                                      &ext_count, arena_.ptr(), status.ptr());
+    if (!exts) {
+      fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
+    }
+    ABSL_ASSERT(exts);
+    if (ext_count != sorted.size()) {
+      fprintf(stderr, "ext_count: %zu, sorted.size(): %zu, data(): %s\n", ext_count,
+              sorted.size(), e.data().c_str());
+    }
+    ABSL_ASSERT(ext_count == sorted.size());
+    for (size_t i = 0; i < ext_count; i++) {
+      extension_map_[sorted[i]] = &exts[i];
     }
   }
 
@@ -474,8 +510,11 @@ class FilePlatformLayout {
  private:
   typedef absl::flat_hash_map<const protobuf::Descriptor*, upb_MiniTable*>
       TableMap;
+  typedef absl::flat_hash_map<const protobuf::FieldDescriptor*, upb_MiniTable_Extension*>
+      ExtensionMap;
   upb::Arena arena_;
   TableMap table_map_;
+  ExtensionMap extension_map_;
   upb_MiniTablePlatform platform_;
 };
 
@@ -489,11 +528,16 @@ class FileLayout {
   const protobuf::FileDescriptor* descriptor() const { return descriptor_; }
 
   const upb_MiniTable* GetMiniTable32(const protobuf::Descriptor* m) const {
-    return layout32_.GetTable(m);
+    return layout32_.GetMiniTable(m);
   }
 
   const upb_MiniTable* GetMiniTable64(const protobuf::Descriptor* m) const {
-    return layout64_.GetTable(m);
+    return layout64_.GetMiniTable(m);
+  }
+
+  const upb_MiniTable_Extension* GetExtension(
+      const protobuf::FieldDescriptor* f) const {
+    return layout64_.GetExtension(f);
   }
 
  private:

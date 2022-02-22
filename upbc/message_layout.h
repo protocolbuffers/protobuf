@@ -116,6 +116,9 @@ class MessageLayout {
   static bool IsPowerOfTwo(size_t val) { return (val & (val - 1)) == 0; }
 
   static size_t Align(size_t val, size_t align) {
+    if (!IsPowerOfTwo(align)) {
+      fprintf(stderr, "YO! Align is: %d\n", (int)align);
+    }
     ABSL_ASSERT(IsPowerOfTwo(align));
     return (val + align - 1) & ~(align - 1);
   }
