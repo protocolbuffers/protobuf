@@ -13,7 +13,10 @@ cc_library(
     srcs = ["def_to_proto.c"],
     hdrs = ["def_to_proto.h"],
     visibility = ["//visibility:public"],
-    deps = ["//:reflection"],
+    deps = [
+        "//:port",
+        "//:reflection",
+    ],
 )
 
 proto_library(
@@ -57,7 +60,10 @@ cc_library(
     srcs = ["required_fields.c"],
     hdrs = ["required_fields.h"],
     visibility = ["//visibility:public"],
-    deps = ["//:reflection"],
+    deps = [
+        "//:port",
+        "//:reflection",
+    ],
 )
 
 proto_library(
@@ -83,6 +89,8 @@ cc_test(
         ":required_fields_test_upb_proto",
         ":required_fields_test_upb_proto_reflection",
         "//:json",
+        "//:reflection",
+        "//:upb",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
@@ -95,7 +103,10 @@ cc_library(
     srcs = ["compare.c"],
     hdrs = ["compare.h"],
     visibility = ["//visibility:public"],
-    deps = ["//:reflection"],
+    deps = [
+        "//:port",
+        "//:reflection",
+    ],
 )
 
 cc_test(

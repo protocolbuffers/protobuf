@@ -77,7 +77,7 @@ cc_library(
         "upb/port_def.inc",
         "upb/port_undef.inc",
     ],
-    visibility = ["//tests:__pkg__"],
+    visibility = ["//:__subpackages__"],
 )
 
 cc_library(
@@ -200,6 +200,7 @@ cc_library(
     deps = [
         ":port",
         ":reflection",
+        ":table",
     ],
 )
 
@@ -232,6 +233,7 @@ cc_test(
         ":empty_upbdefs_proto",
         ":test_messages_proto3_proto_upb",
         ":test_upb_proto",
+        ":upb",
         "@com_google_googletest//:gtest_main",
     ],
 )

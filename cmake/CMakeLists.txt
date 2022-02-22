@@ -116,7 +116,8 @@ add_library(textformat
   ../upb/text_encode.h)
 target_link_libraries(textformat
   port
-  reflection)
+  reflection
+  table)
 add_library(json
   ../upb/json_decode.c
   ../upb/json_encode.c
