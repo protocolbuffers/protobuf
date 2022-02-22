@@ -103,11 +103,17 @@ def RewriteTextFile(filename, line_rewriter):
 
 
 def UpdateCMake():
-  RewriteTextFile('cmake/libprotobuf.cmake',
-    lambda line : re.sub(
-      r'SOVERSION [0-9]+\.[0-9]+(\.[0-9]+)?',
-      'SOVERSION %s' % GetSharedObjectVersion()[0],
-      line))
+  cmake_files = (
+    'cmake/libprotobuf.cmake',
+    'cmake/libprotobuf-lite.cmake',
+    'cmake/libprotoc.cmake'
+  )
+  for cmake_file in cmake_files:
+    RewriteTextFile(cmake_file,
+      lambda line : re.sub(
+        r'SOVERSION [0-9]+\.[0-9]+(\.[0-9]+)?',
+        'SOVERSION %s' % GetSharedObjectVersion()[0],
+        line))
 
 
 def UpdateConfigure():
