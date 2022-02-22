@@ -272,7 +272,10 @@ cc_test(
     srcs = ["upb/msg_test.cc"],
     deps = [
         ":json",
+        ":msg_test_upb_proto",
         ":msg_test_upb_proto_reflection",
+        ":reflection",
+        ":upb",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -282,6 +285,12 @@ proto_library(
     testonly = 1,
     srcs = ["upb/msg_test.proto"],
     deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+)
+
+upb_proto_library(
+    name = "msg_test_upb_proto",
+    testonly = 1,
+    deps = [":msg_test_proto"],
 )
 
 upb_proto_reflection_library(
