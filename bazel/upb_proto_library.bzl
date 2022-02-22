@@ -299,7 +299,6 @@ _upb_proto_library_aspect = aspect(
         ),
         "_upb": attr.label_list(default = [
             "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-            "//:upb",
         ]),
         "_fasttable_enabled": attr.label(default = "//:fasttable_enabled"),
     }),
@@ -348,9 +347,7 @@ _upb_proto_reflection_library_aspect = aspect(
         ),
         "_upbdefs": attr.label_list(
             default = [
-                "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-                "//:upb",
-                "//:reflection",
+                "//:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
             ],
         ),
     }),
