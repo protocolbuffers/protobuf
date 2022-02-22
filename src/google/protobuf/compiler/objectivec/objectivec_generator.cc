@@ -190,20 +190,10 @@ bool ObjectiveCGenerator::GenerateAll(
       // header search path since the generate #import will be more complete.
       generation_options.runtime_import_prefix =
           StripSuffixString(options[i].second, "/");
-    } else if (options[i].first == "default_objc_class_prefix") {
-      // The default objc class prefix to use if specified by the command line 
-      // invocation. The file option is always honored first if one is present.
-      std::string value = options[i].second;
-      if (value.empty()) {
-        *error = "error: default_objc_class_prefix cannot be empty.";
-        return false;
-      }
-      SetDefaultObjcClassPrefix(value);
     } else if (options[i].first == "use_package_as_prefix") {
       // Controls how the symbols should be prefixed to avoid symbols
-      // collisions. The objc_class_prefix file option is always honored first
-      // followed by the default_objc_class_prefix generator option. This is is just 
-      // what to do if either of these options are not set. The available options are:
+      // collisions. The objc_class_prefix file option is always honored, this
+      // is just what to do if that isn't set. The available options are:
       //   "no": Not prefixed (the existing mode).
       //   "yes": Make a prefix out of the proto package.
       bool value = false;
