@@ -99,9 +99,6 @@ class PrefixModeStorage {
  public:
   PrefixModeStorage();
 
-  const std::string default_objc_class_prefix() const { return default_objc_class_prefix_; }
-  void set_default_objc_class_prefix(const std::string& default_objc_class_prefix) { default_objc_class_prefix_ = default_objc_class_prefix; }
-
   bool use_package_name() const { return use_package_name_; }
   void set_use_package_name(bool on_or_off) { use_package_name_ = on_or_off; }
 
@@ -119,14 +116,13 @@ class PrefixModeStorage {
 
  private:
   bool use_package_name_;
-  std::string default_objc_class_prefix_;
   std::string exception_path_;
   std::string forced_prefix_;
   std::unordered_set<std::string> exceptions_;
 };
 
 PrefixModeStorage::PrefixModeStorage() {
-  // Even though there are generation options, have an env back door since some
+  // Even thought there are generation options, have an env back door since some
   // of these helpers could be used in other plugins.
 
   use_package_name_ = BoolFromEnvVar("GPB_OBJC_USE_PACKAGE_AS_PREFIX", false);
@@ -172,10 +168,6 @@ bool PrefixModeStorage::is_package_exempted(const std::string& package) {
 PrefixModeStorage g_prefix_mode;
 
 }  // namespace
-
-void SetDefaultObjcClassPrefix(const std::string& default_objc_class_prefix) {
-  g_prefix_mode.set_default_objc_class_prefix(default_objc_class_prefix);
-}
 
 bool UseProtoPackageAsDefaultPrefix() {
   return g_prefix_mode.use_package_name();
@@ -534,14 +526,9 @@ std::string BaseFileName(const FileDescriptor* file) {
 }
 
 std::string FileClassPrefix(const FileDescriptor* file) {
-  // Always honor the file option first.
+  // Always honor the file option.
   if (file->options().has_objc_class_prefix()) {
     return file->options().objc_class_prefix();
-  }
-
-  // If a default prefix is passed through objc_opt then accept it.
-  if (!g_prefix_mode.default_objc_class_prefix().empty()) {
-    return g_prefix_mode.default_objc_class_prefix();
   }
 
   // If package prefix isn't enabled, done.
