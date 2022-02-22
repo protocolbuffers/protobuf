@@ -77,7 +77,7 @@ cc_library(
         "upb/port_def.inc",
         "upb/port_undef.inc",
     ],
-    visibility = ["//tests:__pkg__"],
+    visibility = ["//:__subpackages__"],
 )
 
 cc_library(

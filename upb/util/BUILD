@@ -14,7 +14,7 @@ cc_library(
     hdrs = ["def_to_proto.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        "//:port",
         "//:reflection",
     ],
 )
@@ -61,7 +61,7 @@ cc_library(
     hdrs = ["required_fields.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        "//:port",
         "//:reflection",
     ],
 )
@@ -104,7 +104,7 @@ cc_library(
     hdrs = ["compare.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        "//:port",
         "//:reflection",
     ],
 )
