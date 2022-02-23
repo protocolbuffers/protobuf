@@ -1314,7 +1314,7 @@ int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
     absl::flat_hash_set<int32_t> values;
     for (auto number : SortedUniqueEnumNumbers(e)) {
       if (static_cast<uint32_t>(number) < 64) {
-        mask |= 1 << number;
+        mask |= 1ULL << number;
       } else {
         values.insert(number);
       }

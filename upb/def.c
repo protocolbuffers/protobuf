@@ -2411,7 +2411,7 @@ upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
   for (int i = 0; i < e->value_count; i++) {
     uint32_t val = (uint32_t)e->values[i].number;
     if (val < 64) {
-      mask |= 1 << val;
+      mask |= 1ULL << val;
     } else {
       n++;
     }
@@ -3102,7 +3102,8 @@ const upb_FileDef* upb_DefPool_AddFile(
 /* Include here since we want most of this file to be stdio-free. */
 #include <stdio.h>
 
-bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
+bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
+                                bool rebuild_minitable) {
   /* Since this function should never fail (it would indicate a bug in upb) we
    * print errors to stderr instead of returning error status to the user. */
   _upb_DefPool_Init** deps = init->deps;
@@ -3119,7 +3120,7 @@ bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
   arena = upb_Arena_New();
 
   for (; *deps; deps++) {
-    if (!_upb_DefPool_LoadDefInit(s, *deps)) goto err;
+    if (!_upb_DefPool_LoadDefInitEx(s, *deps, rebuild_minitable)) goto err;
   }
 
   file = google_protobuf_FileDescriptorProto_parse_ex(
@@ -3136,7 +3137,8 @@ bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
     goto err;
   }
 
-  if (!_upb_DefPool_AddFile(s, file, init->layout, &status)) {
+  const upb_MiniTable_File* mt = rebuild_minitable ? NULL : init->layout;
+  if (!_upb_DefPool_AddFile(s, file, mt, &status)) {
     goto err;
   }
 

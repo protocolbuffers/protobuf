@@ -125,3 +125,19 @@ TEST(DefToProto, Test) {
   upb::FileDefPtr file = msgdef.file();
   CheckFile(file, file_desc);
 }
+
+// Like the previous test, but uses a message layout built at runtime.
+TEST(DefToProto, TestRuntimeReflection) {
+  upb::Arena arena;
+  upb::SymbolTable symtab;
+  upb_StringView test_file_desc =
+      upb_util_def_to_proto_test_proto_upbdefinit.descriptor;
+  const auto* file_desc = google_protobuf_FileDescriptorProto_parse(
+      test_file_desc.data, test_file_desc.size, arena.ptr());
+
+  _upb_DefPool_LoadDefInitEx(
+      symtab.ptr(), &upb_util_def_to_proto_test_proto_upbdefinit, true);
+  upb::FileDefPtr file = symtab.FindFileByName(
+      upb_util_def_to_proto_test_proto_upbdefinit.filename);
+  CheckFile(file, file_desc);
+}

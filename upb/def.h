@@ -389,7 +389,15 @@ typedef struct _upb_DefPool_Init {
   upb_StringView descriptor; /* Serialized descriptor. */
 } _upb_DefPool_Init;
 
-bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init);
+// Should only be directly called by tests.  This varant lets us suppress
+// the use of compiled-in tables, forcing a rebuild of the tables at runtime.
+bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
+                                bool rebuild_minitable);
+
+UPB_INLINE bool _upb_DefPool_LoadDefInit(upb_DefPool* s,
+                                         const _upb_DefPool_Init* init) {
+  return _upb_DefPool_LoadDefInitEx(s, init, false);
+}
 
 #include "upb/port_undef.inc"
 

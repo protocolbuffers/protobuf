@@ -97,6 +97,10 @@ extend Message {
   optional int32 ext = 1001;
 }
 
+enum Has31 {
+  VALUE_31 = 31;
+}
+
 message PretendMessageSet {
   option message_set_wire_format = true;
   // Since this is message_set_wire_format, "max" here means INT32_MAX.
