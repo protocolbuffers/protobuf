@@ -392,7 +392,7 @@ static PyObject* PyUpb_Descriptor_GetFieldsByNumber(PyObject* _self,
           (void*)&upb_MessageDef_Field,
           (void*)&PyUpb_FieldDescriptor_Get,
       },
-      (void*)&upb_MessageDef_FindFieldByNumberWithSize,
+      (void*)&upb_MessageDef_FindFieldByNumber,
       (void*)&upb_FieldDef_Number,
   };
   PyUpb_DescriptorBase* self = (void*)_self;
