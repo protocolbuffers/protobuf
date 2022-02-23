@@ -25,7 +25,7 @@ proto_library(
         "def_to_proto_public_import_test.proto",
         "def_to_proto_regular_import_test.proto",
         "def_to_proto_test.proto",
-        "def_to_proto_weak_import_test.proto",
+        "def_to_proto_weak_import_test.proto",  # copybara:strip_for_google3
     ],
 )
 
@@ -47,6 +47,8 @@ cc_test(
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",
         "//:descriptor_upb_proto_reflection",
+        "//:reflection",
+        "//:upb",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
