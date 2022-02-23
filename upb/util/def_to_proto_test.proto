@@ -69,6 +69,26 @@ enum Enum {
   NEGATIVE_ONE = -1;
 }
 
+enum EnumUpper32Value {
+  UPPER32_VALUE = 40;
+}
+
+enum HasDuplicateValues {
+  option allow_alias = true;
+  A = 0;
+  B = 1;
+  C = 120;
+  D = 130;
+
+  G = 120;
+  F = 1;
+  E = 0;
+  H = 121;
+  I = 121;
+  J = 121;
+  K = 121;
+}
+
 service Service {
   rpc Bar(Message) returns (Message);
 }

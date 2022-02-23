@@ -2397,6 +2397,12 @@ static int count_bits_debug(uint64_t x) {
   return n;
 }
 
+static int compare_int32(const void* a_ptr, const void* b_ptr) {
+  int32_t a = *(int32_t*)a_ptr;
+  int32_t b = *(int32_t*)b_ptr;
+  return ((a) < (b) ? -1 : ((a) == (b) ? 0 : 1));
+}
+
 upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
                                       const upb_EnumDef* e) {
   int n = 0;
@@ -2426,6 +2432,17 @@ upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
     }
     UPB_ASSERT(p == values + n);
   }
+
+  // Enums can have duplicate values; we must sort+uniq them.
+  qsort(values, n, sizeof(*values), &compare_int32);
+
+  int dst = 0;
+  for (int i = 0; i < n; dst++) {
+    int32_t val = values[i];
+    while (i < n && values[i] == val) i++;  // Skip duplicates.
+    values[dst] = val;
+  }
+  n = dst;
 
   UPB_ASSERT(upb_inttable_count(&e->iton) == n + count_bits_debug(mask));
 
@@ -2510,7 +2527,7 @@ static void create_enumdef(
     if (ctx->layout) {
       UPB_ASSERT(ctx->enum_count < ctx->layout->enum_count);
       e->layout = ctx->layout->enums[ctx->enum_count++];
-      UPB_ASSERT(n ==
+      UPB_ASSERT(upb_inttable_count(&e->iton) ==
                  e->layout->value_count + count_bits_debug(e->layout->mask));
     } else {
       e->layout = create_enumlayout(ctx, e);

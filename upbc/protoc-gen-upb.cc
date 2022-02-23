@@ -95,6 +95,17 @@ std::vector<const protobuf::EnumDescriptor*> SortedEnums(
   return enums;
 }
 
+std::vector<int32_t> SortedUniqueEnumNumbers(
+    const protobuf::EnumDescriptor* e) {
+  std::vector<int32_t> values;
+  for (int i = 0; i < e->value_count(); i++) {
+    values.push_back(e->value(i)->number());
+  }
+  std::sort(values.begin(), values.end());
+  std::unique(values.begin(), values.end());
+  return values;
+}
+
 void AddMessages(const protobuf::Descriptor* message,
                  std::vector<const protobuf::Descriptor*>* messages) {
   messages->push_back(message);
@@ -1301,8 +1312,7 @@ int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
   for (const auto* e : this_file_enums) {
     uint64_t mask = 0;
     absl::flat_hash_set<int32_t> values;
-    for (int i = 0; i < e->value_count(); i++) {
-      int32_t number = e->value(i)->number();
+    for (auto number : SortedUniqueEnumNumbers(e)) {
       if (static_cast<uint32_t>(number) < 64) {
         mask |= 1 << number;
       } else {
