@@ -29,7 +29,7 @@ syntax = "proto2";
 
 import "upb/util/def_to_proto_regular_import_test.proto";
 import public "upb/util/def_to_proto_public_import_test.proto";
-import weak "upb/util/def_to_proto_weak_import_test.proto";
+import weak "upb/util/def_to_proto_weak_import_test.proto";  // copybara:strip_for_google3
 
 package pkg;
 
@@ -48,6 +48,8 @@ message Message {
     string oneof_bool = 3 [default = "true"];
     bytes oneof_bytes = 4 [default = "abc\xef\xfe"];
   }
+  optional pkg.RegularImportMessage regular_import_message = 6;
+  optional pkg.PublicImportMessage public_import_message = 7;
   extensions 1000 to max;
   extend Message {
     optional int32 ext = 1000;
