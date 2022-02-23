@@ -188,8 +188,8 @@ const upb_ExtensionRange* upb_MessageDef_ExtensionRange(const upb_MessageDef* m,
                                                         int i);
 const upb_FieldDef* upb_MessageDef_Field(const upb_MessageDef* m, int i);
 const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m, int i);
-const upb_FieldDef* upb_MessageDef_FindFieldByNumberWithSize(
-    const upb_MessageDef* m, uint32_t i);
+const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
+                                                     uint32_t i);
 const upb_FieldDef* upb_MessageDef_FindFieldByNameWithSize(
     const upb_MessageDef* m, const char* name, size_t len);
 const upb_OneofDef* upb_MessageDef_FindOneofByNameWithSize(

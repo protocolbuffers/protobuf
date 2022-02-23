@@ -691,8 +691,8 @@ upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m) {
   return m->file->syntax;
 }
 
-const upb_FieldDef* upb_MessageDef_FindFieldByNumberWithSize(
-    const upb_MessageDef* m, uint32_t i) {
+const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
+                                                     uint32_t i) {
   upb_value val;
   return upb_inttable_lookup(&m->itof, i, &val) ? upb_value_getconstptr(val)
                                                 : NULL;
@@ -1365,8 +1365,8 @@ static void assign_layout_indices(const upb_MessageDef* m, upb_MiniTable* l,
   int n = upb_MessageDef_numfields(m);
   int dense_below = 0;
   for (i = 0; i < n; i++) {
-    upb_FieldDef* f = (upb_FieldDef*)upb_MessageDef_FindFieldByNumberWithSize(
-        m, fields[i].number);
+    upb_FieldDef* f =
+        (upb_FieldDef*)upb_MessageDef_FindFieldByNumber(m, fields[i].number);
     UPB_ASSERT(f);
     f->layout_index = i;
     if (i < UINT8_MAX && fields[i].number == i + 1 &&
@@ -1487,8 +1487,8 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
   if (upb_MessageDef_IsMapEntry(m)) {
     /* TODO(haberman): refactor this method so this special case is more
      * elegant. */
-    const upb_FieldDef* key = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
-    const upb_FieldDef* val = upb_MessageDef_FindFieldByNumberWithSize(m, 2);
+    const upb_FieldDef* key = upb_MessageDef_FindFieldByNumber(m, 1);
+    const upb_FieldDef* val = upb_MessageDef_FindFieldByNumber(m, 2);
     fields[0].number = 1;
     fields[1].number = 2;
     fields[0].mode = kUpb_FieldMode_Scalar;

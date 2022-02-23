@@ -894,10 +894,8 @@ static void jsondec_array(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
 static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
   upb_Map* map = upb_Message_Mutable(msg, f, d->arena).map;
   const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
-  const upb_FieldDef* key_f =
-      upb_MessageDef_FindFieldByNumberWithSize(entry, 1);
-  const upb_FieldDef* val_f =
-      upb_MessageDef_FindFieldByNumberWithSize(entry, 2);
+  const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry, 1);
+  const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry, 2);
 
   jsondec_objstart(d);
   while (jsondec_objnext(d)) {
@@ -1139,10 +1137,9 @@ static void jsondec_timestamp(jsondec* d, upb_Message* msg,
     jsondec_err(d, "Timestamp out of range");
   }
 
-  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumberWithSize(m, 1), seconds,
+  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumber(m, 1), seconds,
                   d->arena);
-  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumberWithSize(m, 2), nanos,
-                  d->arena);
+  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumber(m, 2), nanos, d->arena);
   return;
 
 malformed:
@@ -1174,15 +1171,14 @@ static void jsondec_duration(jsondec* d, upb_Message* msg,
     nanos.int32_val = -nanos.int32_val;
   }
 
-  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumberWithSize(m, 1), seconds,
+  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumber(m, 1), seconds,
                   d->arena);
-  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumberWithSize(m, 2), nanos,
-                  d->arena);
+  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumber(m, 2), nanos, d->arena);
 }
 
 static void jsondec_listvalue(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
-  const upb_FieldDef* values_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
+  const upb_FieldDef* values_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(values_f);
   upb_Array* values = upb_Message_Mutable(msg, values_f, d->arena).array;
 
@@ -1199,10 +1195,9 @@ static void jsondec_listvalue(jsondec* d, upb_Message* msg,
 
 static void jsondec_struct(jsondec* d, upb_Message* msg,
                            const upb_MessageDef* m) {
-  const upb_FieldDef* fields_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
+  const upb_FieldDef* fields_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(fields_f);
-  const upb_FieldDef* value_f =
-      upb_MessageDef_FindFieldByNumberWithSize(entry_m, 2);
+  const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(value_f);
   upb_Map* fields = upb_Message_Mutable(msg, fields_f, d->arena).map;
 
@@ -1228,42 +1223,42 @@ static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
   switch (jsondec_peek(d)) {
     case JD_NUMBER:
       /* double number_value = 2; */
-      f = upb_MessageDef_FindFieldByNumberWithSize(m, 2);
+      f = upb_MessageDef_FindFieldByNumber(m, 2);
       val.double_val = jsondec_number(d);
       break;
     case JD_STRING:
       /* string string_value = 3; */
-      f = upb_MessageDef_FindFieldByNumberWithSize(m, 3);
+      f = upb_MessageDef_FindFieldByNumber(m, 3);
       val.str_val = jsondec_string(d);
       break;
     case JD_FALSE:
       /* bool bool_value = 4; */
-      f = upb_MessageDef_FindFieldByNumberWithSize(m, 4);
+      f = upb_MessageDef_FindFieldByNumber(m, 4);
       val.bool_val = false;
       jsondec_false(d);
       break;
     case JD_TRUE:
       /* bool bool_value = 4; */
-      f = upb_MessageDef_FindFieldByNumberWithSize(m, 4);
+      f = upb_MessageDef_FindFieldByNumber(m, 4);
       val.bool_val = true;
       jsondec_true(d);
       break;
     case JD_NULL:
       /* NullValue null_value = 1; */
-      f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
+      f = upb_MessageDef_FindFieldByNumber(m, 1);
       val.int32_val = 0;
       jsondec_null(d);
       break;
     /* Note: these cases return, because upb_Message_Mutable() is enough. */
     case JD_OBJECT:
       /* Struct struct_value = 5; */
-      f = upb_MessageDef_FindFieldByNumberWithSize(m, 5);
+      f = upb_MessageDef_FindFieldByNumber(m, 5);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
       jsondec_struct(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
     case JD_ARRAY:
       /* ListValue list_value = 6; */
-      f = upb_MessageDef_FindFieldByNumberWithSize(m, 6);
+      f = upb_MessageDef_FindFieldByNumber(m, 6);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
       jsondec_listvalue(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
@@ -1310,7 +1305,7 @@ static upb_StringView jsondec_mask(jsondec* d, const char* buf,
 static void jsondec_fieldmask(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
   /* repeated string paths = 1; */
-  const upb_FieldDef* paths_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
+  const upb_FieldDef* paths_f = upb_MessageDef_FindFieldByNumber(m, 1);
   upb_Array* arr = upb_Message_Mutable(msg, paths_f, d->arena).array;
   upb_StringView str = jsondec_string(d);
   const char* ptr = str.data;
@@ -1350,8 +1345,7 @@ static void jsondec_anyfield(jsondec* d, upb_Message* msg,
 
 static const upb_MessageDef* jsondec_typeurl(jsondec* d, upb_Message* msg,
                                              const upb_MessageDef* m) {
-  const upb_FieldDef* type_url_f =
-      upb_MessageDef_FindFieldByNumberWithSize(m, 1);
+  const upb_FieldDef* type_url_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* type_m;
   upb_StringView type_url = jsondec_string(d);
   const char* end = type_url.data + type_url.size;
@@ -1382,7 +1376,7 @@ static const upb_MessageDef* jsondec_typeurl(jsondec* d, upb_Message* msg,
 static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
   /* string type_url = 1;
    * bytes value = 2; */
-  const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumberWithSize(m, 2);
+  const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 2);
   upb_Message* any_msg;
   const upb_MessageDef* any_m = NULL;
   const char* pre_type_data = NULL;
@@ -1444,7 +1438,7 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
 
 static void jsondec_wrapper(jsondec* d, upb_Message* msg,
                             const upb_MessageDef* m) {
-  const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
+  const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 1);
   upb_MessageValue val = jsondec_value(d, value_f);
   upb_Message_Set(msg, value_f, val, d->arena);
 }

@@ -180,10 +180,10 @@ make:
   if (!a) return (upb_MutableMessageValue){.array = NULL};
   if (upb_FieldDef_IsMap(f)) {
     const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
-    const upb_FieldDef* key = upb_MessageDef_FindFieldByNumberWithSize(
-        entry, kUpb_MapEntry_KeyFieldNumber);
-    const upb_FieldDef* value = upb_MessageDef_FindFieldByNumberWithSize(
-        entry, kUpb_MapEntry_ValueFieldNumber);
+    const upb_FieldDef* key =
+        upb_MessageDef_FindFieldByNumber(entry, kUpb_MapEntry_KeyFieldNumber);
+    const upb_FieldDef* value =
+        upb_MessageDef_FindFieldByNumber(entry, kUpb_MapEntry_ValueFieldNumber);
     ret.map =
         upb_Map_New(a, upb_FieldDef_CType(key), upb_FieldDef_CType(value));
   } else if (upb_FieldDef_IsRepeated(f)) {
@@ -313,8 +313,7 @@ bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
     const upb_MessageDef* subm = upb_FieldDef_MessageSubDef(f);
     if (!subm) continue;
     if (upb_FieldDef_IsMap(f)) {
-      const upb_FieldDef* val_f =
-          upb_MessageDef_FindFieldByNumberWithSize(subm, 2);
+      const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(subm, 2);
       const upb_MessageDef* val_m = upb_FieldDef_MessageSubDef(val_f);
       upb_Map* map = (upb_Map*)val.map_val;
       size_t iter = kUpb_Map_Begin;

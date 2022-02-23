@@ -733,10 +733,10 @@ static void lupb_Message_Newwrapper(lua_State* L, int narg,
                                     upb_MutableMessageValue val) {
   if (upb_FieldDef_IsMap(f)) {
     const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
-    const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumberWithSize(
-        entry, kUpb_MapEntry_KeyFieldNumber);
-    const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumberWithSize(
-        entry, kUpb_MapEntry_ValueFieldNumber);
+    const upb_FieldDef* key_f =
+        upb_MessageDef_FindFieldByNumber(entry, kUpb_MapEntry_KeyFieldNumber);
+    const upb_FieldDef* val_f =
+        upb_MessageDef_FindFieldByNumber(entry, kUpb_MapEntry_ValueFieldNumber);
     lupb_map* lmap =
         lupb_Message_Newud(L, narg, sizeof(*lmap), LUPB_MAP, val_f);
     lmap->key_type = upb_FieldDef_CType(key_f);
@@ -849,10 +849,10 @@ static int lupb_Message_Newindex(lua_State* L) {
   if (upb_FieldDef_IsMap(f)) {
     lupb_map* lmap = lupb_map_check(L, 3);
     const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
-    const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumberWithSize(
-        entry, kUpb_MapEntry_KeyFieldNumber);
-    const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumberWithSize(
-        entry, kUpb_MapEntry_ValueFieldNumber);
+    const upb_FieldDef* key_f =
+        upb_MessageDef_FindFieldByNumber(entry, kUpb_MapEntry_KeyFieldNumber);
+    const upb_FieldDef* val_f =
+        upb_MessageDef_FindFieldByNumber(entry, kUpb_MapEntry_ValueFieldNumber);
     upb_CType key_type = upb_FieldDef_CType(key_f);
     upb_CType value_type = upb_FieldDef_CType(val_f);
     luaL_argcheck(L, lmap->key_type == key_type, 3, "key type mismatch");

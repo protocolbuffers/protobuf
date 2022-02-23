@@ -71,7 +71,7 @@ s/upb_msgdef_field/upb_MessageDef_Field/g;
 s/upb_msgdef_oneof/upb_MessageDef_Oneof/g;
 s/upb_msgdef_ntooz/upb_MessageDef_FindOneofByName/g;
 s/upb_msgdef_ntofz/upb_MessageDef_FindFieldByName/g;
-s/upb_msgdef_itof/upb_MessageDef_FindFieldByNumberWithSize/g;
+s/upb_msgdef_itof/upb_MessageDef_FindFieldByNumber/g;
 s/upb_msgdef_ntof/upb_MessageDef_FindFieldByNameWithSize/g;
 s/upb_msgdef_ntoo/upb_MessageDef_FindOneofByNameWithSize/g;
 s/upb_msgdef_layout/upb_MessageDef_MiniTable/g;
@@ -89,6 +89,7 @@ s/upb_msgdef_lookupjsonnamez/upb_MessageDef_FindByNameName/g;
 s/upb_msgdef_lookupjsonname/upb_MessageDef_FindByJsonNameWithSize/g;
 s/upb_msgdef/upb_MessageDef/g;
 s/WithSizez//g;
+s/upb_MessageDef_FindFieldByNumberWithSize/upb_MessageDef_FindFieldByNumber/g;
 
 s/upb_extrange_options/upb_ExtensionRange_Options/g;
 s/upb_extrange_hasoptions/upb_ExtensionRange_HasOptions/g;

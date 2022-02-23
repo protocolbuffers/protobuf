@@ -141,9 +141,8 @@ static void jsonenc_nanos(jsonenc* e, int32_t nanos) {
 
 static void jsonenc_timestamp(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m) {
-  const upb_FieldDef* seconds_f =
-      upb_MessageDef_FindFieldByNumberWithSize(m, 1);
-  const upb_FieldDef* nanos_f = upb_MessageDef_FindFieldByNumberWithSize(m, 2);
+  const upb_FieldDef* seconds_f = upb_MessageDef_FindFieldByNumber(m, 1);
+  const upb_FieldDef* nanos_f = upb_MessageDef_FindFieldByNumber(m, 2);
   int64_t seconds = upb_Message_Get(msg, seconds_f).int64_val;
   int32_t nanos = upb_Message_Get(msg, nanos_f).int32_val;
   int L, N, I, J, K, hour, min, sec;
@@ -185,9 +184,8 @@ static void jsonenc_timestamp(jsonenc* e, const upb_Message* msg,
 
 static void jsonenc_duration(jsonenc* e, const upb_Message* msg,
                              const upb_MessageDef* m) {
-  const upb_FieldDef* seconds_f =
-      upb_MessageDef_FindFieldByNumberWithSize(m, 1);
-  const upb_FieldDef* nanos_f = upb_MessageDef_FindFieldByNumberWithSize(m, 2);
+  const upb_FieldDef* seconds_f = upb_MessageDef_FindFieldByNumber(m, 1);
+  const upb_FieldDef* nanos_f = upb_MessageDef_FindFieldByNumber(m, 2);
   int64_t seconds = upb_Message_Get(msg, seconds_f).int64_val;
   int32_t nanos = upb_Message_Get(msg, nanos_f).int32_val;
 
@@ -336,7 +334,7 @@ static void upb_JsonEncode_Float(jsonenc* e, float val) {
 
 static void jsonenc_wrapper(jsonenc* e, const upb_Message* msg,
                             const upb_MessageDef* m) {
-  const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
+  const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(m, 1);
   upb_MessageValue val = upb_Message_Get(msg, val_f);
   jsonenc_scalar(e, val, val_f);
 }
@@ -380,9 +378,8 @@ badurl:
 
 static void jsonenc_any(jsonenc* e, const upb_Message* msg,
                         const upb_MessageDef* m) {
-  const upb_FieldDef* type_url_f =
-      upb_MessageDef_FindFieldByNumberWithSize(m, 1);
-  const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumberWithSize(m, 2);
+  const upb_FieldDef* type_url_f = upb_MessageDef_FindFieldByNumber(m, 1);
+  const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 2);
   upb_StringView type_url = upb_Message_Get(msg, type_url_f).str_val;
   upb_StringView value = upb_Message_Get(msg, value_f).str_val;
   const upb_MessageDef* any_m = jsonenc_getanymsg(e, type_url);
@@ -441,7 +438,7 @@ static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
 
 static void jsonenc_fieldmask(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m) {
-  const upb_FieldDef* paths_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
+  const upb_FieldDef* paths_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_Array* paths = upb_Message_Get(msg, paths_f).array_val;
   bool first = true;
   size_t i, n = 0;
@@ -460,11 +457,10 @@ static void jsonenc_fieldmask(jsonenc* e, const upb_Message* msg,
 
 static void jsonenc_struct(jsonenc* e, const upb_Message* msg,
                            const upb_MessageDef* m) {
-  const upb_FieldDef* fields_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
+  const upb_FieldDef* fields_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_Map* fields = upb_Message_Get(msg, fields_f).map_val;
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(fields_f);
-  const upb_FieldDef* value_f =
-      upb_MessageDef_FindFieldByNumberWithSize(entry_m, 2);
+  const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
   size_t iter = kUpb_Map_Begin;
   bool first = true;
 
@@ -487,7 +483,7 @@ static void jsonenc_struct(jsonenc* e, const upb_Message* msg,
 
 static void jsonenc_listvalue(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m) {
-  const upb_FieldDef* values_f = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
+  const upb_FieldDef* values_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* values_m = upb_FieldDef_MessageSubDef(values_f);
   const upb_Array* values = upb_Message_Get(msg, values_f).array_val;
   size_t i;
@@ -669,10 +665,8 @@ static void jsonenc_array(jsonenc* e, const upb_Array* arr,
 
 static void jsonenc_map(jsonenc* e, const upb_Map* map, const upb_FieldDef* f) {
   const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
-  const upb_FieldDef* key_f =
-      upb_MessageDef_FindFieldByNumberWithSize(entry, 1);
-  const upb_FieldDef* val_f =
-      upb_MessageDef_FindFieldByNumberWithSize(entry, 2);
+  const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry, 1);
+  const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry, 2);
   size_t iter = kUpb_Map_Begin;
   bool first = true;
 
