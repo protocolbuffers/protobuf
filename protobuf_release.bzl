@@ -27,7 +27,7 @@ def _package_naming_impl(ctx):
   elif "linux" in system_name:
     values["platform"] = "linux-" + cpu
   elif "mingw" in system_name:
-    if "cpu" == "x86_64":
+    if cpu == "x86_64":
       values["platform"] = "win64"
     else:
       values["platform"] = "win32"
