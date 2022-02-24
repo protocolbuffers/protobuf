@@ -2958,7 +2958,7 @@ static void build_filedef(
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
   for (i = 0; i < n; i++) {
     if (weak_deps[i] >= file->dep_count) {
-      symtab_errf(ctx, "public_dep %d is out of range", (int)weak_deps[i]);
+      symtab_errf(ctx, "weak_dep %d is out of range", (int)weak_deps[i]);
     }
     mutable_weak_deps[i] = weak_deps[i];
   }
