@@ -1623,7 +1623,10 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
   l->size = UPB_ALIGN_UP(l->size, 8);
 
   /* Sort fields by number. */
-  qsort(fields, upb_MessageDef_numfields(m), sizeof(*fields), field_number_cmp);
+  if (fields) {
+    qsort(fields, upb_MessageDef_numfields(m), sizeof(*fields),
+          field_number_cmp);
+  }
   assign_layout_indices(m, l, fields);
 }
 
@@ -2397,6 +2400,12 @@ static int count_bits_debug(uint64_t x) {
   return n;
 }
 
+static int compare_int32(const void* a_ptr, const void* b_ptr) {
+  int32_t a = *(int32_t*)a_ptr;
+  int32_t b = *(int32_t*)b_ptr;
+  return a < b ? -1 : (a == b ? 0 : 1);
+}
+
 upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
                                       const upb_EnumDef* e) {
   int n = 0;
@@ -2405,7 +2414,7 @@ upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
   for (int i = 0; i < e->value_count; i++) {
     uint32_t val = (uint32_t)e->values[i].number;
     if (val < 64) {
-      mask |= 1 << val;
+      mask |= 1ULL << val;
     } else {
       n++;
     }
@@ -2426,6 +2435,17 @@ upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
     }
     UPB_ASSERT(p == values + n);
   }
+
+  // Enums can have duplicate values; we must sort+uniq them.
+  if (values) qsort(values, n, sizeof(*values), &compare_int32);
+
+  int dst = 0;
+  for (int i = 0; i < n; dst++) {
+    int32_t val = values[i];
+    while (i < n && values[i] == val) i++;  // Skip duplicates.
+    values[dst] = val;
+  }
+  n = dst;
 
   UPB_ASSERT(upb_inttable_count(&e->iton) == n + count_bits_debug(mask));
 
@@ -2510,7 +2530,7 @@ static void create_enumdef(
     if (ctx->layout) {
       UPB_ASSERT(ctx->enum_count < ctx->layout->enum_count);
       e->layout = ctx->layout->enums[ctx->enum_count++];
-      UPB_ASSERT(n ==
+      UPB_ASSERT(upb_inttable_count(&e->iton) ==
                  e->layout->value_count + count_bits_debug(e->layout->mask));
     } else {
       e->layout = create_enumlayout(ctx, e);
@@ -3085,7 +3105,8 @@ const upb_FileDef* upb_DefPool_AddFile(
 /* Include here since we want most of this file to be stdio-free. */
 #include <stdio.h>
 
-bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
+bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
+                                bool rebuild_minitable) {
   /* Since this function should never fail (it would indicate a bug in upb) we
    * print errors to stderr instead of returning error status to the user. */
   _upb_DefPool_Init** deps = init->deps;
@@ -3102,7 +3123,7 @@ bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
   arena = upb_Arena_New();
 
   for (; *deps; deps++) {
-    if (!_upb_DefPool_LoadDefInit(s, *deps)) goto err;
+    if (!_upb_DefPool_LoadDefInitEx(s, *deps, rebuild_minitable)) goto err;
   }
 
   file = google_protobuf_FileDescriptorProto_parse_ex(
@@ -3119,7 +3140,8 @@ bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
     goto err;
   }
 
-  if (!_upb_DefPool_AddFile(s, file, init->layout, &status)) {
+  const upb_MiniTable_File* mt = rebuild_minitable ? NULL : init->layout;
+  if (!_upb_DefPool_AddFile(s, file, mt, &status)) {
     goto err;
   }
 
