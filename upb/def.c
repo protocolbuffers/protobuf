@@ -1601,6 +1601,10 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
 
     if (upb_OneofDef_IsSynthetic(o)) continue;
 
+    if (o->field_count == 0) {
+      symtab_errf(ctx, "Oneof must have at least one field (%s)", o->full_name);
+    }
+
     /* Calculate field size: the max of all field sizes. */
     for (int j = 0; j < o->field_count; j++) {
       const upb_FieldDef* f = o->fields[j];
@@ -1787,8 +1791,8 @@ static const void* symtab_resolveany(symtab_addctx* ctx,
     }
   } else {
     /* Remove components from base until we find an entry or run out. */
-    size_t baselen = strlen(base);
-    char* tmp = malloc(sym.size + strlen(base) + 1);
+    size_t baselen = base ? strlen(base) : 0;
+    char* tmp = malloc(sym.size + baselen + 1);
     while (1) {
       char* p = tmp;
       if (baselen) {
@@ -1824,10 +1828,10 @@ static const void* symtab_resolve(symtab_addctx* ctx, const char* from_name_dbg,
   const void* ret =
       symtab_resolveany(ctx, from_name_dbg, base, sym, &found_type);
   if (ret && found_type != type) {
-    symtab_errf(
-        ctx,
-        "type mismatch when resolving %s: couldn't find name %s with type=%d",
-        from_name_dbg, sym.data, (int)type);
+    symtab_errf(ctx,
+                "type mismatch when resolving %s: couldn't find "
+                "name " UPB_STRINGVIEW_FORMAT " with type=%d",
+                from_name_dbg, UPB_STRINGVIEW_ARGS(sym), (int)type);
   }
   return ret;
 }
@@ -1846,6 +1850,11 @@ static void create_oneofdef(
   o->synthetic = false;
 
   SET_OPTIONS(o->opts, OneofDescriptorProto, OneofOptions, oneof_proto);
+
+  upb_value existing_v;
+  if (upb_strtable_lookup2(&m->ntof, name.data, name.size, &existing_v)) {
+    symtab_errf(ctx, "duplicate oneof name (%s)", o->full_name);
+  }
 
   v = pack_def(o, UPB_DEFTYPE_ONEOF);
   CHK_OOM(upb_strtable_insert(&m->ntof, name.data, name.size, v, ctx->arena));
@@ -2156,7 +2165,7 @@ static void create_fielddef(
   f->file = ctx->file; /* Must happen prior to symtab_add(). */
 
   if (!google_protobuf_FieldDescriptorProto_has_name(field_proto)) {
-    symtab_errf(ctx, "field has no name (%s)", upb_MessageDef_FullName(m));
+    symtab_errf(ctx, "field has no name");
   }
 
   name = google_protobuf_FieldDescriptorProto_name(field_proto);
@@ -2949,7 +2958,7 @@ static void build_filedef(
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
   for (i = 0; i < n; i++) {
     if (weak_deps[i] >= file->dep_count) {
-      symtab_errf(ctx, "public_dep %d is out of range", (int)public_deps[i]);
+      symtab_errf(ctx, "public_dep %d is out of range", (int)weak_deps[i]);
     }
     mutable_weak_deps[i] = weak_deps[i];
   }
