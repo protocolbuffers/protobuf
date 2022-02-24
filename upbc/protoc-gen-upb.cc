@@ -1323,8 +1323,7 @@ int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
 
     if (!values.empty()) {
       values_init = EnumInit(e) + "_values";
-      output("static const int32_t $0[$1] = {\n", values_init,
-             values.size());
+      output("static const int32_t $0[$1] = {\n", values_init, values.size());
       for (auto value : values) {
         output("  $0,\n", value);
       }

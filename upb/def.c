@@ -1624,7 +1624,8 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
 
   /* Sort fields by number. */
   if (fields) {
-    qsort(fields, upb_MessageDef_numfields(m), sizeof(*fields), field_number_cmp);
+    qsort(fields, upb_MessageDef_numfields(m), sizeof(*fields),
+          field_number_cmp);
   }
   assign_layout_indices(m, l, fields);
 }
