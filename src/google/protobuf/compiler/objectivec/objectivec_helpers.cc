@@ -95,14 +95,16 @@ class SimpleLineCollector : public LineConsumer {
   std::unordered_set<std::string>* set_;
 };
 
-class ExpectedPrefixesCollector : public LineConsumer {
+class PackageToPrefixesCollector : public LineConsumer {
  public:
-  ExpectedPrefixesCollector(std::map<std::string, std::string>* inout_package_to_prefix_map)
-      : prefix_map_(inout_package_to_prefix_map) {}
+  PackageToPrefixesCollector(const std::string &usage,
+                             std::map<std::string, std::string>* inout_package_to_prefix_map)
+      : usage_(usage), prefix_map_(inout_package_to_prefix_map) {}
 
   virtual bool ConsumeLine(const StringPiece& line, std::string* out_error) override;
 
  private:
+  const std::string usage_;
   std::map<std::string, std::string>* prefix_map_;
 };
 
@@ -170,7 +172,7 @@ std::string PrefixModeStorage::prefix_from_proto_package_mappings(const FileDesc
     std::string error_str;
     // Re use the same collector as we use for expected_prefixes_path since the file
     // format is the same.
-    ExpectedPrefixesCollector collector(&prefix_to_proto_package_map_);
+    PackageToPrefixesCollector collector("Package to prefixes", &prefix_to_proto_package_map_);
     if (!ParseSimpleFile(prefix_to_proto_package_mappings_path_, &collector, &error_str)) {
       if (error_str.empty()) {
         error_str = std::string("protoc:0: warning: Failed to parse")
@@ -1278,12 +1280,11 @@ void RemoveComment(StringPiece* input) {
 
 namespace {
 
-bool ExpectedPrefixesCollector::ConsumeLine(
+bool PackageToPrefixesCollector::ConsumeLine(
     const StringPiece& line, std::string* out_error) {
   int offset = line.find('=');
   if (offset == StringPiece::npos) {
-    *out_error = std::string("Expected prefixes file line without equal sign: '") +
-                 std::string(line) + "'.";
+    *out_error = usage_ + " file line without equal sign: '" + StrCat(line) + "'.";
     return false;
   }
   StringPiece package = line.substr(0, offset);
@@ -1304,7 +1305,7 @@ bool LoadExpectedPackagePrefixes(const Options& generation_options,
     return true;
   }
 
-  ExpectedPrefixesCollector collector(prefix_map);
+  PackageToPrefixesCollector collector("Expected prefixes", prefix_map);
   return ParseSimpleFile(
       generation_options.expected_prefixes_path, &collector, out_error);
 }
