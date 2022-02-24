@@ -1623,7 +1623,9 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
   l->size = UPB_ALIGN_UP(l->size, 8);
 
   /* Sort fields by number. */
-  qsort(fields, upb_MessageDef_numfields(m), sizeof(*fields), field_number_cmp);
+  if (fields) {
+    qsort(fields, upb_MessageDef_numfields(m), sizeof(*fields), field_number_cmp);
+  }
   assign_layout_indices(m, l, fields);
 }
 
@@ -2434,7 +2436,7 @@ upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
   }
 
   // Enums can have duplicate values; we must sort+uniq them.
-  qsort(values, n, sizeof(*values), &compare_int32);
+  if (values) qsort(values, n, sizeof(*values), &compare_int32);
 
   int dst = 0;
   for (int i = 0; i < n; dst++) {
