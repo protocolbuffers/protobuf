@@ -389,7 +389,7 @@ typedef struct _upb_DefPool_Init {
   upb_StringView descriptor; /* Serialized descriptor. */
 } _upb_DefPool_Init;
 
-// Should only be directly called by tests.  This varant lets us suppress
+// Should only be directly called by tests.  This variant lets us suppress
 // the use of compiled-in tables, forcing a rebuild of the tables at runtime.
 bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
                                 bool rebuild_minitable);

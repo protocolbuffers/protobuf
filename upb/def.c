@@ -2402,7 +2402,7 @@ static int count_bits_debug(uint64_t x) {
 static int compare_int32(const void* a_ptr, const void* b_ptr) {
   int32_t a = *(int32_t*)a_ptr;
   int32_t b = *(int32_t*)b_ptr;
-  return ((a) < (b) ? -1 : ((a) == (b) ? 0 : 1));
+  return (a) < (b) ? -1 : ((a) == (b) ? 0 : 1);
 }
 
 upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
