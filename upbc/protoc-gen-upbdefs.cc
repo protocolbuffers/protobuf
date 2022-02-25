@@ -170,10 +170,14 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
     return false;
   }
 
-  Output h_def_output(context->Open(DefHeaderFilename(file->name())));
+  std::unique_ptr<protobuf::io::ZeroCopyOutputStream> h_output_stream(
+      context->Open(DefHeaderFilename(file->name())));
+  Output h_def_output(h_output_stream.get());
   WriteDefHeader(file, h_def_output);
 
-  Output c_def_output(context->Open(DefSourceFilename(file->name())));
+  std::unique_ptr<protobuf::io::ZeroCopyOutputStream> c_output_stream(
+      context->Open(DefSourceFilename(file->name())));
+  Output c_def_output(c_output_stream.get());
   WriteDefSource(file, c_def_output);
 
   return true;
