@@ -107,6 +107,11 @@ endif()
 
 add_library(libprotobuf ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_lite_files} ${libprotobuf_files} ${libprotobuf_includes} ${libprotobuf_rc_files})
+if(protobuf_HAVE_LD_VERSION_SCRIPT)
+  target_link_options(libprotobuf PRIVATE -Wl,--version-script=${protobuf_source_dir}/src/libprotobuf.map)
+  set_target_properties(libprotobuf PROPERTIES
+    LINK_DEPENDS ${protobuf_source_dir}/src/libprotobuf.map)
+endif()
 target_link_libraries(libprotobuf ${CMAKE_THREAD_LIBS_INIT})
 if(protobuf_WITH_ZLIB)
   target_link_libraries(libprotobuf ${ZLIB_LIBRARIES})
