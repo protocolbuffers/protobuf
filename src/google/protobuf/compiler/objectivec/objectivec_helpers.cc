@@ -112,10 +112,10 @@ class PrefixModeStorage {
  public:
   PrefixModeStorage();
 
-  const std::string prefix_to_proto_package_mappings_path() const { return prefix_to_proto_package_mappings_path_; }
-  void set_prefix_to_proto_package_mappings_path(const std::string& path) {
-    prefix_to_proto_package_mappings_path_ = path;
-    prefix_to_proto_package_map_.clear();
+  const std::string package_to_prefix_mappings_path() const { return package_to_prefix_mappings_path_; }
+  void set_package_to_prefix_mappings_path(const std::string& path) {
+    package_to_prefix_mappings_path_ = path;
+    package_to_prefix_map_.clear();
   }
 
   std::string prefix_from_proto_package_mappings(const FileDescriptor* file);
@@ -137,8 +137,8 @@ class PrefixModeStorage {
 
  private:
   bool use_package_name_;
-  std::map<std::string, std::string> prefix_to_proto_package_map_;
-  std::string prefix_to_proto_package_mappings_path_;
+  std::map<std::string, std::string> package_to_prefix_map_;
+  std::string package_to_prefix_mappings_path_;
   std::string exception_path_;
   std::string forced_prefix_;
   std::unordered_set<std::string> exceptions_;
@@ -168,20 +168,20 @@ std::string PrefixModeStorage::prefix_from_proto_package_mappings(const FileDesc
     return "";
   }
 
-  if (prefix_to_proto_package_map_.empty() && !prefix_to_proto_package_mappings_path_.empty()) {
+  if (package_to_prefix_map_.empty() && !package_to_prefix_mappings_path_.empty()) {
     std::string error_str;
     // Re use the same collector as we use for expected_prefixes_path since the file
     // format is the same.
-    PackageToPrefixesCollector collector("Package to prefixes", &prefix_to_proto_package_map_);
-    if (!ParseSimpleFile(prefix_to_proto_package_mappings_path_, &collector, &error_str)) {
+    PackageToPrefixesCollector collector("Package to prefixes", &package_to_prefix_map_);
+    if (!ParseSimpleFile(package_to_prefix_mappings_path_, &collector, &error_str)) {
       if (error_str.empty()) {
         error_str = std::string("protoc:0: warning: Failed to parse")
            + std::string(" prefix to proto package mappings file: ")
-           + prefix_to_proto_package_mappings_path_;
+           + package_to_prefix_mappings_path_;
       }
       std::cerr << error_str << std::endl;
       std::cerr.flush();
-      prefix_to_proto_package_map_.clear();      
+      package_to_prefix_map_.clear();
     }
   }
 
@@ -192,9 +192,9 @@ std::string PrefixModeStorage::prefix_from_proto_package_mappings(const FileDesc
   const std::string lookup_key = package.empty() ? no_package_prefix + file->name() : package;
 
   std::map<std::string, std::string>::const_iterator prefix_lookup =
-      prefix_to_proto_package_map_.find(lookup_key);
+      package_to_prefix_map_.find(lookup_key);
 
-  if (prefix_lookup != prefix_to_proto_package_map_.end()) {
+  if (prefix_lookup != package_to_prefix_map_.end()) {
     return prefix_lookup->second;
   }  
 
@@ -230,12 +230,12 @@ PrefixModeStorage g_prefix_mode;
 
 }  // namespace
 
-std::string GetPrefixToProtoPackageMappingsPath() {
-  return g_prefix_mode.prefix_to_proto_package_mappings_path();
+std::string GetPackageToPrefixMappingsPath() {
+  return g_prefix_mode.package_to_prefix_mappings_path();
 }
 
-void SetPrefixToProtoPackageMappingsPath(const std::string& file_path) {
-  g_prefix_mode.set_prefix_to_proto_package_mappings_path(file_path);
+void SetPackageToPrefixMappingsPath(const std::string& file_path) {
+  g_prefix_mode.set_package_to_prefix_mappings_path(file_path);
 }
 
 bool UseProtoPackageAsDefaultPrefix() {
