@@ -30,3 +30,7 @@ syntax = "proto3";
 package pkg;
 
 message RegularImportMessage {}
+
+enum Proto3Enum {
+    PROTO3_ENUM_ZERO = 0;
+}

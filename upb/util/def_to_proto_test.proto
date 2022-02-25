@@ -50,6 +50,7 @@ message Message {
   }
   optional pkg.RegularImportMessage regular_import_message = 6;
   optional pkg.PublicImportMessage public_import_message = 7;
+  optional pkg.Proto3Enum proto3_enum = 8;
   extensions 1000 to max;
   extend Message {
     optional int32 ext = 1000;

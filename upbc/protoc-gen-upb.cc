@@ -935,7 +935,8 @@ SubLayoutArray::SubLayoutArray(const protobuf::Descriptor* message) {
   std::vector<const protobuf::FieldDescriptor*> sorted_subenums =
       SortedSubEnums(message);
   for (const auto* field : sorted_subenums) {
-    if (field->file()->syntax() != protobuf::FileDescriptor::SYNTAX_PROTO2) {
+    if (field->enum_type()->file()->syntax() !=
+        protobuf::FileDescriptor::SYNTAX_PROTO2) {
       continue;
     }
     if (!indexes_.try_emplace(field->enum_type(), i).second) {
@@ -983,7 +984,8 @@ bool TryFillTableEntry(const protobuf::Descriptor* message,
       type = "b1";
       break;
     case protobuf::FieldDescriptor::TYPE_ENUM:
-      if (field->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2) {
+      if (field->enum_type()->file()->syntax() ==
+          protobuf::FileDescriptor::SYNTAX_PROTO2) {
         // We don't have the means to test proto2 enum fields for valid values.
         return false;
       }
