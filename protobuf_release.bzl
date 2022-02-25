@@ -20,6 +20,8 @@ def _package_naming_impl(ctx):
     cpu = "s390_64"
   elif cpu == "aarch64":
     cpu = "aarch_64"
+  elif cpu == "ppc64":
+    cpu = "ppcle_64"
 
   # use the system name to determine the os and then create platform names
   if "apple" in system_name:
