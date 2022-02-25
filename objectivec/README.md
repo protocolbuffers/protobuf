@@ -133,7 +133,7 @@ This options allow you to provide a custom prefix for all the symbols generated
 from a proto file (classes (from message), enums, the Root for extension
 support).
 
-If not set, the generation options `prefix_to_proto_package_mappings_path` and
+If not set, the generation options `package_to_prefix_mappings_path` and
 `use_package_as_prefix` (documented below) controls what is used instead. Since
 Objective C uses a global namespace for all of its classes, there can be collisions.
 `use_package_as_prefix=yes` should avoid collisions since proto package are used to
@@ -182,8 +182,8 @@ supported keys are:
     having to add the runtime directory to the header search path since the
     generate `#import` will be more complete.
 
-  * `prefix_to_proto_package_mappings_path`: The `value` used for
-    this key is a path to a file containing a list of prefixes and proto packages.
+  * `package_to_prefix_mappings_path`: The `value` used for this key is a 
+    path to a file containing a list of proto packages and prefixes.
     The generator will use this to locate which ObjC class prefix to use when
     generating sources _unless_ the `objc_class_prefix` file option is set.
     This option can be useful if multiple apps consume a common set of
