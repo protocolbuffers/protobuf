@@ -1555,7 +1555,7 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
       field->submsg_index = sublayout_count++;
       subs[field->submsg_index].submsg = upb_FieldDef_MessageSubDef(f)->layout;
     } else if (upb_FieldDef_CType(f) == kUpb_CType_Enum &&
-               f->file->syntax == kUpb_Syntax_Proto2) {
+               f->sub.enumdef->file->syntax == kUpb_Syntax_Proto2) {
       field->submsg_index = sublayout_count++;
       subs[field->submsg_index].subenum = upb_FieldDef_EnumSubDef(f)->layout;
       UPB_ASSERT(subs[field->submsg_index].subenum);
