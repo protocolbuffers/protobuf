@@ -1,43 +1,21 @@
 #!/usr/bin/env python
-# Usage: ./update_version.py <MAJOR>.<MINOR>.<MICRO> [<RC version>]
-#
-# Example:
-# ./update_version.py 3.7.1 2
-#   => Version will become 3.7.1-rc-2 (beta)
-# ./update_version.py 3.7.1
-#   => Version will become 3.7.1 (stable)
+# Usage: ./update_version.py
 
 import datetime
+import json
 import re
 import sys
 from xml.dom import minidom
 
-if len(sys.argv) < 2 or len(sys.argv) > 3:
-  print("""
-[ERROR] Please specify a version.
-
-./update_version.py <MAJOR>.<MINOR>.<MICRO> [<RC version>]
-
-Example:
-./update_version.py 3.7.1 2
-""")
-  exit(1)
-
-NEW_VERSION = sys.argv[1]
+versions = json.load(open('versions.json', 'r'))
+protoc_version = versions['versions'][0]['protoc_version'].split('-')
+RC_VERSION = len(protoc_version) > 1 and int(protoc_version[1][2:]) or -1
+NEW_VERSION = protoc_version[0]
 NEW_VERSION_INFO = [int(x) for x in NEW_VERSION.split('.')]
-if len(NEW_VERSION_INFO) != 3:
-  print("""
-[ERROR] Version must be in the format <MAJOR>.<MINOR>.<MICRO>
 
-Example:
-./update_version.py 3.7.3
-""")
-  exit(1)
-
-RC_VERSION = -1
-if len(sys.argv) > 2:
-  RC_VERSION = int(sys.argv[2])
-
+major_versions = {}
+for (language, version) in versions['versions'][0]['languages'].items():
+  major_versions[language] = int(version.split('.')[0])
 
 def Find(elem, tagname):
   for child in elem.childNodes:
@@ -54,24 +32,16 @@ def ReplaceText(elem, text):
   elem.firstChild.replaceWholeText(text)
 
 
-def GetFullVersion(rc_suffix = '-rc-'):
+def GetFullVersion(lang, rc_suffix = '-rc-'):
   if RC_VERSION < 0:
-    return NEW_VERSION
+    return '%d.%s' % (major_versions[lang], NEW_VERSION)
   else:
-    return '%s%s%s' % (NEW_VERSION, rc_suffix, RC_VERSION)
+    return '%d.%s%s%s' % (major_versions[lang], NEW_VERSION, rc_suffix, RC_VERSION)
 
 
 def GetSharedObjectVersion():
   protobuf_version_offset = 11
-  expected_major_version = 3
-  if NEW_VERSION_INFO[0] != expected_major_version:
-    print("""[ERROR] Major protobuf version has changed. Please update
-update_version.py to readjust the protobuf_version_offset and
-expected_major_version such that the PROTOBUF_VERSION in src/Makefile.am is
-always increasing.
-    """)
-    exit(1)
-  return [NEW_VERSION_INFO[1] + protobuf_version_offset, NEW_VERSION_INFO[2], 0]
+  return [NEW_VERSION_INFO[0] + protobuf_version_offset, NEW_VERSION_INFO[1], 0]
 
 
 def RewriteXml(filename, rewriter, add_xml_prefix=True):
@@ -121,13 +91,13 @@ def UpdateConfigure():
     lambda line : re.sub(
       r'^AC_INIT\(\[Protocol Buffers\],\[.*\],\[protobuf@googlegroups.com\],\[protobuf\]\)$',
       ('AC_INIT([Protocol Buffers],[%s],[protobuf@googlegroups.com],[protobuf])'
-        % GetFullVersion()),
+        % GetFullVersion('cpp')),
       line))
 
 
 def UpdateCpp():
   cpp_version = '%d%03d%03d' % (
-    NEW_VERSION_INFO[0], NEW_VERSION_INFO[1], NEW_VERSION_INFO[2])
+    major_versions['cpp'], NEW_VERSION_INFO[0], NEW_VERSION_INFO[1])
   version_suffix = ''
   if RC_VERSION != -1:
     version_suffix = '-rc%s' % RC_VERSION
@@ -148,7 +118,7 @@ def UpdateCpp():
         r'^#define PROTOBUF_VERSION_SUFFIX .*$',
         '#define PROTOBUF_VERSION_SUFFIX "%s"' % version_suffix,
         line)
-    if NEW_VERSION_INFO[2] == 0:
+    if NEW_VERSION_INFO[1] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
         '#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC %s' % cpp_version,
@@ -176,7 +146,7 @@ def UpdateCpp():
         r'^#define PROTOBUF_VERSION_SUFFIX .*$',
         '#define PROTOBUF_VERSION_SUFFIX "%s"' % version_suffix,
         line)
-    if NEW_VERSION_INFO[2] == 0:
+    if NEW_VERSION_INFO[1] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
         '#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC %s' % cpp_version,
@@ -201,7 +171,7 @@ def UpdateCpp():
         '#if %s < PROTOBUF_MIN_PROTOC_VERSION' % cpp_version,
         line)
     return line
-    
+
   RewriteTextFile('src/google/protobuf/stubs/common.h', RewriteCommon)
   RewriteTextFile('src/google/protobuf/port_def.inc', RewritePortDef)
   RewriteTextFile('src/google/protobuf/any.pb.h', RewritePbH)
@@ -222,69 +192,69 @@ def UpdateCsharp():
   RewriteXml('csharp/src/Google.Protobuf/Google.Protobuf.csproj',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'PropertyGroup'), 'VersionPrefix'),
-      GetFullVersion(rc_suffix = '-rc')),
+      GetFullVersion('csharp', rc_suffix = '-rc')),
     add_xml_prefix=False)
 
   RewriteXml('csharp/Google.Protobuf.Tools.nuspec',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'metadata'), 'version'),
-      GetFullVersion(rc_suffix = '-rc')))
+      GetFullVersion('csharp', rc_suffix = '-rc')))
 
 
 def UpdateJava():
   RewriteXml('java/pom.xml',
     lambda document : ReplaceText(
-      Find(document.documentElement, 'version'), GetFullVersion()))
+      Find(document.documentElement, 'version'), GetFullVersion('java')))
 
   RewriteXml('java/bom/pom.xml',
     lambda document : ReplaceText(
-      Find(document.documentElement, 'version'), GetFullVersion()))
+      Find(document.documentElement, 'version'), GetFullVersion('java')))
 
   RewriteXml('java/core/pom.xml',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'parent'), 'version'),
-      GetFullVersion()))
+      GetFullVersion('java')))
 
   RewriteXml('java/lite/pom.xml',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'parent'), 'version'),
-      GetFullVersion()))
+      GetFullVersion('java')))
 
   RewriteXml('java/util/pom.xml',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'parent'), 'version'),
-      GetFullVersion()))
+      GetFullVersion('java')))
 
   RewriteXml('java/kotlin/pom.xml',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'parent'), 'version'),
-      GetFullVersion()))
+      GetFullVersion('kotlin')))
 
   RewriteXml('java/kotlin-lite/pom.xml',
     lambda document : ReplaceText(
       Find(Find(document.documentElement, 'parent'), 'version'),
-      GetFullVersion()))
+      GetFullVersion('kotlin')))
 
   RewriteXml('protoc-artifacts/pom.xml',
     lambda document : ReplaceText(
-      Find(document.documentElement, 'version'), GetFullVersion()))
-  
+      Find(document.documentElement, 'version'), GetFullVersion('java')))
+
   RewriteTextFile('java/README.md',
     lambda line : re.sub(
       r'<version>.*</version>',
-      '<version>%s</version>' % GetFullVersion(),
+      '<version>%s</version>' % GetFullVersion('java'),
       line))
 
   RewriteTextFile('java/README.md',
     lambda line : re.sub(
       r'implementation \'com.google.protobuf:protobuf-java:.*\'',
-      'implementation \'com.google.protobuf:protobuf-java:%s\'' % GetFullVersion(),
+      'implementation \'com.google.protobuf:protobuf-java:%s\'' % GetFullVersion('java'),
       line))
 
   RewriteTextFile('java/lite.md',
     lambda line : re.sub(
       r'<version>.*</version>',
-      '<version>%s</version>' % GetFullVersion(),
+      '<version>%s</version>' % GetFullVersion('java'),
       line))
 
 
@@ -292,7 +262,7 @@ def UpdateJavaScript():
   RewriteTextFile('js/package.json',
     lambda line : re.sub(
       r'^  "version": ".*",$',
-      '  "version": "%s",' % GetFullVersion(rc_suffix = '-rc.'),
+      '  "version": "%s",' % GetFullVersion('javascript', rc_suffix = '-rc.'),
       line))
 
 
@@ -308,12 +278,12 @@ def UpdateObjectiveC():
   RewriteTextFile('Protobuf.podspec',
     lambda line : re.sub(
       r"^  s.version  = '.*'$",
-      "  s.version  = '%s'" % GetFullVersion(rc_suffix = '-rc'),
+      "  s.version  = '%s'" % GetFullVersion('objectivec', rc_suffix = '-rc'),
       line))
   RewriteTextFile('Protobuf-C++.podspec',
     lambda line : re.sub(
       r"^  s.version  = '.*'$",
-      "  s.version  = '%s'" % GetFullVersion(rc_suffix = '-rc'),
+      "  s.version  = '%s'" % GetFullVersion('cpp', rc_suffix = '-rc'),
       line))
 
 
@@ -334,7 +304,7 @@ def UpdatePhp():
     ReplaceText(Find(root, 'date'), now.strftime('%Y-%m-%d'))
     ReplaceText(Find(root, 'time'), now.strftime('%H:%M:%S'))
     version = Find(root, 'version')
-    ReplaceText(Find(version, 'release'), GetFullVersion(rc_suffix = 'RC'))
+    ReplaceText(Find(version, 'release'), GetFullVersion('php', rc_suffix = 'RC'))
     ReplaceText(Find(version, 'api'), NEW_VERSION)
     stability = Find(root, 'stability')
     ReplaceText(Find(stability, 'release'),
@@ -368,35 +338,45 @@ def UpdatePhp():
   RewriteTextFile('php/ext/google/protobuf/protobuf.h',
     lambda line : re.sub(
       r"^#define PHP_PROTOBUF_VERSION .*$",
-      "#define PHP_PROTOBUF_VERSION \"%s\"" % GetFullVersion(rc_suffix = 'RC'),
+      "#define PHP_PROTOBUF_VERSION \"%s\"" % GetFullVersion('php', rc_suffix = 'RC'),
       line))
 
 def UpdatePython():
   RewriteTextFile('python/google/protobuf/__init__.py',
     lambda line : re.sub(
       r"^__version__ = '.*'$",
-      "__version__ = '%s'" % GetFullVersion(rc_suffix = 'rc'),
+      "__version__ = '%s'" % GetFullVersion('python', rc_suffix = 'rc'),
       line))
 
 def UpdateRuby():
   RewriteXml('ruby/pom.xml',
              lambda document : ReplaceText(
-                 Find(document.documentElement, 'version'), GetFullVersion()))
+                 Find(document.documentElement, 'version'), GetFullVersion('ruby')))
   RewriteXml('ruby/pom.xml',
              lambda document : ReplaceText(
                  Find(Find(Find(document.documentElement, 'dependencies'), 'dependency'), 'version'),
-                 GetFullVersion()))
+                 GetFullVersion('ruby')))
   RewriteTextFile('ruby/google-protobuf.gemspec',
     lambda line : re.sub(
       r'^  s.version     = ".*"$',
-      '  s.version     = "%s"' % GetFullVersion(rc_suffix = '.rc.'),
+      '  s.version     = "%s"' % GetFullVersion('ruby', rc_suffix = '.rc.'),
       line))
 
 def UpdateBazel():
   RewriteTextFile('protobuf_version.bzl',
     lambda line : re.sub(
-     r"^PROTOBUF_VERSION = '.*'$",
-     "PROTOBUF_VERSION = '%s'" % GetFullVersion(),
+     r"^PROTOBUF_JAVA_VERSION = '.*'$",
+     "PROTOBUF_JAVA_VERSION = '%s'" % GetFullVersion('java'),
+     line))
+  RewriteTextFile('protobuf_version.bzl',
+    lambda line : re.sub(
+     r"^PROTOBUF_KOTLIN_VERSION = '.*'$",
+     "PROTOBUF_KOTLIN_VERSION = '%s'" % GetFullVersion('java'),
+     line))
+  RewriteTextFile('protobuf_version.bzl',
+    lambda line : re.sub(
+     r"^PROTOC_VERSION = '.*'$",
+     "PROTOC_VERSION = '%s'" % versions['versions'][0]['protoc_version'],
      line))
 
 

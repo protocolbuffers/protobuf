@@ -1,0 +1,21 @@
+{
+  "versions": [
+    {
+      "date": "2022-03-04",
+      "protoc_version": "20.0-rc1",
+      "lts": false,
+      "languages": {
+        "cpp": "3.20.0-rc1",
+        "csharp": "3.20.0-rc1",
+        "java": "3.20.0-rc1",
+        "javascript": "3.20.0-rc1",
+        "jruby": "3.20.0-rc1",
+        "kotlin": "3.20.0-rc1",
+        "objectivec": "3.20.0-rc1",
+        "php": "3.20.0-rc1",
+        "python": "3.20.0-rc1",
+        "ruby": "3.20.0-rc1"
+      }
+    }
+  ]
+}
