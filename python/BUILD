@@ -32,14 +32,18 @@ load(
     "py_proto_library",
 )
 load(
+    "//bazel:py_extension.bzl",
+    "py_extension",
+)
+load(
     "@rules_python//python:packaging.bzl",
     "py_wheel",
 )
 
 licenses(["notice"])
 
-cc_binary(
-    name = "message",
+py_extension(
+    name = "_message",
     srcs = [
         "convert.c",
         "convert.h",
@@ -61,24 +65,7 @@ cc_binary(
         "repeated.c",
         "repeated.h",
     ],
-    copts = UPB_DEFAULT_COPTS + [
-        # The Python API requires patterns that are ISO C incompatible, like
-        # casts between function pointers and object pointers.
-        "-Wno-pedantic",
-    ],
-    # We use a linker script to hide all symbols except the entry point for
-    # the module.
-    linkopts = select({
-        "@platforms//os:linux": ["-Wl,--version-script,$(location :version_script.lds)"],
-        "@platforms//os:macos": [
-            "-Wl,-exported_symbol",
-            "-Wl,_PyInit__message",
-        ],
-    }),
-    linkshared = True,
-    linkstatic = True,
     deps = [
-        ":version_script.lds",
         "//:descriptor_upb_proto_reflection",
         "//:reflection",
         "//:textformat",
@@ -86,7 +73,6 @@ cc_binary(
         "//upb/util:compare",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
-        "@system_python//:python_headers",
     ],
 )
 
@@ -108,7 +94,7 @@ EXT_SUFFIX = ".abi3.so"
 
 genrule(
     name = "copy_message",
-    srcs = [":message"],
+    srcs = [":_message"],
     outs = ["google/protobuf/pyext/_message" + EXT_SUFFIX],
     cmd = "cp $< $@",
 )
