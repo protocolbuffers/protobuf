@@ -23,22 +23,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-)
-load(
-    "//bazel:py_proto_library.bzl",
-    "py_proto_library",
-)
-load(
-    "//bazel:py_extension.bzl",
-    "py_extension",
-)
-load(
-    "@rules_python//python:packaging.bzl",
-    "py_wheel",
-)
+load("//bazel:py_proto_library.bzl", "py_proto_library")
+load("//bazel:py_extension.bzl", "py_extension")  # copybara:strip_for_google3_begin
+load("@rules_python//python:packaging.bzl", "py_wheel")
 
 licenses(["notice"])
 
@@ -76,16 +63,9 @@ py_extension(
     ],
 )
 
-cc_binary(
-    name = "api_implementation",
-    srcs = [
-        "api_implementation.c",
-    ],
-    linkshared = True,
-    linkstatic = True,
-    # Enable once linker script is available.
-    #copts = ["-fvisibility=hidden"],
-    deps = ["@system_python//:python_headers"],
+py_extension(
+    name = "_api_implementation",
+    srcs = ["api_implementation.c"],
 )
 
 # Copy the extensions into the location recognized by Python.
@@ -101,7 +81,7 @@ genrule(
 
 genrule(
     name = "copy_api_implementation",
-    srcs = [":api_implementation"],
+    srcs = [":_api_implementation"],
     outs = ["google/protobuf/internal/_api_implementation" + EXT_SUFFIX],
     cmd = "cp $< $@",
     visibility = ["//python:__subpackages__"],

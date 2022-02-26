@@ -4,7 +4,7 @@ load(
     "UPB_DEFAULT_COPTS",
 )
 
-def py_extension(name, srcs, deps):
+def py_extension(name, srcs, deps=[]):
     version_script = name + "_version_script.lds"
     symbol = "PyInit_" + name
     native.genrule(
