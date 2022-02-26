@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load("//bazel:py_proto_library.bzl", "py_proto_library")
-load("//bazel:py_extension.bzl", "py_extension")  # copybara:strip_for_google3_begin
+load("//bazel:py_extension.bzl", "py_extension")  # copybara:strip_for_google3
 load("@rules_python//python:packaging.bzl", "py_wheel")
 
 licenses(["notice"])
