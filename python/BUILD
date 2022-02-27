@@ -68,6 +68,23 @@ py_extension(
     srcs = ["api_implementation.c"],
 )
 
+py_test(
+    name = "minimal_test",
+    srcs = [
+        "minimal_test.py",
+    ],
+    imports = ["."],
+    legacy_create_init = False,
+    deps = [
+        "//python:message_ext",
+        "@com_google_protobuf//:python_common_test_protos",
+        "@com_google_protobuf//:python_specific_test_protos",
+        "@com_google_protobuf//:python_srcs",
+    ],
+)
+
+# copybara:strip_for_google3_begin
+
 # Copy the extensions into the location recognized by Python.
 # .abi3.so indicates use of the limited API, and cross-version ABI compatibility.
 EXT_SUFFIX = ".abi3.so"
@@ -102,20 +119,6 @@ py_library(
     visibility = ["//python:__subpackages__"],
 )
 
-py_test(
-    name = "minimal_test",
-    srcs = [
-        "minimal_test.py",
-    ],
-    imports = ["."],
-    legacy_create_init = False,
-    deps = [
-        "//python:message_ext",
-        "@com_google_protobuf//:python_common_test_protos",
-        "@com_google_protobuf//:python_specific_test_protos",
-        "@com_google_protobuf//:python_srcs",
-    ],
-)
 
 py_proto_library(
     name = "well_known_proto_pb2",
@@ -155,3 +158,5 @@ py_wheel(
         "@com_google_protobuf//:python_srcs",
     ],
 )
+
+# copybara:strip_end
