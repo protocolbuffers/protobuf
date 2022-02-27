@@ -33,7 +33,7 @@ pyproto_test_wrapper(name = "descriptor_pool_test")
 
 pyproto_test_wrapper(name = "descriptor_test")
 
-pyproto_test_wrapper(name = "generator_test")
+pyproto_test_wrapper(name = "generator_test")  # copybara:strip_for_google3
 
 pyproto_test_wrapper(name = "json_format_test")
 
