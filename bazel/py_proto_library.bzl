@@ -103,7 +103,7 @@ def _py_proto_library_aspect_impl(target, ctx):
     )
     outs_depset = depset(srcs)
     return [
-        PyInfo(transitive_sources = outs_depset)
+        PyInfo(transitive_sources = outs_depset),
     ]
 
 _py_proto_library_aspect = aspect(

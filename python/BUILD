@@ -23,23 +23,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-)
-load(
-    "//bazel:py_proto_library.bzl",
-    "py_proto_library",
-)
-load(
-    "@rules_python//python:packaging.bzl",
-    "py_wheel",
-)
+load("//bazel:py_proto_library.bzl", "py_proto_library")
+load("//bazel:py_extension.bzl", "py_extension")  # copybara:strip_for_google3
+load("@rules_python//python:packaging.bzl", "py_wheel")
 
 licenses(["notice"])
 
-cc_binary(
-    name = "message",
+py_extension(
+    name = "_message",
     srcs = [
         "convert.c",
         "convert.h",
@@ -61,45 +52,38 @@ cc_binary(
         "repeated.c",
         "repeated.h",
     ],
-    copts = UPB_DEFAULT_COPTS + [
-        # The Python API requires patterns that are ISO C incompatible, like
-        # casts between function pointers and object pointers.
-        "-Wno-pedantic",
-    ],
-    # We use a linker script to hide all symbols except the entry point for
-    # the module.
-    linkopts = select({
-        "@platforms//os:linux": ["-Wl,--version-script,$(location :version_script.lds)"],
-        "@platforms//os:macos": [
-            "-Wl,-exported_symbol",
-            "-Wl,_PyInit__message",
-        ],
-    }),
-    linkshared = True,
-    linkstatic = True,
     deps = [
-        ":version_script.lds",
         "//:descriptor_upb_proto_reflection",
         "//:reflection",
+        "//:table",
         "//:textformat",
         "//:upb",
         "//upb/util:compare",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
-        "@system_python//:python_headers",
     ],
 )
 
-cc_binary(
-    name = "api_implementation",
+py_extension(
+    name = "_api_implementation",
+    srcs = ["api_implementation.c"],
+)
+
+# copybara:strip_for_google3_begin
+
+py_test(
+    name = "minimal_test",
     srcs = [
-        "api_implementation.c",
+        "minimal_test.py",
     ],
-    linkshared = True,
-    linkstatic = True,
-    # Enable once linker script is available.
-    #copts = ["-fvisibility=hidden"],
-    deps = ["@system_python//:python_headers"],
+    imports = ["."],
+    legacy_create_init = False,
+    deps = [
+        "//python:message_ext",
+        "@com_google_protobuf//:python_common_test_protos",
+        "@com_google_protobuf//:python_specific_test_protos",
+        "@com_google_protobuf//:python_srcs",
+    ],
 )
 
 # Copy the extensions into the location recognized by Python.
@@ -108,14 +92,14 @@ EXT_SUFFIX = ".abi3.so"
 
 genrule(
     name = "copy_message",
-    srcs = [":message"],
+    srcs = [":_message"],
     outs = ["google/protobuf/pyext/_message" + EXT_SUFFIX],
     cmd = "cp $< $@",
 )
 
 genrule(
     name = "copy_api_implementation",
-    srcs = [":api_implementation"],
+    srcs = [":_api_implementation"],
     outs = ["google/protobuf/internal/_api_implementation" + EXT_SUFFIX],
     cmd = "cp $< $@",
     visibility = ["//python:__subpackages__"],
@@ -136,20 +120,6 @@ py_library(
     visibility = ["//python:__subpackages__"],
 )
 
-py_test(
-    name = "minimal_test",
-    srcs = [
-        "minimal_test.py",
-    ],
-    imports = ["."],
-    legacy_create_init = False,
-    deps = [
-        "//python:message_ext",
-        "@com_google_protobuf//:python_common_test_protos",
-        "@com_google_protobuf//:python_specific_test_protos",
-        "@com_google_protobuf//:python_srcs",
-    ],
-)
 
 py_proto_library(
     name = "well_known_proto_pb2",
@@ -189,3 +159,5 @@ py_wheel(
         "@com_google_protobuf//:python_srcs",
     ],
 )
+
+# copybara:strip_end

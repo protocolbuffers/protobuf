@@ -193,7 +193,7 @@ PyObject* PyUpb_Forbidden_New(PyObject* cls, PyObject* args, PyObject* kwds);
 static inline void PyUpb_Dealloc(void* self) {
   PyTypeObject* tp = Py_TYPE(self);
   assert(PyType_GetFlags(tp) & Py_TPFLAGS_HEAPTYPE);
-  freefunc tp_free = PyType_GetSlot(tp, Py_tp_free);
+  freefunc tp_free = (freefunc)PyType_GetSlot(tp, Py_tp_free);
   tp_free(self);
   Py_DECREF(tp);
 }

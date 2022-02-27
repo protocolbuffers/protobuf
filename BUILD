@@ -444,7 +444,10 @@ cc_library(
         "upb/table_internal.h",
         "upb/upb.h",
     ],
-    visibility = ["//tests:__pkg__"],
+    visibility = [
+        "//python:__pkg__",
+        "//tests:__pkg__",
+    ],
     deps = [
         ":port",
     ],
