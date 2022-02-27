@@ -2,7 +2,14 @@
 #
 # Code that implements the DSL for defining proto messages.
 
-require 'google/protobuf/descriptor_pb'
+# Suppress warning: loading in progress, circular require considered harmful.
+# This circular require is intentional to avoid missing dependency.
+begin
+  old_verbose, $VERBOSE = $VERBOSE, nil
+  require 'google/protobuf/descriptor_pb'
+ensure
+  $VERBOSE = old_verbose
+end
 
 module Google
   module Protobuf
