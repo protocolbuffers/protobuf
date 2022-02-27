@@ -55,6 +55,7 @@ py_extension(
     deps = [
         "//:descriptor_upb_proto_reflection",
         "//:reflection",
+        "//:table",
         "//:textformat",
         "//:upb",
         "//upb/util:compare",
