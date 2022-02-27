@@ -251,7 +251,7 @@ static PyObject* PyUpb_DescriptorPool_DoAdd(PyObject* _self,
                                             PyObject* file_desc) {
   if (!PyUpb_CMessage_Verify(file_desc)) return NULL;
   const upb_MessageDef* m = PyUpb_CMessage_GetMsgdef(file_desc);
-  const char* file_proto_name = "google.protobuf.FileDescriptorProto";
+  const char* file_proto_name = PYUPB_DESCRIPTOR_PROTO_PACKAGE ".FileDescriptorProto";
   if (strcmp(upb_MessageDef_FullName(m), file_proto_name) != 0) {
     return PyErr_Format(PyExc_TypeError, "Can only add FileDescriptorProto");
   }
