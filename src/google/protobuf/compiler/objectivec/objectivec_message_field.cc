@@ -58,9 +58,8 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
 
 }  // namespace
 
-MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
-                                             const Options& options)
-    : ObjCObjFieldGenerator(descriptor, options) {
+MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor)
+    : ObjCObjFieldGenerator(descriptor) {
   SetMessageVariables(descriptor, &variables_);
 }
 
@@ -79,8 +78,8 @@ void MessageFieldGenerator::DetermineObjectiveCClassDefinitions(
 }
 
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
-    const FieldDescriptor* descriptor, const Options& options)
-    : RepeatedFieldGenerator(descriptor, options) {
+    const FieldDescriptor* descriptor)
+    : RepeatedFieldGenerator(descriptor) {
   SetMessageVariables(descriptor, &variables_);
   variables_["array_storage_type"] = "NSMutableArray";
   variables_["array_property_type"] =

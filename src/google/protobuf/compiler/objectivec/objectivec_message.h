@@ -35,7 +35,6 @@
 #include <set>
 #include <vector>
 #include <google/protobuf/compiler/objectivec/objectivec_field.h>
-#include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/compiler/objectivec/objectivec_oneof.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
@@ -51,7 +50,7 @@ class EnumGenerator;
 class MessageGenerator {
  public:
   MessageGenerator(const std::string& root_classname,
-                   const Descriptor* descriptor, const Options& options);
+                   const Descriptor* descriptor);
   ~MessageGenerator();
 
   MessageGenerator(const MessageGenerator&) = delete;
