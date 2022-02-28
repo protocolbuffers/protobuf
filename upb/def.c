@@ -981,9 +981,7 @@ const char* upb_MethodDef_FullName(const upb_MethodDef* m) {
   return m->full_name;
 }
 
-int upb_MethodDef_Index(const upb_MethodDef* m) {
-  return m->index;
-}
+int upb_MethodDef_Index(const upb_MethodDef* m) { return m->index; }
 
 const char* upb_MethodDef_Name(const upb_MethodDef* m) {
   return shortdefname(m->full_name);
