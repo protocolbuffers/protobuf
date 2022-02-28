@@ -3,8 +3,6 @@
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
 #import "GPBType.pbobjc.h"
-#import "GPBAny.pbobjc.h"
-#import "GPBSourceContext.pbobjc.h"
 
 #import <stdatomic.h>
 

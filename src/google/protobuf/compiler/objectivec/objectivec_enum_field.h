@@ -52,7 +52,8 @@ class EnumFieldGenerator : public SingleFieldGenerator {
   virtual void GenerateCFunctionImplementations(
       io::Printer* printer) const override;
   virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls) const override;
+      std::set<std::string>* fwd_decls,
+      bool include_external_types) const override;
 
  protected:
   EnumFieldGenerator(const FieldDescriptor* descriptor);
