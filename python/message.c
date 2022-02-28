@@ -1482,6 +1482,7 @@ static PyObject* PyUpb_CMessage_GetExtensionDict(PyObject* _self,
                                                  void* closure) {
   PyUpb_CMessage* self = (void*)_self;
   if (self->ext_dict) {
+    Py_INCREF(self->ext_dict);
     return self->ext_dict;
   }
 

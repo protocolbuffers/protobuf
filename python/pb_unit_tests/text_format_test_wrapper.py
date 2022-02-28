@@ -25,14 +25,16 @@
 
 from google.protobuf.internal import text_format_test
 import unittest
-from google.protobuf.internal import _parameterized
-
-sep = _parameterized._SEPARATOR
 
 # These rely on the UnknownFields accessor, which we are trying to deprecate.
 text_format_test.OnlyWorksWithProto2RightNowTests.testPrintUnknownFields.__unittest_expecting_failure__ = True
+
+# copybara:strip_for_google3_begin
+from google.protobuf.internal import _parameterized  # copybara:strip_for_google3
+sep = _parameterized._SEPARATOR
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintUnknownFieldsEmbeddedMessageInBytes" + sep + "0").__unittest_expecting_failure__ = True
 getattr(text_format_test.TextFormatMessageToStringTests, "testPrintUnknownFieldsEmbeddedMessageInBytes" + sep + "1").__unittest_expecting_failure__ = True
+# copybara:strip_end
 
 if __name__ == '__main__':
   unittest.main(module=text_format_test, verbosity=2)
