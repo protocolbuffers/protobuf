@@ -31,6 +31,7 @@
 #include <google/protobuf/compiler/objectivec/objectivec_file.h>
 #include <google/protobuf/compiler/objectivec/objectivec_enum.h>
 #include <google/protobuf/compiler/objectivec/objectivec_extension.h>
+#include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/compiler/objectivec/objectivec_message.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/io/printer.h>
@@ -185,11 +186,12 @@ bool IsDirectDependency(const FileDescriptor* dep, const FileDescriptor* file) {
 
 }  // namespace
 
-FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
+FileGenerator::FileGenerator(const FileDescriptor* file,
+                             const GenerationOptions& generation_options)
     : file_(file),
+      generation_options_(generation_options),
       root_class_name_(FileClassName(file)),
-      is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)),
-      options_(options) {
+      is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
     EnumGenerator* generator = new EnumGenerator(file_->enum_type(i));
     enum_generators_.emplace_back(generator);
@@ -240,9 +242,9 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
   // #import any headers for "public imports" in the proto file.
   {
     ImportWriter import_writer(
-        options_.generate_for_named_framework,
-        options_.named_framework_to_proto_path_mappings_path,
-        options_.runtime_import_prefix,
+        generation_options_.generate_for_named_framework,
+        generation_options_.named_framework_to_proto_path_mappings_path,
+        generation_options_.runtime_import_prefix,
         is_bundled_proto_);
     const std::string header_extension(kHeaderExtension);
     for (int i = 0; i < file_->public_dependency_count(); i++) {
@@ -354,9 +356,9 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
 
   {
     ImportWriter import_writer(
-        options_.generate_for_named_framework,
-        options_.named_framework_to_proto_path_mappings_path,
-        options_.runtime_import_prefix,
+        generation_options_.generate_for_named_framework,
+        generation_options_.named_framework_to_proto_path_mappings_path,
+        generation_options_.runtime_import_prefix,
         is_bundled_proto_);
     const std::string header_extension(kHeaderExtension);
 
@@ -600,7 +602,7 @@ void FileGenerator::PrintFileRuntimePreamble(
       "\n",
       "filename", file_->name());
   ImportWriter::PrintRuntimeImports(
-      printer, headers_to_import, options_.runtime_import_prefix, true);
+      printer, headers_to_import, generation_options_.runtime_import_prefix, true);
   printer->Print("\n");
 }
 

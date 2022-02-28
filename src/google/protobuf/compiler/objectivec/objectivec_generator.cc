@@ -94,7 +94,8 @@ bool ObjectiveCGenerator::GenerateAll(
   //
   // e.g. protoc ... --objc_opt=expected_prefixes=file.txt,generate_for_named_framework=MyFramework
 
-  Options generation_options;
+  Options validation_options;
+  FileGenerator::GenerationOptions generation_options;
 
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
@@ -116,14 +117,14 @@ bool ObjectiveCGenerator::GenerateAll(
       //
       // There is no validation that the prefixes are good prefixes, it is
       // assumed that they are when you create the file.
-      generation_options.expected_prefixes_path = options[i].second;
+      validation_options.expected_prefixes_path = options[i].second;
     } else if (options[i].first == "expected_prefixes_suppressions") {
       // A semicolon delimited string that lists the paths of .proto files to
       // exclude from the package prefix validations (expected_prefixes_path).
       // This is provided as an "out", to skip some files being checked.
       for (StringPiece split_piece : Split(
                options[i].second, ";", true)) {
-        generation_options.expected_prefixes_suppressions.push_back(
+        validation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));
       }
     } else if (options[i].first == "prefixes_must_be_registered") {
@@ -135,7 +136,7 @@ bool ObjectiveCGenerator::GenerateAll(
       //     tried to use a prefix that isn't registered.
       // Default is "no".
       if (!StringToBool(options[i].second,
-                        &generation_options.prefixes_must_be_registered)) {
+                        &validation_options.prefixes_must_be_registered)) {
         *error = "error: Unknown value for prefixes_must_be_registered: " + options[i].second;
         return false;
       }
@@ -147,7 +148,7 @@ bool ObjectiveCGenerator::GenerateAll(
       //     raised if a files doesn't have one.
       // Default is "no".
       if (!StringToBool(options[i].second,
-                        &generation_options.require_prefixes)) {
+                        &validation_options.require_prefixes)) {
         *error = "error: Unknown value for require_prefixes: " + options[i].second;
         return false;
       }
@@ -258,7 +259,7 @@ bool ObjectiveCGenerator::GenerateAll(
   // -----------------------------------------------------------------
 
   // Validate the objc prefix/package pairings.
-  if (!ValidateObjCClassPrefixes(files, generation_options, error)) {
+  if (!ValidateObjCClassPrefixes(files, validation_options, error)) {
     // *error will have been filled in.
     return false;
   }
