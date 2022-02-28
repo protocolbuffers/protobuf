@@ -253,7 +253,11 @@ IsProtobufLibraryBundledProtoFile(const FileDescriptor* file);
 // and the result is false.
 bool PROTOC_EXPORT ValidateObjCClassPrefixes(
     const std::vector<const FileDescriptor*>& files,
-    const Options& generation_options, std::string* out_error);
+    const Options& validation_options, std::string* out_error);
+// Same was the other ValidateObjCClassPrefixes() calls, but the options all
+// come from the environment variables.
+bool PROTOC_EXPORT ValidateObjCClassPrefixes(
+    const std::vector<const FileDescriptor*>& files, std::string* out_error);
 
 // Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
 // the input into the expected output.
