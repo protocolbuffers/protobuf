@@ -1298,16 +1298,16 @@ bool PackageToPrefixesCollector::ConsumeLine(
   return true;
 }
 
-bool LoadExpectedPackagePrefixes(const Options& generation_options,
+bool LoadExpectedPackagePrefixes(const std::string& expected_prefixes_path,
                                  std::map<std::string, std::string>* prefix_map,
                                  std::string* out_error) {
-  if (generation_options.expected_prefixes_path.empty()) {
+  if (expected_prefixes_path.empty()) {
     return true;
   }
 
   PackageToPrefixesCollector collector("Expected prefixes", prefix_map);
   return ParseSimpleFile(
-      generation_options.expected_prefixes_path, &collector, out_error);
+      expected_prefixes_path, &collector, out_error);
 }
 
 bool ValidateObjCClassPrefix(
@@ -1465,7 +1465,7 @@ bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
 
   // Load the expected package prefixes, if available, to validate against.
   std::map<std::string, std::string> expected_package_prefixes;
-  if (!LoadExpectedPackagePrefixes(generation_options,
+  if (!LoadExpectedPackagePrefixes(generation_options.expected_prefixes_path,
                                    &expected_package_prefixes,
                                    out_error)) {
     return false;

@@ -64,14 +64,12 @@ std::string PROTOC_EXPORT GetProtoPackagePrefixExceptionList();
 void PROTOC_EXPORT SetProtoPackagePrefixExceptionList(
     const std::string& file_path);
 
-// Generator options (see objectivec_generator.cc for a description of each):
+// Generator Prefix Validation Options (see objectivec_generator.cc for a
+// description of each):
 struct Options {
   Options();
   std::string expected_prefixes_path;
   std::vector<std::string> expected_prefixes_suppressions;
-  std::string generate_for_named_framework;
-  std::string named_framework_to_proto_path_mappings_path;
-  std::string runtime_import_prefix;
   bool prefixes_must_be_registered;
   bool require_prefixes;
 };
