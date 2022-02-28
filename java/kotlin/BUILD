@@ -1,5 +1,6 @@
 load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
+load("@rules_jvm_external//:kt_defs.bzl", "kt_jvm_export")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
 load("//:protobuf.bzl", "internal_gen_kt_protos")
@@ -45,6 +46,35 @@ kt_jvm_library(
       "src/main/kotlin/com/google/protobuf/ExtendableMessageExtensions.kt",
     ],
     deps = ["//java/core"],
+)
+
+kt_jvm_library(
+    name = "kotlin",
+    runtime_deps = [
+      ":bytestring_lib",
+      ":full_extensions",
+      ":only_for_use_in_proto_generated_code_its_generator_and_tests",
+      ":shared_runtime",
+      ":well_known_protos_kotlin",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+kt_jvm_export(
+    name = "kotlin_mvn",
+    maven_coordinates = "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_VERSION,
+    resources = ["//:well_known_protos"],
+    runtime_deps = [
+      ":bytestring_lib",
+      ":full_extensions",
+      ":only_for_use_in_proto_generated_code_its_generator_and_tests",
+      ":shared_runtime",
+      ":well_known_protos_kotlin",
+    ],
+    deploy_env = [
+        "@com_github_jetbrains_kotlin//:kotlin-stdlib",
+        "//java/core",
+    ],
 )
 
 test_suite(
