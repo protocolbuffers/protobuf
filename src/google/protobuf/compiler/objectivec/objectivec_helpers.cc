@@ -1455,6 +1455,13 @@ bool ValidateObjCClassPrefix(
 }  // namespace
 
 bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
+                               std::string* out_error) {
+    // Options's ctor load from the environment.
+    Options options;
+    return ValidateObjCClassPrefixes(files, options, out_error);
+}
+
+bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
                                const Options& generation_options,
                                std::string* out_error) {
   // Allow a '-' as the path for the expected prefixes to completely disable
