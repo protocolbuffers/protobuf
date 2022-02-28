@@ -188,6 +188,7 @@ struct upb_MethodDef {
   const char* full_name;
   const upb_MessageDef* input_type;
   const upb_MessageDef* output_type;
+  int index;
   bool client_streaming;
   bool server_streaming;
 };
@@ -978,6 +979,10 @@ bool upb_MethodDef_HasOptions(const upb_MethodDef* m) {
 
 const char* upb_MethodDef_FullName(const upb_MethodDef* m) {
   return m->full_name;
+}
+
+int upb_MethodDef_Index(const upb_MethodDef* m) {
+  return m->index;
 }
 
 const char* upb_MethodDef_Name(const upb_MethodDef* m) {
@@ -2382,6 +2387,7 @@ static void create_service(
 
     m->service = s;
     m->full_name = makefullname(ctx, s->full_name, name);
+    m->index = i;
     m->client_streaming =
         google_protobuf_MethodDescriptorProto_client_streaming(method_proto);
     m->server_streaming =
@@ -2810,15 +2816,10 @@ static void resolve_msgdef(symtab_addctx* ctx, upb_MessageDef* m) {
     resolve_fielddef(ctx, m->full_name, (upb_FieldDef*)&m->fields[i]);
   }
 
-  for (int i = 0; i < m->nested_ext_count; i++) {
-    resolve_fielddef(ctx, m->full_name, (upb_FieldDef*)&m->nested_exts[i]);
-  }
-
-  if (!ctx->layout) make_layout(ctx, m);
-
   m->in_message_set = false;
-  if (m->nested_ext_count == 1) {
-    const upb_FieldDef* ext = &m->nested_exts[0];
+  for (int i = 0; i < m->nested_ext_count; i++) {
+    upb_FieldDef* ext = (upb_FieldDef*)&m->nested_exts[i];
+    resolve_fielddef(ctx, m->full_name, ext);
     if (ext->type_ == kUpb_FieldType_Message &&
         ext->label_ == kUpb_Label_Optional && ext->sub.msgdef == m &&
         google_protobuf_MessageOptions_message_set_wire_format(
@@ -2826,6 +2827,8 @@ static void resolve_msgdef(symtab_addctx* ctx, upb_MessageDef* m) {
       m->in_message_set = true;
     }
   }
+
+  if (!ctx->layout) make_layout(ctx, m);
 
   for (int i = 0; i < m->nested_msg_count; i++) {
     resolve_msgdef(ctx, (upb_MessageDef*)&m->nested_msgs[i]);
