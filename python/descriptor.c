@@ -1016,7 +1016,8 @@ static PyObject* PyUpb_FieldDescriptor_GetOptions(PyObject* _self,
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(self, upb_FieldDef_Options(self->def),
                                          &google_protobuf_FieldOptions_msginit,
-                                         PYUPB_DESCRIPTOR_PROTO_PACKAGE ".FieldOptions");
+                                         PYUPB_DESCRIPTOR_PROTO_PACKAGE
+                                         ".FieldOptions");
 }
 
 static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
@@ -1255,7 +1256,8 @@ static PyObject* PyUpb_FileDescriptor_GetOptions(PyObject* _self,
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(self, upb_FileDef_Options(self->def),
                                          &google_protobuf_FileOptions_msginit,
-                                         PYUPB_DESCRIPTOR_PROTO_PACKAGE ".FileOptions");
+                                         PYUPB_DESCRIPTOR_PROTO_PACKAGE
+                                         ".FileOptions");
 }
 
 static PyObject* PyUpb_FileDescriptor_CopyToProto(PyObject* _self,
@@ -1362,7 +1364,8 @@ static PyObject* PyUpb_MethodDescriptor_GetOptions(PyObject* _self,
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(self, upb_MethodDef_Options(self->def),
                                          &google_protobuf_MethodOptions_msginit,
-                                         PYUPB_DESCRIPTOR_PROTO_PACKAGE ".MethodOptions");
+                                         PYUPB_DESCRIPTOR_PROTO_PACKAGE
+                                         ".MethodOptions");
 }
 
 static PyObject* PyUpb_MethodDescriptor_CopyToProto(PyObject* _self,
@@ -1467,7 +1470,8 @@ static PyObject* PyUpb_OneofDescriptor_GetOptions(PyObject* _self,
   PyUpb_DescriptorBase* self = (void*)_self;
   return PyUpb_DescriptorBase_GetOptions(self, upb_OneofDef_Options(self->def),
                                          &google_protobuf_OneofOptions_msginit,
-                                         PYUPB_DESCRIPTOR_PROTO_PACKAGE ".OneofOptions");
+                                         PYUPB_DESCRIPTOR_PROTO_PACKAGE
+                                         ".OneofOptions");
 }
 
 static PyGetSetDef PyUpb_OneofDescriptor_Getters[] = {

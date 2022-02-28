@@ -1832,7 +1832,8 @@ bool PyUpb_InitMessage(PyObject* m) {
   state->listfields_item_key = PyObject_GetAttrString(
       (PyObject*)state->cmessage_type, "_ListFieldsItemKey");
 
-  PyObject* mod = PyImport_ImportModule(PYUPB_PROTOBUF_PUBLIC_PACKAGE ".message");
+  PyObject* mod =
+      PyImport_ImportModule(PYUPB_PROTOBUF_PUBLIC_PACKAGE ".message");
   if (mod == NULL) return false;
 
   state->encode_error_class = PyObject_GetAttrString(mod, "EncodeError");
