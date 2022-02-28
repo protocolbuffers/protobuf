@@ -317,6 +317,7 @@ const google_protobuf_MethodOptions* upb_MethodDef_Options(
     const upb_MethodDef* m);
 bool upb_MethodDef_HasOptions(const upb_MethodDef* m);
 const char* upb_MethodDef_FullName(const upb_MethodDef* m);
+int upb_MethodDef_Index(const upb_MethodDef* m);
 const char* upb_MethodDef_Name(const upb_MethodDef* m);
 const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
