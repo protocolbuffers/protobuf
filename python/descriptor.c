@@ -1341,6 +1341,12 @@ static PyObject* PyUpb_MethodDescriptor_GetFullName(PyObject* self,
   return PyUnicode_FromString(upb_MethodDef_FullName(m));
 }
 
+static PyObject* PyUpb_MethodDescriptor_GetIndex(PyObject* self,
+                                                 void* closure) {
+  const upb_MethodDef* oneof = PyUpb_MethodDescriptor_GetDef(self);
+  return PyLong_FromLong(upb_MethodDef_Index(oneof));
+}
+
 static PyObject* PyUpb_MethodDescriptor_GetContainingService(PyObject* self,
                                                              void* closure) {
   const upb_MethodDef* m = PyUpb_MethodDescriptor_GetDef(self);
@@ -1379,8 +1385,7 @@ static PyObject* PyUpb_MethodDescriptor_CopyToProto(PyObject* _self,
 static PyGetSetDef PyUpb_MethodDescriptor_Getters[] = {
     {"name", PyUpb_MethodDescriptor_GetName, NULL, "Name", NULL},
     {"full_name", PyUpb_MethodDescriptor_GetFullName, NULL, "Full name", NULL},
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
-    //{ "index", PyUpb_MethodDescriptor_GetIndex, NULL, "Index", NULL},
+    {"index", PyUpb_MethodDescriptor_GetIndex, NULL, "Index", NULL},
     {"containing_service", PyUpb_MethodDescriptor_GetContainingService, NULL,
      "Containing service", NULL},
     {"input_type", PyUpb_MethodDescriptor_GetInputType, NULL, "Input type",
