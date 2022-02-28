@@ -182,7 +182,7 @@ supported keys are:
     having to add the runtime directory to the header search path since the
     generate `#import` will be more complete.
 
-  * `package_to_prefix_mappings_path`: The `value` used for this key is a 
+  * `package_to_prefix_mappings_path`: The `value` used for this key is a
     path to a file containing a list of proto packages and prefixes.
     The generator will use this to locate which ObjC class prefix to use when
     generating sources _unless_ the `objc_class_prefix` file option is set.
@@ -217,6 +217,21 @@ supported keys are:
     in the future (as a breaking change), that is likely to change since it
     helps prepare folks before they end up using a lot of protos and getting a
     lot of collisions.
+
+  * `headers_use_forward_declarations`: The `value` for this can be `yes` or
+    `no`, and indicates if the generated headers use forward declarations for
+    Message and Enum types from other .proto files or if the files should be
+    imported into the generated header instead.
+
+    By using forward declarations, less code is likely to recompile when the
+    files do change, but Swift generally doesn't like forward declarations and
+    will fail to include properties when the concrete definition of the type is
+    known at import time. If your proto usages span modules, this can be a
+    problem.
+
+    `headers_use_forward_declarations` currently defaults to `yes` (existing
+    behavior), but in a future release, that default may change to provide
+    better Swift support by default.
 
 Contributing
 ------------

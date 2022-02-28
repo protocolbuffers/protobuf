@@ -57,6 +57,10 @@ const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30004;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
+std::string BundledFileName(const FileDescriptor* file) {
+  return "GPB" + FilePathBasename(file) + kHeaderExtension;
+}
+
 // Checks if a message contains any enums definitions (on the message or
 // a nested message under it).
 bool MessageContainsEnums(const Descriptor* message) {
@@ -218,6 +222,10 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
     headers.push_back("GPBDescriptor.h");
     headers.push_back("GPBMessage.h");
     headers.push_back("GPBRootObject.h");
+    for (int i = 0; i < file_->dependency_count(); i++) {
+      const std::string header_name = BundledFileName(file_->dependency(i));
+      headers.push_back(header_name);
+    }
   } else {
     headers.push_back("GPBProtocolBuffers.h");
   }
@@ -239,7 +247,10 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
       "\n",
       "google_protobuf_objc_version", StrCat(GOOGLE_PROTOBUF_OBJC_VERSION));
 
-  // #import any headers for "public imports" in the proto file.
+  // The bundled protos (WKTs) don't use of forward declarations.
+  bool headers_use_forward_declarations =
+      generation_options_.headers_use_forward_declarations && !is_bundled_proto_;
+
   {
     ImportWriter import_writer(
         generation_options_.generate_for_named_framework,
@@ -247,8 +258,15 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
         generation_options_.runtime_import_prefix,
         /* include_wkt_imports = */ false);
     const std::string header_extension(kHeaderExtension);
-    for (int i = 0; i < file_->public_dependency_count(); i++) {
-      import_writer.AddFile(file_->public_dependency(i), header_extension);
+    if (headers_use_forward_declarations) {
+      // #import any headers for "public imports" in the proto file.
+      for (int i = 0; i < file_->public_dependency_count(); i++) {
+        import_writer.AddFile(file_->public_dependency(i), header_extension);
+      }
+    } else {
+      for (int i = 0; i < file_->dependency_count(); i++) {
+        import_writer.AddFile(file_->dependency(i), header_extension);
+      }
     }
     import_writer.Print(printer);
   }
@@ -268,7 +286,9 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
 
   std::set<std::string> fwd_decls;
   for (const auto& generator : message_generators_) {
-    generator->DetermineForwardDeclarations(&fwd_decls);
+    generator->DetermineForwardDeclarations(
+        &fwd_decls,
+        /* include_external_types = */ headers_use_forward_declarations);
   }
   for (std::set<std::string>::const_iterator i(fwd_decls.begin());
        i != fwd_decls.end(); ++i) {
@@ -340,16 +360,10 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
 
 void FileGenerator::GenerateSource(io::Printer* printer) {
   // #import the runtime support.
-  const std::string header_extension(kHeaderExtension);
   std::vector<std::string> headers;
   headers.push_back("GPBProtocolBuffers_RuntimeSupport.h");
   if (is_bundled_proto_) {
-    headers.push_back("GPB" + FilePathBasename(file_) + header_extension);
-    for (int i = 0; i < file_->dependency_count(); i++) {
-      const std::string header_name =
-          "GPB" + FilePathBasename(file_->dependency(i)) + header_extension;
-      headers.push_back(header_name);
-    }
+    headers.push_back(BundledFileName(file_));
   }
   PrintFileRuntimePreamble(printer, headers);
 
@@ -363,27 +377,34 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
   std::vector<const FileDescriptor*> deps_with_extensions;
   CollectMinimalFileDepsContainingExtensions(file_, &deps_with_extensions);
 
+  // The bundled protos (WKTs) don't use of forward declarations.
+  bool headers_use_forward_declarations =
+      generation_options_.headers_use_forward_declarations && !is_bundled_proto_;
+
   {
     ImportWriter import_writer(
         generation_options_.generate_for_named_framework,
         generation_options_.named_framework_to_proto_path_mappings_path,
         generation_options_.runtime_import_prefix,
         /* include_wkt_imports = */ false);
+    const std::string header_extension(kHeaderExtension);
 
     // #import the header for this proto file.
     import_writer.AddFile(file_, header_extension);
 
-    // #import the headers for anything that a plain dependency of this proto
-    // file (that means they were just an include, not a "public" include).
-    std::set<std::string> public_import_names;
-    for (int i = 0; i < file_->public_dependency_count(); i++) {
-      public_import_names.insert(file_->public_dependency(i)->name());
-    }
-    for (int i = 0; i < file_->dependency_count(); i++) {
-      const FileDescriptor *dep = file_->dependency(i);
-      bool public_import = (public_import_names.count(dep->name()) != 0);
-      if (!public_import) {
-        import_writer.AddFile(dep, header_extension);
+    if (headers_use_forward_declarations) {
+      // #import the headers for anything that a plain dependency of this proto
+      // file (that means they were just an include, not a "public" include).
+      std::set<std::string> public_import_names;
+      for (int i = 0; i < file_->public_dependency_count(); i++) {
+        public_import_names.insert(file_->public_dependency(i)->name());
+      }
+      for (int i = 0; i < file_->dependency_count(); i++) {
+        const FileDescriptor *dep = file_->dependency(i);
+        bool public_import = (public_import_names.count(dep->name()) != 0);
+        if (!public_import) {
+          import_writer.AddFile(dep, header_extension);
+        }
       }
     }
 
