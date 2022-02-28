@@ -41,8 +41,7 @@ namespace compiler {
 namespace objectivec {
 
 class MapFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field,
-                                              const Options& options);
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  public:
   virtual void FinishInitialization(void) override;
@@ -51,7 +50,7 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
   MapFieldGenerator& operator=(const MapFieldGenerator&) = delete;
 
  protected:
-  MapFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
+  MapFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~MapFieldGenerator();
 
   virtual void DetermineObjectiveCClassDefinitions(

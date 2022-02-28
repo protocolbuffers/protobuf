@@ -81,14 +81,13 @@ const char* MapEntryTypeName(const FieldDescriptor* descriptor, bool isKey) {
 
 }  // namespace
 
-MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
-                                     const Options& options)
-    : RepeatedFieldGenerator(descriptor, options) {
+MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
+    : RepeatedFieldGenerator(descriptor) {
   const FieldDescriptor* key_descriptor =
       descriptor->message_type()->map_key();
   const FieldDescriptor* value_descriptor =
       descriptor->message_type()->map_value();
-  value_field_generator_.reset(FieldGenerator::Make(value_descriptor, options));
+  value_field_generator_.reset(FieldGenerator::Make(value_descriptor));
 
   // Pull over some variables_ from the value.
   variables_["field_type"] = value_field_generator_->variable("field_type");

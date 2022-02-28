@@ -196,7 +196,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   }
   for (int i = 0; i < file_->message_type_count(); i++) {
     MessageGenerator* generator =
-        new MessageGenerator(root_class_name_, file_->message_type(i), options_);
+        new MessageGenerator(root_class_name_, file_->message_type(i));
     message_generators_.emplace_back(generator);
   }
   for (int i = 0; i < file_->extension_count(); i++) {
