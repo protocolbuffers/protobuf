@@ -37,6 +37,7 @@ kt_jvm_library(
     name = "bytestring_lib",
     srcs = ["src/main/kotlin/com/google/protobuf/ByteStrings.kt"],
     deps = ["//java/lite"],
+    visibility = ["//java:__subpackages__"],
 )
 
 kt_jvm_library(
@@ -48,21 +49,10 @@ kt_jvm_library(
     deps = ["//java/core"],
 )
 
-kt_jvm_library(
-    name = "kotlin",
-    runtime_deps = [
-      ":bytestring_lib",
-      ":full_extensions",
-      ":only_for_use_in_proto_generated_code_its_generator_and_tests",
-      ":shared_runtime",
-      ":well_known_protos_kotlin",
-    ],
-    visibility = ["//visibility:public"],
-)
-
 kt_jvm_export(
     name = "kotlin_mvn",
     maven_coordinates = "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_VERSION,
+    pom_template = "//java/kotlin:pom_template.xml",
     resources = ["//:well_known_protos"],
     runtime_deps = [
       ":bytestring_lib",
@@ -75,6 +65,17 @@ kt_jvm_export(
         "@com_github_jetbrains_kotlin//:kotlin-stdlib",
         "//java/core",
     ],
+)
+
+filegroup(
+    name = "release",
+    srcs = [
+        ":kotlin_mvn-docs",
+        ":kotlin_mvn-maven-source",
+        ":kotlin_mvn-pom",
+        ":kotlin_mvn-project",
+    ],
+    visibility = ["//java:__pkg__"],
 )
 
 test_suite(

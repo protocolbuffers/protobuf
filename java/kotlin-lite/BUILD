@@ -1,5 +1,7 @@
 load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_java//java:defs.bzl", "java_lite_proto_library")
+load("@rules_jvm_external//:kt_defs.bzl", "kt_jvm_export")
+load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
 load("//:protobuf.bzl", "internal_gen_kt_protos")
 
 java_lite_proto_library(
@@ -11,6 +13,47 @@ kt_jvm_library(
     name = "lite_extensions",
     srcs = ["src/main/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt"],
     deps = ["//java/lite"],
+)
+
+kt_jvm_library(
+    name = "well_known_protos_kotlin_lite",
+    srcs = [
+        "//:gen_well_known_protos_kotlinlite",
+    ],
+    deps = [
+        "//java/lite",
+        "//java/kotlin:only_for_use_in_proto_generated_code_its_generator_and_tests",
+        "//java/kotlin:shared_runtime",
+    ],
+)
+
+kt_jvm_export(
+    name = "kotlin-lite_mvn",
+    maven_coordinates = "com.google.protobuf:protobuf-kotlin-lite:%s" % PROTOBUF_VERSION,
+    pom_template = "//java/kotlin-lite:pom_template.xml",
+    resources = ["//:well_known_protos"],
+    runtime_deps = [
+        ":lite_extensions",
+        ":well_known_protos_kotlin_lite",
+        "//java/kotlin:bytestring_lib",
+        "//java/kotlin:only_for_use_in_proto_generated_code_its_generator_and_tests",
+        "//java/kotlin:shared_runtime",
+    ],
+    deploy_env = [
+        "@com_github_jetbrains_kotlin//:kotlin-stdlib",
+        "//java/lite",
+    ],
+)
+
+filegroup(
+    name = "release",
+    srcs = [
+        ":kotlin-lite_mvn-docs",
+        ":kotlin-lite_mvn-maven-source",
+        ":kotlin-lite_mvn-pom",
+        ":kotlin-lite_mvn-project",
+    ],
+    visibility = ["//java:__pkg__"],
 )
 
 test_suite(
