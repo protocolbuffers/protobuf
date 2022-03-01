@@ -245,7 +245,7 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
         generation_options_.generate_for_named_framework,
         generation_options_.named_framework_to_proto_path_mappings_path,
         generation_options_.runtime_import_prefix,
-        is_bundled_proto_);
+        /* include_wkt_imports = */ false);
     const std::string header_extension(kHeaderExtension);
     for (int i = 0; i < file_->public_dependency_count(); i++) {
       import_writer.AddFile(file_->public_dependency(i), header_extension);
@@ -340,8 +340,17 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
 
 void FileGenerator::GenerateSource(io::Printer* printer) {
   // #import the runtime support.
+  const std::string header_extension(kHeaderExtension);
   std::vector<std::string> headers;
   headers.push_back("GPBProtocolBuffers_RuntimeSupport.h");
+  if (is_bundled_proto_) {
+    headers.push_back("GPB" + FilePathBasename(file_) + header_extension);
+    for (int i = 0; i < file_->dependency_count(); i++) {
+      const std::string header_name =
+          "GPB" + FilePathBasename(file_->dependency(i)) + header_extension;
+      headers.push_back(header_name);
+    }
+  }
   PrintFileRuntimePreamble(printer, headers);
 
   // Enums use atomic in the generated code, so add the system import as needed.
@@ -359,8 +368,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
         generation_options_.generate_for_named_framework,
         generation_options_.named_framework_to_proto_path_mappings_path,
         generation_options_.runtime_import_prefix,
-        is_bundled_proto_);
-    const std::string header_extension(kHeaderExtension);
+        /* include_wkt_imports = */ false);
 
     // #import the header for this proto file.
     import_writer.AddFile(file_, header_extension);
@@ -601,8 +609,26 @@ void FileGenerator::PrintFileRuntimePreamble(
       "// source: $filename$\n"
       "\n",
       "filename", file_->name());
-  ImportWriter::PrintRuntimeImports(
-      printer, headers_to_import, generation_options_.runtime_import_prefix, true);
+
+  if (is_bundled_proto_) {
+    // This is basically a clone of ImportWriter::PrintRuntimeImports() but
+    // without the CPP symbol gate, since within the bundled files, that isn't
+    // needed.
+    std::string import_prefix = generation_options_.runtime_import_prefix;
+    if (!import_prefix.empty()) {
+      import_prefix += "/";
+    }
+    for (const auto& header : headers_to_import) {
+      printer->Print(
+          "#import \"$import_prefix$$header$\"\n",
+          "import_prefix", import_prefix,
+          "header", header);
+    }
+  } else {
+    ImportWriter::PrintRuntimeImports(
+        printer, headers_to_import, generation_options_.runtime_import_prefix, true);
+  }
+
   printer->Print("\n");
 }
 
