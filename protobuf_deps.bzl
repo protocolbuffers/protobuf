@@ -70,9 +70,9 @@ def protobuf_deps():
     if not native.existing_rule("rules_jvm_external"):
         http_archive(
             name = "rules_jvm_external",
-            sha256 = "f36441aa876c4f6427bfb2d1f2d723b48e9d930b62662bf723ddfb8fc80f0140",
-            strip_prefix = "rules_jvm_external-4.1",
-            urls = ["https://github.com/bazelbuild/rules_jvm_external/archive/4.1.zip"],
+            sha256 = "744bd7436f63af7e9872948773b8b106016dc164acb3960b4963f86754532ee7",
+            strip_prefix = "rules_jvm_external-906875b0d5eaaf61a8ca2c9c3835bde6f435d011",
+            urls = ["https://github.com/bazelbuild/rules_jvm_external/archive/906875b0d5eaaf61a8ca2c9c3835bde6f435d011.zip"],
         )
 
     if not native.existing_rule("rules_pkg"):

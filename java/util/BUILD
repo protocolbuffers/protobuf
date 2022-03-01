@@ -27,6 +27,7 @@ java_export(
     pom_template = "pom_template.xml",
     visibility = ["//java:__pkg__"],
     runtime_deps = [":util"],
+    deploy_env = ["//java/core"],
 )
 
 filegroup(
