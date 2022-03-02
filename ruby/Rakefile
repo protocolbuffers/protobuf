@@ -122,10 +122,17 @@ else
   task 'gem:windows' do
     sh "rm Gemfile.lock"
     require 'rake_compiler_dock'
-    ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux'].each do |plat|
+    ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux', 'x64-mingw-ucrt'].each do |plat|
+      versions = if plat == 'x64-mingw-ucrt'
+        '3.1.1'
+      elsif plat == 'x64-mingw32'
+        '3.0.0:2.7.0:2.6.0:2.5.0'
+      else
+        '3.1.1:3.0.0:2.7.0:2.6.0:2.5.0'
+      end
       RakeCompilerDock.sh <<-"EOT", platform: plat
         bundle && \
-        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.0.0:2.7.0:2.6.0:2.5.0
+        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=#{versions}
       EOT
     end
   end
@@ -133,7 +140,7 @@ else
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=3.0.0:2.7.0:2.6.0:2.5.1"
+      system "rake cross native gem RUBY_CC_VERSION=3.1.1:3.0.0:2.7.0:2.6.0:2.5.1"
     end
   else
     task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']
