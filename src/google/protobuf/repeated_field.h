@@ -626,15 +626,15 @@ inline Element* RepeatedField<Element>::AddAlreadyReserved() {
 }
 
 template <typename Element>
-inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n) {
-  GOOGLE_DCHECK_GE(total_size_ - current_size_, n)
+inline Element* RepeatedField<Element>::AddNAlreadyReserved(int elements) {
+  GOOGLE_DCHECK_GE(total_size_ - current_size_, elements)
       << total_size_ << ", " << current_size_;
-  // Warning: sometimes people call this when n == 0 and total_size_ == 0. In
-  // this case the return pointer points to a zero size array (n == 0). Hence
-  // we can just use unsafe_elements(), because the user cannot dereference the
-  // pointer anyway.
+  // Warning: sometimes people call this when elements == 0 and
+  // total_size_ == 0. In this case the return pointer points to a zero size
+  // array (n == 0). Hence we can just use unsafe_elements(), because the user
+  // cannot dereference the pointer anyway.
   Element* ret = unsafe_elements() + current_size_;
-  current_size_ += n;
+  current_size_ += elements;
   return ret;
 }
 
@@ -847,6 +847,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
 template <typename Element>
 void RepeatedField<Element>::UnsafeArenaSwap(RepeatedField* other) {
   if (this == other) return;
+  GOOGLE_DCHECK_EQ(GetArena(), other->GetArena());
   InternalSwap(other);
 }
 
@@ -1142,7 +1143,6 @@ class RepeatedIterator {
   friend class RepeatedIterator;
 
   // Allow construction from RepeatedField.
-  friend class RepeatedField<Element>;  // TODO(b/218695758) Remove this.
   friend class RepeatedField<value_type>;
   explicit RepeatedIterator(Element* it) noexcept : it_(it) {}
 

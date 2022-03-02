@@ -143,7 +143,66 @@ struct ExpressionEater {
 };
 void Fold(std::initializer_list<ExpressionEater>) {}
 
-constexpr size_t RoundUp(size_t n) { return (n + 7) & ~7; }
+template <int R>
+constexpr size_t RoundUpTo(size_t n) {
+  static_assert((R & (R - 1)) == 0, "Must be power of two");
+  return (n + (R - 1)) & ~(R - 1);
+}
+
+constexpr size_t Max(size_t a, size_t b) { return a > b ? a : b; }
+template <typename T, typename... Ts>
+constexpr size_t Max(T a, Ts... b) {
+  return Max(a, Max(b...));
+}
+
+template <typename T>
+constexpr size_t EffectiveAlignof() {
+  // `char` is special in that it gets aligned to 8. It is where we drop the
+  // trivial structs.
+  return std::is_same<T, char>::value ? 8 : alignof(T);
+}
+
+template <int align, typename U, typename... T>
+using AppendIfAlign =
+    typename std::conditional<EffectiveAlignof<U>() == align, void (*)(T..., U),
+                              void (*)(T...)>::type;
+
+// Metafunction to sort types in descending order of alignment.
+// Useful for the flat allocator to ensure proper alignment of all elements
+// without having to add padding.
+// Instead of implementing a proper sort metafunction we just do a
+// filter+merge, which is much simpler to write as a metafunction.
+// We have a fixed set of alignments we can filter on.
+// For simplicity we use a function pointer as a type list.
+template <typename In, typename T16, typename T8, typename T4, typename T2,
+          typename T1>
+struct TypeListSortImpl;
+
+template <typename... T16, typename... T8, typename... T4, typename... T2,
+          typename... T1>
+struct TypeListSortImpl<void (*)(), void (*)(T16...), void (*)(T8...),
+                        void (*)(T4...), void (*)(T2...), void (*)(T1...)> {
+  using type = void (*)(T16..., T8..., T4..., T2..., T1...);
+};
+
+template <typename First, typename... Rest, typename... T16, typename... T8,
+          typename... T4, typename... T2, typename... T1>
+struct TypeListSortImpl<void (*)(First, Rest...), void (*)(T16...),
+                        void (*)(T8...), void (*)(T4...), void (*)(T2...),
+                        void (*)(T1...)> {
+  using type = typename TypeListSortImpl<
+      void (*)(Rest...), AppendIfAlign<16, First, T16...>,
+      AppendIfAlign<8, First, T8...>, AppendIfAlign<4, First, T4...>,
+      AppendIfAlign<2, First, T2...>, AppendIfAlign<1, First, T1...>>::type;
+};
+
+template <typename... T>
+using SortByAlignment =
+    typename TypeListSortImpl<void (*)(T...), void (*)(), void (*)(),
+                              void (*)(), void (*)(), void (*)()>::type;
+
+template <template <typename...> class C, typename... T>
+auto ApplyTypeList(void (*)(T...)) -> C<T...>;
 
 template <typename T>
 constexpr int FindTypeIndex() {
@@ -190,9 +249,12 @@ using PointerT = T*;
 template <typename... T>
 class FlatAllocation {
  public:
+  static constexpr size_t kMaxAlign = Max(alignof(T)...);
+
   FlatAllocation(const TypeMap<IntT, T...>& ends) : ends_(ends) {
     // The arrays start just after FlatAllocation, so adjust the ends.
-    Fold({(ends_.template Get<T>() += RoundUp(sizeof(FlatAllocation)))...});
+    Fold({(ends_.template Get<T>() +=
+           RoundUpTo<kMaxAlign>(sizeof(FlatAllocation)))...});
     Fold({Init<T>()...});
   }
 
@@ -228,38 +290,42 @@ class FlatAllocation {
     constexpr int prev_type_index = type_index == 0 ? 0 : type_index - 1;
     using PrevType =
         typename std::tuple_element<prev_type_index, std::tuple<T...>>::type;
-    return type_index == 0 ? RoundUp(sizeof(FlatAllocation))
+    // Ensure the types are properly aligned.
+    static_assert(EffectiveAlignof<PrevType>() >= EffectiveAlignof<U>(), "");
+    return type_index == 0 ? RoundUpTo<kMaxAlign>(sizeof(FlatAllocation))
                            : ends_.template Get<PrevType>();
   }
 
   template <typename U>
+  int EndOffset() const {
+    return ends_.template Get<U>();
+  }
+
+  // Avoid the reinterpret_cast if the array is empty.
+  // Clang's Control Flow Integrity does not like the cast pointing to memory
+  // that is not yet initialized to be of that type.
+  // (from -fsanitize=cfi-unrelated-cast)
+  template <typename U>
   U* Begin() const {
-    auto begin = BeginOffset<U>();
-    // Avoid the reinterpret_cast if the array is empty.
-    // Clang's Control Flow Integrity does not like the cast pointing to memory
-    // that is not yet initialized to be of that type.
-    // (from -fsanitize=cfi-unrelated-cast)
-    if (begin == ends_.template Get<U>()) return nullptr;
+    int begin = BeginOffset<U>(), end = EndOffset<U>();
+    if (begin == end) return nullptr;
     return reinterpret_cast<U*>(data() + begin);
   }
 
-  // Due to alignment the end offset could contain some extra bytes that do not
-  // belong to any object.
-  // Calculate the actual size by dividing the space by sizeof(U) to drop the
-  // extra bytes. If we calculate end as `data + offset` we can have an invalid
-  // pointer.
   template <typename U>
-  size_t Size() const {
-    return static_cast<size_t>(ends_.template Get<U>() - BeginOffset<U>()) /
-           sizeof(U);
+  U* End() const {
+    int begin = BeginOffset<U>(), end = EndOffset<U>();
+    if (begin == end) return nullptr;
+    return reinterpret_cast<U*>(data() + end);
   }
 
   template <typename U>
   bool Init() {
     // Skip for the `char` block. No need to zero initialize it.
     if (std::is_same<U, char>::value) return true;
-    for (int i = 0, size = Size<U>(); i < size; ++i) {
-      ::new (data() + BeginOffset<U>() + sizeof(U) * i) U{};
+    for (char *p = data() + BeginOffset<U>(), *end = data() + EndOffset<U>();
+         p != end; p += sizeof(U)) {
+      ::new (p) U{};
     }
     return true;
   }
@@ -267,7 +333,7 @@ class FlatAllocation {
   template <typename U>
   bool Destroy() {
     if (std::is_trivially_destructible<U>::value) return true;
-    for (U* it = Begin<U>(), *end = it + Size<U>(); it != end; ++it) {
+    for (U* it = Begin<U>(), *end = End<U>(); it != end; ++it) {
       it->~U();
     }
     return true;
@@ -285,7 +351,7 @@ TypeMap<IntT, T...> CalculateEnds(const TypeMap<IntT, T...>& sizes) {
   int total = 0;
   TypeMap<IntT, T...> out;
   Fold({(out.template Get<T>() = total +=
-         RoundUp(sizeof(T) * sizes.template Get<T>()))...});
+         sizeof(T) * sizes.template Get<T>())...});
   return out;
 }
 
@@ -302,7 +368,9 @@ class FlatAllocatorImpl {
     // We can't call PlanArray after FinalizePlanning has been called.
     GOOGLE_CHECK(!has_allocated());
     if (std::is_trivially_destructible<U>::value) {
-      total_.template Get<char>() += RoundUp(array_size * sizeof(U));
+      // Trivial types are aligned to 8 bytes.
+      static_assert(alignof(U) <= 8, "");
+      total_.template Get<char>() += RoundUpTo<8>(array_size * sizeof(U));
     } else {
       // Since we can't use `if constexpr`, just make the expression compile
       // when this path is not taken.
@@ -324,7 +392,7 @@ class FlatAllocatorImpl {
     TypeToUse*& data = pointers_.template Get<TypeToUse>();
     int& used = used_.template Get<TypeToUse>();
     U* res = reinterpret_cast<U*>(data + used);
-    used += trivial ? RoundUp(array_size * sizeof(U)) : array_size;
+    used += trivial ? RoundUpTo<8>(array_size * sizeof(U)) : array_size;
     GOOGLE_CHECK_LE(used, total_.template Get<TypeToUse>());
     return res;
   }
@@ -491,29 +559,6 @@ class FlatAllocatorImpl {
 };
 
 }  // namespace
-
-namespace internal {
-
-// Small sequential allocator to be used within a single file.
-// Most of the memory for a single FileDescriptor and everything under it is
-// allocated in a single block of memory, with the FlatAllocator giving it out
-// in parts later.
-// The code first plans the total number of bytes needed by calling PlanArray
-// with all the allocations that will happen afterwards, then calls
-// FinalizePlanning passing the underlying allocator (the DescriptorPool::Tables
-// instance), and then proceeds to get the memory via
-// `AllocateArray`/`AllocateString` calls. The calls to PlanArray and
-// The calls have to match between planning and allocating, though not
-// necessarily in the same order.
-class FlatAllocator
-    : public FlatAllocatorImpl<
-          char, std::string, SourceCodeInfo, FileDescriptorTables,
-          // Option types
-          MessageOptions, FieldOptions, EnumOptions, EnumValueOptions,
-          ExtensionRangeOptions, OneofOptions, ServiceOptions, MethodOptions,
-          FileOptions> {};
-
-}  // namespace internal
 
 class Symbol {
  public:
@@ -1081,8 +1126,125 @@ bool AllowedExtendeeInProto3(const std::string& name) {
   return allowed_proto3_extendees->find(name) !=
          allowed_proto3_extendees->end();
 }
-
 }  // anonymous namespace
+
+// Contains tables specific to a particular file.  These tables are not
+// modified once the file has been constructed, so they need not be
+// protected by a mutex.  This makes operations that depend only on the
+// contents of a single file -- e.g. Descriptor::FindFieldByName() --
+// lock-free.
+//
+// For historical reasons, the definitions of the methods of
+// FileDescriptorTables and DescriptorPool::Tables are interleaved below.
+// These used to be a single class.
+class FileDescriptorTables {
+ public:
+  FileDescriptorTables();
+  ~FileDescriptorTables();
+
+  // Empty table, used with placeholder files.
+  inline static const FileDescriptorTables& GetEmptyInstance();
+
+  // -----------------------------------------------------------------
+  // Finding items.
+
+  // Returns a null Symbol (symbol.IsNull() is true) if not found.
+  inline Symbol FindNestedSymbol(const void* parent,
+                                 StringPiece name) const;
+
+  // These return nullptr if not found.
+  inline const FieldDescriptor* FindFieldByNumber(const Descriptor* parent,
+                                                  int number) const;
+  inline const FieldDescriptor* FindFieldByLowercaseName(
+      const void* parent, StringPiece lowercase_name) const;
+  inline const FieldDescriptor* FindFieldByCamelcaseName(
+      const void* parent, StringPiece camelcase_name) const;
+  inline const EnumValueDescriptor* FindEnumValueByNumber(
+      const EnumDescriptor* parent, int number) const;
+  // This creates a new EnumValueDescriptor if not found, in a thread-safe way.
+  inline const EnumValueDescriptor* FindEnumValueByNumberCreatingIfUnknown(
+      const EnumDescriptor* parent, int number) const;
+
+  // -----------------------------------------------------------------
+  // Adding items.
+
+  // These add items to the corresponding tables.  They return false if
+  // the key already exists in the table.
+  bool AddAliasUnderParent(const void* parent, const std::string& name,
+                           Symbol symbol);
+  bool AddFieldByNumber(FieldDescriptor* field);
+  bool AddEnumValueByNumber(EnumValueDescriptor* value);
+
+  // Populates p->first->locations_by_path_ from p->second.
+  // Unusual signature dictated by internal::call_once.
+  static void BuildLocationsByPath(
+      std::pair<const FileDescriptorTables*, const SourceCodeInfo*>* p);
+
+  // Returns the location denoted by the specified path through info,
+  // or nullptr if not found.
+  // The value of info must be that of the corresponding FileDescriptor.
+  // (Conceptually a pure function, but stateful as an optimisation.)
+  const SourceCodeInfo_Location* GetSourceLocation(
+      const std::vector<int>& path, const SourceCodeInfo* info) const;
+
+  // Must be called after BuildFileImpl(), even if the build failed and
+  // we are going to roll back to the last checkpoint.
+  void FinalizeTables();
+
+ private:
+  const void* FindParentForFieldsByMap(const FieldDescriptor* field) const;
+  static void FieldsByLowercaseNamesLazyInitStatic(
+      const FileDescriptorTables* tables);
+  void FieldsByLowercaseNamesLazyInitInternal() const;
+  static void FieldsByCamelcaseNamesLazyInitStatic(
+      const FileDescriptorTables* tables);
+  void FieldsByCamelcaseNamesLazyInitInternal() const;
+
+  SymbolsByParentSet symbols_by_parent_;
+  mutable internal::once_flag fields_by_lowercase_name_once_;
+  mutable internal::once_flag fields_by_camelcase_name_once_;
+  // Make these fields atomic to avoid race conditions with
+  // GetEstimatedOwnedMemoryBytesSize. Once the pointer is set the map won't
+  // change anymore.
+  mutable std::atomic<const FieldsByNameMap*> fields_by_lowercase_name_{};
+  mutable std::atomic<const FieldsByNameMap*> fields_by_camelcase_name_{};
+  FieldsByNumberSet fields_by_number_;  // Not including extensions.
+  EnumValuesByNumberSet enum_values_by_number_;
+  mutable EnumValuesByNumberSet unknown_enum_values_by_number_
+      PROTOBUF_GUARDED_BY(unknown_enum_values_mu_);
+
+  // Populated on first request to save space, hence constness games.
+  mutable internal::once_flag locations_by_path_once_;
+  mutable LocationsByPathMap locations_by_path_;
+
+  // Mutex to protect the unknown-enum-value map due to dynamic
+  // EnumValueDescriptor creation on unknown values.
+  mutable internal::WrappedMutex unknown_enum_values_mu_;
+};
+
+namespace internal {
+
+// Small sequential allocator to be used within a single file.
+// Most of the memory for a single FileDescriptor and everything under it is
+// allocated in a single block of memory, with the FlatAllocator giving it out
+// in parts later.
+// The code first plans the total number of bytes needed by calling PlanArray
+// with all the allocations that will happen afterwards, then calls
+// FinalizePlanning passing the underlying allocator (the DescriptorPool::Tables
+// instance), and then proceeds to get the memory via
+// `AllocateArray`/`AllocateString` calls. The calls to PlanArray and
+// The calls have to match between planning and allocating, though not
+// necessarily in the same order.
+class FlatAllocator
+    : public decltype(ApplyTypeList<FlatAllocatorImpl>(
+          SortByAlignment<char, std::string, SourceCodeInfo,
+                          FileDescriptorTables,
+                          // Option types
+                          MessageOptions, FieldOptions, EnumOptions,
+                          EnumValueOptions, ExtensionRangeOptions, OneofOptions,
+                          ServiceOptions, MethodOptions, FileOptions>())) {};
+
+}  // namespace internal
 
 // ===================================================================
 // DescriptorPool::Tables
@@ -1199,7 +1361,7 @@ class DescriptorPool::Tables {
   Type* Allocate();
 
   // Allocate some bytes which will be reclaimed when the pool is
-  // destroyed.
+  // destroyed. Memory is aligned to 8 bytes.
   void* AllocateBytes(int size);
 
   // Create a FlatAllocation for the corresponding sizes.
@@ -1255,100 +1417,6 @@ class DescriptorPool::Tables {
   std::vector<Symbol> symbols_after_checkpoint_;
   std::vector<const FileDescriptor*> files_after_checkpoint_;
   std::vector<DescriptorIntPair> extensions_after_checkpoint_;
-};
-
-// Contains tables specific to a particular file.  These tables are not
-// modified once the file has been constructed, so they need not be
-// protected by a mutex.  This makes operations that depend only on the
-// contents of a single file -- e.g. Descriptor::FindFieldByName() --
-// lock-free.
-//
-// For historical reasons, the definitions of the methods of
-// FileDescriptorTables and DescriptorPool::Tables are interleaved below.
-// These used to be a single class.
-class FileDescriptorTables {
- public:
-  FileDescriptorTables();
-  ~FileDescriptorTables();
-
-  // Empty table, used with placeholder files.
-  inline static const FileDescriptorTables& GetEmptyInstance();
-
-  // -----------------------------------------------------------------
-  // Finding items.
-
-  // Returns a null Symbol (symbol.IsNull() is true) if not found.
-  inline Symbol FindNestedSymbol(const void* parent,
-                                 StringPiece name) const;
-
-  // These return nullptr if not found.
-  inline const FieldDescriptor* FindFieldByNumber(const Descriptor* parent,
-                                                  int number) const;
-  inline const FieldDescriptor* FindFieldByLowercaseName(
-      const void* parent, StringPiece lowercase_name) const;
-  inline const FieldDescriptor* FindFieldByCamelcaseName(
-      const void* parent, StringPiece camelcase_name) const;
-  inline const EnumValueDescriptor* FindEnumValueByNumber(
-      const EnumDescriptor* parent, int number) const;
-  // This creates a new EnumValueDescriptor if not found, in a thread-safe way.
-  inline const EnumValueDescriptor* FindEnumValueByNumberCreatingIfUnknown(
-      const EnumDescriptor* parent, int number) const;
-
-  // -----------------------------------------------------------------
-  // Adding items.
-
-  // These add items to the corresponding tables.  They return false if
-  // the key already exists in the table.
-  bool AddAliasUnderParent(const void* parent, const std::string& name,
-                           Symbol symbol);
-  bool AddFieldByNumber(FieldDescriptor* field);
-  bool AddEnumValueByNumber(EnumValueDescriptor* value);
-
-  // Populates p->first->locations_by_path_ from p->second.
-  // Unusual signature dictated by internal::call_once.
-  static void BuildLocationsByPath(
-      std::pair<const FileDescriptorTables*, const SourceCodeInfo*>* p);
-
-  // Returns the location denoted by the specified path through info,
-  // or nullptr if not found.
-  // The value of info must be that of the corresponding FileDescriptor.
-  // (Conceptually a pure function, but stateful as an optimisation.)
-  const SourceCodeInfo_Location* GetSourceLocation(
-      const std::vector<int>& path, const SourceCodeInfo* info) const;
-
-  // Must be called after BuildFileImpl(), even if the build failed and
-  // we are going to roll back to the last checkpoint.
-  void FinalizeTables();
-
- private:
-  const void* FindParentForFieldsByMap(const FieldDescriptor* field) const;
-  static void FieldsByLowercaseNamesLazyInitStatic(
-      const FileDescriptorTables* tables);
-  void FieldsByLowercaseNamesLazyInitInternal() const;
-  static void FieldsByCamelcaseNamesLazyInitStatic(
-      const FileDescriptorTables* tables);
-  void FieldsByCamelcaseNamesLazyInitInternal() const;
-
-  SymbolsByParentSet symbols_by_parent_;
-  mutable internal::once_flag fields_by_lowercase_name_once_;
-  mutable internal::once_flag fields_by_camelcase_name_once_;
-  // Make these fields atomic to avoid race conditions with
-  // GetEstimatedOwnedMemoryBytesSize. Once the pointer is set the map won't
-  // change anymore.
-  mutable std::atomic<const FieldsByNameMap*> fields_by_lowercase_name_{};
-  mutable std::atomic<const FieldsByNameMap*> fields_by_camelcase_name_{};
-  FieldsByNumberSet fields_by_number_;  // Not including extensions.
-  EnumValuesByNumberSet enum_values_by_number_;
-  mutable EnumValuesByNumberSet unknown_enum_values_by_number_
-      PROTOBUF_GUARDED_BY(unknown_enum_values_mu_);
-
-  // Populated on first request to save space, hence constness games.
-  mutable internal::once_flag locations_by_path_once_;
-  mutable LocationsByPathMap locations_by_path_;
-
-  // Mutex to protect the unknown-enum-value map due to dynamic
-  // EnumValueDescriptor creation on unknown values.
-  mutable internal::WrappedMutex unknown_enum_values_mu_;
 };
 
 DescriptorPool::Tables::Tables() {
@@ -1738,16 +1806,17 @@ bool DescriptorPool::Tables::AddExtension(const FieldDescriptor* field) {
 template <typename Type>
 Type* DescriptorPool::Tables::Allocate() {
   static_assert(std::is_trivially_destructible<Type>::value, "");
+  static_assert(alignof(Type) <= 8, "");
   return ::new (AllocateBytes(sizeof(Type))) Type{};
 }
 
 void* DescriptorPool::Tables::AllocateBytes(int size) {
   if (size == 0) return nullptr;
-  void* p = ::operator new(size + RoundUp(sizeof(int)));
+  void* p = ::operator new(size + RoundUpTo<8>(sizeof(int)));
   int* sizep = static_cast<int*>(p);
   misc_allocs_.emplace_back(sizep);
   *sizep = size;
-  return static_cast<char*>(p) + RoundUp(sizeof(int));
+  return static_cast<char*>(p) + RoundUpTo<8>(sizeof(int));
 }
 
 template <typename... T>
@@ -1758,7 +1827,8 @@ internal::FlatAllocator::Allocation* DescriptorPool::Tables::CreateFlatAlloc(
 
   int last_end = ends.template Get<
       typename std::tuple_element<sizeof...(T) - 1, std::tuple<T...>>::type>();
-  size_t total_size = last_end + RoundUp(sizeof(FlatAlloc));
+  size_t total_size =
+      last_end + RoundUpTo<FlatAlloc::kMaxAlign>(sizeof(FlatAlloc));
   char* data = static_cast<char*>(::operator new(total_size));
   auto* res = ::new (data) FlatAlloc(ends);
   flat_allocs_.emplace_back(res);

@@ -486,7 +486,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
   // destructor that we need to elide.
   format(
       "struct $1$ {\n"
-      "  constexpr $1$()\n"
+      "  PROTOBUF_CONSTEXPR $1$()\n"
       "      : _instance(::_pbi::ConstantInitialized{}) {}\n"
       "  ~$1$() {}\n"
       "  union {\n"

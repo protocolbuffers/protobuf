@@ -21,10 +21,10 @@ namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
-constexpr Empty::Empty(
+PROTOBUF_CONSTEXPR Empty::Empty(
     ::_pbi::ConstantInitialized){}
 struct EmptyDefaultTypeInternal {
-  constexpr EmptyDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR EmptyDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~EmptyDefaultTypeInternal() {}
   union {

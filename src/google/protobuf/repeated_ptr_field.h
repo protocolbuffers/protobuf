@@ -848,6 +848,7 @@ class StringTypeHandler {
 // Messages.
 template <typename Element>
 class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
+
  public:
   constexpr RepeatedPtrField();
   explicit RepeatedPtrField(Arena* arena);
@@ -1429,6 +1430,7 @@ template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaSwap(
     RepeatedPtrField* other) {
   if (this == other) return;
+  GOOGLE_DCHECK_EQ(GetArena(), other->GetArena());
   RepeatedPtrFieldBase::InternalSwap(other);
 }
 

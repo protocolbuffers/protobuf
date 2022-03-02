@@ -108,7 +108,7 @@ void PrintPresenceCheck(const Formatter& format, const FieldDescriptor* field,
     int has_bit_index = has_bit_indices[field->index()];
     if (*cached_has_word_index != (has_bit_index / 32)) {
       *cached_has_word_index = (has_bit_index / 32);
-      format("cached_has_bits = _has_bits_[$1$];\n", *cached_has_word_index);
+      format("cached_has_bits = $has_bits$[$1$];\n", *cached_has_word_index);
     }
     const std::string mask =
         StrCat(strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8));
@@ -411,6 +411,7 @@ class ColdChunkSkipper {
         access_info_map_(options.access_info_map),
         cold_threshold_(cold_threshold) {
     SetCommonVars(options, &variables_);
+    SetCommonMessageDataVariables(&variables_);
   }
 
   // May open an external if check for a batch of cold fields. "from" is the
@@ -551,6 +552,8 @@ void GenerateExtensionAnnotations(
           google::protobuf::FileOptions::LITE_RUNTIME) {
     return;
   }
+  StringPiece tracker = (*variables)["tracker"];
+  StringPiece extensions = (*variables)["extensions"];
   for (const auto& annotation : accessor_annotations_to_hooks) {
     const std::string& annotation_name = annotation.first;
     const std::string& listener_call = annotation.second;
@@ -560,29 +563,29 @@ void GenerateExtensionAnnotations(
       // Primitive fields accessors.
       // "Has" is here as users calling "has" on a repeated field is a mistake.
       (*variables)[annotation_name] = StrCat(
-          "  _tracker_.", listener_call,
-          "(this, id.number(), _proto_TypeTraits::GetPtr(id.number(), "
-          "_extensions_, id.default_value_ref()));");
+          "  ", tracker, ".", listener_call,
+          "(this, id.number(), _proto_TypeTraits::GetPtr(id.number(), ",
+          extensions, ", id.default_value_ref()));");
     } else if (StrContains(annotation_name, "repeated") &&
                !StrContains(annotation_name, "list") &&
                !StrContains(annotation_name, "size")) {
       // Repeated index accessors.
       std::string str_index = "index";
       if (StrContains(annotation_name, "add")) {
-        str_index = "_extensions_.ExtensionSize(id.number()) - 1";
+        str_index = StrCat(extensions, ".ExtensionSize(id.number()) - 1");
       }
       (*variables)[annotation_name] =
-          StrCat("  _tracker_.", listener_call,
+          StrCat("  ", tracker, ".", listener_call,
                        "(this, id.number(), "
-                       "_proto_TypeTraits::GetPtr(id.number(), _extensions_, ",
-                       str_index, "));");
+                       "_proto_TypeTraits::GetPtr(id.number(), ",
+                       extensions, ", ", str_index, "));");
     } else if (StrContains(annotation_name, "list") ||
                StrContains(annotation_name, "size")) {
       // Repeated full accessors.
       (*variables)[annotation_name] = StrCat(
-          "  _tracker_.", listener_call,
-          "(this, id.number(), _proto_TypeTraits::GetRepeatedPtr(id.number(), "
-          "_extensions_));");
+          "  ", tracker, ".", listener_call,
+          "(this, id.number(), _proto_TypeTraits::GetRepeatedPtr(id.number(), ",
+          extensions, "));");
     } else {
       // Generic accessors such as "clear".
       // TODO(b/190614678): Generalize clear from both repeated and non repeated
@@ -614,6 +617,7 @@ MessageGenerator::MessageGenerator(
   if (!message_layout_helper_) {
     message_layout_helper_.reset(new PaddingOptimizer());
   }
+  SetCommonMessageDataVariables(&variables_);
 
   // Variables that apply to this class
   variables_["classname"] = classname_;
@@ -629,7 +633,8 @@ MessageGenerator::MessageGenerator(
   if (options.field_listener_options.inject_field_listener_events &&
       descriptor->file()->options().optimize_for() !=
           google::protobuf::FileOptions::LITE_RUNTIME) {
-    const std::string injector_template = "  _tracker_.";
+    const std::string injector_template =
+        StrCat("  ", variables_["tracker"], ".");
 
     MaySetAnnotationVariable(options, "serialize", injector_template,
                              "OnSerialize(this);\n", &variables_);
@@ -845,7 +850,7 @@ inline bool HasExtension(
     const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
 $annotate_extension_has$
-  return _extensions_.Has(id.number());
+  return $extensions$.Has(id.number());
 }
 
 template <typename _proto_TypeTraits,
@@ -854,7 +859,7 @@ template <typename _proto_TypeTraits,
 inline void ClearExtension(
     const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
-  _extensions_.ClearExtension(id.number());
+  $extensions$.ClearExtension(id.number());
 $annotate_extension_clear$
 }
 
@@ -865,7 +870,7 @@ inline int ExtensionSize(
     const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
 $annotate_extension_repeated_size$
-  return _extensions_.ExtensionSize(id.number());
+  return $extensions$.ExtensionSize(id.number());
 }
 
 template <typename _proto_TypeTraits,
@@ -875,7 +880,7 @@ inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
     const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
 $annotate_extension_get$
-  return _proto_TypeTraits::Get(id.number(), _extensions_,
+  return _proto_TypeTraits::Get(id.number(), $extensions$,
                                 id.default_value());
 }
 
@@ -887,7 +892,7 @@ inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
 $annotate_extension_mutable$
   return _proto_TypeTraits::Mutable(id.number(), _field_type,
-                                    &_extensions_);
+                                    &$extensions$);
 }
 
 template <typename _proto_TypeTraits,
@@ -897,7 +902,7 @@ inline void SetExtension(
     const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
     typename _proto_TypeTraits::Singular::ConstType value) {
-  _proto_TypeTraits::Set(id.number(), _field_type, value, &_extensions_);
+  _proto_TypeTraits::Set(id.number(), _field_type, value, &$extensions$);
 $annotate_extension_set$
 }
 
@@ -909,7 +914,7 @@ inline void SetAllocatedExtension(
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
     typename _proto_TypeTraits::Singular::MutableType value) {
   _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
-                                  &_extensions_);
+                                  &$extensions$);
 $annotate_extension_set$
 }
 template <typename _proto_TypeTraits,
@@ -920,7 +925,7 @@ inline void UnsafeArenaSetAllocatedExtension(
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
     typename _proto_TypeTraits::Singular::MutableType value) {
   _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
-                                             value, &_extensions_);
+                                             value, &$extensions$);
 $annotate_extension_set$
 }
 template <typename _proto_TypeTraits,
@@ -933,7 +938,7 @@ PROTOBUF_NODISCARD inline
             $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
 $annotate_extension_release$
   return _proto_TypeTraits::Release(id.number(), _field_type,
-                                    &_extensions_);
+                                    &$extensions$);
 }
 template <typename _proto_TypeTraits,
           ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
@@ -944,7 +949,7 @@ UnsafeArenaReleaseExtension(
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
 $annotate_extension_release$
   return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
-                                               &_extensions_);
+                                               &$extensions$);
 }
 
 template <typename _proto_TypeTraits,
@@ -955,7 +960,7 @@ inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
     int index) const {
 $annotate_repeated_extension_get$
-  return _proto_TypeTraits::Get(id.number(), _extensions_, index);
+  return _proto_TypeTraits::Get(id.number(), $extensions$, index);
 }
 
 template <typename _proto_TypeTraits,
@@ -966,7 +971,7 @@ inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
     int index) {
 $annotate_repeated_extension_mutable$
-  return _proto_TypeTraits::Mutable(id.number(), index, &_extensions_);
+  return _proto_TypeTraits::Mutable(id.number(), index, &$extensions$);
 }
 
 template <typename _proto_TypeTraits,
@@ -976,7 +981,7 @@ inline void SetExtension(
     const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
     int index, typename _proto_TypeTraits::Repeated::ConstType value) {
-  _proto_TypeTraits::Set(id.number(), index, value, &_extensions_);
+  _proto_TypeTraits::Set(id.number(), index, value, &$extensions$);
 $annotate_repeated_extension_set$
 }
 
@@ -987,7 +992,7 @@ inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
     const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
   typename _proto_TypeTraits::Repeated::MutableType to_add =
-      _proto_TypeTraits::Add(id.number(), _field_type, &_extensions_);
+      _proto_TypeTraits::Add(id.number(), _field_type, &$extensions$);
 $annotate_repeated_extension_add_mutable$
   return to_add;
 }
@@ -1000,7 +1005,7 @@ inline void AddExtension(
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
     typename _proto_TypeTraits::Repeated::ConstType value) {
   _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
-                         &_extensions_);
+                         &$extensions$);
 $annotate_repeated_extension_add$
 }
 
@@ -1012,7 +1017,7 @@ GetRepeatedExtension(
     const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
 $annotate_repeated_extension_list$
-  return _proto_TypeTraits::GetRepeated(id.number(), _extensions_);
+  return _proto_TypeTraits::GetRepeated(id.number(), $extensions$);
 }
 
 template <typename _proto_TypeTraits,
@@ -1024,7 +1029,7 @@ MutableRepeatedExtension(
         $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
 $annotate_repeated_extension_list_mutable$
   return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
-                                            _is_packed, &_extensions_);
+                                            _is_packed, &$extensions$);
 }
 
 )");
@@ -1061,7 +1066,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
     format(
         "inline bool $classname$::has_$name$() const {\n"
         "$annotate_has$"
-        "  return _weak_field_map_.Has($number$);\n"
+        "  return $weak_field_map$.Has($number$);\n"
         "}\n");
     return;
   }
@@ -1075,7 +1080,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
     format(
         "inline bool $classname$::_internal_has_$name$() const {\n"
         "  bool value = "
-        "(_has_bits_[$has_array_index$] & 0x$has_mask$u) != 0;\n");
+        "($has_bits$[$has_array_index$] & 0x$has_mask$u) != 0;\n");
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         !IsLazy(field, options_, scc_analyzer_)) {
@@ -1125,7 +1130,7 @@ void MessageGenerator::GenerateOneofHasBits(io::Printer* printer) {
         "  return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;\n"
         "}\n"
         "inline void $classname$::clear_has_$oneof_name$() {\n"
-        "  _oneof_case_[$oneof_index$] = $cap_oneof_name$_NOT_SET;\n"
+        "  $oneof_case$[$oneof_index$] = $cap_oneof_name$_NOT_SET;\n"
         "}\n");
   }
 }
@@ -1171,7 +1176,7 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
   // annotated.
   format(
       "inline void $classname$::set_has_$name$() {\n"
-      "  _oneof_case_[$oneof_index$] = k$field_name$;\n"
+      "  $oneof_case$[$oneof_index$] = k$field_name$;\n"
       "}\n");
 }
 
@@ -1206,7 +1211,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
       format.Set("has_array_index", has_bit_index / 32);
       format.Set("has_mask",
                  strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8));
-      format("_has_bits_[$has_array_index$] &= ~0x$has_mask$u;\n");
+      format("$has_bits$[$has_array_index$] &= ~0x$has_mask$u;\n");
     }
   }
   format("$annotate_clear$");
@@ -1303,7 +1308,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> "
         "SuperType;\n"
         "  $classname$();\n"
-        "  explicit constexpr $classname$(\n"
+        "  explicit PROTOBUF_CONSTEXPR $classname$(\n"
         "      ::$proto_ns$::internal::ConstantInitialized);\n"
         "  explicit $classname$(::$proto_ns$::Arena* arena);\n"
         "  void MergeFrom(const $classname$& other);\n"
@@ -1400,7 +1405,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     format("~$classname$() override;\n");
   }
   format(
-      "explicit constexpr "
+      "explicit PROTOBUF_CONSTEXPR "
       "$classname$(::$proto_ns$::internal::ConstantInitialized);\n"
       "\n"
       "$classname$(const $classname$& from);\n"
@@ -1505,16 +1510,16 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
           "bool PackFrom(const ::$proto_ns$::Message& message) {\n"
-          "  return _any_metadata_.PackFrom(GetArena(), message);\n"
+          "  return $any_metadata$.PackFrom(GetArena(), message);\n"
           "}\n"
           "bool PackFrom(const ::$proto_ns$::Message& message,\n"
           "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
           "type_url_prefix) {\n"
-          "  return _any_metadata_.PackFrom(GetArena(), message, "
+          "  return $any_metadata$.PackFrom(GetArena(), message, "
           "type_url_prefix);\n"
           "}\n"
           "bool UnpackTo(::$proto_ns$::Message* message) const {\n"
-          "  return _any_metadata_.UnpackTo(message);\n"
+          "  return $any_metadata$.UnpackTo(message);\n"
           "}\n"
           "static bool GetAnyFieldDescriptors(\n"
           "    const ::$proto_ns$::Message& message,\n"
@@ -1524,7 +1529,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "!std::is_convertible<T, const ::$proto_ns$::Message&>"
           "::value>::type>\n"
           "bool PackFrom(const T& message) {\n"
-          "  return _any_metadata_.PackFrom<T>(GetArena(), message);\n"
+          "  return $any_metadata$.PackFrom<T>(GetArena(), message);\n"
           "}\n"
           "template <typename T, class = typename std::enable_if<"
           "!std::is_convertible<T, const ::$proto_ns$::Message&>"
@@ -1532,36 +1537,36 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "bool PackFrom(const T& message,\n"
           "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
           "type_url_prefix) {\n"
-          "  return _any_metadata_.PackFrom<T>(GetArena(), message, "
+          "  return $any_metadata$.PackFrom<T>(GetArena(), message, "
           "type_url_prefix);"
           "}\n"
           "template <typename T, class = typename std::enable_if<"
           "!std::is_convertible<T, const ::$proto_ns$::Message&>"
           "::value>::type>\n"
           "bool UnpackTo(T* message) const {\n"
-          "  return _any_metadata_.UnpackTo<T>(message);\n"
+          "  return $any_metadata$.UnpackTo<T>(message);\n"
           "}\n");
     } else {
       format(
           "template <typename T>\n"
           "bool PackFrom(const T& message) {\n"
-          "  return _any_metadata_.PackFrom(GetArena(), message);\n"
+          "  return $any_metadata$.PackFrom(GetArena(), message);\n"
           "}\n"
           "template <typename T>\n"
           "bool PackFrom(const T& message,\n"
           "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
           "type_url_prefix) {\n"
-          "  return _any_metadata_.PackFrom(GetArena(), message, "
+          "  return $any_metadata$.PackFrom(GetArena(), message, "
           "type_url_prefix);\n"
           "}\n"
           "template <typename T>\n"
           "bool UnpackTo(T* message) const {\n"
-          "  return _any_metadata_.UnpackTo(message);\n"
+          "  return $any_metadata$.UnpackTo(message);\n"
           "}\n");
     }
     format(
         "template<typename T> bool Is() const {\n"
-        "  return _any_metadata_.Is<T>();\n"
+        "  return $any_metadata$.Is<T>();\n"
         "}\n"
         "static bool ParseAnyTypeUrl(::PROTOBUF_NAMESPACE_ID::ConstStringParam "
         "type_url,\n"
@@ -1668,7 +1673,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
 
   if (!HasSimpleBaseClass(descriptor_, options_)) {
     format(
-        "int GetCachedSize() const final { return _cached_size_.Get(); }"
+        "int GetCachedSize() const final { return "
+        "$cached_size$.Get(); }"
         "\n\nprivate:\n"
         "void SharedCtor();\n"
         "void SharedDtor();\n"
@@ -1701,11 +1707,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "static void ArenaDtor(void* object);\n"
           "inline void OnDemandRegisterArenaDtor(::$proto_ns$::Arena* arena) "
           "override {\n"
-          "  if (arena == nullptr || (_inlined_string_donated_[0] & 0x1u) == "
+          "  if (arena == nullptr || ($inlined_string_donated_array$[0] & "
+          "0x1u) "
+          "== "
           "0) {\n"
           "   return;\n"
           "  }\n"
-          "  _inlined_string_donated_[0] &= 0xFFFFFFFEu;\n"
+          "  $inlined_string_donated_array$[0] &= 0xFFFFFFFEu;\n"
           "  arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);\n"
           "}\n");
       break;
@@ -1956,7 +1964,7 @@ void MessageGenerator::GenerateInlineMethods(io::Printer* printer) {
         "inline $classname$::$camel_oneof_name$Case $classname$::"
         "${1$$oneof_name$_case$}$() const {\n"
         "  return $classname$::$camel_oneof_name$Case("
-        "_oneof_case_[$oneof_index$]);\n"
+        "$oneof_case$[$oneof_index$]);\n"
         "}\n",
         oneof);
   }
@@ -2040,7 +2048,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   format.Indent();
   if (!has_bit_indices_.empty()) {
     format(
-        "using HasBits = decltype(std::declval<$classname$>()._has_bits_);\n");
+        "using HasBits = "
+        "decltype(std::declval<$classname$>().$has_bits$);\n");
   }
   for (auto field : FieldRange(descriptor_)) {
     field_generators_.get(field).GenerateInternalAccessorDeclarations(printer);
@@ -2168,7 +2177,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
           google::protobuf::FileOptions::LITE_RUNTIME) {
     format(
         "::$proto_ns$::AccessListener<$classtype$> "
-        "$1$::_tracker_(&FullMessageName);\n",
+        "$1$::$tracker$(&FullMessageName);\n",
         ClassName(descriptor_));
   }
 }
@@ -2178,28 +2187,30 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   Formatter format(printer, variables_);
 
   if (!has_bit_indices_.empty() || IsMapEntryMessage(descriptor_)) {
-    format("PROTOBUF_FIELD_OFFSET($classtype$, _has_bits_),\n");
+    format("PROTOBUF_FIELD_OFFSET($classtype$, $has_bits$),\n");
   } else {
     format("~0u,  // no _has_bits_\n");
   }
   format("PROTOBUF_FIELD_OFFSET($classtype$, _internal_metadata_),\n");
   if (descriptor_->extension_range_count() > 0) {
-    format("PROTOBUF_FIELD_OFFSET($classtype$, _extensions_),\n");
+    format("PROTOBUF_FIELD_OFFSET($classtype$, $extensions$),\n");
   } else {
     format("~0u,  // no _extensions_\n");
   }
   if (descriptor_->real_oneof_decl_count() > 0) {
-    format("PROTOBUF_FIELD_OFFSET($classtype$, _oneof_case_[0]),\n");
+    format("PROTOBUF_FIELD_OFFSET($classtype$, $oneof_case$[0]),\n");
   } else {
     format("~0u,  // no _oneof_case_\n");
   }
   if (num_weak_fields_ > 0) {
-    format("PROTOBUF_FIELD_OFFSET($classtype$, _weak_field_map_),\n");
+    format("PROTOBUF_FIELD_OFFSET($classtype$, $weak_field_map$),\n");
   } else {
     format("~0u,  // no _weak_field_map_\n");
   }
   if (!inlined_string_indices_.empty()) {
-    format("PROTOBUF_FIELD_OFFSET($classtype$, _inlined_string_donated_),\n");
+    format(
+        "PROTOBUF_FIELD_OFFSET($classtype$, "
+        "$inlined_string_donated_array$),\n");
   } else {
     format("~0u,  // no _inlined_string_donated_\n");
   }
@@ -2310,7 +2321,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* printer) {
   }
 
   if (num_weak_fields_) {
-    format("_weak_field_map_.ClearAll();\n");
+    format("$weak_field_map$.ClearAll();\n");
   }
   format.Outdent();
   format(
@@ -2368,7 +2379,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* printer) {
   Formatter format(printer, variables_);
 
   format(
-      "constexpr $classname$::$classname$(\n"
+      "PROTOBUF_CONSTEXPR $classname$::$classname$(\n"
       "    ::_pbi::ConstantInitialized)");
   format.Indent();
   const char* field_sep = ":";
@@ -2519,16 +2530,16 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
     if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
       format(
           "  if (!is_message_owned) {\n"
-          "    _inlined_string_donated_[0] = ~0u;\n"
+          "    $inlined_string_donated_array$[0] = ~0u;\n"
           "  } else {\n"
           // We should not register ArenaDtor for MOA.
-          "    _inlined_string_donated_[0] = 0xFFFFFFFEu;\n"
+          "    $inlined_string_donated_array$[0] = 0xFFFFFFFEu;\n"
           "  }\n");
     } else {
-      format("  _inlined_string_donated_[0] = 0xFFFFFFFEu;\n");
+      format("  $inlined_string_donated_array$[0] = 0xFFFFFFFEu;\n");
     }
     for (size_t i = 1; i < InlinedStringDonatedSize(); ++i) {
-      format("  _inlined_string_donated_[$1$] = ~0u;\n", i);
+      format("  $inlined_string_donated_array$[$1$] = ~0u;\n", i);
     }
     format("}\n");
     format.Outdent();
@@ -2606,8 +2617,8 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
 
     if (descriptor_->extension_range_count() > 0) {
       format(
-          "_extensions_.MergeFrom(internal_default_instance(), "
-          "from._extensions_);\n");
+          "$extensions$.MergeFrom(internal_default_instance(), "
+          "from.$extensions$);\n");
     }
 
     GenerateConstructorBody(printer, processed, true);
@@ -2687,7 +2698,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
     // Generate SetCachedSize.
     format(
         "void $classname$::SetCachedSize(int size) const {\n"
-        "  _cached_size_.Set(size);\n"
+        "  $cached_size$.Set(size);\n"
         "}\n");
   }
 }
@@ -2723,7 +2734,7 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
       "(void) cached_has_bits;\n\n");
 
   if (descriptor_->extension_range_count() > 0) {
-    format("_extensions_.Clear();\n");
+    format("$extensions$.Clear();\n");
   }
 
   // Collect fields into chunks. Each chunk may have an if() condition that
@@ -2796,7 +2807,7 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
 
       if (cached_has_word_index != HasWordIndex(chunk.front())) {
         cached_has_word_index = HasWordIndex(chunk.front());
-        format("cached_has_bits = _has_bits_[$1$];\n", cached_has_word_index);
+        format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
       }
       format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
       format.Indent();
@@ -2858,14 +2869,14 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
   }
 
   if (num_weak_fields_) {
-    format("_weak_field_map_.ClearAll();\n");
+    format("$weak_field_map$.ClearAll();\n");
   }
 
   // We don't clear donated status.
 
   if (!has_bit_indices_.empty()) {
     // Step 5: Everything else.
-    format("_has_bits_.Clear();\n");
+    format("$has_bits$.Clear();\n");
   }
 
   std::map<std::string, std::string> vars;
@@ -2911,7 +2922,7 @@ void MessageGenerator::GenerateOneofClear(io::Printer* printer) {
     format.Outdent();
     format(
         "}\n"
-        "_oneof_case_[$1$] = $2$_NOT_SET;\n",
+        "$oneof_case$[$1$] = $2$_NOT_SET;\n",
         i, ToUpper(oneof->name()));
     format.Outdent();
     format(
@@ -2931,7 +2942,9 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     if (descriptor_->extension_range_count() > 0) {
-      format("_extensions_.InternalSwap(&other->_extensions_);\n");
+      format(
+          "$extensions$.InternalSwap(&other->$extensions$);"
+          "\n");
     }
 
     std::map<std::string, std::string> vars;
@@ -2946,7 +2959,7 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
 
     if (!has_bit_indices_.empty()) {
       for (int i = 0; i < HasBitsSize(); ++i) {
-        format("swap(_has_bits_[$1$], other->_has_bits_[$1$]);\n", i);
+        format("swap($has_bits$[$1$], other->$has_bits$[$1$]);\n", i);
       }
     }
 
@@ -2993,18 +3006,23 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
     }
 
     for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
-      format("swap(_oneof_case_[$1$], other->_oneof_case_[$1$]);\n", i);
+      format(
+          "swap($oneof_case$[$1$], "
+          "other->$oneof_case$[$1$]);\n",
+          i);
     }
 
     if (num_weak_fields_) {
-      format("_weak_field_map_.UnsafeArenaSwap(&other->_weak_field_map_);\n");
+      format(
+          "$weak_field_map$.UnsafeArenaSwap(&other->$weak_field_map$)"
+          ";\n");
     }
 
     if (!inlined_string_indices_.empty()) {
       for (size_t i = 0; i < InlinedStringDonatedSize(); ++i) {
         format(
-            "swap(_inlined_string_donated_[$1$], "
-            "other->_inlined_string_donated_[$1$]);\n",
+            "swap($inlined_string_donated_array$[$1$], "
+            "other->$inlined_string_donated_array$[$1$]);\n",
             i);
       }
     }
@@ -3119,7 +3137,7 @@ void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
 
       if (cached_has_word_index != HasWordIndex(chunk.front())) {
         cached_has_word_index = HasWordIndex(chunk.front());
-        format("cached_has_bits = from._has_bits_[$1$];\n",
+        format("cached_has_bits = from.$has_bits$[$1$];\n",
                cached_has_word_index);
       }
 
@@ -3180,7 +3198,7 @@ void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
       if (deferred_has_bit_changes) {
         // Flush the has bits for the primitives we deferred.
         GOOGLE_CHECK_LE(0, cached_has_word_index);
-        format("_has_bits_[$1$] |= cached_has_bits;\n", cached_has_word_index);
+        format("$has_bits$[$1$] |= cached_has_bits;\n", cached_has_word_index);
       }
 
       format.Outdent();
@@ -3216,15 +3234,17 @@ void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
     format("}\n");
   }
   if (num_weak_fields_) {
-    format("_weak_field_map_.MergeFrom(from._weak_field_map_);\n");
+    format(
+        "$weak_field_map$.MergeFrom(from.$weak_field_map$);"
+        "\n");
   }
 
   // Merging of extensions and unknown fields is done last, to maximize
   // the opportunity for tail calls.
   if (descriptor_->extension_range_count() > 0) {
     format(
-        "_extensions_.MergeFrom(internal_default_instance(), "
-        "from._extensions_);\n");
+        "$extensions$.MergeFrom(internal_default_instance(), "
+        "from.$extensions$);\n");
   }
 
   format(
@@ -3360,7 +3380,7 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
   Formatter format(printer, vars);
   format("// Extension range [$start$, $end$)\n");
   format(
-      "target = _extensions_._InternalSerialize(\n"
+      "target = $extensions$._InternalSerialize(\n"
       "internal_default_instance(), $start$, $end$, target, stream);\n\n");
 }
 
@@ -3375,7 +3395,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
         "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
         "const {\n"
         "$annotate_serialize$"
-        "  target = _extensions_."
+        "  target = $extensions$."
         "InternalSerializeMessageSetWithCachedSizesToArray(\n"  //
         "internal_default_instance(), target, stream);\n");
     std::map<std::string, std::string> vars;
@@ -3578,7 +3598,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
   if (num_weak_fields_) {
     format(
         "::_pbi::WeakFieldMap::FieldWriter field_writer("
-        "_weak_field_map_);\n");
+        "$weak_field_map$);\n");
   }
 
   format(
@@ -3668,7 +3688,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
   if (num_weak_fields_) {
     format(
         "::_pbi::WeakFieldMap::FieldWriter field_writer("
-        "_weak_field_map_);\n");
+        "$weak_field_map$);\n");
   }
 
   format("for (int i = $1$; i >= 0; i-- ) {\n", num_fields - 1);
@@ -3759,7 +3779,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
         "size_t $classname$::ByteSizeLong() const {\n"
         "$annotate_bytesize$"
         "// @@protoc_insertion_point(message_set_byte_size_start:$full_name$)\n"
-        "  size_t total_size = _extensions_.MessageSetByteSize();\n"
+        "  size_t total_size = $extensions$.MessageSetByteSize();\n"
         "  if ($have_unknown_fields$) {\n"
         "    total_size += ::_pbi::\n"
         "        ComputeUnknownMessageSetItemsSize($unknown_fields$);\n"
@@ -3812,7 +3832,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     format(
-        "total_size += _extensions_.ByteSize();\n"
+        "total_size += $extensions$.ByteSize();\n"
         "\n");
   }
 
@@ -3893,7 +3913,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
 
       if (cached_has_word_index != HasWordIndex(chunk.front())) {
         cached_has_word_index = HasWordIndex(chunk.front());
-        format("cached_has_bits = _has_bits_[$1$];\n", cached_has_word_index);
+        format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
       }
       format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
       format.Indent();
@@ -3973,7 +3993,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
 
   if (num_weak_fields_) {
     // TagSize + MessageSize
-    format("total_size += _weak_field_map_.ByteSizeLong();\n");
+    format("total_size += $weak_field_map$.ByteSizeLong();\n");
   }
 
   if (UseUnknownFieldSet(descriptor_->file(), options_)) {
@@ -3981,7 +4001,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
     // unknown fields in tail position. This allows for better code generation
     // of this function for simple protos.
     format(
-        "return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);\n");
+        "return MaybeComputeUnknownFieldsSize(total_size, &$cached_size$);\n");
   } else {
     format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
     format("  total_size += $unknown_fields$.size();\n");
@@ -4013,14 +4033,14 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     format(
-        "if (!_extensions_.IsInitialized()) {\n"
+        "if (!$extensions$.IsInitialized()) {\n"
         "  return false;\n"
         "}\n\n");
   }
 
   if (num_required_fields_ > 0) {
     format(
-        "if (_Internal::MissingRequiredFields(_has_bits_))"
+        "if (_Internal::MissingRequiredFields($has_bits$))"
         " return false;\n");
   }
 
@@ -4030,7 +4050,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
   }
   if (num_weak_fields_) {
     // For Weak fields.
-    format("if (!_weak_field_map_.IsInitialized()) return false;\n");
+    format("if (!$weak_field_map$.IsInitialized()) return false;\n");
   }
   // Go through the oneof fields, emitting a switch if any might have required
   // fields.

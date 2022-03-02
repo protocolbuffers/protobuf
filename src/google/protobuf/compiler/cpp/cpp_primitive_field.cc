@@ -104,6 +104,9 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = PrimitiveTypeName(options, descriptor->cpp_type());
   (*variables)["default"] = DefaultValue(options, descriptor);
+  (*variables)["cached_byte_size_name"] = MakeVarintCachedSizeName(descriptor);
+  (*variables)["cached_byte_size_field"] =
+      MakeVarintCachedSizeFieldName(descriptor);
   (*variables)["tag"] = StrCat(internal::WireFormat::MakeTag(descriptor));
   int fixed_size = FixedSize(descriptor->type());
   if (fixed_size != -1) {
@@ -313,7 +316,7 @@ void RepeatedPrimitiveFieldGenerator::GeneratePrivateMembers(
   format("::$proto_ns$::RepeatedField< $type$ > $name$_;\n");
   if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("mutable std::atomic<int> _$name$_cached_byte_size_;\n");
+    format("mutable std::atomic<int> $cached_byte_size_name$;\n");
   }
 }
 
@@ -412,7 +415,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
       format(
           "{\n"
           "  int byte_size = "
-          "_$name$_cached_byte_size_.load(std::memory_order_relaxed);\n"
+          "$cached_byte_size_field$.load(std::memory_order_relaxed);\n"
           "  if (byte_size > 0) {\n"
           "    target = stream->Write$declared_type$Packed(\n"
           "        $number$, _internal_$name$(), byte_size, target);\n"
@@ -462,7 +465,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
     if (FixedSize(descriptor_->type()) == -1) {
       format(
           "int cached_size = ::_pbi::ToCachedSize(data_size);\n"
-          "_$name$_cached_byte_size_.store(cached_size,\n"
+          "$cached_byte_size_field$.store(cached_size,\n"
           "                                std::memory_order_relaxed);\n");
     }
     format("total_size += data_size;\n");
@@ -483,7 +486,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateConstinitInitializer(
   format("$name$_()");
   if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("\n, _$name$_cached_byte_size_(0)");
+    format("\n, $cached_byte_size_name$(0)");
   }
 }
 

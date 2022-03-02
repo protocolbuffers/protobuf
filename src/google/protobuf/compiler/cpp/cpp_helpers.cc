@@ -229,6 +229,18 @@ void SetCommonVars(const Options& options,
   (*variables)["string"] = "std::string";
 }
 
+void SetCommonMessageDataVariables(
+    std::map<std::string, std::string>* variables) {
+  (*variables)["any_metadata"] = "_any_metadata_";
+  (*variables)["cached_size"] = "_cached_size_";
+  (*variables)["extensions"] = "_extensions_";
+  (*variables)["has_bits"] = "_has_bits_";
+  (*variables)["inlined_string_donated_array"] = "_inlined_string_donated_";
+  (*variables)["oneof_case"] = "_oneof_case_";
+  (*variables)["tracker"] = "_tracker_";
+  (*variables)["weak_field_map"] = "_weak_field_map_";
+}
+
 void SetUnknownFieldsVariable(const Descriptor* descriptor,
                               const Options& options,
                               std::map<std::string, std::string>* variables) {

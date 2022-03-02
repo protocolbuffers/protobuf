@@ -22,14 +22,14 @@ namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
-constexpr Version::Version(
+PROTOBUF_CONSTEXPR Version::Version(
     ::_pbi::ConstantInitialized)
   : suffix_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , major_(0)
   , minor_(0)
   , patch_(0){}
 struct VersionDefaultTypeInternal {
-  constexpr VersionDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR VersionDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~VersionDefaultTypeInternal() {}
   union {
@@ -37,14 +37,14 @@ struct VersionDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VersionDefaultTypeInternal _Version_default_instance_;
-constexpr CodeGeneratorRequest::CodeGeneratorRequest(
+PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(
     ::_pbi::ConstantInitialized)
   : file_to_generate_()
   , proto_file_()
   , parameter_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , compiler_version_(nullptr){}
 struct CodeGeneratorRequestDefaultTypeInternal {
-  constexpr CodeGeneratorRequestDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR CodeGeneratorRequestDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorRequestDefaultTypeInternal() {}
   union {
@@ -52,14 +52,14 @@ struct CodeGeneratorRequestDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
-constexpr CodeGeneratorResponse_File::CodeGeneratorResponse_File(
+PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(
     ::_pbi::ConstantInitialized)
   : name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , insertion_point_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , content_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , generated_code_info_(nullptr){}
 struct CodeGeneratorResponse_FileDefaultTypeInternal {
-  constexpr CodeGeneratorResponse_FileDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR CodeGeneratorResponse_FileDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponse_FileDefaultTypeInternal() {}
   union {
@@ -67,13 +67,13 @@ struct CodeGeneratorResponse_FileDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
-constexpr CodeGeneratorResponse::CodeGeneratorResponse(
+PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(
     ::_pbi::ConstantInitialized)
   : file_()
   , error_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , supported_features_(uint64_t{0u}){}
 struct CodeGeneratorResponseDefaultTypeInternal {
-  constexpr CodeGeneratorResponseDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR CodeGeneratorResponseDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponseDefaultTypeInternal() {}
   union {

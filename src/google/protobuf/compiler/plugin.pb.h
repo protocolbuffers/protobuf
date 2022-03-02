@@ -107,7 +107,7 @@ class PROTOC_EXPORT Version final :
  public:
   inline Version() : Version(nullptr) {}
   ~Version() override;
-  explicit constexpr Version(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Version(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Version(const Version& from);
   Version(Version&& from) noexcept
@@ -312,7 +312,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
  public:
   inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}
   ~CodeGeneratorRequest() override;
-  explicit constexpr CodeGeneratorRequest(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR CodeGeneratorRequest(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   CodeGeneratorRequest(const CodeGeneratorRequest& from);
   CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept
@@ -538,7 +538,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
  public:
   inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
   ~CodeGeneratorResponse_File() override;
-  explicit constexpr CodeGeneratorResponse_File(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse_File(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from);
   CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept
@@ -758,7 +758,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
  public:
   inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
   ~CodeGeneratorResponse() override;
-  explicit constexpr CodeGeneratorResponse(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   CodeGeneratorResponse(const CodeGeneratorResponse& from);
   CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept

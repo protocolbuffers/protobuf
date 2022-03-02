@@ -21,11 +21,11 @@ namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
-constexpr FieldMask::FieldMask(
+PROTOBUF_CONSTEXPR FieldMask::FieldMask(
     ::_pbi::ConstantInitialized)
   : paths_(){}
 struct FieldMaskDefaultTypeInternal {
-  constexpr FieldMaskDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR FieldMaskDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~FieldMaskDefaultTypeInternal() {}
   union {

@@ -24,7 +24,8 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Fix comments for message set wire format.
 
   Kotlin
-  * Add orNull extensions for optional message fields in Kotlin.
+  * Add orNull extensions for optional message fields.
+  * Add orNull extensions to all proto3 message fields.
 
   Python
   * Fix type annotations of some Duration and Timestamp methods.
@@ -90,6 +91,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Add missing overload for reference wrapped fields.
   * Add MergedDescriptorDatabase::FindAllFileNames()
   * RepeatedField now defines an iterator type instead of using a pointer.
+  * Remove obsolete macros GOOGLE_PROTOBUF_HAS_ONEOF and GOOGLE_PROTOBUF_HAS_ARENAS.
 
 
 2022-01-28 version 3.19.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)

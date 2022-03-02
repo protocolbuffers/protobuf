@@ -127,9 +127,6 @@
 #include <google/protobuf/message_lite.h>
 
 
-#define GOOGLE_PROTOBUF_HAS_ONEOF
-#define GOOGLE_PROTOBUF_HAS_ARENAS
-
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
