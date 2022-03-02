@@ -122,18 +122,11 @@ else
   task 'gem:windows' do
     sh "rm Gemfile.lock"
     require 'rake_compiler_dock'
-    ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux', 'x64-mingw-ucrt'].each do |plat|
+    ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux'].each do |plat|
       # x64-mingw-ucrt only supports 3.1+ whereas 'x64-mingw32' only supports up to 3.0
-      versions = if plat == 'x64-mingw-ucrt'
-        '3.1.0'
-      elsif plat == 'x64-mingw32'
-        '3.0.0:2.7.0:2.6.0:2.5.0'
-      else
-        '3.1.0:3.0.0:2.7.0:2.6.0:2.5.0'
-      end
       RakeCompilerDock.sh <<-"EOT", platform: plat
         bundle && \
-        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=#{versions}
+        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0:2.6.0:2.5.0
       EOT
     end
   end

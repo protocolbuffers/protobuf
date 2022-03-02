@@ -597,6 +597,7 @@ Usage: $0 { cpp |
             ruby26 |
             ruby27 |
             ruby30 |
+            ruby31 |
             jruby92 |
             jruby93 |
             ruby_all |
