@@ -21,7 +21,7 @@ namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
-constexpr Api::Api(
+PROTOBUF_CONSTEXPR Api::Api(
     ::_pbi::ConstantInitialized)
   : methods_()
   , options_()
@@ -32,7 +32,7 @@ constexpr Api::Api(
   , syntax_(0)
 {}
 struct ApiDefaultTypeInternal {
-  constexpr ApiDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR ApiDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~ApiDefaultTypeInternal() {}
   union {
@@ -40,7 +40,7 @@ struct ApiDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ApiDefaultTypeInternal _Api_default_instance_;
-constexpr Method::Method(
+PROTOBUF_CONSTEXPR Method::Method(
     ::_pbi::ConstantInitialized)
   : options_()
   , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
@@ -51,7 +51,7 @@ constexpr Method::Method(
   , syntax_(0)
 {}
 struct MethodDefaultTypeInternal {
-  constexpr MethodDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR MethodDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~MethodDefaultTypeInternal() {}
   union {
@@ -59,12 +59,12 @@ struct MethodDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDefaultTypeInternal _Method_default_instance_;
-constexpr Mixin::Mixin(
+PROTOBUF_CONSTEXPR Mixin::Mixin(
     ::_pbi::ConstantInitialized)
   : name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , root_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
 struct MixinDefaultTypeInternal {
-  constexpr MixinDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR MixinDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~MixinDefaultTypeInternal() {}
   union {

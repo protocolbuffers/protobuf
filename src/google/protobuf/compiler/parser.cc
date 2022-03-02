@@ -941,7 +941,7 @@ bool Parser::ParseMessageField(FieldDescriptorProto* field,
                                const FileDescriptorProto* containing_file) {
   {
     FieldDescriptorProto::Label label;
-    if (ParseLabel(&label, field_location, containing_file)) {
+    if (ParseLabel(&label, field_location)) {
       field->set_label(label);
       if (label == FieldDescriptorProto::LABEL_OPTIONAL &&
           syntax_identifier_ == "proto3") {
@@ -2245,8 +2245,7 @@ bool Parser::ParseMethodOptions(const LocationRecorder& parent_location,
 // -------------------------------------------------------------------
 
 bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
-                        const LocationRecorder& field_location,
-                        const FileDescriptorProto* containing_file) {
+                        const LocationRecorder& field_location) {
   if (!LookingAt("optional") && !LookingAt("repeated") &&
       !LookingAt("required")) {
     return false;

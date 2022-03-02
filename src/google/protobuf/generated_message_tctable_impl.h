@@ -483,6 +483,10 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename FieldType, typename TagType, bool zigzag = false>
   static inline const char* PackedVarint(PROTOBUF_TC_PARAM_DECL);
 
+  // Helper for ints > 127:
+  template <typename FieldType, typename TagType, bool zigzag = false>
+  static const char* SingularVarBigint(PROTOBUF_TC_PARAM_DECL);
+
   // Implementations for fast enum field parsing functions:
   template <typename TagType, uint16_t xform_val>
   static inline const char* SingularEnum(PROTOBUF_TC_PARAM_DECL);

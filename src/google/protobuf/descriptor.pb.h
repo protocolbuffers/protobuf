@@ -325,7 +325,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
  public:
   inline FileDescriptorSet() : FileDescriptorSet(nullptr) {}
   ~FileDescriptorSet() override;
-  explicit constexpr FileDescriptorSet(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR FileDescriptorSet(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FileDescriptorSet(const FileDescriptorSet& from);
   FileDescriptorSet(FileDescriptorSet&& from) noexcept
@@ -484,7 +484,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
  public:
   inline FileDescriptorProto() : FileDescriptorProto(nullptr) {}
   ~FileDescriptorProto() override;
-  explicit constexpr FileDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR FileDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FileDescriptorProto(const FileDescriptorProto& from);
   FileDescriptorProto(FileDescriptorProto&& from) noexcept
@@ -878,7 +878,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
  public:
   inline DescriptorProto_ExtensionRange() : DescriptorProto_ExtensionRange(nullptr) {}
   ~DescriptorProto_ExtensionRange() override;
-  explicit constexpr DescriptorProto_ExtensionRange(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR DescriptorProto_ExtensionRange(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from);
   DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
@@ -1068,7 +1068,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
  public:
   inline DescriptorProto_ReservedRange() : DescriptorProto_ReservedRange(nullptr) {}
   ~DescriptorProto_ReservedRange() override;
-  explicit constexpr DescriptorProto_ReservedRange(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR DescriptorProto_ReservedRange(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from);
   DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
@@ -1238,7 +1238,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
  public:
   inline DescriptorProto() : DescriptorProto(nullptr) {}
   ~DescriptorProto() override;
-  explicit constexpr DescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR DescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   DescriptorProto(const DescriptorProto& from);
   DescriptorProto(DescriptorProto&& from) noexcept
@@ -1587,7 +1587,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
  public:
   inline ExtensionRangeOptions() : ExtensionRangeOptions(nullptr) {}
   ~ExtensionRangeOptions() override;
-  explicit constexpr ExtensionRangeOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR ExtensionRangeOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   ExtensionRangeOptions(const ExtensionRangeOptions& from);
   ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
@@ -1938,7 +1938,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
  public:
   inline FieldDescriptorProto() : FieldDescriptorProto(nullptr) {}
   ~FieldDescriptorProto() override;
-  explicit constexpr FieldDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR FieldDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FieldDescriptorProto(const FieldDescriptorProto& from);
   FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
@@ -2367,7 +2367,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
  public:
   inline OneofDescriptorProto() : OneofDescriptorProto(nullptr) {}
   ~OneofDescriptorProto() override;
-  explicit constexpr OneofDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR OneofDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   OneofDescriptorProto(const OneofDescriptorProto& from);
   OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
@@ -2547,7 +2547,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
  public:
   inline EnumDescriptorProto_EnumReservedRange() : EnumDescriptorProto_EnumReservedRange(nullptr) {}
   ~EnumDescriptorProto_EnumReservedRange() override;
-  explicit constexpr EnumDescriptorProto_EnumReservedRange(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto_EnumReservedRange(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from);
   EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept
@@ -2717,7 +2717,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
  public:
   inline EnumDescriptorProto() : EnumDescriptorProto(nullptr) {}
   ~EnumDescriptorProto() override;
-  explicit constexpr EnumDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR EnumDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumDescriptorProto(const EnumDescriptorProto& from);
   EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
@@ -2965,7 +2965,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
  public:
   inline EnumValueDescriptorProto() : EnumValueDescriptorProto(nullptr) {}
   ~EnumValueDescriptorProto() override;
-  explicit constexpr EnumValueDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR EnumValueDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumValueDescriptorProto(const EnumValueDescriptorProto& from);
   EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
@@ -3160,7 +3160,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
  public:
   inline ServiceDescriptorProto() : ServiceDescriptorProto(nullptr) {}
   ~ServiceDescriptorProto() override;
-  explicit constexpr ServiceDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR ServiceDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   ServiceDescriptorProto(const ServiceDescriptorProto& from);
   ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
@@ -3360,7 +3360,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
  public:
   inline MethodDescriptorProto() : MethodDescriptorProto(nullptr) {}
   ~MethodDescriptorProto() override;
-  explicit constexpr MethodDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR MethodDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   MethodDescriptorProto(const MethodDescriptorProto& from);
   MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
@@ -3610,7 +3610,7 @@ class PROTOBUF_EXPORT FileOptions final :
  public:
   inline FileOptions() : FileOptions(nullptr) {}
   ~FileOptions() override;
-  explicit constexpr FileOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR FileOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FileOptions(const FileOptions& from);
   FileOptions(FileOptions&& from) noexcept
@@ -4344,7 +4344,7 @@ class PROTOBUF_EXPORT MessageOptions final :
  public:
   inline MessageOptions() : MessageOptions(nullptr) {}
   ~MessageOptions() override;
-  explicit constexpr MessageOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR MessageOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   MessageOptions(const MessageOptions& from);
   MessageOptions(MessageOptions&& from) noexcept
@@ -4756,7 +4756,7 @@ class PROTOBUF_EXPORT FieldOptions final :
  public:
   inline FieldOptions() : FieldOptions(nullptr) {}
   ~FieldOptions() override;
-  explicit constexpr FieldOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR FieldOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FieldOptions(const FieldOptions& from);
   FieldOptions(FieldOptions&& from) noexcept
@@ -5277,7 +5277,7 @@ class PROTOBUF_EXPORT OneofOptions final :
  public:
   inline OneofOptions() : OneofOptions(nullptr) {}
   ~OneofOptions() override;
-  explicit constexpr OneofOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR OneofOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   OneofOptions(const OneofOptions& from);
   OneofOptions(OneofOptions&& from) noexcept
@@ -5628,7 +5628,7 @@ class PROTOBUF_EXPORT EnumOptions final :
  public:
   inline EnumOptions() : EnumOptions(nullptr) {}
   ~EnumOptions() override;
-  explicit constexpr EnumOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR EnumOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumOptions(const EnumOptions& from);
   EnumOptions(EnumOptions&& from) noexcept
@@ -6010,7 +6010,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
  public:
   inline EnumValueOptions() : EnumValueOptions(nullptr) {}
   ~EnumValueOptions() override;
-  explicit constexpr EnumValueOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR EnumValueOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumValueOptions(const EnumValueOptions& from);
   EnumValueOptions(EnumValueOptions&& from) noexcept
@@ -6377,7 +6377,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
  public:
   inline ServiceOptions() : ServiceOptions(nullptr) {}
   ~ServiceOptions() override;
-  explicit constexpr ServiceOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR ServiceOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   ServiceOptions(const ServiceOptions& from);
   ServiceOptions(ServiceOptions&& from) noexcept
@@ -6744,7 +6744,7 @@ class PROTOBUF_EXPORT MethodOptions final :
  public:
   inline MethodOptions() : MethodOptions(nullptr) {}
   ~MethodOptions() override;
-  explicit constexpr MethodOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR MethodOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   MethodOptions(const MethodOptions& from);
   MethodOptions(MethodOptions&& from) noexcept
@@ -7158,7 +7158,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
  public:
   inline UninterpretedOption_NamePart() : UninterpretedOption_NamePart(nullptr) {}
   ~UninterpretedOption_NamePart() override;
-  explicit constexpr UninterpretedOption_NamePart(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR UninterpretedOption_NamePart(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from);
   UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
@@ -7336,7 +7336,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
  public:
   inline UninterpretedOption() : UninterpretedOption(nullptr) {}
   ~UninterpretedOption() override;
-  explicit constexpr UninterpretedOption(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR UninterpretedOption(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   UninterpretedOption(const UninterpretedOption& from);
   UninterpretedOption(UninterpretedOption&& from) noexcept
@@ -7603,7 +7603,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
  public:
   inline SourceCodeInfo_Location() : SourceCodeInfo_Location(nullptr) {}
   ~SourceCodeInfo_Location() override;
-  explicit constexpr SourceCodeInfo_Location(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR SourceCodeInfo_Location(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   SourceCodeInfo_Location(const SourceCodeInfo_Location& from);
   SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
@@ -7859,7 +7859,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
  public:
   inline SourceCodeInfo() : SourceCodeInfo(nullptr) {}
   ~SourceCodeInfo() override;
-  explicit constexpr SourceCodeInfo(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR SourceCodeInfo(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   SourceCodeInfo(const SourceCodeInfo& from);
   SourceCodeInfo(SourceCodeInfo&& from) noexcept
@@ -8020,7 +8020,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
  public:
   inline GeneratedCodeInfo_Annotation() : GeneratedCodeInfo_Annotation(nullptr) {}
   ~GeneratedCodeInfo_Annotation() override;
-  explicit constexpr GeneratedCodeInfo_Annotation(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from);
   GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
@@ -8235,7 +8235,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
  public:
   inline GeneratedCodeInfo() : GeneratedCodeInfo(nullptr) {}
   ~GeneratedCodeInfo() override;
-  explicit constexpr GeneratedCodeInfo(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR GeneratedCodeInfo(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   GeneratedCodeInfo(const GeneratedCodeInfo& from);
   GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept

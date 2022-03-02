@@ -32,8 +32,8 @@
 
 #include <cstdint>
 
-#include <google/protobuf/message.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/message.h>
 #include <google/protobuf/stubs/map_util.h>
 
 // Must be included last.

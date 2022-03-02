@@ -418,9 +418,9 @@ void StringFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
     format(
         "::$proto_ns$::internal::InlinedStringField::InternalSwap(\n"
         "  &$field$, lhs_arena, "
-        "(_inlined_string_donated_[0] & 0x1u) == 0, this,\n"
+        "($inlined_string_donated_array$[0] & 0x1u) == 0, this,\n"
         "  &other->$field$, rhs_arena, "
-        "(other->_inlined_string_donated_[0] & 0x1u) == 0, other);\n");
+        "(other->$inlined_string_donated_array$[0] & 0x1u) == 0, other);\n");
   }
 }
 

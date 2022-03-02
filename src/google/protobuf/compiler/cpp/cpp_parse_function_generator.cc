@@ -450,6 +450,7 @@ ParseFunctionGenerator::ParseFunctionGenerator(
         inlined_string_indices, scc_analyzer));
   }
   SetCommonVars(options_, &variables_);
+  SetCommonMessageDataVariables(&variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
   variables_["classname"] = ClassName(descriptor, false);
 }
@@ -491,7 +492,7 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
           "  ctx->set_lazy_eager_verify_func(&$classname$::InternalVerify);\n");
     }
     format(
-        "  return _extensions_.ParseMessageSet(ptr, \n"
+        "  return $extensions$.ParseMessageSet(ptr, \n"
         "      internal_default_instance(), &_internal_metadata_, ctx);\n"
         "}\n");
   }
@@ -785,7 +786,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
       }
       if (descriptor_->extension_range_count() == 1) {
         format(
-            "PROTOBUF_FIELD_OFFSET($classname$, _extensions_),\n"
+            "PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n"
             "$1$, $2$,  // extension_range_{low,high}\n",
             descriptor_->extension_range(0)->start,
             descriptor_->extension_range(0)->end);
@@ -1131,7 +1132,7 @@ void ParseFunctionGenerator::GenerateArenaString(Formatter& format,
     GOOGLE_DCHECK(!inlined_string_indices_.empty());
     int inlined_string_index = inlined_string_indices_[field->index()];
     GOOGLE_DCHECK_GT(inlined_string_index, 0);
-    format(", &$msg$_inlined_string_donated_[0], $1$, $this$",
+    format(", &$msg$$inlined_string_donated_array$[0], $1$, $this$",
            inlined_string_index);
   } else {
     GOOGLE_DCHECK(field->default_value_string().empty());
@@ -1318,7 +1319,7 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
           format(
               "{\n"
               "  auto* default_ = &reinterpret_cast<const Message&>($1$);\n"
-              "  ptr = ctx->ParseMessage($msg$_weak_field_map_.MutableMessage("
+              "  ptr = ctx->ParseMessage($msg$$weak_field_map$.MutableMessage("
               "$2$, default_), ptr);\n"
               "}\n",
               QualifiedDefaultInstanceName(field->message_type(), options_),
@@ -1533,7 +1534,7 @@ void ParseFunctionGenerator::GenerateParseIterationBody(
       }
       format(
           ") {\n"
-          "  ptr = $msg$_extensions_.ParseField(tag, ptr, "
+          "  ptr = $msg$$extensions$.ParseField(tag, ptr, "
           "internal_default_instance(), &$msg$_internal_metadata_, ctx);\n"
           "  CHK_(ptr != nullptr);\n"
           "  $next_tag$;\n"

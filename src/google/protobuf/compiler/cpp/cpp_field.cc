@@ -154,7 +154,8 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
   const google::protobuf::OneofDescriptor* oneof_member =
       descriptor->real_containing_oneof();
   const std::string proto_ns = (*variables)["proto_ns"];
-  const std::string substitute_template_prefix = "  _tracker_.$1<$0>(this, ";
+  const std::string substitute_template_prefix =
+      StrCat("  ", (*variables)["tracker"], ".$1<$0>(this, ");
   std::string prepared_template;
 
   // Flat template is needed if the prepared one is introspecting the values
@@ -235,6 +236,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              std::map<std::string, std::string>* variables,
                              const Options& options) {
   SetCommonVars(options, variables);
+  SetCommonMessageDataVariables(variables);
+
   (*variables)["ns"] = Namespace(descriptor, options);
   (*variables)["name"] = FieldName(descriptor);
   (*variables)["index"] = StrCat(descriptor->index());
@@ -251,7 +254,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["clear_hasbit"] = "";
   if (HasHasbit(descriptor)) {
     (*variables)["set_hasbit_io"] =
-        "_Internal::set_has_" + FieldName(descriptor) + "(&_has_bits_);";
+        StrCat("_Internal::set_has_", FieldName(descriptor), "(&",
+                     (*variables)["has_bits"], ");");
   } else {
     (*variables)["set_hasbit_io"] = "";
   }
@@ -272,10 +276,10 @@ void FieldGenerator::SetHasBitIndex(int32_t has_bit_index) {
     return;
   }
   variables_["set_hasbit"] = StrCat(
-      "_has_bits_[", has_bit_index / 32, "] |= 0x",
+      variables_["has_bits"], "[", has_bit_index / 32, "] |= 0x",
       strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8), "u;");
   variables_["clear_hasbit"] = StrCat(
-      "_has_bits_[", has_bit_index / 32, "] &= ~0x",
+      variables_["has_bits"], "[", has_bit_index / 32, "] &= ~0x",
       strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8), "u;");
 }
 
@@ -288,11 +292,13 @@ void FieldGenerator::SetInlinedStringIndex(int32_t inlined_string_index) {
   GOOGLE_CHECK_GT(inlined_string_index, 0)
       << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
   variables_["inlined_string_donated"] = StrCat(
-      "(_inlined_string_donated_[", inlined_string_index / 32, "] & 0x",
+      "(", variables_["inlined_string_donated_array"], "[",
+      inlined_string_index / 32, "] & 0x",
       strings::Hex(1u << (inlined_string_index % 32), strings::ZERO_PAD_8),
       "u) != 0;");
   variables_["donating_states_word"] =
-      StrCat("_inlined_string_donated_[", inlined_string_index / 32, "]");
+      StrCat(variables_["inlined_string_donated_array"], "[",
+                   inlined_string_index / 32, "]");
   variables_["mask_for_undonate"] = StrCat(
       "~0x", strings::Hex(1u << (inlined_string_index % 32), strings::ZERO_PAD_8),
       "u");

@@ -78,6 +78,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
       break;
   }
   SetCommonVars(options, &variables_);
+  SetCommonMessageDataVariables(&variables_);
   variables_["extendee"] =
       QualifiedClassName(descriptor_->containing_type(), options_);
   variables_["type_traits"] = type_traits_;

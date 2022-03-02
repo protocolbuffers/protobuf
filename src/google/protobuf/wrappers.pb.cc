@@ -21,11 +21,11 @@ namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
-constexpr DoubleValue::DoubleValue(
+PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(
     ::_pbi::ConstantInitialized)
   : value_(0){}
 struct DoubleValueDefaultTypeInternal {
-  constexpr DoubleValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR DoubleValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~DoubleValueDefaultTypeInternal() {}
   union {
@@ -33,11 +33,11 @@ struct DoubleValueDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
-constexpr FloatValue::FloatValue(
+PROTOBUF_CONSTEXPR FloatValue::FloatValue(
     ::_pbi::ConstantInitialized)
   : value_(0){}
 struct FloatValueDefaultTypeInternal {
-  constexpr FloatValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR FloatValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~FloatValueDefaultTypeInternal() {}
   union {
@@ -45,11 +45,11 @@ struct FloatValueDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FloatValueDefaultTypeInternal _FloatValue_default_instance_;
-constexpr Int64Value::Int64Value(
+PROTOBUF_CONSTEXPR Int64Value::Int64Value(
     ::_pbi::ConstantInitialized)
   : value_(int64_t{0}){}
 struct Int64ValueDefaultTypeInternal {
-  constexpr Int64ValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR Int64ValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~Int64ValueDefaultTypeInternal() {}
   union {
@@ -57,11 +57,11 @@ struct Int64ValueDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
-constexpr UInt64Value::UInt64Value(
+PROTOBUF_CONSTEXPR UInt64Value::UInt64Value(
     ::_pbi::ConstantInitialized)
   : value_(uint64_t{0u}){}
 struct UInt64ValueDefaultTypeInternal {
-  constexpr UInt64ValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR UInt64ValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~UInt64ValueDefaultTypeInternal() {}
   union {
@@ -69,11 +69,11 @@ struct UInt64ValueDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
-constexpr Int32Value::Int32Value(
+PROTOBUF_CONSTEXPR Int32Value::Int32Value(
     ::_pbi::ConstantInitialized)
   : value_(0){}
 struct Int32ValueDefaultTypeInternal {
-  constexpr Int32ValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR Int32ValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~Int32ValueDefaultTypeInternal() {}
   union {
@@ -81,11 +81,11 @@ struct Int32ValueDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
-constexpr UInt32Value::UInt32Value(
+PROTOBUF_CONSTEXPR UInt32Value::UInt32Value(
     ::_pbi::ConstantInitialized)
   : value_(0u){}
 struct UInt32ValueDefaultTypeInternal {
-  constexpr UInt32ValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR UInt32ValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~UInt32ValueDefaultTypeInternal() {}
   union {
@@ -93,11 +93,11 @@ struct UInt32ValueDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
-constexpr BoolValue::BoolValue(
+PROTOBUF_CONSTEXPR BoolValue::BoolValue(
     ::_pbi::ConstantInitialized)
   : value_(false){}
 struct BoolValueDefaultTypeInternal {
-  constexpr BoolValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR BoolValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~BoolValueDefaultTypeInternal() {}
   union {
@@ -105,11 +105,11 @@ struct BoolValueDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 BoolValueDefaultTypeInternal _BoolValue_default_instance_;
-constexpr StringValue::StringValue(
+PROTOBUF_CONSTEXPR StringValue::StringValue(
     ::_pbi::ConstantInitialized)
   : value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
 struct StringValueDefaultTypeInternal {
-  constexpr StringValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR StringValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~StringValueDefaultTypeInternal() {}
   union {
@@ -117,11 +117,11 @@ struct StringValueDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StringValueDefaultTypeInternal _StringValue_default_instance_;
-constexpr BytesValue::BytesValue(
+PROTOBUF_CONSTEXPR BytesValue::BytesValue(
     ::_pbi::ConstantInitialized)
   : value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
 struct BytesValueDefaultTypeInternal {
-  constexpr BytesValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR BytesValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~BytesValueDefaultTypeInternal() {}
   union {

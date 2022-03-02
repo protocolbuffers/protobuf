@@ -558,8 +558,12 @@ message TestLazyMessage {
   optional TestAllTypes sub_message = 1 [lazy=true];
 }
 message TestEagerMaybeLazy {
+  message NestedMessage {
+    optional TestPackedTypes packed = 1;
+  }
   optional TestAllTypes message_foo = 1;
   optional TestAllTypes message_bar = 2;
+  optional NestedMessage message_baz = 3;
 }
 // Needed for a Python test.
 message TestNestedMessageHasBits {

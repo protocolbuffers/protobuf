@@ -25,13 +25,13 @@ namespace _pbi = _pb::internal;
   #pragma clang diagnostic ignored "-Wuninitialized"
 #endif  // __llvm__
 PROTOBUF_NAMESPACE_OPEN
-constexpr Any::Any(
+PROTOBUF_CONSTEXPR Any::Any(
     ::_pbi::ConstantInitialized)
   : type_url_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , _any_metadata_(&type_url_, &value_){}
 struct AnyDefaultTypeInternal {
-  constexpr AnyDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR AnyDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~AnyDefaultTypeInternal() {}
   union {

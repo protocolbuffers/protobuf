@@ -71,7 +71,7 @@ class PROTOBUF_EXPORT Api final :
  public:
   inline Api() : Api(nullptr) {}
   ~Api() override;
-  explicit constexpr Api(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Api(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Api(const Api& from);
   Api(Api&& from) noexcept
@@ -326,7 +326,7 @@ class PROTOBUF_EXPORT Method final :
  public:
   inline Method() : Method(nullptr) {}
   ~Method() override;
-  explicit constexpr Method(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Method(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Method(const Method& from);
   Method(Method&& from) noexcept
@@ -559,7 +559,7 @@ class PROTOBUF_EXPORT Mixin final :
  public:
   inline Mixin() : Mixin(nullptr) {}
   ~Mixin() override;
-  explicit constexpr Mixin(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Mixin(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Mixin(const Mixin& from);
   Mixin(Mixin&& from) noexcept

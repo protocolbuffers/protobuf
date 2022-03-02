@@ -61,7 +61,7 @@ class PROTOBUF_EXPORT Duration final :
  public:
   inline Duration() : Duration(nullptr) {}
   ~Duration() override;
-  explicit constexpr Duration(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Duration(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Duration(const Duration& from);
   Duration(Duration&& from) noexcept

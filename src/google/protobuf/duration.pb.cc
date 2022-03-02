@@ -21,12 +21,12 @@ namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
-constexpr Duration::Duration(
+PROTOBUF_CONSTEXPR Duration::Duration(
     ::_pbi::ConstantInitialized)
   : seconds_(int64_t{0})
   , nanos_(0){}
 struct DurationDefaultTypeInternal {
-  constexpr DurationDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR DurationDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~DurationDefaultTypeInternal() {}
   union {

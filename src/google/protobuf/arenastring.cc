@@ -175,6 +175,10 @@ template <typename... Lazy>
 std::string* ArenaStringPtr::MutableSlow(::google::protobuf::Arena* arena,
                                          const Lazy&... lazy_default) {
   GOOGLE_DCHECK(IsDefault());
+
+  // For empty defaults, this ends up calling the default constructor which is
+  // more efficient than a copy construction from
+  // GetEmptyStringAlreadyInited().
   return NewString(arena, lazy_default.get()...);
 }
 

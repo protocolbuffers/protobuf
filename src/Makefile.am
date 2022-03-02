@@ -172,6 +172,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/util/delimited_message_util.h                  \
   google/protobuf/util/field_comparator.h                        \
   google/protobuf/util/field_mask_util.h                         \
+  google/protobuf/util/internal/json_escaping.h                  \
   google/protobuf/util/json_util.h                               \
   google/protobuf/util/message_differencer.h                     \
   google/protobuf/util/time_util.h                               \
@@ -284,7 +285,6 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/util/internal/field_mask_utility.cc          \
   google/protobuf/util/internal/field_mask_utility.h           \
   google/protobuf/util/internal/json_escaping.cc               \
-  google/protobuf/util/internal/json_escaping.h                \
   google/protobuf/util/internal/json_objectwriter.cc           \
   google/protobuf/util/internal/json_objectwriter.h            \
   google/protobuf/util/internal/json_stream_parser.cc          \
@@ -803,12 +803,6 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/util/delimited_message_util_test.cc          \
   google/protobuf/util/field_comparator_test.cc                \
   google/protobuf/util/field_mask_util_test.cc                 \
-  google/protobuf/util/internal/default_value_objectwriter_test.cc \
-  google/protobuf/util/internal/json_objectwriter_test.cc      \
-  google/protobuf/util/internal/json_stream_parser_test.cc     \
-  google/protobuf/util/internal/protostream_objectsource_test.cc \
-  google/protobuf/util/internal/protostream_objectwriter_test.cc \
-  google/protobuf/util/internal/type_info_test_helper.cc       \
   google/protobuf/util/json_util_test.cc                       \
   google/protobuf/util/message_differencer_unittest.cc         \
   google/protobuf/util/time_util_test.cc                       \

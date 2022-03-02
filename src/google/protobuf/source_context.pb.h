@@ -61,7 +61,7 @@ class PROTOBUF_EXPORT SourceContext final :
  public:
   inline SourceContext() : SourceContext(nullptr) {}
   ~SourceContext() override;
-  explicit constexpr SourceContext(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR SourceContext(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   SourceContext(const SourceContext& from);
   SourceContext(SourceContext&& from) noexcept

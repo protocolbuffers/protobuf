@@ -21,7 +21,7 @@ namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
-constexpr Type::Type(
+PROTOBUF_CONSTEXPR Type::Type(
     ::_pbi::ConstantInitialized)
   : fields_()
   , oneofs_()
@@ -31,7 +31,7 @@ constexpr Type::Type(
   , syntax_(0)
 {}
 struct TypeDefaultTypeInternal {
-  constexpr TypeDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR TypeDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~TypeDefaultTypeInternal() {}
   union {
@@ -39,7 +39,7 @@ struct TypeDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TypeDefaultTypeInternal _Type_default_instance_;
-constexpr Field::Field(
+PROTOBUF_CONSTEXPR Field::Field(
     ::_pbi::ConstantInitialized)
   : options_()
   , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
@@ -54,7 +54,7 @@ constexpr Field::Field(
   , oneof_index_(0)
   , packed_(false){}
 struct FieldDefaultTypeInternal {
-  constexpr FieldDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR FieldDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~FieldDefaultTypeInternal() {}
   union {
@@ -62,7 +62,7 @@ struct FieldDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDefaultTypeInternal _Field_default_instance_;
-constexpr Enum::Enum(
+PROTOBUF_CONSTEXPR Enum::Enum(
     ::_pbi::ConstantInitialized)
   : enumvalue_()
   , options_()
@@ -71,7 +71,7 @@ constexpr Enum::Enum(
   , syntax_(0)
 {}
 struct EnumDefaultTypeInternal {
-  constexpr EnumDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR EnumDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~EnumDefaultTypeInternal() {}
   union {
@@ -79,13 +79,13 @@ struct EnumDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDefaultTypeInternal _Enum_default_instance_;
-constexpr EnumValue::EnumValue(
+PROTOBUF_CONSTEXPR EnumValue::EnumValue(
     ::_pbi::ConstantInitialized)
   : options_()
   , name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , number_(0){}
 struct EnumValueDefaultTypeInternal {
-  constexpr EnumValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR EnumValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~EnumValueDefaultTypeInternal() {}
   union {
@@ -93,12 +93,12 @@ struct EnumValueDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDefaultTypeInternal _EnumValue_default_instance_;
-constexpr Option::Option(
+PROTOBUF_CONSTEXPR Option::Option(
     ::_pbi::ConstantInitialized)
   : name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
   , value_(nullptr){}
 struct OptionDefaultTypeInternal {
-  constexpr OptionDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR OptionDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~OptionDefaultTypeInternal() {}
   union {

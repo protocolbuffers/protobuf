@@ -1505,8 +1505,7 @@ void ImmutableMessageGenerator::GenerateTopLevelKotlinMembers(
 void ImmutableMessageGenerator::GenerateKotlinOrNull(io::Printer* printer) const {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (field->has_optional_keyword() &&
-        GetJavaType(field) == JAVATYPE_MESSAGE) {
+    if (field->has_presence() && GetJavaType(field) == JAVATYPE_MESSAGE) {
       printer->Print(
           "val $full_classname$OrBuilder.$camelcase_name$OrNull: $full_name$?\n"
           "  get() = if (has$name$()) get$name$() else null\n\n",

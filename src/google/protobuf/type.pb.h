@@ -174,7 +174,7 @@ class PROTOBUF_EXPORT Type final :
  public:
   inline Type() : Type(nullptr) {}
   ~Type() override;
-  explicit constexpr Type(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Type(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Type(const Type& from);
   Type(Type&& from) noexcept
@@ -419,7 +419,7 @@ class PROTOBUF_EXPORT Field final :
  public:
   inline Field() : Field(nullptr) {}
   ~Field() override;
-  explicit constexpr Field(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Field(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Field(const Field& from);
   Field(Field&& from) noexcept
@@ -788,7 +788,7 @@ class PROTOBUF_EXPORT Enum final :
  public:
   inline Enum() : Enum(nullptr) {}
   ~Enum() override;
-  explicit constexpr Enum(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Enum(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Enum(const Enum& from);
   Enum(Enum&& from) noexcept
@@ -1007,7 +1007,7 @@ class PROTOBUF_EXPORT EnumValue final :
  public:
   inline EnumValue() : EnumValue(nullptr) {}
   ~EnumValue() override;
-  explicit constexpr EnumValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR EnumValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumValue(const EnumValue& from);
   EnumValue(EnumValue&& from) noexcept
@@ -1186,7 +1186,7 @@ class PROTOBUF_EXPORT Option final :
  public:
   inline Option() : Option(nullptr) {}
   ~Option() override;
-  explicit constexpr Option(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Option(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Option(const Option& from);
   Option(Option&& from) noexcept
