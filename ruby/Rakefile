@@ -123,6 +123,7 @@ else
     sh "rm Gemfile.lock"
     require 'rake_compiler_dock'
     ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux', 'x64-mingw-ucrt'].each do |plat|
+      # x64-mingw-ucrt only supports 3.1+ whereas 'x64-mingw32' only supports up to 3.0
       versions = if plat == 'x64-mingw-ucrt'
         '3.1.1'
       elsif plat == 'x64-mingw32'
