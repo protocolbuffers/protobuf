@@ -764,6 +764,7 @@ public class CodedOutputStreamTest {
    * Writes the given value using writeRawVarint32() and writeRawVarint64() and checks that the
    * result matches the given bytes.
    */
+  @SuppressWarnings("UnnecessaryLongToIntConversion") // Intentionally tests 32-bit int values.
   private static void assertWriteVarint(byte[] data, long value) throws Exception {
     for (OutputType outputType : OutputType.values()) {
       // Only test 32-bit write if the value fits into an int.

@@ -61,7 +61,7 @@ class PROTOBUF_EXPORT FieldMask final :
  public:
   inline FieldMask() : FieldMask(nullptr) {}
   ~FieldMask() override;
-  explicit constexpr FieldMask(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR FieldMask(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FieldMask(const FieldMask& from);
   FieldMask(FieldMask&& from) noexcept

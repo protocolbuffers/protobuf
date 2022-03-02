@@ -1831,4 +1831,5 @@ public class TextFormatTest {
     assertThat(TextFormat.printer().printToString(message))
         .isEqualTo("optional_float: -0.0\noptional_double: -0.0\n");
   }
+
 }

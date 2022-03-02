@@ -825,8 +825,7 @@ void ImmutableMessageLiteGenerator::GenerateKotlinOrNull(io::Printer* printer) c
   // Generate getFieldOrNull getters for all optional message fields.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (field->has_optional_keyword() &&
-        GetJavaType(field) == JAVATYPE_MESSAGE) {
+    if (field->has_presence() && GetJavaType(field) == JAVATYPE_MESSAGE) {
       printer->Print(
           "val $full_classname$OrBuilder.$camelcase_name$OrNull: "
           "$full_name$?\n"

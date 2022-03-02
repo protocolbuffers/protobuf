@@ -90,6 +90,7 @@ set(libprotobuf_includes
   ${protobuf_source_dir}/src/google/protobuf/util/delimited_message_util.h
   ${protobuf_source_dir}/src/google/protobuf/util/field_comparator.h
   ${protobuf_source_dir}/src/google/protobuf/util/field_mask_util.h
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/json_escaping.h
   ${protobuf_source_dir}/src/google/protobuf/util/json_util.h
   ${protobuf_source_dir}/src/google/protobuf/util/message_differencer.h
   ${protobuf_source_dir}/src/google/protobuf/util/time_util.h

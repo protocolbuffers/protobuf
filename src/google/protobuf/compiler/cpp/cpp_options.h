@@ -82,6 +82,7 @@ struct Options {
   bool unverified_lazy_message_sets = true;
   bool eagerly_verified_lazy = true;
   bool profile_driven_inline_string = true;
+  bool force_split = false;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = true;
   bool force_inline_string = true;

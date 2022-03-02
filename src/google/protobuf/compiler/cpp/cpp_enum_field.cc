@@ -54,6 +54,9 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   (*variables)["type"] = QualifiedClassName(descriptor->enum_type(), options);
   (*variables)["default"] = Int32ToString(default_value->number());
   (*variables)["full_name"] = descriptor->full_name();
+  (*variables)["cached_byte_size_name"] = MakeVarintCachedSizeName(descriptor);
+  (*variables)["cached_byte_size_field"] =
+      MakeVarintCachedSizeFieldName(descriptor);
 }
 
 }  // namespace
@@ -235,7 +238,7 @@ void RepeatedEnumFieldGenerator::GeneratePrivateMembers(
   format("::$proto_ns$::RepeatedField<int> $name$_;\n");
   if (descriptor_->is_packed() &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("mutable std::atomic<int> _$name$_cached_byte_size_;\n");
+    format("mutable std::atomic<int> $cached_byte_size_name$;\n");
   }
 }
 
@@ -341,7 +344,7 @@ void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     format(
         "{\n"
         "  int byte_size = "
-        "_$name$_cached_byte_size_.load(std::memory_order_relaxed);\n"
+        "$cached_byte_size_field$.load(std::memory_order_relaxed);\n"
         "  if (byte_size > 0) {\n"
         "    target = stream->WriteEnumPacked(\n"
         "        $number$, $field$, byte_size, target);\n"
@@ -379,7 +382,7 @@ void RepeatedEnumFieldGenerator::GenerateByteSize(io::Printer* printer) const {
         "::_pbi::WireFormatLite::Int32Size(static_cast<$int32$>(data_size));\n"
         "}\n"
         "int cached_size = ::_pbi::ToCachedSize(data_size);\n"
-        "_$name$_cached_byte_size_.store(cached_size,\n"
+        "$cached_byte_size_field$.store(cached_size,\n"
         "                                std::memory_order_relaxed);\n"
         "total_size += data_size;\n");
   } else {
@@ -395,7 +398,7 @@ void RepeatedEnumFieldGenerator::GenerateConstinitInitializer(
   format("$name$_()");
   if (descriptor_->is_packed() &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("\n, _$name$_cached_byte_size_(0)");
+    format("\n, $cached_byte_size_name$(0)");
   }
 }
 

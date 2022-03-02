@@ -212,7 +212,9 @@ const TcParseTableBase::FieldEntry* TcParser::FindFieldEntry(
       skipmap &= skipmap - 1;
     }
 #endif
-    return field_entries + adj_fnum;
+    auto* entry = field_entries + adj_fnum;
+    PROTOBUF_ASSUME(entry != nullptr);
+    return entry;
   }
   const uint16_t* lookup_table = table->field_lookup_begin();
   for (;;) {
@@ -247,7 +249,9 @@ const TcParseTableBase::FieldEntry* TcParser::FindFieldEntry(
         skipmap &= skipmap - 1;
       }
 #endif
-      return field_entries + adj_fnum;
+      auto* entry = field_entries + adj_fnum;
+      PROTOBUF_ASSUME(entry != nullptr);
+      return entry;
     }
     lookup_table +=
         num_skip_entries * (sizeof(SkipEntry16) / sizeof(*lookup_table));
@@ -736,9 +740,46 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularVarint(
   }
   ptr += sizeof(TagType);  // Consume tag
   hasbits |= (uint64_t{1} << data.hasbit_idx());
+
+  // clang isn't smart enough to be able to only conditionally save
+  // registers to the stack, so we turn the integer-greater-than-128
+  // case into a separate routine.
+  if (PROTOBUF_PREDICT_FALSE(static_cast<int8_t>(*ptr) < 0)) {
+    PROTOBUF_MUSTTAIL return SingularVarBigint<FieldType, TagType, zigzag>(
+        PROTOBUF_TC_PARAM_PASS);
+  }
+
+  RefAt<FieldType>(msg, data.offset()) =
+      ZigZagDecodeHelper<FieldType, zigzag>(static_cast<uint8_t>(*ptr++));
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+}
+
+template <typename FieldType, typename TagType, bool zigzag>
+PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
+    PROTOBUF_TC_PARAM_DECL) {
+  // For some reason clang wants to save 5 registers to the stack here,
+  // but we only need four for this code, so save the data we don't need
+  // to the stack.  Happily, saving them this way uses regular store
+  // instructions rather than PUSH/POP, which saves time at the cost of greater
+  // code size, but for this heavily-used piece of code, that's fine.
+  struct Spill {
+    uint64_t field_data;
+    ::google::protobuf::MessageLite* msg;
+    const ::google::protobuf::internal::TcParseTableBase* table;
+    uint64_t hasbits;
+  };
+  volatile Spill spill = {data.data, msg, table, hasbits};
+
   uint64_t tmp;
+  PROTOBUF_ASSUME(static_cast<int8_t>(*ptr) < 0);
   ptr = ParseVarint(ptr, &tmp);
-  if (ptr == nullptr) {
+
+  data.data = spill.field_data;
+  msg = spill.msg;
+  table = spill.table;
+  hasbits = spill.hasbits;
+
+  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
     return Error(PROTOBUF_TC_PARAM_PASS);
   }
   RefAt<FieldType>(msg, data.offset()) =

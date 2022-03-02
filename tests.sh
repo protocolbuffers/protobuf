@@ -426,13 +426,13 @@ build_ruby30() {
 build_jruby92() {
   internal_build_cpp                # For conformance tests.
   internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
-  cd ruby && bash travis-test.sh jruby-9.2.19.0 && cd ..
+  cd ruby && bash travis-test.sh jruby-9.2.20.1 && cd ..
 }
 
 build_jruby93() {
   internal_build_cpp                # For conformance tests.
   internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
-  cd ruby && bash travis-test.sh jruby-9.3.0.0 && cd ..
+  cd ruby && bash travis-test.sh jruby-9.3.3.0 && cd ..
 }
 
 build_javascript() {

@@ -44,6 +44,7 @@ import proto3_unittest.UnittestProto3.TestAllTypes
 import proto3_unittest.UnittestProto3.TestAllTypes.NestedEnum
 import proto3_unittest.UnittestProto3.TestEmptyMessage
 import proto3_unittest.copy
+import proto3_unittest.optionalForeignMessageOrNull
 import proto3_unittest.optionalNestedMessageOrNull
 import proto3_unittest.testAllTypes
 import proto3_unittest.testEmptyMessage
@@ -347,5 +348,8 @@ class Proto3Test {
     }
     assertThat(someNestedMessage.optionalNestedMessageOrNull)
       .isEqualTo(TestAllTypesKt.nestedMessage { bb = 118 })
+
+    // No optional keyword, OrNull should still be generated
+    assertThat(someNestedMessage.optionalForeignMessageOrNull).isEqualTo(null)
   }
 }

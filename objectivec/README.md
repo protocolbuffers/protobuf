@@ -133,12 +133,12 @@ This options allow you to provide a custom prefix for all the symbols generated
 from a proto file (classes (from message), enums, the Root for extension
 support).
 
-If not set, the generation options `default_objc_class_prefix` and `use_package_as_prefix`
-(documented below) control what is used instead. Since Objective C uses a global namespace for all
-of its classes, there can be collisions. `use_package_as_prefix=yes` should
-avoid collisions since proto package are used to scope/name things in other
-languages, but this option can be used to get shorter names instead. Convention
-is to base the explicit prefix on the proto package.
+If not set, the generation options `package_to_prefix_mappings_path` and
+`use_package_as_prefix` (documented below) controls what is used instead. Since
+Objective C uses a global namespace for all of its classes, there can be collisions.
+`use_package_as_prefix=yes` should avoid collisions since proto package are used to
+scope/name things in other languages, but this option can be used to get shorter
+names instead. Convention is to base the explicit prefix on the proto package.
 
 Objective C Generator `protoc` Options
 --------------------------------------
@@ -182,11 +182,23 @@ supported keys are:
     having to add the runtime directory to the header search path since the
     generate `#import` will be more complete.
 
-  * `default_objc_class_prefix`: The default ObjC prefix value to use when 
-    generating sources. The generator will use this if the `objc_class_prefix`
-    file option is not set. This option can be useful if multiple iOS apps
-    consume the same proto file but wish to use a different prefix for their
-    generated sources.
+  * `package_to_prefix_mappings_path`: The `value` used for this key is a 
+    path to a file containing a list of proto packages and prefixes.
+    The generator will use this to locate which ObjC class prefix to use when
+    generating sources _unless_ the `objc_class_prefix` file option is set.
+    This option can be useful if multiple apps consume a common set of
+    proto files but wish to use a different prefix for the generated sources
+    between them. This option takes precedent over the `use_package_as_prefix`
+    option.
+
+    The format of the file is:
+      * An entry is a line of "package=prefix".
+      * Comments start with `#`.
+      * A comment can go on a line after a expected package/prefix pair.
+        (i.e. - "package=prefix # comment")
+      * For files that do NOT have a proto package (not recommended), an
+        entry can be made as "no_package:PATH=prefix", where PATH is the
+      path for the .proto file.
 
   * `use_package_as_prefix` and `proto_package_prefix_exceptions_path`: The
     `value` for `use_package_as_prefix` can be `yes` or `no`, and indicates

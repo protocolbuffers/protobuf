@@ -34,8 +34,8 @@
 #include <cstdint>
 #include <deque>
 #include <string>
-#include <vector>
 #include <unordered_set>
+#include <vector>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/type.pb.h>

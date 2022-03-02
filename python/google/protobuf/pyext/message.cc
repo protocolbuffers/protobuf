@@ -784,7 +784,6 @@ PyMessageFactory* GetFactoryForMessage(CMessage* message) {
 static int MaybeReleaseOverlappingOneofField(
     CMessage* cmessage,
     const FieldDescriptor* field) {
-#ifdef GOOGLE_PROTOBUF_HAS_ONEOF
   Message* message = cmessage->message;
   const Reflection* reflection = message->GetReflection();
   if (!field->containing_oneof() ||
@@ -804,7 +803,6 @@ static int MaybeReleaseOverlappingOneofField(
   if (InternalReleaseFieldByDescriptor(cmessage, existing_field) < 0) {
     return -1;
   }
-#endif
   return 0;
 }
 

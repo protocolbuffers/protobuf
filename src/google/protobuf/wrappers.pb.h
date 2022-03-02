@@ -93,7 +93,7 @@ class PROTOBUF_EXPORT DoubleValue final :
  public:
   inline DoubleValue() : DoubleValue(nullptr) {}
   ~DoubleValue() override;
-  explicit constexpr DoubleValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR DoubleValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   DoubleValue(const DoubleValue& from);
   DoubleValue(DoubleValue&& from) noexcept
@@ -236,7 +236,7 @@ class PROTOBUF_EXPORT FloatValue final :
  public:
   inline FloatValue() : FloatValue(nullptr) {}
   ~FloatValue() override;
-  explicit constexpr FloatValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR FloatValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FloatValue(const FloatValue& from);
   FloatValue(FloatValue&& from) noexcept
@@ -379,7 +379,7 @@ class PROTOBUF_EXPORT Int64Value final :
  public:
   inline Int64Value() : Int64Value(nullptr) {}
   ~Int64Value() override;
-  explicit constexpr Int64Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Int64Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Int64Value(const Int64Value& from);
   Int64Value(Int64Value&& from) noexcept
@@ -522,7 +522,7 @@ class PROTOBUF_EXPORT UInt64Value final :
  public:
   inline UInt64Value() : UInt64Value(nullptr) {}
   ~UInt64Value() override;
-  explicit constexpr UInt64Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR UInt64Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   UInt64Value(const UInt64Value& from);
   UInt64Value(UInt64Value&& from) noexcept
@@ -665,7 +665,7 @@ class PROTOBUF_EXPORT Int32Value final :
  public:
   inline Int32Value() : Int32Value(nullptr) {}
   ~Int32Value() override;
-  explicit constexpr Int32Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Int32Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Int32Value(const Int32Value& from);
   Int32Value(Int32Value&& from) noexcept
@@ -808,7 +808,7 @@ class PROTOBUF_EXPORT UInt32Value final :
  public:
   inline UInt32Value() : UInt32Value(nullptr) {}
   ~UInt32Value() override;
-  explicit constexpr UInt32Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR UInt32Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   UInt32Value(const UInt32Value& from);
   UInt32Value(UInt32Value&& from) noexcept
@@ -951,7 +951,7 @@ class PROTOBUF_EXPORT BoolValue final :
  public:
   inline BoolValue() : BoolValue(nullptr) {}
   ~BoolValue() override;
-  explicit constexpr BoolValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR BoolValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   BoolValue(const BoolValue& from);
   BoolValue(BoolValue&& from) noexcept
@@ -1094,7 +1094,7 @@ class PROTOBUF_EXPORT StringValue final :
  public:
   inline StringValue() : StringValue(nullptr) {}
   ~StringValue() override;
-  explicit constexpr StringValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR StringValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   StringValue(const StringValue& from);
   StringValue(StringValue&& from) noexcept
@@ -1242,7 +1242,7 @@ class PROTOBUF_EXPORT BytesValue final :
  public:
   inline BytesValue() : BytesValue(nullptr) {}
   ~BytesValue() override;
-  explicit constexpr BytesValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR BytesValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   BytesValue(const BytesValue& from);
   BytesValue(BytesValue&& from) noexcept

@@ -87,6 +87,10 @@ extern const char kThinSeparator[];
 void SetCommonVars(const Options& options,
                    std::map<std::string, std::string>* variables);
 
+// Variables to access message data from the message scope.
+void SetCommonMessageDataVariables(
+    std::map<std::string, std::string>* variables);
+
 void SetUnknownFieldsVariable(const Descriptor* descriptor,
                               const Options& options,
                               std::map<std::string, std::string>* variables);
@@ -362,8 +366,7 @@ inline bool IsExplicitLazy(const FieldDescriptor* field) {
 inline bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
                                  const Options& options) {
   // TODO(b/211906113): Make lazy() imply eagerly verified lazy.
-  return IsExplicitLazy(field) &&
-         !field->is_repeated() &&
+  return IsExplicitLazy(field) && !field->is_repeated() &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
          GetOptimizeFor(field->file(), options) != FileOptions::LITE_RUNTIME &&
          !options.opensource_runtime;
@@ -491,13 +494,32 @@ inline std::string MakeDefaultName(const FieldDescriptor* field) {
 // variable name.
 // For example, declarations of default variables should always use just
 // MakeDefaultName to produce code like:
-// Type _i_give_permission_to_break_this_code_default_field_;
+//   Type _i_give_permission_to_break_this_code_default_field_;
 //
 // Code that references these should use MakeDefaultFieldName, in case the field
 // exists at some nested level like:
-// internal_container_._i_give_permission_to_break_this_code_default_field_;
+//   internal_container_._i_give_permission_to_break_this_code_default_field_;
 inline std::string MakeDefaultFieldName(const FieldDescriptor* field) {
   return MakeDefaultName(field);
+}
+
+inline std::string MakeVarintCachedSizeName(const FieldDescriptor* field) {
+  return StrCat("_", FieldName(field), "_cached_byte_size_");
+}
+
+// Semantically distinct from MakeVarintCachedSizeName in that it gives the C++
+// code referencing the object from the message scope, rather than just the
+// variable name.
+// For example, declarations of default variables should always use just
+// MakeVarintCachedSizeName to produce code like:
+//   Type _field_cached_byte_size_;
+//
+// Code that references these variables should use
+// MakeVarintCachedSizeFieldName, in case the field exists at some nested level
+// like:
+//   internal_container_._field_cached_byte_size_;
+inline std::string MakeVarintCachedSizeFieldName(const FieldDescriptor* field) {
+  return StrCat("_", FieldName(field), "_cached_byte_size_");
 }
 
 bool IsAnyMessage(const FileDescriptor* descriptor, const Options& options);

@@ -21,12 +21,12 @@ namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
-constexpr Timestamp::Timestamp(
+PROTOBUF_CONSTEXPR Timestamp::Timestamp(
     ::_pbi::ConstantInitialized)
   : seconds_(int64_t{0})
   , nanos_(0){}
 struct TimestampDefaultTypeInternal {
-  constexpr TimestampDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR TimestampDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~TimestampDefaultTypeInternal() {}
   union {

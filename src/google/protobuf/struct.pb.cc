@@ -21,10 +21,10 @@ namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
-constexpr Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(
+PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(
     ::_pbi::ConstantInitialized){}
 struct Struct_FieldsEntry_DoNotUseDefaultTypeInternal {
-  constexpr Struct_FieldsEntry_DoNotUseDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUseDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~Struct_FieldsEntry_DoNotUseDefaultTypeInternal() {}
   union {
@@ -32,11 +32,11 @@ struct Struct_FieldsEntry_DoNotUseDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Struct_FieldsEntry_DoNotUseDefaultTypeInternal _Struct_FieldsEntry_DoNotUse_default_instance_;
-constexpr Struct::Struct(
+PROTOBUF_CONSTEXPR Struct::Struct(
     ::_pbi::ConstantInitialized)
   : fields_(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}){}
 struct StructDefaultTypeInternal {
-  constexpr StructDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR StructDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~StructDefaultTypeInternal() {}
   union {
@@ -44,11 +44,11 @@ struct StructDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StructDefaultTypeInternal _Struct_default_instance_;
-constexpr Value::Value(
+PROTOBUF_CONSTEXPR Value::Value(
     ::_pbi::ConstantInitialized)
   : _oneof_case_{}{}
 struct ValueDefaultTypeInternal {
-  constexpr ValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR ValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~ValueDefaultTypeInternal() {}
   union {
@@ -56,11 +56,11 @@ struct ValueDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ValueDefaultTypeInternal _Value_default_instance_;
-constexpr ListValue::ListValue(
+PROTOBUF_CONSTEXPR ListValue::ListValue(
     ::_pbi::ConstantInitialized)
   : values_(){}
 struct ListValueDefaultTypeInternal {
-  constexpr ListValueDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR ListValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~ListValueDefaultTypeInternal() {}
   union {

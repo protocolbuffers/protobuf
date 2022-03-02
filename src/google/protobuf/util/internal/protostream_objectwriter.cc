@@ -57,9 +57,9 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
+using util::Status;
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
 using std::placeholders::_1;
-using util::Status;
 
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(

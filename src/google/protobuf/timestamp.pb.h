@@ -61,7 +61,7 @@ class PROTOBUF_EXPORT Timestamp final :
  public:
   inline Timestamp() : Timestamp(nullptr) {}
   ~Timestamp() override;
-  explicit constexpr Timestamp(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Timestamp(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Timestamp(const Timestamp& from);
   Timestamp(Timestamp&& from) noexcept

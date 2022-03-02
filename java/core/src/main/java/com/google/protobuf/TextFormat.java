@@ -59,6 +59,8 @@ public final class TextFormat {
 
   private static final Logger logger = Logger.getLogger(TextFormat.class.getName());
 
+  private static final String DEBUG_STRING_SILENT_MARKER = "\t ";
+
 
   /**
    * Outputs a textual representation of the Protocol Message supplied into the parameter output.
@@ -945,6 +947,14 @@ public final class TextFormat {
         Pattern.compile("-?inf(inity)?f?", Pattern.CASE_INSENSITIVE);
     private static final Pattern FLOAT_NAN = Pattern.compile("nanf?", Pattern.CASE_INSENSITIVE);
 
+    /**
+     * {@link containsSilentMarkerAfterCurrentToken} indicates if there is a silent marker after the
+     * current token. This value is moved to {@link containsSilentMarkerAfterPrevToken} every time
+     * the next token is parsed.
+     */
+    private boolean containsSilentMarkerAfterCurrentToken = false;
+    private boolean containsSilentMarkerAfterPrevToken = false;
+
     /** Construct a tokenizer that parses tokens from the given text. */
     private Tokenizer(final CharSequence text) {
       this.text = text;
@@ -967,6 +977,14 @@ public final class TextFormat {
 
     int getColumn() {
       return column;
+    }
+
+    boolean getContainsSilentMarkerAfterCurrentToken() {
+      return containsSilentMarkerAfterCurrentToken;
+    }
+
+    boolean getContainsSilentMarkerAfterPrevToken() {
+      return containsSilentMarkerAfterPrevToken;
     }
 
     /** Are we at the end of the input? */
@@ -1534,6 +1552,23 @@ public final class TextFormat {
    * control the parser behavior.
    */
   public static class Parser {
+    private int debugStringSilentMarker;
+
+    int getSilentMarkerCount() {
+      return debugStringSilentMarker;
+    }
+
+    /**
+     * A valid silent marker appears between a field name and its value. If there is a ":" in
+     * between, the silent marker will only appear after the colon. This is called after a field
+     * name is parsed, and before the ":" if it exists. If the current token is ":", then
+     * containsSilentMarkerAfterCurrentToken indicates if there is a valid silent marker. Otherwise,
+     * the current token is part of the field value, so the silent marker is indicated by
+     * containsSilentMarkerAfterPrevToken.
+     */
+    private void detectSilentMarker(Tokenizer tokenizer) {
+    }
+
     /**
      * Determines if repeated values for non-repeated fields and oneofs are permitted. For example,
      * given required/optional field "foo" and a oneof containing "baz" and "qux":
@@ -1890,6 +1925,7 @@ public final class TextFormat {
         // start with "{" or "<" which indicates the beginning of a message body.
         // If there is no ":" or there is a "{" or "<" after ":", this field has
         // to be a message or the input is ill-formed.
+        detectSilentMarker(tokenizer);
         if (tokenizer.tryConsume(":") && !tokenizer.lookingAt("{") && !tokenizer.lookingAt("<")) {
           skipFieldValue(tokenizer);
         } else {
@@ -1900,6 +1936,7 @@ public final class TextFormat {
 
       // Handle potential ':'.
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+        detectSilentMarker(tokenizer);
         tokenizer.tryConsume(":"); // optional
         if (parseTreeBuilder != null) {
           TextFormatParseInfoTree.Builder childParseTreeBuilder =
@@ -1923,6 +1960,7 @@ public final class TextFormat {
               unknownFields);
         }
       } else {
+        detectSilentMarker(tokenizer);
         tokenizer.consume(":"); // required
         consumeFieldValues(
             tokenizer,
@@ -2184,6 +2222,7 @@ public final class TextFormat {
           throw tokenizer.parseExceptionPreviousToken("Expected a valid type URL.");
         }
       }
+      detectSilentMarker(tokenizer);
       tokenizer.tryConsume(":");
       final String anyEndToken;
       if (tokenizer.tryConsume("<")) {
@@ -2220,7 +2259,7 @@ public final class TextFormat {
     }
 
     /** Skips the next field including the field's name and value. */
-    private static void skipField(Tokenizer tokenizer) throws ParseException {
+    private void skipField(Tokenizer tokenizer) throws ParseException {
       if (tokenizer.tryConsume("[")) {
         // Extension name.
         do {
@@ -2237,6 +2276,7 @@ public final class TextFormat {
       // start with "{" or "<" which indicates the beginning of a message body.
       // If there is no ":" or there is a "{" or "<" after ":", this field has
       // to be a message or the input is ill-formed.
+      detectSilentMarker(tokenizer);
       if (tokenizer.tryConsume(":") && !tokenizer.lookingAt("<") && !tokenizer.lookingAt("{")) {
         skipFieldValue(tokenizer);
       } else {
@@ -2252,7 +2292,7 @@ public final class TextFormat {
     /**
      * Skips the whole body of a message including the beginning delimiter and the ending delimiter.
      */
-    private static void skipFieldMessage(Tokenizer tokenizer) throws ParseException {
+    private void skipFieldMessage(Tokenizer tokenizer) throws ParseException {
       final String delimiter;
       if (tokenizer.tryConsume("<")) {
         delimiter = ">";
@@ -2267,7 +2307,7 @@ public final class TextFormat {
     }
 
     /** Skips a field value. */
-    private static void skipFieldValue(Tokenizer tokenizer) throws ParseException {
+    private void skipFieldValue(Tokenizer tokenizer) throws ParseException {
       if (tokenizer.tryConsumeString()) {
         while (tokenizer.tryConsumeString()) {}
         return;

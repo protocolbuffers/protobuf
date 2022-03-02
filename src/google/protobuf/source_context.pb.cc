@@ -21,11 +21,11 @@ namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
-constexpr SourceContext::SourceContext(
+PROTOBUF_CONSTEXPR SourceContext::SourceContext(
     ::_pbi::ConstantInitialized)
   : file_name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
 struct SourceContextDefaultTypeInternal {
-  constexpr SourceContextDefaultTypeInternal()
+  PROTOBUF_CONSTEXPR SourceContextDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
   ~SourceContextDefaultTypeInternal() {}
   union {

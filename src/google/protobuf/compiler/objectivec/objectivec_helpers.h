@@ -47,9 +47,10 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-// Set the default objc class prefix that should be used. This method is used only
-// when default_objc_class_prefix is passed through objc_opt.
-void PROTOC_EXPORT SetDefaultObjcClassPrefix(const std::string& objc_class_prefix);
+// Get/Set the path to a file to load for objc class prefix lookups.
+std::string PROTOC_EXPORT GetPackageToPrefixMappingsPath();
+void PROTOC_EXPORT SetPackageToPrefixMappingsPath(
+    const std::string& file_path);
 // Get/Set if the proto package should be used to make the default prefix for
 // symbols. This will then impact most of the type naming apis below. It is done
 // as a global to not break any other generator reusing the methods since they
@@ -63,15 +64,12 @@ std::string PROTOC_EXPORT GetProtoPackagePrefixExceptionList();
 void PROTOC_EXPORT SetProtoPackagePrefixExceptionList(
     const std::string& file_path);
 
-// Generator options (see objectivec_generator.cc for a description of each):
+// Generator Prefix Validation Options (see objectivec_generator.cc for a
+// description of each):
 struct Options {
   Options();
   std::string expected_prefixes_path;
   std::vector<std::string> expected_prefixes_suppressions;
-  std::string generate_for_named_framework;
-  std::string named_framework_to_proto_path_mappings_path;
-  std::string runtime_import_prefix;
-  std::string default_objc_class_prefix;
   bool prefixes_must_be_registered;
   bool require_prefixes;
 };
@@ -255,7 +253,11 @@ IsProtobufLibraryBundledProtoFile(const FileDescriptor* file);
 // and the result is false.
 bool PROTOC_EXPORT ValidateObjCClassPrefixes(
     const std::vector<const FileDescriptor*>& files,
-    const Options& generation_options, std::string* out_error);
+    const Options& validation_options, std::string* out_error);
+// Same was the other ValidateObjCClassPrefixes() calls, but the options all
+// come from the environment variables.
+bool PROTOC_EXPORT ValidateObjCClassPrefixes(
+    const std::vector<const FileDescriptor*>& files, std::string* out_error);
 
 // Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
 // the input into the expected output.

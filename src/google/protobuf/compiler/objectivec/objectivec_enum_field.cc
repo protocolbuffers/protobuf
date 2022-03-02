@@ -65,9 +65,8 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
 }
 }  // namespace
 
-EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
-                                       const Options& options)
-    : SingleFieldGenerator(descriptor, options) {
+EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor)
+    : SingleFieldGenerator(descriptor) {
   SetEnumVariables(descriptor, &variables_);
 }
 
@@ -129,8 +128,8 @@ void EnumFieldGenerator::DetermineForwardDeclarations(
 }
 
 RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
-    const FieldDescriptor* descriptor, const Options& options)
-    : RepeatedFieldGenerator(descriptor, options) {
+    const FieldDescriptor* descriptor)
+    : RepeatedFieldGenerator(descriptor) {
   SetEnumVariables(descriptor, &variables_);
   variables_["array_storage_type"] = "GPBEnumArray";
 }

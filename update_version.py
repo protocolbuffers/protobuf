@@ -103,11 +103,17 @@ def RewriteTextFile(filename, line_rewriter):
 
 
 def UpdateCMake():
-  RewriteTextFile('cmake/libprotobuf.cmake',
-    lambda line : re.sub(
-      r'SOVERSION [0-9]+\.[0-9]+(\.[0-9]+)?',
-      'SOVERSION %s' % GetSharedObjectVersion()[0],
-      line))
+  cmake_files = (
+    'cmake/libprotobuf.cmake',
+    'cmake/libprotobuf-lite.cmake',
+    'cmake/libprotoc.cmake'
+  )
+  for cmake_file in cmake_files:
+    RewriteTextFile(cmake_file,
+      lambda line : re.sub(
+        r'SOVERSION ([0-9]+)$',
+        'SOVERSION %s' % GetSharedObjectVersion()[0],
+        line))
 
 
 def UpdateConfigure():
@@ -359,18 +365,6 @@ def UpdatePhp():
       changelog.appendChild(release)
       changelog.appendChild(document.createTextNode('\n '))
   RewriteXml('php/ext/google/protobuf/package.xml', Callback)
-  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
-    lambda line : re.sub(
-      r'PHP_PROTOBUF_VERSION ".*"$',
-      'PHP_PROTOBUF_VERSION "%s"' % NEW_VERSION,
-      line))
-
-  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
-    lambda line : re.sub(
-      r"^#define PHP_PROTOBUF_VERSION .*$",
-      "#define PHP_PROTOBUF_VERSION \"%s\"" % GetFullVersion(rc_suffix = 'RC'),
-      line))
-
   RewriteTextFile('php/ext/google/protobuf/protobuf.h',
     lambda line : re.sub(
       r"^#define PHP_PROTOBUF_VERSION .*$",

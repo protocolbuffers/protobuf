@@ -106,7 +106,7 @@ public:
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE> SuperType;
   Struct_FieldsEntry_DoNotUse();
-  explicit constexpr Struct_FieldsEntry_DoNotUse(
+  explicit PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse(
       ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
   explicit Struct_FieldsEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void MergeFrom(const Struct_FieldsEntry_DoNotUse& other);
@@ -127,7 +127,7 @@ class PROTOBUF_EXPORT Struct final :
  public:
   inline Struct() : Struct(nullptr) {}
   ~Struct() override;
-  explicit constexpr Struct(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Struct(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Struct(const Struct& from);
   Struct(Struct&& from) noexcept
@@ -285,7 +285,7 @@ class PROTOBUF_EXPORT Value final :
  public:
   inline Value() : Value(nullptr) {}
   ~Value() override;
-  explicit constexpr Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Value(const Value& from);
   Value(Value&& from) noexcept
@@ -549,7 +549,7 @@ class PROTOBUF_EXPORT ListValue final :
  public:
   inline ListValue() : ListValue(nullptr) {}
   ~ListValue() override;
-  explicit constexpr ListValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR ListValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   ListValue(const ListValue& from);
   ListValue(ListValue&& from) noexcept

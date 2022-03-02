@@ -61,7 +61,7 @@ class PROTOBUF_EXPORT Any final :
  public:
   inline Any() : Any(nullptr) {}
   ~Any() override;
-  explicit constexpr Any(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR Any(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Any(const Any& from);
   Any(Any&& from) noexcept
