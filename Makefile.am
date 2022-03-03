@@ -1037,7 +1037,10 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/factory_test2.proto                        \
   python/google/protobuf/internal/file_options_test.proto                    \
   python/google/protobuf/internal/generator_test.py                          \
+  python/google/protobuf/internal/import_test.py                             \
   python/google/protobuf/internal/import_test_package/__init__.py            \
+  python/google/protobuf/internal/import_test_package/import_public.proto    \
+  python/google/protobuf/internal/import_test_package/import_public_nested.proto \
   python/google/protobuf/internal/import_test_package/inner.proto            \
   python/google/protobuf/internal/import_test_package/outer.proto            \
   python/google/protobuf/internal/json_format_test.py                        \
