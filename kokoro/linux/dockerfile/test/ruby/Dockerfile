@@ -31,6 +31,7 @@ RUN gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys \
     7D2BAF1CF37B13E2069D6956105BD0E739499BDB
 RUN \curl -sSL https://raw.githubusercontent.com/rvm/rvm/master/binscripts/rvm-installer | bash -s master
 
+RUN /bin/bash -l -c "rvm get head"
 RUN /bin/bash -l -c "rvm install 2.5.1"
 RUN /bin/bash -l -c "rvm install 2.6.0"
 RUN /bin/bash -l -c "rvm install 2.7.0"
