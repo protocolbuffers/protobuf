@@ -5,7 +5,6 @@ set -ex
 set +ex  # rvm script is very verbose and exits with errorcode
 source $HOME/.rvm/scripts/rvm
 set -e  # rvm commands are very verbose
-rvm get head
 time rvm install 2.5.0
 rvm use 2.5.0
 gem install rake-compiler --no-document
