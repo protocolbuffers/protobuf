@@ -19,11 +19,11 @@ You can generate Java Lite code for your .proto files:
 
     $ protoc --java_out=lite:${OUTPUT_DIR} path/to/your/proto/file
 
-The "optimize_for = LITE_RUNTIME" option in proto file no longer has any
+The "optimize_for = LITE_RUNTIME" option in the .proto file no longer has any
 effect on Java code.
 
 Include the generated Java files in your project and add a dependency on the
-protobuf Java Lite runtime. If you are using Maven, use the following:
+protobuf Java Lite runtime. If you are using Maven, include the following:
 
 ```xml
 <dependency>
