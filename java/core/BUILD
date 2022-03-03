@@ -281,7 +281,7 @@ junit_tests(
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
-        "@maven//:org_easymock_easymock",
+        "@maven//:org_mockito_mockito_core",
     ],
 )
 
@@ -408,6 +408,6 @@ junit_tests(
         ":test_util_lite",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
-        "@maven//:org_easymock_easymock",
+        "@maven//:org_mockito_mockito_core",
     ],
 )

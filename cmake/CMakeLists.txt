@@ -1,5 +1,5 @@
 # Minimum CMake required
-cmake_minimum_required(VERSION 3.1.3)
+cmake_minimum_required(VERSION 3.10)
 
 if(protobuf_VERBOSE)
   message(STATUS "Protocol Buffers Configuring...")
@@ -127,6 +127,30 @@ if (protobuf_DISABLE_RTTI)
   add_definitions(-DGOOGLE_PROTOBUF_NO_RTTI=1)
 endif()
 
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map
+"{
+  global:
+    main;
+  local:
+    *;
+};")
+# CheckLinkerFlag module available in CMake >=3.18.
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.18)
+  include(CheckLinkerFlag)
+  check_linker_flag(CXX -Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map protobuf_HAVE_LD_VERSION_SCRIPT)
+else()
+  include(CheckCXXSourceCompiles)
+  set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
+  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map)
+  check_cxx_source_compiles("
+    int main() {
+      return 0;
+    }
+  " protobuf_HAVE_LD_VERSION_SCRIPT)
+  set(CMAKE_REQUIRED_FLAGS ${OLD_CMAKE_REQUIRED_FLAGS})
+endif()
+file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map)
+
 find_package(Threads REQUIRED)
 
 set(_protobuf_FIND_ZLIB)
@@ -182,7 +206,7 @@ else (protobuf_BUILD_SHARED_LIBS)
   # Prior to CMake 3.15, the MSVC runtime library was pushed into the same flags
   # making programmatic control difficult.  Prefer the functionality in newer
   # CMake versions when available.
-  if(CMAKE_VERSION VERSION_GREATER 3.15 OR CMAKE_VERSION VERSION_EQUAL 3.15)
+  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.15)
     if (protobuf_MSVC_STATIC_RUNTIME)
         set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
     else()

@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// A proto file which is imported by inner.proto to test public importing.
+
 syntax = "proto2";
 
 package google.protobuf.python.internal.import_test_package;
 
-import "google/protobuf/internal/import_test_package/inner.proto";
+option optimize_for = SPEED;
 
-message Outer {
-  optional Inner inner = 1;
-  optional ImportPublicNestedMessage import_public_nested = 2;
-}
+// Test nested public import
+import public "google/protobuf/internal/import_test_package/import_public_nested.proto";

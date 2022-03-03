@@ -502,6 +502,8 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   constexpr TypeDefinedMapFieldBase(ConstantInitialized tag)
       : MapFieldBase(tag) {}
   explicit TypeDefinedMapFieldBase(Arena* arena) : MapFieldBase(arena) {}
+  TypeDefinedMapFieldBase(ArenaInitialized, Arena* arena)
+      : TypeDefinedMapFieldBase(arena) {}
 
  protected:
   ~TypeDefinedMapFieldBase() {}
@@ -574,6 +576,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
       : TypeDefinedMapFieldBase<Key, T>(tag), impl_() {}
   explicit MapField(Arena* arena)
       : TypeDefinedMapFieldBase<Key, T>(arena), impl_(arena) {}
+  MapField(ArenaInitialized, Arena* arena) : MapField(arena) {}
 
   // Implement MapFieldBase
   bool ContainsMapKey(const MapKey& map_key) const override;

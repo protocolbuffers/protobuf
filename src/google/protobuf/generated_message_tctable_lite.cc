@@ -34,6 +34,7 @@
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_tctable_decl.h>
 #include <google/protobuf/generated_message_tctable_impl.h>
+#include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -1698,8 +1699,9 @@ const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
       break;
     }
 
-    case field_layout::kRepIString:
-      break;  // note: skipped above
+    case field_layout::kRepIString: {
+      break;
+    }
   }
 
   if (ptr == nullptr || !is_valid) {

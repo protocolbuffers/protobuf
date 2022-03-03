@@ -93,6 +93,11 @@ endif()
 
 add_library(libprotobuf-lite ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_lite_files} ${libprotobuf_lite_includes} ${libprotobuf_lite_rc_files})
+if(protobuf_HAVE_LD_VERSION_SCRIPT)
+  target_link_options(libprotobuf-lite PRIVATE -Wl,--version-script=${protobuf_source_dir}/src/libprotobuf-lite.map)
+  set_target_properties(libprotobuf-lite PROPERTIES
+    LINK_DEPENDS ${protobuf_source_dir}/src/libprotobuf-lite.map)
+endif()
 target_link_libraries(libprotobuf-lite ${CMAKE_THREAD_LIBS_INIT})
 if(protobuf_LINK_LIBATOMIC)
   target_link_libraries(libprotobuf-lite atomic)
@@ -108,6 +113,7 @@ if(protobuf_BUILD_SHARED_LIBS)
 endif()
 set_target_properties(libprotobuf-lite PROPERTIES
     VERSION ${protobuf_VERSION}
+    SOVERSION 30
     OUTPUT_NAME ${LIB_PREFIX}protobuf-lite
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
 add_library(protobuf::libprotobuf-lite ALIAS libprotobuf-lite)

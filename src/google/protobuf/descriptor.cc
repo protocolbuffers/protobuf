@@ -162,46 +162,44 @@ constexpr size_t EffectiveAlignof() {
   return std::is_same<T, char>::value ? 8 : alignof(T);
 }
 
+template <int align, typename U, typename... T>
+using AppendIfAlign =
+    typename std::conditional<EffectiveAlignof<U>() == align, void (*)(T..., U),
+                              void (*)(T...)>::type;
+
 // Metafunction to sort types in descending order of alignment.
 // Useful for the flat allocator to ensure proper alignment of all elements
 // without having to add padding.
+// Instead of implementing a proper sort metafunction we just do a
+// filter+merge, which is much simpler to write as a metafunction.
+// We have a fixed set of alignments we can filter on.
 // For simplicity we use a function pointer as a type list.
-struct TypeListSorter {
-  template <int align, typename U, typename... T>
-  static auto AppendIfAlign(void (*)(T...)) ->
-      typename std::conditional<EffectiveAlignof<U>() == align,
-                                void (*)(T..., U), void (*)(T...)>::type {
-    return nullptr;
-  }
+template <typename In, typename T16, typename T8, typename T4, typename T2,
+          typename T1>
+struct TypeListSortImpl;
 
-  template <typename... T16, typename... T8, typename... T4, typename... T2,
-            typename... T1>
-  static auto SortImpl(void (*)(), void (*)(T16...), void (*)(T8...),
-                       void (*)(T4...), void (*)(T2...), void (*)(T1...))
-      -> void (*)(T16..., T8..., T4..., T2..., T1...) {
-    return nullptr;
-  }
-
-  template <typename T, typename... Ts, typename T16, typename T8, typename T4,
-            typename T2, typename T1, typename Self = TypeListSorter>
-  static auto SortImpl(void (*)(T, Ts...), T16 p16, T8 p8, T4 p4, T2 p2, T1 p1)
-      -> decltype(Self::template SortImpl(
-          static_cast<void (*)(Ts...)>(nullptr), AppendIfAlign<16, T>(p16),
-          AppendIfAlign<8, T>(p8), AppendIfAlign<4, T>(p4),
-          AppendIfAlign<2, T>(p2), AppendIfAlign<1, T>(p1))) {
-    return nullptr;
-  }
-
-  // Instead of implementing a proper sort metafunction we just do a
-  // filter+merge, which is much simpler to write as a metafunction.
-  // We have a fixed set of alignments we can filter on.
-  template <typename... T>
-  static auto SortByAlignment(void (*p)() = nullptr)
-      -> decltype(SortImpl(static_cast<void (*)(T...)>(nullptr), p, p, p, p,
-                           p)) {
-    return nullptr;
-  }
+template <typename... T16, typename... T8, typename... T4, typename... T2,
+          typename... T1>
+struct TypeListSortImpl<void (*)(), void (*)(T16...), void (*)(T8...),
+                        void (*)(T4...), void (*)(T2...), void (*)(T1...)> {
+  using type = void (*)(T16..., T8..., T4..., T2..., T1...);
 };
+
+template <typename First, typename... Rest, typename... T16, typename... T8,
+          typename... T4, typename... T2, typename... T1>
+struct TypeListSortImpl<void (*)(First, Rest...), void (*)(T16...),
+                        void (*)(T8...), void (*)(T4...), void (*)(T2...),
+                        void (*)(T1...)> {
+  using type = typename TypeListSortImpl<
+      void (*)(Rest...), AppendIfAlign<16, First, T16...>,
+      AppendIfAlign<8, First, T8...>, AppendIfAlign<4, First, T4...>,
+      AppendIfAlign<2, First, T2...>, AppendIfAlign<1, First, T1...>>::type;
+};
+
+template <typename... T>
+using SortByAlignment =
+    typename TypeListSortImpl<void (*)(T...), void (*)(), void (*)(),
+                              void (*)(), void (*)(), void (*)()>::type;
 
 template <template <typename...> class C, typename... T>
 auto ApplyTypeList(void (*)(T...)) -> C<T...>;
@@ -1239,12 +1237,12 @@ namespace internal {
 // necessarily in the same order.
 class FlatAllocator
     : public decltype(ApplyTypeList<FlatAllocatorImpl>(
-          TypeListSorter::SortByAlignment<
-              char, std::string, SourceCodeInfo, FileDescriptorTables,
-              // Option types
-              MessageOptions, FieldOptions, EnumOptions, EnumValueOptions,
-              ExtensionRangeOptions, OneofOptions, ServiceOptions,
-              MethodOptions, FileOptions>())) {};
+          SortByAlignment<char, std::string, SourceCodeInfo,
+                          FileDescriptorTables,
+                          // Option types
+                          MessageOptions, FieldOptions, EnumOptions,
+                          EnumValueOptions, ExtensionRangeOptions, OneofOptions,
+                          ServiceOptions, MethodOptions, FileOptions>())) {};
 
 }  // namespace internal
 

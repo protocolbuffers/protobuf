@@ -593,6 +593,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
   if (std::numeric_limits<T>::min() == 0) {
     // Unsigned case.
     unsigned PY_LONG_LONG ulong_result = PyLong_AsUnsignedLongLong(arg_py_int);
+    Py_DECREF(arg_py_int);
     if (VerifyIntegerCastAndRange<T, unsigned PY_LONG_LONG>(arg,
                                                             ulong_result)) {
       *value = static_cast<T>(ulong_result);
@@ -601,6 +602,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
     }
   } else {
     // Signed case.
+    Py_DECREF(arg_py_int);
     PY_LONG_LONG long_result = PyLong_AsLongLong(arg);
     if (VerifyIntegerCastAndRange<T, PY_LONG_LONG>(arg, long_result)) {
       *value = static_cast<T>(long_result);

@@ -34,6 +34,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.Any;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.ByteString;
@@ -1861,7 +1862,7 @@ public class JsonFormatTest {
 
   // Test that we are not leaking out JSON exceptions.
   @Test
-  public void testJsonException() throws Exception {
+  public void testJsonException_forwardsIOException() throws Exception {
     InputStream throwingInputStream =
         new InputStream() {
           @Override
@@ -1879,7 +1880,10 @@ public class JsonFormatTest {
     } catch (IOException e) {
       assertThat(e).hasMessageThat().isEqualTo("12345");
     }
+  }
 
+  @Test
+  public void testJsonException_forwardsJsonException() throws Exception {
     Reader invalidJsonReader = new StringReader("{ xxx - yyy }");
     // When the JSON parser throws parser exceptions, JsonFormat should turn
     // that into InvalidProtocolBufferException.
@@ -1888,7 +1892,7 @@ public class JsonFormatTest {
       JsonFormat.parser().merge(invalidJsonReader, builder);
       assertWithMessage("Exception is expected.").fail();
     } catch (InvalidProtocolBufferException e) {
-      // Expected.
+      assertThat(e.getCause()).isInstanceOf(JsonSyntaxException.class);
     }
   }
 

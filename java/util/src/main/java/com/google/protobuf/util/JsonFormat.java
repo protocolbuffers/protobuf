@@ -1319,11 +1319,11 @@ public class JsonFormat {
         if (e.getCause() instanceof IOException) {
           throw (IOException) e.getCause();
         } else {
-          throw new InvalidProtocolBufferException(e.getMessage());
+          throw new InvalidProtocolBufferException(e.getMessage(), e);
         }
       } catch (RuntimeException e) {
         // We convert all exceptions from JSON parsing to our own exceptions.
-        throw new InvalidProtocolBufferException(e.getMessage());
+        throw new InvalidProtocolBufferException(e.getMessage(), e);
       }
     }
 

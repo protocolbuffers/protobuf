@@ -90,7 +90,6 @@ set(libprotobuf_includes
   ${protobuf_source_dir}/src/google/protobuf/util/delimited_message_util.h
   ${protobuf_source_dir}/src/google/protobuf/util/field_comparator.h
   ${protobuf_source_dir}/src/google/protobuf/util/field_mask_util.h
-  ${protobuf_source_dir}/src/google/protobuf/util/internal/json_escaping.h
   ${protobuf_source_dir}/src/google/protobuf/util/json_util.h
   ${protobuf_source_dir}/src/google/protobuf/util/message_differencer.h
   ${protobuf_source_dir}/src/google/protobuf/util/time_util.h
@@ -108,6 +107,11 @@ endif()
 
 add_library(libprotobuf ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_lite_files} ${libprotobuf_files} ${libprotobuf_includes} ${libprotobuf_rc_files})
+if(protobuf_HAVE_LD_VERSION_SCRIPT)
+  target_link_options(libprotobuf PRIVATE -Wl,--version-script=${protobuf_source_dir}/src/libprotobuf.map)
+  set_target_properties(libprotobuf PROPERTIES
+    LINK_DEPENDS ${protobuf_source_dir}/src/libprotobuf.map)
+endif()
 target_link_libraries(libprotobuf ${CMAKE_THREAD_LIBS_INIT})
 if(protobuf_WITH_ZLIB)
   target_link_libraries(libprotobuf ${ZLIB_LIBRARIES})
@@ -126,7 +130,6 @@ if(protobuf_BUILD_SHARED_LIBS)
 endif()
 set_target_properties(libprotobuf PROPERTIES
     VERSION ${protobuf_VERSION}
-    # Use only the first SO version component for compatibility with Makefile emitted SONAME.
     SOVERSION 30
     OUTPUT_NAME ${LIB_PREFIX}protobuf
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")

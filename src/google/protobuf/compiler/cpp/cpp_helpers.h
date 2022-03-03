@@ -522,6 +522,10 @@ inline std::string MakeVarintCachedSizeFieldName(const FieldDescriptor* field) {
   return StrCat("_", FieldName(field), "_cached_byte_size_");
 }
 
+// Note: A lot of libraries detect Any protos based on Descriptor::full_name()
+// while the two functions below use FileDescriptor::name(). In a sane world the
+// two approaches should be equivalent. But if you are dealing with descriptors
+// from untrusted sources, you might need to match semantics across libraries.
 bool IsAnyMessage(const FileDescriptor* descriptor, const Options& options);
 bool IsAnyMessage(const Descriptor* descriptor, const Options& options);
 

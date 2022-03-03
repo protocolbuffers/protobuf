@@ -295,15 +295,9 @@ TailCallTableInfo::TailCallTableInfo(
         "_fl::Offset{offsetof(", ClassName(descriptor), ", _oneof_case_)}"));
   }
 
-  int inlined_string_count = 0;
-  for (const FieldDescriptor* field : ordered_fields) {
-    if (IsString(field, options) && IsStringInlined(field, options)) {
-      ++inlined_string_count;
-    }
-  }
   // If this message has any inlined string fields, store the donation state
   // offset in the second auxiliary entry.
-  if (inlined_string_count > 0) {
+  if (!inlined_string_indices.empty()) {
     aux_entries.resize(2);  // pad if necessary
     aux_entries[1] =
         StrCat("_fl::Offset{offsetof(", ClassName(descriptor),
