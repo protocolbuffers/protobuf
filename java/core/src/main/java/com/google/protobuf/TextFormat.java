@@ -1554,10 +1554,6 @@ public final class TextFormat {
   public static class Parser {
     private int debugStringSilentMarker;
 
-    int getSilentMarkerCount() {
-      return debugStringSilentMarker;
-    }
-
     /**
      * A valid silent marker appears between a field name and its value. If there is a ":" in
      * between, the silent marker will only appear after the colon. This is called after a field

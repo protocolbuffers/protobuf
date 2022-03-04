@@ -42,10 +42,10 @@
 #include <string>
 #include <utility>
 
-#include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/repeated_field.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/repeated_field.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>

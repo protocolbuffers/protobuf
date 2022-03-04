@@ -58,10 +58,19 @@ inline void SizedArrayDelete(void* p, size_t size) {
 #endif
 }
 
-// Tag type used to invoke the constinit constructor overload of some classes.
-// Such constructors are internal implementation details of the library.
+// Tag type used to invoke the constinit constructor overload of classes
+// such as ArenaStringPtr and MapFieldBase. Such constructors are internal
+// implementation details of the library.
 struct ConstantInitialized {
   explicit ConstantInitialized() = default;
+};
+
+// Tag type used to invoke the arena constructor overload of classes such
+// as ExtensionSet and MapFieldLite in aggregate initialization. These
+// classes typically don't have move/copy constructors, which rules out
+// explicit initialization in pre-C++17.
+struct ArenaInitialized {
+  explicit ArenaInitialized() = default;
 };
 
 }  // namespace internal

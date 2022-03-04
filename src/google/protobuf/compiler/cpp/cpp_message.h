@@ -200,7 +200,8 @@ class MessageGenerator {
   int max_has_bit_index_;
 
   // A map from field index to inlined_string index. For non-inlined-string
-  // fields, the element is -1.
+  // fields, the element is -1. If there is no inlined string in the message,
+  // this is empty.
   std::vector<int> inlined_string_indices_;
   // The count of inlined_string fields in the message.
   int max_inlined_string_index_;

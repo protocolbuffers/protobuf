@@ -190,6 +190,7 @@ class PROTOBUF_EXPORT ExtensionSet {
  public:
   constexpr ExtensionSet();
   explicit ExtensionSet(Arena* arena);
+  ExtensionSet(ArenaInitialized, Arena* arena) : ExtensionSet(arena) {}
   ~ExtensionSet();
 
   // These are called at startup by protocol-compiler-generated code to

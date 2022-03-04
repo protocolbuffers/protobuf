@@ -70,6 +70,7 @@ class MapFieldLite {
 
   constexpr MapFieldLite() : map_() {}
   explicit MapFieldLite(Arena* arena) : map_(arena) {}
+  MapFieldLite(ArenaInitialized, Arena* arena) : MapFieldLite(arena) {}
 
 #ifdef NDEBUG
   void Destruct() { map_.~Map(); }
