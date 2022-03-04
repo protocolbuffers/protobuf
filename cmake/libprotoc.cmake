@@ -145,7 +145,7 @@ endif()
 set_target_properties(libprotoc PROPERTIES
     COMPILE_DEFINITIONS LIBPROTOC_EXPORTS
     VERSION ${protobuf_VERSION}
-    SOVERSION 30
+    SOVERSION 31
     OUTPUT_NAME ${LIB_PREFIX}protoc
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
 add_library(protobuf::libprotoc ALIAS libprotoc)
