@@ -473,6 +473,9 @@ jspb.BinaryEncoder.prototype.writeFixedHash64 = function(hash) {
 jspb.BinaryEncoder.prototype.writeString = function(value) {
   var oldLength = this.buffer_.length;
 
+  // Protect against non-string values being silently ignored.
+  goog.asserts.assert(value.charCodeAt);
+
   for (var i = 0; i < value.length; i++) {
 
     var c = value.charCodeAt(i);
