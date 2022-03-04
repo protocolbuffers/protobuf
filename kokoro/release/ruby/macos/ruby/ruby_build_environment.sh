@@ -71,12 +71,12 @@ cp $CROSS_RUBY CROSS_RUBY31
 
 patch "$CROSS_RUBY31" << EOF
 --- cross-ruby.rake	2022-03-04 11:49:52.000000000 +0000
-+++ patched	2022-03-04 11:50:29.000000000 +0000
++++ patched	2022-03-04 11:58:22.000000000 +0000
 @@ -114,6 +114,7 @@
      '--enable-static',
      '--disable-shared',
      '--disable-install-doc',
-+    '--with-coroutine=universal',
++    '--with-coroutine=context',
      '--without-gmp',
      '--with-ext=',
      'LDFLAGS=-pipe',
