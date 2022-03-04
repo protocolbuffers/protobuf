@@ -658,5 +658,13 @@ module BasicTest
       assert_equal str, m.optional_string
       assert_equal str, m.optional_bytes
     end
+
+    def test_utf8
+      m = proto_module::TestMessage.new(
+        optional_string: "µpb",
+      )
+      m2 = proto_module::TestMessage.decode(proto_module::TestMessage.encode(m))
+      assert_equal m2, m
+    end
   end
 end
