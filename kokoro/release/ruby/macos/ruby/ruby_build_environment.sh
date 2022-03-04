@@ -76,7 +76,7 @@ patch "$CROSS_RUBY31" << EOF
      '--enable-static',
      '--disable-shared',
      '--disable-install-doc',
-+    '--with-coroutine=context',
++    '--with-coroutine=ucontext',
      '--without-gmp',
      '--with-ext=',
      'LDFLAGS=-pipe',
