@@ -174,7 +174,6 @@ typedef struct {
   VALUE pinned_objs;
 } Arena;
 
-
 static void Arena_mark(void *data) {
   Arena *arena = data;
   rb_gc_mark(arena->pinned_objs);
