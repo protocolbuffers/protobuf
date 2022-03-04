@@ -208,7 +208,7 @@ static void fill_classname(const char *fullname,
   }
 }
 
-const char *str_view_dup(upb_StringView str) {
+char *str_view_dup(upb_StringView str) {
   char *ret = malloc(str.size + 1);
   memcpy(ret, str.data, str.size);
   ret[str.size] = '\0';
@@ -219,13 +219,13 @@ char *GetPhpClassname(const upb_FileDef *file, const char *fullname) {
   // Prepend '.' to package name to make it absolute. In the 5 additional
   // bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
   // given message is google.protobuf.Empty.
-  google_protobuf_FileOptions* opts = upb_FileDef_Options(file);
+  const google_protobuf_FileOptions* opts = upb_FileDef_Options(file);
   const char *package = upb_FileDef_Package(file);
-  const char *php_namespace =
+  char *php_namespace =
       google_protobuf_FileOptions_has_php_namespace(opts)
           ? str_view_dup(google_protobuf_FileOptions_php_namespace(opts))
           : NULL;
-  const char *prefix =
+  char *prefix =
       google_protobuf_FileOptions_has_php_class_prefix(opts)
           ? str_view_dup(google_protobuf_FileOptions_php_class_prefix(opts))
           : NULL;
