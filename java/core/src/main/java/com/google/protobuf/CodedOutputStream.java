@@ -1348,31 +1348,36 @@ public abstract class CodedOutputStream extends ByteOutput {
       if (HAS_UNSAFE_ARRAY_OPERATIONS
           && !Android.isOnAndroidDevice()
           && spaceLeft() >= MAX_VARINT32_SIZE) {
-        if ((value & ~0x7F) == 0) {
+        int position = this.position;
+        try {
+          if ((value & ~0x7F) == 0) {
+            UnsafeUtil.putByte(buffer, position++, (byte) value);
+            return;
+          }
+          UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+          value >>>= 7;
+          if ((value & ~0x7F) == 0) {
+            UnsafeUtil.putByte(buffer, position++, (byte) value);
+            return;
+          }
+          UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+          value >>>= 7;
+          if ((value & ~0x7F) == 0) {
+            UnsafeUtil.putByte(buffer, position++, (byte) value);
+            return;
+          }
+          UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+          value >>>= 7;
+          if ((value & ~0x7F) == 0) {
+            UnsafeUtil.putByte(buffer, position++, (byte) value);
+            return;
+          }
+          UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
+          value >>>= 7;
           UnsafeUtil.putByte(buffer, position++, (byte) value);
-          return;
+        } finally {
+          this.position = position;
         }
-        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
-        value >>>= 7;
-        if ((value & ~0x7F) == 0) {
-          UnsafeUtil.putByte(buffer, position++, (byte) value);
-          return;
-        }
-        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
-        value >>>= 7;
-        if ((value & ~0x7F) == 0) {
-          UnsafeUtil.putByte(buffer, position++, (byte) value);
-          return;
-        }
-        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
-        value >>>= 7;
-        if ((value & ~0x7F) == 0) {
-          UnsafeUtil.putByte(buffer, position++, (byte) value);
-          return;
-        }
-        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
-        value >>>= 7;
-        UnsafeUtil.putByte(buffer, position++, (byte) value);
       } else {
         try {
           while (true) {
