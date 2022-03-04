@@ -67,7 +67,7 @@ patch "$CROSS_RUBY" << EOF
  end
 EOF
 
-cp $CROSS_RUBY CROSS_RUBY31
+cp $CROSS_RUBY $CROSS_RUBY31
 
 patch "$CROSS_RUBY31" << EOF
 --- cross-ruby.rake	2022-03-04 11:49:52.000000000 +0000
