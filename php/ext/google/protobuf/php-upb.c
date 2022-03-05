@@ -5521,6 +5521,9 @@ struct upb_FieldDef {
   bool has_json_name_;
   upb_FieldType type_;
   upb_Label label_;
+#if UINTPTR_MAX == 0xffffffff
+  uint32_t padding;  // Increase size to a multiple of 8.
+#endif
 };
 
 struct upb_ExtensionRange {
@@ -5558,6 +5561,9 @@ struct upb_MessageDef {
   int nested_ext_count;
   bool in_message_set;
   upb_WellKnown well_known_type;
+#if UINTPTR_MAX == 0xffffffff
+  uint32_t padding;  // Increase size to a multiple of 8.
+#endif
 };
 
 struct upb_EnumDef {
@@ -5571,6 +5577,9 @@ struct upb_EnumDef {
   const upb_EnumValueDef* values;
   int value_count;
   int32_t defaultval;
+#if UINTPTR_MAX == 0xffffffff
+  uint32_t padding;  // Increase size to a multiple of 8.
+#endif
 };
 
 struct upb_EnumValueDef {
@@ -5589,6 +5598,9 @@ struct upb_OneofDef {
   const upb_FieldDef** fields;
   upb_strtable ntof;
   upb_inttable itof;
+#if UINTPTR_MAX == 0xffffffff
+  uint32_t padding;  // Increase size to a multiple of 8.
+#endif
 };
 
 struct upb_FileDef {
@@ -5682,6 +5694,20 @@ static const void* unpack_def(upb_value v, upb_deftype_t type) {
 }
 
 static upb_value pack_def(const void* ptr, upb_deftype_t type) {
+  // Our 3-bit pointer tagging requires all pointers to be multiples of 8.
+  // The arena will always yield 8-byte-aligned addresses, however we put
+  // the defs into arrays.  For each element in the array to be 8-byte-aligned,
+  // the sizes of each def type must also be a multiple of 8.
+  //
+  // If any of these asserts fail, we need to add or remove padding on 32-bit
+  // machines (64-bit machines will have 8-byte alignment already due to
+  // pointers, which all of these structs have).
+  UPB_ASSERT((sizeof(upb_FieldDef) & UPB_DEFTYPE_MASK) == 0);
+  UPB_ASSERT((sizeof(upb_MessageDef) & UPB_DEFTYPE_MASK) == 0);
+  UPB_ASSERT((sizeof(upb_EnumDef) & UPB_DEFTYPE_MASK) == 0);
+  UPB_ASSERT((sizeof(upb_EnumValueDef) & UPB_DEFTYPE_MASK) == 0);
+  UPB_ASSERT((sizeof(upb_ServiceDef) & UPB_DEFTYPE_MASK) == 0);
+  UPB_ASSERT((sizeof(upb_OneofDef) & UPB_DEFTYPE_MASK) == 0);
   uintptr_t num = (uintptr_t)ptr;
   UPB_ASSERT((num & UPB_DEFTYPE_MASK) == 0);
   num |= type;
