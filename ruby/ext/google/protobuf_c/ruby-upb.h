@@ -787,7 +787,7 @@ extern "C" {
 #endif
 
 uint64_t Wyhash(const void* data, size_t len, uint64_t seed,
-                       const uint64_t salt[]);
+                const uint64_t salt[]);
 extern const uint64_t kWyhashSalt[5];
 
 /* upb_value ******************************************************************/
@@ -1117,6 +1117,18 @@ bool upb_inttable_iter_isequal(const upb_inttable_iter* i1,
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/** upb_*Int* conversion routines ********************************************/
+
+UPB_INLINE int32_t _upb_Int32_FromI(int v) { return (int32_t)v; }
+
+UPB_INLINE int64_t _upb_Int64_FromLL(long long v) { return (int64_t)v; }
+
+UPB_INLINE uint32_t _upb_UInt32_FromU(unsigned v) { return (uint32_t)v; }
+
+UPB_INLINE uint64_t _upb_UInt64_FromULL(unsigned long long v) {
+  return (uint64_t)v;
+}
 
 /** upb_MiniTable *************************************************************/
 
@@ -1920,9 +1932,7 @@ struct upb_Arena {
 // the beginning.
 //
 // The given buffer size must be at least kUpb_RoundTripBufferSize.
-enum {
-  kUpb_RoundTripBufferSize = 32
-};
+enum { kUpb_RoundTripBufferSize = 32 };
 void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size);
 void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
 
@@ -3901,8 +3911,12 @@ UPB_INLINE bool google_protobuf_FieldOptions_has_weak(const google_protobuf_Fiel
 UPB_INLINE bool google_protobuf_FieldOptions_weak(const google_protobuf_FieldOptions* msg) {
   return *UPB_PTR_AT(msg, UPB_SIZE(15, 15), bool);
 }
-UPB_INLINE bool google_protobuf_FieldOptions_has_uninterpreted_option(const google_protobuf_FieldOptions *msg) { return _upb_has_submsg_nohasbit(msg, UPB_SIZE(16, 16)); }
-UPB_INLINE const google_protobuf_UninterpretedOption* const* google_protobuf_FieldOptions_uninterpreted_option(const google_protobuf_FieldOptions *msg, size_t *len) { return (const google_protobuf_UninterpretedOption* const*)_upb_array_accessor(msg, UPB_SIZE(16, 16), len); }
+UPB_INLINE bool google_protobuf_FieldOptions_has_unverified_lazy(const google_protobuf_FieldOptions *msg) { return _upb_hasbit(msg, 7); }
+UPB_INLINE bool google_protobuf_FieldOptions_unverified_lazy(const google_protobuf_FieldOptions* msg) {
+  return *UPB_PTR_AT(msg, UPB_SIZE(16, 16), bool);
+}
+UPB_INLINE bool google_protobuf_FieldOptions_has_uninterpreted_option(const google_protobuf_FieldOptions *msg) { return _upb_has_submsg_nohasbit(msg, UPB_SIZE(20, 24)); }
+UPB_INLINE const google_protobuf_UninterpretedOption* const* google_protobuf_FieldOptions_uninterpreted_option(const google_protobuf_FieldOptions *msg, size_t *len) { return (const google_protobuf_UninterpretedOption* const*)_upb_array_accessor(msg, UPB_SIZE(20, 24), len); }
 
 UPB_INLINE void google_protobuf_FieldOptions_set_ctype(google_protobuf_FieldOptions *msg, int32_t value) {
   _upb_sethas(msg, 1);
@@ -3928,16 +3942,20 @@ UPB_INLINE void google_protobuf_FieldOptions_set_weak(google_protobuf_FieldOptio
   _upb_sethas(msg, 6);
   *UPB_PTR_AT(msg, UPB_SIZE(15, 15), bool) = value;
 }
+UPB_INLINE void google_protobuf_FieldOptions_set_unverified_lazy(google_protobuf_FieldOptions *msg, bool value) {
+  _upb_sethas(msg, 7);
+  *UPB_PTR_AT(msg, UPB_SIZE(16, 16), bool) = value;
+}
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FieldOptions_mutable_uninterpreted_option(google_protobuf_FieldOptions *msg, size_t *len) {
-  return (google_protobuf_UninterpretedOption**)_upb_array_mutable_accessor(msg, UPB_SIZE(16, 16), len);
+  return (google_protobuf_UninterpretedOption**)_upb_array_mutable_accessor(msg, UPB_SIZE(20, 24), len);
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FieldOptions_resize_uninterpreted_option(google_protobuf_FieldOptions *msg, size_t len, upb_Arena *arena) {
-  return (google_protobuf_UninterpretedOption**)_upb_Array_Resize_accessor2(msg, UPB_SIZE(16, 16), len, UPB_SIZE(2, 3), arena);
+  return (google_protobuf_UninterpretedOption**)_upb_Array_Resize_accessor2(msg, UPB_SIZE(20, 24), len, UPB_SIZE(2, 3), arena);
 }
 UPB_INLINE struct google_protobuf_UninterpretedOption* google_protobuf_FieldOptions_add_uninterpreted_option(google_protobuf_FieldOptions *msg, upb_Arena *arena) {
   struct google_protobuf_UninterpretedOption* sub = (struct google_protobuf_UninterpretedOption*)_upb_Message_New(&google_protobuf_UninterpretedOption_msginit, arena);
   bool ok = _upb_Array_Append_accessor2(
-      msg, UPB_SIZE(16, 16), UPB_SIZE(2, 3), &sub, arena);
+      msg, UPB_SIZE(20, 24), UPB_SIZE(2, 3), &sub, arena);
   if (!ok) return NULL;
   return sub;
 }
@@ -4794,8 +4812,8 @@ const upb_ExtensionRange* upb_MessageDef_ExtensionRange(const upb_MessageDef* m,
                                                         int i);
 const upb_FieldDef* upb_MessageDef_Field(const upb_MessageDef* m, int i);
 const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m, int i);
-const upb_FieldDef* upb_MessageDef_FindFieldByNumberWithSize(
-    const upb_MessageDef* m, uint32_t i);
+const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
+                                                     uint32_t i);
 const upb_FieldDef* upb_MessageDef_FindFieldByNameWithSize(
     const upb_MessageDef* m, const char* name, size_t len);
 const upb_OneofDef* upb_MessageDef_FindOneofByNameWithSize(
@@ -4923,6 +4941,7 @@ const google_protobuf_MethodOptions* upb_MethodDef_Options(
     const upb_MethodDef* m);
 bool upb_MethodDef_HasOptions(const upb_MethodDef* m);
 const char* upb_MethodDef_FullName(const upb_MethodDef* m);
+int upb_MethodDef_Index(const upb_MethodDef* m);
 const char* upb_MethodDef_Name(const upb_MethodDef* m);
 const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
@@ -4995,7 +5014,15 @@ typedef struct _upb_DefPool_Init {
   upb_StringView descriptor; /* Serialized descriptor. */
 } _upb_DefPool_Init;
 
-bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init);
+// Should only be directly called by tests.  This variant lets us suppress
+// the use of compiled-in tables, forcing a rebuild of the tables at runtime.
+bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
+                                bool rebuild_minitable);
+
+UPB_INLINE bool _upb_DefPool_LoadDefInit(upb_DefPool* s,
+                                         const _upb_DefPool_Init* init) {
+  return _upb_DefPool_LoadDefInitEx(s, init, false);
+}
 
 
 #ifdef __cplusplus

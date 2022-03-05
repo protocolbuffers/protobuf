@@ -42,12 +42,12 @@ VALUE cTypeError;
 
 const upb_FieldDef *map_field_key(const upb_FieldDef *field) {
   const upb_MessageDef *entry = upb_FieldDef_MessageSubDef(field);
-  return upb_MessageDef_FindFieldByNumberWithSize(entry, 1);
+  return upb_MessageDef_FindFieldByNumber(entry, 1);
 }
 
 const upb_FieldDef *map_field_value(const upb_FieldDef *field) {
   const upb_MessageDef *entry = upb_FieldDef_MessageSubDef(field);
-  return upb_MessageDef_FindFieldByNumberWithSize(entry, 2);
+  return upb_MessageDef_FindFieldByNumber(entry, 2);
 }
 
 // -----------------------------------------------------------------------------
