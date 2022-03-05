@@ -13,7 +13,10 @@ cc_library(
     srcs = ["def_to_proto.c"],
     hdrs = ["def_to_proto.h"],
     visibility = ["//visibility:public"],
-    deps = ["//:reflection"],
+    deps = [
+        "//:port",
+        "//:reflection",
+    ],
 )
 
 proto_library(
@@ -22,7 +25,7 @@ proto_library(
         "def_to_proto_public_import_test.proto",
         "def_to_proto_regular_import_test.proto",
         "def_to_proto_test.proto",
-        "def_to_proto_weak_import_test.proto",
+        "def_to_proto_weak_import_test.proto",  # copybara:strip_for_google3
     ],
 )
 
@@ -44,6 +47,8 @@ cc_test(
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",
         "//:descriptor_upb_proto_reflection",
+        "//:reflection",
+        "//:upb",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
@@ -57,7 +62,10 @@ cc_library(
     srcs = ["required_fields.c"],
     hdrs = ["required_fields.h"],
     visibility = ["//visibility:public"],
-    deps = ["//:reflection"],
+    deps = [
+        "//:port",
+        "//:reflection",
+    ],
 )
 
 proto_library(
@@ -83,6 +91,8 @@ cc_test(
         ":required_fields_test_upb_proto",
         ":required_fields_test_upb_proto_reflection",
         "//:json",
+        "//:reflection",
+        "//:upb",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
@@ -95,7 +105,10 @@ cc_library(
     srcs = ["compare.c"],
     hdrs = ["compare.h"],
     visibility = ["//visibility:public"],
-    deps = ["//:reflection"],
+    deps = [
+        "//:port",
+        "//:reflection",
+    ],
 )
 
 cc_test(

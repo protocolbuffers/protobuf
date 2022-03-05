@@ -7,6 +7,7 @@ cc_fuzz_test(
     srcs = ["file_descriptor_parsenew_fuzzer.cc"],
     deps = [
         "//:descriptor_upb_proto",
+        "//:reflection",
         "//:upb",
     ],
 )

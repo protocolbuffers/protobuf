@@ -88,6 +88,23 @@ static void PyUpb_ExtensionDict_Dealloc(PyUpb_ExtensionDict* self) {
   PyUpb_Dealloc(self);
 }
 
+static PyObject* PyUpb_ExtensionDict_RichCompare(PyObject* _self,
+                                                 PyObject* _other, int opid) {
+  // Only equality comparisons are implemented.
+  if (opid != Py_EQ && opid != Py_NE) {
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  }
+  PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
+  bool equals = false;
+  if (PyObject_TypeCheck(_other, Py_TYPE(_self))) {
+    PyUpb_ExtensionDict* other = (PyUpb_ExtensionDict*)_other;
+    equals = self->msg == other->msg;
+  }
+  bool ret = opid == Py_EQ ? equals : !equals;
+  return PyBool_FromLong(ret);
+}
+
 static int PyUpb_ExtensionDict_Contains(PyObject* _self, PyObject* key) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
   const upb_FieldDef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
@@ -143,7 +160,7 @@ static PyType_Slot PyUpb_ExtensionDict_Slots[] = {
     {Py_tp_methods, PyUpb_ExtensionDict_Methods},
     //{Py_tp_getset, PyUpb_ExtensionDict_Getters},
     //{Py_tp_hash, PyObject_HashNotImplemented},
-    //{Py_tp_richcompare, PyUpb_ExtensionDict_RichCompare},
+    {Py_tp_richcompare, PyUpb_ExtensionDict_RichCompare},
     {Py_tp_iter, PyUpb_ExtensionIterator_New},
     {Py_sq_contains, PyUpb_ExtensionDict_Contains},
     {Py_sq_length, PyUpb_ExtensionDict_Length},

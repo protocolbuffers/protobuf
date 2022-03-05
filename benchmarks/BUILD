@@ -73,7 +73,7 @@ cc_proto_library(
     deps = [":benchmark_descriptor_sv_proto"],
 )
 
-cc_binary(
+cc_test(
     name = "benchmark",
     testonly = 1,
     srcs = ["benchmark.cc"],

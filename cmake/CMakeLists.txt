@@ -103,6 +103,11 @@ add_library(generated_code_support__only_for_generated_code_do_not_use__i_give_p
 target_link_libraries(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
   table
   upb)
+add_library(generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE)
+target_link_libraries(generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
+  descriptor_upb_proto
+  reflection
+  table)
 add_library(reflection
   ../upb/def.c
   ../upb/msg.h
@@ -122,7 +127,8 @@ add_library(textformat
   ../upb/text_encode.h)
 target_link_libraries(textformat
   port
-  reflection)
+  reflection
+  table)
 add_library(json
   ../upb/json_decode.c
   ../upb/json_encode.c

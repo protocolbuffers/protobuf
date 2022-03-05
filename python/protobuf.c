@@ -94,8 +94,8 @@ PyUpb_ModuleState* PyUpb_ModuleState_Get(void) {
 
 PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
   if (!state->wkt_bases) {
-    PyObject* wkt_module =
-        PyImport_ImportModule("google.protobuf.internal.well_known_types");
+    PyObject* wkt_module = PyImport_ImportModule(PYUPB_PROTOBUF_INTERNAL_PACKAGE
+                                                 ".well_known_types");
 
     if (wkt_module == NULL) {
       return false;

@@ -23,10 +23,10 @@ def upb_deps():
             "rm python/google/protobuf/__init__.py",
             "rm python/google/protobuf/pyext/__init__.py",
             "rm python/google/protobuf/internal/__init__.py",
-        ]
+        ],
     )
 
-    rules_python_version = "740825b7f74930c62f44af95c9a4c1bd428d2c53" # Latest @ 2021-06-23
+    rules_python_version = "740825b7f74930c62f44af95c9a4c1bd428d2c53"  # Latest @ 2021-06-23
 
     maybe(
         http_archive,

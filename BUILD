@@ -77,7 +77,7 @@ cc_library(
         "upb/port_def.inc",
         "upb/port_undef.inc",
     ],
-    visibility = ["//tests:__pkg__"],
+    visibility = ["//:__subpackages__"],
 )
 
 cc_library(
@@ -159,7 +159,9 @@ cc_library(
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
+        "upb/decode.h",
         "upb/decode_fast.h",
+        "upb/encode.h",
         "upb/msg.h",
         "upb/msg_internal.h",
         "upb/port_def.inc",
@@ -170,6 +172,22 @@ cc_library(
     deps = [
         ":table",
         ":upb",
+    ],
+)
+
+cc_library(
+    name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    hdrs = [
+        "upb/def.h",
+        "upb/port_def.inc",
+        "upb/port_undef.inc",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":descriptor_upb_proto",
+        ":reflection",
+        ":table",
     ],
 )
 
@@ -222,6 +240,7 @@ cc_library(
     deps = [
         ":port",
         ":reflection",
+        ":table",
     ],
 )
 
@@ -254,6 +273,7 @@ cc_test(
         ":empty_upbdefs_proto",
         ":test_messages_proto3_proto_upb",
         ":test_upb_proto",
+        ":upb",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -292,7 +312,11 @@ cc_test(
     srcs = ["upb/msg_test.cc"],
     deps = [
         ":json",
+        ":msg_test_upb_proto",
         ":msg_test_upb_proto_reflection",
+        ":reflection",
+        ":test_messages_proto3_proto_upb",
+        ":upb",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -302,6 +326,12 @@ proto_library(
     testonly = 1,
     srcs = ["upb/msg_test.proto"],
     deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+)
+
+upb_proto_library(
+    name = "msg_test_upb_proto",
+    testonly = 1,
+    deps = [":msg_test_proto"],
 )
 
 upb_proto_reflection_library(
@@ -436,7 +466,10 @@ cc_library(
         "upb/table_internal.h",
         "upb/upb.h",
     ],
-    visibility = ["//tests:__pkg__"],
+    visibility = [
+        "//python:__pkg__",
+        "//tests:__pkg__",
+    ],
     deps = [
         ":port",
     ],

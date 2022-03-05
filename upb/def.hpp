@@ -194,7 +194,7 @@ class MessageDefPtr {
 
   // These return null pointers if the field is not found.
   FieldDefPtr FindFieldByNumber(uint32_t number) const {
-    return FieldDefPtr(upb_MessageDef_FindFieldByNumberWithSize(ptr_, number));
+    return FieldDefPtr(upb_MessageDef_FindFieldByNumber(ptr_, number));
   }
   FieldDefPtr FindFieldByName(const char* name, size_t len) const {
     return FieldDefPtr(upb_MessageDef_FindFieldByNameWithSize(ptr_, name, len));

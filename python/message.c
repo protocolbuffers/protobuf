@@ -1482,6 +1482,7 @@ static PyObject* PyUpb_CMessage_GetExtensionDict(PyObject* _self,
                                                  void* closure) {
   PyUpb_CMessage* self = (void*)_self;
   if (self->ext_dict) {
+    Py_INCREF(self->ext_dict);
     return self->ext_dict;
   }
 
@@ -1832,7 +1833,8 @@ bool PyUpb_InitMessage(PyObject* m) {
   state->listfields_item_key = PyObject_GetAttrString(
       (PyObject*)state->cmessage_type, "_ListFieldsItemKey");
 
-  PyObject* mod = PyImport_ImportModule("google.protobuf.message");
+  PyObject* mod =
+      PyImport_ImportModule(PYUPB_PROTOBUF_PUBLIC_PACKAGE ".message");
   if (mod == NULL) return false;
 
   state->encode_error_class = PyObject_GetAttrString(mod, "EncodeError");
@@ -1840,8 +1842,8 @@ bool PyUpb_InitMessage(PyObject* m) {
   state->message_class = PyObject_GetAttrString(mod, "Message");
   Py_DECREF(mod);
 
-  PyObject* enum_type_wrapper =
-      PyImport_ImportModule("google.protobuf.internal.enum_type_wrapper");
+  PyObject* enum_type_wrapper = PyImport_ImportModule(
+      PYUPB_PROTOBUF_INTERNAL_PACKAGE ".enum_type_wrapper");
   if (enum_type_wrapper == NULL) return false;
 
   state->enum_type_wrapper_class =

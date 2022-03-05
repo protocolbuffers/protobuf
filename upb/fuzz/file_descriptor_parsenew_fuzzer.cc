@@ -26,11 +26,18 @@
 #include <cstdint>
 
 #include "google/protobuf/descriptor.upb.h"
+#include "upb/def.hpp"
 #include "upb/upb.hpp"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   upb::Arena arena;
-  google_protobuf_FileDescriptorProto_parse(reinterpret_cast<const char*>(data),
-                                            size, arena.ptr());
+  google_protobuf_FileDescriptorProto* proto =
+      google_protobuf_FileDescriptorProto_parse(
+          reinterpret_cast<const char*>(data), size, arena.ptr());
+  if (proto) {
+    upb::SymbolTable symtab;
+    upb::Status status;
+    symtab.AddFile(proto, &status);
+  }
   return 0;
 }

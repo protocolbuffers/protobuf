@@ -86,6 +86,9 @@ struct upb_FieldDef {
   bool has_json_name_;
   upb_FieldType type_;
   upb_Label label_;
+#if UINTPTR_MAX == 0xffffffff
+  uint32_t padding;  // Increase size to a multiple of 8.
+#endif
 };
 
 struct upb_ExtensionRange {
@@ -106,8 +109,8 @@ struct upb_MessageDef {
   upb_strtable ntof;
 
   /* All nested defs.
-   * MEM: We could save some space here by putting nested defs in a contigous
-   * region and calculating counts from offets or vice-versa. */
+   * MEM: We could save some space here by putting nested defs in a contiguous
+   * region and calculating counts from offsets or vice-versa. */
   const upb_FieldDef* fields;
   const upb_OneofDef* oneofs;
   const upb_ExtensionRange* ext_ranges;
@@ -123,6 +126,9 @@ struct upb_MessageDef {
   int nested_ext_count;
   bool in_message_set;
   upb_WellKnown well_known_type;
+#if UINTPTR_MAX == 0xffffffff
+  uint32_t padding;  // Increase size to a multiple of 8.
+#endif
 };
 
 struct upb_EnumDef {
@@ -136,6 +142,9 @@ struct upb_EnumDef {
   const upb_EnumValueDef* values;
   int value_count;
   int32_t defaultval;
+#if UINTPTR_MAX == 0xffffffff
+  uint32_t padding;  // Increase size to a multiple of 8.
+#endif
 };
 
 struct upb_EnumValueDef {
@@ -154,6 +163,9 @@ struct upb_OneofDef {
   const upb_FieldDef** fields;
   upb_strtable ntof;
   upb_inttable itof;
+#if UINTPTR_MAX == 0xffffffff
+  uint32_t padding;  // Increase size to a multiple of 8.
+#endif
 };
 
 struct upb_FileDef {
@@ -188,6 +200,7 @@ struct upb_MethodDef {
   const char* full_name;
   const upb_MessageDef* input_type;
   const upb_MessageDef* output_type;
+  int index;
   bool client_streaming;
   bool server_streaming;
 };
@@ -246,6 +259,20 @@ static const void* unpack_def(upb_value v, upb_deftype_t type) {
 }
 
 static upb_value pack_def(const void* ptr, upb_deftype_t type) {
+  // Our 3-bit pointer tagging requires all pointers to be multiples of 8.
+  // The arena will always yield 8-byte-aligned addresses, however we put
+  // the defs into arrays.  For each element in the array to be 8-byte-aligned,
+  // the sizes of each def type must also be a multiple of 8.
+  //
+  // If any of these asserts fail, we need to add or remove padding on 32-bit
+  // machines (64-bit machines will have 8-byte alignment already due to
+  // pointers, which all of these structs have).
+  UPB_ASSERT((sizeof(upb_FieldDef) & UPB_DEFTYPE_MASK) == 0);
+  UPB_ASSERT((sizeof(upb_MessageDef) & UPB_DEFTYPE_MASK) == 0);
+  UPB_ASSERT((sizeof(upb_EnumDef) & UPB_DEFTYPE_MASK) == 0);
+  UPB_ASSERT((sizeof(upb_EnumValueDef) & UPB_DEFTYPE_MASK) == 0);
+  UPB_ASSERT((sizeof(upb_ServiceDef) & UPB_DEFTYPE_MASK) == 0);
+  UPB_ASSERT((sizeof(upb_OneofDef) & UPB_DEFTYPE_MASK) == 0);
   uintptr_t num = (uintptr_t)ptr;
   UPB_ASSERT((num & UPB_DEFTYPE_MASK) == 0);
   num |= type;
@@ -691,8 +718,8 @@ upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m) {
   return m->file->syntax;
 }
 
-const upb_FieldDef* upb_MessageDef_FindFieldByNumberWithSize(
-    const upb_MessageDef* m, uint32_t i) {
+const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
+                                                     uint32_t i) {
   upb_value val;
   return upb_inttable_lookup(&m->itof, i, &val) ? upb_value_getconstptr(val)
                                                 : NULL;
@@ -979,6 +1006,8 @@ bool upb_MethodDef_HasOptions(const upb_MethodDef* m) {
 const char* upb_MethodDef_FullName(const upb_MethodDef* m) {
   return m->full_name;
 }
+
+int upb_MethodDef_Index(const upb_MethodDef* m) { return m->index; }
 
 const char* upb_MethodDef_Name(const upb_MethodDef* m) {
   return shortdefname(m->full_name);
@@ -1365,8 +1394,8 @@ static void assign_layout_indices(const upb_MessageDef* m, upb_MiniTable* l,
   int n = upb_MessageDef_numfields(m);
   int dense_below = 0;
   for (i = 0; i < n; i++) {
-    upb_FieldDef* f = (upb_FieldDef*)upb_MessageDef_FindFieldByNumberWithSize(
-        m, fields[i].number);
+    upb_FieldDef* f =
+        (upb_FieldDef*)upb_MessageDef_FindFieldByNumber(m, fields[i].number);
     UPB_ASSERT(f);
     f->layout_index = i;
     if (i < UINT8_MAX && fields[i].number == i + 1 &&
@@ -1487,8 +1516,8 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
   if (upb_MessageDef_IsMapEntry(m)) {
     /* TODO(haberman): refactor this method so this special case is more
      * elegant. */
-    const upb_FieldDef* key = upb_MessageDef_FindFieldByNumberWithSize(m, 1);
-    const upb_FieldDef* val = upb_MessageDef_FindFieldByNumberWithSize(m, 2);
+    const upb_FieldDef* key = upb_MessageDef_FindFieldByNumber(m, 1);
+    const upb_FieldDef* val = upb_MessageDef_FindFieldByNumber(m, 2);
     fields[0].number = 1;
     fields[1].number = 2;
     fields[0].mode = kUpb_FieldMode_Scalar;
@@ -1555,7 +1584,7 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
       field->submsg_index = sublayout_count++;
       subs[field->submsg_index].submsg = upb_FieldDef_MessageSubDef(f)->layout;
     } else if (upb_FieldDef_CType(f) == kUpb_CType_Enum &&
-               f->file->syntax == kUpb_Syntax_Proto2) {
+               f->sub.enumdef->file->syntax == kUpb_Syntax_Proto2) {
       field->submsg_index = sublayout_count++;
       subs[field->submsg_index].subenum = upb_FieldDef_EnumSubDef(f)->layout;
       UPB_ASSERT(subs[field->submsg_index].subenum);
@@ -1601,6 +1630,10 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
 
     if (upb_OneofDef_IsSynthetic(o)) continue;
 
+    if (o->field_count == 0) {
+      symtab_errf(ctx, "Oneof must have at least one field (%s)", o->full_name);
+    }
+
     /* Calculate field size: the max of all field sizes. */
     for (int j = 0; j < o->field_count; j++) {
       const upb_FieldDef* f = o->fields[j];
@@ -1623,7 +1656,10 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
   l->size = UPB_ALIGN_UP(l->size, 8);
 
   /* Sort fields by number. */
-  qsort(fields, upb_MessageDef_numfields(m), sizeof(*fields), field_number_cmp);
+  if (fields) {
+    qsort(fields, upb_MessageDef_numfields(m), sizeof(*fields),
+          field_number_cmp);
+  }
   assign_layout_indices(m, l, fields);
 }
 
@@ -1784,8 +1820,8 @@ static const void* symtab_resolveany(symtab_addctx* ctx,
     }
   } else {
     /* Remove components from base until we find an entry or run out. */
-    size_t baselen = strlen(base);
-    char* tmp = malloc(sym.size + strlen(base) + 1);
+    size_t baselen = base ? strlen(base) : 0;
+    char* tmp = malloc(sym.size + baselen + 1);
     while (1) {
       char* p = tmp;
       if (baselen) {
@@ -1821,10 +1857,10 @@ static const void* symtab_resolve(symtab_addctx* ctx, const char* from_name_dbg,
   const void* ret =
       symtab_resolveany(ctx, from_name_dbg, base, sym, &found_type);
   if (ret && found_type != type) {
-    symtab_errf(
-        ctx,
-        "type mismatch when resolving %s: couldn't find name %s with type=%d",
-        from_name_dbg, sym.data, (int)type);
+    symtab_errf(ctx,
+                "type mismatch when resolving %s: couldn't find "
+                "name " UPB_STRINGVIEW_FORMAT " with type=%d",
+                from_name_dbg, UPB_STRINGVIEW_ARGS(sym), (int)type);
   }
   return ret;
 }
@@ -1843,6 +1879,11 @@ static void create_oneofdef(
   o->synthetic = false;
 
   SET_OPTIONS(o->opts, OneofDescriptorProto, OneofOptions, oneof_proto);
+
+  upb_value existing_v;
+  if (upb_strtable_lookup2(&m->ntof, name.data, name.size, &existing_v)) {
+    symtab_errf(ctx, "duplicate oneof name (%s)", o->full_name);
+  }
 
   v = pack_def(o, UPB_DEFTYPE_ONEOF);
   CHK_OOM(upb_strtable_insert(&m->ntof, name.data, name.size, v, ctx->arena));
@@ -2153,7 +2194,7 @@ static void create_fielddef(
   f->file = ctx->file; /* Must happen prior to symtab_add(). */
 
   if (!google_protobuf_FieldDescriptorProto_has_name(field_proto)) {
-    symtab_errf(ctx, "field has no name (%s)", upb_MessageDef_FullName(m));
+    symtab_errf(ctx, "field has no name");
   }
 
   name = google_protobuf_FieldDescriptorProto_name(field_proto);
@@ -2370,6 +2411,7 @@ static void create_service(
 
     m->service = s;
     m->full_name = makefullname(ctx, s->full_name, name);
+    m->index = i;
     m->client_streaming =
         google_protobuf_MethodDescriptorProto_client_streaming(method_proto);
     m->server_streaming =
@@ -2397,6 +2439,12 @@ static int count_bits_debug(uint64_t x) {
   return n;
 }
 
+static int compare_int32(const void* a_ptr, const void* b_ptr) {
+  int32_t a = *(int32_t*)a_ptr;
+  int32_t b = *(int32_t*)b_ptr;
+  return a < b ? -1 : (a == b ? 0 : 1);
+}
+
 upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
                                       const upb_EnumDef* e) {
   int n = 0;
@@ -2405,7 +2453,7 @@ upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
   for (int i = 0; i < e->value_count; i++) {
     uint32_t val = (uint32_t)e->values[i].number;
     if (val < 64) {
-      mask |= 1 << val;
+      mask |= 1ULL << val;
     } else {
       n++;
     }
@@ -2426,6 +2474,17 @@ upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
     }
     UPB_ASSERT(p == values + n);
   }
+
+  // Enums can have duplicate values; we must sort+uniq them.
+  if (values) qsort(values, n, sizeof(*values), &compare_int32);
+
+  int dst = 0;
+  for (int i = 0; i < n; dst++) {
+    int32_t val = values[i];
+    while (i < n && values[i] == val) i++;  // Skip duplicates.
+    values[dst] = val;
+  }
+  n = dst;
 
   UPB_ASSERT(upb_inttable_count(&e->iton) == n + count_bits_debug(mask));
 
@@ -2510,7 +2569,7 @@ static void create_enumdef(
     if (ctx->layout) {
       UPB_ASSERT(ctx->enum_count < ctx->layout->enum_count);
       e->layout = ctx->layout->enums[ctx->enum_count++];
-      UPB_ASSERT(n ==
+      UPB_ASSERT(upb_inttable_count(&e->iton) ==
                  e->layout->value_count + count_bits_debug(e->layout->mask));
     } else {
       e->layout = create_enumlayout(ctx, e);
@@ -2781,15 +2840,10 @@ static void resolve_msgdef(symtab_addctx* ctx, upb_MessageDef* m) {
     resolve_fielddef(ctx, m->full_name, (upb_FieldDef*)&m->fields[i]);
   }
 
-  for (int i = 0; i < m->nested_ext_count; i++) {
-    resolve_fielddef(ctx, m->full_name, (upb_FieldDef*)&m->nested_exts[i]);
-  }
-
-  if (!ctx->layout) make_layout(ctx, m);
-
   m->in_message_set = false;
-  if (m->nested_ext_count == 1) {
-    const upb_FieldDef* ext = &m->nested_exts[0];
+  for (int i = 0; i < m->nested_ext_count; i++) {
+    upb_FieldDef* ext = (upb_FieldDef*)&m->nested_exts[i];
+    resolve_fielddef(ctx, m->full_name, ext);
     if (ext->type_ == kUpb_FieldType_Message &&
         ext->label_ == kUpb_Label_Optional && ext->sub.msgdef == m &&
         google_protobuf_MessageOptions_message_set_wire_format(
@@ -2797,6 +2851,8 @@ static void resolve_msgdef(symtab_addctx* ctx, upb_MessageDef* m) {
       m->in_message_set = true;
     }
   }
+
+  if (!ctx->layout) make_layout(ctx, m);
 
   for (int i = 0; i < m->nested_msg_count; i++) {
     resolve_msgdef(ctx, (upb_MessageDef*)&m->nested_msgs[i]);
@@ -2929,7 +2985,7 @@ static void build_filedef(
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
   for (i = 0; i < n; i++) {
     if (weak_deps[i] >= file->dep_count) {
-      symtab_errf(ctx, "public_dep %d is out of range", (int)public_deps[i]);
+      symtab_errf(ctx, "weak_dep %d is out of range", (int)weak_deps[i]);
     }
     mutable_weak_deps[i] = weak_deps[i];
   }
@@ -3085,7 +3141,8 @@ const upb_FileDef* upb_DefPool_AddFile(
 /* Include here since we want most of this file to be stdio-free. */
 #include <stdio.h>
 
-bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
+bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
+                                bool rebuild_minitable) {
   /* Since this function should never fail (it would indicate a bug in upb) we
    * print errors to stderr instead of returning error status to the user. */
   _upb_DefPool_Init** deps = init->deps;
@@ -3102,7 +3159,7 @@ bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
   arena = upb_Arena_New();
 
   for (; *deps; deps++) {
-    if (!_upb_DefPool_LoadDefInit(s, *deps)) goto err;
+    if (!_upb_DefPool_LoadDefInitEx(s, *deps, rebuild_minitable)) goto err;
   }
 
   file = google_protobuf_FileDescriptorProto_parse_ex(
@@ -3119,7 +3176,8 @@ bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
     goto err;
   }
 
-  if (!_upb_DefPool_AddFile(s, file, init->layout, &status)) {
+  const upb_MiniTable_File* mt = rebuild_minitable ? NULL : init->layout;
+  if (!_upb_DefPool_AddFile(s, file, mt, &status)) {
     goto err;
   }
 

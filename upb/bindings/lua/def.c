@@ -368,7 +368,7 @@ static int lupb_MessageDef_Field(lua_State* L) {
 
   switch (lua_type(L, 2)) {
     case LUA_TNUMBER:
-      f = upb_MessageDef_FindFieldByNumberWithSize(m, lua_tointeger(L, 2));
+      f = upb_MessageDef_FindFieldByNumber(m, lua_tointeger(L, 2));
       break;
     case LUA_TSTRING:
       f = upb_MessageDef_FindFieldByName(m, lua_tostring(L, 2));

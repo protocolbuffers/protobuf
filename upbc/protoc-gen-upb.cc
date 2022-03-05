@@ -96,6 +96,18 @@ std::vector<const protobuf::EnumDescriptor*> SortedEnums(
   return enums;
 }
 
+std::vector<int32_t> SortedUniqueEnumNumbers(
+    const protobuf::EnumDescriptor* e) {
+  std::vector<int32_t> values;
+  for (int i = 0; i < e->value_count(); i++) {
+    values.push_back(e->value(i)->number());
+  }
+  std::sort(values.begin(), values.end());
+  auto last = std::unique(values.begin(), values.end());
+  values.erase(last, values.end());
+  return values;
+}
+
 void AddMessages(const protobuf::Descriptor* message,
                  std::vector<const protobuf::Descriptor*>* messages) {
   messages->push_back(message);
@@ -1112,7 +1124,8 @@ SubLayoutArray::SubLayoutArray(const protobuf::Descriptor* message) {
   std::vector<const protobuf::FieldDescriptor*> sorted_subenums =
       SortedSubEnums(message);
   for (const auto* field : sorted_subenums) {
-    if (field->file()->syntax() != protobuf::FileDescriptor::SYNTAX_PROTO2) {
+    if (field->enum_type()->file()->syntax() !=
+        protobuf::FileDescriptor::SYNTAX_PROTO2) {
       continue;
     }
     if (!indexes_.try_emplace(field->enum_type(), i).second) {
@@ -1160,7 +1173,8 @@ bool TryFillTableEntry(const protobuf::Descriptor* message,
       type = "b1";
       break;
     case protobuf::FieldDescriptor::TYPE_ENUM:
-      if (field->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2) {
+      if (field->enum_type()->file()->syntax() ==
+          protobuf::FileDescriptor::SYNTAX_PROTO2) {
         // We don't have the means to test proto2 enum fields for valid values.
         return false;
       }
@@ -1495,23 +1509,19 @@ int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
 
   for (const auto* e : this_file_enums) {
     uint64_t mask = 0;
-    absl::flat_hash_set<int32_t> values;
-    for (int i = 0; i < e->value_count(); i++) {
-      int32_t number = e->value(i)->number();
+    std::vector<int32_t> values;
+    for (auto number : SortedUniqueEnumNumbers(e)) {
       if (static_cast<uint32_t>(number) < 64) {
-        mask |= 1 << number;
+        mask |= 1ULL << number;
       } else {
-        values.insert(number);
+        values.push_back(number);
       }
     }
-    std::vector<int32_t> values_vec(values.begin(), values.end());
-    std::sort(values_vec.begin(), values_vec.end());
 
-    if (!values_vec.empty()) {
+    if (!values.empty()) {
       values_init = EnumInit(e) + "_values";
-      output("static const int32_t $0[$1] = {\n", values_init,
-             values_vec.size());
-      for (auto value : values_vec) {
+      output("static const int32_t $0[$1] = {\n", values_init, values.size());
+      for (int32_t value : values) {
         output("  $0,\n", value);
       }
       output("};\n\n");
@@ -1520,7 +1530,7 @@ int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
     output("const upb_MiniTable_Enum $0 = {\n", EnumInit(e));
     output("  $0,\n", values_init);
     output("  0x$0ULL,\n", absl::Hex(mask));
-    output("  $0,\n", values_vec.size());
+    output("  $0,\n", values.size());
 
     output("};\n\n");
   }
@@ -1682,10 +1692,14 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
 
   FileLayout layout(file);
 
-  Output h_output(context->Open(HeaderFilename(file)));
+  std::unique_ptr<protobuf::io::ZeroCopyOutputStream> h_output_stream(
+      context->Open(HeaderFilename(file)));
+  Output h_output(h_output_stream.get());
   WriteHeader(file, h_output);
 
-  Output c_output(context->Open(SourceFilename(file)));
+  std::unique_ptr<protobuf::io::ZeroCopyOutputStream> c_output_stream(
+      context->Open(SourceFilename(file)));
+  Output c_output(c_output_stream.get());
   WriteSource(layout, c_output, fasttable_enabled);
 
   return true;
