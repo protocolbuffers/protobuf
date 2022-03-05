@@ -227,7 +227,7 @@ UPB_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
                                    size_t size) {
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
   char* ch_ptr = (char*)ptr;
-  oldsize = UPB_ALIGN_MALLOC(size);
+  oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
   if (ch_ptr + oldsize == h->ptr) {
     if ((size_t)(h->end - ch_ptr) >= size) {

@@ -1431,11 +1431,11 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
       FieldNumberOrder(message);
   assert(field_number_order.size() == mt_32->field_count);
   assert(field_number_order.size() == mt_64->field_count);
-  if (!field_number_order.empty()) {
+  if (mt_64->field_count > 0) {
     std::string fields_array_name = msg_name + "__fields";
     fields_array_ref = "&" + fields_array_name + "[0]";
     output("static const upb_MiniTable_Field $0[$1] = {\n", fields_array_name,
-           field_number_order.size());
+           mt_64->field_count());
     for (int i = 0; i < static_cast<int>(field_number_order.size()); i++) {
       auto field = field_number_order[i];
       int sublayout_index = 0;

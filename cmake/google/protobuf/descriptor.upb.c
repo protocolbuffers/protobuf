@@ -184,7 +184,7 @@ static const upb_MiniTable_Field google_protobuf_EnumDescriptorProto__fields[5] 
 const upb_MiniTable google_protobuf_EnumDescriptorProto_msginit = {
   &google_protobuf_EnumDescriptorProto_submsgs[0],
   &google_protobuf_EnumDescriptorProto__fields[0],
-  UPB_SIZE(32, 64), 5, upb_ExtMode_NonExtendable, 5, 255, 0,
+  UPB_SIZE(32, 56), 5, upb_ExtMode_NonExtendable, 5, 255, 0,
 };
 
 static const upb_MiniTable_Field google_protobuf_EnumDescriptorProto_EnumReservedRange__fields[2] = {
@@ -228,7 +228,7 @@ static const upb_MiniTable_Field google_protobuf_ServiceDescriptorProto__fields[
 const upb_MiniTable google_protobuf_ServiceDescriptorProto_msginit = {
   &google_protobuf_ServiceDescriptorProto_submsgs[0],
   &google_protobuf_ServiceDescriptorProto__fields[0],
-  UPB_SIZE(24, 48), 3, upb_ExtMode_NonExtendable, 3, 255, 0,
+  UPB_SIZE(24, 40), 3, upb_ExtMode_NonExtendable, 3, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_MethodDescriptorProto_submsgs[1] = {
@@ -420,7 +420,7 @@ static const upb_MiniTable_Field google_protobuf_UninterpretedOption__fields[7] 
 const upb_MiniTable google_protobuf_UninterpretedOption_msginit = {
   &google_protobuf_UninterpretedOption_submsgs[0],
   &google_protobuf_UninterpretedOption__fields[0],
-  UPB_SIZE(64, 96), 7, upb_ExtMode_NonExtendable, 0, 255, 0,
+  UPB_SIZE(64, 88), 7, upb_ExtMode_NonExtendable, 0, 255, 0,
 };
 
 static const upb_MiniTable_Field google_protobuf_UninterpretedOption_NamePart__fields[2] = {
@@ -431,7 +431,7 @@ static const upb_MiniTable_Field google_protobuf_UninterpretedOption_NamePart__f
 const upb_MiniTable google_protobuf_UninterpretedOption_NamePart_msginit = {
   NULL,
   &google_protobuf_UninterpretedOption_NamePart__fields[0],
-  UPB_SIZE(16, 32), 2, upb_ExtMode_NonExtendable, 2, 255, 2,
+  UPB_SIZE(16, 24), 2, upb_ExtMode_NonExtendable, 2, 255, 2,
 };
 
 static const upb_MiniTable_Sub google_protobuf_SourceCodeInfo_submsgs[1] = {
@@ -486,7 +486,7 @@ static const upb_MiniTable_Field google_protobuf_GeneratedCodeInfo_Annotation__f
 const upb_MiniTable google_protobuf_GeneratedCodeInfo_Annotation_msginit = {
   NULL,
   &google_protobuf_GeneratedCodeInfo_Annotation__fields[0],
-  UPB_SIZE(24, 48), 4, upb_ExtMode_NonExtendable, 4, 255, 0,
+  UPB_SIZE(24, 40), 4, upb_ExtMode_NonExtendable, 4, 255, 0,
 };
 
 static const upb_MiniTable *messages_layout[27] = {
