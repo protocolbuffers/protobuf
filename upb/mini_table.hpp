@@ -76,6 +76,7 @@ class MtDataEncoder {
     bool operator()(T&& func) {
       char* end = func(buf_);
       if (!end) return false;
+      str_.reserve(_upb_Log2Ceiling(str_.size() + (end - buf_)));
       str_.append(buf_, end - buf_);
       return true;
     }

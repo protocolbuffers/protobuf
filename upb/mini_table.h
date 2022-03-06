@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2021, Google LLC
+ * Copyright (c) 2009-2022, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -150,6 +150,10 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
                                           upb_MiniTablePlatform platform,
                                           upb_Arena* arena, void** buf,
                                           size_t* buf_size, upb_Status* status);
+
+// For testing only.
+char upb_ToBase92(int8_t ch);
+char upb_FromBase92(uint8_t ch);
 
 #ifdef __cplusplus
 } /* extern "C" */
