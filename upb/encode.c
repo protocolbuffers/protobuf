@@ -449,7 +449,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
         return ch != 0;
       }
 #if UINTPTR_MAX == 0xffffffff
-      case upb_FieldRep_Pointer:
+      case kUpb_FieldRep_Pointer:
 #endif
       case kUpb_FieldRep_4Byte: {
         uint32_t u32;

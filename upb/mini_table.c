@@ -561,7 +561,7 @@ static void upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr, size_t len,
   uint32_t last_field_number = 0;
   bool need_dense_below = d->table != NULL;
 
-  d->end = ptr + len;
+  d->end = UPB_PTRADD(ptr, len);
 
   while (ptr < d->end) {
     char ch = *ptr++;
@@ -650,8 +650,10 @@ static bool upb_MtDecoder_SortLayoutItems(upb_MtDecoder* d) {
     upb_MtDecoder_PushItem(d, item);
   }
 
-  qsort(d->vec.data, d->vec.size, sizeof(*d->vec.data),
-        upb_MtDecoder_CompareFields);
+  if (d->vec.size) {
+    qsort(d->vec.data, d->vec.size, sizeof(*d->vec.data),
+          upb_MtDecoder_CompareFields);
+  }
 
   return true;
 }
@@ -735,7 +737,7 @@ size_t upb_MtDecoder_Place(upb_MtDecoder* d, upb_FieldRep rep) {
 }
 
 static bool upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
-  upb_LayoutItem* end = d->vec.data + d->vec.size;
+  upb_LayoutItem* end = UPB_PTRADD(d->vec.data, d->vec.size);
 
   // Compute offsets.
   for (upb_LayoutItem* item = d->vec.data; item < end; item++) {
