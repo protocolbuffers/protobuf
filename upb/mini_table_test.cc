@@ -50,7 +50,7 @@ TEST_P(MiniTableTest, AllScalarTypes) {
   upb::MtDataEncoder e;
   ASSERT_TRUE(e.StartMessage(0));
   int count = 0;
-  for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
     ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i, 0));
     count++;
   }
@@ -77,7 +77,7 @@ TEST_P(MiniTableTest, AllRepeatedTypes) {
   upb::MtDataEncoder e;
   ASSERT_TRUE(e.StartMessage(0));
   int count = 0;
-  for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
     ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i,
                            kUpb_FieldModifier_IsRepeated));
     count++;
@@ -135,12 +135,12 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   upb::MtDataEncoder e;
   ASSERT_TRUE(e.StartMessage(0));
   int count = 0;
-  for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
     ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i, 0));
     count++;
   }
   ASSERT_TRUE(e.StartOneof());
-  for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
     ASSERT_TRUE(e.PutOneofField(i));
   }
   fprintf(stderr, "YO: %s\n", e.data().c_str());

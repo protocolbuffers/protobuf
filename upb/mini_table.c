@@ -573,7 +573,8 @@ static void upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr, size_t len,
       upb_MiniTable_SetField(d, ch, field, msg_modifiers, sub_count);
     } else if (kUpb_EncodedValue_MinModifier <= ch &&
                ch <= kUpb_EncodedValue_MaxModifier) {
-      ptr = upb_MtDecoder_ParseModifier(d, ptr, ch, *field_count, &msg_modifiers);
+      ptr =
+          upb_MtDecoder_ParseModifier(d, ptr, ch, *field_count, &msg_modifiers);
     } else if (ch == kUpb_EncodedValue_End) {
       if (!d->table) {
         upb_MtDecoder_ErrorFormat(d, "Extensions cannot have oneofs.");
@@ -686,19 +687,16 @@ static void upb_MtDecoder_AssignHasbits(upb_MiniTable* ret) {
   ret->size = upb_MiniTable_DivideRoundUp(last_hasbit, 8);
 }
 
-size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep, upb_MiniTablePlatform platform) {
+size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep,
+                               upb_MiniTablePlatform platform) {
   static const uint8_t kRepToSize32[] = {
-      [kUpb_FieldRep_1Byte] = 1,
-      [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 4,
-      [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_Pointer] = 4, [kUpb_FieldRep_StringView] = 8,
       [kUpb_FieldRep_8Byte] = 8,
   };
   static const uint8_t kRepToSize64[] = {
-      [kUpb_FieldRep_1Byte] = 1,
-      [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 8,
-      [kUpb_FieldRep_StringView] = 16,
+      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_Pointer] = 8, [kUpb_FieldRep_StringView] = 16,
       [kUpb_FieldRep_8Byte] = 8,
   };
   assert(sizeof(upb_StringView) ==
@@ -707,19 +705,16 @@ size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep, upb_MiniTablePlatform platform)
                                                   : kRepToSize64[rep];
 }
 
-size_t upb_MtDecoder_AlignOfRep(upb_FieldRep rep, upb_MiniTablePlatform platform) {
+size_t upb_MtDecoder_AlignOfRep(upb_FieldRep rep,
+                                upb_MiniTablePlatform platform) {
   static const uint8_t kRepToAlign32[] = {
-      [kUpb_FieldRep_1Byte] = 1,
-      [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 4,
-      [kUpb_FieldRep_StringView] = 4,
+      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_Pointer] = 4, [kUpb_FieldRep_StringView] = 4,
       [kUpb_FieldRep_8Byte] = 8,
   };
   static const uint8_t kRepToAlign64[] = {
-      [kUpb_FieldRep_1Byte] = 1,
-      [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 8,
-      [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_Pointer] = 8, [kUpb_FieldRep_StringView] = 8,
       [kUpb_FieldRep_8Byte] = 8,
   };
   assert(UPB_ALIGN_OF(upb_StringView) ==
@@ -781,7 +776,8 @@ static bool upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
 upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
                                           upb_MiniTablePlatform platform,
                                           upb_Arena* arena, void** buf,
-                                          size_t* buf_size, upb_Status* status) {
+                                          size_t* buf_size,
+                                          upb_Status* status) {
   upb_MtDecoder decoder = {
       .platform = platform,
       .vec =
@@ -843,7 +839,8 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
   if (!ret || !fields) return NULL;
 
   upb_MiniTable_Sub* subs = NULL;
-  if (value_type == kUpb_FieldType_Message || value_type == kUpb_FieldType_Group) {
+  if (value_type == kUpb_FieldType_Message ||
+      value_type == kUpb_FieldType_Group) {
     subs = upb_Arena_Malloc(arena, sizeof(*subs));
     if (!subs) return NULL;
   }
@@ -929,8 +926,7 @@ void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   table_sub->submsg = sub;
 }
 
-void upb_MiniTable_SetSubEnum(upb_MiniTable* table,
-                              upb_MiniTable_Field* field,
+void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
                               const upb_MiniTable_Enum* sub) {
   assert((uintptr_t)table->fields <= (uintptr_t)field &&
          (uintptr_t)field < (uintptr_t)(table->fields + table->field_count));

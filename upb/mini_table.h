@@ -101,7 +101,6 @@ char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* buf);
 char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* buf,
                                       uint32_t field_num);
 
-
 /** upb_MiniTable *************************************************************/
 
 typedef enum {
@@ -121,8 +120,7 @@ upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
 void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
                                  upb_MiniTable_Field* field,
                                  const upb_MiniTable* sub);
-void upb_MiniTable_SetSubEnum(upb_MiniTable* table,
-                              upb_MiniTable_Field* field,
+void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
                               const upb_MiniTable_Enum* sub);
 
 upb_MiniTable_Extension* upb_MiniTable_BuildExtensions(const char* data,
@@ -154,9 +152,9 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
                                           size_t* buf_size, upb_Status* status);
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 
 #include "upb/port_undef.inc"
 
-#endif  /* UPB_MINI_TABLE_H_ */
+#endif /* UPB_MINI_TABLE_H_ */
