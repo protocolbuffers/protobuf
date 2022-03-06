@@ -92,13 +92,16 @@ typedef enum {
   kUpb_LabelFlags_IsExtension = 8,
 } upb_LabelFlags;
 
+// Note: we sort by this number when calculating layout order.
 typedef enum {
   kUpb_FieldRep_1Byte = 0,
   kUpb_FieldRep_4Byte = 1,
   kUpb_FieldRep_StringView = 2,
   kUpb_FieldRep_Pointer = 3,
   kUpb_FieldRep_8Byte = 4,
+
   kUpb_FieldRep_Shift = 5,  // Bit offset of the rep in upb_MiniTable_Field.mode
+  kUpb_FieldRep_Max = kUpb_FieldRep_8Byte,
 } upb_FieldRep;
 
 UPB_INLINE upb_FieldMode upb_FieldMode_Get(const upb_MiniTable_Field* field) {

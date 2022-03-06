@@ -265,10 +265,13 @@ const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
 
 /** Data decoder **************************************************************/
 
+// Note: we sort by this number when calculating layout order.
 typedef enum {
-  kUpb_LayoutItemType_Field,       // Non-oneof field data.
-  kUpb_LayoutItemType_OneofField,  // Oneof field data.
   kUpb_LayoutItemType_OneofCase,   // Oneof case.
+  kUpb_LayoutItemType_OneofField,  // Oneof field data.
+  kUpb_LayoutItemType_Field,       // Non-oneof field data.
+
+  kUpb_LayoutItemType_Max = kUpb_LayoutItemType_Field,
 } upb_LayoutItemType;
 
 #define kUpb_LayoutItem_IndexSentinel ((uint16_t)-1)
@@ -621,32 +624,34 @@ static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
   upb_MtDecoder_Parse(d, data, len, d->fields, sizeof(*d->fields),
                       &d->table->field_count, &sub_count);
 
-  // Return unused memory from fields array.
-  UPB_ASSERT(d->table->field_count <= len);
-  UPB_ASSERT(
-      _upb_Arena_IsLastAlloc(d->arena, d->fields, sizeof(*d->fields) * len));
-  d->fields = upb_Arena_Realloc(d->arena, d->fields, sizeof(*d->fields) * len,
-                                sizeof(*d->fields) * d->table->field_count);
+  upb_Arena_ShrinkLast(d->arena, d->fields, sizeof(*d->fields) * len,
+                       sizeof(*d->fields) * d->table->field_count);
   d->table->fields = d->fields;
   upb_MtDecoder_AllocateSubs(d, sub_count);
 }
 
 #define UPB_COMPARE_INTEGERS(a, b) ((a) < (b) ? -1 : ((a) == (b) ? 0 : 1))
+#define UPB_COMBINE(rep, ty, idx) (((rep << type_bits) | ty) << idx_bits) | idx
 
 int upb_MtDecoder_CompareFields(const void* _a, const void* _b) {
   const upb_LayoutItem* a = _a;
   const upb_LayoutItem* b = _b;
   // Currently we just sort by:
-  //  1. rep (descending, so largest fields are first)
-  //  2. is_case (descending, so oneof cases are first)
-  //  2. field_number (ascending, so smallest numbers are first)
-  //
+  //  1. rep (smallest fields first)
+  //  2. type (oneof cases first)
+  //  2. field_number (smallest numbers first)
   // The main goal of this is to reduce space lost to padding.
-  if (a->rep != b->rep) return UPB_COMPARE_INTEGERS(a->rep, b->rep);
-  if (a->type != b->type) return UPB_COMPARE_INTEGERS(a->type, b->type);
-  return UPB_COMPARE_INTEGERS(b->field_index, a->field_index);
+  // Later we may have more subtle reasons to prefer a different ordering.
+  const int rep_bits = _upb_Log2Ceiling(kUpb_FieldRep_Max);
+  const int type_bits = _upb_Log2Ceiling(kUpb_LayoutItemType_Max);
+  const int idx_bits = (sizeof(a->field_index) * 8);
+  UPB_ASSERT(idx_bits + rep_bits + type_bits < 32);
+  uint32_t a_packed = UPB_COMBINE(a->rep, a->type, a->field_index);
+  uint32_t b_packed = UPB_COMBINE(b->rep, b->type, b->field_index);
+  return UPB_COMPARE_INTEGERS(a_packed, b_packed);
 }
 
+#undef UPB_COMBINE
 #undef UPB_COMPARE_INTEGERS
 
 static bool upb_MtDecoder_SortLayoutItems(upb_MtDecoder* d) {
@@ -656,7 +661,8 @@ static bool upb_MtDecoder_SortLayoutItems(upb_MtDecoder* d) {
     upb_MiniTable_Field* f = &d->fields[i];
     if (f->offset >= kOneofBase) continue;
     upb_LayoutItem item = {.field_index = i,
-                           .rep = f->mode >> kUpb_FieldRep_Shift};
+                           .rep = f->mode >> kUpb_FieldRep_Shift,
+                           .type = kUpb_LayoutItemType_Field};
     upb_MtDecoder_PushItem(d, item);
   }
 
@@ -756,6 +762,7 @@ static bool upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
     while (true) {
       f->presence = ~item->offset;
       if (f->offset == kUpb_LayoutItem_IndexSentinel) break;
+      UPB_ASSERT(f->offset - kOneofBase < d->table->field_count);
       f = &d->fields[f->offset - kOneofBase];
     }
   }
@@ -903,8 +910,7 @@ upb_MiniTable_Extension* upb_MiniTable_BuildExtensions(const char* data,
   exts = upb_Arena_Malloc(arena, len);
   upb_MtDecoder_CheckOutOfMemory(&decoder, exts);
   upb_MtDecoder_Parse(&decoder, data, len, exts, sizeof(*exts), &count, NULL);
-  exts = upb_Arena_Realloc(arena, exts, sizeof(*exts) * len,
-                           sizeof(*exts) * count);
+  upb_Arena_ShrinkLast(arena, exts, sizeof(*exts) * len, sizeof(*exts) * count);
 
 done:
   *ext_count = count;
