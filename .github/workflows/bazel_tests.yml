@@ -1,0 +1,38 @@
+name: Bazel Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+
+  ubuntu:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - { CC: clang, os: ubuntu-20.04, flags: "" }
+          - { CC: clang, os: ubuntu-20.04, flags: "-c opt" }  # Some warnings only fire with -c opt
+          - { CC: gcc, os: ubuntu-20.04, flags: "-c opt" }
+          - { CC: clang, os: ubuntu-20.04, flags: "--//:fasttable_enabled=true -- -cmake:test_generated_files" }
+          - { CC: clang, os: ubuntu-20.04, flags: "--config=asan -c dbg -- -benchmarks:benchmark -python/..." }
+          - { CC: clang, os: ubuntu-20.04, flags: "--config=ubsan -c dbg -- -benchmarks:benchmark -python/... -upb/bindings/lua/...", install: "libunwind-dev" }
+          - { CC: clang, os: ubuntu-20.04, flags: "--copt=-m32 --linkopt=-m32 -- -... benchmarks:benchmark ", install: "g++-multilib" }
+          - { CC: clang, os: macos-11, flags: "" }
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python venv
+        run: rm -rf /tmp/venv && python3 -m venv /tmp/venv
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y ${{ matrix.install }}
+        if: matrix.install != ''
+      - name: Run tests
+        run: cd ${{ github.workspace }} && PATH=/tmp/venv/bin:$PATH CC=${{ matrix.CC }} bazel test --test_output=errors ... ${{ matrix.flags }}

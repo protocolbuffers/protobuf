@@ -1,6 +1,61 @@
+# Copyright (c) 2009-2021, Google LLC
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of Google LLC nor the
+#       names of its contributors may be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 """Internal rules for building upb."""
 
 load(":upb_proto_library.bzl", "GeneratedSrcsInfo")
+
+UPB_DEFAULT_CPPOPTS = select({
+    "//:windows": [],
+    "//conditions:default": [
+        # copybara:strip_for_google3_begin
+        "-Wextra",
+        # "-Wshorten-64-to-32",  # not in GCC (and my Kokoro images doesn't have Clang)
+        "-Werror",
+        "-Wno-long-long",
+        # copybara:strip_end
+    ],
+})
+
+UPB_DEFAULT_COPTS = select({
+    "//:windows": [],
+    "//:fasttable_enabled_setting": ["-std=gnu99", "-DUPB_ENABLE_FASTTABLE"],
+    "//conditions:default": [
+        # copybara:strip_for_google3_begin
+        "-std=c99",
+        "-pedantic",
+        "-Werror=pedantic",
+        "-Wall",
+        "-Wstrict-prototypes",
+        # GCC (at least) emits spurious warnings for this that cannot be fixed
+        # without introducing redundant initialization (with runtime cost):
+        #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80635
+        #"-Wno-maybe-uninitialized",
+        # copybara:strip_end
+    ],
+})
 
 def _librule(name):
     return name + "_lib"
@@ -50,55 +105,12 @@ def _remove_suffix(str, suffix):
     return str[:-len(suffix)]
 
 def make_shell_script(name, contents, out):
-    contents = (runfiles_init + contents).replace("$", "$$")
+    contents = runfiles_init + contents  # copybara:strip_for_google3
+    contents = contents.replace("$", "$$")
     native.genrule(
         name = "gen_" + name,
         outs = [out],
         cmd = "(cat <<'HEREDOC'\n%s\nHEREDOC\n) > $@" % contents,
-    )
-
-def generated_file_staleness_test(name, outs, generated_pattern):
-    """Tests that checked-in file(s) match the contents of generated file(s).
-
-    The resulting test will verify that all output files exist and have the
-    correct contents.  If the test fails, it can be invoked with --fix to
-    bring the checked-in files up to date.
-
-    Args:
-      name: Name of the rule.
-      outs: the checked-in files that are copied from generated files.
-      generated_pattern: the pattern for transforming each "out" file into a
-        generated file.  For example, if generated_pattern="generated/%s" then
-        a file foo.txt will look for generated file generated/foo.txt.
-    """
-
-    script_name = name + ".py"
-    script_src = "//:tools/staleness_test.py"
-
-    # Filter out non-existing rules so Blaze doesn't error out before we even
-    # run the test.
-    existing_outs = native.glob(include = outs)
-
-    # The file list contains a few extra bits of information at the end.
-    # These get unpacked by the Config class in staleness_test_lib.py.
-    file_list = outs + [generated_pattern, native.package_name() or ".", name]
-
-    native.genrule(
-        name = name + "_makescript",
-        outs = [script_name],
-        srcs = [script_src],
-        testonly = 1,
-        cmd = "cat $(location " + script_src + ") > $@; " +
-              "sed -i.bak -e 's|INSERT_FILE_LIST_HERE|" + "\\\n  ".join(file_list) + "|' $@",
-    )
-
-    native.py_test(
-        name = name,
-        srcs = [script_name],
-        data = existing_outs + [generated_pattern % file for file in outs],
-        deps = [
-            "//:staleness_test_lib",
-        ],
     )
 
 # upb_amalgamation() rule, with file_list aspect.
@@ -135,24 +147,24 @@ def _upb_amalgamation(ctx):
     ctx.actions.run(
         inputs = inputs,
         outputs = ctx.outputs.outs,
-        arguments = [ctx.bin_dir.path + "/"] + [f.path for f in srcs] + ["-I" + root for root in _get_real_roots(inputs)],
+        arguments = [ctx.bin_dir.path + "/", ctx.attr.prefix] + [f.path for f in srcs] + ["-I" + root for root in _get_real_roots(inputs)],
         progress_message = "Making amalgamation",
-        executable = ctx.executable.amalgamator,
+        executable = ctx.executable._amalgamator,
     )
     return []
 
 upb_amalgamation = rule(
     attrs = {
-        "amalgamator": attr.label(
+        "_amalgamator": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
+            default = "//bazel:amalgamate",
+        ),
+        "prefix": attr.string(
+            default = "",
         ),
         "libs": attr.label_list(aspects = [_file_list_aspect]),
         "outs": attr.output_list(),
     },
     implementation = _upb_amalgamation,
 )
-
-def licenses(*args):
-    # No-op (for Google-internal usage).
-    pass

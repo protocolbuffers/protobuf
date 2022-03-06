@@ -1,398 +1,115 @@
 /*
-** Our memory representation for parsing tables and messages themselves.
-** Functions in this file are used by generated code and possibly reflection.
-**
-** The definitions in this file are internal to upb.
-**/
+ * Copyright (c) 2009-2021, Google LLC
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Google LLC nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Public APIs for message operations that do not require descriptors.
+ * These functions can be used even in build that does not want to depend on
+ * reflection or descriptors.
+ *
+ * Descriptor-based reflection functionality lives in reflection.h.
+ */
 
 #ifndef UPB_MSG_H_
 #define UPB_MSG_H_
 
-#include <stdint.h>
-#include <string.h>
+#include <stddef.h>
 
-#include "upb/table.int.h"
 #include "upb/upb.h"
-
-#include "upb/port_def.inc"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define PTR_AT(msg, ofs, type) (type*)((const char*)msg + ofs)
+/** upb_Message
+ * *******************************************************************/
 
-typedef void upb_msg;
+typedef void upb_Message;
 
-/** upb_msglayout *************************************************************/
-
-/* upb_msglayout represents the memory layout of a given upb_msgdef.  The
- * members are public so generated code can initialize them, but users MUST NOT
- * read or write any of its members. */
-
-/* This isn't a real label according to descriptor.proto, but in the table we
- * use this for map fields instead of UPB_LABEL_REPEATED. */
-enum {
-  UPB_LABEL_MAP = 4
-};
-
-typedef struct {
-  uint32_t number;
-  uint16_t offset;
-  int16_t presence;      /* If >0, hasbit_index+1.  If <0, oneof_index+1. */
-  uint16_t submsg_index;  /* undefined if descriptortype != MESSAGE or GROUP. */
-  uint8_t descriptortype;
-  uint8_t label;
-} upb_msglayout_field;
-
-typedef struct upb_msglayout {
-  const struct upb_msglayout *const* submsgs;
-  const upb_msglayout_field *fields;
-  /* Must be aligned to sizeof(void*).  Doesn't include internal members like
-   * unknown fields, extension dict, pointer to msglayout, etc. */
-  uint16_t size;
-  uint16_t field_count;
-  bool extendable;
-} upb_msglayout;
-
-/** upb_msg *******************************************************************/
-
-/* Internal members of a upb_msg.  We can change this without breaking binary
- * compatibility.  We put these before the user's data.  The user's upb_msg*
- * points after the upb_msg_internal. */
-
-/* Used when a message is not extendable. */
-typedef struct {
-  char *unknown;
-  size_t unknown_len;
-  size_t unknown_size;
-} upb_msg_internal;
-
-/* Used when a message is extendable. */
-typedef struct {
-  upb_inttable *extdict;
-  upb_msg_internal base;
-} upb_msg_internal_withext;
-
-/* Maps upb_fieldtype_t -> memory size. */
-extern char _upb_fieldtype_to_size[12];
-
-/* Creates a new messages with the given layout on the given arena. */
-upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a);
+/* For users these are opaque. They can be obtained from
+ * upb_MessageDef_MiniTable() but users cannot access any of the members. */
+struct upb_MiniTable;
+typedef struct upb_MiniTable upb_MiniTable;
 
 /* Adds unknown data (serialized protobuf data) to the given message.  The data
  * is copied into the message instance. */
-void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
-                        upb_arena *arena);
+void upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
+                            upb_Arena* arena);
 
 /* Returns a reference to the message's unknown data. */
-const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
+const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
 
-UPB_INLINE bool _upb_has_field(const void *msg, size_t idx) {
-  return (*PTR_AT(msg, idx / 8, const char) & (1 << (idx % 8))) != 0;
-}
+/* Returns the number of extensions present in this message. */
+size_t upb_Message_ExtensionCount(const upb_Message* msg);
 
-UPB_INLINE bool _upb_sethas(const void *msg, size_t idx) {
-  return (*PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
-}
+/** upb_ExtensionRegistry *****************************************************/
 
-UPB_INLINE bool _upb_clearhas(const void *msg, size_t idx) {
-  return (*PTR_AT(msg, idx / 8, char)) &= (char)(~(1 << (idx % 8)));
-}
-
-UPB_INLINE bool _upb_has_oneof_field(const void *msg, size_t case_ofs, int32_t num) {
-  return *PTR_AT(msg, case_ofs, int32_t) == num;
-}
-
-/** upb_array *****************************************************************/
-
-/* Our internal representation for repeated fields.  */
-typedef struct {
-  uintptr_t data;   /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
-  size_t len;   /* Measured in elements. */
-  size_t size;  /* Measured in elements. */
-} upb_array;
-
-UPB_INLINE const void *_upb_array_constptr(const upb_array *arr) {
-  return (void*)(arr->data & ~(uintptr_t)7);
-}
-
-UPB_INLINE void *_upb_array_ptr(upb_array *arr) {
-  return (void*)_upb_array_constptr(arr);
-}
-
-/* Creates a new array on the given arena. */
-upb_array *_upb_array_new(upb_arena *a, upb_fieldtype_t type);
-
-/* Resizes the capacity of the array to be at least min_size. */
-bool _upb_array_realloc(upb_array *arr, size_t min_size, upb_arena *arena);
-
-/* Fallback functions for when the accessors require a resize. */
-void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size,
-                                 upb_fieldtype_t type, upb_arena *arena);
-bool _upb_array_append_fallback(upb_array **arr_ptr, const void *value,
-                                upb_fieldtype_t type, upb_arena *arena);
-
-UPB_INLINE const void *_upb_array_accessor(const void *msg, size_t ofs,
-                                           size_t *size) {
-  const upb_array *arr = *PTR_AT(msg, ofs, const upb_array*);
-  if (arr) {
-    if (size) *size = arr->len;
-    return _upb_array_constptr(arr);
-  } else {
-    if (size) *size = 0;
-    return NULL;
-  }
-}
-
-UPB_INLINE void *_upb_array_mutable_accessor(void *msg, size_t ofs,
-                                             size_t *size) {
-  upb_array *arr = *PTR_AT(msg, ofs, upb_array*);
-  if (arr) {
-    if (size) *size = arr->len;
-    return _upb_array_ptr(arr);
-  } else {
-    if (size) *size = 0;
-    return NULL;
-  }
-}
-
-UPB_INLINE void *_upb_array_resize_accessor(void *msg, size_t ofs, size_t size,
-                                            upb_fieldtype_t type,
-                                            upb_arena *arena) {
-  upb_array **arr_ptr = PTR_AT(msg, ofs, upb_array*);
-  upb_array *arr = *arr_ptr;
-  if (!arr || arr->size < size) {
-    return _upb_array_resize_fallback(arr_ptr, size, type, arena);
-  }
-  arr->len = size;
-  return _upb_array_ptr(arr);
-}
-
-
-UPB_INLINE bool _upb_array_append_accessor(void *msg, size_t ofs,
-                                           size_t elem_size,
-                                           upb_fieldtype_t type,
-                                           const void *value,
-                                           upb_arena *arena) {
-  upb_array **arr_ptr = PTR_AT(msg, ofs, upb_array*);
-  upb_array *arr = *arr_ptr;
-  void* ptr;
-  if (!arr || arr->len == arr->size) {
-    return _upb_array_append_fallback(arr_ptr, value, type, arena);
-  }
-  ptr = _upb_array_ptr(arr);
-  memcpy(PTR_AT(ptr, arr->len * elem_size, char), value, elem_size);
-  arr->len++;
-  return true;
-}
-
-/** upb_map *******************************************************************/
-
-/* Right now we use strmaps for everything.  We'll likely want to use
- * integer-specific maps for integer-keyed maps.*/
-typedef struct {
-  /* Size of key and val, based on the map type.  Strings are represented as '0'
-   * because they must be handled specially. */
-  char key_size;
-  char val_size;
-
-  upb_strtable table;
-} upb_map;
-
-/* Map entries aren't actually stored, they are only used during parsing.  For
- * parsing, it helps a lot if all map entry messages have the same layout.
- * The compiler and def.c must ensure that all map entries have this layout. */
-typedef struct {
-  upb_msg_internal internal;
-  union {
-    upb_strview str;  /* For str/bytes. */
-    upb_value val;    /* For all other types. */
-  } k;
-  union {
-    upb_strview str;  /* For str/bytes. */
-    upb_value val;    /* For all other types. */
-  } v;
-} upb_map_entry;
-
-/* Creates a new map on the given arena with this key/value type. */
-upb_map *_upb_map_new(upb_arena *a, size_t key_size, size_t value_size);
-
-/* Converting between internal table representation and user values.
+/* Extension registry: a dynamic data structure that stores a map of:
+ *   (upb_MiniTable, number) -> extension info
  *
- * _upb_map_tokey() and _upb_map_fromkey() are inverses.
- * _upb_map_tovalue() and _upb_map_fromvalue() are inverses.
+ * upb_decode() uses upb_ExtensionRegistry to look up extensions while parsing
+ * binary format.
  *
- * These functions account for the fact that strings are treated differently
- * from other types when stored in a map.
+ * upb_ExtensionRegistry is part of the mini-table (msglayout) family of
+ * objects. Like all mini-table objects, it is suitable for reflection-less
+ * builds that do not want to expose names into the binary.
+ *
+ * Unlike most mini-table types, upb_ExtensionRegistry requires dynamic memory
+ * allocation and dynamic initialization:
+ * * If reflection is being used, then upb_DefPool will construct an appropriate
+ *   upb_ExtensionRegistry automatically.
+ * * For a mini-table only build, the user must manually construct the
+ *   upb_ExtensionRegistry and populate it with all of the extensions the user
+ * cares about.
+ * * A third alternative is to manually unpack relevant extensions after the
+ *   main parse is complete, similar to how Any works. This is perhaps the
+ *   nicest solution from the perspective of reducing dependencies, avoiding
+ *   dynamic memory allocation, and avoiding the need to parse uninteresting
+ *   extensions.  The downsides are:
+ *     (1) parse errors are not caught during the main parse
+ *     (2) the CPU hit of parsing comes during access, which could cause an
+ *         undesirable stutter in application performance.
+ *
+ * Users cannot directly get or put into this map. Users can only add the
+ * extensions from a generated module and pass the extension registry to the
+ * binary decoder.
+ *
+ * A upb_DefPool provides a upb_ExtensionRegistry, so any users who use
+ * reflection do not need to populate a upb_ExtensionRegistry directly.
  */
 
-UPB_INLINE upb_strview _upb_map_tokey(const void *key, size_t size) {
-  if (size == UPB_MAPTYPE_STRING) {
-    return *(upb_strview*)key;
-  } else {
-    return upb_strview_make((const char*)key, size);
-  }
-}
+struct upb_ExtensionRegistry;
+typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
 
-UPB_INLINE void _upb_map_fromkey(upb_strview key, void* out, size_t size) {
-  if (size == UPB_MAPTYPE_STRING) {
-    memcpy(out, &key, sizeof(key));
-  } else {
-    memcpy(out, key.data, size);
-  }
-}
-
-UPB_INLINE upb_value _upb_map_tovalue(const void *val, size_t size,
-                                      upb_arena *a) {
-  upb_value ret = {0};
-  if (size == UPB_MAPTYPE_STRING) {
-    upb_strview *strp = (upb_strview*)upb_arena_malloc(a, sizeof(*strp));
-    *strp = *(upb_strview*)val;
-    memcpy(&ret, &strp, sizeof(strp));
-  } else {
-    memcpy(&ret, val, size);
-  }
-  return ret;
-}
-
-UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
-  if (size == UPB_MAPTYPE_STRING) {
-    const upb_strview *strp = (const upb_strview*)upb_value_getptr(val);
-    memcpy(out, strp, sizeof(upb_strview));
-  } else {
-    memcpy(out, &val, size);
-  }
-}
-
-/* Map operations, shared by reflection and generated code. */
-
-UPB_INLINE size_t _upb_map_size(const upb_map *map) {
-  return map->table.t.count;
-}
-
-UPB_INLINE bool _upb_map_get(const upb_map *map, const void *key,
-                             size_t key_size, void *val, size_t val_size) {
-  upb_value tabval;
-  upb_strview k = _upb_map_tokey(key, key_size);
-  bool ret = upb_strtable_lookup2(&map->table, k.data, k.size, &tabval);
-  if (ret) {
-    _upb_map_fromvalue(tabval, val, val_size);
-  }
-  return ret;
-}
-
-UPB_INLINE void* _upb_map_next(const upb_map *map, size_t *iter) {
-  upb_strtable_iter it;
-  it.t = &map->table;
-  it.index = *iter;
-  upb_strtable_next(&it);
-  if (upb_strtable_done(&it)) return NULL;
-  *iter = it.index;
-  return (void*)str_tabent(&it);
-}
-
-UPB_INLINE bool _upb_map_set(upb_map *map, const void *key, size_t key_size,
-                             void *val, size_t val_size, upb_arena *arena) {
-  upb_strview strkey = _upb_map_tokey(key, key_size);
-  upb_value tabval = _upb_map_tovalue(val, val_size, arena);
-  upb_alloc *a = upb_arena_alloc(arena);
-
-  /* TODO(haberman): add overwrite operation to minimize number of lookups. */
-  upb_strtable_remove3(&map->table, strkey.data, strkey.size, NULL, a);
-  return upb_strtable_insert3(&map->table, strkey.data, strkey.size, tabval, a);
-}
-
-UPB_INLINE bool _upb_map_delete(upb_map *map, const void *key, size_t key_size) {
-  upb_strview k = _upb_map_tokey(key, key_size);
-  return upb_strtable_remove3(&map->table, k.data, k.size, NULL, NULL);
-}
-
-UPB_INLINE void _upb_map_clear(upb_map *map) {
-  upb_strtable_clear(&map->table);
-}
-
-/* Message map operations, these get the map from the message first. */
-
-UPB_INLINE size_t _upb_msg_map_size(const upb_msg *msg, size_t ofs) {
-  upb_map *map = UPB_FIELD_AT(msg, upb_map *, ofs);
-  return map ? _upb_map_size(map) : 0;
-}
-
-UPB_INLINE bool _upb_msg_map_get(const upb_msg *msg, size_t ofs,
-                                 const void *key, size_t key_size, void *val,
-                                 size_t val_size) {
-  upb_map *map = UPB_FIELD_AT(msg, upb_map *, ofs);
-  if (!map) return false;
-  return _upb_map_get(map, key, key_size, val, val_size);
-}
-
-UPB_INLINE void *_upb_msg_map_next(const upb_msg *msg, size_t ofs,
-                                   size_t *iter) {
-  upb_map *map = UPB_FIELD_AT(msg, upb_map *, ofs);
-  if (!map) return NULL;
-  return _upb_map_next(map, iter);
-}
-
-UPB_INLINE bool _upb_msg_map_set(upb_msg *msg, size_t ofs, const void *key,
-                                 size_t key_size, void *val, size_t val_size,
-                                 upb_arena *arena) {
-  upb_map **map = PTR_AT(msg, ofs, upb_map *);
-  if (!*map) {
-    *map = _upb_map_new(arena, key_size, val_size);
-  }
-  return _upb_map_set(*map, key, key_size, val, val_size, arena);
-}
-
-UPB_INLINE bool _upb_msg_map_delete(upb_msg *msg, size_t ofs, const void *key,
-                                    size_t key_size) {
-  upb_map *map = UPB_FIELD_AT(msg, upb_map *, ofs);
-  if (!map) return false;
-  return _upb_map_delete(map, key, key_size);
-}
-
-UPB_INLINE void _upb_msg_map_clear(upb_msg *msg, size_t ofs) {
-  upb_map *map = UPB_FIELD_AT(msg, upb_map *, ofs);
-  if (!map) return;
-  _upb_map_clear(map);
-}
-
-/* Accessing map key/value from a pointer, used by generated code only. */
-
-UPB_INLINE void _upb_msg_map_key(const void* msg, void* key, size_t size) {
-  const upb_tabent *ent = (const upb_tabent*)msg;
-  uint32_t u32len;
-  upb_strview k;
-  k.data = upb_tabstr(ent->key, &u32len);
-  k.size = u32len;
-  _upb_map_fromkey(k, key, size);
-}
-
-UPB_INLINE void _upb_msg_map_value(const void* msg, void* val, size_t size) {
-  const upb_tabent *ent = (const upb_tabent*)msg;
-  upb_value v;
-  _upb_value_setval(&v, ent->val.val);
-  _upb_map_fromvalue(v, val, size);
-}
-
-UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val, size_t size) {
-  upb_tabent *ent = (upb_tabent*)msg;
-  /* This is like _upb_map_tovalue() except the entry already exists so we can
-   * reuse the allocated upb_strview for string fields. */
-  if (size == UPB_MAPTYPE_STRING) {
-    upb_strview *strp = (upb_strview*)ent->val.val;
-    memcpy(strp, val, sizeof(*strp));
-  } else {
-    memcpy(&ent->val.val, val, size);
-  }
-}
-
-#undef PTR_AT
+/* Creates a upb_ExtensionRegistry in the given arena.  The arena must outlive
+ * any use of the extreg. */
+upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
-
-#endif /* UPB_MSG_H_ */
+#endif /* UPB_MSG_INT_H_ */

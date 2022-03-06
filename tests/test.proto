@@ -1,8 +1,0 @@
-
-syntax = "proto2";
-
-package upb_test;
-
-message MapTest {
-  map<string, double> map_string_double = 1;
-}

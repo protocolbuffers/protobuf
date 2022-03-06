@@ -1,0 +1,89 @@
+--- BUILD
++++ BUILD
+@@ -525,7 +525,7 @@ cc_binary(
+ filegroup(
+     name = "testdata",
+     srcs = glob(["src/google/protobuf/testdata/**/*"]),
+-    visibility = ["//:__subpackages__"],
++    visibility = ["//visibility:public"],
+ )
+ 
+ RELATIVE_LITE_TEST_PROTOS = [
+@@ -931,13 +931,10 @@ py_library(
+         [
+             "python/google/protobuf/**/*.py",
+         ],
+-        exclude = [
+-            "python/google/protobuf/internal/*_test.py",
+-            "python/google/protobuf/internal/test_util.py",
+-        ],
+     ),
+     imports = ["python"],
+     srcs_version = "PY2AND3",
++    visibility = ["//visibility:public"],
+ )
+ 
+ cc_binary(
+@@ -1038,13 +1035,6 @@ py_proto_library(
+     name = "protobuf_python",
+     srcs = COPIED_WELL_KNOWN_PROTOS,
+     include = "python",
+-    data = select({
+-        "//conditions:default": [],
+-        ":use_fast_cpp_protos": [
+-            ":python/google/protobuf/internal/_api_implementation.so",
+-            ":python/google/protobuf/pyext/_message.so",
+-        ],
+-    }),
+     default_runtime = "",
+     protoc = ":protoc",
+     py_libs = [
+@@ -1080,6 +1070,7 @@ py_proto_library(
+     protoc = ":protoc",
+     srcs_version = "PY2AND3",
+     deps = [":protobuf_python"],
++    visibility = ["//visibility:public"],
+ )
+ 
+ py_proto_library(
+@@ -1093,6 +1084,7 @@ py_proto_library(
+     protoc = ":protoc",
+     srcs_version = "PY2AND3",
+     deps = [":python_common_test_protos"],
++    visibility = ["//visibility:public"],
+ )
+ 
+ py_library(
+
+--- python/google/protobuf/internal/test_util.py
++++ python/google/protobuf/internal/test_util.py
+@@ -634,6 +634,13 @@ def GoldenFile(filename):
+     # Found it.  Load the golden file from the testdata directory.
+     return open(full_path, 'rb')
+ 
++  # Search for cross-repo path.
++  full_path = os.path.join('external/com_google_protobuf/src/google/protobuf/testdata',
++                           filename)
++  if os.path.exists(full_path):
++    # Found it.  Load the golden file from the testdata directory.
++    return open(full_path, 'rb')
++
+   raise RuntimeError(
+       'Could not find golden files.  This test must be run from within the '
+       'protobuf source package so that it can read test data files from the '
+
+--- python/google/protobuf/internal/testing_refleaks.py
++++ python/google/protobuf/internal/testing_refleaks.py
+@@ -67,6 +67,12 @@ class ReferenceLeakCheckerMixin(object):
+   NB_RUNS = 3
+ 
+   def run(self, result=None):
++    testMethod = getattr(self, self._testMethodName)
++    expecting_failure_method = getattr(testMethod, "__unittest_expecting_failure__", False)
++    expecting_failure_class = getattr(self, "__unittest_expecting_failure__", False)
++    if expecting_failure_class or expecting_failure_method:
++      return
++
+     # python_message.py registers all Message classes to some pickle global
+     # registry, which makes the classes immortal.
+     # We save a copy of this registry, and reset it before we could references.

@@ -1,3 +1,27 @@
+# Copyright (c) 2009-2021, Google LLC
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of Google LLC nor the
+#       names of its contributors may be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
@@ -12,6 +36,7 @@ def _get_real_short_path(file):
     if short_path.startswith("../"):
         second_slash = short_path.index("/", 3)
         short_path = short_path[second_slash + 1:]
+
     # Sometimes it has another few prefixes like:
     #   _virtual_imports/any_proto/google/protobuf/any.proto
     # We want just google/protobuf/any.proto.
@@ -64,9 +89,10 @@ def _lua_proto_rule_impl(ctx):
     files = dep[_LuaFiles].files
     return [
         DefaultInfo(
-           files = files,
-            data_runfiles = ctx.runfiles(files = files.to_list())),
-        ]
+            files = files,
+            data_runfiles = ctx.runfiles(files = files.to_list()),
+        ),
+    ]
 
 def _lua_proto_library_aspect_impl(target, ctx):
     proto_info = target[ProtoInfo]
@@ -81,12 +107,12 @@ _lua_proto_library_aspect = aspect(
     attrs = {
         "_upbc": attr.label(
             executable = True,
-            cfg = "host",
-            default = "//:protoc-gen-lua",
+            cfg = "exec",
+            default = "//upb/bindings/lua:protoc-gen-lua",
         ),
         "_protoc": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = "@com_google_protobuf//:protoc",
         ),
     },

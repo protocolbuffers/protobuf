@@ -1,0 +1,48 @@
+
+syntax = "proto2";
+
+package upb_test;
+
+message MapTest {
+  map<string, double> map_string_double = 1;
+}
+
+message MessageName {
+  optional int32 field1 = 1;
+  optional int32 field2 = 2;
+}
+
+message HelloRequest {
+  optional uint32 id = 1;
+  optional uint32 random_name_a0 = 2;
+  optional uint32 random_name_a1 = 3;
+  optional uint32 random_name_a2 = 4;
+  optional uint32 random_name_a3 = 5;
+  optional uint32 random_name_a4 = 6;
+  optional uint32 random_name_a5 = 7;
+  optional uint32 random_name_a6 = 8;
+  optional uint32 random_name_a7 = 9;
+  optional uint32 random_name_a8 = 10;
+  optional uint32 random_name_a9 = 11;
+  optional uint32 random_name_b0 = 12;
+  optional uint32 random_name_b1 = 13;
+  optional uint32 random_name_b2 = 14;
+  optional uint32 random_name_b3 = 15;
+  optional uint32 random_name_b4 = 16;
+  optional uint32 random_name_b5 = 17;
+  optional uint32 random_name_b6 = 18;
+  optional uint32 random_name_b7 = 19;
+  optional uint32 random_name_b8 = 20;
+  optional uint32 random_name_b9 = 21;
+  optional uint32 random_name_c0 = 22;
+  optional uint32 random_name_c1 = 23;
+  optional uint32 random_name_c2 = 24;
+  optional uint32 random_name_c3 = 25;
+  optional uint32 random_name_c4 = 26;
+  optional uint32 random_name_c5 = 27;
+  optional uint32 random_name_c6 = 28;
+  optional uint32 random_name_c7 = 29;
+  optional uint32 random_name_c8 = 30;
+  optional uint32 random_name_c9 = 31;
+  optional string version = 32;
+}
