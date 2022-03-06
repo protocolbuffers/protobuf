@@ -112,6 +112,7 @@
 
   PHP
   * Fix: add missing reserved classnames (#9458)
+  * PHP 8.1 compatibility (#9370)
 
   C#
   * Fix trim warnings (#9182)
