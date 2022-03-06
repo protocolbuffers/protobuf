@@ -278,20 +278,20 @@ std::string SizeLg2(const protobuf::FieldDescriptor* field) {
 std::string SizeRep(const protobuf::FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
-      return "upb_FieldRep_Pointer";
+      return "kUpb_FieldRep_Pointer";
     case protobuf::FieldDescriptor::CPPTYPE_ENUM:
     case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
     case protobuf::FieldDescriptor::CPPTYPE_INT32:
     case protobuf::FieldDescriptor::CPPTYPE_UINT32:
-      return "upb_FieldRep_4Byte";
+      return "kUpb_FieldRep_4Byte";
     case protobuf::FieldDescriptor::CPPTYPE_BOOL:
-      return "upb_FieldRep_1Byte";
+      return "kUpb_FieldRep_1Byte";
     case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
     case protobuf::FieldDescriptor::CPPTYPE_INT64:
     case protobuf::FieldDescriptor::CPPTYPE_UINT64:
-      return "upb_FieldRep_8Byte";
+      return "kUpb_FieldRep_8Byte";
     case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return "upb_FieldRep_StringView";
+      return "kUpb_FieldRep_StringView";
     default:
       fprintf(stderr, "Unexpected type");
       abort();
@@ -1154,24 +1154,24 @@ void WriteField(const protobuf::FieldDescriptor* field,
   std::string rep;
   if (field->is_map()) {
     mode = "kUpb_FieldMode_Map";
-    rep = "upb_FieldRep_Pointer";
+    rep = "kUpb_FieldRep_Pointer";
   } else if (field->is_repeated()) {
     mode = "kUpb_FieldMode_Array";
-    rep = "upb_FieldRep_Pointer";
+    rep = "kUpb_FieldRep_Pointer";
   } else {
     mode = "kUpb_FieldMode_Scalar";
     rep = SizeRep(field);
   }
 
   if (field->is_packed()) {
-    absl::StrAppend(&mode, " | upb_LabelFlags_IsPacked");
+    absl::StrAppend(&mode, " | kUpb_LabelFlags_IsPacked");
   }
 
   if (field->is_extension()) {
-    absl::StrAppend(&mode, " | upb_LabelFlags_IsExtension");
+    absl::StrAppend(&mode, " | kUpb_LabelFlags_IsExtension");
   }
 
-  output("{$0, $1, $2, $3, $4, $5 | ($6 << upb_FieldRep_Shift)}",
+  output("{$0, $1, $2, $3, $4, $5 | ($6 << kUpb_FieldRep_Shift)}",
          field->number(), offset, presence, submsg_index,
          TableDescriptorType(field), mode, rep);
 }
@@ -1275,13 +1275,13 @@ void WriteMessage(const protobuf::Descriptor* message, Output& output,
     table_mask = (table.size() - 1) << 3;
   }
 
-  std::string msgext = "upb_ExtMode_NonExtendable";
+  std::string msgext = "kUpb_ExtMode_NonExtendable";
 
   if (message->extension_range_count()) {
     if (message->options().message_set_wire_format()) {
-      msgext = "upb_ExtMode_IsMessageSet";
+      msgext = "kUpb_ExtMode_IsMessageSet";
     } else {
-      msgext = "upb_ExtMode_Extendable";
+      msgext = "kUpb_ExtMode_Extendable";
     }
   }
 
