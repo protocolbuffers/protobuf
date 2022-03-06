@@ -418,9 +418,9 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
 static void upb_MtDecoder_ModifyField(upb_MtDecoder* d, uint32_t mod,
                                       upb_MiniTable_Field* field) {
   if (mod & kUpb_EncodedFieldModifier_IsUnpacked) {
-    field->mode &= ~upb_LabelFlags_IsPacked;
+    field->mode &= ~kUpb_LabelFlags_IsPacked;
   } else {
-    field->mode |= upb_LabelFlags_IsPacked;
+    field->mode |= kUpb_LabelFlags_IsPacked;
   }
 
   bool singular = mod & kUpb_EncodedFieldModifier_IsProto3Singular;
@@ -802,7 +802,7 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 
   decoder.table->size = 0;
   decoder.table->field_count = 0;
-  decoder.table->ext = upb_ExtMode_NonExtendable;
+  decoder.table->ext = kUpb_ExtMode_NonExtendable;
   decoder.table->dense_below = 0;
   decoder.table->table_mask = 0;
   decoder.table->required_count = 0;
@@ -825,7 +825,7 @@ upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
 
   ret->size = 0;
   ret->field_count = 0;
-  ret->ext = upb_ExtMode_IsMessageSet;
+  ret->ext = kUpb_ExtMode_IsMessageSet;
   ret->dense_below = 0;
   ret->table_mask = 0;
   ret->required_count = 0;
@@ -863,7 +863,7 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
 
   ret->size = UPB_ALIGN_UP(2 * field_size, 8);
   ret->field_count = 2;
-  ret->ext = upb_ExtMode_NonExtendable | upb_ExtMode_IsMapEntry;
+  ret->ext = kUpb_ExtMode_NonExtendable | kUpb_ExtMode_IsMapEntry;
   ret->dense_below = 2;
   ret->table_mask = 0;
   ret->required_count = 0;
@@ -919,7 +919,7 @@ void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
                                  const upb_MiniTable* sub) {
   assert((uintptr_t)table->fields <= (uintptr_t)field &&
          (uintptr_t)field < (uintptr_t)(table->fields + table->field_count));
-  if (sub->ext & upb_ExtMode_IsMapEntry) {
+  if (sub->ext & kUpb_ExtMode_IsMapEntry) {
     field->mode =
         (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift) | kUpb_FieldMode_Map;
   }

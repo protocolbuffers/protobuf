@@ -92,22 +92,13 @@ typedef enum {
   kUpb_LabelFlags_IsExtension = 8,
 } upb_LabelFlags;
 
-/* Representation in the message.  Derivable from descriptortype and mode, but
- * fast access helps the serializer. */
 typedef enum {
   kUpb_FieldRep_1Byte = 0,
   kUpb_FieldRep_4Byte = 1,
-  kUpb_FieldRep_8Byte = 2,
+  kUpb_FieldRep_Pointer = 2,
   kUpb_FieldRep_StringView = 3,
-
-#if UINTPTR_MAX == 0xffffffff
-  kUpb_FieldRep_Pointer = kUpb_FieldRep_4Byte,
-#else
-  kUpb_FieldRep_Pointer = kUpb_FieldRep_8Byte,
-#endif
-
-  kUpb_FieldRep_Shift =
-      6, /* Bit offset of the rep in upb_MiniTable_Field.mode */
+  kUpb_FieldRep_8Byte = 4,
+  kUpb_FieldRep_Shift = 5,  // Bit offset of the rep in upb_MiniTable_Field.mode
 } upb_FieldRep;
 
 UPB_INLINE upb_FieldMode upb_FieldMode_Get(const upb_MiniTable_Field* field) {
