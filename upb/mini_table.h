@@ -130,6 +130,9 @@ upb_MiniTable_Extension* upb_MiniTable_BuildExtensions(const char* data,
                                                        size_t* ext_count,
                                                        upb_Arena* arena,
                                                        upb_Status* status);
+void upb_MiniTable_ResolveExtension(upb_MiniTable_Extension* ext,
+                                    const upb_MiniTable* extendee,
+                                    upb_MiniTable_Sub sub);
 
 // Special-case functions for MessageSet layout and map entries.
 upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
