@@ -1433,7 +1433,7 @@ static void fill_fieldlayout(upb_MiniTable_Field* field,
   } else {
     /* Maps descriptor type -> elem_size_lg2.  */
     static const uint8_t sizes[] = {
-        -1,                      /* invalid descriptor type */
+        -1,                       /* invalid descriptor type */
         kUpb_FieldRep_8Byte,      /* DOUBLE */
         kUpb_FieldRep_4Byte,      /* FLOAT */
         kUpb_FieldRep_8Byte,      /* INT64 */
