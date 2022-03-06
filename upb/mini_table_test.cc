@@ -50,11 +50,10 @@ TEST_P(MiniTableTest, AllScalarTypes) {
   upb::MtDataEncoder e;
   ASSERT_TRUE(e.StartMessage(0));
   int count = 0;
-  for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
     ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i, 0));
     count++;
   }
-  fprintf(stderr, "YO: %s\n", e.data().c_str());
   upb::Status status;
   upb_MiniTable* table = upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
@@ -77,12 +76,11 @@ TEST_P(MiniTableTest, AllRepeatedTypes) {
   upb::MtDataEncoder e;
   ASSERT_TRUE(e.StartMessage(0));
   int count = 0;
-  for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
     ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i,
                            kUpb_FieldModifier_IsRepeated));
     count++;
   }
-  fprintf(stderr, "YO: %s\n", e.data().c_str());
   upb::Status status;
   upb_MiniTable* table = upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
@@ -112,7 +110,6 @@ TEST_P(MiniTableTest, Skips) {
     ASSERT_TRUE(e.PutField(kUpb_FieldType_Float, field_number, 0));
     count++;
   }
-  fprintf(stderr, "YO: %s, %zu\n", e.data().c_str(), e.data().size());
   upb::Status status;
   upb_MiniTable* table = upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
@@ -135,15 +132,14 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   upb::MtDataEncoder e;
   ASSERT_TRUE(e.StartMessage(0));
   int count = 0;
-  for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
     ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i, 0));
     count++;
   }
   ASSERT_TRUE(e.StartOneof());
-  for (int i = kUpb_FieldType_Double ; i < kUpb_FieldType_SInt64; i++) {
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
     ASSERT_TRUE(e.PutOneofField(i));
   }
-  fprintf(stderr, "YO: %s\n", e.data().c_str());
   upb::Status status;
   upb_MiniTable* table = upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
@@ -170,3 +166,9 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
 INSTANTIATE_TEST_SUITE_P(Platforms, MiniTableTest,
                          testing::Values(kUpb_MiniTablePlatform_32Bit,
                                          kUpb_MiniTablePlatform_64Bit));
+
+TEST(MiniTablePlatformIndependentTest, Base92Roundtrip) {
+  for (char i = 0; i < 92; i++) {
+    EXPECT_EQ(i, upb_FromBase92(upb_ToBase92(i)));
+  }
+}

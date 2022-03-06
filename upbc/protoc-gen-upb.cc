@@ -1385,12 +1385,12 @@ std::string GetModeInit(uint8_t mode) {
       break;
   }
 
-  if (mode & upb_LabelFlags_IsPacked) {
-    absl::StrAppend(&ret, " | upb_LabelFlags_IsPacked");
+  if (mode & kUpb_LabelFlags_IsPacked) {
+    absl::StrAppend(&ret, " | kUpb_LabelFlags_IsPacked");
   }
 
-  if (mode & upb_LabelFlags_IsExtension) {
-    absl::StrAppend(&ret, " | upb_LabelFlags_IsExtension");
+  if (mode & kUpb_LabelFlags_IsExtension) {
+    absl::StrAppend(&ret, " | kUpb_LabelFlags_IsExtension");
   }
 
   std::string rep;
@@ -1485,13 +1485,13 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
     table_mask = (table.size() - 1) << 3;
   }
 
-  std::string msgext = "upb_ExtMode_NonExtendable";
+  std::string msgext = "kUpb_ExtMode_NonExtendable";
 
   if (message->extension_range_count()) {
     if (message->options().message_set_wire_format()) {
-      msgext = "upb_ExtMode_IsMessageSet";
+      msgext = "kUpb_ExtMode_IsMessageSet";
     } else {
-      msgext = "upb_ExtMode_Extendable";
+      msgext = "kUpb_ExtMode_Extendable";
     }
   }
 

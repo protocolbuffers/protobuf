@@ -81,8 +81,8 @@ def Benchmark(outbase, bench_cpu=True, runs=12, fasttable=False):
         print("{} {} {} ns/op".format(*values), file=f)
     Run("sort {} -o {} ".format(txt_filename, txt_filename))
 
-  Run("CC=clang bazel build -c opt --copt=-g --copt=-march=native tests:conformance_upb" + extra_args)
-  Run("cp -f bazel-bin/tests/conformance_upb {}.bin".format(outbase))
+  Run("CC=clang bazel build -c opt --copt=-g --copt=-march=native :conformance_upb" + extra_args)
+  Run("cp -f bazel-bin/conformance_upb {}.bin".format(outbase))
 
 
 baseline = "main"

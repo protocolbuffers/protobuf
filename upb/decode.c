@@ -742,7 +742,7 @@ static const char* decode_msgset(upb_Decoder* d, const char* ptr,
       .fields = NULL,
       .size = 0,
       .field_count = 0,
-      .ext = upb_ExtMode_IsMessageSet_ITEM,
+      .ext = kUpb_ExtMode_IsMessageSet_ITEM,
       .dense_below = 0,
       .table_mask = -1};
   return decode_group(d, ptr, msg, &item_layout, 1);
@@ -780,19 +780,19 @@ static const upb_MiniTable_Field* decode_findfield(upb_Decoder* d,
 
   if (d->extreg) {
     switch (l->ext) {
-      case upb_ExtMode_Extendable: {
+      case kUpb_ExtMode_Extendable: {
         const upb_MiniTable_Extension* ext =
             _upb_extreg_get(d->extreg, l, field_number);
         if (ext) return &ext->field;
         break;
       }
-      case upb_ExtMode_IsMessageSet:
+      case kUpb_ExtMode_IsMessageSet:
         if (field_number == _UPB_MSGSET_ITEM) {
           static upb_MiniTable_Field item = {0, 0, 0, 0, TYPE_MSGSET_ITEM, 0};
           return &item;
         }
         break;
-      case upb_ExtMode_IsMessageSet_ITEM:
+      case kUpb_ExtMode_IsMessageSet_ITEM:
         switch (field_number) {
           case _UPB_MSGSET_TYPEID: {
             static upb_MiniTable_Field type_id = {
@@ -885,7 +885,7 @@ static const char* decode_known(upb_Decoder* d, const char* ptr,
   const upb_MiniTable_Sub* subs = layout->subs;
   uint8_t mode = field->mode;
 
-  if (UPB_UNLIKELY(mode & upb_LabelFlags_IsExtension)) {
+  if (UPB_UNLIKELY(mode & kUpb_LabelFlags_IsExtension)) {
     const upb_MiniTable_Extension* ext_layout =
         (const upb_MiniTable_Extension*)field;
     upb_Message_Extension* ext =

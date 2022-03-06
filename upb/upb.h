@@ -223,17 +223,30 @@ UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
   return ret;
 }
 
+// Call to shrink the last alloc from this arena.
+// REQUIRES: (ptr, oldsize) was the last malloc/realloc from this arena.
+// We could also add a upb_Arena_TryShrinkLast() which is simply a no-op if
+// this was not the last alloc.
+UPB_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr, size_t oldsize,
+                                     size_t size) {
+  _upb_ArenaHead* h = (_upb_ArenaHead*)a;
+  oldsize = UPB_ALIGN_MALLOC(oldsize);
+  size = UPB_ALIGN_MALLOC(size);
+  UPB_ASSERT((char*)ptr + oldsize == h->ptr);  // Must be the last alloc.
+  UPB_ASSERT(size <= oldsize);
+  h->ptr = (char*)ptr + size;
+}
+
 UPB_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
                                    size_t size) {
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
-  char* ch_ptr = (char*)ptr;
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
-  if (ch_ptr + oldsize == h->ptr) {
-    if ((size_t)(h->end - ch_ptr) >= size) {
-      h->ptr = ch_ptr + size;
-      return ptr;
+  if (size <= oldsize) {
+    if ((char*)ptr + oldsize == h->ptr) {
+      upb_Arena_ShrinkLast(a, ptr, oldsize, size);
     }
+    return ptr;
   }
 
   void* ret = upb_Arena_Malloc(a, size);
@@ -343,7 +356,7 @@ UPB_INLINE int _upb_Log2Ceiling(int x) {
 #endif
 }
 
-UPB_INLINE int _upb_Log2Ceilingsize(int x) { return 1 << _upb_Log2Ceiling(x); }
+UPB_INLINE int _upb_Log2CeilingSize(int x) { return 1 << _upb_Log2Ceiling(x); }
 
 #include "upb/port_undef.inc"
 

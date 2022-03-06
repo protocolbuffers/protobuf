@@ -288,7 +288,7 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
                          const upb_MiniTable_Sub* subs,
                          const upb_MiniTable_Field* f) {
   const upb_Array* arr = *UPB_PTR_AT(msg, f->offset, upb_Array*);
-  bool packed = f->mode & upb_LabelFlags_IsPacked;
+  bool packed = f->mode & kUpb_LabelFlags_IsPacked;
   size_t pre_len = e->limit - e->ptr;
 
   if (arr == NULL || arr->len == 0) {
@@ -449,7 +449,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
         return ch != 0;
       }
 #if UINTPTR_MAX == 0xffffffff
-      case upb_FieldRep_Pointer:
+      case kUpb_FieldRep_Pointer:
 #endif
       case kUpb_FieldRep_4Byte: {
         uint32_t u32;
@@ -538,7 +538,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
     }
   }
 
-  if (m->ext != upb_ExtMode_NonExtendable) {
+  if (m->ext != kUpb_ExtMode_NonExtendable) {
     /* Encode all extensions together. Unlike C++, we do not attempt to keep
      * these in field number order relative to normal fields or even to each
      * other. */
@@ -547,7 +547,7 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
     if (ext_count) {
       const upb_Message_Extension* end = ext + ext_count;
       for (; ext != end; ext++) {
-        if (UPB_UNLIKELY(m->ext == upb_ExtMode_IsMessageSet)) {
+        if (UPB_UNLIKELY(m->ext == kUpb_ExtMode_IsMessageSet)) {
           encode_msgset_item(e, ext);
         } else {
           encode_field(e, &ext->data, &ext->ext->sub, &ext->ext->field);

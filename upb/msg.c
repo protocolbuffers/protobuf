@@ -54,7 +54,7 @@ static bool realloc_internal(upb_Message* msg, size_t need, upb_Arena* arena) {
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (!in->internal) {
     /* No internal data, allocate from scratch. */
-    size_t size = UPB_MAX(128, _upb_Log2Ceilingsize(need + overhead));
+    size_t size = UPB_MAX(128, _upb_Log2CeilingSize(need + overhead));
     upb_Message_InternalData* internal = upb_Arena_Malloc(arena, size);
     if (!internal) return false;
     internal->size = size;
@@ -63,7 +63,7 @@ static bool realloc_internal(upb_Message* msg, size_t need, upb_Arena* arena) {
     in->internal = internal;
   } else if (in->internal->ext_begin - in->internal->unknown_end < need) {
     /* Internal data is too small, reallocate. */
-    size_t new_size = _upb_Log2Ceilingsize(in->internal->size + need);
+    size_t new_size = _upb_Log2CeilingSize(in->internal->size + need);
     size_t ext_bytes = in->internal->size - in->internal->ext_begin;
     size_t new_ext_begin = new_size - ext_bytes;
     upb_Message_InternalData* internal =
@@ -309,7 +309,7 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 
   /* Grow s->entries if necessary. */
   if (sorted->end > s->cap) {
-    s->cap = _upb_Log2Ceilingsize(sorted->end);
+    s->cap = _upb_Log2CeilingSize(sorted->end);
     s->entries = realloc(s->entries, s->cap * sizeof(*s->entries));
     if (!s->entries) return false;
   }

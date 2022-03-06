@@ -87,20 +87,21 @@ typedef enum {
 } upb_FieldMode;
 
 /* Extra flags on the mode field. */
-enum upb_LabelFlags {
-  upb_LabelFlags_IsPacked = 4,
-  upb_LabelFlags_IsExtension = 8,
-};
+typedef enum {
+  kUpb_LabelFlags_IsPacked = 4,
+  kUpb_LabelFlags_IsExtension = 8,
+} upb_LabelFlags;
 
-/* Representation in the message.  Derivable from descriptortype and mode, but
- * fast access helps the serializer. */
+// Note: we sort by this number when calculating layout order.
 typedef enum {
   kUpb_FieldRep_1Byte = 0,
   kUpb_FieldRep_4Byte = 1,
-  kUpb_FieldRep_Pointer = 2,
-  kUpb_FieldRep_StringView = 3,
+  kUpb_FieldRep_StringView = 2,
+  kUpb_FieldRep_Pointer = 3,
   kUpb_FieldRep_8Byte = 4,
+
   kUpb_FieldRep_Shift = 5,  // Bit offset of the rep in upb_MiniTable_Field.mode
+  kUpb_FieldRep_Max = kUpb_FieldRep_8Byte,
 } upb_FieldRep;
 
 UPB_INLINE upb_FieldMode upb_FieldMode_Get(const upb_MiniTable_Field* field) {
@@ -153,15 +154,15 @@ typedef union {
 } upb_MiniTable_Sub;
 
 typedef enum {
-  upb_ExtMode_NonExtendable = 0,  // Non-extendable message.
-  upb_ExtMode_Extendable = 1,     // Normal extendable message.
-  upb_ExtMode_IsMessageSet = 2,   // MessageSet message.
-  upb_ExtMode_IsMessageSet_ITEM =
+  kUpb_ExtMode_NonExtendable = 0,  // Non-extendable message.
+  kUpb_ExtMode_Extendable = 1,     // Normal extendable message.
+  kUpb_ExtMode_IsMessageSet = 2,   // MessageSet message.
+  kUpb_ExtMode_IsMessageSet_ITEM =
       3,  // MessageSet item (temporary only, see decode.c)
 
   // During table building we steal a bit to indicate that the message is a map
   // entry.  *Only* used during table building!
-  upb_ExtMode_IsMapEntry = 4,
+  kUpb_ExtMode_IsMapEntry = 4,
 } upb_ExtMode;
 
 /* MessageSet wire format is:

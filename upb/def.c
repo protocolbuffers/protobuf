@@ -1433,7 +1433,7 @@ static void fill_fieldlayout(upb_MiniTable_Field* field,
   } else {
     /* Maps descriptor type -> elem_size_lg2.  */
     static const uint8_t sizes[] = {
-        -1,                      /* invalid descriptor type */
+        -1,                       /* invalid descriptor type */
         kUpb_FieldRep_8Byte,      /* DOUBLE */
         kUpb_FieldRep_4Byte,      /* FLOAT */
         kUpb_FieldRep_8Byte,      /* INT64 */
@@ -1458,11 +1458,11 @@ static void fill_fieldlayout(upb_MiniTable_Field* field,
   }
 
   if (upb_FieldDef_IsPacked(f)) {
-    field->mode |= upb_LabelFlags_IsPacked;
+    field->mode |= kUpb_LabelFlags_IsPacked;
   }
 
   if (upb_FieldDef_IsExtension(f)) {
-    field->mode |= upb_LabelFlags_IsExtension;
+    field->mode |= kUpb_LabelFlags_IsExtension;
   }
 }
 
@@ -1500,12 +1500,12 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
 
   if (upb_MessageDef_ExtensionRangeCount(m) > 0) {
     if (google_protobuf_MessageOptions_message_set_wire_format(m->opts)) {
-      l->ext = upb_ExtMode_IsMessageSet;
+      l->ext = kUpb_ExtMode_IsMessageSet;
     } else {
-      l->ext = upb_ExtMode_Extendable;
+      l->ext = kUpb_ExtMode_Extendable;
     }
   } else {
-    l->ext = upb_ExtMode_NonExtendable;
+    l->ext = kUpb_ExtMode_NonExtendable;
   }
 
   /* TODO(haberman): initialize fast tables so that reflection-based parsing
