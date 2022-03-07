@@ -648,7 +648,7 @@ int upb_MtDecoder_CompareFields(const void* _a, const void* _b) {
   uint32_t b_packed = UPB_COMBINE(b->rep, b->type, b->field_index);
   assert(a_packed != b_packed);
 #undef UPB_COMBINE
-  return a < b ? -1 : 1;
+  return a_packed < b_packed ? -1 : 1;
 }
 
 static bool upb_MtDecoder_SortLayoutItems(upb_MtDecoder* d) {
