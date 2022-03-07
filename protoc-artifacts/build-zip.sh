@@ -11,18 +11,18 @@ Example:
   $ $0 protoc-gen-javalite 3.0.0
 
 This script will download pre-built protoc or protoc plugin binaries from maven
-repository and create .zip packages suitable to be included in the github
-release page. If the target is protoc, well-known type .proto files will also be
-included. Each invocation will create 8 zip packages:
+repository and create .zip or .tar.gz packages suitable to be included in the
+github release page. If the target is protoc, well-known type .proto files will
+also be included. Each invocation will create 8 packages:
   dist/<TARGET>-<VERSION_NUMBER>-win32.zip
   dist/<TARGET>-<VERSION_NUMBER>-win64.zip
-  dist/<TARGET>-<VERSION_NUMBER>-osx-aarch_64.zip
-  dist/<TARGET>-<VERSION_NUMBER>-osx-x86_64.zip
-  dist/<TARGET>-<VERSION_NUMBER>-linux-x86_32.zip
-  dist/<TARGET>-<VERSION_NUMBER>-linux-x86_64.zip
-  dist/<TARGET>-<VERSION_NUMBER>-linux-aarch_64.zip
-  dist/<TARGET>-<VERSION_NUMBER>-linux-ppcle_64.zip
-  dist/<TARGET>-<VERSION_NUMBER>-linux-s390_64.zip
+  dist/<TARGET>-<VERSION_NUMBER>-osx-aarch_64.tar.gz
+  dist/<TARGET>-<VERSION_NUMBER>-osx-x86_64.tar.gz
+  dist/<TARGET>-<VERSION_NUMBER>-linux-x86_32.tar.gz
+  dist/<TARGET>-<VERSION_NUMBER>-linux-x86_64.tar.gz
+  dist/<TARGET>-<VERSION_NUMBER>-linux-aarch_64.tar.gz
+  dist/<TARGET>-<VERSION_NUMBER>-linux-ppcle_64.tar.gz
+  dist/<TARGET>-<VERSION_NUMBER>-linux-s390_64.tar.gz
 EOF
   exit 1
 fi
@@ -30,17 +30,17 @@ fi
 TARGET=$1
 VERSION_NUMBER=$2
 
-# <zip file name> <binary file name> pairs.
+# <archive file name> <binary file name> pairs.
 declare -a FILE_NAMES=( \
   win32.zip windows-x86_32.exe \
   win64.zip windows-x86_64.exe \
-  osx-aarch_64.zip osx-aarch_64.exe \
-  osx-x86_64.zip osx-x86_64.exe \
-  linux-x86_32.zip linux-x86_32.exe \
-  linux-x86_64.zip linux-x86_64.exe \
-  linux-aarch_64.zip linux-aarch_64.exe \
-  linux-ppcle_64.zip linux-ppcle_64.exe \
-  linux-s390_64.zip linux-s390_64.exe \
+  osx-aarch_64.tar.gz osx-aarch_64.exe \
+  osx-x86_64.tar.gz osx-x86_64.exe \
+  linux-x86_32.tar.gz linux-x86_32.exe \
+  linux-x86_64.tar.gz linux-x86_64.exe \
+  linux-aarch_64.tar.gz linux-aarch_64.exe \
+  linux-ppcle_64.tar.gz linux-ppcle_64.exe \
+  linux-s390_64.tar.gz linux-s390_64.exe \
 )
 
 # List of all well-known types to be included.
@@ -93,8 +93,8 @@ mkdir -p dist
 mkdir -p ${DIR}/bin
 # Create a zip file for each binary.
 for((i=0;i<${#FILE_NAMES[@]};i+=2));do
-  ZIP_NAME=${FILE_NAMES[$i]}
-  if [ ${ZIP_NAME:0:3} = "win" ]; then
+  ARCHIVE_NAME=${FILE_NAMES[$i]}
+  if [ ${ARCHIVE_NAME:0:3} = "win" ]; then
     BINARY="$TARGET.exe"
   else
     BINARY="$TARGET"
@@ -103,18 +103,23 @@ for((i=0;i<${#FILE_NAMES[@]};i+=2));do
   BINARY_URL=https://repo1.maven.org/maven2/com/google/protobuf/$TARGET/${VERSION_NUMBER}/$TARGET-${VERSION_NUMBER}-${BINARY_NAME}
   if ! wget ${BINARY_URL} -O ${DIR}/bin/$BINARY &> /dev/null; then
     echo "[ERROR] Failed to download ${BINARY_URL}" >&2
-    echo "[ERROR] Skipped $TARGET-${VERSION_NAME}-${ZIP_NAME}" >&2
+    echo "[ERROR] Skipped $TARGET-${VERSION_NAME}-${ARCHIVE_NAME}" >&2
     continue
   fi
-  TARGET_ZIP_FILE=`pwd`/dist/$TARGET-${VERSION_NUMBER}-${ZIP_NAME}
+  TARGET_ARCHIVE_FILE=`pwd`/dist/$TARGET-${VERSION_NUMBER}-${ARCHIVE_NAME}
   pushd $DIR &> /dev/null
   chmod +x bin/$BINARY
   if [ "$TARGET" = "protoc" ]; then
-    zip -r ${TARGET_ZIP_FILE} include bin readme.txt &> /dev/null
+    declare -a ARCHIVE_LIST=( bin include readme.txt )
   else
-    zip -r ${TARGET_ZIP_FILE} bin &> /dev/null
+    declare -a ARCHIVE_LIST=( bin )
+  fi
+  if [ ${ARCHIVE_NAME:(-4)} = ".zip" ]; then
+    zip -r ${TARGET_ARCHIVE_FILE} ${ARCHIVE_LIST[@]} &> /dev/null
+  else
+    tar -acf ${TARGET_ARCHIVE_FILE} ${ARCHIVE_LIST[@]} &> /dev/null
   fi
   rm  bin/$BINARY
   popd &> /dev/null
-  echo "[INFO] Successfully created ${TARGET_ZIP_FILE}"
+  echo "[INFO] Successfully created ${TARGET_ARCHIVE_FILE}"
 done
