@@ -141,7 +141,7 @@ if(protobuf_HAVE_LD_VERSION_SCRIPT)
     LINK_DEPENDS ${protobuf_source_dir}/src/libprotoc.map)
 endif()
 target_link_libraries(libprotoc PRIVATE libprotobuf)
-if(MSVC AND protobuf_BUILD_SHARED_LIBS)
+if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotoc
     PUBLIC  PROTOBUF_USE_DLLS
     PRIVATE LIBPROTOC_EXPORTS)
