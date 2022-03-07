@@ -33,8 +33,6 @@
 #include <php.h>
 #include <Zend/zend_interfaces.h>
 
-#include "php_protobuf.h"
-
 #include "arena.h"
 #include "array.h"
 #include "convert.h"
