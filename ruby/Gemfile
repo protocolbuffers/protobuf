@@ -1,3 +1,5 @@
 source 'https://rubygems.org'
-
+group :development do
+  gem 'rake-compiler-dock', git: 'https://github.com/rake-compiler/rake-compiler-dock.git'
+end
 gemspec
