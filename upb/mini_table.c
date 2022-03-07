@@ -152,13 +152,23 @@ static char* upb_MtDataEncoder_PutBase92Varint(upb_MtDataEncoder* e, char* ptr,
   return ptr;
 }
 
+char* upb_MtDataEncoder_PutModifier(upb_MtDataEncoder* e, char* ptr,
+                                    uint64_t mod) {
+  if (mod) {
+    ptr = upb_MtDataEncoder_PutBase92Varint(e, ptr, mod,
+                                            kUpb_EncodedValue_MinModifier,
+                                            kUpb_EncodedValue_MaxModifier);
+  }
+  return ptr;
+}
+
 char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
                                      uint64_t msg_mod) {
   upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
   in->msg_mod = msg_mod;
   in->last_field_num = 0;
   in->oneof_state = kUpb_OneofState_NotStarted;
-  return ptr;
+  return upb_MtDataEncoder_PutModifier(e, ptr, msg_mod);
 }
 
 char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
@@ -218,11 +228,7 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
       (in->msg_mod & kUpb_MessageModifier_DefaultIsPacked)) {
     encoded_modifiers |= kUpb_EncodedFieldModifier_IsUnpacked;
   }
-  if (encoded_modifiers) {
-    ptr = upb_MtDataEncoder_PutBase92Varint(e, ptr, encoded_modifiers,
-                                            kUpb_EncodedValue_MinModifier,
-                                            kUpb_EncodedValue_MaxModifier);
-  }
+  upb_MtDataEncoder_PutModifier(e, ptr, encoded_modifiers);
   return ptr;
 }
 
@@ -421,6 +427,8 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
   field->descriptortype = kUpb_EncodedToType[type];
   if (upb_MiniTable_HasSub(type, msg_modifiers)) {
     field->submsg_index = sub_count ? (*sub_count)++ : 0;
+  } else {
+    field->submsg_index = 0;
   }
 }
 
@@ -687,6 +695,8 @@ static void upb_MtDecoder_AssignHasbits(upb_MiniTable* ret) {
     upb_MiniTable_Field* field = (upb_MiniTable_Field*)&ret->fields[i];
     if (field->offset == kRequiredPresence) {
       field->presence = ++last_hasbit;
+    } else if (field->offset == kNoPresence) {
+      field->presence = 0;
     }
   }
   ret->required_count = last_hasbit;

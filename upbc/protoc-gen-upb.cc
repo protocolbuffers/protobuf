@@ -74,6 +74,41 @@ const char* kEnumsInit = "enums_layout";
 const char* kExtensionsInit = "extensions_layout";
 const char* kMessagesInit = "messages_layout";
 
+enum SubTag {
+  kNull = 0,
+  kMessage = 1,
+  kEnum = 2,
+  kMask = 3,
+};
+
+upb_MiniTable_Sub PackSub(const char* data, SubTag tag) {
+  uintptr_t val = reinterpret_cast<uintptr_t>(data);
+  assert((val & kMask) == 0);
+  upb_MiniTable_Sub sub;
+  sub.submsg = reinterpret_cast<upb_MiniTable*>(val | tag);
+  return sub;
+}
+
+bool IsNull(upb_MiniTable_Sub sub) {
+  return reinterpret_cast<uintptr_t>(sub.subenum) == 0;
+}
+
+void WriteSub(upb_MiniTable_Sub sub, Output& output) {
+  uintptr_t as_int = reinterpret_cast<uintptr_t>(sub.submsg);
+  const char* str = reinterpret_cast<const char*>(as_int & ~SubTag::kMask);
+  switch (as_int & SubTag::kMask) {
+    case SubTag::kMessage:
+      output("    {.submsg = &$0},\n", str);
+      break;
+    case SubTag::kEnum:
+      output("    {.subenum = &$0},\n", str);
+      break;
+    default:
+      output("    {.submsg = NULL},\n", str);
+      break;
+  }
+}
+
 void AddEnums(const protobuf::Descriptor* message,
               std::vector<const protobuf::EnumDescriptor*>* enums) {
   for (int i = 0; i < message->enum_type_count(); i++) {
@@ -276,29 +311,6 @@ std::string SizeLg2(const protobuf::FieldDescriptor* field) {
   }
 }
 
-std::string SizeRep(const protobuf::FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
-      return "kUpb_FieldRep_Pointer";
-    case protobuf::FieldDescriptor::CPPTYPE_ENUM:
-    case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
-    case protobuf::FieldDescriptor::CPPTYPE_INT32:
-    case protobuf::FieldDescriptor::CPPTYPE_UINT32:
-      return "kUpb_FieldRep_4Byte";
-    case protobuf::FieldDescriptor::CPPTYPE_BOOL:
-      return "kUpb_FieldRep_1Byte";
-    case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
-    case protobuf::FieldDescriptor::CPPTYPE_INT64:
-    case protobuf::FieldDescriptor::CPPTYPE_UINT64:
-      return "kUpb_FieldRep_8Byte";
-    case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return "kUpb_FieldRep_StringView";
-    default:
-      fprintf(stderr, "Unexpected type");
-      abort();
-  }
-}
-
 bool HasNonZeroDefault(const protobuf::FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
@@ -435,22 +447,32 @@ class FilePlatformLayout {
       upb_MiniTable* mt = pair.second;
       for (const auto& f : FieldNumberOrder(pair.first)) {
         upb_MiniTable_Field* mt_f = FindField(mt, f->number());
-        if (f->message_type()) {
-          SetCStr(&mt->subs[mt_f->submsg_index], MessageInit(f->message_type()));
-        } else if (mt_f->descriptortype == kUpb_FieldType_Enum) {
-          SetCStr(&mt->subs[mt_f->submsg_index], EnumInit(f->enum_type()));
-        }
+        assert(mt_f);
+        upb_MiniTable_Sub sub = PackSubForField(f);
+        if (IsNull(sub)) continue;
+        *const_cast<upb_MiniTable_Sub*>(&mt->subs[mt_f->submsg_index]) = sub;
       }
     }
   }
 
-  void SetCStr(const upb_MiniTable_Sub* sub, const std::string& str) {
+  upb_MiniTable_Sub PackSubForField(const protobuf::FieldDescriptor* f) {
+    if (f->message_type()) {
+      return PackSub(AllocStr(MessageInit(f->message_type())),
+                      SubTag::kMessage);
+    } else if (f->enum_type() && f->enum_type()->file()->syntax() ==
+                                      protobuf::FileDescriptor::SYNTAX_PROTO2) {
+      return PackSub(AllocStr(EnumInit(f->enum_type())), SubTag::kEnum);
+    } else {
+      return PackSub(nullptr, SubTag::kNull);
+    }
+  }
+
+  const char* AllocStr(const std::string& str) {
     char* ret =
         static_cast<char*>(upb_Arena_Malloc(arena_.ptr(), str.size() + 1));
     memcpy(ret, str.data(), str.size());
     ret[str.size()] = '\0';
-    upb_MiniTable_Sub* sub_mut = const_cast<upb_MiniTable_Sub*>(sub);
-    sub_mut->submsg = reinterpret_cast<upb_MiniTable*>(ret);
+    return ret;
   }
 
   void BuildExtensions(const protobuf::FileDescriptor* fd) {
@@ -479,6 +501,8 @@ class FilePlatformLayout {
       extension_map_[sorted[i]] = &exts[i];
     }
   }
+
+
 
   upb_MiniTable* MakeMiniTable(const protobuf::Descriptor* m) {
     if (m->options().message_set_wire_format()) {
@@ -1088,29 +1112,6 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
       ToPreproc(file->name()));
 }
 
-int TableDescriptorType(const protobuf::FieldDescriptor* field) {
-  if (field->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2 &&
-      field->type() == protobuf::FieldDescriptor::TYPE_STRING) {
-    // From the perspective of the binary encoder/decoder, proto2 string fields
-    // are identical to bytes fields. Only in proto3 do we check UTF-8 for
-    // string fields at parse time.
-    //
-    // If we ever use these tables for JSON encoding/decoding (for example by
-    // embedding field names on the side) we will have to revisit this, because
-    // string vs. bytes behavior is not affected by proto2 vs proto3.
-    return protobuf::FieldDescriptor::TYPE_BYTES;
-  } else if (field->enum_type() &&
-             field->enum_type()->file()->syntax() ==
-                 protobuf::FileDescriptor::SYNTAX_PROTO3) {
-    // From the perspective of the binary decoder, proto3 enums are identical to
-    // int32 fields.  Only in proto2 do we check enum values to make sure they
-    // are defined in the enum.
-    return protobuf::FieldDescriptor::TYPE_INT32;
-  } else {
-    return field->type();
-  }
-}
-
 struct SubLayoutArray {
  public:
   SubLayoutArray(const protobuf::Descriptor* message);
@@ -1419,8 +1420,9 @@ std::string GetModeInit(uint8_t mode) {
 void WriteField(const upb_MiniTable_Field* field64,
                 const upb_MiniTable_Field* field32, Output& output) {
   output("{$0, UPB_SIZE($1, $2), $3, $4, $5, $6}", field64->number,
-         field64->offset, field32->offset, field64->submsg_index,
-         field64->descriptortype, field64->mode);
+         field64->offset, field32->offset, field32->presence,
+         field64->submsg_index, field64->descriptortype,
+         GetModeInit(field64->mode));
 }
 
 // Writes a single field into a .upb.c source file.
@@ -1584,23 +1586,14 @@ int WriteMessages(const FileLayout& layout, Output& output,
   return file_messages.size();
 }
 
-void WriteExtension(upb_MiniTable_Extension* ext64,
-                    upb_MiniTable_Extension* ext32, Output& output) {
-  WriteField(&ext64->field, &ext32->field, output);
+void WriteExtension(const upb_MiniTable_Extension* ext, Output& output) {
+  WriteField(&ext->field, &ext->field, output);
   output(",\n");
-  output("    &$0,\n", MessageInit(ext->containing_type()));
-  if (ext->message_type()) {
-    output("    {.submsg = &$0},\n", MessageInit(ext->message_type()));
-  } else if (ext->enum_type() && ext->enum_type()->file()->syntax() ==
-                                     protobuf::FileDescriptor::SYNTAX_PROTO2) {
-    output("    {.subenum = &$0},\n", EnumInit(ext->enum_type()));
-  } else {
-    output("    {.submsg = NULL},\n");
-  }
+  WriteSub(ext->sub, output);
 }
 
-int WriteExtensions(const protobuf::FileDescriptor* file, Output& output) {
-  auto exts = SortedExtensions(file);
+int WriteExtensions(const FileLayout& layout, Output& output) {
+  auto exts = SortedExtensions(layout.descriptor());
   absl::flat_hash_set<const protobuf::Descriptor*> forward_decls;
 
   if (exts.empty()) return 0;
@@ -1622,7 +1615,7 @@ int WriteExtensions(const protobuf::FileDescriptor* file, Output& output) {
 
   for (auto ext : exts) {
     output("const upb_MiniTable_Extension $0 = {\n  ", ExtensionLayout(ext));
-    WriteExtension(ext, output);
+    WriteExtension(layout.GetExtension(ext), output);
     output("\n};\n");
   }
 
@@ -1663,7 +1656,7 @@ void WriteSource(const FileLayout& layout, Output& output,
       "\n");
 
   int msg_count = WriteMessages(file, output, fasttable_enabled);
-  int ext_count = WriteExtensions(file, output);
+  int ext_count = WriteExtensions(layout, output);
   int enum_count = WriteEnums(file, output);
 
   output("const upb_MiniTable_File $0 = {\n", FileLayoutName(file));
