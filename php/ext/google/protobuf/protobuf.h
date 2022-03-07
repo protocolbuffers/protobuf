@@ -2,11 +2,6 @@
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// ! THIS FILE ONLY APPROACHING IN-TREE PHP EXTENSION BUILD !
-// ! DOES NOT USE NORMALLY.                                 !
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
