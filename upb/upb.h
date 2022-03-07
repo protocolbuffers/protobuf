@@ -223,7 +223,7 @@ UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
   return ret;
 }
 
-// Call to shrink the last alloc from this arena.
+// Shrinks the last alloc from arena.
 // REQUIRES: (ptr, oldsize) was the last malloc/realloc from this arena.
 // We could also add a upb_Arena_TryShrinkLast() which is simply a no-op if
 // this was not the last alloc.
