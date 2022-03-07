@@ -377,6 +377,16 @@ describe('binaryDecoderTest', function() {
    });
 
   /**
+   * Verifies that passing a non-string to writeString raises an error.
+   */
+  it('testBadString', function() {
+    var encoder = new jspb.BinaryEncoder();
+
+    assertThrows(function() {encoder.writeString(42)});
+    assertThrows(function() {encoder.writeString(null)});
+  });
+
+  /**
    * Verifies that misuse of the decoder class triggers assertions.
    */
   it('testDecodeErrors', function() {
