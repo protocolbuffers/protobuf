@@ -1397,6 +1397,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   update_file_lists.sh                              \
   BUILD                                             \
   WORKSPACE                                         \
+  CMakeLists.txt                                    \
   cmake/CMakeLists.txt                              \
   cmake/README.md                                   \
   cmake/conformance.cmake                           \
