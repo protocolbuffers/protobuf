@@ -1,5 +1,5 @@
 set(protoc_files
-  ${protobuf_source_dir}/src/google/protobuf/compiler/main.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/main.cc
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
