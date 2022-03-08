@@ -208,14 +208,29 @@ static void fill_classname(const char *fullname,
   }
 }
 
-char *GetPhpClassname(const upb_filedef *file, const char *fullname) {
+char *str_view_dup(upb_StringView str) {
+  char *ret = malloc(str.size + 1);
+  memcpy(ret, str.data, str.size);
+  ret[str.size] = '\0';
+  return ret;
+}
+
+char *GetPhpClassname(const upb_FileDef *file, const char *fullname) {
   // Prepend '.' to package name to make it absolute. In the 5 additional
   // bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
   // given message is google.protobuf.Empty.
-  const char *package = upb_filedef_package(file);
-  const char *php_namespace = upb_filedef_phpnamespace(file);
-  const char *prefix = upb_filedef_phpprefix(file);
+  const google_protobuf_FileOptions* opts = upb_FileDef_Options(file);
+  const char *package = upb_FileDef_Package(file);
+  char *php_namespace =
+      google_protobuf_FileOptions_has_php_namespace(opts)
+          ? str_view_dup(google_protobuf_FileOptions_php_namespace(opts))
+          : NULL;
+  char *prefix =
+      google_protobuf_FileOptions_has_php_class_prefix(opts)
+          ? str_view_dup(google_protobuf_FileOptions_php_class_prefix(opts))
+          : NULL;
   char *ret;
+
   stringsink namesink;
   stringsink_init(&namesink);
 
@@ -224,5 +239,7 @@ char *GetPhpClassname(const upb_filedef *file, const char *fullname) {
   stringsink_string(&namesink, "\0", 1);
   ret = strdup(namesink.ptr);
   stringsink_uninit(&namesink);
+  free(php_namespace);
+  free(prefix);
   return ret;
 }
