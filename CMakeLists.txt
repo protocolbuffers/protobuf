@@ -283,13 +283,10 @@ if (MSVC)
   configure_file(${protobuf_SOURCE_DIR}/cmake/version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc @ONLY)
 endif (MSVC)
 
-
-set(protobuf_source_dir ${protobuf_SOURCE_DIR})
-
 include_directories(
   ${ZLIB_INCLUDE_DIRECTORIES}
   ${protobuf_BINARY_DIR}
-  ${protobuf_source_dir}/src)
+  ${protobuf_SOURCE_DIR}/src)
 
 if (MSVC)
   # Add the "lib" prefix for generated .lib outputs.

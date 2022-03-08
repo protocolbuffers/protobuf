@@ -13,7 +13,7 @@ endif (protobuf_BUILD_LIBPROTOC)
 foreach(_library ${_protobuf_libraries})
   set_property(TARGET ${_library}
     PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${protobuf_source_dir}/src>
+    $<BUILD_INTERFACE:${protobuf_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   if (UNIX AND NOT APPLE)
     set_property(TARGET ${_library}
