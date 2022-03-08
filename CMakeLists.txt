@@ -23,6 +23,15 @@ endif()
 # Project
 project(protobuf C CXX)
 
+if(protobuf_DEPRECATED_CMAKE_SUBDIRECTORY_USAGE)
+  if(CMAKE_PROJECT_NAME STREQUAL "protobuf")
+    get_filename_component(CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
+  endif()
+  get_filename_component(CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+  get_filename_component(PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
+  get_filename_component(protobuf_SOURCE_DIR ${protobuf_SOURCE_DIR} DIRECTORY)
+endif()
+
 # Add c++11 flags
 if (CYGWIN)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
