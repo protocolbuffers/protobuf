@@ -196,6 +196,7 @@ UPB_INLINE size_t _upb_ArenaHas(upb_Arena* a) {
   return (size_t)(h->end - h->ptr);
 }
 
+#include <stdio.h>
 UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
   void* ret;
@@ -220,6 +221,7 @@ UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
   }
 #endif
 
+  fprintf(stderr, "upb_Arena_Malloc(%zu) -> %p\n", size, ret);
   return ret;
 }
 
@@ -232,6 +234,7 @@ UPB_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr, size_t oldsize,
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
+  fprintf(stderr, "upb_Arena_ShrinkLast(%p, %zu, %zu)\n", ptr, oldsize, size);
   UPB_ASSERT((char*)ptr + oldsize == h->ptr);  // Must be the last alloc.
   UPB_ASSERT(size <= oldsize);
   h->ptr = (char*)ptr + size;
@@ -243,12 +246,14 @@ UPB_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
   if (size <= oldsize) {
+    fprintf(stderr, "upb_Arena_Realloc(%p, %zu, %zu) (shrink)\n", ptr, oldsize, size);
     if ((char*)ptr + oldsize == h->ptr) {
       upb_Arena_ShrinkLast(a, ptr, oldsize, size);
     }
     return ptr;
   }
 
+  fprintf(stderr, "upb_Arena_Realloc(%p, %zu, %zu) (malloc)\n", ptr, oldsize, size);
   void* ret = upb_Arena_Malloc(a, size);
 
   if (ret && oldsize > 0) {

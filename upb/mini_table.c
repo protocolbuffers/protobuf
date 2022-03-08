@@ -914,8 +914,9 @@ upb_MiniTable_Extension* upb_MiniTable_BuildExtensions(const char* data,
   }
 
   uint16_t count = 0;
-  exts = upb_Arena_Malloc(arena, len);
+  exts = upb_Arena_Malloc(arena, sizeof(*exts) * len);
   upb_MtDecoder_CheckOutOfMemory(&decoder, exts);
+  fprintf(stderr, "ABOUT TO PARSE!\n");
   upb_MtDecoder_Parse(&decoder, data, len, exts, sizeof(*exts), &count, NULL);
   upb_Arena_ShrinkLast(arena, exts, sizeof(*exts) * len, sizeof(*exts) * count);
 
