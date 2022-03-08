@@ -132,12 +132,16 @@ endif()
 add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
   ${libprotoc_files} ${libprotoc_headers} ${libprotoc_rc_files})
 if(protobuf_HAVE_LD_VERSION_SCRIPT)
-  target_link_options(libprotoc PRIVATE -Wl,--version-script=${protobuf_source_dir}/src/libprotoc.map)
+  if(${CMAKE_VERSION} VERSION_GREATER 3.13 OR ${CMAKE_VERSION} VERSION_EQUAL 3.13)
+    target_link_options(libprotoc PRIVATE -Wl,--version-script=${protobuf_source_dir}/src/libprotoc.map)
+  elseif(protobuf_BUILD_SHARED_LIBS)
+    target_link_libraries(libprotoc PRIVATE -Wl,--version-script=${protobuf_source_dir}/src/libprotoc.map)
+  endif()
   set_target_properties(libprotoc PROPERTIES
     LINK_DEPENDS ${protobuf_source_dir}/src/libprotoc.map)
 endif()
-target_link_libraries(libprotoc libprotobuf)
-if(MSVC AND protobuf_BUILD_SHARED_LIBS)
+target_link_libraries(libprotoc PRIVATE libprotobuf)
+if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotoc
     PUBLIC  PROTOBUF_USE_DLLS
     PRIVATE LIBPROTOC_EXPORTS)

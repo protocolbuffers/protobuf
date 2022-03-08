@@ -454,7 +454,7 @@
 # else
 #  define PROTOC_EXPORT __declspec(dllimport)
 # endif  // defined(LIBPROTOC_EXPORTS)
-#elif defined(PROTOBUF_USE_DLLS) && defined(LIBPROTOBUF_EXPORTS)
+#elif defined(PROTOBUF_USE_DLLS) && defined(LIBPROTOC_EXPORTS)
 # define PROTOC_EXPORT __attribute__((visibility("default")))
 #else
 # define PROTOC_EXPORT
