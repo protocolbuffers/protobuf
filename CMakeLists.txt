@@ -66,14 +66,14 @@ set(protobuf_DEBUG_POSTFIX "d"
   CACHE STRING "Default debug postfix")
 mark_as_advanced(protobuf_DEBUG_POSTFIX)
 # User options
-include(protobuf-options.cmake)
+include(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake)
 
 # Overrides for option dependencies
 if (protobuf_BUILD_PROTOC_BINARIES OR protobuf_BUILD_TESTS)
   set(protobuf_BUILD_LIBPROTOC ON)
 endif ()
 # Path to main configure script
-set(protobuf_CONFIGURE_SCRIPT "../configure.ac")
+set(protobuf_CONFIGURE_SCRIPT "${protobuf_SOURCE_DIR}/configure.ac")
 
 # Parse configure script
 set(protobuf_AC_INIT_REGEX
@@ -257,7 +257,7 @@ if (MSVC)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
   string(REPLACE "." ","  protobuf_RC_FILEVERSION "${protobuf_VERSION}")
-  configure_file(extract_includes.bat.in extract_includes.bat)
+  configure_file(${protobuf_SOURCE_DIR}/cmake/extract_includes.bat.in extract_includes.bat)
 
   # Suppress linker warnings about files with no symbols defined.
   set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4221")
@@ -271,11 +271,11 @@ if (MSVC)
     set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> ${rc_flags} <DEFINES> /fo<OBJECT> <SOURCE>")
   endif()
 
-  configure_file(version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc @ONLY)
+  configure_file(${protobuf_SOURCE_DIR}/cmake/version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc @ONLY)
 endif (MSVC)
 
 
-get_filename_component(protobuf_source_dir ${protobuf_SOURCE_DIR} PATH)
+set(protobuf_source_dir ${protobuf_SOURCE_DIR})
 
 include_directories(
   ${ZLIB_INCLUDE_DIRECTORIES}
@@ -295,13 +295,13 @@ if (protobuf_UNICODE)
   add_definitions(-DUNICODE -D_UNICODE)
 endif (protobuf_UNICODE)
 
-include(libprotobuf-lite.cmake)
-include(libprotobuf.cmake)
+include(${protobuf_SOURCE_DIR}/cmake/libprotobuf-lite.cmake)
+include(${protobuf_SOURCE_DIR}/cmake/libprotobuf.cmake)
 if (protobuf_BUILD_LIBPROTOC)
-  include(libprotoc.cmake)
+  include(${protobuf_SOURCE_DIR}/cmake/libprotoc.cmake)
 endif (protobuf_BUILD_LIBPROTOC)
 if (protobuf_BUILD_PROTOC_BINARIES)
-  include(protoc.cmake)
+  include(${protobuf_SOURCE_DIR}/cmake/protoc.cmake)
   if (NOT DEFINED protobuf_PROTOC_EXE)
     set(protobuf_PROTOC_EXE protoc)
   endif (NOT DEFINED protobuf_PROTOC_EXE)
@@ -322,19 +322,19 @@ endif ()
 
 if (protobuf_BUILD_TESTS)
   enable_testing()
-  include(tests.cmake)
+  include(${protobuf_SOURCE_DIR}/cmake/tests.cmake)
 endif (protobuf_BUILD_TESTS)
 
 if (protobuf_BUILD_CONFORMANCE)
-  include(conformance.cmake)
+  include(${protobuf_SOURCE_DIR}/cmake/conformance.cmake)
 endif (protobuf_BUILD_CONFORMANCE)
 
 if (protobuf_INSTALL)
-  include(install.cmake)
+  include(${protobuf_SOURCE_DIR}/cmake/install.cmake)
 endif (protobuf_INSTALL)
 
 if (protobuf_BUILD_EXAMPLES)
-  include(examples.cmake)
+  include(${protobuf_SOURCE_DIR}/cmake/examples.cmake)
 endif (protobuf_BUILD_EXAMPLES)
 
 if(protobuf_VERBOSE)

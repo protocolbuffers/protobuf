@@ -7,7 +7,7 @@ mark_as_advanced(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
 if (protobuf_USE_EXTERNAL_GTEST)
   find_package(GTest REQUIRED)
 else()
-  if (NOT EXISTS "${PROJECT_SOURCE_DIR}/../third_party/googletest/CMakeLists.txt")
+  if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/googletest/CMakeLists.txt")
     message(FATAL_ERROR
             "Cannot find third_party/googletest directory that's needed to "
             "build tests. If you use git, make sure you have cloned submodules:\n"
