@@ -436,6 +436,47 @@ sh_test(
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )
 
+cc_binary(
+    name = "conformance_upb_dynamic_minitable",
+    testonly = 1,
+    srcs = ["upb/conformance_upb.c"],
+    copts = UPB_DEFAULT_COPTS + [
+        "-DREBUILD_MINITABLES"
+    ],
+    data = ["upb/conformance_upb_failures.txt"],
+    deps = [
+        ":conformance_proto_upb",
+        ":conformance_proto_upbdefs",
+        ":test_messages_proto2_upbdefs",
+        ":test_messages_proto3_upbdefs",
+        "//:json",
+        "//:port",
+        "//:reflection",
+        "//:textformat",
+        "//:upb",
+    ],
+)
+
+make_shell_script(
+    name = "gen_test_conformance_upb_dynamic_minitable",
+    out = "test_conformance_upb_dynamic_minitable.sh",
+    contents = "external/com_google_protobuf/conformance_test_runner " +
+               " --enforce_recommended " +
+               " --failure_list ./upb/conformance_upb_failures.txt" +
+               " ./conformance_upb_dynamic_minitable",
+)
+
+sh_test(
+    name = "test_conformance_upb_dynamic_minitable",
+    srcs = ["test_conformance_upb_dynamic_minitable.sh"],
+    data = [
+        "upb/conformance_upb_failures.txt",
+        ":conformance_upb_dynamic_minitable",
+        "@com_google_protobuf//:conformance_test_runner",
+    ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)
+
 # Internal C/C++ libraries #####################################################
 
 cc_library(

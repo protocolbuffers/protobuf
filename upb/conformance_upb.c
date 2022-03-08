@@ -323,8 +323,13 @@ bool DoTestIo(upb_DefPool* symtab) {
 int main(void) {
   upb_DefPool* symtab = upb_DefPool_New();
 
+#ifdef REBUILD_MINITABLES
+  _upb_DefPool_LoadDefInitEx(symtab, &src_google_protobuf_test_messages_proto2_proto_upbdefinit, true);
+  _upb_DefPool_LoadDefInitEx(symtab, &src_google_protobuf_test_messages_proto3_proto_upbdefinit, true);
+#else
   protobuf_test_messages_proto2_TestAllTypesProto2_getmsgdef(symtab);
   protobuf_test_messages_proto3_TestAllTypesProto3_getmsgdef(symtab);
+#endif
 
   while (1) {
     if (!DoTestIo(symtab)) {
