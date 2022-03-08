@@ -36,7 +36,7 @@
 
 #include "php-upb.h"
 
-const upb_DefPool *get_global_symtab();
+upb_DefPool *get_global_symtab();
 
 #if PHP_VERSION_ID < 70300
 #define GC_ADDREF(h) ++GC_REFCOUNT(h)

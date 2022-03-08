@@ -85,7 +85,7 @@ void free_protobuf_globals(zend_protobuf_globals *globals) {
 
 ZEND_DECLARE_MODULE_GLOBALS(protobuf)
 
-const upb_DefPool *get_global_symtab() {
+upb_DefPool *get_global_symtab() {
   return PROTOBUF_G(global_symtab);
 }
 

@@ -1,5 +1,5 @@
 --TEST--
-Unneccesary zval
+unnecessary zval
 --FILE--
 <?php
 var_dump(new \stdClass());

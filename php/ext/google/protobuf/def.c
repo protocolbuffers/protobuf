@@ -741,9 +741,7 @@ upb_DefPool *DescriptorPool_GetSymbolTable() {
  * Returns the generated DescriptorPool.
  */
 PHP_METHOD(DescriptorPool, getGeneratedPool) {
-  zval ret;
-  DescriptorPool_CreateWithSymbolTable(&ret, get_global_symtab());
-  RETURN_COPY(&ret);
+  DescriptorPool_CreateWithSymbolTable(return_value, get_global_symtab());
 }
 
 /*
@@ -1012,9 +1010,7 @@ zend_class_entry *InternalDescriptorPool_class_entry;
  * instance.
  */
 PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
-  zval ret;
-  DescriptorPool_CreateWithSymbolTable(&ret, get_global_symtab());
-  RETURN_COPY(&ret);
+  DescriptorPool_CreateWithSymbolTable(return_value, get_global_symtab());
 }
 
 static zend_function_entry InternalDescriptorPool_methods[] = {
