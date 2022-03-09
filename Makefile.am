@@ -309,7 +309,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/CodedOutputStream.java               \
   java/core/src/main/java/com/google/protobuf/CodedOutputStreamWriter.java         \
   java/core/src/main/java/com/google/protobuf/CompileTimeConstant.java             \
-  java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java    \
   java/core/src/main/java/com/google/protobuf/Descriptors.java                     \
   java/core/src/main/java/com/google/protobuf/DiscardUnknownFieldsParser.java      \
   java/core/src/main/java/com/google/protobuf/DoubleArrayList.java                 \
@@ -344,7 +343,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/LazyStringList.java                  \
   java/core/src/main/java/com/google/protobuf/ListFieldSchema.java                 \
   java/core/src/main/java/com/google/protobuf/LongArrayList.java                   \
-  java/core/src/main/java/com/google/protobuf/ManifestSchemaFactory.java           \
   java/core/src/main/java/com/google/protobuf/MapEntry.java                        \
   java/core/src/main/java/com/google/protobuf/MapEntryLite.java                    \
   java/core/src/main/java/com/google/protobuf/MapField.java                        \
