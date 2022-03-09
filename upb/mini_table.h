@@ -92,13 +92,13 @@ typedef struct {
 //   ptr = upb_MiniTable_PutOneofField(&e, ptr, ...);
 //
 // Oneofs must be encoded after all regular fields.
-char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* buf,
+char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
                                      uint64_t msg_mod);
-char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* buf,
+char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
                                  upb_FieldType type, uint32_t field_num,
                                  uint64_t field_mod);
-char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* buf);
-char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* buf,
+char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr);
+char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
                                       uint32_t field_num);
 
 /** upb_MiniTable *************************************************************/
