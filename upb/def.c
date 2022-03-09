@@ -1413,7 +1413,11 @@ static uint8_t map_descriptortype(const upb_FieldDef* f) {
   if (type == kUpb_FieldType_String && f->file->syntax == kUpb_Syntax_Proto2) {
     return kUpb_FieldType_Bytes;
   } else if (type == kUpb_FieldType_Enum &&
-             f->sub.enumdef->file->syntax == kUpb_Syntax_Proto3) {
+             (f->sub.enumdef->file->syntax == kUpb_Syntax_Proto3 ||
+              // TODO(https://github.com/protocolbuffers/upb/issues/541):
+              // fix map enum values to check for unknown enum values and put
+              // them in the unknown field set.
+              upb_MessageDef_IsMapEntry(upb_FieldDef_ContainingType(f)))) {
     return kUpb_FieldType_Int32;
   }
   return type;
