@@ -837,6 +837,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/package.xml                                 \
   php/ext/google/protobuf/php-upb.c                                   \
   php/ext/google/protobuf/php-upb.h                                   \
+  php/ext/google/protobuf/php_protobuf.h                              \  
   php/ext/google/protobuf/protobuf.c                                  \
   php/ext/google/protobuf/protobuf.h                                  \
   php/ext/google/protobuf/wkt.inc                                     \
