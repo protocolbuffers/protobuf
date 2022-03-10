@@ -404,7 +404,8 @@ TEST(MessageTest, MapField) {
   upb_test_TestMapFieldExtra* test_msg_extra =
       upb_test_TestMapFieldExtra_new(arena.ptr());
 
-  ASSERT_TRUE(upb_test_TestMapFieldExtra_map_field_set(test_msg_extra, 0, upb_test_TestMapFieldExtra_THREE, arena.ptr()));
+  ASSERT_TRUE(upb_test_TestMapFieldExtra_map_field_set(
+      test_msg_extra, 0, upb_test_TestMapFieldExtra_THREE, arena.ptr()));
 
   size_t size;
   char* serialized = upb_test_TestMapFieldExtra_serialize_ex(
@@ -412,15 +413,17 @@ TEST(MessageTest, MapField) {
   ASSERT_NE(nullptr, serialized);
   ASSERT_NE(0, size);
 
-  upb_test_TestMapField* test_msg = upb_test_TestMapField_parse(serialized, size, arena.ptr());
+  upb_test_TestMapField* test_msg =
+      upb_test_TestMapField_parse(serialized, size, arena.ptr());
   ASSERT_NE(nullptr, test_msg);
 
   ASSERT_FALSE(upb_test_TestMapField_map_field_get(test_msg, 0, nullptr));
-  serialized = upb_test_TestMapField_serialize_ex(
-      test_msg, 0, arena.ptr(), &size);
+  serialized =
+      upb_test_TestMapField_serialize_ex(test_msg, 0, arena.ptr(), &size);
   ASSERT_NE(0, size);
   // parse into second instance
   upb_test_TestMapFieldExtra* test_msg_extra2 =
       upb_test_TestMapFieldExtra_parse(serialized, size, arena.ptr());
-  ASSERT_TRUE(upb_test_TestMapFieldExtra_map_field_get(test_msg_extra2, 0, nullptr));
+  ASSERT_TRUE(
+      upb_test_TestMapFieldExtra_map_field_get(test_msg_extra2, 0, nullptr));
 }
