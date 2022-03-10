@@ -92,7 +92,7 @@ set(tests_protos
 )
 
 macro(compile_proto_file filename)
-  get_filename_component(dirname ${filename} PATH)
+  get_filename_component(dirname ${filename} DIRECTORY)
   get_filename_component(basename ${filename} NAME_WE)
   add_custom_command(
     OUTPUT ${protobuf_SOURCE_DIR}/src/${dirname}/${basename}.pb.cc
