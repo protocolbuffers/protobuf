@@ -338,28 +338,7 @@ final class Utf8 {
    */
   static String decodeUtf8(byte[] bytes, int index, int size)
       throws InvalidProtocolBufferException {
-    try {
-      String s = new String(bytes, index, size, Internal.UTF_8);
-
-      // "\uFFFD" is UTF-8 default replacement string, which illegal byte sequences get replaced with.
-      if (!s.contains("\uFFFD")) {
-        return s;
-      }
-
-      // Since s contains "\uFFFD" there are 2 options:
-      // 1) The byte array slice is invalid UTF-8.
-      // 2) The byte array slice is valid UTF-8 and contains encodings for "\uFFFD".
-      // To rule out (1), we encode s and compare it to the byte array slice.
-      // If the byte array slice was invalid UTF-8, then we would get a different sequence of bytes.
-      if (Arrays.equals(s.getBytes(Internal.UTF_8), Arrays.copyOfRange(bytes, index, index + size))) {
-        return s;
-      }
-
-      throw InvalidProtocolBufferException.invalidUtf8();
-    } catch (IndexOutOfBoundsException e) {
-      throw new ArrayIndexOutOfBoundsException(
-              String.format("buffer length=%d, index=%d, size=%d", bytes.length, index, size));
-    }
+    return processor.decodeUtf8(bytes, index, size);
   }
 
   /**
@@ -631,6 +610,14 @@ final class Utf8 {
     }
 
     /**
+     * Decodes the given byte array slice into a {@link String}.
+     *
+     * @throws InvalidProtocolBufferException if the byte array slice is not valid UTF-8
+     */
+    abstract String decodeUtf8(byte[] bytes, int index, int size)
+        throws InvalidProtocolBufferException;
+
+    /**
      * Decodes the given portion of the {@link ByteBuffer} into a {@link String}.
      *
      * @throws InvalidProtocolBufferException if the portion of the buffer is not valid UTF-8
@@ -639,7 +626,7 @@ final class Utf8 {
         throws InvalidProtocolBufferException {
       if (buffer.hasArray()) {
         final int offset = buffer.arrayOffset();
-        return Utf8.decodeUtf8(buffer.array(), offset + index, size);
+        return decodeUtf8(buffer.array(), offset + index, size);
       } else if (buffer.isDirect()) {
         return decodeUtf8Direct(buffer, index, size);
       }
@@ -964,6 +951,81 @@ final class Utf8 {
     int partialIsValidUtf8Direct(int state, ByteBuffer buffer, int index, int limit) {
       // For safe processing, we have to use the ByteBuffer API.
       return partialIsValidUtf8Default(state, buffer, index, limit);
+    }
+
+    @Override
+    String decodeUtf8(byte[] bytes, int index, int size) throws InvalidProtocolBufferException {
+      // Bitwise OR combines the sign bits so any negative value fails the check.
+      if ((index | size | bytes.length - index - size) < 0) {
+        throw new ArrayIndexOutOfBoundsException(
+            String.format("buffer length=%d, index=%d, size=%d", bytes.length, index, size));
+      }
+
+      int offset = index;
+      final int limit = offset + size;
+
+      // The longest possible resulting String is the same as the number of input bytes, when it is
+      // all ASCII. For other cases, this over-allocates and we will truncate in the end.
+      char[] resultArr = new char[size];
+      int resultPos = 0;
+
+      // Optimize for 100% ASCII (Hotspot loves small simple top-level loops like this).
+      // This simple loop stops when we encounter a byte >= 0x80 (i.e. non-ASCII).
+      while (offset < limit) {
+        byte b = bytes[offset];
+        if (!DecodeUtil.isOneByte(b)) {
+          break;
+        }
+        offset++;
+        DecodeUtil.handleOneByte(b, resultArr, resultPos++);
+      }
+
+      while (offset < limit) {
+        byte byte1 = bytes[offset++];
+        if (DecodeUtil.isOneByte(byte1)) {
+          DecodeUtil.handleOneByte(byte1, resultArr, resultPos++);
+          // It's common for there to be multiple ASCII characters in a run mixed in, so add an
+          // extra optimized loop to take care of these runs.
+          while (offset < limit) {
+            byte b = bytes[offset];
+            if (!DecodeUtil.isOneByte(b)) {
+              break;
+            }
+            offset++;
+            DecodeUtil.handleOneByte(b, resultArr, resultPos++);
+          }
+        } else if (DecodeUtil.isTwoBytes(byte1)) {
+          if (offset >= limit) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleTwoBytes(byte1, /* byte2 */ bytes[offset++], resultArr, resultPos++);
+        } else if (DecodeUtil.isThreeBytes(byte1)) {
+          if (offset >= limit - 1) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleThreeBytes(
+              byte1,
+              /* byte2 */ bytes[offset++],
+              /* byte3 */ bytes[offset++],
+              resultArr,
+              resultPos++);
+        } else {
+          if (offset >= limit - 2) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleFourBytes(
+              byte1,
+              /* byte2 */ bytes[offset++],
+              /* byte3 */ bytes[offset++],
+              /* byte4 */ bytes[offset++],
+              resultArr,
+              resultPos++);
+          // 4-byte case requires two chars.
+          resultPos++;
+        }
+      }
+
+      return new String(resultArr, 0, resultPos);
     }
 
     @Override
@@ -1301,6 +1363,38 @@ final class Utf8 {
       }
 
       return partialIsValidUtf8(address, (int) (addressLimit - address));
+    }
+
+    /**
+     * Decodes the given UTF-8 encoded byte array slice into a {@link String}.
+     *
+     * @throws InvalidProtocolBufferException if the input is not valid UTF-8.
+     */
+    @Override
+    String decodeUtf8(byte[] bytes, int index, int size)
+            throws InvalidProtocolBufferException {
+      try {
+        String s = new String(bytes, index, size, Internal.UTF_8);
+
+        // "\uFFFD" is UTF-8 default replacement string, which illegal byte sequences get replaced with.
+        if (!s.contains("\uFFFD")) {
+          return s;
+        }
+
+        // Since s contains "\uFFFD" there are 2 options:
+        // 1) The byte array slice is invalid UTF-8.
+        // 2) The byte array slice is valid UTF-8 and contains encodings for "\uFFFD".
+        // To rule out (1), we encode s and compare it to the byte array slice.
+        // If the byte array slice was invalid UTF-8, then we would get a different sequence of bytes.
+        if (Arrays.equals(s.getBytes(Internal.UTF_8), Arrays.copyOfRange(bytes, index, index + size))) {
+          return s;
+        }
+
+        throw InvalidProtocolBufferException.invalidUtf8();
+      } catch (IndexOutOfBoundsException e) {
+        throw new ArrayIndexOutOfBoundsException(
+                String.format("buffer length=%d, index=%d, size=%d", bytes.length, index, size));
+      }
     }
 
     @Override

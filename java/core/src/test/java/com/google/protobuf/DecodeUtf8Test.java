@@ -217,7 +217,13 @@ public class DecodeUtf8Test extends TestCase {
   // appropriate size.
   private void assertInvalid(byte[] bytes, ByteBuffer buffer) throws Exception {
     try {
-      Utf8.decodeUtf8(bytes, 0, bytes.length);
+      UNSAFE_PROCESSOR.decodeUtf8(bytes, 0, bytes.length);
+      fail();
+    } catch (InvalidProtocolBufferException e) {
+      // Expected.
+    }
+    try {
+      SAFE_PROCESSOR.decodeUtf8(bytes, 0, bytes.length);
       fail();
     } catch (InvalidProtocolBufferException e) {
       // Expected.
@@ -245,7 +251,13 @@ public class DecodeUtf8Test extends TestCase {
 
   private void assertInvalidSlice(byte[] bytes, int index, int size) throws Exception {
     try {
-      Utf8.decodeUtf8(bytes, index, size);
+      UNSAFE_PROCESSOR.decodeUtf8(bytes, index, size);
+      fail();
+    } catch (ArrayIndexOutOfBoundsException e) {
+      // Expected.
+    }
+    try {
+      SAFE_PROCESSOR.decodeUtf8(bytes, index, size);
       fail();
     } catch (ArrayIndexOutOfBoundsException e) {
       // Expected.
@@ -295,7 +307,10 @@ public class DecodeUtf8Test extends TestCase {
     }
     assertDecode(
         new String(bytes, index, size, Internal.UTF_8),
-            Utf8.decodeUtf8(bytes, index, size));
+        UNSAFE_PROCESSOR.decodeUtf8(bytes, index, size));
+    assertDecode(
+        new String(bytes, index, size, Internal.UTF_8),
+        SAFE_PROCESSOR.decodeUtf8(bytes, index, size));
 
     ByteBuffer direct = ByteBuffer.allocateDirect(bytes.length);
     direct.put(bytes);
