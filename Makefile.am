@@ -460,8 +460,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/ParseExceptionsTest.java             \
   java/core/src/test/java/com/google/protobuf/ParserLiteTest.java                  \
   java/core/src/test/java/com/google/protobuf/ParserTest.java                      \
-  java/core/src/test/java/com/google/protobuf/Proto2MessageFactory.java            \
-  java/core/src/test/java/com/google/protobuf/Proto2MessageLiteFactory.java        \
   java/core/src/test/java/com/google/protobuf/Proto2UnknownEnumValueTest.java      \
   java/core/src/test/java/com/google/protobuf/Proto3MessageFactory.java            \
   java/core/src/test/java/com/google/protobuf/Proto3MessageLiteFactory.java        \
