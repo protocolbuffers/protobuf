@@ -1365,11 +1365,6 @@ final class Utf8 {
       return partialIsValidUtf8(address, (int) (addressLimit - address));
     }
 
-    /**
-     * Decodes the given UTF-8 encoded byte array slice into a {@link String}.
-     *
-     * @throws InvalidProtocolBufferException if the input is not valid UTF-8.
-     */
     @Override
     String decodeUtf8(byte[] bytes, int index, int size)
             throws InvalidProtocolBufferException {
