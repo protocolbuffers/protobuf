@@ -30,11 +30,11 @@
 
 #include <google/protobuf/compiler/java/java_context.h>
 
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/compiler/java/java_field.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
 
 namespace google {

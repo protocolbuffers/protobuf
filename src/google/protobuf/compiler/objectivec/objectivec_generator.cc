@@ -94,7 +94,8 @@ bool ObjectiveCGenerator::GenerateAll(
   //
   // e.g. protoc ... --objc_opt=expected_prefixes=file.txt,generate_for_named_framework=MyFramework
 
-  Options generation_options;
+  Options validation_options;
+  FileGenerator::GenerationOptions generation_options;
 
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
@@ -116,14 +117,14 @@ bool ObjectiveCGenerator::GenerateAll(
       //
       // There is no validation that the prefixes are good prefixes, it is
       // assumed that they are when you create the file.
-      generation_options.expected_prefixes_path = options[i].second;
+      validation_options.expected_prefixes_path = options[i].second;
     } else if (options[i].first == "expected_prefixes_suppressions") {
       // A semicolon delimited string that lists the paths of .proto files to
       // exclude from the package prefix validations (expected_prefixes_path).
       // This is provided as an "out", to skip some files being checked.
       for (StringPiece split_piece : Split(
                options[i].second, ";", true)) {
-        generation_options.expected_prefixes_suppressions.push_back(
+        validation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));
       }
     } else if (options[i].first == "prefixes_must_be_registered") {
@@ -135,7 +136,7 @@ bool ObjectiveCGenerator::GenerateAll(
       //     tried to use a prefix that isn't registered.
       // Default is "no".
       if (!StringToBool(options[i].second,
-                        &generation_options.prefixes_must_be_registered)) {
+                        &validation_options.prefixes_must_be_registered)) {
         *error = "error: Unknown value for prefixes_must_be_registered: " + options[i].second;
         return false;
       }
@@ -147,7 +148,7 @@ bool ObjectiveCGenerator::GenerateAll(
       //     raised if a files doesn't have one.
       // Default is "no".
       if (!StringToBool(options[i].second,
-                        &generation_options.require_prefixes)) {
+                        &validation_options.require_prefixes)) {
         *error = "error: Unknown value for require_prefixes: " + options[i].second;
         return false;
       }
@@ -188,8 +189,22 @@ bool ObjectiveCGenerator::GenerateAll(
       // generated files. When integrating ObjC protos into a build system,
       // this can be used to avoid having to add the runtime directory to the
       // header search path since the generate #import will be more complete.
-      generation_options.runtime_import_prefix =
-          StripSuffixString(options[i].second, "/");
+      generation_options.runtime_import_prefix = StripSuffixString(options[i].second, "/");
+    } else if (options[i].first == "package_to_prefix_mappings_path") {
+      // Path to use for when loading the objc class prefix mappings to use.
+      // The `objc_class_prefix` file option is always honored first if one is present.
+      // This option also has precedent over the use_package_as_prefix option.
+      //
+      // The format of the file is:
+      //   - An entry is a line of "package=prefix".
+      //   - Comments start with "#".
+      //   - A comment can go on a line after a expected package/prefix pair.
+      //     (i.e. - "package=prefix # comment")
+      //   - For files that do NOT have a proto package (not recommended), an
+      //     entry can be made as "no_package:PATH=prefix", where PATH is the
+      //     path for the .proto file.
+      //
+      SetPackageToPrefixMappingsPath(options[i].second);
     } else if (options[i].first == "use_package_as_prefix") {
       // Controls how the symbols should be prefixed to avoid symbols
       // collisions. The objc_class_prefix file option is always honored, this
@@ -215,6 +230,12 @@ bool ObjectiveCGenerator::GenerateAll(
       //   - A comment can go on a line after a expected package/prefix pair.
       //     (i.e. - "some.proto.package # comment")
       SetProtoPackagePrefixExceptionList(options[i].second);
+    } else if (options[i].first == "headers_use_forward_declarations") {
+      if (!StringToBool(options[i].second,
+                        &generation_options.headers_use_forward_declarations)) {
+        *error = "error: Unknown value for headers_use_forward_declarations: " + options[i].second;
+        return false;
+      }
     } else {
       *error = "error: Unknown generator option: " + options[i].first;
       return false;
@@ -243,7 +264,7 @@ bool ObjectiveCGenerator::GenerateAll(
   // -----------------------------------------------------------------
 
   // Validate the objc prefix/package pairings.
-  if (!ValidateObjCClassPrefixes(files, generation_options, error)) {
+  if (!ValidateObjCClassPrefixes(files, validation_options, error)) {
     // *error will have been filled in.
     return false;
   }

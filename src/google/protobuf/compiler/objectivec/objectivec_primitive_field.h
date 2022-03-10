@@ -41,12 +41,10 @@ namespace compiler {
 namespace objectivec {
 
 class PrimitiveFieldGenerator : public SingleFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field,
-                                              const Options& options);
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
-                          const Options& options);
+  PrimitiveFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~PrimitiveFieldGenerator();
 
   PrimitiveFieldGenerator(const PrimitiveFieldGenerator&) = delete;
@@ -59,12 +57,10 @@ class PrimitiveFieldGenerator : public SingleFieldGenerator {
 };
 
 class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field,
-                                              const Options& options);
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  PrimitiveObjFieldGenerator(const FieldDescriptor* descriptor,
-                             const Options& options);
+  PrimitiveObjFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~PrimitiveObjFieldGenerator();
 
   PrimitiveObjFieldGenerator(const PrimitiveObjFieldGenerator&) = delete;
@@ -73,12 +69,10 @@ class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {
 };
 
 class RepeatedPrimitiveFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field,
-                                              const Options& options);
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
-                                  const Options& options);
+  RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~RepeatedPrimitiveFieldGenerator();
 
   RepeatedPrimitiveFieldGenerator(const RepeatedPrimitiveFieldGenerator&) =

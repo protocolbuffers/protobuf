@@ -58,19 +58,27 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
 
 }  // namespace
 
-MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
-                                             const Options& options)
-    : ObjCObjFieldGenerator(descriptor, options) {
+MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor)
+    : ObjCObjFieldGenerator(descriptor) {
   SetMessageVariables(descriptor, &variables_);
 }
 
 MessageFieldGenerator::~MessageFieldGenerator() {}
 
 void MessageFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls) const {
-  ObjCObjFieldGenerator::DetermineForwardDeclarations(fwd_decls);
-  // Class name is already in "storage_type".
-  fwd_decls->insert("@class " + variable("storage_type"));
+    std::set<std::string>* fwd_decls,
+    bool include_external_types) const {
+  ObjCObjFieldGenerator::DetermineForwardDeclarations(
+      fwd_decls, include_external_types);
+  // Within a file there is no requirement on the order of the messages, so
+  // local references need a forward declaration. External files (not WKTs),
+  // need one when requested.
+  if ((include_external_types &&
+       !IsProtobufLibraryBundledProtoFile(descriptor_->message_type()->file())) ||
+      descriptor_->file() == descriptor_->message_type()->file()) {
+    // Class name is already in "storage_type".
+    fwd_decls->insert("@class " + variable("storage_type"));
+  }
 }
 
 void MessageFieldGenerator::DetermineObjectiveCClassDefinitions(
@@ -79,8 +87,8 @@ void MessageFieldGenerator::DetermineObjectiveCClassDefinitions(
 }
 
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
-    const FieldDescriptor* descriptor, const Options& options)
-    : RepeatedFieldGenerator(descriptor, options) {
+    const FieldDescriptor* descriptor)
+    : RepeatedFieldGenerator(descriptor) {
   SetMessageVariables(descriptor, &variables_);
   variables_["array_storage_type"] = "NSMutableArray";
   variables_["array_property_type"] =
@@ -90,10 +98,19 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
 RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 
 void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls) const {
-  RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls);
-  // Class name is already in "storage_type".
-  fwd_decls->insert("@class " + variable("storage_type"));
+    std::set<std::string>* fwd_decls,
+    bool include_external_types) const {
+  RepeatedFieldGenerator::DetermineForwardDeclarations(
+      fwd_decls, include_external_types);
+  // Within a file there is no requirement on the order of the messages, so
+  // local references need a forward declaration. External files (not WKTs),
+  // need one when requested.
+  if ((include_external_types &&
+       !IsProtobufLibraryBundledProtoFile(descriptor_->message_type()->file())) ||
+      descriptor_->file() == descriptor_->message_type()->file()) {
+    // Class name is already in "storage_type".
+    fwd_decls->insert("@class " + variable("storage_type"));
+  }
 }
 
 void RepeatedMessageFieldGenerator::DetermineObjectiveCClassDefinitions(

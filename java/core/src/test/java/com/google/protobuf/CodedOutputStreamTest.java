@@ -399,7 +399,7 @@ public class CodedOutputStreamTest {
   public void testWriteMessageWithNegativeEnumValue() throws Exception {
     SparseEnumMessage message =
         SparseEnumMessage.newBuilder().setSparseEnum(TestSparseEnum.SPARSE_E).build();
-    assertThat(message.getSparseEnum().getNumber() < 0).isTrue();
+    assertThat(message.getSparseEnum().getNumber()).isLessThan(0);
     for (OutputType outputType : OutputType.values()) {
       Coder coder = outputType.newCoder(message.getSerializedSize());
       message.writeTo(coder.stream());
@@ -427,11 +427,9 @@ public class CodedOutputStreamTest {
     String string =
         "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz";
     // Ensure we take the slower fast path.
-    assertThat(
-            CodedOutputStream.computeUInt32SizeNoTag(string.length())
-                != CodedOutputStream.computeUInt32SizeNoTag(
-                    string.length() * Utf8.MAX_BYTES_PER_CHAR))
-        .isTrue();
+    assertThat(CodedOutputStream.computeUInt32SizeNoTag(string.length()))
+        .isNotEqualTo(
+            CodedOutputStream.computeUInt32SizeNoTag(string.length() * Utf8.MAX_BYTES_PER_CHAR));
 
     coder.stream().writeStringNoTag(string);
     coder.stream().flush();
@@ -766,6 +764,7 @@ public class CodedOutputStreamTest {
    * Writes the given value using writeRawVarint32() and writeRawVarint64() and checks that the
    * result matches the given bytes.
    */
+  @SuppressWarnings("UnnecessaryLongToIntConversion") // Intentionally tests 32-bit int values.
   private static void assertWriteVarint(byte[] data, long value) throws Exception {
     for (OutputType outputType : OutputType.values()) {
       // Only test 32-bit write if the value fits into an int.

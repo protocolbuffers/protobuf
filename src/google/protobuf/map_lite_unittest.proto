@@ -120,6 +120,10 @@ message TestRequiredLite {
   required int32 a = 1;
   required int32 b = 2;
   required int32 c = 3;
+
+  extend TestAllExtensionsLite {
+    optional TestRequiredLite single = 1000;
+  }
 }
 
 message ForeignMessageArenaLite {

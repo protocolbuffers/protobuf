@@ -30,15 +30,15 @@
 
 #include <google/protobuf/parse_context.h>
 
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/wire_format_lite.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -50,8 +50,8 @@ namespace {
 // Only call if at start of tag.
 bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth) {
   constexpr int kSlopBytes = EpsCopyInputStream::kSlopBytes;
-  GOOGLE_DCHECK(overrun >= 0);
-  GOOGLE_DCHECK(overrun <= kSlopBytes);
+  GOOGLE_DCHECK_GE(overrun, 0);
+  GOOGLE_DCHECK_LE(overrun, kSlopBytes);
   auto ptr = begin + overrun;
   auto end = begin + kSlopBytes;
   while (ptr < end) {
@@ -180,17 +180,17 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
   // if (ptr < limit_end_) return {ptr, false};
   GOOGLE_DCHECK(limit_end_ == buffer_end_ + (std::min)(0, limit_));
   // At this point we know the following assertion holds.
-  GOOGLE_DCHECK(limit_ > 0);
+  GOOGLE_DCHECK_GT(limit_, 0);
   GOOGLE_DCHECK(limit_end_ == buffer_end_);  // because limit_ > 0
   const char* p;
   do {
     // We are past the end of buffer_end_, in the slop region.
-    GOOGLE_DCHECK(overrun >= 0);
+    GOOGLE_DCHECK_GE(overrun, 0);
     p = NextBuffer(overrun, depth);
     if (p == nullptr) {
       // We are at the end of the stream
       if (PROTOBUF_PREDICT_FALSE(overrun != 0)) return {nullptr, true};
-      GOOGLE_DCHECK(limit_ > 0);
+      GOOGLE_DCHECK_GT(limit_, 0);
       limit_end_ = buffer_end_;
       // Distinguish ending on a pushed limit or ending on end-of-stream.
       SetEndOfStream();
@@ -388,12 +388,13 @@ const char* StringParser(const char* begin, const char* end, void* object,
 }
 
 // Defined in wire_format_lite.cc
-void PrintUTF8ErrorLog(const char* field_name, const char* operation_str,
+void PrintUTF8ErrorLog(StringPiece message_name,
+                       StringPiece field_name, const char* operation_str,
                        bool emit_stacktrace);
 
 bool VerifyUTF8(StringPiece str, const char* field_name) {
   if (!IsStructurallyValidUTF8(str)) {
-    PrintUTF8ErrorLog(field_name, "parsing", false);
+    PrintUTF8ErrorLog("", field_name, "parsing", false);
     return false;
   }
   return true;

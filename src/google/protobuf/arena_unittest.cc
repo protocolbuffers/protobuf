@@ -47,6 +47,9 @@
 #include <google/protobuf/unittest_arena.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/message.h>
@@ -54,14 +57,13 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <gtest/gtest.h>
-#include <google/protobuf/stubs/strutil.h>
 
 
 // Must be included last
 #include <google/protobuf/port_def.inc>
 
 using proto2_arena_unittest::ArenaMessage;
+using protobuf_unittest::ForeignMessage;
 using protobuf_unittest::TestAllExtensions;
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
@@ -540,6 +542,16 @@ TEST(ArenaTest, UnsafeArenaSwap) {
   TestUtil::SetAllFields(message1);
   message1->UnsafeArenaSwap(message2);
   TestUtil::ExpectAllFieldsSet(*message2);
+}
+
+TEST(ArenaTest, GetOwningArena) {
+  Arena arena;
+  auto* m1 = Arena::CreateMessage<TestAllTypes>(&arena);
+  EXPECT_EQ(Arena::InternalGetOwningArena(m1), &arena);
+  EXPECT_EQ(&arena, Arena::InternalGetOwningArena(
+                        m1->mutable_repeated_foreign_message()));
+  EXPECT_EQ(&arena,
+            Arena::InternalGetOwningArena(m1->mutable_repeated_int32()));
 }
 
 TEST(ArenaTest, SwapBetweenArenasUsingReflection) {
@@ -1463,6 +1475,71 @@ TEST(ArenaTest, AddCleanup) {
   for (int i = 0; i < 100; i++) {
     arena.Own(new int);
   }
+}
+
+TEST(ArenaTest, SpaceReuseForArraysSizeChecks) {
+  // Limit to 1<<20 to avoid using too much memory on the test.
+  for (int i = 0; i < 20; ++i) {
+    SCOPED_TRACE(i);
+    Arena arena;
+    std::vector<void*> pointers;
+
+    const size_t size = 16 << i;
+
+    for (int j = 0; j < 10; ++j) {
+      pointers.push_back(Arena::CreateArray<char>(&arena, size));
+    }
+
+    for (void* p : pointers) {
+      internal::ArenaTestPeer::ReturnArrayMemory(&arena, p, size);
+    }
+
+    std::vector<void*> second_pointers;
+    for (int j = 9; j != 0; --j) {
+      second_pointers.push_back(Arena::CreateArray<char>(&arena, size));
+    }
+
+    // The arena will give us back the pointers we returned, except the first
+    // one. That one becomes part of the freelist data structure.
+    ASSERT_THAT(second_pointers,
+                testing::UnorderedElementsAreArray(
+                    std::vector<void*>(pointers.begin() + 1, pointers.end())));
+  }
+}
+
+TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
+#ifdef ADDRESS_SANITIZER
+  char buf[1024]{};
+  {
+    Arena arena(buf, sizeof(buf));
+    std::vector<void*> pointers;
+    for (int i = 0; i < 100; ++i) {
+      pointers.push_back(Arena::CreateArray<char>(&arena, 16));
+    }
+    for (void* p : pointers) {
+      internal::ArenaTestPeer::ReturnArrayMemory(&arena, p, 16);
+      // The first one is not poisoned because it becomes the freelist.
+      if (p != pointers[0]) EXPECT_TRUE(__asan_address_is_poisoned(p));
+    }
+
+    bool found_poison = false;
+    for (char& c : buf) {
+      if (__asan_address_is_poisoned(&c)) {
+        found_poison = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found_poison);
+  }
+
+  // Should not be poisoned after destruction.
+  for (char& c : buf) {
+    ASSERT_FALSE(__asan_address_is_poisoned(&c));
+  }
+
+#else   // ADDRESS_SANITIZER
+  GTEST_SKIP();
+#endif  // ADDRESS_SANITIZER
 }
 
 namespace {

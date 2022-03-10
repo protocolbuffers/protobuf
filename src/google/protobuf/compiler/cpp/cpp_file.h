@@ -40,11 +40,12 @@
 #include <set>
 #include <string>
 #include <vector>
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/compiler/cpp/cpp_options.h>
 #include <google/protobuf/compiler/scc.h>
+#include <google/protobuf/compiler/cpp/cpp_options.h>
 
 namespace google {
 namespace protobuf {
@@ -122,11 +123,11 @@ class FileGenerator {
   void GenerateInternalForwardDeclarations(const CrossFileReferences& refs,
                                            io::Printer* printer);
   void GenerateSourceIncludes(io::Printer* printer);
+  void GenerateSourcePrelude(io::Printer* printer);
   void GenerateSourceDefaultInstance(int idx, io::Printer* printer);
 
   void GenerateInitForSCC(const SCC* scc, const CrossFileReferences& refs,
                           io::Printer* printer);
-  void GenerateTables(io::Printer* printer);
   void GenerateReflectionInitializationCode(io::Printer* printer);
 
   // For other imports, generates their forward-declarations.

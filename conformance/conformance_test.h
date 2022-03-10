@@ -174,6 +174,11 @@ class ConformanceTestSuite {
     failure_list_flag_name_ = failure_list_flag_name;
   }
 
+  // Sets the path of the output directory.
+  void SetOutputDir(const char* output_dir) {
+    output_dir_ = output_dir;
+  }
+
   // Run all the conformance tests against the given test runner.
   // Test output will be stored in "output".
   //
@@ -296,6 +301,7 @@ class ConformanceTestSuite {
   bool verbose_;
   bool enforce_recommended_;
   std::string output_;
+  std::string output_dir_;
   std::string failure_list_flag_name_;
   std::string failure_list_filename_;
 

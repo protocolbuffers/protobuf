@@ -69,8 +69,6 @@ import org.junit.runners.JUnit4;
 
 /**
  * Test case for {@link TextFormat}.
- *
- * <p>TODO(wenboz): ExtensionTest and rest of text_format_unittest.cc.
  */
 @RunWith(JUnit4.class)
 public class TextFormatTest {
@@ -170,6 +168,13 @@ public class TextFormatTest {
     javaText = javaText.replace(".0\n", "\n");
 
     assertThat(javaText).isEqualTo(ALL_FIELDS_SET_TEXT);
+  }
+
+  @Test
+  // https://github.com/protocolbuffers/protobuf/issues/9447
+  public void testCharacterNotInUnicodeBlock() throws TextFormat.InvalidEscapeSequenceException {
+    ByteString actual = TextFormat.unescapeBytes("\\U000358da");
+    assertThat(actual.size()).isEqualTo(4);
   }
 
   /** Print TestAllTypes as Builder and compare with golden file. */
@@ -1826,4 +1831,5 @@ public class TextFormatTest {
     assertThat(TextFormat.printer().printToString(message))
         .isEqualTo("optional_float: -0.0\noptional_double: -0.0\n");
   }
+
 }

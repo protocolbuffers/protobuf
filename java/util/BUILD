@@ -27,6 +27,7 @@ java_export(
     pom_template = "pom_template.xml",
     visibility = ["//java:__pkg__"],
     runtime_deps = [":util"],
+    deploy_env = ["//java/core"],
 )
 
 filegroup(
@@ -67,6 +68,7 @@ junit_tests(
         ":util",
         "//java/core",
         "//java/core:generic_test_protos_java_proto",
+        "@maven//:com_google_code_gson_gson",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",

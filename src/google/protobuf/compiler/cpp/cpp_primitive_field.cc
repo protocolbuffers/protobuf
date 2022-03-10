@@ -34,10 +34,10 @@
 
 #include <google/protobuf/compiler/cpp/cpp_primitive_field.h>
 
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 
 namespace google {
 namespace protobuf {
@@ -104,6 +104,9 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = PrimitiveTypeName(options, descriptor->cpp_type());
   (*variables)["default"] = DefaultValue(options, descriptor);
+  (*variables)["cached_byte_size_name"] = MakeVarintCachedSizeName(descriptor);
+  (*variables)["cached_byte_size_field"] =
+      MakeVarintCachedSizeFieldName(descriptor);
   (*variables)["tag"] = StrCat(internal::WireFormat::MakeTag(descriptor));
   int fixed_size = FixedSize(descriptor->type());
   if (fixed_size != -1) {
@@ -150,7 +153,7 @@ void PrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
-      "  return $name$_;\n"
+      "  return $field$;\n"
       "}\n"
       "inline $type$ $classname$::$name$() const {\n"
       "$annotate_get$"
@@ -159,7 +162,7 @@ void PrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline void $classname$::_internal_set_$name$($type$ value) {\n"
       "  $set_hasbit$\n"
-      "  $name$_ = value;\n"
+      "  $field$ = value;\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n"
       "  _internal_set_$name$(value);\n"
@@ -170,7 +173,7 @@ void PrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void PrimitiveFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_ = $default$;\n");
+  format("$field$ = $default$;\n");
 }
 
 void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
@@ -180,19 +183,19 @@ void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("swap($name$_, other->$name$_);\n");
+  format("swap($field$, other->$field$);\n");
 }
 
 void PrimitiveFieldGenerator::GenerateConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_ = $default$;\n");
+  format("$field$ = $default$;\n");
 }
 
 void PrimitiveFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_ = from.$name$_;\n");
+  format("$field$ = from.$field$;\n");
 }
 
 void PrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
@@ -201,7 +204,7 @@ void PrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   format(
       "target = stream->EnsureSpace(target);\n"
       "target = "
-      "::$proto_ns$::internal::WireFormatLite::Write$declared_type$ToArray("
+      "::_pbi::WireFormatLite::Write$declared_type$ToArray("
       "$number$, this->_internal_$name$(), target);\n");
 }
 
@@ -214,12 +217,12 @@ void PrimitiveFieldGenerator::GenerateByteSize(io::Printer* printer) const {
       // Adding one is very common and it turns out it can be done for
       // free inside of WireFormatLite, so we can save an instruction here.
       format(
-          "total_size += ::$proto_ns$::internal::WireFormatLite::"
+          "total_size += ::_pbi::WireFormatLite::"
           "$declared_type$SizePlusOne(this->_internal_$name$());\n");
     } else {
       format(
           "total_size += $tag_size$ +\n"
-          "  ::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
+          "  ::_pbi::WireFormatLite::$declared_type$Size(\n"
           "    this->_internal_$name$());\n");
     }
   } else {
@@ -249,7 +252,7 @@ void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
       "  if (_internal_has_$name$()) {\n"
-      "    return $field_member$;\n"
+      "    return $field$;\n"
       "  }\n"
       "  return $default$;\n"
       "}\n"
@@ -258,7 +261,7 @@ void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "  }\n"
-      "  $field_member$ = value;\n"
+      "  $field$ = value;\n"
       "}\n"
       "inline $type$ $classname$::$name$() const {\n"
       "$annotate_get$"
@@ -275,7 +278,7 @@ void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
 void PrimitiveOneofFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$field_member$ = $default$;\n");
+  format("$field$ = $default$;\n");
 }
 
 void PrimitiveOneofFieldGenerator::GenerateSwappingCode(
@@ -286,7 +289,7 @@ void PrimitiveOneofFieldGenerator::GenerateSwappingCode(
 void PrimitiveOneofFieldGenerator::GenerateConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$ns$::_$classname$_default_instance_.$name$_ = $default$;\n");
+  format("$ns$::_$classname$_default_instance_.$field$ = $default$;\n");
 }
 
 // ===================================================================
@@ -313,7 +316,7 @@ void RepeatedPrimitiveFieldGenerator::GeneratePrivateMembers(
   format("::$proto_ns$::RepeatedField< $type$ > $name$_;\n");
   if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("mutable std::atomic<int> _$name$_cached_byte_size_;\n");
+    format("mutable std::atomic<int> $cached_byte_size_name$;\n");
   }
 }
 
@@ -344,7 +347,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$(int index) const {\n"
-      "  return $name$_.Get(index);\n"
+      "  return $field$.Get(index);\n"
       "}\n"
       "inline $type$ $classname$::$name$(int index) const {\n"
       "$annotate_get$"
@@ -353,11 +356,11 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline void $classname$::set_$name$(int index, $type$ value) {\n"
       "$annotate_set$"
-      "  $name$_.Set(index, value);\n"
+      "  $field$.Set(index, value);\n"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
       "inline void $classname$::_internal_add_$name$($type$ value) {\n"
-      "  $name$_.Add(value);\n"
+      "  $field$.Add(value);\n"
       "}\n"
       "inline void $classname$::add_$name$($type$ value) {\n"
       "  _internal_add_$name$(value);\n"
@@ -366,7 +369,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline const ::$proto_ns$::RepeatedField< $type$ >&\n"
       "$classname$::_internal_$name$() const {\n"
-      "  return $name$_;\n"
+      "  return $field$;\n"
       "}\n"
       "inline const ::$proto_ns$::RepeatedField< $type$ >&\n"
       "$classname$::$name$() const {\n"
@@ -376,7 +379,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline ::$proto_ns$::RepeatedField< $type$ >*\n"
       "$classname$::_internal_mutable_$name$() {\n"
-      "  return &$name$_;\n"
+      "  return &$field$;\n"
       "}\n"
       "inline ::$proto_ns$::RepeatedField< $type$ >*\n"
       "$classname$::mutable_$name$() {\n"
@@ -389,30 +392,19 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
 void RepeatedPrimitiveFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.Clear();\n");
+  format("$field$.Clear();\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.MergeFrom(from.$name$_);\n");
+  format("$field$.MergeFrom(from.$field$);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSwappingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.InternalSwap(&other->$name$_);\n");
-}
-
-void RepeatedPrimitiveFieldGenerator::GenerateConstructorCode(
-    io::Printer* printer) const {
-  // Not needed for repeated fields.
-}
-
-void RepeatedPrimitiveFieldGenerator::GenerateCopyConstructorCode(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format("$name$_.CopyFrom(from.$name$_);\n");
+  format("$field$.InternalSwap(&other->$field$);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
@@ -423,7 +415,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
       format(
           "{\n"
           "  int byte_size = "
-          "_$name$_cached_byte_size_.load(std::memory_order_relaxed);\n"
+          "$cached_byte_size_field$.load(std::memory_order_relaxed);\n"
           "  if (byte_size > 0) {\n"
           "    target = stream->Write$declared_type$Packed(\n"
           "        $number$, _internal_$name$(), byte_size, target);\n"
@@ -440,7 +432,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     format(
         "for (int i = 0, n = this->_internal_$name$_size(); i < n; i++) {\n"
         "  target = stream->EnsureSpace(target);\n"
-        "  target = ::$proto_ns$::internal::WireFormatLite::"
+        "  target = ::_pbi::WireFormatLite::"
         "Write$declared_type$ToArray($number$, this->_internal_$name$(i), "
         "target);\n"
         "}\n");
@@ -455,8 +447,8 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
   int fixed_size = FixedSize(descriptor_->type());
   if (fixed_size == -1) {
     format(
-        "size_t data_size = ::$proto_ns$::internal::WireFormatLite::\n"
-        "  $declared_type$Size(this->$name$_);\n");
+        "size_t data_size = ::_pbi::WireFormatLite::\n"
+        "  $declared_type$Size(this->$field$);\n");
   } else {
     format(
         "unsigned int count = static_cast<unsigned "
@@ -468,13 +460,12 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
     format(
         "if (data_size > 0) {\n"
         "  total_size += $tag_size$ +\n"
-        "    ::$proto_ns$::internal::WireFormatLite::Int32Size(\n"
-        "        static_cast<$int32$>(data_size));\n"
+        "    ::_pbi::WireFormatLite::Int32Size(static_cast<$int32$>(data_size));\n"
         "}\n");
     if (FixedSize(descriptor_->type()) == -1) {
       format(
-          "int cached_size = ::$proto_ns$::internal::ToCachedSize(data_size);\n"
-          "_$name$_cached_byte_size_.store(cached_size,\n"
+          "int cached_size = ::_pbi::ToCachedSize(data_size);\n"
+          "$cached_byte_size_field$.store(cached_size,\n"
           "                                std::memory_order_relaxed);\n");
     }
     format("total_size += data_size;\n");
@@ -482,7 +473,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
     format(
         "total_size += $tag_size$ *\n"
         "              "
-        "::$proto_ns$::internal::FromIntSize(this->_internal_$name$_size());\n"
+        "::_pbi::FromIntSize(this->_internal_$name$_size());\n"
         "total_size += data_size;\n");
   }
   format.Outdent();
@@ -495,7 +486,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateConstinitInitializer(
   format("$name$_()");
   if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("\n, _$name$_cached_byte_size_(0)");
+    format("\n, $cached_byte_size_name$(0)");
   }
 }
 

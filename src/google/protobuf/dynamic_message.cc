@@ -70,8 +70,8 @@
 #include <new>
 #include <unordered_map>
 
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/unknown_field_set.h>
@@ -85,7 +85,8 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format.h>
 
-#include <google/protobuf/port_def.inc>  // NOLINT
+// Must be included last.
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -99,14 +100,6 @@ using internal::ArenaStringPtr;
 
 // ===================================================================
 // Some helper tables and functions...
-
-class DynamicMessageReflectionHelper {
- public:
-  static bool IsLazyField(const Reflection* reflection,
-                          const FieldDescriptor* field) {
-    return reflection->IsLazyField(field);
-  }
-};
 
 namespace {
 
@@ -232,7 +225,7 @@ class DynamicMessage : public Message {
   // This should only be used by GetPrototypeNoLock() to avoid dead lock.
   DynamicMessage(DynamicMessageFactory::TypeInfo* type_info, bool lock_factory);
 
-  ~DynamicMessage();
+  ~DynamicMessage() override;
 
   // Called on the prototype after construction to initialize message fields.
   // Cross linking the default instances allows for fast reflection access of
@@ -276,13 +269,6 @@ class DynamicMessage : public Message {
   friend class DynamicMessageFactory;
 
   bool is_prototype() const;
-
-  inline int OffsetValue(int v, FieldDescriptor::Type type) const {
-    if (type == FieldDescriptor::TYPE_MESSAGE) {
-      return v & ~0x1u;
-    }
-    return v;
-  }
 
   inline void* OffsetToPointer(int offset) {
     return reinterpret_cast<uint8_t*>(this) + offset;
@@ -355,23 +341,20 @@ DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
 }
 
 inline void* DynamicMessage::MutableRaw(int i) {
-  return OffsetToPointer(
-      OffsetValue(type_info_->offsets[i], type_info_->type->field(i)->type()));
+  return OffsetToPointer(type_info_->offsets[i]);
 }
-void* DynamicMessage::MutableExtensionsRaw() {
+inline void* DynamicMessage::MutableExtensionsRaw() {
   return OffsetToPointer(type_info_->extensions_offset);
 }
-void* DynamicMessage::MutableWeakFieldMapRaw() {
+inline void* DynamicMessage::MutableWeakFieldMapRaw() {
   return OffsetToPointer(type_info_->weak_field_map_offset);
 }
-void* DynamicMessage::MutableOneofCaseRaw(int i) {
+inline void* DynamicMessage::MutableOneofCaseRaw(int i) {
   return OffsetToPointer(type_info_->oneof_case_offset + sizeof(uint32_t) * i);
 }
-void* DynamicMessage::MutableOneofFieldRaw(const FieldDescriptor* f) {
-  return OffsetToPointer(
-      OffsetValue(type_info_->offsets[type_info_->type->field_count() +
-                                      f->containing_oneof()->index()],
-                  f->type()));
+inline void* DynamicMessage::MutableOneofFieldRaw(const FieldDescriptor* f) {
+  return OffsetToPointer(type_info_->offsets[type_info_->type->field_count() +
+                                             f->containing_oneof()->index()]);
 }
 
 void DynamicMessage::SharedCtor(bool lock_factory) {
@@ -433,12 +416,8 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
             if (!field->is_repeated()) {
-              const std::string* default_value =
-                  field->default_value_string().empty()
-                      ? &internal::GetEmptyStringAlreadyInited()
-                      : nullptr;
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
-              asp->UnsafeSetDefault(default_value);
+              asp->InitDefault();
             } else {
               new (field_ptr)
                   RepeatedPtrField<std::string>(GetArenaForAllocation());
@@ -539,13 +518,7 @@ DynamicMessage::~DynamicMessage() {
           switch (field->options().ctype()) {
             default:
             case FieldOptions::STRING: {
-              // Oneof string fields are never set as a default instance.
-              // We just need to pass some arbitrary default string to make it
-              // work. This allows us to not have the real default accessible
-              // from reflection.
-              const std::string* default_value = nullptr;
-              reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(
-                  default_value, nullptr);
+              reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
               break;
             }
           }
@@ -599,13 +572,7 @@ DynamicMessage::~DynamicMessage() {
       switch (field->options().ctype()) {
         default:  // TODO(kenton):  Support other string reps.
         case FieldOptions::STRING: {
-          const std::string* default_value =
-              reinterpret_cast<const ArenaStringPtr*>(
-                  type_info_->prototype->OffsetToPointer(
-                      type_info_->offsets[i]))
-                  ->GetPointer();
-          reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(default_value,
-                                                                nullptr);
+          reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
           break;
         }
       }

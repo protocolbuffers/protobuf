@@ -37,6 +37,7 @@
 
 #include <map>
 #include <string>
+
 #include <google/protobuf/compiler/java/java_field.h>
 
 namespace google {
@@ -99,7 +100,7 @@ class ImmutableEnumOneofFieldGenerator : public ImmutableEnumFieldGenerator {
   ImmutableEnumOneofFieldGenerator(const FieldDescriptor* descriptor,
                                    int messageBitIndex, int builderBitIndex,
                                    Context* context);
-  ~ImmutableEnumOneofFieldGenerator();
+  ~ImmutableEnumOneofFieldGenerator() override;
 
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;

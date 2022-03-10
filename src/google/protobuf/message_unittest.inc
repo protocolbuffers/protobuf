@@ -264,6 +264,29 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionNotInitialized) {
                   UNITTEST_PACKAGE_NAME)));
 }
 
+TEST(MESSAGE_TEST_NAME, MergeFromUninitialized) {
+  UNITTEST::TestNestedRequiredForeign o, p, q;
+  UNITTEST::TestNestedRequiredForeign* child = o.mutable_child();
+  constexpr int kDepth = 2;
+  for (int i = 0; i < kDepth; i++) {
+    child->set_dummy(i);
+    child = child->mutable_child();
+  }
+  UNITTEST::TestRequiredForeign* payload = child->mutable_payload();
+  payload->mutable_optional_message()->set_a(1);
+  payload->mutable_optional_message()->set_dummy2(100);
+  payload->mutable_optional_message()->set_dummy4(200);
+  ASSERT_TRUE(p.ParsePartialFromString(o.SerializePartialAsString()));
+
+  GOOGLE_LOG(ERROR) << "seongkim: copy 1";
+  q.mutable_child()->set_dummy(500);
+  q = p;
+  GOOGLE_LOG(ERROR) << "seongkim: copy 1 done";
+  q.ParsePartialFromString(q.SerializePartialAsString());
+  EXPECT_TRUE(TestUtil::EqualsToSerialized(q, o.SerializePartialAsString()));
+  EXPECT_TRUE(TestUtil::EqualsToSerialized(q, p.SerializePartialAsString()));
+}
+
 TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageTruncated) {
   UNITTEST::NestedTestAllTypes o, p;
   constexpr int kDepth = 5;
@@ -347,6 +370,165 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionWireMalformed) {
   // Overwriting the last byte to 0xFF results in malformed wire.
   serialized[serialized.size() - 1] = 0xFF;
   EXPECT_FALSE(p.ParseFromString(serialized));
+}
+
+TEST(MESSAGE_TEST_NAME, UninitializedAndMalformed) {
+  UNITTEST::TestRequiredForeign o, p1, p2;
+  o.mutable_optional_message()->set_a(-1);
+
+  // -1 becomes \xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x1
+  std::string serialized;
+  EXPECT_TRUE(o.SerializePartialToString(&serialized));
+
+  // Should parse correctly.
+  EXPECT_TRUE(p1.ParsePartialFromString(serialized));
+  EXPECT_FALSE(p1.IsInitialized());
+
+  // Overwriting the last byte to 0xFF results in malformed wire.
+  serialized[serialized.size() - 1] = 0xFF;
+  EXPECT_FALSE(p2.ParseFromString(serialized));
+  EXPECT_FALSE(p2.IsInitialized());
+}
+
+inline UNITTEST::NestedTestAllTypes InitNestedProto(int depth) {
+  UNITTEST::NestedTestAllTypes p;
+  auto* child = p.mutable_child();
+  for (int i = 0; i < depth; i++) {
+    child->mutable_payload()->set_optional_int32(i);
+    child = child->mutable_child();
+  }
+  // -1 becomes \xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x1
+  child->mutable_payload()->set_optional_int32(-1);
+  return p;
+}
+
+// Parsing proto must not access beyond the bound.
+TEST(MESSAGE_TEST_NAME, ParseStrictlyBoundedStream) {
+  UNITTEST::NestedTestAllTypes o, p;
+  constexpr int kDepth = 2;
+  o = InitNestedProto(kDepth);
+  TestUtil::SetAllFields(o.mutable_child()->mutable_payload());
+  o.mutable_child()->mutable_child()->mutable_payload()->set_optional_string(
+      std::string(1024, 'a'));
+
+  std::string data;
+  EXPECT_TRUE(o.SerializeToString(&data));
+
+  TestUtil::BoundedArrayInputStream stream(data.data(), data.size());
+  EXPECT_TRUE(p.ParseFromBoundedZeroCopyStream(&stream, data.size()));
+  TestUtil::ExpectAllFieldsSet(p.child().payload());
+}
+
+TEST(MESSAGE_TEST_NAME, AllSetMethodsOnStringField) {
+  UNITTEST::TestAllTypes msg;
+
+
+  msg.set_optional_string("Asciiz");
+  EXPECT_EQ(msg.optional_string(), "Asciiz");
+
+  msg.set_optional_string("Length delimited", 6);
+  EXPECT_EQ(msg.optional_string(), "Length");
+
+  std::string value = "std::string value 1";
+  msg.set_optional_string(value);
+  EXPECT_EQ(msg.optional_string(), "std::string value 1");
+
+  value = "std::string value 2";
+  msg.set_optional_string(std::cref(value));
+  EXPECT_EQ(msg.optional_string(), "std::string value 2");
+
+  value = "std::string value 3";
+  msg.set_optional_string(std::move(value));
+  EXPECT_EQ(msg.optional_string(), "std::string value 3");
+}
+
+TEST(MESSAGE_TEST_NAME, SuccessAfterParsingFailure) {
+  UNITTEST::NestedTestAllTypes o, p, q;
+  constexpr int kDepth = 5;
+  o = InitNestedProto(kDepth);
+  std::string serialized;
+  EXPECT_TRUE(o.SerializeToString(&serialized));
+
+  // Should parse correctly.
+  EXPECT_TRUE(p.ParseFromString(serialized));
+
+  // Overwriting the last byte to 0xFF results in malformed wire.
+  serialized[serialized.size() - 1] = 0xFF;
+  EXPECT_FALSE(p.ParseFromString(serialized));
+
+  // Subsequent serialization should be parsed correctly.
+  EXPECT_TRUE(q.ParseFromString(p.SerializeAsString()));
+}
+
+TEST(MESSAGE_TEST_NAME, ExceedRecursionLimit) {
+  UNITTEST::NestedTestAllTypes o, p;
+  const int kDepth = io::CodedInputStream::GetDefaultRecursionLimit() + 10;
+  o = InitNestedProto(kDepth);
+  std::string serialized;
+  EXPECT_TRUE(o.SerializeToString(&serialized));
+
+  // Recursion level deeper than the default.
+  EXPECT_FALSE(p.ParseFromString(serialized));
+}
+
+TEST(MESSAGE_TEST_NAME, SupportCustomRecursionLimitRead) {
+  UNITTEST::NestedTestAllTypes o, p;
+  const int kDepth = io::CodedInputStream::GetDefaultRecursionLimit() + 10;
+  o = InitNestedProto(kDepth);
+  std::string serialized;
+  EXPECT_TRUE(o.SerializeToString(&serialized));
+
+  // Should pass with custom limit + reads.
+  io::ArrayInputStream raw_input(serialized.data(), serialized.size());
+  io::CodedInputStream input(&raw_input);
+  input.SetRecursionLimit(kDepth + 10);
+  EXPECT_TRUE(p.ParseFromCodedStream(&input));
+
+  EXPECT_EQ(p.child().payload().optional_int32(), 0);
+  EXPECT_EQ(p.child().child().payload().optional_int32(), 1);
+
+  // Verify p serializes successfully (survives VerifyConsistency).
+  std::string result;
+  EXPECT_TRUE(p.SerializeToString(&result));
+}
+
+TEST(MESSAGE_TEST_NAME, SupportCustomRecursionLimitWrite) {
+  UNITTEST::NestedTestAllTypes o, p;
+  const int kDepth = io::CodedInputStream::GetDefaultRecursionLimit() + 10;
+  o = InitNestedProto(kDepth);
+  std::string serialized;
+  EXPECT_TRUE(o.SerializeToString(&serialized));
+
+  // Should pass with custom limit + writes.
+  io::ArrayInputStream raw_input(serialized.data(), serialized.size());
+  io::CodedInputStream input(&raw_input);
+  input.SetRecursionLimit(kDepth + 10);
+  EXPECT_TRUE(p.ParseFromCodedStream(&input));
+
+  EXPECT_EQ(p.mutable_child()->mutable_payload()->optional_int32(), 0);
+  EXPECT_EQ(
+      p.mutable_child()->mutable_child()->mutable_payload()->optional_int32(),
+      1);
+}
+
+// While deep recursion is never guaranteed, this test aims to catch potential
+// issues with very deep recursion.
+TEST(MESSAGE_TEST_NAME, SupportDeepRecursionLimit) {
+  UNITTEST::NestedTestAllTypes o, p;
+  constexpr int kDepth = 1000;
+  auto* child = o.mutable_child();
+  for (int i = 0; i < kDepth; i++) {
+    child = child->mutable_child();
+  }
+  child->mutable_payload()->set_optional_int32(100);
+
+  std::string serialized;
+  EXPECT_TRUE(o.SerializeToString(&serialized));
+
+  io::ArrayInputStream raw_input(serialized.data(), serialized.size());
+  io::CodedInputStream input(&raw_input);
+  input.SetRecursionLimit(1100);
+  EXPECT_TRUE(p.ParseFromCodedStream(&input));
 }
 
 TEST(MESSAGE_TEST_NAME, Swap) {
@@ -485,7 +667,7 @@ class RepeatedInputStream : public io::ZeroCopyInputStream {
   std::string data_;
   size_t count_;     // The number of strings that haven't been consumed.
   size_t position_;  // Position in the std::string for the next read.
-  int64 total_byte_count_;
+  int64_t total_byte_count_;
 };
 }  // namespace
 
@@ -513,6 +695,8 @@ TEST(MESSAGE_TEST_NAME, TestParseMessagesCloseTo2G) {
 }
 
 TEST(MESSAGE_TEST_NAME, TestParseMessagesOver2G) {
+  constexpr int32_t kint32max = std::numeric_limits<int32_t>::max();
+
   // Create a message with a large std::string field.
   std::string value = std::string(64 * 1024 * 1024, 'x');
   UNITTEST::TestAllTypes message;

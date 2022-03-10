@@ -315,7 +315,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
     io::Printer printer(output.get(), '$',
-                        annotate ? &annotation_collector : NULL);
+                        annotate ? &annotation_collector : nullptr);
     printer.PrintRaw(GetOutputFileContent(name_, parameter, file, context));
     std::string annotate_suffix = "_annotation";
     if (annotate) {

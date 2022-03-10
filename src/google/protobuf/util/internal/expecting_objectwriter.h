@@ -102,7 +102,7 @@ class ExpectingObjectWriter : public ObjectWriter {
  public:
   explicit ExpectingObjectWriter(MockObjectWriter* mock) : mock_(mock) {}
 
-  virtual ObjectWriter* StartObject(StringPiece name) {
+  ObjectWriter* StartObject(StringPiece name) override {
     (name.empty() ? EXPECT_CALL(*mock_, StartObject(IsEmpty()))
                   : EXPECT_CALL(*mock_, StartObject(Eq(std::string(name)))))
         .WillOnce(Return(mock_))
@@ -110,14 +110,14 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* EndObject() {
+  ObjectWriter* EndObject() override {
     EXPECT_CALL(*mock_, EndObject())
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;
   }
 
-  virtual ObjectWriter* StartList(StringPiece name) {
+  ObjectWriter* StartList(StringPiece name) override {
     (name.empty() ? EXPECT_CALL(*mock_, StartList(IsEmpty()))
                   : EXPECT_CALL(*mock_, StartList(Eq(std::string(name)))))
         .WillOnce(Return(mock_))
@@ -125,14 +125,14 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* EndList() {
+  ObjectWriter* EndList() override {
     EXPECT_CALL(*mock_, EndList())
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;
   }
 
-  virtual ObjectWriter* RenderBool(StringPiece name, bool value) {
+  ObjectWriter* RenderBool(StringPiece name, bool value) override {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderBool(IsEmpty(), TypedEq<bool>(value)))
          : EXPECT_CALL(*mock_,
@@ -142,7 +142,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderInt32(StringPiece name, int32_t value) {
+  ObjectWriter* RenderInt32(StringPiece name, int32_t value) override {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderInt32(IsEmpty(), TypedEq<int32_t>(value)))
          : EXPECT_CALL(*mock_, RenderInt32(Eq(std::string(name)),
@@ -152,7 +152,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderUint32(StringPiece name, uint32_t value) {
+  ObjectWriter* RenderUint32(StringPiece name, uint32_t value) override {
     (name.empty() ? EXPECT_CALL(*mock_, RenderUint32(IsEmpty(),
                                                      TypedEq<uint32_t>(value)))
                   : EXPECT_CALL(*mock_, RenderUint32(Eq(std::string(name)),
@@ -162,7 +162,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderInt64(StringPiece name, int64_t value) {
+  ObjectWriter* RenderInt64(StringPiece name, int64_t value) override {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderInt64(IsEmpty(), TypedEq<int64_t>(value)))
          : EXPECT_CALL(*mock_, RenderInt64(Eq(std::string(name)),
@@ -172,7 +172,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderUint64(StringPiece name, uint64_t value) {
+  ObjectWriter* RenderUint64(StringPiece name, uint64_t value) override {
     (name.empty() ? EXPECT_CALL(*mock_, RenderUint64(IsEmpty(),
                                                      TypedEq<uint64_t>(value)))
                   : EXPECT_CALL(*mock_, RenderUint64(Eq(std::string(name)),
@@ -182,7 +182,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderDouble(StringPiece name, double value) {
+  ObjectWriter* RenderDouble(StringPiece name, double value) override {
     (name.empty()
          ? EXPECT_CALL(*mock_,
                        RenderDouble(IsEmpty(), NanSensitiveDoubleEq(value)))
@@ -193,7 +193,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderFloat(StringPiece name, float value) {
+  ObjectWriter* RenderFloat(StringPiece name, float value) override {
     (name.empty()
          ? EXPECT_CALL(*mock_,
                        RenderFloat(IsEmpty(), NanSensitiveFloatEq(value)))
@@ -204,8 +204,8 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderString(StringPiece name,
-                                     StringPiece value) {
+  ObjectWriter* RenderString(StringPiece name,
+                             StringPiece value) override {
     (name.empty() ? EXPECT_CALL(*mock_, RenderString(IsEmpty(),
                                                      TypedEq<StringPiece>(
                                                          std::string(value))))
@@ -228,7 +228,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderNull(StringPiece name) {
+  ObjectWriter* RenderNull(StringPiece name) override {
     (name.empty() ? EXPECT_CALL(*mock_, RenderNull(IsEmpty()))
                   : EXPECT_CALL(*mock_, RenderNull(Eq(std::string(name))))
                         .WillOnce(Return(mock_))

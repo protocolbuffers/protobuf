@@ -35,10 +35,10 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/type.pb.h>
-#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/status.h>
 
@@ -54,7 +54,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
   explicit TypeInfoForTypeResolver(TypeResolver* type_resolver)
       : type_resolver_(type_resolver) {}
 
-  virtual ~TypeInfoForTypeResolver() {
+  ~TypeInfoForTypeResolver() override {
     DeleteCachedTypes(&cached_types_);
     DeleteCachedTypes(&cached_enums_);
   }

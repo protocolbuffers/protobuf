@@ -36,4 +36,5 @@ import "google/protobuf/internal/import_test_package/inner.proto";
 
 message Outer {
   optional Inner inner = 1;
+  optional ImportPublicNestedMessage import_public_nested = 2;
 }

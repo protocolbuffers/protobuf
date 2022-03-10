@@ -75,6 +75,9 @@ class GeneratedMessageReflectionTestHelper {
   static bool IsLazyExtension(const Message& msg, const FieldDescriptor* ext) {
     return msg.GetReflection()->IsLazyExtension(msg, ext);
   }
+  static bool IsLazyField(const Message& msg, const FieldDescriptor* field) {
+    return msg.GetReflection()->IsLazyField(field);
+  }
 };
 
 namespace {
@@ -303,53 +306,58 @@ TEST_P(GeneratedMessageReflectionSwapTest, OneofBothSet) {
 }
 
 TEST_P(GeneratedMessageReflectionSwapTest, SwapFields) {
-  unittest::TestAllTypes lhs, rhs;
-  lhs.set_optional_double(12.3);
-  lhs.mutable_repeated_int32()->Add(10);
-  lhs.mutable_repeated_int32()->Add(20);
+  std::unique_ptr<unittest::TestAllTypes> lhs(
+      Arena::CreateMessage<unittest::TestAllTypes>(nullptr));
+  std::unique_ptr<unittest::TestAllTypes> rhs(
+      Arena::CreateMessage<unittest::TestAllTypes>(nullptr));
+  lhs->set_optional_double(12.3);
+  lhs->mutable_repeated_int32()->Add(10);
+  lhs->mutable_repeated_int32()->Add(20);
 
-  rhs.set_optional_string("hello");
-  rhs.mutable_repeated_int64()->Add(30);
+  rhs->set_optional_string("hello");
+  rhs->mutable_repeated_int64()->Add(30);
 
   std::vector<const FieldDescriptor*> fields;
-  const Descriptor* descriptor = lhs.GetDescriptor();
+  const Descriptor* descriptor = lhs->GetDescriptor();
   fields.push_back(descriptor->FindFieldByName("optional_double"));
   fields.push_back(descriptor->FindFieldByName("repeated_int32"));
   fields.push_back(descriptor->FindFieldByName("optional_string"));
   fields.push_back(descriptor->FindFieldByName("optional_uint64"));
 
-  SwapFields(lhs.GetReflection(), &lhs, &rhs, fields);
+  SwapFields(lhs->GetReflection(), lhs.get(), rhs.get(), fields);
 
-  EXPECT_FALSE(lhs.has_optional_double());
-  EXPECT_EQ(0, lhs.repeated_int32_size());
-  EXPECT_TRUE(lhs.has_optional_string());
-  EXPECT_EQ("hello", lhs.optional_string());
-  EXPECT_EQ(0, lhs.repeated_int64_size());
-  EXPECT_FALSE(lhs.has_optional_uint64());
+  EXPECT_FALSE(lhs->has_optional_double());
+  EXPECT_EQ(0, lhs->repeated_int32_size());
+  EXPECT_TRUE(lhs->has_optional_string());
+  EXPECT_EQ("hello", lhs->optional_string());
+  EXPECT_EQ(0, lhs->repeated_int64_size());
+  EXPECT_FALSE(lhs->has_optional_uint64());
 
-  EXPECT_TRUE(rhs.has_optional_double());
-  EXPECT_EQ(12.3, rhs.optional_double());
-  EXPECT_EQ(2, rhs.repeated_int32_size());
-  EXPECT_EQ(10, rhs.repeated_int32(0));
-  EXPECT_EQ(20, rhs.repeated_int32(1));
-  EXPECT_FALSE(rhs.has_optional_string());
-  EXPECT_EQ(1, rhs.repeated_int64_size());
-  EXPECT_FALSE(rhs.has_optional_uint64());
+  EXPECT_TRUE(rhs->has_optional_double());
+  EXPECT_EQ(12.3, rhs->optional_double());
+  EXPECT_EQ(2, rhs->repeated_int32_size());
+  EXPECT_EQ(10, rhs->repeated_int32(0));
+  EXPECT_EQ(20, rhs->repeated_int32(1));
+  EXPECT_FALSE(rhs->has_optional_string());
+  EXPECT_EQ(1, rhs->repeated_int64_size());
+  EXPECT_FALSE(rhs->has_optional_uint64());
 }
 
 TEST_P(GeneratedMessageReflectionSwapTest, SwapFieldsAll) {
-  unittest::TestAllTypes lhs;
-  unittest::TestAllTypes rhs;
+  std::unique_ptr<unittest::TestAllTypes> lhs(
+      Arena::CreateMessage<unittest::TestAllTypes>(nullptr));
+  std::unique_ptr<unittest::TestAllTypes> rhs(
+      Arena::CreateMessage<unittest::TestAllTypes>(nullptr));
 
-  TestUtil::SetAllFields(&rhs);
+  TestUtil::SetAllFields(rhs.get());
 
   std::vector<const FieldDescriptor*> fields;
-  const Reflection* reflection = lhs.GetReflection();
-  reflection->ListFields(rhs, &fields);
-  SwapFields(reflection, &lhs, &rhs, fields);
+  const Reflection* reflection = lhs->GetReflection();
+  reflection->ListFields(*rhs, &fields);
+  SwapFields(reflection, lhs.get(), rhs.get(), fields);
 
-  TestUtil::ExpectAllFieldsSet(lhs);
-  TestUtil::ExpectClear(rhs);
+  TestUtil::ExpectAllFieldsSet(*lhs);
+  TestUtil::ExpectClear(*rhs);
 }
 
 TEST(GeneratedMessageReflectionTest, SwapFieldsAllOnDifferentArena) {

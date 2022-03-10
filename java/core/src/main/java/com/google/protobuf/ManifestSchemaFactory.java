@@ -35,6 +35,7 @@ import static com.google.protobuf.Internal.checkNotNull;
 /**
  * Dynamically generates a manifest-based (i.e. table-based) schema for a given protobuf message.
  */
+@CheckReturnValue
 @ExperimentalApi
 final class ManifestSchemaFactory implements SchemaFactory {
 

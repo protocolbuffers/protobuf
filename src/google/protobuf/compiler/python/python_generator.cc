@@ -54,13 +54,15 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/compiler/python/python_helpers.h>
+#include <google/protobuf/compiler/python/python_pyi_generator.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/descriptor.pb.h>
 
 namespace google {
 namespace protobuf {
@@ -68,16 +70,6 @@ namespace compiler {
 namespace python {
 
 namespace {
-
-
-// Returns the Python module name expected for a given .proto filename.
-std::string ModuleName(const std::string& filename) {
-  std::string basename = StripProto(filename);
-  ReplaceCharacters(&basename, "-", '_');
-  ReplaceCharacters(&basename, "/", '.');
-  return basename + "_pb2";
-}
-
 // Returns the alias we assign to the module of the given .proto filename
 // when importing. See testPackageInitializationImport in
 // net/proto2/python/internal/reflection_test.py
@@ -92,78 +84,18 @@ std::string ModuleAlias(const std::string& filename) {
   return module_name;
 }
 
-// Keywords reserved by the Python language.
-const char* const kKeywords[] = {
-    "False",  "None",     "True",  "and",    "as",       "assert",
-    "async",  "await",    "break", "class",  "continue", "def",
-    "del",    "elif",     "else",  "except", "finally",  "for",
-    "from",   "global",   "if",    "import", "in",       "is",
-    "lambda", "nonlocal", "not",   "or",     "pass",     "raise",
-    "return", "try",      "while", "with",   "yield",    "print",
-};
-const char* const* kKeywordsEnd =
-    kKeywords + (sizeof(kKeywords) / sizeof(kKeywords[0]));
-
-bool ContainsPythonKeyword(const std::string& module_name) {
-  std::vector<std::string> tokens = Split(module_name, ".");
-  for (int i = 0; i < tokens.size(); ++i) {
-    if (std::find(kKeywords, kKeywordsEnd, tokens[i]) != kKeywordsEnd) {
-      return true;
-    }
-  }
-  return false;
-}
-
-inline bool IsPythonKeyword(const std::string& name) {
-  return (std::find(kKeywords, kKeywordsEnd, name) != kKeywordsEnd);
-}
-
-std::string ResolveKeyword(const std::string& name) {
-  if (IsPythonKeyword(name)) {
-    return "globals()['" + name + "']";
-  }
-  return name;
-}
-
-// Returns the name of all containing types for descriptor,
-// in order from outermost to innermost, followed by descriptor's
-// own name.  Each name is separated by |separator|.
-template <typename DescriptorT>
-std::string NamePrefixedWithNestedTypes(const DescriptorT& descriptor,
-                                        const std::string& separator) {
-  std::string name = descriptor.name();
-  const Descriptor* parent = descriptor.containing_type();
-  if (parent != nullptr) {
-    std::string prefix = NamePrefixedWithNestedTypes(*parent, separator);
-    if (separator == "." && IsPythonKeyword(name)) {
-      return "getattr(" + prefix + ", '" + name + "')";
-    } else {
-      return prefix + separator + name;
-    }
-  }
-  if (separator == ".") {
-    name = ResolveKeyword(name);
-  }
-  return name;
-}
-
 // Name of the class attribute where we store the Python
 // descriptor.Descriptor instance for the generated class.
 // Must stay consistent with the _DESCRIPTOR_KEY constant
 // in proto2/public/reflection.py.
 const char kDescriptorKey[] = "DESCRIPTOR";
 
+
 // Does the file have top-level enums?
 inline bool HasTopLevelEnums(const FileDescriptor* file) {
   return file->enum_type_count() > 0;
 }
 
-// Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor* file) {
-  return file->service_count() > 0 && file->options().py_generic_services();
-}
-
-// Prints the common boilerplate needed at the top of every .py
 // file output by this generator.
 void PrintTopBoilerplate(io::Printer* printer, const FileDescriptor* file,
                          bool descriptor_proto) {
@@ -174,27 +106,16 @@ void PrintTopBoilerplate(io::Printer* printer, const FileDescriptor* file,
       "# source: $filename$\n"
       "\"\"\"Generated protocol buffer code.\"\"\"\n",
       "filename", file->name());
-  if (HasTopLevelEnums(file)) {
-    printer->Print(
-        "from google.protobuf.internal import enum_type_wrapper\n");
-  }
   printer->Print(
+      "from google.protobuf.internal import builder as _builder\n"
       "from google.protobuf import descriptor as _descriptor\n"
       "from google.protobuf import descriptor_pool as "
       "_descriptor_pool\n"
-      "from google.protobuf import message as _message\n"
-      "from google.protobuf import reflection as _reflection\n"
       "from google.protobuf import symbol_database as "
       "_symbol_database\n");
-  if (HasGenericServices(file)) {
-    printer->Print(
-        "from google.protobuf import service as _service\n"
-        "from google.protobuf import service_reflection\n");
-  }
 
-  printer->Print(
-      "# @@protoc_insertion_point(imports)\n\n"
-      "_sym_db = _symbol_database.Default()\n");
+  printer->Print("# @@protoc_insertion_point(imports)\n\n");
+  printer->Print("_sym_db = _symbol_database.Default()\n");
   printer->Print("\n\n");
 }
 
@@ -309,6 +230,11 @@ bool Generator::Generate(const FileDescriptor* file,
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "cpp_generated_lib_linked") {
       cpp_generated_lib_linked = true;
+    } else if (options[i].first == "pyi_out") {
+      python::PyiGenerator pyi_generator;
+      if (!pyi_generator.Generate(file, "", context, error)) {
+        return false;
+      }
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
@@ -324,11 +250,8 @@ bool Generator::Generate(const FileDescriptor* file,
   //   to have any mutable members.  Then it is implicitly thread-safe.
   MutexLock lock(&mutex_);
   file_ = file;
-  std::string module_name = ModuleName(file->name());
-  std::string filename = module_name;
-  ReplaceCharacters(&filename, ".", '/');
-  filename += ".py";
 
+  std::string filename = GetFileName(file, ".py");
   pure_python_workable_ = !cpp_generated_lib_linked;
   if (HasPrefixString(file->name(), "google/protobuf/")) {
     pure_python_workable_ = true;
@@ -349,15 +272,13 @@ bool Generator::Generate(const FileDescriptor* file,
     PrintImports();
   }
   PrintFileDescriptor();
-  PrintTopLevelEnums();
-  PrintTopLevelExtensions();
   if (pure_python_workable_) {
     if (GeneratingDescriptorProto()) {
       printer_->Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
       printer_->Indent();
       // Create enums before message descriptors
-      PrintAllNestedEnumsInFile(StripPrintDescriptor::kCreate);
-      PrintMessageDescriptors(StripPrintDescriptor::kCreate);
+      PrintAllNestedEnumsInFile();
+      PrintMessageDescriptors();
       FixForeignFieldsInDescriptors();
       printer_->Outdent();
       printer_->Print("else:\n");
@@ -365,16 +286,18 @@ bool Generator::Generate(const FileDescriptor* file,
     }
     // Find the message descriptors first and then use the message
     // descriptor to find enums.
-    PrintMessageDescriptors(StripPrintDescriptor::kFind);
-    PrintAllNestedEnumsInFile(StripPrintDescriptor::kFind);
+    printer_->Print(
+        "_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())\n");
     if (GeneratingDescriptorProto()) {
       printer_->Outdent();
     }
   }
-  PrintMessages();
+  std::string module_name = ModuleName(file->name());
+  printer_->Print(
+      "_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, '$module_name$', "
+      "globals())\n",
+      "module_name", module_name);
   if (pure_python_workable_) {
-    PrintServiceDescriptors();
-
     printer.Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
     printer_->Indent();
 
@@ -395,14 +318,15 @@ bool Generator::Generate(const FileDescriptor* file,
     printer_->Outdent();
   }
   if (HasGenericServices(file)) {
-    PrintServices();
+    printer_->Print(
+        "_builder.BuildServices(DESCRIPTOR, '$module_name$', globals())\n",
+        "module_name", module_name);
   }
 
   printer.Print("# @@protoc_insertion_point(module_scope)\n");
 
   return !printer.failed();
 }
-
 
 // Prints Python imports for all modules imported by |file|.
 void Generator::PrintImports() const {
@@ -516,47 +440,17 @@ void Generator::PrintFileDescriptor() const {
   printer_->Print("\n");
 }
 
-// Prints descriptors and module-level constants for all top-level
-// enums defined in |file|.
-void Generator::PrintTopLevelEnums() const {
-  std::vector<std::pair<std::string, int> > top_level_enum_values;
-  for (int i = 0; i < file_->enum_type_count(); ++i) {
-    const EnumDescriptor& enum_descriptor = *file_->enum_type(i);
-    PrintFindEnum(enum_descriptor);
-    printer_->Print(
-        "$name$ = "
-        "enum_type_wrapper.EnumTypeWrapper($descriptor_name$)",
-        "name", ResolveKeyword(enum_descriptor.name()), "descriptor_name",
-        ModuleLevelDescriptorName(enum_descriptor));
-    printer_->Print("\n");
-
-    for (int j = 0; j < enum_descriptor.value_count(); ++j) {
-      const EnumValueDescriptor& value_descriptor = *enum_descriptor.value(j);
-      top_level_enum_values.push_back(
-          std::make_pair(value_descriptor.name(), value_descriptor.number()));
-    }
-  }
-
-  for (int i = 0; i < top_level_enum_values.size(); ++i) {
-    printer_->Print("$name$ = $value$\n", "name",
-                    ResolveKeyword(top_level_enum_values[i].first), "value",
-                    StrCat(top_level_enum_values[i].second));
-  }
-  printer_->Print("\n");
-}
-
 // Prints all enums contained in all message types in |file|.
-void Generator::PrintAllNestedEnumsInFile(
-    StripPrintDescriptor print_mode) const {
+void Generator::PrintAllNestedEnumsInFile() const {
   for (int i = 0; i < file_->message_type_count(); ++i) {
-    PrintNestedEnums(*file_->message_type(i), print_mode);
+    PrintNestedEnums(*file_->message_type(i));
   }
 }
 
 // Prints a Python statement assigning the appropriate module-level
 // enum name to a Python EnumDescriptor object equivalent to
 // enum_descriptor.
-void Generator::PrintCreateEnum(const EnumDescriptor& enum_descriptor) const {
+void Generator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
   std::map<std::string, std::string> m;
   std::string module_level_descriptor_name =
       ModuleLevelDescriptorName(enum_descriptor);
@@ -600,68 +494,23 @@ void Generator::PrintCreateEnum(const EnumDescriptor& enum_descriptor) const {
   printer_->Print("\n");
 }
 
-void Generator::PrintFindEnum(const EnumDescriptor& enum_descriptor) const {
-  std::map<std::string, std::string> m;
-  m["descriptor_name"] = ModuleLevelDescriptorName(enum_descriptor);
-  m["name"] = enum_descriptor.name();
-  m["file"] = kDescriptorKey;
-  if (enum_descriptor.containing_type()) {
-    m["containing_type"] =
-        ModuleLevelDescriptorName(*enum_descriptor.containing_type());
-    printer_->Print(m,
-                    "$descriptor_name$ = "
-                    "$containing_type$.enum_types_by_name['$name$']\n");
-  } else {
-    printer_->Print(
-        m, "$descriptor_name$ = $file$.enum_types_by_name['$name$']\n");
-  }
-}
-
 // Recursively prints enums in nested types within descriptor, then
 // prints enums contained at the top level in descriptor.
-void Generator::PrintNestedEnums(const Descriptor& descriptor,
-                                 StripPrintDescriptor print_mode) const {
+void Generator::PrintNestedEnums(const Descriptor& descriptor) const {
   for (int i = 0; i < descriptor.nested_type_count(); ++i) {
-    PrintNestedEnums(*descriptor.nested_type(i), print_mode);
+    PrintNestedEnums(*descriptor.nested_type(i));
   }
 
   for (int i = 0; i < descriptor.enum_type_count(); ++i) {
-    if (print_mode == StripPrintDescriptor::kCreate) {
-      PrintCreateEnum(*descriptor.enum_type(i));
-    } else {
-      PrintFindEnum(*descriptor.enum_type(i));
-    }
+    PrintEnum(*descriptor.enum_type(i));
   }
-}
-
-void Generator::PrintTopLevelExtensions() const {
-  for (int i = 0; i < file_->extension_count(); ++i) {
-    const FieldDescriptor& extension_field = *file_->extension(i);
-    std::string constant_name = extension_field.name() + "_FIELD_NUMBER";
-    ToUpper(&constant_name);
-    printer_->Print("$constant_name$ = $number$\n", "constant_name",
-                    constant_name, "number",
-                    StrCat(extension_field.number()));
-    printer_->Print(
-        "$resolved_name$ = "
-        "$file$.extensions_by_name['$name$']\n",
-        "resolved_name", ResolveKeyword(extension_field.name()), "file",
-        kDescriptorKey, "name", extension_field.name());
-  }
-  printer_->Print("\n");
 }
 
 // Prints Python equivalents of all Descriptors in |file|.
-void Generator::PrintMessageDescriptors(StripPrintDescriptor print_mode) const {
-  if (print_mode == StripPrintDescriptor::kCreate) {
-    for (int i = 0; i < file_->message_type_count(); ++i) {
-      PrintCreateDescriptor(*file_->message_type(i));
-      printer_->Print("\n");
-    }
-  } else {
-    for (int i = 0; i < file_->message_type_count(); ++i) {
-      PrintFindDescriptor(*file_->message_type(i));
-    }
+void Generator::PrintMessageDescriptors() const {
+  for (int i = 0; i < file_->message_type_count(); ++i) {
+    PrintDescriptor(*file_->message_type(i));
+    printer_->Print("\n");
   }
 }
 
@@ -730,14 +579,13 @@ void Generator::PrintServiceStub(const ServiceDescriptor& descriptor) const {
 // to a Python Descriptor object for message_descriptor.
 //
 // Mutually recursive with PrintNestedDescriptors().
-void Generator::PrintCreateDescriptor(
-    const Descriptor& message_descriptor) const {
+void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
   std::map<std::string, std::string> m;
   m["name"] = message_descriptor.name();
   m["full_name"] = message_descriptor.full_name();
   m["file"] = kDescriptorKey;
 
-  PrintNestedDescriptors(message_descriptor, StripPrintDescriptor::kCreate);
+  PrintNestedDescriptors(message_descriptor);
 
   printer_->Print("\n");
   printer_->Print("$descriptor_name$ = _descriptor.Descriptor(\n",
@@ -823,41 +671,14 @@ void Generator::PrintCreateDescriptor(
   printer_->Print(")\n");
 }
 
-void Generator::PrintFindDescriptor(
-    const Descriptor& message_descriptor) const {
-  std::map<std::string, std::string> m;
-  m["descriptor_name"] = ModuleLevelDescriptorName(message_descriptor);
-  m["name"] = message_descriptor.name();
-
-  if (message_descriptor.containing_type()) {
-    m["containing_type"] =
-        ModuleLevelDescriptorName(*message_descriptor.containing_type());
-    printer_->Print(m,
-                    "$descriptor_name$ = "
-                    "$containing_type$.nested_types_by_name['$name$']\n");
-  } else {
-    m["file"] = kDescriptorKey;
-    printer_->Print(
-        m, "$descriptor_name$ = $file$.message_types_by_name['$name$']\n");
-  }
-
-  PrintNestedDescriptors(message_descriptor, StripPrintDescriptor::kFind);
-}
-
 // Prints Python Descriptor objects for all nested types contained in
 // message_descriptor.
 //
 // Mutually recursive with PrintDescriptor().
-void Generator::PrintNestedDescriptors(const Descriptor& containing_descriptor,
-                                       StripPrintDescriptor print_mode) const {
-  if (print_mode == StripPrintDescriptor::kCreate) {
-    for (int i = 0; i < containing_descriptor.nested_type_count(); ++i) {
-      PrintCreateDescriptor(*containing_descriptor.nested_type(i));
-    }
-  } else {
-    for (int i = 0; i < containing_descriptor.nested_type_count(); ++i) {
-      PrintFindDescriptor(*containing_descriptor.nested_type(i));
-    }
+void Generator::PrintNestedDescriptors(
+    const Descriptor& containing_descriptor) const {
+  for (int i = 0; i < containing_descriptor.nested_type_count(); ++i) {
+    PrintDescriptor(*containing_descriptor.nested_type(i));
   }
 }
 
@@ -1463,7 +1284,7 @@ void Generator::FixOptionsForEnum(const EnumDescriptor& enum_descriptor) const {
     if (value_options != "None") {
       PrintDescriptorOptionsFixingCode(
           StringPrintf("%s.values_by_name[\"%s\"]", descriptor_name.c_str(),
-                       value_descriptor.name().c_str()),
+                          value_descriptor.name().c_str()),
           value_options, printer_);
     }
   }

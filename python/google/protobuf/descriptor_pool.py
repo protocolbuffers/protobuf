@@ -1213,6 +1213,8 @@ class DescriptorPool(object):
         containing_service=None,
         input_type=input_type,
         output_type=output_type,
+        client_streaming=method_proto.client_streaming,
+        server_streaming=method_proto.server_streaming,
         options=_OptionsOrNone(method_proto),
         # pylint: disable=protected-access
         create_key=descriptor._internal_create_key)
@@ -1233,21 +1235,25 @@ class DescriptorPool(object):
       for enum in desc.enum_types:
         yield (_PrefixWithDot(enum.full_name), enum)
 
-  def _GetDeps(self, dependencies):
+  def _GetDeps(self, dependencies, visited=None):
     """Recursively finds dependencies for file protos.
 
     Args:
       dependencies: The names of the files being depended on.
+      visited: The names of files already found.
 
     Yields:
       Each direct and indirect dependency.
     """
 
+    visited = visited or set()
     for dependency in dependencies:
-      dep_desc = self.FindFileByName(dependency)
-      yield dep_desc
-      for parent_dep in dep_desc.dependencies:
-        yield parent_dep
+      if dependency not in visited:
+        visited.add(dependency)
+        dep_desc = self.FindFileByName(dependency)
+        yield dep_desc
+        public_files = [d.name for d in dep_desc.public_dependencies]
+        yield from self._GetDeps(public_files, visited)
 
   def _GetTypeFromScope(self, package, type_name, scope):
     """Finds a given type name in the current scope.

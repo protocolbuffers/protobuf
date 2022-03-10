@@ -31,9 +31,10 @@
 #ifndef GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__
 #define GOOGLE_PROTOBUF_MAP_TYPE_HANDLER_H__
 
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/arenastring.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/wire_format_lite.h>
 
 #ifdef SWIG
@@ -322,7 +323,8 @@ inline uint8_t* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Write(
     int field, const MapEntryAccessorType& value, uint8_t* ptr,
     io::EpsCopyOutputStream* stream) {
   ptr = stream->EnsureSpace(ptr);
-  return WireFormatLite::InternalWriteMessage(field, value, ptr, stream);
+  return WireFormatLite::InternalWriteMessage(
+      field, value, value.GetCachedSize(), ptr, stream);
 }
 
 #define WRITE_METHOD(FieldType, DeclaredType)                     \
@@ -578,25 +580,26 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::IsInitialized(
   template <typename Type>                                                    \
   inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Merge(  \
       const MapEntryAccessorType& from, TypeOnMemory* to, Arena* arena) {     \
-    to->Set(&internal::GetEmptyStringAlreadyInited(), from, arena);           \
+    to->Set(from, arena);                                                     \
   }                                                                           \
   template <typename Type>                                                    \
   void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::DeleteNoArena( \
       TypeOnMemory& value) {                                                  \
-    value.DestroyNoArena(&internal::GetEmptyStringAlreadyInited());           \
+    value.Destroy();                                                          \
   }                                                                           \
   template <typename Type>                                                    \
   constexpr auto                                                              \
   MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Constinit()         \
       ->TypeOnMemory {                                                        \
-    return TypeOnMemory(&internal::fixed_address_empty_string);               \
+    return TypeOnMemory(&internal::fixed_address_empty_string,                \
+                        ConstantInitialized{});                               \
   }                                                                           \
   template <typename Type>                                                    \
   inline typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,            \
                                  Type>::MapEntryAccessorType*                 \
   MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::EnsureMutable(      \
       TypeOnMemory* value, Arena* arena) {                                    \
-    return value->Mutable(ArenaStringPtr::EmptyDefault{}, arena);             \
+    return value->Mutable(arena);                                             \
   }                                                                           \
   template <typename Type>                                                    \
   inline const typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,      \
@@ -683,6 +686,48 @@ PRIMITIVE_HANDLER_FUNCTIONS(SFIXED64)
 PRIMITIVE_HANDLER_FUNCTIONS(SFIXED32)
 PRIMITIVE_HANDLER_FUNCTIONS(BOOL)
 #undef PRIMITIVE_HANDLER_FUNCTIONS
+
+// Functions for operating on a map entry using type handlers.
+//
+// Does not contain any representation (this class is not intended to be
+// instantiated).
+template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType>
+struct MapEntryFuncs {
+  typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
+  typedef MapTypeHandler<kValueFieldType, Value> ValueTypeHandler;
+  enum : int {
+    kKeyFieldNumber = 1,
+    kValueFieldNumber = 2
+  };
+
+  static uint8_t* InternalSerialize(int field_number, const Key& key,
+                                    const Value& value, uint8_t* ptr,
+                                    io::EpsCopyOutputStream* stream) {
+    ptr = stream->EnsureSpace(ptr);
+    ptr = WireFormatLite::WriteTagToArray(
+        field_number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, ptr);
+    ptr = io::CodedOutputStream::WriteVarint32ToArray(GetCachedSize(key, value),
+                                                      ptr);
+
+    ptr = KeyTypeHandler::Write(kKeyFieldNumber, key, ptr, stream);
+    return ValueTypeHandler::Write(kValueFieldNumber, value, ptr, stream);
+  }
+
+  static size_t ByteSizeLong(const Key& key, const Value& value) {
+    // Tags for key and value will both be one byte (field numbers 1 and 2).
+    size_t inner_length =
+        2 + KeyTypeHandler::ByteSize(key) + ValueTypeHandler::ByteSize(value);
+    return inner_length + io::CodedOutputStream::VarintSize32(
+                              static_cast<uint32_t>(inner_length));
+  }
+
+  static int GetCachedSize(const Key& key, const Value& value) {
+    // Tags for key and value will both be one byte (field numbers 1 and 2).
+    return 2 + KeyTypeHandler::GetCachedSize(key) +
+           ValueTypeHandler::GetCachedSize(value);
+  }
+};
 
 }  // namespace internal
 }  // namespace protobuf

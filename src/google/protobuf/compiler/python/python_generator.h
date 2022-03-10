@@ -40,6 +40,7 @@
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/stubs/mutex.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -59,8 +60,6 @@ class Printer;
 namespace compiler {
 namespace python {
 
-enum class StripPrintDescriptor { kCreate, kFind };
-
 // CodeGenerator implementation for generated Python protocol buffer classes.
 // If you create your own protocol compiler binary and you want it to support
 // Python output, you can do so by registering an instance of this
@@ -68,7 +67,7 @@ enum class StripPrintDescriptor { kCreate, kFind };
 class PROTOC_EXPORT Generator : public CodeGenerator {
  public:
   Generator();
-  virtual ~Generator();
+  ~Generator() override;
 
   // CodeGenerator methods.
   bool Generate(const FileDescriptor* file, const std::string& parameter,
@@ -80,14 +79,9 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
  private:
   void PrintImports() const;
   void PrintFileDescriptor() const;
-  void PrintTopLevelEnums() const;
-  void PrintAllNestedEnumsInFile(StripPrintDescriptor print_mode) const;
-  void PrintNestedEnums(const Descriptor& descriptor,
-                        StripPrintDescriptor print_mode) const;
-  void PrintCreateEnum(const EnumDescriptor& enum_descriptor) const;
-  void PrintFindEnum(const EnumDescriptor& enum_descriptor) const;
-
-  void PrintTopLevelExtensions() const;
+  void PrintAllNestedEnumsInFile() const;
+  void PrintNestedEnums(const Descriptor& descriptor) const;
+  void PrintEnum(const EnumDescriptor& enum_descriptor) const;
 
   void PrintFieldDescriptor(const FieldDescriptor& field,
                             bool is_extension) const;
@@ -97,11 +91,9 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const FieldDescriptor* (Descriptor::*GetterFn)(int)const) const;
   void PrintFieldsInDescriptor(const Descriptor& message_descriptor) const;
   void PrintExtensionsInDescriptor(const Descriptor& message_descriptor) const;
-  void PrintMessageDescriptors(StripPrintDescriptor print_mode) const;
-  void PrintCreateDescriptor(const Descriptor& message_descriptor) const;
-  void PrintFindDescriptor(const Descriptor& message_descriptor) const;
-  void PrintNestedDescriptors(const Descriptor& containing_descriptor,
-                              StripPrintDescriptor print_mode) const;
+  void PrintMessageDescriptors() const;
+  void PrintDescriptor(const Descriptor& message_descriptor) const;
+  void PrintNestedDescriptors(const Descriptor& containing_descriptor) const;
 
   void PrintMessages() const;
   void PrintMessage(const Descriptor& message_descriptor,

@@ -35,6 +35,8 @@
 #include <functional>
 
 #include <google/protobuf/arena.h>
+#include <google/protobuf/stubs/mutex.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/generated_message_util.h>
@@ -42,12 +44,11 @@
 #include <google/protobuf/map_field_lite.h>
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/message.h>
-#include <google/protobuf/stubs/mutex.h>
-#include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -58,6 +59,13 @@ namespace google {
 namespace protobuf {
 class DynamicMessage;
 class MapIterator;
+
+// Microsoft compiler complains about non-virtual destructor,
+// even when the destructor is private.
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4265)
+#endif  // _MSC_VER
 
 #define TYPE_CHECK(EXPECTEDTYPE, METHOD)                                   \
   if (type() != EXPECTEDTYPE) {                                            \
@@ -330,15 +338,22 @@ class PROTOBUF_EXPORT MapFieldBase {
   // It uses a linker initialized mutex, so it is not compatible with regular
   // runtime instances.
   // Except in MSVC, where we can't have a constinit mutex.
-  explicit constexpr MapFieldBase(ConstantInitialized)
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr MapFieldBase(ConstantInitialized)
       : arena_(nullptr),
         repeated_field_(nullptr),
         mutex_(GOOGLE_PROTOBUF_LINKER_INITIALIZED),
         state_(STATE_MODIFIED_MAP) {}
   explicit MapFieldBase(Arena* arena)
       : arena_(arena), repeated_field_(nullptr), state_(STATE_MODIFIED_MAP) {}
-  virtual ~MapFieldBase();
 
+ protected:
+  ~MapFieldBase() {  // "protected" stops users from deleting a `MapFieldBase *`
+    GOOGLE_DCHECK(repeated_field_ == nullptr);
+  }
+  void Destruct();
+
+ public:
   // Returns reference to internal repeated field. Data written using
   // Map's api prior to calling this function is guarantted to be
   // included in repeated field.
@@ -483,10 +498,18 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   // This constructor is for constant initialized global instances.
   // It uses a linker initialized mutex, so it is not compatible with regular
   // runtime instances.
-  explicit constexpr TypeDefinedMapFieldBase(ConstantInitialized tag)
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr TypeDefinedMapFieldBase(ConstantInitialized tag)
       : MapFieldBase(tag) {}
   explicit TypeDefinedMapFieldBase(Arena* arena) : MapFieldBase(arena) {}
-  ~TypeDefinedMapFieldBase() override {}
+  TypeDefinedMapFieldBase(ArenaInitialized, Arena* arena)
+      : TypeDefinedMapFieldBase(arena) {}
+
+ protected:
+  ~TypeDefinedMapFieldBase() {}
+  using MapFieldBase::Destruct;
+
+ public:
   void MapBegin(MapIterator* map_iter) const override;
   void MapEnd(MapIterator* map_iter) const override;
   bool EqualIterator(const MapIterator& a, const MapIterator& b) const override;
@@ -536,18 +559,24 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   typedef typename MapIf<kIsValueEnum, T, const T&>::type CastValueType;
 
  public:
-  typedef typename Derived::SuperType EntryTypeTrait;
   typedef Map<Key, T> MapType;
 
-  MapField() {}
+  MapField() : impl_() {}
+  virtual ~MapField() {}  // Destruct() must already have been called!
+  void Destruct() {
+    impl_.Destruct();
+    TypeDefinedMapFieldBase<Key, T>::Destruct();
+  }
 
   // This constructor is for constant initialized global instances.
   // It uses a linker initialized mutex, so it is not compatible with regular
   // runtime instances.
-  explicit constexpr MapField(ConstantInitialized tag)
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr MapField(ConstantInitialized tag)
       : TypeDefinedMapFieldBase<Key, T>(tag), impl_() {}
   explicit MapField(Arena* arena)
       : TypeDefinedMapFieldBase<Key, T>(arena), impl_(arena) {}
+  MapField(ArenaInitialized, Arena* arena) : MapField(arena) {}
 
   // Implement MapFieldBase
   bool ContainsMapKey(const MapKey& map_key) const override;
@@ -579,16 +608,6 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   // Used in the implementation of parsing. Caller should take the ownership iff
   // arena_ is nullptr.
   EntryType* NewEntry() const { return impl_.NewEntry(); }
-  // Used in the implementation of serializing enum value type. Caller should
-  // take the ownership iff arena_ is nullptr.
-  EntryType* NewEnumEntryWrapper(const Key& key, const T t) const {
-    return impl_.NewEnumEntryWrapper(key, t);
-  }
-  // Used in the implementation of serializing other value types. Caller should
-  // take the ownership iff arena_ is nullptr.
-  EntryType* NewEntryWrapper(const Key& key, const T& t) const {
-    return impl_.NewEntryWrapper(key, t);
-  }
 
   const char* _InternalParse(const char* ptr, ParseContext* ctx) {
     return impl_._InternalParse(ptr, ctx);
@@ -645,7 +664,7 @@ class PROTOBUF_EXPORT DynamicMapField
  public:
   explicit DynamicMapField(const Message* default_entry);
   DynamicMapField(const Message* default_entry, Arena* arena);
-  ~DynamicMapField() override;
+  virtual ~DynamicMapField();
 
   // Implement MapFieldBase
   bool ContainsMapKey(const MapKey& map_key) const override;
@@ -917,6 +936,10 @@ class PROTOBUF_EXPORT MapIterator {
 
 }  // namespace protobuf
 }  // namespace google
+
+#ifdef _MSC_VER
+#pragma warning(pop)  // restore warning C4265
+#endif                // _MSC_VER
 
 #include <google/protobuf/port_undef.inc>
 

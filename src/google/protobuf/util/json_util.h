@@ -39,6 +39,7 @@
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -181,8 +182,8 @@ namespace internal {
 class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
  public:
   explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
-      : stream_(stream), buffer_(NULL), buffer_size_(0) {}
-  ~ZeroCopyStreamByteSink();
+      : stream_(stream), buffer_(nullptr), buffer_size_(0) {}
+  ~ZeroCopyStreamByteSink() override;
 
   void Append(const char* bytes, size_t len) override;
 

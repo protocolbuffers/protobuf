@@ -40,14 +40,14 @@
 VALUE cParseError;
 VALUE cTypeError;
 
-const upb_fielddef* map_field_key(const upb_fielddef* field) {
-  const upb_msgdef *entry = upb_fielddef_msgsubdef(field);
-  return upb_msgdef_itof(entry, 1);
+const upb_FieldDef *map_field_key(const upb_FieldDef *field) {
+  const upb_MessageDef *entry = upb_FieldDef_MessageSubDef(field);
+  return upb_MessageDef_FindFieldByNumberWithSize(entry, 1);
 }
 
-const upb_fielddef* map_field_value(const upb_fielddef* field) {
-  const upb_msgdef *entry = upb_fielddef_msgsubdef(field);
-  return upb_msgdef_itof(entry, 2);
+const upb_FieldDef *map_field_value(const upb_FieldDef *field) {
+  const upb_MessageDef *entry = upb_FieldDef_MessageSubDef(field);
+  return upb_MessageDef_FindFieldByNumberWithSize(entry, 2);
 }
 
 // -----------------------------------------------------------------------------
@@ -66,21 +66,21 @@ static size_t StringBuilder_SizeOf(size_t cap) {
   return sizeof(StringBuilder) + cap;
 }
 
-StringBuilder* StringBuilder_New() {
+StringBuilder *StringBuilder_New() {
   const size_t cap = 128;
-  StringBuilder* builder = malloc(sizeof(*builder));
+  StringBuilder *builder = malloc(sizeof(*builder));
   builder->size = 0;
   builder->cap = cap;
   builder->data = malloc(builder->cap);
   return builder;
 }
 
-void StringBuilder_Free(StringBuilder* b) {
+void StringBuilder_Free(StringBuilder *b) {
   free(b->data);
   free(b);
 }
 
-void StringBuilder_Printf(StringBuilder* b, const char *fmt, ...) {
+void StringBuilder_Printf(StringBuilder *b, const char *fmt, ...) {
   size_t have = b->cap - b->size;
   size_t n;
   va_list args;
@@ -104,60 +104,62 @@ void StringBuilder_Printf(StringBuilder* b, const char *fmt, ...) {
   b->size += n;
 }
 
-VALUE StringBuilder_ToRubyString(StringBuilder* b) {
+VALUE StringBuilder_ToRubyString(StringBuilder *b) {
   VALUE ret = rb_str_new(b->data, b->size);
   rb_enc_associate(ret, rb_utf8_encoding());
   return ret;
 }
 
-static void StringBuilder_PrintEnum(StringBuilder* b, int32_t val,
-                                    const upb_enumdef* e) {
-  const char *name = upb_enumdef_iton(e, val);
-  if (name) {
-    StringBuilder_Printf(b, ":%s", name);
+static void StringBuilder_PrintEnum(StringBuilder *b, int32_t val,
+                                    const upb_EnumDef *e) {
+  const upb_EnumValueDef *ev = upb_EnumDef_FindValueByNumber(e, val);
+  if (ev) {
+    StringBuilder_Printf(b, ":%s", upb_EnumValueDef_Name(ev));
   } else {
     StringBuilder_Printf(b, "%" PRId32, val);
   }
 }
 
-void StringBuilder_PrintMsgval(StringBuilder* b, upb_msgval val,
+void StringBuilder_PrintMsgval(StringBuilder *b, upb_MessageValue val,
                                TypeInfo info) {
   switch (info.type) {
-    case UPB_TYPE_BOOL:
+    case kUpb_CType_Bool:
       StringBuilder_Printf(b, "%s", val.bool_val ? "true" : "false");
       break;
-    case UPB_TYPE_FLOAT: {
+    case kUpb_CType_Float: {
       VALUE str = rb_inspect(DBL2NUM(val.float_val));
       StringBuilder_Printf(b, "%s", RSTRING_PTR(str));
       break;
     }
-    case UPB_TYPE_DOUBLE: {
+    case kUpb_CType_Double: {
       VALUE str = rb_inspect(DBL2NUM(val.double_val));
       StringBuilder_Printf(b, "%s", RSTRING_PTR(str));
       break;
     }
-    case UPB_TYPE_INT32:
+    case kUpb_CType_Int32:
       StringBuilder_Printf(b, "%" PRId32, val.int32_val);
       break;
-    case UPB_TYPE_UINT32:
+    case kUpb_CType_UInt32:
       StringBuilder_Printf(b, "%" PRIu32, val.uint32_val);
       break;
-    case UPB_TYPE_INT64:
+    case kUpb_CType_Int64:
       StringBuilder_Printf(b, "%" PRId64, val.int64_val);
       break;
-    case UPB_TYPE_UINT64:
+    case kUpb_CType_UInt64:
       StringBuilder_Printf(b, "%" PRIu64, val.uint64_val);
       break;
-    case UPB_TYPE_STRING:
-      StringBuilder_Printf(b, "\"%.*s\"", (int)val.str_val.size, val.str_val.data);
+    case kUpb_CType_String:
+      StringBuilder_Printf(b, "\"%.*s\"", (int)val.str_val.size,
+                           val.str_val.data);
       break;
-    case UPB_TYPE_BYTES:
-      StringBuilder_Printf(b, "\"%.*s\"", (int)val.str_val.size, val.str_val.data);
+    case kUpb_CType_Bytes:
+      StringBuilder_Printf(b, "\"%.*s\"", (int)val.str_val.size,
+                           val.str_val.data);
       break;
-    case UPB_TYPE_ENUM:
+    case kUpb_CType_Enum:
       StringBuilder_PrintEnum(b, val.int32_val, info.def.enumdef);
       break;
-    case UPB_TYPE_MESSAGE:
+    case kUpb_CType_Message:
       Message_PrintMessage(b, val.msg_val, info.def.msgdef);
       break;
   }
@@ -168,7 +170,7 @@ void StringBuilder_PrintMsgval(StringBuilder* b, upb_msgval val,
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  upb_arena *arena;
+  upb_Arena *arena;
   VALUE pinned_objs;
 } Arena;
 
@@ -179,44 +181,53 @@ static void Arena_mark(void *data) {
 
 static void Arena_free(void *data) {
   Arena *arena = data;
-  upb_arena_free(arena->arena);
+  upb_Arena_Free(arena->arena);
   xfree(arena);
 }
 
 static VALUE cArena;
 
 const rb_data_type_t Arena_type = {
-  "Google::Protobuf::Internal::Arena",
-  { Arena_mark, Arena_free, NULL },
-  .flags = RUBY_TYPED_FREE_IMMEDIATELY,
+    "Google::Protobuf::Internal::Arena",
+    {Arena_mark, Arena_free, NULL},
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
+
+static void* ruby_upb_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize, size_t size) {
+  if (size == 0) {
+    xfree(ptr);
+    return NULL;
+  } else {
+    return xrealloc(ptr, size);
+  }
+}
+
+upb_alloc ruby_upb_alloc = {&ruby_upb_allocfunc};
 
 static VALUE Arena_alloc(VALUE klass) {
   Arena *arena = ALLOC(Arena);
-  arena->arena = upb_arena_new();
+  arena->arena = upb_Arena_Init(NULL, 0, &ruby_upb_alloc);
   arena->pinned_objs = Qnil;
   return TypedData_Wrap_Struct(klass, &Arena_type, arena);
 }
 
-upb_arena *Arena_get(VALUE _arena) {
+upb_Arena *Arena_get(VALUE _arena) {
   Arena *arena;
   TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
   return arena->arena;
 }
 
-void Arena_fuse(VALUE _arena, upb_arena *other) {
+void Arena_fuse(VALUE _arena, upb_Arena *other) {
   Arena *arena;
   TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
-  if (!upb_arena_fuse(arena->arena, other)) {
+  if (!upb_Arena_Fuse(arena->arena, other)) {
     rb_raise(rb_eRuntimeError,
              "Unable to fuse arenas. This should never happen since Ruby does "
              "not use initial blocks");
   }
 }
 
-VALUE Arena_new() {
-  return Arena_alloc(cArena);
-}
+VALUE Arena_new() { return Arena_alloc(cArena); }
 
 void Arena_Pin(VALUE _arena, VALUE obj) {
   Arena *arena;
@@ -333,8 +344,8 @@ static void SecondaryMap_MaybeGC() {
   // avoid O(N^2) CPU costs.
   size_t threshold = PBRUBY_MAX(secondary_len * 0.2, 2000);
   if (waste > threshold) {
-    rb_funcall(gc_secondary_map_lambda, rb_intern("call"), 2,
-               secondary_map, weak_obj_cache);
+    rb_funcall(gc_secondary_map_lambda, rb_intern("call"), 2, secondary_map,
+               weak_obj_cache);
   }
 }
 
@@ -353,7 +364,7 @@ static VALUE SecondaryMap_Get(VALUE key, bool create) {
 #endif
 
 // Requires: secondary_map_mutex is held by this thread iff create == true.
-static VALUE ObjectCache_GetKey(const void* key, bool create) {
+static VALUE ObjectCache_GetKey(const void *key, bool create) {
   VALUE key_val = (VALUE)key;
   PBRUBY_ASSERT((key_val & 3) == 0);
   VALUE ret = LL2NUM(key_val >> 2);
@@ -380,7 +391,7 @@ static void ObjectCache_Init() {
 #endif
 }
 
-void ObjectCache_Add(const void* key, VALUE val) {
+void ObjectCache_Add(const void *key, VALUE val) {
   PBRUBY_ASSERT(ObjectCache_Get(key) == Qnil);
 #if USE_SECONDARY_MAP
   rb_mutex_lock(secondary_map_mutex);
@@ -394,7 +405,7 @@ void ObjectCache_Add(const void* key, VALUE val) {
 }
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
-VALUE ObjectCache_Get(const void* key) {
+VALUE ObjectCache_Get(const void *key) {
   VALUE key_rb = ObjectCache_GetKey(key, false);
   return rb_funcall(weak_obj_cache, item_get, 1, key_rb);
 }
@@ -407,9 +418,9 @@ VALUE ObjectCache_Get(const void* key) {
  * unknown fields in submessages.
  */
 static VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb) {
-  const upb_msgdef *m;
-  upb_msg *msg = Message_GetMutable(msg_rb, &m);
-  if (!upb_msg_discardunknown(msg, m, 128)) {
+  const upb_MessageDef *m;
+  upb_Message *msg = Message_GetMutable(msg_rb, &m);
+  if (!upb_Message_DiscardUnknown(msg, m, 128)) {
     rb_raise(rb_eRuntimeError, "Messages nested too deeply.");
   }
 
@@ -431,10 +442,10 @@ VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj) {
     return Map_deep_copy(obj);
   } else {
     VALUE new_arena_rb = Arena_new();
-    upb_arena *new_arena = Arena_get(new_arena_rb);
-    const upb_msgdef *m;
-    const upb_msg *msg = Message_Get(obj, &m);
-    upb_msg* new_msg = Message_deep_copy(msg, m, new_arena);
+    upb_Arena *new_arena = Arena_get(new_arena_rb);
+    const upb_MessageDef *m;
+    const upb_Message *msg = Message_Get(obj, &m);
+    upb_Message *new_msg = Message_deep_copy(msg, m, new_arena);
     return Message_GetRubyWrapper(new_msg, m, new_arena_rb);
   }
 }
@@ -445,8 +456,7 @@ VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj) {
 
 // This must be named "Init_protobuf_c" because the Ruby module is named
 // "protobuf_c" -- the VM looks for this symbol in our .so.
-__attribute__ ((visibility ("default")))
-void Init_protobuf_c() {
+__attribute__((visibility("default"))) void Init_protobuf_c() {
   ObjectCache_Init();
 
   VALUE google = rb_define_module("Google");
@@ -465,6 +475,6 @@ void Init_protobuf_c() {
 
   rb_define_singleton_method(protobuf, "discard_unknown",
                              Google_Protobuf_discard_unknown, 1);
-  rb_define_singleton_method(protobuf, "deep_copy",
-                             Google_Protobuf_deep_copy, 1);
+  rb_define_singleton_method(protobuf, "deep_copy", Google_Protobuf_deep_copy,
+                             1);
 }

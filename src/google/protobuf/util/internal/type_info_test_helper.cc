@@ -36,11 +36,11 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/util/internal/default_value_objectwriter.h>
-#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/internal/constants.h>
+#include <google/protobuf/util/internal/default_value_objectwriter.h>
 #include <google/protobuf/util/internal/protostream_objectsource.h>
 #include <google/protobuf/util/internal/protostream_objectwriter.h>
+#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
 

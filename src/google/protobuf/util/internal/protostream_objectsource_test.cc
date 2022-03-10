@@ -46,11 +46,11 @@
 #include <google/protobuf/util/internal/testdata/proto3.pb.h>
 #include <google/protobuf/util/internal/testdata/struct.pb.h>
 #include <google/protobuf/util/internal/testdata/timestamp_duration.pb.h>
-#include <google/protobuf/util/internal/type_info_test_helper.h>
-#include <google/protobuf/util/internal/constants.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/status.h>
+#include <google/protobuf/util/internal/constants.h>
+#include <google/protobuf/util/internal/type_info_test_helper.h>
 
 
 namespace google {
@@ -103,7 +103,7 @@ class ProtostreamObjectSourceTest
     helper_.ResetTypeInfo(Book::descriptor(), Proto3Message::descriptor());
   }
 
-  virtual ~ProtostreamObjectSourceTest() {}
+  ~ProtostreamObjectSourceTest() override {}
 
   void DoTest(const Message& msg, const Descriptor* descriptor) {
     util::Status status = ExecuteTest(msg, descriptor);

@@ -71,6 +71,14 @@ module BasicTest
       TestMessage.encode(msg)
     end
 
+    def test_issue_9440
+      msg = HelloRequest.new
+      msg.id = 8
+      assert_equal 8, msg.id
+      msg.version = '1'
+      assert_equal 8, msg.id
+    end
+
     def test_has_field
       m = TestSingularFields.new
       assert !m.has_singular_msg?
@@ -635,6 +643,28 @@ module BasicTest
       assert_equal 1, m.map_string_msg.length
       assert_equal 2, m.map_string_int32.size
       assert_equal 1, m.map_string_msg.size
+    end
+
+    def test_string_with_singleton_class_enabled
+      str = 'foobar'
+      # NOTE: Accessing a singleton class of an object changes its low level class representation
+      #       as far as the C API's CLASS_OF() method concerned, exposing the issue
+      str.singleton_class
+      m = proto_module::TestMessage.new(
+        optional_string: str,
+        optional_bytes: str
+      )
+
+      assert_equal str, m.optional_string
+      assert_equal str, m.optional_bytes
+    end
+
+    def test_utf8
+      m = proto_module::TestMessage.new(
+        optional_string: "µpb",
+      )
+      m2 = proto_module::TestMessage.decode(proto_module::TestMessage.encode(m))
+      assert_equal m2, m
     end
   end
 end

@@ -41,10 +41,10 @@
 #include <map>
 #include <string>
 
-#include <google/protobuf/compiler/cpp/cpp_options.h>
-#include <google/protobuf/compiler/cpp/cpp_names.h>
 #include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/compiler/cpp/cpp_names.h>
+#include <google/protobuf/compiler/cpp/cpp_options.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.h>
@@ -58,6 +58,8 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+
+enum class ArenaDtorNeeds { kNone = 0, kOnDemand = 1, kRequired = 2 };
 
 inline std::string ProtobufNamespace(const Options& /* options */) {
   return "PROTOBUF_NAMESPACE_ID";
@@ -84,6 +86,10 @@ extern const char kThinSeparator[];
 
 void SetCommonVars(const Options& options,
                    std::map<std::string, std::string>* variables);
+
+// Variables to access message data from the message scope.
+void SetCommonMessageDataVariables(
+    std::map<std::string, std::string>* variables);
 
 void SetUnknownFieldsVariable(const Descriptor* descriptor,
                               const Options& options,
@@ -185,6 +191,9 @@ std::string ResolveKeyword(const std::string& name);
 // should be using lowercase-with-underscores style for proto field names
 // anyway, so normally this just returns field->name().
 std::string FieldName(const FieldDescriptor* field);
+
+// Returns the (unqualified) private member name for this field in C++ code.
+std::string FieldMemberName(const FieldDescriptor* field);
 
 // Returns an estimate of the compiler's alignment for the field.  This
 // can't guarantee to be correct because the generated code could be compiled on
@@ -348,9 +357,16 @@ bool HasLazyFields(const FileDescriptor* file, const Options& options,
 bool IsLazy(const FieldDescriptor* field, const Options& options,
             MessageSCCAnalyzer* scc_analyzer);
 
+// Is this an explicit (non-profile driven) lazy field, as denoted by
+// lazy/unverified_lazy in the descriptor?
+inline bool IsExplicitLazy(const FieldDescriptor* field) {
+  return field->options().lazy() || field->options().unverified_lazy();
+}
+
 inline bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
                                  const Options& options) {
-  return field->options().lazy() && !field->is_repeated() &&
+  // TODO(b/211906113): Make lazy() imply eagerly verified lazy.
+  return IsExplicitLazy(field) && !field->is_repeated() &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
          GetOptimizeFor(field->file(), options) != FileOptions::LITE_RUNTIME &&
          !options.opensource_runtime;
@@ -359,7 +375,8 @@ inline bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
 inline bool IsEagerlyVerifiedLazy(const FieldDescriptor* field,
                                   const Options& options,
                                   MessageSCCAnalyzer* scc_analyzer) {
-  return IsLazy(field, options, scc_analyzer) && !field->options().lazy();
+  // TODO(b/211906113): Make lazy() imply eagerly verified lazy.
+  return IsLazy(field, options, scc_analyzer) && !IsExplicitLazy(field);
 }
 
 inline bool IsFieldUsed(const FieldDescriptor* /* field */,
@@ -472,6 +489,43 @@ inline std::string MakeDefaultName(const FieldDescriptor* field) {
          "_";
 }
 
+// Semantically distinct from MakeDefaultName in that it gives the C++ code
+// referencing a default field from the message scope, rather than just the
+// variable name.
+// For example, declarations of default variables should always use just
+// MakeDefaultName to produce code like:
+//   Type _i_give_permission_to_break_this_code_default_field_;
+//
+// Code that references these should use MakeDefaultFieldName, in case the field
+// exists at some nested level like:
+//   internal_container_._i_give_permission_to_break_this_code_default_field_;
+inline std::string MakeDefaultFieldName(const FieldDescriptor* field) {
+  return MakeDefaultName(field);
+}
+
+inline std::string MakeVarintCachedSizeName(const FieldDescriptor* field) {
+  return StrCat("_", FieldName(field), "_cached_byte_size_");
+}
+
+// Semantically distinct from MakeVarintCachedSizeName in that it gives the C++
+// code referencing the object from the message scope, rather than just the
+// variable name.
+// For example, declarations of default variables should always use just
+// MakeVarintCachedSizeName to produce code like:
+//   Type _field_cached_byte_size_;
+//
+// Code that references these variables should use
+// MakeVarintCachedSizeFieldName, in case the field exists at some nested level
+// like:
+//   internal_container_._field_cached_byte_size_;
+inline std::string MakeVarintCachedSizeFieldName(const FieldDescriptor* field) {
+  return StrCat("_", FieldName(field), "_cached_byte_size_");
+}
+
+// Note: A lot of libraries detect Any protos based on Descriptor::full_name()
+// while the two functions below use FileDescriptor::name(). In a sane world the
+// two approaches should be equivalent. But if you are dealing with descriptors
+// from untrusted sources, you might need to match semantics across libraries.
 bool IsAnyMessage(const FileDescriptor* descriptor, const Options& options);
 bool IsAnyMessage(const Descriptor* descriptor, const Options& options);
 
@@ -955,7 +1009,7 @@ inline OneOfRangeImpl OneOfRange(const Descriptor* desc) { return {desc}; }
 
 PROTOC_EXPORT std::string StripProto(const std::string& filename);
 
-bool EnableMessageOwnedArena(const Descriptor* desc);
+bool EnableMessageOwnedArena(const Descriptor* desc, const Options& options);
 
 bool ShouldVerify(const Descriptor* descriptor, const Options& options,
                   MessageSCCAnalyzer* scc_analyzer);

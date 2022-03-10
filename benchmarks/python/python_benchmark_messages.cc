@@ -18,8 +18,7 @@ static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                      NULL};
 
 extern "C" {
-PyMODINIT_FUNC
-PyInit_libbenchmark_messages() {
+PyMODINIT_FUNC PyInit_libbenchmark_messages() {
   benchmarks::BenchmarkDataset().descriptor();
   benchmarks::proto3::GoogleMessage1().descriptor();
   benchmarks::proto2::GoogleMessage1().descriptor();

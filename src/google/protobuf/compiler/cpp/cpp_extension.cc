@@ -33,11 +33,13 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_extension.h>
+
 #include <map>
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/descriptor.pb.h>
+
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/descriptor.pb.h>
 
 namespace google {
 namespace protobuf {
@@ -76,6 +78,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
       break;
   }
   SetCommonVars(options, &variables_);
+  SetCommonMessageDataVariables(&variables_);
   variables_["extendee"] =
       QualifiedClassName(descriptor_->containing_type(), options_);
   variables_["type_traits"] = type_traits_;
@@ -91,6 +94,19 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["scope"] = scope;
   variables_["scoped_name"] = ExtensionName(descriptor_);
   variables_["number"] = StrCat(descriptor_->number());
+
+  bool add_verify_fn =
+      // Only verify msgs.
+      descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+      // Options say to verify.
+      ShouldVerify(descriptor_->message_type(), options_, scc_analyzer_) &&
+      ShouldVerify(descriptor_->containing_type(), options_, scc_analyzer_);
+
+  variables_["verify_fn"] =
+      add_verify_fn
+          ? StrCat("&", FieldMessageTypeName(descriptor_, options_),
+                         "::InternalVerify")
+          : "nullptr";
 }
 
 ExtensionGenerator::~ExtensionGenerator() {}
@@ -164,23 +180,11 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
   }
 
   format(
-      "PROTOBUF_ATTRIBUTE_INIT_PRIORITY "
+      "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 "
       "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
-      "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
-      "  $scoped_name$($constant_name$, $1$);\n",
+      "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$>\n"
+      "  $scoped_name$($constant_name$, $1$, $verify_fn$);\n",
       default_str);
-
-  // Register extension verify function if needed.
-  if (descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-      ShouldVerify(descriptor_->message_type(), options_, scc_analyzer_) &&
-      ShouldVerify(descriptor_->containing_type(), options_, scc_analyzer_)) {
-    format(
-        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY "
-        "::$proto_ns$::internal::RegisterExtensionVerify< $extendee$,\n"
-        "    $1$, $number$> $2$_$name$_register;\n",
-        ClassName(descriptor_->message_type(), true),
-        IsScoped() ? ClassName(descriptor_->extension_scope(), false) : "");
-  }
 }
 
 }  // namespace cpp

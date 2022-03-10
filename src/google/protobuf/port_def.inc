@@ -148,27 +148,31 @@
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.
+// PROTOBUF_FUTURE_FINAL is used on classes that are historically not marked as
+// final, but that may be marked final in future (breaking) releases.
 // #define PROTOBUF_FUTURE_BREAKING_CHANGES 1
+// #define PROTOBUF_FUTURE_FINAL final
+#define PROTOBUF_FUTURE_FINAL
 
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3019003
+#define PROTOBUF_VERSION 3020000
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
 #endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3019000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3020000
 
 #ifdef PROTOBUF_MIN_PROTOC_VERSION
 #error PROTOBUF_MIN_PROTOC_VERSION was previously defined
 #endif
-#define PROTOBUF_MIN_PROTOC_VERSION 3019000
+#define PROTOBUF_MIN_PROTOC_VERSION 3020000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
 #endif
-#define PROTOBUF_VERSION_SUFFIX ""
+#define PROTOBUF_VERSION_SUFFIX "-rc1"
 
 #if defined(PROTOBUF_NAMESPACE) || defined(PROTOBUF_NAMESPACE_ID)
 #error PROTOBUF_NAMESPACE or PROTOBUF_NAMESPACE_ID was previously defined
@@ -229,11 +233,14 @@
 #ifdef PROTOBUF_TAILCALL
 #error PROTOBUF_TAILCALL was previously defined
 #endif
-#if __has_cpp_attribute(clang::musttail) && \
-  !defined(__arm__) && !defined(_ARCH_PPC) && !defined(__wasm__)
+#if __has_cpp_attribute(clang::musttail) && !defined(__arm__) && \
+    !defined(_ARCH_PPC) && !defined(__wasm__) &&                 \
+    !(defined(_MSC_VER) && defined(_M_IX86))
 #  ifndef PROTO2_OPENSOURCE
 // Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
+// Compilation fails on X86 Windows:
+// https://github.com/llvm/llvm-project/issues/53271
 #  endif
 #define PROTOBUF_MUSTTAIL [[clang::musttail]]
 #define PROTOBUF_TAILCALL true
@@ -356,17 +363,25 @@
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3019000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3020000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
 #endif
 #if defined(GOOGLE_PROTOBUF_NO_RTTI) && GOOGLE_PROTOBUF_NO_RTTI
+// A user-provided definition GOOGLE_PROTOBUF_NO_RTTI=1 disables RTTI.
 #define PROTOBUF_RTTI 0
-#elif __has_feature(cxx_rtti)
+#elif defined(__cpp_rtti)
+// https://en.cppreference.com/w/cpp/feature_test
 #define PROTOBUF_RTTI 1
-#elif defined(__cxx_rtti)
-// https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros#C.2B.2B98
+#elif __has_feature(cxx_rtti)
+// https://clang.llvm.org/docs/LanguageExtensions.html#c-rtti
+#define PROTOBUF_RTTI 1
+#elif defined(__GXX_RTTI)
+// https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+#define PROTOBUF_RTTI 1
+#elif defined(_CPPRTTI)
+// https://docs.microsoft.com/en-us/cpp/build/reference/gr-enable-run-time-type-information
 #define PROTOBUF_RTTI 1
 #else
 #define PROTOBUF_RTTI 0
@@ -439,7 +454,7 @@
 # else
 #  define PROTOC_EXPORT __declspec(dllimport)
 # endif  // defined(LIBPROTOC_EXPORTS)
-#elif defined(PROTOBUF_USE_DLLS) && defined(LIBPROTOBUF_EXPORTS)
+#elif defined(PROTOBUF_USE_DLLS) && defined(LIBPROTOC_EXPORTS)
 # define PROTOC_EXPORT __attribute__((visibility("default")))
 #else
 # define PROTOC_EXPORT
@@ -459,13 +474,20 @@
 #ifdef PROTOBUF_NODISCARD
 #error PROTOBUF_NODISCARD was previously defined
 #endif
-#if __has_cpp_attribute(nodiscard)
+#if __has_cpp_attribute(nodiscard) && PROTOBUF_CPLUSPLUS_MIN(201703L)
 #define PROTOBUF_NODISCARD [[nodiscard]]
 #elif __has_attribute(warn_unused_result) || PROTOBUF_GNUC_MIN(4, 8)
 #define PROTOBUF_NODISCARD __attribute__((warn_unused_result))
 #else
 #define PROTOBUF_NODISCARD
 #endif
+
+// Enable all stable experiments if this flag is set.  This allows us to group
+// all of these experiments under a single build flag, which can be enabled in
+// the protobuf.stable-experiments TAP project.
+#ifdef PROTOBUF_ENABLE_STABLE_EXPERIMENTS
+#define PROTOBUF_FORCE_MESSAGE_OWNED_ARENA
+#endif  // !PROTOBUF_ENABLE_STABLE_EXPERIMENTS
 
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
 #error PROTOBUF_FORCE_COPY_IN_RELEASE was previously defined
@@ -574,16 +596,24 @@
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
-#if defined(__cpp_constinit) && !PROTOBUF_GNUC_MIN(3, 0) && !defined(_MSC_VER)
-// Our use of constinit does not yet work with GCC:
-// https://github.com/protocolbuffers/protobuf/issues/8310
-// Does not work yet with Visual Studio 2019 Update 16.10
+#if defined(__cpp_constinit)
 #define PROTOBUF_CONSTINIT constinit
-#elif !defined(_MSC_VER) && \
-    __has_cpp_attribute(clang::require_constant_initialization)
+#define PROTOBUF_CONSTEXPR constexpr
+// Some older Clang versions incorrectly raise an error about
+// constant-initializing weak default instance pointers. Versions 12.0 and
+// higher seem to work, except that XCode 12.5.1 shows the error even though it
+// uses Clang 12.0.5.
+#elif __has_cpp_attribute(clang::require_constant_initialization) && \
+    ((defined(__APPLE__) && __clang_major__ >= 13) ||                \
+     (!defined(__APPLE__) && __clang_major__ >= 12))
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
+#define PROTOBUF_CONSTEXPR constexpr
+#elif PROTOBUF_GNUC_MIN(12, 0)
+#define PROTOBUF_CONSTINIT __constinit
+#define PROTOBUF_CONSTEXPR constexpr
 #else
 #define PROTOBUF_CONSTINIT
+#define PROTOBUF_CONSTEXPR inline
 #endif
 
 // Some globals with an empty non-trivial destructor are annotated with
@@ -598,20 +628,43 @@
 #define PROTOBUF_ATTRIBUTE_NO_DESTROY
 #endif
 
+// Force clang to always emit complete debug info for a type.
+// Clang uses constructor homing to determine when to emit debug info for a
+// type. If the constructor of a type is never used, which can happen in some
+// cases where member variables are constructed in place for optimization
+// purposes (see b/208803175 for an example), the type will have incomplete
+// debug info unless this attribute is used.
+#ifdef PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG
+#error PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG was previously defined
+#endif
+#if __has_cpp_attribute(clang::standalone_debug)
+#define PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG [[clang::standalone_debug]]
+#else
+#define PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG
+#endif
+
 // Protobuf extensions and reflection require registration of the protos linked
 // in the binary. Not until everything is registered does the runtime have a
 // complete view on all protos. When code is using reflection or extensions
 // in between registration calls this can lead to surprising behavior. By
 // having the registration run first we mitigate this scenario.
-// Highest priority is 101. We use 102 to allow code that really wants to
-// higher priority to still beat us.
-#ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY
-#error PROTOBUF_ATTRIBUTE_INIT_PRIORITY was previously defined
+// Highest priority is 101. We use 102 for registration, to allow code that
+// really wants to higher priority to still beat us. Some initialization happens
+// at higher priority, though, since it is needed before registration.
+#ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+#error PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 was previously defined
 #endif
-#if PROTOBUF_GNUC_MIN(3, 0) && (!defined(__APPLE__) || defined(__clang__)) && !((defined(sun) || defined(__sun)) && (defined(__SVR4) || defined(__svr4__)))
-#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY __attribute__((init_priority((102))))
+#ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
+#error PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 was previously defined
+#endif
+#if PROTOBUF_GNUC_MIN(3, 0) && (!defined(__APPLE__) || defined(__clang__)) && \
+    !((defined(sun) || defined(__sun)) &&                                     \
+      (defined(__SVR4) || defined(__svr4__)))
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 __attribute__((init_priority((101))))
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 __attribute__((init_priority((102))))
 #else
-#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
 #endif
 
 #ifdef PROTOBUF_PRAGMA_INIT_SEG
@@ -679,19 +732,6 @@
 #endif
 #if defined(PROTOBUF_EXPERIMENTAL_USE_TAIL_CALL_TABLE_PARSER)
 #define PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED 1
-// Selectively use static member functions instead of templates:
-#ifndef PROTOBUF_TC_STATIC_PARSE_SINGULAR1
-#  define PROTOBUF_TC_STATIC_PARSE_SINGULAR1 1
-#endif
-#ifndef PROTOBUF_TC_STATIC_PARSE_SINGULAR2
-#  define PROTOBUF_TC_STATIC_PARSE_SINGULAR2 0
-#endif
-#ifndef PROTOBUF_TC_STATIC_PARSE_REPEATED1
-#  define PROTOBUF_TC_STATIC_PARSE_REPEATED1 0
-#endif
-#ifndef PROTOBUF_TC_STATIC_PARSE_REPEATED2
-#  define PROTOBUF_TC_STATIC_PARSE_REPEATED2 0
-#endif
 #endif
 
 #define PROTOBUF_TC_PARAM_DECL                                 \
@@ -711,6 +751,8 @@
 #else
 #define PROTOBUF_UNUSED
 #endif
+
+// ThreadSafeArenaz is turned off completely in opensource builds.
 
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
@@ -757,11 +799,24 @@
 #undef SERVICE_DISABLED
 #pragma push_macro("SEVERITY_ERROR")
 #undef SEVERITY_ERROR
+#pragma push_macro("STATUS_PENDING")
+#undef STATUS_PENDING
 #pragma push_macro("STRICT")
 #undef STRICT
 #pragma push_macro("timezone")
 #undef timezone
 #endif  // _MSC_VER
+
+#ifdef __APPLE__
+// Inconvenient macro names from usr/include/math.h in some macOS SDKs.
+#pragma push_macro("DOMAIN")
+#undef DOMAIN
+// Inconvenient macro names from /usr/include/mach/boolean.h in some macOS SDKs.
+#pragma push_macro("TRUE")
+#undef TRUE
+#pragma push_macro("FALSE")
+#undef FALSE
+#endif  // __APPLE__
 
 #if defined(__clang__) || PROTOBUF_GNUC_MIN(3, 0) || defined(_MSC_VER)
 // Don't let Objective-C Macros interfere with proto identifiers with the same

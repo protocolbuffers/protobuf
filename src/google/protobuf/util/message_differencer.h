@@ -43,6 +43,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__
 #define GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__
 
+
 #include <functional>
 #include <map>
 #include <memory>
@@ -544,6 +545,9 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // to compare fields in messages.
   void set_message_field_comparison(MessageFieldComparison comparison);
 
+  // Returns the current message field comparison used in this differencer.
+  MessageFieldComparison message_field_comparison() const;
+
   // Tells the differencer whether or not to report matches. This method must
   // be called before Compare. The default for a new differencer is false.
   void set_report_matches(bool report_matches) {
@@ -567,7 +571,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   void set_scope(Scope scope);
 
   // Returns the current scope used by this differencer.
-  Scope scope();
+  Scope scope() const;
 
   // DEPRECATED. Pass a DefaultFieldComparator instance instead.
   // Sets the type of comparison (as defined in the FloatComparison enumeration
@@ -583,7 +587,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   void set_repeated_field_comparison(RepeatedFieldComparison comparison);
 
   // Returns the current repeated field comparison used by this differencer.
-  RepeatedFieldComparison repeated_field_comparison();
+  RepeatedFieldComparison repeated_field_comparison() const;
 
   // Compares the two specified messages, returning true if they are the same,
   // false otherwise. If this method returns false, any changes between the

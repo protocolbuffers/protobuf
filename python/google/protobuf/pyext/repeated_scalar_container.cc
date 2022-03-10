@@ -274,6 +274,11 @@ static PyObject* Subscript(PyObject* pself, PyObject* slice) {
   bool return_list = false;
   if (PyLong_Check(slice)) {
     from = to = PyLong_AsLong(slice);
+  } else if (PyIndex_Check(slice)) {
+    from = to = PyNumber_AsSsize_t(slice, PyExc_ValueError);
+    if (from == -1 && PyErr_Occurred()) {
+      return nullptr;
+    }
   } else if (PySlice_Check(slice)) {
     length = Len(pself);
     if (PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slicelength) ==

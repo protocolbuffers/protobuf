@@ -40,16 +40,17 @@
 #ifndef GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_H__
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_H__
 
+
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/port.h>
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/message_lite.h>
-#include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/stubs/casts.h>
 
 // Do UTF-8 validation on string type in Debug build only
 #ifndef NDEBUG
@@ -67,6 +68,7 @@
 #undef TYPE_BOOL
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -622,14 +624,13 @@ class PROTOBUF_EXPORT WireFormatLite {
   // of serialization, the "ToArray" variants may be invoked.  But they don't
   // have a CodedOutputStream available, so they get an additional parameter
   // telling them whether to serialize deterministically.
-  template <typename MessageType>
-  PROTOBUF_NDEBUG_INLINE static uint8_t* InternalWriteGroup(
-      int field_number, const MessageType& value, uint8_t* target,
-      io::EpsCopyOutputStream* stream);
-  template <typename MessageType>
-  PROTOBUF_NDEBUG_INLINE static uint8_t* InternalWriteMessage(
-      int field_number, const MessageType& value, uint8_t* target,
-      io::EpsCopyOutputStream* stream);
+  static uint8_t* InternalWriteGroup(int field_number, const MessageLite& value,
+                                     uint8_t* target,
+                                     io::EpsCopyOutputStream* stream);
+  static uint8_t* InternalWriteMessage(int field_number,
+                                       const MessageLite& value,
+                                       int cached_size, uint8_t* target,
+                                       io::EpsCopyOutputStream* stream);
 
   // Like above, but de-virtualize the call to SerializeWithCachedSizes().  The
   // pointer must point at an instance of MessageType, *not* a subclass (or
@@ -662,7 +663,8 @@ class PROTOBUF_EXPORT WireFormatLite {
                                     static_cast<uint32_t>(field_number) << 3) +
                                 io::CodedOutputStream::VarintSize32(size)),
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    return InternalWriteMessage(field_number, value, target, &stream);
+    return InternalWriteMessage(field_number, value, value.GetCachedSize(),
+                                target, &stream);
   }
 
   // Compute the byte size of a field.  The XxSize() functions do NOT include
@@ -1704,25 +1706,6 @@ inline uint8_t* WireFormatLite::WriteBytesToArray(int field_number,
   return io::CodedOutputStream::WriteStringWithSizeToArray(value, target);
 }
 
-
-template <typename MessageType>
-inline uint8_t* WireFormatLite::InternalWriteGroup(
-    int field_number, const MessageType& value, uint8_t* target,
-    io::EpsCopyOutputStream* stream) {
-  target = WriteTagToArray(field_number, WIRETYPE_START_GROUP, target);
-  target = value._InternalSerialize(target, stream);
-  target = stream->EnsureSpace(target);
-  return WriteTagToArray(field_number, WIRETYPE_END_GROUP, target);
-}
-template <typename MessageType>
-inline uint8_t* WireFormatLite::InternalWriteMessage(
-    int field_number, const MessageType& value, uint8_t* target,
-    io::EpsCopyOutputStream* stream) {
-  target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
-  target = io::CodedOutputStream::WriteVarint32ToArrayOutOfLine(
-      static_cast<uint32_t>(value.GetCachedSize()), target);
-  return value._InternalSerialize(target, stream);
-}
 
 // See comment on ReadGroupNoVirtual to understand the need for this template
 // parameter name.

@@ -5,6 +5,7 @@
         <arg value="--proto_path=${protobuf.source.dir}"/>
         <arg value="--proto_path=${protobuf.basedir}/java/core/${test.proto.dir}"/>
         <arg value="${protobuf.source.dir}/google/protobuf/descriptor.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/map_lite_unittest.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_lite.proto"/>

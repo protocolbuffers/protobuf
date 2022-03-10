@@ -36,19 +36,19 @@
 #include "protobuf.h"
 #include "ruby-upb.h"
 
-// Returns a Ruby wrapper object for the given upb_array, which will be created
+// Returns a Ruby wrapper object for the given upb_Array, which will be created
 // if one does not exist already.
-VALUE RepeatedField_GetRubyWrapper(upb_array* msg, TypeInfo type_info,
+VALUE RepeatedField_GetRubyWrapper(upb_Array* msg, TypeInfo type_info,
                                    VALUE arena);
 
-// Gets the underlying upb_array for this Ruby RepeatedField object, which must
+// Gets the underlying upb_Array for this Ruby RepeatedField object, which must
 // have a type that matches |f|. If this is not a repeated field or the type
 // doesn't match, raises an exception.
-const upb_array* RepeatedField_GetUpbArray(VALUE value, const upb_fielddef* f,
-                                           upb_arena* arena);
+const upb_Array* RepeatedField_GetUpbArray(VALUE value, const upb_FieldDef* f,
+                                           upb_Arena* arena);
 
 // Implements #inspect for this repeated field by appending its contents to |b|.
-void RepeatedField_Inspect(StringBuilder* b, const upb_array* array,
+void RepeatedField_Inspect(StringBuilder* b, const upb_Array* array,
                            TypeInfo info);
 
 // Returns a deep copy of this RepeatedField object.

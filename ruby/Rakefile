@@ -80,6 +80,16 @@ if RUBY_PLATFORM == "java"
   end
 
 else
+  unless ENV['IN_DOCKER'] == 'true'
+    # We need utf8_range in-tree.
+    FileUtils.mkdir_p("ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/utf8_range.h", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/naive.c", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/range2-neon.c", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/range2-sse.c", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/LICENSE", "ext/google/protobuf_c/third_party/utf8_range")
+  end
+
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
     unless RUBY_PLATFORM =~ /darwin/
       # TODO: also set "no_native to true" for mac if possible. As is,

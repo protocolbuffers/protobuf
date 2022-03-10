@@ -34,7 +34,6 @@
 #include <string>
 #include <set>
 #include <vector>
-#include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
 
@@ -49,7 +48,19 @@ class MessageGenerator;
 
 class FileGenerator {
  public:
-  FileGenerator(const FileDescriptor* file, const Options& options);
+  struct GenerationOptions {
+    GenerationOptions()
+      // TODO(thomasvl): Eventually flip this default to false for better
+      // interop with Swift if proto usages span modules made from ObjC sources.
+      : headers_use_forward_declarations(true) {}
+    std::string generate_for_named_framework;
+    std::string named_framework_to_proto_path_mappings_path;
+    std::string runtime_import_prefix;
+    bool headers_use_forward_declarations;
+  };
+
+  FileGenerator(const FileDescriptor* file,
+                const GenerationOptions& generation_options);
   ~FileGenerator();
 
   FileGenerator(const FileGenerator&) = delete;
@@ -60,14 +71,13 @@ class FileGenerator {
 
  private:
   const FileDescriptor* file_;
+  const GenerationOptions& generation_options_;
   std::string root_class_name_;
   bool is_bundled_proto_;
 
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
   std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-
-  const Options options_;
 
   void PrintFileRuntimePreamble(
       io::Printer* printer,

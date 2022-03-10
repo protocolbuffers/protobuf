@@ -350,7 +350,17 @@ bool ConformanceTestSuite::CheckSetEmpty(
     StringAppendF(&output_, "\n");
 
     if (!write_to_file.empty()) {
-      std::ofstream os(write_to_file);
+      std::string full_filename;
+      const std::string* filename = &write_to_file;
+      if (!output_dir_.empty()) {
+        full_filename = output_dir_;
+        if (*output_dir_.rbegin() != '/') {
+          full_filename.push_back('/');
+        }
+        full_filename += write_to_file;
+        filename = &full_filename;
+      }
+      std::ofstream os(*filename);
       if (os) {
         for (std::set<string>::const_iterator iter = set_to_check.begin();
              iter != set_to_check.end(); ++iter) {
@@ -358,7 +368,7 @@ bool ConformanceTestSuite::CheckSetEmpty(
         }
       } else {
         StringAppendF(&output_, "Failed to open file: %s\n",
-                      write_to_file.c_str());
+                      filename->c_str());
       }
     }
 

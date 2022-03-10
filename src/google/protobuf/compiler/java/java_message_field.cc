@@ -32,17 +32,18 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/compiler/java/java_message_field.h>
+
 #include <map>
 #include <string>
 
-#include <google/protobuf/compiler/java/java_context.h>
-#include <google/protobuf/compiler/java/java_doc_comment.h>
-#include <google/protobuf/compiler/java/java_helpers.h>
-#include <google/protobuf/compiler/java/java_message_field.h>
-#include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/java/java_context.h>
+#include <google/protobuf/compiler/java/java_doc_comment.h>
+#include <google/protobuf/compiler/java/java_helpers.h>
+#include <google/protobuf/compiler/java/java_name_resolver.h>
 
 namespace google {
 namespace protobuf {
@@ -438,6 +439,16 @@ void ImmutableMessageFieldGenerator::GenerateKotlinDslMembers(
       "public fun ${$has$kt_capitalized_name$$}$(): kotlin.Boolean {\n"
       "  return $kt_dsl_builder$.${$has$capitalized_name$$}$()\n"
       "}\n");
+
+  GenerateKotlinOrNull(printer);
+}
+
+void ImmutableMessageFieldGenerator::GenerateKotlinOrNull(io::Printer* printer) const {
+  if (descriptor_->has_optional_keyword()) {
+    printer->Print(variables_,
+                   "public val $classname$Kt.Dsl.$name$OrNull: $kt_type$?\n"
+                   "  get() = $kt_dsl_builder$.$name$OrNull\n");
+  }
 }
 
 void ImmutableMessageFieldGenerator::GenerateFieldBuilderInitializationCode(
@@ -698,8 +709,9 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
 
       "if ($has_oneof_case_message$) {\n"
       "  $name$Builder_.mergeFrom(value);\n"
-      "}\n"
-      "$name$Builder_.setMessage(value);\n",
+      "} else {\n"
+      "  $name$Builder_.setMessage(value);\n"
+      "}\n",
 
       "$set_oneof_case_message$;\n"
       "return this;\n");
@@ -1426,7 +1438,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateKotlinDslMembers(
                  "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
                  "add(value: $kt_type$) {\n"
                  "  $kt_dsl_builder$.${$add$capitalized_name$$}$(value)\n"
-                 "}");
+                 "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                /* builder */ false);
@@ -1438,7 +1450,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateKotlinDslMembers(
                  "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
                  "plusAssign(value: $kt_type$) {\n"
                  "  add(value)\n"
-                 "}");
+                 "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                /* builder */ false);
@@ -1449,7 +1461,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateKotlinDslMembers(
                  "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
                  "addAll(values: kotlin.collections.Iterable<$kt_type$>) {\n"
                  "  $kt_dsl_builder$.${$addAll$capitalized_name$$}$(values)\n"
-                 "}");
+                 "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                /* builder */ false);
@@ -1462,7 +1474,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateKotlinDslMembers(
       "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
       "plusAssign(values: kotlin.collections.Iterable<$kt_type$>) {\n"
       "  addAll(values)\n"
-      "}");
+      "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
                                /* builder */ false);
@@ -1474,7 +1486,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateKotlinDslMembers(
       "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
       "set(index: kotlin.Int, value: $kt_type$) {\n"
       "  $kt_dsl_builder$.${$set$capitalized_name$$}$(index, value)\n"
-      "}");
+      "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ false);
@@ -1485,7 +1497,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateKotlinDslMembers(
                  "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
                  "clear() {\n"
                  "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
-                 "}");
+                 "}\n\n");
 }
 
 }  // namespace java

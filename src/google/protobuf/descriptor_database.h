@@ -37,13 +37,16 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_DATABASE_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_DATABASE_H__
 
+
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -377,6 +380,10 @@ class PROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
   bool FindAllExtensionNumbers(const std::string& extendee_type,
                                std::vector<int>* output) override;
 
+
+  // This function is best-effort. Returns true if at least one underlying
+  // DescriptorDatabase returns true.
+  bool FindAllFileNames(std::vector<std::string>* output) override;
 
  private:
   std::vector<DescriptorDatabase*> sources_;

@@ -133,12 +133,12 @@ This options allow you to provide a custom prefix for all the symbols generated
 from a proto file (classes (from message), enums, the Root for extension
 support).
 
-If not set, the generation option `use_package_as_prefix` (documented below)
-controls what is used instead. Since Objective C uses a global namespace for all
-of its classes, there can be collisions. `use_package_as_prefix=yes` should
-avoid collisions since proto package are used to scope/name things in other
-languages, but this option can be used to get shorter names instead. Convention
-is to base the explicit prefix on the proto package.
+If not set, the generation options `package_to_prefix_mappings_path` and
+`use_package_as_prefix` (documented below) controls what is used instead. Since
+Objective C uses a global namespace for all of its classes, there can be collisions.
+`use_package_as_prefix=yes` should avoid collisions since proto package are used to
+scope/name things in other languages, but this option can be used to get shorter
+names instead. Convention is to base the explicit prefix on the proto package.
 
 Objective C Generator `protoc` Options
 --------------------------------------
@@ -182,6 +182,24 @@ supported keys are:
     having to add the runtime directory to the header search path since the
     generate `#import` will be more complete.
 
+  * `package_to_prefix_mappings_path`: The `value` used for this key is a
+    path to a file containing a list of proto packages and prefixes.
+    The generator will use this to locate which ObjC class prefix to use when
+    generating sources _unless_ the `objc_class_prefix` file option is set.
+    This option can be useful if multiple apps consume a common set of
+    proto files but wish to use a different prefix for the generated sources
+    between them. This option takes precedent over the `use_package_as_prefix`
+    option.
+
+    The format of the file is:
+      * An entry is a line of "package=prefix".
+      * Comments start with `#`.
+      * A comment can go on a line after a expected package/prefix pair.
+        (i.e. - "package=prefix # comment")
+      * For files that do NOT have a proto package (not recommended), an
+        entry can be made as "no_package:PATH=prefix", where PATH is the
+      path for the .proto file.
+
   * `use_package_as_prefix` and `proto_package_prefix_exceptions_path`: The
     `value` for `use_package_as_prefix` can be `yes` or `no`, and indicates
     if a prefix should be derived from the proto package for all the symbols
@@ -199,6 +217,21 @@ supported keys are:
     in the future (as a breaking change), that is likely to change since it
     helps prepare folks before they end up using a lot of protos and getting a
     lot of collisions.
+
+  * `headers_use_forward_declarations`: The `value` for this can be `yes` or
+    `no`, and indicates if the generated headers use forward declarations for
+    Message and Enum types from other .proto files or if the files should be
+    imported into the generated header instead.
+
+    By using forward declarations, less code is likely to recompile when the
+    files do change, but Swift generally doesn't like forward declarations and
+    will fail to include properties when the concrete definition of the type is
+    known at import time. If your proto usages span modules, this can be a
+    problem.
+
+    `headers_use_forward_declarations` currently defaults to `yes` (existing
+    behavior), but in a future release, that default may change to provide
+    better Swift support by default.
 
 Contributing
 ------------

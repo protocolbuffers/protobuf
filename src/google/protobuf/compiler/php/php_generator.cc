@@ -48,28 +48,29 @@ const std::string kDescriptorMetadataFile =
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {
-    "abstract",     "and",        "array",      "as",         "break",
-    "callable",     "case",       "catch",      "class",      "clone",
-    "const",        "continue",   "declare",    "default",    "die",
-    "do",           "echo",       "else",       "elseif",     "empty",
-    "enddeclare",   "endfor",     "endforeach", "endif",      "endswitch",
-    "endwhile",     "eval",       "exit",       "extends",    "final",
-    "finally",      "fn",         "for",        "foreach",    "function",
-    "global",       "goto",       "if",         "implements", "include",
-    "include_once", "instanceof", "insteadof",  "interface",  "isset",
-    "list",         "match",      "namespace",  "new",        "or",
-    "print",        "private",    "protected",  "public",     "require",
-    "require_once", "return",     "static",     "switch",     "throw",
-    "trait",        "try",        "unset",      "use",        "var",
-    "while",        "xor",        "yield",      "int",        "float",
-    "bool",         "string",     "true",       "false",      "null",
-    "void",         "iterable"};
+    "abstract",     "and",          "array",      "as",         "break",
+    "callable",     "case",         "catch",      "class",      "clone",
+    "const",        "continue",     "declare",    "default",    "die",
+    "do",           "echo",         "else",       "elseif",     "empty",
+    "enddeclare",   "endfor",       "endforeach", "endif",      "endswitch",
+    "endwhile",     "eval",         "exit",       "extends",    "final",
+    "finally",      "fn",           "for",        "foreach",    "function",
+    "global",       "goto",         "if",         "implements", "include",
+    "include_once", "instanceof",   "insteadof",  "interface",  "isset",
+    "list",         "match",        "namespace",  "new",        "or",
+    "parent",       "print",        "private",    "protected",  "public",
+    "require",      "require_once", "return",     "self",       "static",
+    "switch",       "throw",        "trait",      "try",        "unset",
+    "use",          "var",          "while",      "xor",        "yield",
+    "int",          "float",        "bool",       "string",     "true",
+    "false",        "null",         "void",       "iterable"};
 const char* const kValidConstantNames[] = {
     "int",   "float", "bool", "string",   "true",
-    "false", "null",  "void", "iterable",
+    "false", "null",  "void", "iterable", "parent",
+    "self"
 };
-const int kReservedNamesSize = 77;
-const int kValidConstantNamesSize = 9;
+const int kReservedNamesSize = 79;
+const int kValidConstantNamesSize = 11;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;
@@ -1114,7 +1115,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
   std::map<const FileDescriptor*, int> dependency_count;
   std::set<const FileDescriptor*> nodes_without_dependency;
   FileDescriptorSet sorted_file_set;
-  
+
   AnalyzeDependencyForFile(
       file, &nodes_without_dependency, &deps, &dependency_count);
 
@@ -1869,44 +1870,45 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
       "\n"
       "PHP_METHOD($c_name$, name) {\n"
       "  $file_c_name$_AddDescriptor();\n"
-      "  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();\n"
-      "  const upb_enumdef *e = upb_symtab_lookupenum(symtab, \"$name$\");\n"
-      "  const char *name;\n"
+      "  const upb_DefPool *symtab = DescriptorPool_GetSymbolTable();\n"
+      "  const upb_EnumDef *e = upb_DefPool_FindEnumByName(symtab, \"$name$\");\n"
       "  zend_long value;\n"
       "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"l\", &value) ==\n"
       "      FAILURE) {\n"
       "    return;\n"
       "  }\n"
-      "  name = upb_enumdef_iton(e, value);\n"
-      "  if (!name) {\n"
+      "  const upb_EnumValueDef* ev =\n"
+      "      upb_EnumDef_FindValueByNumber(e, value);\n"
+      "  if (!ev) {\n"
       "    zend_throw_exception_ex(NULL, 0,\n"
       "                            \"$php_name$ has no name \"\n"
       "                            \"defined for value \" ZEND_LONG_FMT \".\",\n"
       "                            value);\n"
       "    return;\n"
       "  }\n"
-      "  RETURN_STRING(name);\n"
+      "  RETURN_STRING(upb_EnumValueDef_Name(ev));\n"
       "}\n"
       "\n"
       "PHP_METHOD($c_name$, value) {\n"
       "  $file_c_name$_AddDescriptor();\n"
-      "  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();\n"
-      "  const upb_enumdef *e = upb_symtab_lookupenum(symtab, \"$name$\");\n"
+      "  const upb_DefPool *symtab = DescriptorPool_GetSymbolTable();\n"
+      "  const upb_EnumDef *e = upb_DefPool_FindEnumByName(symtab, \"$name$\");\n"
       "  char *name = NULL;\n"
       "  size_t name_len;\n"
-      "  int32_t num;\n"
       "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"s\", &name,\n"
       "                            &name_len) == FAILURE) {\n"
       "    return;\n"
       "  }\n"
-      "  if (!upb_enumdef_ntoi(e, name, name_len, &num)) {\n"
+      "  const upb_EnumValueDef* ev = upb_EnumDef_FindValueByNameWithSize(\n"
+      "      e, name, name_len);\n"
+      "  if (!ev) {\n"
       "    zend_throw_exception_ex(NULL, 0,\n"
       "                            \"$php_name$ has no value \"\n"
       "                            \"defined for name %s.\",\n"
       "                            name);\n"
       "    return;\n"
       "  }\n"
-      "  RETURN_LONG(num);\n"
+      "  RETURN_LONG(upb_EnumValueDef_Number(ev));\n"
       "}\n"
       "\n"
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
@@ -1965,8 +1967,8 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
     printer->Print(
       "static PHP_METHOD($c_name$, get$camel_name$) {\n"
       "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
-      "  const upb_fielddef *f = upb_msgdef_ntofz(intern->desc->msgdef,\n"
-      "                                           \"$name$\");\n"
+      "  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(\n"
+      "      intern->desc->msgdef, \"$name$\");\n"
       "  zval ret;\n"
       "  Message_get(intern, f, &ret);\n"
       "  RETURN_COPY_VALUE(&ret);\n"
@@ -1974,8 +1976,8 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "\n"
       "static PHP_METHOD($c_name$, set$camel_name$) {\n"
       "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
-      "  const upb_fielddef *f = upb_msgdef_ntofz(intern->desc->msgdef,\n"
-      "                                           \"$name$\");\n"
+      "  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(\n"
+      "      intern->desc->msgdef, \"$name$\");\n"
       "  zval *val;\n"
       "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"z\", &val)\n"
       "      == FAILURE) {\n"
@@ -1995,10 +1997,11 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
     printer->Print(
       "static PHP_METHOD($c_name$, get$camel_name$) {\n"
       "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
-      "  const upb_oneofdef *oneof = upb_msgdef_ntooz(intern->desc->msgdef,\n"
-      "                                              \"$name$\");\n"
-      "  const upb_fielddef *field = upb_msg_whichoneof(intern->msg, oneof);\n"
-      "  RETURN_STRING(field ? upb_fielddef_name(field) : \"\");\n"
+      "  const upb_OneofDef *oneof = upb_MessageDef_FindOneofByName(\n"
+      "      intern->desc->msgdef, \"$name$\");\n"
+      "  const upb_FieldDef *field = \n"
+      "      upb_Message_WhichOneof(intern->msg, oneof);\n"
+      "  RETURN_STRING(field ? upb_FieldDef_Name(field) : \"\");\n"
       "}\n",
       "c_name", c_name,
       "name", oneof->name(),
@@ -2065,7 +2068,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       break;
     default:
       break;
-  } 
+  }
 
   printer->Print(
       "  ZEND_FE_END\n"

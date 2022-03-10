@@ -63,7 +63,10 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
+
+using ::testing::AnyOf;
 
 namespace google {
 namespace protobuf {
@@ -198,7 +201,7 @@ void AddEmptyEnum(FileDescriptorProto* file, const std::string& name) {
 class MockErrorCollector : public DescriptorPool::ErrorCollector {
  public:
   MockErrorCollector() {}
-  ~MockErrorCollector() {}
+  ~MockErrorCollector() override {}
 
   std::string text_;
   std::string warning_text_;
@@ -862,6 +865,22 @@ TEST_F(DescriptorTest, FieldNamesDedup) {
               ElementsAre("fieldname7"));
 }
 
+TEST_F(DescriptorTest, FieldNameDedupJsonEqFull) {
+  // Test a regression where json_name == full_name
+  FileDescriptorProto proto;
+  proto.set_name("file");
+  auto* message = AddMessage(&proto, "Name1");
+  auto* field =
+      AddField(message, "Name2", 1, FieldDescriptorProto::LABEL_OPTIONAL,
+               FieldDescriptorProto::TYPE_INT32);
+  field->set_json_name("Name1.Name2");
+  auto* file = pool_.BuildFile(proto);
+  EXPECT_EQ(file->message_type(0)->name(), "Name1");
+  EXPECT_EQ(file->message_type(0)->field(0)->name(), "Name2");
+  EXPECT_EQ(file->message_type(0)->field(0)->full_name(), "Name1.Name2");
+  EXPECT_EQ(file->message_type(0)->field(0)->json_name(), "Name1.Name2");
+}
+
 TEST_F(DescriptorTest, FieldsByIndex) {
   ASSERT_EQ(4, message_->field_count());
   EXPECT_EQ(foo_, message_->field(0));
@@ -1306,7 +1325,8 @@ TEST_F(StylizedFieldNamesTest, CamelcaseName) {
 
 TEST_F(StylizedFieldNamesTest, FindByLowercaseName) {
   EXPECT_EQ(message_->field(0), message_->FindFieldByLowercaseName("foo_foo"));
-  EXPECT_EQ(message_->field(1), message_->FindFieldByLowercaseName("foobar"));
+  EXPECT_THAT(message_->FindFieldByLowercaseName("foobar"),
+              AnyOf(message_->field(1), message_->field(4)));
   EXPECT_EQ(message_->field(2), message_->FindFieldByLowercaseName("foobaz"));
   EXPECT_TRUE(message_->FindFieldByLowercaseName("FooBar") == nullptr);
   EXPECT_TRUE(message_->FindFieldByLowercaseName("fooBaz") == nullptr);
@@ -1315,8 +1335,8 @@ TEST_F(StylizedFieldNamesTest, FindByLowercaseName) {
 
   EXPECT_EQ(message_->extension(0),
             message_->FindExtensionByLowercaseName("bar_foo"));
-  EXPECT_EQ(message_->extension(1),
-            message_->FindExtensionByLowercaseName("barbar"));
+  EXPECT_THAT(message_->FindExtensionByLowercaseName("barbar"),
+              AnyOf(message_->extension(1), message_->extension(4)));
   EXPECT_EQ(message_->extension(2),
             message_->FindExtensionByLowercaseName("barbaz"));
   EXPECT_TRUE(message_->FindExtensionByLowercaseName("BarBar") == nullptr);
@@ -1326,7 +1346,8 @@ TEST_F(StylizedFieldNamesTest, FindByLowercaseName) {
 
   EXPECT_EQ(file_->extension(0),
             file_->FindExtensionByLowercaseName("baz_foo"));
-  EXPECT_EQ(file_->extension(1), file_->FindExtensionByLowercaseName("bazbar"));
+  EXPECT_THAT(file_->FindExtensionByLowercaseName("bazbar"),
+              AnyOf(file_->extension(1), file_->extension(4)));
   EXPECT_EQ(file_->extension(2), file_->FindExtensionByLowercaseName("bazbaz"));
   EXPECT_TRUE(file_->FindExtensionByLowercaseName("BazBar") == nullptr);
   EXPECT_TRUE(file_->FindExtensionByLowercaseName("bazBaz") == nullptr);
@@ -1334,7 +1355,8 @@ TEST_F(StylizedFieldNamesTest, FindByLowercaseName) {
 }
 
 TEST_F(StylizedFieldNamesTest, FindByCamelcaseName) {
-  EXPECT_EQ(message_->field(0), message_->FindFieldByCamelcaseName("fooFoo"));
+  EXPECT_THAT(message_->FindFieldByCamelcaseName("fooFoo"),
+              AnyOf(message_->field(0), message_->field(3)));
   EXPECT_EQ(message_->field(1), message_->FindFieldByCamelcaseName("fooBar"));
   EXPECT_EQ(message_->field(2), message_->FindFieldByCamelcaseName("fooBaz"));
   EXPECT_TRUE(message_->FindFieldByCamelcaseName("foo_foo") == nullptr);
@@ -1342,8 +1364,8 @@ TEST_F(StylizedFieldNamesTest, FindByCamelcaseName) {
   EXPECT_TRUE(message_->FindFieldByCamelcaseName("barFoo") == nullptr);
   EXPECT_TRUE(message_->FindFieldByCamelcaseName("nosuchfield") == nullptr);
 
-  EXPECT_EQ(message_->extension(0),
-            message_->FindExtensionByCamelcaseName("barFoo"));
+  EXPECT_THAT(message_->FindExtensionByCamelcaseName("barFoo"),
+              AnyOf(message_->extension(0), message_->extension(3)));
   EXPECT_EQ(message_->extension(1),
             message_->FindExtensionByCamelcaseName("barBar"));
   EXPECT_EQ(message_->extension(2),
@@ -1353,7 +1375,8 @@ TEST_F(StylizedFieldNamesTest, FindByCamelcaseName) {
   EXPECT_TRUE(message_->FindExtensionByCamelcaseName("fooFoo") == nullptr);
   EXPECT_TRUE(message_->FindExtensionByCamelcaseName("nosuchfield") == nullptr);
 
-  EXPECT_EQ(file_->extension(0), file_->FindExtensionByCamelcaseName("bazFoo"));
+  EXPECT_THAT(file_->FindExtensionByCamelcaseName("bazFoo"),
+              AnyOf(file_->extension(0), file_->extension(3)));
   EXPECT_EQ(file_->extension(1), file_->FindExtensionByCamelcaseName("bazBar"));
   EXPECT_EQ(file_->extension(2), file_->FindExtensionByCamelcaseName("bazBaz"));
   EXPECT_TRUE(file_->FindExtensionByCamelcaseName("baz_foo") == nullptr);
@@ -1645,7 +1668,6 @@ TEST_F(ServiceDescriptorTest, MethodName) {
   EXPECT_EQ("Foo", foo_->name());
   EXPECT_EQ("Bar", bar_->name());
 }
-
 TEST_F(ServiceDescriptorTest, MethodFullName) {
   EXPECT_EQ("TestService.Foo", foo_->full_name());
   EXPECT_EQ("TestService.Bar", bar_->full_name());
@@ -2738,9 +2760,9 @@ TEST_F(MiscTest, DefaultValues) {
   ASSERT_TRUE(message->field(10)->has_default_value());
 
   EXPECT_EQ(-1, message->field(0)->default_value_int32());
-  EXPECT_EQ(int64{-1000000000000}, message->field(1)->default_value_int64());
+  EXPECT_EQ(int64_t{-1000000000000}, message->field(1)->default_value_int64());
   EXPECT_EQ(42, message->field(2)->default_value_uint32());
-  EXPECT_EQ(uint64{2000000000000}, message->field(3)->default_value_uint64());
+  EXPECT_EQ(uint64_t{2000000000000}, message->field(3)->default_value_uint64());
   EXPECT_EQ(4.5, message->field(4)->default_value_float());
   EXPECT_EQ(10e100, message->field(5)->default_value_double());
   EXPECT_TRUE(message->field(6)->default_value_bool());
@@ -3156,11 +3178,11 @@ TEST(CustomOptions, OptionLocations) {
       file->FindServiceByName("TestServiceWithCustomOptions");
   const MethodDescriptor* method = service->FindMethodByName("Foo");
 
-  EXPECT_EQ(int64{9876543210},
+  EXPECT_EQ(int64_t{9876543210},
             file->options().GetExtension(protobuf_unittest::file_opt1));
   EXPECT_EQ(-56,
             message->options().GetExtension(protobuf_unittest::message_opt1));
-  EXPECT_EQ(int64{8765432109},
+  EXPECT_EQ(int64_t{8765432109},
             field->options().GetExtension(protobuf_unittest::field_opt1));
   EXPECT_EQ(42,  // Check that we get the default for an option we don't set.
             field->options().GetExtension(protobuf_unittest::field_opt2));
@@ -3170,7 +3192,7 @@ TEST(CustomOptions, OptionLocations) {
   EXPECT_EQ(-789, enm->options().GetExtension(protobuf_unittest::enum_opt1));
   EXPECT_EQ(123, enm->value(1)->options().GetExtension(
                      protobuf_unittest::enum_value_opt1));
-  EXPECT_EQ(int64{-9876543210},
+  EXPECT_EQ(int64_t{-9876543210},
             service->options().GetExtension(protobuf_unittest::service_opt1));
   EXPECT_EQ(protobuf_unittest::METHODOPT1_VAL2,
             method->options().GetExtension(protobuf_unittest::method_opt1));
@@ -3982,14 +4004,10 @@ TEST_F(ValidationErrorTest, NullCharSymbolName) {
       "} "
       "}",
       STATIC_STR("bar.proto: foo.\0\x1\v.Bar: NAME: \"\0\x1\v.Bar\" is not a "
-                 "valid identifier.\nbar.proto: foo.\0\x1\v.Bar: NAME: "
-                 "\"\0\x1\v.Bar\" is not a valid identifier.\nbar.proto: "
-                 "foo.\0\x1\v.Bar: NAME: \"\0\x1\v.Bar\" is not a valid "
-                 "identifier.\nbar.proto: foo.\0\x1\v.Bar: NAME: "
-                 "\"\0\x1\v.Bar\" is not a valid identifier.\nbar.proto: "
-                 "foo.\0\x1\v.Bar.foo: NAME: \"foo.\0\x1\v.Bar.foo\" contains "
-                 "null character.\nbar.proto: foo.\0\x1\v.Bar: NAME: "
-                 "\"foo.\0\x1\v.Bar\" contains null character.\n"));
+                 "valid identifier.\nbar.proto: foo.\0\x1\v.Bar.foo: NAME: "
+                 "\"foo.\0\x1\v.Bar.foo\" contains null character.\nbar.proto: "
+                 "foo.\0\x1\v.Bar: NAME: \"foo.\0\x1\v.Bar\" contains null "
+                 "character.\n"));
 }
 
 TEST_F(ValidationErrorTest, NullCharFileName) {
@@ -6837,7 +6855,7 @@ class DatabaseBackedPoolTest : public testing::Test {
   class ErrorDescriptorDatabase : public DescriptorDatabase {
    public:
     ErrorDescriptorDatabase() {}
-    ~ErrorDescriptorDatabase() {}
+    ~ErrorDescriptorDatabase() override {}
 
     // implements DescriptorDatabase ---------------------------------
     bool FindFileByName(const std::string& filename,
@@ -6876,7 +6894,7 @@ class DatabaseBackedPoolTest : public testing::Test {
         : wrapped_db_(wrapped_db) {
       Clear();
     }
-    ~CallCountingDatabase() {}
+    ~CallCountingDatabase() override {}
 
     DescriptorDatabase* wrapped_db_;
 
@@ -6911,7 +6929,7 @@ class DatabaseBackedPoolTest : public testing::Test {
    public:
     FalsePositiveDatabase(DescriptorDatabase* wrapped_db)
         : wrapped_db_(wrapped_db) {}
-    ~FalsePositiveDatabase() {}
+    ~FalsePositiveDatabase() override {}
 
     DescriptorDatabase* wrapped_db_;
 
@@ -7198,7 +7216,7 @@ TEST_F(DatabaseBackedPoolTest, DoesntReloadFilesUncesessarily) {
 class ExponentialErrorDatabase : public DescriptorDatabase {
  public:
   ExponentialErrorDatabase() {}
-  ~ExponentialErrorDatabase() {}
+  ~ExponentialErrorDatabase() override {}
 
   // implements DescriptorDatabase ---------------------------------
   bool FindFileByName(const std::string& filename,
@@ -7482,7 +7500,6 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
   const MethodDescriptor* m_desc = s_desc->FindMethodByName("Method");
   EXPECT_TRUE(m_desc->GetSourceLocation(&loc));
   EXPECT_EQ("29:3-29:31", PrintSourceLocation(loc));
-
 }
 
 TEST_F(SourceLocationTest, ExtensionSourceLocation) {

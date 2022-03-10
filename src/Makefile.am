@@ -18,7 +18,7 @@ else
 PTHREAD_DEF =
 endif
 
-PROTOBUF_VERSION = 30:3:0
+PROTOBUF_VERSION = 31:0:0
 
 if GCC
 # Turn on all warnings except for sign comparison (we ignore sign comparison
@@ -71,6 +71,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/arena.h                                        \
   google/protobuf/arena_impl.h                                   \
   google/protobuf/arenastring.h                                  \
+  google/protobuf/arenaz_sampler.h                               \
   google/protobuf/compiler/code_generator.h                      \
   google/protobuf/compiler/command_line_interface.h              \
   google/protobuf/compiler/cpp/cpp_file.h                        \
@@ -93,6 +94,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/plugin.h                              \
   google/protobuf/compiler/plugin.pb.h                           \
   google/protobuf/compiler/python/python_generator.h             \
+  google/protobuf/compiler/python/python_pyi_generator.h         \
   google/protobuf/compiler/ruby/ruby_generator.h                 \
   google/protobuf/descriptor.h                                   \
   google/protobuf/descriptor.pb.h                                \
@@ -109,11 +111,8 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_enum_util.h                          \
   google/protobuf/generated_message_bases.h                      \
   google/protobuf/generated_message_reflection.h                 \
-  google/protobuf/generated_message_table_driven.h               \
-  google/protobuf/generated_message_table_driven_lite.h          \
   google/protobuf/generated_message_tctable_decl.h               \
   google/protobuf/generated_message_tctable_impl.h               \
-  google/protobuf/generated_message_tctable_impl.inc             \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
   google/protobuf/implicit_weak_message.h                        \
@@ -194,9 +193,9 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/any_lite.cc                                  \
   google/protobuf/arena.cc                                     \
   google/protobuf/arenastring.cc                               \
+  google/protobuf/arenaz_sampler.cc                            \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_enum_util.cc                       \
-  google/protobuf/generated_message_table_driven_lite.cc       \
   google/protobuf/generated_message_tctable_lite.cc            \
   google/protobuf/generated_message_util.cc                    \
   google/protobuf/implicit_weak_message.cc                     \
@@ -254,7 +253,6 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/field_mask.pb.cc                             \
   google/protobuf/generated_message_bases.cc                   \
   google/protobuf/generated_message_reflection.cc              \
-  google/protobuf/generated_message_table_driven.cc            \
   google/protobuf/generated_message_tctable_full.cc            \
   google/protobuf/io/gzip_stream.cc                            \
   google/protobuf/io/printer.cc                                \
@@ -473,6 +471,9 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/plugin.cc                           \
   google/protobuf/compiler/plugin.pb.cc                        \
   google/protobuf/compiler/python/python_generator.cc          \
+  google/protobuf/compiler/python/python_helpers.cc            \
+  google/protobuf/compiler/python/python_helpers.h             \
+  google/protobuf/compiler/python/python_pyi_generator.cc      \
   google/protobuf/compiler/ruby/ruby_generator.cc              \
   google/protobuf/compiler/scc.h                               \
   google/protobuf/compiler/subprocess.cc                       \
@@ -738,6 +739,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/any_test.cc                                  \
   google/protobuf/arena_unittest.cc                            \
   google/protobuf/arenastring_unittest.cc                      \
+  google/protobuf/arenaz_sampler_test.cc                       \
   google/protobuf/compiler/annotation_test_util.cc             \
   google/protobuf/compiler/annotation_test_util.h              \
   google/protobuf/compiler/command_line_interface_unittest.cc  \
@@ -764,6 +766,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/dynamic_message_unittest.cc                  \
   google/protobuf/extension_set_unittest.cc                    \
   google/protobuf/generated_message_reflection_unittest.cc     \
+  google/protobuf/generated_message_tctable_lite_test.cc       \
   google/protobuf/inlined_string_field_unittest.cc             \
   google/protobuf/io/coded_stream_unittest.cc                  \
   google/protobuf/io/io_win32_unittest.cc                      \

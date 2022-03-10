@@ -38,19 +38,19 @@
 #include <memory>
 #include <string>
 
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_primitive_field.h>
 #include <google/protobuf/compiler/cpp/cpp_string_field.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/compiler/cpp/cpp_enum_field.h>
 #include <google/protobuf/compiler/cpp/cpp_map_field.h>
 #include <google/protobuf/compiler/cpp/cpp_message_field.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format.h>
 
 namespace google {
 namespace protobuf {
@@ -81,7 +81,7 @@ std::string GenerateTemplateForOneofString(const FieldDescriptor* descriptor,
   std::string field_name = google::protobuf::compiler::cpp::FieldName(descriptor);
   std::string field_pointer =
       descriptor->options().ctype() == google::protobuf::FieldOptions::STRING
-          ? "$0.GetPointer()"
+          ? "$0.UnsafeGetPointer()"
           : "$0";
 
   if (descriptor->default_value_string().empty()) {
@@ -103,7 +103,7 @@ std::string GenerateTemplateForOneofString(const FieldDescriptor* descriptor,
   return strings::Substitute(
       StrCat("_internal_has_", field_name, "() ? ", field_pointer, " : ",
                    default_value_pointer),
-      field_member, MakeDefaultName(descriptor));
+      field_member, MakeDefaultFieldName(descriptor));
 }
 
 std::string GenerateTemplateForSingleString(const FieldDescriptor* descriptor,
@@ -114,8 +114,8 @@ std::string GenerateTemplateForSingleString(const FieldDescriptor* descriptor,
 
   if (descriptor->options().ctype() == google::protobuf::FieldOptions::STRING) {
     return strings::Substitute(
-        "$0.IsDefault(nullptr) ? &$1.get() : $0.GetPointer()", field_member,
-        MakeDefaultName(descriptor));
+        "$0.IsDefault() ? &$1.get() : $0.UnsafeGetPointer()", field_member,
+        MakeDefaultFieldName(descriptor));
   }
 
   return StrCat("&", field_member);
@@ -150,14 +150,12 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
       google::protobuf::FileOptions::LITE_RUNTIME) {
     return;
   }
-  std::string field_member = (*variables)["field_member"];
+  std::string field_member = (*variables)["field"];
   const google::protobuf::OneofDescriptor* oneof_member =
       descriptor->real_containing_oneof();
-  if (oneof_member) {
-    field_member = StrCat(oneof_member->name(), "_.", field_member);
-  }
   const std::string proto_ns = (*variables)["proto_ns"];
-  const std::string substitute_template_prefix = "  _tracker_.$1<$0>(this, ";
+  const std::string substitute_template_prefix =
+      StrCat("  ", (*variables)["tracker"], ".$1<$0>(this, ");
   std::string prepared_template;
 
   // Flat template is needed if the prepared one is introspecting the values
@@ -178,7 +176,7 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
   } else if (descriptor->is_map()) {
     prepared_template = "nullptr";
   } else if (descriptor->type() == FieldDescriptor::TYPE_MESSAGE &&
-             !descriptor->options().lazy()) {
+             !IsExplicitLazy(descriptor)) {
     prepared_template = "nullptr";
   } else if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     if (oneof_member) {
@@ -238,13 +236,15 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              std::map<std::string, std::string>* variables,
                              const Options& options) {
   SetCommonVars(options, variables);
+  SetCommonMessageDataVariables(variables);
+
   (*variables)["ns"] = Namespace(descriptor, options);
   (*variables)["name"] = FieldName(descriptor);
   (*variables)["index"] = StrCat(descriptor->index());
   (*variables)["number"] = StrCat(descriptor->number());
   (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
   (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
-  (*variables)["field_member"] = FieldName(descriptor) + "_";
+  (*variables)["field"] = FieldMemberName(descriptor);
 
   (*variables)["tag_size"] = StrCat(
       WireFormat::TagSize(descriptor->number(), descriptor->type()));
@@ -254,7 +254,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["clear_hasbit"] = "";
   if (HasHasbit(descriptor)) {
     (*variables)["set_hasbit_io"] =
-        "_Internal::set_has_" + FieldName(descriptor) + "(&_has_bits_);";
+        StrCat("_Internal::set_has_", FieldName(descriptor), "(&",
+                     (*variables)["has_bits"], ");");
   } else {
     (*variables)["set_hasbit_io"] = "";
   }
@@ -275,10 +276,10 @@ void FieldGenerator::SetHasBitIndex(int32_t has_bit_index) {
     return;
   }
   variables_["set_hasbit"] = StrCat(
-      "_has_bits_[", has_bit_index / 32, "] |= 0x",
+      variables_["has_bits"], "[", has_bit_index / 32, "] |= 0x",
       strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8), "u;");
   variables_["clear_hasbit"] = StrCat(
-      "_has_bits_[", has_bit_index / 32, "] &= ~0x",
+      variables_["has_bits"], "[", has_bit_index / 32, "] &= ~0x",
       strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8), "u;");
 }
 
@@ -287,12 +288,17 @@ void FieldGenerator::SetInlinedStringIndex(int32_t inlined_string_index) {
     GOOGLE_CHECK_EQ(inlined_string_index, -1);
     return;
   }
+  // The first bit is the tracking bit for on demand registering ArenaDtor.
+  GOOGLE_CHECK_GT(inlined_string_index, 0)
+      << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
   variables_["inlined_string_donated"] = StrCat(
-      "(_inlined_string_donated_[", inlined_string_index / 32, "] & 0x",
+      "(", variables_["inlined_string_donated_array"], "[",
+      inlined_string_index / 32, "] & 0x",
       strings::Hex(1u << (inlined_string_index % 32), strings::ZERO_PAD_8),
       "u) != 0;");
   variables_["donating_states_word"] =
-      StrCat("_inlined_string_donated_[", inlined_string_index / 32, "]");
+      StrCat(variables_["inlined_string_donated_array"], "[",
+                   inlined_string_index / 32, "]");
   variables_["mask_for_undonate"] = StrCat(
       "~0x", strings::Hex(1u << (inlined_string_index % 32), strings::ZERO_PAD_8),
       "u");
@@ -303,8 +309,6 @@ void SetCommonOneofFieldVariables(
     std::map<std::string, std::string>* variables) {
   const std::string prefix = descriptor->containing_oneof()->name() + "_.";
   (*variables)["oneof_name"] = descriptor->containing_oneof()->name();
-  (*variables)["field_member"] =
-      StrCat(prefix, (*variables)["name"], "_");
 }
 
 FieldGenerator::~FieldGenerator() {}

@@ -68,7 +68,7 @@ class GeneratorResponseContext : public GeneratorContext {
       : compiler_version_(compiler_version),
         response_(response),
         parsed_files_(parsed_files) {}
-  virtual ~GeneratorResponseContext() {}
+  ~GeneratorResponseContext() override {}
 
   // implements GeneratorContext --------------------------------------
 
@@ -117,7 +117,7 @@ bool GenerateCode(const CodeGeneratorRequest& request,
   DescriptorPool pool;
   for (int i = 0; i < request.proto_file_size(); i++) {
     const FileDescriptor* file = pool.BuildFile(request.proto_file(i));
-    if (file == NULL) {
+    if (file == nullptr) {
       // BuildFile() already wrote an error message.
       return false;
     }
@@ -126,7 +126,7 @@ bool GenerateCode(const CodeGeneratorRequest& request,
   std::vector<const FileDescriptor*> parsed_files;
   for (int i = 0; i < request.file_to_generate_size(); i++) {
     parsed_files.push_back(pool.FindFileByName(request.file_to_generate(i)));
-    if (parsed_files.back() == NULL) {
+    if (parsed_files.back() == nullptr) {
       *error_msg =
           "protoc asked plugin to generate a file but "
           "did not provide a descriptor for the file: " +

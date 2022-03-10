@@ -116,12 +116,12 @@ build_dist_install() {
 
   # Try to install Java
   pushd java
-  use_java jdk8
+  use_java jdk11
   $MVN install
   popd
 
   # Try to install Python
-  virtualenv --no-site-packages venv
+  python3 -m venv venv
   source venv/bin/activate
   pushd python
   python3 setup.py clean build sdist
@@ -189,6 +189,10 @@ build_golang() {
 use_java() {
   version=$1
   case "$version" in
+    jdk11)
+      export PATH=/usr/lib/jvm/java-11-openjdk-amd64/bin:$PATH
+      export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+      ;;
     jdk8)
       export PATH=/usr/lib/jvm/java-8-openjdk-amd64/bin:$PATH
       export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
@@ -222,7 +226,7 @@ internal_build_java() {
   cp -r java $dir
   cd $dir && $MVN clean
   # Skip tests here - callers will decide what tests they want to run
-  $MVN install -pl core -Dmaven.test.skip=true
+  $MVN install -Dmaven.test.skip=true
 }
 
 build_java() {
@@ -268,7 +272,7 @@ build_java_linkage_monitor() {
   # Linkage Monitor checks compatibility with other Google libraries
   # https://github.com/GoogleCloudPlatform/cloud-opensource-java/tree/master/linkage-monitor
 
-  use_java jdk8
+  use_java jdk11
   internal_build_cpp
 
   # Linkage Monitor uses $HOME/.m2 local repository
@@ -330,12 +334,7 @@ build_objectivec_cocoapods_integration() {
 build_python() {
   internal_build_cpp
   cd python
-  if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{35,36\}-python
-  else
-    envlist=py\{36\}-python
-  fi
-  python -m tox -e $envlist
+  tox --skip-missing-interpreters
   cd ..
 }
 
@@ -343,24 +342,8 @@ build_python_version() {
   internal_build_cpp
   cd python
   envlist=$1
-  python -m tox -e $envlist
+  tox -e $envlist
   cd ..
-}
-
-build_python33() {
-  build_python_version py33-python
-}
-
-build_python34() {
-  build_python_version py34-python
-}
-
-build_python35() {
-  build_python_version py35-python
-}
-
-build_python36() {
-  build_python_version py36-python
 }
 
 build_python37() {
@@ -384,12 +367,7 @@ build_python_cpp() {
   export LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
-  if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{35,36\}-cpp
-  else
-    envlist=py\{36\}-cpp
-  fi
-  tox -e $envlist
+  tox --skip-missing-interpreters
   cd ..
 }
 
@@ -401,22 +379,6 @@ build_python_cpp_version() {
   envlist=$1
   tox -e $envlist
   cd ..
-}
-
-build_python33_cpp() {
-  build_python_cpp_version py33-cpp
-}
-
-build_python34_cpp() {
-  build_python_cpp_version py34-cpp
-}
-
-build_python35_cpp() {
-  build_python_cpp_version py35-cpp
-}
-
-build_python36_cpp() {
-  build_python_cpp_version py36-cpp
 }
 
 build_python37_cpp() {
@@ -464,13 +426,13 @@ build_ruby30() {
 build_jruby92() {
   internal_build_cpp                # For conformance tests.
   internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
-  cd ruby && bash travis-test.sh jruby-9.2.19.0 && cd ..
+  cd ruby && bash travis-test.sh jruby-9.2.20.1 && cd ..
 }
 
 build_jruby93() {
   internal_build_cpp                # For conformance tests.
   internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
-  cd ruby && bash travis-test.sh jruby-9.3.0.0 && cd ..
+  cd ruby && bash travis-test.sh jruby-9.3.3.0 && cd ..
 }
 
 build_javascript() {
@@ -496,6 +458,8 @@ build_php() {
   use_php $1
   pushd php
   rm -rf vendor
+  php -v
+  php -m
   composer update
   composer test
   popd
@@ -505,6 +469,8 @@ build_php() {
 test_php_c() {
   pushd php
   rm -rf vendor
+  php -v
+  php -m
   composer update
   composer test_c
   popd
@@ -572,7 +538,9 @@ build_php_multirequest() {
 
 build_php8.0_all() {
   build_php 8.0
+  build_php 8.1
   build_php_c 8.0
+  build_php_c 8.1
 }
 
 build_php_all_32() {

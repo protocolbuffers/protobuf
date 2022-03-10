@@ -38,7 +38,7 @@
 
 typedef struct Arena {
   zend_object std;
-  upb_arena* arena;
+  upb_Arena* arena;
 } Arena;
 
 zend_class_entry *Arena_class_entry;
@@ -50,14 +50,14 @@ static zend_object* Arena_Create(zend_class_entry *class_type) {
   Arena *intern = emalloc(sizeof(Arena));
   zend_object_std_init(&intern->std, class_type);
   intern->std.handlers = &Arena_object_handlers;
-  intern->arena = upb_arena_new();
+  intern->arena = upb_Arena_New();
   // Skip object_properties_init(), we don't allow derived classes.
   return &intern->std;
 }
 
 static void Arena_Free(zend_object* obj) {
   Arena* intern = (Arena*)obj;
-  upb_arena_free(intern->arena);
+  upb_Arena_Free(intern->arena);
   zend_object_std_dtor(&intern->std);
 }
 
@@ -67,7 +67,7 @@ void Arena_Init(zval* val) {
   ZVAL_OBJ(val, Arena_Create(Arena_class_entry));
 }
 
-upb_arena *Arena_Get(zval *val) {
+upb_Arena *Arena_Get(zval *val) {
   Arena *a = (Arena*)Z_OBJ_P(val);
   return a->arena;
 }

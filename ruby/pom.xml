@@ -9,7 +9,7 @@
 
     <groupId>com.google.protobuf.jruby</groupId>
     <artifactId>protobuf-jruby</artifactId>
-    <version>3.19.3</version>
+    <version>3.20.0-rc-1</version>
     <name>Protocol Buffer JRuby native extension</name>
     <description>
       Protocol Buffers are a way of encoding structured data in an efficient yet
@@ -19,7 +19,7 @@
     <url>https://developers.google.com/protocol-buffers/</url>
     <licenses>
       <license>
-        <name>3-Clause BSD License</name>
+        <name>BSD-3-Clause</name>
         <url>https://opensource.org/licenses/BSD-3-Clause</url>
         <distribution>repo</distribution>
       </license>
@@ -76,12 +76,12 @@
         <dependency>
           <groupId>com.google.protobuf</groupId>
           <artifactId>protobuf-java-util</artifactId>
-          <version>3.19.3</version>
+          <version>3.20.0-rc-1</version>
         </dependency>
         <dependency>
             <groupId>org.jruby</groupId>
             <artifactId>jruby-complete</artifactId>
-            <version>9.2.19.0</version>
+            <version>9.2.20.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

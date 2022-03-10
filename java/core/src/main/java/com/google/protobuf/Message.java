@@ -28,9 +28,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// TODO(kenton):  Use generics?  E.g. Builder<BuilderType extends Builder>, then
-//   mergeFrom*() could return BuilderType for better type-safety.
-
 package com.google.protobuf;
 
 import java.io.IOException;
@@ -41,8 +38,8 @@ import java.util.Map;
  * Abstract interface implemented by Protocol Message objects.
  *
  * <p>See also {@link MessageLite}, which defines most of the methods that typical users care about.
- * {@link Message} adds to it methods that are not available in the "lite" runtime. The biggest
- * added features are introspection and reflection -- i.e., getting descriptors for the message type
+ * {@link Message} adds methods that are not available in the "lite" runtime. The biggest added
+ * features are introspection and reflection; that is, getting descriptors for the message type
  * and accessing the field values dynamically.
  *
  * @author kenton@google.com Kenton Varda
@@ -165,16 +162,13 @@ public interface Message extends MessageLite, MessageOrBuilder {
      * Get a nested builder instance for the given field.
      *
      * <p>Normally, we hold a reference to the immutable message object for the message type field.
-     * Some implementations(the generated message builders), however, can also hold a reference to
+     * Some implementations (the generated message builders) can also hold a reference to
      * the builder object (a nested builder) for the field.
      *
-     * <p>If the field is already backed up by a nested builder, the nested builder will be
-     * returned. Otherwise, a new field builder will be created and returned. The original message
-     * field (if exist) will be merged into the field builder, which will then be nested into its
+     * <p>If the field is already backed up by a nested builder, the nested builder is
+     * returned. Otherwise, a new field builder is created and returned. The original message
+     * field (if one exists) is merged into the field builder, which is then nested into its
      * parent builder.
-     *
-     * <p>NOTE: implementations that do not support nested builders will throw <code>
-     * UnsupportedOperationException</code>.
      */
     Builder getFieldBuilder(Descriptors.FieldDescriptor field);
 
@@ -182,22 +176,19 @@ public interface Message extends MessageLite, MessageOrBuilder {
      * Get a nested builder instance for the given repeated field instance.
      *
      * <p>Normally, we hold a reference to the immutable message object for the message type field.
-     * Some implementations(the generated message builders), however, can also hold a reference to
+     * Some implementations (the generated message builders) can also hold a reference to
      * the builder object (a nested builder) for the field.
      *
-     * <p>If the field is already backed up by a nested builder, the nested builder will be
-     * returned. Otherwise, a new field builder will be created and returned. The original message
-     * field (if exist) will be merged into the field builder, which will then be nested into its
+     * <p>If the field is already backed up by a nested builder, the nested builder is
+     * returned. Otherwise, a new field builder is created and returned. The original message
+     * field (if one exists) is merged into the field builder, which is then nested into its
      * parent builder.
-     *
-     * <p>NOTE: implementations that do not support nested builders will throw <code>
-     * UnsupportedOperationException</code>.
      */
     Builder getRepeatedFieldBuilder(Descriptors.FieldDescriptor field, int index);
 
     /**
-     * Sets a field to the given value. The value must be of the correct type for this field, i.e.
-     * the same type that {@link Message#getField(Descriptors.FieldDescriptor)} would return.
+     * Sets a field to the given value. The value must be of the correct type for this field, that
+     * is, the same type that {@link Message#getField(Descriptors.FieldDescriptor)} returns.
      */
     Builder setField(Descriptors.FieldDescriptor field, Object value);
 
@@ -215,10 +206,10 @@ public interface Message extends MessageLite, MessageOrBuilder {
 
     /**
      * Sets an element of a repeated field to the given value. The value must be of the correct type
-     * for this field, i.e. the same type that {@link
-     * Message#getRepeatedField(Descriptors.FieldDescriptor,int)} would return.
+     * for this field; that is, the same type that {@link
+     * Message#getRepeatedField(Descriptors.FieldDescriptor,int)} returns.
      *
-     * @throws IllegalArgumentException The field is not a repeated field, or {@code
+     * @throws IllegalArgumentException if the field is not a repeated field, or {@code
      *     field.getContainingType() != getDescriptorForType()}.
      */
     Builder setRepeatedField(Descriptors.FieldDescriptor field, int index, Object value);
@@ -226,8 +217,8 @@ public interface Message extends MessageLite, MessageOrBuilder {
     /**
      * Like {@code setRepeatedField}, but appends the value as a new element.
      *
-     * @throws IllegalArgumentException The field is not a repeated field, or {@code
-     *     field.getContainingType() != getDescriptorForType()}.
+     * @throws IllegalArgumentException if the field is not a repeated field, or {@code
+     *     field.getContainingType() != getDescriptorForType()}
      */
     Builder addRepeatedField(Descriptors.FieldDescriptor field, Object value);
 

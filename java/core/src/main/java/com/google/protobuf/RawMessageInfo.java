@@ -34,6 +34,7 @@ package com.google.protobuf;
  * RawMessageInfo stores the same amount of information as {@link MessageInfo} but in a more compact
  * format.
  */
+@CheckReturnValue
 final class RawMessageInfo implements MessageInfo {
 
   private final MessageLite defaultInstance;

@@ -39,32 +39,25 @@
 // particularly different from STL vector as it manages ownership of the
 // pointers that it contains.
 //
-// Typically, clients should not need to access RepeatedField objects directly,
-// but should instead use the accessor functions generated automatically by the
-// protocol compiler.
-//
 // This header covers RepeatedField.
 
 #ifndef GOOGLE_PROTOBUF_REPEATED_FIELD_H__
 #define GOOGLE_PROTOBUF_REPEATED_FIELD_H__
 
-#include <utility>
-#ifdef _MSC_VER
-// This is required for min/max on VS2013 only.
-#include <algorithm>
-#endif
 
+#include <algorithm>
 #include <iterator>
 #include <limits>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/repeated_ptr_field.h>
 #include <google/protobuf/arena.h>
-#include <google/protobuf/message_lite.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/message_lite.h>
+#include <google/protobuf/repeated_ptr_field.h>
 
 
 // Must be included last.
@@ -81,9 +74,18 @@ class Message;
 
 namespace internal {
 
-// kRepeatedFieldLowerClampLimit is the smallest size that will be allocated
-// when growing a repeated field.
-constexpr int kRepeatedFieldLowerClampLimit = 4;
+template <typename T, int kRepHeaderSize>
+constexpr int RepeatedFieldLowerClampLimit() {
+  // The header is padded to be at least `sizeof(T)` when it would be smaller
+  // otherwise.
+  static_assert(sizeof(T) <= kRepHeaderSize, "");
+  // We want to pad the minimum size to be a power of two bytes, including the
+  // header.
+  // The first allocation is kRepHeaderSize bytes worth of elements for a total
+  // of 2*kRepHeaderSize bytes.
+  // For an 8-byte header, we allocate 8 bool, 2 ints, or 1 int64.
+  return kRepHeaderSize / sizeof(T);
+}
 
 // kRepeatedFieldUpperClampLimit is the lowest signed integer value that
 // overflows when multiplied by 2 (which is undefined behavior). Sizes above
@@ -120,7 +122,6 @@ inline void SwapBlock(char* p, char* q) {
 
 // Swaps two blocks of memory of size kSize:
 //  template <int kSize> void memswap(char* p, char* q);
-
 template <int kSize>
 inline typename std::enable_if<(kSize == 0), void>::type memswap(char*, char*) {
 }
@@ -147,6 +148,9 @@ PROTO_MEMSWAP_DEF_SIZE(uint64_t, (1u << 31))
 #endif
 
 #undef PROTO_MEMSWAP_DEF_SIZE
+
+template <typename Element>
+class RepeatedIterator;
 
 }  // namespace internal
 
@@ -192,20 +196,20 @@ class RepeatedField final {
 
   void Set(int index, const Element& value);
   void Add(const Element& value);
-  // Appends a new element and return a pointer to it.
+  // Appends a new element and returns a pointer to it.
   // The new element is uninitialized if |Element| is a POD type.
   Element* Add();
-  // Append elements in the range [begin, end) after reserving
+  // Appends elements in the range [begin, end) after reserving
   // the appropriate number of elements.
   template <typename Iter>
   void Add(Iter begin, Iter end);
 
-  // Remove the last element in the array.
+  // Removes the last element in the array.
   void RemoveLast();
 
-  // Extract elements with indices in "[start .. start+num-1]".
-  // Copy them into "elements[0 .. num-1]" if "elements" is not nullptr.
-  // Caution: implementation also moves elements with indices [start+num ..].
+  // Extracts elements with indices in "[start .. start+num-1]".
+  // Copies them into "elements[0 .. num-1]" if "elements" is not nullptr.
+  // Caution: also moves elements with indices [start+num ..].
   // Calling this routine inside a loop can cause quadratic behavior.
   void ExtractSubrange(int start, int num, Element* elements);
 
@@ -217,11 +221,11 @@ class RepeatedField final {
   template <typename Iter>
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Assign(Iter begin, Iter end);
 
-  // Reserve space to expand the field to at least the given size.  If the
+  // Reserves space to expand the field to at least the given size.  If the
   // array is grown, it will always be at least doubled in size.
   void Reserve(int new_size);
 
-  // Resize the RepeatedField to a new, smaller size.  This is O(1).
+  // Resizes the RepeatedField to a new, smaller size.  This is O(1).
   void Truncate(int new_size);
 
   void AddAlreadyReserved(const Element& value);
@@ -242,22 +246,22 @@ class RepeatedField final {
   Element* mutable_data();
   const Element* data() const;
 
-  // Swap entire contents with "other". If they are separate arenas then, copies
-  // data between each other.
+  // Swaps entire contents with "other". If they are separate arenas then,
+  // copies data between each other.
   void Swap(RepeatedField* other);
 
-  // Swap entire contents with "other". Should be called only if the caller can
+  // Swaps entire contents with "other". Should be called only if the caller can
   // guarantee that both repeated fields are on the same arena or are on the
   // heap. Swapping between different arenas is disallowed and caught by a
   // GOOGLE_DCHECK (see API docs for details).
   void UnsafeArenaSwap(RepeatedField* other);
 
-  // Swap two elements.
+  // Swaps two elements.
   void SwapElements(int index1, int index2);
 
   // STL-like iterator support
-  typedef Element* iterator;
-  typedef const Element* const_iterator;
+  typedef internal::RepeatedIterator<Element> iterator;
+  typedef internal::RepeatedIterator<const Element> const_iterator;
   typedef Element value_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
@@ -308,10 +312,9 @@ class RepeatedField final {
   // Invalidates all iterators at or after the removed range, including end().
   iterator erase(const_iterator first, const_iterator last);
 
-  // Get the Arena on which this RepeatedField stores its elements.
+  // Gets the Arena on which this RepeatedField stores its elements.
   inline Arena* GetArena() const {
-    return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
-                              : rep()->arena;
+    return GetOwningArena();
   }
 
   // For internal use only.
@@ -320,6 +323,14 @@ class RepeatedField final {
   inline void InternalSwap(RepeatedField* other);
 
  private:
+  template <typename T> friend class Arena::InternalHelper;
+
+  // Gets the Arena on which this RepeatedField stores its elements.
+  inline Arena* GetOwningArena() const {
+    return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
+                              : rep()->arena;
+  }
+
   static constexpr int kInitialSize = 0;
   // A note on the representation here (see also comment below for
   // RepeatedPtrFieldBase's struct Rep):
@@ -333,21 +344,24 @@ class RepeatedField final {
   // RepeatedField class to avoid costly cache misses due to the indirection.
   int current_size_;
   int total_size_;
+  // Pad the Rep after arena allow for power-of-two byte sizes when
+  // sizeof(Element) > sizeof(Arena*). eg for 16-byte objects.
+  static constexpr size_t kRepHeaderSize =
+      sizeof(Arena*) < sizeof(Element) ? sizeof(Element) : sizeof(Arena*);
   struct Rep {
     Arena* arena;
-    // Here we declare a huge array as a way of approximating C's "flexible
-    // array member" feature without relying on undefined behavior.
-    Element elements[(std::numeric_limits<int>::max() - 2 * sizeof(Arena*)) /
-                     sizeof(Element)];
+    Element* elements() {
+      return reinterpret_cast<Element*>(reinterpret_cast<char*>(this) +
+                                        kRepHeaderSize);
+    }
   };
-  static constexpr size_t kRepHeaderSize = offsetof(Rep, elements);
 
   // If total_size_ == 0 this points to an Arena otherwise it points to the
   // elements member of a Rep struct. Using this invariant allows the storage of
   // the arena pointer without an extra allocation in the constructor.
   void* arena_or_elements_;
 
-  // Return pointer to elements array.
+  // Returns a pointer to elements array.
   // pre-condition: the array must have been allocated.
   Element* elements() const {
     GOOGLE_DCHECK_GT(total_size_, 0);
@@ -355,48 +369,48 @@ class RepeatedField final {
     return unsafe_elements();
   }
 
-  // Return pointer to elements array if it exists otherwise either null or
-  // a invalid pointer is returned. This only happens for empty repeated fields,
-  // where you can't dereference this pointer anyway (it's empty).
+  // Returns a pointer to elements array if it exists; otherwise either null or
+  // an invalid pointer is returned. This only happens for empty repeated
+  // fields, where you can't dereference this pointer anyway (it's empty).
   Element* unsafe_elements() const {
     return static_cast<Element*>(arena_or_elements_);
   }
 
-  // Return pointer to the Rep struct.
+  // Returns a pointer to the Rep struct.
   // pre-condition: the Rep must have been allocated, ie elements() is safe.
   Rep* rep() const {
-    char* addr = reinterpret_cast<char*>(elements()) - offsetof(Rep, elements);
-    return reinterpret_cast<Rep*>(addr);
+    return reinterpret_cast<Rep*>(reinterpret_cast<char*>(elements()) -
+                                  kRepHeaderSize);
   }
 
   friend class Arena;
   typedef void InternalArenaConstructable_;
 
-  // Move the contents of |from| into |to|, possibly clobbering |from| in the
+  // Moves the contents of |from| into |to|, possibly clobbering |from| in the
   // process.  For primitive types this is just a memcpy(), but it could be
   // specialized for non-primitive types to, say, swap each element instead.
   void MoveArray(Element* to, Element* from, int size);
 
-  // Copy the elements of |from| into |to|.
+  // Copies the elements of |from| into |to|.
   void CopyArray(Element* to, const Element* from, int size);
 
   // Internal helper to delete all elements and deallocate the storage.
-  void InternalDeallocate(Rep* rep, int size) {
+  void InternalDeallocate(Rep* rep, int size, bool in_destructor) {
     if (rep != nullptr) {
-      Element* e = &rep->elements[0];
+      Element* e = &rep->elements()[0];
       if (!std::is_trivial<Element>::value) {
-        Element* limit = &rep->elements[size];
+        Element* limit = &rep->elements()[size];
         for (; e < limit; e++) {
           e->~Element();
         }
       }
+      const size_t bytes = size * sizeof(*e) + kRepHeaderSize;
       if (rep->arena == nullptr) {
-#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
-        const size_t bytes = size * sizeof(*e) + kRepHeaderSize;
-        ::operator delete(static_cast<void*>(rep), bytes);
-#else
-        ::operator delete(static_cast<void*>(rep));
-#endif
+        internal::SizedDelete(rep, bytes);
+      } else if (!in_destructor) {
+        // If we are in the destructor, we might be being destroyed as part of
+        // the arena teardown. We can't try and return blocks to the arena then.
+        rep->arena->ReturnArrayMemory(rep, bytes);
       }
     }
   }
@@ -419,7 +433,7 @@ class RepeatedField final {
   // largely the presence of the fallback path disturbs the compilers mem-to-reg
   // analysis.
   //
-  // This class takes ownership of a repeated field for the duration of it's
+  // This class takes ownership of a repeated field for the duration of its
   // lifetime. The repeated field should not be accessed during this time, ie.
   // only access through this class is allowed. This class should always be a
   // function local stack variable. Intended use
@@ -432,13 +446,13 @@ class RepeatedField final {
   //   }
   // }
   //
-  // Typically due to the fact adder is a local stack variable. The compiler
-  // will be successful in mem-to-reg transformation and the machine code will
-  // be loop: cmp %size, %capacity jae fallback mov dword ptr [%buffer + %size *
-  // 4], %val inc %size jmp loop
+  // Typically, due to the fact that adder is a local stack variable, the
+  // compiler will be successful in mem-to-reg transformation and the machine
+  // code will be loop: cmp %size, %capacity jae fallback mov dword ptr [%buffer
+  // + %size * 4], %val inc %size jmp loop
   //
   // The first version executes at 7 cycles per iteration while the second
-  // version near 1 or 2 cycles.
+  // version executes at only 1 or 2 cycles.
   template <int = 0, bool = std::is_trivial<Element>::value>
   class FastAdderImpl {
    public:
@@ -531,13 +545,13 @@ RepeatedField<Element>::RepeatedField(Iter begin, Iter end)
 template <typename Element>
 RepeatedField<Element>::~RepeatedField() {
 #ifndef NDEBUG
-  // Try to trigger segfault / asan failure in non-opt builds. If arena_
+  // Try to trigger segfault / asan failure in non-opt builds if arena_
   // lifetime has ended before the destructor.
   auto arena = GetArena();
   if (arena) (void)arena->SpaceAllocated();
 #endif
   if (total_size_ > 0) {
-    InternalDeallocate(rep(), total_size_);
+    InternalDeallocate(rep(), total_size_, true);
   }
 }
 
@@ -612,15 +626,15 @@ inline Element* RepeatedField<Element>::AddAlreadyReserved() {
 }
 
 template <typename Element>
-inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n) {
-  GOOGLE_DCHECK_GE(total_size_ - current_size_, n)
+inline Element* RepeatedField<Element>::AddNAlreadyReserved(int elements) {
+  GOOGLE_DCHECK_GE(total_size_ - current_size_, elements)
       << total_size_ << ", " << current_size_;
-  // Warning: sometimes people call this when n == 0 and total_size_ == 0. In
-  // this case the return pointer points to a zero size array (n == 0). Hence
-  // we can just use unsafe_elements(), because the user cannot dereference the
-  // pointer anyway.
+  // Warning: sometimes people call this when elements == 0 and
+  // total_size_ == 0. In this case the return pointer points to a zero size
+  // array (n == 0). Hence we can just use unsafe_elements(), because the user
+  // cannot dereference the pointer anyway.
   Element* ret = unsafe_elements() + current_size_;
-  current_size_ += n;
+  current_size_ += elements;
   return ret;
 }
 
@@ -833,6 +847,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
 template <typename Element>
 void RepeatedField<Element>::UnsafeArenaSwap(RepeatedField* other) {
   if (this == other) return;
+  GOOGLE_DCHECK_EQ(GetArena(), other->GetArena());
   InternalSwap(other);
 }
 
@@ -845,31 +860,31 @@ void RepeatedField<Element>::SwapElements(int index1, int index2) {
 template <typename Element>
 inline typename RepeatedField<Element>::iterator
 RepeatedField<Element>::begin() {
-  return unsafe_elements();
+  return iterator(unsafe_elements());
 }
 template <typename Element>
 inline typename RepeatedField<Element>::const_iterator
 RepeatedField<Element>::begin() const {
-  return unsafe_elements();
+  return const_iterator(unsafe_elements());
 }
 template <typename Element>
 inline typename RepeatedField<Element>::const_iterator
 RepeatedField<Element>::cbegin() const {
-  return unsafe_elements();
+  return const_iterator(unsafe_elements());
 }
 template <typename Element>
 inline typename RepeatedField<Element>::iterator RepeatedField<Element>::end() {
-  return unsafe_elements() + current_size_;
+  return iterator(unsafe_elements() + current_size_);
 }
 template <typename Element>
 inline typename RepeatedField<Element>::const_iterator
 RepeatedField<Element>::end() const {
-  return unsafe_elements() + current_size_;
+  return const_iterator(unsafe_elements() + current_size_);
 }
 template <typename Element>
 inline typename RepeatedField<Element>::const_iterator
 RepeatedField<Element>::cend() const {
-  return unsafe_elements() + current_size_;
+  return const_iterator(unsafe_elements() + current_size_);
 }
 
 template <typename Element>
@@ -886,18 +901,23 @@ namespace internal {
 //     new_size > total_size &&
 //     (total_size == 0 ||
 //      total_size >= kRepeatedFieldLowerClampLimit)
+template <typename T, int kRepHeaderSize>
 inline int CalculateReserveSize(int total_size, int new_size) {
-  if (new_size < kRepeatedFieldLowerClampLimit) {
+  constexpr int lower_limit = RepeatedFieldLowerClampLimit<T, kRepHeaderSize>();
+  if (new_size < lower_limit) {
     // Clamp to smallest allowed size.
-    return kRepeatedFieldLowerClampLimit;
+    return lower_limit;
   }
-  if (total_size < kRepeatedFieldUpperClampLimit) {
-    return std::max(total_size * 2, new_size);
-  } else {
-    // Clamp to largest allowed size.
-    GOOGLE_DCHECK_GT(new_size, kRepeatedFieldUpperClampLimit);
+  constexpr int kMaxSizeBeforeClamp =
+      (std::numeric_limits<int>::max() - kRepHeaderSize) / 2;
+  if (PROTOBUF_PREDICT_FALSE(total_size > kMaxSizeBeforeClamp)) {
     return std::numeric_limits<int>::max();
   }
+  // We want to double the number of bytes, not the number of elements, to try
+  // to stay within power-of-two allocations.
+  // The allocation has kRepHeaderSize + sizeof(T) * capacity.
+  int doubled_size = 2 * total_size + kRepHeaderSize / sizeof(T);
+  return std::max(doubled_size, new_size);
 }
 }  // namespace internal
 
@@ -909,7 +929,10 @@ void RepeatedField<Element>::Reserve(int new_size) {
   Rep* old_rep = total_size_ > 0 ? rep() : nullptr;
   Rep* new_rep;
   Arena* arena = GetArena();
-  new_size = internal::CalculateReserveSize(total_size_, new_size);
+
+  new_size = internal::CalculateReserveSize<Element, kRepHeaderSize>(
+      total_size_, new_size);
+
   GOOGLE_DCHECK_LE(
       static_cast<size_t>(new_size),
       (std::numeric_limits<size_t>::max() - kRepHeaderSize) / sizeof(Element))
@@ -928,7 +951,7 @@ void RepeatedField<Element>::Reserve(int new_size) {
   //     total_size_ == 0 ||
   //     total_size_ >= internal::kMinRepeatedFieldAllocationSize
   total_size_ = new_size;
-  arena_or_elements_ = new_rep->elements;
+  arena_or_elements_ = new_rep->elements();
   // Invoke placement-new on newly allocated elements. We shouldn't have to do
   // this, since Element is supposed to be POD, but a previous version of this
   // code allocated storage with "new Element[size]" and some code uses
@@ -944,11 +967,11 @@ void RepeatedField<Element>::Reserve(int new_size) {
     new (e) Element;
   }
   if (current_size_ > 0) {
-    MoveArray(&elements()[0], old_rep->elements, current_size_);
+    MoveArray(&elements()[0], old_rep->elements(), current_size_);
   }
 
   // Likewise, we need to invoke destructors on the old array.
-  InternalDeallocate(old_rep, old_total_size);
+  InternalDeallocate(old_rep, old_total_size, false);
 
 }
 
@@ -1003,6 +1026,130 @@ struct ElementCopier<Element, true> {
 // Ported by johannes from util/gtl/proto-array-iterators.h
 
 namespace internal {
+
+// STL-like iterator implementation for RepeatedField.  You should not
+// refer to this class directly; use RepeatedField<T>::iterator instead.
+//
+// Note: All of the iterator operators *must* be inlined to avoid performance
+// regressions.  This is caused by the extern template declarations below (which
+// are required because of the RepeatedField extern template declarations).  If
+// any of these functions aren't explicitly inlined (e.g. defined in the class),
+// the compiler isn't allowed to inline them.
+template <typename Element>
+class RepeatedIterator {
+ public:
+  using iterator_category = std::random_access_iterator_tag;
+  // Note: remove_const is necessary for std::partial_sum, which uses value_type
+  // to determine the summation variable type.
+  using value_type = typename std::remove_const<Element>::type;
+  using difference_type = std::ptrdiff_t;
+  using pointer = Element*;
+  using reference = Element&;
+
+  constexpr RepeatedIterator() noexcept : it_(nullptr) {}
+
+  // Allows "upcasting" from RepeatedIterator<T**> to
+  // RepeatedIterator<const T*const*>.
+  template <typename OtherElement,
+            typename std::enable_if<std::is_convertible<
+                OtherElement*, pointer>::value>::type* = nullptr>
+  constexpr RepeatedIterator(
+      const RepeatedIterator<OtherElement>& other) noexcept
+      : it_(other.it_) {}
+
+  // dereferenceable
+  constexpr reference operator*() const noexcept { return *it_; }
+  constexpr pointer operator->() const noexcept { return it_; }
+
+ private:
+  // Helper alias to hide the internal type.
+  using iterator = RepeatedIterator<Element>;
+
+ public:
+  // {inc,dec}rementable
+  iterator& operator++() noexcept {
+    ++it_;
+    return *this;
+  }
+  iterator operator++(int) noexcept { return iterator(it_++); }
+  iterator& operator--() noexcept {
+    --it_;
+    return *this;
+  }
+  iterator operator--(int) noexcept { return iterator(it_--); }
+
+  // equality_comparable
+  friend constexpr bool operator==(const iterator& x,
+                                   const iterator& y) noexcept {
+    return x.it_ == y.it_;
+  }
+  friend constexpr bool operator!=(const iterator& x,
+                                   const iterator& y) noexcept {
+    return x.it_ != y.it_;
+  }
+
+  // less_than_comparable
+  friend constexpr bool operator<(const iterator& x,
+                                  const iterator& y) noexcept {
+    return x.it_ < y.it_;
+  }
+  friend constexpr bool operator<=(const iterator& x,
+                                   const iterator& y) noexcept {
+    return x.it_ <= y.it_;
+  }
+  friend constexpr bool operator>(const iterator& x,
+                                  const iterator& y) noexcept {
+    return x.it_ > y.it_;
+  }
+  friend constexpr bool operator>=(const iterator& x,
+                                   const iterator& y) noexcept {
+    return x.it_ >= y.it_;
+  }
+
+  // addable, subtractable
+  iterator& operator+=(difference_type d) noexcept {
+    it_ += d;
+    return *this;
+  }
+  constexpr iterator operator+(difference_type d) const noexcept {
+    return iterator(it_ + d);
+  }
+  friend constexpr iterator operator+(const difference_type d,
+                                      iterator it) noexcept {
+    return it + d;
+  }
+
+  iterator& operator-=(difference_type d) noexcept {
+    it_ -= d;
+    return *this;
+  }
+  iterator constexpr operator-(difference_type d) const noexcept {
+    return iterator(it_ - d);
+  }
+
+  // indexable
+  constexpr reference operator[](difference_type d) const noexcept {
+    return it_[d];
+  }
+
+  // random access iterator
+  friend constexpr difference_type operator-(iterator it1,
+                                             iterator it2) noexcept {
+    return it1.it_ - it2.it_;
+  }
+
+ private:
+  template <typename OtherElement>
+  friend class RepeatedIterator;
+
+  // Allow construction from RepeatedField.
+  friend class RepeatedField<value_type>;
+  explicit RepeatedIterator(Element* it) noexcept : it_(it) {}
+
+  // The internal iterator.
+  Element* it_;
+};
+
 // A back inserter for RepeatedField objects.
 template <typename T>
 class RepeatedFieldBackInsertIterator {
@@ -1048,6 +1195,20 @@ extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<int64_t>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<uint64_t>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<float>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<double>;
+
+namespace internal {
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedIterator<bool>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+    RepeatedIterator<int32_t>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+    RepeatedIterator<uint32_t>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+    RepeatedIterator<int64_t>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+    RepeatedIterator<uint64_t>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedIterator<float>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedIterator<double>;
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

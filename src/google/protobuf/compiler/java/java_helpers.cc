@@ -40,13 +40,13 @@
 #include <unordered_set>
 #include <vector>
 
+#include <google/protobuf/wire_format.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stringprintf.h>
+#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/compiler/java/java_names.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/hash.h>  // for hash<T *>
 
 namespace google {
@@ -66,15 +66,27 @@ namespace {
 
 const char* kDefaultPackage = "";
 
-// Names that should be avoided as field names.
-// Using them will cause the compiler to generate accessors whose names are
-// colliding with methods defined in base classes.
+// Names that should be avoided (in UpperCamelCase format).
+// Using them will cause the compiler to generate accessors whose names
+// collide with methods defined in base classes.
+// Keep this list in sync with specialFieldNames in
+// java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java
 const char* kForbiddenWordList[] = {
-    // message base class:
-    "cached_size",
-    "serialized_size",
     // java.lang.Object:
-    "class",
+    "Class",
+    // com.google.protobuf.MessageLiteOrBuilder:
+    "DefaultInstanceForType",
+    // com.google.protobuf.MessageLite:
+    "ParserForType",
+    "SerializedSize",
+    // com.google.protobuf.MessageOrBuilder:
+    "AllFields",
+    "DescriptorForType",
+    "InitializationErrorString",
+    // TODO(b/219045204): re-enable
+    // "UnknownFields",
+    // obsolete. kept for backwards compatibility of generated code
+    "CachedSize",
 };
 
 const std::unordered_set<std::string>* kReservedNames =
@@ -93,7 +105,7 @@ const std::unordered_set<std::string>* kReservedNames =
 
 bool IsForbidden(const std::string& field_name) {
   for (int i = 0; i < GOOGLE_ARRAYSIZE(kForbiddenWordList); ++i) {
-    if (field_name == kForbiddenWordList[i]) {
+    if (UnderscoresToCamelCase(field_name, true) == kForbiddenWordList[i]) {
       return true;
     }
   }
@@ -1049,8 +1061,7 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
 
   if (field->is_map()) {
     if (!SupportUnknownEnumValue(field)) {
-      const FieldDescriptor* value =
-          field->message_type()->map_value();
+      const FieldDescriptor* value = field->message_type()->map_value();
       if (GetJavaType(value) == JAVATYPE_ENUM) {
         extra_bits |= kMapWithProto2EnumValue;
       }

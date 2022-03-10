@@ -76,13 +76,13 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
         return &field;
       }
     }
-    return NULL;
+    return nullptr;
   }
 
   bool HasField(const Type& type, Field::Cardinality cardinality,
                 Field::Kind kind, const std::string& name, int number) {
     const Field* field = FindField(type, name);
-    if (field == NULL) {
+    if (field == nullptr) {
       return false;
     }
     return field->cardinality() == cardinality && field->kind() == kind &&
@@ -92,7 +92,7 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
   bool CheckFieldTypeUrl(const Type& type, const std::string& name,
                          const std::string& type_url) {
     const Field* field = FindField(type, name);
-    if (field == NULL) {
+    if (field == nullptr) {
       return false;
     }
     return field->type_url() == type_url;
@@ -101,7 +101,7 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
   bool FieldInOneof(const Type& type, const std::string& name,
                     const std::string& oneof_name) {
     const Field* field = FindField(type, name);
-    if (field == NULL || field->oneof_index() <= 0 ||
+    if (field == nullptr || field->oneof_index() <= 0 ||
         field->oneof_index() > type.oneofs_size()) {
       return false;
     }
@@ -110,7 +110,7 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
 
   bool IsPacked(const Type& type, const std::string& name) {
     const Field* field = FindField(type, name);
-    if (field == NULL) {
+    if (field == nullptr) {
       return false;
     }
     return field->packed();

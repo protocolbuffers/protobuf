@@ -374,7 +374,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
    * @return a {@link SortedMap} to which overflow entries mappings can be added or removed.
    * @throws UnsupportedOperationException if {@link #makeImmutable()} has been called.
    */
-  @SuppressWarnings("unchecked")
   private SortedMap<K, V> getOverflowEntriesMutable() {
     checkMutable();
     if (overflowEntries.isEmpty() && !(overflowEntries instanceof TreeMap)) {
@@ -441,7 +440,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
       if (!(o instanceof Map.Entry)) {
         return false;
       }
-      @SuppressWarnings("unchecked")
       Map.Entry<?, ?> other = (Map.Entry<?, ?>) o;
       return equals(key, other.getKey()) && equals(value, other.getValue());
     }

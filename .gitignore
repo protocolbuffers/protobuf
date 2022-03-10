@@ -215,5 +215,14 @@ _build/
 .idea
 *.iml
 
+# Eclipse
+**/.settings
+**/.project
+**/.classpath
+
 # BenchmarkDotNet
 BenchmarkDotNet.Artifacts/
+
+# Clangd uses these common ephemeral files
+.cache
+compile_commands.json

@@ -41,20 +41,19 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arena.h>
-#include <google/protobuf/generated_message_table_driven.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/mutex.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -230,7 +229,7 @@ bool MessageLite::MergeFromImpl(io::CodedInputStream* input,
   if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
   if (!ctx.EndedAtEndOfStream()) {
-    GOOGLE_DCHECK(ctx.LastTag() != 1);  // We can't end on a pushed limit.
+    GOOGLE_DCHECK_NE(ctx.LastTag(), 1);  // We can't end on a pushed limit.
     if (ctx.IsExceedingLimit(ptr)) return false;
     input->SetLastTag(ctx.LastTag());
   } else {
@@ -506,9 +505,8 @@ std::string MessageLite::SerializePartialAsString() const {
 
 namespace internal {
 
-template <>
-MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
-    const MessageLite* prototype, Arena* arena) {
+MessageLite* NewFromPrototypeHelper(const MessageLite* prototype,
+                                    Arena* arena) {
   return prototype->New(arena);
 }
 template <>
@@ -521,6 +519,19 @@ void GenericTypeHandler<std::string>::Merge(const std::string& from,
                                             std::string* to) {
   *to = from;
 }
+
+// Non-inline implementations of InternalMetadata routines
+#if defined(NDEBUG) || defined(_MSC_VER)
+// for opt and MSVC builds, the destructor is defined in the header.
+#else
+// This is moved out of the header because the GOOGLE_DCHECK produces a lot of code.
+InternalMetadata::~InternalMetadata() {
+  if (HasMessageOwnedArenaTag()) {
+    GOOGLE_DCHECK(!HasUnknownFieldsTag());
+    delete reinterpret_cast<Arena*>(ptr_ - kMessageOwnedArenaTagMask);
+  }
+}
+#endif
 
 // Non-inline variants of std::string specializations for
 // various InternalMetadata routines.

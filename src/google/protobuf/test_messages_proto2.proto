@@ -209,6 +209,7 @@ message TestAllTypesProto2 {
   optional double default_double = 252 [ default = 7e22];
   optional bool default_bool = 253 [ default = true];
   optional string default_string = 254 [ default = "Rosebud"];
+  optional bytes default_bytes = 255 [ default = "joshua"];
 
   // Test field-name-to-JSON-name convention.
   // (protobuf says names can be any valid C/C++ identifier.)
@@ -289,4 +290,8 @@ message EnumOnlyProto2 {
     kFalse = 0;
     kTrue = 1;
   }
+}
+
+message OneStringProto2 {
+  optional string data = 1;
 }
