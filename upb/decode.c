@@ -424,8 +424,7 @@ static bool decode_checkenum(upb_Decoder* d, const char* ptr, upb_Message* msg,
 
   if (UPB_LIKELY(v < 64) && UPB_LIKELY(((1ULL << v) & e->mask))) return true;
 
-  bool ans =  decode_checkenum_slow(d, ptr, msg, e, field, v);
-  return ans;
+  return decode_checkenum_slow(d, ptr, msg, e, field, v);
 }
 
 UPB_NOINLINE
