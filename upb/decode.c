@@ -385,6 +385,18 @@ static char* encode_varint32(uint32_t val, char* ptr) {
   return ptr;
 }
 
+static void upb_Decode_AddUnknownVarints(upb_Decoder* d, upb_Message* msg,
+                                         uint32_t val1, uint32_t val2) {
+  char buf[20];
+  char* end = buf;
+  end = encode_varint32(val1, end);
+  end = encode_varint32(val2, end);
+
+  if (!_upb_Message_AddUnknown(msg, buf, end - buf, &d->arena)) {
+    decode_err(d, kUpb_DecodeStatus_OutOfMemory);
+  }
+}
+
 UPB_NOINLINE
 static bool decode_checkenum_slow(upb_Decoder* d, const char* ptr,
                                   upb_Message* msg, const upb_MiniTable_Enum* e,
@@ -398,17 +410,9 @@ static bool decode_checkenum_slow(upb_Decoder* d, const char* ptr,
 
   // Unrecognized enum goes into unknown fields.
   // For packed fields the tag could be arbitrarily far in the past, so we
-  // just re-encode the tag here.
-  char buf[20];
-  char* end = buf;
+  // just re-encode the tag and value here.
   uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Varint;
-  end = encode_varint32(tag, end);
-  end = encode_varint32(v, end);
-
-  if (!_upb_Message_AddUnknown(msg, buf, end - buf, &d->arena)) {
-    decode_err(d, kUpb_DecodeStatus_OutOfMemory);
-  }
-
+  upb_Decode_AddUnknownVarints(d, msg, tag, v);
   return false;
 }
 
@@ -627,8 +631,20 @@ static const char* decode_tomap(upb_Decoder* d, const char* ptr,
         upb_value_ptr(_upb_Message_New(entry->subs[0].submsg, &d->arena));
   }
 
+  const char* start = ptr;
   ptr = decode_tosubmsg(d, ptr, &ent.k, subs, field, val->size);
-  _upb_Map_Set(map, &ent.k, map->key_size, &ent.v, map->val_size, &d->arena);
+  // check if ent had any unknown fields
+  size_t size;
+  upb_Message_GetUnknown(&ent.k, &size);
+  if (size != 0) {
+    uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Delimited;
+    upb_Decode_AddUnknownVarints(d, msg, tag, (uint32_t)(ptr - start));
+    if (!_upb_Message_AddUnknown(msg, start, ptr - start, &d->arena)) {
+      decode_err(d, kUpb_DecodeStatus_OutOfMemory);
+    }
+  } else {
+    _upb_Map_Set(map, &ent.k, map->key_size, &ent.v, map->val_size, &d->arena);
+  }
   return ptr;
 }
 

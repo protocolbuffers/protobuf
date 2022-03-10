@@ -158,3 +158,22 @@ message TestMaxRequiredFields {
   required int32 required_int32_61 = 61;
   required int32 required_int32_62 = 62;
 }
+
+message TestMapField {
+  enum EnumMap {
+    ZERO = 0;
+    ONE = 1;
+    TWO = 2;
+  }
+  map<int32, EnumMap> map_field = 1;
+}
+
+message TestMapFieldExtra {
+  enum EnumMap {
+    ZERO = 0;
+    ONE = 1;
+    TWO = 2;
+    THREE = 3;
+  }
+  map<int32, EnumMap> map_field = 1;
+}
