@@ -43,32 +43,24 @@ cc_toolchain_config(
     name = "linux-aarch_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
-    extra_compiler_flags = [
-        "-I/opt/manylinux/2014/aarch64/usr/include/c++/10/aarch64-redhat-linux",
-        "-I/opt/manylinux/2014/aarch64/usr/include/c++/10"
-    ],
     sysroot = "/opt/manylinux/2014/aarch64",
     linker_path = "/usr/bin/ld",
     target_cpu = "aarch64",
     target_full_name = "aarch64-linux-gnu",
     toolchain_name = "linux_aarch_64",
     # Don't really need this, setting it because it's required.
-    toolchain_dir = "/opt/manylinux/2014/aarch64/usr/include",
+    toolchain_dir = "/opt/manylinux/2014/aarch64",
 )
 
 cc_toolchain_config(
     name = "linux-ppcle_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
-    extra_compiler_flags = [
-        "-I/usr/powerpc64le-linux-gnu/include/c++/8/powerpc64le-linux-gnu/",
-        "-I/usr/powerpc64le-linux-gnu/include/c++/8/"
-    ],
-    extra_include = "/usr/include",
     linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/ppc64le",
     target_cpu = "ppc64",
     target_full_name = "powerpc64le-linux-gnu",
-    toolchain_dir = "/usr/powerpc64le-linux-gnu/include",
+    toolchain_dir = "/opt/manylinux/2014/ppc64le",
     toolchain_name = "linux_ppcle_64",
 )
 
@@ -76,15 +68,11 @@ cc_toolchain_config(
     name = "linux-s390_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
-    extra_compiler_flags = [
-        "-I/usr/s390x-linux-gnu/include/c++/8/s390x-linux-gnu/",
-        "-I/usr/s390x-linux-gnu/include/c++/8/"
-    ],
-    extra_include = "/usr/include",
     linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/s390x",
     target_cpu = "systemz",
     target_full_name = "s390x-linux-gnu",
-    toolchain_dir = "/usr/s390x-linux-gnu/include",
+    toolchain_dir = "/opt/manylinux/2014/s390x",
     toolchain_name = "linux_s390_64",
 )
 
@@ -92,11 +80,11 @@ cc_toolchain_config(
     name = "linux-x86_32-config",
     bit_flag = "-m32",
     cpp_flag = "-lstdc++",
-    extra_include = "/usr/include",
     linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/i686",
     target_cpu = "x86_32",
     target_full_name = "i386-linux-gnu",
-    toolchain_dir = "/usr/include/i386-linux-gnu",
+    toolchain_dir = "/opt/manylinux/2014/i686",
     toolchain_name = "linux_x86_32",
 )
 
@@ -104,11 +92,11 @@ cc_toolchain_config(
     name = "linux-x86_64-config",
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
-    extra_include = "/usr/include",
     linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/x86_64",
     target_cpu = "x86_64",
     target_full_name = "x86_64-linux-gnu",
-    toolchain_dir = "/usr/include/x86_64-linux-gnu",
+    toolchain_dir = "/opt/manylinux/2014/x86_64",
     toolchain_name = "linux_x86_64",
 )
 
