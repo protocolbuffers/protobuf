@@ -157,22 +157,22 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3019004
+#define PROTOBUF_VERSION 3020000
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
 #endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3019000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3020000
 
 #ifdef PROTOBUF_MIN_PROTOC_VERSION
 #error PROTOBUF_MIN_PROTOC_VERSION was previously defined
 #endif
-#define PROTOBUF_MIN_PROTOC_VERSION 3019000
+#define PROTOBUF_MIN_PROTOC_VERSION 3020000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
 #endif
-#define PROTOBUF_VERSION_SUFFIX ""
+#define PROTOBUF_VERSION_SUFFIX "-rc1"
 
 #if defined(PROTOBUF_NAMESPACE) || defined(PROTOBUF_NAMESPACE_ID)
 #error PROTOBUF_NAMESPACE or PROTOBUF_NAMESPACE_ID was previously defined
@@ -363,7 +363,7 @@
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3019000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3020000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
@@ -454,7 +454,7 @@
 # else
 #  define PROTOC_EXPORT __declspec(dllimport)
 # endif  // defined(LIBPROTOC_EXPORTS)
-#elif defined(PROTOBUF_USE_DLLS) && defined(LIBPROTOBUF_EXPORTS)
+#elif defined(PROTOBUF_USE_DLLS) && defined(LIBPROTOC_EXPORTS)
 # define PROTOC_EXPORT __attribute__((visibility("default")))
 #else
 # define PROTOC_EXPORT
@@ -533,6 +533,17 @@
   __builtin_assume(pred)
 #else
 #define PROTOBUF_ASSUME(pred) GOOGLE_DCHECK(pred)
+#endif
+
+// PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW tells the compiler if it has
+// __builtin_mul_overflow intrinsic to check for multiplication overflow.
+#ifdef PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW
+#error PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW was previously defined
+#endif
+#if __has_builtin(__builtin_mul_overflow)
+#define PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW 1
+#else
+#define PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW 0
 #endif
 
 // Specify memory alignment for structs, classes, etc.

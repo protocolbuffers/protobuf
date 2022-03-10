@@ -160,11 +160,19 @@ void MapFieldGenerator::FinishInitialization(void) {
 }
 
 void MapFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls) const {
-  RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls);
+    std::set<std::string>* fwd_decls,
+    bool include_external_types) const {
+  RepeatedFieldGenerator::DetermineForwardDeclarations(
+      fwd_decls, include_external_types);
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();
-  if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_MESSAGE) {
+  // Within a file there is no requirement on the order of the messages, so
+  // local references need a forward declaration. External files (not WKTs),
+  // need one when requested.
+  if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_MESSAGE &&
+      ((include_external_types &&
+        !IsProtobufLibraryBundledProtoFile(value_descriptor->file())) ||
+       descriptor_->file() == value_descriptor->file())) {
     const std::string& value_storage_type =
         value_field_generator_->variable("storage_type");
     fwd_decls->insert("@class " + value_storage_type);

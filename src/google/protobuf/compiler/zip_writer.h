@@ -29,6 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
+#ifndef GOOGLE_PROTOBUF_COMPILER_ZIP_WRITER_H__
+#define GOOGLE_PROTOBUF_COMPILER_ZIP_WRITER_H__
 
 #include <cstdint>
 #include <vector>
@@ -63,3 +65,5 @@ class ZipWriter {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#endif  // GOOGLE_PROTOBUF_COMPILER_ZIP_WRITER_H__

@@ -3625,13 +3625,17 @@ TEST(TextFormatMapTest, Sorted) {
                         &expected_text, true));
 
   CleanStringLineEndings(&expected_text, false);
-  EXPECT_EQ(message.DebugString(), expected_text);
+  TextFormat::Printer printer;
+  std::string actual_text;
+  printer.PrintToString(message, &actual_text);
+  EXPECT_EQ(actual_text, expected_text);
 
   // Test again on the reverse order.
   UNITTEST::TestMap message2;
   tester.SetMapFieldsViaReflection(&message2);
   tester.SwapMapsViaReflection(&message2);
-  EXPECT_EQ(message2.DebugString(), expected_text);
+  printer.PrintToString(message2, &actual_text);
+  EXPECT_EQ(actual_text, expected_text);
 }
 
 TEST(TextFormatMapTest, ParseCorruptedString) {

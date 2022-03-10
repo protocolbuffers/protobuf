@@ -129,10 +129,13 @@ class MessageTest(unittest.TestCase):
     # TODO(jieluo): Fix cpp extension to raise error instead of warning.
     # b/27494216
     end_tag = encoder.TagBytes(1, 4)
-    if api_implementation.Type() == 'python':
+    if (api_implementation.Type() == 'python' or
+        api_implementation._Version() == 3):
       with self.assertRaises(message.DecodeError) as context:
         msg.FromString(end_tag)
-      self.assertEqual('Unexpected end-group tag.', str(context.exception))
+      if api_implementation.Type() == 'python':
+        # Only pure-Python has an error message this specific.
+        self.assertEqual('Unexpected end-group tag.', str(context.exception))
 
     # Field number 0 is illegal.
     self.assertRaises(message.DecodeError, msg.FromString, b'\3\4')

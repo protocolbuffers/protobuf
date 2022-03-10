@@ -58,12 +58,15 @@ class PrimitiveFieldGenerator : public FieldGenerator {
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
-  void GenerateConstructorCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override {}
   void GenerateCopyConstructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
-  void GenerateConstinitInitializer(io::Printer* printer) const override;
+  void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
+  void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveFieldGenerator);
@@ -100,10 +103,14 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override {}
   void GenerateCopyConstructorCode(io::Printer* printer) const override {}
+  void GenerateDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
-  void GenerateConstinitInitializer(io::Printer* printer) const override;
+  void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
+  void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPrimitiveFieldGenerator);

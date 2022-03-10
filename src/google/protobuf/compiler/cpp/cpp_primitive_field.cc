@@ -186,12 +186,6 @@ void PrimitiveFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   format("swap($field$, other->$field$);\n");
 }
 
-void PrimitiveFieldGenerator::GenerateConstructorCode(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format("$field$ = $default$;\n");
-}
-
 void PrimitiveFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -230,10 +224,22 @@ void PrimitiveFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   }
 }
 
-void PrimitiveFieldGenerator::GenerateConstinitInitializer(
+void PrimitiveFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_($default$)");
+  format("/*decltype($field$)*/$default$");
+}
+
+void PrimitiveFieldGenerator::GenerateAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){$default$}");
+}
+
+void PrimitiveFieldGenerator::GenerateCopyAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){}");
 }
 
 // ===================================================================
@@ -407,6 +413,12 @@ void RepeatedPrimitiveFieldGenerator::GenerateSwappingCode(
   format("$field$.InternalSwap(&other->$field$);\n");
 }
 
+void RepeatedPrimitiveFieldGenerator::GenerateDestructorCode(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("$field$.~RepeatedField();\n");
+}
+
 void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -460,7 +472,8 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
     format(
         "if (data_size > 0) {\n"
         "  total_size += $tag_size$ +\n"
-        "    ::_pbi::WireFormatLite::Int32Size(static_cast<$int32$>(data_size));\n"
+        "    "
+        "::_pbi::WireFormatLite::Int32Size(static_cast<$int32$>(data_size));\n"
         "}\n");
     if (FixedSize(descriptor_->type()) == -1) {
       format(
@@ -480,13 +493,37 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
   format("}\n");
 }
 
-void RepeatedPrimitiveFieldGenerator::GenerateConstinitInitializer(
+void RepeatedPrimitiveFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_()");
+  format("/*decltype($field$)*/{}");
   if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("\n, $cached_byte_size_name$(0)");
+    format("\n, /*decltype($cached_byte_size_field$)*/{0}");
+  }
+}
+
+void RepeatedPrimitiveFieldGenerator::GenerateAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){arena}");
+  if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
+      HasGeneratedMethods(descriptor_->file(), options_)) {
+    // std::atomic has no move constructor, which prevents explicit aggregate
+    // initialization pre-C++17.
+    format("\n, /*decltype($cached_byte_size_field$)*/{0}");
+  }
+}
+
+void RepeatedPrimitiveFieldGenerator::GenerateCopyAggregateInitializer(
+    io::Printer* printer) const {
+
+  Formatter format(printer, variables_);
+  format("decltype($field$){from.$field$}");
+  if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
+      HasGeneratedMethods(descriptor_->file(), options_)) {
+    // std::atomic has no move constructor.
+    format("\n, /*decltype($cached_byte_size_field$)*/{0}");
   }
 }
 

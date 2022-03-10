@@ -118,7 +118,7 @@ set_cmake_value() {
 
 
 # Replace file lists in cmake files.
-CMAKE_PREFIX="\${protobuf_source_dir}/src/"
+CMAKE_PREFIX="\${protobuf_SOURCE_DIR}/src/"
 set_cmake_value $CMAKE_DIR/libprotobuf-lite.cmake libprotobuf_lite_files $CMAKE_PREFIX $LIBPROTOBUF_LITE_SOURCES
 set_cmake_value $CMAKE_DIR/libprotobuf.cmake libprotobuf_files $CMAKE_PREFIX $LIBPROTOBUF_SOURCES
 set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_files $CMAKE_PREFIX $LIBPROTOC_SOURCES

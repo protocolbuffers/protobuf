@@ -32,9 +32,9 @@
 
 #include <algorithm>
 
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/descriptor.pb.h>
 
 namespace google {

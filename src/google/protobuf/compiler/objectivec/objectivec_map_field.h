@@ -56,7 +56,8 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
   virtual void DetermineObjectiveCClassDefinitions(
       std::set<std::string>* fwd_decls) const override;
   virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls) const override;
+      std::set<std::string>* fwd_decls,
+      bool include_external_types) const override;
 
  private:
   std::unique_ptr<FieldGenerator> value_field_generator_;

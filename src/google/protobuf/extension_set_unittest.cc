@@ -414,6 +414,46 @@ TEST(ExtensionSetTest, ArenaMergeFrom) {
   TestUtil::ExpectAllExtensionsSet(message2);
 }
 
+TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensions) {
+  Arena arena;
+  {
+    auto* message1 = Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+    auto* message2 = Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+
+    // Set an extension and then clear it
+    message1->SetExtension(unittest::optional_int32_extension, 1);
+    message1->ClearExtension(unittest::optional_int32_extension);
+
+    // Since all extensions in message1 have been cleared, we should be able to
+    // merge it into message2 without allocating any additional memory.
+    uint64_t space_used_before_merge = arena.SpaceUsed();
+    message2->MergeFrom(*message1);
+    EXPECT_EQ(space_used_before_merge, arena.SpaceUsed());
+  }
+  {
+    // As more complicated case, let's have message1 and message2 share some
+    // uncleared extensions in common.
+    auto* message1 = Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+    auto* message2 = Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+
+    // Set int32 and uint32 on both messages.
+    message1->SetExtension(unittest::optional_int32_extension, 1);
+    message2->SetExtension(unittest::optional_int32_extension, 2);
+    message1->SetExtension(unittest::optional_uint32_extension, 1);
+    message2->SetExtension(unittest::optional_uint32_extension, 2);
+
+    // Set and clear int64 and uint64 on message1.
+    message1->SetExtension(unittest::optional_int64_extension, 0);
+    message1->ClearExtension(unittest::optional_int64_extension);
+    message1->SetExtension(unittest::optional_uint64_extension, 0);
+    message1->ClearExtension(unittest::optional_uint64_extension);
+
+    uint64_t space_used_before_merge = arena.SpaceUsed();
+    message2->MergeFrom(*message1);
+    EXPECT_EQ(space_used_before_merge, arena.SpaceUsed());
+  }
+}
+
 TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
   Arena arena;
   unittest::TestAllExtensions* message =
@@ -1336,6 +1376,18 @@ TEST(ExtensionSetTest, BoolExtension) {
 TEST(ExtensionSetTest, ConstInit) {
   PROTOBUF_CONSTINIT static ExtensionSet set{};
   EXPECT_EQ(set.NumExtensions(), 0);
+}
+
+TEST(ExtensionSetTest, ExtensionSetSpaceUsed) {
+  unittest::TestAllExtensions msg;
+  size_t l = msg.SpaceUsedLong();
+  msg.SetExtension(unittest::optional_int32_extension, 100);
+  unittest::TestAllExtensions msg2(msg);
+  size_t l2 = msg2.SpaceUsedLong();
+  msg.ClearExtension(unittest::optional_int32_extension);
+  unittest::TestAllExtensions msg3(msg);
+  size_t l3 = msg3.SpaceUsedLong();
+  EXPECT_TRUE((l2 - l) > (l3 - l));
 }
 
 }  // namespace

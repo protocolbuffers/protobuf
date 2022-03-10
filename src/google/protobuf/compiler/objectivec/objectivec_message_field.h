@@ -53,7 +53,8 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
 
  public:
   virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls) const override;
+      std::set<std::string>* fwd_decls,
+      bool include_external_types) const override;
   virtual void DetermineObjectiveCClassDefinitions(
       std::set<std::string>* fwd_decls) const override;
 };
@@ -70,7 +71,8 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
 
  public:
   virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls) const override;
+      std::set<std::string>* fwd_decls,
+      bool include_external_types) const override;
   virtual void DetermineObjectiveCClassDefinitions(
       std::set<std::string>* fwd_decls) const override;
 };

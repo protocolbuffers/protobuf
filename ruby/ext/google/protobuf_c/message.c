@@ -1141,7 +1141,11 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   if (argc == 2) {
     VALUE hash_args = argv[1];
     if (TYPE(hash_args) != T_HASH) {
-      rb_raise(rb_eArgError, "Expected hash arguments.");
+      if (RTEST(rb_funcall(hash_args, rb_intern("respond_to?"), 1, rb_str_new2("to_h")))) {
+        hash_args = rb_funcall(hash_args, rb_intern("to_h"), 0);
+      } else {
+        rb_raise(rb_eArgError, "Expected hash arguments.");
+      }
     }
 
     if (RTEST(rb_hash_lookup2(hash_args,

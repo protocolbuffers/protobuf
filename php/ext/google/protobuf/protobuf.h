@@ -36,7 +36,7 @@
 
 #include "php-upb.h"
 
-const zval *get_generated_pool();
+upb_DefPool *get_global_symtab();
 
 #if PHP_VERSION_ID < 70300
 #define GC_ADDREF(h) ++GC_REFCOUNT(h)
@@ -127,16 +127,16 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_setter, 0, 0, 1)
   ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-#define PHP_PROTOBUF_VERSION "3.19.4"
+#define PHP_PROTOBUF_VERSION "3.20.0RC1"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
-//  * upb_msg* -> Message
-//  * upb_array* -> RepeatedField
-//  * upb_map*, -> MapField
-//  * upb_msgdef* -> Descriptor
-//  * upb_enumdef* -> EnumDescriptor
-//  * upb_msgdef* -> Descriptor
+//  * upb_Message* -> Message
+//  * upb_Array* -> RepeatedField
+//  * upb_Map*, -> MapField
+//  * upb_MessageDef* -> Descriptor
+//  * upb_EnumDef* -> EnumDescriptor
+//  * upb_MessageDef* -> Descriptor
 //
 // Each wrapped object should add itself to the map when it is constructed, and
 // remove itself from the map when it is destroyed. This is how we ensure that
@@ -149,12 +149,12 @@ bool ObjCache_Get(const void *key, zval *val);
 // PHP class name map. This is necessary because the pb_name->php_class_name
 // transformation is non-reversible, so when we need to look up a msgdef or
 // enumdef by PHP class, we can't turn the class name into a pb_name.
-//  * php_class_name -> upb_msgdef*
-//  * php_class_name -> upb_enumdef*
-void NameMap_AddMessage(const upb_msgdef *m);
-void NameMap_AddEnum(const upb_enumdef *m);
-const upb_msgdef *NameMap_GetMessage(zend_class_entry *ce);
-const upb_enumdef *NameMap_GetEnum(zend_class_entry *ce);
+//  * php_class_name -> upb_MessageDef*
+//  * php_class_name -> upb_EnumDef*
+void NameMap_AddMessage(const upb_MessageDef *m);
+void NameMap_AddEnum(const upb_EnumDef *m);
+const upb_MessageDef *NameMap_GetMessage(zend_class_entry *ce);
+const upb_EnumDef *NameMap_GetEnum(zend_class_entry *ce);
 
 // Add this descriptor object to the global list of descriptors that will be
 // kept alive for the duration of the request but destroyed when the request

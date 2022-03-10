@@ -61,7 +61,10 @@ class MapFieldGenerator : public FieldGenerator {
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
   void GenerateIsInitialized(io::Printer* printer) const override;
-  void GenerateConstinitInitializer(io::Printer* printer) const override;
+  void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const override;
+  void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
   void GenerateDestructorCode(io::Printer* printer) const override;
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
   ArenaDtorNeeds NeedsArenaDestructor() const override;

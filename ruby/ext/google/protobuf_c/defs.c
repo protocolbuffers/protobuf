@@ -159,6 +159,7 @@ VALUE DescriptorPool_add_serialized_file(VALUE _self,
     rb_raise(cTypeError, "Unable to build file to DescriptorPool: %s",
              upb_Status_ErrorMessage(&status));
   }
+  RB_GC_GUARD(arena_rb);
   return get_filedef_obj(_self, filedef);
 }
 

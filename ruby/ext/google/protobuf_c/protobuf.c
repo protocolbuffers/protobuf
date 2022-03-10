@@ -193,9 +193,20 @@ const rb_data_type_t Arena_type = {
     .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
+static void* ruby_upb_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize, size_t size) {
+  if (size == 0) {
+    xfree(ptr);
+    return NULL;
+  } else {
+    return xrealloc(ptr, size);
+  }
+}
+
+upb_alloc ruby_upb_alloc = {&ruby_upb_allocfunc};
+
 static VALUE Arena_alloc(VALUE klass) {
   Arena *arena = ALLOC(Arena);
-  arena->arena = upb_Arena_New();
+  arena->arena = upb_Arena_Init(NULL, 0, &ruby_upb_alloc);
   arena->pinned_objs = Qnil;
   return TypedData_Wrap_Struct(klass, &Arena_type, arena);
 }

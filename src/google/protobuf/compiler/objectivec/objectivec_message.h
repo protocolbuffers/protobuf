@@ -62,7 +62,8 @@ class MessageGenerator {
   void GenerateSource(io::Printer* printer);
   void GenerateExtensionRegistrationSource(io::Printer* printer);
   void DetermineObjectiveCClassDefinitions(std::set<std::string>* fwd_decls);
-  void DetermineForwardDeclarations(std::set<std::string>* fwd_decls);
+  void DetermineForwardDeclarations(std::set<std::string>* fwd_decls,
+                                    bool include_external_types);
 
   // Checks if the message or a nested message includes a oneof definition.
   bool IncludesOneOfDefinition() const;
