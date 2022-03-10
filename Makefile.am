@@ -461,8 +461,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/ParserLiteTest.java                  \
   java/core/src/test/java/com/google/protobuf/ParserTest.java                      \
   java/core/src/test/java/com/google/protobuf/Proto2UnknownEnumValueTest.java      \
-  java/core/src/test/java/com/google/protobuf/Proto3MessageFactory.java            \
-  java/core/src/test/java/com/google/protobuf/Proto3MessageLiteFactory.java        \
   java/core/src/test/java/com/google/protobuf/ProtobufArrayListTest.java           \
   java/core/src/test/java/com/google/protobuf/RepeatedFieldBuilderV3Test.java      \
   java/core/src/test/java/com/google/protobuf/RopeByteStringSubstringTest.java     \
