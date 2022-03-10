@@ -414,21 +414,14 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/WireFormat.java                      \
   java/core/src/main/java/com/google/protobuf/Writer.java                          \
   java/core/src/test/java/com/google/protobuf/AbstractMessageTest.java             \
-  java/core/src/test/java/com/google/protobuf/AbstractProto2LiteSchemaTest.java    \
-  java/core/src/test/java/com/google/protobuf/AbstractProto2SchemaTest.java        \
-  java/core/src/test/java/com/google/protobuf/AbstractProto3LiteSchemaTest.java    \
-  java/core/src/test/java/com/google/protobuf/AbstractProto3SchemaTest.java        \
-  java/core/src/test/java/com/google/protobuf/AbstractSchemaTest.java              \
   java/core/src/test/java/com/google/protobuf/AnyTest.java                         \
   java/core/src/test/java/com/google/protobuf/ArrayDecodersTest.java               \
-  java/core/src/test/java/com/google/protobuf/BinaryProtocolTest.java              \
   java/core/src/test/java/com/google/protobuf/BooleanArrayListTest.java            \
   java/core/src/test/java/com/google/protobuf/BoundedByteStringTest.java           \
   java/core/src/test/java/com/google/protobuf/ByteBufferWriterTest.java            \
   java/core/src/test/java/com/google/protobuf/ByteStringTest.java                  \
   java/core/src/test/java/com/google/protobuf/CachedFieldSizeTest.java             \
   java/core/src/test/java/com/google/protobuf/CheckUtf8Test.java                   \
-  java/core/src/test/java/com/google/protobuf/CodedAdapterTest.java                \
   java/core/src/test/java/com/google/protobuf/CodedInputStreamTest.java            \
   java/core/src/test/java/com/google/protobuf/CodedOutputStreamTest.java           \
   java/core/src/test/java/com/google/protobuf/DecodeUtf8Test.java                  \
@@ -439,7 +432,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/DynamicMessageTest.java              \
   java/core/src/test/java/com/google/protobuf/EnumTest.java                        \
   java/core/src/test/java/com/google/protobuf/ExperimentalMessageFactory.java      \
-  java/core/src/test/java/com/google/protobuf/ExperimentalSerializationUtil.java   \
   java/core/src/test/java/com/google/protobuf/ExperimentalTestDataProvider.java    \
   java/core/src/test/java/com/google/protobuf/ExtensionRegistryFactoryTest.java    \
   java/core/src/test/java/com/google/protobuf/FieldPresenceTest.java               \
@@ -469,15 +461,11 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/ParserLiteTest.java                  \
   java/core/src/test/java/com/google/protobuf/ParserTest.java                      \
   java/core/src/test/java/com/google/protobuf/Proto2ExtensionLookupSchemaTest.java \
-  java/core/src/test/java/com/google/protobuf/Proto2LiteSchemaTest.java            \
   java/core/src/test/java/com/google/protobuf/Proto2MessageFactory.java            \
   java/core/src/test/java/com/google/protobuf/Proto2MessageLiteFactory.java        \
-  java/core/src/test/java/com/google/protobuf/Proto2SchemaTest.java                \
   java/core/src/test/java/com/google/protobuf/Proto2UnknownEnumValueTest.java      \
-  java/core/src/test/java/com/google/protobuf/Proto3LiteSchemaTest.java            \
   java/core/src/test/java/com/google/protobuf/Proto3MessageFactory.java            \
   java/core/src/test/java/com/google/protobuf/Proto3MessageLiteFactory.java        \
-  java/core/src/test/java/com/google/protobuf/Proto3SchemaTest.java                \
   java/core/src/test/java/com/google/protobuf/ProtobufArrayListTest.java           \
   java/core/src/test/java/com/google/protobuf/RepeatedFieldBuilderV3Test.java      \
   java/core/src/test/java/com/google/protobuf/RopeByteStringSubstringTest.java     \
@@ -487,9 +475,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/SmallSortedMapTest.java              \
   java/core/src/test/java/com/google/protobuf/TestBadIdentifiers.java              \
   java/core/src/test/java/com/google/protobuf/TestBadIdentifiersLite.java          \
-  java/core/src/test/java/com/google/protobuf/TestSchemas.java                     \
-  java/core/src/test/java/com/google/protobuf/TestSchemasLite.java                 \
-  java/core/src/test/java/com/google/protobuf/TestUtil.java                        \
+   java/core/src/test/java/com/google/protobuf/TestUtil.java                        \
   java/core/src/test/java/com/google/protobuf/TestUtilLite.java                    \
   java/core/src/test/java/com/google/protobuf/TextFormatParseInfoTreeTest.java     \
   java/core/src/test/java/com/google/protobuf/TextFormatParseLocationTest.java     \
