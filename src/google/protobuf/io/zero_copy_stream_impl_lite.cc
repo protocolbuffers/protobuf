@@ -124,12 +124,11 @@ bool ArrayOutputStream::Next(void** data, int* size) {
 }
 
 void ArrayOutputStream::BackUp(int count) {
-  GOOGLE_CHECK_GT(last_returned_size_, 0)
-      << "BackUp() can only be called after a successful Next().";
-  GOOGLE_CHECK_LE(count, last_returned_size_);
+  GOOGLE_CHECK_LE(count, last_returned_size_)
+      << "BackUp() can not exceed the size of the last Next() call.";
   GOOGLE_CHECK_GE(count, 0);
   position_ -= count;
-  last_returned_size_ = 0;  // Don't let caller back up further.
+  last_returned_size_ -= count;
 }
 
 int64_t ArrayOutputStream::ByteCount() const { return position_; }
@@ -328,6 +327,10 @@ bool CopyingOutputStreamAdaptor::Next(void** data, int* size) {
 }
 
 void CopyingOutputStreamAdaptor::BackUp(int count) {
+  if (count == 0) {
+    Flush();
+    return;
+  }
   GOOGLE_CHECK_GE(count, 0);
   GOOGLE_CHECK_EQ(buffer_used_, buffer_size_)
       << " BackUp() can only be called after Next().";

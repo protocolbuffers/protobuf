@@ -43,6 +43,8 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {

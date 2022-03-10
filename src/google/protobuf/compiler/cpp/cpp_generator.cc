@@ -40,11 +40,11 @@
 #include <vector>
 
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/compiler/cpp/cpp_file.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 
 namespace google {
 namespace protobuf {
@@ -82,6 +82,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   // FOO_EXPORT is a macro which should expand to __declspec(dllexport) or
   // __declspec(dllimport) depending on what is being compiled.
   //
+  // If the proto_h option is passed to the compiler, we will generate all
+  // classes and enums so that they can be forward-declared from files that
+  // need them from imports.
+  //
+  // If the lite option is passed to the compiler, we will generate the
+  // current files and all transitive dependencies using the LITE runtime.
   Options file_options;
 
   file_options.opensource_runtime = opensource_runtime_;
@@ -109,8 +115,10 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.lite_implicit_weak_fields = true;
       if (!options[i].second.empty()) {
         file_options.num_cc_files =
-            strto32(options[i].second.c_str(), NULL, 10);
+            strto32(options[i].second.c_str(), nullptr, 10);
       }
+    } else if (options[i].first == "proto_h") {
+      file_options.proto_h = true;
     } else if (options[i].first == "annotate_accessor") {
       file_options.annotate_accessor = true;
     } else if (options[i].first == "inject_field_listener_events") {
@@ -127,14 +135,14 @@ bool CppGenerator::Generate(const FileDescriptor* file,
               .insert(options[i].second.substr(pos, next_pos - pos));
         pos = next_pos + 1;
       } while (pos < options[i].second.size());
+    } else if (options[i].first == "verified_lazy_message_sets") {
+      file_options.unverified_lazy_message_sets = false;
+    } else if (options[i].first == "unverified_lazy_message_sets") {
+      file_options.unverified_lazy_message_sets = true;
     } else if (options[i].first == "eagerly_verified_lazy") {
       file_options.eagerly_verified_lazy = true;
     } else if (options[i].first == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
-    } else if (options[i].first == "table_driven_parsing") {
-      file_options.table_driven_parsing = true;
-    } else if (options[i].first == "table_driven_serialization") {
-      file_options.table_driven_serialization = true;
     } else if (options[i].first == "experimental_tail_call_table_mode") {
       if (options[i].second == "never") {
         file_options.tctable_mode = Options::kTCTableNever;
@@ -183,7 +191,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     std::string info_path = basename + ".proto.h.meta";
     io::Printer printer(
         output.get(), '$',
-        file_options.annotate_headers ? &annotation_collector : NULL);
+        file_options.annotate_headers ? &annotation_collector : nullptr);
     file_generator.GenerateProtoHeader(
         &printer, file_options.annotate_headers ? info_path : "");
     if (file_options.annotate_headers) {
@@ -202,7 +210,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     std::string info_path = basename + ".pb.h.meta";
     io::Printer printer(
         output.get(), '$',
-        file_options.annotate_headers ? &annotation_collector : NULL);
+        file_options.annotate_headers ? &annotation_collector : nullptr);
     file_generator.GeneratePBHeader(
         &printer, file_options.annotate_headers ? info_path : "");
     if (file_options.annotate_headers) {

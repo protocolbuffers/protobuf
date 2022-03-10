@@ -41,12 +41,10 @@ namespace compiler {
 namespace objectivec {
 
 class MessageFieldGenerator : public ObjCObjFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field,
-                                              const Options& options);
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  MessageFieldGenerator(const FieldDescriptor* descriptor,
-                        const Options& options);
+  MessageFieldGenerator(const FieldDescriptor* descriptor);
 
   MessageFieldGenerator(const MessageFieldGenerator&) = delete;
   MessageFieldGenerator& operator=(const MessageFieldGenerator&) = delete;
@@ -55,18 +53,17 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
 
  public:
   virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls) const override;
+      std::set<std::string>* fwd_decls,
+      bool include_external_types) const override;
   virtual void DetermineObjectiveCClassDefinitions(
       std::set<std::string>* fwd_decls) const override;
 };
 
 class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field,
-                                              const Options& options);
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
-                                const Options& options);
+  RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~RepeatedMessageFieldGenerator();
 
   RepeatedMessageFieldGenerator(const RepeatedMessageFieldGenerator&) = delete;
@@ -74,7 +71,8 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
 
  public:
   virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls) const override;
+      std::set<std::string>* fwd_decls,
+      bool include_external_types) const override;
   virtual void DetermineObjectiveCClassDefinitions(
       std::set<std::string>* fwd_decls) const override;
 };

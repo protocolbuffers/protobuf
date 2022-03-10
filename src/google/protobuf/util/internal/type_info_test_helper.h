@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_TYPE_INFO_TEST_HELPER_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_TYPE_INFO_TEST_HELPER_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_TYPE_INFO_TEST_HELPER_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_TYPE_INFO_TEST_HELPER_H__
 
 #include <memory>
 #include <vector>
@@ -37,9 +37,9 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
-#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/internal/protostream_objectsource.h>
 #include <google/protobuf/util/internal/protostream_objectwriter.h>
+#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/type_resolver.h>
 
 namespace google {
@@ -93,4 +93,4 @@ class TypeInfoTestHelper {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_TYPE_INFO_TEST_HELPER_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_TYPE_INFO_TEST_HELPER_H__

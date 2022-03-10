@@ -199,7 +199,6 @@ message FieldDescriptorProto {
   // For booleans, "true" or "false".
   // For strings, contains the default text contents (not escaped in any way).
   // For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
-  // TODO(kenton):  Base-64 encode?
   optional string default_value = 7;
 
   // If set, gives the index of a oneof in the containing type's oneof_decl
@@ -604,7 +603,18 @@ message FieldOptions {
   // implementation must either *always* check its required fields, or *never*
   // check its required fields, regardless of whether or not the message has
   // been parsed.
+  //
+  // As of 2021, lazy does no correctness checks on the byte stream during
+  // parsing.  This may lead to crashes if and when an invalid byte stream is
+  // finally parsed upon access.
+  //
+  // TODO(b/211906113):  Enable validation on lazy fields.
   optional bool lazy = 5 [default = false];
+
+  // unverified_lazy does no correctness checks on the byte stream. This should
+  // only be used where lazy with verification is prohibitive for performance
+  // reasons.
+  optional bool unverified_lazy = 15 [default = false];
 
   // Is this field deprecated?
   // Depending on the target platform, this can emit Deprecated annotations
@@ -803,8 +813,8 @@ message SourceCodeInfo {
     // location.
     //
     // Each element is a field number or an index.  They form a path from
-    // the root FileDescriptorProto to the place where the definition occurs.  For
-    // example, this path:
+    // the root FileDescriptorProto to the place where the definition occurs.
+    // For example, this path:
     //   [ 4, 3, 2, 7, 1 ]
     // refers to:
     //   file.message_type(3)  // 4, 3

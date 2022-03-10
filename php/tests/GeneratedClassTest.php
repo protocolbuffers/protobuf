@@ -9,6 +9,7 @@ use Google\Protobuf\Internal\GPBType;
 use Bar\TestLegacyMessage;
 use Bar\TestLegacyMessage_NestedEnum;
 use Bar\TestLegacyMessage_NestedMessage;
+use Foo\Test32Fields;
 use Foo\TestEnum;
 use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
@@ -933,6 +934,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Lower\PBnamespace();
         $m = new \Lower\PBnew();
         $m = new \Lower\PBor();
+        $m = new \Lower\PBparent();
         $m = new \Lower\PBprint();
         $m = new \Lower\PBprivate();
         $m = new \Lower\PBprotected();
@@ -940,6 +942,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Lower\PBrequire();
         $m = new \Lower\PBrequire_once();
         $m = new \Lower\PBreturn();
+        $m = new \Lower\PBself();
         $m = new \Lower\PBstatic();
         $m = new \Lower\PBswitch();
         $m = new \Lower\PBthrow();
@@ -1011,6 +1014,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Upper\PBNAMESPACE();
         $m = new \Upper\PBNEW();
         $m = new \Upper\PBOR();
+        $m = new \Upper\PBPARENT();
         $m = new \Upper\PBPRINT();
         $m = new \Upper\PBPRIVATE();
         $m = new \Upper\PBPROTECTED();
@@ -1018,6 +1022,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Upper\PBREQUIRE();
         $m = new \Upper\PBREQUIRE_ONCE();
         $m = new \Upper\PBRETURN();
+        $m = new \Upper\PBSELF();
         $m = new \Upper\PBSTATIC();
         $m = new \Upper\PBSWITCH();
         $m = new \Upper\PBTHROW();
@@ -1089,6 +1094,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Lower_enum\PBnamespace();
         $m = new \Lower_enum\PBnew();
         $m = new \Lower_enum\PBor();
+        $m = new \Lower_enum\PBparent();
         $m = new \Lower_enum\PBprint();
         $m = new \Lower_enum\PBprivate();
         $m = new \Lower_enum\PBprotected();
@@ -1096,6 +1102,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Lower_enum\PBrequire();
         $m = new \Lower_enum\PBrequire_once();
         $m = new \Lower_enum\PBreturn();
+        $m = new \Lower_enum\PBself();
         $m = new \Lower_enum\PBstatic();
         $m = new \Lower_enum\PBswitch();
         $m = new \Lower_enum\PBthrow();
@@ -1167,6 +1174,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Upper_enum\PBNAMESPACE();
         $m = new \Upper_enum\PBNEW();
         $m = new \Upper_enum\PBOR();
+        $m = new \Upper_enum\PBPARENT();
         $m = new \Upper_enum\PBPRINT();
         $m = new \Upper_enum\PBPRIVATE();
         $m = new \Upper_enum\PBPROTECTED();
@@ -1174,6 +1182,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Upper_enum\PBREQUIRE();
         $m = new \Upper_enum\PBREQUIRE_ONCE();
         $m = new \Upper_enum\PBRETURN();
+        $m = new \Upper_enum\PBSELF();
         $m = new \Upper_enum\PBSTATIC();
         $m = new \Upper_enum\PBSWITCH();
         $m = new \Upper_enum\PBTHROW();
@@ -1272,6 +1281,8 @@ class GeneratedClassTest extends TestBase
         $m = \Lower_enum_value\NotAllowed::null;
         $m = \Lower_enum_value\NotAllowed::void;
         $m = \Lower_enum_value\NotAllowed::iterable;
+        $m = \Lower_enum_value\NotAllowed::parent;
+        $m = \Lower_enum_value\NotAllowed::self;
 
         $m = \Upper_enum_value\NotAllowed::PBABSTRACT;
         $m = \Upper_enum_value\NotAllowed::PBAND;
@@ -1350,6 +1361,8 @@ class GeneratedClassTest extends TestBase
         $m = \Upper_enum_value\NotAllowed::NULL;
         $m = \Upper_enum_value\NotAllowed::VOID;
         $m = \Upper_enum_value\NotAllowed::ITERABLE;
+        $m = \Upper_enum_value\NotAllowed::PARENT;
+        $m = \Upper_enum_value\NotAllowed::SELF;
 
         $this->assertTrue(true);
     }
@@ -1848,5 +1861,14 @@ class GeneratedClassTest extends TestBase
         /* var_dump($m); */
 
         $this->assertTrue(true);
+    }
+
+    public function testIssue9440()
+    {
+        $m = new Test32Fields();
+        $m->setId(8);
+        $this->assertEquals(8, $m->getId());
+        $m->setVersion('1');
+        $this->assertEquals(8, $m->getId());
     }
 }

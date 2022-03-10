@@ -58,6 +58,7 @@ import protobuf_unittest.UnittestProto.TestEmptyMessageWithExtensions
 import protobuf_unittest.copy
 import protobuf_unittest.foreignMessage
 import protobuf_unittest.optionalGroupExtension
+import protobuf_unittest.optionalNestedMessageOrNull
 import protobuf_unittest.repeatedGroupExtension
 import protobuf_unittest.testAllExtensions
 import protobuf_unittest.testAllTypes
@@ -952,5 +953,17 @@ class Proto2Test {
       clearDo_()
       assertThat(hasDo_()).isFalse()
     }
+  }
+
+  @Test
+  fun testGetOrNull() {
+    val noNestedMessage = testAllTypes {}
+    assertThat(noNestedMessage.optionalNestedMessageOrNull).isEqualTo(null)
+
+    val someNestedMessage = testAllTypes {
+      optionalNestedMessage = TestAllTypesKt.nestedMessage { bb = 118 }
+    }
+    assertThat(someNestedMessage.optionalNestedMessageOrNull)
+      .isEqualTo(TestAllTypesKt.nestedMessage { bb = 118 })
   }
 }

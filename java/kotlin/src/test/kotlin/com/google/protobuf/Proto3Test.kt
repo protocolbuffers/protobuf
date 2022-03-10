@@ -44,6 +44,8 @@ import proto3_unittest.UnittestProto3.TestAllTypes
 import proto3_unittest.UnittestProto3.TestAllTypes.NestedEnum
 import proto3_unittest.UnittestProto3.TestEmptyMessage
 import proto3_unittest.copy
+import proto3_unittest.optionalForeignMessageOrNull
+import proto3_unittest.optionalNestedMessageOrNull
 import proto3_unittest.testAllTypes
 import proto3_unittest.testEmptyMessage
 import org.junit.Test
@@ -86,66 +88,61 @@ class Proto3Test {
       assertThat(repeatedString).isEqualTo(listOf("5", "2", "3", "4"))
 
       repeatedNestedMessage.addAll(listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 }))
-      assertThat(repeatedNestedMessage).isEqualTo(
-        listOf(
-          nestedMessage { bb = 1 },
-          nestedMessage { bb = 2 }
-        )
-      )
+      assertThat(repeatedNestedMessage)
+        .isEqualTo(listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 }))
       repeatedNestedMessage += listOf(nestedMessage { bb = 3 }, nestedMessage { bb = 4 })
-      assertThat(repeatedNestedMessage).isEqualTo(
-        listOf(
-          nestedMessage { bb = 1 },
-          nestedMessage { bb = 2 },
-          nestedMessage { bb = 3 },
-          nestedMessage { bb = 4 }
+      assertThat(repeatedNestedMessage)
+        .isEqualTo(
+          listOf(
+            nestedMessage { bb = 1 },
+            nestedMessage { bb = 2 },
+            nestedMessage { bb = 3 },
+            nestedMessage { bb = 4 }
+          )
         )
-      )
       repeatedNestedMessage[0] = nestedMessage { bb = 5 }
-      assertThat(repeatedNestedMessage).isEqualTo(
-        listOf(
-          nestedMessage { bb = 5 },
-          nestedMessage { bb = 2 },
-          nestedMessage { bb = 3 },
-          nestedMessage { bb = 4 }
+      assertThat(repeatedNestedMessage)
+        .isEqualTo(
+          listOf(
+            nestedMessage { bb = 5 },
+            nestedMessage { bb = 2 },
+            nestedMessage { bb = 3 },
+            nestedMessage { bb = 4 }
+          )
         )
-      )
 
       repeatedNestedEnum.addAll(listOf(NestedEnum.FOO, NestedEnum.BAR))
       assertThat(repeatedNestedEnum).isEqualTo(listOf(NestedEnum.FOO, NestedEnum.BAR))
       repeatedNestedEnum += listOf(NestedEnum.BAZ, NestedEnum.FOO)
-      assertThat(repeatedNestedEnum).isEqualTo(
-        listOf(NestedEnum.FOO, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO)
-      )
+      assertThat(repeatedNestedEnum)
+        .isEqualTo(listOf(NestedEnum.FOO, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO))
       repeatedNestedEnum[0] = NestedEnum.BAR
-      assertThat(repeatedNestedEnum).isEqualTo(
-        listOf(NestedEnum.BAR, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO)
-      )
+      assertThat(repeatedNestedEnum)
+        .isEqualTo(listOf(NestedEnum.BAR, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO))
     }
   }
 
   @Test
   fun testClears() {
     assertThat(
-      testAllTypes {
-        optionalInt32 = 101
-        clearOptionalInt32()
+        testAllTypes {
+          optionalInt32 = 101
+          clearOptionalInt32()
 
-        optionalString = "115"
-        clearOptionalString()
+          optionalString = "115"
+          clearOptionalString()
 
-        optionalNestedMessage = TestAllTypesKt.nestedMessage { bb = 118 }
-        clearOptionalNestedMessage()
+          optionalNestedMessage = TestAllTypesKt.nestedMessage { bb = 118 }
+          clearOptionalNestedMessage()
 
-        optionalNestedEnum = NestedEnum.BAZ
-        clearOptionalNestedEnum()
+          optionalNestedEnum = NestedEnum.BAZ
+          clearOptionalNestedEnum()
 
-        oneofUint32 = 601
-        clearOneofUint32()
-      }
-    ).isEqualTo(
-      TestAllTypes.newBuilder().build()
-    )
+          oneofUint32 = 601
+          clearOneofUint32()
+        }
+      )
+      .isEqualTo(TestAllTypes.newBuilder().build())
   }
 
   @Test
@@ -154,126 +151,110 @@ class Proto3Test {
       optionalInt32 = 101
       optionalString = "115"
     }
-    val modifiedMessage = message.copy {
-      optionalInt32 = 201
-    }
+    val modifiedMessage = message.copy { optionalInt32 = 201 }
 
-    assertThat(message).isEqualTo(
-      TestAllTypes.newBuilder()
-        .setOptionalInt32(101)
-        .setOptionalString("115")
-        .build()
-    )
-    assertThat(modifiedMessage).isEqualTo(
-      TestAllTypes.newBuilder()
-        .setOptionalInt32(201)
-        .setOptionalString("115")
-        .build()
-    )
+    assertThat(message)
+      .isEqualTo(TestAllTypes.newBuilder().setOptionalInt32(101).setOptionalString("115").build())
+    assertThat(modifiedMessage)
+      .isEqualTo(TestAllTypes.newBuilder().setOptionalInt32(201).setOptionalString("115").build())
   }
 
   @Test
   fun testOneof() {
     val message = testAllTypes {
       oneofString = "foo"
-      assertThat(oneofFieldCase)
-        .isEqualTo(TestAllTypes.OneofFieldCase.ONEOF_STRING)
+      assertThat(oneofFieldCase).isEqualTo(TestAllTypes.OneofFieldCase.ONEOF_STRING)
       assertThat(oneofString).isEqualTo("foo")
       clearOneofField()
-      assertThat(oneofFieldCase)
-        .isEqualTo(TestAllTypes.OneofFieldCase.ONEOFFIELD_NOT_SET)
+      assertThat(oneofFieldCase).isEqualTo(TestAllTypes.OneofFieldCase.ONEOFFIELD_NOT_SET)
       oneofUint32 = 5
     }
 
-    assertThat(message.getOneofFieldCase())
-      .isEqualTo(TestAllTypes.OneofFieldCase.ONEOF_UINT32)
+    assertThat(message.getOneofFieldCase()).isEqualTo(TestAllTypes.OneofFieldCase.ONEOF_UINT32)
     assertThat(message.getOneofUint32()).isEqualTo(5)
   }
 
   @Test
   fun testEmptyMessages() {
-    assertThat(
-      testEmptyMessage {}
-    ).isEqualTo(
-      TestEmptyMessage.newBuilder().build()
-    )
+    assertThat(testEmptyMessage {}).isEqualTo(TestEmptyMessage.newBuilder().build())
   }
 
   @Test
   fun testEvilNames() {
     assertThat(
-      evilNamesProto3 {
-        initialized = true
-        hasFoo = true
-        bar = "foo"
-        isInitialized = true
-        fooBar = "foo"
-        aLLCAPS += "foo"
-        aLLCAPSMAP[1] = true
-        hasUnderbarPrecedingNumeric1Foo = true
-        hasUnderbarPrecedingNumeric42Bar = true
-        hasUnderbarPrecedingNumeric123Foo42BarBaz = true
-        extension += "foo"
-        class_ = "foo"
-        int = 1.0
-        long = true
-        boolean = 1L
-        sealed = "foo"
-        interface_ = 1F
-        in_ = 1
-        object_ = "foo"
-        cachedSize_ = "foo"
-        serializedSize_ = true
-        value = "foo"
-        index = 1L
-        values += "foo"
-        newValues += "foo"
-        builder = true
-        k[1] = 1
-        v["foo"] = "foo"
-        key["foo"] = 1
-        map[1] = "foo"
-        pairs["foo"] = 1
-        LeadingUnderscore = "foo"
-        option = 1
-      }
-    ).isEqualTo(
-      EvilNamesProto3.newBuilder()
-        .setInitialized(true)
-        .setHasFoo(true)
-        .setBar("foo")
-        .setIsInitialized(true)
-        .setFooBar("foo")
-        .addALLCAPS("foo")
-        .putALLCAPSMAP(1, true)
-        .setHasUnderbarPrecedingNumeric1Foo(true)
-        .setHasUnderbarPrecedingNumeric42Bar(true)
-        .setHasUnderbarPrecedingNumeric123Foo42BarBaz(true)
-        .addExtension("foo")
-        .setClass_("foo")
-        .setInt(1.0)
-        .setLong(true)
-        .setBoolean(1L)
-        .setSealed("foo")
-        .setInterface(1F)
-        .setIn(1)
-        .setObject("foo")
-        .setCachedSize_("foo")
-        .setSerializedSize_(true)
-        .setValue("foo")
-        .setIndex(1L)
-        .addValues("foo")
-        .addNewValues("foo")
-        .setBuilder(true)
-        .putK(1, 1)
-        .putV("foo", "foo")
-        .putKey("foo", 1)
-        .putMap(1, "foo")
-        .putPairs("foo", 1)
-        .setLeadingUnderscore("foo")
-        .setOption(1)
-        .build()
-    )
+        evilNamesProto3 {
+          initialized = true
+          hasFoo = true
+          bar = "foo"
+          isInitialized = true
+          fooBar = "foo"
+          aLLCAPS += "foo"
+          aLLCAPSMAP[1] = true
+          hasUnderbarPrecedingNumeric1Foo = true
+          hasUnderbarPrecedingNumeric42Bar = true
+          hasUnderbarPrecedingNumeric123Foo42BarBaz = true
+          extension += "foo"
+          class_ = "foo"
+          int = 1.0
+          long = true
+          boolean = 1L
+          sealed = "foo"
+          interface_ = 1F
+          in_ = 1
+          object_ = "foo"
+          cachedSize_ = "foo"
+          serializedSize_ = true
+          value = "foo"
+          index = 1L
+          values += "foo"
+          newValues += "foo"
+          builder = true
+          k[1] = 1
+          v["foo"] = "foo"
+          key["foo"] = 1
+          map[1] = "foo"
+          pairs["foo"] = 1
+          LeadingUnderscore = "foo"
+          option = 1
+        }
+      )
+      .isEqualTo(
+        EvilNamesProto3.newBuilder()
+          .setInitialized(true)
+          .setHasFoo(true)
+          .setBar("foo")
+          .setIsInitialized(true)
+          .setFooBar("foo")
+          .addALLCAPS("foo")
+          .putALLCAPSMAP(1, true)
+          .setHasUnderbarPrecedingNumeric1Foo(true)
+          .setHasUnderbarPrecedingNumeric42Bar(true)
+          .setHasUnderbarPrecedingNumeric123Foo42BarBaz(true)
+          .addExtension("foo")
+          .setClass_("foo")
+          .setInt(1.0)
+          .setLong(true)
+          .setBoolean(1L)
+          .setSealed("foo")
+          .setInterface(1F)
+          .setIn(1)
+          .setObject("foo")
+          .setCachedSize_("foo")
+          .setSerializedSize_(true)
+          .setValue("foo")
+          .setIndex(1L)
+          .addValues("foo")
+          .addNewValues("foo")
+          .setBuilder(true)
+          .putK(1, 1)
+          .putV("foo", "foo")
+          .putKey("foo", 1)
+          .putMap(1, "foo")
+          .putPairs("foo", 1)
+          .setLeadingUnderscore("foo")
+          .setOption(1)
+          .build()
+      )
 
     assertThat(class_ {}).isEqualTo(Class.newBuilder().build())
   }
@@ -350,16 +331,25 @@ class Proto3Test {
 
   @Test
   fun testMultipleFiles() {
-    assertThat(
-      com.google.protobuf.kotlin.generator.multipleFilesMessageA {}
-    ).isEqualTo(
-      com.google.protobuf.kotlin.generator.MultipleFilesMessageA.newBuilder().build()
-    )
+    assertThat(com.google.protobuf.kotlin.generator.multipleFilesMessageA {})
+      .isEqualTo(com.google.protobuf.kotlin.generator.MultipleFilesMessageA.newBuilder().build())
 
-    assertThat(
-      com.google.protobuf.kotlin.generator.multipleFilesMessageB {}
-    ).isEqualTo(
-      com.google.protobuf.kotlin.generator.MultipleFilesMessageB.newBuilder().build()
-    )
+    assertThat(com.google.protobuf.kotlin.generator.multipleFilesMessageB {})
+      .isEqualTo(com.google.protobuf.kotlin.generator.MultipleFilesMessageB.newBuilder().build())
+  }
+
+  @Test
+  fun testGetOrNull() {
+    val noNestedMessage = testAllTypes {}
+    assertThat(noNestedMessage.optionalNestedMessageOrNull).isEqualTo(null)
+
+    val someNestedMessage = testAllTypes {
+      optionalNestedMessage = TestAllTypesKt.nestedMessage { bb = 118 }
+    }
+    assertThat(someNestedMessage.optionalNestedMessageOrNull)
+      .isEqualTo(TestAllTypesKt.nestedMessage { bb = 118 })
+
+    // No optional keyword, OrNull should still be generated
+    assertThat(someNestedMessage.optionalForeignMessageOrNull).isEqualTo(null)
   }
 }

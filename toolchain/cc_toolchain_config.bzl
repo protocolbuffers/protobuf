@@ -28,13 +28,16 @@ all_compile_actions = [
 ]
 
 def _impl(ctx):
-  artifact_name_patterns = [
-      artifact_name_pattern(
-          category_name = "executable",
-          prefix = "",
-          extension = ".exe",
-      ),
-  ]
+  if 'mingw' in ctx.attr.target_full_name:
+      artifact_name_patterns = [
+          artifact_name_pattern(
+              category_name = "executable",
+              prefix = "",
+              extension = ".exe",
+          ),
+      ]
+  else:
+      artifact_name_patterns = []
 
   tool_paths = [
       tool_path(
@@ -47,7 +50,7 @@ def _impl(ctx):
       ),
       tool_path(
           name = "ar",
-          path = "/usr/bin/llvm-ar",
+          path = "/usr/local/bin/llvm-ar",
       ),
       tool_path(
           name = "compat-ld",
@@ -102,13 +105,18 @@ def _impl(ctx):
       ],
   )
 
+  if 'osx' in ctx.attr.target_full_name:
+    sysroot_action_set = all_link_actions
+  else:
+    sysroot_action_set = all_link_actions + all_compile_actions
+
   sysroot_flags = feature(
       name = "sysroot_flags",
       #Only enable this if a sysroot was specified
       enabled = (ctx.attr.sysroot != ""),
       flag_sets = [
           flag_set(
-              actions = all_link_actions,
+              actions = sysroot_action_set,
               flag_groups = [
                   flag_group(
                       flags = [

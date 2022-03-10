@@ -37,6 +37,7 @@
 
 #include <map>
 #include <string>
+
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 
 namespace google {
@@ -48,7 +49,7 @@ class StringFieldGenerator : public FieldGenerator {
  public:
   StringFieldGenerator(const FieldDescriptor* descriptor,
                        const Options& options);
-  ~StringFieldGenerator();
+  ~StringFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -64,11 +65,13 @@ class StringFieldGenerator : public FieldGenerator {
   void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateCopyConstructorCode(io::Printer* printer) const override;
   void GenerateDestructorCode(io::Printer* printer) const override;
+  void GenerateArenaDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
   void GenerateConstinitInitializer(io::Printer* printer) const override;
   bool IsInlined() const override { return inlined_; }
+  ArenaDtorNeeds NeedsArenaDestructor() const override;
 
  private:
   bool inlined_;
@@ -79,7 +82,7 @@ class StringOneofFieldGenerator : public StringFieldGenerator {
  public:
   StringOneofFieldGenerator(const FieldDescriptor* descriptor,
                             const Options& options);
-  ~StringOneofFieldGenerator();
+  ~StringOneofFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
@@ -99,7 +102,7 @@ class RepeatedStringFieldGenerator : public FieldGenerator {
  public:
   RepeatedStringFieldGenerator(const FieldDescriptor* descriptor,
                                const Options& options);
-  ~RepeatedStringFieldGenerator();
+  ~RepeatedStringFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -108,8 +111,8 @@ class RepeatedStringFieldGenerator : public FieldGenerator {
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
-  void GenerateConstructorCode(io::Printer* printer) const override;
-  void GenerateCopyConstructorCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override {}
+  void GenerateCopyConstructorCode(io::Printer* printer) const override {}
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;

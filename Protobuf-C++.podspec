@@ -1,9 +1,9 @@
 Pod::Spec.new do |s|
   s.name     = 'Protobuf-C++'
-  s.version  = '3.19.3'
+  s.version  = '3.20.0-rc1'
   s.summary  = 'Protocol Buffers v3 runtime library for C++.'
   s.homepage = 'https://github.com/google/protobuf'
-  s.license  = '3-Clause BSD License'
+  s.license  = 'BSD-3-Clause'
   s.authors  = { 'The Protocol Buffers contributors' => 'protobuf@googlegroups.com' }
   s.cocoapods_version = '>= 1.0'
 

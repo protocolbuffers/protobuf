@@ -28,9 +28,7 @@ ZLIB_DEPS = ["@zlib//:zlib"]
 ################################################################################
 
 MSVC_COPTS = [
-    "/wd4018",  # -Wno-sign-compare
     "/wd4065",  # switch statement contains 'default' but no 'case' labels
-    "/wd4146",  # unary minus operator applied to unsigned type, result still unsigned
     "/wd4244",  # 'conversion' conversion from 'type1' to 'type2', possible loss of data
     "/wd4251",  # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
     "/wd4267",  # 'var' : conversion from 'size_t' to 'type', possible loss of data
@@ -48,7 +46,6 @@ COPTS = select({
     ":msvc": MSVC_COPTS,
     "//conditions:default": [
         "-DHAVE_ZLIB",
-        "-Wmissing-field-initializers",
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
     ],
@@ -149,6 +146,7 @@ load(
     "adapt_proto_library",
     "cc_proto_library",
     "internal_copied_filegroup",
+    "internal_gen_kt_protos",
     "internal_gen_well_known_protos_java",
     "internal_protobuf_py_tests",
     "py_proto_library",
@@ -163,7 +161,6 @@ cc_library(
         "src/google/protobuf/arenastring.cc",
         "src/google/protobuf/extension_set.cc",
         "src/google/protobuf/generated_enum_util.cc",
-        "src/google/protobuf/generated_message_table_driven_lite.cc",
         "src/google/protobuf/generated_message_tctable_lite.cc",
         "src/google/protobuf/generated_message_util.cc",
         "src/google/protobuf/implicit_weak_message.cc",
@@ -225,7 +222,6 @@ cc_library(
         "src/google/protobuf/field_mask.pb.cc",
         "src/google/protobuf/generated_message_bases.cc",
         "src/google/protobuf/generated_message_reflection.cc",
-        "src/google/protobuf/generated_message_table_driven.cc",
         "src/google/protobuf/generated_message_tctable_full.cc",
         "src/google/protobuf/io/gzip_stream.cc",
         "src/google/protobuf/io/printer.cc",
@@ -501,6 +497,8 @@ cc_library(
         "src/google/protobuf/compiler/plugin.cc",
         "src/google/protobuf/compiler/plugin.pb.cc",
         "src/google/protobuf/compiler/python/python_generator.cc",
+        "src/google/protobuf/compiler/python/python_helpers.cc",
+        "src/google/protobuf/compiler/python/python_pyi_generator.cc",
         "src/google/protobuf/compiler/ruby/ruby_generator.cc",
         "src/google/protobuf/compiler/subprocess.cc",
         "src/google/protobuf/compiler/zip_writer.cc",
@@ -891,6 +889,23 @@ internal_gen_well_known_protos_java(
     visibility = [
         "//java:__subpackages__",
     ],
+    deps = [proto + "_proto" for proto in LITE_WELL_KNOWN_PROTO_MAP.keys()],
+)
+
+internal_gen_kt_protos(
+    name = "gen_well_known_protos_kotlin",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+)
+
+internal_gen_kt_protos(
+    name = "gen_well_known_protos_kotlinlite",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    lite = True,
     deps = [proto + "_proto" for proto in LITE_WELL_KNOWN_PROTO_MAP.keys()],
 )
 
@@ -1431,143 +1446,60 @@ filegroup(
 
 # Kotlin proto rules
 
-genrule(
-    name = "gen_kotlin_unittest_lite",
+proto_library(
+    name = "kt_unittest_lite",
     srcs = [
         "src/google/protobuf/unittest_lite.proto",
         "src/google/protobuf/unittest_import_lite.proto",
         "src/google/protobuf/unittest_import_public_lite.proto",
         "src/google/protobuf/map_lite_unittest.proto",
     ],
-    outs = [
-        "TestAllTypesLiteKt.kt",
-        "ForeignMessageLiteKt.kt",
-        "TestAllExtensionsLiteKt.kt",
-        "TestEmptyMessageLiteKt.kt",
-        "TestEmptyMessageWithExtensionsLiteKt.kt",
-        "TestMapLiteKt.kt",
-        "OptionalGroup_extension_liteKt.kt",
-        "RepeatedGroup_extension_liteKt.kt",
-    ],
-    visibility = ["//java:__subpackages__"],
-    cmd = "$(location //:protoc) " +
-          "--kotlin_out=lite:$(@D) -Isrc/ " +
-          "$(locations src/google/protobuf/unittest_lite.proto) && " +
-          "$(location //:protoc) " +
-          "--kotlin_out=lite:$(@D) -Isrc/ " +
-          "$(locations src/google/protobuf/map_lite_unittest.proto) && " +
-          "cp $(@D)/com/google/protobuf/TestAllTypesLiteKt.kt " +
-          "$(location TestAllTypesLiteKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/ForeignMessageLiteKt.kt " +
-          "$(location ForeignMessageLiteKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/TestAllExtensionsLiteKt.kt " +
-          "$(location TestAllExtensionsLiteKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/TestAllTypesLiteKt.kt " +
-          "$(location TestAllTypesLiteKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/TestEmptyMessageLiteKt.kt " +
-          "$(location TestEmptyMessageLiteKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/TestEmptyMessageWithExtensionsLiteKt.kt " +
-          "$(location TestEmptyMessageWithExtensionsLiteKt.kt) && " +
-          "cp $(@D)/protobuf_unittest/TestMapLiteKt.kt " +
-          "$(location TestMapLiteKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/OptionalGroup_extension_liteKt.kt " +
-          "$(location OptionalGroup_extension_liteKt.kt) && " +
-          "cp $(@D)/com/google/protobuf/RepeatedGroup_extension_liteKt.kt " +
-          "$(location RepeatedGroup_extension_liteKt.kt)",
-    tools = [":protoc"],
+    strip_import_prefix = "src",
 )
 
-genrule(
-    name = "gen_kotlin_unittest",
+internal_gen_kt_protos(
+    name = "gen_kotlin_unittest_lite",
+    deps = [":kt_unittest_lite"],
+    lite = True,
+    visibility = ["//java:__subpackages__"],
+)
+
+proto_library(
+    name = "kt_unittest",
     srcs = [
         "src/google/protobuf/unittest.proto",
         "src/google/protobuf/unittest_import.proto",
         "src/google/protobuf/unittest_import_public.proto",
         "src/google/protobuf/map_proto2_unittest.proto",
     ],
-    outs = [
-        "TestAllTypesKt.kt",
-        "ForeignMessageKt.kt",
-        "TestAllExtensionsKt.kt",
-        "TestEmptyMessageKt.kt",
-        "TestEmptyMessageWithExtensionsKt.kt",
-        "TestIntIntMapKt.kt",
-        "TestEnumMapKt.kt",
-        "TestMapsKt.kt",
-        "OptionalGroup_extensionKt.kt",
-        "RepeatedGroup_extensionKt.kt",
-    ],
-    visibility = ["//java:__subpackages__"],
-    cmd = "$(location //:protoc) " +
-          "--kotlin_out=shared,immutable:$(@D) -Isrc/ " +
-          "$(location src/google/protobuf/unittest.proto) && " +
-          "$(location //:protoc) " +
-          "--kotlin_out=shared,immutable:$(@D) -Isrc/ " + 
-          "$(location src/google/protobuf/map_proto2_unittest.proto) && " +
-          "cp $(@D)/protobuf_unittest/TestAllTypesKt.kt " +
-          "$(location TestAllTypesKt.kt) && " +
-          "cp $(@D)/protobuf_unittest/ForeignMessageKt.kt " +
-          "$(location ForeignMessageKt.kt) && " +
-          "cp $(@D)/protobuf_unittest/TestAllExtensionsKt.kt " +
-          "$(location TestAllExtensionsKt.kt) && " +
-          "cp $(@D)/protobuf_unittest/TestEmptyMessageKt.kt " +
-          "$(location TestEmptyMessageKt.kt) && " +
-          "cp $(@D)/protobuf_unittest/TestEmptyMessageWithExtensionsKt.kt " +
-          "$(location TestEmptyMessageWithExtensionsKt.kt) && " +
-          "cp $(@D)/protobuf_unittest/TestIntIntMapKt.kt " +
-          "$(location TestIntIntMapKt.kt) && " +
-          "cp $(@D)/protobuf_unittest/TestEnumMapKt.kt " +
-          "$(location TestEnumMapKt.kt) && " +
-          "cp $(@D)/protobuf_unittest/TestMapsKt.kt " +
-          "$(location TestMapsKt.kt) && " +
-          "cp $(@D)/protobuf_unittest/OptionalGroup_extensionKt.kt " +
-          "$(location OptionalGroup_extensionKt.kt) && " +
-          "cp $(@D)/protobuf_unittest/RepeatedGroup_extensionKt.kt " +
-          "$(location RepeatedGroup_extensionKt.kt)",
-    tools = ["//:protoc"],
+    strip_import_prefix = "src",
 )
 
-genrule(
-    name = "gen_kotlin_proto3_unittest_lite",
-    srcs = [
-        "src/google/protobuf/unittest_proto3_lite.proto",
-        "src/google/protobuf/unittest_import.proto",
-        "src/google/protobuf/unittest_import_public.proto",
-    ],
-    outs = [
-        "TestAllTypesProto3LiteKt.kt",
-        "TestEmptyMessageProto3LiteKt.kt",
-    ],
+internal_gen_kt_protos(
+    name = "gen_kotlin_unittest",
+    deps = [":kt_unittest"],
     visibility = ["//java:__subpackages__"],
-    cmd = "$(location //:protoc) " +
-          "--kotlin_out=lite:$(@D) -Isrc/ " +
-          "$(location src/google/protobuf/unittest_proto3_lite.proto) && " +
-          "cp $(@D)/proto3_lite_unittest/TestAllTypesKt.kt " +
-          "$(location TestAllTypesProto3LiteKt.kt) && " +
-          "cp $(@D)/proto3_lite_unittest/TestEmptyMessageKt.kt " +
-          "$(location TestEmptyMessageProto3LiteKt.kt)",
-    tools = ["//:protoc"],
 )
 
-genrule(
-    name = "gen_kotlin_proto3_unittest",
+proto_library(
+    name = "kt_proto3_unittest",
     srcs = [
         "src/google/protobuf/unittest_proto3.proto",
         "src/google/protobuf/unittest_import.proto",
         "src/google/protobuf/unittest_import_public.proto",
     ],
-    outs = [
-        "TestAllTypesProto3Kt.kt",
-        "TestEmptyMessageProto3Kt.kt",
-    ],
-    visibility = ["//java:__subpackages__"],
-    cmd = "$(location //:protoc) " +
-          "--kotlin_out=shared,immutable:$(@D) -Isrc/ " +
-          "$(location src/google/protobuf/unittest_proto3.proto) && " +
-          "cp $(@D)/proto3_unittest/TestAllTypesKt.kt " +
-          "$(location TestAllTypesProto3Kt.kt) && " +
-          "cp $(@D)/proto3_unittest/TestEmptyMessageKt.kt " +
-          "$(location TestEmptyMessageProto3Kt.kt)",
-    tools = ["//:protoc"],
+    strip_import_prefix = "src",
 )
 
+internal_gen_kt_protos(
+    name = "gen_kotlin_proto3_unittest_lite",
+    deps = [":kt_proto3_unittest"],
+    lite = True,
+    visibility = ["//java:__subpackages__"],
+)
+
+internal_gen_kt_protos(
+    name = "gen_kotlin_proto3_unittest",
+    deps = [":kt_proto3_unittest"],
+    visibility = ["//java:__subpackages__"],
+)

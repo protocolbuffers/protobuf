@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.19.3</version>
+    <version>3.20.0-rc-1</version>
   </parent>
 
   <artifactId>protobuf-javalite</artifactId>
@@ -23,8 +23,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymock</artifactId>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -105,6 +105,7 @@
                     <include>CodedInputStreamReader.java</include>
                     <include>CodedOutputStream.java</include>
                     <include>CodedOutputStreamWriter.java</include>
+                    <include>CompileTimeConstant.java</include>
                     <include>DoubleArrayList.java</include>
                     <include>ExperimentalApi.java</include>
                     <include>ExtensionLite.java</include>
@@ -119,6 +120,7 @@
                     <include>FloatArrayList.java</include>
                     <include>GeneratedMessageInfoFactory.java</include>
                     <include>GeneratedMessageLite.java</include>
+                    <include>InlineMe.java</include>
                     <include>IntArrayList.java</include>
                     <include>Internal.java</include>
                     <include>InvalidProtocolBufferException.java</include>

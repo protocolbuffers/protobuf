@@ -47,7 +47,7 @@ class FieldGroup {
   FieldGroup() : preferred_location_(0) {}
 
   // A group with a single field.
-  FieldGroup(float preferred_location, const FieldDescriptor* field)
+  FieldGroup(double preferred_location, const FieldDescriptor* field)
       : preferred_location_(preferred_location), fields_(1, field) {}
 
   // Append the fields in 'other' to this group.
@@ -63,7 +63,7 @@ class FieldGroup {
     fields_.insert(fields_.end(), other.fields_.begin(), other.fields_.end());
   }
 
-  void SetPreferredLocation(float location) { preferred_location_ = location; }
+  void SetPreferredLocation(double location) { preferred_location_ = location; }
   const std::vector<const FieldDescriptor*>& fields() const { return fields_; }
 
   // FieldGroup objects sort by their preferred location.
@@ -77,7 +77,7 @@ class FieldGroup {
   // field in this group in the original ordering of fields.  This is very
   // approximate, but should put this group close to where its member fields
   // originally went.
-  float preferred_location_;
+  double preferred_location_;
   std::vector<const FieldDescriptor*> fields_;
   // We rely on the default copy constructor and operator= so this type can be
   // used in a vector.
@@ -203,7 +203,7 @@ void PaddingOptimizer::OptimizeLayout(
           field_group.SetPreferredLocation(-1);
         } else {
           // Move incomplete 4-byte block to the end.
-          field_group.SetPreferredLocation(fields->size() + 1);
+          field_group.SetPreferredLocation(double{FieldDescriptor::kMaxNumber});
         }
       }
       aligned_to_8[f].push_back(field_group);

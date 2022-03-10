@@ -37,6 +37,7 @@
 
 #include <map>
 #include <string>
+
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 
 namespace google {
@@ -48,7 +49,7 @@ class PrimitiveFieldGenerator : public FieldGenerator {
  public:
   PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
                           const Options& options);
-  ~PrimitiveFieldGenerator();
+  ~PrimitiveFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -72,7 +73,7 @@ class PrimitiveOneofFieldGenerator : public PrimitiveFieldGenerator {
  public:
   PrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor,
                                const Options& options);
-  ~PrimitiveOneofFieldGenerator();
+  ~PrimitiveOneofFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
@@ -88,7 +89,7 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
  public:
   RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
                                   const Options& options);
-  ~RepeatedPrimitiveFieldGenerator();
+  ~RepeatedPrimitiveFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -97,8 +98,8 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
-  void GenerateConstructorCode(io::Printer* printer) const override;
-  void GenerateCopyConstructorCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override {}
+  void GenerateCopyConstructorCode(io::Printer* printer) const override {}
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;

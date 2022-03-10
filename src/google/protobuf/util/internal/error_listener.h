@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_ERROR_LISTENER_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_ERROR_LISTENER_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_ERROR_LISTENER_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_ERROR_LISTENER_H__
 
 #include <algorithm>
 #include <memory>
@@ -39,8 +39,8 @@
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/util/internal/location_tracker.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/util/internal/location_tracker.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -106,4 +106,4 @@ class PROTOBUF_EXPORT NoopErrorListener : public ErrorListener {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_ERROR_LISTENER_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_ERROR_LISTENER_H__

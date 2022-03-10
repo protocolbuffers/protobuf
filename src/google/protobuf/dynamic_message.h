@@ -38,14 +38,15 @@
 #ifndef GOOGLE_PROTOBUF_DYNAMIC_MESSAGE_H__
 #define GOOGLE_PROTOBUF_DYNAMIC_MESSAGE_H__
 
+
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/message.h>
 #include <google/protobuf/stubs/mutex.h>
+#include <google/protobuf/message.h>
 #include <google/protobuf/reflection.h>
 #include <google/protobuf/repeated_field.h>
 
@@ -53,6 +54,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -94,7 +96,7 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   //   the zero-arg constructor.
   DynamicMessageFactory(const DescriptorPool* pool);
 
-  ~DynamicMessageFactory();
+  ~DynamicMessageFactory() override;
 
   // Call this to tell the DynamicMessageFactory that if it is given a
   // Descriptor d for which:

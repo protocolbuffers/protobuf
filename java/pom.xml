@@ -4,7 +4,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.19.3</version>
+  <version>3.20.0-rc-1</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -41,7 +41,7 @@
 
   <licenses>
     <license>
-      <name>3-Clause BSD License</name>
+      <name>BSD-3-Clause</name>
       <url>https://opensource.org/licenses/BSD-3-Clause</url>
       <distribution>repo</distribution>
     </license>
@@ -79,9 +79,9 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.easymock</groupId>
-        <artifactId>easymock</artifactId>
-        <version>3.2</version>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>4.3.1</version>
         <scope>test</scope>
       </dependency>
       <dependency>

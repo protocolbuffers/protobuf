@@ -46,11 +46,11 @@
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/tokenizer.h>
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/hash.h>
 
@@ -180,9 +180,9 @@ bool IsNumberFollowUnderscore(const std::string& name) {
 // ===================================================================
 
 Parser::Parser()
-    : input_(NULL),
-      error_collector_(NULL),
-      source_location_table_(NULL),
+    : input_(nullptr),
+      error_collector_(nullptr),
+      source_location_table_(nullptr),
       had_errors_(false),
       require_syntax_identifier_(false),
       stop_after_syntax_identifier_(false) {
@@ -221,12 +221,8 @@ bool Parser::Consume(const char* text, const char* error) {
 }
 
 bool Parser::Consume(const char* text) {
-  if (TryConsume(text)) {
-    return true;
-  } else {
-    AddError("Expected \"" + std::string(text) + "\".");
-    return false;
-  }
+  std::string error = "Expected \"" + std::string(text) + "\".";
+  return Consume(text, error.c_str());
 }
 
 bool Parser::ConsumeIdentifier(std::string* output, const char* error) {
@@ -347,7 +343,7 @@ bool Parser::TryConsumeEndOfDeclaration(const char* text,
     // from last time.
     leading.swap(upcoming_doc_comments_);
 
-    if (location != NULL) {
+    if (location != nullptr) {
       upcoming_detached_comments_.swap(detached);
       location->AttachComments(&leading, &trailing, &detached);
     } else if (strcmp(text, "}") == 0) {
@@ -380,7 +376,7 @@ bool Parser::ConsumeEndOfDeclaration(const char* text,
 // -------------------------------------------------------------------
 
 void Parser::AddError(int line, int column, const std::string& error) {
-  if (error_collector_ != NULL) {
+  if (error_collector_ != nullptr) {
     error_collector_->AddError(line, column, error);
   }
   had_errors_ = true;
@@ -473,7 +469,7 @@ void Parser::LocationRecorder::EndAt(const io::Tokenizer::Token& token) {
 void Parser::LocationRecorder::RecordLegacyLocation(
     const Message* descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location) {
-  if (parser_->source_location_table_ != NULL) {
+  if (parser_->source_location_table_ != nullptr) {
     parser_->source_location_table_->Add(
         descriptor, location, location_->span(0), location_->span(1));
   }
@@ -516,7 +512,7 @@ void Parser::SkipStatement() {
     if (AtEnd()) {
       return;
     } else if (LookingAtType(io::Tokenizer::TYPE_SYMBOL)) {
-      if (TryConsumeEndOfDeclaration(";", NULL)) {
+      if (TryConsumeEndOfDeclaration(";", nullptr)) {
         return;
       } else if (TryConsume("{")) {
         SkipRestOfBlock();
@@ -534,7 +530,7 @@ void Parser::SkipRestOfBlock() {
     if (AtEnd()) {
       return;
     } else if (LookingAtType(io::Tokenizer::TYPE_SYMBOL)) {
-      if (TryConsumeEndOfDeclaration("}", NULL)) {
+      if (TryConsumeEndOfDeclaration("}", nullptr)) {
         return;
       } else if (TryConsume("{")) {
         SkipRestOfBlock();
@@ -628,7 +624,7 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
 
   if (LookingAtType(io::Tokenizer::TYPE_START)) {
     // Advance to first token.
-    input_->NextWithComments(NULL, &upcoming_detached_comments_,
+    input_->NextWithComments(nullptr, &upcoming_detached_comments_,
                              &upcoming_doc_comments_);
   }
 
@@ -644,7 +640,7 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
         return false;
       }
       // Store the syntax into the file.
-      if (file != NULL) file->set_syntax(syntax_identifier_);
+      if (file != nullptr) file->set_syntax(syntax_identifier_);
     } else if (!stop_after_syntax_identifier_) {
       GOOGLE_LOG(WARNING) << "No syntax specified for the proto file: " << file->name()
                    << ". Please use 'syntax = \"proto2\";' "
@@ -664,16 +660,16 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
 
         if (LookingAt("}")) {
           AddError("Unmatched \"}\".");
-          input_->NextWithComments(NULL, &upcoming_detached_comments_,
+          input_->NextWithComments(nullptr, &upcoming_detached_comments_,
                                    &upcoming_doc_comments_);
         }
       }
     }
   }
 
-  input_ = NULL;
-  source_code_info_ = NULL;
-  assert(file != NULL);
+  input_ = nullptr;
+  source_code_info_ = nullptr;
+  assert(file != nullptr);
   source_code_info.Swap(file->mutable_source_code_info());
   return !had_errors_;
 }
@@ -706,7 +702,7 @@ bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
 
 bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
                                     const LocationRecorder& root_location) {
-  if (TryConsumeEndOfDeclaration(";", NULL)) {
+  if (TryConsumeEndOfDeclaration(";", nullptr)) {
     // empty statement; ignore
     return true;
   } else if (LookingAt("message")) {
@@ -862,7 +858,7 @@ bool Parser::ParseMessageBlock(DescriptorProto* message,
                                const FileDescriptorProto* containing_file) {
   DO(ConsumeEndOfDeclaration("{", &message_location));
 
-  while (!TryConsumeEndOfDeclaration("}", NULL)) {
+  while (!TryConsumeEndOfDeclaration("}", nullptr)) {
     if (AtEnd()) {
       AddError("Reached end of input in message definition (missing '}').");
       return false;
@@ -887,7 +883,7 @@ bool Parser::ParseMessageBlock(DescriptorProto* message,
 bool Parser::ParseMessageStatement(DescriptorProto* message,
                                    const LocationRecorder& message_location,
                                    const FileDescriptorProto* containing_file) {
-  if (TryConsumeEndOfDeclaration(";", NULL)) {
+  if (TryConsumeEndOfDeclaration(";", nullptr)) {
     // empty statement; ignore
     return true;
   } else if (LookingAt("message")) {
@@ -945,7 +941,7 @@ bool Parser::ParseMessageField(FieldDescriptorProto* field,
                                const FileDescriptorProto* containing_file) {
   {
     FieldDescriptorProto::Label label;
-    if (ParseLabel(&label, field_location, containing_file)) {
+    if (ParseLabel(&label, field_location)) {
       field->set_label(label);
       if (label == FieldDescriptorProto::LABEL_OPTIONAL &&
           syntax_identifier_ == "proto3") {
@@ -1458,7 +1454,7 @@ bool Parser::ParseOption(Message* options,
   // Create an entry in the uninterpreted_option field.
   const FieldDescriptor* uninterpreted_option_field =
       options->GetDescriptor()->FindFieldByName("uninterpreted_option");
-  GOOGLE_CHECK(uninterpreted_option_field != NULL)
+  GOOGLE_CHECK(uninterpreted_option_field != nullptr)
       << "No field named \"uninterpreted_option\" in the Options proto.";
 
   const Reflection* reflection = options->GetReflection();
@@ -1906,7 +1902,7 @@ bool Parser::ParseExtend(RepeatedPtrField<FieldDescriptorProto>* extensions,
       // other statements.
       SkipStatement();
     }
-  } while (!TryConsumeEndOfDeclaration("}", NULL));
+  } while (!TryConsumeEndOfDeclaration("}", nullptr));
 
   return true;
 }
@@ -1970,7 +1966,7 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
       // other statements.
       SkipStatement();
     }
-  } while (!TryConsumeEndOfDeclaration("}", NULL));
+  } while (!TryConsumeEndOfDeclaration("}", nullptr));
 
   return true;
 }
@@ -2003,7 +1999,7 @@ bool Parser::ParseEnumBlock(EnumDescriptorProto* enum_type,
                             const FileDescriptorProto* containing_file) {
   DO(ConsumeEndOfDeclaration("{", &enum_location));
 
-  while (!TryConsumeEndOfDeclaration("}", NULL)) {
+  while (!TryConsumeEndOfDeclaration("}", nullptr)) {
     if (AtEnd()) {
       AddError("Reached end of input in enum definition (missing '}').");
       return false;
@@ -2022,7 +2018,7 @@ bool Parser::ParseEnumBlock(EnumDescriptorProto* enum_type,
 bool Parser::ParseEnumStatement(EnumDescriptorProto* enum_type,
                                 const LocationRecorder& enum_location,
                                 const FileDescriptorProto* containing_file) {
-  if (TryConsumeEndOfDeclaration(";", NULL)) {
+  if (TryConsumeEndOfDeclaration(";", nullptr)) {
     // empty statement; ignore
     return true;
   } else if (LookingAt("option")) {
@@ -2120,7 +2116,7 @@ bool Parser::ParseServiceBlock(ServiceDescriptorProto* service,
                                const FileDescriptorProto* containing_file) {
   DO(ConsumeEndOfDeclaration("{", &service_location));
 
-  while (!TryConsumeEndOfDeclaration("}", NULL)) {
+  while (!TryConsumeEndOfDeclaration("}", nullptr)) {
     if (AtEnd()) {
       AddError("Reached end of input in service definition (missing '}').");
       return false;
@@ -2139,7 +2135,7 @@ bool Parser::ParseServiceBlock(ServiceDescriptorProto* service,
 bool Parser::ParseServiceStatement(ServiceDescriptorProto* service,
                                    const LocationRecorder& service_location,
                                    const FileDescriptorProto* containing_file) {
-  if (TryConsumeEndOfDeclaration(";", NULL)) {
+  if (TryConsumeEndOfDeclaration(";", nullptr)) {
     // empty statement; ignore
     return true;
   } else if (LookingAt("option")) {
@@ -2177,7 +2173,6 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
                                     DescriptorPool::ErrorCollector::OTHER);
       method->set_client_streaming(true);
       DO(Consume("stream"));
-
     }
     LocationRecorder location(method_location,
                               MethodDescriptorProto::kInputTypeFieldNumber);
@@ -2198,7 +2193,6 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
                                     DescriptorPool::ErrorCollector::OTHER);
       DO(Consume("stream"));
       method->set_server_streaming(true);
-
     }
     LocationRecorder location(method_location,
                               MethodDescriptorProto::kOutputTypeFieldNumber);
@@ -2226,13 +2220,13 @@ bool Parser::ParseMethodOptions(const LocationRecorder& parent_location,
                                 Message* mutable_options) {
   // Options!
   ConsumeEndOfDeclaration("{", &parent_location);
-  while (!TryConsumeEndOfDeclaration("}", NULL)) {
+  while (!TryConsumeEndOfDeclaration("}", nullptr)) {
     if (AtEnd()) {
       AddError("Reached end of input in method options (missing '}').");
       return false;
     }
 
-    if (TryConsumeEndOfDeclaration(";", NULL)) {
+    if (TryConsumeEndOfDeclaration(";", nullptr)) {
       // empty statement; ignore
     } else {
       LocationRecorder location(parent_location, optionsFieldNumber);
@@ -2251,8 +2245,7 @@ bool Parser::ParseMethodOptions(const LocationRecorder& parent_location,
 // -------------------------------------------------------------------
 
 bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
-                        const LocationRecorder& field_location,
-                        const FileDescriptorProto* containing_file) {
+                        const LocationRecorder& field_location) {
   if (!LookingAt("optional") && !LookingAt("repeated") &&
       !LookingAt("required")) {
     return false;
@@ -2396,7 +2389,7 @@ bool SourceLocationTable::Find(
     int* column) const {
   const std::pair<int, int>* result =
       FindOrNull(location_map_, std::make_pair(descriptor, location));
-  if (result == NULL) {
+  if (result == nullptr) {
     *line = -1;
     *column = 0;
     return false;

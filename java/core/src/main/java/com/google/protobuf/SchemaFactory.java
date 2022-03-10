@@ -32,6 +32,7 @@ package com.google.protobuf;
 
 /** A factory that manufactures {@link Schema} instances for protobuf messages. */
 @ExperimentalApi
+@CheckReturnValue
 interface SchemaFactory {
   /** Creates a schema instance for the given protobuf message type. */
   <T> Schema<T> createSchema(Class<T> messageType);

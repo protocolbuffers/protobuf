@@ -44,15 +44,16 @@ cc_toolchain_config(
     bit_flag = "-m64",
     cpp_flag = "-lstdc++",
     extra_compiler_flags = [
-        "-I/usr/aarch64-linux-gnu/include/c++/8/aarch64-linux-gnu/",
-        "-I/usr/aarch64-linux-gnu/include/c++/8"
+        "-I/opt/manylinux/2014/aarch64/usr/include/c++/10/aarch64-redhat-linux",
+        "-I/opt/manylinux/2014/aarch64/usr/include/c++/10"
     ],
-    extra_include = "/usr/include",
+    sysroot = "/opt/manylinux/2014/aarch64",
     linker_path = "/usr/bin/ld",
     target_cpu = "aarch64",
     target_full_name = "aarch64-linux-gnu",
-    toolchain_dir = "/usr/aarch64-linux-gnu/include",
     toolchain_name = "linux_aarch_64",
+    # Don't really need this, setting it because it's required.
+    toolchain_dir = "/opt/manylinux/2014/aarch64/usr/include",
 )
 
 cc_toolchain_config(

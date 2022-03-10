@@ -30,9 +30,9 @@
 
 #include <google/protobuf/util/internal/field_mask_utility.h>
 
-#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/status_macros.h>
 
 // Must be included last.

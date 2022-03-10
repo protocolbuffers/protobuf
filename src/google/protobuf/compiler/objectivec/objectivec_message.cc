@@ -171,11 +171,10 @@ const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
 }  // namespace
 
 MessageGenerator::MessageGenerator(const std::string& root_classname,
-                                   const Descriptor* descriptor,
-                                   const Options& options)
+                                   const Descriptor* descriptor)
     : root_classname_(root_classname),
       descriptor_(descriptor),
-      field_generators_(descriptor, options),
+      field_generators_(descriptor),
       class_name_(ClassName(descriptor_)),
       deprecated_attribute_(GetOptionalDeprecatedAttribute(
           descriptor, descriptor->file(), false, true)) {
@@ -197,8 +196,7 @@ MessageGenerator::MessageGenerator(const std::string& root_classname,
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     MessageGenerator* generator =
         new MessageGenerator(root_classname_,
-                             descriptor_->nested_type(i),
-                             options);
+                             descriptor_->nested_type(i));
     nested_message_generators_.emplace_back(generator);
   }
 }
@@ -217,17 +215,18 @@ void MessageGenerator::GenerateStaticVariablesInitialization(
 }
 
 void MessageGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls) {
+    std::set<std::string>* fwd_decls,
+    bool include_external_types) {
   if (!IsMapEntryMessage(descriptor_)) {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
       field_generators_.get(fieldDescriptor)
-          .DetermineForwardDeclarations(fwd_decls);
+          .DetermineForwardDeclarations(fwd_decls, include_external_types);
     }
   }
 
   for (const auto& generator : nested_message_generators_) {
-    generator->DetermineForwardDeclarations(fwd_decls);
+    generator->DetermineForwardDeclarations(fwd_decls, include_external_types);
   }
 }
 

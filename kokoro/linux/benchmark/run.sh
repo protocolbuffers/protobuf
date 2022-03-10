@@ -23,7 +23,7 @@ popd
 ./configure CXXFLAGS="-fPIC -O2"
 make -j8
 pushd python
-virtualenv -p python3 env
+python3 -m venv env
 source env/bin/activate
 python3 setup.py build --cpp_implementation
 pip3 install --install-option="--cpp_implementation" .

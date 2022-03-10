@@ -71,22 +71,23 @@ static void stringsink_uninit(stringsink *sink) { free(sink->ptr); }
 /* def name -> classname ******************************************************/
 
 const char *const kReservedNames[] = {
-    "abstract",   "and",          "array",      "as",           "break",
-    "callable",   "case",         "catch",      "class",        "clone",
-    "const",      "continue",     "declare",    "default",      "die",
-    "do",         "echo",         "else",       "elseif",       "empty",
-    "enddeclare", "endfor",       "endforeach", "endif",        "endswitch",
-    "endwhile",   "eval",         "exit",       "extends",      "final",
-    "finally",    "fn",           "for",        "foreach",      "function",
-    "if",         "implements",   "include",    "include_once", "instanceof",
-    "global",     "goto",         "insteadof",  "interface",    "isset",
-    "list",       "match",        "namespace",  "new",          "object",
-    "or",         "print",        "private",    "protected",    "public",
-    "require",    "require_once", "return",     "static",       "switch",
-    "throw",      "trait",        "try",        "unset",        "use",
-    "var",        "while",        "xor",        "yield",        "int",
-    "float",      "bool",         "string",     "true",         "false",
-    "null",       "void",         "iterable",   NULL};
+    "abstract",   "and",         "array",        "as",           "break",
+    "callable",   "case",        "catch",        "class",        "clone",
+    "const",      "continue",    "declare",      "default",      "die",
+    "do",         "echo",        "else",         "elseif",       "empty",
+    "enddeclare", "endfor",      "endforeach",   "endif",        "endswitch",
+    "endwhile",   "eval",        "exit",         "extends",      "final",
+    "finally",    "fn",          "for",          "foreach",      "function",
+    "if",         "implements",  "include",      "include_once", "instanceof",
+    "global",     "goto",        "insteadof",    "interface",    "isset",
+    "list",       "match",       "namespace",    "new",          "object",
+    "or",         "parent",      "print",        "private",      "protected",
+    "public",     "require",     "require_once", "return",       "self",
+    "static",     "switch",      "throw",        "trait",        "try",
+    "unset",      "use",         "var",          "while",        "xor",
+    "yield",      "int",         "float",        "bool",         "string",
+    "true",       "false",       "null",         "void",         "iterable",
+    NULL};
 
 bool is_reserved_name(const char* name) {
   int i;
@@ -207,14 +208,29 @@ static void fill_classname(const char *fullname,
   }
 }
 
-char *GetPhpClassname(const upb_filedef *file, const char *fullname) {
+char *str_view_dup(upb_StringView str) {
+  char *ret = malloc(str.size + 1);
+  memcpy(ret, str.data, str.size);
+  ret[str.size] = '\0';
+  return ret;
+}
+
+char *GetPhpClassname(const upb_FileDef *file, const char *fullname) {
   // Prepend '.' to package name to make it absolute. In the 5 additional
   // bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
   // given message is google.protobuf.Empty.
-  const char *package = upb_filedef_package(file);
-  const char *php_namespace = upb_filedef_phpnamespace(file);
-  const char *prefix = upb_filedef_phpprefix(file);
+  const google_protobuf_FileOptions* opts = upb_FileDef_Options(file);
+  const char *package = upb_FileDef_Package(file);
+  char *php_namespace =
+      google_protobuf_FileOptions_has_php_namespace(opts)
+          ? str_view_dup(google_protobuf_FileOptions_php_namespace(opts))
+          : NULL;
+  char *prefix =
+      google_protobuf_FileOptions_has_php_class_prefix(opts)
+          ? str_view_dup(google_protobuf_FileOptions_php_class_prefix(opts))
+          : NULL;
   char *ret;
+
   stringsink namesink;
   stringsink_init(&namesink);
 
@@ -223,5 +239,7 @@ char *GetPhpClassname(const upb_filedef *file, const char *fullname) {
   stringsink_string(&namesink, "\0", 1);
   ret = strdup(namesink.ptr);
   stringsink_uninit(&namesink);
+  free(php_namespace);
+  free(prefix);
   return ret;
 }

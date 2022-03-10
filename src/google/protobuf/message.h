@@ -110,6 +110,7 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_H__
 
+
 #include <iosfwd>
 #include <string>
 #include <type_traits>
@@ -118,16 +119,15 @@
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/map.h>  // TODO(b/211442718): cleanup
 #include <google/protobuf/message_lite.h>
-#include <google/protobuf/port.h>
 
 
-#define GOOGLE_PROTOBUF_HAS_ONEOF
-#define GOOGLE_PROTOBUF_HAS_ARENAS
-
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -145,7 +145,6 @@ class MessageFactory;
 // Defined in other files.
 class AssignDescriptorsHelper;
 class DynamicMessageFactory;
-class DynamicMessageReflectionHelper;
 class GeneratedMessageReflectionTestHelper;
 class MapKey;
 class MapValueConstRef;
@@ -1040,7 +1039,6 @@ class PROTOBUF_EXPORT Reflection final {
   friend class ::PROTOBUF_NAMESPACE_ID::MessageLayoutInspector;
   friend class ::PROTOBUF_NAMESPACE_ID::AssignDescriptorsHelper;
   friend class DynamicMessageFactory;
-  friend class DynamicMessageReflectionHelper;
   friend class GeneratedMessageReflectionTestHelper;
   friend class python::MapReflectionFriend;
   friend class python::MessageReflectionFriend;
@@ -1144,7 +1142,7 @@ class PROTOBUF_EXPORT Reflection final {
   const internal::ExtensionSet& GetExtensionSet(const Message& message) const;
   internal::ExtensionSet* MutableExtensionSet(Message* message) const;
 
-  inline const internal::InternalMetadata& GetInternalMetadata(
+  const internal::InternalMetadata& GetInternalMetadata(
       const Message& message) const;
 
   internal::InternalMetadata* MutableInternalMetadata(Message* message) const;
@@ -1163,6 +1161,8 @@ class PROTOBUF_EXPORT Reflection final {
   inline uint32_t* MutableInlinedStringDonatedArray(Message* message) const;
   inline bool IsInlinedStringDonated(const Message& message,
                                      const FieldDescriptor* field) const;
+  inline void SwapInlinedStringDonated(Message* lhs, Message* rhs,
+                                       const FieldDescriptor* field) const;
 
   // Shallow-swap fields listed in fields vector of two messages. It is the
   // caller's responsibility to make sure shallow swap is safe.
@@ -1375,11 +1375,11 @@ T* DynamicCastToGenerated(Message* from) {
 // Call this function to ensure that this message's reflection is linked into
 // the binary:
 //
-//   google::protobuf::LinkMessageReflection<FooMessage>();
+//   google::protobuf::LinkMessageReflection<pkg::FooMessage>();
 //
 // This will ensure that the following lookup will succeed:
 //
-//   DescriptorPool::generated_pool()->FindMessageTypeByName("FooMessage");
+//   DescriptorPool::generated_pool()->FindMessageTypeByName("pkg.FooMessage");
 //
 // As a side-effect, it will also guarantee that anything else from the same
 // .proto file will also be available for lookup in the generated pool.

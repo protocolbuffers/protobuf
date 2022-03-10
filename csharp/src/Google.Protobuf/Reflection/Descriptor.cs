@@ -113,52 +113,53 @@ namespace Google.Protobuf.Reflection {
             "CgpkZXByZWNhdGVkGAMgASgIOgVmYWxzZRIRCgltYXBfZW50cnkYByABKAgS",
             "QwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3Rv",
             "YnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAkoECAQQBUoECAUQ",
-            "BkoECAYQB0oECAgQCUoECAkQCiKeAwoMRmllbGRPcHRpb25zEjoKBWN0eXBl",
+            "BkoECAYQB0oECAgQCUoECAkQCiK+AwoMRmllbGRPcHRpb25zEjoKBWN0eXBl",
             "GAEgASgOMiMuZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucy5DVHlwZToG",
             "U1RSSU5HEg4KBnBhY2tlZBgCIAEoCBI/CgZqc3R5cGUYBiABKA4yJC5nb29n",
             "bGUucHJvdG9idWYuRmllbGRPcHRpb25zLkpTVHlwZToJSlNfTk9STUFMEhMK",
-            "BGxhenkYBSABKAg6BWZhbHNlEhkKCmRlcHJlY2F0ZWQYAyABKAg6BWZhbHNl",
-            "EhMKBHdlYWsYCiABKAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9u",
-            "GOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9u",
-            "Ii8KBUNUeXBlEgoKBlNUUklORxAAEggKBENPUkQQARIQCgxTVFJJTkdfUElF",
-            "Q0UQAiI1CgZKU1R5cGUSDQoJSlNfTk9STUFMEAASDQoJSlNfU1RSSU5HEAES",
-            "DQoJSlNfTlVNQkVSEAIqCQjoBxCAgICAAkoECAQQBSJeCgxPbmVvZk9wdGlv",
-            "bnMSQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnBy",
-            "b3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiKTAQoLRW51",
-            "bU9wdGlvbnMSEwoLYWxsb3dfYWxpYXMYAiABKAgSGQoKZGVwcmVjYXRlZBgD",
-            "IAEoCDoFZmFsc2USQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQu",
-            "Z29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICA",
-            "AkoECAUQBiJ9ChBFbnVtVmFsdWVPcHRpb25zEhkKCmRlcHJlY2F0ZWQYASAB",
-            "KAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdv",
-            "b2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIi",
-            "ewoOU2VydmljZU9wdGlvbnMSGQoKZGVwcmVjYXRlZBghIAEoCDoFZmFsc2US",
-            "QwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3Rv",
-            "YnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiKtAgoNTWV0aG9k",
-            "T3B0aW9ucxIZCgpkZXByZWNhdGVkGCEgASgIOgVmYWxzZRJfChFpZGVtcG90",
-            "ZW5jeV9sZXZlbBgiIAEoDjIvLmdvb2dsZS5wcm90b2J1Zi5NZXRob2RPcHRp",
-            "b25zLklkZW1wb3RlbmN5TGV2ZWw6E0lERU1QT1RFTkNZX1VOS05PV04SQwoU",
+            "BGxhenkYBSABKAg6BWZhbHNlEh4KD3VudmVyaWZpZWRfbGF6eRgPIAEoCDoF",
+            "ZmFsc2USGQoKZGVwcmVjYXRlZBgDIAEoCDoFZmFsc2USEwoEd2VhaxgKIAEo",
+            "CDoFZmFsc2USQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29v",
+            "Z2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24iLwoFQ1R5cGUSCgoG",
+            "U1RSSU5HEAASCAoEQ09SRBABEhAKDFNUUklOR19QSUVDRRACIjUKBkpTVHlw",
+            "ZRINCglKU19OT1JNQUwQABINCglKU19TVFJJTkcQARINCglKU19OVU1CRVIQ",
+            "AioJCOgHEICAgIACSgQIBBAFIl4KDE9uZW9mT3B0aW9ucxJDChR1bmludGVy",
+            "cHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRl",
+            "cnByZXRlZE9wdGlvbioJCOgHEICAgIACIpMBCgtFbnVtT3B0aW9ucxITCgth",
+            "bGxvd19hbGlhcxgCIAEoCBIZCgpkZXByZWNhdGVkGAMgASgIOgVmYWxzZRJD",
+            "ChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9i",
+            "dWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACSgQIBRAGIn0KEEVu",
+            "dW1WYWx1ZU9wdGlvbnMSGQoKZGVwcmVjYXRlZBgBIAEoCDoFZmFsc2USQwoU",
             "dW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVm",
-            "LlVuaW50ZXJwcmV0ZWRPcHRpb24iUAoQSWRlbXBvdGVuY3lMZXZlbBIXChNJ",
-            "REVNUE9URU5DWV9VTktOT1dOEAASEwoPTk9fU0lERV9FRkZFQ1RTEAESDgoK",
-            "SURFTVBPVEVOVBACKgkI6AcQgICAgAIingIKE1VuaW50ZXJwcmV0ZWRPcHRp",
-            "b24SOwoEbmFtZRgCIAMoCzItLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJl",
-            "dGVkT3B0aW9uLk5hbWVQYXJ0EhgKEGlkZW50aWZpZXJfdmFsdWUYAyABKAkS",
-            "GgoScG9zaXRpdmVfaW50X3ZhbHVlGAQgASgEEhoKEm5lZ2F0aXZlX2ludF92",
-            "YWx1ZRgFIAEoAxIUCgxkb3VibGVfdmFsdWUYBiABKAESFAoMc3RyaW5nX3Zh",
-            "bHVlGAcgASgMEhcKD2FnZ3JlZ2F0ZV92YWx1ZRgIIAEoCRozCghOYW1lUGFy",
-            "dBIRCgluYW1lX3BhcnQYASACKAkSFAoMaXNfZXh0ZW5zaW9uGAIgAigIItUB",
-            "Cg5Tb3VyY2VDb2RlSW5mbxI6Cghsb2NhdGlvbhgBIAMoCzIoLmdvb2dsZS5w",
-            "cm90b2J1Zi5Tb3VyY2VDb2RlSW5mby5Mb2NhdGlvbhqGAQoITG9jYXRpb24S",
-            "EAoEcGF0aBgBIAMoBUICEAESEAoEc3BhbhgCIAMoBUICEAESGAoQbGVhZGlu",
-            "Z19jb21tZW50cxgDIAEoCRIZChF0cmFpbGluZ19jb21tZW50cxgEIAEoCRIh",
-            "ChlsZWFkaW5nX2RldGFjaGVkX2NvbW1lbnRzGAYgAygJIqcBChFHZW5lcmF0",
-            "ZWRDb2RlSW5mbxJBCgphbm5vdGF0aW9uGAEgAygLMi0uZ29vZ2xlLnByb3Rv",
-            "YnVmLkdlbmVyYXRlZENvZGVJbmZvLkFubm90YXRpb24aTwoKQW5ub3RhdGlv",
-            "bhIQCgRwYXRoGAEgAygFQgIQARITCgtzb3VyY2VfZmlsZRgCIAEoCRINCgVi",
-            "ZWdpbhgDIAEoBRILCgNlbmQYBCABKAVCfgoTY29tLmdvb2dsZS5wcm90b2J1",
-            "ZkIQRGVzY3JpcHRvclByb3Rvc0gBWi1nb29nbGUuZ29sYW5nLm9yZy9wcm90",
-            "b2J1Zi90eXBlcy9kZXNjcmlwdG9ycGL4AQGiAgNHUEKqAhpHb29nbGUuUHJv",
-            "dG9idWYuUmVmbGVjdGlvbg=="));
+            "LlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiJ7Cg5TZXJ2aWNlT3B0",
+            "aW9ucxIZCgpkZXByZWNhdGVkGCEgASgIOgVmYWxzZRJDChR1bmludGVycHJl",
+            "dGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnBy",
+            "ZXRlZE9wdGlvbioJCOgHEICAgIACIq0CCg1NZXRob2RPcHRpb25zEhkKCmRl",
+            "cHJlY2F0ZWQYISABKAg6BWZhbHNlEl8KEWlkZW1wb3RlbmN5X2xldmVsGCIg",
+            "ASgOMi8uZ29vZ2xlLnByb3RvYnVmLk1ldGhvZE9wdGlvbnMuSWRlbXBvdGVu",
+            "Y3lMZXZlbDoTSURFTVBPVEVOQ1lfVU5LTk9XThJDChR1bmludGVycHJldGVk",
+            "X29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRl",
+            "ZE9wdGlvbiJQChBJZGVtcG90ZW5jeUxldmVsEhcKE0lERU1QT1RFTkNZX1VO",
+            "S05PV04QABITCg9OT19TSURFX0VGRkVDVFMQARIOCgpJREVNUE9URU5UEAIq",
+            "CQjoBxCAgICAAiKeAgoTVW5pbnRlcnByZXRlZE9wdGlvbhI7CgRuYW1lGAIg",
+            "AygLMi0uZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24uTmFt",
+            "ZVBhcnQSGAoQaWRlbnRpZmllcl92YWx1ZRgDIAEoCRIaChJwb3NpdGl2ZV9p",
+            "bnRfdmFsdWUYBCABKAQSGgoSbmVnYXRpdmVfaW50X3ZhbHVlGAUgASgDEhQK",
+            "DGRvdWJsZV92YWx1ZRgGIAEoARIUCgxzdHJpbmdfdmFsdWUYByABKAwSFwoP",
+            "YWdncmVnYXRlX3ZhbHVlGAggASgJGjMKCE5hbWVQYXJ0EhEKCW5hbWVfcGFy",
+            "dBgBIAIoCRIUCgxpc19leHRlbnNpb24YAiACKAgi1QEKDlNvdXJjZUNvZGVJ",
+            "bmZvEjoKCGxvY2F0aW9uGAEgAygLMiguZ29vZ2xlLnByb3RvYnVmLlNvdXJj",
+            "ZUNvZGVJbmZvLkxvY2F0aW9uGoYBCghMb2NhdGlvbhIQCgRwYXRoGAEgAygF",
+            "QgIQARIQCgRzcGFuGAIgAygFQgIQARIYChBsZWFkaW5nX2NvbW1lbnRzGAMg",
+            "ASgJEhkKEXRyYWlsaW5nX2NvbW1lbnRzGAQgASgJEiEKGWxlYWRpbmdfZGV0",
+            "YWNoZWRfY29tbWVudHMYBiADKAkipwEKEUdlbmVyYXRlZENvZGVJbmZvEkEK",
+            "CmFubm90YXRpb24YASADKAsyLS5nb29nbGUucHJvdG9idWYuR2VuZXJhdGVk",
+            "Q29kZUluZm8uQW5ub3RhdGlvbhpPCgpBbm5vdGF0aW9uEhAKBHBhdGgYASAD",
+            "KAVCAhABEhMKC3NvdXJjZV9maWxlGAIgASgJEg0KBWJlZ2luGAMgASgFEgsK",
+            "A2VuZBgEIAEoBUJ+ChNjb20uZ29vZ2xlLnByb3RvYnVmQhBEZXNjcmlwdG9y",
+            "UHJvdG9zSAFaLWdvb2dsZS5nb2xhbmcub3JnL3Byb3RvYnVmL3R5cGVzL2Rl",
+            "c2NyaXB0b3JwYvgBAaICA0dQQqoCGkdvb2dsZS5Qcm90b2J1Zi5SZWZsZWN0",
+            "aW9u"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -175,7 +176,7 @@ namespace Google.Protobuf.Reflection {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodDescriptorProto), global::Google.Protobuf.Reflection.MethodDescriptorProto.Parser, new[]{ "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileOptions), global::Google.Protobuf.Reflection.FileOptions.Parser, new[]{ "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "PhpGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "SwiftPrefix", "PhpClassPrefix", "PhpNamespace", "PhpMetadataNamespace", "RubyPackage", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MessageOptions), global::Google.Protobuf.Reflection.MessageOptions.Parser, new[]{ "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "UninterpretedOption" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions), global::Google.Protobuf.Reflection.FieldOptions.Parser, new[]{ "Ctype", "Packed", "Jstype", "Lazy", "Deprecated", "Weak", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.CType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.JSType) }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions), global::Google.Protobuf.Reflection.FieldOptions.Parser, new[]{ "Ctype", "Packed", "Jstype", "Lazy", "UnverifiedLazy", "Deprecated", "Weak", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.CType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.JSType) }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.OneofOptions), global::Google.Protobuf.Reflection.OneofOptions.Parser, new[]{ "UninterpretedOption" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumOptions), global::Google.Protobuf.Reflection.EnumOptions.Parser, new[]{ "AllowAlias", "Deprecated", "UninterpretedOption" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueOptions), global::Google.Protobuf.Reflection.EnumValueOptions.Parser, new[]{ "Deprecated", "UninterpretedOption" }, null, null, null, null),
@@ -2507,7 +2508,6 @@ namespace Google.Protobuf.Reflection {
     /// For booleans, "true" or "false".
     /// For strings, contains the default text contents (not escaped in any way).
     /// For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
-    /// TODO(kenton):  Base-64 encode?
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -6943,6 +6943,7 @@ namespace Google.Protobuf.Reflection {
       packed_ = other.packed_;
       jstype_ = other.jstype_;
       lazy_ = other.lazy_;
+      unverifiedLazy_ = other.unverifiedLazy_;
       deprecated_ = other.deprecated_;
       weak_ = other.weak_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
@@ -7096,6 +7097,12 @@ namespace Google.Protobuf.Reflection {
     /// implementation must either *always* check its required fields, or *never*
     /// check its required fields, regardless of whether or not the message has
     /// been parsed.
+    ///
+    /// As of 2021, lazy does no correctness checks on the byte stream during
+    /// parsing.  This may lead to crashes if and when an invalid byte stream is
+    /// finally parsed upon access.
+    ///
+    /// TODO(b/211906113):  Enable validation on lazy fields.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -7117,6 +7124,38 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void ClearLazy() {
       _hasBits0 &= ~8;
+    }
+
+    /// <summary>Field number for the "unverified_lazy" field.</summary>
+    public const int UnverifiedLazyFieldNumber = 15;
+    private readonly static bool UnverifiedLazyDefaultValue = false;
+
+    private bool unverifiedLazy_;
+    /// <summary>
+    /// unverified_lazy does no correctness checks on the byte stream. This should
+    /// only be used where lazy with verification is prohibitive for performance
+    /// reasons.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool UnverifiedLazy {
+      get { if ((_hasBits0 & 64) != 0) { return unverifiedLazy_; } else { return UnverifiedLazyDefaultValue; } }
+      set {
+        _hasBits0 |= 64;
+        unverifiedLazy_ = value;
+      }
+    }
+    /// <summary>Gets whether the "unverified_lazy" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasUnverifiedLazy {
+      get { return (_hasBits0 & 64) != 0; }
+    }
+    /// <summary>Clears the value of the "unverified_lazy" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearUnverifiedLazy() {
+      _hasBits0 &= ~64;
     }
 
     /// <summary>Field number for the "deprecated" field.</summary>
@@ -7215,6 +7254,7 @@ namespace Google.Protobuf.Reflection {
       if (Packed != other.Packed) return false;
       if (Jstype != other.Jstype) return false;
       if (Lazy != other.Lazy) return false;
+      if (UnverifiedLazy != other.UnverifiedLazy) return false;
       if (Deprecated != other.Deprecated) return false;
       if (Weak != other.Weak) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
@@ -7232,6 +7272,7 @@ namespace Google.Protobuf.Reflection {
       if (HasPacked) hash ^= Packed.GetHashCode();
       if (HasJstype) hash ^= Jstype.GetHashCode();
       if (HasLazy) hash ^= Lazy.GetHashCode();
+      if (HasUnverifiedLazy) hash ^= UnverifiedLazy.GetHashCode();
       if (HasDeprecated) hash ^= Deprecated.GetHashCode();
       if (HasWeak) hash ^= Weak.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
@@ -7280,6 +7321,10 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(80);
         output.WriteBool(Weak);
       }
+      if (HasUnverifiedLazy) {
+        output.WriteRawTag(120);
+        output.WriteBool(UnverifiedLazy);
+      }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
       if (_extensions != null) {
         _extensions.WriteTo(output);
@@ -7318,6 +7363,10 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(80);
         output.WriteBool(Weak);
       }
+      if (HasUnverifiedLazy) {
+        output.WriteRawTag(120);
+        output.WriteBool(UnverifiedLazy);
+      }
       uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
       if (_extensions != null) {
         _extensions.WriteTo(ref output);
@@ -7342,6 +7391,9 @@ namespace Google.Protobuf.Reflection {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Jstype);
       }
       if (HasLazy) {
+        size += 1 + 1;
+      }
+      if (HasUnverifiedLazy) {
         size += 1 + 1;
       }
       if (HasDeprecated) {
@@ -7377,6 +7429,9 @@ namespace Google.Protobuf.Reflection {
       }
       if (other.HasLazy) {
         Lazy = other.Lazy;
+      }
+      if (other.HasUnverifiedLazy) {
+        UnverifiedLazy = other.UnverifiedLazy;
       }
       if (other.HasDeprecated) {
         Deprecated = other.Deprecated;
@@ -7427,6 +7482,10 @@ namespace Google.Protobuf.Reflection {
             Weak = input.ReadBool();
             break;
           }
+          case 120: {
+            UnverifiedLazy = input.ReadBool();
+            break;
+          }
           case 7994: {
             uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
             break;
@@ -7470,6 +7529,10 @@ namespace Google.Protobuf.Reflection {
           }
           case 80: {
             Weak = input.ReadBool();
+            break;
+          }
+          case 120: {
+            UnverifiedLazy = input.ReadBool();
             break;
           }
           case 7994: {
@@ -10101,8 +10164,8 @@ namespace Google.Protobuf.Reflection {
         /// location.
         ///
         /// Each element is a field number or an index.  They form a path from
-        /// the root FileDescriptorProto to the place where the definition occurs.  For
-        /// example, this path:
+        /// the root FileDescriptorProto to the place where the definition occurs.
+        /// For example, this path:
         ///   [ 4, 3, 2, 7, 1 ]
         /// refers to:
         ///   file.message_type(3)  // 4, 3

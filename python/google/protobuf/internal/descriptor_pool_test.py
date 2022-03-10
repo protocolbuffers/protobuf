@@ -541,7 +541,13 @@ class DescriptorPoolTestBase(object):
       pool._AddExtensionDescriptor(
           file_descriptor.extensions_by_name['optional_int32_extension'])
       pool.Add(unittest_fd)
-      pool.Add(conflict_fd)
+      with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        pool.Add(conflict_fd)
+        self.assertTrue(len(w))
+        self.assertIs(w[0].category, RuntimeWarning)
+        self.assertIn('Conflict register for file "other_file": ',
+                      str(w[0].message))
       pool.FindFileByName(unittest_fd.name)
       with self.assertRaises(TypeError):
         pool.FindFileByName(conflict_fd.name)
@@ -649,10 +655,10 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
     self.db.Add(file_proto)
 
     self.assertRaisesRegex(KeyError, 'SubMessage',
-                            self.pool.FindMessageTypeByName,
-                            'collector.ErrorMessage')
-    self.assertRaisesRegex(KeyError, 'SubMessage',
-                            self.pool.FindFileByName, 'error_file')
+                           self.pool.FindMessageTypeByName,
+                           'collector.ErrorMessage')
+    self.assertRaisesRegex(KeyError, 'SubMessage', self.pool.FindFileByName,
+                           'error_file')
     with self.assertRaises(KeyError) as exc:
       self.pool.FindFileByName('none_file')
     self.assertIn(str(exc.exception), ('\'none_file\'',

@@ -27,6 +27,7 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/CodedInputStreamReader.java",
     "src/main/java/com/google/protobuf/CodedOutputStream.java",
     "src/main/java/com/google/protobuf/CodedOutputStreamWriter.java",
+    "src/main/java/com/google/protobuf/CompileTimeConstant.java",
     "src/main/java/com/google/protobuf/DoubleArrayList.java",
     "src/main/java/com/google/protobuf/ExperimentalApi.java",
     "src/main/java/com/google/protobuf/ExtensionLite.java",
@@ -41,6 +42,7 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/FloatArrayList.java",
     "src/main/java/com/google/protobuf/GeneratedMessageInfoFactory.java",
     "src/main/java/com/google/protobuf/GeneratedMessageLite.java",
+    "src/main/java/com/google/protobuf/InlineMe.java",
     "src/main/java/com/google/protobuf/IntArrayList.java",
     "src/main/java/com/google/protobuf/Internal.java",
     "src/main/java/com/google/protobuf/InvalidProtocolBufferException.java",
@@ -279,7 +281,7 @@ junit_tests(
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
-        "@maven//:org_easymock_easymock",
+        "@maven//:org_mockito_mockito_core",
     ],
 )
 
@@ -406,6 +408,6 @@ junit_tests(
         ":test_util_lite",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
-        "@maven//:org_easymock_easymock",
+        "@maven//:org_mockito_mockito_core",
     ],
 )

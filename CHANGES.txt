@@ -1,3 +1,143 @@
+2022-03-04 version 3.20.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Dropped Ruby 2.3 and 2.4 support for CI and releases. (#9311)
+  * Message.decode/encode: Add max_recursion_depth option (#9218)
+  * Rename max_recursion_depth to recursion_limit (#9486)
+  * Fix conversion of singleton classes in Ruby (#9342)
+  * Suppress warning for intentional circular require (#9556)
+  * JSON will now output shorter strings for double and float fields when possible
+    without losing precision.
+  * Encoding and decoding of binary format will now work properly on big-endian
+    systems.
+  * UTF-8 verification was fixed to properly reject surrogate code points.
+  * Unknown enums for proto2 protos now properly implement proto2's behavior of
+    putting such values in unknown fields.
+
+  Java
+  * Revert "Standardize on Array copyOf" (#9400)
+  * Resolve more java field accessor name conflicts (#8198)
+  * Don't support map fields in DynamicMessage.Builder.{getFieldBuilder,getRepeatedFieldBuilder}
+  * Fix parseFrom to only throw InvalidProtocolBufferException
+  * InvalidProtocolBufferException now allows arbitrary wrapped Exception types.
+  * Fix bug in `FieldSet.Builder.mergeFrom`
+  * Flush CodedOutputStream also flushes underlying OutputStream
+  * When oneof case is the same and the field type is Message, merge the
+    subfield. (previously it was replaced.)’
+  * Add @CheckReturnValue to some protobuf types
+  * Report original exceptions when parsing JSON
+  * Add more info to @deprecated javadoc for set/get/has methods
+  * Fix initialization bug in doc comment line numbers
+  * Fix comments for message set wire format.
+
+  Kotlin
+  * Add test scope to kotlin-test for protobuf-kotlin-lite (#9518)
+  * Add orNull extensions for optional message fields.
+  * Add orNull extensions to all proto3 message fields.
+
+  Python
+  * Dropped support for Python < 3.7 (#9480)
+  * Protoc is now able to generate python stubs (.pyi) with --pyi_out
+  * Pin multibuild scripts to get manylinux1 wheels back (#9216)
+  * Fix type annotations of some Duration and Timestamp methods.
+  * Repeated field containers are now generic in field types and could be used
+    in type annotations.
+  * Protobuf python generated codes are simplified. Descriptors and message
+    classes' definitions are now dynamic created in internal/builder.py.
+    Insertion Points for messages classes are discarded.
+  * has_presence is added for FieldDescriptor in python
+  * Loosen indexing type requirements to allow valid __index__() implementations
+    rather than only PyLongObjects.
+  * Fix the deepcopy bug caused by not copying message_listener.
+  * Added python JSON parse recursion limit (default 100)
+  * Path info is added for python JSON parse errors
+  * Pure python repeated scalar fields will not able to pickle. Convert to list
+    first.
+  * Timestamp.ToDatetime() now accepts an optional tzinfo parameter. If
+    specified, the function returns a timezone-aware datetime in the given time
+    zone. If omitted or None, the function returns a timezone-naive UTC datetime
+    (as previously).
+  * Adds client_streaming and server_streaming fields to MethodDescriptor.
+  * Add "ensure_ascii" parameter to json_format.MessageToJson. This allows smaller
+    JSON serializations with UTF-8 or other non-ASCII encodings.
+  * Added experimental support for directly assigning numpy scalars and array.
+  * Improve the calculation of public_dependencies in DescriptorPool.
+
+  Compiler
+  * Migrate IsDefault(const std::string*) and UnsafeSetDefault(const std::string*)
+  * Implement strong qualified tags for TaggedPtr
+  * Rework allocations to power-of-two byte sizes.
+  * Migrate IsDefault(const std::string*) and UnsafeSetDefault(const std::string*)
+  * Implement strong qualified tags for TaggedPtr
+  * Make TaggedPtr Set...() calls explicitly spell out the content type.
+  * Check for parsing error before verifying UTF8.
+  * Enforce a maximum message nesting limit of 32 in the descriptor builder to
+    guard against stack overflows
+  * Fixed bugs in operators for RepeatedPtrIterator
+  * Assert a maximum map alignment for allocated values
+  * Fix proto1 group extension protodb parsing error
+  * Do not log/report the same descriptor symbol multiple times if it contains
+    more than one invalid character.
+  * Add UnknownFieldSet::SerializeToString and SerializeToCodedStream.
+  * Remove explicit default pointers and deprecated API from protocol compiler
+
+  Arenas
+  * Change Repeated*Field to reuse memory when using arenas.
+  * Implements pbarenaz for profiling proto arenas
+  * Introduce CreateString() and CreateArenaString() for cleaner semantics
+  * Fix unreferenced parameter for MSVC builds
+  * Add UnsafeSetAllocated to be used for one-of string fields.
+  * Make Arena::AllocateAligned() a public function.
+  * Determine if ArenaDtor related code generation is necessary in one place.
+  * Implement on demand register ArenaDtor for InlinedStringField
+
+  C++
+  * Enable testing via CTest (#8737)
+  * Add option to use external GTest in CMake (#8736)
+  * CMake: Set correct sonames for libprotobuf-lite.so and libprotoc.so (#8635) (#9529)
+  * Add cmake option `protobuf_INSTALL` to not install files (#7123)
+  * CMake: Allow custom plugin options e.g. to generate mocks (#9105)
+  * CMake: Use linker version scripts (#9545)
+  * Manually *struct Cord fields to work better with arenas.
+  * Manually destruct map fields.
+  * Generate narrower code
+  * Fix https://github.com/protocolbuffers/protobuf/issues/9378 by removing
+    shadowed _cached_size_ field
+  * Remove GetPointer() and explicit nullptr defaults.
+  * Add proto_h flag for speeding up large builds
+  * Add missing overload for reference wrapped fields.
+  * Add MergedDescriptorDatabase::FindAllFileNames()
+  * RepeatedField now defines an iterator type instead of using a pointer.
+  * Remove obsolete macros GOOGLE_PROTOBUF_HAS_ONEOF and GOOGLE_PROTOBUF_HAS_ARENAS.
+
+  PHP
+  * Fix: add missing reserved classnames (#9458)
+  * PHP 8.1 compatibility (#9370)
+
+  C#
+  * Fix trim warnings (#9182)
+  * Fixes NullReferenceException when accessing FieldDescriptor.IsPacked (#9430)
+  * Add ToProto() method to all descriptor classes (#9426)
+  * Add an option to preserve proto names in JsonFormatter (#6307)
+
+  Objective-C
+  * Add prefix_to_proto_package_mappings_path option. (#9498)
+  * Rename `proto_package_to_prefix_mappings_path` to `package_to_prefix_mappings_path`. (#9552)
+  * Add a generation option to control use of forward declarations in headers. (#9568)
+
+2022-01-28 version 3.19.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Python
+  * Make libprotobuf symbols local on OSX to fix issue #9395 (#9435)
+
+  Ruby
+  * Fixed a data loss bug that could occur when the number of `optional`
+    fields in a message is an exact multiple of 32. (#9440).
+
+  PHP
+  * Fixed a data loss bug that could occur when the number of `optional`
+    fields in a message is an exact multiple of 32. (#9440).
+
 2022-01-10 version 3.19.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Python

@@ -38,17 +38,18 @@
 
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/util/internal/field_mask_utility.h>
-#include <google/protobuf/util/internal/object_location_tracker.h>
-#include <google/protobuf/util/internal/constants.h>
-#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 #include <google/protobuf/stubs/time.h>
+#include <google/protobuf/util/internal/constants.h>
+#include <google/protobuf/util/internal/field_mask_utility.h>
+#include <google/protobuf/util/internal/object_location_tracker.h>
+#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/map_util.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -56,9 +57,9 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
+using util::Status;
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
 using std::placeholders::_1;
-using util::Status;
 
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
@@ -139,7 +140,7 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
   }
   int32_t i_nanos = 0;
   // 's_nanos' contains fractional seconds -- i.e. 'nanos' is equal to
-  // "0." + s_nanos.ToString() seconds. An int32 is used for the
+  // "0." + s_nanos.ToString() seconds. An int32_t is used for the
   // conversion to 'nanos', rather than a double, so that there is no
   // loss of precision.
   if (!s_nanos.empty() && !safe_strto32(s_nanos, &i_nanos)) {
@@ -158,7 +159,7 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
     // point in "0." + s_nanos.ToString()
     int32_t scale = num_leading_zeros + s_nanos.size();
     // 'conversion' converts i_nanos into nanoseconds.
-    // conversion = kNanosPerSecond / static_cast<int32>(std::pow(10, scale))
+    // conversion = kNanosPerSecond / static_cast<int32_t>(std::pow(10, scale))
     // For efficiency, we precompute the conversion factor.
     int32_t conversion = 0;
     switch (scale) {
@@ -1031,8 +1032,8 @@ Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter* ow,
 
   StringPiece value(data.str());
 
-  int64 seconds;
-  int32 nanos;
+  int64_t seconds;
+  int32_t nanos;
   if (!::google::protobuf::internal::ParseTime(value.ToString(), &seconds,
                                                &nanos)) {
     return util::InvalidArgumentError(StrCat("Invalid time format: ", value));

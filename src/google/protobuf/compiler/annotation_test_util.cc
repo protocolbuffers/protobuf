@@ -58,9 +58,8 @@ class DescriptorCapturingGenerator : public CodeGenerator {
   explicit DescriptorCapturingGenerator(FileDescriptorProto* file)
       : file_(file) {}
 
-  virtual bool Generate(const FileDescriptor* file,
-                        const std::string& parameter, GeneratorContext* context,
-                        std::string* error) const {
+  bool Generate(const FileDescriptor* file, const std::string& parameter,
+                GeneratorContext* context, std::string* error) const override {
     file->CopyTo(file_);
     return true;
   }
@@ -128,7 +127,7 @@ const GeneratedCodeInfo::Annotation* FindAnnotationOnPath(
   std::vector<const GeneratedCodeInfo::Annotation*> annotations;
   FindAnnotationsOnPath(info, source_file, path, &annotations);
   if (annotations.empty()) {
-    return NULL;
+    return nullptr;
   }
   return annotations[0];
 }

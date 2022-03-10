@@ -34,12 +34,12 @@
 #include <cstdint>
 #include <type_traits>
 
-#include <google/protobuf/parse_context.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_tctable_decl.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
-#include <google/protobuf/port.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/wire_format_lite.h>
 
 // Must come last:
@@ -53,6 +53,189 @@ class UnknownFieldSet;
 
 namespace internal {
 
+// Field layout enums.
+//
+// Structural information about fields is packed into a 16-bit value. The enum
+// types below represent bitwise fields, along with their respective widths,
+// shifts, and masks.
+//
+//     Bit:
+//     +-----------------------+-----------------------+
+//     |15        ..          8|7         ..          0|
+//     +-----------------------+-----------------------+
+//     :  .  :  .  :  .  :  .  :  .  :  .  : 3|========| [3] FieldType
+//     :     :     :     :     :     : 5|=====|  :     : [2] FieldCardinality
+//     :  .  :  .  :  .  :  . 8|========|  :  .  :  .  : [3] FieldRep
+//     :     :     :   10|=====|     :     :     :     : [2] TransformValidation
+//     :  .  :  .12|=====|  .  :  .  :  .  :  .  :  .  : [2] FormatDiscriminator
+//     +-----------------------+-----------------------+
+//     |15        ..          8|7         ..          0|
+//     +-----------------------+-----------------------+
+//
+namespace field_layout {
+// clang-format off
+
+// Field kind (3 bits):
+// These values broadly represent a wire type and an in-memory storage class.
+enum FieldKind : uint16_t {
+  kFkShift = 0,
+  kFkBits = 3,
+  kFkMask = ((1 << kFkBits) - 1) << kFkShift,
+
+  kFkNone = 0,
+  kFkVarint,        // WT=0     rep=8,32,64 bits
+  kFkPackedVarint,  // WT=2     rep=8,32,64 bits
+  kFkFixed,         // WT=1,5   rep=32,64 bits
+  kFkPackedFixed,   // WT=2     rep=32,64 bits
+  kFkString,        // WT=2     rep=various
+  kFkMessage,       // WT=2,3,4 rep=MessageLite*
+  // Maps are a special case of Message, but use different parsing logic.
+  kFkMap,           // WT=2     rep=Map(Lite)<various, various>
+};
+
+static_assert(kFkMap < (1 << kFkBits), "too many types");
+
+// Cardinality (2 bits):
+// These values determine how many values a field can have and its presence.
+// Packed fields are represented in FieldType.
+enum Cardinality : uint16_t {
+  kFcShift    = kFkShift + kFkBits,
+  kFcBits     = 2,
+  kFcMask     = ((1 << kFcBits) - 1) << kFcShift,
+
+  kFcSingular = 0,
+  kFcOptional = 1 << kFcShift,
+  kFcRepeated = 2 << kFcShift,
+  kFcOneof    = 3 << kFcShift,
+};
+
+// Field representation (3 bits):
+// These values are the specific refinements of storage classes in FieldType.
+enum FieldRep : uint16_t {
+  kRepShift    = kFcShift + kFcBits,
+  kRepBits     = 3,
+  kRepMask     = ((1 << kRepBits) - 1) << kRepShift,
+
+  // Numeric types (used for optional and repeated fields):
+  kRep8Bits    = 0,
+  kRep32Bits   = 2 << kRepShift,
+  kRep64Bits   = 3 << kRepShift,
+  // String types:
+  kRepAString  = 0,               // ArenaStringPtr
+  kRepIString  = 1 << kRepShift,  // InlinedString
+  kRepCord     = 2 << kRepShift,  // absl::Cord
+  kRepSPiece   = 3 << kRepShift,  // StringPieceField
+  kRepSString  = 4 << kRepShift,  // std::string*
+  // Message types (WT=2 unless otherwise noted):
+  kRepMessage  = 0,               // MessageLite*
+  kRepGroup    = 1 << kRepShift,  // MessageLite* (WT=3,4)
+  kRepLazy     = 2 << kRepShift,  // LazyField*
+  kRepIWeak    = 3 << kRepShift,  // ImplicitWeak
+};
+
+// Transform/validation (2 bits):
+// These values determine transforms or validation to/from wire format.
+enum TransformValidation : uint16_t {
+  kTvShift     = kRepShift + kRepBits,
+  kTvBits      = 2,
+  kTvMask      = ((1 << kTvBits) - 1) << kTvShift,
+
+  // Varint fields:
+  kTvZigZag    = 1 << kTvShift,
+  kTvEnum      = 2 << kTvShift,  // validate using generated _IsValid()
+  kTvRange     = 3 << kTvShift,  // validate using FieldAux::enum_range
+  // String fields:
+  kTvUtf8Debug = 1 << kTvShift,  // proto2
+  kTvUtf8      = 2 << kTvShift,  // proto3
+};
+
+static_assert((kTvEnum & kTvRange) != 0,
+              "enum validation types must share a bit");
+static_assert((kTvEnum & kTvRange & kTvZigZag) == 0,
+              "zigzag encoding is not enum validation");
+
+// Format discriminators (2 bits):
+enum FormatDiscriminator : uint16_t {
+  kFmtShift      = kTvShift + kTvBits,
+  kFmtBits       = 2,
+  kFmtMask       = ((1 << kFmtBits) - 1) << kFmtShift,
+
+  // Numeric:
+  kFmtUnsigned   = 1 << kFmtShift,  // fixed, varint
+  kFmtSigned     = 2 << kFmtShift,  // fixed, varint
+  kFmtFloating   = 3 << kFmtShift,  // fixed
+  kFmtEnum       = 3 << kFmtShift,  // varint
+  // Strings:
+  kFmtUtf8       = 1 << kFmtShift,  // string (proto3, enforce_utf8=true)
+  kFmtUtf8Escape = 2 << kFmtShift,  // string (proto2, enforce_utf8=false)
+  // Bytes:
+  kFmtArray      = 1 << kFmtShift,  // bytes
+  // Messages:
+  kFmtShow       = 1 << kFmtShift,  // message, map
+};
+
+// Update this assertion (and comments above) when adding or removing bits:
+static_assert(kFmtShift + kFmtBits == 12, "number of bits changed");
+
+// This assertion should not change unless the storage width changes:
+static_assert(kFmtShift + kFmtBits <= 16, "too many bits");
+
+// Convenience aliases (16 bits, with format):
+enum FieldType : uint16_t {
+  // Numeric types:
+  kBool            = kFkVarint | kRep8Bits,
+
+  kFixed32         = kFkFixed  | kRep32Bits | kFmtUnsigned,
+  kUInt32          = kFkVarint | kRep32Bits | kFmtUnsigned,
+  kSFixed32        = kFkFixed  | kRep32Bits | kFmtSigned,
+  kInt32           = kFkVarint | kRep32Bits | kFmtSigned,
+  kSInt32          = kFkVarint | kRep32Bits | kFmtSigned | kTvZigZag,
+  kFloat           = kFkFixed  | kRep32Bits | kFmtFloating,
+  kEnum            = kFkVarint | kRep32Bits | kFmtEnum   | kTvEnum,
+  kEnumRange       = kFkVarint | kRep32Bits | kFmtEnum   | kTvRange,
+  kOpenEnum        = kFkVarint | kRep32Bits | kFmtEnum,
+
+  kFixed64         = kFkFixed  | kRep64Bits | kFmtUnsigned,
+  kUInt64          = kFkVarint | kRep64Bits | kFmtUnsigned,
+  kSFixed64        = kFkFixed  | kRep64Bits | kFmtSigned,
+  kInt64           = kFkVarint | kRep64Bits | kFmtSigned,
+  kSInt64          = kFkVarint | kRep64Bits | kFmtSigned | kTvZigZag,
+  kDouble          = kFkFixed  | kRep64Bits | kFmtFloating,
+
+  kPackedBool      = kFkPackedVarint | kRep8Bits,
+
+  kPackedFixed32   = kFkPackedFixed  | kRep32Bits | kFmtUnsigned,
+  kPackedUInt32    = kFkPackedVarint | kRep32Bits | kFmtUnsigned,
+  kPackedSFixed32  = kFkPackedFixed  | kRep32Bits | kFmtSigned,
+  kPackedInt32     = kFkPackedVarint | kRep32Bits | kFmtSigned,
+  kPackedSInt32    = kFkPackedVarint | kRep32Bits | kFmtSigned | kTvZigZag,
+  kPackedFloat     = kFkPackedFixed  | kRep32Bits | kFmtFloating,
+  kPackedEnum      = kFkPackedVarint | kRep32Bits | kFmtEnum   | kTvEnum,
+  kPackedEnumRange = kFkPackedVarint | kRep32Bits | kFmtEnum   | kTvRange,
+  kPackedOpenEnum  = kFkPackedVarint | kRep32Bits | kFmtEnum,
+
+  kPackedFixed64   = kFkPackedFixed  | kRep64Bits | kFmtUnsigned,
+  kPackedUInt64    = kFkPackedVarint | kRep64Bits | kFmtUnsigned,
+  kPackedSFixed64  = kFkPackedFixed  | kRep64Bits | kFmtSigned,
+  kPackedInt64     = kFkPackedVarint | kRep64Bits | kFmtSigned,
+  kPackedSInt64    = kFkPackedVarint | kRep64Bits | kFmtSigned | kTvZigZag,
+  kPackedDouble    = kFkPackedFixed  | kRep64Bits | kFmtFloating,
+
+  // String types:
+  kBytes           = kFkString | kFmtArray,
+  kRawString       = kFkString | kFmtUtf8  | kTvUtf8Debug,
+  kUtf8String      = kFkString | kFmtUtf8  | kTvUtf8,
+
+  // Message types:
+  kMessage         = kFkMessage,
+
+  // Map types:
+  kMap             = kFkMap,
+};
+
+// clang-format on
+}  // namespace field_layout
+
 // PROTOBUF_TC_PARAM_DECL are the parameters for tailcall functions, it is
 // defined in port_def.inc.
 //
@@ -62,36 +245,6 @@ namespace internal {
 
 // PROTOBUF_TC_PARAM_PASS passes values to match PROTOBUF_TC_PARAM_DECL.
 #define PROTOBUF_TC_PARAM_PASS msg, ptr, ctx, table, hasbits, data
-
-// PROTOBUF_TC_PARSE_* decide which function is used to parse message-typed
-// fields. The guard macros are defined in port_def.inc.
-#if PROTOBUF_TC_STATIC_PARSE_SINGULAR1
-#define PROTOBUF_TC_PARSE_SINGULAR1(MESSAGE) MESSAGE::Tct_ParseS1
-#else
-#define PROTOBUF_TC_PARSE_SINGULAR1(MESSAGE) \
-  ::google::protobuf::internal::TcParser::SingularParseMessage<MESSAGE, uint8_t>
-#endif  // PROTOBUF_TC_STATIC_PARSE_SINGULAR1
-
-#if PROTOBUF_TC_STATIC_PARSE_SINGULAR2
-#define PROTOBUF_TC_PARSE_SINGULAR2(MESSAGE) MESSAGE::Tct_ParseS2
-#else
-#define PROTOBUF_TC_PARSE_SINGULAR2(MESSAGE) \
-  ::google::protobuf::internal::TcParser::SingularParseMessage<MESSAGE, uint16_t>
-#endif  // PROTOBUF_TC_STATIC_PARSE_SINGULAR2
-
-#if PROTOBUF_TC_STATIC_PARSE_REPEATED1
-#define PROTOBUF_TC_PARSE_REPEATED1(MESSAGE) MESSAGE::Tct_ParseR1
-#else
-#define PROTOBUF_TC_PARSE_REPEATED1(MESSAGE) \
-  ::google::protobuf::internal::TcParser::RepeatedParseMessage<MESSAGE, uint8_t>
-#endif  // PROTOBUF_TC_STATIC_PARSE_REPEATED1
-
-#if PROTOBUF_TC_STATIC_PARSE_REPEATED2
-#define PROTOBUF_TC_PARSE_REPEATED2(MESSAGE) MESSAGE::Tct_ParseR2
-#else
-#define PROTOBUF_TC_PARSE_REPEATED2(MESSAGE) \
-  ::google::protobuf::internal::TcParser::RepeatedParseMessage<MESSAGE, uint16_t>
-#endif  // PROTOBUF_TC_STATIC_PARSE_REPEATED2
 
 #ifndef NDEBUG
 template <size_t align>
@@ -107,105 +260,120 @@ extern template void AlignFail<8>(uintptr_t);
 #endif
 
 // TcParser implements most of the parsing logic for tailcall tables.
-class TcParser final {
+class PROTOBUF_EXPORT TcParser final {
  public:
   static const char* GenericFallback(PROTOBUF_TC_PARAM_DECL);
   static const char* GenericFallbackLite(PROTOBUF_TC_PARAM_DECL);
 
-  // Dispatch to the designated parse function
-  inline PROTOBUF_ALWAYS_INLINE static const char* TagDispatch(
-      PROTOBUF_TC_PARAM_DECL) {
-    const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
-    const size_t idx = coded_tag & table->fast_idx_mask;
-    PROTOBUF_ASSUME((idx & 7) == 0);
-    auto* fast_entry = table->fast_entry(idx >> 3);
-    data = fast_entry->bits;
-    data.data ^= coded_tag;
-    PROTOBUF_MUSTTAIL return fast_entry->target(PROTOBUF_TC_PARAM_PASS);
-  }
-
-  // We can only safely call from field to next field if the call is optimized
-  // to a proper tail call. Otherwise we blow through stack. Clang and gcc
-  // reliably do this optimization in opt mode, but do not perform this in debug
-  // mode. Luckily the structure of the algorithm is such that it's always
-  // possible to just return and use the enclosing parse loop as a trampoline.
-  static const char* ToTagDispatch(PROTOBUF_TC_PARAM_DECL) {
-    constexpr bool always_return = !PROTOBUF_TAILCALL;
-    if (always_return || !ctx->DataAvailable(ptr)) {
-      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
-    }
-    PROTOBUF_MUSTTAIL return TagDispatch(PROTOBUF_TC_PARAM_PASS);
-  }
-
   static const char* ParseLoop(MessageLite* msg, const char* ptr,
                                ParseContext* ctx,
-                               const TcParseTableBase* table) {
-    ScopedArenaSwap saved(msg, ctx);
-    const uint32_t has_bits_offset = table->has_bits_offset;
-    while (!ctx->Done(&ptr)) {
-      uint64_t hasbits = 0;
-      if (has_bits_offset) hasbits = RefAt<uint32_t>(msg, has_bits_offset);
-      ptr = TagDispatch(msg, ptr, ctx, table, hasbits, {});
-      if (ptr == nullptr) break;
-      if (ctx->LastTag() != 1) break;  // Ended on terminating tag
-    }
-    return ptr;
-  }
+                               const TcParseTableBase* table);
 
-  template <typename FieldType, typename TagType>
-  PROTOBUF_NOINLINE static const char* SingularParseMessage(
-      PROTOBUF_TC_PARAM_DECL) {
-    if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
-      return table->fallback(PROTOBUF_TC_PARAM_PASS);
-    }
-    ptr += sizeof(TagType);
-    hasbits |= (uint64_t{1} << data.hasbit_idx());
-    auto& field = RefAt<FieldType*>(msg, data.offset());
-    if (field == nullptr) {
-      auto arena = ctx->data().arena;
-      if (Arena::is_arena_constructable<FieldType>::value) {
-        field = Arena::CreateMessage<FieldType>(arena);
-      } else {
-        field = Arena::Create<FieldType>(arena);
-      }
-    }
-    SyncHasbits(msg, hasbits, table);
-    return ctx->ParseMessage(field, ptr);
-  }
+  // Functions referenced by generated fast tables (numeric types):
+  //   F: fixed      V: varint     Z: zigzag
+  //   8/32/64: storage type width (bits)
+  //   S: singular   R: repeated   P: packed
+  //   1/2: tag length (bytes)
 
-  template <typename FieldType, typename TagType>
-  PROTOBUF_NOINLINE static const char* RepeatedParseMessage(
-      PROTOBUF_TC_PARAM_DECL) {
-    if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
-      return table->fallback(PROTOBUF_TC_PARAM_PASS);
-    }
-    ptr += sizeof(TagType);
-    auto& field = RefAt<RepeatedPtrField<FieldType>>(msg, data.offset());
-    SyncHasbits(msg, hasbits, table);
-    ptr = ctx->ParseMessage(field.Add(), ptr);
-    return ptr;
-  }
+  // Fixed:
+  static const char* FastF32S1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastF32S2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastF32R1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastF32R2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastF32P1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastF32P2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastF64S1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastF64S2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastF64R1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastF64R2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastF64P1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastF64P2(PROTOBUF_TC_PARAM_DECL);
 
-  template <typename LayoutType, typename TagType>
-  static const char* SingularFixed(PROTOBUF_TC_PARAM_DECL);
-  template <typename LayoutType, typename TagType>
-  static const char* RepeatedFixed(PROTOBUF_TC_PARAM_DECL);
-  template <typename LayoutType, typename TagType>
-  static const char* PackedFixed(PROTOBUF_TC_PARAM_DECL);
+  // Varint:
+  static const char* FastV8S1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV8S2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV8R1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV8R2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV8P1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV8P2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV32S1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV32S2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV32R1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV32R2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV32P1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV32P2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV64S1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV64S2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV64R1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV64R2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV64P1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastV64P2(PROTOBUF_TC_PARAM_DECL);
 
-  enum VarintDecode { kNoConversion = 0, kZigZag = 1 };
-  template <typename FieldType, typename TagType, VarintDecode zigzag>
-  static const char* SingularVarint(PROTOBUF_TC_PARAM_DECL);
-  template <typename FieldType, typename TagType, VarintDecode zigzag>
-  static const char* RepeatedVarint(PROTOBUF_TC_PARAM_DECL);
-  template <typename FieldType, typename TagType, VarintDecode zigzag>
-  static const char* PackedVarint(PROTOBUF_TC_PARAM_DECL);
+  // Varint (with zigzag):
+  static const char* FastZ32S1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastZ32S2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastZ32R1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastZ32R2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastZ32P1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastZ32P2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastZ64S1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastZ64S2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastZ64R1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastZ64R2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastZ64P1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastZ64P2(PROTOBUF_TC_PARAM_DECL);
 
-  enum Utf8Type { kNoUtf8 = 0, kUtf8 = 1, kUtf8ValidateOnly = 2 };
-  template <typename TagType, Utf8Type utf8>
-  static const char* SingularString(PROTOBUF_TC_PARAM_DECL);
-  template <typename TagType, Utf8Type utf8>
-  static const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
+  // Functions referenced by generated fast tables (closed enum):
+  //   E: closed enum (N.B.: open enums use V32, above)
+  //   r: enum range  v: enum validator (_IsValid function)
+  //   S: singular   R: repeated
+  //   1/2: tag length (bytes)
+  static const char* FastErS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastErS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastErR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastErR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEvS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEvS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEvR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEvR2(PROTOBUF_TC_PARAM_DECL);
+
+  // Functions referenced by generated fast tables (string types):
+  //   B: bytes      S: string     U: UTF-8 string
+  //   (empty): ArenaStringPtr     i: InlinedString
+  //   S: singular   R: repeated
+  //   1/2: tag length (bytes)
+  static const char* FastBS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastBS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastBR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastBR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastUS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastUS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastUR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastUR2(PROTOBUF_TC_PARAM_DECL);
+
+  static const char* FastBiS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastBiS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSiS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastSiS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastUiS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastUiS2(PROTOBUF_TC_PARAM_DECL);
+
+  // Functions referenced by generated fast tables (message types):
+  //   M: message    G: group
+  //   S: singular   R: repeated
+  //   1/2: tag length (bytes)
+  static const char* FastMS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastMS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastMR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastMR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGR2(PROTOBUF_TC_PARAM_DECL);
 
   template <typename T>
   static inline T& RefAt(void* x, size_t offset) {
@@ -219,6 +387,38 @@ class TcParser final {
     return *target;
   }
 
+  template <typename T>
+  static inline const T& RefAt(const void* x, size_t offset) {
+    const T* target =
+        reinterpret_cast<const T*>(static_cast<const char*>(x) + offset);
+#ifndef NDEBUG
+    if (PROTOBUF_PREDICT_FALSE(
+            reinterpret_cast<uintptr_t>(target) % alignof(T) != 0)) {
+      AlignFail<alignof(T)>(reinterpret_cast<uintptr_t>(target));
+    }
+#endif
+    return *target;
+  }
+
+  // Mini parsing:
+  //
+  // This function parses a field from incoming data based on metadata stored in
+  // the message definition. If the field is not defined in the message, it is
+  // stored in either the ExtensionSet (if applicable) or the UnknownFieldSet.
+  //
+  // NOTE: Currently, this function only calls the table-level fallback
+  // function, so it should only be called as the fallback from fast table
+  // parsing.
+  static const char* MiniParse(PROTOBUF_TC_PARAM_DECL);
+
+ private:
+  friend class GeneratedTcTableLiteTest;
+
+  template <typename TagType, bool group_coding>
+  static inline const char* SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
+  template <typename TagType, bool group_coding>
+  static inline const char* RepeatedParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
+
   static inline PROTOBUF_ALWAYS_INLINE void SyncHasbits(
       MessageLite* msg, uint64_t hasbits, const TcParseTableBase* table) {
     const uint32_t has_bits_offset = table->has_bits_offset;
@@ -229,37 +429,14 @@ class TcParser final {
     }
   }
 
- protected:
-  static inline PROTOBUF_ALWAYS_INLINE const char* ToParseLoop(
-      PROTOBUF_TC_PARAM_DECL) {
-    (void)data;
-    (void)ctx;
-    SyncHasbits(msg, hasbits, table);
-    return ptr;
-  }
+  static const char* TagDispatch(PROTOBUF_TC_PARAM_DECL);
+  static const char* ToTagDispatch(PROTOBUF_TC_PARAM_DECL);
+  static const char* ToParseLoop(PROTOBUF_TC_PARAM_DECL);
+  static const char* Error(PROTOBUF_TC_PARAM_DECL);
 
-  static inline PROTOBUF_ALWAYS_INLINE const char* Error(
-      PROTOBUF_TC_PARAM_DECL) {
-    (void)data;
-    (void)ctx;
-    (void)ptr;
-    SyncHasbits(msg, hasbits, table);
-    return nullptr;
-  }
+  static const char* FastUnknownEnumFallback(PROTOBUF_TC_PARAM_DECL);
 
-  class ScopedArenaSwap final {
-   public:
-    ScopedArenaSwap(MessageLite* msg, ParseContext* ctx)
-        : ctx_(ctx), saved_(ctx->data().arena) {
-      ctx_->data().arena = msg->GetArenaForAllocation();
-    }
-    ScopedArenaSwap(const ScopedArenaSwap&) = delete;
-    ~ScopedArenaSwap() { ctx_->data().arena = saved_; }
-
-   private:
-    ParseContext* const ctx_;
-    Arena* const saved_;
-  };
+  class ScopedArenaSwap;
 
   template <class MessageBaseT, class UnknownFieldsT>
   static const char* GenericFallbackImpl(PROTOBUF_TC_PARAM_DECL) {
@@ -267,14 +444,12 @@ class TcParser final {
   if (PROTOBUF_PREDICT_FALSE(!(x))) return nullptr /* NOLINT */
 
     SyncHasbits(msg, hasbits, table);
-    uint32_t tag;
-    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
+    uint32_t tag = data.tag();
     if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
       ctx->SetLastTag(tag);
       return ptr;
     }
-    (void)data;
     uint32_t num = tag >> 3;
     if (table->extension_range_low <= num &&
         num <= table->extension_range_high) {
@@ -288,10 +463,79 @@ class TcParser final {
         ptr, ctx);
 #undef CHK_
   }
-};
 
-// Declare helper functions:
-#include <google/protobuf/generated_message_tctable_impl.inc>
+  // Note: `inline` is needed on template function declarations below to avoid
+  // -Wattributes diagnostic in GCC.
+
+  // Implementations for fast fixed field parsing functions:
+  template <typename LayoutType, typename TagType>
+  static inline const char* SingularFixed(PROTOBUF_TC_PARAM_DECL);
+  template <typename LayoutType, typename TagType>
+  static inline const char* RepeatedFixed(PROTOBUF_TC_PARAM_DECL);
+  template <typename LayoutType, typename TagType>
+  static inline const char* PackedFixed(PROTOBUF_TC_PARAM_DECL);
+
+  // Implementations for fast varint field parsing functions:
+  template <typename FieldType, typename TagType, bool zigzag = false>
+  static inline const char* SingularVarint(PROTOBUF_TC_PARAM_DECL);
+  template <typename FieldType, typename TagType, bool zigzag = false>
+  static inline const char* RepeatedVarint(PROTOBUF_TC_PARAM_DECL);
+  template <typename FieldType, typename TagType, bool zigzag = false>
+  static inline const char* PackedVarint(PROTOBUF_TC_PARAM_DECL);
+
+  // Helper for ints > 127:
+  template <typename FieldType, typename TagType, bool zigzag = false>
+  static const char* SingularVarBigint(PROTOBUF_TC_PARAM_DECL);
+
+  // Implementations for fast enum field parsing functions:
+  template <typename TagType, uint16_t xform_val>
+  static inline const char* SingularEnum(PROTOBUF_TC_PARAM_DECL);
+  template <typename TagType, uint16_t xform_val>
+  static inline const char* RepeatedEnum(PROTOBUF_TC_PARAM_DECL);
+
+  // Implementations for fast string field parsing functions:
+  enum Utf8Type { kNoUtf8 = 0, kUtf8 = 1, kUtf8ValidateOnly = 2 };
+  template <typename TagType, Utf8Type utf8>
+  static inline const char* SingularString(PROTOBUF_TC_PARAM_DECL);
+  template <typename TagType, Utf8Type utf8>
+  static inline const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
+
+  // Mini field lookup:
+  static const TcParseTableBase::FieldEntry* FindFieldEntry(
+      const TcParseTableBase* table, uint32_t field_num);
+  static StringPiece MessageName(const TcParseTableBase* table);
+  static StringPiece FieldName(const TcParseTableBase* table,
+                                     const TcParseTableBase::FieldEntry*);
+  static bool ChangeOneof(const TcParseTableBase* table,
+                          const TcParseTableBase::FieldEntry& entry,
+                          uint32_t field_num, ParseContext* ctx,
+                          MessageLite* msg);
+
+  // UTF-8 validation:
+  static void ReportFastUtf8Error(uint32_t decoded_tag,
+                                  const TcParseTableBase* table);
+  static bool MpVerifyUtf8(StringPiece wire_bytes,
+                           const TcParseTableBase* table,
+                           const TcParseTableBase::FieldEntry& entry,
+                           uint16_t xform_val);
+
+  // For FindFieldEntry tests:
+  friend class FindFieldEntryTest;
+  static constexpr const uint32_t kMtSmallScanSize = 4;
+
+  // Mini parsing:
+  static const char* MpVarint(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpRepeatedVarint(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpPackedVarint(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpFixed(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpRepeatedFixed(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpPackedFixed(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpString(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpRepeatedString(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpMessage(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpMap(PROTOBUF_TC_PARAM_DECL);
+};
 
 }  // namespace internal
 }  // namespace protobuf

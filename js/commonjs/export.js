@@ -15,7 +15,7 @@ goog.require('jspb.ExtensionFieldInfo');
 goog.require('jspb.Message');
 goog.require('jspb.Map');
 
-if ( typeof exports === 'object' ) {
+if (typeof exports === 'object') {
   exports.Map = jspb.Map;
   exports.Message = jspb.Message;
   exports.BinaryReader = jspb.BinaryReader;
@@ -23,7 +23,8 @@ if ( typeof exports === 'object' ) {
   exports.ExtensionFieldInfo = jspb.ExtensionFieldInfo;
   exports.ExtensionFieldBinaryInfo = jspb.ExtensionFieldBinaryInfo;
 
-  // These are used by generated code but should not be used directly by clients.
+  // These are used by generated code but should not be used directly by
+  // clients.
   exports.exportSymbol = goog.exportSymbol;
   exports.inherits = goog.inherits;
   exports.object = {extend: goog.object.extend};

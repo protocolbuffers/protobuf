@@ -33,9 +33,10 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_service.h>
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 
 namespace google {
 namespace protobuf {

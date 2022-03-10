@@ -96,8 +96,8 @@ bool FileExists(const std::string& path) {
 
 class CommandLineInterfaceTest : public testing::Test {
  protected:
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   // Runs the CommandLineInterface with the given command line.  The
   // command is automatically split on spaces, and the string "$tmpdir"
@@ -256,14 +256,14 @@ class CommandLineInterfaceTest : public testing::Test {
 class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
  public:
   NullCodeGenerator() : called_(false) {}
-  ~NullCodeGenerator() {}
+  ~NullCodeGenerator() override {}
 
   mutable bool called_;
   mutable std::string parameter_;
 
   // implements CodeGenerator ----------------------------------------
   bool Generate(const FileDescriptor* file, const std::string& parameter,
-                GeneratorContext* context, std::string* error) const {
+                GeneratorContext* context, std::string* error) const override {
     called_ = true;
     parameter_ = parameter;
     return true;
@@ -1714,7 +1714,7 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
                  "  optional Foo foo = 1;\n"
                  "}\n");
 
-  std::string current_working_directory = getcwd(NULL, 0);
+  std::string current_working_directory = getcwd(nullptr, 0);
   SwitchToTempDirectory();
 
   Run("protocol_compiler --dependency_out=manifest --test_out=. "
@@ -2518,12 +2518,12 @@ enum EncodeDecodeTestMode { PROTO_PATH, DESCRIPTOR_SET_IN };
 
 class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     WriteUnittestProtoDescriptorSet();
     duped_stdin_ = dup(STDIN_FILENO);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     dup2(duped_stdin_, STDIN_FILENO);
     close(duped_stdin_);
   }

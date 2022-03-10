@@ -33,10 +33,11 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_enum_field.h>
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 
 namespace google {
 namespace protobuf {
@@ -53,6 +54,9 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   (*variables)["type"] = QualifiedClassName(descriptor->enum_type(), options);
   (*variables)["default"] = Int32ToString(default_value->number());
   (*variables)["full_name"] = descriptor->full_name();
+  (*variables)["cached_byte_size_name"] = MakeVarintCachedSizeName(descriptor);
+  (*variables)["cached_byte_size_field"] =
+      MakeVarintCachedSizeFieldName(descriptor);
 }
 
 }  // namespace
@@ -90,7 +94,7 @@ void EnumFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
-      "  return static_cast< $type$ >($name$_);\n"
+      "  return static_cast< $type$ >($field$);\n"
       "}\n"
       "inline $type$ $classname$::$name$() const {\n"
       "$annotate_get$"
@@ -103,7 +107,7 @@ void EnumFieldGenerator::GenerateInlineAccessorDefinitions(
   }
   format(
       "  $set_hasbit$\n"
-      "  $name$_ = value;\n"
+      "  $field$ = value;\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n"
       "  _internal_set_$name$(value);\n"
@@ -114,7 +118,7 @@ void EnumFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void EnumFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_ = $default$;\n");
+  format("$field$ = $default$;\n");
 }
 
 void EnumFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
@@ -124,18 +128,18 @@ void EnumFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 
 void EnumFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("swap($name$_, other->$name$_);\n");
+  format("swap($field$, other->$field$);\n");
 }
 
 void EnumFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_ = $default$;\n");
+  format("$field$ = $default$;\n");
 }
 
 void EnumFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_ = from.$name$_;\n");
+  format("$field$ = from.$field$;\n");
 }
 
 void EnumFieldGenerator::GenerateSerializeWithCachedSizesToArray(
@@ -143,7 +147,7 @@ void EnumFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   Formatter format(printer, variables_);
   format(
       "target = stream->EnsureSpace(target);\n"
-      "target = ::$proto_ns$::internal::WireFormatLite::WriteEnumToArray(\n"
+      "target = ::_pbi::WireFormatLite::WriteEnumToArray(\n"
       "  $number$, this->_internal_$name$(), target);\n");
 }
 
@@ -151,9 +155,7 @@ void EnumFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "total_size += $tag_size$ +\n"
-      "  "
-      "::$proto_ns$::internal::WireFormatLite::EnumSize(this->_internal_$name$("
-      "));\n");
+      "  ::_pbi::WireFormatLite::EnumSize(this->_internal_$name$());\n");
 }
 
 void EnumFieldGenerator::GenerateConstinitInitializer(
@@ -178,7 +180,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
       "  if (_internal_has_$name$()) {\n"
-      "    return static_cast< $type$ >($field_member$);\n"
+      "    return static_cast< $type$ >($field$);\n"
       "  }\n"
       "  return static_cast< $type$ >($default$);\n"
       "}\n"
@@ -196,7 +198,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "  }\n"
-      "  $field_member$ = value;\n"
+      "  $field$ = value;\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n"
       "  _internal_set_$name$(value);\n"
@@ -207,7 +209,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void EnumOneofFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$field_member$ = $default$;\n");
+  format("$field$ = $default$;\n");
 }
 
 void EnumOneofFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
@@ -217,7 +219,7 @@ void EnumOneofFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
 void EnumOneofFieldGenerator::GenerateConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$ns$::_$classname$_default_instance_.$name$_ = $default$;\n");
+  format("$ns$::_$classname$_default_instance_.$field$ = $default$;\n");
 }
 
 // ===================================================================
@@ -236,7 +238,7 @@ void RepeatedEnumFieldGenerator::GeneratePrivateMembers(
   format("::$proto_ns$::RepeatedField<int> $name$_;\n");
   if (descriptor_->is_packed() &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("mutable std::atomic<int> _$name$_cached_byte_size_;\n");
+    format("mutable std::atomic<int> $cached_byte_size_name$;\n");
   }
 }
 
@@ -265,7 +267,7 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$(int index) const {\n"
-      "  return static_cast< $type$ >($name$_.Get(index));\n"
+      "  return static_cast< $type$ >($field$.Get(index));\n"
       "}\n"
       "inline $type$ $classname$::$name$(int index) const {\n"
       "$annotate_get$"
@@ -277,7 +279,7 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
     format("  assert($type$_IsValid(value));\n");
   }
   format(
-      "  $name$_.Set(index, value);\n"
+      "  $field$.Set(index, value);\n"
       "$annotate_set$"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
@@ -286,7 +288,7 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
     format("  assert($type$_IsValid(value));\n");
   }
   format(
-      "  $name$_.Add(value);\n"
+      "  $field$.Add(value);\n"
       "}\n"
       "inline void $classname$::add_$name$($type$ value) {\n"
       "  _internal_add_$name$(value);\n"
@@ -297,11 +299,11 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "$classname$::$name$() const {\n"
       "$annotate_list$"
       "  // @@protoc_insertion_point(field_list:$full_name$)\n"
-      "  return $name$_;\n"
+      "  return $field$;\n"
       "}\n"
       "inline ::$proto_ns$::RepeatedField<int>*\n"
       "$classname$::_internal_mutable_$name$() {\n"
-      "  return &$name$_;\n"
+      "  return &$field$;\n"
       "}\n"
       "inline ::$proto_ns$::RepeatedField<int>*\n"
       "$classname$::mutable_$name$() {\n"
@@ -314,19 +316,19 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
 void RepeatedEnumFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.Clear();\n");
+  format("$field$.Clear();\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.MergeFrom(from.$name$_);\n");
+  format("$field$.MergeFrom(from.$field$);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSwappingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.InternalSwap(&other->$name$_);\n");
+  format("$field$.InternalSwap(&other->$field$);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateConstructorCode(
@@ -342,17 +344,17 @@ void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     format(
         "{\n"
         "  int byte_size = "
-        "_$name$_cached_byte_size_.load(std::memory_order_relaxed);\n"
+        "$cached_byte_size_field$.load(std::memory_order_relaxed);\n"
         "  if (byte_size > 0) {\n"
         "    target = stream->WriteEnumPacked(\n"
-        "        $number$, $name$_, byte_size, target);\n"
+        "        $number$, $field$, byte_size, target);\n"
         "  }\n"
         "}\n");
   } else {
     format(
         "for (int i = 0, n = this->_internal_$name$_size(); i < n; i++) {\n"
         "  target = stream->EnsureSpace(target);\n"
-        "  target = ::$proto_ns$::internal::WireFormatLite::WriteEnumToArray(\n"
+        "  target = ::_pbi::WireFormatLite::WriteEnumToArray(\n"
         "      $number$, this->_internal_$name$(i), target);\n"
         "}\n");
   }
@@ -368,7 +370,7 @@ void RepeatedEnumFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   format.Indent();
   format(
       "for (unsigned int i = 0; i < count; i++) {\n"
-      "  data_size += ::$proto_ns$::internal::WireFormatLite::EnumSize(\n"
+      "  data_size += ::_pbi::WireFormatLite::EnumSize(\n"
       "    this->_internal_$name$(static_cast<int>(i)));\n"
       "}\n");
 
@@ -376,11 +378,11 @@ void RepeatedEnumFieldGenerator::GenerateByteSize(io::Printer* printer) const {
     format(
         "if (data_size > 0) {\n"
         "  total_size += $tag_size$ +\n"
-        "    ::$proto_ns$::internal::WireFormatLite::Int32Size(\n"
-        "        static_cast<$int32$>(data_size));\n"
+        "    "
+        "::_pbi::WireFormatLite::Int32Size(static_cast<$int32$>(data_size));\n"
         "}\n"
-        "int cached_size = ::$proto_ns$::internal::ToCachedSize(data_size);\n"
-        "_$name$_cached_byte_size_.store(cached_size,\n"
+        "int cached_size = ::_pbi::ToCachedSize(data_size);\n"
+        "$cached_byte_size_field$.store(cached_size,\n"
         "                                std::memory_order_relaxed);\n"
         "total_size += data_size;\n");
   } else {
@@ -396,7 +398,7 @@ void RepeatedEnumFieldGenerator::GenerateConstinitInitializer(
   format("$name$_()");
   if (descriptor_->is_packed() &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("\n, _$name$_cached_byte_size_(0)");
+    format("\n, $cached_byte_size_name$(0)");
   }
 }
 

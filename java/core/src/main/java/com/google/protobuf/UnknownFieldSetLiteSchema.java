@@ -32,6 +32,7 @@ package com.google.protobuf;
 
 import java.io.IOException;
 
+@CheckReturnValue
 class UnknownFieldSetLiteSchema
     extends UnknownFieldSchema<UnknownFieldSetLite, UnknownFieldSetLite> {
 

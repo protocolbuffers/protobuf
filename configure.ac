@@ -17,7 +17,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.19.3],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.20.0-rc-1],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -80,7 +80,7 @@ AC_LANG([C++])
 ACX_USE_SYSTEM_EXTENSIONS
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AM_CONDITIONAL(GCC, test "$GCC" = yes)   # let the Makefile know if we're gcc
-AC_PROG_OBJC
+AS_CASE([$target_os], [darwin*], [AC_PROG_OBJC], [AM_CONDITIONAL([am__fastdepOBJC], [false])])
 
 # test_util.cc takes forever to compile with GCC and optimization turned on.
 AC_MSG_CHECKING([C++ compiler flags...])

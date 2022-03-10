@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_STREAM_PARSER_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_STREAM_PARSER_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_JSON_STREAM_PARSER_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_JSON_STREAM_PARSER_H__
 
 #include <cstdint>
 #include <stack>
@@ -40,6 +40,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -346,4 +347,4 @@ class PROTOBUF_EXPORT JsonStreamParser {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_STREAM_PARSER_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_JSON_STREAM_PARSER_H__

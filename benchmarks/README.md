@@ -4,8 +4,8 @@
 This directory contains benchmarking schemas and data sets that you
 can use to test a variety of performance scenarios against your
 protobuf language runtime. If you are looking for performance
-numbers of officially support languages, see [here](
-https://github.com/protocolbuffers/protobuf/blob/master/docs/performance.md)
+numbers of officially supported languages, see [Protobuf Performance](
+https://github.com/protocolbuffers/protobuf/blob/master/docs/performance.md).
 
 ## Prerequisite
 
@@ -87,7 +87,17 @@ To run all the benchmark dataset:
 
 ### Java:
 
+First build the Java binary in the usual way with Maven:
+
 ```
+$ cd java
+$ mvn install
+```
+
+Assuming that completes successfully,
+
+```
+$ cd ../benchmarks
 $ make java
 ```
 

@@ -1345,6 +1345,7 @@ public class LiteTest {
   }
 
   @Test
+  @SuppressWarnings("ProtoNewBuilderMergeFrom")
   public void testBuilderMergeFromNull() throws Exception {
     try {
       TestAllTypesLite.newBuilder().mergeFrom((TestAllTypesLite) null);
@@ -1899,6 +1900,7 @@ public class LiteTest {
   }
 
   @Test
+  @SuppressWarnings("ProtoNewBuilderMergeFrom")
   public void testMergeFromNoLazyFieldSharing() throws Exception {
     TestAllTypesLite.Builder sourceBuilder =
         TestAllTypesLite.newBuilder().setOptionalLazyMessage(NestedMessage.newBuilder().setBb(1));
@@ -2487,9 +2489,9 @@ public class LiteTest {
       assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException expected) {
       assertThat(
-              TestAllExtensionsLite.newBuilder()
-                  .setExtension(UnittestLite.optionalInt32ExtensionLite, 123)
-                  .build())
+          TestAllExtensionsLite.newBuilder()
+              .setExtension(UnittestLite.optionalInt32ExtensionLite, 123)
+              .build())
           .isEqualTo(expected.getUnfinishedMessage());
     }
   }
@@ -2782,7 +2784,7 @@ public class LiteTest {
     assertThat(message1).isNotEqualTo(message2);
   }
 
-  private String encodeHex(ByteString bytes) {
+  private static String encodeHex(ByteString bytes) {
     String hexDigits = "0123456789abcdef";
     StringBuilder stringBuilder = new StringBuilder(bytes.size() * 2);
     for (byte b : bytes) {
@@ -2792,7 +2794,7 @@ public class LiteTest {
     return stringBuilder.toString();
   }
 
-  private boolean contains(ByteString a, ByteString b) {
+  private static boolean contains(ByteString a, ByteString b) {
     for (int i = 0; i <= a.size() - b.size(); ++i) {
       if (a.substring(i, i + b.size()).equals(b)) {
         return true;

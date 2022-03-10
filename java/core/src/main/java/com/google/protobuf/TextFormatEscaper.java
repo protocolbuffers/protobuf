@@ -30,7 +30,24 @@
 
 package com.google.protobuf;
 
-/** Provide text format escaping support for proto2 instances. */
+/**
+ * Provide text format escaping of proto instances. These ASCII characters are escaped:
+ *
+ * ASCII #7   (bell) --> \a
+ * ASCII #8   (backspace) --> \b
+ * ASCII #9   (horizontal tab) --> \t
+ * ASCII #10  (linefeed) --> \n
+ * ASCII #11  (vertical tab) --> \v
+ * ASCII #13  (carriage return) --> \r
+ * ASCII #12  (formfeed) --> \f
+ * ASCII #34  (apostrophe) --> \'
+ * ASCII #39  (straight double quote) --> \"
+ * ASCII #92  (backslash) --> \\
+ *
+ * Other printable ASCII characters between 32 and 127 inclusive are output as is, unescaped.
+ * Other ASCII characters less than 32 and all Unicode characters 128 or greater are
+ * first encoded as UTF-8, then each byte is escaped individually as a 3-digit octal escape.
+ */
 final class TextFormatEscaper {
   private TextFormatEscaper() {}
 
@@ -41,17 +58,13 @@ final class TextFormatEscaper {
   }
 
   /**
-   * Escapes bytes in the format used in protocol buffer text format, which is the same as the
-   * format used for C string literals. All bytes that are not printable 7-bit ASCII characters are
-   * escaped, as well as backslash, single-quote, and double-quote characters. Characters for which
-   * no defined short-hand escape sequence is defined will be escaped using 3-digit octal sequences.
+   * Backslash escapes bytes in the format used in protocol buffer text format.
    */
-  static String escapeBytes(final ByteSequence input) {
+  static String escapeBytes(ByteSequence input) {
     final StringBuilder builder = new StringBuilder(input.size());
     for (int i = 0; i < input.size(); i++) {
-      final byte b = input.byteAt(i);
+      byte b = input.byteAt(i);
       switch (b) {
-          // Java does not recognize \a or \v, apparently.
         case 0x07:
           builder.append("\\a");
           break;
@@ -100,10 +113,7 @@ final class TextFormatEscaper {
   }
 
   /**
-   * Escapes bytes in the format used in protocol buffer text format, which is the same as the
-   * format used for C string literals. All bytes that are not printable 7-bit ASCII characters are
-   * escaped, as well as backslash, single-quote, and double-quote characters. Characters for which
-   * no defined short-hand escape sequence is defined will be escaped using 3-digit octal sequences.
+   * Backslash escapes bytes in the format used in protocol buffer text format.
    */
   static String escapeBytes(final ByteString input) {
     return escapeBytes(
@@ -137,16 +147,14 @@ final class TextFormatEscaper {
   }
 
   /**
-   * Like {@link #escapeBytes(ByteString)}, but escapes a text string. Non-ASCII characters are
-   * first encoded as UTF-8, then each byte is escaped individually as a 3-digit octal escape. Yes,
-   * it's weird.
+   * Like {@link #escapeBytes(ByteString)}, but escapes a text string.
    */
-  static String escapeText(final String input) {
+  static String escapeText(String input) {
     return escapeBytes(ByteString.copyFromUtf8(input));
   }
 
   /** Escape double quotes and backslashes in a String for unicode output of a message. */
-  static String escapeDoubleQuotesAndBackslashes(final String input) {
+  static String escapeDoubleQuotesAndBackslashes(String input) {
     return input.replace("\\", "\\\\").replace("\"", "\\\"");
   }
 }

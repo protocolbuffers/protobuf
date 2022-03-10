@@ -42,8 +42,7 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 
 import calendar
 import collections.abc
-from datetime import datetime
-from datetime import timedelta
+import datetime
 
 from google.protobuf.descriptor import FieldDescriptor
 
@@ -89,7 +88,9 @@ class Any(object):
     return '/' in self.type_url and self.TypeName() == descriptor.full_name
 
 
-_EPOCH_DATETIME = datetime.utcfromtimestamp(0)
+_EPOCH_DATETIME_NAIVE = datetime.datetime.utcfromtimestamp(0)
+_EPOCH_DATETIME_AWARE = datetime.datetime.fromtimestamp(
+    0, tz=datetime.timezone.utc)
 
 
 class Timestamp(object):
@@ -109,7 +110,7 @@ class Timestamp(object):
     total_sec = self.seconds + (self.nanos - nanos) // _NANOS_PER_SECOND
     seconds = total_sec % _SECONDS_PER_DAY
     days = (total_sec - seconds) // _SECONDS_PER_DAY
-    dt = datetime(1970, 1, 1) + timedelta(days, seconds)
+    dt = datetime.datetime(1970, 1, 1) + datetime.timedelta(days, seconds)
 
     result = dt.isoformat()
     if (nanos % 1e9) == 0:
@@ -159,8 +160,8 @@ class Timestamp(object):
       raise ValueError(
           'time data \'{0}\' does not match format \'%Y-%m-%dT%H:%M:%S\', '
           'lowercase \'t\' is not accepted'.format(second_value))
-    date_object = datetime.strptime(second_value, _TIMESTAMPFOMAT)
-    td = date_object - datetime(1970, 1, 1)
+    date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFOMAT)
+    td = date_object - datetime.datetime(1970, 1, 1)
     seconds = td.seconds + td.days * _SECONDS_PER_DAY
     if len(nano_value) > 9:
       raise ValueError(
@@ -191,7 +192,7 @@ class Timestamp(object):
 
   def GetCurrentTime(self):
     """Get the current UTC into Timestamp."""
-    self.FromDatetime(datetime.utcnow())
+    self.FromDatetime(datetime.datetime.utcnow())
 
   def ToNanoseconds(self):
     """Converts Timestamp to nanoseconds since epoch."""
@@ -231,14 +232,32 @@ class Timestamp(object):
     self.seconds = seconds
     self.nanos = 0
 
-  def ToDatetime(self):
-    """Converts Timestamp to datetime."""
-    return _EPOCH_DATETIME + timedelta(
-        seconds=self.seconds, microseconds=_RoundTowardZero(
-            self.nanos, _NANOS_PER_MICROSECOND))
+  def ToDatetime(self, tzinfo=None):
+    """Converts Timestamp to a datetime.
+
+    Args:
+      tzinfo: A datetime.tzinfo subclass; defaults to None.
+
+    Returns:
+      If tzinfo is None, returns a timezone-naive UTC datetime (with no timezone
+      information, i.e. not aware that it's UTC).
+
+      Otherwise, returns a timezone-aware datetime in the input timezone.
+    """
+    delta = datetime.timedelta(
+        seconds=self.seconds,
+        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND))
+    if tzinfo is None:
+      return _EPOCH_DATETIME_NAIVE + delta
+    else:
+      return _EPOCH_DATETIME_AWARE.astimezone(tzinfo) + delta
 
   def FromDatetime(self, dt):
-    """Converts datetime to Timestamp."""
+    """Converts datetime to Timestamp.
+
+    Args:
+      dt: A datetime. If it's timezone-naive, it's assumed to be in UTC.
+    """
     # Using this guide: http://wiki.python.org/moin/WorkingWithTime
     # And this conversion guide: http://docs.python.org/library/time.html
 
@@ -363,7 +382,7 @@ class Duration(object):
 
   def ToTimedelta(self):
     """Converts Duration to timedelta."""
-    return timedelta(
+    return datetime.timedelta(
         seconds=self.seconds, microseconds=_RoundTowardZero(
             self.nanos, _NANOS_PER_MICROSECOND))
 

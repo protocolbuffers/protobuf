@@ -40,10 +40,10 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  const upb_array *array;   // Can get as mutable when non-frozen.
+  const upb_Array* array;  // Can get as mutable when non-frozen.
   TypeInfo type_info;
   VALUE type_class;  // To GC-root the msgdef/enumdef in type_info.
-  VALUE arena;       // To GC-root the upb_array.
+  VALUE arena;       // To GC-root the upb_Array.
 } RepeatedField;
 
 VALUE cRepeatedField;
@@ -55,9 +55,9 @@ static void RepeatedField_mark(void* _self) {
 }
 
 const rb_data_type_t RepeatedField_type = {
-  "Google::Protobuf::RepeatedField",
-  { RepeatedField_mark, RUBY_DEFAULT_FREE, NULL },
-  .flags = RUBY_TYPED_FREE_IMMEDIATELY,
+    "Google::Protobuf::RepeatedField",
+    {RepeatedField_mark, RUBY_DEFAULT_FREE, NULL},
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
 static RepeatedField* ruby_to_RepeatedField(VALUE _self) {
@@ -66,9 +66,9 @@ static RepeatedField* ruby_to_RepeatedField(VALUE _self) {
   return self;
 }
 
-static upb_array *RepeatedField_GetMutable(VALUE _self) {
+static upb_Array* RepeatedField_GetMutable(VALUE _self) {
   rb_check_frozen(_self);
-  return (upb_array*)ruby_to_RepeatedField(_self)->array;
+  return (upb_Array*)ruby_to_RepeatedField(_self)->array;
 }
 
 VALUE RepeatedField_alloc(VALUE klass) {
@@ -79,7 +79,7 @@ VALUE RepeatedField_alloc(VALUE klass) {
   return TypedData_Wrap_Struct(klass, &RepeatedField_type, self);
 }
 
-VALUE RepeatedField_GetRubyWrapper(upb_array* array, TypeInfo type_info,
+VALUE RepeatedField_GetRubyWrapper(upb_Array* array, TypeInfo type_info,
                                    VALUE arena) {
   PBRUBY_ASSERT(array);
   VALUE val = ObjectCache_Get(array);
@@ -92,7 +92,7 @@ VALUE RepeatedField_GetRubyWrapper(upb_array* array, TypeInfo type_info,
     self->array = array;
     self->arena = arena;
     self->type_info = type_info;
-    if (self->type_info.type == UPB_TYPE_MESSAGE) {
+    if (self->type_info.type == kUpb_CType_Message) {
       self->type_class = Descriptor_DefToClass(type_info.def.msgdef);
     }
   }
@@ -105,24 +105,24 @@ VALUE RepeatedField_GetRubyWrapper(upb_array* array, TypeInfo type_info,
 
 static VALUE RepeatedField_new_this_type(RepeatedField* from) {
   VALUE arena_rb = Arena_new();
-  upb_array *array = upb_array_new(Arena_get(arena_rb), from->type_info.type);
+  upb_Array* array = upb_Array_New(Arena_get(arena_rb), from->type_info.type);
   VALUE ret = RepeatedField_GetRubyWrapper(array, from->type_info, arena_rb);
   PBRUBY_ASSERT(ruby_to_RepeatedField(ret)->type_class == from->type_class);
   return ret;
 }
 
-void RepeatedField_Inspect(StringBuilder* b, const upb_array* array,
+void RepeatedField_Inspect(StringBuilder* b, const upb_Array* array,
                            TypeInfo info) {
   bool first = true;
   StringBuilder_Printf(b, "[");
-  size_t n = array ? upb_array_size(array) : 0;
+  size_t n = array ? upb_Array_Size(array) : 0;
   for (size_t i = 0; i < n; i++) {
     if (first) {
       first = false;
     } else {
       StringBuilder_Printf(b, ", ");
     }
-    StringBuilder_PrintMsgval(b, upb_array_get(array, i), info);
+    StringBuilder_PrintMsgval(b, upb_Array_Get(array, i), info);
   }
   StringBuilder_Printf(b, "]");
 }
@@ -132,24 +132,24 @@ VALUE RepeatedField_deep_copy(VALUE _self) {
   VALUE new_rptfield = RepeatedField_new_this_type(self);
   RepeatedField* new_self = ruby_to_RepeatedField(new_rptfield);
   VALUE arena_rb = new_self->arena;
-  upb_array *new_array = RepeatedField_GetMutable(new_rptfield);
-  upb_arena *arena = Arena_get(arena_rb);
-  size_t elements = upb_array_size(self->array);
+  upb_Array* new_array = RepeatedField_GetMutable(new_rptfield);
+  upb_Arena* arena = Arena_get(arena_rb);
+  size_t elements = upb_Array_Size(self->array);
 
-  upb_array_resize(new_array, elements, arena);
+  upb_Array_Resize(new_array, elements, arena);
 
-  size_t size = upb_array_size(self->array);
+  size_t size = upb_Array_Size(self->array);
   for (size_t i = 0; i < size; i++) {
-    upb_msgval msgval = upb_array_get(self->array, i);
-    upb_msgval copy = Msgval_DeepCopy(msgval, self->type_info, arena);
-    upb_array_set(new_array, i, copy);
+    upb_MessageValue msgval = upb_Array_Get(self->array, i);
+    upb_MessageValue copy = Msgval_DeepCopy(msgval, self->type_info, arena);
+    upb_Array_Set(new_array, i, copy);
   }
 
   return new_rptfield;
 }
 
-const upb_array* RepeatedField_GetUpbArray(VALUE val, const upb_fielddef* field,
-                                           upb_arena* arena) {
+const upb_Array* RepeatedField_GetUpbArray(VALUE val, const upb_FieldDef* field,
+                                           upb_Arena* arena) {
   RepeatedField* self;
   TypeInfo type_info = TypeInfo_get(field);
 
@@ -173,17 +173,17 @@ const upb_array* RepeatedField_GetUpbArray(VALUE val, const upb_fielddef* field,
 
 static int index_position(VALUE _index, RepeatedField* repeated_field) {
   int index = NUM2INT(_index);
-  if (index < 0) index += upb_array_size(repeated_field->array);
+  if (index < 0) index += upb_Array_Size(repeated_field->array);
   return index;
 }
 
 static VALUE RepeatedField_subarray(RepeatedField* self, long beg, long len) {
-  size_t size = upb_array_size(self->array);
+  size_t size = upb_Array_Size(self->array);
   VALUE ary = rb_ary_new2(size);
   long i;
 
   for (i = beg; i < beg + len; i++) {
-    upb_msgval msgval = upb_array_get(self->array, i);
+    upb_MessageValue msgval = upb_Array_Get(self->array, i);
     VALUE elem = Convert_UpbToRuby(msgval, self->type_info, self->arena);
     rb_ary_push(ary, elem);
   }
@@ -200,17 +200,16 @@ static VALUE RepeatedField_subarray(RepeatedField* self, long beg, long len) {
  */
 static VALUE RepeatedField_each(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  int size = upb_array_size(self->array);
+  int size = upb_Array_Size(self->array);
   int i;
 
   for (i = 0; i < size; i++) {
-    upb_msgval msgval = upb_array_get(self->array, i);
+    upb_MessageValue msgval = upb_Array_Get(self->array, i);
     VALUE val = Convert_UpbToRuby(msgval, self->type_info, self->arena);
     rb_yield(val);
   }
   return _self;
 }
-
 
 /*
  * call-seq:
@@ -220,20 +219,20 @@ static VALUE RepeatedField_each(VALUE _self) {
  */
 static VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  long size = upb_array_size(self->array);
+  long size = upb_Array_Size(self->array);
 
   VALUE arg = argv[0];
   long beg, len;
 
-  if (argc == 1){
+  if (argc == 1) {
     if (FIXNUM_P(arg)) {
       /* standard case */
-      upb_msgval msgval;
+      upb_MessageValue msgval;
       int index = index_position(argv[0], self);
-      if (index < 0 || (size_t)index >= upb_array_size(self->array)) {
+      if (index < 0 || (size_t)index >= upb_Array_Size(self->array)) {
         return Qnil;
       }
-      msgval = upb_array_get(self->array, index);
+      msgval = upb_Array_Get(self->array, index);
       return Convert_UpbToRuby(msgval, self->type_info, self->arena);
     } else {
       /* check if idx is Range */
@@ -269,10 +268,10 @@ static VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
  */
 static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  int size = upb_array_size(self->array);
-  upb_array *array = RepeatedField_GetMutable(_self);
-  upb_arena *arena = Arena_get(self->arena);
-  upb_msgval msgval = Convert_RubyToUpb(val, "", self->type_info, arena);
+  int size = upb_Array_Size(self->array);
+  upb_Array* array = RepeatedField_GetMutable(_self);
+  upb_Arena* arena = Arena_get(self->arena);
+  upb_MessageValue msgval = Convert_RubyToUpb(val, "", self->type_info, arena);
 
   int index = index_position(_index, self);
   if (index < 0 || index >= (INT_MAX - 1)) {
@@ -280,17 +279,17 @@ static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   }
 
   if (index >= size) {
-    upb_array_resize(array, index + 1, arena);
-    upb_msgval fill;
+    upb_Array_Resize(array, index + 1, arena);
+    upb_MessageValue fill;
     memset(&fill, 0, sizeof(fill));
     for (int i = size; i < index; i++) {
       // Fill default values.
       // TODO(haberman): should this happen at the upb level?
-      upb_array_set(array, i, fill);
+      upb_Array_Set(array, i, fill);
     }
   }
 
-  upb_array_set(array, index, msgval);
+  upb_Array_Set(array, index, msgval);
   return Qnil;
 }
 
@@ -302,13 +301,14 @@ static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
  */
 static VALUE RepeatedField_push_vararg(int argc, VALUE* argv, VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  upb_arena *arena = Arena_get(self->arena);
-  upb_array *array = RepeatedField_GetMutable(_self);
+  upb_Arena* arena = Arena_get(self->arena);
+  upb_Array* array = RepeatedField_GetMutable(_self);
   int i;
 
   for (i = 0; i < argc; i++) {
-    upb_msgval msgval = Convert_RubyToUpb(argv[i], "", self->type_info, arena);
-    upb_array_append(array, msgval, arena);
+    upb_MessageValue msgval =
+        Convert_RubyToUpb(argv[i], "", self->type_info, arena);
+    upb_Array_Append(array, msgval, arena);
   }
 
   return _self;
@@ -322,11 +322,11 @@ static VALUE RepeatedField_push_vararg(int argc, VALUE* argv, VALUE _self) {
  */
 static VALUE RepeatedField_push(VALUE _self, VALUE val) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  upb_arena *arena = Arena_get(self->arena);
-  upb_array *array = RepeatedField_GetMutable(_self);
+  upb_Arena* arena = Arena_get(self->arena);
+  upb_Array* array = RepeatedField_GetMutable(_self);
 
-  upb_msgval msgval = Convert_RubyToUpb(val, "", self->type_info, arena);
-  upb_array_append(array, msgval, arena);
+  upb_MessageValue msgval = Convert_RubyToUpb(val, "", self->type_info, arena);
+  upb_Array_Append(array, msgval, arena);
 
   return _self;
 }
@@ -336,19 +336,19 @@ static VALUE RepeatedField_push(VALUE _self, VALUE val) {
  */
 static VALUE RepeatedField_pop_one(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  size_t size = upb_array_size(self->array);
-  upb_array *array = RepeatedField_GetMutable(_self);
-  upb_msgval last;
+  size_t size = upb_Array_Size(self->array);
+  upb_Array* array = RepeatedField_GetMutable(_self);
+  upb_MessageValue last;
   VALUE ret;
 
   if (size == 0) {
     return Qnil;
   }
 
-  last = upb_array_get(self->array, size - 1);
+  last = upb_Array_Get(self->array, size - 1);
   ret = Convert_UpbToRuby(last, self->type_info, self->arena);
 
-  upb_array_resize(array, size - 1, Arena_get(self->arena));
+  upb_Array_Resize(array, size - 1, Arena_get(self->arena));
   return ret;
 }
 
@@ -360,11 +360,11 @@ static VALUE RepeatedField_pop_one(VALUE _self) {
  */
 static VALUE RepeatedField_replace(VALUE _self, VALUE list) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  upb_array *array = RepeatedField_GetMutable(_self);
+  upb_Array* array = RepeatedField_GetMutable(_self);
   int i;
 
   Check_Type(list, T_ARRAY);
-  upb_array_resize(array, 0, Arena_get(self->arena));
+  upb_Array_Resize(array, 0, Arena_get(self->arena));
 
   for (i = 0; i < RARRAY_LEN(list); i++) {
     RepeatedField_push(_self, rb_ary_entry(list, i));
@@ -381,8 +381,8 @@ static VALUE RepeatedField_replace(VALUE _self, VALUE list) {
  */
 static VALUE RepeatedField_clear(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  upb_array *array = RepeatedField_GetMutable(_self);
-  upb_array_resize(array, 0, Arena_get(self->arena));
+  upb_Array* array = RepeatedField_GetMutable(_self);
+  upb_Array_Resize(array, 0, Arena_get(self->arena));
   return _self;
 }
 
@@ -394,7 +394,7 @@ static VALUE RepeatedField_clear(VALUE _self) {
  */
 static VALUE RepeatedField_length(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  return INT2NUM(upb_array_size(self->array));
+  return INT2NUM(upb_Array_Size(self->array));
 }
 
 /*
@@ -408,16 +408,16 @@ static VALUE RepeatedField_dup(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   VALUE new_rptfield = RepeatedField_new_this_type(self);
   RepeatedField* new_rptfield_self = ruby_to_RepeatedField(new_rptfield);
-  upb_array *new_array = RepeatedField_GetMutable(new_rptfield);
-  upb_arena* arena = Arena_get(new_rptfield_self->arena);
-  int size = upb_array_size(self->array);
+  upb_Array* new_array = RepeatedField_GetMutable(new_rptfield);
+  upb_Arena* arena = Arena_get(new_rptfield_self->arena);
+  int size = upb_Array_Size(self->array);
   int i;
 
   Arena_fuse(self->arena, arena);
 
   for (i = 0; i < size; i++) {
-    upb_msgval msgval = upb_array_get(self->array, i);
-    upb_array_append(new_array, msgval, arena);
+    upb_MessageValue msgval = upb_Array_Get(self->array, i);
+    upb_Array_Append(new_array, msgval, arena);
   }
 
   return new_rptfield;
@@ -432,12 +432,12 @@ static VALUE RepeatedField_dup(VALUE _self) {
  */
 VALUE RepeatedField_to_ary(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  int size = upb_array_size(self->array);
+  int size = upb_Array_Size(self->array);
   VALUE ary = rb_ary_new2(size);
   int i;
 
   for (i = 0; i < size; i++) {
-    upb_msgval msgval = upb_array_get(self->array, i);
+    upb_MessageValue msgval = upb_Array_Get(self->array, i);
     VALUE val = Convert_UpbToRuby(msgval, self->type_info, self->arena);
     rb_ary_push(ary, val);
   }
@@ -473,17 +473,17 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
 
   self = ruby_to_RepeatedField(_self);
   other = ruby_to_RepeatedField(_other);
-  size_t n = upb_array_size(self->array);
+  size_t n = upb_Array_Size(self->array);
 
   if (self->type_info.type != other->type_info.type ||
       self->type_class != other->type_class ||
-      upb_array_size(other->array) != n) {
+      upb_Array_Size(other->array) != n) {
     return Qfalse;
   }
 
   for (size_t i = 0; i < n; i++) {
-    upb_msgval val1 = upb_array_get(self->array, i);
-    upb_msgval val2 = upb_array_get(other->array, i);
+    upb_MessageValue val1 = upb_Array_Get(self->array, i);
+    upb_MessageValue val2 = upb_Array_Get(other->array, i);
     if (!Msgval_IsEqual(val1, val2, self->type_info)) {
       return Qfalse;
     }
@@ -517,10 +517,10 @@ static VALUE RepeatedField_freeze(VALUE _self) {
 VALUE RepeatedField_hash(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   uint64_t hash = 0;
-  size_t n = upb_array_size(self->array);
+  size_t n = upb_Array_Size(self->array);
 
   for (size_t i = 0; i < n; i++) {
-    upb_msgval val = upb_array_get(self->array, i);
+    upb_MessageValue val = upb_Array_Get(self->array, i);
     hash = Msgval_GetHash(val, self->type_info, hash);
   }
 
@@ -549,10 +549,10 @@ VALUE RepeatedField_plus(VALUE _self, VALUE list) {
     RepeatedField* self = ruby_to_RepeatedField(_self);
     RepeatedField* list_rptfield = ruby_to_RepeatedField(list);
     RepeatedField* dupped = ruby_to_RepeatedField(dupped_);
-    upb_array *dupped_array = RepeatedField_GetMutable(dupped_);
-    upb_arena* arena = Arena_get(dupped->arena);
+    upb_Array* dupped_array = RepeatedField_GetMutable(dupped_);
+    upb_Arena* arena = Arena_get(dupped->arena);
     Arena_fuse(list_rptfield->arena, arena);
-    int size = upb_array_size(list_rptfield->array);
+    int size = upb_Array_Size(list_rptfield->array);
     int i;
 
     if (self->type_info.type != list_rptfield->type_info.type ||
@@ -562,8 +562,8 @@ VALUE RepeatedField_plus(VALUE _self, VALUE list) {
     }
 
     for (i = 0; i < size; i++) {
-      upb_msgval msgval = upb_array_get(list_rptfield->array, i);
-      upb_array_append(dupped_array, msgval, arena);
+      upb_MessageValue msgval = upb_Array_Get(list_rptfield->array, i);
+      upb_Array_Append(dupped_array, msgval, arena);
     }
   } else {
     rb_raise(rb_eArgError, "Unknown type appending to RepeatedField");
@@ -601,7 +601,7 @@ VALUE RepeatedField_concat(VALUE _self, VALUE list) {
  */
 VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  upb_arena *arena;
+  upb_Arena* arena;
   VALUE ary = Qnil;
 
   self->arena = Arena_new();
@@ -612,7 +612,7 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
   }
 
   self->type_info = TypeInfo_FromClass(argc, argv, 0, &self->type_class, &ary);
-  self->array = upb_array_new(arena, self->type_info.type);
+  self->array = upb_Array_New(arena, self->type_info.type);
   ObjectCache_Add(self->array, _self);
 
   if (ary != Qnil) {
@@ -627,14 +627,12 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
 }
 
 void RepeatedField_register(VALUE module) {
-  VALUE klass = rb_define_class_under(
-      module, "RepeatedField", rb_cObject);
+  VALUE klass = rb_define_class_under(module, "RepeatedField", rb_cObject);
   rb_define_alloc_func(klass, RepeatedField_alloc);
   rb_gc_register_address(&cRepeatedField);
   cRepeatedField = klass;
 
-  rb_define_method(klass, "initialize",
-                   RepeatedField_init, -1);
+  rb_define_method(klass, "initialize", RepeatedField_init, -1);
   rb_define_method(klass, "each", RepeatedField_each, 0);
   rb_define_method(klass, "[]", RepeatedField_index, -1);
   rb_define_method(klass, "at", RepeatedField_index, -1);

@@ -31,6 +31,7 @@
 #include <google/protobuf/compiler/objectivec/objectivec_file.h>
 #include <google/protobuf/compiler/objectivec/objectivec_enum.h>
 #include <google/protobuf/compiler/objectivec/objectivec_extension.h>
+#include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/compiler/objectivec/objectivec_message.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/io/printer.h>
@@ -55,6 +56,10 @@ namespace {
 const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30004;
 
 const char* kHeaderExtension = ".pbobjc.h";
+
+std::string BundledFileName(const FileDescriptor* file) {
+  return "GPB" + FilePathBasename(file) + kHeaderExtension;
+}
 
 // Checks if a message contains any enums definitions (on the message or
 // a nested message under it).
@@ -185,18 +190,19 @@ bool IsDirectDependency(const FileDescriptor* dep, const FileDescriptor* file) {
 
 }  // namespace
 
-FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
+FileGenerator::FileGenerator(const FileDescriptor* file,
+                             const GenerationOptions& generation_options)
     : file_(file),
+      generation_options_(generation_options),
       root_class_name_(FileClassName(file)),
-      is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)),
-      options_(options) {
+      is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
     EnumGenerator* generator = new EnumGenerator(file_->enum_type(i));
     enum_generators_.emplace_back(generator);
   }
   for (int i = 0; i < file_->message_type_count(); i++) {
     MessageGenerator* generator =
-        new MessageGenerator(root_class_name_, file_->message_type(i), options_);
+        new MessageGenerator(root_class_name_, file_->message_type(i));
     message_generators_.emplace_back(generator);
   }
   for (int i = 0; i < file_->extension_count(); i++) {
@@ -216,6 +222,10 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
     headers.push_back("GPBDescriptor.h");
     headers.push_back("GPBMessage.h");
     headers.push_back("GPBRootObject.h");
+    for (int i = 0; i < file_->dependency_count(); i++) {
+      const std::string header_name = BundledFileName(file_->dependency(i));
+      headers.push_back(header_name);
+    }
   } else {
     headers.push_back("GPBProtocolBuffers.h");
   }
@@ -237,16 +247,26 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
       "\n",
       "google_protobuf_objc_version", StrCat(GOOGLE_PROTOBUF_OBJC_VERSION));
 
-  // #import any headers for "public imports" in the proto file.
+  // The bundled protos (WKTs) don't use of forward declarations.
+  bool headers_use_forward_declarations =
+      generation_options_.headers_use_forward_declarations && !is_bundled_proto_;
+
   {
     ImportWriter import_writer(
-        options_.generate_for_named_framework,
-        options_.named_framework_to_proto_path_mappings_path,
-        options_.runtime_import_prefix,
-        is_bundled_proto_);
+        generation_options_.generate_for_named_framework,
+        generation_options_.named_framework_to_proto_path_mappings_path,
+        generation_options_.runtime_import_prefix,
+        /* include_wkt_imports = */ false);
     const std::string header_extension(kHeaderExtension);
-    for (int i = 0; i < file_->public_dependency_count(); i++) {
-      import_writer.AddFile(file_->public_dependency(i), header_extension);
+    if (headers_use_forward_declarations) {
+      // #import any headers for "public imports" in the proto file.
+      for (int i = 0; i < file_->public_dependency_count(); i++) {
+        import_writer.AddFile(file_->public_dependency(i), header_extension);
+      }
+    } else {
+      for (int i = 0; i < file_->dependency_count(); i++) {
+        import_writer.AddFile(file_->dependency(i), header_extension);
+      }
     }
     import_writer.Print(printer);
   }
@@ -266,7 +286,9 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
 
   std::set<std::string> fwd_decls;
   for (const auto& generator : message_generators_) {
-    generator->DetermineForwardDeclarations(&fwd_decls);
+    generator->DetermineForwardDeclarations(
+        &fwd_decls,
+        /* include_external_types = */ headers_use_forward_declarations);
   }
   for (std::set<std::string>::const_iterator i(fwd_decls.begin());
        i != fwd_decls.end(); ++i) {
@@ -340,6 +362,9 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
   // #import the runtime support.
   std::vector<std::string> headers;
   headers.push_back("GPBProtocolBuffers_RuntimeSupport.h");
+  if (is_bundled_proto_) {
+    headers.push_back(BundledFileName(file_));
+  }
   PrintFileRuntimePreamble(printer, headers);
 
   // Enums use atomic in the generated code, so add the system import as needed.
@@ -352,28 +377,34 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
   std::vector<const FileDescriptor*> deps_with_extensions;
   CollectMinimalFileDepsContainingExtensions(file_, &deps_with_extensions);
 
+  // The bundled protos (WKTs) don't use of forward declarations.
+  bool headers_use_forward_declarations =
+      generation_options_.headers_use_forward_declarations && !is_bundled_proto_;
+
   {
     ImportWriter import_writer(
-        options_.generate_for_named_framework,
-        options_.named_framework_to_proto_path_mappings_path,
-        options_.runtime_import_prefix,
-        is_bundled_proto_);
+        generation_options_.generate_for_named_framework,
+        generation_options_.named_framework_to_proto_path_mappings_path,
+        generation_options_.runtime_import_prefix,
+        /* include_wkt_imports = */ false);
     const std::string header_extension(kHeaderExtension);
 
     // #import the header for this proto file.
     import_writer.AddFile(file_, header_extension);
 
-    // #import the headers for anything that a plain dependency of this proto
-    // file (that means they were just an include, not a "public" include).
-    std::set<std::string> public_import_names;
-    for (int i = 0; i < file_->public_dependency_count(); i++) {
-      public_import_names.insert(file_->public_dependency(i)->name());
-    }
-    for (int i = 0; i < file_->dependency_count(); i++) {
-      const FileDescriptor *dep = file_->dependency(i);
-      bool public_import = (public_import_names.count(dep->name()) != 0);
-      if (!public_import) {
-        import_writer.AddFile(dep, header_extension);
+    if (headers_use_forward_declarations) {
+      // #import the headers for anything that a plain dependency of this proto
+      // file (that means they were just an include, not a "public" include).
+      std::set<std::string> public_import_names;
+      for (int i = 0; i < file_->public_dependency_count(); i++) {
+        public_import_names.insert(file_->public_dependency(i)->name());
+      }
+      for (int i = 0; i < file_->dependency_count(); i++) {
+        const FileDescriptor *dep = file_->dependency(i);
+        bool public_import = (public_import_names.count(dep->name()) != 0);
+        if (!public_import) {
+          import_writer.AddFile(dep, header_extension);
+        }
       }
     }
 
@@ -599,8 +630,26 @@ void FileGenerator::PrintFileRuntimePreamble(
       "// source: $filename$\n"
       "\n",
       "filename", file_->name());
-  ImportWriter::PrintRuntimeImports(
-      printer, headers_to_import, options_.runtime_import_prefix, true);
+
+  if (is_bundled_proto_) {
+    // This is basically a clone of ImportWriter::PrintRuntimeImports() but
+    // without the CPP symbol gate, since within the bundled files, that isn't
+    // needed.
+    std::string import_prefix = generation_options_.runtime_import_prefix;
+    if (!import_prefix.empty()) {
+      import_prefix += "/";
+    }
+    for (const auto& header : headers_to_import) {
+      printer->Print(
+          "#import \"$import_prefix$$header$\"\n",
+          "import_prefix", import_prefix,
+          "header", header);
+    }
+  } else {
+    ImportWriter::PrintRuntimeImports(
+        printer, headers_to_import, generation_options_.runtime_import_prefix, true);
+  }
+
   printer->Print("\n");
 }
 

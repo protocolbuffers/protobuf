@@ -816,11 +816,17 @@ module CommonTests
                                       :optional_enum => :B,
                                       :repeated_string => ["a", "b", "c"],
                                       :repeated_int32 => [42, 43, 44],
-                                      :repeated_enum => [:A, :B, :C, 100],
+                                      :repeated_enum => [:A, :B, :C],
                                       :repeated_msg => [proto_module::TestMessage2.new(:foo => 1),
                                                         proto_module::TestMessage2.new(:foo => 2)])
+    if proto_module == ::BasicTest
+      # For proto3 we can add an unknown enum value safely.
+      m.repeated_enum << 100
+    end
+
     data = proto_module::TestMessage.encode m
     m2 = proto_module::TestMessage.decode data
+
     assert_equal m, m2
 
     data = Google::Protobuf.encode m
@@ -864,6 +870,9 @@ module CommonTests
 
     decoded_msg = Google::Protobuf.decode_json(proto_module::TestMessage, encoded_msg)
     assert_equal proto_module::TestMessage.decode_json(m.to_json), decoded_msg
+
+    assert_equal [m].to_json, Google::Protobuf.encode_json([m])
+    assert_equal proto_module::TestMessage.decode_json([m.to_json].first), decoded_msg
   end
 
   def test_def_errors
@@ -1239,7 +1248,7 @@ module CommonTests
     struct = struct_from_ruby(JSON.parse(json))
     assert_equal json, struct.to_json
 
-    assert_raise(RuntimeError, "Maximum recursion depth exceeded during encoding") do
+    assert_raise(RuntimeError, "Recursion limit exceeded during encoding") do
       struct = Google::Protobuf::Struct.new
       struct.fields["foobar"] = Google::Protobuf::Value.new(struct_value: struct)
       Google::Protobuf::Struct.encode(struct)
