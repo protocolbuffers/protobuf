@@ -636,7 +636,7 @@ static const char* decode_tomap(upb_Decoder* d, const char* ptr,
   // check if ent had any unknown fields
   size_t size;
   upb_Message_GetUnknown(&ent.k, &size);
-  if(size != 0) {
+  if (size != 0) {
     uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Delimited;
     upb_Decode_AddUnknownVarints(d, msg, tag, (uint32_t)(ptr - start));
     if (!_upb_Message_AddUnknown(msg, start, ptr - start, &d->arena)) {
