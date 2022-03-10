@@ -416,19 +416,15 @@ static bool decode_checkenum_slow(upb_Decoder* d, const char* ptr,
   return false;
 }
 
-#include <stdio.h>
 UPB_FORCEINLINE
 static bool decode_checkenum(upb_Decoder* d, const char* ptr, upb_Message* msg,
                              const upb_MiniTable_Enum* e,
                              const upb_MiniTable_Field* field, wireval* val) {
   uint32_t v = val->uint32_val;
 
-  // printf("@test:we are here\n");
   if (UPB_LIKELY(v < 64) && UPB_LIKELY(((1ULL << v) & e->mask))) return true;
 
-  // printf("@test:we are here 2\n");
   bool ans =  decode_checkenum_slow(d, ptr, msg, e, field, v);
-  // printf("@test:%d\n", (int)ans);
   return ans;
 }
 
