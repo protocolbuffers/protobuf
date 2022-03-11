@@ -36,7 +36,7 @@
 
 #include "php-upb.h"
 
-const zval *get_generated_pool();
+upb_DefPool *get_global_symtab();
 
 #if PHP_VERSION_ID < 70300
 #define GC_ADDREF(h) ++GC_REFCOUNT(h)
@@ -127,7 +127,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_setter, 0, 0, 1)
   ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-#define PHP_PROTOBUF_VERSION "3.19.4"
+#define PHP_PROTOBUF_VERSION "3.20.0RC1"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:

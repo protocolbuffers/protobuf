@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package packagerversion="1.9.5" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+<package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.9.5" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
  <name>protobuf</name>
  <channel>pecl.php.net</channel>
  <summary>Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data.</summary>
@@ -10,15 +10,15 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2022-01-28</date>
- <time>00:03:40</time>
+ <date>2022-03-04</date>
+ <time>16:28:14</time>
  <version>
-  <release>3.19.4</release>
-  <api>3.19.4</api>
+  <release>3.20.0RC1</release>
+  <api>3.20.0</api>
  </version>
  <stability>
-  <release>stable</release>
-  <api>stable</api>
+  <release>beta</release>
+  <api>beta</api>
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
  <notes>
@@ -1203,6 +1203,21 @@ G  A release.
    <date>2022-01-28</date>
    <time>00:03:40</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.20.0RC1</release>
+    <api>3.20.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2022-03-04</date>
+   <time>16:28:14</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
    <notes>
    </notes>
   </release>

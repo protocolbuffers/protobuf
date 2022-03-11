@@ -870,6 +870,9 @@ module CommonTests
 
     decoded_msg = Google::Protobuf.decode_json(proto_module::TestMessage, encoded_msg)
     assert_equal proto_module::TestMessage.decode_json(m.to_json), decoded_msg
+
+    assert_equal [m].to_json, Google::Protobuf.encode_json([m])
+    assert_equal proto_module::TestMessage.decode_json([m.to_json].first), decoded_msg
   end
 
   def test_def_errors

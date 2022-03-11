@@ -555,7 +555,15 @@ public class RubyMessage extends RubyObject {
         String result;
 
         if (args.length > 1) {
-            RubyHash options = (RubyHash) args[1];
+            RubyHash options;
+            if (args[1] instanceof RubyHash) {
+                options = (RubyHash) args[1];
+            } else if (args[1].respondsTo("to_h")) {
+                options = (RubyHash) args[1].callMethod(context, "to_h");
+            } else {
+                throw runtime.newArgumentError("Expected hash arguments.");
+            }
+
             IRubyObject emitDefaults = options.fastARef(runtime.newSymbol("emit_defaults"));
             IRubyObject preserveNames = options.fastARef(runtime.newSymbol("preserve_proto_fieldnames"));
 

@@ -180,7 +180,7 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Protobuf for nginx module](https://github.com/dbcode/protobuf-nginx/)
 * [RSpec matchers and Cucumber step defs for testing Protocol Buffers](https://github.com/connamara/protobuf_spec)
 * [Sbt plugin for Protocol Buffers](https://github.com/Atry/sbt-cppp)
-* [Gradle Protobuf Plugin](https://github.com/aantono/gradle-plugin-protobuf)
+* [Protobuf Plugin for Gradle](https://github.com/google/protobuf-gradle-plugin)
 * [Multi-platform executable JAR and Java API for protoc](https://github.com/os72/protoc-jar)
 * [Python scripts to convert between Protocol Buffers and JSON](https://github.com/NextTuesday/py-pb-converters)
 * [Visual Studio Language Service support for Protocol Buffers](http://visualstudiogallery.msdn.microsoft.com/4bc0f38c-b058-4e05-ae38-155e053c19c5)
