@@ -1414,6 +1414,7 @@ static uint8_t map_descriptortype(const upb_FieldDef* f) {
     return kUpb_FieldType_Bytes;
   } else if (type == kUpb_FieldType_Enum &&
              (f->sub.enumdef->file->syntax == kUpb_Syntax_Proto3 ||
+              UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 ||
               // TODO(https://github.com/protocolbuffers/upb/issues/541):
               // fix map enum values to check for unknown enum values and put
               // them in the unknown field set.
@@ -1584,11 +1585,11 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
 
     fill_fieldlayout(field, f);
 
-    if (upb_FieldDef_IsSubMessage(f)) {
+    if (field->descriptortype == kUpb_FieldType_Message ||
+        field->descriptortype == kUpb_FieldType_Group) {
       field->submsg_index = sublayout_count++;
       subs[field->submsg_index].submsg = upb_FieldDef_MessageSubDef(f)->layout;
-    } else if (upb_FieldDef_CType(f) == kUpb_CType_Enum &&
-               f->sub.enumdef->file->syntax == kUpb_Syntax_Proto2) {
+    } else if (field->descriptortype == kUpb_FieldType_Enum) {
       field->submsg_index = sublayout_count++;
       subs[field->submsg_index].subenum = upb_FieldDef_EnumSubDef(f)->layout;
       UPB_ASSERT(subs[field->submsg_index].subenum);
