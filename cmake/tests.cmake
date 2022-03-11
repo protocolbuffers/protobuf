@@ -56,6 +56,7 @@ set(tests_protos
   google/protobuf/unittest_drop_unknown_fields.proto
   google/protobuf/unittest_embed_optimize_for.proto
   google/protobuf/unittest_empty.proto
+  google/protobuf/unittest_enormous_descriptor.proto
   google/protobuf/unittest_import.proto
   google/protobuf/unittest_import_public.proto
   google/protobuf/unittest_lazy_dependencies.proto
