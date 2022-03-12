@@ -251,3 +251,11 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_UNPOISON_MEMORY_REGION(addr, size) \
   ((void)(addr), (void)(size))
 #endif
+
+/* Disable proto2 arena behavior (TEMPORARY) **********************************/
+
+#ifdef UPB_DISABLE_PROTO2_ENUM_CHECKING
+#define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 1
+#else
+#define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 0
+#endif

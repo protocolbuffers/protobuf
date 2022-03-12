@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # copybara:insert_for_google3_begin
-# load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", _cc_proto_library="cc_proto_library")
+# load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", _cc_proto_library = "cc_proto_library")
 # copybara:insert_end
 
 # copybara:strip_for_google3_begin
@@ -36,7 +36,7 @@ def proto_library(**kwargs):
         # copybara:insert_for_google3_begin
         # cc_api_version = 2,
         # copybara:insert_end
-        **kwargs,
+        **kwargs
     )
 
 def tmpl_cc_binary(name, gen, args, replacements = [], **kwargs):
@@ -55,7 +55,7 @@ def tmpl_cc_binary(name, gen, args, replacements = [], **kwargs):
         # copybara:insert_end
         name = name,
         srcs = srcs,
-        **kwargs,
+        **kwargs
     )
 
 def cc_optimizefor_proto_library(name, srcs, outs, optimize_for):

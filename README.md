@@ -57,6 +57,22 @@ For PHP, use [PECL](https://pecl.php.net/package/protobuf):
 $ sudo pecl install protobuf
 ```
 
+Alternatively, you can build and install upb using
+[vcpkg](https://github.com/microsoft/vcpkg/) dependency manager:
+
+    git clone https://github.com/Microsoft/vcpkg.git
+    cd vcpkg
+    ./bootstrap-vcpkg.sh
+    ./vcpkg integrate install
+    ./vcpkg install upb
+
+The upb port in vcpkg is kept up to date by microsoft team members and community
+contributors.
+
+If the version is out of date, please
+[create an issue or pull request](https://github.com/Microsoft/vcpkg) on the
+vcpkg repository.
+
 ## Contributing
 
 Please see [CONTRIBUTING.md](CONTRIBUTING.md).

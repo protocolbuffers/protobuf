@@ -173,7 +173,7 @@ char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
 
 char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
                                  upb_FieldType type, uint32_t field_num,
-                                 uint64_t modifiers) {
+                                 uint64_t field_mod) {
   static const char kUpb_TypeToEncoded[] = {
       [kUpb_FieldType_Double] = kUpb_EncodedType_Double,
       [kUpb_FieldType_Float] = kUpb_EncodedType_Float,
@@ -209,7 +209,7 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
 
   // Put field type.
   int encoded_type = kUpb_TypeToEncoded[type];
-  if (modifiers & kUpb_FieldModifier_IsRepeated) {
+  if (field_mod & kUpb_FieldModifier_IsRepeated) {
     // Repeated fields shift the type number up (unlike other modifiers which
     // are bit flags).
     encoded_type += kUpb_EncodedType_RepeatedBase;
@@ -218,13 +218,13 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
   if (!ptr) return NULL;
 
   uint32_t encoded_modifiers = 0;
-  if (modifiers & kUpb_FieldModifier_IsProto3Singular) {
+  if (field_mod & kUpb_FieldModifier_IsProto3Singular) {
     encoded_modifiers |= kUpb_EncodedFieldModifier_IsProto3Singular;
   }
-  if (modifiers & kUpb_FieldModifier_IsRequired) {
+  if (field_mod & kUpb_FieldModifier_IsRequired) {
     encoded_modifiers |= kUpb_EncodedFieldModifier_IsRequired;
   }
-  if ((modifiers & kUpb_FieldModifier_IsPacked) !=
+  if ((field_mod & kUpb_FieldModifier_IsPacked) !=
       (in->msg_mod & kUpb_MessageModifier_DefaultIsPacked)) {
     encoded_modifiers |= kUpb_EncodedFieldModifier_IsUnpacked;
   }

@@ -110,6 +110,16 @@ cc_library(
 )
 
 cc_library(
+    name = "mini_table_internal",
+    hdrs = ["upb/msg_internal.h"],
+    deps = [
+        ":port",
+        ":table",
+        ":upb",
+    ],
+)
+
+cc_library(
     name = "mini_table",
     srcs = ["upb/mini_table.c"],
     hdrs = [
@@ -118,7 +128,11 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
-    deps = [":upb"],
+    deps = [
+        ":mini_table_internal",
+        ":port",
+        ":upb",
+    ],
 )
 
 cc_test(
@@ -126,8 +140,10 @@ cc_test(
     srcs = ["upb/mini_table_test.cc"],
     deps = [
         ":mini_table",
-        "@com_google_googletest//:gtest_main",
+        ":mini_table_internal",
+        ":upb",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -453,6 +469,47 @@ sh_test(
     data = [
         "upb/conformance_upb_failures.txt",
         ":conformance_upb",
+        "@com_google_protobuf//:conformance_test_runner",
+    ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)
+
+cc_binary(
+    name = "conformance_upb_dynamic_minitable",
+    testonly = 1,
+    srcs = ["upb/conformance_upb.c"],
+    copts = UPB_DEFAULT_COPTS + [
+        "-DREBUILD_MINITABLES",
+    ],
+    data = ["upb/conformance_upb_failures.txt"],
+    deps = [
+        ":conformance_proto_upb",
+        ":conformance_proto_upbdefs",
+        ":test_messages_proto2_upbdefs",
+        ":test_messages_proto3_upbdefs",
+        "//:json",
+        "//:port",
+        "//:reflection",
+        "//:textformat",
+        "//:upb",
+    ],
+)
+
+make_shell_script(
+    name = "gen_test_conformance_upb_dynamic_minitable",
+    out = "test_conformance_upb_dynamic_minitable.sh",
+    contents = "external/com_google_protobuf/conformance_test_runner " +
+               " --enforce_recommended " +
+               " --failure_list ./upb/conformance_upb_failures.txt" +
+               " ./conformance_upb_dynamic_minitable",
+)
+
+sh_test(
+    name = "test_conformance_upb_dynamic_minitable",
+    srcs = ["test_conformance_upb_dynamic_minitable.sh"],
+    data = [
+        "upb/conformance_upb_failures.txt",
+        ":conformance_upb_dynamic_minitable",
         "@com_google_protobuf//:conformance_test_runner",
     ],
     deps = ["@bazel_tools//tools/bash/runfiles"],

@@ -1,4 +1,3 @@
-
 # copybara:strip_for_google3_begin
 
 def pyproto_test_wrapper(name):
