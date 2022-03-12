@@ -93,20 +93,18 @@ bool IsNull(upb_MiniTable_Sub sub) {
   return reinterpret_cast<uintptr_t>(sub.subenum) == 0;
 }
 
-void WriteSub(upb_MiniTable_Sub sub, Output& output) {
+std::string GetSub(upb_MiniTable_Sub sub) {
   uintptr_t as_int = reinterpret_cast<uintptr_t>(sub.submsg);
   const char* str = reinterpret_cast<const char*>(as_int & ~SubTag::kMask);
   switch (as_int & SubTag::kMask) {
     case SubTag::kMessage:
-      output("    {.submsg = &$0},\n", str);
-      break;
+      return absl::Substitute("{.submsg = &$0}", str);
     case SubTag::kEnum:
-      output("    {.subenum = &$0},\n", str);
-      break;
+      return absl::Substitute("{.subenum = &$0}", str);
     default:
-      output("    {.submsg = NULL},\n", str);
-      break;
+      return std::string("{.submsg = NULL}");
   }
+  return std::string("ERROR in WriteSub");
 }
 
 void AddEnums(const protobuf::Descriptor* message,
@@ -413,7 +411,7 @@ class FilePlatformLayout {
       const protobuf::FieldDescriptor* fd) const {
     auto it = extension_map_.find(fd);
     assert(it != extension_map_.end());
-    return it->second;
+    return &it->second;
   }
 
  private:
@@ -448,22 +446,24 @@ class FilePlatformLayout {
       for (const auto& f : FieldNumberOrder(pair.first)) {
         upb_MiniTable_Field* mt_f = FindField(mt, f->number());
         assert(mt_f);
-        upb_MiniTable_Sub sub = PackSubForField(f);
+        upb_MiniTable_Sub sub = PackSubForField(f, mt_f);
         if (IsNull(sub)) continue;
+        fprintf(stderr, "YO: %s\n", f->full_name().c_str());
         *const_cast<upb_MiniTable_Sub*>(&mt->subs[mt_f->submsg_index]) = sub;
       }
     }
   }
 
-  upb_MiniTable_Sub PackSubForField(const protobuf::FieldDescriptor* f) {
-    if (f->message_type()) {
+  upb_MiniTable_Sub PackSubForField(const protobuf::FieldDescriptor* f,
+                                    const upb_MiniTable_Field* mt_f) {
+    if (mt_f->submsg_index == kUpb_NoSub) {
+      return PackSub(nullptr, SubTag::kNull);
+    } else if (f->message_type()) {
       return PackSub(AllocStr(MessageInit(f->message_type())),
                       SubTag::kMessage);
-    } else if (f->enum_type() && f->enum_type()->file()->syntax() ==
-                                      protobuf::FileDescriptor::SYNTAX_PROTO2) {
-      return PackSub(AllocStr(EnumInit(f->enum_type())), SubTag::kEnum);
     } else {
-      return PackSub(nullptr, SubTag::kNull);
+      ABSL_ASSERT(f->enum_type());
+      return PackSub(AllocStr(EnumInit(f->enum_type())), SubTag::kEnum);
     }
   }
 
@@ -477,32 +477,26 @@ class FilePlatformLayout {
 
   void BuildExtensions(const protobuf::FileDescriptor* fd) {
     auto sorted = SortedExtensions(fd);
-    upb::MtDataEncoder e;
-    e.StartMessage(0);
+    upb::Status status;
     for (const auto& f : sorted) {
+      upb::MtDataEncoder e;
+      e.StartMessage(0);
       e.PutField(static_cast<upb_FieldType>(f->type()), f->number(),
                  GetFieldModifiers(f));
-    }
-    upb::Status status;
-    size_t ext_count;
-    upb_MiniTable_Extension* exts =
-        upb_MiniTable_BuildExtensions(e.data().data(), e.data().size(),
-                                      &ext_count, arena_.ptr(), status.ptr());
-    if (!exts) {
-      fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
-    }
-    ABSL_ASSERT(exts);
-    if (ext_count != sorted.size()) {
-      fprintf(stderr, "ext_count: %zu, sorted.size(): %zu, data(): %s\n", ext_count,
-              sorted.size(), e.data().c_str());
-    }
-    ABSL_ASSERT(ext_count == sorted.size());
-    for (size_t i = 0; i < ext_count; i++) {
-      extension_map_[sorted[i]] = &exts[i];
+      upb_MiniTable_Extension& ext = extension_map_[f];
+      upb_MiniTable_Sub sub;
+      bool ok = upb_MiniTable_BuildExtension(e.data().data(), e.data().size(),
+                                             &ext, sub, status.ptr());
+      if (!ok) {
+        fprintf(stderr, "Error building mini-table: %s\n",
+                status.error_message());
+      }
+      ext.extendee = reinterpret_cast<const upb_MiniTable*>(
+          AllocStr(MessageInit(f->containing_type())));
+      ext.sub = PackSubForField(f, &ext.field);
+      ABSL_ASSERT(ok);
     }
   }
-
-
 
   upb_MiniTable* MakeMiniTable(const protobuf::Descriptor* m) {
     if (m->options().message_set_wire_format()) {
@@ -576,7 +570,7 @@ class FilePlatformLayout {
  private:
   typedef absl::flat_hash_map<const protobuf::Descriptor*, upb_MiniTable*>
       TableMap;
-  typedef absl::flat_hash_map<const protobuf::FieldDescriptor*, upb_MiniTable_Extension*>
+  typedef absl::flat_hash_map<const protobuf::FieldDescriptor*, upb_MiniTable_Extension>
       ExtensionMap;
   upb::Arena arena_;
   TableMap table_map_;
@@ -1367,10 +1361,12 @@ std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
   return table;
 }
 
+// Returns the field mode as a string initializer.
+//
+// We could just emit this as a number (and we may yet go in that direction) but
+// for now emitting symbolic constants gives this better readability and
+// debuggability.
 std::string GetModeInit(uint8_t mode) {
-  // We could just emit this as a number (and we may yet go in that direction)
-  // but for now emitting symbolic constants gives this better readability and
-  // debuggability.
   std::string ret;
   switch (mode & kUpb_FieldMode_Mask) {
     case kUpb_FieldMode_Map:
@@ -1420,9 +1416,11 @@ std::string GetModeInit(uint8_t mode) {
 void WriteField(const upb_MiniTable_Field* field64,
                 const upb_MiniTable_Field* field32, Output& output) {
   output("{$0, UPB_SIZE($1, $2), $3, $4, $5, $6}", field64->number,
-         field64->offset, field32->offset, field32->presence,
-         field64->submsg_index, field64->descriptortype,
-         GetModeInit(field64->mode));
+         field32->offset, field64->offset, field32->presence,
+         field64->submsg_index == kUpb_NoSub
+             ? "kUpb_NoSub"
+             : absl::StrCat(field64->submsg_index).c_str(),
+         field64->descriptortype, GetModeInit(field64->mode));
 }
 
 // Writes a single field into a .upb.c source file.
@@ -1444,21 +1442,23 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
   const upb_MiniTable* mt_32 = layout.GetMiniTable32(message);
   const upb_MiniTable* mt_64 = layout.GetMiniTable64(message);
   MessageLayout msg_layout(message);
-  SubLayoutArray sublayout_array(message);
+  std::vector<std::string> subs;
 
-  if (sublayout_array.total_count()) {
-    // TODO(haberman): could save a little bit of space by only generating a
-    // "submsgs" array for every strongly-connected component.
+  for (int i = 0; i < mt_64->field_count; i++) {
+    const upb_MiniTable_Field* f = &mt_64->fields[i];
+    if (f->submsg_index != kUpb_NoSub) {
+      subs.push_back(GetSub(mt_64->subs[f->submsg_index]));
+    }
+  }
+
+  if (!subs.empty()) {
     std::string submsgs_array_name = msg_name + "_submsgs";
     submsgs_array_ref = "&" + submsgs_array_name + "[0]";
     output("static const upb_MiniTable_Sub $0[$1] = {\n", submsgs_array_name,
-           sublayout_array.total_count());
+           subs.size());
 
-    for (const auto* submsg : sublayout_array.submsgs()) {
-      output("  {.submsg = &$0},\n", MessageInit(submsg));
-    }
-    for (const auto* subenum : sublayout_array.subenums()) {
-      output("  {.subenum = &$0},\n", EnumInit(subenum));
+    for (const auto& sub : subs) {
+      output("  $0,\n", sub);
     }
 
     output("};\n\n");
@@ -1589,7 +1589,8 @@ int WriteMessages(const FileLayout& layout, Output& output,
 void WriteExtension(const upb_MiniTable_Extension* ext, Output& output) {
   WriteField(&ext->field, &ext->field, output);
   output(",\n");
-  WriteSub(ext->sub, output);
+  output("  &$0,\n", reinterpret_cast<const char*>(ext->extendee));
+  output("  $0,\n", GetSub(ext->sub));
 }
 
 int WriteExtensions(const FileLayout& layout, Output& output) {

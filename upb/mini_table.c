@@ -357,10 +357,36 @@ static const char* upb_MiniTable_DecodeBase92Varint(upb_MtDecoder* d,
   }
 }
 
-static bool upb_MiniTable_HasSub(char type, uint64_t msg_modifiers) {
-  return type == kUpb_EncodedType_Message || type == kUpb_EncodedType_Group ||
-         (type == kUpb_EncodedType_Enum &&
-          (msg_modifiers & kUpb_MessageModifier_HasClosedEnums));
+static bool upb_MiniTable_HasSub(upb_MiniTable_Field* field,
+                                 uint64_t msg_modifiers) {
+  if (field->descriptortype == kUpb_FieldType_Message ||
+      field->descriptortype == kUpb_FieldType_Group) {
+    return true;
+  } else if (field->descriptortype == kUpb_FieldType_Enum) {
+    if (msg_modifiers & kUpb_MessageModifier_HasClosedEnums) {
+      return true;
+    } else {
+      field->descriptortype = kUpb_FieldType_Int32;
+      return false;
+    }
+  } else if (field->descriptortype == kUpb_FieldType_String) {
+    if (!(msg_modifiers & kUpb_MessageModifier_ValidateUtf8)) {
+      field->descriptortype = kUpb_FieldType_Bytes;
+      return false;
+    }
+  }
+  return false;
+}
+
+static void upb_MiniTable_SetTypeAndSub(upb_MiniTable_Field* field,
+                                        upb_FieldType type, uint32_t* sub_count,
+                                        uint64_t msg_modifiers) {
+  field->descriptortype = type;
+  if (upb_MiniTable_HasSub(field, msg_modifiers)) {
+    field->submsg_index = sub_count ? (*sub_count)++ : 0;
+  } else {
+    field->submsg_index = kUpb_NoSub;
+  }
 }
 
 static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
@@ -424,12 +450,8 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
     upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", (int)type);
     UPB_UNREACHABLE();
   }
-  field->descriptortype = kUpb_EncodedToType[type];
-  if (upb_MiniTable_HasSub(type, msg_modifiers)) {
-    field->submsg_index = sub_count ? (*sub_count)++ : 0;
-  } else {
-    field->submsg_index = 0;
-  }
+  upb_MiniTable_SetTypeAndSub(field, kUpb_EncodedToType[type], sub_count,
+                              msg_modifiers);
 }
 
 static void upb_MtDecoder_ModifyField(upb_MtDecoder* d, uint32_t mod,
@@ -877,11 +899,11 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
   fields[1].mode = kUpb_FieldMode_Scalar;
   fields[0].presence = 0;
   fields[1].presence = 0;
-  fields[0].descriptortype = key_type;
-  fields[1].descriptortype = value_type;
   fields[0].offset = 0;
   fields[1].offset = field_size;
-  fields[1].submsg_index = 0;
+
+  upb_MiniTable_SetTypeAndSub(&fields[0], key_type, NULL, 0);
+  upb_MiniTable_SetTypeAndSub(&fields[1], value_type, NULL, 0);
 
   ret->size = UPB_ALIGN_UP(2 * field_size, 8);
   ret->field_count = 2;
@@ -894,35 +916,23 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
   return ret;
 }
 
-upb_MiniTable_Extension* upb_MiniTable_BuildExtensions(const char* data,
-                                                       size_t len,
-                                                       size_t* ext_count,
-                                                       upb_Arena* arena,
-                                                       upb_Status* status) {
+bool upb_MiniTable_BuildExtension(const char* data, size_t len,
+                                  upb_MiniTable_Extension* ext,
+                                  upb_MiniTable_Sub sub, upb_Status* status) {
   upb_MtDecoder decoder = {
-      .arena = arena,
+      .arena = NULL,
       .status = status,
       .table = NULL,
   };
 
-  upb_MiniTable_Extension* exts;
-
   if (UPB_SETJMP(decoder.err)) {
-    exts = NULL;
-    *ext_count = 0;
-    goto done;
+    return false;
   }
 
   uint16_t count = 0;
-  exts = upb_Arena_Malloc(arena, sizeof(*exts) * len);
-  upb_MtDecoder_CheckOutOfMemory(&decoder, exts);
   fprintf(stderr, "ABOUT TO PARSE!\n");
-  upb_MtDecoder_Parse(&decoder, data, len, exts, sizeof(*exts), &count, NULL);
-  upb_Arena_ShrinkLast(arena, exts, sizeof(*exts) * len, sizeof(*exts) * count);
-
-done:
-  *ext_count = count;
-  return exts;
+  upb_MtDecoder_Parse(&decoder, data, len, ext, sizeof(*ext), &count, NULL);
+  return true;
 }
 
 upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,

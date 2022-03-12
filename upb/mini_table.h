@@ -41,10 +41,11 @@ const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number);
 
 typedef enum {
-  kUpb_MessageModifier_DefaultIsPacked = 1,
-  kUpb_MessageModifier_HasClosedEnums = 2,
-  kUpb_MessageModifier_IsExtendable = 4,
-  kUpb_MessageModifier_IsMapEntry = 8,
+  kUpb_MessageModifier_ValidateUtf8 = 1,
+  kUpb_MessageModifier_DefaultIsPacked = 2,
+  kUpb_MessageModifier_HasClosedEnums = 4,
+  kUpb_MessageModifier_IsExtendable = 8,
+  kUpb_MessageModifier_IsMapEntry = 16,
 } kUpb_MessageModifier;
 
 typedef enum {
@@ -123,14 +124,9 @@ void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
 void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
                               const upb_MiniTable_Enum* sub);
 
-upb_MiniTable_Extension* upb_MiniTable_BuildExtensions(const char* data,
-                                                       size_t len,
-                                                       size_t* ext_count,
-                                                       upb_Arena* arena,
-                                                       upb_Status* status);
-void upb_MiniTable_ResolveExtension(upb_MiniTable_Extension* ext,
-                                    const upb_MiniTable* extendee,
-                                    upb_MiniTable_Sub sub);
+bool upb_MiniTable_BuildExtension(const char* data, size_t len,
+                                  upb_MiniTable_Extension* ext,
+                                  upb_MiniTable_Sub sub, upb_Status* status);
 
 // Special-case functions for MessageSet layout and map entries.
 upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
