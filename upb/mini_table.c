@@ -61,7 +61,7 @@ typedef enum {
 
 typedef enum {
   kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
-  kUpb_EncodedFieldModifier_JspbString = 1 << 1,
+  kUpb_EncodedFieldModifier_IsClosedEnum = 1 << 1,
   // upb only.
   kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
   kUpb_EncodedFieldModifier_IsRequired = 1 << 3,
@@ -219,6 +219,11 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
   uint32_t encoded_modifiers = 0;
 
   // Put field type.
+  if (type == kUpb_FieldType_Enum &&
+      !(field_mod & kUpb_FieldModifier_IsClosedEnum)) {
+    type = kUpb_FieldType_Int32;
+  }
+
   int encoded_type = kUpb_TypeToEncoded[type];
   if (field_mod & kUpb_FieldModifier_IsRepeated) {
     // Repeated fields shift the type number up (unlike other modifiers which
@@ -374,12 +379,7 @@ static bool upb_MiniTable_HasSub(upb_MiniTable_Field* field,
       field->descriptortype == kUpb_FieldType_Group) {
     return true;
   } else if (field->descriptortype == kUpb_FieldType_Enum) {
-    if (false) { // XXX (msg_modifiers & kUpb_MessageModifier_HasClosedEnums) {
-      return true;
-    } else {
-      field->descriptortype = kUpb_FieldType_Int32;
-      return false;
-    }
+    return true;
   } else if (field->descriptortype == kUpb_FieldType_String) {
     if (!(msg_modifiers & kUpb_MessageModifier_ValidateUtf8)) {
       field->descriptortype = kUpb_FieldType_Bytes;
@@ -921,6 +921,7 @@ upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
 
 upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
                                            upb_FieldType value_type,
+                                           bool value_is_proto3_enum,
                                            upb_MiniTablePlatform platform,
                                            upb_Arena* arena) {
   upb_MiniTable* ret = upb_Arena_Malloc(arena, sizeof(*ret));
@@ -928,8 +929,10 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
   if (!ret || !fields) return NULL;
 
   upb_MiniTable_Sub* subs = NULL;
+  if (value_is_proto3_enum) value_type = kUpb_FieldType_Int32;
   if (value_type == kUpb_FieldType_Message ||
-      value_type == kUpb_FieldType_Group) {
+      value_type == kUpb_FieldType_Group ||
+      value_type == kUpb_FieldType_Enum) {
     subs = upb_Arena_Malloc(arena, sizeof(*subs));
     if (!subs) return NULL;
   }
@@ -958,6 +961,53 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
   ret->subs = subs;
   ret->fields = fields;
   return ret;
+}
+
+upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
+                                            upb_Arena* arena,
+                                            upb_Status* status) {
+  upb_MtDecoder decoder = {
+      .status = status,
+  };
+
+  if (UPB_SETJMP(decoder.err)) {
+    return NULL;
+  }
+
+  upb_MiniTable_Enum* table = upb_Arena_Malloc(arena, sizeof(*table));
+  upb_MtDecoder_CheckOutOfMemory(&decoder, table);
+
+  table->mask = 0;
+  table->value_count = 0;
+  table->values = NULL;
+  
+  const char* ptr = data;
+  const char* end = UPB_PTRADD(data, len);
+
+  // Currently we do minimal validation of invariants (eg. that values are in
+  // order).  We may want to add these, but more likely, we will want the format
+  // to be a more compact variation where these errors are not possible.
+  while (end - ptr >= 4) {
+    uint32_t val;
+    memcpy(&val, ptr, 4);
+    if (val >= 64) break;
+    table->mask |= 1ULL << val;
+    ptr += 4;
+  }
+
+  if (ptr != end) {
+    size_t bytes = end - ptr;
+    if (bytes / 4 * 4 != bytes) {
+      upb_MtDecoder_ErrorFormat(&decoder, "Bytes should be a multiple of 4");
+      UPB_UNREACHABLE();
+    }
+    table->values = upb_Arena_Malloc(arena, end - ptr);
+    upb_MtDecoder_CheckOutOfMemory(&decoder, table);
+    memcpy((void*)table->values, ptr, end - ptr);
+    table->value_count = bytes / 4; 
+  }
+
+  return table;
 }
 
 bool upb_MiniTable_BuildExtension(const char* data, size_t len,

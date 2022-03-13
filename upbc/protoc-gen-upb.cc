@@ -38,6 +38,9 @@
 #include "upb/upb.hpp"
 #include "upbc/common.h"
 
+// Must be last.
+#include "upb/port_def.inc"
+
 namespace upbc {
 namespace {
 
@@ -472,8 +475,11 @@ class FilePlatformLayout {
     } else if (m->options().map_entry()) {
       return upb_MiniTable_BuildMapEntry(
           static_cast<upb_FieldType>(m->map_key()->type()),
-          static_cast<upb_FieldType>(m->map_value()->type()), platform_,
-          arena_.ptr());
+          static_cast<upb_FieldType>(m->map_value()->type()),
+          m->map_value()->enum_type() &&
+              m->map_value()->enum_type()->file()->syntax() ==
+                  protobuf::FileDescriptor::SYNTAX_PROTO3,
+          platform_, arena_.ptr());
     } else {
       return MakeRegularMiniTable(m);
     }
@@ -508,9 +514,7 @@ class FilePlatformLayout {
   uint64_t GetMessageModifiers(const protobuf::Descriptor* m) {
     uint64_t ret = 0;
 
-    if (m->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2) {
-      ret |= kUpb_MessageModifier_HasClosedEnums;
-    } else {
+    if (m->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO3) {
       ret |= kUpb_MessageModifier_ValidateUtf8;
       ret |= kUpb_MessageModifier_DefaultIsPacked;
     }
@@ -529,6 +533,10 @@ class FilePlatformLayout {
     if (f->is_repeated()) ret |= kUpb_FieldModifier_IsRepeated;
     if (f->is_required()) ret |= kUpb_FieldModifier_IsRequired;
     if (f->is_packed()) ret |= kUpb_FieldModifier_IsPacked;
+    if (f->enum_type() && f->enum_type()->file()->syntax() ==
+                              protobuf::FileDescriptor::SYNTAX_PROTO2) {
+      ret |= kUpb_FieldModifier_IsClosedEnum;
+    }
     if (f->is_optional() && !f->has_presence()) {
       ret |= kUpb_FieldModifier_IsProto3Singular;
     }
@@ -1245,7 +1253,6 @@ int GetTableSlot(const protobuf::FieldDescriptor* field) {
   return (tag & 0xf8) >> 3;
 }
 
-#include "upb/port_def.inc"
 bool TryFillTableEntry(const FileLayout& layout,
                        const protobuf::FieldDescriptor* field,
                        TableEntry& ent) {
