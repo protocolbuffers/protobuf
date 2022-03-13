@@ -60,7 +60,7 @@ typedef enum {
 } upb_EncodedType;
 
 typedef enum {
-  kUpb_EncodedFieldModifier_IsUnpacked = 1 << 0,
+  kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
   kUpb_EncodedFieldModifier_JspbString = 1 << 1,
   // upb only.
   kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
@@ -226,7 +226,7 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
   }
   if ((field_mod & kUpb_FieldModifier_IsPacked) !=
       (in->msg_mod & kUpb_MessageModifier_DefaultIsPacked)) {
-    encoded_modifiers |= kUpb_EncodedFieldModifier_IsUnpacked;
+    encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
   }
   return upb_MtDataEncoder_PutModifier(e, ptr, encoded_modifiers);
 }
@@ -453,16 +453,21 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
                               msg_modifiers);
 }
 
-static void upb_MtDecoder_ModifyField(upb_MtDecoder* d, uint32_t mod,
+static void upb_MtDecoder_ModifyField(upb_MtDecoder* d, uint32_t message_modifiers,
+                                      uint32_t field_modifiers,
                                       upb_MiniTable_Field* field) {
-  if (mod & kUpb_EncodedFieldModifier_IsUnpacked) {
-    field->mode &= ~kUpb_LabelFlags_IsPacked;
-  } else {
+  static const unsigned kPackableTypes =
+      -1U & ~(1 << kUpb_FieldType_String) & ~(1U << kUpb_FieldType_Bytes) &
+      ~(1U << kUpb_FieldType_Message) & ~(1U << kUpb_FieldType_Group);
+  bool packed = (message_modifiers & kUpb_MessageModifier_DefaultIsPacked) ^
+                (field_modifiers & kUpb_EncodedFieldModifier_FlipPacked);
+  bool packable = (1 << field->descriptortype) & kPackableTypes;
+  if (upb_FieldMode_Get(field) == kUpb_FieldMode_Array && packed && packable) {
     field->mode |= kUpb_LabelFlags_IsPacked;
   }
 
-  bool singular = mod & kUpb_EncodedFieldModifier_IsProto3Singular;
-  bool required = mod & kUpb_EncodedFieldModifier_IsRequired;
+  bool singular = field_modifiers & kUpb_EncodedFieldModifier_IsProto3Singular;
+  bool required = field_modifiers & kUpb_EncodedFieldModifier_IsRequired;
 
   // Validate.
   if ((singular || required) && field->offset != kHasbitPresence) {
@@ -576,7 +581,7 @@ static const char* upb_MtDecoder_ParseModifier(upb_MtDecoder* d,
                                          kUpb_EncodedValue_MinModifier,
                                          kUpb_EncodedValue_MaxModifier, &mod);
   if (last_field) {
-    upb_MtDecoder_ModifyField(d, mod, last_field);
+    upb_MtDecoder_ModifyField(d, *msg_modifiers, mod, last_field);
   } else {
     if (!d->table) {
       upb_MtDecoder_ErrorFormat(d, "Extensions cannot have message modifiers");

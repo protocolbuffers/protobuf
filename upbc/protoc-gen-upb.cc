@@ -549,7 +549,7 @@ class FilePlatformLayout {
 
     if (f->is_repeated()) ret |= kUpb_FieldModifier_IsRepeated;
     if (f->is_required()) ret |= kUpb_FieldModifier_IsRequired;
-    if (f->is_packed()) ret |= kUpb_FieldModifier_IsPacked;  // TODO
+    if (f->is_packed()) ret |= kUpb_FieldModifier_IsPacked;
     if (f->is_optional() && !f->has_presence()) {
       ret |= kUpb_FieldModifier_IsProto3Singular;
     }
