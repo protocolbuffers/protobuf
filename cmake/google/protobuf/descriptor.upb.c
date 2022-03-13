@@ -17,13 +17,17 @@ static const upb_MiniTable_Sub google_protobuf_FileDescriptorSet_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_FileDescriptorSet__fields[1] = {
-  {1, UPB_SIZE(0, 0), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_FileDescriptorSet_msginit = {
   &google_protobuf_FileDescriptorSet_submsgs[0],
   &google_protobuf_FileDescriptorSet__fields[0],
-  UPB_SIZE(4, 8), 1, kUpb_ExtMode_NonExtendable, 1, 255, 0,
+  UPB_SIZE(4, 8), 1, kUpb_ExtMode_NonExtendable, 1, 8, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000000003f00000a, &upb_prm_1bt_maxmaxb},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_FileDescriptorProto_submsgs[6] = {
@@ -36,24 +40,42 @@ static const upb_MiniTable_Sub google_protobuf_FileDescriptorProto_submsgs[6] = 
 };
 
 static const upb_MiniTable_Field google_protobuf_FileDescriptorProto__fields[12] = {
-  {1, UPB_SIZE(4, 8), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), 2, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(20, 40), 0, kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(24, 48), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(28, 56), 0, 1, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(32, 64), 0, 2, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {7, UPB_SIZE(36, 72), 0, 3, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {8, UPB_SIZE(40, 80), 3, 4, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {9, UPB_SIZE(44, 88), 4, 5, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {10, UPB_SIZE(48, 96), 0, kUpb_NoSub, 5, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {11, UPB_SIZE(52, 104), 0, kUpb_NoSub, 5, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {12, UPB_SIZE(56, 112), 5, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(12, 24), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(20, 40), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(24, 48), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(28, 56), UPB_SIZE(0, 0), 1, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(32, 64), UPB_SIZE(0, 0), 2, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {7, UPB_SIZE(36, 72), UPB_SIZE(0, 0), 3, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {8, UPB_SIZE(40, 80), UPB_SIZE(3, 3), 4, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {9, UPB_SIZE(44, 88), UPB_SIZE(4, 4), 5, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {10, UPB_SIZE(48, 96), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {11, UPB_SIZE(52, 104), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {12, UPB_SIZE(56, 112), UPB_SIZE(5, 5), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_FileDescriptorProto_msginit = {
   &google_protobuf_FileDescriptorProto_submsgs[0],
   &google_protobuf_FileDescriptorProto__fields[0],
-  UPB_SIZE(64, 128), 12, kUpb_ExtMode_NonExtendable, 12, 255, 0,
+  UPB_SIZE(64, 128), 12, kUpb_ExtMode_NonExtendable, 12, 120, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800000100000a, &upb_psb_1bt},
+    {0x0018000002000012, &upb_psb_1bt},
+    {0x002800003f00001a, &upb_prb_1bt},
+    {0x003000003f000022, &upb_prm_1bt_maxmaxb},
+    {0x003800003f01002a, &upb_prm_1bt_maxmaxb},
+    {0x004000003f020032, &upb_prm_1bt_maxmaxb},
+    {0x004800003f03003a, &upb_prm_1bt_maxmaxb},
+    {0x0050000003040042, &upb_psm_1bt_maxmaxb},
+    {0x005800000405004a, &upb_psm_1bt_maxmaxb},
+    {0x006000003f000050, &upb_prv4_1bt},
+    {0x006800003f000058, &upb_prv4_1bt},
+    {0x0070000005000062, &upb_psb_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_DescriptorProto_submsgs[8] = {
@@ -68,22 +90,40 @@ static const upb_MiniTable_Sub google_protobuf_DescriptorProto_submsgs[8] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_DescriptorProto__fields[10] = {
-  {1, UPB_SIZE(4, 8), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(16, 32), 0, 1, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(20, 40), 0, 2, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(24, 48), 0, 3, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(28, 56), 0, 4, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {7, UPB_SIZE(32, 64), 2, 5, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {8, UPB_SIZE(36, 72), 0, 6, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {9, UPB_SIZE(40, 80), 0, 7, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {10, UPB_SIZE(44, 88), 0, kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(12, 24), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(16, 32), UPB_SIZE(0, 0), 1, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(20, 40), UPB_SIZE(0, 0), 2, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(24, 48), UPB_SIZE(0, 0), 3, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(28, 56), UPB_SIZE(0, 0), 4, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {7, UPB_SIZE(32, 64), UPB_SIZE(2, 2), 5, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {8, UPB_SIZE(36, 72), UPB_SIZE(0, 0), 6, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {9, UPB_SIZE(40, 80), UPB_SIZE(0, 0), 7, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {10, UPB_SIZE(44, 88), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_DescriptorProto_msginit = {
   &google_protobuf_DescriptorProto_submsgs[0],
   &google_protobuf_DescriptorProto__fields[0],
-  UPB_SIZE(48, 96), 10, kUpb_ExtMode_NonExtendable, 10, 255, 0,
+  UPB_SIZE(48, 96), 10, kUpb_ExtMode_NonExtendable, 10, 120, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800000100000a, &upb_psb_1bt},
+    {0x001800003f000012, &upb_prm_1bt_maxmaxb},
+    {0x002000003f01001a, &upb_prm_1bt_maxmaxb},
+    {0x002800003f020022, &upb_prm_1bt_maxmaxb},
+    {0x003000003f03002a, &upb_prm_1bt_maxmaxb},
+    {0x003800003f040032, &upb_prm_1bt_maxmaxb},
+    {0x004000000205003a, &upb_psm_1bt_maxmaxb},
+    {0x004800003f060042, &upb_prm_1bt_maxmaxb},
+    {0x005000003f07004a, &upb_prm_1bt_maxmaxb},
+    {0x005800003f000052, &upb_prb_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_DescriptorProto_ExtensionRange_submsgs[1] = {
@@ -91,26 +131,38 @@ static const upb_MiniTable_Sub google_protobuf_DescriptorProto_ExtensionRange_su
 };
 
 static const upb_MiniTable_Field google_protobuf_DescriptorProto_ExtensionRange__fields[3] = {
-  {1, UPB_SIZE(4, 4), 1, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(8, 8), 2, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(12, 16), 3, 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 4), UPB_SIZE(1, 1), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(8, 8), UPB_SIZE(2, 2), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(12, 16), UPB_SIZE(3, 3), 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_DescriptorProto_ExtensionRange_msginit = {
   &google_protobuf_DescriptorProto_ExtensionRange_submsgs[0],
   &google_protobuf_DescriptorProto_ExtensionRange__fields[0],
-  UPB_SIZE(16, 24), 3, kUpb_ExtMode_NonExtendable, 3, 255, 0,
+  UPB_SIZE(16, 24), 3, kUpb_ExtMode_NonExtendable, 3, 24, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0004000001000008, &upb_psv4_1bt},
+    {0x0008000002000010, &upb_psv4_1bt},
+    {0x001000000300001a, &upb_psm_1bt_maxmaxb},
+  }),
 };
 
 static const upb_MiniTable_Field google_protobuf_DescriptorProto_ReservedRange__fields[2] = {
-  {1, UPB_SIZE(4, 4), 1, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(8, 8), 2, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 4), UPB_SIZE(1, 1), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(8, 8), UPB_SIZE(2, 2), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_DescriptorProto_ReservedRange_msginit = {
   NULL,
   &google_protobuf_DescriptorProto_ReservedRange__fields[0],
-  UPB_SIZE(12, 12), 2, kUpb_ExtMode_NonExtendable, 2, 255, 0,
+  UPB_SIZE(12, 12), 2, kUpb_ExtMode_NonExtendable, 2, 24, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0004000001000008, &upb_psv4_1bt},
+    {0x0008000002000010, &upb_psv4_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_ExtensionRangeOptions_submsgs[1] = {
@@ -118,13 +170,47 @@ static const upb_MiniTable_Sub google_protobuf_ExtensionRangeOptions_submsgs[1] 
 };
 
 static const upb_MiniTable_Field google_protobuf_ExtensionRangeOptions__fields[1] = {
-  {999, UPB_SIZE(0, 0), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_ExtensionRangeOptions_msginit = {
   &google_protobuf_ExtensionRangeOptions_submsgs[0],
   &google_protobuf_ExtensionRangeOptions__fields[0],
-  UPB_SIZE(4, 8), 1, kUpb_ExtMode_Extendable, 0, 255, 0,
+  UPB_SIZE(4, 8), 1, kUpb_ExtMode_Extendable, 0, 248, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000000003f003eba, &upb_prm_2bt_maxmaxb},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_FieldDescriptorProto_submsgs[1] = {
@@ -132,23 +218,57 @@ static const upb_MiniTable_Sub google_protobuf_FieldDescriptorProto_submsgs[1] =
 };
 
 static const upb_MiniTable_Field google_protobuf_FieldDescriptorProto__fields[11] = {
-  {1, UPB_SIZE(24, 24), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(32, 40), 2, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(4, 4), 3, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(8, 8), 4, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(12, 12), 5, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(40, 56), 6, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {7, UPB_SIZE(48, 72), 7, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {8, UPB_SIZE(56, 88), 8, 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {9, UPB_SIZE(16, 16), 9, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {10, UPB_SIZE(60, 96), 10, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {17, UPB_SIZE(20, 20), 11, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(24, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(32, 40), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(4, 4), UPB_SIZE(3, 3), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(8, 8), UPB_SIZE(4, 4), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(12, 12), UPB_SIZE(5, 5), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(40, 56), UPB_SIZE(6, 6), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {7, UPB_SIZE(48, 72), UPB_SIZE(7, 7), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {8, UPB_SIZE(56, 88), UPB_SIZE(8, 8), 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {9, UPB_SIZE(16, 16), UPB_SIZE(9, 9), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {10, UPB_SIZE(60, 96), UPB_SIZE(10, 10), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {17, UPB_SIZE(20, 20), UPB_SIZE(11, 11), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_FieldDescriptorProto_msginit = {
   &google_protobuf_FieldDescriptorProto_submsgs[0],
   &google_protobuf_FieldDescriptorProto__fields[0],
-  UPB_SIZE(68, 112), 11, kUpb_ExtMode_NonExtendable, 10, 255, 0,
+  UPB_SIZE(68, 112), 11, kUpb_ExtMode_NonExtendable, 10, 248, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x001800000100000a, &upb_psb_1bt},
+    {0x0028000002000012, &upb_psb_1bt},
+    {0x0004000003000018, &upb_psv4_1bt},
+    {0x0008000004000020, &upb_psv4_1bt},
+    {0x000c000005000028, &upb_psv4_1bt},
+    {0x0038000006000032, &upb_psb_1bt},
+    {0x004800000700003a, &upb_psb_1bt},
+    {0x0058000008000042, &upb_psm_1bt_maxmaxb},
+    {0x0010000009000048, &upb_psv4_1bt},
+    {0x006000000a000052, &upb_psb_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x001400000b000188, &upb_psb1_2bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_OneofDescriptorProto_submsgs[1] = {
@@ -156,14 +276,20 @@ static const upb_MiniTable_Sub google_protobuf_OneofDescriptorProto_submsgs[1] =
 };
 
 static const upb_MiniTable_Field google_protobuf_OneofDescriptorProto__fields[2] = {
-  {1, UPB_SIZE(4, 8), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), 2, 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(12, 24), UPB_SIZE(2, 2), 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_OneofDescriptorProto_msginit = {
   &google_protobuf_OneofDescriptorProto_submsgs[0],
   &google_protobuf_OneofDescriptorProto__fields[0],
-  UPB_SIZE(16, 32), 2, kUpb_ExtMode_NonExtendable, 2, 255, 0,
+  UPB_SIZE(16, 32), 2, kUpb_ExtMode_NonExtendable, 2, 24, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800000100000a, &upb_psb_1bt},
+    {0x0018000002000012, &upb_psm_1bt_maxmaxb},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_EnumDescriptorProto_submsgs[3] = {
@@ -173,28 +299,44 @@ static const upb_MiniTable_Sub google_protobuf_EnumDescriptorProto_submsgs[3] = 
 };
 
 static const upb_MiniTable_Field google_protobuf_EnumDescriptorProto__fields[5] = {
-  {1, UPB_SIZE(4, 8), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(16, 32), 2, 1, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(20, 40), 0, 2, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(24, 48), 0, kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(12, 24), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(16, 32), UPB_SIZE(2, 2), 1, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(20, 40), UPB_SIZE(0, 0), 2, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(24, 48), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_EnumDescriptorProto_msginit = {
   &google_protobuf_EnumDescriptorProto_submsgs[0],
   &google_protobuf_EnumDescriptorProto__fields[0],
-  UPB_SIZE(28, 56), 5, kUpb_ExtMode_NonExtendable, 5, 255, 0,
+  UPB_SIZE(28, 56), 5, kUpb_ExtMode_NonExtendable, 5, 56, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800000100000a, &upb_psb_1bt},
+    {0x001800003f000012, &upb_prm_1bt_maxmaxb},
+    {0x002000000201001a, &upb_psm_1bt_maxmaxb},
+    {0x002800003f020022, &upb_prm_1bt_maxmaxb},
+    {0x003000003f00002a, &upb_prb_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Field google_protobuf_EnumDescriptorProto_EnumReservedRange__fields[2] = {
-  {1, UPB_SIZE(4, 4), 1, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(8, 8), 2, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 4), UPB_SIZE(1, 1), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(8, 8), UPB_SIZE(2, 2), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit = {
   NULL,
   &google_protobuf_EnumDescriptorProto_EnumReservedRange__fields[0],
-  UPB_SIZE(12, 12), 2, kUpb_ExtMode_NonExtendable, 2, 255, 0,
+  UPB_SIZE(12, 12), 2, kUpb_ExtMode_NonExtendable, 2, 24, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0004000001000008, &upb_psv4_1bt},
+    {0x0008000002000010, &upb_psv4_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_EnumValueDescriptorProto_submsgs[1] = {
@@ -202,15 +344,21 @@ static const upb_MiniTable_Sub google_protobuf_EnumValueDescriptorProto_submsgs[
 };
 
 static const upb_MiniTable_Field google_protobuf_EnumValueDescriptorProto__fields[3] = {
-  {1, UPB_SIZE(8, 8), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(4, 4), 2, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(16, 24), 3, 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(8, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(4, 4), UPB_SIZE(2, 2), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(16, 24), UPB_SIZE(3, 3), 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_EnumValueDescriptorProto_msginit = {
   &google_protobuf_EnumValueDescriptorProto_submsgs[0],
   &google_protobuf_EnumValueDescriptorProto__fields[0],
-  UPB_SIZE(20, 32), 3, kUpb_ExtMode_NonExtendable, 3, 255, 0,
+  UPB_SIZE(20, 32), 3, kUpb_ExtMode_NonExtendable, 3, 24, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800000100000a, &upb_psb_1bt},
+    {0x0004000002000010, &upb_psv4_1bt},
+    {0x001800000300001a, &upb_psm_1bt_maxmaxb},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_ServiceDescriptorProto_submsgs[2] = {
@@ -219,15 +367,21 @@ static const upb_MiniTable_Sub google_protobuf_ServiceDescriptorProto_submsgs[2]
 };
 
 static const upb_MiniTable_Field google_protobuf_ServiceDescriptorProto__fields[3] = {
-  {1, UPB_SIZE(4, 8), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(16, 32), 2, 1, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(12, 24), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(16, 32), UPB_SIZE(2, 2), 1, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_ServiceDescriptorProto_msginit = {
   &google_protobuf_ServiceDescriptorProto_submsgs[0],
   &google_protobuf_ServiceDescriptorProto__fields[0],
-  UPB_SIZE(20, 40), 3, kUpb_ExtMode_NonExtendable, 3, 255, 0,
+  UPB_SIZE(20, 40), 3, kUpb_ExtMode_NonExtendable, 3, 24, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800000100000a, &upb_psb_1bt},
+    {0x001800003f000012, &upb_prm_1bt_maxmaxb},
+    {0x002000000201001a, &upb_psm_1bt_maxmaxb},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_MethodDescriptorProto_submsgs[1] = {
@@ -235,18 +389,28 @@ static const upb_MiniTable_Sub google_protobuf_MethodDescriptorProto_submsgs[1] 
 };
 
 static const upb_MiniTable_Field google_protobuf_MethodDescriptorProto__fields[6] = {
-  {1, UPB_SIZE(4, 8), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), 2, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(20, 40), 3, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(28, 56), 4, 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(1, 1), 5, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(2, 2), 6, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(12, 24), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(20, 40), UPB_SIZE(3, 3), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(28, 56), UPB_SIZE(4, 4), 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(1, 1), UPB_SIZE(5, 5), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(2, 2), UPB_SIZE(6, 6), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_MethodDescriptorProto_msginit = {
   &google_protobuf_MethodDescriptorProto_submsgs[0],
   &google_protobuf_MethodDescriptorProto__fields[0],
-  UPB_SIZE(32, 64), 6, kUpb_ExtMode_NonExtendable, 6, 255, 0,
+  UPB_SIZE(32, 64), 6, kUpb_ExtMode_NonExtendable, 6, 56, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800000100000a, &upb_psb_1bt},
+    {0x0018000002000012, &upb_psb_1bt},
+    {0x002800000300001a, &upb_psb_1bt},
+    {0x0038000004000022, &upb_psm_1bt_maxmaxb},
+    {0x0001000005000028, &upb_psb1_1bt},
+    {0x0002000006000030, &upb_psb1_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_FileOptions_submsgs[1] = {
@@ -254,33 +418,67 @@ static const upb_MiniTable_Sub google_protobuf_FileOptions_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_FileOptions__fields[21] = {
-  {1, UPB_SIZE(20, 24), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {8, UPB_SIZE(28, 40), 2, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {9, UPB_SIZE(4, 4), 3, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {10, UPB_SIZE(8, 8), 4, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {11, UPB_SIZE(36, 56), 5, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {16, UPB_SIZE(9, 9), 6, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {17, UPB_SIZE(10, 10), 7, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {18, UPB_SIZE(11, 11), 8, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {20, UPB_SIZE(12, 12), 9, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {23, UPB_SIZE(13, 13), 10, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {27, UPB_SIZE(14, 14), 11, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {31, UPB_SIZE(15, 15), 12, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {36, UPB_SIZE(44, 72), 13, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {37, UPB_SIZE(52, 88), 14, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {39, UPB_SIZE(60, 104), 15, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {40, UPB_SIZE(68, 120), 16, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {41, UPB_SIZE(76, 136), 17, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {42, UPB_SIZE(16, 16), 18, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {44, UPB_SIZE(84, 152), 19, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {45, UPB_SIZE(92, 168), 20, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(100, 184), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(20, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {8, UPB_SIZE(28, 40), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {9, UPB_SIZE(4, 4), UPB_SIZE(3, 3), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {10, UPB_SIZE(8, 8), UPB_SIZE(4, 4), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {11, UPB_SIZE(36, 56), UPB_SIZE(5, 5), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {16, UPB_SIZE(9, 9), UPB_SIZE(6, 6), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {17, UPB_SIZE(10, 10), UPB_SIZE(7, 7), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {18, UPB_SIZE(11, 11), UPB_SIZE(8, 8), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {20, UPB_SIZE(12, 12), UPB_SIZE(9, 9), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {23, UPB_SIZE(13, 13), UPB_SIZE(10, 10), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {27, UPB_SIZE(14, 14), UPB_SIZE(11, 11), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {31, UPB_SIZE(15, 15), UPB_SIZE(12, 12), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {36, UPB_SIZE(44, 72), UPB_SIZE(13, 13), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {37, UPB_SIZE(52, 88), UPB_SIZE(14, 14), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {39, UPB_SIZE(60, 104), UPB_SIZE(15, 15), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {40, UPB_SIZE(68, 120), UPB_SIZE(16, 16), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {41, UPB_SIZE(76, 136), UPB_SIZE(17, 17), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {42, UPB_SIZE(16, 16), UPB_SIZE(18, 18), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {44, UPB_SIZE(84, 152), UPB_SIZE(19, 19), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {45, UPB_SIZE(92, 168), UPB_SIZE(20, 20), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(100, 184), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_FileOptions_msginit = {
   &google_protobuf_FileOptions_submsgs[0],
   &google_protobuf_FileOptions__fields[0],
-  UPB_SIZE(104, 192), 21, kUpb_ExtMode_Extendable, 1, 255, 0,
+  UPB_SIZE(104, 192), 21, kUpb_ExtMode_Extendable, 1, 248, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x001800000100000a, &upb_psb_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0028000002000042, &upb_psb_1bt},
+    {0x0004000003000048, &upb_psv4_1bt},
+    {0x0008000004000050, &upb_psb1_1bt},
+    {0x003800000500005a, &upb_psb_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0009000006000180, &upb_psb1_2bt},
+    {0x000a000007000188, &upb_psb1_2bt},
+    {0x000b000008000190, &upb_psb1_2bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000c0000090001a0, &upb_psb1_2bt},
+    {0x005800000e0002aa, &upb_psb_2bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000d00000a0001b8, &upb_psb1_2bt},
+    {0x00780000100002c2, &upb_psb_2bt},
+    {0x00880000110002ca, &upb_psb_2bt},
+    {0x00100000120002d0, &upb_psb1_2bt},
+    {0x000e00000b0001d8, &upb_psb1_2bt},
+    {0x00980000130002e2, &upb_psb_2bt},
+    {0x00a80000140002ea, &upb_psb_2bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000f00000c0001f8, &upb_psb1_2bt},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_MessageOptions_submsgs[1] = {
@@ -288,17 +486,51 @@ static const upb_MiniTable_Sub google_protobuf_MessageOptions_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_MessageOptions__fields[5] = {
-  {1, UPB_SIZE(1, 1), 1, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(2, 2), 2, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(3, 3), 3, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {7, UPB_SIZE(4, 4), 4, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(8, 8), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(1, 1), UPB_SIZE(1, 1), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(2, 2), UPB_SIZE(2, 2), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(3, 3), UPB_SIZE(3, 3), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {7, UPB_SIZE(4, 4), UPB_SIZE(4, 4), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(8, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_MessageOptions_msginit = {
   &google_protobuf_MessageOptions_submsgs[0],
   &google_protobuf_MessageOptions__fields[0],
-  UPB_SIZE(12, 16), 5, kUpb_ExtMode_Extendable, 3, 255, 0,
+  UPB_SIZE(12, 16), 5, kUpb_ExtMode_Extendable, 3, 248, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0001000001000008, &upb_psb1_1bt},
+    {0x0002000002000010, &upb_psb1_1bt},
+    {0x0003000003000018, &upb_psb1_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0004000004000038, &upb_psb1_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800003f003eba, &upb_prm_2bt_maxmaxb},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_FieldOptions_submsgs[1] = {
@@ -306,20 +538,54 @@ static const upb_MiniTable_Sub google_protobuf_FieldOptions_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_FieldOptions__fields[8] = {
-  {1, UPB_SIZE(4, 4), 1, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(8, 8), 2, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(9, 9), 3, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(10, 10), 4, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(12, 12), 5, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {10, UPB_SIZE(16, 16), 6, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {15, UPB_SIZE(17, 17), 7, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(20, 24), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 4), UPB_SIZE(1, 1), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(8, 8), UPB_SIZE(2, 2), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(9, 9), UPB_SIZE(3, 3), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(10, 10), UPB_SIZE(4, 4), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(12, 12), UPB_SIZE(5, 5), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {10, UPB_SIZE(16, 16), UPB_SIZE(6, 6), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {15, UPB_SIZE(17, 17), UPB_SIZE(7, 7), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(20, 24), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_FieldOptions_msginit = {
   &google_protobuf_FieldOptions_submsgs[0],
   &google_protobuf_FieldOptions__fields[0],
-  UPB_SIZE(24, 32), 8, kUpb_ExtMode_Extendable, 3, 255, 0,
+  UPB_SIZE(24, 32), 8, kUpb_ExtMode_Extendable, 3, 248, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0004000001000008, &upb_psv4_1bt},
+    {0x0008000002000010, &upb_psb1_1bt},
+    {0x0009000003000018, &upb_psb1_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000a000004000028, &upb_psb1_1bt},
+    {0x000c000005000030, &upb_psv4_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0010000006000050, &upb_psb1_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0011000007000078, &upb_psb1_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x001800003f003eba, &upb_prm_2bt_maxmaxb},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_OneofOptions_submsgs[1] = {
@@ -327,13 +593,47 @@ static const upb_MiniTable_Sub google_protobuf_OneofOptions_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_OneofOptions__fields[1] = {
-  {999, UPB_SIZE(0, 0), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_OneofOptions_msginit = {
   &google_protobuf_OneofOptions_submsgs[0],
   &google_protobuf_OneofOptions__fields[0],
-  UPB_SIZE(4, 8), 1, kUpb_ExtMode_Extendable, 0, 255, 0,
+  UPB_SIZE(4, 8), 1, kUpb_ExtMode_Extendable, 0, 248, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000000003f003eba, &upb_prm_2bt_maxmaxb},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_EnumOptions_submsgs[1] = {
@@ -341,15 +641,49 @@ static const upb_MiniTable_Sub google_protobuf_EnumOptions_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_EnumOptions__fields[3] = {
-  {2, UPB_SIZE(1, 1), 1, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(2, 2), 2, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(4, 8), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(1, 1), UPB_SIZE(1, 1), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(2, 2), UPB_SIZE(2, 2), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_EnumOptions_msginit = {
   &google_protobuf_EnumOptions_submsgs[0],
   &google_protobuf_EnumOptions__fields[0],
-  UPB_SIZE(8, 16), 3, kUpb_ExtMode_Extendable, 0, 255, 0,
+  UPB_SIZE(8, 16), 3, kUpb_ExtMode_Extendable, 0, 248, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0001000001000010, &upb_psb1_1bt},
+    {0x0002000002000018, &upb_psb1_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800003f003eba, &upb_prm_2bt_maxmaxb},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_EnumValueOptions_submsgs[1] = {
@@ -357,14 +691,48 @@ static const upb_MiniTable_Sub google_protobuf_EnumValueOptions_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_EnumValueOptions__fields[2] = {
-  {1, UPB_SIZE(1, 1), 1, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(4, 8), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(1, 1), UPB_SIZE(1, 1), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_EnumValueOptions_msginit = {
   &google_protobuf_EnumValueOptions_submsgs[0],
   &google_protobuf_EnumValueOptions__fields[0],
-  UPB_SIZE(8, 16), 2, kUpb_ExtMode_Extendable, 1, 255, 0,
+  UPB_SIZE(8, 16), 2, kUpb_ExtMode_Extendable, 1, 248, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0001000001000008, &upb_psb1_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800003f003eba, &upb_prm_2bt_maxmaxb},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_ServiceOptions_submsgs[1] = {
@@ -372,14 +740,48 @@ static const upb_MiniTable_Sub google_protobuf_ServiceOptions_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_ServiceOptions__fields[2] = {
-  {33, UPB_SIZE(1, 1), 1, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(4, 8), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {33, UPB_SIZE(1, 1), UPB_SIZE(1, 1), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_ServiceOptions_msginit = {
   &google_protobuf_ServiceOptions_submsgs[0],
   &google_protobuf_ServiceOptions__fields[0],
-  UPB_SIZE(8, 16), 2, kUpb_ExtMode_Extendable, 0, 255, 0,
+  UPB_SIZE(8, 16), 2, kUpb_ExtMode_Extendable, 0, 248, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0001000001000288, &upb_psb1_2bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800003f003eba, &upb_prm_2bt_maxmaxb},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_MethodOptions_submsgs[1] = {
@@ -387,15 +789,49 @@ static const upb_MiniTable_Sub google_protobuf_MethodOptions_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_MethodOptions__fields[3] = {
-  {33, UPB_SIZE(1, 1), 1, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {34, UPB_SIZE(4, 4), 2, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(8, 8), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {33, UPB_SIZE(1, 1), UPB_SIZE(1, 1), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {34, UPB_SIZE(4, 4), UPB_SIZE(2, 2), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(8, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_MethodOptions_msginit = {
   &google_protobuf_MethodOptions_submsgs[0],
   &google_protobuf_MethodOptions__fields[0],
-  UPB_SIZE(12, 16), 3, kUpb_ExtMode_Extendable, 0, 255, 0,
+  UPB_SIZE(12, 16), 3, kUpb_ExtMode_Extendable, 0, 248, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0001000001000288, &upb_psb1_2bt},
+    {0x0004000002000290, &upb_psv4_2bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800003f003eba, &upb_prm_2bt_maxmaxb},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_UninterpretedOption_submsgs[1] = {
@@ -403,30 +839,54 @@ static const upb_MiniTable_Sub google_protobuf_UninterpretedOption_submsgs[1] = 
 };
 
 static const upb_MiniTable_Field google_protobuf_UninterpretedOption__fields[7] = {
-  {2, UPB_SIZE(4, 8), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(8, 16), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(32, 64), 2, kUpb_NoSub, 4, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(40, 72), 3, kUpb_NoSub, 3, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(48, 80), 4, kUpb_NoSub, 1, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
-  {7, UPB_SIZE(16, 32), 5, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {8, UPB_SIZE(24, 48), 6, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(8, 16), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(32, 64), UPB_SIZE(2, 2), kUpb_NoSub, 4, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(40, 72), UPB_SIZE(3, 3), kUpb_NoSub, 3, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(48, 80), UPB_SIZE(4, 4), kUpb_NoSub, 1, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
+  {7, UPB_SIZE(16, 32), UPB_SIZE(5, 5), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {8, UPB_SIZE(24, 48), UPB_SIZE(6, 6), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_UninterpretedOption_msginit = {
   &google_protobuf_UninterpretedOption_submsgs[0],
   &google_protobuf_UninterpretedOption__fields[0],
-  UPB_SIZE(56, 88), 7, kUpb_ExtMode_NonExtendable, 0, 255, 0,
+  UPB_SIZE(56, 88), 7, kUpb_ExtMode_NonExtendable, 0, 120, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800003f000012, &upb_prm_1bt_maxmaxb},
+    {0x001000000100001a, &upb_psb_1bt},
+    {0x0040000002000020, &upb_psv8_1bt},
+    {0x0048000003000028, &upb_psv8_1bt},
+    {0x0050000004000031, &upb_psf8_1bt},
+    {0x002000000500003a, &upb_psb_1bt},
+    {0x0030000006000042, &upb_psb_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Field google_protobuf_UninterpretedOption_NamePart__fields[2] = {
-  {1, UPB_SIZE(4, 8), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(1, 1), 2, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(1, 1), UPB_SIZE(2, 2), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_UninterpretedOption_NamePart_msginit = {
   NULL,
   &google_protobuf_UninterpretedOption_NamePart__fields[0],
-  UPB_SIZE(12, 24), 2, kUpb_ExtMode_NonExtendable, 2, 255, 2,
+  UPB_SIZE(12, 24), 2, kUpb_ExtMode_NonExtendable, 2, 24, 2,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800000100000a, &upb_psb_1bt},
+    {0x0001000002000010, &upb_psb1_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_SourceCodeInfo_submsgs[1] = {
@@ -434,27 +894,41 @@ static const upb_MiniTable_Sub google_protobuf_SourceCodeInfo_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_SourceCodeInfo__fields[1] = {
-  {1, UPB_SIZE(0, 0), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_SourceCodeInfo_msginit = {
   &google_protobuf_SourceCodeInfo_submsgs[0],
   &google_protobuf_SourceCodeInfo__fields[0],
-  UPB_SIZE(4, 8), 1, kUpb_ExtMode_NonExtendable, 1, 255, 0,
+  UPB_SIZE(4, 8), 1, kUpb_ExtMode_NonExtendable, 1, 8, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000000003f00000a, &upb_prm_1bt_maxmaxb},
+  }),
 };
 
 static const upb_MiniTable_Field google_protobuf_SourceCodeInfo_Location__fields[5] = {
-  {1, UPB_SIZE(4, 8), 0, kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(8, 16), 0, kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(12, 24), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(20, 40), 2, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(28, 56), 0, kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 8), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(8, 16), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(12, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(20, 40), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(28, 56), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_SourceCodeInfo_Location_msginit = {
   NULL,
   &google_protobuf_SourceCodeInfo_Location__fields[0],
-  UPB_SIZE(32, 64), 5, kUpb_ExtMode_NonExtendable, 4, 255, 0,
+  UPB_SIZE(32, 64), 5, kUpb_ExtMode_NonExtendable, 4, 56, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000800003f00000a, &upb_ppv4_1bt},
+    {0x001000003f000012, &upb_ppv4_1bt},
+    {0x001800000100001a, &upb_psb_1bt},
+    {0x0028000002000022, &upb_psb_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x003800003f000032, &upb_prb_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable_Sub google_protobuf_GeneratedCodeInfo_submsgs[1] = {
@@ -462,26 +936,40 @@ static const upb_MiniTable_Sub google_protobuf_GeneratedCodeInfo_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_GeneratedCodeInfo__fields[1] = {
-  {1, UPB_SIZE(0, 0), 0, 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_GeneratedCodeInfo_msginit = {
   &google_protobuf_GeneratedCodeInfo_submsgs[0],
   &google_protobuf_GeneratedCodeInfo__fields[0],
-  UPB_SIZE(4, 8), 1, kUpb_ExtMode_NonExtendable, 1, 255, 0,
+  UPB_SIZE(4, 8), 1, kUpb_ExtMode_NonExtendable, 1, 8, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x000000003f00000a, &upb_prm_1bt_maxmaxb},
+  }),
 };
 
 static const upb_MiniTable_Field google_protobuf_GeneratedCodeInfo_Annotation__fields[4] = {
-  {1, UPB_SIZE(12, 16), 0, kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(16, 24), 1, kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(4, 4), 2, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(8, 8), 3, kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(12, 16), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(16, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(4, 4), UPB_SIZE(2, 2), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(8, 8), UPB_SIZE(3, 3), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_GeneratedCodeInfo_Annotation_msginit = {
   NULL,
   &google_protobuf_GeneratedCodeInfo_Annotation__fields[0],
-  UPB_SIZE(24, 40), 4, kUpb_ExtMode_NonExtendable, 4, 255, 0,
+  UPB_SIZE(24, 40), 4, kUpb_ExtMode_NonExtendable, 4, 56, 0,
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &fastdecode_generic},
+    {0x001000003f00000a, &upb_ppv4_1bt},
+    {0x0018000001000012, &upb_psb_1bt},
+    {0x0004000002000018, &upb_psv4_1bt},
+    {0x0008000003000020, &upb_psv4_1bt},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+    {0x0000000000000000, &fastdecode_generic},
+  }),
 };
 
 static const upb_MiniTable *messages_layout[27] = {

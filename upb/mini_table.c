@@ -807,7 +807,7 @@ size_t upb_MtDecoder_Place(upb_MtDecoder* d, upb_FieldRep rep) {
   return ret;
 }
 
-static bool upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
+static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   upb_LayoutItem* end = UPB_PTRADD(d->vec.data, d->vec.size);
 
   // Compute offsets.
@@ -847,7 +847,8 @@ static bool upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
         break;
     }
   }
-  return true;
+
+  d->table->size = UPB_ALIGN_UP(d->table->size, 16);
 }
 
 upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,

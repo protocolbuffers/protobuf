@@ -196,18 +196,19 @@ UPB_INLINE size_t _upb_ArenaHas(upb_Arena* a) {
   return (size_t)(h->end - h->ptr);
 }
 
-UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
+#include <stdio.h>
+UPB_INLINE void* _upb_Arena_FastMalloc(upb_Arena* a, size_t size) {
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
-  void* ret;
-  size = UPB_ALIGN_MALLOC(size);
+  void* ret = h->ptr;
+  UPB_ASSERT(UPB_ALIGN_MALLOC((uintptr_t)ret) == (uintptr_t)ret);
 
-  if (UPB_UNLIKELY(_upb_ArenaHas(a) < size)) {
-    return _upb_Arena_SlowMalloc(a, size);
+  if (UPB_ALIGN_MALLOC(size) != size) {
+    fprintf(stderr, "YO: %d vs %d\n", (int)UPB_ALIGN_MALLOC(size), (int)size);
   }
-
-  ret = h->ptr;
-  h->ptr += size;
+  UPB_ASSERT(UPB_ALIGN_MALLOC(size) == size);
   UPB_UNPOISON_MEMORY_REGION(ret, size);
+
+  h->ptr += size;
 
 #if UPB_ASAN
   {
@@ -221,6 +222,16 @@ UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
 #endif
 
   return ret;
+}
+
+UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
+  size = UPB_ALIGN_MALLOC(size);
+
+  if (UPB_UNLIKELY(_upb_ArenaHas(a) < size)) {
+    return _upb_Arena_SlowMalloc(a, size);
+  }
+
+  return _upb_Arena_FastMalloc(a, size);
 }
 
 // Shrinks the last alloc from arena.
