@@ -150,6 +150,7 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 // For testing only.
 char upb_ToBase92(int8_t ch);
 char upb_FromBase92(uint8_t ch);
+bool upb_IsTypePackable(upb_FieldType type);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -110,6 +110,14 @@ char upb_FromBase92(uint8_t ch) {
   return kUpb_FromBase92[ch - ' '];
 }
 
+bool upb_IsTypePackable(upb_FieldType type) {
+  static const unsigned kPackableTypes =
+      -1U & ~(1 << kUpb_FieldType_String) & ~(1U << kUpb_FieldType_Bytes) &
+      ~(1U << kUpb_FieldType_Message) & ~(1U << kUpb_FieldType_Group);
+  return (1 << type) & kPackableTypes;
+}
+
+
 /** upb_MtDataEncoder *********************************************************/
 
 typedef struct {
@@ -171,6 +179,7 @@ char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
   return upb_MtDataEncoder_PutModifier(e, ptr, msg_mod);
 }
 
+#include <stdio.h>
 char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
                                  upb_FieldType type, uint32_t field_num,
                                  uint64_t field_mod) {
@@ -207,26 +216,29 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
   }
   in->last_field_num = field_num;
 
+  uint32_t encoded_modifiers = 0;
+
   // Put field type.
   int encoded_type = kUpb_TypeToEncoded[type];
   if (field_mod & kUpb_FieldModifier_IsRepeated) {
     // Repeated fields shift the type number up (unlike other modifiers which
     // are bit flags).
     encoded_type += kUpb_EncodedType_RepeatedBase;
+
+    bool field_is_packed = field_mod & kUpb_FieldModifier_IsPacked;
+    bool default_is_packed = in->msg_mod & kUpb_MessageModifier_DefaultIsPacked;
+    if (field_is_packed != default_is_packed && upb_IsTypePackable(type)) {
+      encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
+    }
   }
   ptr = upb_MtDataEncoder_Put(e, ptr, encoded_type);
   if (!ptr) return NULL;
 
-  uint32_t encoded_modifiers = 0;
   if (field_mod & kUpb_FieldModifier_IsProto3Singular) {
     encoded_modifiers |= kUpb_EncodedFieldModifier_IsProto3Singular;
   }
   if (field_mod & kUpb_FieldModifier_IsRequired) {
     encoded_modifiers |= kUpb_EncodedFieldModifier_IsRequired;
-  }
-  if ((field_mod & kUpb_FieldModifier_IsPacked) !=
-      (in->msg_mod & kUpb_MessageModifier_DefaultIsPacked)) {
-    encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
   }
   return upb_MtDataEncoder_PutModifier(e, ptr, encoded_modifiers);
 }
@@ -377,6 +389,11 @@ static bool upb_MiniTable_HasSub(upb_MiniTable_Field* field,
   return false;
 }
 
+static bool upb_MtDecoder_FieldIsPackable(upb_MiniTable_Field* field) {
+  return (field->mode & kUpb_FieldMode_Array) &&
+         upb_IsTypePackable(field->descriptortype);
+}
+
 static void upb_MiniTable_SetTypeAndSub(upb_MiniTable_Field* field,
                                         upb_FieldType type, uint32_t* sub_count,
                                         uint64_t msg_modifiers) {
@@ -385,6 +402,11 @@ static void upb_MiniTable_SetTypeAndSub(upb_MiniTable_Field* field,
     field->submsg_index = sub_count ? (*sub_count)++ : 0;
   } else {
     field->submsg_index = kUpb_NoSub;
+  }
+
+  if (upb_MtDecoder_FieldIsPackable(field) &&
+      (msg_modifiers & kUpb_MessageModifier_DefaultIsPacked)) {
+    field->mode |= kUpb_LabelFlags_IsPacked;
   }
 }
 
@@ -453,17 +475,17 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
                               msg_modifiers);
 }
 
+#include <stdio.h>
 static void upb_MtDecoder_ModifyField(upb_MtDecoder* d, uint32_t message_modifiers,
                                       uint32_t field_modifiers,
                                       upb_MiniTable_Field* field) {
-  static const unsigned kPackableTypes =
-      -1U & ~(1 << kUpb_FieldType_String) & ~(1U << kUpb_FieldType_Bytes) &
-      ~(1U << kUpb_FieldType_Message) & ~(1U << kUpb_FieldType_Group);
-  bool packed = (bool)(message_modifiers & kUpb_MessageModifier_DefaultIsPacked) ^
-                (bool)(field_modifiers & kUpb_EncodedFieldModifier_FlipPacked);
-  bool packable = (1 << field->descriptortype) & kPackableTypes;
-  if (upb_FieldMode_Get(field) == kUpb_FieldMode_Array && packed && packable) {
-    field->mode |= kUpb_LabelFlags_IsPacked;
+  if (field_modifiers & kUpb_EncodedFieldModifier_FlipPacked) {
+    if (!upb_MtDecoder_FieldIsPackable(field)) {
+      upb_MtDecoder_ErrorFormat(
+          d, "Cannot flip packed on unpackable field %" PRIu32, field->number);
+      UPB_UNREACHABLE();
+    }
+    field->mode ^= kUpb_LabelFlags_IsPacked;
   }
 
   bool singular = field_modifiers & kUpb_EncodedFieldModifier_IsProto3Singular;
@@ -515,6 +537,42 @@ static void upb_MtDecoder_PushOneof(upb_MtDecoder* d, upb_LayoutItem item) {
   upb_MtDecoder_PushItem(d, item);
 }
 
+size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep,
+                               upb_MiniTablePlatform platform) {
+  static const uint8_t kRepToSize32[] = {
+      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_Pointer] = 4, [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_8Byte] = 8,
+  };
+  static const uint8_t kRepToSize64[] = {
+      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_Pointer] = 8, [kUpb_FieldRep_StringView] = 16,
+      [kUpb_FieldRep_8Byte] = 8,
+  };
+  UPB_ASSERT(sizeof(upb_StringView) ==
+             UPB_SIZE(kRepToSize32, kRepToSize64)[kUpb_FieldRep_StringView]);
+  return platform == kUpb_MiniTablePlatform_32Bit ? kRepToSize32[rep]
+                                                  : kRepToSize64[rep];
+}
+
+size_t upb_MtDecoder_AlignOfRep(upb_FieldRep rep,
+                                upb_MiniTablePlatform platform) {
+  static const uint8_t kRepToAlign32[] = {
+      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_Pointer] = 4, [kUpb_FieldRep_StringView] = 4,
+      [kUpb_FieldRep_8Byte] = 8,
+  };
+  static const uint8_t kRepToAlign64[] = {
+      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_Pointer] = 8, [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_8Byte] = 8,
+  };
+  UPB_ASSERT(UPB_ALIGN_OF(upb_StringView) ==
+             UPB_SIZE(kRepToAlign32, kRepToAlign64)[kUpb_FieldRep_StringView]);
+  return platform == kUpb_MiniTablePlatform_32Bit ? kRepToAlign32[rep]
+                                                  : kRepToAlign64[rep];
+}
+
 static const char* upb_MtDecoder_DecodeOneofField(upb_MtDecoder* d,
                                                   const char* ptr,
                                                   char first_ch,
@@ -543,7 +601,11 @@ static const char* upb_MtDecoder_DecodeOneofField(upb_MtDecoder* d,
   }
 
   // Oneof storage must be large enough to accommodate the largest member.
-  item->rep = UPB_MAX(item->rep, f->mode >> kUpb_FieldRep_Shift);
+  int rep = f->mode >> kUpb_FieldRep_Shift;
+  if (upb_MtDecoder_SizeOfRep(rep, d->platform) >
+      upb_MtDecoder_SizeOfRep(item->rep, d->platform)) {
+    item->rep = rep;
+  }
   // Prepend this field to the linked list.
   f->offset = item->field_index;
   item->field_index = (f - d->fields) + kOneofBase;
@@ -735,42 +797,6 @@ static void upb_MtDecoder_AssignHasbits(upb_MiniTable* ret) {
   }
 
   ret->size = last_hasbit ? upb_MiniTable_DivideRoundUp(last_hasbit + 1, 8) : 0;
-}
-
-size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep,
-                               upb_MiniTablePlatform platform) {
-  static const uint8_t kRepToSize32[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 4, [kUpb_FieldRep_StringView] = 8,
-      [kUpb_FieldRep_8Byte] = 8,
-  };
-  static const uint8_t kRepToSize64[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 8, [kUpb_FieldRep_StringView] = 16,
-      [kUpb_FieldRep_8Byte] = 8,
-  };
-  UPB_ASSERT(sizeof(upb_StringView) ==
-             UPB_SIZE(kRepToSize32, kRepToSize64)[kUpb_FieldRep_StringView]);
-  return platform == kUpb_MiniTablePlatform_32Bit ? kRepToSize32[rep]
-                                                  : kRepToSize64[rep];
-}
-
-size_t upb_MtDecoder_AlignOfRep(upb_FieldRep rep,
-                                upb_MiniTablePlatform platform) {
-  static const uint8_t kRepToAlign32[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 4, [kUpb_FieldRep_StringView] = 4,
-      [kUpb_FieldRep_8Byte] = 8,
-  };
-  static const uint8_t kRepToAlign64[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 8, [kUpb_FieldRep_StringView] = 8,
-      [kUpb_FieldRep_8Byte] = 8,
-  };
-  UPB_ASSERT(UPB_ALIGN_OF(upb_StringView) ==
-             UPB_SIZE(kRepToAlign32, kRepToAlign64)[kUpb_FieldRep_StringView]);
-  return platform == kUpb_MiniTablePlatform_32Bit ? kRepToAlign32[rep]
-                                                  : kRepToAlign64[rep];
 }
 
 size_t upb_MtDecoder_Place(upb_MtDecoder* d, upb_FieldRep rep) {

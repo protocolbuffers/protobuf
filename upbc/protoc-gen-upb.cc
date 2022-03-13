@@ -1504,8 +1504,9 @@ std::string GetModeInit(uint8_t mode) {
 
 void WriteField(const upb_MiniTable_Field* field64,
                 const upb_MiniTable_Field* field32, Output& output) {
-  output("{$0, UPB_SIZE($1, $2), $3, $4, $5, $6}", field64->number,
-         field32->offset, field64->offset, field64->presence,
+  output("{$0, UPB_SIZE($1, $2), UPB_SIZE($3, $4), $5, $6, $7}",
+         field64->number, field32->offset, field64->offset, field32->presence,
+         field64->presence,
          field64->submsg_index == kUpb_NoSub
              ? "kUpb_NoSub"
              : absl::StrCat(field64->submsg_index).c_str(),
