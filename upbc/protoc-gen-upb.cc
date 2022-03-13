@@ -656,8 +656,9 @@ void GenerateExtensionInHeader(const protobuf::FieldDescriptor* ext,
 }
 
 void GenerateMessageInHeader(const protobuf::Descriptor* message,
-                             Output& output) {
-  MessageLayout layout(message);
+                             const FileLayout& layout, Output& output) {
+  const upb_MiniTable* mt_32 = layout.GetMiniTable32(message);
+  const upb_MiniTable* mt_64 = layout.GetMiniTable64(message);
 
   output("/* $0 */\n\n", message->full_name());
   std::string msg_name = ToCIdent(message->full_name());
@@ -948,7 +949,8 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message,
   output("\n");
 }
 
-void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
+void WriteHeader(const FileLayout& layout, Output& output) {
+  const protobuf::FileDescriptor* file = layout.descriptor();
   EmitFileWarning(file, output);
   output(
       "#ifndef $0_UPB_H_\n"
@@ -1052,7 +1054,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
   output("\n");
 
   for (auto message : this_file_messages) {
-    GenerateMessageInHeader(message, output);
+    GenerateMessageInHeader(message, layout, output);
   }
 
   for (auto ext : this_file_exts) {
@@ -1705,7 +1707,7 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
   std::unique_ptr<protobuf::io::ZeroCopyOutputStream> h_output_stream(
       context->Open(HeaderFilename(file)));
   Output h_output(h_output_stream.get());
-  WriteHeader(file, h_output);
+  WriteHeader(layout, h_output);
 
   std::unique_ptr<protobuf::io::ZeroCopyOutputStream> c_output_stream(
       context->Open(SourceFilename(file)));
