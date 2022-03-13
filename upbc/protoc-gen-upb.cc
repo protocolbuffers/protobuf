@@ -35,14 +35,32 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/wire_format.h"
 #include "upb/mini_table.hpp"
+#include "upb/upb.hpp"
 #include "upbc/common.h"
-#include "upbc/message_layout.h"
 
 namespace upbc {
 namespace {
 
 namespace protoc = ::google::protobuf::compiler;
 namespace protobuf = ::google::protobuf;
+
+// Returns fields in order of "hotness", eg. how frequently they appear in
+// serialized payloads. Ideally this will use a profile. When we don't have
+// that, we assume that fields with smaller numbers are used more frequently.
+inline std::vector<const google::protobuf::FieldDescriptor*> FieldHotnessOrder(
+    const google::protobuf::Descriptor* message) {
+  std::vector<const google::protobuf::FieldDescriptor*> fields;
+  for (int i = 0; i < message->field_count(); i++) {
+    fields.push_back(message->field(i));
+  }
+  std::sort(fields.begin(), fields.end(),
+            [](const google::protobuf::FieldDescriptor* a,
+               const google::protobuf::FieldDescriptor* b) {
+              return std::make_pair(!a->is_required(), a->number()) <
+                     std::make_pair(!b->is_required(), b->number());
+            });
+  return fields;
+}
 
 std::string SourceFilename(const google::protobuf::FileDescriptor* file) {
   return StripExtension(file->name()) + ".upb.c";
@@ -207,10 +225,6 @@ std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
 
 std::string EnumValueSymbol(const protobuf::EnumValueDescriptor* value) {
   return ToCIdent(value->full_name());
-}
-
-std::string GetSizeInit(const MessageLayout::Size& size) {
-  return absl::Substitute("UPB_SIZE($0, $1)", size.size32, size.size64);
 }
 
 std::string CTypeInternal(const protobuf::FieldDescriptor* field,
@@ -1171,33 +1185,28 @@ void WriteHeader(const FileLayout& layout, Output& output) {
     // This is gratuitously inefficient with how many times it rebuilds
     // MessageLayout objects for the same message. But we only do this for one
     // proto (descriptor.proto) so we don't worry about it.
-    const protobuf::Descriptor* max32 = nullptr;
-    const protobuf::Descriptor* max64 = nullptr;
+    const protobuf::Descriptor* max32_message = nullptr;
+    const protobuf::Descriptor* max64_message = nullptr;
+    size_t max32 = 0;
+    size_t max64 = 0;
     for (const auto* message : this_file_messages) {
       if (absl::EndsWith(message->name(), "Options")) {
-        MessageLayout layout(message);
-        if (max32 == nullptr) {
-          max32 = message;
-          max64 = message;
-        } else {
-          if (layout.message_size().size32 >
-              MessageLayout(max32).message_size().size32) {
-            max32 = message;
-          }
-          if (layout.message_size().size64 >
-              MessageLayout(max64).message_size().size64) {
-            max64 = message;
-          }
+        size_t size32 = layout.GetMiniTable32(message)->size;
+        size_t size64 = layout.GetMiniTable64(message)->size;
+        if (size32 > max32) {
+          max32 = size32;
+          max32_message = message;
+        }
+        if (size64 > max64) {
+          max64 = size64;
+          max64_message = message;
         }
       }
     }
 
-    output("/* Max size 32 is $0 */\n", max32->full_name());
-    output("/* Max size 64 is $0 */\n", max64->full_name());
-    MessageLayout::Size size;
-    size.size32 = MessageLayout(max32).message_size().size32;
-    size.size64 = MessageLayout(max32).message_size().size64;
-    output("#define _UPB_MAXOPT_SIZE $0\n\n", GetSizeInit(size));
+    output("/* Max size 32 is $0 */\n", max32_message->full_name());
+    output("/* Max size 64 is $0 */\n", max64_message->full_name());
+    output("#define _UPB_MAXOPT_SIZE UPB_SIZE($0, $1)\n\n", max32, max64);
   }
 
   output(
@@ -1236,6 +1245,7 @@ int GetTableSlot(const protobuf::FieldDescriptor* field) {
   return (tag & 0xf8) >> 3;
 }
 
+#include "upb/port_def.inc"
 bool TryFillTableEntry(const FileLayout& layout,
                        const protobuf::FieldDescriptor* field,
                        TableEntry& ent) {
@@ -1481,7 +1491,6 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
   std::string subenums_array_ref = "NULL";
   const upb_MiniTable* mt_32 = layout.GetMiniTable32(message);
   const upb_MiniTable* mt_64 = layout.GetMiniTable64(message);
-  MessageLayout msg_layout(message);
   std::vector<std::string> subs;
 
   for (int i = 0; i < mt_64->field_count; i++) {

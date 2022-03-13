@@ -43,11 +43,7 @@ cc_library(
 
 cc_binary(
     name = "protoc-gen-upb",
-    srcs = [
-        "protoc-gen-upb.cc",
-        "message_layout.cc",
-        "message_layout.h",
-    ],
+    srcs = ["protoc-gen-upb.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
