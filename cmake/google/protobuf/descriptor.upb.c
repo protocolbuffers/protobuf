@@ -23,7 +23,7 @@ static const upb_MiniTable_Field google_protobuf_FileDescriptorSet__fields[1] = 
 const upb_MiniTable google_protobuf_FileDescriptorSet_msginit = {
   &google_protobuf_FileDescriptorSet_submsgs[0],
   &google_protobuf_FileDescriptorSet__fields[0],
-  UPB_SIZE(16, 16), 1, kUpb_ExtMode_NonExtendable, 1, 255, 0,
+  UPB_SIZE(4, 8), 1, kUpb_ExtMode_NonExtendable, 1, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_FileDescriptorProto_submsgs[6] = {
@@ -53,7 +53,7 @@ static const upb_MiniTable_Field google_protobuf_FileDescriptorProto__fields[12]
 const upb_MiniTable google_protobuf_FileDescriptorProto_msginit = {
   &google_protobuf_FileDescriptorProto_submsgs[0],
   &google_protobuf_FileDescriptorProto__fields[0],
-  UPB_SIZE(64, 128), 12, kUpb_ExtMode_NonExtendable, 12, 255, 0,
+  UPB_SIZE(64, 136), 12, kUpb_ExtMode_NonExtendable, 12, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_DescriptorProto_submsgs[8] = {
@@ -83,7 +83,7 @@ static const upb_MiniTable_Field google_protobuf_DescriptorProto__fields[10] = {
 const upb_MiniTable google_protobuf_DescriptorProto_msginit = {
   &google_protobuf_DescriptorProto_submsgs[0],
   &google_protobuf_DescriptorProto__fields[0],
-  UPB_SIZE(48, 96), 10, kUpb_ExtMode_NonExtendable, 10, 255, 0,
+  UPB_SIZE(48, 104), 10, kUpb_ExtMode_NonExtendable, 10, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_DescriptorProto_ExtensionRange_submsgs[1] = {
@@ -99,7 +99,7 @@ static const upb_MiniTable_Field google_protobuf_DescriptorProto_ExtensionRange_
 const upb_MiniTable google_protobuf_DescriptorProto_ExtensionRange_msginit = {
   &google_protobuf_DescriptorProto_ExtensionRange_submsgs[0],
   &google_protobuf_DescriptorProto_ExtensionRange__fields[0],
-  UPB_SIZE(16, 32), 3, kUpb_ExtMode_NonExtendable, 3, 255, 0,
+  UPB_SIZE(16, 24), 3, kUpb_ExtMode_NonExtendable, 3, 255, 0,
 };
 
 static const upb_MiniTable_Field google_protobuf_DescriptorProto_ReservedRange__fields[2] = {
@@ -110,7 +110,7 @@ static const upb_MiniTable_Field google_protobuf_DescriptorProto_ReservedRange__
 const upb_MiniTable google_protobuf_DescriptorProto_ReservedRange_msginit = {
   NULL,
   &google_protobuf_DescriptorProto_ReservedRange__fields[0],
-  UPB_SIZE(16, 16), 2, kUpb_ExtMode_NonExtendable, 2, 255, 0,
+  UPB_SIZE(12, 24), 2, kUpb_ExtMode_NonExtendable, 2, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_ExtensionRangeOptions_submsgs[1] = {
@@ -124,7 +124,7 @@ static const upb_MiniTable_Field google_protobuf_ExtensionRangeOptions__fields[1
 const upb_MiniTable google_protobuf_ExtensionRangeOptions_msginit = {
   &google_protobuf_ExtensionRangeOptions_submsgs[0],
   &google_protobuf_ExtensionRangeOptions__fields[0],
-  UPB_SIZE(16, 16), 1, kUpb_ExtMode_Extendable, 0, 255, 0,
+  UPB_SIZE(4, 8), 1, kUpb_ExtMode_Extendable, 0, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_FieldDescriptorProto_submsgs[1] = {
@@ -148,7 +148,7 @@ static const upb_MiniTable_Field google_protobuf_FieldDescriptorProto__fields[11
 const upb_MiniTable google_protobuf_FieldDescriptorProto_msginit = {
   &google_protobuf_FieldDescriptorProto_submsgs[0],
   &google_protobuf_FieldDescriptorProto__fields[0],
-  UPB_SIZE(80, 112), 11, kUpb_ExtMode_NonExtendable, 10, 255, 0,
+  UPB_SIZE(68, 120), 11, kUpb_ExtMode_NonExtendable, 10, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_OneofDescriptorProto_submsgs[1] = {
@@ -163,7 +163,7 @@ static const upb_MiniTable_Field google_protobuf_OneofDescriptorProto__fields[2]
 const upb_MiniTable google_protobuf_OneofDescriptorProto_msginit = {
   &google_protobuf_OneofDescriptorProto_submsgs[0],
   &google_protobuf_OneofDescriptorProto__fields[0],
-  UPB_SIZE(16, 32), 2, kUpb_ExtMode_NonExtendable, 2, 255, 0,
+  UPB_SIZE(16, 40), 2, kUpb_ExtMode_NonExtendable, 2, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_EnumDescriptorProto_submsgs[3] = {
@@ -183,7 +183,7 @@ static const upb_MiniTable_Field google_protobuf_EnumDescriptorProto__fields[5] 
 const upb_MiniTable google_protobuf_EnumDescriptorProto_msginit = {
   &google_protobuf_EnumDescriptorProto_submsgs[0],
   &google_protobuf_EnumDescriptorProto__fields[0],
-  UPB_SIZE(32, 64), 5, kUpb_ExtMode_NonExtendable, 5, 255, 0,
+  UPB_SIZE(28, 56), 5, kUpb_ExtMode_NonExtendable, 5, 255, 0,
 };
 
 static const upb_MiniTable_Field google_protobuf_EnumDescriptorProto_EnumReservedRange__fields[2] = {
@@ -194,7 +194,7 @@ static const upb_MiniTable_Field google_protobuf_EnumDescriptorProto_EnumReserve
 const upb_MiniTable google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit = {
   NULL,
   &google_protobuf_EnumDescriptorProto_EnumReservedRange__fields[0],
-  UPB_SIZE(16, 16), 2, kUpb_ExtMode_NonExtendable, 2, 255, 0,
+  UPB_SIZE(12, 24), 2, kUpb_ExtMode_NonExtendable, 2, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_EnumValueDescriptorProto_submsgs[1] = {
@@ -210,7 +210,7 @@ static const upb_MiniTable_Field google_protobuf_EnumValueDescriptorProto__field
 const upb_MiniTable google_protobuf_EnumValueDescriptorProto_msginit = {
   &google_protobuf_EnumValueDescriptorProto_submsgs[0],
   &google_protobuf_EnumValueDescriptorProto__fields[0],
-  UPB_SIZE(32, 32), 3, kUpb_ExtMode_NonExtendable, 3, 255, 0,
+  UPB_SIZE(20, 40), 3, kUpb_ExtMode_NonExtendable, 3, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_ServiceDescriptorProto_submsgs[2] = {
@@ -227,7 +227,7 @@ static const upb_MiniTable_Field google_protobuf_ServiceDescriptorProto__fields[
 const upb_MiniTable google_protobuf_ServiceDescriptorProto_msginit = {
   &google_protobuf_ServiceDescriptorProto_submsgs[0],
   &google_protobuf_ServiceDescriptorProto__fields[0],
-  UPB_SIZE(32, 48), 3, kUpb_ExtMode_NonExtendable, 3, 255, 0,
+  UPB_SIZE(20, 40), 3, kUpb_ExtMode_NonExtendable, 3, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_MethodDescriptorProto_submsgs[1] = {
@@ -246,7 +246,7 @@ static const upb_MiniTable_Field google_protobuf_MethodDescriptorProto__fields[6
 const upb_MiniTable google_protobuf_MethodDescriptorProto_msginit = {
   &google_protobuf_MethodDescriptorProto_submsgs[0],
   &google_protobuf_MethodDescriptorProto__fields[0],
-  UPB_SIZE(32, 64), 6, kUpb_ExtMode_NonExtendable, 6, 255, 0,
+  UPB_SIZE(32, 72), 6, kUpb_ExtMode_NonExtendable, 6, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_FileOptions_submsgs[1] = {
@@ -280,7 +280,7 @@ static const upb_MiniTable_Field google_protobuf_FileOptions__fields[21] = {
 const upb_MiniTable google_protobuf_FileOptions_msginit = {
   &google_protobuf_FileOptions_submsgs[0],
   &google_protobuf_FileOptions__fields[0],
-  UPB_SIZE(112, 192), 21, kUpb_ExtMode_Extendable, 1, 255, 0,
+  UPB_SIZE(104, 200), 21, kUpb_ExtMode_Extendable, 1, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_MessageOptions_submsgs[1] = {
@@ -298,7 +298,7 @@ static const upb_MiniTable_Field google_protobuf_MessageOptions__fields[5] = {
 const upb_MiniTable google_protobuf_MessageOptions_msginit = {
   &google_protobuf_MessageOptions_submsgs[0],
   &google_protobuf_MessageOptions__fields[0],
-  UPB_SIZE(16, 16), 5, kUpb_ExtMode_Extendable, 3, 255, 0,
+  UPB_SIZE(12, 24), 5, kUpb_ExtMode_Extendable, 3, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_FieldOptions_submsgs[1] = {
@@ -319,7 +319,7 @@ static const upb_MiniTable_Field google_protobuf_FieldOptions__fields[8] = {
 const upb_MiniTable google_protobuf_FieldOptions_msginit = {
   &google_protobuf_FieldOptions_submsgs[0],
   &google_protobuf_FieldOptions__fields[0],
-  UPB_SIZE(32, 32), 8, kUpb_ExtMode_Extendable, 3, 255, 0,
+  UPB_SIZE(24, 40), 8, kUpb_ExtMode_Extendable, 3, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_OneofOptions_submsgs[1] = {
@@ -333,7 +333,7 @@ static const upb_MiniTable_Field google_protobuf_OneofOptions__fields[1] = {
 const upb_MiniTable google_protobuf_OneofOptions_msginit = {
   &google_protobuf_OneofOptions_submsgs[0],
   &google_protobuf_OneofOptions__fields[0],
-  UPB_SIZE(16, 16), 1, kUpb_ExtMode_Extendable, 0, 255, 0,
+  UPB_SIZE(4, 8), 1, kUpb_ExtMode_Extendable, 0, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_EnumOptions_submsgs[1] = {
@@ -349,7 +349,7 @@ static const upb_MiniTable_Field google_protobuf_EnumOptions__fields[3] = {
 const upb_MiniTable google_protobuf_EnumOptions_msginit = {
   &google_protobuf_EnumOptions_submsgs[0],
   &google_protobuf_EnumOptions__fields[0],
-  UPB_SIZE(16, 16), 3, kUpb_ExtMode_Extendable, 0, 255, 0,
+  UPB_SIZE(8, 24), 3, kUpb_ExtMode_Extendable, 0, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_EnumValueOptions_submsgs[1] = {
@@ -364,7 +364,7 @@ static const upb_MiniTable_Field google_protobuf_EnumValueOptions__fields[2] = {
 const upb_MiniTable google_protobuf_EnumValueOptions_msginit = {
   &google_protobuf_EnumValueOptions_submsgs[0],
   &google_protobuf_EnumValueOptions__fields[0],
-  UPB_SIZE(16, 16), 2, kUpb_ExtMode_Extendable, 1, 255, 0,
+  UPB_SIZE(8, 24), 2, kUpb_ExtMode_Extendable, 1, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_ServiceOptions_submsgs[1] = {
@@ -379,7 +379,7 @@ static const upb_MiniTable_Field google_protobuf_ServiceOptions__fields[2] = {
 const upb_MiniTable google_protobuf_ServiceOptions_msginit = {
   &google_protobuf_ServiceOptions_submsgs[0],
   &google_protobuf_ServiceOptions__fields[0],
-  UPB_SIZE(16, 16), 2, kUpb_ExtMode_Extendable, 0, 255, 0,
+  UPB_SIZE(8, 24), 2, kUpb_ExtMode_Extendable, 0, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_MethodOptions_submsgs[1] = {
@@ -395,7 +395,7 @@ static const upb_MiniTable_Field google_protobuf_MethodOptions__fields[3] = {
 const upb_MiniTable google_protobuf_MethodOptions_msginit = {
   &google_protobuf_MethodOptions_submsgs[0],
   &google_protobuf_MethodOptions__fields[0],
-  UPB_SIZE(16, 16), 3, kUpb_ExtMode_Extendable, 0, 255, 0,
+  UPB_SIZE(12, 24), 3, kUpb_ExtMode_Extendable, 0, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_UninterpretedOption_submsgs[1] = {
@@ -415,7 +415,7 @@ static const upb_MiniTable_Field google_protobuf_UninterpretedOption__fields[7] 
 const upb_MiniTable google_protobuf_UninterpretedOption_msginit = {
   &google_protobuf_UninterpretedOption_submsgs[0],
   &google_protobuf_UninterpretedOption__fields[0],
-  UPB_SIZE(64, 96), 7, kUpb_ExtMode_NonExtendable, 0, 255, 0,
+  UPB_SIZE(56, 88), 7, kUpb_ExtMode_NonExtendable, 0, 255, 0,
 };
 
 static const upb_MiniTable_Field google_protobuf_UninterpretedOption_NamePart__fields[2] = {
@@ -426,7 +426,7 @@ static const upb_MiniTable_Field google_protobuf_UninterpretedOption_NamePart__f
 const upb_MiniTable google_protobuf_UninterpretedOption_NamePart_msginit = {
   NULL,
   &google_protobuf_UninterpretedOption_NamePart__fields[0],
-  UPB_SIZE(16, 32), 2, kUpb_ExtMode_NonExtendable, 2, 255, 2,
+  UPB_SIZE(12, 24), 2, kUpb_ExtMode_NonExtendable, 2, 255, 2,
 };
 
 static const upb_MiniTable_Sub google_protobuf_SourceCodeInfo_submsgs[1] = {
@@ -440,7 +440,7 @@ static const upb_MiniTable_Field google_protobuf_SourceCodeInfo__fields[1] = {
 const upb_MiniTable google_protobuf_SourceCodeInfo_msginit = {
   &google_protobuf_SourceCodeInfo_submsgs[0],
   &google_protobuf_SourceCodeInfo__fields[0],
-  UPB_SIZE(16, 16), 1, kUpb_ExtMode_NonExtendable, 1, 255, 0,
+  UPB_SIZE(4, 8), 1, kUpb_ExtMode_NonExtendable, 1, 255, 0,
 };
 
 static const upb_MiniTable_Field google_protobuf_SourceCodeInfo_Location__fields[5] = {
@@ -454,7 +454,7 @@ static const upb_MiniTable_Field google_protobuf_SourceCodeInfo_Location__fields
 const upb_MiniTable google_protobuf_SourceCodeInfo_Location_msginit = {
   NULL,
   &google_protobuf_SourceCodeInfo_Location__fields[0],
-  UPB_SIZE(32, 64), 5, kUpb_ExtMode_NonExtendable, 4, 255, 0,
+  UPB_SIZE(32, 72), 5, kUpb_ExtMode_NonExtendable, 4, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_GeneratedCodeInfo_submsgs[1] = {
@@ -468,7 +468,7 @@ static const upb_MiniTable_Field google_protobuf_GeneratedCodeInfo__fields[1] = 
 const upb_MiniTable google_protobuf_GeneratedCodeInfo_msginit = {
   &google_protobuf_GeneratedCodeInfo_submsgs[0],
   &google_protobuf_GeneratedCodeInfo__fields[0],
-  UPB_SIZE(16, 16), 1, kUpb_ExtMode_NonExtendable, 1, 255, 0,
+  UPB_SIZE(4, 8), 1, kUpb_ExtMode_NonExtendable, 1, 255, 0,
 };
 
 static const upb_MiniTable_Field google_protobuf_GeneratedCodeInfo_Annotation__fields[4] = {
@@ -481,7 +481,7 @@ static const upb_MiniTable_Field google_protobuf_GeneratedCodeInfo_Annotation__f
 const upb_MiniTable google_protobuf_GeneratedCodeInfo_Annotation_msginit = {
   NULL,
   &google_protobuf_GeneratedCodeInfo_Annotation__fields[0],
-  UPB_SIZE(32, 48), 4, kUpb_ExtMode_NonExtendable, 4, 255, 0,
+  UPB_SIZE(24, 40), 4, kUpb_ExtMode_NonExtendable, 4, 255, 0,
 };
 
 static const upb_MiniTable *messages_layout[27] = {
