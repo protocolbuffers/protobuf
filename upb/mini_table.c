@@ -459,8 +459,8 @@ static void upb_MtDecoder_ModifyField(upb_MtDecoder* d, uint32_t message_modifie
   static const unsigned kPackableTypes =
       -1U & ~(1 << kUpb_FieldType_String) & ~(1U << kUpb_FieldType_Bytes) &
       ~(1U << kUpb_FieldType_Message) & ~(1U << kUpb_FieldType_Group);
-  bool packed = (message_modifiers & kUpb_MessageModifier_DefaultIsPacked) ^
-                (field_modifiers & kUpb_EncodedFieldModifier_FlipPacked);
+  bool packed = (bool)(message_modifiers & kUpb_MessageModifier_DefaultIsPacked) ^
+                (bool)(field_modifiers & kUpb_EncodedFieldModifier_FlipPacked);
   bool packable = (1 << field->descriptortype) & kPackableTypes;
   if (upb_FieldMode_Get(field) == kUpb_FieldMode_Array && packed && packable) {
     field->mode |= kUpb_LabelFlags_IsPacked;
