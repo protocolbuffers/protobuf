@@ -228,8 +228,7 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
       (in->msg_mod & kUpb_MessageModifier_DefaultIsPacked)) {
     encoded_modifiers |= kUpb_EncodedFieldModifier_IsUnpacked;
   }
-  upb_MtDataEncoder_PutModifier(e, ptr, encoded_modifiers);
-  return ptr;
+  return upb_MtDataEncoder_PutModifier(e, ptr, encoded_modifiers);
 }
 
 char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr) {
@@ -363,7 +362,7 @@ static bool upb_MiniTable_HasSub(upb_MiniTable_Field* field,
       field->descriptortype == kUpb_FieldType_Group) {
     return true;
   } else if (field->descriptortype == kUpb_FieldType_Enum) {
-    if (msg_modifiers & kUpb_MessageModifier_HasClosedEnums) {
+    if (false) { // XXX (msg_modifiers & kUpb_MessageModifier_HasClosedEnums) {
       return true;
     } else {
       field->descriptortype = kUpb_FieldType_Int32;
@@ -479,7 +478,9 @@ static void upb_MtDecoder_ModifyField(upb_MtDecoder* d, uint32_t mod,
   }
 
   if (singular) field->offset = kNoPresence;
-  if (required) field->offset = kRequiredPresence;
+  if (required) {
+    field->offset = kRequiredPresence;
+  }
 }
 
 static void upb_MtDecoder_PushItem(upb_MtDecoder* d, upb_LayoutItem item) {
@@ -568,21 +569,20 @@ static const char* upb_MtDecoder_DecodeOneofs(upb_MtDecoder* d,
 
 static const char* upb_MtDecoder_ParseModifier(upb_MtDecoder* d,
                                                const char* ptr, char first_ch,
-                                               uint16_t field_count,
+                                               upb_MiniTable_Field* last_field,
                                                uint64_t* msg_modifiers) {
   uint32_t mod;
   ptr = upb_MiniTable_DecodeBase92Varint(d, ptr, first_ch,
                                          kUpb_EncodedValue_MinModifier,
                                          kUpb_EncodedValue_MaxModifier, &mod);
-  if (field_count == 0) {
+  if (last_field) {
+    upb_MtDecoder_ModifyField(d, mod, last_field);
+  } else {
     if (!d->table) {
       upb_MtDecoder_ErrorFormat(d, "Extensions cannot have message modifiers");
       UPB_UNREACHABLE();
     }
     *msg_modifiers = mod;
-  } else {
-    upb_MiniTable_Field* field = &d->fields[field_count - 1];
-    upb_MtDecoder_ModifyField(d, mod, field);
   }
 
   return ptr;
@@ -599,6 +599,7 @@ static void upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr, size_t len,
                                 uint16_t* field_count, uint32_t* sub_count) {
   uint64_t msg_modifiers = 0;
   uint32_t last_field_number = 0;
+  upb_MiniTable_Field* last_field = NULL;
   bool need_dense_below = d->table != NULL;
 
   d->end = UPB_PTRADD(ptr, len);
@@ -610,11 +611,11 @@ static void upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr, size_t len,
       *field_count += 1;
       fields = (char*)fields + field_size;
       field->number = ++last_field_number;
+      last_field = field;
       upb_MiniTable_SetField(d, ch, field, msg_modifiers, sub_count);
     } else if (kUpb_EncodedValue_MinModifier <= ch &&
                ch <= kUpb_EncodedValue_MaxModifier) {
-      ptr =
-          upb_MtDecoder_ParseModifier(d, ptr, ch, *field_count, &msg_modifiers);
+      ptr = upb_MtDecoder_ParseModifier(d, ptr, ch, last_field, &msg_modifiers);
     } else if (ch == kUpb_EncodedValue_End) {
       if (!d->table) {
         upb_MtDecoder_ErrorFormat(d, "Extensions cannot have oneofs.");
@@ -728,7 +729,7 @@ static void upb_MtDecoder_AssignHasbits(upb_MiniTable* ret) {
     }
   }
 
-  ret->size = upb_MiniTable_DivideRoundUp(last_hasbit, 8);
+  ret->size = last_hasbit ? upb_MiniTable_DivideRoundUp(last_hasbit + 1, 8) : 0;
 }
 
 size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep,
@@ -930,8 +931,9 @@ bool upb_MiniTable_BuildExtension(const char* data, size_t len,
   }
 
   uint16_t count = 0;
-  fprintf(stderr, "ABOUT TO PARSE!\n");
   upb_MtDecoder_Parse(&decoder, data, len, ext, sizeof(*ext), &count, NULL);
+  ext->field.mode |= kUpb_LabelFlags_IsExtension;
+  ext->field.offset = 0;
   return true;
 }
 
