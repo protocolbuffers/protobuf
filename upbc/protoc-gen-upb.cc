@@ -95,39 +95,6 @@ const char* kEnumsInit = "enums_layout";
 const char* kExtensionsInit = "extensions_layout";
 const char* kMessagesInit = "messages_layout";
 
-enum SubTag {
-  kNull = 0,
-  kMessage = 1,
-  kEnum = 2,
-  kMask = 3,
-};
-
-upb_MiniTable_Sub PackSub(const char* data, SubTag tag) {
-  uintptr_t val = reinterpret_cast<uintptr_t>(data);
-  assert((val & kMask) == 0);
-  upb_MiniTable_Sub sub;
-  sub.submsg = reinterpret_cast<upb_MiniTable*>(val | tag);
-  return sub;
-}
-
-bool IsNull(upb_MiniTable_Sub sub) {
-  return reinterpret_cast<uintptr_t>(sub.subenum) == 0;
-}
-
-std::string GetSub(upb_MiniTable_Sub sub) {
-  uintptr_t as_int = reinterpret_cast<uintptr_t>(sub.submsg);
-  const char* str = reinterpret_cast<const char*>(as_int & ~SubTag::kMask);
-  switch (as_int & SubTag::kMask) {
-    case SubTag::kMessage:
-      return absl::Substitute("{.submsg = &$0}", str);
-    case SubTag::kEnum:
-      return absl::Substitute("{.subenum = &$0}", str);
-    default:
-      return std::string("{.submsg = NULL}");
-  }
-  return std::string("ERROR in WriteSub");
-}
-
 void AddEnums(const protobuf::Descriptor* message,
               std::vector<const protobuf::EnumDescriptor*>* enums) {
   for (int i = 0; i < message->enum_type_count(); i++) {
@@ -383,6 +350,9 @@ class FilePlatformLayout {
   const upb_MiniTable_Extension* GetExtension(
       const protobuf::FieldDescriptor* fd) const;
 
+  // Get the initializer for the given sub-message/sub-enum link.
+  static std::string GetSub(upb_MiniTable_Sub sub);
+
  private:
   // Functions to build mini-tables for this file's messages and extensions.
   void BuildMiniTables(const protobuf::FileDescriptor* fd);
@@ -392,8 +362,28 @@ class FilePlatformLayout {
   uint64_t GetMessageModifiers(const protobuf::Descriptor* m);
   uint64_t GetFieldModifiers(const protobuf::FieldDescriptor* f);
   void ResolveIntraFileReferences();
-  void SetSubTableStrings();
 
+  // When we are generating code, tables are linked to sub-tables via name (ie.
+  // a string) rather than by pointer.  We need to emit an initializer like
+  // `&foo_sub_table`.  To do this, we store `const char*` strings in all the
+  // links that would normally be pointers:
+  //    field -> sub-message
+  //    field -> enum table (proto2 only)
+  //    extension -> extendee
+  //
+  // This requires a bit of reinterpret_cast<>(), but it's confined to a few
+  // functions.  We tag the pointer so we know which member of the union to
+  // initialize.
+  enum SubTag {
+    kNull = 0,
+    kMessage = 1,
+    kEnum = 2,
+    kMask = 3,
+  };
+
+  static upb_MiniTable_Sub PackSub(const char* data, SubTag tag);
+  static bool IsNull(upb_MiniTable_Sub sub);
+  void SetSubTableStrings();
   upb_MiniTable_Sub PackSubForField(const protobuf::FieldDescriptor* f,
                                     const upb_MiniTable_Field* mt_f);
   const char* AllocStr(const std::string& str);
@@ -440,6 +430,32 @@ void FilePlatformLayout::ResolveIntraFileReferences() {
       // never alter the mini-table.
     }
   }
+}
+
+upb_MiniTable_Sub FilePlatformLayout::PackSub(const char* data, SubTag tag) {
+  uintptr_t val = reinterpret_cast<uintptr_t>(data);
+  assert((val & kMask) == 0);
+  upb_MiniTable_Sub sub;
+  sub.submsg = reinterpret_cast<upb_MiniTable*>(val | tag);
+  return sub;
+}
+
+bool FilePlatformLayout::IsNull(upb_MiniTable_Sub sub) {
+  return reinterpret_cast<uintptr_t>(sub.subenum) == 0;
+}
+
+std::string FilePlatformLayout::GetSub(upb_MiniTable_Sub sub) {
+  uintptr_t as_int = reinterpret_cast<uintptr_t>(sub.submsg);
+  const char* str = reinterpret_cast<const char*>(as_int & ~SubTag::kMask);
+  switch (as_int & SubTag::kMask) {
+    case SubTag::kMessage:
+      return absl::Substitute("{.submsg = &$0}", str);
+    case SubTag::kEnum:
+      return absl::Substitute("{.subenum = &$0}", str);
+    default:
+      return std::string("{.submsg = NULL}");
+  }
+  return std::string("ERROR in WriteSub");
 }
 
 void FilePlatformLayout::SetSubTableStrings() {
@@ -1539,7 +1555,7 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
   for (int i = 0; i < mt_64->field_count; i++) {
     const upb_MiniTable_Field* f = &mt_64->fields[i];
     if (f->submsg_index != kUpb_NoSub) {
-      subs.push_back(GetSub(mt_64->subs[f->submsg_index]));
+      subs.push_back(FilePlatformLayout::GetSub(mt_64->subs[f->submsg_index]));
     }
   }
 
@@ -1682,7 +1698,7 @@ void WriteExtension(const upb_MiniTable_Extension* ext, Output& output) {
   WriteField(&ext->field, &ext->field, output);
   output(",\n");
   output("  &$0,\n", reinterpret_cast<const char*>(ext->extendee));
-  output("  $0,\n", GetSub(ext->sub));
+  output("  $0,\n", FilePlatformLayout::GetSub(ext->sub));
 }
 
 int WriteExtensions(const FileLayout& layout, Output& output) {
