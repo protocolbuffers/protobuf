@@ -391,7 +391,8 @@ class FilePlatformLayout {
  private:
   typedef absl::flat_hash_map<const protobuf::Descriptor*, upb_MiniTable*>
       TableMap;
-  typedef absl::flat_hash_map<const protobuf::FieldDescriptor*, upb_MiniTable_Extension>
+  typedef absl::flat_hash_map<const protobuf::FieldDescriptor*,
+                              upb_MiniTable_Extension>
       ExtensionMap;
   upb::Arena arena_;
   TableMap table_map_;
@@ -765,8 +766,8 @@ void GenerateMessageFunctionsInHeader(const protobuf::Descriptor* message,
 }
 
 void GenerateOneofInHeader(const protobuf::OneofDescriptor* oneof,
-                           const FileLayout& layout,
-                           absl::string_view msg_name, Output& output) {
+                           const FileLayout& layout, absl::string_view msg_name,
+                           Output& output) {
   std::string fullname = ToCIdent(oneof->full_name());
   output("typedef enum {\n");
   for (int j = 0; j < oneof->field_count(); j++) {
@@ -783,8 +784,7 @@ void GenerateOneofInHeader(const protobuf::OneofDescriptor* oneof,
           return ($0_oneofcases)*UPB_PTR_AT(msg, $3, int32_t);
         }
       )cc",
-      fullname, msg_name, oneof->name(),
-      layout.GetOneofCaseOffset(oneof));
+      fullname, msg_name, oneof->name(), layout.GetOneofCaseOffset(oneof));
 }
 
 void GenerateHazzer(const protobuf::FieldDescriptor* field,
@@ -852,8 +852,7 @@ void GenerateMapGetters(const protobuf::FieldDescriptor* field,
           return ($0)_upb_msg_map_next(msg, $3, iter);
         }
       )cc",
-      CTypeConst(field), msg_name, field->name(),
-      layout.GetFieldOffset(field));
+      CTypeConst(field), msg_name, field->name(), layout.GetFieldOffset(field));
 }
 
 void GenerateMapEntryGetters(const protobuf::FieldDescriptor* field,
@@ -881,28 +880,26 @@ void GenerateRepeatedGetters(const protobuf::FieldDescriptor* field,
           return ($0 const*)_upb_array_accessor(msg, $3, len);
         }
       )cc",
-      CTypeConst(field), msg_name, field->name(),
-      layout.GetFieldOffset(field));
+      CTypeConst(field), msg_name, field->name(), layout.GetFieldOffset(field));
 }
 
 void GenerateOneofGetters(const protobuf::FieldDescriptor* field,
-                          const FileLayout& layout,
-                          absl::string_view msg_name, Output& output) {
+                          const FileLayout& layout, absl::string_view msg_name,
+                          Output& output) {
   output(
       R"cc(
         UPB_INLINE $0 $1_$2(const $1* msg) {
           return UPB_READ_ONEOF(msg, $0, $3, $4, $5, $6);
         }
       )cc",
-      CTypeConst(field), msg_name, field->name(),
-      layout.GetFieldOffset(field),
+      CTypeConst(field), msg_name, field->name(), layout.GetFieldOffset(field),
       layout.GetOneofCaseOffset(field->real_containing_oneof()),
       field->number(), FieldDefault(field));
 }
 
 void GenerateScalarGetters(const protobuf::FieldDescriptor* field,
-                           const FileLayout& layout,
-                           absl::string_view msg_name, Output& output) {
+                           const FileLayout& layout, absl::string_view msg_name,
+                           Output& output) {
   if (HasNonZeroDefault(field)) {
     output(
         R"cc(
@@ -971,8 +968,7 @@ void GenerateMapSetters(const protobuf::FieldDescriptor* field,
           return _upb_msg_map_delete(msg, $3, &key, $4);
         }
       )cc",
-      msg_name, field->name(), CType(key),
-      layout.GetFieldOffset(field),
+      msg_name, field->name(), CType(key), layout.GetFieldOffset(field),
       key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
           ? "0"
           : "sizeof(key)");
@@ -982,8 +978,7 @@ void GenerateMapSetters(const protobuf::FieldDescriptor* field,
           return ($0)_upb_msg_map_next(msg, $3, iter);
         }
       )cc",
-      CType(field), msg_name, field->name(),
-      layout.GetFieldOffset(field));
+      CType(field), msg_name, field->name(), layout.GetFieldOffset(field));
 }
 
 void GenerateRepeatedSetters(const protobuf::FieldDescriptor* field,
@@ -1534,8 +1529,7 @@ void WriteField(const upb_MiniTable_Field* field64,
 
 // Writes a single field into a .upb.c source file.
 void WriteMessageField(const upb_MiniTable_Field* field64,
-                       const upb_MiniTable_Field* field32,
-                       Output& output) {
+                       const upb_MiniTable_Field* field32, Output& output) {
   output("  ");
   WriteField(field64, field32, output);
   output(",\n");

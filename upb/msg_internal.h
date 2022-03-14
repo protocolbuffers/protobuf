@@ -87,7 +87,8 @@ typedef enum {
 
 } upb_FieldMode;
 
-#define kUpb_FieldMode_Mask 3 /* Mask to isolate the mode from upb_FieldRep. */
+#define kUpb_FieldMode_Mask 3 /* Mask to isolate the mode from upb_FieldRep. \
+                               */
 
 /* Extra flags on the mode field. */
 typedef enum {

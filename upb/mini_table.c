@@ -117,7 +117,6 @@ bool upb_IsTypePackable(upb_FieldType type) {
   return (1 << type) & kPackableTypes;
 }
 
-
 /** upb_MtDataEncoder *********************************************************/
 
 typedef struct {
@@ -476,7 +475,8 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
 }
 
 #include <stdio.h>
-static void upb_MtDecoder_ModifyField(upb_MtDecoder* d, uint32_t message_modifiers,
+static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
+                                      uint32_t message_modifiers,
                                       uint32_t field_modifiers,
                                       upb_MiniTable_Field* field) {
   if (field_modifiers & kUpb_EncodedFieldModifier_FlipPacked) {
@@ -931,8 +931,7 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
   upb_MiniTable_Sub* subs = NULL;
   if (value_is_proto3_enum) value_type = kUpb_FieldType_Int32;
   if (value_type == kUpb_FieldType_Message ||
-      value_type == kUpb_FieldType_Group ||
-      value_type == kUpb_FieldType_Enum) {
+      value_type == kUpb_FieldType_Group || value_type == kUpb_FieldType_Enum) {
     subs = upb_Arena_Malloc(arena, sizeof(*subs));
     if (!subs) return NULL;
   }
@@ -980,7 +979,7 @@ upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
   table->mask = 0;
   table->value_count = 0;
   table->values = NULL;
-  
+
   const char* ptr = data;
   const char* end = UPB_PTRADD(data, len);
 
@@ -1004,7 +1003,7 @@ upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
     table->values = upb_Arena_Malloc(arena, end - ptr);
     upb_MtDecoder_CheckOutOfMemory(&decoder, table);
     memcpy((void*)table->values, ptr, end - ptr);
-    table->value_count = bytes / 4; 
+    table->value_count = bytes / 4;
   }
 
   return table;
