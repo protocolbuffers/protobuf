@@ -161,10 +161,8 @@ void Message_PrintMessage(StringBuilder* b, const upb_Message* msg,
 
     if (upb_FieldDef_IsMap(field)) {
       const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(field);
-      const upb_FieldDef* key_f =
-          upb_MessageDef_FindFieldByNumberWithSize(entry_m, 1);
-      const upb_FieldDef* val_f =
-          upb_MessageDef_FindFieldByNumberWithSize(entry_m, 2);
+      const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_m, 1);
+      const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
       TypeInfo val_info = TypeInfo_get(val_f);
       Map_Inspect(b, msgval.map_val, upb_FieldDef_CType(key_f), val_info);
     } else if (upb_FieldDef_IsRepeated(field)) {
@@ -365,7 +363,7 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
         upb_MessageValue wrapper = upb_Message_Get(self->msg, f);
         const upb_MessageDef* wrapper_m = upb_FieldDef_MessageSubDef(f);
         const upb_FieldDef* value_f =
-            upb_MessageDef_FindFieldByNumberWithSize(wrapper_m, 1);
+            upb_MessageDef_FindFieldByNumber(wrapper_m, 1);
         upb_MessageValue value = upb_Message_Get(wrapper.msg_val, value_f);
         return Convert_UpbToRuby(value, TypeInfo_get(value_f), self->arena);
       } else {
@@ -377,8 +375,8 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
       if (argv[1] == Qnil) {
         upb_Message_ClearField(msg, f);
       } else {
-        const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumberWithSize(
-            upb_FieldDef_MessageSubDef(f), 1);
+        const upb_FieldDef* val_f =
+            upb_MessageDef_FindFieldByNumber(upb_FieldDef_MessageSubDef(f), 1);
         upb_MessageValue msgval = Convert_RubyToUpb(
             argv[1], upb_FieldDef_Name(f), TypeInfo_get(val_f), arena);
         upb_Message* wrapper = upb_Message_Mutable(msg, f, arena).msg;
@@ -527,10 +525,8 @@ static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
 static void Map_InitFromValue(upb_Map* map, const upb_FieldDef* f, VALUE val,
                               upb_Arena* arena) {
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
-  const upb_FieldDef* key_f =
-      upb_MessageDef_FindFieldByNumberWithSize(entry_m, 1);
-  const upb_FieldDef* val_f =
-      upb_MessageDef_FindFieldByNumberWithSize(entry_m, 2);
+  const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_m, 1);
+  const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
   if (TYPE(val) != T_HASH) {
     rb_raise(rb_eArgError,
              "Expected Hash object as initializer value for map field '%s' "
@@ -748,7 +744,7 @@ uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
                     &size);
 
   if (data) {
-    uint64_t ret = Wyhash(data, size, seed, kWyhashSalt);
+    uint64_t ret = _upb_Hash(data, size, seed);
     upb_Arena_Free(arena);
     return ret;
   } else {
@@ -847,10 +843,8 @@ static VALUE Message_CreateHash(const upb_Message* msg,
 
     if (upb_FieldDef_IsMap(field)) {
       const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(field);
-      const upb_FieldDef* key_f =
-          upb_MessageDef_FindFieldByNumberWithSize(entry_m, 1);
-      const upb_FieldDef* val_f =
-          upb_MessageDef_FindFieldByNumberWithSize(entry_m, 2);
+      const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_m, 1);
+      const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
       upb_CType key_type = upb_FieldDef_CType(key_f);
       msg_value = Map_CreateHash(msgval.map_val, key_type, TypeInfo_get(val_f));
     } else if (upb_FieldDef_IsRepeated(field)) {
@@ -1357,10 +1351,8 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
         upb_Message* msg = upb_Message_New(m, arena);
         upb_MessageValue sec, nsec;
         struct timespec time;
-        const upb_FieldDef* sec_f =
-            upb_MessageDef_FindFieldByNumberWithSize(m, 1);
-        const upb_FieldDef* nsec_f =
-            upb_MessageDef_FindFieldByNumberWithSize(m, 2);
+        const upb_FieldDef* sec_f = upb_MessageDef_FindFieldByNumber(m, 1);
+        const upb_FieldDef* nsec_f = upb_MessageDef_FindFieldByNumber(m, 2);
 
         if (!rb_obj_is_kind_of(value, rb_cTime)) goto badtype;
 
@@ -1375,10 +1367,8 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
         // Numeric -> Google::Protobuf::Duration
         upb_Message* msg = upb_Message_New(m, arena);
         upb_MessageValue sec, nsec;
-        const upb_FieldDef* sec_f =
-            upb_MessageDef_FindFieldByNumberWithSize(m, 1);
-        const upb_FieldDef* nsec_f =
-            upb_MessageDef_FindFieldByNumberWithSize(m, 2);
+        const upb_FieldDef* sec_f = upb_MessageDef_FindFieldByNumber(m, 1);
+        const upb_FieldDef* nsec_f = upb_MessageDef_FindFieldByNumber(m, 2);
 
         if (!rb_obj_is_kind_of(value, rb_cNumeric)) goto badtype;
 
