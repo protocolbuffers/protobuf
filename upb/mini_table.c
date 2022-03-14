@@ -111,10 +111,14 @@ char upb_FromBase92(uint8_t ch) {
 }
 
 bool upb_IsTypePackable(upb_FieldType type) {
-  static const unsigned kPackableTypes =
-      -1U & ~(1 << kUpb_FieldType_String) & ~(1U << kUpb_FieldType_Bytes) &
-      ~(1U << kUpb_FieldType_Message) & ~(1U << kUpb_FieldType_Group);
-  return (1 << type) & kPackableTypes;
+  // clang-format off
+  static const unsigned kUnpackableTypes =
+      (1 << kUpb_FieldType_String) |
+      (1 << kUpb_FieldType_Bytes) |
+      (1 << kUpb_FieldType_Message) |
+      (1 << kUpb_FieldType_Group);
+  // clang-format on
+  return (1 << type) & ~kUnpackableTypes;
 }
 
 /** upb_MtDataEncoder *********************************************************/
@@ -178,7 +182,6 @@ char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
   return upb_MtDataEncoder_PutModifier(e, ptr, msg_mod);
 }
 
-#include <stdio.h>
 char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
                                  upb_FieldType type, uint32_t field_num,
                                  uint64_t field_mod) {
@@ -229,10 +232,12 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
     // are bit flags).
     encoded_type += kUpb_EncodedType_RepeatedBase;
 
-    bool field_is_packed = field_mod & kUpb_FieldModifier_IsPacked;
-    bool default_is_packed = in->msg_mod & kUpb_MessageModifier_DefaultIsPacked;
-    if (field_is_packed != default_is_packed && upb_IsTypePackable(type)) {
-      encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
+    if (upb_IsTypePackable(type)) {
+      bool field_is_packed = field_mod & kUpb_FieldModifier_IsPacked;
+      bool default_is_packed = in->msg_mod & kUpb_MessageModifier_DefaultIsPacked;
+      if (field_is_packed != default_is_packed) {
+        encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
+      }
     }
   }
   ptr = upb_MtDataEncoder_Put(e, ptr, encoded_type);
@@ -374,18 +379,19 @@ static const char* upb_MiniTable_DecodeBase92Varint(upb_MtDecoder* d,
 
 static bool upb_MiniTable_HasSub(upb_MiniTable_Field* field,
                                  uint64_t msg_modifiers) {
-  if (field->descriptortype == kUpb_FieldType_Message ||
-      field->descriptortype == kUpb_FieldType_Group) {
-    return true;
-  } else if (field->descriptortype == kUpb_FieldType_Enum) {
-    return true;
-  } else if (field->descriptortype == kUpb_FieldType_String) {
-    if (!(msg_modifiers & kUpb_MessageModifier_ValidateUtf8)) {
-      field->descriptortype = kUpb_FieldType_Bytes;
+  switch (field->descriptortype) {
+    case kUpb_FieldType_Message:
+    case kUpb_FieldType_Group:
+    case kUpb_FieldType_Enum:
+      return true;
+    case kUpb_FieldType_String:
+      if (!(msg_modifiers & kUpb_MessageModifier_ValidateUtf8)) {
+        field->descriptortype = kUpb_FieldType_Bytes;
+      }
       return false;
-    }
+    default:
+      return false;
   }
-  return false;
 }
 
 static bool upb_MtDecoder_FieldIsPackable(upb_MiniTable_Field* field) {
@@ -474,7 +480,6 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
                               msg_modifiers);
 }
 
-#include <stdio.h>
 static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
                                       uint32_t message_modifiers,
                                       uint32_t field_modifiers,
@@ -996,7 +1001,7 @@ upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
 
   if (ptr != end) {
     size_t bytes = end - ptr;
-    if (bytes / 4 * 4 != bytes) {
+    if (bytes % 4 != 0) {
       upb_MtDecoder_ErrorFormat(&decoder, "Bytes should be a multiple of 4");
       UPB_UNREACHABLE();
     }

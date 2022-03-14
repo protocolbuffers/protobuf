@@ -389,11 +389,10 @@ class FilePlatformLayout {
   const char* AllocStr(const std::string& str);
 
  private:
-  typedef absl::flat_hash_map<const protobuf::Descriptor*, upb_MiniTable*>
-      TableMap;
-  typedef absl::flat_hash_map<const protobuf::FieldDescriptor*,
-                              upb_MiniTable_Extension>
-      ExtensionMap;
+  using TableMap =
+      absl::flat_hash_map<const protobuf::Descriptor*, upb_MiniTable*>;
+  using ExtensionMap = absl::flat_hash_map<const protobuf::FieldDescriptor*,
+                                           upb_MiniTable_Extension>;
   upb::Arena arena_;
   TableMap table_map_;
   ExtensionMap extension_map_;
@@ -420,8 +419,10 @@ void FilePlatformLayout::ResolveIntraFileReferences() {
   for (const auto& pair : table_map_) {
     upb_MiniTable* mt = pair.second;
     // First we properly resolve for defs within the file.
-    for (const auto& f : FieldNumberOrder(pair.first)) {
+    for (const auto* f : FieldNumberOrder(pair.first)) {
       if (f->message_type() && f->message_type()->file() == f->file()) {
+        // const_cast is safe because the mini-table is owned exclusively
+        // by us, and was allocated from an arena (known-writable memory).
         upb_MiniTable_Field* mt_f = const_cast<upb_MiniTable_Field*>(
             upb_MiniTable_FindFieldByNumber(mt, f->number()));
         upb_MiniTable* sub_mt = GetMiniTable(f->message_type());
@@ -456,18 +457,20 @@ std::string FilePlatformLayout::GetSub(upb_MiniTable_Sub sub) {
     default:
       return std::string("{.submsg = NULL}");
   }
-  return std::string("ERROR in WriteSub");
+  return std::string("ERROR in GetSub");
 }
 
 void FilePlatformLayout::SetSubTableStrings() {
   for (const auto& pair : table_map_) {
     upb_MiniTable* mt = pair.second;
-    for (const auto& f : FieldNumberOrder(pair.first)) {
+    for (const auto* f : FieldNumberOrder(pair.first)) {
       upb_MiniTable_Field* mt_f = const_cast<upb_MiniTable_Field*>(
           upb_MiniTable_FindFieldByNumber(mt, f->number()));
       assert(mt_f);
       upb_MiniTable_Sub sub = PackSubForField(f, mt_f);
       if (IsNull(sub)) continue;
+      // const_cast is safe because the mini-table is owned exclusively
+      // by us, and was allocated from an arena (known-writable memory).
       *const_cast<upb_MiniTable_Sub*>(&mt->subs[mt_f->submsg_index]) = sub;
     }
   }
@@ -502,9 +505,9 @@ void FilePlatformLayout::BuildMiniTables(const protobuf::FileDescriptor* fd) {
 }
 
 void FilePlatformLayout::BuildExtensions(const protobuf::FileDescriptor* fd) {
-  auto sorted = SortedExtensions(fd);
+  std::vector<const protobuf::FieldDescriptor*> sorted = SortedExtensions(fd);
   upb::Status status;
-  for (const auto& f : sorted) {
+  for (const auto* f : sorted) {
     upb::MtDataEncoder e;
     e.StartMessage(0);
     e.PutField(static_cast<upb_FieldType>(f->type()), f->number(),
@@ -517,10 +520,10 @@ void FilePlatformLayout::BuildExtensions(const protobuf::FileDescriptor* fd) {
       fprintf(stderr, "Error building mini-table: %s\n",
               status.error_message());
     }
+    ABSL_ASSERT(ok);
     ext.extendee = reinterpret_cast<const upb_MiniTable*>(
         AllocStr(MessageInit(f->containing_type())));
     ext.sub = PackSubForField(f, &ext.field);
-    ABSL_ASSERT(ok);
   }
 }
 
@@ -545,7 +548,7 @@ upb_MiniTable* FilePlatformLayout::MakeRegularMiniTable(
     const protobuf::Descriptor* m) {
   upb::MtDataEncoder e;
   e.StartMessage(GetMessageModifiers(m));
-  for (const auto& f : FieldNumberOrder(m)) {
+  for (const auto* f : FieldNumberOrder(m)) {
     e.PutField(static_cast<upb_FieldType>(f->type()), f->number(),
                GetFieldModifiers(f));
   }
@@ -557,7 +560,7 @@ upb_MiniTable* FilePlatformLayout::MakeRegularMiniTable(
       e.PutOneofField(f->number());
     }
   }
-  const auto& str = e.data();
+  const std::string& str = e.data();
   upb::Status status;
   upb_MiniTable* ret = upb_MiniTable_Build(str.data(), str.size(), platform_,
                                            arena_.ptr(), status.ptr());
