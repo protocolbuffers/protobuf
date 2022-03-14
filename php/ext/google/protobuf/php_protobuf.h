@@ -1,6 +1,11 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2022 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
+//
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// ! THIS FILE ONLY APPROACHING IN-TREE PHP EXTENSION BUILD !
+// ! DOES NOT USE NORMALLY.                                 !
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -27,21 +32,14 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#ifndef PHP_PROTOBUF_H
+# define PHP_PROTOBUF_H
 
-#ifndef PHP_PROTOBUF_ARENA_H_
-#define PHP_PROTOBUF_ARENA_H_
+# ifdef HAVE_CONFIG_H
+#  include "config.h"
+# endif
 
-#include <php.h>
+extern zend_module_entry protobuf_module_entry;
+# define phpext_protobuf_ptr &protobuf_module_entry
 
-#include "php-upb.h"
-
-// Registers the PHP Arena class.
-void Arena_ModuleInit();
-
-// Creates and returns a new arena object that wraps a new upb_Arena*.
-void Arena_Init(zval *val);
-
-// Gets the underlying upb_Arena from this arena object.
-upb_Arena *Arena_Get(zval *arena);
-
-#endif  // PHP_PROTOBUF_ARENA_H_
+#endif	/* PHP_PROTOBUF_H */

@@ -22,9 +22,10 @@ namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_CONSTEXPR Timestamp::Timestamp(
-    ::_pbi::ConstantInitialized)
-  : seconds_(int64_t{0})
-  , nanos_(0){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.seconds_)*/int64_t{0}
+  , /*decltype(_impl_.nanos_)*/0
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct TimestampDefaultTypeInternal {
   PROTOBUF_CONSTEXPR TimestampDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -46,8 +47,8 @@ const uint32_t TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets[] PROT
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Timestamp, seconds_),
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Timestamp, nanos_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Timestamp, _impl_.seconds_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Timestamp, _impl_.nanos_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Timestamp)},
@@ -91,23 +92,32 @@ class Timestamp::_Internal {
 Timestamp::Timestamp(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
 }
 Timestamp::Timestamp(const Timestamp& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.seconds_){}
+    , decltype(_impl_.nanos_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  ::memcpy(&seconds_, &from.seconds_,
-    static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
-    reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
+  ::memcpy(&_impl_.seconds_, &from._impl_.seconds_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.nanos_) -
+    reinterpret_cast<char*>(&_impl_.seconds_)) + sizeof(_impl_.nanos_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Timestamp)
 }
 
-inline void Timestamp::SharedCtor() {
-::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-    reinterpret_cast<char*>(&seconds_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
-    reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
+inline void Timestamp::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.seconds_){int64_t{0}}
+    , decltype(_impl_.nanos_){0}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
 }
 
 Timestamp::~Timestamp() {
@@ -124,7 +134,7 @@ inline void Timestamp::SharedDtor() {
 }
 
 void Timestamp::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void Timestamp::Clear() {
@@ -133,9 +143,9 @@ void Timestamp::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  ::memset(&seconds_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&nanos_) -
-      reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
+  ::memset(&_impl_.seconds_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.nanos_) -
+      reinterpret_cast<char*>(&_impl_.seconds_)) + sizeof(_impl_.nanos_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -148,7 +158,7 @@ const char* Timestamp::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx
       // int64 seconds = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          seconds_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          _impl_.seconds_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -156,7 +166,7 @@ const char* Timestamp::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx
       // int32 nanos = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
-          nanos_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          _impl_.nanos_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -228,7 +238,7 @@ size_t Timestamp::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_nanos());
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Timestamp::_class_data_ = {
@@ -274,11 +284,11 @@ void Timestamp::InternalSwap(Timestamp* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(Timestamp, nanos_)
-      + sizeof(Timestamp::nanos_)
-      - PROTOBUF_FIELD_OFFSET(Timestamp, seconds_)>(
-          reinterpret_cast<char*>(&seconds_),
-          reinterpret_cast<char*>(&other->seconds_));
+      PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.nanos_)
+      + sizeof(Timestamp::_impl_.nanos_)
+      - PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.seconds_)>(
+          reinterpret_cast<char*>(&_impl_.seconds_),
+          reinterpret_cast<char*>(&other->_impl_.seconds_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Timestamp::GetMetadata() const {

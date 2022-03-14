@@ -49,6 +49,7 @@ public class TestBadIdentifiers extends TestCase {
         TestBadIdentifiersProto.Override.getDefaultInstance();
   }
 
+  @SuppressWarnings("IgnoredPureGetter") // TODO(b/221602772): Fix this
   public void testGetDescriptor() {
     TestBadIdentifiersProto.getDescriptor();
     TestBadIdentifiersProto.Descriptor.getDefaultInstance().getDescriptor();

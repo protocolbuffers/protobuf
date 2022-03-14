@@ -98,6 +98,9 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+// Must be included last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace io {
@@ -937,12 +940,23 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
       // token, but Tokenizer still think it's integer.
       return false;
     }
-    if (static_cast<uint64_t>(digit) > max_value ||
-        result > (max_value - digit) / base) {
+    if (static_cast<uint64_t>(digit) > max_value) return false;
+#if PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW
+    // If there is a uint64_t overflow, there is a result * base logical
+    // overflow. This is done to avoid division.
+    if (__builtin_mul_overflow(result, base, &result) ||
+        result > (max_value - digit)) {
+      // Overflow.
+      return false;
+    }
+    result += digit;
+#else
+    if (result > (max_value - digit) / base) {
       // Overflow.
       return false;
     }
     result = result * base + digit;
+#endif  // PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW
   }
 
   *output = result;
@@ -1183,3 +1197,6 @@ bool Tokenizer::IsIdentifier(const std::string& text) {
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+

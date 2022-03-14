@@ -115,12 +115,16 @@ void EnumFieldGenerator::GenerateCFunctionImplementations(
 }
 
 void EnumFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls) const {
-  SingleFieldGenerator::DetermineForwardDeclarations(fwd_decls);
-  // If it is an enum defined in a different file, then we'll need a forward
-  // declaration for it.  When it is in our file, all the enums are output
-  // before the message, so it will be declared before it is needed.
-  if (descriptor_->file() != descriptor_->enum_type()->file()) {
+    std::set<std::string>* fwd_decls,
+    bool include_external_types) const {
+  SingleFieldGenerator::DetermineForwardDeclarations(
+      fwd_decls, include_external_types);
+  // If it is an enum defined in a different file (and not a WKT), then we'll
+  // need a forward declaration for it.  When it is in our file, all the enums
+  // are output before the message, so it will be declared before it is needed.
+  if (include_external_types &&
+      descriptor_->file() != descriptor_->enum_type()->file() &&
+      !IsProtobufLibraryBundledProtoFile(descriptor_->enum_type()->file())) {
     // Enum name is already in "storage_type".
     const std::string& name = variable("storage_type");
     fwd_decls->insert("GPB_ENUM_FWD_DECLARE(" + name + ")");

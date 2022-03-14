@@ -189,8 +189,7 @@ bool ObjectiveCGenerator::GenerateAll(
       // generated files. When integrating ObjC protos into a build system,
       // this can be used to avoid having to add the runtime directory to the
       // header search path since the generate #import will be more complete.
-      generation_options.runtime_import_prefix =
-          StripSuffixString(options[i].second, "/");
+      generation_options.runtime_import_prefix = StripSuffixString(options[i].second, "/");
     } else if (options[i].first == "package_to_prefix_mappings_path") {
       // Path to use for when loading the objc class prefix mappings to use.
       // The `objc_class_prefix` file option is always honored first if one is present.
@@ -231,6 +230,12 @@ bool ObjectiveCGenerator::GenerateAll(
       //   - A comment can go on a line after a expected package/prefix pair.
       //     (i.e. - "some.proto.package # comment")
       SetProtoPackagePrefixExceptionList(options[i].second);
+    } else if (options[i].first == "headers_use_forward_declarations") {
+      if (!StringToBool(options[i].second,
+                        &generation_options.headers_use_forward_declarations)) {
+        *error = "error: Unknown value for headers_use_forward_declarations: " + options[i].second;
+        return false;
+      }
     } else {
       *error = "error: Unknown generator option: " + options[i].first;
       return false;

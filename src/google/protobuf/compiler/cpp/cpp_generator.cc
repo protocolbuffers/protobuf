@@ -141,6 +141,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.unverified_lazy_message_sets = true;
     } else if (options[i].first == "eagerly_verified_lazy") {
       file_options.eagerly_verified_lazy = true;
+    } else if (options[i].first == "message_owned_arena_trial") {
+      file_options.message_owned_arena_trial = true;
     } else if (options[i].first == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
     } else if (options[i].first == "experimental_tail_call_table_mode") {

@@ -22,8 +22,9 @@ namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_CONSTEXPR FieldMask::FieldMask(
-    ::_pbi::ConstantInitialized)
-  : paths_(){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.paths_)*/{}
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct FieldMaskDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FieldMaskDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -45,7 +46,7 @@ const uint32_t TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto::offsets[] P
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldMask, paths_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldMask, _impl_.paths_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FieldMask)},
@@ -88,19 +89,28 @@ class FieldMask::_Internal {
 
 FieldMask::FieldMask(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
-  paths_(arena) {
-  SharedCtor();
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldMask)
 }
 FieldMask::FieldMask(const FieldMask& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
-      paths_(from.paths_) {
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.paths_){from._impl_.paths_}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
 
-inline void FieldMask::SharedCtor() {
+inline void FieldMask::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.paths_){arena}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
 }
 
 FieldMask::~FieldMask() {
@@ -114,10 +124,11 @@ FieldMask::~FieldMask() {
 
 inline void FieldMask::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.paths_.~RepeatedPtrField();
 }
 
 void FieldMask::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void FieldMask::Clear() {
@@ -126,7 +137,7 @@ void FieldMask::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  paths_.Clear();
+  _impl_.paths_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -208,13 +219,13 @@ size_t FieldMask::ByteSizeLong() const {
 
   // repeated string paths = 1;
   total_size += 1 *
-      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(paths_.size());
-  for (int i = 0, n = paths_.size(); i < n; i++) {
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(_impl_.paths_.size());
+  for (int i = 0, n = _impl_.paths_.size(); i < n; i++) {
     total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-      paths_.Get(i));
+      _impl_.paths_.Get(i));
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData FieldMask::_class_data_ = {
@@ -236,7 +247,7 @@ void FieldMask::MergeFrom(const FieldMask& from) {
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  paths_.MergeFrom(from.paths_);
+  _impl_.paths_.MergeFrom(from._impl_.paths_);
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -254,7 +265,7 @@ bool FieldMask::IsInitialized() const {
 void FieldMask::InternalSwap(FieldMask* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  paths_.InternalSwap(&other->paths_);
+  _impl_.paths_.InternalSwap(&other->_impl_.paths_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FieldMask::GetMetadata() const {

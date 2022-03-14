@@ -49,10 +49,14 @@ class MessageGenerator;
 class FileGenerator {
  public:
   struct GenerationOptions {
-    GenerationOptions() {}
+    GenerationOptions()
+      // TODO(thomasvl): Eventually flip this default to false for better
+      // interop with Swift if proto usages span modules made from ObjC sources.
+      : headers_use_forward_declarations(true) {}
     std::string generate_for_named_framework;
     std::string named_framework_to_proto_path_mappings_path;
     std::string runtime_import_prefix;
+    bool headers_use_forward_declarations;
   };
 
   FileGenerator(const FileDescriptor* file,

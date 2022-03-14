@@ -147,10 +147,10 @@ class PROTOBUF_EXPORT Duration final :
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
   uint8_t* _InternalSerialize(
       uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor();
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Duration* other);
@@ -203,9 +203,12 @@ class PROTOBUF_EXPORT Duration final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  int64_t seconds_;
-  int32_t nanos_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  struct Impl_ {
+    int64_t seconds_;
+    int32_t nanos_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fduration_2eproto;
 };
 // ===================================================================
@@ -221,10 +224,10 @@ class PROTOBUF_EXPORT Duration final :
 
 // int64 seconds = 1;
 inline void Duration::clear_seconds() {
-  seconds_ = int64_t{0};
+  _impl_.seconds_ = int64_t{0};
 }
 inline int64_t Duration::_internal_seconds() const {
-  return seconds_;
+  return _impl_.seconds_;
 }
 inline int64_t Duration::seconds() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Duration.seconds)
@@ -232,7 +235,7 @@ inline int64_t Duration::seconds() const {
 }
 inline void Duration::_internal_set_seconds(int64_t value) {
   
-  seconds_ = value;
+  _impl_.seconds_ = value;
 }
 inline void Duration::set_seconds(int64_t value) {
   _internal_set_seconds(value);
@@ -241,10 +244,10 @@ inline void Duration::set_seconds(int64_t value) {
 
 // int32 nanos = 2;
 inline void Duration::clear_nanos() {
-  nanos_ = 0;
+  _impl_.nanos_ = 0;
 }
 inline int32_t Duration::_internal_nanos() const {
-  return nanos_;
+  return _impl_.nanos_;
 }
 inline int32_t Duration::nanos() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Duration.nanos)
@@ -252,7 +255,7 @@ inline int32_t Duration::nanos() const {
 }
 inline void Duration::_internal_set_nanos(int32_t value) {
   
-  nanos_ = value;
+  _impl_.nanos_ = value;
 }
 inline void Duration::set_nanos(int32_t value) {
   _internal_set_nanos(value);

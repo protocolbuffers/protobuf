@@ -698,6 +698,16 @@ class EncodeDecodeTest extends TestBase
         $m->mergeFromString(hex2bin('7A01'));
     }
 
+    public function testEncodeDecodeValidUtf8()
+    {
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"optionalString\":\"\\u1000\"}");
+        $serialized = $m->serializeToString();
+        $m2 = new TestMessage();
+        $m2->mergeFromString($serialized);
+        $this->assertSame($m->getOptionalString(), $m2->getOptionalString());
+    }
+
     public function testDecodeInvalidEnum()
     {
         $this->expectException(Exception::class);

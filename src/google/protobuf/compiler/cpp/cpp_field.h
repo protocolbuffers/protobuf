@@ -165,10 +165,32 @@ class FieldGenerator {
   }
 
   // Generate initialization code for private members declared by
-  // GeneratePrivateMembers(), specifically for the constexpr constructor.
-  // These go into the constructor's initializer list and must follow that
-  // syntax (eg `field_(args)`). Does not include `:` or `,` separators.
-  virtual void GenerateConstinitInitializer(io::Printer* printer) const {}
+  // GeneratePrivateMembers(). These go into the SharedCtor's
+  // aggregate initialization of the _impl_ struct and must follow the syntax
+  // (e.g. `decltype($field$){$default$}`). Does not include `:` or `,`
+  // separators.  Default values should be specified here when possible.
+  //
+  // Note: We use `decltype($field$)` for both explicit construction and the
+  // fact that it's self-documenting.  Pre-C++17, copy elision isn't guaranteed
+  // in aggregate initialization so a valid copy/move constructor must exist
+  // (even though it's not used).  Because of this, we need to comment out the
+  // decltype and fallback to implicit construction.
+  virtual void GenerateAggregateInitializer(io::Printer* printer) const;
+
+  // Generate constinit initialization code for private members declared by
+  // GeneratePrivateMembers(). These go into the constexpr constructor's
+  // aggregate initialization of the _impl_ struct and must follow the syntax
+  // (e.g. `/*decltype($field$)*/{}`, see above). Does not
+  // include `:` or `,` separators.
+  virtual void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const;
+
+  // Generate copy initialization code for private members declared by
+  // GeneratePrivateMembers(). These go into the copy constructor's
+  // aggregate initialization of the _impl_ struct and must follow the syntax
+  // (e.g. `decltype($field$){from.$field$}`, see above). Does not
+  // include `:` or `,` separators.
+  virtual void GenerateCopyAggregateInitializer(io::Printer* printer) const;
 
   // Generate lines to serialize this field directly to the array "target",
   // which are placed within the message's SerializeWithCachedSizesToArray()

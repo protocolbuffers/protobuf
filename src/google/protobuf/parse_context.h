@@ -34,6 +34,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <type_traits>
 
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -374,6 +375,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
 using LazyEagerVerifyFnType = const char* (*)(const char* ptr,
                                               ParseContext* ctx);
+using LazyEagerVerifyFnRef = std::remove_pointer<LazyEagerVerifyFnType>::type&;
 
 // ParseContext holds all data that is global to the entire parse. Most
 // importantly it contains the input stream, but also recursion depth and also

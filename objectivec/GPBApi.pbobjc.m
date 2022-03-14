@@ -3,8 +3,6 @@
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
 #import "GPBApi.pbobjc.h"
-#import "GPBSourceContext.pbobjc.h"
-#import "GPBType.pbobjc.h"
 
 // @@protoc_insertion_point(imports)
 

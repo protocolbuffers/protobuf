@@ -27,10 +27,6 @@ get_source_files() {
   get_variable_value $@ | grep "cc$\|inc$"
 }
 
-get_proto_files_blacklisted() {
-  get_proto_files $@ | sed '/^google\/protobuf\/unittest_enormous_descriptor.proto$/d'
-}
-
 get_proto_files() {
   get_variable_value $@ | grep "pb.cc$" | sed "s/pb.cc/proto/"
 }
@@ -58,7 +54,6 @@ LIBPROTOC_SOURCES=$(get_source_files $MAKEFILE libprotoc_la_SOURCES)
 LIBPROTOC_HEADERS=$(get_variable_value $MAKEFILE nobase_include_HEADERS | grep /compiler/)
 LITE_PROTOS=$(get_proto_files $MAKEFILE protoc_lite_outputs)
 PROTOS=$(get_proto_files $MAKEFILE protoc_outputs)
-PROTOS_BLACKLISTED=$(get_proto_files_blacklisted $MAKEFILE protoc_outputs)
 WKT_PROTOS=$(get_variable_value $MAKEFILE nobase_dist_proto_DATA)
 COMMON_TEST_SOURCES=$(get_source_files $MAKEFILE COMMON_TEST_SOURCES)
 COMMON_LITE_TEST_SOURCES=$(get_source_files $MAKEFILE COMMON_LITE_TEST_SOURCES)
@@ -118,13 +113,13 @@ set_cmake_value() {
 
 
 # Replace file lists in cmake files.
-CMAKE_PREFIX="\${protobuf_source_dir}/src/"
+CMAKE_PREFIX="\${protobuf_SOURCE_DIR}/src/"
 set_cmake_value $CMAKE_DIR/libprotobuf-lite.cmake libprotobuf_lite_files $CMAKE_PREFIX $LIBPROTOBUF_LITE_SOURCES
 set_cmake_value $CMAKE_DIR/libprotobuf.cmake libprotobuf_files $CMAKE_PREFIX $LIBPROTOBUF_SOURCES
 set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_files $CMAKE_PREFIX $LIBPROTOC_SOURCES
 set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_headers $CMAKE_PREFIX $LIBPROTOC_HEADERS
 set_cmake_value $CMAKE_DIR/tests.cmake lite_test_protos "" $LITE_PROTOS
-set_cmake_value $CMAKE_DIR/tests.cmake tests_protos "" $PROTOS_BLACKLISTED
+set_cmake_value $CMAKE_DIR/tests.cmake tests_protos "" $PROTOS
 set_cmake_value $CMAKE_DIR/tests.cmake common_test_files $CMAKE_PREFIX '${common_lite_test_files}' $COMMON_TEST_SOURCES
 set_cmake_value $CMAKE_DIR/tests.cmake common_lite_test_files $CMAKE_PREFIX $COMMON_LITE_TEST_SOURCES
 set_cmake_value $CMAKE_DIR/tests.cmake tests_files $CMAKE_PREFIX $TEST_SOURCES
