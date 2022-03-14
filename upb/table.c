@@ -433,7 +433,7 @@ const uint64_t kWyhashSalt[5] = {
     0x082EFA98EC4E6C89ULL, 0x452821E638D01377ULL,
 };
 
-uint32_t _upb_Hash(const char* p, size_t n, uint64_t seed) {
+uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed) {
   return Wyhash(p, n, seed, kWyhashSalt);
 }
 
