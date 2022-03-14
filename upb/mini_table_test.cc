@@ -66,7 +66,6 @@ TEST_P(MiniTableTest, AllScalarTypes) {
   for (int i = 0; i < 16; i++) {
     const upb_MiniTable_Field* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(i + kUpb_FieldType_Double, f->descriptortype);
     EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);
@@ -93,7 +92,6 @@ TEST_P(MiniTableTest, AllRepeatedTypes) {
   for (int i = 0; i < 16; i++) {
     const upb_MiniTable_Field* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(i + kUpb_FieldType_Double, f->descriptortype);
     EXPECT_EQ(kUpb_FieldMode_Array, f->mode & kUpb_FieldMode_Mask);
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);
@@ -152,7 +150,6 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   for (int i = 0; i < 16; i++) {
     const upb_MiniTable_Field* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(i + kUpb_FieldType_Double, f->descriptortype);
     EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
     // For a oneof all fields have the same offset.
     EXPECT_EQ(table->fields[0].offset, f->offset);
