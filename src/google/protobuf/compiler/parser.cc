@@ -976,37 +976,14 @@ bool Parser::ParseMessageFieldNoLabel(
     if (TryConsume("map")) {
       if (LookingAt("<")) {
         map_field.is_map_field = true;
+        DO(ParseMapType(&map_field, field, location));
       } else {
         // False positive
         type_parsed = true;
         type_name = "map";
       }
     }
-    if (map_field.is_map_field) {
-      if (field->has_oneof_index()) {
-        AddError("Map fields are not allowed in oneofs.");
-        return false;
-      }
-      if (field->has_label()) {
-        AddError(
-            "Field labels (required/optional/repeated) are not allowed on "
-            "map fields.");
-        return false;
-      }
-      if (field->has_extendee()) {
-        AddError("Map fields are not allowed to be extensions.");
-        return false;
-      }
-      field->set_label(FieldDescriptorProto::LABEL_REPEATED);
-      DO(Consume("<"));
-      DO(ParseType(&map_field.key_type, &map_field.key_type_name));
-      DO(Consume(","));
-      DO(ParseType(&map_field.value_type, &map_field.value_type_name));
-      DO(Consume(">"));
-      // Defer setting of the type name of the map field until the
-      // field name is parsed. Add the source location though.
-      location.AddPath(FieldDescriptorProto::kTypeNameFieldNumber);
-    } else {
+    if (!map_field.is_map_field) {
       // Handle the case where no explicit label is given for a non-map field.
       if (!field->has_label() && DefaultToOptionalFields()) {
         field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
@@ -1018,8 +995,8 @@ bool Parser::ParseMessageFieldNoLabel(
         field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
       }
 
-      // Handle the case where the actual type is a message or enum named "map",
-      // which we already consumed in the code above.
+      // Handle the case where the actual type is a message or enum named
+      // "map", which we already consumed in the code above.
       if (!type_parsed) {
         DO(ParseType(&type, &type_name));
       }
@@ -1124,6 +1101,34 @@ bool Parser::ParseMessageFieldNoLabel(
     GenerateMapEntry(map_field, field, messages);
   }
 
+  return true;
+}
+
+bool Parser::ParseMapType(MapField* map_field, FieldDescriptorProto* field,
+                          LocationRecorder& type_name_location) {
+  if (field->has_oneof_index()) {
+    AddError("Map fields are not allowed in oneofs.");
+    return false;
+  }
+  if (field->has_label()) {
+    AddError(
+        "Field labels (required/optional/repeated) are not allowed on "
+        "map fields.");
+    return false;
+  }
+  if (field->has_extendee()) {
+    AddError("Map fields are not allowed to be extensions.");
+    return false;
+  }
+  field->set_label(FieldDescriptorProto::LABEL_REPEATED);
+  DO(Consume("<"));
+  DO(ParseType(&map_field->key_type, &map_field->key_type_name));
+  DO(Consume(","));
+  DO(ParseType(&map_field->value_type, &map_field->value_type_name));
+  DO(Consume(">"));
+  // Defer setting of the type name of the map field until the
+  // field name is parsed. Add the source location though.
+  type_name_location.AddPath(FieldDescriptorProto::kTypeNameFieldNumber);
   return true;
 }
 

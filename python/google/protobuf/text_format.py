@@ -1143,9 +1143,12 @@ def _SkipFieldContents(tokenizer):
   # start with "{" or "<" which indicates the beginning of a message body.
   # If there is no ":" or there is a "{" or "<" after ":", this field has
   # to be a message or the input is ill-formed.
-  if tokenizer.TryConsume(':') and not tokenizer.LookingAt(
-      '{') and not tokenizer.LookingAt('<'):
-    _SkipFieldValue(tokenizer)
+  if tokenizer.TryConsume(
+      ':') and not tokenizer.LookingAt('{') and not tokenizer.LookingAt('<'):
+    if tokenizer.LookingAt('['):
+      _SkipRepeatedFieldValue(tokenizer)
+    else:
+      _SkipFieldValue(tokenizer)
   else:
     _SkipFieldMessage(tokenizer)
 
@@ -1196,7 +1199,7 @@ def _SkipFieldValue(tokenizer):
   """Skips over a field value.
 
   Args:
-    tokenizer: A tokenizer to parse the field name and values.
+    tokenizer: A tokenizer to parse the field value.
 
   Raises:
     ParseError: In case an invalid field value is found.
@@ -1212,6 +1215,20 @@ def _SkipFieldValue(tokenizer):
       not _TryConsumeInt64(tokenizer) and not _TryConsumeUint64(tokenizer) and
       not tokenizer.TryConsumeFloat()):
     raise ParseError('Invalid field value: ' + tokenizer.token)
+
+
+def _SkipRepeatedFieldValue(tokenizer):
+  """Skips over a repeated field value.
+
+  Args:
+    tokenizer: A tokenizer to parse the field value.
+  """
+  tokenizer.Consume('[')
+  if not tokenizer.LookingAt(']'):
+    _SkipFieldValue(tokenizer)
+    while tokenizer.TryConsume(','):
+      _SkipFieldValue(tokenizer)
+  tokenizer.Consume(']')
 
 
 class Tokenizer(object):

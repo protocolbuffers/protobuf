@@ -109,14 +109,14 @@ class PROTOBUF_EXPORT Any final :
   // implements Any -----------------------------------------------
 
   bool PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message) {
-    return _any_metadata_.PackFrom(GetArena(), message);
+    return _impl_._any_metadata_.PackFrom(GetArena(), message);
   }
   bool PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message,
                 ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url_prefix) {
-    return _any_metadata_.PackFrom(GetArena(), message, type_url_prefix);
+    return _impl_._any_metadata_.PackFrom(GetArena(), message, type_url_prefix);
   }
   bool UnpackTo(::PROTOBUF_NAMESPACE_ID::Message* message) const {
-    return _any_metadata_.UnpackTo(message);
+    return _impl_._any_metadata_.UnpackTo(message);
   }
   static bool GetAnyFieldDescriptors(
       const ::PROTOBUF_NAMESPACE_ID::Message& message,
@@ -124,18 +124,18 @@ class PROTOBUF_EXPORT Any final :
       const ::PROTOBUF_NAMESPACE_ID::FieldDescriptor** value_field);
   template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
   bool PackFrom(const T& message) {
-    return _any_metadata_.PackFrom<T>(GetArena(), message);
+    return _impl_._any_metadata_.PackFrom<T>(GetArena(), message);
   }
   template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
   bool PackFrom(const T& message,
                 ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url_prefix) {
-    return _any_metadata_.PackFrom<T>(GetArena(), message, type_url_prefix);}
+    return _impl_._any_metadata_.PackFrom<T>(GetArena(), message, type_url_prefix);}
   template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
   bool UnpackTo(T* message) const {
-    return _any_metadata_.UnpackTo<T>(message);
+    return _impl_._any_metadata_.UnpackTo<T>(message);
   }
   template<typename T> bool Is() const {
-    return _any_metadata_.Is<T>();
+    return _impl_._any_metadata_.Is<T>();
   }
   static bool ParseAnyTypeUrl(::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url,
                               std::string* full_type_name);
@@ -180,10 +180,10 @@ class PROTOBUF_EXPORT Any final :
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
   uint8_t* _InternalSerialize(
       uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor();
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Any* other);
@@ -246,10 +246,13 @@ class PROTOBUF_EXPORT Any final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr type_url_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr value_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata _any_metadata_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr type_url_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr value_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata _any_metadata_;
+  };
+  union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fany_2eproto;
 };
 // ===================================================================
@@ -265,7 +268,7 @@ class PROTOBUF_EXPORT Any final :
 
 // string type_url = 1;
 inline void Any::clear_type_url() {
-  type_url_.ClearToEmpty();
+  _impl_.type_url_.ClearToEmpty();
 }
 inline const std::string& Any::type_url() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.type_url)
@@ -275,7 +278,7 @@ template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void Any::set_type_url(ArgT0&& arg0, ArgT... args) {
  
- type_url_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+ _impl_.type_url_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Any.type_url)
 }
 inline std::string* Any::mutable_type_url() {
@@ -284,19 +287,19 @@ inline std::string* Any::mutable_type_url() {
   return _s;
 }
 inline const std::string& Any::_internal_type_url() const {
-  return type_url_.Get();
+  return _impl_.type_url_.Get();
 }
 inline void Any::_internal_set_type_url(const std::string& value) {
   
-  type_url_.Set(value, GetArenaForAllocation());
+  _impl_.type_url_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Any::_internal_mutable_type_url() {
   
-  return type_url_.Mutable(GetArenaForAllocation());
+  return _impl_.type_url_.Mutable(GetArenaForAllocation());
 }
 inline std::string* Any::release_type_url() {
   // @@protoc_insertion_point(field_release:google.protobuf.Any.type_url)
-  return type_url_.Release();
+  return _impl_.type_url_.Release();
 }
 inline void Any::set_allocated_type_url(std::string* type_url) {
   if (type_url != nullptr) {
@@ -304,10 +307,10 @@ inline void Any::set_allocated_type_url(std::string* type_url) {
   } else {
     
   }
-  type_url_.SetAllocated(type_url, GetArenaForAllocation());
+  _impl_.type_url_.SetAllocated(type_url, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (type_url_.IsDefault()) {
-    type_url_.Set("", GetArenaForAllocation());
+  if (_impl_.type_url_.IsDefault()) {
+    _impl_.type_url_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Any.type_url)
@@ -315,7 +318,7 @@ inline void Any::set_allocated_type_url(std::string* type_url) {
 
 // bytes value = 2;
 inline void Any::clear_value() {
-  value_.ClearToEmpty();
+  _impl_.value_.ClearToEmpty();
 }
 inline const std::string& Any::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.value)
@@ -325,7 +328,7 @@ template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void Any::set_value(ArgT0&& arg0, ArgT... args) {
  
- value_.SetBytes(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+ _impl_.value_.SetBytes(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Any.value)
 }
 inline std::string* Any::mutable_value() {
@@ -334,19 +337,19 @@ inline std::string* Any::mutable_value() {
   return _s;
 }
 inline const std::string& Any::_internal_value() const {
-  return value_.Get();
+  return _impl_.value_.Get();
 }
 inline void Any::_internal_set_value(const std::string& value) {
   
-  value_.Set(value, GetArenaForAllocation());
+  _impl_.value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Any::_internal_mutable_value() {
   
-  return value_.Mutable(GetArenaForAllocation());
+  return _impl_.value_.Mutable(GetArenaForAllocation());
 }
 inline std::string* Any::release_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Any.value)
-  return value_.Release();
+  return _impl_.value_.Release();
 }
 inline void Any::set_allocated_value(std::string* value) {
   if (value != nullptr) {
@@ -354,10 +357,10 @@ inline void Any::set_allocated_value(std::string* value) {
   } else {
     
   }
-  value_.SetAllocated(value, GetArenaForAllocation());
+  _impl_.value_.SetAllocated(value, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (value_.IsDefault()) {
-    value_.Set("", GetArenaForAllocation());
+  if (_impl_.value_.IsDefault()) {
+    _impl_.value_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Any.value)

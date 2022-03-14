@@ -236,7 +236,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              std::map<std::string, std::string>* variables,
                              const Options& options) {
   SetCommonVars(options, variables);
-  SetCommonMessageDataVariables(variables);
+  SetCommonMessageDataVariables(descriptor->containing_type(), variables);
 
   (*variables)["ns"] = Namespace(descriptor, options);
   (*variables)["name"] = FieldName(descriptor);
@@ -302,6 +302,23 @@ void FieldGenerator::SetInlinedStringIndex(int32_t inlined_string_index) {
   variables_["mask_for_undonate"] = StrCat(
       "~0x", strings::Hex(1u << (inlined_string_index % 32), strings::ZERO_PAD_8),
       "u");
+}
+
+void FieldGenerator::GenerateAggregateInitializer(io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){arena}");
+}
+
+void FieldGenerator::GenerateConstexprAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("/*decltype($field$)*/{}");
+}
+
+void FieldGenerator::GenerateCopyAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){from.$field$}");
 }
 
 void SetCommonOneofFieldVariables(

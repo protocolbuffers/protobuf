@@ -184,6 +184,12 @@ bool IsEagerlyVerifiedLazyImpl(const FieldDescriptor* field,
   return false;
 }
 
+// Returns true if the message can potentially allocate memory for its field.
+// This is used to determine if message-owned arena will be useful.
+bool AllocExpected(const Descriptor* descriptor) {
+  return false;
+}
+
 }  // namespace
 
 bool IsLazy(const FieldDescriptor* field, const Options& options,
@@ -230,15 +236,18 @@ void SetCommonVars(const Options& options,
 }
 
 void SetCommonMessageDataVariables(
+    const Descriptor* descriptor,
     std::map<std::string, std::string>* variables) {
-  (*variables)["any_metadata"] = "_any_metadata_";
-  (*variables)["cached_size"] = "_cached_size_";
-  (*variables)["extensions"] = "_extensions_";
-  (*variables)["has_bits"] = "_has_bits_";
-  (*variables)["inlined_string_donated_array"] = "_inlined_string_donated_";
-  (*variables)["oneof_case"] = "_oneof_case_";
-  (*variables)["tracker"] = "_tracker_";
-  (*variables)["weak_field_map"] = "_weak_field_map_";
+  std::string prefix = IsMapEntryMessage(descriptor) ? "" : "_impl_.";
+  (*variables)["any_metadata"] = prefix + "_any_metadata_";
+  (*variables)["cached_size"] = prefix + "_cached_size_";
+  (*variables)["extensions"] = prefix + "_extensions_";
+  (*variables)["has_bits"] = prefix + "_has_bits_";
+  (*variables)["inlined_string_donated_array"] =
+      prefix + "_inlined_string_donated_";
+  (*variables)["oneof_case"] = prefix + "_oneof_case_";
+  (*variables)["tracker"] = "Impl_::_tracker_";
+  (*variables)["weak_field_map"] = prefix + "_weak_field_map_";
 }
 
 void SetUnknownFieldsVariable(const Descriptor* descriptor,
@@ -466,11 +475,13 @@ std::string FieldName(const FieldDescriptor* field) {
 }
 
 std::string FieldMemberName(const FieldDescriptor* field) {
+  StringPiece prefix =
+      IsMapEntryMessage(field->containing_type()) ? "" : "_impl_.";
   if (field->real_containing_oneof() == nullptr) {
-    return StrCat(FieldName(field), "_");
+    return StrCat(prefix, FieldName(field), "_");
   }
-  return StrCat(field->containing_oneof()->name(), "_.", FieldName(field),
-                      "_");
+  return StrCat(prefix, field->containing_oneof()->name(), "_.",
+                      FieldName(field), "_");
 }
 
 std::string OneofCaseConstantName(const FieldDescriptor* field) {
@@ -984,6 +995,16 @@ bool ShouldVerify(const FileDescriptor* file, const Options& options,
   (void)file;
   (void)options;
   (void)scc_analyzer;
+  return false;
+}
+
+bool IsUtf8String(const FieldDescriptor* field) {
+  return IsProto3(field->file()) &&
+      field->type() == FieldDescriptor::TYPE_STRING;
+}
+
+bool ShouldVerifySimple(const Descriptor* descriptor) {
+  (void)descriptor;
   return false;
 }
 
@@ -1505,9 +1526,20 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
   return FileOptions::SPEED;
 }
 
+inline bool IsMessageOwnedArenaEligible(const Descriptor* desc,
+                                        const Options& options) {
+  return GetOptimizeFor(desc->file(), options) != FileOptions::LITE_RUNTIME &&
+         AllocExpected(desc) && !options.bootstrap;
+}
+
 bool EnableMessageOwnedArena(const Descriptor* desc, const Options& options) {
   (void)desc;
   (void)options;
+  return false;
+}
+
+bool EnableMessageOwnedArenaTrial(const Descriptor* desc,
+                                  const Options& options) {
   return false;
 }
 

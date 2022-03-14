@@ -226,8 +226,7 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizesToArray(
             format);
       }
     }
-    format(
-        "};\n");
+    format("};\n");
   }
 
   format(
@@ -271,14 +270,29 @@ void MapFieldGenerator::GenerateIsInitialized(io::Printer* printer) const {
       "false;\n");
 }
 
-void MapFieldGenerator::GenerateConstinitInitializer(
+void MapFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    format("$name$_(::$proto_ns$::internal::ConstantInitialized{})");
+    format("/*decltype($field$)*/{::_pbi::ConstantInitialized()}");
   } else {
-    format("$name$_()");
+    format("/*decltype($field$)*/{}");
   }
+}
+
+void MapFieldGenerator::GenerateCopyAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  // MapField has no move constructor, which prevents explicit aggregate
+  // initialization pre-C++17.
+  format("/*decltype($field$)*/{}");
+}
+
+void MapFieldGenerator::GenerateAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  // MapField has no move constructor.
+  format("/*decltype($field$)*/{::_pbi::ArenaInitialized(), arena}");
 }
 
 void MapFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
@@ -286,6 +300,7 @@ void MapFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
 
   Formatter format(printer, variables_);
   format("$field$.Destruct();\n");
+  format("$field$.~MapField$lite$();\n");
 }
 
 void MapFieldGenerator::GenerateArenaDestructorCode(

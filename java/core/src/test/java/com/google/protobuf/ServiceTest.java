@@ -251,7 +251,4 @@ public class ServiceTest {
     assertThat(file.getServices().get(0).getMethods()).hasSize(1);
     assertThat(file.getServices().get(0).getMethods().get(0).getName()).isEqualTo("Foo");
   }
-
-
-  // =================================================================
 }

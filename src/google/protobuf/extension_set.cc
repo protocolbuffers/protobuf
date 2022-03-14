@@ -949,23 +949,35 @@ void ExtensionSet::Clear() {
 }
 
 namespace {
-// Computes the size of a std::set_union without constructing the union.
+// Computes the size of an ExtensionSet union without actually constructing the
+// union. Note that we do not count cleared extensions from the source to be
+// part of the total, because there is no need to allocate space for those. We
+// do include cleared extensions in the destination, though, because those are
+// already allocated and will not be going away.
 template <typename ItX, typename ItY>
-size_t SizeOfUnion(ItX it_xs, ItX end_xs, ItY it_ys, ItY end_ys) {
+size_t SizeOfUnion(ItX it_dest, ItX end_dest, ItY it_source, ItY end_source) {
   size_t result = 0;
-  while (it_xs != end_xs && it_ys != end_ys) {
-    ++result;
-    if (it_xs->first < it_ys->first) {
-      ++it_xs;
-    } else if (it_xs->first == it_ys->first) {
-      ++it_xs;
-      ++it_ys;
+  while (it_dest != end_dest && it_source != end_source) {
+    if (it_dest->first < it_source->first) {
+      ++result;
+      ++it_dest;
+    } else if (it_dest->first == it_source->first) {
+      ++result;
+      ++it_dest;
+      ++it_source;
     } else {
-      ++it_ys;
+      if (!it_source->second.is_cleared) {
+        ++result;
+      }
+      ++it_source;
     }
   }
-  result += std::distance(it_xs, end_xs);
-  result += std::distance(it_ys, end_ys);
+  result += std::distance(it_dest, end_dest);
+  for (; it_source != end_source; ++it_source) {
+    if (!it_source->second.is_cleared) {
+      ++result;
+    }
+  }
   return result;
 }
 }  // namespace

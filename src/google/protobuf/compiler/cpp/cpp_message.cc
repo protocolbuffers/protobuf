@@ -83,7 +83,7 @@ static constexpr int kNoHasbit = -1;
 // masks must be non-zero.
 std::string ConditionalToCheckBitmasks(
     const std::vector<uint32_t>& masks, bool return_success = true,
-    StringPiece has_bits_var = "_has_bits_") {
+    StringPiece has_bits_var = "_impl_._has_bits_") {
   std::vector<std::string> parts;
   for (int i = 0; i < masks.size(); i++) {
     if (masks[i] == 0) continue;
@@ -403,7 +403,7 @@ static int popcnt(uint32_t n) {
 class ColdChunkSkipper {
  public:
   ColdChunkSkipper(
-      const Options& options,
+      const Descriptor* descriptor, const Options& options,
       const std::vector<std::vector<const FieldDescriptor*>>& chunks,
       const std::vector<int>& has_bit_indices, const double cold_threshold)
       : chunks_(chunks),
@@ -411,7 +411,7 @@ class ColdChunkSkipper {
         access_info_map_(options.access_info_map),
         cold_threshold_(cold_threshold) {
     SetCommonVars(options, &variables_);
-    SetCommonMessageDataVariables(&variables_);
+    SetCommonMessageDataVariables(descriptor, &variables_);
   }
 
   // May open an external if check for a batch of cold fields. "from" is the
@@ -495,7 +495,7 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
     if (this_word == cached_has_word_index) {
       format("(cached_has_bits & 0x$mask$u) != 0");
     } else {
-      format("($1$_has_bits_[$2$] & 0x$mask$u) != 0", from, this_word);
+      format("($1$_impl_._has_bits_[$2$] & 0x$mask$u) != 0", from, this_word);
     }
   }
   format(")) {\n");
@@ -617,7 +617,7 @@ MessageGenerator::MessageGenerator(
   if (!message_layout_helper_) {
     message_layout_helper_.reset(new PaddingOptimizer());
   }
-  SetCommonMessageDataVariables(&variables_);
+  SetCommonMessageDataVariables(descriptor, &variables_);
 
   // Variables that apply to this class
   variables_["classname"] = classname_;
@@ -1398,6 +1398,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     format(
         "inline $classname$() : $classname$("
         "::$proto_ns$::Arena::InternalCreateMessageOwnedArena(), true) {}\n");
+  } else if (EnableMessageOwnedArenaTrial(descriptor_, options_)) {
+    format(
+        "inline $classname$() : $classname$(InMoaTrial() ? "
+        "::$proto_ns$::Arena::InternalCreateMessageOwnedArena() : nullptr, "
+        "InMoaTrial()) {}\n");
   } else {
     format("inline $classname$() : $classname$(nullptr) {}\n");
   }
@@ -1676,7 +1681,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "int GetCachedSize() const final { return "
         "$cached_size$.Get(); }"
         "\n\nprivate:\n"
-        "void SharedCtor();\n"
+        "void SharedCtor(::$proto_ns$::Arena* arena, bool is_message_owned);\n"
         "void SharedDtor();\n"
         "void SetCachedSize(int size) const$ full_final$;\n"
         "void InternalSwap($classname$* other);\n");
@@ -1837,11 +1842,20 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
                            : StrCat("::$proto_ns$::internal::HasBits<",
                                           sizeof_has_bits, "> _has_bits_;\n");
 
+  format(
+      "template <typename T> friend class "
+      "::$proto_ns$::Arena::InternalHelper;\n"
+      "typedef void InternalArenaConstructable_;\n"
+      "typedef void DestructorSkippable_;\n");
+
   // To minimize padding, data members are divided into three sections:
   // (1) members assumed to align to 8 bytes
   // (2) members corresponding to message fields, re-ordered to optimize
   //     alignment.
   // (3) members assumed to align to 4 bytes.
+
+  format("struct Impl_ {\n");
+  format.Indent();
 
   // Members assumed to align to 8 bytes:
 
@@ -1865,12 +1879,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     format("::$proto_ns$::internal::HasBits<$1$> _inlined_string_donated_;\n",
            InlinedStringDonatedSize());
   }
-
-  format(
-      "template <typename T> friend class "
-      "::$proto_ns$::Arena::InternalHelper;\n"
-      "typedef void InternalArenaConstructable_;\n"
-      "typedef void DestructorSkippable_;\n");
 
   if (!has_bit_indices_.empty()) {
     // _has_bits_ is frequently accessed, so to reduce code size and improve
@@ -1940,6 +1948,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   if (IsAnyMessage(descriptor_, options_)) {
     format("::$proto_ns$::internal::AnyMetadata _any_metadata_;\n");
   }
+
+  format.Outdent();
+  format(
+      "};\n"
+      "union { Impl_ _impl_; };\n");
 
   // The TableStruct struct needs access to the private parts, in order to
   // construct the offsets of all members.
@@ -2250,7 +2263,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
 
   int count = 0;
   for (auto oneof : OneOfRange(descriptor_)) {
-    format("PROTOBUF_FIELD_OFFSET($classtype$, $1$_),\n", oneof->name());
+    format("PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$1$_),\n", oneof->name());
     count++;
   }
   GOOGLE_CHECK_EQ(count, descriptor_->real_oneof_decl_count());
@@ -2286,15 +2299,110 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* printer) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(printer, variables_);
 
-  format("inline void $classname$::SharedCtor() {\n");
+  format(
+      "inline void $classname$::SharedCtor(\n"
+      "    ::_pb::Arena* arena, bool is_message_owned) {\n"
+      "  (void)arena;\n"
+      "  (void)is_message_owned;\n");
 
-  std::vector<bool> processed(optimized_order_.size(), false);
-  GenerateConstructorBody(printer, processed, false);
+  format.Indent();
+  // Impl_ _impl_.
+  format("new (&_impl_) Impl_{");
+  format.Indent();
+  const char* field_sep = " ";
+  const auto put_sep = [&] {
+    format("\n$1$ ", field_sep);
+    field_sep = ",";
+  };
+
+  // Note: any fields without move/copy constructors can't be explicitly
+  // aggregate initialized pre-C++17.
+  if (descriptor_->extension_range_count() > 0) {
+    put_sep();
+    format("/*decltype($extensions$)*/{::_pbi::ArenaInitialized(), arena}");
+  }
+  if (!inlined_string_indices_.empty()) {
+    put_sep();
+    format("decltype($inlined_string_donated_array$){}");
+  }
+  bool need_to_emit_cached_size = !HasSimpleBaseClass(descriptor_, options_);
+  if (!has_bit_indices_.empty()) {
+    put_sep();
+    format("decltype($has_bits$){}");
+    if (need_to_emit_cached_size) {
+      put_sep();
+      format("/*decltype($cached_size$)*/{}");
+      need_to_emit_cached_size = false;
+    }
+  }
+
+  // Initialize member variables with arena constructor.
+  for (auto field : optimized_order_) {
+    GOOGLE_DCHECK(!IsFieldStripped(field, options_));
+    put_sep();
+    field_generators_.get(field).GenerateAggregateInitializer(printer);
+  }
+  for (auto oneof : OneOfRange(descriptor_)) {
+    put_sep();
+    format("decltype(_impl_.$1$_){}", oneof->name());
+  }
+
+  if (need_to_emit_cached_size) {
+    put_sep();
+    format("/*decltype($cached_size$)*/{}");
+  }
+
+  if (descriptor_->real_oneof_decl_count() != 0) {
+    put_sep();
+    format("/*decltype($oneof_case$)*/{}");
+  }
+  if (num_weak_fields_ > 0) {
+    put_sep();
+    format("decltype($weak_field_map$){arena}");
+  }
+  if (IsAnyMessage(descriptor_, options_)) {
+    put_sep();
+    // AnyMetadata has no move constructor.
+    format("/*decltype($any_metadata$)*/{&_impl_.type_url_, &_impl_.value_}");
+  }
+
+  format.Outdent();
+  format("\n};\n");
+
+  if (!inlined_string_indices_.empty()) {
+    // Donate inline string fields.
+    format.Indent();
+    // The last bit is the tracking bit for registering ArenaDtor. The bit is 1
+    // means ArenaDtor is not registered on construction, and on demand register
+    // is needed.
+    format("if (arena != nullptr) {\n");
+    if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
+      format(
+          "  if (!is_message_owned) {\n"
+          "    $inlined_string_donated_array$[0] = ~0u;\n"
+          "  } else {\n"
+          // We should not register ArenaDtor for MOA.
+          "    $inlined_string_donated_array$[0] = 0xFFFFFFFEu;\n"
+          "  }\n");
+    } else {
+      format("  $inlined_string_donated_array$[0] = 0xFFFFFFFEu;\n");
+    }
+    for (size_t i = 1; i < InlinedStringDonatedSize(); ++i) {
+      format("  $inlined_string_donated_array$[$1$] = ~0u;\n", i);
+    }
+    format("}\n");
+    format.Outdent();
+  }
+
+  for (const FieldDescriptor* field : optimized_order_) {
+    field_generators_.get(field).GenerateConstructorCode(printer);
+  }
 
   for (auto oneof : OneOfRange(descriptor_)) {
     format("clear_has_$1$();\n", oneof->name());
   }
 
+  format.Outdent();
   format("}\n\n");
 }
 
@@ -2305,6 +2413,11 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* printer) {
   format("inline void $classname$::SharedDtor() {\n");
   format.Indent();
   format("$DCHK$(GetArenaForAllocation() == nullptr);\n");
+
+  if (descriptor_->extension_range_count() > 0) {
+    format("$extensions$.~ExtensionSet();\n");
+  }
+
   // Write the destructors for each field except oneof members.
   // optimized_order_ does not contain oneof fields.
   for (auto field : optimized_order_) {
@@ -2323,6 +2436,11 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* printer) {
   if (num_weak_fields_) {
     format("$weak_field_map$.ClearAll();\n");
   }
+
+  if (IsAnyMessage(descriptor_, options_)) {
+    format("$any_metadata$.~AnyMetadata();\n");
+  }
+
   format.Outdent();
   format(
       "}\n"
@@ -2378,71 +2496,90 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* printer) {
 void MessageGenerator::GenerateConstexprConstructor(io::Printer* printer) {
   Formatter format(printer, variables_);
 
+  if (IsMapEntryMessage(descriptor_)) {
+    format(
+        "PROTOBUF_CONSTEXPR $classname$::$classname$(\n"
+        "    ::_pbi::ConstantInitialized) {}\n");
+    return;
+  }
+
   format(
       "PROTOBUF_CONSTEXPR $classname$::$classname$(\n"
       "    ::_pbi::ConstantInitialized)");
+
+  bool need_to_emit_cached_size = !HasSimpleBaseClass(descriptor_, options_);
+  format(": _impl_{");
   format.Indent();
-  const char* field_sep = ":";
+  const char* field_sep = " ";
   const auto put_sep = [&] {
     format("\n$1$ ", field_sep);
     field_sep = ",";
   };
-
-  if (!IsMapEntryMessage(descriptor_)) {
-    // Process non-oneof fields first.
-    for (auto field : optimized_order_) {
-      auto& gen = field_generators_.get(field);
+  if (descriptor_->extension_range_count() > 0) {
+    put_sep();
+    format("/*decltype($extensions$)*/{}");
+  }
+  if (!inlined_string_indices_.empty()) {
+    put_sep();
+    format("/*decltype($inlined_string_donated_array$)*/{}");
+  }
+  if (!has_bit_indices_.empty()) {
+    put_sep();
+    format("/*decltype($has_bits$)*/{}");
+    if (need_to_emit_cached_size) {
       put_sep();
-      gen.GenerateConstinitInitializer(printer);
+      format("/*decltype($cached_size$)*/{}");
+      need_to_emit_cached_size = false;
     }
+  }
+  for (auto field : optimized_order_) {
+    put_sep();
+    field_generators_.get(field).GenerateConstexprAggregateInitializer(printer);
+  }
+  for (auto oneof : OneOfRange(descriptor_)) {
+    put_sep();
+    format("/*decltype(_impl_.$1$_)*/{}", oneof->name());
+  }
 
-    if (IsAnyMessage(descriptor_, options_)) {
-      put_sep();
-      format("_any_metadata_(&type_url_, &value_)");
-    }
+  if (need_to_emit_cached_size) {
+    put_sep();
+    format("/*decltype($cached_size$)*/{}");
+  }
 
-    if (descriptor_->real_oneof_decl_count() != 0) {
-      put_sep();
-      format("_oneof_case_{}");
-    }
+  if (descriptor_->real_oneof_decl_count() != 0) {
+    put_sep();
+    format("/*decltype($oneof_case$)*/{}");
+  }
+
+  if (num_weak_fields_) {
+    put_sep();
+    format("/*decltype($weak_field_map$)*/{}");
+  }
+
+  if (IsAnyMessage(descriptor_, options_)) {
+    put_sep();
+    format(
+        "/*decltype($any_metadata$)*/{&_impl_.type_url_, "
+        "&_impl_.value_}");
   }
 
   format.Outdent();
-  format("{}\n");
+  format("} {}\n");
 }
 
-void MessageGenerator::GenerateConstructorBody(io::Printer* printer,
-                                               std::vector<bool> processed,
-                                               bool copy_constructor) const {
+void MessageGenerator::GenerateCopyConstructorBody(io::Printer* printer) const {
   Formatter format(printer, variables_);
 
-  const RunMap runs = FindRuns(
-      optimized_order_, [copy_constructor, this](const FieldDescriptor* field) {
-        return (copy_constructor && IsPOD(field)) ||
-               (!copy_constructor &&
-                CanBeManipulatedAsRawBytes(field, options_, scc_analyzer_));
-      });
+  const RunMap runs =
+      FindRuns(optimized_order_,
+               [](const FieldDescriptor* field) { return IsPOD(field); });
 
-  std::string pod_template;
-  if (copy_constructor) {
-    pod_template =
-        "::memcpy(&$first$, &from.$first$,\n"
-        "  static_cast<size_t>(reinterpret_cast<char*>(&$last$) -\n"
-        "  reinterpret_cast<char*>(&$first$)) + sizeof($last$));\n";
-  } else {
-    pod_template =
-        "::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(\n"
-        "    reinterpret_cast<char*>(&$first$) - "
-        "reinterpret_cast<char*>(this)),\n"
-        "    0, static_cast<size_t>(reinterpret_cast<char*>(&$last$) -\n"
-        "    reinterpret_cast<char*>(&$first$)) + sizeof($last$));\n";
-  }
+  std::string pod_template =
+      "::memcpy(&$first$, &from.$first$,\n"
+      "  static_cast<size_t>(reinterpret_cast<char*>(&$last$) -\n"
+      "  reinterpret_cast<char*>(&$first$)) + sizeof($last$));\n";
 
-  for (int i = 0; i < optimized_order_.size(); ++i) {
-    if (processed[i]) {
-      continue;
-    }
-
+  for (size_t i = 0; i < optimized_order_.size(); ++i) {
     const FieldDescriptor* field = optimized_order_[i];
     const auto it = runs.find(field);
 
@@ -2463,11 +2600,7 @@ void MessageGenerator::GenerateConstructorBody(io::Printer* printer,
       i += run_length - 1;
       // ++i at the top of the loop.
     } else {
-      if (copy_constructor) {
-        field_generators_.get(field).GenerateCopyConstructorCode(printer);
-      } else {
-        field_generators_.get(field).GenerateConstructorCode(printer);
-      }
+      field_generators_.get(field).GenerateCopyConstructorCode(printer);
     }
   }
 }
@@ -2475,78 +2608,14 @@ void MessageGenerator::GenerateConstructorBody(io::Printer* printer,
 void MessageGenerator::GenerateStructors(io::Printer* printer) {
   Formatter format(printer, variables_);
 
-  std::string superclass;
-  superclass = SuperClassName(descriptor_, options_);
-  std::string initializer_with_arena = superclass + "(arena, is_message_owned)";
-
-  if (descriptor_->extension_range_count() > 0) {
-    initializer_with_arena += ",\n  _extensions_(arena)";
-  }
-
-  // Initialize member variables with arena constructor.
-  for (auto field : optimized_order_) {
-    GOOGLE_DCHECK(!IsFieldStripped(field, options_));
-    bool has_arena_constructor = field->is_repeated();
-    if (!field->real_containing_oneof() &&
-        (IsLazy(field, options_, scc_analyzer_) ||
-         IsStringPiece(field, options_) ||
-         (IsString(field, options_) && IsStringInlined(field, options_)))) {
-      has_arena_constructor = true;
-    }
-    if (has_arena_constructor) {
-      initializer_with_arena +=
-          std::string(",\n  ") + FieldName(field) + std::string("_(arena)");
-    }
-  }
-
-  if (IsAnyMessage(descriptor_, options_)) {
-    initializer_with_arena += ",\n  _any_metadata_(&type_url_, &value_)";
-  }
-  if (num_weak_fields_ > 0) {
-    initializer_with_arena += ", _weak_field_map_(arena)";
-  }
-
-  std::string initializer_null = superclass + "()";
-  if (IsAnyMessage(descriptor_, options_)) {
-    initializer_null += ", _any_metadata_(&type_url_, &value_)";
-  }
-  if (num_weak_fields_ > 0) {
-    initializer_null += ", _weak_field_map_(nullptr)";
-  }
-
   format(
       "$classname$::$classname$(::$proto_ns$::Arena* arena,\n"
       "                         bool is_message_owned)\n"
-      "  : $1$ {\n",
-      initializer_with_arena);
-
-  if (!inlined_string_indices_.empty()) {
-    // Donate inline string fields.
-    format.Indent();
-    // The last bit is the tracking bit for registering ArenaDtor. The bit is 1
-    // means ArenaDtor is not registered on construction, and on demand register
-    // is needed.
-    format("if (arena != nullptr) {\n");
-    if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
-      format(
-          "  if (!is_message_owned) {\n"
-          "    $inlined_string_donated_array$[0] = ~0u;\n"
-          "  } else {\n"
-          // We should not register ArenaDtor for MOA.
-          "    $inlined_string_donated_array$[0] = 0xFFFFFFFEu;\n"
-          "  }\n");
-    } else {
-      format("  $inlined_string_donated_array$[0] = 0xFFFFFFFEu;\n");
-    }
-    for (size_t i = 1; i < InlinedStringDonatedSize(); ++i) {
-      format("  $inlined_string_donated_array$[$1$] = ~0u;\n", i);
-    }
-    format("}\n");
-    format.Outdent();
-  }
+      "  : $1$(arena, is_message_owned) {\n",
+      SuperClassName(descriptor_, options_));
 
   if (!HasSimpleBaseClass(descriptor_, options_)) {
-    format("  SharedCtor();\n");
+    format("  SharedCtor(arena, is_message_owned);\n");
     if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
       format(
           "  if (arena != nullptr && !is_message_owned) {\n"
@@ -2576,40 +2645,68 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
   } else {
     format(
         "$classname$::$classname$(const $classname$& from)\n"
-        "  : $superclass$()");
-    format.Indent();
-    format.Indent();
+        "  : $superclass$() {\n");
     format.Indent();
 
-    // Do not copy inlined_string_donated_, because this is not an arena
-    // constructor.
+    const char* field_sep = " ";
+    const auto put_sep = [&] {
+      format("\n$1$ ", field_sep);
+      field_sep = ",";
+    };
 
+    format("new (&_impl_) Impl_{");
+    format.Indent();
+
+    if (descriptor_->extension_range_count() > 0) {
+      put_sep();
+      format("/*decltype($extensions$)*/{}");
+    }
+    if (!inlined_string_indices_.empty()) {
+      // Do not copy inlined_string_donated_, because this is not an arena
+      // constructor.
+      put_sep();
+      format("decltype($inlined_string_donated_array$){}");
+    }
+    bool need_to_emit_cached_size = !HasSimpleBaseClass(descriptor_, options_);
     if (!has_bit_indices_.empty()) {
-      format(",\n_has_bits_(from._has_bits_)");
-    }
-
-    std::vector<bool> processed(optimized_order_.size(), false);
-    for (int i = 0; i < optimized_order_.size(); i++) {
-      auto field = optimized_order_[i];
-      if (!(field->is_repeated() && !(field->is_map())) &&
-          !IsCord(field, options_)) {
-        continue;
+      put_sep();
+      format("decltype($has_bits$){from.$has_bits$}");
+      if (need_to_emit_cached_size) {
+        put_sep();
+        format("/*decltype($cached_size$)*/{}");
+        need_to_emit_cached_size = false;
       }
-
-      processed[i] = true;
-      format(",\n$1$_(from.$1$_)", FieldName(field));
     }
 
-    if (IsAnyMessage(descriptor_, options_)) {
-      format(",\n_any_metadata_(&type_url_, &value_)");
+    // Initialize member variables with arena constructor.
+    for (auto field : optimized_order_) {
+      put_sep();
+      field_generators_.get(field).GenerateCopyAggregateInitializer(printer);
+    }
+    for (auto oneof : OneOfRange(descriptor_)) {
+      put_sep();
+      format("decltype(_impl_.$1$_){}", oneof->name());
+    }
+
+    if (need_to_emit_cached_size) {
+      put_sep();
+      format("/*decltype($cached_size$)*/{}");
+    }
+
+    if (descriptor_->real_oneof_decl_count() != 0) {
+      put_sep();
+      format("/*decltype($oneof_case$)*/{}");
     }
     if (num_weak_fields_ > 0) {
-      format(",\n_weak_field_map_(from._weak_field_map_)");
+      put_sep();
+      format("decltype($weak_field_map$){from.$weak_field_map$}");
     }
-
+    if (IsAnyMessage(descriptor_, options_)) {
+      put_sep();
+      format("/*decltype($any_metadata$)*/{&_impl_.type_url_, &_impl_.value_}");
+    }
     format.Outdent();
-    format.Outdent();
-    format(" {\n");
+    format("};\n\n");
 
     format(
         "_internal_metadata_.MergeFrom<$unknown_fields_type$>(from._internal_"
@@ -2621,7 +2718,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
           "from.$extensions$);\n");
     }
 
-    GenerateConstructorBody(printer, processed, true);
+    GenerateCopyConstructorBody(printer);
 
     // Copy oneof fields. Oneof field requires oneof case check.
     for (auto oneof : OneOfRange(descriptor_)) {
@@ -2763,7 +2860,8 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
         return same;
       });
 
-  ColdChunkSkipper cold_skipper(options_, chunks, has_bit_indices_, kColdRatio);
+  ColdChunkSkipper cold_skipper(descriptor_, options_, chunks, has_bit_indices_,
+                                kColdRatio);
   int cached_has_word_index = -1;
 
   for (int chunk_index = 0; chunk_index < chunks.size(); chunk_index++) {
@@ -3002,14 +3100,11 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
     }
 
     for (auto oneof : OneOfRange(descriptor_)) {
-      format("swap($1$_, other->$1$_);\n", oneof->name());
+      format("swap(_impl_.$1$_, other->_impl_.$1$_);\n", oneof->name());
     }
 
     for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
-      format(
-          "swap($oneof_case$[$1$], "
-          "other->$oneof_case$[$1$]);\n",
-          i);
+      format("swap($oneof_case$[$1$], other->$oneof_case$[$1$]);\n", i);
     }
 
     if (num_weak_fields_) {
@@ -3109,7 +3204,8 @@ void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
         return HasByteIndex(a) == HasByteIndex(b);
       });
 
-  ColdChunkSkipper cold_skipper(options_, chunks, has_bit_indices_, kColdRatio);
+  ColdChunkSkipper cold_skipper(descriptor_, options_, chunks, has_bit_indices_,
+                                kColdRatio);
 
   // cached_has_word_index maintains that:
   //   cached_has_bits = from._has_bits_[cached_has_word_index]
@@ -3485,7 +3581,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
             // Reload.
             int new_index = has_bit_index / 32;
 
-            format_("cached_has_bits = _has_bits_[$1$];\n", new_index);
+            format_("cached_has_bits = _impl_._has_bits_[$1$];\n", new_index);
 
             cached_has_bit_index_ = new_index;
           }
@@ -3885,7 +3981,8 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
   chunks.erase(std::remove_if(chunks.begin(), chunks.end(), IsRequired),
                chunks.end());
 
-  ColdChunkSkipper cold_skipper(options_, chunks, has_bit_indices_, kColdRatio);
+  ColdChunkSkipper cold_skipper(descriptor_, options_, chunks, has_bit_indices_,
+                                kColdRatio);
   int cached_has_word_index = -1;
 
   format(

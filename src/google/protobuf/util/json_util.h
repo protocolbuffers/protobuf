@@ -33,11 +33,11 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__
 
-#include <google/protobuf/message.h>
-#include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/message.h>
+#include <google/protobuf/util/type_resolver.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -62,8 +62,7 @@ struct JsonParseOptions {
   bool case_insensitive_enum_parsing;
 
   JsonParseOptions()
-      : ignore_unknown_fields(false),
-        case_insensitive_enum_parsing(false) {}
+      : ignore_unknown_fields(false), case_insensitive_enum_parsing(false) {}
 };
 
 struct JsonPrintOptions {
