@@ -984,26 +984,6 @@ size_t SizeOfUnion(ItX it_dest, ItX end_dest, ItY it_source, ItY end_source) {
 
 void ExtensionSet::MergeFrom(const MessageLite* extendee,
                              const ExtensionSet& other) {
-  // check if the other is cleared
-  bool is_other_all_cleared = true;
-  if (PROTOBUF_PREDICT_TRUE(!other.is_large())){
-    for (const KeyValue* it = other.flat_begin(); it != other.flat_end(); it++){
-      is_other_all_cleared = is_other_all_cleared && it->second.is_cleared;
-      if (!is_other_all_cleared){
-        break;
-      }
-    }
-  } else {
-    for (LargeMap::iterator it = other.map_.large->begin(); it != other.map_.large->end(); it++){
-      is_other_all_cleared = is_other_all_cleared && it->second.is_cleared;
-      if (!is_other_all_cleared){
-        break;
-      }
-    }
-  }
-  if (is_other_all_cleared){
-    return;
-  }
   if (PROTOBUF_PREDICT_TRUE(!is_large())) {
     if (PROTOBUF_PREDICT_TRUE(!other.is_large())) {
       GrowCapacity(SizeOfUnion(flat_begin(), flat_end(), other.flat_begin(),

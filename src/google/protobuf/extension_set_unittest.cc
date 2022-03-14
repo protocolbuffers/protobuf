@@ -1380,13 +1380,13 @@ TEST(ExtensionSetTest, ConstInit) {
 
 TEST(ExtensionSetTest, ExtensionSetSpaceUsed) {
   unittest::TestAllExtensions msg;
-  long l = msg.SpaceUsedLong();
+  size_t l = msg.SpaceUsedLong();
   msg.SetExtension(unittest::optional_int32_extension, 100);
   unittest::TestAllExtensions msg2(msg);
-  long l2 = msg2.SpaceUsedLong();
+  size_t l2 = msg2.SpaceUsedLong();
   msg.ClearExtension(unittest::optional_int32_extension);
   unittest::TestAllExtensions msg3(msg);
-  long l3 = msg3.SpaceUsedLong();
+  size_t l3 = msg3.SpaceUsedLong();
   EXPECT_TRUE((l2 - l) > (l3 - l));
 }
 
