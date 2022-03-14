@@ -717,11 +717,10 @@ static const char* fastdecode_longstring_noutf8(
 UPB_FORCEINLINE
 static void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size,
                               int copy, char* data, upb_StringView* dst) {
-  char* alloc_ret = _upb_Arena_FastMalloc(&d->arena, copy);
-  UPB_ASSERT(alloc_ret == data);
+  d->arena.head.ptr += copy;
   dst->data = data;
+  UPB_UNPOISON_MEMORY_REGION(data, copy);
   memcpy(data, ptr, copy);
-  // We over-allocated from the arena, poison the excess.
   UPB_POISON_MEMORY_REGION(data + size, copy - size);
 }
 
@@ -755,8 +754,7 @@ static void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size,
                                                                               \
   if (UPB_LIKELY(size <= 15 - tagbytes)) {                                    \
     if (arena_has < 16) goto longstr;                                         \
-    char* alloc_ret = _upb_Arena_FastMalloc(&d->arena, 16);                   \
-    UPB_ASSERT(buf == alloc_ret);                                             \
+    d->arena.head.ptr += 16;                                                  \
     memcpy(buf, ptr - tagbytes - 1, 16);                                      \
     dst->data = buf + tagbytes + 1;                                           \
   } else if (UPB_LIKELY(size <= 32)) {                                        \
@@ -933,10 +931,11 @@ upb_Message* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* l,
   if (UPB_LIKELY(msg_ceil_bytes > 0 &&
                  _upb_ArenaHas(&d->arena) >= msg_ceil_bytes)) {
     UPB_ASSERT(size <= (size_t)msg_ceil_bytes);
-    // We are doing memset(0) past our actual allocation.  Do it prior to the
-    // actual alloc, to avoid writing to the ASAN guard page.
-    memset(d->arena.head.ptr, 0, msg_ceil_bytes);
-    msg_data = _upb_Arena_FastMalloc(&d->arena, size);
+    msg_data = d->arena.head.ptr;
+    d->arena.head.ptr += size;
+    UPB_UNPOISON_MEMORY_REGION(msg_data, msg_ceil_bytes);
+    memset(msg_data, 0, msg_ceil_bytes);
+    UPB_POISON_MEMORY_REGION(msg_data + size, msg_ceil_bytes - size);
   } else {
     msg_data = (char*)upb_Arena_Malloc(&d->arena, size);
     memset(msg_data, 0, size);
