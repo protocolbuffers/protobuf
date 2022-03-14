@@ -234,7 +234,8 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
 
     if (upb_IsTypePackable(type)) {
       bool field_is_packed = field_mod & kUpb_FieldModifier_IsPacked;
-      bool default_is_packed = in->msg_mod & kUpb_MessageModifier_DefaultIsPacked;
+      bool default_is_packed =
+          in->msg_mod & kUpb_MessageModifier_DefaultIsPacked;
       if (field_is_packed != default_is_packed) {
         encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
       }
