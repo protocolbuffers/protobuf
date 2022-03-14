@@ -840,6 +840,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/protobuf.c                                  \
   php/ext/google/protobuf/protobuf.h                                  \
   php/ext/google/protobuf/wkt.inc                                     \
+  php/ext/google/protobuf/tests/unnecessary_zval.phpt                 \
   php/generate_descriptor_protos.sh                                   \
   php/generate_test_protos.sh                                         \
   php/release.sh                                                      \
@@ -1037,7 +1038,10 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/factory_test2.proto                        \
   python/google/protobuf/internal/file_options_test.proto                    \
   python/google/protobuf/internal/generator_test.py                          \
+  python/google/protobuf/internal/import_test.py                             \
   python/google/protobuf/internal/import_test_package/__init__.py            \
+  python/google/protobuf/internal/import_test_package/import_public.proto    \
+  python/google/protobuf/internal/import_test_package/import_public_nested.proto \
   python/google/protobuf/internal/import_test_package/inner.proto            \
   python/google/protobuf/internal/import_test_package/outer.proto            \
   python/google/protobuf/internal/json_format_test.py                        \
@@ -1393,6 +1397,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   update_file_lists.sh                              \
   BUILD                                             \
   WORKSPACE                                         \
+  CMakeLists.txt                                    \
   cmake/CMakeLists.txt                              \
   cmake/README.md                                   \
   cmake/conformance.cmake                           \

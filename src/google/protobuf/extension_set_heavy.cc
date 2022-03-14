@@ -359,7 +359,8 @@ int ExtensionSet::SpaceUsedExcludingSelf() const {
 }
 
 size_t ExtensionSet::SpaceUsedExcludingSelfLong() const {
-  size_t total_size = Size() * sizeof(KeyValue);
+  size_t total_size =
+      (is_large() ? map_.large->size() : flat_capacity_) * sizeof(KeyValue);
   ForEach([&total_size](int /* number */, const Extension& ext) {
     total_size += ext.SpaceUsedExcludingSelfLong();
   });

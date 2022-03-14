@@ -340,19 +340,19 @@ uint64_t Msgval_GetHash(upb_MessageValue val, TypeInfo type_info,
                         uint64_t seed) {
   switch (type_info.type) {
     case kUpb_CType_Bool:
-      return Wyhash(&val, 1, seed, kWyhashSalt);
+      return _upb_Hash(&val, 1, seed);
     case kUpb_CType_Float:
     case kUpb_CType_Int32:
     case kUpb_CType_UInt32:
     case kUpb_CType_Enum:
-      return Wyhash(&val, 4, seed, kWyhashSalt);
+      return _upb_Hash(&val, 4, seed);
     case kUpb_CType_Double:
     case kUpb_CType_Int64:
     case kUpb_CType_UInt64:
-      return Wyhash(&val, 8, seed, kWyhashSalt);
+      return _upb_Hash(&val, 8, seed);
     case kUpb_CType_String:
     case kUpb_CType_Bytes:
-      return Wyhash(val.str_val.data, val.str_val.size, seed, kWyhashSalt);
+      return _upb_Hash(val.str_val.data, val.str_val.size, seed);
     case kUpb_CType_Message:
       return Message_Hash(val.msg_val, type_info.def.msgdef, seed);
     default:

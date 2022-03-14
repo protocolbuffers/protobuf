@@ -1378,6 +1378,18 @@ TEST(ExtensionSetTest, ConstInit) {
   EXPECT_EQ(set.NumExtensions(), 0);
 }
 
+TEST(ExtensionSetTest, ExtensionSetSpaceUsed) {
+  unittest::TestAllExtensions msg;
+  size_t l = msg.SpaceUsedLong();
+  msg.SetExtension(unittest::optional_int32_extension, 100);
+  unittest::TestAllExtensions msg2(msg);
+  size_t l2 = msg2.SpaceUsedLong();
+  msg.ClearExtension(unittest::optional_int32_extension);
+  unittest::TestAllExtensions msg3(msg);
+  size_t l3 = msg3.SpaceUsedLong();
+  EXPECT_TRUE((l2 - l) > (l3 - l));
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf
