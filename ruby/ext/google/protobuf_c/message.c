@@ -744,7 +744,7 @@ uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
                     &size);
 
   if (data) {
-    uint64_t ret = Wyhash(data, size, seed, kWyhashSalt);
+    uint64_t ret = _upb_Hash(data, size, seed);
     upb_Arena_Free(arena);
     return ret;
   } else {
