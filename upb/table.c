@@ -433,14 +433,18 @@ const uint64_t kWyhashSalt[5] = {
     0x082EFA98EC4E6C89ULL, 0x452821E638D01377ULL,
 };
 
-uint32_t _upb_Hash(const char* p, size_t n) {
-  return Wyhash(p, n, 0, kWyhashSalt);
+uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed) {
+  return Wyhash(p, n, seed, kWyhashSalt);
+}
+
+static uint32_t _upb_Hash_NoSeed(const char* p, size_t n) {
+  return _upb_Hash(p, n, 0);
 }
 
 static uint32_t strhash(upb_tabkey key) {
   uint32_t len;
   char* str = upb_tabstr(key, &len);
-  return _upb_Hash(str, len);
+  return _upb_Hash_NoSeed(str, len);
 }
 
 static bool streql(upb_tabkey k1, lookupkey_t k2) {
@@ -496,20 +500,20 @@ bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
   tabkey = strcopy(key, a);
   if (tabkey == 0) return false;
 
-  hash = _upb_Hash(key.str.str, key.str.len);
+  hash = _upb_Hash_NoSeed(key.str.str, key.str.len);
   insert(&t->t, key, tabkey, v, hash, &strhash, &streql);
   return true;
 }
 
 bool upb_strtable_lookup2(const upb_strtable* t, const char* key, size_t len,
                           upb_value* v) {
-  uint32_t hash = _upb_Hash(key, len);
+  uint32_t hash = _upb_Hash_NoSeed(key, len);
   return lookup(&t->t, strkey2(key, len), v, hash, &streql);
 }
 
 bool upb_strtable_remove2(upb_strtable* t, const char* key, size_t len,
                           upb_value* val) {
-  uint32_t hash = _upb_Hash(key, len);
+  uint32_t hash = _upb_Hash_NoSeed(key, len);
   upb_tabkey tabkey;
   return rm(&t->t, strkey2(key, len), val, &tabkey, hash, &streql);
 }
