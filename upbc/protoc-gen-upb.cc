@@ -362,6 +362,12 @@ std::string CTypeConst(const protobuf::FieldDescriptor* field) {
   return CTypeInternal(field, true);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// FilePlatformLayout
+////////////////////////////////////////////////////////////////////////////////
+
+// FilePlatformLayout builds and vends upb MiniTables for a given platform (32
+// or 64 bit).
 class FilePlatformLayout {
  public:
   FilePlatformLayout(const protobuf::FileDescriptor* fd,
@@ -371,178 +377,26 @@ class FilePlatformLayout {
     BuildExtensions(fd);
   }
 
-  upb_MiniTable* GetMiniTable(const protobuf::Descriptor* m) const {
-    auto it = table_map_.find(m);
-    assert(it != table_map_.end());
-    return it->second;
-  }
-
+  // Retrieves a upb MiniTable or Extension given a protobuf descriptor.  The
+  // descriptor must be from this layout's file.
+  upb_MiniTable* GetMiniTable(const protobuf::Descriptor* m) const;
   const upb_MiniTable_Extension* GetExtension(
-      const protobuf::FieldDescriptor* fd) const {
-    auto it = extension_map_.find(fd);
-    assert(it != extension_map_.end());
-    return &it->second;
-  }
+      const protobuf::FieldDescriptor* fd) const;
 
  private:
-  void BuildMiniTables(const protobuf::FileDescriptor* fd) {
-    for (const auto& m : SortedMessages(fd)) {
-      table_map_[m] = MakeMiniTable(m);
-    }
-    ResolveIntraFileReferences();
-    SetSubTableStrings();
-  }
-
-  void ResolveIntraFileReferences() {
-    // This properly resolves references within a file, in order to set any
-    // necessary flags (eg. is a map).
-    for (const auto& pair : table_map_) {
-      upb_MiniTable* mt = pair.second;
-      // First we properly resolve for defs within the file.
-      for (const auto& f : FieldNumberOrder(pair.first)) {
-        if (f->message_type() && f->message_type()->file() == f->file()) {
-          upb_MiniTable_Field* mt_f = const_cast<upb_MiniTable_Field*>(
-              upb_MiniTable_FindFieldByNumber(mt, f->number()));
-          upb_MiniTable* sub_mt = GetMiniTable(f->message_type());
-          upb_MiniTable_SetSubMessage(mt, mt_f, sub_mt);
-        }
-        // TODO: proto2 enums.
-      }
-    }
-  }
-
-  void SetSubTableStrings() {
-    for (const auto& pair : table_map_) {
-      upb_MiniTable* mt = pair.second;
-      for (const auto& f : FieldNumberOrder(pair.first)) {
-        upb_MiniTable_Field* mt_f = const_cast<upb_MiniTable_Field*>(
-            upb_MiniTable_FindFieldByNumber(mt, f->number()));
-        assert(mt_f);
-        upb_MiniTable_Sub sub = PackSubForField(f, mt_f);
-        if (IsNull(sub)) continue;
-        *const_cast<upb_MiniTable_Sub*>(&mt->subs[mt_f->submsg_index]) = sub;
-      }
-    }
-  }
+  // Functions to build mini-tables for this file's messages and extensions.
+  void BuildMiniTables(const protobuf::FileDescriptor* fd);
+  void BuildExtensions(const protobuf::FileDescriptor* fd);
+  upb_MiniTable* MakeMiniTable(const protobuf::Descriptor* m);
+  upb_MiniTable* MakeRegularMiniTable(const protobuf::Descriptor* m);
+  uint64_t GetMessageModifiers(const protobuf::Descriptor* m);
+  uint64_t GetFieldModifiers(const protobuf::FieldDescriptor* f);
+  void ResolveIntraFileReferences();
+  void SetSubTableStrings();
 
   upb_MiniTable_Sub PackSubForField(const protobuf::FieldDescriptor* f,
-                                    const upb_MiniTable_Field* mt_f) {
-    if (mt_f->submsg_index == kUpb_NoSub) {
-      return PackSub(nullptr, SubTag::kNull);
-    } else if (f->message_type()) {
-      return PackSub(AllocStr(MessageInit(f->message_type())),
-                      SubTag::kMessage);
-    } else {
-      ABSL_ASSERT(f->enum_type());
-      return PackSub(AllocStr(EnumInit(f->enum_type())), SubTag::kEnum);
-    }
-  }
-
-  const char* AllocStr(const std::string& str) {
-    char* ret =
-        static_cast<char*>(upb_Arena_Malloc(arena_.ptr(), str.size() + 1));
-    memcpy(ret, str.data(), str.size());
-    ret[str.size()] = '\0';
-    return ret;
-  }
-
-  void BuildExtensions(const protobuf::FileDescriptor* fd) {
-    auto sorted = SortedExtensions(fd);
-    upb::Status status;
-    for (const auto& f : sorted) {
-      upb::MtDataEncoder e;
-      e.StartMessage(0);
-      e.PutField(static_cast<upb_FieldType>(f->type()), f->number(),
-                 GetFieldModifiers(f));
-      upb_MiniTable_Extension& ext = extension_map_[f];
-      upb_MiniTable_Sub sub;
-      bool ok = upb_MiniTable_BuildExtension(e.data().data(), e.data().size(),
-                                             &ext, sub, status.ptr());
-      if (!ok) {
-        fprintf(stderr, "Error building mini-table: %s\n",
-                status.error_message());
-      }
-      ext.extendee = reinterpret_cast<const upb_MiniTable*>(
-          AllocStr(MessageInit(f->containing_type())));
-      ext.sub = PackSubForField(f, &ext.field);
-      ABSL_ASSERT(ok);
-    }
-  }
-
-  upb_MiniTable* MakeMiniTable(const protobuf::Descriptor* m) {
-    if (m->options().message_set_wire_format()) {
-      return upb_MiniTable_BuildMessageSet(platform_, arena_.ptr());
-    } else if (m->options().map_entry()) {
-      return upb_MiniTable_BuildMapEntry(
-          static_cast<upb_FieldType>(m->map_key()->type()),
-          static_cast<upb_FieldType>(m->map_value()->type()),
-          m->map_value()->enum_type() &&
-              m->map_value()->enum_type()->file()->syntax() ==
-                  protobuf::FileDescriptor::SYNTAX_PROTO3,
-          platform_, arena_.ptr());
-    } else {
-      return MakeRegularMiniTable(m);
-    }
-  }
-
-  upb_MiniTable* MakeRegularMiniTable(const protobuf::Descriptor* m) {
-    upb::MtDataEncoder e;
-    e.StartMessage(GetMessageModifiers(m));
-    for (const auto& f : FieldNumberOrder(m)) {
-      e.PutField(static_cast<upb_FieldType>(f->type()), f->number(),
-                 GetFieldModifiers(f));
-    }
-    for (int i = 0; i < m->real_oneof_decl_count(); i++) {
-      const protobuf::OneofDescriptor* oneof = m->oneof_decl(i);
-      e.StartOneof();
-      for (int j = 0; j < oneof->field_count(); j++) {
-        const protobuf::FieldDescriptor* f = oneof->field(j);
-        e.PutOneofField(f->number());
-      }
-    }
-    const auto& str = e.data();
-    upb::Status status;
-    upb_MiniTable* ret = upb_MiniTable_Build(str.data(), str.size(), platform_,
-                                             arena_.ptr(), status.ptr());
-    if (!ret) {
-      fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
-    }
-    assert(ret);
-    return ret;
-  }
-
-  uint64_t GetMessageModifiers(const protobuf::Descriptor* m) {
-    uint64_t ret = 0;
-
-    if (m->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO3) {
-      ret |= kUpb_MessageModifier_ValidateUtf8;
-      ret |= kUpb_MessageModifier_DefaultIsPacked;
-    }
-
-    if (m->extension_range_count() > 0) {
-      ret |= kUpb_MessageModifier_IsExtendable;
-    }
-
-    assert(!m->options().map_entry());
-    return ret;
-  }
-
-  uint64_t GetFieldModifiers(const protobuf::FieldDescriptor* f) {
-    uint64_t ret = 0;
-
-    if (f->is_repeated()) ret |= kUpb_FieldModifier_IsRepeated;
-    if (f->is_required()) ret |= kUpb_FieldModifier_IsRequired;
-    if (f->is_packed()) ret |= kUpb_FieldModifier_IsPacked;
-    if (f->enum_type() && f->enum_type()->file()->syntax() ==
-                              protobuf::FileDescriptor::SYNTAX_PROTO2) {
-      ret |= kUpb_FieldModifier_IsClosedEnum;
-    }
-    if (f->is_optional() && !f->has_presence()) {
-      ret |= kUpb_FieldModifier_IsProto3Singular;
-    }
-
-    return ret;
-  }
+                                    const upb_MiniTable_Field* mt_f);
+  const char* AllocStr(const std::string& str);
 
  private:
   typedef absl::flat_hash_map<const protobuf::Descriptor*, upb_MiniTable*>
@@ -555,6 +409,188 @@ class FilePlatformLayout {
   upb_MiniTablePlatform platform_;
 };
 
+upb_MiniTable* FilePlatformLayout::GetMiniTable(
+    const protobuf::Descriptor* m) const {
+  auto it = table_map_.find(m);
+  assert(it != table_map_.end());
+  return it->second;
+}
+
+const upb_MiniTable_Extension* FilePlatformLayout::GetExtension(
+    const protobuf::FieldDescriptor* fd) const {
+  auto it = extension_map_.find(fd);
+  assert(it != extension_map_.end());
+  return &it->second;
+}
+
+void FilePlatformLayout::ResolveIntraFileReferences() {
+  // This properly resolves references within a file, in order to set any
+  // necessary flags (eg. is a map).
+  for (const auto& pair : table_map_) {
+    upb_MiniTable* mt = pair.second;
+    // First we properly resolve for defs within the file.
+    for (const auto& f : FieldNumberOrder(pair.first)) {
+      if (f->message_type() && f->message_type()->file() == f->file()) {
+        upb_MiniTable_Field* mt_f = const_cast<upb_MiniTable_Field*>(
+            upb_MiniTable_FindFieldByNumber(mt, f->number()));
+        upb_MiniTable* sub_mt = GetMiniTable(f->message_type());
+        upb_MiniTable_SetSubMessage(mt, mt_f, sub_mt);
+      }
+      // We don't worry about enums here, because resolving an enum will
+      // never alter the mini-table.
+    }
+  }
+}
+
+void FilePlatformLayout::SetSubTableStrings() {
+  for (const auto& pair : table_map_) {
+    upb_MiniTable* mt = pair.second;
+    for (const auto& f : FieldNumberOrder(pair.first)) {
+      upb_MiniTable_Field* mt_f = const_cast<upb_MiniTable_Field*>(
+          upb_MiniTable_FindFieldByNumber(mt, f->number()));
+      assert(mt_f);
+      upb_MiniTable_Sub sub = PackSubForField(f, mt_f);
+      if (IsNull(sub)) continue;
+      *const_cast<upb_MiniTable_Sub*>(&mt->subs[mt_f->submsg_index]) = sub;
+    }
+  }
+}
+
+upb_MiniTable_Sub FilePlatformLayout::PackSubForField(
+    const protobuf::FieldDescriptor* f, const upb_MiniTable_Field* mt_f) {
+  if (mt_f->submsg_index == kUpb_NoSub) {
+    return PackSub(nullptr, SubTag::kNull);
+  } else if (f->message_type()) {
+    return PackSub(AllocStr(MessageInit(f->message_type())), SubTag::kMessage);
+  } else {
+    ABSL_ASSERT(f->enum_type());
+    return PackSub(AllocStr(EnumInit(f->enum_type())), SubTag::kEnum);
+  }
+}
+
+const char* FilePlatformLayout::AllocStr(const std::string& str) {
+  char* ret =
+      static_cast<char*>(upb_Arena_Malloc(arena_.ptr(), str.size() + 1));
+  memcpy(ret, str.data(), str.size());
+  ret[str.size()] = '\0';
+  return ret;
+}
+
+void FilePlatformLayout::BuildMiniTables(const protobuf::FileDescriptor* fd) {
+  for (const auto& m : SortedMessages(fd)) {
+    table_map_[m] = MakeMiniTable(m);
+  }
+  ResolveIntraFileReferences();
+  SetSubTableStrings();
+}
+
+void FilePlatformLayout::BuildExtensions(const protobuf::FileDescriptor* fd) {
+  auto sorted = SortedExtensions(fd);
+  upb::Status status;
+  for (const auto& f : sorted) {
+    upb::MtDataEncoder e;
+    e.StartMessage(0);
+    e.PutField(static_cast<upb_FieldType>(f->type()), f->number(),
+               GetFieldModifiers(f));
+    upb_MiniTable_Extension& ext = extension_map_[f];
+    upb_MiniTable_Sub sub;
+    bool ok = upb_MiniTable_BuildExtension(e.data().data(), e.data().size(),
+                                           &ext, sub, status.ptr());
+    if (!ok) {
+      fprintf(stderr, "Error building mini-table: %s\n",
+              status.error_message());
+    }
+    ext.extendee = reinterpret_cast<const upb_MiniTable*>(
+        AllocStr(MessageInit(f->containing_type())));
+    ext.sub = PackSubForField(f, &ext.field);
+    ABSL_ASSERT(ok);
+  }
+}
+
+upb_MiniTable* FilePlatformLayout::MakeMiniTable(
+    const protobuf::Descriptor* m) {
+  if (m->options().message_set_wire_format()) {
+    return upb_MiniTable_BuildMessageSet(platform_, arena_.ptr());
+  } else if (m->options().map_entry()) {
+    return upb_MiniTable_BuildMapEntry(
+        static_cast<upb_FieldType>(m->map_key()->type()),
+        static_cast<upb_FieldType>(m->map_value()->type()),
+        m->map_value()->enum_type() &&
+            m->map_value()->enum_type()->file()->syntax() ==
+                protobuf::FileDescriptor::SYNTAX_PROTO3,
+        platform_, arena_.ptr());
+  } else {
+    return MakeRegularMiniTable(m);
+  }
+}
+
+upb_MiniTable* FilePlatformLayout::MakeRegularMiniTable(
+    const protobuf::Descriptor* m) {
+  upb::MtDataEncoder e;
+  e.StartMessage(GetMessageModifiers(m));
+  for (const auto& f : FieldNumberOrder(m)) {
+    e.PutField(static_cast<upb_FieldType>(f->type()), f->number(),
+               GetFieldModifiers(f));
+  }
+  for (int i = 0; i < m->real_oneof_decl_count(); i++) {
+    const protobuf::OneofDescriptor* oneof = m->oneof_decl(i);
+    e.StartOneof();
+    for (int j = 0; j < oneof->field_count(); j++) {
+      const protobuf::FieldDescriptor* f = oneof->field(j);
+      e.PutOneofField(f->number());
+    }
+  }
+  const auto& str = e.data();
+  upb::Status status;
+  upb_MiniTable* ret = upb_MiniTable_Build(str.data(), str.size(), platform_,
+                                           arena_.ptr(), status.ptr());
+  if (!ret) {
+    fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
+  }
+  assert(ret);
+  return ret;
+}
+
+uint64_t FilePlatformLayout::GetMessageModifiers(
+    const protobuf::Descriptor* m) {
+  uint64_t ret = 0;
+
+  if (m->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO3) {
+    ret |= kUpb_MessageModifier_ValidateUtf8;
+    ret |= kUpb_MessageModifier_DefaultIsPacked;
+  }
+
+  if (m->extension_range_count() > 0) {
+    ret |= kUpb_MessageModifier_IsExtendable;
+  }
+
+  assert(!m->options().map_entry());
+  return ret;
+}
+
+uint64_t FilePlatformLayout::GetFieldModifiers(
+    const protobuf::FieldDescriptor* f) {
+  uint64_t ret = 0;
+
+  if (f->is_repeated()) ret |= kUpb_FieldModifier_IsRepeated;
+  if (f->is_required()) ret |= kUpb_FieldModifier_IsRequired;
+  if (f->is_packed()) ret |= kUpb_FieldModifier_IsPacked;
+  if (f->enum_type() && f->enum_type()->file()->syntax() ==
+                            protobuf::FileDescriptor::SYNTAX_PROTO2) {
+    ret |= kUpb_FieldModifier_IsClosedEnum;
+  }
+  if (f->is_optional() && !f->has_presence()) {
+    ret |= kUpb_FieldModifier_IsProto3Singular;
+  }
+
+  return ret;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// FileLayout
+////////////////////////////////////////////////////////////////////////////////
+
+// FileLayout is a pair of platform layouts: one for 32-bit and one for 64-bit.
 class FileLayout {
  public:
   FileLayout(const protobuf::FileDescriptor* fd)
