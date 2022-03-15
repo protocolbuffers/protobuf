@@ -145,7 +145,7 @@ def _impl(ctx):
                           "-fvisibility=hidden",
                       ] + ctx.attr.extra_compiler_flags + [
                           "-isystem",
-                          ctx.attr.toolchain_dir,
+                          ctx.attr.sysroot,
                       ],
                   ),
               ],
@@ -160,7 +160,7 @@ def _impl(ctx):
       ctx = ctx,
       compiler = "clang",
       cxx_builtin_include_directories = [
-          ctx.attr.toolchain_dir,
+          ctx.attr.sysroot,
           ctx.attr.extra_include,
           "/usr/local/include",
           "/usr/local/lib/clang",
@@ -187,7 +187,6 @@ cc_toolchain_config = rule(
         "sysroot": attr.string(mandatory = False),
         "target_cpu": attr.string(mandatory = True, values = ["aarch64", "ppc64", "systemz", "x86_32", "x86_64"]),
         "target_full_name": attr.string(mandatory = True),
-        "toolchain_dir": attr.string(mandatory = True),
         "toolchain_name": attr.string(mandatory = True),
     },
     provides = [CcToolchainConfigInfo],
