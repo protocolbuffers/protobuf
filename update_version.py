@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Usage: ./update_version.py <MAJOR>.<MINOR>.<MICRO> [<RC version>]
 #
 # Example:
@@ -201,7 +201,7 @@ def UpdateCpp():
         '#if %s < PROTOBUF_MIN_PROTOC_VERSION' % cpp_version,
         line)
     return line
-    
+
   RewriteTextFile('src/google/protobuf/stubs/common.h', RewriteCommon)
   RewriteTextFile('src/google/protobuf/port_def.inc', RewritePortDef)
   RewriteTextFile('src/google/protobuf/any.pb.h', RewritePbH)
@@ -268,7 +268,7 @@ def UpdateJava():
   RewriteXml('protoc-artifacts/pom.xml',
     lambda document : ReplaceText(
       Find(document.documentElement, 'version'), GetFullVersion()))
-  
+
   RewriteTextFile('java/README.md',
     lambda line : re.sub(
       r'<version>.*</version>',
