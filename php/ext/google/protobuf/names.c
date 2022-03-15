@@ -82,7 +82,7 @@ const char *const kReservedNames[] = {
     "global",     "goto",        "insteadof",    "interface",    "isset",
     "list",       "match",       "namespace",    "new",          "object",
     "or",         "parent",      "print",        "private",      "protected",
-    "public",     "readme",      "require",      "require_once", "return",
+    "public",     "readonly",    "require",      "require_once", "return",
     "self",       "static",      "switch",       "throw",        "trait",
     "try",        "unset",       "use",          "var",          "while",
     "xor",        "yield",       "int",          "float",        "bool",
