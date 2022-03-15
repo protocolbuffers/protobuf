@@ -41,17 +41,17 @@ const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number);
 
 typedef enum {
-  kUpb_MessageModifier_DefaultIsPacked = 1,
-  kUpb_MessageModifier_HasClosedEnums = 2,
-  kUpb_MessageModifier_IsExtendable = 4,
-  kUpb_MessageModifier_IsMapEntry = 8,
+  kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
+  kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
+  kUpb_MessageModifier_IsExtendable = 1 << 2,
 } kUpb_MessageModifier;
 
 typedef enum {
-  kUpb_FieldModifier_IsRepeated = 1,
-  kUpb_FieldModifier_IsPacked = 2,
-  kUpb_FieldModifier_IsProto3Singular = 4,
-  kUpb_FieldModifier_IsRequired = 8,
+  kUpb_FieldModifier_IsRepeated = 1 << 0,
+  kUpb_FieldModifier_IsPacked = 1 << 1,
+  kUpb_FieldModifier_IsClosedEnum = 1 << 2,
+  kUpb_FieldModifier_IsProto3Singular = 1 << 3,
+  kUpb_FieldModifier_IsRequired = 1 << 4,
 } kUpb_FieldModifier;
 
 /** upb_MtDataEncoder *********************************************************/
@@ -101,6 +101,13 @@ char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr);
 char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
                                       uint32_t field_num);
 
+// Encodes the set of values for a given enum.  The values must be given in
+// order (after casting to uint32_t), and repeats are not allowed.
+char* upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e, char* ptr);
+char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
+                                     uint32_t val);
+char* upb_MtDataEncoder_FinishEnum(upb_MtDataEncoder* e, char* ptr);
+
 /** upb_MiniTable *************************************************************/
 
 typedef enum {
@@ -123,22 +130,22 @@ void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
 void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
                               const upb_MiniTable_Enum* sub);
 
-upb_MiniTable_Extension* upb_MiniTable_BuildExtensions(const char* data,
-                                                       size_t len,
-                                                       size_t* ext_count,
-                                                       upb_Arena* arena,
-                                                       upb_Status* status);
-void upb_MiniTable_ResolveExtension(upb_MiniTable_Extension* ext,
-                                    const upb_MiniTable* extendee,
-                                    upb_MiniTable_Sub sub);
+bool upb_MiniTable_BuildExtension(const char* data, size_t len,
+                                  upb_MiniTable_Extension* ext,
+                                  upb_MiniTable_Sub sub, upb_Status* status);
 
 // Special-case functions for MessageSet layout and map entries.
 upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
                                              upb_Arena* arena);
 upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
                                            upb_FieldType value_type,
+                                           bool value_is_proto3_enum,
                                            upb_MiniTablePlatform platform,
                                            upb_Arena* arena);
+
+upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
+                                            upb_Arena* arena,
+                                            upb_Status* status);
 
 // Like upb_MiniTable_Build(), but the user provides a buffer of layout data so
 // it can be reused from call to call, avoiding repeated realloc()/free().
@@ -154,6 +161,7 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 // For testing only.
 char upb_ToBase92(int8_t ch);
 char upb_FromBase92(uint8_t ch);
+bool upb_IsTypePackable(upb_FieldType type);
 
 #ifdef __cplusplus
 } /* extern "C" */

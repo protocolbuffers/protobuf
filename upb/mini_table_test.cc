@@ -29,9 +29,12 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "gmock/gmock.h"
+#include "google/protobuf/descriptor.h"
 #include "gtest/gtest.h"
 #include "upb/msg_internal.h"
 #include "upb/upb.hpp"
+
+namespace protobuf = ::google::protobuf;
 
 class MiniTableTest : public testing::TestWithParam<upb_MiniTablePlatform> {};
 
@@ -63,7 +66,6 @@ TEST_P(MiniTableTest, AllScalarTypes) {
   for (int i = 0; i < 16; i++) {
     const upb_MiniTable_Field* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(i + kUpb_FieldType_Double, f->descriptortype);
     EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);
@@ -90,7 +92,6 @@ TEST_P(MiniTableTest, AllRepeatedTypes) {
   for (int i = 0; i < 16; i++) {
     const upb_MiniTable_Field* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(i + kUpb_FieldType_Double, f->descriptortype);
     EXPECT_EQ(kUpb_FieldMode_Array, f->mode & kUpb_FieldMode_Mask);
     EXPECT_TRUE(offsets.insert(f->offset).second);
     EXPECT_TRUE(f->offset < table->size);
@@ -149,7 +150,6 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   for (int i = 0; i < 16; i++) {
     const upb_MiniTable_Field* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
-    EXPECT_EQ(i + kUpb_FieldType_Double, f->descriptortype);
     EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
     // For a oneof all fields have the same offset.
     EXPECT_EQ(table->fields[0].offset, f->offset);
@@ -170,5 +170,13 @@ INSTANTIATE_TEST_SUITE_P(Platforms, MiniTableTest,
 TEST(MiniTablePlatformIndependentTest, Base92Roundtrip) {
   for (char i = 0; i < 92; i++) {
     EXPECT_EQ(i, upb_FromBase92(upb_ToBase92(i)));
+  }
+}
+
+TEST(MiniTablePlatformIndependentTest, IsTypePackable) {
+  for (int i = 1; i <= protobuf::FieldDescriptor::MAX_TYPE; i++) {
+    EXPECT_EQ(upb_IsTypePackable(static_cast<upb_FieldType>(i)),
+              protobuf::FieldDescriptor::IsTypePackable(
+                  static_cast<protobuf::FieldDescriptor::Type>(i)));
   }
 }

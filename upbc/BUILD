@@ -43,15 +43,12 @@ cc_library(
 
 cc_binary(
     name = "protoc-gen-upb",
-    srcs = [
-        "protoc-gen-upb.cc",
-        "message_layout.cc",
-        "message_layout.h",
-    ],
+    srcs = ["protoc-gen-upb.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":common",
+        "//:mini_table",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",

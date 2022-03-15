@@ -72,19 +72,22 @@ typedef struct {
   uint32_t number;
   uint16_t offset;
   int16_t presence;       // If >0, hasbit_index.  If <0, ~oneof_index
-  uint16_t submsg_index;  // undefined if descriptortype != MESSAGE/GROUP/ENUM
+  uint16_t submsg_index;  // kUpb_NoSub if descriptortype != MESSAGE/GROUP/ENUM
   uint8_t descriptortype;
   uint8_t mode; /* upb_FieldMode | upb_LabelFlags |
                    (upb_FieldRep << kUpb_FieldRep_Shift) */
 } upb_MiniTable_Field;
 
+#define kUpb_NoSub ((uint16_t)-1)
+
 typedef enum {
   kUpb_FieldMode_Map = 0,
   kUpb_FieldMode_Array = 1,
   kUpb_FieldMode_Scalar = 2,
-
-  kUpb_FieldMode_Mask = 3, /* Mask to isolate the mode from upb_FieldRep. */
 } upb_FieldMode;
+
+// Mask to isolate the upb_FieldMode from field.mode.
+#define kUpb_FieldMode_Mask 3
 
 /* Extra flags on the mode field. */
 typedef enum {
