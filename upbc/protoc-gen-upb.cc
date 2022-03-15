@@ -386,7 +386,7 @@ class FilePlatformLayout {
   void SetSubTableStrings();
   upb_MiniTable_Sub PackSubForField(const protobuf::FieldDescriptor* f,
                                     const upb_MiniTable_Field* mt_f);
-  const char* AllocStr(const std::string& str);
+  const char* AllocStr(absl::string_view str);
 
  private:
   using TableMap =
@@ -488,7 +488,7 @@ upb_MiniTable_Sub FilePlatformLayout::PackSubForField(
   }
 }
 
-const char* FilePlatformLayout::AllocStr(const std::string& str) {
+const char* FilePlatformLayout::AllocStr(absl::string_view str) {
   char* ret =
       static_cast<char*>(upb_Arena_Malloc(arena_.ptr(), str.size() + 1));
   memcpy(ret, str.data(), str.size());
@@ -517,6 +517,7 @@ void FilePlatformLayout::BuildExtensions(const protobuf::FileDescriptor* fd) {
     bool ok = upb_MiniTable_BuildExtension(e.data().data(), e.data().size(),
                                            &ext, sub, status.ptr());
     if (!ok) {
+      // TODO(haberman): Use ABSL CHECK() when it is available.
       fprintf(stderr, "Error building mini-table: %s\n",
               status.error_message());
     }
