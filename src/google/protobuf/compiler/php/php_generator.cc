@@ -407,19 +407,6 @@ std::string GeneratedClassFileName(const DescriptorType* desc,
   return result + ".php";
 }
 
-template <typename DescriptorType>
-std::string LegacyGeneratedClassFileName(const DescriptorType* desc,
-                                         const Options& options) {
-  std::string result = LegacyFullClassName(desc, options);
-
-  for (int i = 0; i < result.size(); i++) {
-    if (result[i] == '\\') {
-      result[i] = '/';
-    }
-  }
-  return result + ".php";
-}
-
 std::string GeneratedServiceFileName(const ServiceDescriptor* service,
                                      const Options& options) {
   std::string result = FullClassName(service, options) + "Interface";
@@ -1358,7 +1345,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   Outdent(&printer);
   printer.Print("}\n\n");
 
-  // write legacy file for backwards compatibility with nested messages and enums
+  // write legacy alias for backwards compatibility with nested messages and enums
   if (en->containing_type() != NULL) {
     printer.Print(
         "// Adding a class alias for backwards compatibility with the previous class name.\n");
@@ -1472,7 +1459,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   Outdent(&printer);
   printer.Print("}\n\n");
 
-  // write legacy file for backwards compatibility with nested messages and enums
+  // write legacy alias for backwards compatibility with nested messages and enums
   if (message->containing_type() != NULL) {
     printer.Print(
         "// Adding a class alias for backwards compatibility with the previous class name.\n");
