@@ -112,5 +112,21 @@ namespace Google.Protobuf
             // See https://github.com/protocolbuffers/protobuf/pull/7289
             cis.AssertNextTag(WireFormat.MakeTag(11, WireFormat.WireType.Varint));
         }
+
+        [Test]
+        public void NoneFieldInOneof()
+        {
+            var message = new OneofWithNoneField();
+            var emptyHashCode = message.GetHashCode();
+            Assert.AreEqual(OneofWithNoneField.TestOneofCase.None, message.TestCase);
+            message.None = "test";
+            Assert.AreEqual(OneofWithNoneField.TestOneofCase.None_, message.TestCase);
+            Assert.AreNotEqual(emptyHashCode, message.GetHashCode());
+
+            var bytes = message.ToByteArray();
+            var parsed = OneofWithNoneField.Parser.ParseFrom(bytes);
+            Assert.AreEqual(message, parsed);
+            Assert.AreEqual("test", parsed.None);
+        }
     }
 }
