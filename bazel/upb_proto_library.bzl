@@ -30,11 +30,16 @@
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
-load("@rules_proto//proto:defs.bzl", "ProtoInfo")  # copybara:strip_for_google3
 
 # Generic support code #########################################################
 
-_is_bazel = True  # copybara:replace_for_google3 _is_bazel = False
+# begin:github_only
+_is_google3 = False
+# end:github_only
+
+# begin:google_only
+# _is_google3 = True
+# end:google_only
 
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:
@@ -97,7 +102,7 @@ def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
 
     blaze_only_args = {}
 
-    if not _is_bazel:
+    if _is_google3:
         blaze_only_args["grep_includes"] = ctx.file._grep_includes
 
     (compilation_context, compilation_outputs) = cc_common.compile(
@@ -269,11 +274,11 @@ def _upb_proto_reflection_library_aspect_impl(target, ctx):
     return _upb_proto_aspect_impl(target, ctx, "upbdefs", _UpbDefsWrappedCcInfo, _WrappedDefsGeneratedSrcsInfo)
 
 def _maybe_add(d):
-    if not _is_bazel:
+    if _is_google3:
         d["_grep_includes"] = attr.label(
             allow_single_file = True,
             cfg = "exec",
-            default = "//tools/cpp:grep-includes",
+            default = "@bazel_tools//tools/cpp:grep-includes",
         )
     return d
 

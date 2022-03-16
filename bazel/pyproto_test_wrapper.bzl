@@ -1,4 +1,4 @@
-# copybara:strip_for_google3_begin
+# begin:github_only
 
 def pyproto_test_wrapper(name):
     src = name + "_wrapper.py"
@@ -16,7 +16,9 @@ def pyproto_test_wrapper(name):
         ],
     )
 
-# copybara:replace_for_google3_begin
+# end:github_only
+
+# begin:google_only
 #
 # def pyproto_test_wrapper(name):
 #     src = name + "_wrapper.py"
@@ -30,4 +32,4 @@ def pyproto_test_wrapper(name):
 #         ],
 #     )
 #
-# copybara:replace_for_google3_end
+# end:google_only

@@ -29,7 +29,6 @@ syntax = "proto2";
 
 import "upb/util/def_to_proto_regular_import_test.proto";
 import public "upb/util/def_to_proto_public_import_test.proto";
-import weak "upb/util/def_to_proto_weak_import_test.proto";  // copybara:strip_for_google3
 
 package pkg;
 

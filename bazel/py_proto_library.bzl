@@ -34,7 +34,10 @@ business of vending py_proto_library(), so we keep it private to upb.
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@rules_proto//proto:defs.bzl", "ProtoInfo")  # copybara:strip_for_google3
+
+# begin:github_only
+load("@rules_proto//proto:defs.bzl", "ProtoInfo")
+# end:github_only
 
 # Generic support code #########################################################
 

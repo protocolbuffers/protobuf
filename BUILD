@@ -28,7 +28,6 @@ load(
     "UPB_DEFAULT_COPTS",
     "UPB_DEFAULT_CPPOPTS",
     "make_shell_script",
-    "upb_amalgamation",  # copybara:strip_for_google3
 )
 load(
     "//bazel:upb_proto_library.bzl",
@@ -37,6 +36,13 @@ load(
     "upb_proto_library_copts",
     "upb_proto_reflection_library",
 )
+
+# begin:github_only
+load(
+    "//bazel:build_defs.bzl",
+    "upb_amalgamation",
+)
+# end:github_only
 
 licenses(["notice"])
 
@@ -535,7 +541,7 @@ cc_library(
 
 # Amalgamation #################################################################
 
-# copybara:strip_for_google3_begin
+# begin:github_only
 
 upb_amalgamation(
     name = "gen_amalgamation",
@@ -640,4 +646,4 @@ filegroup(
     visibility = ["//cmake:__pkg__"],
 )
 
-# copybara:strip_end
+# end:github_only

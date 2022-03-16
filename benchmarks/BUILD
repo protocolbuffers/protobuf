@@ -23,6 +23,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# begin:google_only
+# load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", "cc_proto_library")
+# end:google_only
+
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
@@ -30,10 +34,10 @@ load(
 )
 load(
     ":build_defs.bzl",
-    "tmpl_cc_binary",
     "cc_optimizefor_proto_library",
     "expand_suffixes",
     "proto_library",
+    "tmpl_cc_binary",
 )
 
 licenses(["notice"])
@@ -87,6 +91,7 @@ cc_test(
         "//:reflection",
         "@com_github_google_benchmark//:benchmark_main",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -121,7 +126,6 @@ py_binary(
 
 genrule(
     name = "do_gen_synthetic_protos",
-    tools = [":gen_synthetic_protos"],
     outs = [
         "100_msgs.proto",
         "200_msgs.proto",
@@ -129,6 +133,7 @@ genrule(
         "200_fields.proto",
     ],
     cmd = "$(execpath :gen_synthetic_protos) $(RULEDIR)",
+    tools = [":gen_synthetic_protos"],
 )
 
 proto_library(
@@ -157,82 +162,87 @@ proto_library(
 )
 
 [(
-upb_proto_library(
-    name = k + "_upb_proto",
-    deps = [":" + k + "_proto"],
-),
-cc_proto_library(
-    name = k + "_cc_proto",
-    deps = [":" + k + "_proto"],
-),
-tmpl_cc_binary(
-    name = k + "_upb_binary",
-    testonly = 1,
-    gen = ":gen_upb_binary_c",
-    args = [
-        package_name() + "/" + k + ".upb.h",
-        "upb_benchmark_" + v,
-    ],
-    deps = [
-        ":" + k + "_upb_proto",
-    ],
-),
-tmpl_cc_binary(
-    name = k + "_protobuf_binary",
-    testonly = 1,
-    gen = ":gen_protobuf_binary_cc",
-    args = [
-        package_name() + "/" + k + ".pb.h",
-        "upb_benchmark::" + v,
-    ],
-    deps = [
-        ":" + k + "_cc_proto",
-    ],
-),
-cc_optimizefor_proto_library(
-    srcs = [k + ".proto"],
-    outs = [k + "_lite.proto"],
-    name = k + "_cc_lite_proto",
-    optimize_for = "LITE_RUNTIME",
-),
-tmpl_cc_binary(
-    name = k + "_lite_protobuf_binary",
-    testonly = 1,
-    gen = ":gen_protobuf_binary_cc",
-    args = [
-        package_name() + "/" + k + "_lite.pb.h",
-        "upb_benchmark::" + v,
-    ],
-    deps = [
-        ":" + k + "_cc_lite_proto",
-    ],
-),
-cc_optimizefor_proto_library(
-    srcs = [k + ".proto"],
-    outs = [k + "_codesize.proto"],
-    name = k + "_cc_codesize_proto",
-    optimize_for = "CODE_SIZE",
-),
-tmpl_cc_binary(
-    name = k + "_codesize_protobuf_binary",
-    testonly = 1,
-    gen = ":gen_protobuf_binary_cc",
-    args = [
-        package_name() + "/" + k + "_codesize.pb.h",
-        "upb_benchmark::" + v,
-    ],
-    deps = [
-        ":" + k + "_cc_codesize_proto",
-    ],
-)
+    upb_proto_library(
+        name = k + "_upb_proto",
+        deps = [":" + k + "_proto"],
+    ),
+    cc_proto_library(
+        name = k + "_cc_proto",
+        deps = [":" + k + "_proto"],
+    ),
+    tmpl_cc_binary(
+        name = k + "_upb_binary",
+        testonly = 1,
+        args = [
+            package_name() + "/" + k + ".upb.h",
+            "upb_benchmark_" + v,
+        ],
+        gen = ":gen_upb_binary_c",
+        deps = [
+            ":" + k + "_upb_proto",
+        ],
+    ),
+    tmpl_cc_binary(
+        name = k + "_protobuf_binary",
+        testonly = 1,
+        args = [
+            package_name() + "/" + k + ".pb.h",
+            "upb_benchmark::" + v,
+        ],
+        gen = ":gen_protobuf_binary_cc",
+        deps = [
+            ":" + k + "_cc_proto",
+        ],
+    ),
+    cc_optimizefor_proto_library(
+        name = k + "_cc_lite_proto",
+        srcs = [k + ".proto"],
+        outs = [k + "_lite.proto"],
+        optimize_for = "LITE_RUNTIME",
+    ),
+    tmpl_cc_binary(
+        name = k + "_lite_protobuf_binary",
+        testonly = 1,
+        args = [
+            package_name() + "/" + k + "_lite.pb.h",
+            "upb_benchmark::" + v,
+        ],
+        gen = ":gen_protobuf_binary_cc",
+        deps = [
+            ":" + k + "_cc_lite_proto",
+        ],
+    ),
+    cc_optimizefor_proto_library(
+        name = k + "_cc_codesize_proto",
+        srcs = [k + ".proto"],
+        outs = [k + "_codesize.proto"],
+        optimize_for = "CODE_SIZE",
+    ),
+    tmpl_cc_binary(
+        name = k + "_codesize_protobuf_binary",
+        testonly = 1,
+        args = [
+            package_name() + "/" + k + "_codesize.pb.h",
+            "upb_benchmark::" + v,
+        ],
+        gen = ":gen_protobuf_binary_cc",
+        deps = [
+            ":" + k + "_cc_codesize_proto",
+        ],
+    ),
 ) for k, v in SIZE_BENCHMARKS.items()]
 
 genrule(
-    testonly = 1,
     name = "size_data",
+    testonly = 1,
     srcs = expand_suffixes(
         SIZE_BENCHMARKS.keys(),
-        suffixes = ["_upb_binary", "_protobuf_binary", "_lite_protobuf_binary", "_codesize_protobuf_binary"],
+        suffixes = [
+            "_upb_binary",
+            "_protobuf_binary",
+            "_lite_protobuf_binary",
+            "_codesize_protobuf_binary",
+        ],
     ),
     outs = ["size_data.txt"],
     # We want --format=GNU which counts rodata with data, not text.

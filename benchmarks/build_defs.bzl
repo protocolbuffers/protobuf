@@ -23,19 +23,21 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# copybara:insert_for_google3_begin
+# begin:google_only
 # load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", _cc_proto_library = "cc_proto_library")
-# copybara:insert_end
+#
+# _is_google3 = True
+# end:google_only
 
-# copybara:strip_for_google3_begin
+# begin:github_only
 _cc_proto_library = native.cc_proto_library
-# copybara:strip_end
+_is_google3 = False
+# end:github_only
 
 def proto_library(**kwargs):
+    if _is_google3:
+        kwargs["cc_api_version"] = 2
     native.proto_library(
-        # copybara:insert_for_google3_begin
-        # cc_api_version = 2,
-        # copybara:insert_end
         **kwargs
     )
 
@@ -48,11 +50,10 @@ def tmpl_cc_binary(name, gen, args, replacements = [], **kwargs):
         cmd = "$(location " + gen + ") " + " ".join(args) + " > $@",
     )
 
+    if _is_google3:
+        kwargs["malloc"] = "//base:system_malloc"
+        kwargs["features"] = ["-static_linking_mode"]
     native.cc_binary(
-        # copybara:insert_for_google3_begin
-        # malloc="//base:system_malloc",
-        # features = ["-static_linking_mode"],
-        # copybara:insert_end
         name = name,
         srcs = srcs,
         **kwargs

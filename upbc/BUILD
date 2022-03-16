@@ -32,12 +32,12 @@ licenses(["notice"])
 
 cc_library(
     name = "common",
-    hdrs = ["common.h"],
     srcs = ["common.cc"],
+    hdrs = ["common.h"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
-        "@com_google_protobuf//:protobuf",
         "@com_google_absl//absl/strings",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -49,6 +49,8 @@ cc_binary(
     deps = [
         ":common",
         "//:mini_table",
+        "//:port",
+        "//:upb",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",

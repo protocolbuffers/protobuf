@@ -27,9 +27,9 @@ from google.protobuf.internal import descriptor_pool_test
 import unittest
 import copy
 
-# copybara:insert_for_google3_begin
+# begin:google_only
 # from google3.testing.pybase import googletest
-# copybara:insert_end
+# end:google_only
 
 # This is testing that certain methods unconditionally throw TypeError.
 # In the new extension we simply don't define them at all.
@@ -37,9 +37,12 @@ descriptor_pool_test.AddDescriptorTest.testAddTypeError.__unittest_expecting_fai
 
 descriptor_pool_test.SecondaryDescriptorFromDescriptorDB.testErrorCollector.__unittest_expecting_failure__ = True
 
+# begin:github_only
 if __name__ == '__main__':
-  # copybara:strip_for_google3_begin
   unittest.main(module=descriptor_pool_test, verbosity=2)
-  # copybara:replace_for_google3_begin
-  # googletest.main()
-  # copybara:replace_for_google3_end
+# end:github_only
+
+# begin:google_only
+# if __name__ == '__main__':
+#   googletest.main()
+# end:google_only

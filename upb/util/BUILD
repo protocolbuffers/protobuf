@@ -25,7 +25,6 @@ proto_library(
         "def_to_proto_public_import_test.proto",
         "def_to_proto_regular_import_test.proto",
         "def_to_proto_test.proto",
-        "def_to_proto_weak_import_test.proto",  # copybara:strip_for_google3
     ],
 )
 

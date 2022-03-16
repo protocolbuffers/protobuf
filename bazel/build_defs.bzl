@@ -27,38 +27,39 @@
 
 load(":upb_proto_library.bzl", "GeneratedSrcsInfo")
 
+_DEFAULT_CPPOPTS = []
+_DEFAULT_COPTS = []
+
+# begin:github_only
+_DEFAULT_CPPOPTS.extend([
+    "-Wextra",
+    # "-Wshorten-64-to-32",  # not in GCC (and my Kokoro images doesn't have Clang)
+    "-Werror",
+    "-Wno-long-long",
+])
+_DEFAULT_COPTS.extend([
+    "-std=c99",
+    "-pedantic",
+    "-Werror=pedantic",
+    "-Wall",
+    "-Wstrict-prototypes",
+    # GCC (at least) emits spurious warnings for this that cannot be fixed
+    # without introducing redundant initialization (with runtime cost):
+    #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80635
+    #"-Wno-maybe-uninitialized",
+])
+# end:github_only
+
 UPB_DEFAULT_CPPOPTS = select({
     "//:windows": [],
-    "//conditions:default": [
-        # copybara:strip_for_google3_begin
-        "-Wextra",
-        # "-Wshorten-64-to-32",  # not in GCC (and my Kokoro images doesn't have Clang)
-        "-Werror",
-        "-Wno-long-long",
-        # copybara:strip_end
-    ],
+    "//conditions:default": _DEFAULT_CPPOPTS,
 })
 
 UPB_DEFAULT_COPTS = select({
     "//:windows": [],
     "//:fasttable_enabled_setting": ["-std=gnu99", "-DUPB_ENABLE_FASTTABLE"],
-    "//conditions:default": [
-        # copybara:strip_for_google3_begin
-        "-std=c99",
-        "-pedantic",
-        "-Werror=pedantic",
-        "-Wall",
-        "-Wstrict-prototypes",
-        # GCC (at least) emits spurious warnings for this that cannot be fixed
-        # without introducing redundant initialization (with runtime cost):
-        #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80635
-        #"-Wno-maybe-uninitialized",
-        # copybara:strip_end
-    ],
+    "//conditions:default": _DEFAULT_COPTS,
 })
-
-def _librule(name):
-    return name + "_lib"
 
 runfiles_init = """\
 # --- begin runfiles.bash initialization v2 ---
@@ -94,18 +95,7 @@ def _get_real_roots(files):
             roots[real_root] = True
     return roots.keys()
 
-def _remove_prefix(str, prefix):
-    if not str.startswith(prefix):
-        fail("%s doesn't start with %s" % (str, prefix))
-    return str[len(prefix):]
-
-def _remove_suffix(str, suffix):
-    if not str.endswith(suffix):
-        fail("%s doesn't end with %s" % (str, suffix))
-    return str[:-len(suffix)]
-
 def make_shell_script(name, contents, out):
-    contents = runfiles_init + contents  # copybara:strip_for_google3
     contents = contents.replace("$", "$$")
     native.genrule(
         name = "gen_" + name,

@@ -23,9 +23,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# begin:github_only
 load("//bazel:py_proto_library.bzl", "py_proto_library")
-load("//bazel:py_extension.bzl", "py_extension")  # copybara:strip_for_google3
+load("//bazel:py_extension.bzl", "py_extension")
 load("@rules_python//python:packaging.bzl", "py_wheel")
+# end:github_only
 
 licenses(["notice"])
 
@@ -69,7 +71,7 @@ py_extension(
     srcs = ["api_implementation.c"],
 )
 
-# copybara:strip_for_google3_begin
+# begin:github_only
 
 py_test(
     name = "minimal_test",
@@ -120,7 +122,6 @@ py_library(
     visibility = ["//python:__subpackages__"],
 )
 
-
 py_proto_library(
     name = "well_known_proto_pb2",
     deps = [
@@ -160,4 +161,4 @@ py_wheel(
     ],
 )
 
-# copybara:strip_end
+# end:github_only
