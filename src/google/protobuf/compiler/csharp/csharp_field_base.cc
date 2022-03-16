@@ -130,8 +130,9 @@ void FieldGeneratorBase::SetCommonOneofFieldVariables(
   } else {
     (*variables)["has_property_check"] =
       oneof_name() + "Case_ == " + oneof_property_name() +
-      "OneofCase." + property_name();
+      "OneofCase." + oneof_case_name();
   }
+  (*variables)["oneof_case_name"] = oneof_case_name();
   (*variables)["oneof_property_name"] = oneof_property_name();
 }
 
@@ -185,6 +186,10 @@ void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
 void FieldGeneratorBase::AddPublicMemberAttributes(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   WriteGeneratedCodeAttributes(printer);
+}
+
+std::string FieldGeneratorBase::oneof_case_name() {
+  return GetOneofCaseName(descriptor_);
 }
 
 std::string FieldGeneratorBase::oneof_property_name() {
