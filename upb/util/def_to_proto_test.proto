@@ -13,11 +13,11 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -27,10 +27,11 @@
 
 syntax = "proto2";
 
-import "upb/util/def_to_proto_regular_import_test.proto";
+package pkg;
+
 import public "upb/util/def_to_proto_public_import_test.proto";
 
-package pkg;
+import "upb/util/def_to_proto_regular_import_test.proto";
 
 option optimize_for = CODE_SIZE;
 option go_package = "foo_go_package";
@@ -75,6 +76,7 @@ enum EnumUpper32Value {
 
 enum HasDuplicateValues {
   option allow_alias = true;
+
   A = 0;
   B = 1;
   C = 120;
@@ -103,6 +105,7 @@ enum Has31 {
 
 message PretendMessageSet {
   option message_set_wire_format = true;
+
   // Since this is message_set_wire_format, "max" here means INT32_MAX.
   // (For normal messages "max" would mean 2**29 - 1).
   extensions 4 to max;
