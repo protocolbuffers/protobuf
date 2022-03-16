@@ -55,6 +55,21 @@ namespace Google.Protobuf
             return set.ValuesByNumber.TryGetValue(extension.FieldNumber, out value);
         }
 
+        // TODO: Documentation, and coming up with a better name. (And tests!)
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TTarget"></typeparam>
+        /// <param name="set"></param>
+        /// <param name="fieldNumber"></param>
+        /// <returns></returns>
+        public static object GetRawValue<TTarget>(ref ExtensionSet<TTarget> set, int fieldNumber) where TTarget : IExtendableMessage<TTarget>
+        {
+            set.ValuesByNumber.TryGetValue(fieldNumber, out var value);
+            return value?.GetValue();
+        }
+
         /// <summary>
         /// Gets the value of the specified extension
         /// </summary>

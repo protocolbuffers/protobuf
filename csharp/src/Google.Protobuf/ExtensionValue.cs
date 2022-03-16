@@ -44,6 +44,7 @@ namespace Google.Protobuf
         void WriteTo(ref WriteContext ctx);
         int CalculateSize();
         bool IsInitialized();
+        object GetValue();
     }
 
     internal sealed class ExtensionValue<T> : IExtensionValue
@@ -116,6 +117,7 @@ namespace Google.Protobuf
             }
         }
 
+        object IExtensionValue.GetValue() => GetValue();
         public T GetValue() => field;
 
         public void SetValue(T value)
@@ -199,6 +201,7 @@ namespace Google.Protobuf
             field.WriteTo(ref ctx, codec);
         }
 
+        object IExtensionValue.GetValue() => GetValue();
         public RepeatedField<T> GetValue() => field;
 
         public bool IsInitialized()

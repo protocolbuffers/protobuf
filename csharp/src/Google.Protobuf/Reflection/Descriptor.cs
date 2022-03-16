@@ -9052,8 +9052,13 @@ namespace Google.Protobuf.Reflection {
         }
       }
     }
-    #endif
+#endif
 
+    // Note: we'd generate this for every extendable message. See https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/compiler/csharp/csharp_message.cc#L272
+    // The name is definitely up for discussion.
+    public object GetExtensionValue(int fieldNumber) {
+      return pb::ExtensionSet.GetRawValue(ref _extensions, fieldNumber);
+    }
     public TValue GetExtension<TValue>(pb::Extension<MethodOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
