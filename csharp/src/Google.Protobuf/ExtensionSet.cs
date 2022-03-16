@@ -63,7 +63,18 @@ namespace Google.Protobuf
             IExtensionValue value;
             if (TryGetValue(ref set, extension, out value))
             {
-                return ((ExtensionValue<TValue>)value).GetValue();
+                if (value is ExtensionValue<TValue> genericValue)
+                {
+                    return genericValue.GetValue();
+                }
+                else if (value.GetValue() is TValue v)
+                {
+                    return v;
+                }
+                else
+                {
+                    throw new Exception("**unknown**");
+                }
             }
             else 
             {

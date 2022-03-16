@@ -62,6 +62,10 @@ namespace Google.Protobuf
             Assert.AreEqual(message, other);
             Assert.AreEqual(message.CalculateSize(), other.CalculateSize());
         }
+        
+        public static readonly Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, object> OptionalStringExtensionBytesHack =
+            new Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, object>(14, codec: null);
+
 
         [Test]
         public void TryMergeFieldFrom_CodedInputStream()
@@ -77,6 +81,9 @@ namespace Google.Protobuf
             // test the legacy overload of TryMergeFieldFrom that takes a CodedInputStream
             Assert.IsTrue(ExtensionSet.TryMergeFieldFrom(ref extensionSet, input));
             Assert.AreEqual("abcd", ExtensionSet.Get(ref extensionSet, OptionalStringExtension));
+
+            var b = ExtensionSet.Get(ref extensionSet, OptionalStringExtensionBytesHack);
+            Assert.AreEqual("abcd", b);
         }
 
         [Test]
