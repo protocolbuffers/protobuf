@@ -120,6 +120,7 @@ std::vector<const protobuf::EnumDescriptor*> SortedEnums(
 std::vector<int32_t> SortedUniqueEnumNumbers(
     const protobuf::EnumDescriptor* e) {
   std::vector<int32_t> values;
+  values.reserve(e->value_count());
   for (int i = 0; i < e->value_count(); i++) {
     values.push_back(e->value(i)->number());
   }
