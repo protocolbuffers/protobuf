@@ -108,6 +108,7 @@ void AddEnums(const protobuf::Descriptor* message,
 std::vector<const protobuf::EnumDescriptor*> SortedEnums(
     const protobuf::FileDescriptor* file) {
   std::vector<const protobuf::EnumDescriptor*> enums;
+  enums.reserve(file->enum_type_count());
   for (int i = 0; i < file->enum_type_count(); i++) {
     enums.push_back(file->enum_type(i));
   }
