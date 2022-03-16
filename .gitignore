@@ -89,6 +89,10 @@ java/**/*.iml
 # Windows native output.
 cmake/build
 build_msvc
+# Directories suggested by cmake/README.md
+/debug/
+/solution/
+/release/
 
 # NuGet packages: we want the repository configuration, but not the
 # packages themselves.
