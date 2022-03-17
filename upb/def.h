@@ -164,11 +164,11 @@ const upb_FieldDef* upb_OneofDef_LookupNumber(const upb_OneofDef* o,
 #define kUpb_Any_TypeFieldNumber 1
 #define kUpb_Any_ValueFieldNumber 2
 
-/* Well-known field tag numbers for timestamp messages. */
+/* Well-known field tag numbers for duration messages. */
 #define kUpb_Duration_SecondsFieldNumber 1
 #define kUpb_Duration_NanosFieldNumber 2
 
-/* Well-known field tag numbers for duration messages. */
+/* Well-known field tag numbers for timestamp messages. */
 #define kUpb_Timestamp_SecondsFieldNumber 1
 #define kUpb_Timestamp_NanosFieldNumber 2
 
