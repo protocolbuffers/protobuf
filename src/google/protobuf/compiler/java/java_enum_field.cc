@@ -291,7 +291,7 @@ void ImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ false);
   printer->Print(variables_,
-                 "public fun ${$clear$kt_capitalized_name$$}$() {\n"
+                 "fun ${$clear$kt_capitalized_name$$}$() {\n"
                  "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
                  "}\n");
 
@@ -299,7 +299,7 @@ void ImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
-        "public fun ${$has$kt_capitalized_name$$}$(): kotlin.Boolean {\n"
+        "fun ${$has$kt_capitalized_name$$}$(): kotlin.Boolean {\n"
         "  return $kt_dsl_builder$.${$has$capitalized_name$$}$()\n"
         "}\n");
   }
@@ -1082,12 +1082,12 @@ void RepeatedImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
       " */\n"
       "@kotlin.OptIn"
       "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
-      "public class ${$$kt_capitalized_name$Proxy$}$ private constructor()"
+      "class ${$$kt_capitalized_name$Proxy$}$ private constructor()"
       " : com.google.protobuf.kotlin.DslProxy()\n");
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "$kt_deprecation$ public val $kt_name$: "
+                 "$kt_deprecation$ $kt_name$: "
                  "com.google.protobuf.kotlin.DslList"
                  "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
                  "  @kotlin.jvm.JvmSynthetic\n"
@@ -1100,7 +1100,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"add$kt_capitalized_name$\")\n"
-                 "public fun com.google.protobuf.kotlin.DslList"
+                 "fun com.google.protobuf.kotlin.DslList"
                  "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
                  "add(value: $kt_type$) {\n"
                  "  $kt_dsl_builder$.${$add$capitalized_name$$}$(value)\n"
@@ -1112,7 +1112,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"plusAssign$kt_capitalized_name$\")\n"
                  "@Suppress(\"NOTHING_TO_INLINE\")\n"
-                 "public inline operator fun com.google.protobuf.kotlin.DslList"
+                 "inline operator fun com.google.protobuf.kotlin.DslList"
                  "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
                  "plusAssign(value: $kt_type$) {\n"
                  "  add(value)\n"
@@ -1123,7 +1123,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"addAll$kt_capitalized_name$\")\n"
-                 "public fun com.google.protobuf.kotlin.DslList"
+                 "fun com.google.protobuf.kotlin.DslList"
                  "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
                  "addAll(values: kotlin.collections.Iterable<$kt_type$>) {\n"
                  "  $kt_dsl_builder$.${$addAll$capitalized_name$$}$(values)\n"
@@ -1136,7 +1136,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
       "@kotlin.jvm.JvmSynthetic\n"
       "@kotlin.jvm.JvmName(\"plusAssignAll$kt_capitalized_name$\")\n"
       "@Suppress(\"NOTHING_TO_INLINE\")\n"
-      "public inline operator fun com.google.protobuf.kotlin.DslList"
+      "inline operator fun com.google.protobuf.kotlin.DslList"
       "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
       "plusAssign(values: kotlin.collections.Iterable<$kt_type$>) {\n"
       "  addAll(values)\n"
@@ -1148,7 +1148,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@kotlin.jvm.JvmName(\"set$kt_capitalized_name$\")\n"
-      "public operator fun com.google.protobuf.kotlin.DslList"
+      "operator fun com.google.protobuf.kotlin.DslList"
       "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
       "set(index: kotlin.Int, value: $kt_type$) {\n"
       "  $kt_dsl_builder$.${$set$capitalized_name$$}$(index, value)\n"
@@ -1159,7 +1159,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"clear$kt_capitalized_name$\")\n"
-                 "public fun com.google.protobuf.kotlin.DslList"
+                 "fun com.google.protobuf.kotlin.DslList"
                  "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
                  "clear() {\n"
                  "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"

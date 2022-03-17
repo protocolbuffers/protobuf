@@ -835,13 +835,13 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
       " */\n"
       "@kotlin.OptIn"
       "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
-      "public class ${$$kt_capitalized_name$Proxy$}$ private constructor()"
+      "class ${$$kt_capitalized_name$Proxy$}$ private constructor()"
       " : com.google.protobuf.kotlin.DslProxy()\n");
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(
       variables_,
-      "$kt_deprecation$ public val $kt_name$: "
+      "$kt_deprecation$ val $kt_name$: "
       "com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  @kotlin.jvm.JvmSynthetic\n"
@@ -854,7 +854,7 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
   printer->Print(
       variables_,
       "@JvmName(\"put$kt_capitalized_name$\")\n"
-      "public fun com.google.protobuf.kotlin.DslMap"
+      "fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .put(key: $kt_key_type$, value: $kt_value_type$) {\n"
       "     $kt_dsl_builder$.${$put$capitalized_name$$}$(key, value)\n"
@@ -866,7 +866,7 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
       "@kotlin.jvm.JvmSynthetic\n"
       "@JvmName(\"set$kt_capitalized_name$\")\n"
       "@Suppress(\"NOTHING_TO_INLINE\")\n"
-      "public inline operator fun com.google.protobuf.kotlin.DslMap"
+      "inline operator fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .set(key: $kt_key_type$, value: $kt_value_type$) {\n"
       "     put(key, value)\n"
@@ -877,7 +877,7 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@JvmName(\"remove$kt_capitalized_name$\")\n"
-      "public fun com.google.protobuf.kotlin.DslMap"
+      "fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .remove(key: $kt_key_type$) {\n"
       "     $kt_dsl_builder$.${$remove$capitalized_name$$}$(key)\n"
@@ -888,7 +888,7 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@JvmName(\"putAll$kt_capitalized_name$\")\n"
-      "public fun com.google.protobuf.kotlin.DslMap"
+      "fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .putAll(map: kotlin.collections.Map<$kt_key_type$, $kt_value_type$>) "
       "{\n"
@@ -900,7 +900,7 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@JvmName(\"clear$kt_capitalized_name$\")\n"
-      "public fun com.google.protobuf.kotlin.DslMap"
+      "fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .clear() {\n"
       "     $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
