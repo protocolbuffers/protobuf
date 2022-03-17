@@ -422,6 +422,10 @@ build_ruby30() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-3.0.2 && cd ..
 }
+build_ruby31() {
+  internal_build_cpp  # For conformance tests.
+  cd ruby && bash travis-test.sh ruby-3.1.0 && cd ..
+}
 
 build_jruby92() {
   internal_build_cpp                # For conformance tests.
@@ -593,6 +597,7 @@ Usage: $0 { cpp |
             ruby26 |
             ruby27 |
             ruby30 |
+            ruby31 |
             jruby92 |
             jruby93 |
             ruby_all |

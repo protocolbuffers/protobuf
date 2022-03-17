@@ -35,6 +35,7 @@ RUN /bin/bash -l -c "rvm install 2.5.1"
 RUN /bin/bash -l -c "rvm install 2.6.0"
 RUN /bin/bash -l -c "rvm install 2.7.0"
 RUN /bin/bash -l -c "rvm install 3.0.0"
+RUN /bin/bash -l -c "rvm install 3.1.0"
 RUN /bin/bash -l -c "rvm install jruby-9.2.20.1"
 RUN /bin/bash -l -c "rvm install jruby-9.3.3.0"
 
