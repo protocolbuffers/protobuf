@@ -41,95 +41,70 @@ cc_toolchain_suite(
 
 cc_toolchain_config(
     name = "linux-aarch_64-config",
-    bit_flag = "-m64",
-    cpp_flag = "-lstdc++",
     sysroot = "/opt/manylinux/2014/aarch64",
     linker_path = "/usr/bin/ld",
     target_cpu = "aarch64",
     target_full_name = "aarch64-linux-gnu",
-    toolchain_name = "linux_aarch_64",
 )
 
 cc_toolchain_config(
     name = "linux-ppcle_64-config",
-    bit_flag = "-m64",
-    cpp_flag = "-lstdc++",
     linker_path = "/usr/bin/ld",
     sysroot = "/opt/manylinux/2014/ppc64le",
     target_cpu = "ppc64",
     target_full_name = "powerpc64le-linux-gnu",
-    toolchain_name = "linux_ppcle_64",
 )
 
 cc_toolchain_config(
     name = "linux-s390_64-config",
-    bit_flag = "-m64",
-    cpp_flag = "-lstdc++",
     linker_path = "/usr/bin/ld",
     sysroot = "/opt/manylinux/2014/s390x",
     target_cpu = "systemz",
     target_full_name = "s390x-linux-gnu",
-    toolchain_name = "linux_s390_64",
 )
 
 cc_toolchain_config(
     name = "linux-x86_32-config",
-    bit_flag = "-m32",
-    cpp_flag = "-lstdc++",
     linker_path = "/usr/bin/ld",
     sysroot = "/opt/manylinux/2014/i686",
     target_cpu = "x86_32",
     target_full_name = "i386-linux-gnu",
-    toolchain_name = "linux_x86_32",
 )
 
 cc_toolchain_config(
     name = "linux-x86_64-config",
-    bit_flag = "-m64",
-    cpp_flag = "-lstdc++",
     linker_path = "/usr/bin/ld",
     sysroot = "/opt/manylinux/2014/x86_64",
     target_cpu = "x86_64",
     target_full_name = "x86_64-linux-gnu",
-    toolchain_name = "linux_x86_64",
 )
 
 cc_toolchain_config(
     name = "osx-aarch_64-config",
-    bit_flag = "-m64",
-    cpp_flag = "-lc++",
     extra_compiler_flags = [
         "-I/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
         "-I/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include"
     ],
-    extra_include = "/usr/include",
     linker_path = "/usr/tools",
     sysroot = "/usr/tools/apple_sdks/xcode_13_0/macosx",
     target_cpu = "aarch64",
     target_full_name = "aarch64-apple-macosx11.3",
-    toolchain_name = "osx_aarch_64",
 )
 
 cc_toolchain_config(
     name = "osx-x86_64-config",
-    bit_flag = "-m64",
-    cpp_flag = "-lc++",
     extra_compiler_flags = [
         "-I/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include/c++/v1",
         "-I/usr/tools/apple_sdks/xcode_13_0/macosx/usr/include"
     ],
-    extra_include = "/usr/include",
     linker_path = "/usr/tools",
     sysroot = "/usr/tools/apple_sdks/xcode_13_0/macosx",
     target_cpu = "x86_64",
     target_full_name = "x86_64-apple-macosx11.3",
-    toolchain_name = "osx_x86_64",
 )
 
 cc_toolchain_config(
     name = "win32-config",
-    bit_flag = "-m32",
-    cpp_flag = "-lstdc++",
     extra_compiler_flags = [
         "-isystem/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++",
         "-isystem/usr/lib/gcc/i686-w64-mingw32/8.3-posix/include/c++/i686-w64-mingw32",
@@ -144,13 +119,10 @@ cc_toolchain_config(
     sysroot = "/usr/i686-w64-mingw32",
     target_cpu = "x86_32",
     target_full_name = "i686-w64-mingw32",
-    toolchain_name = "i686-w64-mingw32",
 )
 
 cc_toolchain_config(
     name = "win64-config",
-    bit_flag = "-m64",
-    cpp_flag = "-lstdc++",
     extra_compiler_flags = [
         "-isystem/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/",
         "-isystem/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/include/c++/x86_64-w64-mingw32",
@@ -163,5 +135,4 @@ cc_toolchain_config(
     sysroot = "/usr/x86_64-w64-mingw32",
     target_cpu = "x86_64",
     target_full_name = "x86_64-w64-mingw32",
-    toolchain_name = "x86_64-w64-mingw32",
 )
