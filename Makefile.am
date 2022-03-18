@@ -1121,6 +1121,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/symbol_database.py                                  \
   python/google/protobuf/text_encoding.py                                    \
   python/google/protobuf/text_format.py                                      \
+  python/google/protobuf/unknown_fields.py                                   \
   python/google/protobuf/util/__init__.py                                    \
   python/release.sh                                                          \
   python/mox.py                                                              \
