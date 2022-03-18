@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1552,7 +1553,6 @@ public final class TextFormat {
    * control the parser behavior.
    */
   public static class Parser {
-    private int debugStringSilentMarker;
 
     /**
      * A valid silent marker appears between a field name and its value. If there is a ":" in
@@ -1803,7 +1803,6 @@ public final class TextFormat {
       while (!tokenizer.atEnd()) {
         mergeField(tokenizer, extensionRegistry, target, unknownFields);
       }
-
       checkUnknownFields(unknownFields);
     }
 

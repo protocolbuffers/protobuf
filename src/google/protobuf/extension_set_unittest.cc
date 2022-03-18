@@ -107,20 +107,6 @@ TEST(ExtensionSetTest, Clear) {
   message.Clear();
   TestUtil::ExpectExtensionsClear(message);
 
-  // Unlike with the defaults test, we do NOT expect that requesting embedded
-  // messages will return a pointer to the default instance.  Instead, they
-  // should return the objects that were created when mutable_blah() was
-  // called.
-  EXPECT_NE(&unittest::OptionalGroup_extension::default_instance(),
-            &message.GetExtension(unittest::optionalgroup_extension));
-  EXPECT_NE(&unittest::TestAllTypes::NestedMessage::default_instance(),
-            &message.GetExtension(unittest::optional_nested_message_extension));
-  EXPECT_NE(
-      &unittest::ForeignMessage::default_instance(),
-      &message.GetExtension(unittest::optional_foreign_message_extension));
-  EXPECT_NE(&unittest_import::ImportMessage::default_instance(),
-            &message.GetExtension(unittest::optional_import_message_extension));
-
   // Make sure setting stuff again after clearing works.  (This takes slightly
   // different code paths since the objects are reused.)
   TestUtil::SetAllExtensions(&message);

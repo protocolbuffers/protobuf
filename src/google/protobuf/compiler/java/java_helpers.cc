@@ -261,18 +261,18 @@ std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
   return name;
 }
 
+// Names that should be avoided as field names in Kotlin.
+// All Kotlin hard keywords are in this list.
+const std::unordered_set<std::string>* kKotlinForbiddenNames =
+    new std::unordered_set<std::string>({
+        "as",    "as?",   "break", "class",  "continue",  "do",     "else",
+        "false", "for",   "fun",   "if",     "in",        "!in",    "interface",
+        "is",    "!is",   "null",  "object", "package",   "return", "super",
+        "this",  "throw", "true",  "try",    "typealias", "typeof", "val",
+        "var",   "when",  "while",
+    });
+
 bool IsForbiddenKotlin(const std::string& field_name) {
-  // Names that should be avoided as field names in Kotlin.
-  // All Kotlin hard keywords are in this list.
-  const std::unordered_set<std::string>* kKotlinForbiddenNames =
-      new std::unordered_set<std::string>({
-          "as",      "as?",       "break",  "class", "continue", "do",
-          "else",    "false",     "for",    "fun",   "if",       "in",
-          "!in",     "interface", "is",     "!is",   "null",     "object",
-          "package", "return",    "super",  "this",  "throw",    "true",
-          "try",     "typealias", "typeof", "val",   "var",      "when",
-          "while",
-      });
   return kKotlinForbiddenNames->find(field_name) !=
          kKotlinForbiddenNames->end();
 }

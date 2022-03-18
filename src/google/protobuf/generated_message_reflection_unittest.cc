@@ -152,28 +152,6 @@ TEST(GeneratedMessageReflectionTest, GetStringReference) {
 }
 
 
-TEST(GeneratedMessageReflectionTest, DefaultsAfterClear) {
-  // Check that after setting all fields and then clearing, getting an
-  // embedded message does NOT return the default instance.
-  unittest::TestAllTypes message;
-  TestUtil::ReflectionTester reflection_tester(
-      unittest::TestAllTypes::descriptor());
-
-  TestUtil::SetAllFields(&message);
-  message.Clear();
-
-  const Reflection* reflection = message.GetReflection();
-
-  EXPECT_NE(&unittest::TestAllTypes::OptionalGroup::default_instance(),
-            &reflection->GetMessage(message, F("optionalgroup")));
-  EXPECT_NE(&unittest::TestAllTypes::NestedMessage::default_instance(),
-            &reflection->GetMessage(message, F("optional_nested_message")));
-  EXPECT_NE(&unittest::ForeignMessage::default_instance(),
-            &reflection->GetMessage(message, F("optional_foreign_message")));
-  EXPECT_NE(&unittest_import::ImportMessage::default_instance(),
-            &reflection->GetMessage(message, F("optional_import_message")));
-}
-
 class GeneratedMessageReflectionSwapTest : public testing::TestWithParam<bool> {
  protected:
   void Swap(const Reflection* reflection, Message* lhs, Message* rhs) {

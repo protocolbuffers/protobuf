@@ -1,6 +1,11 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2022 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
+//
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// ! THIS FILE ONLY APPROACHING IN-TREE PHP EXTENSION BUILD !
+// ! DOES NOT USE NORMALLY.                                 !
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -27,25 +32,14 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#ifndef PHP_PROTOBUF_H
+# define PHP_PROTOBUF_H
 
-syntax = "proto3";
+# ifdef HAVE_CONFIG_H
+#  include "config.h"
+# endif
 
-package google.protobuf;
+extern zend_module_entry protobuf_module_entry;
+# define phpext_protobuf_ptr &protobuf_module_entry
 
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
-option go_package = "google.golang.org/protobuf/types/known/emptypb";
-option java_package = "com.google.protobuf";
-option java_outer_classname = "EmptyProto";
-option java_multiple_files = true;
-option objc_class_prefix = "GPB";
-option cc_enable_arenas = true;
-
-// A generic empty message that you can re-use to avoid defining duplicated
-// empty messages in your APIs. A typical example is to use it as the request
-// or the response type of an API method. For instance:
-//
-//     service Foo {
-//       rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);
-//     }
-//
-message Empty {}
+#endif	/* PHP_PROTOBUF_H */

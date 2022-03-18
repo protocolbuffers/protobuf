@@ -253,13 +253,13 @@ public class DecodeUtf8Test extends TestCase {
     try {
       UNSAFE_PROCESSOR.decodeUtf8(bytes, index, size);
       fail();
-    } catch (ArrayIndexOutOfBoundsException e) {
+    } catch (IndexOutOfBoundsException e) {
       // Expected.
     }
     try {
       SAFE_PROCESSOR.decodeUtf8(bytes, index, size);
       fail();
-    } catch (ArrayIndexOutOfBoundsException e) {
+    } catch (IndexOutOfBoundsException e) {
       // Expected.
     }
 
@@ -269,13 +269,13 @@ public class DecodeUtf8Test extends TestCase {
     try {
       UNSAFE_PROCESSOR.decodeUtf8(direct, index, size);
       fail();
-    } catch (ArrayIndexOutOfBoundsException e) {
+    } catch (IndexOutOfBoundsException e) {
       // Expected.
     }
     try {
       SAFE_PROCESSOR.decodeUtf8(direct, index, size);
       fail();
-    } catch (ArrayIndexOutOfBoundsException e) {
+    } catch (IndexOutOfBoundsException e) {
       // Expected.
     }
 
@@ -285,13 +285,13 @@ public class DecodeUtf8Test extends TestCase {
     try {
       UNSAFE_PROCESSOR.decodeUtf8(heap, index, size);
       fail();
-    } catch (ArrayIndexOutOfBoundsException e) {
+    } catch (IndexOutOfBoundsException e) {
       // Expected.
     }
     try {
       SAFE_PROCESSOR.decodeUtf8(heap, index, size);
       fail();
-    } catch (ArrayIndexOutOfBoundsException e) {
+    } catch (IndexOutOfBoundsException e) {
       // Expected.
     }
   }
