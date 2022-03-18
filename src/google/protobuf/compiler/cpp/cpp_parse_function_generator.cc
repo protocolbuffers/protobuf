@@ -231,8 +231,7 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
         break;
 
       case FieldDescriptor::TYPE_ENUM:
-        if (field->is_repeated() &&
-            !HasPreservingUnknownEnumSemantics(field)) {
+        if (field->is_repeated() && !HasPreservingUnknownEnumSemantics(field)) {
           // TODO(b/206890171): handle packed repeated closed enums
           // Non-packed repeated can be handled using tables, but we still
           // need to generate fallback code for all repeated enums in order to
@@ -244,15 +243,15 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
         }
         break;
 
-        case FieldDescriptor::TYPE_BYTES:
-        case FieldDescriptor::TYPE_STRING:
-          if (IsStringInlined(field, options)) {
-            // TODO(b/198211897): support InilnedStringField.
-            handled = false;
-          } else {
-            handled = true;
-          }
-          break;
+      case FieldDescriptor::TYPE_BYTES:
+      case FieldDescriptor::TYPE_STRING:
+        if (IsStringInlined(field, options)) {
+          // TODO(b/198211897): support InilnedStringField.
+          handled = false;
+        } else {
+          handled = true;
+        }
+        break;
 
       case FieldDescriptor::TYPE_MESSAGE:
       case FieldDescriptor::TYPE_GROUP:
@@ -291,8 +290,9 @@ TailCallTableInfo::TailCallTableInfo(
     GOOGLE_LOG_IF(DFATAL, ordered_fields.empty())
         << "Invalid message: " << descriptor->full_name() << " has "
         << oneof_count << " oneof declarations, but no fields";
-    aux_entries.push_back(StrCat(
-        "_fl::Offset{offsetof(", ClassName(descriptor), ", _oneof_case_)}"));
+    aux_entries.push_back(StrCat("_fl::Offset{offsetof(",
+                                       ClassName(descriptor),
+                                       ", _impl_._oneof_case_)}"));
   }
 
   // If this message has any inlined string fields, store the donation state
@@ -301,7 +301,7 @@ TailCallTableInfo::TailCallTableInfo(
     aux_entries.resize(2);  // pad if necessary
     aux_entries[1] =
         StrCat("_fl::Offset{offsetof(", ClassName(descriptor),
-                     ", _inlined_string_donated_)}");
+                     ", _impl_._inlined_string_donated_)}");
   }
 
   // Fill in mini table entries.
@@ -444,7 +444,7 @@ ParseFunctionGenerator::ParseFunctionGenerator(
         inlined_string_indices, scc_analyzer));
   }
   SetCommonVars(options_, &variables_);
-  SetCommonMessageDataVariables(&variables_);
+  SetCommonMessageDataVariables(descriptor_, &variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
   variables_["classname"] = ClassName(descriptor, false);
 }
@@ -547,13 +547,13 @@ void ParseFunctionGenerator::GenerateTailcallFallbackFunction(
 
   if (num_hasbits_ > 0) {
     // Sync hasbits
-    format("typed_msg->_has_bits_[0] = hasbits;\n");
+    format("typed_msg->_impl_._has_bits_[0] = hasbits;\n");
   }
   format("uint32_t tag = data.tag();\n");
 
   format.Set("msg", "typed_msg->");
   format.Set("this", "typed_msg");
-  format.Set("has_bits", "typed_msg->_has_bits_");
+  format.Set("has_bits", "typed_msg->_impl_._has_bits_");
   format.Set("next_tag", "goto next_tag");
   GenerateParseIterationBody(format, descriptor_,
                              tc_table_info_->fallback_fields);
@@ -649,7 +649,7 @@ void ParseFunctionGenerator::GenerateLoopingParseFunction(Formatter& format) {
     format("_Internal::HasBits has_bits{};\n");
     format.Set("has_bits", "has_bits");
   } else {
-    format.Set("has_bits", "_has_bits_");
+    format.Set("has_bits", "_impl_._has_bits_");
   }
   format.Set("next_tag", "continue");
   format("while (!ctx->Done(&ptr)) {\n");
@@ -665,7 +665,7 @@ void ParseFunctionGenerator::GenerateLoopingParseFunction(Formatter& format) {
 
   format.Outdent();
   format("message_done:\n");
-  if (hasbits_size) format("  _has_bits_.Or(has_bits);\n");
+  if (hasbits_size) format("  _impl_._has_bits_.Or(has_bits);\n");
 
   format(
       "  return ptr;\n"
@@ -774,7 +774,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
     {
       auto header_scope = format.ScopedIndent();
       if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
-        format("PROTOBUF_FIELD_OFFSET($classname$, _has_bits_),\n");
+        format("PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_),\n");
       } else {
         format("0,  // no _has_bits_\n");
       }

@@ -1366,30 +1366,26 @@ final class Utf8 {
     }
 
     @Override
-    String decodeUtf8(byte[] bytes, int index, int size)
-            throws InvalidProtocolBufferException {
-      try {
-        String s = new String(bytes, index, size, Internal.UTF_8);
+    String decodeUtf8(byte[] bytes, int index, int size) throws InvalidProtocolBufferException {
+      String s = new String(bytes, index, size, Internal.UTF_8);
 
-        // "\uFFFD" is UTF-8 default replacement string, which illegal byte sequences get replaced with.
-        if (!s.contains("\uFFFD")) {
-          return s;
-        }
-
-        // Since s contains "\uFFFD" there are 2 options:
-        // 1) The byte array slice is invalid UTF-8.
-        // 2) The byte array slice is valid UTF-8 and contains encodings for "\uFFFD".
-        // To rule out (1), we encode s and compare it to the byte array slice.
-        // If the byte array slice was invalid UTF-8, then we would get a different sequence of bytes.
-        if (Arrays.equals(s.getBytes(Internal.UTF_8), Arrays.copyOfRange(bytes, index, index + size))) {
-          return s;
-        }
-
-        throw InvalidProtocolBufferException.invalidUtf8();
-      } catch (IndexOutOfBoundsException e) {
-        throw new ArrayIndexOutOfBoundsException(
-                String.format("buffer length=%d, index=%d, size=%d", bytes.length, index, size));
+      // "\uFFFD" is UTF-8 default replacement string, which illegal byte sequences get replaced
+      // with.
+      if (!s.contains("\uFFFD")) {
+        return s;
       }
+
+      // Since s contains "\uFFFD" there are 2 options:
+      // 1) The byte array slice is invalid UTF-8.
+      // 2) The byte array slice is valid UTF-8 and contains encodings for "\uFFFD".
+      // To rule out (1), we encode s and compare it to the byte array slice.
+      // If the byte array slice was invalid UTF-8, then we would get a different sequence of bytes.
+      if (Arrays.equals(
+          s.getBytes(Internal.UTF_8), Arrays.copyOfRange(bytes, index, index + size))) {
+        return s;
+      }
+
+      throw InvalidProtocolBufferException.invalidUtf8();
     }
 
     @Override

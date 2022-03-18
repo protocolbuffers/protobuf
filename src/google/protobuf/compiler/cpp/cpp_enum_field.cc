@@ -131,11 +131,6 @@ void EnumFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   format("swap($field$, other->$field$);\n");
 }
 
-void EnumFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format("$field$ = $default$;\n");
-}
-
 void EnumFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -158,10 +153,22 @@ void EnumFieldGenerator::GenerateByteSize(io::Printer* printer) const {
       "  ::_pbi::WireFormatLite::EnumSize(this->_internal_$name$());\n");
 }
 
-void EnumFieldGenerator::GenerateConstinitInitializer(
+void EnumFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_($default$)\n");
+  format("/*decltype($field$)*/$default$");
+}
+
+void EnumFieldGenerator::GenerateAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){$default$}");
+}
+
+void EnumFieldGenerator::GenerateCopyAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){}");
 }
 
 // ===================================================================
@@ -336,6 +343,12 @@ void RepeatedEnumFieldGenerator::GenerateConstructorCode(
   // Not needed for repeated fields.
 }
 
+void RepeatedEnumFieldGenerator::GenerateDestructorCode(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("$field$.~RepeatedField();\n");
+}
+
 void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -392,13 +405,36 @@ void RepeatedEnumFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   format("}\n");
 }
 
-void RepeatedEnumFieldGenerator::GenerateConstinitInitializer(
+void RepeatedEnumFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_()");
+  format("/*decltype($field$)*/{}");
   if (descriptor_->is_packed() &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("\n, $cached_byte_size_name$(0)");
+    format("\n, /*decltype($cached_byte_size_field$)*/{0}");
+  }
+}
+
+void RepeatedEnumFieldGenerator::GenerateAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){arena}");
+  if (descriptor_->is_packed() &&
+      HasGeneratedMethods(descriptor_->file(), options_)) {
+    // std::atomic has no copy constructor, which prevents explicit aggregate
+    // initialization pre-C++17.
+    format("\n, /*decltype($cached_byte_size_field$)*/{0}");
+  }
+}
+
+void RepeatedEnumFieldGenerator::GenerateCopyAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){from.$field$}");
+  if (descriptor_->is_packed() &&
+      HasGeneratedMethods(descriptor_->file(), options_)) {
+    // std::atomic has no copy constructor.
+    format("\n, /*decltype($cached_byte_size_field$)*/{0}");
   }
 }
 

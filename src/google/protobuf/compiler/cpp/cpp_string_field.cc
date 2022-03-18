@@ -118,7 +118,7 @@ void StringFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
     //
     // `_init_inline_xxx` is used for initializing default instances.
     format(
-        "union { ::$proto_ns$::internal::InlinedStringField $name$_; };\n"
+        "::$proto_ns$::internal::InlinedStringField $name$_;\n"
         "static std::true_type _init_inline_$name$_;\n");
   }
 }
@@ -522,20 +522,36 @@ void StringFieldGenerator::GenerateByteSize(io::Printer* printer) const {
       "    this->_internal_$name$());\n");
 }
 
-void StringFieldGenerator::GenerateConstinitInitializer(
+void StringFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (inlined_) {
-    format("$name$_(nullptr, false)");
+    format("/*decltype($field$)*/{nullptr, false}");
     return;
   }
   if (descriptor_->default_value_string().empty()) {
     format(
-        "$name$_(&::_pbi::fixed_address_empty_string, "
-        "::_pbi::ConstantInitialized{})");
+        "/*decltype($field$)*/{&::_pbi::fixed_address_empty_string, "
+        "::_pbi::ConstantInitialized{}}");
   } else {
-    format("$name$_(nullptr, ::_pbi::ConstantInitialized{})");
+    format("/*decltype($field$)*/{nullptr, ::_pbi::ConstantInitialized{}}");
   }
+}
+
+void StringFieldGenerator::GenerateAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (!inlined_) {
+    format("decltype($field$){}");
+  } else {
+    format("decltype($field$)(arena)");
+  }
+}
+
+void StringFieldGenerator::GenerateCopyAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){}");
 }
 
 // ===================================================================
@@ -867,6 +883,12 @@ void RepeatedStringFieldGenerator::GenerateSwappingCode(
   format("$field$.InternalSwap(&other->$field$);\n");
 }
 
+void RepeatedStringFieldGenerator::GenerateDestructorCode(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("$field$.~RepeatedPtrField();\n");
+}
+
 void RepeatedStringFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -897,12 +919,6 @@ void RepeatedStringFieldGenerator::GenerateByteSize(
       "::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
       "    $field$.Get(i));\n"
       "}\n");
-}
-
-void RepeatedStringFieldGenerator::GenerateConstinitInitializer(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format("$name$_()");
 }
 
 }  // namespace cpp

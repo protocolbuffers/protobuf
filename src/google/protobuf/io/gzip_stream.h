@@ -47,7 +47,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/port.h>
-#include <zlib.h>
+#include "zlib.h"
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>

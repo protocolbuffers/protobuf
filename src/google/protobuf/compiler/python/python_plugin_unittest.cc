@@ -29,12 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
-//
-// TODO(kenton):  Share code with the versions of this test in other languages?
-//   It seemed like parameterizing it would add more complexity than it is
-//   worth.
 
 #include <memory>
+#include <string>
 
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>

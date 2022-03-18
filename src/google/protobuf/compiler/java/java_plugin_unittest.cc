@@ -29,12 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
-//
-// TODO(kenton):  Share code with the versions of this test in other languages?
-//   It seemed like parameterizing it would add more complexity than it is
-//   worth.
 
 #include <memory>
+#include <string>
 
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
@@ -42,6 +39,7 @@
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -109,6 +107,25 @@ TEST(JavaPluginTest, PluginTest) {
                         test_out.c_str(), "test.proto"};
 
   EXPECT_EQ(0, cli.Run(5, argv));
+
+  // Loop over the lines of the generated code and verify that we find what we
+  // expect
+
+  std::string output;
+  GOOGLE_CHECK_OK(File::GetContents(TestTempDir() + "/Test.java", &output,
+                             true));
+  std::vector<std::string> lines = Split(output, "\n");
+  bool found_generated_annotation = false;
+  bool found_do_not_edit = false;
+  for (const auto& line : lines) {
+    if (line.find(" DO NOT EDIT!") != std::string::npos) {
+      found_do_not_edit = true;
+    }
+    if (line.find("@com.google.protobuf.Generated") != std::string::npos) {
+      found_generated_annotation = true;
+    }
+  }
+  EXPECT_TRUE(found_do_not_edit);
 }
 
 }  // namespace

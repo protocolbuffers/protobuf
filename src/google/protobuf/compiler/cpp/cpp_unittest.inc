@@ -339,19 +339,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, Clear) {
   TestUtil::SetAllFields(&message);
   message.Clear();
   TestUtil::ExpectClear(message);
-
-  // Unlike with the defaults test, we do NOT expect that requesting embedded
-  // messages will return a pointer to the default instance.  Instead, they
-  // should return the objects that were created when mutable_blah() was
-  // called.
-  EXPECT_NE(&UNITTEST::TestAllTypes::OptionalGroup::default_instance(),
-            &message.optionalgroup());
-  EXPECT_NE(&UNITTEST::TestAllTypes::NestedMessage::default_instance(),
-            &message.optional_nested_message());
-  EXPECT_NE(&UNITTEST::ForeignMessage::default_instance(),
-            &message.optional_foreign_message());
-  EXPECT_NE(&UNITTEST_IMPORT::ImportMessage::default_instance(),
-            &message.optional_import_message());
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, EmbeddedNullsInBytesCharStar) {
@@ -503,6 +490,9 @@ TEST(GENERATED_MESSAGE_TEST_NAME, ADLSwap) {
   // Note the address of one of the repeated fields, to verify it was swapped
   // rather than copied.
   const int32_t* addr = &message1.repeated_int32().Get(0);
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+  const int32_t value = *addr;
+#endif
 
   using std::swap;
   swap(message1, message2);
@@ -512,7 +502,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, ADLSwap) {
 
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
   EXPECT_NE(addr, &message2.repeated_int32().Get(0));
-  EXPECT_EQ(*addr, message2.repeated_int32().Get(0));
+  EXPECT_EQ(value, message2.repeated_int32().Get(0));
 #else
   EXPECT_EQ(addr, &message2.repeated_int32().Get(0));
 #endif

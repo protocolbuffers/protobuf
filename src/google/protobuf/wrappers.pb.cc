@@ -22,8 +22,9 @@ namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(
-    ::_pbi::ConstantInitialized)
-  : value_(0){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.value_)*/0
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct DoubleValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DoubleValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -34,8 +35,9 @@ struct DoubleValueDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
 PROTOBUF_CONSTEXPR FloatValue::FloatValue(
-    ::_pbi::ConstantInitialized)
-  : value_(0){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.value_)*/0
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct FloatValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FloatValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -46,8 +48,9 @@ struct FloatValueDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FloatValueDefaultTypeInternal _FloatValue_default_instance_;
 PROTOBUF_CONSTEXPR Int64Value::Int64Value(
-    ::_pbi::ConstantInitialized)
-  : value_(int64_t{0}){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.value_)*/int64_t{0}
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct Int64ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Int64ValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -58,8 +61,9 @@ struct Int64ValueDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
 PROTOBUF_CONSTEXPR UInt64Value::UInt64Value(
-    ::_pbi::ConstantInitialized)
-  : value_(uint64_t{0u}){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.value_)*/uint64_t{0u}
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct UInt64ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UInt64ValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -70,8 +74,9 @@ struct UInt64ValueDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
 PROTOBUF_CONSTEXPR Int32Value::Int32Value(
-    ::_pbi::ConstantInitialized)
-  : value_(0){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.value_)*/0
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct Int32ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Int32ValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -82,8 +87,9 @@ struct Int32ValueDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
 PROTOBUF_CONSTEXPR UInt32Value::UInt32Value(
-    ::_pbi::ConstantInitialized)
-  : value_(0u){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.value_)*/0u
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct UInt32ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UInt32ValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -94,8 +100,9 @@ struct UInt32ValueDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
 PROTOBUF_CONSTEXPR BoolValue::BoolValue(
-    ::_pbi::ConstantInitialized)
-  : value_(false){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.value_)*/false
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct BoolValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR BoolValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -106,8 +113,9 @@ struct BoolValueDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 BoolValueDefaultTypeInternal _BoolValue_default_instance_;
 PROTOBUF_CONSTEXPR StringValue::StringValue(
-    ::_pbi::ConstantInitialized)
-  : value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.value_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct StringValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR StringValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -118,8 +126,9 @@ struct StringValueDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StringValueDefaultTypeInternal _StringValue_default_instance_;
 PROTOBUF_CONSTEXPR BytesValue::BytesValue(
-    ::_pbi::ConstantInitialized)
-  : value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.value_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct BytesValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR BytesValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -141,63 +150,63 @@ const uint32_t TableStruct_google_2fprotobuf_2fwrappers_2eproto::offsets[] PROTO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DoubleValue, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DoubleValue, _impl_.value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FloatValue, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FloatValue, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FloatValue, _impl_.value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Int64Value, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Int64Value, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Int64Value, _impl_.value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::UInt64Value, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::UInt64Value, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::UInt64Value, _impl_.value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Int32Value, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Int32Value, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Int32Value, _impl_.value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::UInt32Value, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::UInt32Value, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::UInt32Value, _impl_.value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::BoolValue, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::BoolValue, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::BoolValue, _impl_.value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::StringValue, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::StringValue, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::StringValue, _impl_.value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::BytesValue, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::BytesValue, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::BytesValue, _impl_.value_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DoubleValue)},
@@ -263,18 +272,28 @@ class DoubleValue::_Internal {
 DoubleValue::DoubleValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DoubleValue)
 }
 DoubleValue::DoubleValue(const DoubleValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  value_ = from.value_;
+  _impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DoubleValue)
 }
 
-inline void DoubleValue::SharedCtor() {
-value_ = 0;
+inline void DoubleValue::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){0}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
 }
 
 DoubleValue::~DoubleValue() {
@@ -291,7 +310,7 @@ inline void DoubleValue::SharedDtor() {
 }
 
 void DoubleValue::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void DoubleValue::Clear() {
@@ -300,7 +319,7 @@ void DoubleValue::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_ = 0;
+  _impl_.value_ = 0;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -313,7 +332,7 @@ const char* DoubleValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* c
       // double value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 9)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
+          _impl_.value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
           ptr += sizeof(double);
         } else
           goto handle_unusual;
@@ -382,7 +401,7 @@ size_t DoubleValue::ByteSizeLong() const {
     total_size += 1 + 8;
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData DoubleValue::_class_data_ = {
@@ -428,7 +447,7 @@ bool DoubleValue::IsInitialized() const {
 void DoubleValue::InternalSwap(DoubleValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(value_, other->value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DoubleValue::GetMetadata() const {
@@ -446,18 +465,28 @@ class FloatValue::_Internal {
 FloatValue::FloatValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FloatValue)
 }
 FloatValue::FloatValue(const FloatValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  value_ = from.value_;
+  _impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FloatValue)
 }
 
-inline void FloatValue::SharedCtor() {
-value_ = 0;
+inline void FloatValue::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){0}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
 }
 
 FloatValue::~FloatValue() {
@@ -474,7 +503,7 @@ inline void FloatValue::SharedDtor() {
 }
 
 void FloatValue::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void FloatValue::Clear() {
@@ -483,7 +512,7 @@ void FloatValue::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_ = 0;
+  _impl_.value_ = 0;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -496,7 +525,7 @@ const char* FloatValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ct
       // float value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 13)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          _impl_.value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
           ptr += sizeof(float);
         } else
           goto handle_unusual;
@@ -565,7 +594,7 @@ size_t FloatValue::ByteSizeLong() const {
     total_size += 1 + 4;
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData FloatValue::_class_data_ = {
@@ -611,7 +640,7 @@ bool FloatValue::IsInitialized() const {
 void FloatValue::InternalSwap(FloatValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(value_, other->value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FloatValue::GetMetadata() const {
@@ -629,18 +658,28 @@ class Int64Value::_Internal {
 Int64Value::Int64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int64Value)
 }
 Int64Value::Int64Value(const Int64Value& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  value_ = from.value_;
+  _impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int64Value)
 }
 
-inline void Int64Value::SharedCtor() {
-value_ = int64_t{0};
+inline void Int64Value::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){int64_t{0}}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
 }
 
 Int64Value::~Int64Value() {
@@ -657,7 +696,7 @@ inline void Int64Value::SharedDtor() {
 }
 
 void Int64Value::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void Int64Value::Clear() {
@@ -666,7 +705,7 @@ void Int64Value::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_ = int64_t{0};
+  _impl_.value_ = int64_t{0};
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -679,7 +718,7 @@ const char* Int64Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ct
       // int64 value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          _impl_.value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -740,7 +779,7 @@ size_t Int64Value::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_value());
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Int64Value::_class_data_ = {
@@ -782,7 +821,7 @@ bool Int64Value::IsInitialized() const {
 void Int64Value::InternalSwap(Int64Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(value_, other->value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Int64Value::GetMetadata() const {
@@ -800,18 +839,28 @@ class UInt64Value::_Internal {
 UInt64Value::UInt64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt64Value)
 }
 UInt64Value::UInt64Value(const UInt64Value& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  value_ = from.value_;
+  _impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt64Value)
 }
 
-inline void UInt64Value::SharedCtor() {
-value_ = uint64_t{0u};
+inline void UInt64Value::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){uint64_t{0u}}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
 }
 
 UInt64Value::~UInt64Value() {
@@ -828,7 +877,7 @@ inline void UInt64Value::SharedDtor() {
 }
 
 void UInt64Value::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void UInt64Value::Clear() {
@@ -837,7 +886,7 @@ void UInt64Value::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_ = uint64_t{0u};
+  _impl_.value_ = uint64_t{0u};
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -850,7 +899,7 @@ const char* UInt64Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* c
       // uint64 value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          _impl_.value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -911,7 +960,7 @@ size_t UInt64Value::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_value());
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData UInt64Value::_class_data_ = {
@@ -953,7 +1002,7 @@ bool UInt64Value::IsInitialized() const {
 void UInt64Value::InternalSwap(UInt64Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(value_, other->value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UInt64Value::GetMetadata() const {
@@ -971,18 +1020,28 @@ class Int32Value::_Internal {
 Int32Value::Int32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int32Value)
 }
 Int32Value::Int32Value(const Int32Value& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  value_ = from.value_;
+  _impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int32Value)
 }
 
-inline void Int32Value::SharedCtor() {
-value_ = 0;
+inline void Int32Value::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){0}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
 }
 
 Int32Value::~Int32Value() {
@@ -999,7 +1058,7 @@ inline void Int32Value::SharedDtor() {
 }
 
 void Int32Value::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void Int32Value::Clear() {
@@ -1008,7 +1067,7 @@ void Int32Value::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_ = 0;
+  _impl_.value_ = 0;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1021,7 +1080,7 @@ const char* Int32Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ct
       // int32 value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          _impl_.value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -1082,7 +1141,7 @@ size_t Int32Value::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_value());
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Int32Value::_class_data_ = {
@@ -1124,7 +1183,7 @@ bool Int32Value::IsInitialized() const {
 void Int32Value::InternalSwap(Int32Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(value_, other->value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Int32Value::GetMetadata() const {
@@ -1142,18 +1201,28 @@ class UInt32Value::_Internal {
 UInt32Value::UInt32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt32Value)
 }
 UInt32Value::UInt32Value(const UInt32Value& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  value_ = from.value_;
+  _impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt32Value)
 }
 
-inline void UInt32Value::SharedCtor() {
-value_ = 0u;
+inline void UInt32Value::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){0u}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
 }
 
 UInt32Value::~UInt32Value() {
@@ -1170,7 +1239,7 @@ inline void UInt32Value::SharedDtor() {
 }
 
 void UInt32Value::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void UInt32Value::Clear() {
@@ -1179,7 +1248,7 @@ void UInt32Value::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_ = 0u;
+  _impl_.value_ = 0u;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1192,7 +1261,7 @@ const char* UInt32Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* c
       // uint32 value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          _impl_.value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -1253,7 +1322,7 @@ size_t UInt32Value::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_value());
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData UInt32Value::_class_data_ = {
@@ -1295,7 +1364,7 @@ bool UInt32Value::IsInitialized() const {
 void UInt32Value::InternalSwap(UInt32Value* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(value_, other->value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UInt32Value::GetMetadata() const {
@@ -1313,18 +1382,28 @@ class BoolValue::_Internal {
 BoolValue::BoolValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BoolValue)
 }
 BoolValue::BoolValue(const BoolValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  value_ = from.value_;
+  _impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BoolValue)
 }
 
-inline void BoolValue::SharedCtor() {
-value_ = false;
+inline void BoolValue::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){false}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
 }
 
 BoolValue::~BoolValue() {
@@ -1341,7 +1420,7 @@ inline void BoolValue::SharedDtor() {
 }
 
 void BoolValue::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void BoolValue::Clear() {
@@ -1350,7 +1429,7 @@ void BoolValue::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_ = false;
+  _impl_.value_ = false;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1363,7 +1442,7 @@ const char* BoolValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx
       // bool value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          _impl_.value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -1424,7 +1503,7 @@ size_t BoolValue::ByteSizeLong() const {
     total_size += 1 + 1;
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData BoolValue::_class_data_ = {
@@ -1466,7 +1545,7 @@ bool BoolValue::IsInitialized() const {
 void BoolValue::InternalSwap(BoolValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(value_, other->value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata BoolValue::GetMetadata() const {
@@ -1484,28 +1563,39 @@ class StringValue::_Internal {
 StringValue::StringValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.StringValue)
 }
 StringValue::StringValue(const StringValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  value_.InitDefault();
+  _impl_.value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    value_.Set("", GetArenaForAllocation());
+    _impl_.value_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_value().empty()) {
-    value_.Set(from._internal_value(), 
+    _impl_.value_.Set(from._internal_value(), 
       GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.StringValue)
 }
 
-inline void StringValue::SharedCtor() {
-value_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  value_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void StringValue::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+  _impl_.value_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.value_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
 StringValue::~StringValue() {
@@ -1519,11 +1609,11 @@ StringValue::~StringValue() {
 
 inline void StringValue::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  value_.Destroy();
+  _impl_.value_.Destroy();
 }
 
 void StringValue::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void StringValue::Clear() {
@@ -1532,7 +1622,7 @@ void StringValue::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_.ClearToEmpty();
+  _impl_.value_.ClearToEmpty();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1614,7 +1704,7 @@ size_t StringValue::ByteSizeLong() const {
         this->_internal_value());
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData StringValue::_class_data_ = {
@@ -1659,8 +1749,8 @@ void StringValue::InternalSwap(StringValue* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &value_, lhs_arena,
-      &other->value_, rhs_arena
+      &_impl_.value_, lhs_arena,
+      &other->_impl_.value_, rhs_arena
   );
 }
 
@@ -1679,28 +1769,39 @@ class BytesValue::_Internal {
 BytesValue::BytesValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BytesValue)
 }
 BytesValue::BytesValue(const BytesValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  value_.InitDefault();
+  _impl_.value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    value_.Set("", GetArenaForAllocation());
+    _impl_.value_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_value().empty()) {
-    value_.Set(from._internal_value(), 
+    _impl_.value_.Set(from._internal_value(), 
       GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BytesValue)
 }
 
-inline void BytesValue::SharedCtor() {
-value_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  value_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void BytesValue::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+  _impl_.value_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.value_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
 BytesValue::~BytesValue() {
@@ -1714,11 +1815,11 @@ BytesValue::~BytesValue() {
 
 inline void BytesValue::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  value_.Destroy();
+  _impl_.value_.Destroy();
 }
 
 void BytesValue::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void BytesValue::Clear() {
@@ -1727,7 +1828,7 @@ void BytesValue::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_.ClearToEmpty();
+  _impl_.value_.ClearToEmpty();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1804,7 +1905,7 @@ size_t BytesValue::ByteSizeLong() const {
         this->_internal_value());
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData BytesValue::_class_data_ = {
@@ -1849,8 +1950,8 @@ void BytesValue::InternalSwap(BytesValue* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &value_, lhs_arena,
-      &other->value_, rhs_arena
+      &_impl_.value_, lhs_arena,
+      &other->_impl_.value_, rhs_arena
   );
 }
 
