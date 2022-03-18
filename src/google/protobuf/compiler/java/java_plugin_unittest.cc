@@ -126,6 +126,7 @@ TEST(JavaPluginTest, PluginTest) {
     }
   }
   EXPECT_TRUE(found_do_not_edit);
+  (void)found_generated_annotation;
 }
 
 }  // namespace
