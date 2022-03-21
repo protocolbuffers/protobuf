@@ -63,7 +63,7 @@ namespace Google.Protobuf
             Assert.AreEqual(message, other);
             Assert.AreEqual(message.CalculateSize(), other.CalculateSize());
         }
-        
+
         [Test]
         public void TryMergeFieldFrom_CodedInputStream()
         {
