@@ -1766,12 +1766,12 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileWithDescriptorSetOut
                  "}\n");
 
   Run("protocol_compiler --dependency_out=$tmpdir/manifest "
-      "--descriptor_set_out=bar.pb --proto_path=$tmpdir bar.proto");
+      "--descriptor_set_out=$tmpdir/bar.pb --proto_path=$tmpdir bar.proto");
 
   ExpectNoErrors();
 
   ExpectFileContent("manifest",
-                    "bar.pb: "
+                    "$tmpdir/bar.pb: "
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 }
 #endif  // !_WIN32
