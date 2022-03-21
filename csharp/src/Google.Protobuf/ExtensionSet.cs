@@ -84,10 +84,18 @@ namespace Google.Protobuf
                 }
                 else
                 {
-                    var storedType = value.GetType().GetTypeInfo().GenericTypeArguments[0];
-                    throw new InvalidOperationException(
-                        "The stored extension value has a type of '" + storedType.AssemblyQualifiedName + "'. " +
-                        "This a different from the requested type of '" + typeof(TValue).AssemblyQualifiedName + "'.");
+                    var valueType = value.GetType().GetTypeInfo();
+                    if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(ExtensionValue<>))
+                    {
+                        var storedType = valueType.GenericTypeArguments[0];
+                        throw new InvalidOperationException(
+                            "The stored extension value has a type of '" + storedType.AssemblyQualifiedName + "'. " +
+                            "This a different from the requested type of '" + typeof(TValue).AssemblyQualifiedName + "'.");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unexpected extension value type: " + valueType.AssemblyQualifiedName);
+                    }
                 }
             }
             else 
