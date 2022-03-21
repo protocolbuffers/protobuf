@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
 
@@ -81,7 +82,7 @@ namespace Google.Protobuf
         }
 
         [Test]
-        public void GetExtension()
+        public void GetSingle()
         {
             var extensionValue = new TestAllTypes.Types.NestedMessage() { Bb = 42 };
             var untypedExtension = new Extension<TestAllExtensions, object>(OptionalNestedMessageExtension.FieldNumber, codec: null);
@@ -97,6 +98,36 @@ namespace Google.Protobuf
             Assert.IsNotNull(value2);
 
             var valueBytes = ((IMessage)value2).ToByteArray();
+            var parsedValue = TestProtos.Proto2.TestAllTypes.Types.NestedMessage.Parser.ParseFrom(valueBytes);
+            Assert.AreEqual(extensionValue, parsedValue);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => message.GetExtension(wrongTypedExtension));
+
+            var expectedMessage = "The stored extension value has a type of 'Google.Protobuf.TestProtos.Proto2.TestAllTypes+Types+NestedMessage, Google.Protobuf.Test.TestProtos, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604'. " +
+                "This a different from the requested type of 'Google.Protobuf.TestProtos.Proto2.TestAllTypes, Google.Protobuf.Test.TestProtos, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604'.";
+            Assert.AreEqual(expectedMessage, ex.Message);
+        }
+
+        [Test]
+        public void GetRepeated()
+        {
+            var extensionValue = new TestAllTypes.Types.NestedMessage() { Bb = 42 };
+            var untypedExtension = new Extension<TestAllExtensions, IList>(RepeatedNestedMessageExtension.FieldNumber, codec: null);
+            var wrongTypedExtension = new RepeatedExtension<TestAllExtensions, TestAllTypes>(RepeatedNestedMessageExtension.FieldNumber, codec: null);
+
+            var message = new TestAllExtensions();
+
+            var value1 = message.GetExtension(untypedExtension);
+            Assert.IsNull(value1);
+
+            var repeatedField = message.GetOrInitializeExtension<TestAllTypes.Types.NestedMessage>(RepeatedNestedMessageExtension);
+            repeatedField.Add(extensionValue);
+
+            var value2 = message.GetExtension(untypedExtension);
+            Assert.IsNotNull(value2);
+            Assert.AreEqual(1, value2.Count);
+
+            var valueBytes = ((IMessage)value2[0]).ToByteArray();
             var parsedValue = TestProtos.Proto2.TestAllTypes.Types.NestedMessage.Parser.ParseFrom(valueBytes);
             Assert.AreEqual(extensionValue, parsedValue);
 

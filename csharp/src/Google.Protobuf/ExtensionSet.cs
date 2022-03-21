@@ -112,7 +112,25 @@ namespace Google.Protobuf
             IExtensionValue value;
             if (TryGetValue(ref set, extension, out value))
             {
-                return ((RepeatedExtensionValue<TValue>)value).GetValue();
+                if (value is RepeatedExtensionValue<TValue> extensionValue)
+                {
+                    return extensionValue.GetValue();
+                }
+                else
+                {
+                    var valueType = value.GetType().GetTypeInfo();
+                    if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(RepeatedExtensionValue<>))
+                    {
+                        var storedType = valueType.GenericTypeArguments[0];
+                        throw new InvalidOperationException(
+                            "The stored extension value has a type of '" + storedType.AssemblyQualifiedName + "'. " +
+                            "This a different from the requested type of '" + typeof(TValue).AssemblyQualifiedName + "'.");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unexpected extension value type: " + valueType.AssemblyQualifiedName);
+                    }
+                }
             }
             else 
             {
