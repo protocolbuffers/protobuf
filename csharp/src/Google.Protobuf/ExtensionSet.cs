@@ -34,6 +34,7 @@ using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security;
 
 namespace Google.Protobuf
@@ -63,17 +64,30 @@ namespace Google.Protobuf
             IExtensionValue value;
             if (TryGetValue(ref set, extension, out value))
             {
-                if (value is ExtensionValue<TValue> genericValue)
+                // The stored ExtensionValue can be a different type to what is being requested.
+                // This happens when the same extension proto is compiled in different assemblies.
+                // To allow consuming assemblies to still get the value when the TValue type is
+                // different, this get method:
+                // 1. Attempts to cast the value to the expected ExtensionValue<TValue>.
+                //    This is the usual case. It is used first because it avoids possibly boxing the value.
+                // 2. Fallback to get the value as object from IExtensionValue then casting.
+                //    This allows for someone to specify a TValue of object. They can then convert
+                //    the values to bytes and reparse using expected value.
+                // 3. If neither of these work, throw a user friendly error that the types aren't compatible.
+                if (value is ExtensionValue<TValue> extensionValue)
                 {
-                    return genericValue.GetValue();
+                    return extensionValue.GetValue();
                 }
-                else if (value.GetValue() is TValue v)
+                else if (value.GetValue() is TValue underlyingValue)
                 {
-                    return v;
+                    return underlyingValue;
                 }
                 else
                 {
-                    throw new Exception("**unknown**");
+                    var storedType = value.GetType().GetTypeInfo().GenericTypeArguments[0];
+                    throw new InvalidOperationException(
+                        "The stored extension value has a type of '" + storedType.AssemblyQualifiedName + "'. " +
+                        "This a different from the requested type of '" + typeof(TValue).AssemblyQualifiedName + "'.");
                 }
             }
             else 
