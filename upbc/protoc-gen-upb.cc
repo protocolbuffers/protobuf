@@ -97,6 +97,7 @@ const char* kMessagesInit = "messages_layout";
 
 void AddEnums(const protobuf::Descriptor* message,
               std::vector<const protobuf::EnumDescriptor*>* enums) {
+  enums->reserve(enums->size() + message->enum_type_count());
   for (int i = 0; i < message->enum_type_count(); i++) {
     enums->push_back(message->enum_type(i));
   }
