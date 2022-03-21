@@ -161,9 +161,8 @@ class MessageGenerator {
   void GenerateFieldClear(const FieldDescriptor* field, bool is_inline,
                           Formatter format);
 
-  void GenerateConstructorBody(io::Printer* printer,
-                               std::vector<bool> already_processed,
-                               bool copy_constructor) const;
+  // Generates the body of the message's copy constructor.
+  void GenerateCopyConstructorBody(io::Printer* printer) const;
 
   // Returns the level that this message needs ArenaDtor. If the message has
   // a field that is not arena-exclusive, it needs an ArenaDtor

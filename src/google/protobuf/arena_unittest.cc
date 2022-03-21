@@ -41,17 +41,17 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_arena.pb.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/extension_set.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>

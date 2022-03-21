@@ -67,13 +67,16 @@ class MessageFieldGenerator : public FieldGenerator {
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateDestructorCode(io::Printer* printer) const override;
-  void GenerateConstructorCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override {}
   void GenerateCopyConstructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
   void GenerateIsInitialized(io::Printer* printer) const override;
-  void GenerateConstinitInitializer(io::Printer* printer) const override;
+  void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
+  void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
 
  protected:
   const bool implicit_weak_field_;
@@ -124,11 +127,11 @@ class RepeatedMessageFieldGenerator : public FieldGenerator {
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateCopyConstructorCode(io::Printer* printer) const override {}
+  void GenerateDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
   void GenerateIsInitialized(io::Printer* printer) const override;
-  void GenerateConstinitInitializer(io::Printer* printer) const override;
 
  private:
   const bool implicit_weak_field_;

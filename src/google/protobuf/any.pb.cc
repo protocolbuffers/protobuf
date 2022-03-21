@@ -26,10 +26,11 @@ namespace _pbi = _pb::internal;
 #endif  // __llvm__
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_CONSTEXPR Any::Any(
-    ::_pbi::ConstantInitialized)
-  : type_url_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
-  , value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
-  , _any_metadata_(&type_url_, &value_){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.type_url_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.value_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_._cached_size_)*/{}
+  , /*decltype(_impl_._any_metadata_)*/{&_impl_.type_url_, &_impl_.value_}} {}
 struct AnyDefaultTypeInternal {
   PROTOBUF_CONSTEXPR AnyDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -51,8 +52,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fany_2eproto::offsets[] PROTOBUF_S
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, type_url_),
-  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, value_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, _impl_.type_url_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, _impl_.value_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Any)},
@@ -108,43 +109,56 @@ class Any::_Internal {
 
 Any::Any(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
-  _any_metadata_(&type_url_, &value_) {
-  SharedCtor();
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
 }
 Any::Any(const Any& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _any_metadata_(&type_url_, &value_) {
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  new (&_impl_) Impl_{
+      decltype(_impl_.type_url_){}
+    , decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , /*decltype(_impl_._any_metadata_)*/{&_impl_.type_url_, &_impl_.value_}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  type_url_.InitDefault();
+  _impl_.type_url_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    type_url_.Set("", GetArenaForAllocation());
+    _impl_.type_url_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_type_url().empty()) {
-    type_url_.Set(from._internal_type_url(), 
+    _impl_.type_url_.Set(from._internal_type_url(), 
       GetArenaForAllocation());
   }
-  value_.InitDefault();
+  _impl_.value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    value_.Set("", GetArenaForAllocation());
+    _impl_.value_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_value().empty()) {
-    value_.Set(from._internal_value(), 
+    _impl_.value_.Set(from._internal_value(), 
       GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
 }
 
-inline void Any::SharedCtor() {
-type_url_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  type_url_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-value_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  value_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+inline void Any::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.type_url_){}
+    , decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , /*decltype(_impl_._any_metadata_)*/{&_impl_.type_url_, &_impl_.value_}
+  };
+  _impl_.type_url_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.type_url_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.value_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.value_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
 Any::~Any() {
@@ -158,12 +172,13 @@ Any::~Any() {
 
 inline void Any::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  type_url_.Destroy();
-  value_.Destroy();
+  _impl_.type_url_.Destroy();
+  _impl_.value_.Destroy();
+  _impl_._any_metadata_.~AnyMetadata();
 }
 
 void Any::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void Any::Clear() {
@@ -172,8 +187,8 @@ void Any::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  type_url_.ClearToEmpty();
-  value_.ClearToEmpty();
+  _impl_.type_url_.ClearToEmpty();
+  _impl_.value_.ClearToEmpty();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -277,7 +292,7 @@ size_t Any::ByteSizeLong() const {
         this->_internal_value());
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Any::_class_data_ = {
@@ -325,12 +340,12 @@ void Any::InternalSwap(Any* other) {
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &type_url_, lhs_arena,
-      &other->type_url_, rhs_arena
+      &_impl_.type_url_, lhs_arena,
+      &other->_impl_.type_url_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &value_, lhs_arena,
-      &other->value_, rhs_arena
+      &_impl_.value_, lhs_arena,
+      &other->_impl_.value_, rhs_arena
   );
 }
 

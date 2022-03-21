@@ -49,12 +49,17 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/file.h>
-#include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/test_util2.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <gmock/gmock.h>
+#include <google/protobuf/testing/googletest.h>
+#include <gtest/gtest.h>
+#include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
@@ -67,11 +72,6 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/util/time_util.h>
-#include <gmock/gmock.h>
-#include <google/protobuf/testing/googletest.h>
-#include <gtest/gtest.h>
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/stubs/substitute.h>
 
 
 // Must be included last.
@@ -3625,13 +3625,17 @@ TEST(TextFormatMapTest, Sorted) {
                         &expected_text, true));
 
   CleanStringLineEndings(&expected_text, false);
-  EXPECT_EQ(message.DebugString(), expected_text);
+  TextFormat::Printer printer;
+  std::string actual_text;
+  printer.PrintToString(message, &actual_text);
+  EXPECT_EQ(actual_text, expected_text);
 
   // Test again on the reverse order.
   UNITTEST::TestMap message2;
   tester.SetMapFieldsViaReflection(&message2);
   tester.SwapMapsViaReflection(&message2);
-  EXPECT_EQ(message2.DebugString(), expected_text);
+  printer.PrintToString(message2, &actual_text);
+  EXPECT_EQ(actual_text, expected_text);
 }
 
 TEST(TextFormatMapTest, ParseCorruptedString) {

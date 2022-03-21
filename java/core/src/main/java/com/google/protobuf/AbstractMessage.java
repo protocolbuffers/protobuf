@@ -94,13 +94,13 @@ public abstract class AbstractMessage
     return MessageReflection.delimitWithCommas(findInitializationErrors());
   }
 
-  /** TODO(jieluo): Clear it when all subclasses have implemented this method. */
+  // TODO(jieluo): Clear it when all subclasses have implemented this method.
   @Override
   public boolean hasOneof(OneofDescriptor oneof) {
     throw new UnsupportedOperationException("hasOneof() is not implemented.");
   }
 
-  /** TODO(jieluo): Clear it when all subclasses have implemented this method. */
+  // TODO(jieluo): Clear it when all subclasses have implemented this method.
   @Override
   public FieldDescriptor getOneofFieldDescriptor(OneofDescriptor oneof) {
     throw new UnsupportedOperationException("getOneofFieldDescriptor() is not implemented.");

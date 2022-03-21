@@ -34,14 +34,14 @@
 #include <list>
 #include <string>
 
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/util/internal/testdata/maps.pb.h>
 #include <google/protobuf/util/json_format.pb.h>
 #include <google/protobuf/util/json_format_proto3.pb.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/descriptor_database.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
 

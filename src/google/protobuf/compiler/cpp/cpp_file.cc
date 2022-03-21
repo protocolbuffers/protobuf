@@ -510,7 +510,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
       // Force the initialization of the inlined string in the default instance.
       format(
           "PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 std::true_type "
-          "$1$::_init_inline_$2$_ = "
+          "$1$::Impl_::_init_inline_$2$_ = "
           "($3$._instance.$4$.Init(), std::true_type{});\n",
           ClassName(generator->descriptor_), FieldName(field),
           DefaultInstanceName(generator->descriptor_, options_),

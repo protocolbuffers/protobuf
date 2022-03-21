@@ -89,6 +89,7 @@ void SetCommonVars(const Options& options,
 
 // Variables to access message data from the message scope.
 void SetCommonMessageDataVariables(
+    const Descriptor* descriptor,
     std::map<std::string, std::string>* variables);
 
 void SetUnknownFieldsVariable(const Descriptor* descriptor,
@@ -485,8 +486,8 @@ inline bool IsCrossFileMessage(const FieldDescriptor* field) {
 }
 
 inline std::string MakeDefaultName(const FieldDescriptor* field) {
-  return "_i_give_permission_to_break_this_code_default_" + FieldName(field) +
-         "_";
+  return StrCat("_i_give_permission_to_break_this_code_default_",
+                      FieldName(field), "_");
 }
 
 // Semantically distinct from MakeDefaultName in that it gives the C++ code
@@ -500,7 +501,7 @@ inline std::string MakeDefaultName(const FieldDescriptor* field) {
 // exists at some nested level like:
 //   internal_container_._i_give_permission_to_break_this_code_default_field_;
 inline std::string MakeDefaultFieldName(const FieldDescriptor* field) {
-  return MakeDefaultName(field);
+  return StrCat("Impl_::", MakeDefaultName(field));
 }
 
 inline std::string MakeVarintCachedSizeName(const FieldDescriptor* field) {
@@ -519,7 +520,7 @@ inline std::string MakeVarintCachedSizeName(const FieldDescriptor* field) {
 // like:
 //   internal_container_._field_cached_byte_size_;
 inline std::string MakeVarintCachedSizeFieldName(const FieldDescriptor* field) {
-  return StrCat("_", FieldName(field), "_cached_byte_size_");
+  return StrCat("_impl_._", FieldName(field), "_cached_byte_size_");
 }
 
 // Note: A lot of libraries detect Any protos based on Descriptor::full_name()
@@ -1011,10 +1012,18 @@ PROTOC_EXPORT std::string StripProto(const std::string& filename);
 
 bool EnableMessageOwnedArena(const Descriptor* desc, const Options& options);
 
+bool EnableMessageOwnedArenaTrial(const Descriptor* desc,
+                                  const Options& options);
+
 bool ShouldVerify(const Descriptor* descriptor, const Options& options,
                   MessageSCCAnalyzer* scc_analyzer);
 bool ShouldVerify(const FileDescriptor* file, const Options& options,
                   MessageSCCAnalyzer* scc_analyzer);
+
+bool ShouldVerifySimple(const Descriptor* descriptor);
+
+bool IsUtf8String(const FieldDescriptor* field);
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

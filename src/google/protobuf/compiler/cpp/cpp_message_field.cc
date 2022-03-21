@@ -157,8 +157,7 @@ void MessageFieldGenerator::GenerateAccessorDeclarations(
 }
 
 void MessageFieldGenerator::GenerateNonInlineAccessorDefinitions(
-    io::Printer* printer) const {
-}
+    io::Printer* printer) const {}
 
 void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
@@ -438,14 +437,6 @@ void MessageFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   format("delete $field$;\n");
 }
 
-void MessageFieldGenerator::GenerateConstructorCode(
-    io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
-
-  Formatter format(printer, variables_);
-  format("$field$ = nullptr;\n");
-}
-
 void MessageFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
   GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
@@ -454,8 +445,6 @@ void MessageFieldGenerator::GenerateCopyConstructorCode(
   format(
       "if (from._internal_has_$name$()) {\n"
       "  $field$ = new $type$(*from.$field$);\n"
-      "} else {\n"
-      "  $field$ = nullptr;\n"
       "}\n");
 }
 
@@ -500,10 +489,22 @@ void MessageFieldGenerator::GenerateIsInitialized(io::Printer* printer) const {
       "}\n");
 }
 
-void MessageFieldGenerator::GenerateConstinitInitializer(
+void MessageFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_(nullptr)");
+  format("/*decltype($field$)*/nullptr");
+}
+
+void MessageFieldGenerator::GenerateCopyAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){nullptr}");
+}
+
+void MessageFieldGenerator::GenerateAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("decltype($field$){nullptr}");
 }
 
 // ===================================================================
@@ -846,6 +847,18 @@ void RepeatedMessageFieldGenerator::GenerateConstructorCode(
   // Not needed for repeated fields.
 }
 
+void RepeatedMessageFieldGenerator::GenerateDestructorCode(
+    io::Printer* printer) const {
+  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+
+  Formatter format(printer, variables_);
+  if (implicit_weak_field_) {
+    format("$field$.~WeakRepeatedPtrField();\n");
+  } else {
+    format("$field$.~RepeatedPtrField();\n");
+  }
+}
+
 void RepeatedMessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
   GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
@@ -920,12 +933,6 @@ void RepeatedMessageFieldGenerator::GenerateIsInitialized(
         "if (!::$proto_ns$::internal::AllAreInitialized($field$))\n"
         "  return false;\n");
   }
-}
-
-void RepeatedMessageFieldGenerator::GenerateConstinitInitializer(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format("$name$_()");
 }
 
 }  // namespace cpp
