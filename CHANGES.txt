@@ -2,8 +2,11 @@
 
   Ruby
   * Dropped Ruby 2.3 and 2.4 support for CI and releases. (#9311)
-  * Message.decode/encode: Add max_recursion_depth option (#9218)
-  * Rename max_recursion_depth to recursion_limit (#9486)
+  * Added Ruby 3.1 support for CI and releases (#9566).
+  * Message.decode/encode: Add recursion_limit option (#9218/#9486)
+  * Allocate with xrealloc()/xfree() so message allocation is visible to the
+    Ruby GC.  In certain tests this leads to much lower memory usage due to more
+    frequent GC runs (#9586).
   * Fix conversion of singleton classes in Ruby (#9342)
   * Suppress warning for intentional circular require (#9556)
   * JSON will now output shorter strings for double and float fields when possible
