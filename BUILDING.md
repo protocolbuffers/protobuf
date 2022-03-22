@@ -9,7 +9,7 @@ Given the right tools, this project can be built on Linux, Mac OS X, or Windows 
 Likely incomplete
 
 * git
-* JDK 8 or JDK 11. JDK 17 probably doesn't work.
+* JDK 8 or JDK 11.
 * bazel
 * clang
 
