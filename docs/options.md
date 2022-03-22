@@ -304,3 +304,8 @@ with info about your project (name and website) so we can add an entry for you.
 1. Embedded Proto
    * Website: https://EmbeddedProto.com
    * Extension: 1141
+
+1. Protoc-gen-fieldmask
+   * Website: https://github.com/yeqown/protoc-gen-fieldmask
+   * Extension: 1142
+ 

@@ -36,6 +36,9 @@
 
 #include <google/protobuf/stubs/common.h>
 
+// Must be last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 class Descriptor;
@@ -150,5 +153,7 @@ class ClassNameResolver {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_NAME_RESOLVER_H__

@@ -40,16 +40,15 @@ Simple usage example:
 
 
 from google.protobuf.internal import api_implementation
-from google.protobuf.internal import decoder
-from google.protobuf.internal import wire_format
+if api_implementation.Type() == 'cpp':
+  from google.protobuf.pyext import _message  # pylint: disable=g-import-not-at-top
+else:
+  from google.protobuf.internal import decoder  # pylint: disable=g-import-not-at-top
+  from google.protobuf.internal import wire_format  # pylint: disable=g-import-not-at-top
 
 if api_implementation.Type() == 'cpp':
 
-  def UnknownFieldSet(msg):
-    # New UnknownFieldSet in cpp extension has not implemented yet. Fall
-    # back to old API
-    # TODO(jieluo): Add UnknownFieldSet for cpp extension.
-    return msg.UnknownFields()
+  UnknownFieldSet = _message.UnknownFieldSet
 
 else:
   class UnknownField:

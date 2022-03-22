@@ -359,7 +359,7 @@ public class GeneratedMessageTest {
 
   @Test
   public void testParsedMessagesAreImmutable() throws Exception {
-    TestAllTypes value = TestAllTypes.parser().parseFrom(TestUtil.getAllSet().toByteString());
+    TestAllTypes value = TestAllTypes.parseFrom(TestUtil.getAllSet().toByteString());
     assertIsUnmodifiable(value.getRepeatedInt32List());
     assertIsUnmodifiable(value.getRepeatedInt64List());
     assertIsUnmodifiable(value.getRepeatedUint32List());

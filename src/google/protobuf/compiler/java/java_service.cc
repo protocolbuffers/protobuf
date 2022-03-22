@@ -41,6 +41,9 @@
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 
+// Must be last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -472,3 +475,5 @@ void ImmutableServiceGenerator::GenerateBlockingMethodSignature(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

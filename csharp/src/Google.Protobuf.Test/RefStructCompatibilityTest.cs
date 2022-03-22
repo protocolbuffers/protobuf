@@ -60,7 +60,7 @@ namespace Google.Protobuf
 
             var currentAssemblyDir = Path.GetDirectoryName(typeof(RefStructCompatibilityTest).GetTypeInfo().Assembly.Location);
             var testProtosProjectDir = Path.GetFullPath(Path.Combine(currentAssemblyDir, "..", "..", "..", "..", "Google.Protobuf.Test.TestProtos"));
-            var testProtosOutputDir = (currentAssemblyDir.Contains("bin/Debug/") || currentAssemblyDir.Contains("bin\\Debug\\")) ? "bin\\Debug\\net45" : "bin\\Release\\net45";
+            var testProtosOutputDir = (currentAssemblyDir.Contains("bin/Debug/") || currentAssemblyDir.Contains("bin\\Debug\\")) ? "bin\\Debug\\net462" : "bin\\Release\\net462";
 
             // If "ref struct" types are used in the generated code, compilation with an old compiler will fail with the following error:
             // "XYZ is obsolete: 'Types with embedded references are not supported in this version of your compiler.'"

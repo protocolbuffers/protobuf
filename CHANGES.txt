@@ -1,3 +1,18 @@
+Unreleased Changes
+
+C++
+  * Refactor generated message class layout
+  * Optimize tokenizer ParseInteger by removing division
+  * Reserve exactly the right amount of capacity in ExtensionSet::MergeFrom
+
+Java
+  * 6x speedup in ArrayEncoder.writeUInt32NotTag
+
+Python
+  * Added UnknownFieldSet(message) for pure Python. The old
+    message.UnknownFields() will be deprecated after UnknownFieldSet(message) is
+    added for cpp extension.
+
 2022-03-04 version 3.20.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Ruby
