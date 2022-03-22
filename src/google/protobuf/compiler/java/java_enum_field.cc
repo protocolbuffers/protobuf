@@ -48,6 +48,9 @@
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 
+// Must be last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -859,7 +862,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
-                                          LIST_INDEXED_GETTER,
+                                          LIST_INDEXED_SETTER,
                                           /* builder */ true);
     printer->Print(
         variables_,
@@ -1174,3 +1177,5 @@ std::string RepeatedImmutableEnumFieldGenerator::GetBoxedType() const {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

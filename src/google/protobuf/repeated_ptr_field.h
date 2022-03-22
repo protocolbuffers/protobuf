@@ -749,7 +749,7 @@ class GenericTypeHandler {
   static inline GenericType* New(Arena* arena, GenericType&& value) {
     return Arena::Create<GenericType>(arena, std::move(value));
   }
-  static inline GenericType* NewFromPrototype(const GenericType* prototype,
+  static inline GenericType* NewFromPrototype(const GenericType* /*prototype*/,
                                               Arena* arena = nullptr) {
     return New(arena);
   }

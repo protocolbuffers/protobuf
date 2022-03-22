@@ -72,7 +72,6 @@
 #undef PROTOBUF_NAMESPACE_CLOSE
 #undef PROTOBUF_UNUSED
 #undef PROTOBUF_ASSUME
-#undef PROTOBUF_HAS_BUILTIN_MUL_OVERFLOW
 #undef PROTOBUF_EXPORT_TEMPLATE_DECLARE
 #undef PROTOBUF_EXPORT_TEMPLATE_DEFINE
 #undef PROTOBUF_ALIGNAS
@@ -112,6 +111,7 @@
 #pragma pop_macro("ERROR_BUSY")
 #pragma pop_macro("ERROR_INSTALL_FAILED")
 #pragma pop_macro("ERROR_NOT_FOUND")
+#pragma pop_macro("GetClassName")
 #pragma pop_macro("GetMessage")
 #pragma pop_macro("IGNORE")
 #pragma pop_macro("IN")
