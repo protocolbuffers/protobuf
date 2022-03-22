@@ -1,0 +1,27 @@
+# Building Protocol Buffers
+
+These are instructions for building the open source release of protobuf from source.
+
+Given the right tools, this project can be built on Linux, Mac OS X, or Windows though Linux is by far the most commonly used and best tested platform.
+
+## Prerequisites
+
+Likely incomplete
+
+* git
+* JDK 8 or JDK 11. JDK 17 probably doesn't work.
+* bazel
+* clang
+
+
+## Detailed instructions
+
+1. `$ git clone git@github.com:protocolbuffers/protobuf.git`
+1. `$ cd protobuf`
+1. `$ git clean -xfd .` (Important for cleaning up after previous builds.)
+1. `$ bazel build //...`
+
+Now run the tests:
+
+
+1. `$ bazel test //...`
