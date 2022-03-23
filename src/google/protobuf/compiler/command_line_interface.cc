@@ -2209,6 +2209,10 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     }
   }
 
+  if(!descriptor_set_out_name_.empty()) {
+    output_filenames.push_back(descriptor_set_out_name_);
+  }
+
   int fd;
   do {
     fd = open(dependency_out_name_.c_str(),
