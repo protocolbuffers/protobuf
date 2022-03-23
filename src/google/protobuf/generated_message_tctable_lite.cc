@@ -580,6 +580,35 @@ const char* TcParser::FastF64P2(PROTOBUF_TC_PARAM_DECL) {
 
 namespace {
 
+// Shift "byte" left by n * 7 bits, filling vacated bits with ones.
+template <int n>
+inline PROTOBUF_ALWAYS_INLINE uint64_t
+shift_left_fill_with_ones(uint64_t byte, uint64_t ones) {
+  return (byte << (n * 7)) | (ones >> (64 - (n * 7)));
+}
+
+// Shift "byte" left by n * 7 bits, filling vacated bits with ones, and
+// put the new value in res.  Return whether the result was negative.
+template <int n>
+inline PROTOBUF_ALWAYS_INLINE bool shift_left_fill_with_ones_was_negative(
+    uint64_t byte, uint64_t ones, int64_t& res) {
+#if defined(__GCC_ASM_FLAG_OUTPUTS__) && defined(__x86_64__)
+  // For the first two rounds (ptr[1] and ptr[2]), micro benchmarks show a
+  // substantial improvement from capturing the sign from the condition code
+  // register on x86-64.
+  bool sign_bit;
+  asm("shldq %3, %2, %1"
+      : "=@ccs"(sign_bit), "+r"(byte)
+      : "r"(ones), "i"(n * 7));
+  res = byte;
+  return sign_bit;
+#else
+  // Generic fallback:
+  res = (byte << (n * 7)) | (ones >> (64 - (n * 7)));
+  return static_cast<int64_t>(res) < 0;
+#endif
+}
+
 inline PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint64_t>
 Parse64FallbackPair(const char* p, int64_t res1) {
   auto ptr = reinterpret_cast<const int8_t*>(p);
@@ -601,78 +630,42 @@ Parse64FallbackPair(const char* p, int64_t res1) {
   // has 57 high bits of ones, which is enough for the largest shift done.
   GOOGLE_DCHECK_EQ(res1 >> 7, -1);
   uint64_t ones = res1;  // save the high 1 bits from res1 (input to SHLD)
-  uint64_t byte;         // the "next" 7-bit chunk, shifted (result from SHLD)
   int64_t res2, res3;    // accumulated result chunks
-#define SHLD(n) byte = ((byte << (n * 7)) | (ones >> (64 - (n * 7))))
 
-  int sign_bit;
-#if defined(__GCC_ASM_FLAG_OUTPUTS__) && defined(__x86_64__)
-  // For the first two rounds (ptr[1] and ptr[2]), micro benchmarks show a
-  // substantial improvement from capturing the sign from the condition code
-  // register on x86-64.
-#define SHLD_SIGN(n)                  \
-  asm("shldq %3, %2, %1"              \
-      : "=@ccs"(sign_bit), "+r"(byte) \
-      : "r"(ones), "i"(n * 7))
-#else
-  // Generic fallback:
-#define SHLD_SIGN(n)                           \
-  do {                                         \
-    SHLD(n);                                   \
-    sign_bit = static_cast<int64_t>(byte) < 0; \
-  } while (0)
-#endif
-
-  byte = ptr[1];
-  SHLD_SIGN(1);
-  res2 = byte;
-  if (!sign_bit) goto done2;
-  byte = ptr[2];
-  SHLD_SIGN(2);
-  res3 = byte;
-  if (!sign_bit) goto done3;
-
-#undef SHLD_SIGN
+  if (!shift_left_fill_with_ones_was_negative<1>(ptr[1], ones, res2))
+    goto done2;
+  if (!shift_left_fill_with_ones_was_negative<2>(ptr[2], ones, res3))
+    goto done3;
 
   // For the remainder of the chunks, check the sign of the AND result.
-  byte = ptr[3];
-  SHLD(3);
-  res1 &= byte;
+  res1 &= shift_left_fill_with_ones<3>(ptr[3], ones);
   if (res1 >= 0) goto done4;
-  byte = ptr[4];
-  SHLD(4);
-  res2 &= byte;
+  res2 &= shift_left_fill_with_ones<4>(ptr[4], ones);
   if (res2 >= 0) goto done5;
-  byte = ptr[5];
-  SHLD(5);
-  res3 &= byte;
+  res3 &= shift_left_fill_with_ones<5>(ptr[5], ones);
   if (res3 >= 0) goto done6;
-  byte = ptr[6];
-  SHLD(6);
-  res1 &= byte;
+  res1 &= shift_left_fill_with_ones<6>(ptr[6], ones);
   if (res1 >= 0) goto done7;
-  byte = ptr[7];
-  SHLD(7);
-  res2 &= byte;
+  res2 &= shift_left_fill_with_ones<7>(ptr[7], ones);
   if (res2 >= 0) goto done8;
-  byte = ptr[8];
-  SHLD(8);
-  res3 &= byte;
+  res3 &= shift_left_fill_with_ones<8>(ptr[8], ones);
   if (res3 >= 0) goto done9;
-
-#undef SHLD
 
   // For valid 64bit varints, the 10th byte/ptr[9] should be exactly 1. In this
   // case, the continuation bit of ptr[8] already set the top bit of res3
   // correctly, so all we have to do is check that the expected case is true.
-  byte = ptr[9];
-  if (PROTOBUF_PREDICT_TRUE(byte == 1)) goto done10;
+  if (PROTOBUF_PREDICT_TRUE(ptr[9] == 1)) goto done10;
 
   // A value of 0, however, represents an over-serialized varint. This case
   // should not happen, but if does (say, due to a nonconforming serializer),
   // deassert the continuation bit that came from ptr[8].
-  if (byte == 0) {
+  if (ptr[9] == 0) {
+#if defined(__GCC_ASM_FLAG_OUTPUTS__) && defined(__x86_64__)
+    // Use a small instruction since this is an uncommon code path.
+    asm("btcq $63,%0" : "+r"(res3));
+#else
     res3 ^= static_cast<uint64_t>(1) << 63;
+#endif
     goto done10;
   }
 
@@ -680,18 +673,24 @@ Parse64FallbackPair(const char* p, int64_t res1) {
   // fit in 64 bits. If the continue bit is set, it is an unterminated varint.
   return {nullptr, 0};
 
-#define DONE(n) done##n : return {p + n, res1 & res2 & res3};
 done2:
   return {p + 2, res1 & res2};
-  DONE(3)
-  DONE(4)
-  DONE(5)
-  DONE(6)
-  DONE(7)
-  DONE(8)
-  DONE(9)
-  DONE(10)
-#undef DONE
+done3:
+  return {p + 3, res1 & res2 & res3};
+done4:
+  return {p + 4, res1 & res2 & res3};
+done5:
+  return {p + 5, res1 & res2 & res3};
+done6:
+  return {p + 6, res1 & res2 & res3};
+done7:
+  return {p + 7, res1 & res2 & res3};
+done8:
+  return {p + 8, res1 & res2 & res3};
+done9:
+  return {p + 9, res1 & res2 & res3};
+done10:
+  return {p + 10, res1 & res2 & res3};
 }
 
 inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,

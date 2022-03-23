@@ -36,6 +36,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_PYTHON_PYI_GENERATOR_H__
 
 #include <map>
+#include <set>
 #include <string>
 
 #include <google/protobuf/stubs/mutex.h>
@@ -65,26 +66,41 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   ~PyiGenerator() override;
 
   // CodeGenerator methods.
+  uint64_t GetSupportedFeatures() const override {
+    // Code generators must explicitly support proto3 optional.
+    return CodeGenerator::FEATURE_PROTO3_OPTIONAL;
+  }
   bool Generate(const FileDescriptor* file, const std::string& parameter,
                 GeneratorContext* generator_context,
                 std::string* error) const override;
 
  private:
-  void PrintImports(std::map<std::string, std::string>* item_map) const;
+  void PrintImportForDescriptor(const FileDescriptor& desc,
+                                std::map<std::string, std::string>* import_map,
+                                std::set<std::string>* seen_aliases) const;
+  void PrintImports(std::map<std::string, std::string>* item_map,
+                    std::map<std::string, std::string>* import_map) const;
   void PrintEnum(const EnumDescriptor& enum_descriptor) const;
   void AddEnumValue(const EnumDescriptor& enum_descriptor,
-                    std::map<std::string, std::string>* item_map) const;
+                    std::map<std::string, std::string>* item_map,
+                    const std::map<std::string, std::string>& import_map) const;
   void PrintTopLevelEnums() const;
   template <typename DescriptorT>
   void AddExtensions(const DescriptorT& descriptor,
                      std::map<std::string, std::string>* item_map) const;
-  void PrintMessages() const;
-  void PrintMessage(const Descriptor& message_descriptor, bool is_nested) const;
+  void PrintMessages(
+      const std::map<std::string, std::string>& import_map) const;
+  void PrintMessage(const Descriptor& message_descriptor, bool is_nested,
+                    const std::map<std::string, std::string>& import_map) const;
   void PrintServices() const;
   void PrintItemMap(const std::map<std::string, std::string>& item_map) const;
-  std::string GetFieldType(const FieldDescriptor& field_des) const;
+  std::string GetFieldType(
+      const FieldDescriptor& field_des, const Descriptor& containing_des,
+      const std::map<std::string, std::string>& import_map) const;
   template <typename DescriptorT>
-  std::string ModuleLevelName(const DescriptorT& descriptor) const;
+  std::string ModuleLevelName(
+      const DescriptorT& descriptor,
+      const std::map<std::string, std::string>& import_map) const;
 
   // Very coarse-grained lock to ensure that Generate() is reentrant.
   // Guards file_ and printer_.

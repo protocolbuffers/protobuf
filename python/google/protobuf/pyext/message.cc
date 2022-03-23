@@ -68,6 +68,7 @@
 #include <google/protobuf/pyext/repeated_scalar_container.h>
 #include <google/protobuf/pyext/safe_numerics.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
+#include <google/protobuf/pyext/unknown_field_set.h>
 #include <google/protobuf/pyext/unknown_fields.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/io/strtod.h>
@@ -2424,7 +2425,7 @@ static PyObject* GetExtensionDict(CMessage* self, void *closure) {
   return reinterpret_cast<PyObject*>(extension_dict);
 }
 
-static PyObject* UnknownFieldSet(CMessage* self) {
+static PyObject* GetUnknownFields(CMessage* self) {
   if (self->unknown_field_set == nullptr) {
     self->unknown_field_set = unknown_fields::NewPyUnknownFields(self);
   } else {
@@ -2493,7 +2494,7 @@ static PyMethodDef Methods[] = {
      "Serializes the message to a string, only for initialized messages."},
     {"SetInParent", (PyCFunction)SetInParent, METH_NOARGS,
      "Sets the has bit of the given field in its parent message."},
-    {"UnknownFields", (PyCFunction)UnknownFieldSet, METH_NOARGS,
+    {"UnknownFields", (PyCFunction)GetUnknownFields, METH_NOARGS,
      "Parse unknown field set"},
     {"WhichOneof", (PyCFunction)WhichOneof, METH_O,
      "Returns the name of the field set inside a oneof, "
@@ -2970,15 +2971,20 @@ bool InitProto2MessageModule(PyObject *m) {
     return false;
   }
 
+  if (PyType_Ready(&PyUnknownFieldSet_Type) < 0) {
+    return false;
+  }
+
   PyModule_AddObject(m, "UnknownFieldSet",
-                     reinterpret_cast<PyObject*>(&PyUnknownFields_Type));
+                     reinterpret_cast<PyObject*>(&PyUnknownFieldSet_Type));
 
   if (PyType_Ready(&PyUnknownFieldRef_Type) < 0) {
     return false;
   }
 
-  PyModule_AddObject(m, "UnknownField",
-                     reinterpret_cast<PyObject*>(&PyUnknownFieldRef_Type));
+  if (PyType_Ready(&PyUnknownField_Type) < 0) {
+    return false;
+  }
 
   // Initialize Map container types.
   if (!InitMapContainers()) {
