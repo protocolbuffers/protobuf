@@ -51,7 +51,7 @@ foreach(_extract_string ${_extract_strings})
   string(REPLACE "\\" "/" _header ${_header})
   get_filename_component(_extract_from "${protobuf_SOURCE_DIR}/src/${_header}" ABSOLUTE)
   get_filename_component(_extract_name ${_header} NAME)
-  get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" PATH)
+  get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" DIRECTORY)
   if(EXISTS "${_extract_from}")
     install(FILES "${_extract_from}"
       DESTINATION "${_extract_to}"
@@ -88,10 +88,10 @@ _protobuf_auto_list("${protobuf_SOURCE_DIR}/src/Makefile.am" nobase_dist_proto_D
 foreach(_file ${nobase_dist_proto_DATA})
   get_filename_component(_file_from "${protobuf_SOURCE_DIR}/src/${_file}" ABSOLUTE)
   get_filename_component(_file_name ${_file} NAME)
-  get_filename_component(_file_path ${_file} PATH)
+  get_filename_component(_dir ${_file} DIRECTORY)
   if(EXISTS "${_file_from}")
     install(FILES "${_file_from}"
-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_file_path}"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_dir}"
       COMPONENT protobuf-protos
       RENAME "${_file_name}")
   else()

@@ -79,6 +79,34 @@ module BasicTest
       assert_equal 8, msg.id
     end
 
+    def test_issue_9507
+      pool = Google::Protobuf::DescriptorPool.new
+      pool.build do
+        add_message "NpeMessage" do
+          optional :type, :enum, 1, "TestEnum"
+          optional :other, :string, 2
+        end
+        add_enum "TestEnum" do
+          value :Something, 0
+        end
+      end
+
+      msgclass = pool.lookup("NpeMessage").msgclass
+
+      m = msgclass.new(
+        other: "foo"      # must be set, but can be blank
+      )
+
+      begin
+        encoded = msgclass.encode(m)
+      rescue java.lang.NullPointerException => e
+        flunk "NPE rescued"
+      end
+      decoded = msgclass.decode(encoded)
+      decoded.inspect
+      decoded.to_proto
+    end
+
     def test_has_field
       m = TestSingularFields.new
       assert !m.has_singular_msg?
