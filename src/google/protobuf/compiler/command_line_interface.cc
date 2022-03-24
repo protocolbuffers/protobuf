@@ -2209,7 +2209,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     }
   }
 
-  if(!descriptor_set_out_name_.empty()) {
+  if (!descriptor_set_out_name_.empty()) {
     output_filenames.push_back(descriptor_set_out_name_);
   }
 

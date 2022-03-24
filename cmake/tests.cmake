@@ -46,8 +46,8 @@ set(lite_test_protos
 
 set(tests_protos
   google/protobuf/any_test.proto
-  google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto
-  google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto
+  google/protobuf/compiler/cpp/test_bad_identifiers.proto
+  google/protobuf/compiler/cpp/test_large_enum_value.proto
   google/protobuf/map_proto2_unittest.proto
   google/protobuf/map_unittest.proto
   google/protobuf/unittest.proto
@@ -93,7 +93,7 @@ set(tests_protos
 )
 
 macro(compile_proto_file filename)
-  get_filename_component(dirname ${filename} DIRECTORY)
+  get_filename_component(dirname ${filename} PATH)
   get_filename_component(basename ${filename} NAME_WE)
   add_custom_command(
     OUTPUT ${protobuf_SOURCE_DIR}/src/${dirname}/${basename}.pb.cc
@@ -129,10 +129,10 @@ set(common_lite_test_files
 
 set(common_test_files
   ${common_lite_test_files}
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.cc
 )
@@ -143,22 +143,22 @@ set(tests_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/cpp_move_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/cpp_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/cpp_unittest.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/bootstrap_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/metadata_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/move_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/plugin_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_bootstrap_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_doc_comment_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_plugin_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/plugin_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/parser_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/python_plugin_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/plugin_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_database_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_unittest.cc

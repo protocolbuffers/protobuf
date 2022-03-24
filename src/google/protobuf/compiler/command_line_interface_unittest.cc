@@ -1754,7 +1754,8 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 }
 
-TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileWithDescriptorSetOut) {
+TEST_F(CommandLineInterfaceTest,
+       WriteDependencyManifestFileWithDescriptorSetOut) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
                  "message Foo {}\n");
