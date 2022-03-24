@@ -46,10 +46,12 @@
     <file baseinstalldir="/" name="protobuf.c" role="src"/>
     <file baseinstalldir="/" name="protobuf.h" role="src"/>
     <file baseinstalldir="/" name="wkt.inc" role="src"/>
-    <file baseinstalldir="/" name="third_party/utf8_range/naive.c" role="doc"/>
-    <file baseinstalldir="/" name="third_party/utf8_range/range2-neon.c" role="doc"/>
-    <file baseinstalldir="/" name="third_party/utf8_range/range2-sse.c" role="doc"/>
     <file baseinstalldir="/" name="LICENSE" role="doc"/>
+    <file baseinstalldir="/" name="third_party/utf8_range/naive.c" role="src"/>
+    <file baseinstalldir="/" name="third_party/utf8_range/range2-neon.c" role="src"/>
+    <file baseinstalldir="/" name="third_party/utf8_range/range2-sse.c" role="src"/>
+    <file baseinstalldir="/" name="third_party/utf8_range/utf8_range.h" role="src"/>
+    <file baseinstalldir="/" name="third_party/utf8_range/LICENSE" role="doc"/>
   </dir>
  </contents>
  <dependencies>
