@@ -1791,7 +1791,7 @@ module CommonTests
     # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
     match = RUBY_PLATFORM == "java" &&
       JRUBY_VERSION.match(/^(\d+)\.(\d+)\.\d+\.\d+$/)
-    match && (match[1].to_i < 9 or match[2].to_i < 3)
+    match && (match[1].to_i > 9 || (match[1].to_i == 9 && match[2].to_i >= 3))
   end
 
   def test_object_gc
