@@ -1893,9 +1893,10 @@ module CommonTests
 
     # `=` suffix actions should work on elements of a oneof but not the oneof itself.
     assert !msg.respond_to?( :my_oneof= )
-    assert_raise NoMethodError do
+    error = assert_raise RuntimeError do
       msg.my_oneof = nil
     end
+    assert_equal "Oneof accessors are read-only.", error.message
     assert msg.respond_to? :a=
     msg.a = "foo"
     assert msg.respond_to? :b=

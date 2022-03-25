@@ -323,10 +323,7 @@ public class RubyMessage extends RubyObject {
             String strippedMethodName = methodName.substring(0, methodName.length() - 1);
             FieldDescriptor fieldDescriptor = descriptor.findFieldByName(strippedMethodName);
             if (fieldDescriptor != null) {
-                oneofDescriptor = rubyDescriptor.lookupOneof(context, RubyString.newString(context.runtime, strippedMethodName));
-                if (oneofDescriptor.isNil()) {
-                    return context.runtime.getTrue();
-                }
+                return context.runtime.getTrue();
             }
             if (strippedMethodName.endsWith(AS_VALUE_SUFFIX)) {
                 strippedMethodName = methodName.substring(0, strippedMethodName.length() - 9);
@@ -374,10 +371,9 @@ public class RubyMessage extends RubyObject {
     public IRubyObject methodMissing(ThreadContext context, IRubyObject[] args) {
         Ruby runtime = context.runtime;
         String methodName = args[0].asJavaString();
+        RubyDescriptor rubyDescriptor = (RubyDescriptor) getDescriptor(context, metaClass);
 
         if (args.length == 1) {
-            RubyDescriptor rubyDescriptor = (RubyDescriptor) getDescriptor(context, metaClass);
-
             // If we find a Oneof return it's name (use lookupOneof because it has an index)
             IRubyObject oneofDescriptor = rubyDescriptor.lookupOneof(context, args[0]);
 
@@ -489,9 +485,13 @@ public class RubyMessage extends RubyObject {
 
             methodName = methodName.substring(0, methodName.length() - 1); // Trim equals sign
             FieldDescriptor fieldDescriptor = descriptor.findFieldByName(methodName);
-
             if (fieldDescriptor != null) {
                 return setFieldInternal(context, fieldDescriptor, args[1]);
+            }
+
+            IRubyObject oneofDescriptor = rubyDescriptor.lookupOneof(context, RubyString.newString(context.runtime, methodName));
+            if (!oneofDescriptor.isNil()) {
+                throw runtime.newRuntimeError("Oneof accessors are read-only.");
             }
 
             if (methodName.endsWith(AS_VALUE_SUFFIX)) {
