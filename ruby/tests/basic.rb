@@ -67,7 +67,7 @@ module BasicTest
       msg = TestMessage.new
       msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
 
-      # https://github.com/jruby/jruby/issues/6818 was fix in JRuby 9.3.0.0
+      # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
       match = RUBY_PLATFORM == "java" &&
         JRUBY_VERSION.match(/^(\d+)\.(\d+)\.\d+\.\d+$/)
       unless match and (match[1].to_i < 9 or match[2].to_i < 3)

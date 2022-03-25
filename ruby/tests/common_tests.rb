@@ -1085,8 +1085,8 @@ module CommonTests
   end
 
   def test_json
-    # TODO: Fix JSON in JRuby version.
-    return if RUBY_PLATFORM == "java"
+    # # TODO: Fix JSON in JRuby version.
+    # return if RUBY_PLATFORM == "java"
     m = proto_module::TestMessage.new(:optional_int32 => 1234,
                                       :optional_int64 => -0x1_0000_0000,
                                       :optional_uint32 => 0x8000_0000,
@@ -1787,27 +1787,34 @@ module CommonTests
     assert_nil h[m2]
   end
 
+  def cruby_or_jruby_9_3_or_higher?
+    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
+    match = RUBY_PLATFORM == "java" &&
+      JRUBY_VERSION.match(/^(\d+)\.(\d+)\.\d+\.\d+$/)
+    match && (match[1].to_i < 9 or match[2].to_i < 3)
+  end
+
   def test_object_gc
     m = proto_module::TestMessage.new(optional_msg: proto_module::TestMessage2.new)
     m.optional_msg
-    # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
-    GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
+    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
+    GC.start(full_mark: true, immediate_sweep: true) if cruby_or_jruby_9_3_or_higher?
     m.optional_msg.inspect
   end
 
   def test_object_gc_freeze
     m = proto_module::TestMessage.new
     m.repeated_float.freeze
-    # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
-    GC.start(full_mark: true) unless RUBY_PLATFORM == "java"
+    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
+    GC.start(full_mark: true) if cruby_or_jruby_9_3_or_higher?
 
     # Make sure we remember that the object is frozen.
     # The wrapper object contains this information, so we need to ensure that
     # the previous GC did not collect it.
     assert m.repeated_float.frozen?
 
-    # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
-    GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
+    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
+    GC.start(full_mark: true, immediate_sweep: true) if cruby_or_jruby_9_3_or_higher?
     assert m.repeated_float.frozen?
   end
 
