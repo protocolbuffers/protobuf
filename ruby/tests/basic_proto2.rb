@@ -255,5 +255,20 @@ module BasicTestProto2
       assert_equal "tests/basic_test_proto2.proto", file_descriptor.name
       assert_equal :proto2, file_descriptor.syntax
     end
+
+    def test_oneof_fields_respond_to? # regression test for issue 9202
+      msg = proto_module::OneofMessage.new(a: "foo")
+      # `has_` prefix + "?" suffix actions should only work for oneofs fields.
+      assert msg.respond_to? :has_my_oneof?
+      assert msg.has_my_oneof?
+      assert msg.respond_to? :has_a?
+      assert msg.has_a?
+      assert msg.respond_to? :has_b?
+      assert !msg.has_b?
+      assert msg.respond_to? :has_c?
+      assert !msg.has_c?
+      assert msg.respond_to? :has_d?
+      assert !msg.has_d?
+    end
   end
 end

@@ -691,5 +691,51 @@ module BasicTest
       m2 = proto_module::TestMessage.decode(proto_module::TestMessage.encode(m))
       assert_equal m2, m
     end
+
+    def test_map_fields_respond_to? # regression test for issue 9202
+      msg = proto_module::MapMessage.new
+      assert msg.respond_to?(:map_string_int32=)
+      msg.map_string_int32 = Google::Protobuf::Map.new(:string, :int32)
+      assert msg.respond_to?(:map_string_int32)
+      assert_equal( Google::Protobuf::Map.new(:string, :int32), msg.map_string_int32 )
+      assert msg.respond_to?(:clear_map_string_int32)
+      msg.clear_map_string_int32
+
+      assert !msg.respond_to?(:has_map_string_int32?)
+      assert_raise NoMethodError do
+        msg.has_map_string_int32?
+      end
+      assert !msg.respond_to?(:map_string_int32_as_value)
+      assert_raise NoMethodError do
+        msg.map_string_int32_as_value
+      end
+      assert !msg.respond_to?(:map_string_int32_as_value=)
+      assert_raise NoMethodError do
+        msg.map_string_int32_as_value = :boom
+      end
+    end
+  end
+
+  def test_oneof_fields_respond_to? # regression test for issue 9202
+    msg = proto_module::OneofMessage.new
+    # `has_` prefix + "?" suffix actions should only work for oneofs fields.
+    assert msg.has_my_oneof?
+    assert msg.respond_to? :has_my_oneof?
+    assert !msg.respond_to?( :has_a? )
+    assert_raise NoMethodError do
+      msg.has_a?
+    end
+    assert !msg.respond_to?( :has_b? )
+    assert_raise NoMethodError do
+      msg.has_b?
+    end
+    assert !msg.respond_to?( :has_c? )
+    assert_raise NoMethodError do
+      msg.has_c?
+    end
+    assert !msg.respond_to?( :has_d? )
+    assert_raise NoMethodError do
+      msg.has_d?
+    end
   end
 end
