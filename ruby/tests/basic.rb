@@ -66,8 +66,13 @@ module BasicTest
     def test_issue_8559_crash
       msg = TestMessage.new
       msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
-      # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
-      GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
+
+      # https://github.com/jruby/jruby/issues/6818 was fix in JRuby 9.3.0.0
+      match = RUBY_PLATFORM == "java" &&
+        JRUBY_VERSION.match(/^(\d+)\.(\d+)\.\d+\.\d+$/)
+      unless match and (match[1].to_i < 9 or match[2].to_i < 3)
+        GC.start(full_mark: true, immediate_sweep: true)
+      end
       TestMessage.encode(msg)
     end
 
@@ -568,8 +573,6 @@ module BasicTest
 
 
     def test_json_maps
-      # TODO: Fix JSON in JRuby version.
-      return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
       expected = {mapStringInt32: {a: 1}, mapStringMsg: {}, mapStringEnum: {}}
       expected_preserve = {map_string_int32: {a: 1}, map_string_msg: {}, map_string_enum: {}}
@@ -583,8 +586,6 @@ module BasicTest
     end
 
     def test_json_maps_emit_defaults_submsg
-      # TODO: Fix JSON in JRuby version.
-      return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new(foo: 0)})
       expected = {mapStringInt32: {}, mapStringMsg: {a: {foo: 0}}, mapStringEnum: {}}
 
@@ -594,8 +595,6 @@ module BasicTest
     end
 
     def test_json_emit_defaults_submsg
-      # TODO: Fix JSON in JRuby version.
-      return if RUBY_PLATFORM == "java"
       m = TestSingularFields.new(singular_msg: proto_module::TestMessage2.new)
 
       expected = {
@@ -618,8 +617,6 @@ module BasicTest
     end
 
     def test_respond_to
-      # This test fails with JRuby 1.7.23, likely because of an old JRuby bug.
-      return if RUBY_PLATFORM == "java"
       msg = MapMessage.new
       assert msg.respond_to?(:map_string_int32)
       assert !msg.respond_to?(:bacon)

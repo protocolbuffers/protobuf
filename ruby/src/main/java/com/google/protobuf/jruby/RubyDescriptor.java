@@ -209,6 +209,8 @@ public class RubyDescriptor extends RubyObject {
         klass.include(new IRubyObject[] {messageExts});
         klass.instance_variable_set(runtime.newString(Utils.DESCRIPTOR_INSTANCE_VAR), this);
         klass.defineAnnotatedMethods(RubyMessage.class);
+        // Workaround for https://github.com/jruby/jruby/issues/7154
+        klass.searchMethod("respond_to?").setIsBuiltin(false);
         return klass;
     }
 

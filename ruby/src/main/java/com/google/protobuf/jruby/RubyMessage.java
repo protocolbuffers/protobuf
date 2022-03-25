@@ -262,6 +262,84 @@ public class RubyMessage extends RubyObject {
 
     /*
      * call-seq:
+     *     Message.respond_to?(method_name, search_private_and_protected) => boolean
+     *
+     *  Parallels method_missing, returning true when this object implements a method with the given
+     *  method_name.
+     */
+    @JRubyMethod(name="respond_to?", required = 1, optional = 1)
+    public IRubyObject respondTo(ThreadContext context, IRubyObject [] args) {
+        String methodName = args[0].asJavaString();
+        if (descriptor.findFieldByName(methodName) != null) {
+            return context.runtime.getTrue();
+        }
+        RubyDescriptor rubyDescriptor = (RubyDescriptor) getDescriptor(context, metaClass);
+        IRubyObject oneofDescriptor = rubyDescriptor.lookupOneof(context, args[0]);
+        if (!oneofDescriptor.isNil()) {
+            return context.runtime.getTrue();
+        }
+        if (methodName.startsWith(CLEAR_PREFIX)) {
+            String strippedMethodName = methodName.substring(6);
+            if (descriptor.findFieldByName(strippedMethodName) != null) {
+                return context.runtime.getTrue();
+            }
+        }
+        if (methodName.startsWith(HAS_PREFIX) && methodName.endsWith(QUESTION_MARK)) {
+            String strippedMethodName = methodName.substring(4, methodName.length() - 1);
+            FieldDescriptor fieldDescriptor = descriptor.findFieldByName(strippedMethodName);
+            if (fieldDescriptor != null &&
+                (!proto3 || fieldDescriptor.getContainingOneof() == null || fieldDescriptor
+                    .getContainingOneof().isSynthetic()) &&
+                    fieldDescriptor.hasPresence()) {
+                return context.runtime.getTrue();
+            }
+            oneofDescriptor = rubyDescriptor.lookupOneof(context, RubyString.newString(context.runtime, strippedMethodName));
+            if (!oneofDescriptor.isNil()) {
+                return context.runtime.getTrue();
+            }
+        }
+        if (methodName.endsWith(AS_VALUE_SUFFIX)) {
+            FieldDescriptor fieldDescriptor = descriptor.findFieldByName(
+                methodName.substring(0, methodName.length() - 9));
+            if (fieldDescriptor != null && isWrappable(fieldDescriptor)) {
+                return context.runtime.getTrue();
+            }
+        }
+        if (methodName.endsWith(CONST_SUFFIX)) {
+            FieldDescriptor fieldDescriptor = descriptor.findFieldByName(
+                methodName.substring(0, methodName.length() - 6));
+            if (fieldDescriptor != null) {
+                if (fieldDescriptor.getType() == FieldDescriptor.Type.ENUM) {
+                    return context.runtime.getTrue();
+                }
+            }
+        }
+        if (methodName.endsWith(Utils.EQUAL_SIGN)) {
+            String strippedMethodName = methodName.substring(0, methodName.length() - 1);
+            FieldDescriptor fieldDescriptor = descriptor.findFieldByName(strippedMethodName);
+            if (fieldDescriptor != null) {
+                oneofDescriptor = rubyDescriptor.lookupOneof(context, RubyString.newString(context.runtime, strippedMethodName));
+                if (oneofDescriptor.isNil()) {
+                    return context.runtime.getTrue();
+                }
+            }
+            if (strippedMethodName.endsWith(AS_VALUE_SUFFIX)) {
+                strippedMethodName = methodName.substring(0, strippedMethodName.length() - 9);
+                fieldDescriptor = descriptor.findFieldByName(strippedMethodName);
+                if (fieldDescriptor != null && isWrappable(fieldDescriptor)) {
+                    return context.runtime.getTrue();
+                }
+            }
+        }
+        boolean includePrivate = false;
+        if ( args.length == 2 ) {
+            includePrivate = context.runtime.getTrue().equals(args[1]);
+        }
+        return metaClass.respondsToMethod(methodName, includePrivate) ? context.runtime.getTrue() : context.runtime.getFalse();
+    }
+
+    /*
+     * call-seq:
      *     Message.method_missing(*args)
      *
      * Provides accessors and setters and methods to clear and check for presence of
@@ -379,8 +457,7 @@ public class RubyMessage extends RubyObject {
             } else if (methodName.endsWith(CONST_SUFFIX)) {
                 methodName = methodName.substring(0, methodName.length() - 6);
                 fieldDescriptor = descriptor.findFieldByName(methodName);
-
-                if (fieldDescriptor.getType() == FieldDescriptor.Type.ENUM) {
+                if (fieldDescriptor != null && fieldDescriptor.getType() == FieldDescriptor.Type.ENUM) {
                     IRubyObject enumValue = getFieldInternal(context, fieldDescriptor);
 
                     if (!enumValue.isNil()) {
@@ -414,7 +491,7 @@ public class RubyMessage extends RubyObject {
 
                 fieldDescriptor = descriptor.findFieldByName(methodName);
 
-                if (fieldDescriptor != null) {
+                if (fieldDescriptor != null && isWrappable(fieldDescriptor)) {
                     if (args[1].isNil()) {
                         return setFieldInternal(context, fieldDescriptor, args[1]);
                     }

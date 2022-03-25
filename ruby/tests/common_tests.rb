@@ -1810,4 +1810,208 @@ module CommonTests
     GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
     assert m.repeated_float.frozen?
   end
+
+  def test_optional_fields_respond_to? # regression test for issue 9202
+    msg = proto_module::TestMessage.new
+    assert msg.respond_to? :optional_int32=
+    msg.optional_int32 = 42
+
+    assert msg.respond_to? :optional_int32
+    assert_equal 42, msg.optional_int32
+
+    assert msg.respond_to? :clear_optional_int32
+    msg.clear_optional_int32
+    assert_equal 0, msg.optional_int32
+
+    assert msg.respond_to? :has_optional_int32?
+    assert !msg.has_optional_int32?
+
+    assert !msg.respond_to?( :optional_int32_as_value= )
+    assert_raise NoMethodError do
+      msg.optional_int32_as_value = 42
+    end
+
+    assert !msg.respond_to?( :optional_int32_as_value )
+    assert_raise NoMethodError do
+      msg.optional_int32_as_value
+    end
+
+    assert msg.respond_to? :optional_enum_const
+    assert_equal 0, msg.optional_enum_const
+
+    assert !msg.respond_to?( :foo )
+    assert_raise NoMethodError do
+      msg.foo
+    end
+
+    assert !msg.respond_to?( :foo_const )
+    assert_raise NoMethodError do
+      msg.foo_const
+    end
+
+    assert !msg.respond_to?( :optional_int32_const )
+    assert_raise NoMethodError do
+      msg.optional_int32_const
+    end
+  end
+
+  def test_oneof_fields_respond_to? # regression test for issue 9202
+    msg = proto_module::OneofMessage.new
+
+    # names of the elements of a oneof and the oneof itself should be valid actions.
+    assert msg.respond_to? :my_oneof
+    assert_nil msg.my_oneof
+    assert msg.respond_to? :a
+    assert_equal "", msg.a
+    assert msg.respond_to? :b
+    assert_equal 0, msg.b
+    assert msg.respond_to? :c
+    assert_nil msg.c
+    assert msg.respond_to? :d
+    assert_equal :Default, msg.d
+
+    # `clear` prefix actions should elements of a oneof but not the oneof itself.
+    assert !msg.respond_to?( :clear_my_oneof )
+    assert_raise NoMethodError do
+      msg.clear_my_oneof
+    end
+    assert msg.respond_to? :clear_a
+    msg.clear_a
+    assert msg.respond_to? :clear_b
+    msg.clear_b
+    assert msg.respond_to? :clear_c
+    msg.clear_c
+    assert msg.respond_to? :clear_d
+    msg.clear_d
+
+    # `=` suffix actions should elements of a oneof but not the oneof itself.
+    assert !msg.respond_to?( :my_oneof= )
+    assert_raise NoMethodError do
+      msg.my_oneof = nil
+    end
+    assert msg.respond_to? :a=
+    msg.a = "foo"
+    assert msg.respond_to? :b=
+    msg.b = 42
+    assert msg.respond_to? :c=
+    msg.c = proto_module::TestMessage2.new
+    assert msg.respond_to? :d=
+    msg.d = :Default
+
+    # `has_` prefix + "?" suffix actions should only work for oneofs fields.
+    assert msg.has_my_oneof?
+    assert msg.respond_to? :has_my_oneof?
+    assert !msg.respond_to?( :has_a? )
+    assert_raise NoMethodError do
+      msg.has_a?
+    end
+    assert !msg.respond_to?( :has_b? )
+    assert_raise NoMethodError do
+      msg.has_b?
+    end
+    assert !msg.respond_to?( :has_c? )
+    assert_raise NoMethodError do
+      msg.has_c?
+    end
+    assert !msg.respond_to?( :has_d? )
+    assert_raise NoMethodError do
+      msg.has_d?
+    end
+
+    # `_as_value` suffix actions should only work for wrapped fields.
+    assert !msg.respond_to?( :my_oneof_as_value )
+    assert_raise NoMethodError do
+      msg.my_oneof_as_value
+    end
+    assert !msg.respond_to?( :a_as_value )
+    assert_raise NoMethodError do
+      msg.a_as_value
+    end
+    assert !msg.respond_to?( :b_as_value )
+    assert_raise NoMethodError do
+      msg.b_as_value
+    end
+    assert !msg.respond_to?( :c_as_value )
+    assert_raise NoMethodError do
+      msg.c_as_value
+    end
+    assert !msg.respond_to?( :d_as_value )
+    assert_raise NoMethodError do
+      msg.d_as_value
+    end
+
+    # `_as_value=` suffix actions should only work for wrapped fields.
+    assert !msg.respond_to?( :my_oneof_as_value= )
+    assert_raise NoMethodError do
+      msg.my_oneof_as_value = :boom
+    end
+    assert !msg.respond_to?( :a_as_value= )
+    assert_raise NoMethodError do
+      msg.a_as_value = ""
+    end
+    assert !msg.respond_to?( :b_as_value= )
+    assert_raise NoMethodError do
+      msg.b_as_value = 42
+    end
+    assert !msg.respond_to?( :c_as_value= )
+    assert_raise NoMethodError do
+      msg.c_as_value = proto_module::TestMessage2.new
+    end
+    assert !msg.respond_to?( :d_as_value= )
+    assert_raise NoMethodError do
+      msg.d_as_value = :Default
+    end
+
+    # `_const` suffix actions should only work for enum fields.
+    assert !msg.respond_to?( :my_oneof_const )
+    assert_raise NoMethodError do
+      msg.my_oneof_const
+    end
+    assert !msg.respond_to?( :a_const )
+    assert_raise NoMethodError do
+      msg.a_const
+    end
+    assert !msg.respond_to?( :b_const )
+    assert_raise NoMethodError do
+      msg.b_const
+    end
+    assert !msg.respond_to?( :c_const )
+    assert_raise NoMethodError do
+      msg.c_const
+    end
+    assert msg.respond_to? :d_const
+    assert_equal 0, msg.d_const
+  end
+
+  def test_map_fields_respond_to? # regression test for issue 9202
+    msg = proto_module::MapMessage.new
+    assert msg.respond_to?(:map_string_int32=)
+    msg.map_string_int32 = Google::Protobuf::Map.new(:string, :int32)
+    assert msg.respond_to?(:map_string_int32)
+    assert_equal( Google::Protobuf::Map.new(:string, :int32), msg.map_string_int32 )
+    assert msg.respond_to?(:clear_map_string_int32)
+    msg.clear_map_string_int32
+
+    assert !msg.respond_to?(:has_map_string_int32?)
+    assert_raise NoMethodError do
+      msg.has_map_string_int32?
+    end
+    assert !msg.respond_to?(:map_string_int32_as_value)
+    assert_raise NoMethodError do
+      msg.map_string_int32_as_value
+    end
+    assert !msg.respond_to?(:map_string_int32_as_value=)
+    assert_raise NoMethodError do
+      msg.map_string_int32_as_value = :boom
+    end
+  end
+
+  def test_wrapped_fields_respond_to? # regression test for issue 9202
+    msg = proto_module::Wrapper.new
+    assert msg.respond_to?( :double_as_value= )
+    msg.double_as_value = 42
+    assert msg.respond_to?( :double_as_value )
+    assert_equal 42, msg.double_as_value
+    assert_equal Google::Protobuf::DoubleValue.new(value: 42), msg.double
+  end
 end
