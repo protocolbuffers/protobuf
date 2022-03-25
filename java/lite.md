@@ -30,7 +30,7 @@ protobuf Java runtime. If you are using Maven, use the following:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-javalite</artifactId>
-  <version>3.20.0-rc-2</version>
+  <version>3.20.0</version>
 </dependency>
 ```
 
