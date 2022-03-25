@@ -1858,7 +1858,7 @@ module CommonTests
   def test_oneof_fields_respond_to? # regression test for issue 9202
     msg = proto_module::OneofMessage.new
 
-    # names of the elements of a oneof and the oneof itself should be valid actions.
+    # names of the elements of a oneof and the oneof itself are valid actions.
     assert msg.respond_to? :my_oneof
     assert_nil msg.my_oneof
     assert msg.respond_to? :a
@@ -1870,11 +1870,11 @@ module CommonTests
     assert msg.respond_to? :d
     assert_equal :Default, msg.d
 
-    # `clear` prefix actions should elements of a oneof but not the oneof itself.
-    assert !msg.respond_to?( :clear_my_oneof )
-    assert_raise NoMethodError do
-      msg.clear_my_oneof
-    end
+    # `clear` prefix actions work on elements of a oneof and the oneof itself.
+    assert msg.respond_to? :clear_my_oneof
+    msg.clear_my_oneof
+    # Repeatedly clearing a oneof used to cause a NoMethodError under JRuby
+    msg.clear_my_oneof
     assert msg.respond_to? :clear_a
     msg.clear_a
     assert msg.respond_to? :clear_b
@@ -1884,7 +1884,7 @@ module CommonTests
     assert msg.respond_to? :clear_d
     msg.clear_d
 
-    # `=` suffix actions should elements of a oneof but not the oneof itself.
+    # `=` suffix actions should work on elements of a oneof but not the oneof itself.
     assert !msg.respond_to?( :my_oneof= )
     assert_raise NoMethodError do
       msg.my_oneof = nil

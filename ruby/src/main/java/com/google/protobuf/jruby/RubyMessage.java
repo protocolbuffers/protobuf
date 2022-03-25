@@ -280,6 +280,11 @@ public class RubyMessage extends RubyObject {
         }
         if (methodName.startsWith(CLEAR_PREFIX)) {
             String strippedMethodName = methodName.substring(6);
+            oneofDescriptor = rubyDescriptor.lookupOneof(context, context.runtime.newSymbol(strippedMethodName));
+            if (!oneofDescriptor.isNil()) {
+                return context.runtime.getTrue();
+            }
+
             if (descriptor.findFieldByName(strippedMethodName) != null) {
                 return context.runtime.getTrue();
             }
@@ -409,9 +414,12 @@ public class RubyMessage extends RubyObject {
             if (methodName.startsWith(CLEAR_PREFIX)) {
                 methodName = methodName.substring(6);
                 oneofDescriptor = rubyDescriptor.lookupOneof(context, runtime.newSymbol(methodName));
-
                 if (!oneofDescriptor.isNil()) {
                     fieldDescriptor = oneofCases.get(((RubyOneofDescriptor) oneofDescriptor).getDescriptor());
+                    if (fieldDescriptor == null) {
+                        // Clearing an already cleared oneof; return here to avoid NoMethodError.
+                        return context.nil;
+                    }
                 }
 
                 if (fieldDescriptor == null) {
