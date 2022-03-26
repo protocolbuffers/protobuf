@@ -1085,8 +1085,6 @@ module CommonTests
   end
 
   def test_json
-    # # TODO: Fix JSON in JRuby version.
-    # return if RUBY_PLATFORM == "java"
     m = proto_module::TestMessage.new(:optional_int32 => 1234,
                                       :optional_int64 => -0x1_0000_0000,
                                       :optional_uint32 => 0x8000_0000,
