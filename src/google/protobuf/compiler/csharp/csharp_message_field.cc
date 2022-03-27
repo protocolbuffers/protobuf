@@ -52,7 +52,7 @@ namespace csharp {
 MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
                                              int presenceIndex,
                                              const Options *options)
-    : FieldGeneratorBase(descriptor, presenceIndex, options) {
+	: FieldGeneratorBase(descriptor, presenceIndex, options) {
   if (!SupportsPresenceApi(descriptor_)) {
     variables_["has_property_check"] = name() + "_ != null";
     variables_["has_not_property_check"] = name() + "_ == null";
@@ -100,37 +100,60 @@ void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
 }
 
 void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if (other.$has_property_check$) {\n"
-    "  if ($has_not_property_check$) {\n"
-    "    $property_name$ = new $type_name$();\n"
-    "  }\n"
-    "  $property_name$.MergeFrom(other.$property_name$);\n"
-    "}\n");
+  if (descriptor_->message_type()->options().has_csharp_generate_struct()) {
+    printer->Print(
+      variables_,
+      "$name$_.MergeFrom(other.$name$_);\n");
+  } else {
+    printer->Print(
+      variables_,
+      "if (other.$has_property_check$) {\n"
+      "  if ($has_not_property_check$) {\n"
+      "    $property_name$ = new $type_name$();\n"
+      "  }\n"
+      "  $property_name$.MergeFrom(other.$property_name$);\n"
+      "}\n");
+  }
 }
 
 void MessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($has_not_property_check$) {\n"
-    "  $property_name$ = new $type_name$();\n"
-    "}\n");
-  if (descriptor_->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
-    printer->Print(variables_, "input.ReadMessage($property_name$);\n");
+  if (descriptor_->message_type()->options().has_csharp_generate_struct()) {
+    if (descriptor_->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
+      printer->Print(variables_, "input.ReadMessage(ref $name$_);\n");
+    } else {
+      printer->Print(variables_, "input.ReadGroup($name$_);\n");
+    }
   } else {
-    printer->Print(variables_, "input.ReadGroup($property_name$);\n");
+    printer->Print(
+      variables_,
+      "if ($has_not_property_check$) {\n"
+      "  $property_name$ = new $type_name$();\n"
+      "}\n");
+    if (descriptor_->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
+      printer->Print(variables_, "input.ReadMessage($property_name$);\n");
+    }
+    else {
+      printer->Print(variables_, "input.ReadGroup($property_name$);\n");
+    }
   }
 }
 
 void MessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   if (descriptor_->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
-    printer->Print(
-      variables_,
-      "if ($has_property_check$) {\n"
-      "  output.WriteRawTag($tag_bytes$);\n"
-      "  output.WriteMessage($property_name$);\n"
-      "}\n");
+    if (descriptor_->message_type()->options().has_csharp_generate_struct()) {
+      printer->Print(
+        variables_,
+        "output.WriteRawTag($tag_bytes$);\n"
+        "output.WriteMessage($name$_);\n");
+    } else {
+      printer->Print(
+        variables_,
+        "if ($has_property_check$) {\n"
+        "  output.WriteRawTag($tag_bytes$);\n"
+        "  output.WriteMessage($property_name$);\n"
+        "}\n");
+
+    }
   } else {
     printer->Print(
       variables_,
@@ -144,11 +167,17 @@ void MessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
 
 void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   if (descriptor_->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
-    printer->Print(
-      variables_,
-      "if ($has_property_check$) {\n"
-      "  size += $tag_size$ + pb::CodedOutputStream.ComputeMessageSize($property_name$);\n"
-      "}\n");
+    if (descriptor_->message_type()->options().has_csharp_generate_struct()) {
+      printer->Print(
+        variables_,
+        "size += $tag_size$ + pb::CodedOutputStream.ComputeMessageSize($name$_);\n");
+    } else {
+      printer->Print(
+        variables_,
+        "if ($has_property_check$) {\n"
+        "  size += $tag_size$ + pb::CodedOutputStream.ComputeMessageSize($property_name$);\n"
+        "}\n");
+    }
   } else {
     printer->Print(
       variables_,
@@ -159,14 +188,30 @@ void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
 }
 
 void MessageFieldGenerator::WriteHash(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
+
+  if (descriptor_->message_type()->options().has_csharp_generate_struct()) {
+    printer->Print(
+      variables_,
+      "hash ^= $name$_.GetHashCode();\n");
+
+  } else {
+    printer->Print(
+      variables_,
+      "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
+
+  }
 }
 void MessageFieldGenerator::WriteEquals(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if (!object.Equals($property_name$, other.$property_name$)) return false;\n");
+  if (descriptor_->message_type()->options().has_csharp_generate_struct()) {
+    printer->Print(
+      variables_,
+      "if (!$name$_.Equals(other.$name$_)) return false;\n");
+
+  } else {
+    printer->Print(
+      variables_,
+      "if (!object.Equals($property_name$, other.$property_name$)) return false;\n");
+  }
 }
 void MessageFieldGenerator::WriteToString(io::Printer* printer) {
   variables_["field_name"] = GetFieldName(descriptor_);
@@ -185,8 +230,13 @@ void MessageFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
   printer->Print(");\n");
 }
 void MessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
-  printer->Print(variables_,
-    "$name$_ = other.$has_property_check$ ? other.$name$_.Clone() : null;\n");
+  if (descriptor_->message_type()->options().has_csharp_generate_struct()) {
+    printer->Print(variables_,
+      "$name$_ = other.$name$_.Clone();\n");
+  } else {
+    printer->Print(variables_,
+      "$name$_ = other.$has_property_check$ ? other.$name$_.Clone() : null;\n");
+  }
 }
 
 void MessageFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
@@ -253,11 +303,17 @@ void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
 }
 
 void MessageOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
-  printer->Print(variables_,
-    "if ($property_name$ == null) {\n"
-    "  $property_name$ = new $type_name$();\n"
-    "}\n"
-    "$property_name$.MergeFrom(other.$property_name$);\n");
+  if (descriptor_->message_type()->options().has_csharp_generate_struct()) {
+    printer->Print(variables_,
+      "$name$_.MergeFrom(other.$name$_);\n");
+
+  } else {
+    printer->Print(variables_,
+      "if ($property_name$ == null) {\n"
+      "  $property_name$ = new $type_name$();\n"
+      "}\n"
+      "$property_name$.MergeFrom(other.$property_name$);\n");
+  }
 }
 
 void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {

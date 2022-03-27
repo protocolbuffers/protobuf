@@ -408,3 +408,15 @@ enum CommentEnum {
   // Zero value comment
   ZERO_VALUE = 0;
 }
+
+
+message PointOptimized {
+  option csharp_generate_struct = true;
+  float x = 1;
+  float y = 2;
+}
+
+message TestPoint {
+  PointOptimized first_point = 1;
+  repeated PointOptimized remaining_points =  2;
+}

@@ -251,6 +251,15 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Reads an embedded message field value from the input.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ReadMessage<T>(ref T message) where T : struct, IBufferMessage
+        {
+            ParsingPrimitivesMessages.ReadMessage(ref this, ref message);
+        }
+
+        /// <summary>
         /// Reads an embedded group field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

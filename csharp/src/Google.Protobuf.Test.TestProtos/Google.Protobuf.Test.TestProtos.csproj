@@ -11,6 +11,7 @@
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <IsPackable>False</IsPackable>
+	<LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <!-- Needed for the net45 build to work on Unix. See https://github.com/dotnet/designs/pull/33 -->

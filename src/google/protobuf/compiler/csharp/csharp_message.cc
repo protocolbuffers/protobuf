@@ -120,14 +120,21 @@ void MessageGenerator::Generate(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   AddSerializableAttribute(printer);
 
-  printer->Print(
-    vars,
-    "$access_level$ sealed partial class $class_name$ : ");
+  bool has_csharp_generate_struct = descriptor_->options().has_csharp_generate_struct();
+  if (has_csharp_generate_struct) {
+    printer->Print(
+      vars,
+      "$access_level$ partial struct $class_name$ : ");
+  }
+  else {
+    printer->Print(
+      vars,
+      "$access_level$ sealed partial class $class_name$ : ");
+  }
 
   if (has_extension_ranges_) {
     printer->Print(vars, "pb::IExtendableMessage<$class_name$>\n");
-  }
-  else {
+  } else {
     printer->Print(vars, "pb::IMessage<$class_name$>\n");
   }
   printer->Print("#if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE\n");
@@ -137,10 +144,15 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Indent();
 
   // All static fields and properties
-  printer->Print(
+  if (has_csharp_generate_struct) {
+    printer->Print(
+      vars,
+      "private static readonly pb::ValueTypeMessageParser<$class_name$> _parser = new pb::ValueTypeMessageParser<$class_name$>(() => new $class_name$());\n");
+  } else {
+    printer->Print(
       vars,
       "private static readonly pb::MessageParser<$class_name$> _parser = new pb::MessageParser<$class_name$>(() => new $class_name$());\n");
-
+  }
   printer->Print(
       "private pb::UnknownFieldSet _unknownFields;\n");
 
@@ -165,11 +177,15 @@ void MessageGenerator::Generate(io::Printer* printer) {
   }
 
   WriteGeneratedCodeAttributes(printer);
-
-  printer->Print(
+  if (has_csharp_generate_struct) {
+    printer->Print(
+      vars,
+      "public static pb::ValueTypeMessageParser<$class_name$> Parser { get { return _parser; } }\n\n");
+  } else {
+    printer->Print(
       vars,
       "public static pb::MessageParser<$class_name$> Parser { get { return _parser; } }\n\n");
-
+  }
   // Access the message descriptor via the relevant file descriptor or containing message descriptor.
   if (!descriptor_->containing_type()) {
     vars["descriptor_accessor"] = GetReflectionClassName(descriptor_->file())
@@ -195,13 +211,15 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "\n");
 
   // Parameterless constructor and partial OnConstruction method.
-  WriteGeneratedCodeAttributes(printer);
-  printer->Print(
-    vars,
-    "public $class_name$() {\n"
-    "  OnConstruction();\n"
-    "}\n\n"
-    "partial void OnConstruction();\n\n");
+  if (!has_csharp_generate_struct) {
+    WriteGeneratedCodeAttributes(printer);
+    printer->Print(
+      vars,
+      "public $class_name$() {\n"
+      "  OnConstruction();\n"
+      "}\n\n"
+      "partial void OnConstruction();\n\n");
+  }
 
   GenerateCloningCode(printer);
   GenerateFreezingCode(printer);
@@ -443,21 +461,34 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
 
     // Equality
     WriteGeneratedCodeAttributes(printer);
-    printer->Print(
+    if (descriptor_->options().has_csharp_generate_struct()) {
+      printer->Print(
+        vars,
+        "public override bool Equals(object other) {\n"
+        "  return other is $class_name$ other1 ? Equals(other1) : false;\n"
+        "}\n\n");
+
+    } else {
+      printer->Print(
         vars,
         "public override bool Equals(object other) {\n"
         "  return Equals(other as $class_name$);\n"
         "}\n\n");
+    }
     WriteGeneratedCodeAttributes(printer);
     printer->Print(
+      vars,
+      "public bool Equals($class_name$ other) {\n");
+    if (!descriptor_->options().has_csharp_generate_struct()) {
+      printer->Print(
         vars,
-        "public bool Equals($class_name$ other) {\n"
         "  if (ReferenceEquals(other, null)) {\n"
         "    return false;\n"
         "  }\n"
         "  if (ReferenceEquals(other, this)) {\n"
         "    return true;\n"
         "  }\n");
+    }
     printer->Indent();
     for (int i = 0; i < descriptor_->field_count(); i++) {
       std::unique_ptr<FieldGeneratorBase> generator(
@@ -613,10 +644,12 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     vars,
     "public void MergeFrom($class_name$ other) {\n");
   printer->Indent();
-  printer->Print(
-    "if (other == null) {\n"
-    "  return;\n"
-    "}\n");
+  if (!descriptor_->options().has_csharp_generate_struct()) {
+    printer->Print(
+      "if (other == null) {\n"
+      "  return;\n"
+      "}\n");
+  }
   // Merge non-oneof fields, treating optional proto3 fields as normal fields
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
@@ -664,7 +697,11 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Print("public void MergeFrom(pb::CodedInputStream input) {\n");
   printer->Print("#if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE\n");
   printer->Indent();
-  printer->Print("input.ReadRawMessage(this);\n");
+  if (descriptor_->options().has_csharp_generate_struct()) {
+    printer->Print("input.ReadRawMessage(ref this);\n");
+  } else {
+    printer->Print("input.ReadRawMessage(this);\n");
+  }
   printer->Outdent();
   printer->Print("#else\n");
   printer->Indent();

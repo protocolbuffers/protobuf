@@ -523,6 +523,8 @@ message MessageOptions {
   reserved 8;  // javalite_serializable
   reserved 9;  // javanano_as_lite
 
+  // Generates the message as a struct
+  optional bool csharp_generate_struct = 10 [default = false];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

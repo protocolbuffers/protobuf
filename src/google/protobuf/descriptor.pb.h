@@ -4512,6 +4512,7 @@ class PROTOBUF_EXPORT MessageOptions final :
     kNoStandardDescriptorAccessorFieldNumber = 2,
     kDeprecatedFieldNumber = 3,
     kMapEntryFieldNumber = 7,
+    kCsharpGenerateStructFieldNumber = 10,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
@@ -4581,6 +4582,19 @@ class PROTOBUF_EXPORT MessageOptions final :
   private:
   bool _internal_map_entry() const;
   void _internal_set_map_entry(bool value);
+  public:
+
+  // optional bool csharp_generate_struct = 10 [default = false];
+  bool has_csharp_generate_struct() const;
+  private:
+  bool _internal_has_csharp_generate_struct() const;
+  public:
+  void clear_csharp_generate_struct();
+  bool csharp_generate_struct() const;
+  void set_csharp_generate_struct(bool value);
+  private:
+  bool _internal_csharp_generate_struct() const;
+  void _internal_set_csharp_generate_struct(bool value);
   public:
 
 
@@ -4790,6 +4804,7 @@ class PROTOBUF_EXPORT MessageOptions final :
     bool no_standard_descriptor_accessor_;
     bool deprecated_;
     bool map_entry_;
+    bool csharp_generate_struct_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -12989,6 +13004,34 @@ inline void MessageOptions::_internal_set_map_entry(bool value) {
 inline void MessageOptions::set_map_entry(bool value) {
   _internal_set_map_entry(value);
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.map_entry)
+}
+
+// optional bool csharp_generate_struct = 10 [default = false];
+inline bool MessageOptions::_internal_has_csharp_generate_struct() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  return value;
+}
+inline bool MessageOptions::has_csharp_generate_struct() const {
+  return _internal_has_csharp_generate_struct();
+}
+inline void MessageOptions::clear_csharp_generate_struct() {
+  _impl_.csharp_generate_struct_ = false;
+  _impl_._has_bits_[0] &= ~0x00000010u;
+}
+inline bool MessageOptions::_internal_csharp_generate_struct() const {
+  return _impl_.csharp_generate_struct_;
+}
+inline bool MessageOptions::csharp_generate_struct() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.csharp_generate_struct)
+  return _internal_csharp_generate_struct();
+}
+inline void MessageOptions::_internal_set_csharp_generate_struct(bool value) {
+  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_.csharp_generate_struct_ = value;
+}
+inline void MessageOptions::set_csharp_generate_struct(bool value) {
+  _internal_set_csharp_generate_struct(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.csharp_generate_struct)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;

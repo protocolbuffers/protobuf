@@ -447,6 +447,22 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Reads an embedded message field value from the stream.
+        /// </summary>
+        public void ReadMessage<T>(ref T builder) where T: struct, IBufferMessage
+        {
+            ParseContext.Initialize(buffer.AsSpan(), ref state, out ParseContext ctx);
+            try
+            {
+                ParsingPrimitivesMessages.ReadMessage(ref ctx, ref builder);
+            }
+            finally
+            {
+                ctx.CopyStateTo(this);
+            }
+        }
+
+        /// <summary>
         /// Reads an embedded group field from the stream.
         /// </summary>
         public void ReadGroup(IMessage builder)
@@ -693,6 +709,25 @@ namespace Google.Protobuf
                 ctx.CopyStateTo(this);
             }
         }
-#endregion
+
+        /// <summary>
+        /// Reads a top-level message or a nested message after the limits for this message have been pushed.
+        /// (parser will proceed until the end of the current limit)
+        /// NOTE: this method needs to be public because it's invoked by the generated code - e.g. msg.MergeFrom(CodedInputStream input) method
+        /// </summary>
+        public void ReadRawMessage<T>(ref T message) where T: struct, IBufferMessage
+        {
+            ParseContext.Initialize(this, out ParseContext ctx);
+            try
+            {
+                ParsingPrimitivesMessages.ReadRawMessage(ref ctx, ref message);
+            }
+            finally
+            {
+                ctx.CopyStateTo(this);
+            }
+        }
+
+        #endregion
     }
 }

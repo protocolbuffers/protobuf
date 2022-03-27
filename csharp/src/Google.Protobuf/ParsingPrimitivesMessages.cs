@@ -138,6 +138,28 @@ namespace Google.Protobuf
             SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
         }
 
+        public static void ReadMessage<T>(ref ParseContext ctx, ref T message) where T: struct, IBufferMessage
+        {
+            int length = ParsingPrimitives.ParseLength(ref ctx.buffer, ref ctx.state);
+            if (ctx.state.recursionDepth >= ctx.state.recursionLimit)
+            {
+                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+            }
+            int oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
+            ++ctx.state.recursionDepth;
+
+            ReadRawMessage(ref ctx, ref message);
+
+            CheckReadEndOfStreamTag(ref ctx.state);
+            // Check that we've read exactly as much data as expected.
+            if (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+            {
+                throw InvalidProtocolBufferException.TruncatedMessage();
+            }
+            --ctx.state.recursionDepth;
+            SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
+        }
+
         public static KeyValuePair<TKey, TValue> ReadMapEntry<TKey, TValue>(ref ParseContext ctx, MapField<TKey, TValue>.Codec codec)
         {
             int length = ParsingPrimitives.ParseLength(ref ctx.buffer, ref ctx.state);
@@ -225,6 +247,11 @@ namespace Google.Protobuf
             CheckLastTagWas(ref ctx.state, WireFormat.MakeTag(fieldNumber, WireFormat.WireType.EndGroup));
 
             --ctx.state.recursionDepth;
+        }
+
+        public static void ReadRawMessage<T>(ref ParseContext ctx, ref T message) where T: struct, IBufferMessage
+        {
+            message.InternalMergeFrom(ref ctx);
         }
 
         public static void ReadRawMessage(ref ParseContext ctx, IMessage message)

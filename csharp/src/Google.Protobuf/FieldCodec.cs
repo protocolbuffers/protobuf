@@ -440,6 +440,34 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Retrieves a codec suitable for a message field with the given tag.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <param name="parser">A parser to use for the message type.</param>
+        /// <returns>A codec for the given tag.</returns>
+        public static FieldCodec<T> ForMessage<T>(uint tag, ValueTypeMessageParser<T> parser) where T : struct, IMessage<T>, IBufferMessage
+        {
+            return new FieldCodec<T>(
+                (ref ParseContext ctx) =>
+                {
+                    T message = parser.CreateTemplate();
+                    ctx.ReadMessage(message);
+                    return message;
+                },
+                (ref WriteContext output, T value) => output.WriteMessage(value),
+                (ref ParseContext ctx, ref T v) =>
+                {
+                    ctx.ReadMessage(v);
+                },
+                (ref T v, T v2) =>
+                {
+                    v.MergeFrom(v2);
+                    return true;
+                },
+                message => CodedOutputStream.ComputeMessageSize(message), tag);
+        }
+
+        /// <summary>
         /// Retrieves a codec suitable for a group field with the given tag.
         /// </summary>
         /// <param name="startTag">The start group tag.</param>
@@ -653,7 +681,15 @@ namespace Google.Protobuf
         private static readonly EqualityComparer<T> EqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<T>();
         private static readonly T DefaultDefault;
         // Only non-nullable value types support packing. This is the simplest way of detecting that.
-        private static readonly bool TypeSupportsPacking = default(T) != null;
+        private static readonly bool TypeSupportsPacking = typeof(T) == typeof(int) ||
+                                                           typeof(T) == typeof(uint) ||
+                                                           typeof(T) == typeof(long) ||
+                                                           typeof(T) == typeof(ulong) ||
+                                                           typeof(T) == typeof(float) ||
+                                                           typeof(T) == typeof(double) ||
+                                                           typeof(T) == typeof(sbyte) ||
+                                                           typeof(T) == typeof(byte) ||
+                                                           typeof(T) == typeof(bool);
 
         /// <summary>
         /// Merges an input stream into a value

@@ -260,9 +260,30 @@ namespace Google.Protobuf
             input.CheckReadEndOfStreamTag();
         }
 
+        internal static void MergeFromStruct<T>(ref this T message, byte[] data, bool discardUnknownFields, ExtensionRegistry registry) where T: struct, IBufferMessage
+        {
+            ProtoPreconditions.CheckNotNull(data, "data");
+            CodedInputStream input = new CodedInputStream(data);
+            input.DiscardUnknownFields = discardUnknownFields;
+            input.ExtensionRegistry = registry;
+            message.MergeFrom(input);
+            input.CheckReadEndOfStreamTag();
+        }
+
+
         internal static void MergeFrom(this IMessage message, byte[] data, int offset, int length, bool discardUnknownFields, ExtensionRegistry registry)
         {
             ProtoPreconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(data, "data");
+            CodedInputStream input = new CodedInputStream(data, offset, length);
+            input.DiscardUnknownFields = discardUnknownFields;
+            input.ExtensionRegistry = registry;
+            message.MergeFrom(input);
+            input.CheckReadEndOfStreamTag();
+        }
+
+        internal static void MergeFromStruct<T>(ref this T message, byte[] data, int offset, int length, bool discardUnknownFields, ExtensionRegistry registry) where T: struct, IBufferMessage
+        {
             ProtoPreconditions.CheckNotNull(data, "data");
             CodedInputStream input = new CodedInputStream(data, offset, length);
             input.DiscardUnknownFields = discardUnknownFields;
@@ -282,9 +303,29 @@ namespace Google.Protobuf
             input.CheckReadEndOfStreamTag();
         }
 
+        internal static void MergeFromStruct<T>(ref this T message, ByteString data, bool discardUnknownFields, ExtensionRegistry registry) where T: struct, IBufferMessage
+        {
+            ProtoPreconditions.CheckNotNull(data, "data");
+            CodedInputStream input = data.CreateCodedInput();
+            input.DiscardUnknownFields = discardUnknownFields;
+            input.ExtensionRegistry = registry;
+            message.MergeFrom(input);
+            input.CheckReadEndOfStreamTag();
+        }
+
         internal static void MergeFrom(this IMessage message, Stream input, bool discardUnknownFields, ExtensionRegistry registry)
         {
             ProtoPreconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(input, "input");
+            CodedInputStream codedInput = new CodedInputStream(input);
+            codedInput.DiscardUnknownFields = discardUnknownFields;
+            codedInput.ExtensionRegistry = registry;
+            message.MergeFrom(codedInput);
+            codedInput.CheckReadEndOfStreamTag();
+        }
+
+        internal static void MergeFromStruct<T>(ref this T message, Stream input, bool discardUnknownFields, ExtensionRegistry registry) where T: struct, IBufferMessage
+        {
             ProtoPreconditions.CheckNotNull(input, "input");
             CodedInputStream codedInput = new CodedInputStream(input);
             codedInput.DiscardUnknownFields = discardUnknownFields;
@@ -304,7 +345,28 @@ namespace Google.Protobuf
         }
 
         [SecuritySafeCritical]
+        internal static void MergeFromStruct<T>(ref this T message, ReadOnlySequence<byte> data, bool discardUnknownFields, ExtensionRegistry registry) where T: struct, IBufferMessage
+        {
+            ParseContext.Initialize(data, out ParseContext ctx);
+            ctx.DiscardUnknownFields = discardUnknownFields;
+            ctx.ExtensionRegistry = registry;
+            ParsingPrimitivesMessages.ReadRawMessage(ref ctx, message);
+            ParsingPrimitivesMessages.CheckReadEndOfStreamTag(ref ctx.state);
+        }
+
+        [SecuritySafeCritical]
         internal static void MergeFrom(this IMessage message, ReadOnlySpan<byte> data, bool discardUnknownFields, ExtensionRegistry registry)
+        {
+            ParseContext.Initialize(data, out ParseContext ctx);
+            ctx.DiscardUnknownFields = discardUnknownFields;
+            ctx.ExtensionRegistry = registry;
+            ParsingPrimitivesMessages.ReadRawMessage(ref ctx, message);
+            ParsingPrimitivesMessages.CheckReadEndOfStreamTag(ref ctx.state);
+        }
+
+
+        [SecuritySafeCritical]
+        internal static void MergeFromStruct<T>(ref this T message, ReadOnlySpan<byte> data, bool discardUnknownFields, ExtensionRegistry registry) where T : struct, IBufferMessage
         {
             ParseContext.Initialize(data, out ParseContext ctx);
             ctx.DiscardUnknownFields = discardUnknownFields;
@@ -318,6 +380,14 @@ namespace Google.Protobuf
             ProtoPreconditions.CheckNotNull(message, "message");
             ProtoPreconditions.CheckNotNull(input, "input");
             int size = (int) CodedInputStream.ReadRawVarint32(input);
+            Stream limitedStream = new LimitedInputStream(input, size);
+            MergeFrom(message, limitedStream, discardUnknownFields, registry);
+        }
+
+        internal static void MergeDelimitedFromStruct<T>(ref this T message, Stream input, bool discardUnknownFields, ExtensionRegistry registry) where T : struct, IBufferMessage
+        {
+            ProtoPreconditions.CheckNotNull(input, "input");
+            int size = (int)CodedInputStream.ReadRawVarint32(input);
             Stream limitedStream = new LimitedInputStream(input, size);
             MergeFrom(message, limitedStream, discardUnknownFields, registry);
         }

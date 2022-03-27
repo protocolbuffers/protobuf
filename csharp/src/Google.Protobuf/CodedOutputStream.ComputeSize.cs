@@ -31,6 +31,7 @@
 #endregion
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Google.Protobuf
 {
@@ -152,6 +153,16 @@ namespace Google.Protobuf
         public static int ComputeMessageSize(IMessage value)
         {
             int size = value.CalculateSize();
+            return ComputeLengthSize(size) + size;
+        }
+        
+        /// <summary>
+        /// Computes the number of bytes that would be needed to encode an
+        /// embedded message field, including the tag.
+        /// </summary>
+        public static int ComputeMessageSize<T>(in T value) where T: struct, IMessage
+        {
+            int size = Unsafe.AsRef(value).CalculateSize();
             return ComputeLengthSize(size) + size;
         }
 

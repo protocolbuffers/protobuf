@@ -188,6 +188,16 @@ namespace Google.Protobuf
         {
             WritingPrimitivesMessages.WriteMessage(ref this, value);
         }
+        
+        /// <summary>
+        /// Writes a message, without a tag.
+        /// The data is length-prefixed.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteMessage<T>(in T value) where T: struct, IBufferMessage
+        {
+            WritingPrimitivesMessages.WriteMessage(ref this, value);
+        }
 
         /// <summary>
         /// Writes a group, without a tag, to the stream.

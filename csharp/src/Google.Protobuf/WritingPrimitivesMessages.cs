@@ -48,6 +48,36 @@ namespace Google.Protobuf
         /// The data is length-prefixed.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteMessage<T>(ref WriteContext ctx, in T value) where T: struct, IBufferMessage
+        {
+            WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, Unsafe.AsRef(value).CalculateSize());
+            WriteRawMessage(ref ctx, value);
+        }
+
+        /// <summary>
+        /// Writes a group, without a tag.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteGroup<T>(ref WriteContext ctx, in T value) where T : struct, IBufferMessage
+        {
+            WriteRawMessage(ref ctx, value);
+        }
+
+        /// <summary>
+        /// Writes a message, without a tag.
+        /// Message will be written without a length prefix.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteRawMessage<T>(ref WriteContext ctx, in T message) where T : struct, IBufferMessage
+        {
+            Unsafe.AsRef(message).InternalWriteTo(ref ctx);
+        }
+
+        /// <summary>
+        /// Writes a message, without a tag.
+        /// The data is length-prefixed.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteMessage(ref WriteContext ctx, IMessage value)
         {
             WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, value.CalculateSize());
