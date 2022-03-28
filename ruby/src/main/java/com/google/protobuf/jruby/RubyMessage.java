@@ -334,7 +334,7 @@ public class RubyMessage extends RubyObject {
             }
         }
         boolean includePrivate = false;
-        if ( args.length == 2 ) {
+        if (args.length == 2) {
             includePrivate = context.runtime.getTrue().equals(args[1]);
         }
         return metaClass.respondsToMethod(methodName, includePrivate) ? context.runtime.getTrue() : context.runtime.getFalse();
