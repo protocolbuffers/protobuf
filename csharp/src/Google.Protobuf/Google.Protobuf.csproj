@@ -8,7 +8,7 @@
     <!-- C# 7.2 is required for Span/BufferWriter/ReadOnlySequence -->
     <LangVersion>10.0</LangVersion>
     <Authors>Google Inc.</Authors>
-    <TargetFrameworks>netstandard1.1;netstandard2.0;net45;net50</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net45;net50</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>

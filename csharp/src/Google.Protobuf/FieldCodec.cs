@@ -689,7 +689,8 @@ namespace Google.Protobuf
                                                            typeof(T) == typeof(double) ||
                                                            typeof(T) == typeof(sbyte) ||
                                                            typeof(T) == typeof(byte) ||
-                                                           typeof(T) == typeof(bool);
+                                                           typeof(T) == typeof(bool) ||
+                                                           typeof(T).IsEnum;
 
         /// <summary>
         /// Merges an input stream into a value
