@@ -115,6 +115,21 @@ namespace Google.Protobuf
             return result;
         }
 
+
+        /// <summary>
+        /// Converts the given message into a byte array in protobuf encoding.
+        /// </summary>
+        /// <param name="message">The message to convert.</param>
+        /// <returns>The message data as a byte array.</returns>
+        public static byte[] ToByteArray<T>(this T message) where T: struct, IBufferMessage
+        {
+            byte[] result = new byte[message.CalculateSize()];
+            CodedOutputStream output = new CodedOutputStream(result);
+            message.WriteTo(output);
+            output.CheckNoSpaceLeft();
+            return result;
+        }
+
         /// <summary>
         /// Writes the given message data to the given stream in protobuf encoding.
         /// </summary>
