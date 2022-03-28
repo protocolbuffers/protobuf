@@ -963,6 +963,17 @@ namespace Google.Protobuf
             var result = PointOptimized.Parser.ParseFrom(input);
             Assert.AreEqual(point, result);
         }
+        
+        [Test]
+        public void TestStructMessageViaInterface()
+        {
+            var point = new PointOptimized() { X = 1.0f, Y = 2.0f };
+            var ms = new MemoryStream(point.ToByteArray());
+            var input = new CodedInputStream(ms);
+            // Goes through IMessage to deserialize
+            var result = ((MessageParser)PointOptimized.Parser).ParseFrom(input);
+            Assert.AreEqual(point, result);
+        }
 
         [Test]
         public void TestStructNestedMessage()
