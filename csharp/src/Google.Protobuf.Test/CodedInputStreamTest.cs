@@ -965,11 +965,30 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void TestStructNestedMessage()
+        {
+            var nestedPoint = new NestedPointOptimized()
+            {
+                Left = new PointOptimized() { X = 2.0f, Y = 3.0f },
+                Right = new PointOptimized() { X = 4.0f, Y = 5.0f },
+            };
+            var ms = new MemoryStream(nestedPoint.ToByteArray());
+            var input = new CodedInputStream(ms);
+            var result = NestedPointOptimized.Parser.ParseFrom(input);
+            Assert.AreEqual(nestedPoint, result);
+        }
+
+        [Test]
         public void TestStructMessageWithRepeated()
         {
             var testPoint = new TestPoint
             {
-                FirstPoint = new PointOptimized() { X = 1.0f, Y = 2.0f }
+                FirstPoint = new PointOptimized() { X = 1.0f, Y = 2.0f },
+                NestedPoint = new NestedPointOptimized()
+                {
+                    Left = new PointOptimized() { X = 2.0f, Y = 3.0f },
+                    Right = new PointOptimized() { X = 4.0f, Y = 5.0f },
+                }
             };
             for (int i = 0; i < 100; i++)
             {

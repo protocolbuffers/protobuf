@@ -143,23 +143,28 @@ namespace Google.Protobuf.TestProtos {
             "TWVzc2FnZRIMCgR0ZXh0GAEgASgJGisKFE5lc3RlZENvbW1lbnRNZXNzYWdl",
             "EhMKC25lc3RlZF90ZXh0GAEgASgJIiMKEU5lc3RlZENvbW1lbnRFbnVtEg4K",
             "ClpFUk9fVkFMVUUQACIqCg5Qb2ludE9wdGltaXplZBIJCgF4GAEgASgCEgkK",
-            "AXkYAiABKAI6AlABIoIBCglUZXN0UG9pbnQSNwoLZmlyc3RfcG9pbnQYASAB",
-            "KAsyIi5wcm90b2J1Zl91bml0dGVzdDMuUG9pbnRPcHRpbWl6ZWQSPAoQcmVt",
-            "YWluaW5nX3BvaW50cxgCIAMoCzIiLnByb3RvYnVmX3VuaXR0ZXN0My5Qb2lu",
-            "dE9wdGltaXplZCpZCgtGb3JlaWduRW51bRIXChNGT1JFSUdOX1VOU1BFQ0lG",
-            "SUVEEAASDwoLRk9SRUlHTl9GT08QBBIPCgtGT1JFSUdOX0JBUhAFEg8KC0ZP",
-            "UkVJR05fQkFaEAYqdQoUVGVzdEVudW1XaXRoRHVwVmFsdWUSKAokVEVTVF9F",
-            "TlVNX1dJVEhfRFVQX1ZBTFVFX1VOU1BFQ0lGSUVEEAASCAoERk9PMRABEggK",
-            "BEJBUjEQAhIHCgNCQVoQAxIICgRGT08yEAESCAoEQkFSMhACGgIQASqdAQoO",
-            "VGVzdFNwYXJzZUVudW0SIAocVEVTVF9TUEFSU0VfRU5VTV9VTlNQRUNJRklF",
-            "RBAAEgwKCFNQQVJTRV9BEHsSDgoIU1BBUlNFX0IQpucDEg8KCFNQQVJTRV9D",
-            "ELKxgAYSFQoIU1BBUlNFX0QQ8f//////////ARIVCghTUEFSU0VfRRC03vz/",
-            "//////8BEgwKCFNQQVJTRV9HEAIqHQoLQ29tbWVudEVudW0SDgoKWkVST19W",
-            "QUxVRRAAMp0BCgtUZXN0U2VydmljZRJGCgNGb28SHi5wcm90b2J1Zl91bml0",
-            "dGVzdDMuRm9vUmVxdWVzdBofLnByb3RvYnVmX3VuaXR0ZXN0My5Gb29SZXNw",
-            "b25zZRJGCgNCYXISHi5wcm90b2J1Zl91bml0dGVzdDMuQmFyUmVxdWVzdBof",
-            "LnByb3RvYnVmX3VuaXR0ZXN0My5CYXJSZXNwb25zZUIsQg1Vbml0dGVzdFBy",
-            "b3RvqgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
+            "AXkYAiABKAI6AlABIn8KFE5lc3RlZFBvaW50T3B0aW1pemVkEjAKBGxlZnQY",
+            "ASABKAsyIi5wcm90b2J1Zl91bml0dGVzdDMuUG9pbnRPcHRpbWl6ZWQSMQoF",
+            "cmlnaHQYAiABKAsyIi5wcm90b2J1Zl91bml0dGVzdDMuUG9pbnRPcHRpbWl6",
+            "ZWQ6AlABIsIBCglUZXN0UG9pbnQSNwoLZmlyc3RfcG9pbnQYASABKAsyIi5w",
+            "cm90b2J1Zl91bml0dGVzdDMuUG9pbnRPcHRpbWl6ZWQSPgoMbmVzdGVkX3Bv",
+            "aW50GAIgASgLMigucHJvdG9idWZfdW5pdHRlc3QzLk5lc3RlZFBvaW50T3B0",
+            "aW1pemVkEjwKEHJlbWFpbmluZ19wb2ludHMYAyADKAsyIi5wcm90b2J1Zl91",
+            "bml0dGVzdDMuUG9pbnRPcHRpbWl6ZWQqWQoLRm9yZWlnbkVudW0SFwoTRk9S",
+            "RUlHTl9VTlNQRUNJRklFRBAAEg8KC0ZPUkVJR05fRk9PEAQSDwoLRk9SRUlH",
+            "Tl9CQVIQBRIPCgtGT1JFSUdOX0JBWhAGKnUKFFRlc3RFbnVtV2l0aER1cFZh",
+            "bHVlEigKJFRFU1RfRU5VTV9XSVRIX0RVUF9WQUxVRV9VTlNQRUNJRklFRBAA",
+            "EggKBEZPTzEQARIICgRCQVIxEAISBwoDQkFaEAMSCAoERk9PMhABEggKBEJB",
+            "UjIQAhoCEAEqnQEKDlRlc3RTcGFyc2VFbnVtEiAKHFRFU1RfU1BBUlNFX0VO",
+            "VU1fVU5TUEVDSUZJRUQQABIMCghTUEFSU0VfQRB7Eg4KCFNQQVJTRV9CEKbn",
+            "AxIPCghTUEFSU0VfQxCysYAGEhUKCFNQQVJTRV9EEPH//////////wESFQoI",
+            "U1BBUlNFX0UQtN78////////ARIMCghTUEFSU0VfRxACKh0KC0NvbW1lbnRF",
+            "bnVtEg4KClpFUk9fVkFMVUUQADKdAQoLVGVzdFNlcnZpY2USRgoDRm9vEh4u",
+            "cHJvdG9idWZfdW5pdHRlc3QzLkZvb1JlcXVlc3QaHy5wcm90b2J1Zl91bml0",
+            "dGVzdDMuRm9vUmVzcG9uc2USRgoDQmFyEh4ucHJvdG9idWZfdW5pdHRlc3Qz",
+            "LkJhclJlcXVlc3QaHy5wcm90b2J1Zl91bml0dGVzdDMuQmFyUmVzcG9uc2VC",
+            "LEINVW5pdHRlc3RQcm90b6oCGkdvb2dsZS5Qcm90b2J1Zi5UZXN0UHJvdG9z",
+            "YgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.ForeignEnum), typeof(global::Google.Protobuf.TestProtos.TestEnumWithDupValue), typeof(global::Google.Protobuf.TestProtos.TestSparseEnum), typeof(global::Google.Protobuf.TestProtos.CommentEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -200,7 +205,8 @@ namespace Google.Protobuf.TestProtos {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestEmptyMessage), global::Google.Protobuf.TestProtos.TestEmptyMessage.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.CommentMessage), global::Google.Protobuf.TestProtos.CommentMessage.Parser, new[]{ "Text" }, null, new[]{ typeof(global::Google.Protobuf.TestProtos.CommentMessage.Types.NestedCommentEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.CommentMessage.Types.NestedCommentMessage), global::Google.Protobuf.TestProtos.CommentMessage.Types.NestedCommentMessage.Parser, new[]{ "NestedText" }, null, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.PointOptimized), global::Google.Protobuf.TestProtos.PointOptimized.Parser, new[]{ "X", "Y" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestPoint), global::Google.Protobuf.TestProtos.TestPoint.Parser, new[]{ "FirstPoint", "RemainingPoints" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.NestedPointOptimized), global::Google.Protobuf.TestProtos.NestedPointOptimized.Parser, new[]{ "Left", "Right" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestPoint), global::Google.Protobuf.TestProtos.TestPoint.Parser, new[]{ "FirstPoint", "NestedPoint", "RemainingPoints" }, null, null, null, null)
           }));
     }
     #endregion
@@ -10659,6 +10665,9 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
+  /// <summary>
+  /// Test with structs
+  /// </summary>
   public partial struct PointOptimized : pb::IMessage<PointOptimized>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -10868,6 +10877,199 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
+  public partial struct NestedPointOptimized : pb::IMessage<NestedPointOptimized>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::ValueTypeMessageParser<NestedPointOptimized> _parser = new pb::ValueTypeMessageParser<NestedPointOptimized>(() => new NestedPointOptimized());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::ValueTypeMessageParser<NestedPointOptimized> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[37]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public NestedPointOptimized(NestedPointOptimized other) : this() {
+      left_ = other.left_.Clone();
+      right_ = other.right_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public NestedPointOptimized Clone() {
+      return new NestedPointOptimized(this);
+    }
+
+    /// <summary>Field number for the "left" field.</summary>
+    public const int LeftFieldNumber = 1;
+    private global::Google.Protobuf.TestProtos.PointOptimized left_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Google.Protobuf.TestProtos.PointOptimized Left {
+      get { return left_; }
+      set {
+        left_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "right" field.</summary>
+    public const int RightFieldNumber = 2;
+    private global::Google.Protobuf.TestProtos.PointOptimized right_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Google.Protobuf.TestProtos.PointOptimized Right {
+      get { return right_; }
+      set {
+        right_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return other is NestedPointOptimized other1 ? Equals(other1) : false;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(NestedPointOptimized other) {
+      if (!left_.Equals(other.left_)) return false;
+      if (!right_.Equals(other.right_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= left_.GetHashCode();
+      hash ^= right_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      output.WriteRawTag(10);
+      output.WriteMessage(left_);
+      output.WriteRawTag(18);
+      output.WriteMessage(right_);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      output.WriteRawTag(10);
+      output.WriteMessage(left_);
+      output.WriteRawTag(18);
+      output.WriteMessage(right_);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      size += 1 + pb::CodedOutputStream.ComputeMessageSize(left_);
+      size += 1 + pb::CodedOutputStream.ComputeMessageSize(right_);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(NestedPointOptimized other) {
+      left_.MergeFrom(other.left_);
+      right_.MergeFrom(other.right_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(ref this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            input.ReadMessage(ref left_);
+            break;
+          }
+          case 18: {
+            input.ReadMessage(ref right_);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            input.ReadMessage(ref left_);
+            break;
+          }
+          case 18: {
+            input.ReadMessage(ref right_);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
   public sealed partial class TestPoint : pb::IMessage<TestPoint>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -10882,7 +11084,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[37]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[38]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10903,6 +11105,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestPoint(TestPoint other) : this() {
       firstPoint_ = other.firstPoint_.Clone();
+      nestedPoint_ = other.nestedPoint_.Clone();
       remainingPoints_ = other.remainingPoints_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -10925,10 +11128,22 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "nested_point" field.</summary>
+    public const int NestedPointFieldNumber = 2;
+    private global::Google.Protobuf.TestProtos.NestedPointOptimized nestedPoint_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Google.Protobuf.TestProtos.NestedPointOptimized NestedPoint {
+      get { return nestedPoint_; }
+      set {
+        nestedPoint_ = value;
+      }
+    }
+
     /// <summary>Field number for the "remaining_points" field.</summary>
-    public const int RemainingPointsFieldNumber = 2;
+    public const int RemainingPointsFieldNumber = 3;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.PointOptimized> _repeated_remainingPoints_codec
-        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.TestProtos.PointOptimized.Parser);
+        = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.TestProtos.PointOptimized.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.PointOptimized> remainingPoints_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.PointOptimized>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -10952,6 +11167,7 @@ namespace Google.Protobuf.TestProtos {
         return true;
       }
       if (!firstPoint_.Equals(other.firstPoint_)) return false;
+      if (!nestedPoint_.Equals(other.nestedPoint_)) return false;
       if(!remainingPoints_.Equals(other.remainingPoints_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -10961,6 +11177,7 @@ namespace Google.Protobuf.TestProtos {
     public override int GetHashCode() {
       int hash = 1;
       hash ^= firstPoint_.GetHashCode();
+      hash ^= nestedPoint_.GetHashCode();
       hash ^= remainingPoints_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -10982,6 +11199,8 @@ namespace Google.Protobuf.TestProtos {
     #else
       output.WriteRawTag(10);
       output.WriteMessage(firstPoint_);
+      output.WriteRawTag(18);
+      output.WriteMessage(nestedPoint_);
       remainingPoints_.WriteTo(output, _repeated_remainingPoints_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -10995,6 +11214,8 @@ namespace Google.Protobuf.TestProtos {
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       output.WriteRawTag(10);
       output.WriteMessage(firstPoint_);
+      output.WriteRawTag(18);
+      output.WriteMessage(nestedPoint_);
       remainingPoints_.WriteTo(ref output, _repeated_remainingPoints_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -11007,6 +11228,7 @@ namespace Google.Protobuf.TestProtos {
     public int CalculateSize() {
       int size = 0;
       size += 1 + pb::CodedOutputStream.ComputeMessageSize(firstPoint_);
+      size += 1 + pb::CodedOutputStream.ComputeMessageSize(nestedPoint_);
       size += remainingPoints_.CalculateSize(_repeated_remainingPoints_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -11021,6 +11243,7 @@ namespace Google.Protobuf.TestProtos {
         return;
       }
       firstPoint_.MergeFrom(other.firstPoint_);
+      nestedPoint_.MergeFrom(other.nestedPoint_);
       remainingPoints_.Add(other.remainingPoints_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -11042,6 +11265,10 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 18: {
+            input.ReadMessage(ref nestedPoint_);
+            break;
+          }
+          case 26: {
             remainingPoints_.AddEntriesFrom(input, _repeated_remainingPoints_codec);
             break;
           }
@@ -11065,6 +11292,10 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 18: {
+            input.ReadMessage(ref nestedPoint_);
+            break;
+          }
+          case 26: {
             remainingPoints_.AddEntriesFrom(ref input, _repeated_remainingPoints_codec);
             break;
           }

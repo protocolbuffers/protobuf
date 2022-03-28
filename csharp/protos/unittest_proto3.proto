@@ -409,14 +409,21 @@ enum CommentEnum {
   ZERO_VALUE = 0;
 }
 
-
+// Test with structs
 message PointOptimized {
   option csharp_generate_struct = true;
   float x = 1;
   float y = 2;
 }
 
+message NestedPointOptimized {
+  option csharp_generate_struct = true;
+  PointOptimized left = 1;
+  PointOptimized right = 2;
+}
+
 message TestPoint {
   PointOptimized first_point = 1;
-  repeated PointOptimized remaining_points =  2;
+  NestedPointOptimized nested_point = 2;
+  repeated PointOptimized remaining_points =  3;
 }
