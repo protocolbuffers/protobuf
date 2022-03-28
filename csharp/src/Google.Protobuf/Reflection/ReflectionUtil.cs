@@ -34,6 +34,7 @@ using Google.Protobuf.Compatibility;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Google.Protobuf.Reflection
 {
@@ -135,8 +136,17 @@ namespace Google.Protobuf.Reflection
         /// an object is pretty cheap.
         /// </summary>
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
-        private static IReflectionHelper GetReflectionHelper(Type t1, Type t2) =>
-            (IReflectionHelper) Activator.CreateInstance(typeof(ReflectionHelper<,>).MakeGenericType(t1, t2));
+        private static IReflectionHelper GetReflectionHelper(Type t1, Type t2)
+        {
+#if !NETSTANDARD1_1
+            if (t1.IsValueType)
+            {
+                return (IReflectionHelper)Activator.CreateInstance(typeof(ValueTypeReflectionHelper<,>).MakeGenericType(t1, t2));
+            }
+#endif
+            var helper = (IReflectionHelper) Activator.CreateInstance(typeof(ReflectionHelper<,>).MakeGenericType(t1, t2));
+            return helper;
+        }
 
         // Non-generic interface allowing us to use an instance of ReflectionHelper<T1, T2> without statically
         // knowing the types involved.
@@ -208,6 +218,75 @@ namespace Google.Protobuf.Reflection
                 return message => del((T1)message);
             }
         }
+
+        private class ValueTypeReflectionHelper<T1, T2> : IReflectionHelper where T1 : struct
+        {
+            public Func<IMessage, int> CreateFuncIMessageInt32(MethodInfo method)
+            {
+                // On pleasant runtimes, we can create a Func<int> from a method returning
+                // an enum based on an int. That's the fast path.
+                if (CanConvertEnumFuncToInt32Func)
+                {
+                    var del = (FuncTransform<int>)method.CreateDelegate(typeof(FuncTransform<int>));
+                    return message => del(ref Unsafe.As<CastToT1>(message).Value);
+                }
+                else
+                {
+                    // On some runtimes (e.g. old Mono) the return type has to be exactly correct,
+                    // so we go via boxing. Reflection is already fairly inefficient, and this is
+                    // only used for one-of case checking, fortunately.
+                    var del = (FuncTransform<T2>)method.CreateDelegate(typeof(FuncTransform<T2>));
+                    return message => (int)(object)del(ref Unsafe.As<CastToT1>(message).Value);
+                }
+            }
+
+            public Action<IMessage> CreateActionIMessage(MethodInfo method)
+            {
+                var del = (ActionTransform)method.CreateDelegate(typeof(ActionTransform));
+                return message =>
+                {
+                    del(ref Unsafe.As<CastToT1>(message).Value);
+                };
+            }
+
+            public Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method)
+            {
+                var del = (FuncTransform<T2>)method.CreateDelegate(typeof(FuncTransform<T2>));
+                return message =>
+                {
+                    return del(ref Unsafe.As<CastToT1>(message).Value);
+                };
+            }
+
+            public Action<IMessage, object> CreateActionIMessageObject(MethodInfo method)
+            {
+                var del = (ActionTransform<T2>)method.CreateDelegate(typeof(ActionTransform<T2>));
+                return (message, arg) =>
+                {
+                    del(ref Unsafe.As<CastToT1>(message).Value, (T2)arg);
+                };
+            }
+
+            public Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method)
+            {
+                var del = (FuncTransform<bool>)method.CreateDelegate(typeof(FuncTransform<bool>));
+                return message =>
+                {
+                    return del(ref Unsafe.As<CastToT1>(message).Value);
+                };
+            }
+
+            private delegate TResult FuncTransform<out TResult>(ref T1 instance);
+            private delegate void ActionTransform(ref T1 instance);
+            private delegate void ActionTransform<TInput>(ref T1 instance, TInput input);
+
+            private sealed class CastToT1
+            {
+                public T1 Value;
+            }
+        }
+
+
 
         private class ExtensionReflectionHelper<T1, T3> : IExtensionReflectionHelper
             where T1 : IExtendableMessage<T1>
