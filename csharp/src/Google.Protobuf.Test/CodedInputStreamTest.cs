@@ -954,6 +954,34 @@ namespace Google.Protobuf
             }
         }
 
+        [Test]
+        public void TestStructMessage()
+        {
+            var point = new PointOptimized() { X = 1.0f, Y = 2.0f };
+            var ms = new MemoryStream(point.ToByteArray());
+            var input = new CodedInputStream(ms);
+            var result = PointOptimized.Parser.ParseFrom(input);
+            Assert.AreEqual(point, result);
+        }
+
+        [Test]
+        public void TestStructMessageWithRepeated()
+        {
+            var testPoint = new TestPoint
+            {
+                FirstPoint = new PointOptimized() { X = 1.0f, Y = 2.0f }
+            };
+            for (int i = 0; i < 100; i++)
+            {
+                testPoint.RemainingPoints.Add(new PointOptimized() { X = (float)i, Y = 2.0f });
+            }
+            var ms = new MemoryStream(testPoint.ToByteArray());
+            var input = new CodedInputStream(ms);
+            var result = TestPoint.Parser.ParseFrom(input);
+
+            Assert.AreEqual(testPoint, result);
+        }
+
         /// <returns>A serialized big message</returns>
         private static byte[] GenerateBigSerializedMessage()
         {
