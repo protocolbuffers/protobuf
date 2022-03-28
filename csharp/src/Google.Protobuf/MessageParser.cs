@@ -558,7 +558,7 @@ namespace Google.Protobuf
         public new T ParseDelimitedFrom(Stream input)
         {
             T message = factory();
-            message.MergeDelimitedFrom(input, DiscardUnknownFields, Extensions);
+            message.MergeDelimitedFromStruct(input, DiscardUnknownFields, Extensions);
             return message;
         }
 
