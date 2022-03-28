@@ -796,7 +796,7 @@ module CommonTests
     m.repeated_string += %w[two three]
     assert_equal %w[one two three], m.repeated_string
 
-    m.repeated_string.push *['four', 'five']
+    m.repeated_string.push( *['four', 'five'] )
     assert_equal %w[one two three four five], m.repeated_string
 
     m.repeated_string.push 'six', 'seven'
@@ -1286,6 +1286,7 @@ module CommonTests
     m2 = proto_module::Wrapper.decode(m.to_proto)
     run_asserts.call(m2)
     m3 = proto_module::Wrapper.decode_json(m.to_json)
+    run_asserts.call(m3)
   end
 
   def test_wrapper_getters
@@ -1536,8 +1537,6 @@ module CommonTests
       assert_nil m.bytes
       assert_nil m.bytes_as_value
     }
-
-    m = proto_module::Wrapper.new
 
     m2 = proto_module::Wrapper.new(
       double: Google::Protobuf::DoubleValue.new(value: 2.0),

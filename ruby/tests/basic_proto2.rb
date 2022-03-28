@@ -142,7 +142,7 @@ module BasicTestProto2
       m = TestMessageDefaults.new
 
       m.optional_int32 = -42
-      assert_equal -42, m.optional_int32
+      assert_equal( -42, m.optional_int32 )
       assert m.has_optional_int32?
       m.clear_optional_int32
       assert_equal 1, m.optional_int32

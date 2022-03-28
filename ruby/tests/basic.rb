@@ -68,9 +68,7 @@ module BasicTest
       msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
 
       # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
-      match = RUBY_PLATFORM == "java" &&
-        JRUBY_VERSION.match(/^(\d+)\.(\d+)\.\d+\.\d+$/)
-      unless match and (match[1].to_i < 9 or match[2].to_i < 3)
+      if cruby_or_jruby_9_3_or_higher?
         GC.start(full_mark: true, immediate_sweep: true)
       end
       TestMessage.encode(msg)
@@ -104,7 +102,7 @@ module BasicTest
 
       begin
         encoded = msgclass.encode(m)
-      rescue java.lang.NullPointerException => e
+      rescue java.lang.NullPointerException
         flunk "NPE rescued"
       end
       decoded = msgclass.decode(encoded)
@@ -178,7 +176,7 @@ module BasicTest
       m = TestSingularFields.new
 
       m.singular_int32 = -42
-      assert_equal -42, m.singular_int32
+      assert_equal( -42, m.singular_int32 )
       m.clear_singular_int32
       assert_equal 0, m.singular_int32
 
