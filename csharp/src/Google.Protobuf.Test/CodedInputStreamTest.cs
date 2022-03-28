@@ -992,7 +992,7 @@ namespace Google.Protobuf
         [Test]
         public void TestStructMessageWithRepeated()
         {
-            var testPoint = new TestPoint
+            var testPoint = new TestPointOptimized
             {
                 FirstPoint = new PointOptimized() { X = 1.0f, Y = 2.0f },
                 NestedPoint = new NestedPointOptimized()
@@ -1007,7 +1007,7 @@ namespace Google.Protobuf
             }
             var ms = new MemoryStream(testPoint.ToByteArray());
             var input = new CodedInputStream(ms);
-            var result = TestPoint.Parser.ParseFrom(input);
+            var result = TestPointOptimized.Parser.ParseFrom(input);
 
             Assert.AreEqual(testPoint, result);
         }

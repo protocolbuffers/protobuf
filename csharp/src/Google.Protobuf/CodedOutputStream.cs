@@ -282,13 +282,13 @@ namespace Google.Protobuf
         /// The data is length-prefixed.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteMessage<T>(in T value) where T: struct, IBufferMessage
+        public void WriteMessage<T>(ref T value) where T: struct, IBufferMessage
         {
             var span = new Span<byte>(buffer);
             WriteContext.Initialize(ref span, ref state, out WriteContext ctx);
             try
             {
-                WritingPrimitivesMessages.WriteMessage(ref ctx, value);
+                WritingPrimitivesMessages.WriteMessage(ref ctx, ref value);
             }
             finally
             {
@@ -323,13 +323,13 @@ namespace Google.Protobuf
         /// Only the message data is written, without a length-delimiter.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteRawMessage<T>(in T value) where T: struct, IBufferMessage
+        public void WriteRawMessage<T>(ref T value) where T: struct, IBufferMessage
         {
             var span = new Span<byte>(buffer);
             WriteContext.Initialize(ref span, ref state, out WriteContext ctx);
             try
             {
-                WritingPrimitivesMessages.WriteRawMessage(ref ctx, value);
+                WritingPrimitivesMessages.WriteRawMessage(ref ctx, ref value);
             }
             finally
             {
@@ -585,7 +585,7 @@ namespace Google.Protobuf
             {
             }
         }
-
+        
         /// <summary>
         /// Flushes any buffered data and optionally closes the underlying stream, if any.
         /// </summary>

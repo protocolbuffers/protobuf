@@ -249,6 +249,7 @@ namespace Google.Protobuf
             --ctx.state.recursionDepth;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReadRawMessage<T>(ref ParseContext ctx, ref T message) where T: struct, IBufferMessage
         {
             message.InternalMergeFrom(ref ctx);

@@ -145,6 +145,19 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Writes the given message data to the given stream in protobuf encoding.
+        /// </summary>
+        /// <param name="message">The message to write to the stream.</param>
+        /// <param name="output">The stream to write to.</param>
+        public static void WriteTo<T>(this T message, Stream output) where T: struct, IBufferMessage
+        {
+            ProtoPreconditions.CheckNotNull(output, "output");
+            CodedOutputStream codedOutput = new CodedOutputStream(output);
+            message.WriteTo(codedOutput);
+            codedOutput.Flush();
+        }
+
+        /// <summary>
         /// Writes the length and then data of the given message to a stream.
         /// </summary>
         /// <param name="message">The message to write.</param>
@@ -365,7 +378,7 @@ namespace Google.Protobuf
             ParseContext.Initialize(data, out ParseContext ctx);
             ctx.DiscardUnknownFields = discardUnknownFields;
             ctx.ExtensionRegistry = registry;
-            ParsingPrimitivesMessages.ReadRawMessage(ref ctx, message);
+            ParsingPrimitivesMessages.ReadRawMessage(ref ctx, ref message);
             ParsingPrimitivesMessages.CheckReadEndOfStreamTag(ref ctx.state);
         }
 
@@ -386,7 +399,7 @@ namespace Google.Protobuf
             ParseContext.Initialize(data, out ParseContext ctx);
             ctx.DiscardUnknownFields = discardUnknownFields;
             ctx.ExtensionRegistry = registry;
-            ParsingPrimitivesMessages.ReadRawMessage(ref ctx, message);
+            ParsingPrimitivesMessages.ReadRawMessage(ref ctx, ref message);
             ParsingPrimitivesMessages.CheckReadEndOfStreamTag(ref ctx.state);
         }
 
@@ -404,7 +417,7 @@ namespace Google.Protobuf
             ProtoPreconditions.CheckNotNull(input, "input");
             int size = (int)CodedInputStream.ReadRawVarint32(input);
             Stream limitedStream = new LimitedInputStream(input, size);
-            MergeFrom(message, limitedStream, discardUnknownFields, registry);
+            MergeFromStruct(ref message, limitedStream, discardUnknownFields, registry);
         }
     }
 }

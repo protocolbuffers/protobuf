@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+    <ProjectReference Include="..\Google.Protobuf.Test.TestProtos\Google.Protobuf.Test.TestProtos.csproj" />
     <ProjectReference Include="..\Google.Protobuf\Google.Protobuf.csproj" />
   </ItemGroup>
 

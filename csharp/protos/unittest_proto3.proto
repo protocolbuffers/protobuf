@@ -422,8 +422,26 @@ message NestedPointOptimized {
   PointOptimized right = 2;
 }
 
-message TestPoint {
+message TestPointOptimized {
   PointOptimized first_point = 1;
   NestedPointOptimized nested_point = 2;
   repeated PointOptimized remaining_points =  3;
+  repeated NestedPointOptimized remaining_nested_points =  4;
+}
+
+message Point {
+  float x = 1;
+  float y = 2;
+}
+
+message NestedPoint {
+  Point left = 1;
+  Point right = 2;
+}
+
+message TestPoint {
+  Point first_point = 1;
+  NestedPoint nested_point = 2;
+  repeated Point remaining_points =  3;
+  repeated NestedPoint remaining_nested_points =  4;
 }

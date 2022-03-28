@@ -194,9 +194,9 @@ namespace Google.Protobuf
         /// The data is length-prefixed.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteMessage<T>(in T value) where T: struct, IBufferMessage
+        public void WriteMessage<T>(ref T value) where T: struct, IBufferMessage
         {
-            WritingPrimitivesMessages.WriteMessage(ref this, value);
+            WritingPrimitivesMessages.WriteMessage(ref this, ref value);
         }
 
         /// <summary>

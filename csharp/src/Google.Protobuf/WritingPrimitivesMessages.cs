@@ -48,19 +48,10 @@ namespace Google.Protobuf
         /// The data is length-prefixed.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteMessage<T>(ref WriteContext ctx, in T value) where T: struct, IBufferMessage
+        public static void WriteMessage<T>(ref WriteContext ctx, ref T value) where T: struct, IBufferMessage
         {
-            WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, Unsafe.AsRef(value).CalculateSize());
-            WriteRawMessage(ref ctx, value);
-        }
-
-        /// <summary>
-        /// Writes a group, without a tag.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteGroup<T>(ref WriteContext ctx, in T value) where T : struct, IBufferMessage
-        {
-            WriteRawMessage(ref ctx, value);
+            WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, value.CalculateSize());
+            WriteRawMessage(ref ctx, ref value);
         }
 
         /// <summary>
@@ -68,9 +59,9 @@ namespace Google.Protobuf
         /// Message will be written without a length prefix.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteRawMessage<T>(ref WriteContext ctx, in T message) where T : struct, IBufferMessage
+        public static void WriteRawMessage<T>(ref WriteContext ctx, ref T message) where T : struct, IBufferMessage
         {
-            Unsafe.AsRef(message).InternalWriteTo(ref ctx);
+            message.InternalWriteTo(ref ctx);
         }
 
         /// <summary>

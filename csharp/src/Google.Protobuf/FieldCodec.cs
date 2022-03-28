@@ -454,7 +454,7 @@ namespace Google.Protobuf
                     ctx.ReadMessage(ref message);
                     return message;
                 },
-                (ref WriteContext output, T value) => output.WriteMessage(value),
+                (ref WriteContext output, T value) => output.WriteMessage(ref value),
                 (ref ParseContext ctx, ref T v) =>
                 {
                     ctx.ReadMessage(ref v);
@@ -464,7 +464,7 @@ namespace Google.Protobuf
                     v.MergeFrom(v2);
                     return true;
                 },
-                message => CodedOutputStream.ComputeMessageSize(message), tag);
+                message => CodedOutputStream.ComputeMessageSize(ref message), tag);
         }
 
         /// <summary>

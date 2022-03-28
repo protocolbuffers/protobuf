@@ -160,9 +160,9 @@ namespace Google.Protobuf
         /// Computes the number of bytes that would be needed to encode an
         /// embedded message field, including the tag.
         /// </summary>
-        public static int ComputeMessageSize<T>(in T value) where T: struct, IMessage
+        public static int ComputeMessageSize<T>(ref T value) where T: struct, IMessage
         {
-            int size = Unsafe.AsRef(value).CalculateSize();
+            int size = value.CalculateSize();
             return ComputeLengthSize(size) + size;
         }
 
