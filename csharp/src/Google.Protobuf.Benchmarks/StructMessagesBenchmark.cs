@@ -43,7 +43,7 @@ public class StructMessagesBenchmark
         }
     }
 
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public void ManagedMessage()
     {
         var output = new CodedOutputStream(_buffer);
