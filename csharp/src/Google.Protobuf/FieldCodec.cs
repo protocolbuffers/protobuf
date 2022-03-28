@@ -451,13 +451,13 @@ namespace Google.Protobuf
                 (ref ParseContext ctx) =>
                 {
                     T message = parser.CreateTemplate();
-                    ctx.ReadMessage(message);
+                    ctx.ReadMessage(ref message);
                     return message;
                 },
                 (ref WriteContext output, T value) => output.WriteMessage(value),
                 (ref ParseContext ctx, ref T v) =>
                 {
-                    ctx.ReadMessage(v);
+                    ctx.ReadMessage(ref v);
                 },
                 (ref T v, T v2) =>
                 {
