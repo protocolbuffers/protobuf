@@ -33,30 +33,29 @@
 package google;
 
 import com.google.protobuf.jruby.*;
+import java.io.IOException;
 import org.jruby.Ruby;
 import org.jruby.runtime.load.BasicLibraryService;
 
-import java.io.IOException;
-
 public class ProtobufJavaService implements BasicLibraryService {
-    @Override
-    public boolean basicLoad(Ruby ruby) throws IOException {
-        ruby.defineModule("Google");
+  @Override
+  public boolean basicLoad(Ruby ruby) throws IOException {
+    ruby.defineModule("Google");
 
-        /*
-         * The order these happen in is important because we
-         * save a static reference to some classes and they
-         * need to exist before we try to save a reference to them
-         */
-        RubyProtobuf.createProtobuf(ruby);
-        RubyFileDescriptor.createRubyFileDescriptor(ruby);
-        RubyEnumDescriptor.createRubyEnumDescriptor(ruby);
-        RubyRepeatedField.createRubyRepeatedField(ruby);
-        RubyFieldDescriptor.createRubyFieldDescriptor(ruby);
-        RubyMap.createRubyMap(ruby);
-        RubyOneofDescriptor.createRubyOneofDescriptor(ruby);
-        RubyDescriptor.createRubyDescriptor(ruby);
-        RubyDescriptorPool.createRubyDescriptorPool(ruby);
-        return true;
-    }
+    /*
+     * The order these happen in is important because we
+     * save a static reference to some classes and they
+     * need to exist before we try to save a reference to them
+     */
+    RubyProtobuf.createProtobuf(ruby);
+    RubyFileDescriptor.createRubyFileDescriptor(ruby);
+    RubyEnumDescriptor.createRubyEnumDescriptor(ruby);
+    RubyRepeatedField.createRubyRepeatedField(ruby);
+    RubyFieldDescriptor.createRubyFieldDescriptor(ruby);
+    RubyMap.createRubyMap(ruby);
+    RubyOneofDescriptor.createRubyOneofDescriptor(ruby);
+    RubyDescriptor.createRubyDescriptor(ruby);
+    RubyDescriptorPool.createRubyDescriptorPool(ruby);
+    return true;
+  }
 }
