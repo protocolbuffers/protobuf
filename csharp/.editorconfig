@@ -12,7 +12,6 @@ indent_style = space
 tab_width = 4
 
 # New line preferences
-# See https://github.com/protocolbuffers/protobuf/issues/9526
-#end_of_line = lf
+end_of_line = lf
 insert_final_newline = false
 trim_trailing_whitespace = true
