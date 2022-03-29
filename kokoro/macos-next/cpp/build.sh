@@ -117,8 +117,13 @@ xcrun --show-sdk-path
 
 PATH=/Applications/CMake.app/Contents/bin:$PATH
 export PATH
+ls /Applications/CMake.app/Contents/bin
 
 which cmake
+cmake --version
+
+alias cmake=/Applications/CMake.app/Contents/bin/cmake
+
 cmake --version
 
 export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
