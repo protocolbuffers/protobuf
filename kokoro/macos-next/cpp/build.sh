@@ -113,6 +113,7 @@ xcrun --show-sdk-path
 #   -c - \
 #   -o /dev/null
 
+export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
 # Build everything first
 cmake -G Xcode ../.. \
