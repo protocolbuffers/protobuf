@@ -25,6 +25,9 @@ xcrun --show-sdk-path
 
 #  -DHAVE_ZLIB
 #  -isysroot /Applications/Xcode_13.2.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk \
+
+#  -I/tmpfs/src/github/protobuf/third_party/googletest/googlemock/include \
+#  -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk/usr/include \
 echo "#include <cmath>" | \
   /Applications/Xcode_13.2.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang \
   -v \
@@ -89,7 +92,6 @@ echo "#include <cmath>" | \
   -I/tmpfs/src/github/protobuf/third_party/googletest/googletest \
   -I/tmpfs/src/github/protobuf/third_party/googletest/googletest/include \
   -I/tmpfs/src/github/protobuf/third_party/googletest/googlemock/include \
-  -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk/usr/include \
   -I/tmpfs/src/github/protobuf/cmake/build/protobuf.build/Debug/libprotobuf.build/DerivedSources-normal/x86_64 \
   -I/tmpfs/src/github/protobuf/cmake/build/protobuf.build/Debug/libprotobuf.build/DerivedSources/x86_64 \
   -I/tmpfs/src/github/protobuf/cmake/build/protobuf.build/Debug/libprotobuf.build/DerivedSources \
