@@ -2,9 +2,6 @@
 #
 # Build file to set up and run tests
 
-# NOTE: in order to avoid blocking anyone, this job always succeeds for now.
-exit 0
-
 # Set up artifact output location
 : ${KOKORO_ARTIFACTS_DIR:=/tmp/kokoro_artifacts}
 : ${BUILD_LOGDIR:=$KOKORO_ARTIFACTS_DIR/logs}
