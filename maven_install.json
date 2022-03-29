@@ -69,12 +69,12 @@
                 "url": "https://repo1.maven.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar"
             },
             {
-                "coord": "com.google.guava:guava-testlib:30.1.1-jre",
+                "coord": "com.google.guava:guava-testlib:30.1-jre",
                 "dependencies": [
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.5.1",
                     "com.google.guava:failureaccess:1.0.1",
-                    "com.google.guava:guava:30.1.1-jre",
+                    "com.google.guava:guava:31.1-jre",
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
                     "com.google.j2objc:j2objc-annotations:1.3",
                     "junit:junit:4.13.2",
@@ -84,21 +84,21 @@
                 "directDependencies": [
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.5.1",
-                    "com.google.guava:guava:30.1.1-jre",
+                    "com.google.guava:guava:31.1-jre",
                     "com.google.j2objc:j2objc-annotations:1.3",
                     "junit:junit:4.13.2",
                     "org.checkerframework:checker-qual:3.9.1"
                 ],
-                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava-testlib/30.1.1-jre/guava-testlib-30.1.1-jre.jar",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava-testlib/31.1-jre/guava-testlib-31.1-jre.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/guava/guava-testlib/30.1.1-jre/guava-testlib-30.1.1-jre.jar",
-                    "https://repo.maven.apache.org/maven2/com/google/guava/guava-testlib/30.1.1-jre/guava-testlib-30.1.1-jre.jar"
+                    "https://repo1.maven.org/maven2/com/google/guava/guava-testlib/31.1-jre/guava-testlib-31.1-jre.jar",
+                    "https://repo.maven.apache.org/maven2/com/google/guava/guava-testlib/31.1-jre/guava-testlib-31.1-jre.jar"
                 ],
-                "sha256": "8a7fc9adfa1e7441d1d30ca288c593ebc7c4a24c601d01169b781c398f24099b",
-                "url": "https://repo1.maven.org/maven2/com/google/guava/guava-testlib/30.1.1-jre/guava-testlib-30.1.1-jre.jar"
+                "sha256": "aadc71b10d5c3ac474dd16be84cfb18d257e584d1e0a59f8cab64ef4376226ce",
+                "url": "https://repo1.maven.org/maven2/com/google/guava/guava-testlib/31.1-jre/guava-testlib-31.1-jre.jar"
             },
             {
-                "coord": "com.google.guava:guava:30.1.1-jre",
+                "coord": "com.google.guava:guava:31.1-jre",
                 "dependencies": [
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.5.1",
@@ -115,13 +115,13 @@
                     "com.google.j2objc:j2objc-annotations:1.3",
                     "org.checkerframework:checker-qual:3.9.1"
                 ],
-                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava/30.1.1-jre/guava-30.1.1-jre.jar",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/guava/guava/30.1.1-jre/guava-30.1.1-jre.jar",
-                    "https://repo.maven.apache.org/maven2/com/google/guava/guava/30.1.1-jre/guava-30.1.1-jre.jar"
+                    "https://repo1.maven.org/maven2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar",
+                    "https://repo.maven.apache.org/maven2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar"
                 ],
-                "sha256": "44ce229ce26d880bf3afc362bbfcec34d7e6903d195bbb1db9f3b6e0d9834f06",
-                "url": "https://repo1.maven.org/maven2/com/google/guava/guava/30.1.1-jre/guava-30.1.1-jre.jar"
+                "sha256": "a42edc9cab792e39fe39bb94f3fca655ed157ff87a8af78e1d6ba5b07c4a00ab",
+                "url": "https://repo1.maven.org/maven2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar"
             },
             {
                 "coord": "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
@@ -152,7 +152,7 @@
                 "dependencies": [
                     "com.google.auto.value:auto-value-annotations:1.7.4",
                     "com.google.errorprone:error_prone_annotations:2.5.1",
-                    "com.google.guava:guava:30.1.1-jre",
+                    "com.google.guava:guava:31.1-jre",
                     "junit:junit:4.13.2",
                     "org.checkerframework:checker-qual:3.9.1",
                     "org.ow2.asm:asm:9.0"
@@ -160,7 +160,7 @@
                 "directDependencies": [
                     "com.google.auto.value:auto-value-annotations:1.7.4",
                     "com.google.errorprone:error_prone_annotations:2.5.1",
-                    "com.google.guava:guava:30.1.1-jre",
+                    "com.google.guava:guava:31.1-jre",
                     "junit:junit:4.13.2",
                     "org.checkerframework:checker-qual:3.9.1",
                     "org.ow2.asm:asm:9.0"
