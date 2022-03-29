@@ -115,6 +115,9 @@ xcrun --show-sdk-path
 #   -c - \
 #   -o /dev/null
 
+PATH=/Applications/CMake.app/Contents/bin:$PATH
+export PATH
+
 which cmake
 cmake --version
 
