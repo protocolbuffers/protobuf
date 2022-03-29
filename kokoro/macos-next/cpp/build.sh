@@ -23,6 +23,8 @@ xcodebuild -version
 xcodebuild -showsdks
 xcrun --show-sdk-path
 
+#  -DHAVE_ZLIB
+#  -isysroot /Applications/Xcode_13.2.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk \
 echo "#include <cmath>" | \
   /Applications/Xcode_13.2.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang \
   -v \
@@ -67,7 +69,6 @@ echo "#include <cmath>" | \
   -DCMAKE_INTDIR\=\"Debug\" \
   -DGOOGLE_PROTOBUF_CMAKE_BUILD \
   -DHAVE_ZLIB \
-  -isysroot /Applications/Xcode_13.2.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk \
   -fasm-blocks \
   -fstrict-aliasing \
   -Wdeprecated-declarations \
