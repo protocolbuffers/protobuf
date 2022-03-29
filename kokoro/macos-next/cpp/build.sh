@@ -23,11 +23,21 @@ xcodebuild -version
 xcodebuild -showsdks
 xcrun --show-sdk-path
 
+sudo xcode-select -s /Applications/Xcode_13.2.1.app
+
+# Print some basic info
+xcode-select --print-path
+xcodebuild -version
+xcodebuild -showsdks
+xcrun --show-sdk-path
+
 #  -DHAVE_ZLIB
 #  -isysroot /Applications/Xcode_13.2.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk \
 
 #  -I/tmpfs/src/github/protobuf/third_party/googletest/googlemock/include \
 #  -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk/usr/include \
+
+
 echo "#include <cmath>" | \
   /Applications/Xcode_13.2.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang \
   -v \
