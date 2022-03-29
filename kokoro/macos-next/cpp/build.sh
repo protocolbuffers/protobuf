@@ -2,6 +2,8 @@
 #
 # Build file to set up and run tests
 
+set -o pipefail
+
 # Set up artifact output location
 : ${KOKORO_ARTIFACTS_DIR:=/tmp/kokoro_artifacts}
 : ${BUILD_LOGDIR:=$KOKORO_ARTIFACTS_DIR/logs}
@@ -118,6 +120,19 @@ export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 # Build everything first
 cmake -G Xcode ../.. \
   2>&1 | tee ${BUILD_LOGDIR}/00_configure_sponge_log.log
+
+ls ${BUILD_LOGDIR}
+
+echo "============================================================"
+echo -e "CMakeOutput.log:\n"
+cat CMakeFiles/CMakeOutput.log
+
+echo "============================================================"
+echo -e "CMakeError.log:\n"
+cat CMakeFiles/CMakeError.log
+
+echo "============================================================"
+
 cmake --build . --config Debug \
   2>&1 | tee ${BUILD_LOGDIR}/01_build_sponge_log.log
 
