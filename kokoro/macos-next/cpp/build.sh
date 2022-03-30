@@ -30,7 +30,7 @@ git submodule update --init --recursive
 mkdir -p cmake/build
 cd cmake/build
 
-cmake -G Xcode ../.. -Dprotobuf_TEST_XML_OUTDIR=${BUILD_LOGDIR} \
+cmake -G Xcode ../.. -Dprotobuf_TEST_XML_OUTDIR=${KOKORO_ARTIFACTS_DIR} \
   2>&1 | tee ${BUILD_LOGDIR}/01_configure.log
 
 cp CMakeFiles/CMake*.log ${BUILD_LOGDIR}
@@ -48,5 +48,6 @@ ctest -C Debug --verbose \
 # Rename test XML output
 #
 find ${BUILD_LOGDIR} -name '*.xml' | while read xmllog; do
-  mv -v ${xmllog} ${xmllog%.xml}_sponge_log.xml
+  mkdir -p ${xmllog%.xml}
+  mv -v ${xmllog} ${xmllog%.xml}/sponge_log.xml
 done
