@@ -1,5 +1,7 @@
 option(protobuf_USE_EXTERNAL_GTEST "Use external Google Test (i.e. not the one in third_party/googletest)" OFF)
 
+option(protobuf_TEST_XML_OUTDIR "Output directory for XML logs from tests." "")
+
 option(protobuf_ABSOLUTE_TEST_PLUGIN_PATH
   "Using absolute test_plugin path in tests" ON)
 mark_as_advanced(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
@@ -239,6 +241,13 @@ if(MINGW)
 
 endif()
 
+if(protobuf_TEST_XML_OUTDIR)
+  if(NOT "${protobuf_TEST_XML_OUTDIR}" MATCHES "[/\\]$")
+    string(APPEND protobuf_TEST_XML_OUTDIR "/")
+  endif()
+  set(protobuf_GTEST_ARGS "--gtest_output=xml:${protobuf_TEST_XML_OUTDIR}")
+endif()
+
 add_executable(tests ${tests_files})
 if (MSVC)
   target_compile_options(tests PRIVATE
@@ -263,11 +272,17 @@ set(lite_test_files
 add_executable(lite-test ${lite_test_files})
 target_link_libraries(lite-test protobuf-lite-test-common libprotobuf-lite GTest::gmock_main)
 
+add_test(NAME lite-test
+  COMMAND lite-test ${protobuf_GTEST_ARGS})
+
 set(lite_arena_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/lite_arena_unittest.cc
 )
 add_executable(lite-arena-test ${lite_arena_test_files})
 target_link_libraries(lite-arena-test protobuf-lite-test-common libprotobuf-lite GTest::gmock_main)
+
+add_test(NAME lite-arena-test
+  COMMAND lite-arena-test ${protobuf_GTEST_ARGS})
 
 add_custom_target(check
   COMMAND tests
@@ -275,5 +290,5 @@ add_custom_target(check
   WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
 
 add_test(NAME check
-  COMMAND tests
+  COMMAND tests ${protobuf_GTEST_ARGS}
   WORKING_DIRECTORY "${protobuf_SOURCE_DIR}")
