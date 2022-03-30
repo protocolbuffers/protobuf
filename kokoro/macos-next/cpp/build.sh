@@ -12,6 +12,24 @@ mkdir -p ${BUILD_LOGDIR}
 # Change to repo root
 cd $(dirname $0)/../../..
 
+function recursive-ls() {
+  [[ $1 == / ]] && return
+  recursive-ls $(dirname $1) || true
+  if [[ -d $1 ]]; then
+    echo D $1
+  elif [[ -f $1 ]]; then
+    echo F $1
+  elif [[ -h $1 ]]; then
+    echo L $1
+  elif [[ -e $1 ]]; then
+    echo "  $1"
+  else
+    echo "Not found: $1"
+    return 1
+  fi
+}
+recursive-ls /Volumes/BuildData/usr/local/Cellar/cmake/3.22.2/share/cmake/Modules/CMakeCXXCompilerABI.cpp || true
+
 # Update submodules
 git submodule update --init --recursive
 
@@ -115,15 +133,9 @@ xcrun --show-sdk-path
 #   -c - \
 #   -o /dev/null
 
-PATH=/Applications/CMake.app/Contents/bin:$PATH
 export PATH
-ls /Applications/CMake.app/Contents/bin
 
 which cmake
-cmake --version
-
-alias cmake=/Applications/CMake.app/Contents/bin/cmake
-
 cmake --version
 
 export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
