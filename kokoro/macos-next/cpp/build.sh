@@ -47,7 +47,7 @@ ctest -C Debug --verbose \
 #
 # Rename test XML output
 #
-find ${BUILD_LOGDIR} -name '*.xml' | while read xmllog; do
+find ${KOKORO_ARTIFACTS_DIR} -name '*.xml' | while read xmllog; do
   mkdir -p ${xmllog%.xml}
   mv -v ${xmllog} ${xmllog%.xml}/sponge_log.xml
 done
