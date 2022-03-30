@@ -50,7 +50,7 @@ cd cmake/build
 #
 # Configure and stage logs
 #
-cmake -G Xcode ../..
+cmake -G Xcode ../.. -Dprotobuf_BUILD_TESTS=OFF
 
 cp CMakeFiles/CMakeError.log $BUILD_LOG_DIR
 cp CMakeFiles/CMakeOutput.log $BUILD_LOG_DIR
