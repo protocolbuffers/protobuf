@@ -13,6 +13,7 @@ pwd
 ls -l /
 ls -l /tmpfs
 ls -l /Volumes/BuildData
+cd /Volumes/BuildData/tmpfs/src
 
 # Change to repo root
 cd $(dirname $0)/../../..
