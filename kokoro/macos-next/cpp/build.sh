@@ -9,10 +9,16 @@
 : ${BUILD_LOGDIR:=$KOKORO_ARTIFACTS_DIR/logs}
 mkdir -p ${BUILD_LOGDIR}
 
+
 #
 # Change to repo root
 #
-cd $(dirname $0)/../../..
+if [[ -h /tmpfs ]] && [[ ${PWD} == /tmpfs/src ]]; then
+  # Workaround for internal Kokoro bug: b/227401944
+  cd /Volumes/BuildData/tmpfs/src/github/protobuf
+else
+  cd $(dirname $0)/../../..
+fi
 
 #
 # Update submodules
