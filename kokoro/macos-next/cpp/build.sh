@@ -1,36 +1,68 @@
-#!/bin/bash -ex
+#!/bin/bash -ex -o pipefail
 #
 # Build file to set up and run tests
 
-# NOTE: in order to avoid blocking anyone, this job always succeeds for now.
-exit 0
+#
+# Print some basic info
+#
+pwd
+ls -l /
+ls -l /Volumes/BuildData
 
-# Set up artifact output location
-: ${KOKORO_ARTIFACTS_DIR:=/tmp/kokoro_artifacts}
-: ${BUILD_LOGDIR:=$KOKORO_ARTIFACTS_DIR/logs}
-mkdir -p ${BUILD_LOGDIR}
+xcode-select --print-path
+xcodebuild -version
+xcodebuild -showsdks
+xcrun --show-sdk-path
 
+ls -l $(which cmake)
+cmake --version
+
+#
+# Debugging info: print all default CMake settings.
+#
+cat > $TEMP/print-all.cmake <<EOF
+get_cmake_property(_vars VARIABLES)
+list (SORT _vars)
+foreach (_var \${_vars})
+    message(STATUS "\${_var}=\${\${_var}}")
+endforeach()
+EOF
+
+cmake -P $TEMP/print-all.cmake
+
+#
+# Set up a path for outputs
+#
+BUILD_LOG_DIR=$KOKORO_ARTIFACTS_DIR/_logs
+mkdir -p $BUILD_LOG_DIR
+
+#
 # Change to repo root
+#
 cd $(dirname $0)/../../..
 
-# Update submodules
-git submodule update --init --recursive
-
+#
 # Build in a separate directory
+#
 mkdir -p cmake/build
 cd cmake/build
 
-# Print some basic info
-xcode-select --print-path
-xcodebuild -version
-xcrun --show-sdk-path
+#
+# Configure and stage logs
+#
+cmake -G Xcode ../..
 
-# Build everything first
-cmake -G Xcode ../.. \
-  2>&1 | tee ${BUILD_LOGDIR}/00_configure_sponge_log.log
+cp CMakeFiles/CMakeError.log $BUILD_LOG_DIR
+cp CMakeFiles/CMakeOutput.log $BUILD_LOG_DIR
+
+#
+# Build
+#
 cmake --build . --config Debug \
-  2>&1 | tee ${BUILD_LOGDIR}/01_build_sponge_log.log
+  2>&1 | tee ${BUILD_LOG_DIR}/01_build.log
 
+#
 # Run tests
+#
 ctest -C Debug --verbose --quiet \
-  --output-log ${BUILD_LOGDIR}/02_test_sponge_log.log
+  --output-log ${BUILD_LOG_DIR}/02_test.log
