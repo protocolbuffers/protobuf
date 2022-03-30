@@ -9,6 +9,11 @@ set -o pipefail
 : ${BUILD_LOGDIR:=$KOKORO_ARTIFACTS_DIR/logs}
 mkdir -p ${BUILD_LOGDIR}
 
+pwd
+ls -l /
+ls -l /tmpfs
+ls -l /Volumes/BuildData
+
 # Change to repo root
 cd $(dirname $0)/../../..
 
