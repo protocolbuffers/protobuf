@@ -160,8 +160,6 @@ else()
 endif()
 file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map)
 
-find_package(Threads REQUIRED)
-
 set(_protobuf_FIND_ZLIB)
 if (protobuf_WITH_ZLIB)
   find_package(ZLIB)
