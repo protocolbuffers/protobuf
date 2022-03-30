@@ -48,5 +48,5 @@ ctest -C Debug --verbose \
 # Rename test XML output
 #
 find ${BUILD_LOGDIR} -name '*.xml' | while read xmllog; do
-  mv -v ${xmllog} ${xmllog%/*}/sponge_log_${xmllog##*/}
+  mv -v ${xmllog} ${xmllog%.xml}_sponge_log.xml
 done
