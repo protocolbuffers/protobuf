@@ -2,7 +2,7 @@
 #
 # Build file to set up and run tests
 
-cd /Volumes/BuildData/tmpfs
+cd /Volumes/BuildData/tmpfs/src
 
 #
 # Print some basic info
