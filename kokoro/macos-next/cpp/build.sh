@@ -11,9 +11,14 @@ mkdir -p ${BUILD_LOGDIR}
 
 pwd
 ls -l /
-ls -l /tmpfs
 ls -l /Volumes/BuildData
-cd /Volumes/BuildData/tmpfs/src
+
+cd /
+sudo rm tmpfs
+sudo ln -s Volumes/BuildData tmpfs
+cd /tmpfs/src
+pwd
+ls -l /
 
 # Change to repo root
 cd $(dirname $0)/../../..
