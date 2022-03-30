@@ -12,6 +12,8 @@ mkdir -p ${BUILD_LOGDIR}
 # Change to repo root
 cd $(dirname $0)/../../..
 
+ls -l $(which cmake)
+
 function recursive-ls() {
   [[ $1 == / ]] && return
   recursive-ls $(dirname $1) || true
@@ -28,7 +30,10 @@ function recursive-ls() {
     return 1
   fi
 }
-recursive-ls /Volumes/BuildData/usr/local/Cellar/cmake/3.22.2/share/cmake/Modules/CMakeCXXCompilerABI.cpp || true
+set +x
+recursive-ls /usr/local/Cellar/cmake/3.22.2/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+#recursive-ls /Volumes/BuildData/usr/local/Cellar/cmake/3.22.2/share/cmake/Modules/CMakeCXXCompilerABI.cpp || true
+set -x
 
 # Update submodules
 git submodule update --init --recursive
