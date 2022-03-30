@@ -25,9 +25,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""TODO(haberman): DO NOT SUBMIT without one-line documentation for make_cmakelists.
+"""A tool to convert {WORKSPACE, BUILD} -> CMakeLists.txt.
 
-TODO(haberman): DO NOT SUBMIT without a detailed description of make_cmakelists.
+This tool is very upb-specific at the moment, and should not be seen as a
+generic Bazel -> CMake converter.
 """
 
 from __future__ import absolute_import
@@ -38,8 +39,8 @@ import sys
 import textwrap
 import os
 
-def StripColons(deps):
-  return map(lambda x: x[1:], deps)
+def StripFirstChar(deps):
+  return [dep[1:] for dep in deps]
 
 def IsSourceFile(name):
   return name.endswith(".c") or name.endswith(".cc")
@@ -54,7 +55,7 @@ class BuildFileFunctions(object):
     self.converter.toplevel += "target_link_libraries(%s%s\n  %s)\n" % (
         kwargs["name"],
         keyword,
-        "\n  ".join(StripColons(kwargs["deps"]))
+        "\n  ".join(StripFirstChar(kwargs["deps"]))
     )
 
   def load(self, *args):

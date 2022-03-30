@@ -46,10 +46,15 @@ load(
 
 licenses(["notice"])
 
-exports_files([
-    "LICENSE",
-    "build_defs",
-])
+exports_files(["LICENSE"])
+
+exports_files(
+    [
+        "BUILD",
+        "WORKSPACE",
+    ],
+    visibility = ["//cmake:__pkg__"],
+)
 
 config_setting(
     name = "windows",
@@ -615,15 +620,6 @@ cc_library(
     hdrs = ["ruby-upb.h"],
     copts = UPB_DEFAULT_COPTS,
     deps = ["//third_party/utf8_range"],
-)
-
-exports_files(
-    [
-        "upb/json/parser.rl",
-        "BUILD",
-        "WORKSPACE",
-    ],
-    visibility = ["//cmake:__pkg__"],
 )
 
 exports_files(
