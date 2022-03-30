@@ -43,7 +43,7 @@ cmake --build . --config Debug \
 #
 # Run tests
 #
-ctest -C Debug --verbose \
+ctest -C Debug -j4 --verbose \
   --output-log ${TEST_LOGDIR}/03_test.log
 
 #
