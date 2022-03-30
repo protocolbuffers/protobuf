@@ -38,8 +38,8 @@ set -x
 cat > $TEMP/print-all.cmake <<EOF
 get_cmake_property(_variableNames VARIABLES)
 list (SORT _variableNames)
-foreach (_vN ${_variableNames})
-    message(STATUS "${_vN}=${${_vN}}")
+foreach (_vN \${_variableNames})
+    message(STATUS "\${_vN}=\${\${_vN}}")
 endforeach()
 EOF
 
