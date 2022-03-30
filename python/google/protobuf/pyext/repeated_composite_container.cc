@@ -40,19 +40,13 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/reflection.h>
 #include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
-#include <google/protobuf/reflection.h>
 #include <google/protobuf/stubs/map_util.h>
-
-#if PY_MAJOR_VERSION >= 3
-  #define PyInt_Check PyLong_Check
-  #define PyInt_AsLong PyLong_AsLong
-  #define PyInt_FromLong PyLong_FromLong
-#endif
 
 namespace google {
 namespace protobuf {
@@ -80,17 +74,15 @@ PyObject* Add(RepeatedCompositeContainer* self, PyObject* args,
   if (cmessage::AssureWritable(self->parent) == -1) return nullptr;
   Message* message = self->parent->message;
 
-  Message* sub_message =
-      message->GetReflection()->AddMessage(
-          message,
-          self->parent_field_descriptor,
-          self->child_message_class->py_message_factory->message_factory);
+  Message* sub_message = message->GetReflection()->AddMessage(
+      message, self->parent_field_descriptor,
+      self->child_message_class->py_message_factory->message_factory);
   CMessage* cmsg = self->parent->BuildSubMessageFromPointer(
       self->parent_field_descriptor, sub_message, self->child_message_class);
 
   if (cmessage::InitAttributes(cmsg, args, kwargs) < 0) {
-    message->GetReflection()->RemoveLast(
-        message, self->parent_field_descriptor);
+    message->GetReflection()->RemoveLast(message,
+                                         self->parent_field_descriptor);
     Py_DECREF(cmsg);
     return nullptr;
   }
@@ -114,8 +106,7 @@ static PyObject* AddMessage(RepeatedCompositeContainer* self, PyObject* value) {
   if (py_cmsg == nullptr) return nullptr;
   CMessage* cmsg = reinterpret_cast<CMessage*>(py_cmsg);
   if (ScopedPyObjectPtr(cmessage::MergeFrom(cmsg, value)) == nullptr) {
-    reflection->RemoveLast(
-        message, self->parent_field_descriptor);
+    reflection->RemoveLast(message, self->parent_field_descriptor);
     Py_DECREF(cmsg);
     return nullptr;
   }
@@ -158,7 +149,7 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
   Py_ssize_t end_index = index;
   if (end_index < 0) end_index += length;
   if (end_index < 0) end_index = 0;
-  for (Py_ssize_t i = length; i > end_index; i --) {
+  for (Py_ssize_t i = length; i > end_index; i--) {
     reflection->SwapElements(message, field_descriptor, i, i - 1);
   }
 
@@ -246,13 +237,8 @@ PyObject* Subscript(RepeatedCompositeContainer* self, PyObject* item) {
     Py_ssize_t from, to, step, slicelength, cur, i;
     PyObject* result;
 
-#if PY_MAJOR_VERSION >= 3
-    if (PySlice_GetIndicesEx(item,
-                             length, &from, &to, &step, &slicelength) == -1) {
-#else
-    if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(item),
-                             length, &from, &to, &step, &slicelength) == -1) {
-#endif
+    if (PySlice_GetIndicesEx(item, length, &from, &to, &step, &slicelength) ==
+        -1) {
       return nullptr;
     }
 
@@ -279,8 +265,7 @@ static PyObject* SubscriptMethod(PyObject* self, PyObject* slice) {
   return Subscript(reinterpret_cast<RepeatedCompositeContainer*>(self), slice);
 }
 
-int AssignSubscript(RepeatedCompositeContainer* self,
-                    PyObject* slice,
+int AssignSubscript(RepeatedCompositeContainer* self, PyObject* slice,
                     PyObject* value) {
   if (value != nullptr) {
     PyErr_SetString(PyExc_TypeError, "does not support assignment");
@@ -379,24 +364,22 @@ static void ReorderAttached(RepeatedCompositeContainer* self,
   const FieldDescriptor* descriptor = self->parent_field_descriptor;
   const Py_ssize_t length = Length(reinterpret_cast<PyObject*>(self));
 
-  // Since Python protobuf objects are never arena-allocated, adding and
-  // removing message pointers to the underlying array is just updating
-  // pointers.
-  for (Py_ssize_t i = 0; i < length; ++i)
-    reflection->ReleaseLast(message, descriptor);
-
+  // We need to rearrange things to match python's sort order.
   for (Py_ssize_t i = 0; i < length; ++i) {
-    CMessage* py_cmsg = reinterpret_cast<CMessage*>(
-        PyList_GET_ITEM(child_list, i));
-    reflection->AddAllocatedMessage(message, descriptor, py_cmsg->message);
+    reflection->UnsafeArenaReleaseLast(message, descriptor);
+  }
+  for (Py_ssize_t i = 0; i < length; ++i) {
+    Message* child_message =
+        reinterpret_cast<CMessage*>(PyList_GET_ITEM(child_list, i))->message;
+    reflection->UnsafeArenaAddAllocatedMessage(message, descriptor,
+                                               child_message);
   }
 }
 
 // Returns 0 if successful; returns -1 and sets an exception if
 // unsuccessful.
-static int SortPythonMessages(RepeatedCompositeContainer* self,
-                               PyObject* args,
-                               PyObject* kwds) {
+static int SortPythonMessages(RepeatedCompositeContainer* self, PyObject* args,
+                              PyObject* kwds) {
   ScopedPyObjectPtr child_list(
       PySequence_List(reinterpret_cast<PyObject*>(self)));
   if (child_list == nullptr) {
@@ -494,9 +477,8 @@ PyObject* DeepCopy(PyObject* pself, PyObject* arg) {
 }
 
 // The private constructor of RepeatedCompositeContainer objects.
-RepeatedCompositeContainer *NewContainer(
-    CMessage* parent,
-    const FieldDescriptor* parent_field_descriptor,
+RepeatedCompositeContainer* NewContainer(
+    CMessage* parent, const FieldDescriptor* parent_field_descriptor,
     CMessageClass* child_message_class) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return nullptr;
@@ -533,9 +515,9 @@ static PySequenceMethods SqMethods = {
 };
 
 static PyMappingMethods MpMethods = {
-  Length,                 /* mp_length */
-  SubscriptMethod,        /* mp_subscript */
-  AssignSubscriptMethod,  /* mp_ass_subscript */
+    Length,                /* mp_length */
+    SubscriptMethod,       /* mp_subscript */
+    AssignSubscriptMethod, /* mp_ass_subscript */
 };
 
 static PyMethodDef Methods[] = {
@@ -563,11 +545,15 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject RepeatedCompositeContainer_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
-    ".RepeatedCompositeContainer",              // tp_name
-    sizeof(RepeatedCompositeContainer),         // tp_basicsize
-    0,                                          //  tp_itemsize
-    repeated_composite_container::Dealloc,      //  tp_dealloc
-    0,                                          //  tp_print, in Python >=3.8: Py_ssize_t tp_vectorcall_offset
+    ".RepeatedCompositeContainer",          // tp_name
+    sizeof(RepeatedCompositeContainer),     // tp_basicsize
+    0,                                      //  tp_itemsize
+    repeated_composite_container::Dealloc,  //  tp_dealloc
+#if PY_VERSION_HEX >= 0x03080000
+    0,  //  tp_vectorcall_offset
+#else
+    nullptr,  //  tp_print
+#endif
     nullptr,                                    //  tp_getattr
     nullptr,                                    //  tp_setattr
     nullptr,                                    //  tp_compare

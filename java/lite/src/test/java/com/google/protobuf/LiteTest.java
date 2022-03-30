@@ -30,7 +30,8 @@
 
 package com.google.protobuf;
 
-import static java.util.Collections.emptyList;
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static java.util.Collections.singletonList;
 
 import com.google.protobuf.FieldPresenceTestProto.TestAllTypes;
@@ -38,6 +39,7 @@ import com.google.protobuf.UnittestImportLite.ImportEnumLite;
 import com.google.protobuf.UnittestImportPublicLite.PublicImportMessageLite;
 import com.google.protobuf.UnittestLite.ForeignEnumLite;
 import com.google.protobuf.UnittestLite.ForeignMessageLite;
+import com.google.protobuf.UnittestLite.RecursiveMessage;
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.NestedEnum;
@@ -53,6 +55,7 @@ import map_lite_test.MapTestProto.TestMap;
 import map_lite_test.MapTestProto.TestMap.MessageValue;
 import protobuf_unittest.NestedExtensionLite;
 import protobuf_unittest.NonNestedExtensionLite;
+import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
@@ -61,6 +64,7 @@ import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOne
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -68,15 +72,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-/**
- * Test lite runtime.
- *
- * @author kenton@google.com Kenton Varda
- */
-public class LiteTest extends TestCase {
-  @Override
+/** Test lite runtime. */
+@RunWith(JUnit4.class)
+public class LiteTest {
+
+  @Before
   public void setUp() throws Exception {
     // Test that nested extensions are initialized correctly even if the outer
     // class has not been accessed directly.  This was once a bug with lite
@@ -84,9 +89,10 @@ public class LiteTest extends TestCase {
     //
     // We put this in setUp() rather than in its own test method because we
     // need to make sure it runs before any actual tests.
-    assertNotNull(TestNestedExtensionLite.nestedExtension);
+    assertThat(TestNestedExtensionLite.nestedExtension).isNotNull();
   }
 
+  @Test
   public void testLite() throws Exception {
     // Since lite messages are a subset of regular messages, we can mostly
     // assume that the functionality of lite messages is already thoroughly
@@ -107,12 +113,13 @@ public class LiteTest extends TestCase {
 
     TestAllTypesLite message2 = TestAllTypesLite.parseFrom(data);
 
-    assertEquals(123, message2.getOptionalInt32());
-    assertEquals(1, message2.getRepeatedStringCount());
-    assertEquals("hello", message2.getRepeatedString(0));
-    assertEquals(7, message2.getOptionalNestedMessage().getBb());
+    assertThat(message2.getOptionalInt32()).isEqualTo(123);
+    assertThat(message2.getRepeatedStringCount()).isEqualTo(1);
+    assertThat(message2.getRepeatedString(0)).isEqualTo("hello");
+    assertThat(message2.getOptionalNestedMessage().getBb()).isEqualTo(7);
   }
 
+  @Test
   public void testLite_unknownEnumAtListBoundary() throws Exception {
     ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
     CodedOutputStream output = CodedOutputStream.newInstance(byteStream);
@@ -127,6 +134,7 @@ public class LiteTest extends TestCase {
     TestAllTypesLite.parseFrom(new ByteArrayInputStream(byteStream.toByteArray()));
   }
 
+  @Test
   public void testLiteExtensions() throws Exception {
     // TODO(kenton):  Unlike other features of the lite library, extensions are
     //   implemented completely differently from the regular library.  We
@@ -147,61 +155,66 @@ public class LiteTest extends TestCase {
     // writing, parsing hasn't been implemented yet.
     TestAllExtensionsLite message2 = message.toBuilder().build();
 
-    assertEquals(123, (int) message2.getExtension(UnittestLite.optionalInt32ExtensionLite));
-    assertEquals(1, message2.getExtensionCount(UnittestLite.repeatedStringExtensionLite));
-    assertEquals(1, message2.getExtension(UnittestLite.repeatedStringExtensionLite).size());
-    assertEquals("hello", message2.getExtension(UnittestLite.repeatedStringExtensionLite, 0));
-    assertEquals(
-        NestedEnum.BAZ, message2.getExtension(UnittestLite.optionalNestedEnumExtensionLite));
-    assertEquals(7, message2.getExtension(UnittestLite.optionalNestedMessageExtensionLite).getBb());
+    assertThat((int) message2.getExtension(UnittestLite.optionalInt32ExtensionLite)).isEqualTo(123);
+    assertThat(message2.getExtensionCount(UnittestLite.repeatedStringExtensionLite)).isEqualTo(1);
+    assertThat(message2.getExtension(UnittestLite.repeatedStringExtensionLite)).hasSize(1);
+    assertThat(message2.getExtension(UnittestLite.repeatedStringExtensionLite, 0))
+        .isEqualTo("hello");
+    assertThat(message2.getExtension(UnittestLite.optionalNestedEnumExtensionLite))
+        .isEqualTo(NestedEnum.BAZ);
+    assertThat(message2.getExtension(UnittestLite.optionalNestedMessageExtensionLite).getBb())
+        .isEqualTo(7);
   }
 
+  @Test
   public void testClone() {
     TestAllTypesLite.Builder expected = TestAllTypesLite.newBuilder().setOptionalInt32(123);
-    assertEquals(expected.getOptionalInt32(), expected.clone().getOptionalInt32());
+    assertThat(expected.getOptionalInt32()).isEqualTo(expected.clone().getOptionalInt32());
 
     TestAllExtensionsLite.Builder expected2 =
         TestAllExtensionsLite.newBuilder()
             .setExtension(UnittestLite.optionalInt32ExtensionLite, 123);
-    assertEquals(
-        expected2.getExtension(UnittestLite.optionalInt32ExtensionLite),
-        expected2.clone().getExtension(UnittestLite.optionalInt32ExtensionLite));
+    assertThat(expected2.getExtension(UnittestLite.optionalInt32ExtensionLite))
+        .isEqualTo(expected2.clone().getExtension(UnittestLite.optionalInt32ExtensionLite));
   }
 
+  @Test
   public void testAddAll() {
     try {
       TestAllTypesLite.newBuilder().addAllRepeatedBytes(null);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException e) {
       // expected.
     }
   }
 
+  @Test
   public void testMemoization() throws Exception {
     TestAllExtensionsLite message = TestUtilLite.getAllLiteExtensionsSet();
 
     // Test serialized size is memoized
     message.memoizedSerializedSize = -1;
     int size = message.getSerializedSize();
-    assertTrue(size > 0);
-    assertEquals(size, message.memoizedSerializedSize);
+    assertThat(size).isGreaterThan(0);
+    assertThat(message.memoizedSerializedSize).isEqualTo(size);
 
     // Test hashCode is memoized
-    assertEquals(0, message.memoizedHashCode);
+    assertThat(message.memoizedHashCode).isEqualTo(0);
     int hashCode = message.hashCode();
-    assertTrue(hashCode != 0);
-    assertEquals(hashCode, message.memoizedHashCode);
+    assertThat(hashCode).isNotEqualTo(0);
+    assertThat(hashCode).isEqualTo(message.memoizedHashCode);
 
     // Test isInitialized is memoized
     Field memo = message.getClass().getDeclaredField("memoizedIsInitialized");
     memo.setAccessible(true);
     memo.set(message, (byte) -1);
     boolean initialized = message.isInitialized();
-    assertTrue(initialized);
+    assertThat(initialized).isTrue();
     // We have to cast to Byte first. Casting to byte causes a type error
-    assertEquals(1, ((Byte) memo.get(message)).intValue());
+    assertThat(((Byte) memo.get(message)).intValue()).isEqualTo(1);
   }
 
+  @Test
   public void testSanityCopyOnWrite() throws InvalidProtocolBufferException {
     // Since builders are implemented as a thin wrapper around a message
     // instance, we attempt to verify that we can't cause the builder to modify
@@ -211,1093 +224,1107 @@ public class LiteTest extends TestCase {
     TestAllTypesLite message = builder.build();
     TestAllTypesLite messageAfterBuild;
     builder.setOptionalBool(true);
-    assertEquals(false, message.getOptionalBool());
-    assertEquals(true, builder.getOptionalBool());
+    assertThat(message.getOptionalBool()).isFalse();
+    assertThat(builder.getOptionalBool()).isTrue();
     messageAfterBuild = builder.build();
-    assertEquals(true, messageAfterBuild.getOptionalBool());
-    assertEquals(false, message.getOptionalBool());
+    assertThat(messageAfterBuild.getOptionalBool()).isTrue();
+    assertThat(message.getOptionalBool()).isFalse();
     builder.clearOptionalBool();
-    assertEquals(false, builder.getOptionalBool());
-    assertEquals(true, messageAfterBuild.getOptionalBool());
+    assertThat(builder.getOptionalBool()).isFalse();
+    assertThat(messageAfterBuild.getOptionalBool()).isTrue();
 
     message = builder.build();
     builder.setOptionalBytes(ByteString.copyFromUtf8("hi"));
-    assertEquals(ByteString.EMPTY, message.getOptionalBytes());
-    assertEquals(ByteString.copyFromUtf8("hi"), builder.getOptionalBytes());
+    assertThat(message.getOptionalBytes()).isEqualTo(ByteString.EMPTY);
+    assertThat(builder.getOptionalBytes()).isEqualTo(ByteString.copyFromUtf8("hi"));
     messageAfterBuild = builder.build();
-    assertEquals(ByteString.copyFromUtf8("hi"), messageAfterBuild.getOptionalBytes());
-    assertEquals(ByteString.EMPTY, message.getOptionalBytes());
+    assertThat(messageAfterBuild.getOptionalBytes()).isEqualTo(ByteString.copyFromUtf8("hi"));
+    assertThat(message.getOptionalBytes()).isEqualTo(ByteString.EMPTY);
     builder.clearOptionalBytes();
-    assertEquals(ByteString.EMPTY, builder.getOptionalBytes());
-    assertEquals(ByteString.copyFromUtf8("hi"), messageAfterBuild.getOptionalBytes());
+    assertThat(builder.getOptionalBytes()).isEqualTo(ByteString.EMPTY);
+    assertThat(messageAfterBuild.getOptionalBytes()).isEqualTo(ByteString.copyFromUtf8("hi"));
 
     message = builder.build();
     builder.setOptionalCord("hi");
-    assertEquals("", message.getOptionalCord());
-    assertEquals("hi", builder.getOptionalCord());
+    assertThat(message.getOptionalCord()).isEmpty();
+    assertThat(builder.getOptionalCord()).isEqualTo("hi");
     messageAfterBuild = builder.build();
-    assertEquals("hi", messageAfterBuild.getOptionalCord());
-    assertEquals("", message.getOptionalCord());
+    assertThat(messageAfterBuild.getOptionalCord()).isEqualTo("hi");
+    assertThat(message.getOptionalCord()).isEmpty();
     builder.clearOptionalCord();
-    assertEquals("", builder.getOptionalCord());
-    assertEquals("hi", messageAfterBuild.getOptionalCord());
+    assertThat(builder.getOptionalCord()).isEmpty();
+    assertThat(messageAfterBuild.getOptionalCord()).isEqualTo("hi");
 
     message = builder.build();
     builder.setOptionalCordBytes(ByteString.copyFromUtf8("no"));
-    assertEquals(ByteString.EMPTY, message.getOptionalCordBytes());
-    assertEquals(ByteString.copyFromUtf8("no"), builder.getOptionalCordBytes());
+    assertThat(message.getOptionalCordBytes()).isEqualTo(ByteString.EMPTY);
+    assertThat(builder.getOptionalCordBytes()).isEqualTo(ByteString.copyFromUtf8("no"));
     messageAfterBuild = builder.build();
-    assertEquals(ByteString.copyFromUtf8("no"), messageAfterBuild.getOptionalCordBytes());
-    assertEquals(ByteString.EMPTY, message.getOptionalCordBytes());
+    assertThat(messageAfterBuild.getOptionalCordBytes()).isEqualTo(ByteString.copyFromUtf8("no"));
+    assertThat(message.getOptionalCordBytes()).isEqualTo(ByteString.EMPTY);
     builder.clearOptionalCord();
-    assertEquals(ByteString.EMPTY, builder.getOptionalCordBytes());
-    assertEquals(ByteString.copyFromUtf8("no"), messageAfterBuild.getOptionalCordBytes());
+    assertThat(builder.getOptionalCordBytes()).isEqualTo(ByteString.EMPTY);
+    assertThat(messageAfterBuild.getOptionalCordBytes()).isEqualTo(ByteString.copyFromUtf8("no"));
 
     message = builder.build();
     builder.setOptionalDouble(1);
-    assertEquals(0D, message.getOptionalDouble(), 0.0);
-    assertEquals(1D, builder.getOptionalDouble(), 0.0);
+    assertThat(message.getOptionalDouble()).isEqualTo(0D);
+    assertThat(builder.getOptionalDouble()).isEqualTo(1D);
     messageAfterBuild = builder.build();
-    assertEquals(1D, messageAfterBuild.getOptionalDouble(), 0.0);
-    assertEquals(0D, message.getOptionalDouble(), 0.0);
+    assertThat(messageAfterBuild.getOptionalDouble()).isEqualTo(1D);
+    assertThat(message.getOptionalDouble()).isEqualTo(0D);
     builder.clearOptionalDouble();
-    assertEquals(0D, builder.getOptionalDouble(), 0.0);
-    assertEquals(1D, messageAfterBuild.getOptionalDouble(), 0.0);
+    assertThat(builder.getOptionalDouble()).isEqualTo(0D);
+    assertThat(messageAfterBuild.getOptionalDouble()).isEqualTo(1D);
 
     message = builder.build();
     builder.setOptionalFixed32(1);
-    assertEquals(0, message.getOptionalFixed32());
-    assertEquals(1, builder.getOptionalFixed32());
+    assertThat(message.getOptionalFixed32()).isEqualTo(0);
+    assertThat(builder.getOptionalFixed32()).isEqualTo(1);
     messageAfterBuild = builder.build();
-    assertEquals(1, messageAfterBuild.getOptionalFixed32());
-    assertEquals(0, message.getOptionalFixed32());
+    assertThat(messageAfterBuild.getOptionalFixed32()).isEqualTo(1);
+    assertThat(message.getOptionalFixed32()).isEqualTo(0);
     builder.clearOptionalFixed32();
-    assertEquals(0, builder.getOptionalFixed32());
-    assertEquals(1, messageAfterBuild.getOptionalFixed32());
+    assertThat(builder.getOptionalFixed32()).isEqualTo(0);
+    assertThat(messageAfterBuild.getOptionalFixed32()).isEqualTo(1);
 
     message = builder.build();
     builder.setOptionalFixed64(1);
-    assertEquals(0L, message.getOptionalFixed64());
-    assertEquals(1L, builder.getOptionalFixed64());
+    assertThat(message.getOptionalFixed64()).isEqualTo(0L);
+    assertThat(builder.getOptionalFixed64()).isEqualTo(1L);
     messageAfterBuild = builder.build();
-    assertEquals(1L, messageAfterBuild.getOptionalFixed64());
-    assertEquals(0L, message.getOptionalFixed64());
+    assertThat(messageAfterBuild.getOptionalFixed64()).isEqualTo(1L);
+    assertThat(message.getOptionalFixed64()).isEqualTo(0L);
     builder.clearOptionalFixed64();
-    assertEquals(0L, builder.getOptionalFixed64());
-    assertEquals(1L, messageAfterBuild.getOptionalFixed64());
+    assertThat(builder.getOptionalFixed64()).isEqualTo(0L);
+    assertThat(messageAfterBuild.getOptionalFixed64()).isEqualTo(1L);
 
     message = builder.build();
     builder.setOptionalFloat(1);
-    assertEquals(0F, message.getOptionalFloat(), 0.0f);
-    assertEquals(1F, builder.getOptionalFloat(), 0.0f);
+    assertThat(message.getOptionalFloat()).isEqualTo(0F);
+    assertThat(builder.getOptionalFloat()).isEqualTo(1F);
     messageAfterBuild = builder.build();
-    assertEquals(1F, messageAfterBuild.getOptionalFloat(), 0.0f);
-    assertEquals(0F, message.getOptionalFloat(), 0.0f);
+    assertThat(messageAfterBuild.getOptionalFloat()).isEqualTo(1F);
+    assertThat(message.getOptionalFloat()).isEqualTo(0F);
     builder.clearOptionalFloat();
-    assertEquals(0F, builder.getOptionalFloat(), 0.0f);
-    assertEquals(1F, messageAfterBuild.getOptionalFloat(), 0.0f);
+    assertThat(builder.getOptionalFloat()).isEqualTo(0F);
+    assertThat(messageAfterBuild.getOptionalFloat()).isEqualTo(1F);
 
     message = builder.build();
     builder.setOptionalForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAR);
-    assertEquals(ForeignEnumLite.FOREIGN_LITE_FOO, message.getOptionalForeignEnum());
-    assertEquals(ForeignEnumLite.FOREIGN_LITE_BAR, builder.getOptionalForeignEnum());
+    assertThat(message.getOptionalForeignEnum()).isEqualTo(ForeignEnumLite.FOREIGN_LITE_FOO);
+    assertThat(builder.getOptionalForeignEnum()).isEqualTo(ForeignEnumLite.FOREIGN_LITE_BAR);
     messageAfterBuild = builder.build();
-    assertEquals(ForeignEnumLite.FOREIGN_LITE_BAR, messageAfterBuild.getOptionalForeignEnum());
-    assertEquals(ForeignEnumLite.FOREIGN_LITE_FOO, message.getOptionalForeignEnum());
+    assertThat(messageAfterBuild.getOptionalForeignEnum())
+        .isEqualTo(ForeignEnumLite.FOREIGN_LITE_BAR);
+    assertThat(message.getOptionalForeignEnum()).isEqualTo(ForeignEnumLite.FOREIGN_LITE_FOO);
     builder.clearOptionalForeignEnum();
-    assertEquals(ForeignEnumLite.FOREIGN_LITE_FOO, builder.getOptionalForeignEnum());
-    assertEquals(ForeignEnumLite.FOREIGN_LITE_BAR, messageAfterBuild.getOptionalForeignEnum());
+    assertThat(builder.getOptionalForeignEnum()).isEqualTo(ForeignEnumLite.FOREIGN_LITE_FOO);
+    assertThat(messageAfterBuild.getOptionalForeignEnum())
+        .isEqualTo(ForeignEnumLite.FOREIGN_LITE_BAR);
 
     message = builder.build();
     ForeignMessageLite foreignMessage = ForeignMessageLite.newBuilder().setC(1).build();
     builder.setOptionalForeignMessage(foreignMessage);
-    assertEquals(ForeignMessageLite.getDefaultInstance(), message.getOptionalForeignMessage());
-    assertEquals(foreignMessage, builder.getOptionalForeignMessage());
+    assertThat(message.getOptionalForeignMessage())
+        .isEqualTo(ForeignMessageLite.getDefaultInstance());
+    assertThat(builder.getOptionalForeignMessage()).isEqualTo(foreignMessage);
     messageAfterBuild = builder.build();
-    assertEquals(foreignMessage, messageAfterBuild.getOptionalForeignMessage());
-    assertEquals(ForeignMessageLite.getDefaultInstance(), message.getOptionalForeignMessage());
+    assertThat(messageAfterBuild.getOptionalForeignMessage()).isEqualTo(foreignMessage);
+    assertThat(message.getOptionalForeignMessage())
+        .isEqualTo(ForeignMessageLite.getDefaultInstance());
     builder.clearOptionalForeignMessage();
-    assertEquals(ForeignMessageLite.getDefaultInstance(), builder.getOptionalForeignMessage());
-    assertEquals(foreignMessage, messageAfterBuild.getOptionalForeignMessage());
+    assertThat(builder.getOptionalForeignMessage())
+        .isEqualTo(ForeignMessageLite.getDefaultInstance());
+    assertThat(messageAfterBuild.getOptionalForeignMessage()).isEqualTo(foreignMessage);
 
     message = builder.build();
     ForeignMessageLite foreignMessageC3 = ForeignMessageLite.newBuilder().setC(3).build();
     builder.setOptionalForeignMessage(foreignMessageC3);
-    assertEquals(ForeignMessageLite.getDefaultInstance(), message.getOptionalForeignMessage());
-    assertEquals(foreignMessageC3, builder.getOptionalForeignMessage());
+    assertThat(message.getOptionalForeignMessage())
+        .isEqualTo(ForeignMessageLite.getDefaultInstance());
+    assertThat(builder.getOptionalForeignMessage()).isEqualTo(foreignMessageC3);
     messageAfterBuild = builder.build();
-    assertEquals(foreignMessageC3, messageAfterBuild.getOptionalForeignMessage());
-    assertEquals(ForeignMessageLite.getDefaultInstance(), message.getOptionalForeignMessage());
+    assertThat(messageAfterBuild.getOptionalForeignMessage()).isEqualTo(foreignMessageC3);
+    assertThat(message.getOptionalForeignMessage())
+        .isEqualTo(ForeignMessageLite.getDefaultInstance());
     builder.clearOptionalForeignMessage();
-    assertEquals(ForeignMessageLite.getDefaultInstance(), builder.getOptionalForeignMessage());
-    assertEquals(foreignMessageC3, messageAfterBuild.getOptionalForeignMessage());
+    assertThat(builder.getOptionalForeignMessage())
+        .isEqualTo(ForeignMessageLite.getDefaultInstance());
+    assertThat(messageAfterBuild.getOptionalForeignMessage()).isEqualTo(foreignMessageC3);
 
     message = builder.build();
     OptionalGroup optionalGroup = OptionalGroup.newBuilder().setA(1).build();
     builder.setOptionalGroup(optionalGroup);
-    assertEquals(OptionalGroup.getDefaultInstance(), message.getOptionalGroup());
-    assertEquals(optionalGroup, builder.getOptionalGroup());
+    assertThat(message.getOptionalGroup()).isEqualTo(OptionalGroup.getDefaultInstance());
+    assertThat(builder.getOptionalGroup()).isEqualTo(optionalGroup);
     messageAfterBuild = builder.build();
-    assertEquals(optionalGroup, messageAfterBuild.getOptionalGroup());
-    assertEquals(OptionalGroup.getDefaultInstance(), message.getOptionalGroup());
+    assertThat(messageAfterBuild.getOptionalGroup()).isEqualTo(optionalGroup);
+    assertThat(message.getOptionalGroup()).isEqualTo(OptionalGroup.getDefaultInstance());
     builder.clearOptionalGroup();
-    assertEquals(OptionalGroup.getDefaultInstance(), builder.getOptionalGroup());
-    assertEquals(optionalGroup, messageAfterBuild.getOptionalGroup());
+    assertThat(builder.getOptionalGroup()).isEqualTo(OptionalGroup.getDefaultInstance());
+    assertThat(messageAfterBuild.getOptionalGroup()).isEqualTo(optionalGroup);
 
     message = builder.build();
     OptionalGroup.Builder optionalGroupBuilder = OptionalGroup.newBuilder().setA(3);
     builder.setOptionalGroup(optionalGroupBuilder);
-    assertEquals(OptionalGroup.getDefaultInstance(), message.getOptionalGroup());
-    assertEquals(optionalGroupBuilder.build(), builder.getOptionalGroup());
+    assertThat(message.getOptionalGroup()).isEqualTo(OptionalGroup.getDefaultInstance());
+    assertThat(builder.getOptionalGroup()).isEqualTo(optionalGroupBuilder.build());
     messageAfterBuild = builder.build();
-    assertEquals(optionalGroupBuilder.build(), messageAfterBuild.getOptionalGroup());
-    assertEquals(OptionalGroup.getDefaultInstance(), message.getOptionalGroup());
+    assertThat(messageAfterBuild.getOptionalGroup()).isEqualTo(optionalGroupBuilder.build());
+    assertThat(message.getOptionalGroup()).isEqualTo(OptionalGroup.getDefaultInstance());
     builder.clearOptionalGroup();
-    assertEquals(OptionalGroup.getDefaultInstance(), builder.getOptionalGroup());
-    assertEquals(optionalGroupBuilder.build(), messageAfterBuild.getOptionalGroup());
+    assertThat(builder.getOptionalGroup()).isEqualTo(OptionalGroup.getDefaultInstance());
+    assertThat(messageAfterBuild.getOptionalGroup()).isEqualTo(optionalGroupBuilder.build());
 
     message = builder.build();
     builder.setOptionalInt32(1);
-    assertEquals(0, message.getOptionalInt32());
-    assertEquals(1, builder.getOptionalInt32());
+    assertThat(message.getOptionalInt32()).isEqualTo(0);
+    assertThat(builder.getOptionalInt32()).isEqualTo(1);
     messageAfterBuild = builder.build();
-    assertEquals(1, messageAfterBuild.getOptionalInt32());
-    assertEquals(0, message.getOptionalInt32());
+    assertThat(messageAfterBuild.getOptionalInt32()).isEqualTo(1);
+    assertThat(message.getOptionalInt32()).isEqualTo(0);
     builder.clearOptionalInt32();
-    assertEquals(0, builder.getOptionalInt32());
-    assertEquals(1, messageAfterBuild.getOptionalInt32());
+    assertThat(builder.getOptionalInt32()).isEqualTo(0);
+    assertThat(messageAfterBuild.getOptionalInt32()).isEqualTo(1);
 
     message = builder.build();
     builder.setOptionalInt64(1);
-    assertEquals(0L, message.getOptionalInt64());
-    assertEquals(1L, builder.getOptionalInt64());
+    assertThat(message.getOptionalInt64()).isEqualTo(0L);
+    assertThat(builder.getOptionalInt64()).isEqualTo(1L);
     messageAfterBuild = builder.build();
-    assertEquals(1L, messageAfterBuild.getOptionalInt64());
-    assertEquals(0L, message.getOptionalInt64());
+    assertThat(messageAfterBuild.getOptionalInt64()).isEqualTo(1L);
+    assertThat(message.getOptionalInt64()).isEqualTo(0L);
     builder.clearOptionalInt64();
-    assertEquals(0L, builder.getOptionalInt64());
-    assertEquals(1L, messageAfterBuild.getOptionalInt64());
+    assertThat(builder.getOptionalInt64()).isEqualTo(0L);
+    assertThat(messageAfterBuild.getOptionalInt64()).isEqualTo(1L);
 
     message = builder.build();
     NestedMessage nestedMessage = NestedMessage.newBuilder().setBb(1).build();
     builder.setOptionalLazyMessage(nestedMessage);
-    assertEquals(NestedMessage.getDefaultInstance(), message.getOptionalLazyMessage());
-    assertEquals(nestedMessage, builder.getOptionalLazyMessage());
+    assertThat(message.getOptionalLazyMessage()).isEqualTo(NestedMessage.getDefaultInstance());
+    assertThat(builder.getOptionalLazyMessage()).isEqualTo(nestedMessage);
     messageAfterBuild = builder.build();
-    assertEquals(nestedMessage, messageAfterBuild.getOptionalLazyMessage());
-    assertEquals(NestedMessage.getDefaultInstance(), message.getOptionalLazyMessage());
+    assertThat(messageAfterBuild.getOptionalLazyMessage()).isEqualTo(nestedMessage);
+    assertThat(message.getOptionalLazyMessage()).isEqualTo(NestedMessage.getDefaultInstance());
     builder.clearOptionalLazyMessage();
-    assertEquals(NestedMessage.getDefaultInstance(), builder.getOptionalLazyMessage());
-    assertEquals(nestedMessage, messageAfterBuild.getOptionalLazyMessage());
+    assertThat(builder.getOptionalLazyMessage()).isEqualTo(NestedMessage.getDefaultInstance());
+    assertThat(messageAfterBuild.getOptionalLazyMessage()).isEqualTo(nestedMessage);
 
     message = builder.build();
     NestedMessage.Builder nestedMessageBuilder = NestedMessage.newBuilder().setBb(3);
     builder.setOptionalLazyMessage(nestedMessageBuilder);
-    assertEquals(NestedMessage.getDefaultInstance(), message.getOptionalLazyMessage());
-    assertEquals(nestedMessageBuilder.build(), builder.getOptionalLazyMessage());
+    assertThat(message.getOptionalLazyMessage()).isEqualTo(NestedMessage.getDefaultInstance());
+    assertThat(builder.getOptionalLazyMessage()).isEqualTo(nestedMessageBuilder.build());
     messageAfterBuild = builder.build();
-    assertEquals(nestedMessageBuilder.build(), messageAfterBuild.getOptionalLazyMessage());
-    assertEquals(NestedMessage.getDefaultInstance(), message.getOptionalLazyMessage());
+    assertThat(messageAfterBuild.getOptionalLazyMessage()).isEqualTo(nestedMessageBuilder.build());
+    assertThat(message.getOptionalLazyMessage()).isEqualTo(NestedMessage.getDefaultInstance());
     builder.clearOptionalLazyMessage();
-    assertEquals(NestedMessage.getDefaultInstance(), builder.getOptionalLazyMessage());
-    assertEquals(nestedMessageBuilder.build(), messageAfterBuild.getOptionalLazyMessage());
+    assertThat(builder.getOptionalLazyMessage()).isEqualTo(NestedMessage.getDefaultInstance());
+    assertThat(messageAfterBuild.getOptionalLazyMessage()).isEqualTo(nestedMessageBuilder.build());
 
     message = builder.build();
     builder.setOptionalSfixed32(1);
-    assertEquals(0, message.getOptionalSfixed32());
-    assertEquals(1, builder.getOptionalSfixed32());
+    assertThat(message.getOptionalSfixed32()).isEqualTo(0);
+    assertThat(builder.getOptionalSfixed32()).isEqualTo(1);
     messageAfterBuild = builder.build();
-    assertEquals(1, messageAfterBuild.getOptionalSfixed32());
-    assertEquals(0, message.getOptionalSfixed32());
+    assertThat(messageAfterBuild.getOptionalSfixed32()).isEqualTo(1);
+    assertThat(message.getOptionalSfixed32()).isEqualTo(0);
     builder.clearOptionalSfixed32();
-    assertEquals(0, builder.getOptionalSfixed32());
-    assertEquals(1, messageAfterBuild.getOptionalSfixed32());
+    assertThat(builder.getOptionalSfixed32()).isEqualTo(0);
+    assertThat(messageAfterBuild.getOptionalSfixed32()).isEqualTo(1);
 
     message = builder.build();
     builder.setOptionalSfixed64(1);
-    assertEquals(0L, message.getOptionalSfixed64());
-    assertEquals(1L, builder.getOptionalSfixed64());
+    assertThat(message.getOptionalSfixed64()).isEqualTo(0L);
+    assertThat(builder.getOptionalSfixed64()).isEqualTo(1L);
     messageAfterBuild = builder.build();
-    assertEquals(1L, messageAfterBuild.getOptionalSfixed64());
-    assertEquals(0L, message.getOptionalSfixed64());
+    assertThat(messageAfterBuild.getOptionalSfixed64()).isEqualTo(1L);
+    assertThat(message.getOptionalSfixed64()).isEqualTo(0L);
     builder.clearOptionalSfixed64();
-    assertEquals(0L, builder.getOptionalSfixed64());
-    assertEquals(1L, messageAfterBuild.getOptionalSfixed64());
+    assertThat(builder.getOptionalSfixed64()).isEqualTo(0L);
+    assertThat(messageAfterBuild.getOptionalSfixed64()).isEqualTo(1L);
 
     message = builder.build();
     builder.setOptionalSint32(1);
-    assertEquals(0, message.getOptionalSint32());
-    assertEquals(1, builder.getOptionalSint32());
+    assertThat(message.getOptionalSint32()).isEqualTo(0);
+    assertThat(builder.getOptionalSint32()).isEqualTo(1);
     messageAfterBuild = builder.build();
-    assertEquals(1, messageAfterBuild.getOptionalSint32());
+    assertThat(messageAfterBuild.getOptionalSint32()).isEqualTo(1);
     builder.clearOptionalSint32();
-    assertEquals(0, builder.getOptionalSint32());
-    assertEquals(1, messageAfterBuild.getOptionalSint32());
+    assertThat(builder.getOptionalSint32()).isEqualTo(0);
+    assertThat(messageAfterBuild.getOptionalSint32()).isEqualTo(1);
 
     message = builder.build();
     builder.setOptionalSint64(1);
-    assertEquals(0L, message.getOptionalSint64());
-    assertEquals(1L, builder.getOptionalSint64());
+    assertThat(message.getOptionalSint64()).isEqualTo(0L);
+    assertThat(builder.getOptionalSint64()).isEqualTo(1L);
     messageAfterBuild = builder.build();
-    assertEquals(1L, messageAfterBuild.getOptionalSint64());
-    assertEquals(0L, message.getOptionalSint64());
+    assertThat(messageAfterBuild.getOptionalSint64()).isEqualTo(1L);
+    assertThat(message.getOptionalSint64()).isEqualTo(0L);
     builder.clearOptionalSint64();
-    assertEquals(0L, builder.getOptionalSint64());
-    assertEquals(1L, messageAfterBuild.getOptionalSint64());
+    assertThat(builder.getOptionalSint64()).isEqualTo(0L);
+    assertThat(messageAfterBuild.getOptionalSint64()).isEqualTo(1L);
 
     message = builder.build();
     builder.setOptionalString("hi");
-    assertEquals("", message.getOptionalString());
-    assertEquals("hi", builder.getOptionalString());
+    assertThat(message.getOptionalString()).isEmpty();
+    assertThat(builder.getOptionalString()).isEqualTo("hi");
     messageAfterBuild = builder.build();
-    assertEquals("hi", messageAfterBuild.getOptionalString());
-    assertEquals("", message.getOptionalString());
+    assertThat(messageAfterBuild.getOptionalString()).isEqualTo("hi");
+    assertThat(message.getOptionalString()).isEmpty();
     builder.clearOptionalString();
-    assertEquals("", builder.getOptionalString());
-    assertEquals("hi", messageAfterBuild.getOptionalString());
+    assertThat(builder.getOptionalString()).isEmpty();
+    assertThat(messageAfterBuild.getOptionalString()).isEqualTo("hi");
 
     message = builder.build();
     builder.setOptionalStringBytes(ByteString.copyFromUtf8("no"));
-    assertEquals(ByteString.EMPTY, message.getOptionalStringBytes());
-    assertEquals(ByteString.copyFromUtf8("no"), builder.getOptionalStringBytes());
+    assertThat(message.getOptionalStringBytes()).isEqualTo(ByteString.EMPTY);
+    assertThat(builder.getOptionalStringBytes()).isEqualTo(ByteString.copyFromUtf8("no"));
     messageAfterBuild = builder.build();
-    assertEquals(ByteString.copyFromUtf8("no"), messageAfterBuild.getOptionalStringBytes());
-    assertEquals(ByteString.EMPTY, message.getOptionalStringBytes());
+    assertThat(messageAfterBuild.getOptionalStringBytes()).isEqualTo(ByteString.copyFromUtf8("no"));
+    assertThat(message.getOptionalStringBytes()).isEqualTo(ByteString.EMPTY);
     builder.clearOptionalString();
-    assertEquals(ByteString.EMPTY, builder.getOptionalStringBytes());
-    assertEquals(ByteString.copyFromUtf8("no"), messageAfterBuild.getOptionalStringBytes());
+    assertThat(builder.getOptionalStringBytes()).isEqualTo(ByteString.EMPTY);
+    assertThat(messageAfterBuild.getOptionalStringBytes()).isEqualTo(ByteString.copyFromUtf8("no"));
 
     message = builder.build();
     builder.setOptionalStringPiece("hi");
-    assertEquals("", message.getOptionalStringPiece());
-    assertEquals("hi", builder.getOptionalStringPiece());
+    assertThat(message.getOptionalStringPiece()).isEmpty();
+    assertThat(builder.getOptionalStringPiece()).isEqualTo("hi");
     messageAfterBuild = builder.build();
-    assertEquals("hi", messageAfterBuild.getOptionalStringPiece());
-    assertEquals("", message.getOptionalStringPiece());
+    assertThat(messageAfterBuild.getOptionalStringPiece()).isEqualTo("hi");
+    assertThat(message.getOptionalStringPiece()).isEmpty();
     builder.clearOptionalStringPiece();
-    assertEquals("", builder.getOptionalStringPiece());
-    assertEquals("hi", messageAfterBuild.getOptionalStringPiece());
+    assertThat(builder.getOptionalStringPiece()).isEmpty();
+    assertThat(messageAfterBuild.getOptionalStringPiece()).isEqualTo("hi");
 
     message = builder.build();
     builder.setOptionalStringPieceBytes(ByteString.copyFromUtf8("no"));
-    assertEquals(ByteString.EMPTY, message.getOptionalStringPieceBytes());
-    assertEquals(ByteString.copyFromUtf8("no"), builder.getOptionalStringPieceBytes());
+    assertThat(message.getOptionalStringPieceBytes()).isEqualTo(ByteString.EMPTY);
+    assertThat(builder.getOptionalStringPieceBytes()).isEqualTo(ByteString.copyFromUtf8("no"));
     messageAfterBuild = builder.build();
-    assertEquals(ByteString.copyFromUtf8("no"), messageAfterBuild.getOptionalStringPieceBytes());
-    assertEquals(ByteString.EMPTY, message.getOptionalStringPieceBytes());
+    assertThat(messageAfterBuild.getOptionalStringPieceBytes())
+        .isEqualTo(ByteString.copyFromUtf8("no"));
+    assertThat(message.getOptionalStringPieceBytes()).isEqualTo(ByteString.EMPTY);
     builder.clearOptionalStringPiece();
-    assertEquals(ByteString.EMPTY, builder.getOptionalStringPieceBytes());
-    assertEquals(ByteString.copyFromUtf8("no"), messageAfterBuild.getOptionalStringPieceBytes());
+    assertThat(builder.getOptionalStringPieceBytes()).isEqualTo(ByteString.EMPTY);
+    assertThat(messageAfterBuild.getOptionalStringPieceBytes())
+        .isEqualTo(ByteString.copyFromUtf8("no"));
 
     message = builder.build();
     builder.setOptionalUint32(1);
-    assertEquals(0, message.getOptionalUint32());
-    assertEquals(1, builder.getOptionalUint32());
+    assertThat(message.getOptionalUint32()).isEqualTo(0);
+    assertThat(builder.getOptionalUint32()).isEqualTo(1);
     messageAfterBuild = builder.build();
-    assertEquals(1, messageAfterBuild.getOptionalUint32());
-    assertEquals(0, message.getOptionalUint32());
+    assertThat(messageAfterBuild.getOptionalUint32()).isEqualTo(1);
+    assertThat(message.getOptionalUint32()).isEqualTo(0);
     builder.clearOptionalUint32();
-    assertEquals(0, builder.getOptionalUint32());
-    assertEquals(1, messageAfterBuild.getOptionalUint32());
+    assertThat(builder.getOptionalUint32()).isEqualTo(0);
+    assertThat(messageAfterBuild.getOptionalUint32()).isEqualTo(1);
 
     message = builder.build();
     builder.setOptionalUint64(1);
-    assertEquals(0L, message.getOptionalUint64());
-    assertEquals(1L, builder.getOptionalUint64());
+    assertThat(message.getOptionalUint64()).isEqualTo(0L);
+    assertThat(builder.getOptionalUint64()).isEqualTo(1L);
     messageAfterBuild = builder.build();
-    assertEquals(1L, messageAfterBuild.getOptionalUint64());
-    assertEquals(0L, message.getOptionalUint64());
+    assertThat(messageAfterBuild.getOptionalUint64()).isEqualTo(1L);
+    assertThat(message.getOptionalUint64()).isEqualTo(0L);
     builder.clearOptionalUint64();
-    assertEquals(0L, builder.getOptionalUint64());
-    assertEquals(1L, messageAfterBuild.getOptionalUint64());
+    assertThat(builder.getOptionalUint64()).isEqualTo(0L);
+    assertThat(messageAfterBuild.getOptionalUint64()).isEqualTo(1L);
 
     message = builder.build();
     builder.addAllRepeatedBool(singletonList(true));
-    assertEquals(emptyList(), message.getRepeatedBoolList());
-    assertEquals(singletonList(true), builder.getRepeatedBoolList());
-    assertEquals(emptyList(), message.getRepeatedBoolList());
+    assertThat(message.getRepeatedBoolList()).isEmpty();
+    assertThat(builder.getRepeatedBoolList()).containsExactly(true);
+    assertThat(message.getRepeatedBoolList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedBool();
-    assertEquals(emptyList(), builder.getRepeatedBoolList());
-    assertEquals(singletonList(true), messageAfterBuild.getRepeatedBoolList());
+    assertThat(builder.getRepeatedBoolList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedBoolList()).containsExactly(true);
 
     message = builder.build();
     builder.addAllRepeatedBytes(singletonList(ByteString.copyFromUtf8("hi")));
-    assertEquals(emptyList(), message.getRepeatedBytesList());
-    assertEquals(singletonList(ByteString.copyFromUtf8("hi")), builder.getRepeatedBytesList());
-    assertEquals(emptyList(), message.getRepeatedBytesList());
+    assertThat(message.getRepeatedBytesList()).isEmpty();
+    assertThat(builder.getRepeatedBytesList()).containsExactly(ByteString.copyFromUtf8("hi"));
+    assertThat(message.getRepeatedBytesList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedBytes();
-    assertEquals(emptyList(), builder.getRepeatedBytesList());
-    assertEquals(
-        singletonList(ByteString.copyFromUtf8("hi")), messageAfterBuild.getRepeatedBytesList());
+    assertThat(builder.getRepeatedBytesList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedBytesList())
+        .containsExactly(ByteString.copyFromUtf8("hi"));
 
     message = builder.build();
     builder.addAllRepeatedCord(singletonList("hi"));
-    assertEquals(emptyList(), message.getRepeatedCordList());
-    assertEquals(singletonList("hi"), builder.getRepeatedCordList());
-    assertEquals(emptyList(), message.getRepeatedCordList());
+    assertThat(message.getRepeatedCordList()).isEmpty();
+    assertThat(builder.getRepeatedCordList()).containsExactly("hi");
+    assertThat(message.getRepeatedCordList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedCord();
-    assertEquals(emptyList(), builder.getRepeatedCordList());
-    assertEquals(singletonList("hi"), messageAfterBuild.getRepeatedCordList());
+    assertThat(builder.getRepeatedCordList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedCordList()).containsExactly("hi");
 
     message = builder.build();
     builder.addAllRepeatedDouble(singletonList(1D));
-    assertEquals(emptyList(), message.getRepeatedDoubleList());
-    assertEquals(singletonList(1D), builder.getRepeatedDoubleList());
-    assertEquals(emptyList(), message.getRepeatedDoubleList());
+    assertThat(message.getRepeatedDoubleList()).isEmpty();
+    assertThat(builder.getRepeatedDoubleList()).containsExactly(1D);
+    assertThat(message.getRepeatedDoubleList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedDouble();
-    assertEquals(emptyList(), builder.getRepeatedDoubleList());
-    assertEquals(singletonList(1D), messageAfterBuild.getRepeatedDoubleList());
+    assertThat(builder.getRepeatedDoubleList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedDoubleList()).containsExactly(1D);
 
     message = builder.build();
     builder.addAllRepeatedFixed32(singletonList(1));
-    assertEquals(emptyList(), message.getRepeatedFixed32List());
-    assertEquals(singletonList(1), builder.getRepeatedFixed32List());
-    assertEquals(emptyList(), message.getRepeatedFixed32List());
+    assertThat(message.getRepeatedFixed32List()).isEmpty();
+    assertThat(builder.getRepeatedFixed32List()).containsExactly(1);
+    assertThat(message.getRepeatedFixed32List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedFixed32();
-    assertEquals(emptyList(), builder.getRepeatedFixed32List());
-    assertEquals(singletonList(1), messageAfterBuild.getRepeatedFixed32List());
+    assertThat(builder.getRepeatedFixed32List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedFixed32List()).containsExactly(1);
 
     message = builder.build();
     builder.addAllRepeatedFixed64(singletonList(1L));
-    assertEquals(emptyList(), message.getRepeatedFixed64List());
-    assertEquals(singletonList(1L), builder.getRepeatedFixed64List());
-    assertEquals(emptyList(), message.getRepeatedFixed64List());
+    assertThat(message.getRepeatedFixed64List()).isEmpty();
+    assertThat(builder.getRepeatedFixed64List()).containsExactly(1L);
+    assertThat(message.getRepeatedFixed64List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedFixed64();
-    assertEquals(emptyList(), builder.getRepeatedFixed64List());
-    assertEquals(singletonList(1L), messageAfterBuild.getRepeatedFixed64List());
+    assertThat(builder.getRepeatedFixed64List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedFixed64List()).containsExactly(1L);
 
     message = builder.build();
     builder.addAllRepeatedFloat(singletonList(1F));
-    assertEquals(emptyList(), message.getRepeatedFloatList());
-    assertEquals(singletonList(1F), builder.getRepeatedFloatList());
-    assertEquals(emptyList(), message.getRepeatedFloatList());
+    assertThat(message.getRepeatedFloatList()).isEmpty();
+    assertThat(builder.getRepeatedFloatList()).containsExactly(1F);
+    assertThat(message.getRepeatedFloatList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedFloat();
-    assertEquals(emptyList(), builder.getRepeatedFloatList());
-    assertEquals(singletonList(1F), messageAfterBuild.getRepeatedFloatList());
+    assertThat(builder.getRepeatedFloatList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedFloatList()).containsExactly(1F);
 
     message = builder.build();
     builder.addAllRepeatedForeignEnum(singletonList(ForeignEnumLite.FOREIGN_LITE_BAR));
-    assertEquals(emptyList(), message.getRepeatedForeignEnumList());
-    assertEquals(
-        singletonList(ForeignEnumLite.FOREIGN_LITE_BAR), builder.getRepeatedForeignEnumList());
-    assertEquals(emptyList(), message.getRepeatedForeignEnumList());
+    assertThat(message.getRepeatedForeignEnumList()).isEmpty();
+    assertThat(builder.getRepeatedForeignEnumList())
+        .containsExactly(ForeignEnumLite.FOREIGN_LITE_BAR);
+    assertThat(message.getRepeatedForeignEnumList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedForeignEnum();
-    assertEquals(emptyList(), builder.getRepeatedForeignEnumList());
-    assertEquals(
-        singletonList(ForeignEnumLite.FOREIGN_LITE_BAR),
-        messageAfterBuild.getRepeatedForeignEnumList());
+    assertThat(builder.getRepeatedForeignEnumList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedForeignEnumList())
+        .containsExactly(ForeignEnumLite.FOREIGN_LITE_BAR);
 
     message = builder.build();
     builder.addAllRepeatedForeignMessage(singletonList(foreignMessage));
-    assertEquals(emptyList(), message.getRepeatedForeignMessageList());
-    assertEquals(singletonList(foreignMessage), builder.getRepeatedForeignMessageList());
-    assertEquals(emptyList(), message.getRepeatedForeignMessageList());
+    assertThat(message.getRepeatedForeignMessageList()).isEmpty();
+    assertThat(builder.getRepeatedForeignMessageList()).containsExactly(foreignMessage);
+    assertThat(message.getRepeatedForeignMessageList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedForeignMessage();
-    assertEquals(emptyList(), builder.getRepeatedForeignMessageList());
-    assertEquals(singletonList(foreignMessage), messageAfterBuild.getRepeatedForeignMessageList());
+    assertThat(builder.getRepeatedForeignMessageList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedForeignMessageList()).containsExactly(foreignMessage);
 
     message = builder.build();
     builder.addAllRepeatedGroup(singletonList(RepeatedGroup.getDefaultInstance()));
-    assertEquals(emptyList(), message.getRepeatedGroupList());
-    assertEquals(singletonList(RepeatedGroup.getDefaultInstance()), builder.getRepeatedGroupList());
-    assertEquals(emptyList(), message.getRepeatedGroupList());
+    assertThat(message.getRepeatedGroupList()).isEmpty();
+    assertThat(builder.getRepeatedGroupList()).containsExactly(RepeatedGroup.getDefaultInstance());
+    assertThat(message.getRepeatedGroupList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedGroup();
-    assertEquals(emptyList(), builder.getRepeatedGroupList());
-    assertEquals(
-        singletonList(RepeatedGroup.getDefaultInstance()),
-        messageAfterBuild.getRepeatedGroupList());
+    assertThat(builder.getRepeatedGroupList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedGroupList())
+        .containsExactly(RepeatedGroup.getDefaultInstance());
 
     message = builder.build();
     builder.addAllRepeatedInt32(singletonList(1));
-    assertEquals(emptyList(), message.getRepeatedInt32List());
-    assertEquals(singletonList(1), builder.getRepeatedInt32List());
-    assertEquals(emptyList(), message.getRepeatedInt32List());
+    assertThat(message.getRepeatedInt32List()).isEmpty();
+    assertThat(builder.getRepeatedInt32List()).containsExactly(1);
+    assertThat(message.getRepeatedInt32List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedInt32();
-    assertEquals(emptyList(), builder.getRepeatedInt32List());
-    assertEquals(singletonList(1), messageAfterBuild.getRepeatedInt32List());
+    assertThat(builder.getRepeatedInt32List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedInt32List()).containsExactly(1);
 
     message = builder.build();
     builder.addAllRepeatedInt64(singletonList(1L));
-    assertEquals(emptyList(), message.getRepeatedInt64List());
-    assertEquals(singletonList(1L), builder.getRepeatedInt64List());
-    assertEquals(emptyList(), message.getRepeatedInt64List());
+    assertThat(message.getRepeatedInt64List()).isEmpty();
+    assertThat(builder.getRepeatedInt64List()).containsExactly(1L);
+    assertThat(message.getRepeatedInt64List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedInt64();
-    assertEquals(emptyList(), builder.getRepeatedInt64List());
-    assertEquals(singletonList(1L), messageAfterBuild.getRepeatedInt64List());
+    assertThat(builder.getRepeatedInt64List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedInt64List()).containsExactly(1L);
 
     message = builder.build();
     builder.addAllRepeatedLazyMessage(singletonList(nestedMessage));
-    assertEquals(emptyList(), message.getRepeatedLazyMessageList());
-    assertEquals(singletonList(nestedMessage), builder.getRepeatedLazyMessageList());
-    assertEquals(emptyList(), message.getRepeatedLazyMessageList());
+    assertThat(message.getRepeatedLazyMessageList()).isEmpty();
+    assertThat(builder.getRepeatedLazyMessageList()).containsExactly(nestedMessage);
+    assertThat(message.getRepeatedLazyMessageList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedLazyMessage();
-    assertEquals(emptyList(), builder.getRepeatedLazyMessageList());
-    assertEquals(singletonList(nestedMessage), messageAfterBuild.getRepeatedLazyMessageList());
+    assertThat(builder.getRepeatedLazyMessageList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedLazyMessageList()).containsExactly(nestedMessage);
 
     message = builder.build();
     builder.addAllRepeatedSfixed32(singletonList(1));
-    assertEquals(emptyList(), message.getRepeatedSfixed32List());
-    assertEquals(singletonList(1), builder.getRepeatedSfixed32List());
-    assertEquals(emptyList(), message.getRepeatedSfixed32List());
+    assertThat(message.getRepeatedSfixed32List()).isEmpty();
+    assertThat(builder.getRepeatedSfixed32List()).containsExactly(1);
+    assertThat(message.getRepeatedSfixed32List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedSfixed32();
-    assertEquals(emptyList(), builder.getRepeatedSfixed32List());
-    assertEquals(singletonList(1), messageAfterBuild.getRepeatedSfixed32List());
+    assertThat(builder.getRepeatedSfixed32List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedSfixed32List()).containsExactly(1);
 
     message = builder.build();
     builder.addAllRepeatedSfixed64(singletonList(1L));
-    assertEquals(emptyList(), message.getRepeatedSfixed64List());
-    assertEquals(singletonList(1L), builder.getRepeatedSfixed64List());
-    assertEquals(emptyList(), message.getRepeatedSfixed64List());
+    assertThat(message.getRepeatedSfixed64List()).isEmpty();
+    assertThat(builder.getRepeatedSfixed64List()).containsExactly(1L);
+    assertThat(message.getRepeatedSfixed64List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedSfixed64();
-    assertEquals(emptyList(), builder.getRepeatedSfixed64List());
-    assertEquals(singletonList(1L), messageAfterBuild.getRepeatedSfixed64List());
+    assertThat(builder.getRepeatedSfixed64List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedSfixed64List()).containsExactly(1L);
 
     message = builder.build();
     builder.addAllRepeatedSint32(singletonList(1));
-    assertEquals(emptyList(), message.getRepeatedSint32List());
-    assertEquals(singletonList(1), builder.getRepeatedSint32List());
-    assertEquals(emptyList(), message.getRepeatedSint32List());
+    assertThat(message.getRepeatedSint32List()).isEmpty();
+    assertThat(builder.getRepeatedSint32List()).containsExactly(1);
+    assertThat(message.getRepeatedSint32List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedSint32();
-    assertEquals(emptyList(), builder.getRepeatedSint32List());
-    assertEquals(singletonList(1), messageAfterBuild.getRepeatedSint32List());
+    assertThat(builder.getRepeatedSint32List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedSint32List()).containsExactly(1);
 
     message = builder.build();
     builder.addAllRepeatedSint64(singletonList(1L));
-    assertEquals(emptyList(), message.getRepeatedSint64List());
-    assertEquals(singletonList(1L), builder.getRepeatedSint64List());
-    assertEquals(emptyList(), message.getRepeatedSint64List());
+    assertThat(message.getRepeatedSint64List()).isEmpty();
+    assertThat(builder.getRepeatedSint64List()).containsExactly(1L);
+    assertThat(message.getRepeatedSint64List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedSint64();
-    assertEquals(emptyList(), builder.getRepeatedSint64List());
-    assertEquals(singletonList(1L), messageAfterBuild.getRepeatedSint64List());
+    assertThat(builder.getRepeatedSint64List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedSint64List()).containsExactly(1L);
 
     message = builder.build();
     builder.addAllRepeatedString(singletonList("hi"));
-    assertEquals(emptyList(), message.getRepeatedStringList());
-    assertEquals(singletonList("hi"), builder.getRepeatedStringList());
-    assertEquals(emptyList(), message.getRepeatedStringList());
+    assertThat(message.getRepeatedStringList()).isEmpty();
+    assertThat(builder.getRepeatedStringList()).containsExactly("hi");
+    assertThat(message.getRepeatedStringList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedString();
-    assertEquals(emptyList(), builder.getRepeatedStringList());
-    assertEquals(singletonList("hi"), messageAfterBuild.getRepeatedStringList());
+    assertThat(builder.getRepeatedStringList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedStringList()).containsExactly("hi");
 
     message = builder.build();
     builder.addAllRepeatedStringPiece(singletonList("hi"));
-    assertEquals(emptyList(), message.getRepeatedStringPieceList());
-    assertEquals(singletonList("hi"), builder.getRepeatedStringPieceList());
-    assertEquals(emptyList(), message.getRepeatedStringPieceList());
+    assertThat(message.getRepeatedStringPieceList()).isEmpty();
+    assertThat(builder.getRepeatedStringPieceList()).containsExactly("hi");
+    assertThat(message.getRepeatedStringPieceList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedStringPiece();
-    assertEquals(emptyList(), builder.getRepeatedStringPieceList());
-    assertEquals(singletonList("hi"), messageAfterBuild.getRepeatedStringPieceList());
+    assertThat(builder.getRepeatedStringPieceList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedStringPieceList()).containsExactly("hi");
 
     message = builder.build();
     builder.addAllRepeatedUint32(singletonList(1));
-    assertEquals(emptyList(), message.getRepeatedUint32List());
-    assertEquals(singletonList(1), builder.getRepeatedUint32List());
-    assertEquals(emptyList(), message.getRepeatedUint32List());
+    assertThat(message.getRepeatedUint32List()).isEmpty();
+    assertThat(builder.getRepeatedUint32List()).containsExactly(1);
+    assertThat(message.getRepeatedUint32List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedUint32();
-    assertEquals(emptyList(), builder.getRepeatedUint32List());
-    assertEquals(singletonList(1), messageAfterBuild.getRepeatedUint32List());
+    assertThat(builder.getRepeatedUint32List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedUint32List()).containsExactly(1);
 
     message = builder.build();
     builder.addAllRepeatedUint64(singletonList(1L));
-    assertEquals(emptyList(), message.getRepeatedUint64List());
-    assertEquals(singletonList(1L), builder.getRepeatedUint64List());
-    assertEquals(emptyList(), message.getRepeatedUint64List());
+    assertThat(message.getRepeatedUint64List()).isEmpty();
+    assertThat(builder.getRepeatedUint64List()).containsExactly(1L);
+    assertThat(message.getRepeatedUint64List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedUint64();
-    assertEquals(emptyList(), builder.getRepeatedUint64List());
-    assertEquals(singletonList(1L), messageAfterBuild.getRepeatedUint64List());
+    assertThat(builder.getRepeatedUint64List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedUint64List()).containsExactly(1L);
 
     message = builder.build();
     builder.addRepeatedBool(true);
-    assertEquals(emptyList(), message.getRepeatedBoolList());
-    assertEquals(singletonList(true), builder.getRepeatedBoolList());
-    assertEquals(emptyList(), message.getRepeatedBoolList());
+    assertThat(message.getRepeatedBoolList()).isEmpty();
+    assertThat(builder.getRepeatedBoolList()).containsExactly(true);
+    assertThat(message.getRepeatedBoolList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedBool();
-    assertEquals(emptyList(), builder.getRepeatedBoolList());
-    assertEquals(singletonList(true), messageAfterBuild.getRepeatedBoolList());
+    assertThat(builder.getRepeatedBoolList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedBoolList()).containsExactly(true);
 
     message = builder.build();
     builder.addRepeatedBytes(ByteString.copyFromUtf8("hi"));
-    assertEquals(emptyList(), message.getRepeatedBytesList());
-    assertEquals(singletonList(ByteString.copyFromUtf8("hi")), builder.getRepeatedBytesList());
-    assertEquals(emptyList(), message.getRepeatedBytesList());
+    assertThat(message.getRepeatedBytesList()).isEmpty();
+    assertThat(builder.getRepeatedBytesList()).containsExactly(ByteString.copyFromUtf8("hi"));
+    assertThat(message.getRepeatedBytesList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedBytes();
-    assertEquals(emptyList(), builder.getRepeatedBytesList());
-    assertEquals(
-        singletonList(ByteString.copyFromUtf8("hi")), messageAfterBuild.getRepeatedBytesList());
+    assertThat(builder.getRepeatedBytesList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedBytesList())
+        .containsExactly(ByteString.copyFromUtf8("hi"));
 
     message = builder.build();
     builder.addRepeatedCord("hi");
-    assertEquals(emptyList(), message.getRepeatedCordList());
-    assertEquals(singletonList("hi"), builder.getRepeatedCordList());
-    assertEquals(emptyList(), message.getRepeatedCordList());
+    assertThat(message.getRepeatedCordList()).isEmpty();
+    assertThat(builder.getRepeatedCordList()).containsExactly("hi");
+    assertThat(message.getRepeatedCordList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedCord();
-    assertEquals(emptyList(), builder.getRepeatedCordList());
-    assertEquals(singletonList("hi"), messageAfterBuild.getRepeatedCordList());
+    assertThat(builder.getRepeatedCordList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedCordList()).containsExactly("hi");
 
     message = builder.build();
     builder.addRepeatedDouble(1D);
-    assertEquals(emptyList(), message.getRepeatedDoubleList());
-    assertEquals(singletonList(1D), builder.getRepeatedDoubleList());
-    assertEquals(emptyList(), message.getRepeatedDoubleList());
+    assertThat(message.getRepeatedDoubleList()).isEmpty();
+    assertThat(builder.getRepeatedDoubleList()).containsExactly(1D);
+    assertThat(message.getRepeatedDoubleList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedDouble();
-    assertEquals(emptyList(), builder.getRepeatedDoubleList());
-    assertEquals(singletonList(1D), messageAfterBuild.getRepeatedDoubleList());
+    assertThat(builder.getRepeatedDoubleList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedDoubleList()).containsExactly(1D);
 
     message = builder.build();
     builder.addRepeatedFixed32(1);
-    assertEquals(emptyList(), message.getRepeatedFixed32List());
-    assertEquals(singletonList(1), builder.getRepeatedFixed32List());
-    assertEquals(emptyList(), message.getRepeatedFixed32List());
+    assertThat(message.getRepeatedFixed32List()).isEmpty();
+    assertThat(builder.getRepeatedFixed32List()).containsExactly(1);
+    assertThat(message.getRepeatedFixed32List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedFixed32();
-    assertEquals(emptyList(), builder.getRepeatedFixed32List());
-    assertEquals(singletonList(1), messageAfterBuild.getRepeatedFixed32List());
+    assertThat(builder.getRepeatedFixed32List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedFixed32List()).containsExactly(1);
 
     message = builder.build();
     builder.addRepeatedFixed64(1L);
-    assertEquals(emptyList(), message.getRepeatedFixed64List());
-    assertEquals(singletonList(1L), builder.getRepeatedFixed64List());
-    assertEquals(emptyList(), message.getRepeatedFixed64List());
+    assertThat(message.getRepeatedFixed64List()).isEmpty();
+    assertThat(builder.getRepeatedFixed64List()).containsExactly(1L);
+    assertThat(message.getRepeatedFixed64List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedFixed64();
-    assertEquals(emptyList(), builder.getRepeatedFixed64List());
-    assertEquals(singletonList(1L), messageAfterBuild.getRepeatedFixed64List());
+    assertThat(builder.getRepeatedFixed64List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedFixed64List()).containsExactly(1L);
 
     message = builder.build();
     builder.addRepeatedFloat(1F);
-    assertEquals(emptyList(), message.getRepeatedFloatList());
-    assertEquals(singletonList(1F), builder.getRepeatedFloatList());
-    assertEquals(emptyList(), message.getRepeatedFloatList());
+    assertThat(message.getRepeatedFloatList()).isEmpty();
+    assertThat(builder.getRepeatedFloatList()).containsExactly(1F);
+    assertThat(message.getRepeatedFloatList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedFloat();
-    assertEquals(emptyList(), builder.getRepeatedFloatList());
-    assertEquals(singletonList(1F), messageAfterBuild.getRepeatedFloatList());
+    assertThat(builder.getRepeatedFloatList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedFloatList()).containsExactly(1F);
 
     message = builder.build();
     builder.addRepeatedForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAR);
-    assertEquals(emptyList(), message.getRepeatedForeignEnumList());
-    assertEquals(
-        singletonList(ForeignEnumLite.FOREIGN_LITE_BAR), builder.getRepeatedForeignEnumList());
-    assertEquals(emptyList(), message.getRepeatedForeignEnumList());
+    assertThat(message.getRepeatedForeignEnumList()).isEmpty();
+    assertThat(builder.getRepeatedForeignEnumList())
+        .containsExactly(ForeignEnumLite.FOREIGN_LITE_BAR);
+    assertThat(message.getRepeatedForeignEnumList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedForeignEnum();
-    assertEquals(emptyList(), builder.getRepeatedForeignEnumList());
-    assertEquals(
-        singletonList(ForeignEnumLite.FOREIGN_LITE_BAR),
-        messageAfterBuild.getRepeatedForeignEnumList());
+    assertThat(builder.getRepeatedForeignEnumList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedForeignEnumList())
+        .containsExactly(ForeignEnumLite.FOREIGN_LITE_BAR);
 
     message = builder.build();
     builder.addRepeatedForeignMessage(foreignMessage);
-    assertEquals(emptyList(), message.getRepeatedForeignMessageList());
-    assertEquals(singletonList(foreignMessage), builder.getRepeatedForeignMessageList());
-    assertEquals(emptyList(), message.getRepeatedForeignMessageList());
+    assertThat(message.getRepeatedForeignMessageList()).isEmpty();
+    assertThat(builder.getRepeatedForeignMessageList()).containsExactly(foreignMessage);
+    assertThat(message.getRepeatedForeignMessageList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.removeRepeatedForeignMessage(0);
-    assertEquals(emptyList(), builder.getRepeatedForeignMessageList());
-    assertEquals(singletonList(foreignMessage), messageAfterBuild.getRepeatedForeignMessageList());
+    assertThat(builder.getRepeatedForeignMessageList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedForeignMessageList()).containsExactly(foreignMessage);
 
     message = builder.build();
     builder.addRepeatedGroup(RepeatedGroup.getDefaultInstance());
-    assertEquals(emptyList(), message.getRepeatedGroupList());
-    assertEquals(singletonList(RepeatedGroup.getDefaultInstance()), builder.getRepeatedGroupList());
-    assertEquals(emptyList(), message.getRepeatedGroupList());
+    assertThat(message.getRepeatedGroupList()).isEmpty();
+    assertThat(builder.getRepeatedGroupList()).containsExactly(RepeatedGroup.getDefaultInstance());
+    assertThat(message.getRepeatedGroupList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.removeRepeatedGroup(0);
-    assertEquals(emptyList(), builder.getRepeatedGroupList());
-    assertEquals(
-        singletonList(RepeatedGroup.getDefaultInstance()),
-        messageAfterBuild.getRepeatedGroupList());
+    assertThat(builder.getRepeatedGroupList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedGroupList())
+        .containsExactly(RepeatedGroup.getDefaultInstance());
 
     message = builder.build();
     builder.addRepeatedInt32(1);
-    assertEquals(emptyList(), message.getRepeatedInt32List());
-    assertEquals(singletonList(1), builder.getRepeatedInt32List());
-    assertEquals(emptyList(), message.getRepeatedInt32List());
+    assertThat(message.getRepeatedInt32List()).isEmpty();
+    assertThat(builder.getRepeatedInt32List()).containsExactly(1);
+    assertThat(message.getRepeatedInt32List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedInt32();
-    assertEquals(emptyList(), builder.getRepeatedInt32List());
-    assertEquals(singletonList(1), messageAfterBuild.getRepeatedInt32List());
+    assertThat(builder.getRepeatedInt32List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedInt32List()).containsExactly(1);
 
     message = builder.build();
     builder.addRepeatedInt64(1L);
-    assertEquals(emptyList(), message.getRepeatedInt64List());
-    assertEquals(singletonList(1L), builder.getRepeatedInt64List());
-    assertEquals(emptyList(), message.getRepeatedInt64List());
+    assertThat(message.getRepeatedInt64List()).isEmpty();
+    assertThat(builder.getRepeatedInt64List()).containsExactly(1L);
+    assertThat(message.getRepeatedInt64List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedInt64();
-    assertEquals(emptyList(), builder.getRepeatedInt64List());
-    assertEquals(singletonList(1L), messageAfterBuild.getRepeatedInt64List());
+    assertThat(builder.getRepeatedInt64List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedInt64List()).containsExactly(1L);
 
     message = builder.build();
     builder.addRepeatedLazyMessage(nestedMessage);
-    assertEquals(emptyList(), message.getRepeatedLazyMessageList());
-    assertEquals(singletonList(nestedMessage), builder.getRepeatedLazyMessageList());
-    assertEquals(emptyList(), message.getRepeatedLazyMessageList());
+    assertThat(message.getRepeatedLazyMessageList()).isEmpty();
+    assertThat(builder.getRepeatedLazyMessageList()).containsExactly(nestedMessage);
+    assertThat(message.getRepeatedLazyMessageList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.removeRepeatedLazyMessage(0);
-    assertEquals(emptyList(), builder.getRepeatedLazyMessageList());
-    assertEquals(singletonList(nestedMessage), messageAfterBuild.getRepeatedLazyMessageList());
+    assertThat(builder.getRepeatedLazyMessageList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedLazyMessageList()).containsExactly(nestedMessage);
 
     message = builder.build();
     builder.addRepeatedSfixed32(1);
-    assertEquals(emptyList(), message.getRepeatedSfixed32List());
-    assertEquals(singletonList(1), builder.getRepeatedSfixed32List());
-    assertEquals(emptyList(), message.getRepeatedSfixed32List());
+    assertThat(message.getRepeatedSfixed32List()).isEmpty();
+    assertThat(builder.getRepeatedSfixed32List()).containsExactly(1);
+    assertThat(message.getRepeatedSfixed32List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedSfixed32();
-    assertEquals(emptyList(), builder.getRepeatedSfixed32List());
-    assertEquals(singletonList(1), messageAfterBuild.getRepeatedSfixed32List());
+    assertThat(builder.getRepeatedSfixed32List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedSfixed32List()).containsExactly(1);
 
     message = builder.build();
     builder.addRepeatedSfixed64(1L);
-    assertEquals(emptyList(), message.getRepeatedSfixed64List());
-    assertEquals(singletonList(1L), builder.getRepeatedSfixed64List());
-    assertEquals(emptyList(), message.getRepeatedSfixed64List());
+    assertThat(message.getRepeatedSfixed64List()).isEmpty();
+    assertThat(builder.getRepeatedSfixed64List()).containsExactly(1L);
+    assertThat(message.getRepeatedSfixed64List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedSfixed64();
-    assertEquals(emptyList(), builder.getRepeatedSfixed64List());
-    assertEquals(singletonList(1L), messageAfterBuild.getRepeatedSfixed64List());
+    assertThat(builder.getRepeatedSfixed64List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedSfixed64List()).containsExactly(1L);
 
     message = builder.build();
     builder.addRepeatedSint32(1);
-    assertEquals(emptyList(), message.getRepeatedSint32List());
-    assertEquals(singletonList(1), builder.getRepeatedSint32List());
-    assertEquals(emptyList(), message.getRepeatedSint32List());
+    assertThat(message.getRepeatedSint32List()).isEmpty();
+    assertThat(builder.getRepeatedSint32List()).containsExactly(1);
+    assertThat(message.getRepeatedSint32List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedSint32();
-    assertEquals(emptyList(), builder.getRepeatedSint32List());
-    assertEquals(singletonList(1), messageAfterBuild.getRepeatedSint32List());
+    assertThat(builder.getRepeatedSint32List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedSint32List()).containsExactly(1);
 
     message = builder.build();
     builder.addRepeatedSint64(1L);
-    assertEquals(emptyList(), message.getRepeatedSint64List());
-    assertEquals(singletonList(1L), builder.getRepeatedSint64List());
-    assertEquals(emptyList(), message.getRepeatedSint64List());
+    assertThat(message.getRepeatedSint64List()).isEmpty();
+    assertThat(builder.getRepeatedSint64List()).containsExactly(1L);
+    assertThat(message.getRepeatedSint64List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedSint64();
-    assertEquals(emptyList(), builder.getRepeatedSint64List());
-    assertEquals(singletonList(1L), messageAfterBuild.getRepeatedSint64List());
+    assertThat(builder.getRepeatedSint64List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedSint64List()).containsExactly(1L);
 
     message = builder.build();
     builder.addRepeatedString("hi");
-    assertEquals(emptyList(), message.getRepeatedStringList());
-    assertEquals(singletonList("hi"), builder.getRepeatedStringList());
-    assertEquals(emptyList(), message.getRepeatedStringList());
+    assertThat(message.getRepeatedStringList()).isEmpty();
+    assertThat(builder.getRepeatedStringList()).containsExactly("hi");
+    assertThat(message.getRepeatedStringList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedString();
-    assertEquals(emptyList(), builder.getRepeatedStringList());
-    assertEquals(singletonList("hi"), messageAfterBuild.getRepeatedStringList());
+    assertThat(builder.getRepeatedStringList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedStringList()).containsExactly("hi");
 
     message = builder.build();
     builder.addRepeatedStringPiece("hi");
-    assertEquals(emptyList(), message.getRepeatedStringPieceList());
-    assertEquals(singletonList("hi"), builder.getRepeatedStringPieceList());
-    assertEquals(emptyList(), message.getRepeatedStringPieceList());
+    assertThat(message.getRepeatedStringPieceList()).isEmpty();
+    assertThat(builder.getRepeatedStringPieceList()).containsExactly("hi");
+    assertThat(message.getRepeatedStringPieceList()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedStringPiece();
-    assertEquals(emptyList(), builder.getRepeatedStringPieceList());
-    assertEquals(singletonList("hi"), messageAfterBuild.getRepeatedStringPieceList());
+    assertThat(builder.getRepeatedStringPieceList()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedStringPieceList()).containsExactly("hi");
 
     message = builder.build();
     builder.addRepeatedUint32(1);
-    assertEquals(emptyList(), message.getRepeatedUint32List());
-    assertEquals(singletonList(1), builder.getRepeatedUint32List());
-    assertEquals(emptyList(), message.getRepeatedUint32List());
+    assertThat(message.getRepeatedUint32List()).isEmpty();
+    assertThat(builder.getRepeatedUint32List()).containsExactly(1);
+    assertThat(message.getRepeatedUint32List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedUint32();
-    assertEquals(emptyList(), builder.getRepeatedUint32List());
-    assertEquals(singletonList(1), messageAfterBuild.getRepeatedUint32List());
+    assertThat(builder.getRepeatedUint32List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedUint32List()).containsExactly(1);
 
     message = builder.build();
     builder.addRepeatedUint64(1L);
-    assertEquals(emptyList(), message.getRepeatedUint64List());
-    assertEquals(singletonList(1L), builder.getRepeatedUint64List());
-    assertEquals(emptyList(), message.getRepeatedUint64List());
+    assertThat(message.getRepeatedUint64List()).isEmpty();
+    assertThat(builder.getRepeatedUint64List()).containsExactly(1L);
+    assertThat(message.getRepeatedUint64List()).isEmpty();
     messageAfterBuild = builder.build();
     builder.clearRepeatedUint64();
-    assertEquals(emptyList(), builder.getRepeatedUint64List());
-    assertEquals(singletonList(1L), messageAfterBuild.getRepeatedUint64List());
+    assertThat(builder.getRepeatedUint64List()).isEmpty();
+    assertThat(messageAfterBuild.getRepeatedUint64List()).containsExactly(1L);
 
     message = builder.build();
     builder.addRepeatedBool(true);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedBoolCount());
+    assertThat(message.getRepeatedBoolCount()).isEqualTo(0);
     builder.setRepeatedBool(0, false);
-    assertEquals(true, messageAfterBuild.getRepeatedBool(0));
-    assertEquals(false, builder.getRepeatedBool(0));
+    assertThat(messageAfterBuild.getRepeatedBool(0)).isTrue();
+    assertThat(builder.getRepeatedBool(0)).isFalse();
     builder.clearRepeatedBool();
 
     message = builder.build();
     builder.addRepeatedBytes(ByteString.copyFromUtf8("hi"));
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedBytesCount());
+    assertThat(message.getRepeatedBytesCount()).isEqualTo(0);
     builder.setRepeatedBytes(0, ByteString.EMPTY);
-    assertEquals(ByteString.copyFromUtf8("hi"), messageAfterBuild.getRepeatedBytes(0));
-    assertEquals(ByteString.EMPTY, builder.getRepeatedBytes(0));
+    assertThat(messageAfterBuild.getRepeatedBytes(0)).isEqualTo(ByteString.copyFromUtf8("hi"));
+    assertThat(builder.getRepeatedBytes(0)).isEqualTo(ByteString.EMPTY);
     builder.clearRepeatedBytes();
 
     message = builder.build();
     builder.addRepeatedCord("hi");
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedCordCount());
+    assertThat(message.getRepeatedCordCount()).isEqualTo(0);
     builder.setRepeatedCord(0, "");
-    assertEquals("hi", messageAfterBuild.getRepeatedCord(0));
-    assertEquals("", builder.getRepeatedCord(0));
+    assertThat(messageAfterBuild.getRepeatedCord(0)).isEqualTo("hi");
+    assertThat(builder.getRepeatedCord(0)).isEmpty();
     builder.clearRepeatedCord();
     message = builder.build();
 
     builder.addRepeatedCordBytes(ByteString.copyFromUtf8("hi"));
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedCordCount());
+    assertThat(message.getRepeatedCordCount()).isEqualTo(0);
     builder.setRepeatedCord(0, "");
-    assertEquals(ByteString.copyFromUtf8("hi"), messageAfterBuild.getRepeatedCordBytes(0));
-    assertEquals(ByteString.EMPTY, builder.getRepeatedCordBytes(0));
+    assertThat(messageAfterBuild.getRepeatedCordBytes(0)).isEqualTo(ByteString.copyFromUtf8("hi"));
+    assertThat(builder.getRepeatedCordBytes(0)).isEqualTo(ByteString.EMPTY);
     builder.clearRepeatedCord();
 
     message = builder.build();
     builder.addRepeatedDouble(1D);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedDoubleCount());
+    assertThat(message.getRepeatedDoubleCount()).isEqualTo(0);
     builder.setRepeatedDouble(0, 0D);
-    assertEquals(1D, messageAfterBuild.getRepeatedDouble(0), 0.0);
-    assertEquals(0D, builder.getRepeatedDouble(0), 0.0);
+    assertThat(messageAfterBuild.getRepeatedDouble(0)).isEqualTo(1D);
+    assertThat(builder.getRepeatedDouble(0)).isEqualTo(0D);
     builder.clearRepeatedDouble();
 
     message = builder.build();
     builder.addRepeatedFixed32(1);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedFixed32Count());
+    assertThat(message.getRepeatedFixed32Count()).isEqualTo(0);
     builder.setRepeatedFixed32(0, 0);
-    assertEquals(1, messageAfterBuild.getRepeatedFixed32(0));
-    assertEquals(0, builder.getRepeatedFixed32(0));
+    assertThat(messageAfterBuild.getRepeatedFixed32(0)).isEqualTo(1);
+    assertThat(builder.getRepeatedFixed32(0)).isEqualTo(0);
     builder.clearRepeatedFixed32();
 
     message = builder.build();
     builder.addRepeatedFixed64(1L);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedFixed64Count());
+    assertThat(message.getRepeatedFixed64Count()).isEqualTo(0);
     builder.setRepeatedFixed64(0, 0L);
-    assertEquals(1L, messageAfterBuild.getRepeatedFixed64(0));
-    assertEquals(0L, builder.getRepeatedFixed64(0));
+    assertThat(messageAfterBuild.getRepeatedFixed64(0)).isEqualTo(1L);
+    assertThat(builder.getRepeatedFixed64(0)).isEqualTo(0L);
     builder.clearRepeatedFixed64();
 
     message = builder.build();
     builder.addRepeatedFloat(1F);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedFloatCount());
+    assertThat(message.getRepeatedFloatCount()).isEqualTo(0);
     builder.setRepeatedFloat(0, 0F);
-    assertEquals(1F, messageAfterBuild.getRepeatedFloat(0), 0.0f);
-    assertEquals(0F, builder.getRepeatedFloat(0), 0.0f);
+    assertThat(messageAfterBuild.getRepeatedFloat(0)).isEqualTo(1F);
+    assertThat(builder.getRepeatedFloat(0)).isEqualTo(0F);
     builder.clearRepeatedFloat();
 
     message = builder.build();
     builder.addRepeatedForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAR);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedForeignEnumCount());
+    assertThat(message.getRepeatedForeignEnumCount()).isEqualTo(0);
     builder.setRepeatedForeignEnum(0, ForeignEnumLite.FOREIGN_LITE_FOO);
-    assertEquals(ForeignEnumLite.FOREIGN_LITE_BAR, messageAfterBuild.getRepeatedForeignEnum(0));
-    assertEquals(ForeignEnumLite.FOREIGN_LITE_FOO, builder.getRepeatedForeignEnum(0));
+    assertThat(messageAfterBuild.getRepeatedForeignEnum(0))
+        .isEqualTo(ForeignEnumLite.FOREIGN_LITE_BAR);
+    assertThat(builder.getRepeatedForeignEnum(0)).isEqualTo(ForeignEnumLite.FOREIGN_LITE_FOO);
     builder.clearRepeatedForeignEnum();
 
     message = builder.build();
     builder.addRepeatedForeignMessage(foreignMessage);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedForeignMessageCount());
+    assertThat(message.getRepeatedForeignMessageCount()).isEqualTo(0);
     builder.setRepeatedForeignMessage(0, ForeignMessageLite.getDefaultInstance());
-    assertEquals(foreignMessage, messageAfterBuild.getRepeatedForeignMessage(0));
-    assertEquals(ForeignMessageLite.getDefaultInstance(), builder.getRepeatedForeignMessage(0));
+    assertThat(messageAfterBuild.getRepeatedForeignMessage(0)).isEqualTo(foreignMessage);
+    assertThat(builder.getRepeatedForeignMessage(0))
+        .isEqualTo(ForeignMessageLite.getDefaultInstance());
     builder.clearRepeatedForeignMessage();
 
     message = builder.build();
     builder.addRepeatedForeignMessage(foreignMessageC3);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedForeignMessageCount());
+    assertThat(message.getRepeatedForeignMessageCount()).isEqualTo(0);
     builder.setRepeatedForeignMessage(0, ForeignMessageLite.getDefaultInstance());
-    assertEquals(foreignMessageC3, messageAfterBuild.getRepeatedForeignMessage(0));
-    assertEquals(ForeignMessageLite.getDefaultInstance(), builder.getRepeatedForeignMessage(0));
+    assertThat(messageAfterBuild.getRepeatedForeignMessage(0)).isEqualTo(foreignMessageC3);
+    assertThat(builder.getRepeatedForeignMessage(0))
+        .isEqualTo(ForeignMessageLite.getDefaultInstance());
     builder.clearRepeatedForeignMessage();
 
     message = builder.build();
     builder.addRepeatedForeignMessage(0, foreignMessage);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedForeignMessageCount());
+    assertThat(message.getRepeatedForeignMessageCount()).isEqualTo(0);
     builder.setRepeatedForeignMessage(0, foreignMessageC3);
-    assertEquals(foreignMessage, messageAfterBuild.getRepeatedForeignMessage(0));
-    assertEquals(foreignMessageC3, builder.getRepeatedForeignMessage(0));
+    assertThat(messageAfterBuild.getRepeatedForeignMessage(0)).isEqualTo(foreignMessage);
+    assertThat(builder.getRepeatedForeignMessage(0)).isEqualTo(foreignMessageC3);
     builder.clearRepeatedForeignMessage();
 
     message = builder.build();
     RepeatedGroup repeatedGroup = RepeatedGroup.newBuilder().setA(1).build();
     builder.addRepeatedGroup(repeatedGroup);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedGroupCount());
+    assertThat(message.getRepeatedGroupCount()).isEqualTo(0);
     builder.setRepeatedGroup(0, RepeatedGroup.getDefaultInstance());
-    assertEquals(repeatedGroup, messageAfterBuild.getRepeatedGroup(0));
-    assertEquals(RepeatedGroup.getDefaultInstance(), builder.getRepeatedGroup(0));
+    assertThat(messageAfterBuild.getRepeatedGroup(0)).isEqualTo(repeatedGroup);
+    assertThat(builder.getRepeatedGroup(0)).isEqualTo(RepeatedGroup.getDefaultInstance());
     builder.clearRepeatedGroup();
 
     message = builder.build();
     builder.addRepeatedGroup(0, repeatedGroup);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedGroupCount());
+    assertThat(message.getRepeatedGroupCount()).isEqualTo(0);
     builder.setRepeatedGroup(0, RepeatedGroup.getDefaultInstance());
-    assertEquals(repeatedGroup, messageAfterBuild.getRepeatedGroup(0));
-    assertEquals(RepeatedGroup.getDefaultInstance(), builder.getRepeatedGroup(0));
+    assertThat(messageAfterBuild.getRepeatedGroup(0)).isEqualTo(repeatedGroup);
+    assertThat(builder.getRepeatedGroup(0)).isEqualTo(RepeatedGroup.getDefaultInstance());
     builder.clearRepeatedGroup();
 
     message = builder.build();
     RepeatedGroup.Builder repeatedGroupBuilder = RepeatedGroup.newBuilder().setA(3);
     builder.addRepeatedGroup(repeatedGroupBuilder);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedGroupCount());
+    assertThat(message.getRepeatedGroupCount()).isEqualTo(0);
     builder.setRepeatedGroup(0, RepeatedGroup.getDefaultInstance());
-    assertEquals(repeatedGroupBuilder.build(), messageAfterBuild.getRepeatedGroup(0));
-    assertEquals(RepeatedGroup.getDefaultInstance(), builder.getRepeatedGroup(0));
+    assertThat(messageAfterBuild.getRepeatedGroup(0)).isEqualTo(repeatedGroupBuilder.build());
+    assertThat(builder.getRepeatedGroup(0)).isEqualTo(RepeatedGroup.getDefaultInstance());
     builder.clearRepeatedGroup();
 
     message = builder.build();
     builder.addRepeatedGroup(0, repeatedGroupBuilder);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedGroupCount());
+    assertThat(message.getRepeatedGroupCount()).isEqualTo(0);
     builder.setRepeatedGroup(0, RepeatedGroup.getDefaultInstance());
-    assertEquals(repeatedGroupBuilder.build(), messageAfterBuild.getRepeatedGroup(0));
-    assertEquals(RepeatedGroup.getDefaultInstance(), builder.getRepeatedGroup(0));
+    assertThat(messageAfterBuild.getRepeatedGroup(0)).isEqualTo(repeatedGroupBuilder.build());
+    assertThat(builder.getRepeatedGroup(0)).isEqualTo(RepeatedGroup.getDefaultInstance());
     builder.clearRepeatedGroup();
 
     message = builder.build();
     builder.addRepeatedInt32(1);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedInt32Count());
+    assertThat(message.getRepeatedInt32Count()).isEqualTo(0);
     builder.setRepeatedInt32(0, 0);
-    assertEquals(1, messageAfterBuild.getRepeatedInt32(0));
-    assertEquals(0, builder.getRepeatedInt32(0));
+    assertThat(messageAfterBuild.getRepeatedInt32(0)).isEqualTo(1);
+    assertThat(builder.getRepeatedInt32(0)).isEqualTo(0);
     builder.clearRepeatedInt32();
 
     message = builder.build();
     builder.addRepeatedInt64(1L);
     messageAfterBuild = builder.build();
-    assertEquals(0L, message.getRepeatedInt64Count());
+    assertThat(message.getRepeatedInt64Count()).isEqualTo(0L);
     builder.setRepeatedInt64(0, 0L);
-    assertEquals(1L, messageAfterBuild.getRepeatedInt64(0));
-    assertEquals(0L, builder.getRepeatedInt64(0));
+    assertThat(messageAfterBuild.getRepeatedInt64(0)).isEqualTo(1L);
+    assertThat(builder.getRepeatedInt64(0)).isEqualTo(0L);
     builder.clearRepeatedInt64();
 
     message = builder.build();
     builder.addRepeatedLazyMessage(nestedMessage);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedLazyMessageCount());
+    assertThat(message.getRepeatedLazyMessageCount()).isEqualTo(0);
     builder.setRepeatedLazyMessage(0, NestedMessage.getDefaultInstance());
-    assertEquals(nestedMessage, messageAfterBuild.getRepeatedLazyMessage(0));
-    assertEquals(NestedMessage.getDefaultInstance(), builder.getRepeatedLazyMessage(0));
+    assertThat(messageAfterBuild.getRepeatedLazyMessage(0)).isEqualTo(nestedMessage);
+    assertThat(builder.getRepeatedLazyMessage(0)).isEqualTo(NestedMessage.getDefaultInstance());
     builder.clearRepeatedLazyMessage();
 
     message = builder.build();
     builder.addRepeatedLazyMessage(0, nestedMessage);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedLazyMessageCount());
+    assertThat(message.getRepeatedLazyMessageCount()).isEqualTo(0);
     builder.setRepeatedLazyMessage(0, NestedMessage.getDefaultInstance());
-    assertEquals(nestedMessage, messageAfterBuild.getRepeatedLazyMessage(0));
-    assertEquals(NestedMessage.getDefaultInstance(), builder.getRepeatedLazyMessage(0));
+    assertThat(messageAfterBuild.getRepeatedLazyMessage(0)).isEqualTo(nestedMessage);
+    assertThat(builder.getRepeatedLazyMessage(0)).isEqualTo(NestedMessage.getDefaultInstance());
     builder.clearRepeatedLazyMessage();
 
     message = builder.build();
     builder.addRepeatedLazyMessage(nestedMessageBuilder);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedLazyMessageCount());
+    assertThat(message.getRepeatedLazyMessageCount()).isEqualTo(0);
     builder.setRepeatedLazyMessage(0, NestedMessage.getDefaultInstance());
-    assertEquals(nestedMessageBuilder.build(), messageAfterBuild.getRepeatedLazyMessage(0));
-    assertEquals(NestedMessage.getDefaultInstance(), builder.getRepeatedLazyMessage(0));
+    assertThat(messageAfterBuild.getRepeatedLazyMessage(0)).isEqualTo(nestedMessageBuilder.build());
+    assertThat(builder.getRepeatedLazyMessage(0)).isEqualTo(NestedMessage.getDefaultInstance());
     builder.clearRepeatedLazyMessage();
 
     message = builder.build();
     builder.addRepeatedLazyMessage(0, nestedMessageBuilder);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedLazyMessageCount());
+    assertThat(message.getRepeatedLazyMessageCount()).isEqualTo(0);
     builder.setRepeatedLazyMessage(0, NestedMessage.getDefaultInstance());
-    assertEquals(nestedMessageBuilder.build(), messageAfterBuild.getRepeatedLazyMessage(0));
-    assertEquals(NestedMessage.getDefaultInstance(), builder.getRepeatedLazyMessage(0));
+    assertThat(messageAfterBuild.getRepeatedLazyMessage(0)).isEqualTo(nestedMessageBuilder.build());
+    assertThat(builder.getRepeatedLazyMessage(0)).isEqualTo(NestedMessage.getDefaultInstance());
     builder.clearRepeatedLazyMessage();
 
     message = builder.build();
     builder.addRepeatedSfixed32(1);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedSfixed32Count());
+    assertThat(message.getRepeatedSfixed32Count()).isEqualTo(0);
     builder.setRepeatedSfixed32(0, 0);
-    assertEquals(1, messageAfterBuild.getRepeatedSfixed32(0));
-    assertEquals(0, builder.getRepeatedSfixed32(0));
+    assertThat(messageAfterBuild.getRepeatedSfixed32(0)).isEqualTo(1);
+    assertThat(builder.getRepeatedSfixed32(0)).isEqualTo(0);
     builder.clearRepeatedSfixed32();
 
     message = builder.build();
     builder.addRepeatedSfixed64(1L);
     messageAfterBuild = builder.build();
-    assertEquals(0L, message.getRepeatedSfixed64Count());
+    assertThat(message.getRepeatedSfixed64Count()).isEqualTo(0L);
     builder.setRepeatedSfixed64(0, 0L);
-    assertEquals(1L, messageAfterBuild.getRepeatedSfixed64(0));
-    assertEquals(0L, builder.getRepeatedSfixed64(0));
+    assertThat(messageAfterBuild.getRepeatedSfixed64(0)).isEqualTo(1L);
+    assertThat(builder.getRepeatedSfixed64(0)).isEqualTo(0L);
     builder.clearRepeatedSfixed64();
 
     message = builder.build();
     builder.addRepeatedSint32(1);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedSint32Count());
+    assertThat(message.getRepeatedSint32Count()).isEqualTo(0);
     builder.setRepeatedSint32(0, 0);
-    assertEquals(1, messageAfterBuild.getRepeatedSint32(0));
-    assertEquals(0, builder.getRepeatedSint32(0));
+    assertThat(messageAfterBuild.getRepeatedSint32(0)).isEqualTo(1);
+    assertThat(builder.getRepeatedSint32(0)).isEqualTo(0);
     builder.clearRepeatedSint32();
 
     message = builder.build();
     builder.addRepeatedSint64(1L);
     messageAfterBuild = builder.build();
-    assertEquals(0L, message.getRepeatedSint64Count());
+    assertThat(message.getRepeatedSint64Count()).isEqualTo(0L);
     builder.setRepeatedSint64(0, 0L);
-    assertEquals(1L, messageAfterBuild.getRepeatedSint64(0));
-    assertEquals(0L, builder.getRepeatedSint64(0));
+    assertThat(messageAfterBuild.getRepeatedSint64(0)).isEqualTo(1L);
+    assertThat(builder.getRepeatedSint64(0)).isEqualTo(0L);
     builder.clearRepeatedSint64();
 
     message = builder.build();
     builder.addRepeatedString("hi");
     messageAfterBuild = builder.build();
-    assertEquals(0L, message.getRepeatedStringCount());
+    assertThat(message.getRepeatedStringCount()).isEqualTo(0L);
     builder.setRepeatedString(0, "");
-    assertEquals("hi", messageAfterBuild.getRepeatedString(0));
-    assertEquals("", builder.getRepeatedString(0));
+    assertThat(messageAfterBuild.getRepeatedString(0)).isEqualTo("hi");
+    assertThat(builder.getRepeatedString(0)).isEmpty();
     builder.clearRepeatedString();
 
     message = builder.build();
     builder.addRepeatedStringBytes(ByteString.copyFromUtf8("hi"));
     messageAfterBuild = builder.build();
-    assertEquals(0L, message.getRepeatedStringCount());
+    assertThat(message.getRepeatedStringCount()).isEqualTo(0L);
     builder.setRepeatedString(0, "");
-    assertEquals(ByteString.copyFromUtf8("hi"), messageAfterBuild.getRepeatedStringBytes(0));
-    assertEquals(ByteString.EMPTY, builder.getRepeatedStringBytes(0));
+    assertThat(messageAfterBuild.getRepeatedStringBytes(0))
+        .isEqualTo(ByteString.copyFromUtf8("hi"));
+    assertThat(builder.getRepeatedStringBytes(0)).isEqualTo(ByteString.EMPTY);
     builder.clearRepeatedString();
 
     message = builder.build();
     builder.addRepeatedStringPiece("hi");
     messageAfterBuild = builder.build();
-    assertEquals(0L, message.getRepeatedStringPieceCount());
+    assertThat(message.getRepeatedStringPieceCount()).isEqualTo(0L);
     builder.setRepeatedStringPiece(0, "");
-    assertEquals("hi", messageAfterBuild.getRepeatedStringPiece(0));
-    assertEquals("", builder.getRepeatedStringPiece(0));
+    assertThat(messageAfterBuild.getRepeatedStringPiece(0)).isEqualTo("hi");
+    assertThat(builder.getRepeatedStringPiece(0)).isEmpty();
     builder.clearRepeatedStringPiece();
 
     message = builder.build();
     builder.addRepeatedStringPieceBytes(ByteString.copyFromUtf8("hi"));
     messageAfterBuild = builder.build();
-    assertEquals(0L, message.getRepeatedStringPieceCount());
+    assertThat(message.getRepeatedStringPieceCount()).isEqualTo(0L);
     builder.setRepeatedStringPiece(0, "");
-    assertEquals(ByteString.copyFromUtf8("hi"), messageAfterBuild.getRepeatedStringPieceBytes(0));
-    assertEquals(ByteString.EMPTY, builder.getRepeatedStringPieceBytes(0));
+    assertThat(messageAfterBuild.getRepeatedStringPieceBytes(0))
+        .isEqualTo(ByteString.copyFromUtf8("hi"));
+    assertThat(builder.getRepeatedStringPieceBytes(0)).isEqualTo(ByteString.EMPTY);
     builder.clearRepeatedStringPiece();
 
     message = builder.build();
     builder.addRepeatedUint32(1);
     messageAfterBuild = builder.build();
-    assertEquals(0, message.getRepeatedUint32Count());
+    assertThat(message.getRepeatedUint32Count()).isEqualTo(0);
     builder.setRepeatedUint32(0, 0);
-    assertEquals(1, messageAfterBuild.getRepeatedUint32(0));
-    assertEquals(0, builder.getRepeatedUint32(0));
+    assertThat(messageAfterBuild.getRepeatedUint32(0)).isEqualTo(1);
+    assertThat(builder.getRepeatedUint32(0)).isEqualTo(0);
     builder.clearRepeatedUint32();
 
     message = builder.build();
     builder.addRepeatedUint64(1L);
     messageAfterBuild = builder.build();
-    assertEquals(0L, message.getRepeatedUint64Count());
+    assertThat(message.getRepeatedUint64Count()).isEqualTo(0L);
     builder.setRepeatedUint64(0, 0L);
-    assertEquals(1L, messageAfterBuild.getRepeatedUint64(0));
-    assertEquals(0L, builder.getRepeatedUint64(0));
+    assertThat(messageAfterBuild.getRepeatedUint64(0)).isEqualTo(1L);
+    assertThat(builder.getRepeatedUint64(0)).isEqualTo(0L);
     builder.clearRepeatedUint64();
 
     message = builder.build();
-    assertEquals(0, message.getSerializedSize());
+    assertThat(message.getSerializedSize()).isEqualTo(0);
     builder.mergeFrom(TestAllTypesLite.newBuilder().setOptionalBool(true).build());
-    assertEquals(0, message.getSerializedSize());
-    assertEquals(true, builder.build().getOptionalBool());
+    assertThat(message.getSerializedSize()).isEqualTo(0);
+    assertThat(builder.build().getOptionalBool()).isTrue();
     builder.clearOptionalBool();
 
     message = builder.build();
-    assertEquals(0, message.getSerializedSize());
+    assertThat(message.getSerializedSize()).isEqualTo(0);
     builder.mergeFrom(TestAllTypesLite.newBuilder().setOptionalBool(true).build());
-    assertEquals(0, message.getSerializedSize());
-    assertEquals(true, builder.build().getOptionalBool());
+    assertThat(message.getSerializedSize()).isEqualTo(0);
+    assertThat(builder.build().getOptionalBool()).isTrue();
     builder.clear();
-    assertEquals(0, builder.build().getSerializedSize());
+    assertThat(builder.build().getSerializedSize()).isEqualTo(0);
 
     message = builder.build();
-    assertEquals(0, message.getSerializedSize());
+    assertThat(message.getSerializedSize()).isEqualTo(0);
     builder.mergeOptionalForeignMessage(foreignMessage);
-    assertEquals(0, message.getSerializedSize());
-    assertEquals(foreignMessage.getC(), builder.build().getOptionalForeignMessage().getC());
+    assertThat(message.getSerializedSize()).isEqualTo(0);
+    assertThat(builder.build().getOptionalForeignMessage().getC()).isEqualTo(foreignMessage.getC());
     builder.clearOptionalForeignMessage();
 
     message = builder.build();
-    assertEquals(0, message.getSerializedSize());
+    assertThat(message.getSerializedSize()).isEqualTo(0);
     builder.mergeOptionalLazyMessage(nestedMessage);
-    assertEquals(0, message.getSerializedSize());
-    assertEquals(nestedMessage.getBb(), builder.build().getOptionalLazyMessage().getBb());
+    assertThat(message.getSerializedSize()).isEqualTo(0);
+    assertThat(builder.build().getOptionalLazyMessage().getBb()).isEqualTo(nestedMessage.getBb());
     builder.clearOptionalLazyMessage();
 
     message = builder.build();
     builder.setOneofString("hi");
-    assertEquals(OneofFieldCase.ONEOFFIELD_NOT_SET, message.getOneofFieldCase());
-    assertEquals(OneofFieldCase.ONEOF_STRING, builder.getOneofFieldCase());
-    assertEquals("hi", builder.getOneofString());
+    assertThat(message.getOneofFieldCase()).isEqualTo(OneofFieldCase.ONEOFFIELD_NOT_SET);
+    assertThat(builder.getOneofFieldCase()).isEqualTo(OneofFieldCase.ONEOF_STRING);
+    assertThat(builder.getOneofString()).isEqualTo("hi");
     messageAfterBuild = builder.build();
-    assertEquals(OneofFieldCase.ONEOF_STRING, messageAfterBuild.getOneofFieldCase());
-    assertEquals("hi", messageAfterBuild.getOneofString());
+    assertThat(messageAfterBuild.getOneofFieldCase()).isEqualTo(OneofFieldCase.ONEOF_STRING);
+    assertThat(messageAfterBuild.getOneofString()).isEqualTo("hi");
     builder.setOneofUint32(1);
-    assertEquals(OneofFieldCase.ONEOF_STRING, messageAfterBuild.getOneofFieldCase());
-    assertEquals("hi", messageAfterBuild.getOneofString());
-    assertEquals(OneofFieldCase.ONEOF_UINT32, builder.getOneofFieldCase());
-    assertEquals(1, builder.getOneofUint32());
+    assertThat(messageAfterBuild.getOneofFieldCase()).isEqualTo(OneofFieldCase.ONEOF_STRING);
+    assertThat(messageAfterBuild.getOneofString()).isEqualTo("hi");
+    assertThat(builder.getOneofFieldCase()).isEqualTo(OneofFieldCase.ONEOF_UINT32);
+    assertThat(builder.getOneofUint32()).isEqualTo(1);
     TestAllTypesLiteOrBuilder messageOrBuilder = builder;
-    assertEquals(OneofFieldCase.ONEOF_UINT32, messageOrBuilder.getOneofFieldCase());
+    assertThat(messageOrBuilder.getOneofFieldCase()).isEqualTo(OneofFieldCase.ONEOF_UINT32);
 
     TestAllExtensionsLite.Builder extendableMessageBuilder = TestAllExtensionsLite.newBuilder();
     TestAllExtensionsLite extendableMessage = extendableMessageBuilder.build();
     extendableMessageBuilder.setExtension(UnittestLite.optionalInt32ExtensionLite, 1);
-    assertFalse(extendableMessage.hasExtension(UnittestLite.optionalInt32ExtensionLite));
+    assertThat(extendableMessage.hasExtension(UnittestLite.optionalInt32ExtensionLite)).isFalse();
     extendableMessage = extendableMessageBuilder.build();
-    assertEquals(
-        1, (int) extendableMessageBuilder.getExtension(UnittestLite.optionalInt32ExtensionLite));
-    assertEquals(1, (int) extendableMessage.getExtension(UnittestLite.optionalInt32ExtensionLite));
+    assertThat((int) extendableMessageBuilder.getExtension(UnittestLite.optionalInt32ExtensionLite))
+        .isEqualTo(1);
+    assertThat((int) extendableMessage.getExtension(UnittestLite.optionalInt32ExtensionLite))
+        .isEqualTo(1);
     extendableMessageBuilder.setExtension(UnittestLite.optionalInt32ExtensionLite, 3);
-    assertEquals(
-        3, (int) extendableMessageBuilder.getExtension(UnittestLite.optionalInt32ExtensionLite));
-    assertEquals(1, (int) extendableMessage.getExtension(UnittestLite.optionalInt32ExtensionLite));
+    assertThat((int) extendableMessageBuilder.getExtension(UnittestLite.optionalInt32ExtensionLite))
+        .isEqualTo(3);
+    assertThat((int) extendableMessage.getExtension(UnittestLite.optionalInt32ExtensionLite))
+        .isEqualTo(1);
     extendableMessage = extendableMessageBuilder.build();
-    assertEquals(
-        3, (int) extendableMessageBuilder.getExtension(UnittestLite.optionalInt32ExtensionLite));
-    assertEquals(3, (int) extendableMessage.getExtension(UnittestLite.optionalInt32ExtensionLite));
+    assertThat((int) extendableMessageBuilder.getExtension(UnittestLite.optionalInt32ExtensionLite))
+        .isEqualTo(3);
+    assertThat((int) extendableMessage.getExtension(UnittestLite.optionalInt32ExtensionLite))
+        .isEqualTo(3);
 
     // No extension registry, so it should be in unknown fields.
     extendableMessage = TestAllExtensionsLite.parseFrom(extendableMessage.toByteArray());
-    assertFalse(extendableMessage.hasExtension(UnittestLite.optionalInt32ExtensionLite));
+    assertThat(extendableMessage.hasExtension(UnittestLite.optionalInt32ExtensionLite)).isFalse();
 
     extendableMessageBuilder = extendableMessage.toBuilder();
     extendableMessageBuilder.mergeFrom(
@@ -1311,21 +1338,25 @@ public class LiteTest extends TestCase {
     extendableMessage = TestAllExtensionsLite.parseFrom(extendableMessage.toByteArray(), registry);
 
     // The unknown field was preserved.
-    assertEquals(3, (int) extendableMessage.getExtension(UnittestLite.optionalInt32ExtensionLite));
-    assertEquals(
-        11, (int) extendableMessage.getExtension(UnittestLite.optionalFixed32ExtensionLite));
+    assertThat((int) extendableMessage.getExtension(UnittestLite.optionalInt32ExtensionLite))
+        .isEqualTo(3);
+    assertThat((int) extendableMessage.getExtension(UnittestLite.optionalFixed32ExtensionLite))
+        .isEqualTo(11);
   }
 
+  @Test
+  @SuppressWarnings("ProtoNewBuilderMergeFrom")
   public void testBuilderMergeFromNull() throws Exception {
     try {
       TestAllTypesLite.newBuilder().mergeFrom((TestAllTypesLite) null);
-      fail("Expected exception");
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException e) {
       // Pass.
     }
   }
 
   // Builder.mergeFrom() should keep existing extensions.
+  @Test
   public void testBuilderMergeFromWithExtensions() throws Exception {
     TestAllExtensionsLite message =
         TestAllExtensionsLite.newBuilder()
@@ -1339,12 +1370,15 @@ public class LiteTest extends TestCase {
     builder.mergeFrom(message.toByteArray(), registry);
     builder.mergeFrom(message.toByteArray(), registry);
     TestAllExtensionsLite result = builder.build();
-    assertEquals(2, result.getExtensionCount(UnittestLite.repeatedInt32ExtensionLite));
-    assertEquals(12, result.getExtension(UnittestLite.repeatedInt32ExtensionLite, 0).intValue());
-    assertEquals(12, result.getExtension(UnittestLite.repeatedInt32ExtensionLite, 1).intValue());
+    assertThat(result.getExtensionCount(UnittestLite.repeatedInt32ExtensionLite)).isEqualTo(2);
+    assertThat(result.getExtension(UnittestLite.repeatedInt32ExtensionLite, 0).intValue())
+        .isEqualTo(12);
+    assertThat(result.getExtension(UnittestLite.repeatedInt32ExtensionLite, 1).intValue())
+        .isEqualTo(12);
   }
 
   // Builder.mergeFrom() should keep existing unknown fields.
+  @Test
   public void testBuilderMergeFromWithUnknownFields() throws Exception {
     TestAllTypesLite message = TestAllTypesLite.newBuilder().addRepeatedInt32(1).build();
 
@@ -1352,9 +1386,10 @@ public class LiteTest extends TestCase {
     builder.mergeFrom(message.toByteArray());
     builder.mergeFrom(message.toByteArray());
     NestedMessage result = builder.build();
-    assertEquals(message.getSerializedSize() * 2, result.getSerializedSize());
+    assertThat(result.getSerializedSize()).isEqualTo(message.getSerializedSize() * 2);
   }
 
+  @Test
   public void testMergeFrom_differentFieldsSetWithinOneField() throws Exception {
     TestAllTypesLite result =
         TestAllTypesLite.newBuilder()
@@ -1368,6 +1403,7 @@ public class LiteTest extends TestCase {
     assertToStringEquals("oneof_nested_message2 {\n  dd: 3\n}", result);
   }
 
+  @Test
   public void testMergeFrom_differentFieldsOfSameTypeSetWithinOneField() throws Exception {
     TestAllTypesLite result =
         TestAllTypesLite.newBuilder()
@@ -1381,6 +1417,7 @@ public class LiteTest extends TestCase {
     assertToStringEquals("oneof_lazy_nested_message {\n  cc: 3\n}", result);
   }
 
+  @Test
   public void testMergeFrom_sameFieldSetWithinOneofField() throws Exception {
     TestAllTypesLite result =
         TestAllTypesLite.newBuilder()
@@ -1394,16 +1431,54 @@ public class LiteTest extends TestCase {
     assertToStringEquals("oneof_nested_message {\n  bb: 2\n  cc: 4\n}", result);
   }
 
+  @Test
+  public void testMergeFrom_failureWhenReadingValue_propagatesOriginalException() {
+    final byte[] bytes = TestOneof2.newBuilder().setFooInt(123).build().toByteArray();
+    final IOException injectedException = new IOException("oh no");
+    CodedInputStream failingInputStream =
+        CodedInputStream.newInstance(
+            new InputStream() {
+              boolean first = true;
+
+              @Override
+              public int read(byte[] b, int off, int len) throws IOException {
+                if (!first) {
+                  throw injectedException;
+                }
+                first = false;
+                System.arraycopy(bytes, 0, b, off, len);
+                return len;
+              }
+
+              @Override
+              public int read() {
+                throw new UnsupportedOperationException();
+              }
+            },
+            bytes.length - 1);
+    TestOneof2.Builder builder = TestOneof2.newBuilder();
+
+    try {
+      builder.mergeFrom(failingInputStream, ExtensionRegistryLite.getEmptyRegistry());
+      assertWithMessage("Expected mergeFrom to fail").fail();
+    } catch (IOException e) {
+      assertThat(e).isSameInstanceAs(injectedException);
+    }
+  }
+
+  @Test
   public void testToStringDefaultInstance() throws Exception {
     assertToStringEquals("", TestAllTypesLite.getDefaultInstance());
   }
 
+  @Test
   public void testToStringScalarFieldsSuffixedWithList() throws Exception {
     assertToStringEquals(
         "deceptively_named_list: 7",
         TestAllTypesLite.newBuilder().setDeceptivelyNamedList(7).build());
   }
 
+  @Test
   public void testToStringPrimitives() throws Exception {
     TestAllTypesLite proto =
         TestAllTypesLite.newBuilder()
@@ -1425,6 +1500,7 @@ public class LiteTest extends TestCase {
   }
 
 
+  @Test
   public void testToStringStringFields() throws Exception {
     TestAllTypesLite proto =
         TestAllTypesLite.newBuilder().setOptionalString("foo\"bar\nbaz\\").build();
@@ -1434,6 +1510,7 @@ public class LiteTest extends TestCase {
     assertToStringEquals("optional_string: \"\\346\\226\\207\"", proto);
   }
 
+  @Test
   public void testToStringNestedMessage() throws Exception {
     TestAllTypesLite proto =
         TestAllTypesLite.newBuilder()
@@ -1448,6 +1525,7 @@ public class LiteTest extends TestCase {
     assertToStringEquals("optional_nested_message {\n  bb: 7\n}", proto);
   }
 
+  @Test
   public void testToStringRepeatedFields() throws Exception {
     TestAllTypesLite proto =
         TestAllTypesLite.newBuilder()
@@ -1466,6 +1544,7 @@ public class LiteTest extends TestCase {
         "repeated_lazy_message {\n  bb: 7\n}\nrepeated_lazy_message {\n  bb: 8\n}", proto);
   }
 
+  @Test
   public void testToStringForeignFields() throws Exception {
     TestAllTypesLite proto =
         TestAllTypesLite.newBuilder()
@@ -1479,6 +1558,7 @@ public class LiteTest extends TestCase {
         proto);
   }
 
+  @Test
   public void testToStringExtensions() throws Exception {
     TestAllExtensionsLite message =
         TestAllExtensionsLite.newBuilder()
@@ -1494,6 +1574,7 @@ public class LiteTest extends TestCase {
         "[1]: 123\n[18] {\n  bb: 7\n}\n[21]: 3\n[44]: \"spam\"\n[44]: \"eggs\"", message);
   }
 
+  @Test
   public void testToStringUnknownFields() throws Exception {
     TestAllExtensionsLite messageWithExtensions =
         TestAllExtensionsLite.newBuilder()
@@ -1511,6 +1592,7 @@ public class LiteTest extends TestCase {
         "1: 123\n18: \"\\b\\a\"\n21: 3\n44: \"spam\"\n44: \"eggs\"", messageWithUnknownFields);
   }
 
+  @Test
   public void testToStringLazyMessage() throws Exception {
     TestAllTypesLite message =
         TestAllTypesLite.newBuilder()
@@ -1519,6 +1601,7 @@ public class LiteTest extends TestCase {
     assertToStringEquals("optional_lazy_message {\n  bb: 1\n}", message);
   }
 
+  @Test
   public void testToStringGroup() throws Exception {
     TestAllTypesLite message =
         TestAllTypesLite.newBuilder()
@@ -1527,11 +1610,13 @@ public class LiteTest extends TestCase {
     assertToStringEquals("optional_group {\n  a: 1\n}", message);
   }
 
+  @Test
   public void testToStringOneof() throws Exception {
     TestAllTypesLite message = TestAllTypesLite.newBuilder().setOneofString("hello").build();
     assertToStringEquals("oneof_string: \"hello\"", message);
   }
 
+  @Test
   public void testToStringMapFields() throws Exception {
     TestMap message1 =
         TestMap.newBuilder()
@@ -1575,15 +1660,16 @@ public class LiteTest extends TestCase {
   // comparison as it contains unstable addresses.
   private static void assertToStringEquals(String expected, MessageLite message) {
     String toString = message.toString();
-    assertEquals('#', toString.charAt(0));
+    assertThat(toString.charAt(0)).isEqualTo('#');
     if (toString.contains("\n")) {
       toString = toString.substring(toString.indexOf("\n") + 1);
     } else {
       toString = "";
     }
-    assertEquals(expected, toString);
+    assertThat(toString).isEqualTo(expected);
   }
 
+  @Test
   public void testParseLazy() throws Exception {
     ByteString bb =
         TestAllTypesLite.newBuilder()
@@ -1599,10 +1685,11 @@ public class LiteTest extends TestCase {
     ByteString concat = bb.concat(cc);
     TestAllTypesLite message = TestAllTypesLite.parseFrom(concat);
 
-    assertEquals(11, message.getOptionalLazyMessage().getBb());
-    assertEquals(22L, message.getOptionalLazyMessage().getCc());
+    assertThat(message.getOptionalLazyMessage().getBb()).isEqualTo(11);
+    assertThat(message.getOptionalLazyMessage().getCc()).isEqualTo(22L);
   }
 
+  @Test
   public void testParseLazy_oneOf() throws Exception {
     ByteString bb =
         TestAllTypesLite.newBuilder()
@@ -1618,26 +1705,188 @@ public class LiteTest extends TestCase {
     ByteString concat = bb.concat(cc);
     TestAllTypesLite message = TestAllTypesLite.parseFrom(concat);
 
-    assertEquals(11, message.getOneofLazyNestedMessage().getBb());
-    assertEquals(22L, message.getOneofLazyNestedMessage().getCc());
+    assertThat(message.getOneofLazyNestedMessage().getBb()).isEqualTo(11);
+    assertThat(message.getOneofLazyNestedMessage().getCc()).isEqualTo(22L);
   }
 
+  @Test
   public void testMergeFromStream_repeatedField() throws Exception {
     TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder().addRepeatedString("hello");
     builder.mergeFrom(CodedInputStream.newInstance(builder.build().toByteArray()));
 
-    assertEquals(2, builder.getRepeatedStringCount());
+    assertThat(builder.getRepeatedStringCount()).isEqualTo(2);
   }
 
+  @Test
   public void testMergeFromStream_invalidBytes() throws Exception {
     TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder().setDefaultBool(true);
     try {
       builder.mergeFrom(CodedInputStream.newInstance("Invalid bytes".getBytes(Internal.UTF_8)));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
   }
 
+  @Test
+  public void testParseFromStream_IOExceptionNotLost() throws Exception {
+    final IOException readException = new IOException();
+    try {
+      TestAllTypesLite.parseFrom(
+          CodedInputStream.newInstance(
+              new InputStream() {
+                @Override
+                public int read() throws IOException {
+                  throw readException;
+                }
+              }));
+      assertWithMessage("expected exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      boolean found = false;
+      for (Throwable exception = expected; exception != null; exception = exception.getCause()) {
+        if (exception == readException) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        throw new AssertionError("Lost cause of parsing error", expected);
+      }
+    }
+  }
+
+  @Test
+  public void testParseDelimitedFromStream_IOExceptionNotLost() throws Exception {
+    final IOException readException = new IOException();
+    try {
+      TestAllTypesLite.parseDelimitedFrom(
+          new InputStream() {
+            @Override
+            public int read() throws IOException {
+              throw readException;
+            }
+          });
+      assertWithMessage("expected exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      boolean found = false;
+      for (Throwable exception = expected; exception != null; exception = exception.getCause()) {
+        if (exception == readException) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        throw new AssertionError("Lost cause of parsing error", expected);
+      }
+    }
+  }
+
+  @Test
+  public void testParseFromArray_manyNestedMessagesError() throws Exception {
+    RecursiveMessage.Builder recursiveMessage =
+        RecursiveMessage.newBuilder().setPayload(ByteString.copyFrom(new byte[1]));
+    for (int i = 0; i < 20; i++) {
+      recursiveMessage = RecursiveMessage.newBuilder().setRecurse(recursiveMessage.build());
+    }
+    byte[] result = recursiveMessage.build().toByteArray();
+    result[
+            result.length
+                - CodedOutputStream.computeTagSize(RecursiveMessage.PAYLOAD_FIELD_NUMBER)
+                - CodedOutputStream.computeLengthDelimitedFieldSize(1)] =
+        0; // Set invalid tag
+    try {
+      RecursiveMessage.parseFrom(result);
+      assertWithMessage("Result was: " + Arrays.toString(result)).fail();
+    } catch (InvalidProtocolBufferException expected) {
+      boolean found = false;
+      int exceptionCount = 0;
+      for (Throwable exception = expected; exception != null; exception = exception.getCause()) {
+        if (exception instanceof InvalidProtocolBufferException) {
+          exceptionCount++;
+        }
+        for (StackTraceElement element : exception.getStackTrace()) {
+          if (InvalidProtocolBufferException.class.getName().equals(element.getClassName())
+              && "invalidTag".equals(element.getMethodName())) {
+            found = true;
+          } else if (Android.isOnAndroidDevice()
+              && "decodeUnknownField".equals(element.getMethodName())) {
+            // Android is missing the first element of the stack trace - b/181147885
+            found = true;
+          }
+        }
+      }
+      if (!found) {
+        throw new AssertionError("Lost cause of parsing error", expected);
+      }
+      if (exceptionCount > 1) {
+        throw new AssertionError(exceptionCount + " nested parsing exceptions", expected);
+      }
+    }
+  }
+
+  @Test
+  public void testParseFromStream_manyNestedMessagesError() throws Exception {
+    RecursiveMessage.Builder recursiveMessage =
+        RecursiveMessage.newBuilder().setPayload(ByteString.copyFrom(new byte[1]));
+    for (int i = 0; i < 20; i++) {
+      recursiveMessage = RecursiveMessage.newBuilder().setRecurse(recursiveMessage.build());
+    }
+    byte[] result = recursiveMessage.build().toByteArray();
+    result[
+            result.length
+                - CodedOutputStream.computeTagSize(RecursiveMessage.PAYLOAD_FIELD_NUMBER)
+                - CodedOutputStream.computeLengthDelimitedFieldSize(1)] =
+        0; // Set invalid tag
+    try {
+      RecursiveMessage.parseFrom(CodedInputStream.newInstance(new ByteArrayInputStream(result)));
+      assertWithMessage("Result was: " + Arrays.toString(result)).fail();
+    } catch (InvalidProtocolBufferException expected) {
+      boolean found = false;
+      int exceptionCount = 0;
+      for (Throwable exception = expected; exception != null; exception = exception.getCause()) {
+        if (exception instanceof InvalidProtocolBufferException) {
+          exceptionCount++;
+        }
+        for (StackTraceElement element : exception.getStackTrace()) {
+          if (InvalidProtocolBufferException.class.getName().equals(element.getClassName())
+              && "invalidTag".equals(element.getMethodName())) {
+            found = true;
+          } else if (Android.isOnAndroidDevice() && "readTag".equals(element.getMethodName())) {
+            // Android is missing the first element of the stack trace - b/181147885
+            found = true;
+          }
+        }
+      }
+      if (!found) {
+        throw new AssertionError("Lost cause of parsing error", expected);
+      }
+      if (exceptionCount > 1) {
+        throw new AssertionError(exceptionCount + " nested parsing exceptions", expected);
+      }
+    }
+  }
+
+  @Test
+  public void testParseFromStream_sneakyNestedException() throws Exception {
+    final InvalidProtocolBufferException sketchy =
+        new InvalidProtocolBufferException("Created in a sketchy way!")
+            .setUnfinishedMessage(TestAllTypesLite.getDefaultInstance());
+    try {
+      RecursiveMessage.parseFrom(
+          CodedInputStream.newInstance(
+              new InputStream() {
+                @Override
+                public int read() throws IOException {
+                  throw sketchy;
+                }
+              }));
+      assertWithMessage("expected exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected).isNotSameInstanceAs(sketchy);
+    }
+    assertThat(sketchy.getUnfinishedMessage()).isEqualTo(TestAllTypesLite.getDefaultInstance());
+  }
+
+  @Test
   public void testMergeFrom_sanity() throws Exception {
     TestAllTypesLite one = TestUtilLite.getAllLiteSetBuilder().build();
     byte[] bytes = one.toByteArray();
@@ -1645,388 +1894,392 @@ public class LiteTest extends TestCase {
 
     one = one.toBuilder().mergeFrom(one).build();
     two = two.toBuilder().mergeFrom(bytes).build();
-    assertEquals(one, two);
-    assertEquals(two, one);
-    assertEquals(one.hashCode(), two.hashCode());
+    assertThat(one).isEqualTo(two);
+    assertThat(two).isEqualTo(one);
+    assertThat(one.hashCode()).isEqualTo(two.hashCode());
   }
 
+  @Test
+  @SuppressWarnings("ProtoNewBuilderMergeFrom")
   public void testMergeFromNoLazyFieldSharing() throws Exception {
     TestAllTypesLite.Builder sourceBuilder =
         TestAllTypesLite.newBuilder().setOptionalLazyMessage(NestedMessage.newBuilder().setBb(1));
     TestAllTypesLite.Builder targetBuilder =
         TestAllTypesLite.newBuilder().mergeFrom(sourceBuilder.build());
-    assertEquals(1, sourceBuilder.getOptionalLazyMessage().getBb());
+    assertThat(sourceBuilder.getOptionalLazyMessage().getBb()).isEqualTo(1);
     // now change the sourceBuilder, and target value shouldn't be affected.
     sourceBuilder.setOptionalLazyMessage(NestedMessage.newBuilder().setBb(2));
-    assertEquals(1, targetBuilder.getOptionalLazyMessage().getBb());
+    assertThat(targetBuilder.getOptionalLazyMessage().getBb()).isEqualTo(1);
   }
 
+  @Test
   public void testEquals_notEqual() throws Exception {
     TestAllTypesLite one = TestUtilLite.getAllLiteSetBuilder().build();
     byte[] bytes = one.toByteArray();
     TestAllTypesLite two = one.toBuilder().mergeFrom(one).mergeFrom(bytes).build();
 
-    assertFalse(one.equals(two));
-    assertFalse(two.equals(one));
+    assertThat(one.equals(two)).isFalse();
+    assertThat(two.equals(one)).isFalse();
 
-    assertFalse(one.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(one));
+    assertThat(one.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(one)).isFalse();
 
     TestAllTypesLite oneFieldSet = TestAllTypesLite.newBuilder().setDefaultBool(true).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultCord("").build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultCordBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultDouble(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultFixed32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultFixed64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultFloat(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder()
             .setDefaultForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAR)
             .build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder().setDefaultImportEnum(ImportEnumLite.IMPORT_LITE_BAR).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultInt32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultInt64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultNestedEnum(NestedEnum.BAR).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultSfixed32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultSfixed64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultSint32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultSint64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultString("").build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultStringBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultStringPiece("").build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder().setDefaultStringPieceBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultUint32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setDefaultUint64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedBool(true).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedCord("").build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedCordBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedDouble(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedFixed32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedFixed64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedFloat(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder()
             .addRepeatedForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAR)
             .build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder().addRepeatedImportEnum(ImportEnumLite.IMPORT_LITE_BAR).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedInt32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedInt64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedNestedEnum(NestedEnum.BAR).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedSfixed32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedSfixed64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedSint32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedSint64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedString("").build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedStringBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedStringPiece("").build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder().addRepeatedStringPieceBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedUint32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().addRepeatedUint64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalBool(true).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalCord("").build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalCordBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalDouble(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalFixed32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalFixed64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalFloat(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder()
             .setOptionalForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAR)
             .build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder().setOptionalImportEnum(ImportEnumLite.IMPORT_LITE_BAR).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalInt32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalInt64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalNestedEnum(NestedEnum.BAR).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalSfixed32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalSfixed64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalSint32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalSint64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalString("").build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalStringBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalStringPiece("").build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder().setOptionalStringPieceBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalUint32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOptionalUint64(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOneofBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder()
             .setOneofLazyNestedMessage(NestedMessage.getDefaultInstance())
             .build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder()
             .setOneofNestedMessage(NestedMessage.getDefaultInstance())
             .build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOneofString("").build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOneofStringBytes(ByteString.EMPTY).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet = TestAllTypesLite.newBuilder().setOneofUint32(0).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder()
             .setOptionalForeignMessage(ForeignMessageLite.getDefaultInstance())
             .build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder().setOptionalGroup(OptionalGroup.getDefaultInstance()).build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder()
             .setOptionalPublicImportMessage(PublicImportMessageLite.getDefaultInstance())
             .build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
 
     oneFieldSet =
         TestAllTypesLite.newBuilder()
             .setOptionalLazyMessage(NestedMessage.getDefaultInstance())
             .build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
 
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
     oneFieldSet =
         TestAllTypesLite.newBuilder()
             .addRepeatedLazyMessage(NestedMessage.getDefaultInstance())
             .build();
-    assertFalse(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance()));
-    assertFalse(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet));
+    assertThat(oneFieldSet.equals(TestAllTypesLite.getDefaultInstance())).isFalse();
+    assertThat(TestAllTypesLite.getDefaultInstance().equals(oneFieldSet)).isFalse();
   }
 
+  @Test
   public void testEquals() throws Exception {
     // Check that two identical objs are equal.
     Foo foo1a = Foo.newBuilder().setValue(1).addBar(Bar.newBuilder().setName("foo1")).build();
@@ -2034,19 +2287,20 @@ public class LiteTest extends TestCase {
     Foo foo2 = Foo.newBuilder().setValue(1).addBar(Bar.newBuilder().setName("foo2")).build();
 
     // Check that equals is doing value rather than object equality.
-    assertEquals(foo1a, foo1b);
-    assertEquals(foo1a.hashCode(), foo1b.hashCode());
+    assertThat(foo1a).isEqualTo(foo1b);
+    assertThat(foo1a.hashCode()).isEqualTo(foo1b.hashCode());
 
     // Check that a different object is not equal.
-    assertFalse(foo1a.equals(foo2));
+    assertThat(foo1a.equals(foo2)).isFalse();
 
     // Check that two objects which have different types but the same field values are not
     // considered to be equal.
     Bar bar = Bar.newBuilder().setName("bar").build();
     BarPrime barPrime = BarPrime.newBuilder().setName("bar").build();
-    assertFalse(bar.equals(barPrime));
+    assertThat(bar).isNotEqualTo((Object) barPrime); // compiler already won't let this happen.
   }
 
+  @Test
   public void testEqualsAndHashCodeForTrickySchemaTypes() {
     Foo foo1 = Foo.getDefaultInstance();
     Foo foo2 = Foo.newBuilder().setSint64(1).build();
@@ -2058,6 +2312,7 @@ public class LiteTest extends TestCase {
     assertEqualsAndHashCodeAreFalse(foo1, foo4);
   }
 
+  @Test
   public void testOneofEquals() throws Exception {
     TestOneofEquals.Builder builder = TestOneofEquals.newBuilder();
     TestOneofEquals message1 = builder.build();
@@ -2065,20 +2320,21 @@ public class LiteTest extends TestCase {
     // check with the oneof case.
     builder.setName("");
     TestOneofEquals message2 = builder.build();
-    assertFalse(message1.equals(message2));
+    assertThat(message1.equals(message2)).isFalse();
   }
 
+  @Test
   public void testEquals_sanity() throws Exception {
     TestAllTypesLite one = TestUtilLite.getAllLiteSetBuilder().build();
     TestAllTypesLite two = TestAllTypesLite.parseFrom(one.toByteArray());
-    assertEquals(one, two);
-    assertEquals(one.hashCode(), two.hashCode());
+    assertThat(one).isEqualTo(two);
+    assertThat(one.hashCode()).isEqualTo(two.hashCode());
 
-    assertEquals(
-        one.toBuilder().mergeFrom(two).build(),
-        two.toBuilder().mergeFrom(two.toByteArray()).build());
+    assertThat(one.toBuilder().mergeFrom(two).build())
+        .isEqualTo(two.toBuilder().mergeFrom(two.toByteArray()).build());
   }
 
+  @Test
   public void testEqualsAndHashCodeWithUnknownFields() throws InvalidProtocolBufferException {
     Foo fooWithOnlyValue = Foo.newBuilder().setValue(1).build();
 
@@ -2095,6 +2351,7 @@ public class LiteTest extends TestCase {
     assertEqualsAndHashCodeAreFalse(fooWithValueAndExtension, fooWithValueAndUnknownFields);
   }
 
+  @Test
   public void testEqualsAndHashCodeWithExtensions() throws InvalidProtocolBufferException {
     Foo fooWithOnlyValue = Foo.newBuilder().setValue(1).build();
 
@@ -2109,6 +2366,7 @@ public class LiteTest extends TestCase {
   }
 
   // Test to ensure we avoid a class cast exception with oneofs.
+  @Test
   public void testEquals_oneOfMessages() {
     TestAllTypesLite mine = TestAllTypesLite.newBuilder().setOneofString("Hello").build();
 
@@ -2117,10 +2375,11 @@ public class LiteTest extends TestCase {
             .setOneofNestedMessage(NestedMessage.getDefaultInstance())
             .build();
 
-    assertFalse(mine.equals(other));
-    assertFalse(other.equals(mine));
+    assertThat(mine.equals(other)).isFalse();
+    assertThat(other.equals(mine)).isFalse();
   }
 
+  @Test
   public void testHugeFieldNumbers() throws InvalidProtocolBufferException {
     TestHugeFieldNumbersLite message =
         TestHugeFieldNumbersLite.newBuilder()
@@ -2133,23 +2392,25 @@ public class LiteTest extends TestCase {
 
     TestHugeFieldNumbersLite parsedMessage =
         TestHugeFieldNumbersLite.parseFrom(message.toByteArray());
-    assertEquals(1, parsedMessage.getOptionalInt32());
-    assertEquals(2, parsedMessage.getRepeatedInt32(0));
-    assertEquals(ForeignEnumLite.FOREIGN_LITE_FOO, parsedMessage.getOptionalEnum());
-    assertEquals("xyz", parsedMessage.getOptionalString());
-    assertEquals(3, parsedMessage.getOptionalMessage().getC());
+    assertThat(parsedMessage.getOptionalInt32()).isEqualTo(1);
+    assertThat(parsedMessage.getRepeatedInt32(0)).isEqualTo(2);
+    assertThat(parsedMessage.getOptionalEnum()).isEqualTo(ForeignEnumLite.FOREIGN_LITE_FOO);
+    assertThat(parsedMessage.getOptionalString()).isEqualTo("xyz");
+    assertThat(parsedMessage.getOptionalMessage().getC()).isEqualTo(3);
   }
 
   private void assertEqualsAndHashCodeAreFalse(Object o1, Object o2) {
-    assertFalse(o1.equals(o2));
-    assertFalse(o1.hashCode() == o2.hashCode());
+    assertThat(o1.equals(o2)).isFalse();
+    assertThat(o1.hashCode()).isNotEqualTo(o2.hashCode());
   }
 
+  @Test
   public void testRecursiveHashcode() {
     // This tests that we don't infinite loop.
-    TestRecursiveOneof.getDefaultInstance().hashCode();
+    int unused = TestRecursiveOneof.getDefaultInstance().hashCode();
   }
 
+  @Test
   public void testParseFromByteBuffer() throws Exception {
     TestAllTypesLite message =
         TestAllTypesLite.newBuilder()
@@ -2161,13 +2422,14 @@ public class LiteTest extends TestCase {
     TestAllTypesLite copy =
         TestAllTypesLite.parseFrom(message.toByteString().asReadOnlyByteBuffer());
 
-    assertEquals(message, copy);
+    assertThat(message).isEqualTo(copy);
   }
 
+  @Test
   public void testParseFromByteBufferThrows() {
     try {
       TestAllTypesLite.parseFrom(ByteBuffer.wrap(new byte[] {0x5}));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
 
@@ -2177,14 +2439,14 @@ public class LiteTest extends TestCase {
     ByteBuffer buffer = ByteBuffer.wrap(message.toByteArray(), 0, message.getSerializedSize() - 1);
     try {
       TestAllTypesLite.parseFrom(buffer);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException expected) {
-      assertEquals(
-          TestAllTypesLite.newBuilder().setOptionalInt32(123).build(),
-          expected.getUnfinishedMessage());
+      assertThat(TestAllTypesLite.newBuilder().setOptionalInt32(123).build())
+          .isEqualTo(expected.getUnfinishedMessage());
     }
   }
 
+  @Test
   public void testParseFromByteBuffer_extensions() throws Exception {
     TestAllExtensionsLite message =
         TestAllExtensionsLite.newBuilder()
@@ -2202,15 +2464,16 @@ public class LiteTest extends TestCase {
     TestAllExtensionsLite copy =
         TestAllExtensionsLite.parseFrom(message.toByteString().asReadOnlyByteBuffer(), registry);
 
-    assertEquals(message, copy);
+    assertThat(message).isEqualTo(copy);
   }
 
+  @Test
   public void testParseFromByteBufferThrows_extensions() {
     ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
     UnittestLite.registerAllExtensions(registry);
     try {
       TestAllExtensionsLite.parseFrom(ByteBuffer.wrap(new byte[] {0x5}), registry);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException expected) {
     }
 
@@ -2223,17 +2486,18 @@ public class LiteTest extends TestCase {
     ByteBuffer buffer = ByteBuffer.wrap(message.toByteArray(), 0, message.getSerializedSize() - 1);
     try {
       TestAllExtensionsLite.parseFrom(buffer, registry);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException expected) {
-      assertEquals(
+      assertThat(
           TestAllExtensionsLite.newBuilder()
               .setExtension(UnittestLite.optionalInt32ExtensionLite, 123)
-              .build(),
-          expected.getUnfinishedMessage());
+              .build())
+          .isEqualTo(expected.getUnfinishedMessage());
     }
   }
 
   // Make sure we haven't screwed up the code generation for packing fields by default.
+  @Test
   public void testPackedSerialization() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.addRepeatedInt32(4321);
@@ -2244,159 +2508,163 @@ public class LiteTest extends TestCase {
 
     while (!in.isAtEnd()) {
       int tag = in.readTag();
-      assertEquals(WireFormat.WIRETYPE_LENGTH_DELIMITED, WireFormat.getTagWireType(tag));
+      assertThat(WireFormat.getTagWireType(tag)).isEqualTo(WireFormat.WIRETYPE_LENGTH_DELIMITED);
       in.skipField(tag);
     }
   }
 
+  @Test
   public void testAddAllIteratesOnce() {
-    TestAllTypesLite.newBuilder()
-        .addAllRepeatedBool(new OneTimeIterableList<>(false))
-        .addAllRepeatedInt32(new OneTimeIterableList<>(0))
-        .addAllRepeatedInt64(new OneTimeIterableList<>(0L))
-        .addAllRepeatedFloat(new OneTimeIterableList<>(0f))
-        .addAllRepeatedDouble(new OneTimeIterableList<>(0d))
-        .addAllRepeatedBytes(new OneTimeIterableList<>(ByteString.EMPTY))
-        .addAllRepeatedString(new OneTimeIterableList<>(""))
-        .addAllRepeatedNestedMessage(new OneTimeIterableList<>(NestedMessage.getDefaultInstance()))
-        .addAllRepeatedBool(new OneTimeIterable<>(false))
-        .addAllRepeatedInt32(new OneTimeIterable<>(0))
-        .addAllRepeatedInt64(new OneTimeIterable<>(0L))
-        .addAllRepeatedFloat(new OneTimeIterable<>(0f))
-        .addAllRepeatedDouble(new OneTimeIterable<>(0d))
-        .addAllRepeatedBytes(new OneTimeIterable<>(ByteString.EMPTY))
-        .addAllRepeatedString(new OneTimeIterable<>(""))
-        .addAllRepeatedNestedMessage(new OneTimeIterable<>(NestedMessage.getDefaultInstance()))
-        .build();
+    TestAllTypesLite unused =
+        TestAllTypesLite.newBuilder()
+            .addAllRepeatedBool(new OneTimeIterableList<>(false))
+            .addAllRepeatedInt32(new OneTimeIterableList<>(0))
+            .addAllRepeatedInt64(new OneTimeIterableList<>(0L))
+            .addAllRepeatedFloat(new OneTimeIterableList<>(0f))
+            .addAllRepeatedDouble(new OneTimeIterableList<>(0d))
+            .addAllRepeatedBytes(new OneTimeIterableList<>(ByteString.EMPTY))
+            .addAllRepeatedString(new OneTimeIterableList<>(""))
+            .addAllRepeatedNestedMessage(
+                new OneTimeIterableList<>(NestedMessage.getDefaultInstance()))
+            .addAllRepeatedBool(new OneTimeIterable<>(false))
+            .addAllRepeatedInt32(new OneTimeIterable<>(0))
+            .addAllRepeatedInt64(new OneTimeIterable<>(0L))
+            .addAllRepeatedFloat(new OneTimeIterable<>(0f))
+            .addAllRepeatedDouble(new OneTimeIterable<>(0d))
+            .addAllRepeatedBytes(new OneTimeIterable<>(ByteString.EMPTY))
+            .addAllRepeatedString(new OneTimeIterable<>(""))
+            .addAllRepeatedNestedMessage(new OneTimeIterable<>(NestedMessage.getDefaultInstance()))
+            .build();
   }
 
+  @Test
   public void testAddAllIteratesOnce_throwsOnNull() {
     TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
     try {
       builder.addAllRepeatedBool(new OneTimeIterableList<>(true, false, null));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 2 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedBoolCount());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 2 is null.");
+      assertThat(builder.getRepeatedBoolCount()).isEqualTo(0);
     }
 
     try {
       builder.addAllRepeatedBool(new OneTimeIterable<>(true, false, null));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 2 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedBoolCount());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 2 is null.");
+      assertThat(builder.getRepeatedBoolCount()).isEqualTo(0);
     }
 
     try {
       builder = TestAllTypesLite.newBuilder();
       builder.addAllRepeatedBool(new OneTimeIterableList<>((Boolean) null));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 0 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedBoolCount());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
+      assertThat(builder.getRepeatedBoolCount()).isEqualTo(0);
     }
 
     try {
       builder = TestAllTypesLite.newBuilder();
       builder.addAllRepeatedInt32(new OneTimeIterableList<>((Integer) null));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 0 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedInt32Count());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
+      assertThat(builder.getRepeatedInt32Count()).isEqualTo(0);
     }
 
     try {
       builder = TestAllTypesLite.newBuilder();
       builder.addAllRepeatedInt64(new OneTimeIterableList<>((Long) null));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 0 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedInt64Count());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
+      assertThat(builder.getRepeatedInt64Count()).isEqualTo(0);
     }
 
     try {
       builder = TestAllTypesLite.newBuilder();
       builder.addAllRepeatedFloat(new OneTimeIterableList<>((Float) null));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 0 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedFloatCount());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
+      assertThat(builder.getRepeatedFloatCount()).isEqualTo(0);
     }
 
     try {
       builder = TestAllTypesLite.newBuilder();
       builder.addAllRepeatedDouble(new OneTimeIterableList<>((Double) null));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 0 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedDoubleCount());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
+      assertThat(builder.getRepeatedDoubleCount()).isEqualTo(0);
     }
 
     try {
       builder = TestAllTypesLite.newBuilder();
       builder.addAllRepeatedBytes(new OneTimeIterableList<>((ByteString) null));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 0 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedBytesCount());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
+      assertThat(builder.getRepeatedBytesCount()).isEqualTo(0);
     }
 
     try {
       builder = TestAllTypesLite.newBuilder();
       builder.addAllRepeatedString(new OneTimeIterableList<>("", "", null, ""));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 2 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedStringCount());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 2 is null.");
+      assertThat(builder.getRepeatedStringCount()).isEqualTo(0);
     }
 
     try {
       builder = TestAllTypesLite.newBuilder();
       builder.addAllRepeatedString(new OneTimeIterable<>("", "", null, ""));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 2 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedStringCount());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 2 is null.");
+      assertThat(builder.getRepeatedStringCount()).isEqualTo(0);
     }
 
     try {
       builder = TestAllTypesLite.newBuilder();
       builder.addAllRepeatedString(new OneTimeIterableList<>((String) null));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 0 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedStringCount());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
+      assertThat(builder.getRepeatedStringCount()).isEqualTo(0);
     }
 
     try {
       builder = TestAllTypesLite.newBuilder();
       builder.addAllRepeatedNestedMessage(new OneTimeIterableList<>((NestedMessage) null));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
-      assertEquals("Element at index 0 is null.", expected.getMessage());
-      assertEquals(0, builder.getRepeatedNestedMessageCount());
+      assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
+      assertThat(builder.getRepeatedNestedMessageCount()).isEqualTo(0);
     }
   }
 
+  @Test
   public void testExtensionRenamesKeywords() {
-    assertTrue(NonNestedExtensionLite.package_ instanceof GeneratedMessageLite.GeneratedExtension);
-    assertTrue(
-        NestedExtensionLite.MyNestedExtensionLite.private_
-            instanceof GeneratedMessageLite.GeneratedExtension);
+    assertThat(NonNestedExtensionLite.package_)
+        .isInstanceOf(GeneratedMessageLite.GeneratedExtension.class);
+    assertThat(NestedExtensionLite.MyNestedExtensionLite.private_)
+        .isInstanceOf(GeneratedMessageLite.GeneratedExtension.class);
 
     NonNestedExtensionLite.MessageLiteToBeExtended msg =
         NonNestedExtensionLite.MessageLiteToBeExtended.newBuilder()
             .setExtension(NonNestedExtensionLite.package_, true)
             .build();
-    assertTrue(msg.getExtension(NonNestedExtensionLite.package_));
+    assertThat(msg.getExtension(NonNestedExtensionLite.package_)).isTrue();
 
     msg =
         NonNestedExtensionLite.MessageLiteToBeExtended.newBuilder()
             .setExtension(NestedExtensionLite.MyNestedExtensionLite.private_, 2.4)
             .build();
-    assertEquals(
-        2.4, msg.getExtension(NestedExtensionLite.MyNestedExtensionLite.private_), 0.001);
+    assertThat(msg.getExtension(NestedExtensionLite.MyNestedExtensionLite.private_)).isEqualTo(2.4);
   }
 
   private static final class OneTimeIterableList<T> extends ArrayList<T> {
@@ -2409,7 +2677,7 @@ public class LiteTest extends TestCase {
     @Override
     public Iterator<T> iterator() {
       if (wasIterated) {
-        fail();
+        assertWithMessage("expected exception").fail();
       }
       wasIterated = true;
       return super.iterator();
@@ -2427,21 +2695,23 @@ public class LiteTest extends TestCase {
     @Override
     public Iterator<T> iterator() {
       if (wasIterated) {
-        fail();
+        assertWithMessage("expected exception").fail();
       }
       wasIterated = true;
       return list.iterator();
     }
   }
 
+  @Test
   public void testNullExtensionRegistry() throws Exception {
     try {
       TestAllTypesLite.parseFrom(new byte[] {}, null);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
     }
   }
 
+  @Test
   public void testSerializeToOutputStreamThrowsIOException() {
     try {
       TestAllTypesLite.newBuilder()
@@ -2455,11 +2725,12 @@ public class LiteTest extends TestCase {
                   throw new IOException();
                 }
               });
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IOException expected) {
     }
   }
 
+  @Test
   public void testUnpairedSurrogatesReplacedByQuestionMark() throws InvalidProtocolBufferException {
     String testString = "foo \ud83d bar";
     String expectedString = "foo ? bar";
@@ -2471,18 +2742,49 @@ public class LiteTest extends TestCase {
     // Behavior is compatible with String.getBytes("UTF-8"), which replaces
     // unpaired surrogates with a question mark.
     TestAllTypesLite parsedMessage = TestAllTypesLite.parseFrom(serializedMessage);
-    assertEquals(expectedString, parsedMessage.getOptionalString());
+    assertThat(parsedMessage.getOptionalString()).isEqualTo(expectedString);
 
     // Conversion happens during serialization.
     ByteString expectedBytes = ByteString.copyFromUtf8(expectedString);
-    assertTrue(
-        String.format(
-            "Expected serializedMessage (%s) to contain \"%s\" (%s).",
-            encodeHex(serializedMessage), expectedString, encodeHex(expectedBytes)),
-        contains(serializedMessage, expectedBytes));
+    assertWithMessage(
+            String.format(
+                "Expected serializedMessage (%s) to contain \"%s\" (%s).",
+                encodeHex(serializedMessage), expectedString, encodeHex(expectedBytes)))
+        .that(contains(serializedMessage, expectedBytes))
+        .isTrue();
   }
 
-  private String encodeHex(ByteString bytes) {
+  @Test
+  public void testPreservesFloatingPointNegative0() throws Exception {
+    proto3_unittest.UnittestProto3.TestAllTypes message =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(-0.0f)
+            .setOptionalDouble(-0.0)
+            .build();
+    assertThat(
+            proto3_unittest.UnittestProto3.TestAllTypes.parseFrom(
+                message.toByteString(), ExtensionRegistryLite.getEmptyRegistry()))
+        .isEqualTo(message);
+  }
+
+  @Test
+  public void testNegative0FloatingPointEquality() throws Exception {
+    // Like Double#equals and Float#equals, we treat -0.0 as not being equal to +0.0 even though
+    // IEEE 754 mandates that they are equivalent. This test asserts that behavior.
+    proto3_unittest.UnittestProto3.TestAllTypes message1 =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(-0.0f)
+            .setOptionalDouble(-0.0)
+            .build();
+    proto3_unittest.UnittestProto3.TestAllTypes message2 =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalFloat(0.0f)
+            .setOptionalDouble(0.0)
+            .build();
+    assertThat(message1).isNotEqualTo(message2);
+  }
+
+  private static String encodeHex(ByteString bytes) {
     String hexDigits = "0123456789abcdef";
     StringBuilder stringBuilder = new StringBuilder(bytes.size() * 2);
     for (byte b : bytes) {
@@ -2492,7 +2794,7 @@ public class LiteTest extends TestCase {
     return stringBuilder.toString();
   }
 
-  private boolean contains(ByteString a, ByteString b) {
+  private static boolean contains(ByteString a, ByteString b) {
     for (int i = 0; i <= a.size() - b.size(); ++i) {
       if (a.substring(i, i + b.size()).equals(b)) {
         return true;

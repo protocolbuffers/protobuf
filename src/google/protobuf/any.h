@@ -37,6 +37,7 @@
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/message_lite.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -67,12 +68,12 @@ class PROTOBUF_EXPORT AnyMetadata {
   // The resulted type URL will be "type.googleapis.com/<message_full_name>".
   // Returns false if serializing the message failed.
   template <typename T>
-  bool PackFrom(const T& message) {
-    return InternalPackFrom(message, kTypeGoogleApisComPrefix,
+  bool PackFrom(Arena* arena, const T& message) {
+    return InternalPackFrom(arena, message, kTypeGoogleApisComPrefix,
                             T::FullMessageName());
   }
 
-  bool PackFrom(const Message& message);
+  bool PackFrom(Arena* arena, const Message& message);
 
   // Packs a message using the given type URL prefix. The type URL will be
   // constructed by concatenating the message type's full name to the prefix
@@ -82,11 +83,14 @@ class PROTOBUF_EXPORT AnyMetadata {
   // URL: "type.googleapis.com/<message_full_name>".
   // Returns false if serializing the message failed.
   template <typename T>
-  bool PackFrom(const T& message, StringPiece type_url_prefix) {
-    return InternalPackFrom(message, type_url_prefix, T::FullMessageName());
+  bool PackFrom(Arena* arena, const T& message,
+                StringPiece type_url_prefix) {
+    return InternalPackFrom(arena, message, type_url_prefix,
+                            T::FullMessageName());
   }
 
-  bool PackFrom(const Message& message, StringPiece type_url_prefix);
+  bool PackFrom(Arena* arena, const Message& message,
+                StringPiece type_url_prefix);
 
   // Unpacks the payload into the given message. Returns false if the message's
   // type doesn't match the type specified in the type URL (i.e., the full
@@ -108,7 +112,7 @@ class PROTOBUF_EXPORT AnyMetadata {
   }
 
  private:
-  bool InternalPackFrom(const MessageLite& message,
+  bool InternalPackFrom(Arena* arena, const MessageLite& message,
                         StringPiece type_url_prefix,
                         StringPiece type_name);
   bool InternalUnpackTo(StringPiece type_name,
@@ -126,8 +130,8 @@ class PROTOBUF_EXPORT AnyMetadata {
 // *full_type_name. Returns false if the type_url does not have a "/"
 // in the type url separating the full type name.
 //
-// NOTE: this function is available publicly as:
-//   google::protobuf::Any()  // static method on the generated message type.
+// NOTE: this function is available publicly as a static method on the
+// generated message type: google::protobuf::Any::ParseAnyTypeUrl()
 bool ParseAnyTypeUrl(StringPiece type_url, std::string* full_type_name);
 
 // Get the proto type name and prefix from Any::type_url value. For example,

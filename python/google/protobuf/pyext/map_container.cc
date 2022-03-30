@@ -32,23 +32,19 @@
 
 #include <google/protobuf/pyext/map_container.h>
 
+#include <cstdint>
 #include <memory>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/map_field.h>
 #include <google/protobuf/map.h>
+#include <google/protobuf/map_field.h>
 #include <google/protobuf/message.h>
-#include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/message.h>
+#include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/repeated_composite_container.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 #include <google/protobuf/stubs/map_util.h>
-
-#if PY_MAJOR_VERSION >= 3
-  #define PyInt_FromLong PyLong_FromLong
-  #define PyInt_FromSize_t PyLong_FromSize_t
-#endif
 
 namespace google {
 namespace protobuf {
@@ -99,7 +95,7 @@ struct MapIterator {
   //
   // We store this so that if the map is modified during iteration we can throw
   // an error.
-  uint64 version;
+  uint64_t version;
 };
 
 Message* MapContainer::GetMutableMessage() {
@@ -176,11 +172,11 @@ static PyObject* MapKeyToPython(MapContainer* self, const MapKey& key) {
       self->parent_field_descriptor->message_type()->map_key();
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return PyInt_FromLong(key.GetInt32Value());
+      return PyLong_FromLong(key.GetInt32Value());
     case FieldDescriptor::CPPTYPE_INT64:
       return PyLong_FromLongLong(key.GetInt64Value());
     case FieldDescriptor::CPPTYPE_UINT32:
-      return PyInt_FromSize_t(key.GetUInt32Value());
+      return PyLong_FromSize_t(key.GetUInt32Value());
     case FieldDescriptor::CPPTYPE_UINT64:
       return PyLong_FromUnsignedLongLong(key.GetUInt64Value());
     case FieldDescriptor::CPPTYPE_BOOL:
@@ -191,7 +187,7 @@ static PyObject* MapKeyToPython(MapContainer* self, const MapKey& key) {
       PyErr_Format(
           PyExc_SystemError, "Couldn't convert type %d to value",
           field_descriptor->cpp_type());
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -202,11 +198,11 @@ PyObject* MapValueRefToPython(MapContainer* self, const MapValueRef& value) {
       self->parent_field_descriptor->message_type()->map_value();
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return PyInt_FromLong(value.GetInt32Value());
+      return PyLong_FromLong(value.GetInt32Value());
     case FieldDescriptor::CPPTYPE_INT64:
       return PyLong_FromLongLong(value.GetInt64Value());
     case FieldDescriptor::CPPTYPE_UINT32:
-      return PyInt_FromSize_t(value.GetUInt32Value());
+      return PyLong_FromSize_t(value.GetUInt32Value());
     case FieldDescriptor::CPPTYPE_UINT64:
       return PyLong_FromUnsignedLongLong(value.GetUInt64Value());
     case FieldDescriptor::CPPTYPE_FLOAT:
@@ -218,12 +214,12 @@ PyObject* MapValueRefToPython(MapContainer* self, const MapValueRef& value) {
     case FieldDescriptor::CPPTYPE_STRING:
       return ToStringObject(field_descriptor, value.GetStringValue());
     case FieldDescriptor::CPPTYPE_ENUM:
-      return PyInt_FromLong(value.GetEnumValue());
+      return PyLong_FromLong(value.GetEnumValue());
     default:
       PyErr_Format(
           PyExc_SystemError, "Couldn't convert type %d to value",
           field_descriptor->cpp_type());
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -287,7 +283,7 @@ static bool PythonToMapValueRef(MapContainer* self, PyObject* obj,
         const EnumDescriptor* enum_descriptor = field_descriptor->enum_type();
         const EnumValueDescriptor* enum_value =
             enum_descriptor->FindValueByNumber(value);
-        if (enum_value != NULL) {
+        if (enum_value != nullptr) {
           value_ref->SetEnumValue(value);
           return true;
         } else {
@@ -366,7 +362,7 @@ PyObject* MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
   MapKey map_key;
 
   if (!PythonToMapKey(self, key, &map_key)) {
-    return NULL;
+    return nullptr;
   }
 
   if (reflection->ContainsMapKey(*message, self->parent_field_descriptor,
@@ -382,14 +378,14 @@ PyObject* MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
 MapContainer* NewScalarMapContainer(
     CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
-    return NULL;
+    return nullptr;
   }
 
   PyObject* obj(PyType_GenericAlloc(ScalarMapContainer_Type, 0));
-  if (obj == NULL) {
+  if (obj == nullptr) {
     PyErr_Format(PyExc_RuntimeError,
                  "Could not allocate new container.");
-    return NULL;
+    return nullptr;
   }
 
   MapContainer* self = GetMap(obj);
@@ -412,7 +408,7 @@ PyObject* MapReflectionFriend::ScalarMapGetItem(PyObject* _self,
   MapValueRef value;
 
   if (!PythonToMapKey(self, key, &map_key)) {
-    return NULL;
+    return nullptr;
   }
 
   if (reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
@@ -436,12 +432,12 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
     return -1;
   }
 
-  self->version++;
-
   if (v) {
     // Set item to v.
-    reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
-                                       map_key, &value);
+    if (reflection->InsertOrLookupMapValue(
+            message, self->parent_field_descriptor, map_key, &value)) {
+      self->version++;
+    }
 
     if (!PythonToMapValueRef(self, v, reflection->SupportsUnknownEnumValues(),
                              &value)) {
@@ -452,6 +448,7 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
     // Delete key from map.
     if (reflection->DeleteMapValue(message, self->parent_field_descriptor,
                                    map_key)) {
+      self->version++;
       return 0;
     } else {
       PyErr_Format(PyExc_KeyError, "Key not present in map");
@@ -462,23 +459,24 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
 
 static PyObject* ScalarMapGet(PyObject* self, PyObject* args,
                               PyObject* kwargs) {
-  static char* kwlist[] = {"key", "default", nullptr};
+  static const char* kwlist[] = {"key", "default", nullptr};
   PyObject* key;
-  PyObject* default_value = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &key,
+  PyObject* default_value = nullptr;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O",
+                                   const_cast<char**>(kwlist), &key,
                                    &default_value)) {
-    return NULL;
+    return nullptr;
   }
 
   ScopedPyObjectPtr is_present(MapReflectionFriend::Contains(self, key));
-  if (is_present.get() == NULL) {
-    return NULL;
+  if (is_present.get() == nullptr) {
+    return nullptr;
   }
 
   if (PyObject_IsTrue(is_present.get())) {
     return MapReflectionFriend::ScalarMapGetItem(self, key);
   } else {
-    if (default_value != NULL) {
+    if (default_value != nullptr) {
       Py_INCREF(default_value);
       return default_value;
     } else {
@@ -489,8 +487,8 @@ static PyObject* ScalarMapGet(PyObject* self, PyObject* args,
 
 PyObject* MapReflectionFriend::ScalarMapToStr(PyObject* _self) {
   ScopedPyObjectPtr dict(PyDict_New());
-  if (dict == NULL) {
-    return NULL;
+  if (dict == nullptr) {
+    return nullptr;
   }
   ScopedPyObjectPtr key;
   ScopedPyObjectPtr value;
@@ -503,15 +501,15 @@ PyObject* MapReflectionFriend::ScalarMapToStr(PyObject* _self) {
        it != reflection->MapEnd(message, self->parent_field_descriptor);
        ++it) {
     key.reset(MapKeyToPython(self, it.GetKey()));
-    if (key == NULL) {
-      return NULL;
+    if (key == nullptr) {
+      return nullptr;
     }
     value.reset(MapValueRefToPython(self, it.GetValueRef()));
-    if (value == NULL) {
-      return NULL;
+    if (value == nullptr) {
+      return nullptr;
     }
     if (PyDict_SetItem(dict.get(), key.get(), value.get()) < 0) {
-      return NULL;
+      return nullptr;
     }
   }
   return PyObject_Repr(dict.get());
@@ -545,76 +543,24 @@ static PyMethodDef ScalarMapMethods[] = {
     { "__reduce__", (PyCFunction)Reduce, METH_NOARGS,
       "Outputs picklable representation of the repeated field." },
     */
-    {NULL, NULL},
+    {nullptr, nullptr},
 };
 
-PyTypeObject *ScalarMapContainer_Type;
-#if PY_MAJOR_VERSION >= 3
-  static PyType_Slot ScalarMapContainer_Type_slots[] = {
-      {Py_tp_dealloc, (void *)ScalarMapDealloc},
-      {Py_mp_length, (void *)MapReflectionFriend::Length},
-      {Py_mp_subscript, (void *)MapReflectionFriend::ScalarMapGetItem},
-      {Py_mp_ass_subscript, (void *)MapReflectionFriend::ScalarMapSetItem},
-      {Py_tp_methods, (void *)ScalarMapMethods},
-      {Py_tp_iter, (void *)MapReflectionFriend::GetIterator},
-      {Py_tp_repr, (void *)MapReflectionFriend::ScalarMapToStr},
-      {0, 0},
-  };
+PyTypeObject* ScalarMapContainer_Type;
+static PyType_Slot ScalarMapContainer_Type_slots[] = {
+    {Py_tp_dealloc, (void*)ScalarMapDealloc},
+    {Py_mp_length, (void*)MapReflectionFriend::Length},
+    {Py_mp_subscript, (void*)MapReflectionFriend::ScalarMapGetItem},
+    {Py_mp_ass_subscript, (void*)MapReflectionFriend::ScalarMapSetItem},
+    {Py_tp_methods, (void*)ScalarMapMethods},
+    {Py_tp_iter, (void*)MapReflectionFriend::GetIterator},
+    {Py_tp_repr, (void*)MapReflectionFriend::ScalarMapToStr},
+    {0, nullptr},
+};
 
-  PyType_Spec ScalarMapContainer_Type_spec = {
-      FULL_MODULE_NAME ".ScalarMapContainer",
-      sizeof(MapContainer),
-      0,
-      Py_TPFLAGS_DEFAULT,
-      ScalarMapContainer_Type_slots
-  };
-#else
-  static PyMappingMethods ScalarMapMappingMethods = {
-    MapReflectionFriend::Length,             // mp_length
-    MapReflectionFriend::ScalarMapGetItem,   // mp_subscript
-    MapReflectionFriend::ScalarMapSetItem,   // mp_ass_subscript
-  };
-
-  PyTypeObject _ScalarMapContainer_Type = {
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    FULL_MODULE_NAME ".ScalarMapContainer",  //  tp_name
-    sizeof(MapContainer),                //  tp_basicsize
-    0,                                   //  tp_itemsize
-    ScalarMapDealloc,                    //  tp_dealloc
-    0,                                   //  tp_print
-    0,                                   //  tp_getattr
-    0,                                   //  tp_setattr
-    0,                                   //  tp_compare
-    MapReflectionFriend::ScalarMapToStr,  //  tp_repr
-    0,                                   //  tp_as_number
-    0,                                   //  tp_as_sequence
-    &ScalarMapMappingMethods,            //  tp_as_mapping
-    0,                                   //  tp_hash
-    0,                                   //  tp_call
-    0,                                   //  tp_str
-    0,                                   //  tp_getattro
-    0,                                   //  tp_setattro
-    0,                                   //  tp_as_buffer
-    Py_TPFLAGS_DEFAULT,                  //  tp_flags
-    "A scalar map container",            //  tp_doc
-    0,                                   //  tp_traverse
-    0,                                   //  tp_clear
-    0,                                   //  tp_richcompare
-    0,                                   //  tp_weaklistoffset
-    MapReflectionFriend::GetIterator,    //  tp_iter
-    0,                                   //  tp_iternext
-    ScalarMapMethods,                    //  tp_methods
-    0,                                   //  tp_members
-    0,                                   //  tp_getset
-    0,                                   //  tp_base
-    0,                                   //  tp_dict
-    0,                                   //  tp_descr_get
-    0,                                   //  tp_descr_set
-    0,                                   //  tp_dictoffset
-    0,                                   //  tp_init
-  };
-#endif
-
+PyType_Spec ScalarMapContainer_Type_spec = {
+    FULL_MODULE_NAME ".ScalarMapContainer", sizeof(MapContainer), 0,
+    Py_TPFLAGS_DEFAULT, ScalarMapContainer_Type_slots};
 
 // MessageMap //////////////////////////////////////////////////////////////////
 
@@ -634,13 +580,13 @@ MessageMapContainer* NewMessageMapContainer(
     CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor,
     CMessageClass* message_class) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
-    return NULL;
+    return nullptr;
   }
 
   PyObject* obj = PyType_GenericAlloc(MessageMapContainer_Type, 0);
-  if (obj == NULL) {
+  if (obj == nullptr) {
     PyErr_SetString(PyExc_RuntimeError, "Could not allocate new container.");
-    return NULL;
+    return nullptr;
   }
 
   MessageMapContainer* self = GetMessageMap(obj);
@@ -715,7 +661,7 @@ PyObject* MapReflectionFriend::MessageMapGetItem(PyObject* _self,
   MapValueRef value;
 
   if (!PythonToMapKey(self, key, &map_key)) {
-    return NULL;
+    return nullptr;
   }
 
   if (reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
@@ -728,8 +674,8 @@ PyObject* MapReflectionFriend::MessageMapGetItem(PyObject* _self,
 
 PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
   ScopedPyObjectPtr dict(PyDict_New());
-  if (dict == NULL) {
-    return NULL;
+  if (dict == nullptr) {
+    return nullptr;
   }
   ScopedPyObjectPtr key;
   ScopedPyObjectPtr value;
@@ -742,38 +688,39 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
        it != reflection->MapEnd(message, self->parent_field_descriptor);
        ++it) {
     key.reset(MapKeyToPython(self, it.GetKey()));
-    if (key == NULL) {
-      return NULL;
+    if (key == nullptr) {
+      return nullptr;
     }
     value.reset(GetCMessage(self, it.MutableValueRef()->MutableMessageValue()));
-    if (value == NULL) {
-      return NULL;
+    if (value == nullptr) {
+      return nullptr;
     }
     if (PyDict_SetItem(dict.get(), key.get(), value.get()) < 0) {
-      return NULL;
+      return nullptr;
     }
   }
   return PyObject_Repr(dict.get());
 }
 
 PyObject* MessageMapGet(PyObject* self, PyObject* args, PyObject* kwargs) {
-  static char* kwlist[] = {"key", "default", nullptr};
+  static const char* kwlist[] = {"key", "default", nullptr};
   PyObject* key;
-  PyObject* default_value = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &key,
+  PyObject* default_value = nullptr;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O",
+                                   const_cast<char**>(kwlist), &key,
                                    &default_value)) {
-    return NULL;
+    return nullptr;
   }
 
   ScopedPyObjectPtr is_present(MapReflectionFriend::Contains(self, key));
-  if (is_present.get() == NULL) {
-    return NULL;
+  if (is_present.get() == nullptr) {
+    return nullptr;
   }
 
   if (PyObject_IsTrue(is_present.get())) {
     return MapReflectionFriend::MessageMapGetItem(self, key);
   } else {
-    if (default_value != NULL) {
+    if (default_value != nullptr) {
       Py_INCREF(default_value);
       return default_value;
     } else {
@@ -813,75 +760,23 @@ static PyMethodDef MessageMapMethods[] = {
     { "__reduce__", (PyCFunction)Reduce, METH_NOARGS,
       "Outputs picklable representation of the repeated field." },
     */
-    {NULL, NULL},
+    {nullptr, nullptr},
 };
 
-PyTypeObject *MessageMapContainer_Type;
-#if PY_MAJOR_VERSION >= 3
-  static PyType_Slot MessageMapContainer_Type_slots[] = {
-      {Py_tp_dealloc, (void *)MessageMapDealloc},
-      {Py_mp_length, (void *)MapReflectionFriend::Length},
-      {Py_mp_subscript, (void *)MapReflectionFriend::MessageMapGetItem},
-      {Py_mp_ass_subscript, (void *)MapReflectionFriend::MessageMapSetItem},
-      {Py_tp_methods, (void *)MessageMapMethods},
-      {Py_tp_iter, (void *)MapReflectionFriend::GetIterator},
-      {Py_tp_repr, (void *)MapReflectionFriend::MessageMapToStr},
-      {0, 0}
-  };
+PyTypeObject* MessageMapContainer_Type;
+static PyType_Slot MessageMapContainer_Type_slots[] = {
+    {Py_tp_dealloc, (void*)MessageMapDealloc},
+    {Py_mp_length, (void*)MapReflectionFriend::Length},
+    {Py_mp_subscript, (void*)MapReflectionFriend::MessageMapGetItem},
+    {Py_mp_ass_subscript, (void*)MapReflectionFriend::MessageMapSetItem},
+    {Py_tp_methods, (void*)MessageMapMethods},
+    {Py_tp_iter, (void*)MapReflectionFriend::GetIterator},
+    {Py_tp_repr, (void*)MapReflectionFriend::MessageMapToStr},
+    {0, nullptr}};
 
-  PyType_Spec MessageMapContainer_Type_spec = {
-      FULL_MODULE_NAME ".MessageMapContainer",
-      sizeof(MessageMapContainer),
-      0,
-      Py_TPFLAGS_DEFAULT,
-      MessageMapContainer_Type_slots
-  };
-#else
-  static PyMappingMethods MessageMapMappingMethods = {
-    MapReflectionFriend::Length,              // mp_length
-    MapReflectionFriend::MessageMapGetItem,   // mp_subscript
-    MapReflectionFriend::MessageMapSetItem,   // mp_ass_subscript
-  };
-
-  PyTypeObject _MessageMapContainer_Type = {
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    FULL_MODULE_NAME ".MessageMapContainer",  //  tp_name
-    sizeof(MessageMapContainer),         //  tp_basicsize
-    0,                                   //  tp_itemsize
-    MessageMapDealloc,                   //  tp_dealloc
-    0,                                   //  tp_print
-    0,                                   //  tp_getattr
-    0,                                   //  tp_setattr
-    0,                                   //  tp_compare
-    MapReflectionFriend::MessageMapToStr,  //  tp_repr
-    0,                                   //  tp_as_number
-    0,                                   //  tp_as_sequence
-    &MessageMapMappingMethods,           //  tp_as_mapping
-    0,                                   //  tp_hash
-    0,                                   //  tp_call
-    0,                                   //  tp_str
-    0,                                   //  tp_getattro
-    0,                                   //  tp_setattro
-    0,                                   //  tp_as_buffer
-    Py_TPFLAGS_DEFAULT,                  //  tp_flags
-    "A map container for message",       //  tp_doc
-    0,                                   //  tp_traverse
-    0,                                   //  tp_clear
-    0,                                   //  tp_richcompare
-    0,                                   //  tp_weaklistoffset
-    MapReflectionFriend::GetIterator,    //  tp_iter
-    0,                                   //  tp_iternext
-    MessageMapMethods,                   //  tp_methods
-    0,                                   //  tp_members
-    0,                                   //  tp_getset
-    0,                                   //  tp_base
-    0,                                   //  tp_dict
-    0,                                   //  tp_descr_get
-    0,                                   //  tp_descr_set
-    0,                                   //  tp_dictoffset
-    0,                                   //  tp_init
-  };
-#endif
+PyType_Spec MessageMapContainer_Type_spec = {
+    FULL_MODULE_NAME ".MessageMapContainer", sizeof(MessageMapContainer), 0,
+    Py_TPFLAGS_DEFAULT, MessageMapContainer_Type_slots};
 
 // MapIterator /////////////////////////////////////////////////////////////////
 
@@ -893,7 +788,7 @@ PyObject* MapReflectionFriend::GetIterator(PyObject *_self) {
   MapContainer* self = GetMap(_self);
 
   ScopedPyObjectPtr obj(PyType_GenericAlloc(&MapIterator_Type, 0));
-  if (obj == NULL) {
+  if (obj == nullptr) {
     return PyErr_Format(PyExc_KeyError, "Could not allocate iterator");
   }
 
@@ -930,8 +825,8 @@ PyObject* MapReflectionFriend::IterNext(PyObject* _self) {
                         "Map cleared during iteration.");
   }
 
-  if (self->iter.get() == NULL) {
-    return NULL;
+  if (self->iter.get() == nullptr) {
+    return nullptr;
   }
 
   Message* message = self->container->GetMutableMessage();
@@ -939,7 +834,7 @@ PyObject* MapReflectionFriend::IterNext(PyObject* _self) {
 
   if (*self->iter ==
       reflection->MapEnd(message, self->container->parent_field_descriptor)) {
-    return NULL;
+    return nullptr;
   }
 
   PyObject* ret = MapKeyToPython(self->container, self->iter->GetKey());
@@ -958,96 +853,76 @@ static void DeallocMapIterator(PyObject* _self) {
 }
 
 PyTypeObject MapIterator_Type = {
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  FULL_MODULE_NAME ".MapIterator",     //  tp_name
-  sizeof(MapIterator),                 //  tp_basicsize
-  0,                                   //  tp_itemsize
-  DeallocMapIterator,                  //  tp_dealloc
-  0,                                   //  tp_print
-  0,                                   //  tp_getattr
-  0,                                   //  tp_setattr
-  0,                                   //  tp_compare
-  0,                                   //  tp_repr
-  0,                                   //  tp_as_number
-  0,                                   //  tp_as_sequence
-  0,                                   //  tp_as_mapping
-  0,                                   //  tp_hash
-  0,                                   //  tp_call
-  0,                                   //  tp_str
-  0,                                   //  tp_getattro
-  0,                                   //  tp_setattro
-  0,                                   //  tp_as_buffer
-  Py_TPFLAGS_DEFAULT,                  //  tp_flags
-  "A scalar map iterator",             //  tp_doc
-  0,                                   //  tp_traverse
-  0,                                   //  tp_clear
-  0,                                   //  tp_richcompare
-  0,                                   //  tp_weaklistoffset
-  PyObject_SelfIter,                   //  tp_iter
-  MapReflectionFriend::IterNext,       //  tp_iternext
-  0,                                   //  tp_methods
-  0,                                   //  tp_members
-  0,                                   //  tp_getset
-  0,                                   //  tp_base
-  0,                                   //  tp_dict
-  0,                                   //  tp_descr_get
-  0,                                   //  tp_descr_set
-  0,                                   //  tp_dictoffset
-  0,                                   //  tp_init
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
+    ".MapIterator",       //  tp_name
+    sizeof(MapIterator),  //  tp_basicsize
+    0,                    //  tp_itemsize
+    DeallocMapIterator,   //  tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
+    nullptr,                        //  tp_getattr
+    nullptr,                        //  tp_setattr
+    nullptr,                        //  tp_compare
+    nullptr,                        //  tp_repr
+    nullptr,                        //  tp_as_number
+    nullptr,                        //  tp_as_sequence
+    nullptr,                        //  tp_as_mapping
+    nullptr,                        //  tp_hash
+    nullptr,                        //  tp_call
+    nullptr,                        //  tp_str
+    nullptr,                        //  tp_getattro
+    nullptr,                        //  tp_setattro
+    nullptr,                        //  tp_as_buffer
+    Py_TPFLAGS_DEFAULT,             //  tp_flags
+    "A scalar map iterator",        //  tp_doc
+    nullptr,                        //  tp_traverse
+    nullptr,                        //  tp_clear
+    nullptr,                        //  tp_richcompare
+    0,                              //  tp_weaklistoffset
+    PyObject_SelfIter,              //  tp_iter
+    MapReflectionFriend::IterNext,  //  tp_iternext
+    nullptr,                        //  tp_methods
+    nullptr,                        //  tp_members
+    nullptr,                        //  tp_getset
+    nullptr,                        //  tp_base
+    nullptr,                        //  tp_dict
+    nullptr,                        //  tp_descr_get
+    nullptr,                        //  tp_descr_set
+    0,                              //  tp_dictoffset
+    nullptr,                        //  tp_init
 };
 
 bool InitMapContainers() {
   // ScalarMapContainer_Type derives from our MutableMapping type.
-  ScopedPyObjectPtr containers(PyImport_ImportModule(
-      "google.protobuf.internal.containers"));
-  if (containers == NULL) {
+  ScopedPyObjectPtr abc(PyImport_ImportModule("collections.abc"));
+  if (abc == nullptr) {
     return false;
   }
 
   ScopedPyObjectPtr mutable_mapping(
-      PyObject_GetAttrString(containers.get(), "MutableMapping"));
-  if (mutable_mapping == NULL) {
+      PyObject_GetAttrString(abc.get(), "MutableMapping"));
+  if (mutable_mapping == nullptr) {
     return false;
   }
 
   Py_INCREF(mutable_mapping.get());
-#if PY_MAJOR_VERSION >= 3
   ScopedPyObjectPtr bases(PyTuple_Pack(1, mutable_mapping.get()));
-  if (bases == NULL) {
+  if (bases == nullptr) {
     return false;
   }
 
   ScalarMapContainer_Type = reinterpret_cast<PyTypeObject*>(
       PyType_FromSpecWithBases(&ScalarMapContainer_Type_spec, bases.get()));
-#else
-  _ScalarMapContainer_Type.tp_base =
-      reinterpret_cast<PyTypeObject*>(mutable_mapping.get());
-
-  if (PyType_Ready(&_ScalarMapContainer_Type) < 0) {
-    return false;
-  }
-
-  ScalarMapContainer_Type = &_ScalarMapContainer_Type;
-#endif
 
   if (PyType_Ready(&MapIterator_Type) < 0) {
     return false;
   }
 
-#if PY_MAJOR_VERSION >= 3
   MessageMapContainer_Type = reinterpret_cast<PyTypeObject*>(
       PyType_FromSpecWithBases(&MessageMapContainer_Type_spec, bases.get()));
-#else
-  Py_INCREF(mutable_mapping.get());
-  _MessageMapContainer_Type.tp_base =
-      reinterpret_cast<PyTypeObject*>(mutable_mapping.get());
-
-  if (PyType_Ready(&_MessageMapContainer_Type) < 0) {
-    return false;
-  }
-
-  MessageMapContainer_Type = &_MessageMapContainer_Type;
-#endif
   return true;
 }
 

@@ -87,6 +87,8 @@ std::string GetFieldConstantName(const FieldDescriptor* field);
 
 std::string GetPropertyName(const FieldDescriptor* descriptor);
 
+std::string GetOneofCaseName(const FieldDescriptor* descriptor);
+
 int GetFixedSize(FieldDescriptor::Type type);
 
 std::string UnderscoresToCamelCase(const std::string& input,
@@ -130,7 +132,8 @@ uint GetGroupEndTag(const Descriptor* descriptor);
 // descriptors etc, for use in the runtime. This is the only type which is
 // allowed to use proto2 syntax, and it generates internal classes.
 inline bool IsDescriptorProto(const FileDescriptor* descriptor) {
-  return descriptor->name() == "google/protobuf/descriptor.proto";
+  return descriptor->name() == "google/protobuf/descriptor.proto" ||
+         descriptor->name() == "net/proto2/proto/descriptor.proto";
 }
 
 // Determines whether the given message is an options message within descriptor.proto.
@@ -138,15 +141,15 @@ inline bool IsDescriptorOptionMessage(const Descriptor* descriptor) {
   if (!IsDescriptorProto(descriptor->file())) {
     return false;
   }
-  const std::string name = descriptor->full_name();
-  return name == "google.protobuf.FileOptions" ||
-      name == "google.protobuf.MessageOptions" ||
-      name == "google.protobuf.FieldOptions" ||
-      name == "google.protobuf.OneofOptions" ||
-      name == "google.protobuf.EnumOptions" ||
-      name == "google.protobuf.EnumValueOptions" ||
-      name == "google.protobuf.ServiceOptions" ||
-      name == "google.protobuf.MethodOptions";
+  const std::string name = descriptor->name();
+  return name == "FileOptions" ||
+      name == "MessageOptions" ||
+      name == "FieldOptions" ||
+      name == "OneofOptions" ||
+      name == "EnumOptions" ||
+      name == "EnumValueOptions" ||
+      name == "ServiceOptions" ||
+      name == "MethodOptions";
 }
 
 inline bool IsWrapperType(const FieldDescriptor* descriptor) {

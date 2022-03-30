@@ -692,7 +692,7 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an lazily parsed MessageSet
+   * Compute the number of bytes that would be needed to encode a lazily parsed MessageSet
    * extension field to the stream. For historical reasons, the wire format differs from normal
    * fields.
    */
@@ -996,8 +996,6 @@ public abstract class CodedOutputStream extends ByteOutput {
       writeLazy(bytes, 0, bytes.length);
     } catch (IndexOutOfBoundsException e) {
       throw new OutOfSpaceException(e);
-    } catch (OutOfSpaceException e) {
-      throw e;
     }
   }
 
@@ -1056,7 +1054,7 @@ public abstract class CodedOutputStream extends ByteOutput {
    */
   @Deprecated
   public static int computeGroupSize(final int fieldNumber, final MessageLite value) {
-    return computeTagSize(fieldNumber) * 2 + computeGroupSizeNoTag(value);
+    return computeTagSize(fieldNumber) * 2 + value.getSerializedSize();
   }
 
   /**
@@ -1072,6 +1070,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
   /** Compute the number of bytes that would be needed to encode a {@code group} field. */
   @Deprecated
+  @InlineMe(replacement = "value.getSerializedSize()")
   public static int computeGroupSizeNoTag(final MessageLite value) {
     return value.getSerializedSize();
   }
@@ -1089,6 +1088,7 @@ public abstract class CodedOutputStream extends ByteOutput {
    * @deprecated use {@link #writeUInt32NoTag} instead.
    */
   @Deprecated
+  @InlineMe(replacement = "this.writeUInt32NoTag(value)")
   public final void writeRawVarint32(int value) throws IOException {
     writeUInt32NoTag(value);
   }
@@ -1099,6 +1099,7 @@ public abstract class CodedOutputStream extends ByteOutput {
    * @deprecated use {@link #writeUInt64NoTag} instead.
    */
   @Deprecated
+  @InlineMe(replacement = "this.writeUInt64NoTag(value)")
   public final void writeRawVarint64(long value) throws IOException {
     writeUInt64NoTag(value);
   }
@@ -1110,6 +1111,9 @@ public abstract class CodedOutputStream extends ByteOutput {
    * @deprecated use {@link #computeUInt32SizeNoTag(int)} instead.
    */
   @Deprecated
+  @InlineMe(
+      replacement = "CodedOutputStream.computeUInt32SizeNoTag(value)",
+      imports = "com.google.protobuf.CodedOutputStream")
   public static int computeRawVarint32Size(final int value) {
     return computeUInt32SizeNoTag(value);
   }
@@ -1120,6 +1124,9 @@ public abstract class CodedOutputStream extends ByteOutput {
    * @deprecated use {@link #computeUInt64SizeNoTag(long)} instead.
    */
   @Deprecated
+  @InlineMe(
+      replacement = "CodedOutputStream.computeUInt64SizeNoTag(value)",
+      imports = "com.google.protobuf.CodedOutputStream")
   public static int computeRawVarint64Size(long value) {
     return computeUInt64SizeNoTag(value);
   }
@@ -1130,6 +1137,7 @@ public abstract class CodedOutputStream extends ByteOutput {
    * @deprecated Use {@link #writeFixed32NoTag} instead.
    */
   @Deprecated
+  @InlineMe(replacement = "this.writeFixed32NoTag(value)")
   public final void writeRawLittleEndian32(final int value) throws IOException {
     writeFixed32NoTag(value);
   }
@@ -1140,6 +1148,7 @@ public abstract class CodedOutputStream extends ByteOutput {
    * @deprecated Use {@link #writeFixed64NoTag} instead.
    */
   @Deprecated
+  @InlineMe(replacement = "this.writeFixed64NoTag(value)")
   public final void writeRawLittleEndian64(final long value) throws IOException {
     writeFixed64NoTag(value);
   }
@@ -1334,49 +1343,19 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void writeUInt32NoTag(int value) throws IOException {
-      if (HAS_UNSAFE_ARRAY_OPERATIONS
-          && !Android.isOnAndroidDevice()
-          && spaceLeft() >= MAX_VARINT32_SIZE) {
-        if ((value & ~0x7F) == 0) {
-          UnsafeUtil.putByte(buffer, position++, (byte) value);
-          return;
-        }
-        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
-        value >>>= 7;
-        if ((value & ~0x7F) == 0) {
-          UnsafeUtil.putByte(buffer, position++, (byte) value);
-          return;
-        }
-        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
-        value >>>= 7;
-        if ((value & ~0x7F) == 0) {
-          UnsafeUtil.putByte(buffer, position++, (byte) value);
-          return;
-        }
-        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
-        value >>>= 7;
-        if ((value & ~0x7F) == 0) {
-          UnsafeUtil.putByte(buffer, position++, (byte) value);
-          return;
-        }
-        UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
-        value >>>= 7;
-        UnsafeUtil.putByte(buffer, position++, (byte) value);
-      } else {
-        try {
-          while (true) {
-            if ((value & ~0x7F) == 0) {
-              buffer[position++] = (byte) value;
-              return;
-            } else {
-              buffer[position++] = (byte) ((value & 0x7F) | 0x80);
-              value >>>= 7;
-            }
+      try {
+        while (true) {
+          if ((value & ~0x7F) == 0) {
+            buffer[position++] = (byte) value;
+            return;
+          } else {
+            buffer[position++] = (byte) ((value & 0x7F) | 0x80);
+            value >>>= 7;
           }
-        } catch (IndexOutOfBoundsException e) {
-          throw new OutOfSpaceException(
-              String.format("Pos: %d, limit: %d, len: %d", position, limit, 1), e);
         }
+      } catch (IndexOutOfBoundsException e) {
+        throw new OutOfSpaceException(
+            String.format("Pos: %d, limit: %d, len: %d", position, limit, 1), e);
       }
     }
 

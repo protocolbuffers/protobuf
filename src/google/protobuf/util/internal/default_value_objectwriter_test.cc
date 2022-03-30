@@ -32,8 +32,8 @@
 
 #include <google/protobuf/util/internal/expecting_objectwriter.h>
 #include <google/protobuf/util/internal/testdata/default_value_test.pb.h>
-#include <google/protobuf/util/internal/type_info_test_helper.h>
 #include <google/protobuf/util/internal/constants.h>
+#include <google/protobuf/util/internal/type_info_test_helper.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -57,7 +57,7 @@ class BaseDefaultValueObjectWriterTest
         &mock_));
   }
 
-  virtual ~BaseDefaultValueObjectWriterTest() {}
+  ~BaseDefaultValueObjectWriterTest() override {}
 
   TypeInfoTestHelper helper_;
   MockObjectWriter mock_;
@@ -71,7 +71,7 @@ class DefaultValueObjectWriterTest : public BaseDefaultValueObjectWriterTest {
  protected:
   DefaultValueObjectWriterTest()
       : BaseDefaultValueObjectWriterTest(DefaultValueTest::descriptor()) {}
-  virtual ~DefaultValueObjectWriterTest() {}
+  ~DefaultValueObjectWriterTest() override {}
 };
 
 INSTANTIATE_TEST_SUITE_P(DifferentTypeInfoSourceTest,

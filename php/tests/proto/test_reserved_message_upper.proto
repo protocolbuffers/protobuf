@@ -32,6 +32,8 @@ message EVAL {}
 message EXIT {}
 message EXTENDS {}
 message FINAL {}
+message FINALLY {}
+message FN {}
 message FOR {}
 message FOREACH {}
 message FUNCTION {}
@@ -46,9 +48,11 @@ message INSTEADOF {}
 message INTERFACE {}
 message ISSET {}
 message LIST {}
+message MATCH {}
 message NAMESPACE {}
 message NEW {}
 message OR {}
+message PARENT {}
 message PRINT {}
 message PRIVATE {}
 message PROTECTED {}
@@ -56,6 +60,7 @@ message PUBLIC {}
 message REQUIRE {}
 message REQUIRE_ONCE {}
 message RETURN {}
+message SELF {}
 message STATIC {}
 message SWITCH {}
 message THROW {}
@@ -66,6 +71,7 @@ message USE {}
 message VAR {}
 message WHILE {}
 message XOR {}
+message YIELD {}
 message INT {}
 message FLOAT {}
 message BOOL {}

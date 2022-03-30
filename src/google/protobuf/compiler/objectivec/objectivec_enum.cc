@@ -127,7 +127,6 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
     if (alias_values_to_skip_.find(all_values_[i]) != alias_values_to_skip_.end()) {
       continue;
     }
-    SourceLocation location;
     if (all_values_[i]->GetSourceLocation(&location)) {
       std::string comments = BuildCommentsString(location, true).c_str();
       if (comments.length() > 0) {

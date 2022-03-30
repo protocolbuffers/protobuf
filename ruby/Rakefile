@@ -8,6 +8,7 @@ spec = Gem::Specification.load("google-protobuf.gemspec")
 well_known_protos = %w[
   google/protobuf/any.proto
   google/protobuf/api.proto
+  google/protobuf/descriptor.proto
   google/protobuf/duration.proto
   google/protobuf/empty.proto
   google/protobuf/field_mask.proto
@@ -18,11 +19,29 @@ well_known_protos = %w[
   google/protobuf/wrappers.proto
 ]
 
+test_protos = %w[
+  tests/basic_test.proto
+  tests/basic_test_proto2.proto
+  tests/generated_code.proto
+  tests/generated_code_proto2.proto
+  tests/multi_level_nesting_test.proto
+  tests/test_import.proto
+  tests/test_import_proto2.proto
+  tests/test_ruby_package.proto
+  tests/test_ruby_package_proto2.proto
+]
+
 # These are omitted for now because we don't support proto2.
 proto2_protos = %w[
   google/protobuf/descriptor.proto
   google/protobuf/compiler/plugin.proto
 ]
+
+if system('../src/protoc --version')
+  protoc_command = '../src/protoc' 
+else
+  protoc_command = 'protoc' 
+end
 
 genproto_output = []
 
@@ -34,23 +53,43 @@ unless ENV['IN_DOCKER'] == 'true'
     output_file = "lib/" + proto_file.sub(/\.proto$/, "_pb.rb")
     genproto_output << output_file
     file output_file => input_file do |file_task|
-      sh "../src/protoc -I../src --ruby_out=lib #{input_file}"
+      sh "#{protoc_command} -I../src --ruby_out=lib #{input_file}"
+    end
+  end
+
+  test_protos.each do |proto_file|
+    output_file = proto_file.sub(/\.proto$/, "_pb.rb")
+    genproto_output << output_file
+    file output_file => proto_file do |file_task|
+      sh "#{protoc_command} -I../src -I. -I./tests --ruby_out=.  #{proto_file}"
     end
   end
 end
 
 if RUBY_PLATFORM == "java"
-  if `which mvn` == ''
-    raise ArgumentError, "maven needs to be installed"
-  end
-  task :clean do
+  task :clean => :require_mvn do
     system("mvn --batch-mode clean")
   end
 
-  task :compile do
+  task :compile => :require_mvn do
     system("mvn --batch-mode package")
   end
+
+  task :require_mvn do
+    raise ArgumentError, "maven needs to be installed" if `which mvn` == ''
+  end
+
 else
+  unless ENV['IN_DOCKER'] == 'true'
+    # We need utf8_range in-tree.
+    FileUtils.mkdir_p("ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/utf8_range.h", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/naive.c", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/range2-neon.c", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/range2-sse.c", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/LICENSE", "ext/google/protobuf_c/third_party/utf8_range")
+  end
+
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
     unless RUBY_PLATFORM =~ /darwin/
       # TODO: also set "no_native to true" for mac if possible. As is,
@@ -64,16 +103,31 @@ else
     ext.cross_platform = [
       'x86-mingw32', 'x64-mingw32',
       'x86_64-linux', 'x86-linux',
-      'universal-darwin'
+      'x86_64-darwin', 'arm64-darwin',
     ]
   end
 
+  task 'gem:java' do
+    sh "rm Gemfile.lock"
+    require 'rake_compiler_dock'
+    # Specify the repo root as the working and mount directory to provide access
+    # to the java directory
+    repo_root = File.realdirpath File.join(Dir.pwd, '..')
+    RakeCompilerDock.sh <<-"EOT", platform: 'jruby', rubyvm: :jruby, mountdir: repo_root, workdir: repo_root
+      sudo apt-get install maven -y && \
+      cd java && mvn install -Dmaven.test.skip=true && cd ../ruby && \
+      bundle && \
+      IN_DOCKER=true rake compile gem
+    EOT
+  end
+
   task 'gem:windows' do
+    sh "rm Gemfile.lock"
     require 'rake_compiler_dock'
     ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux'].each do |plat|
       RakeCompilerDock.sh <<-"EOT", platform: plat
         bundle && \
-        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=2.7.0:2.6.0:2.5.0:2.4.0:2.3.0
+        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0:2.6.0:2.5.0
       EOT
     end
   end
@@ -81,58 +135,11 @@ else
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=2.7.0:2.6.0:2.5.1:2.4.0:2.3.0"
+      system "rake cross native gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0:2.6.0:2.5.1"
     end
   else
-    task 'gem:native' => [:genproto, 'gem:windows']
+    task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']
   end
-end
-
-
-# Proto for tests.
-genproto_output << "tests/generated_code.rb"
-genproto_output << "tests/generated_code_proto2.rb"
-genproto_output << "tests/test_import.rb"
-genproto_output << "tests/test_import_proto2.rb"
-genproto_output << "tests/test_ruby_package.rb"
-genproto_output << "tests/test_ruby_package_proto2.rb"
-genproto_output << "tests/basic_test.rb"
-genproto_output << "tests/basic_test_proto2.rb"
-genproto_output << "tests/wrappers.rb"
-file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/generated_code.proto"
-end
-
-file "tests/generated_code_proto2.rb" => "tests/generated_code_proto2.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/generated_code_proto2.proto"
-end
-
-file "tests/test_import.rb" => "tests/test_import.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/test_import.proto"
-end
-
-file "tests/test_import_proto2.rb" => "tests/test_import_proto2.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/test_import_proto2.proto"
-end
-
-file "tests/test_ruby_package.rb" => "tests/test_ruby_package.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/test_ruby_package.proto"
-end
-
-file "tests/test_ruby_package_proto2.rb" => "tests/test_ruby_package_proto2.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/test_ruby_package_proto2.proto"
-end
-
-file "tests/basic_test.rb" => "tests/basic_test.proto" do |file_task|
-  sh "../src/protoc --experimental_allow_proto3_optional -I../src -I. --ruby_out=. tests/basic_test.proto"
-end
-
-file "tests/basic_test_proto2.rb" => "tests/basic_test_proto2.proto" do |file_task|
-  sh "../src/protoc -I../src -I. --ruby_out=. tests/basic_test_proto2.proto"
-end
-
-file "tests/wrappers.rb" => "../src/google/protobuf/wrappers.proto" do |file_task|
-  sh "../src/protoc -I../src -I. --ruby_out=tests ../src/google/protobuf/wrappers.proto"
 end
 
 task :genproto => genproto_output
@@ -144,7 +151,7 @@ end
 Gem::PackageTask.new(spec) do |pkg|
 end
 
-Rake::TestTask.new(:test => :build) do |t|
+Rake::TestTask.new(:test => [:build, :genproto]) do |t|
   t.test_files = FileList["tests/*.rb"].exclude("tests/gc_test.rb", "tests/common_tests.rb")
 end
 
@@ -154,7 +161,7 @@ Rake::TestTask.new(:gc_test => :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 
-task :build => [:clean, :compile, :genproto]
+task :build => [:clean, :genproto, :compile]
 task :default => [:build]
 
 # vim:sw=2:et

@@ -43,6 +43,7 @@
 #include <limits>
 #include <list>
 #include <sstream>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -63,7 +64,10 @@ namespace protobuf {
 namespace {
 
 using ::protobuf_unittest::TestAllTypes;
+using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::Ge;
+using ::testing::Le;
 
 TEST(RepeatedField, ConstInit) {
   PROTOBUF_CONSTINIT static RepeatedField<int> field{};  // NOLINT
@@ -123,7 +127,10 @@ TEST(RepeatedField, Small) {
   EXPECT_TRUE(field.empty());
   EXPECT_EQ(field.size(), 0);
   // Additional bytes are for 'struct Rep' header.
-  int expected_usage = 4 * sizeof(int) + sizeof(Arena*);
+  int expected_usage =
+      (sizeof(Arena*) > sizeof(int) ? sizeof(Arena*) / sizeof(int) : 3) *
+          sizeof(int) +
+      sizeof(Arena*);
   EXPECT_GE(field.SpaceUsedExcludingSelf(), expected_usage);
 }
 
@@ -146,6 +153,85 @@ TEST(RepeatedField, Large) {
 
   int expected_usage = 16 * sizeof(int);
   EXPECT_GE(field.SpaceUsedExcludingSelf(), expected_usage);
+}
+
+template <typename Rep>
+void CheckAllocationSizes(bool is_ptr) {
+  using T = typename Rep::value_type;
+  // Use a large initial block to make the checks below easier to predict.
+  std::string buf(1 << 20, 0);
+
+  Arena arena(&buf[0], buf.size());
+  auto* rep = Arena::CreateMessage<Rep>(&arena);
+  size_t prev = arena.SpaceUsed();
+
+  for (int i = 0; i < 100; ++i) {
+    rep->Add(T{});
+    if (sizeof(void*) == 8) {
+      // For RepeatedPtrField we also allocate the T in the arena.
+      // Subtract those from the count.
+      size_t new_used = arena.SpaceUsed() - (is_ptr ? sizeof(T) * (i + 1) : 0);
+      size_t last_alloc = new_used - prev;
+      prev = new_used;
+
+      // When we actually allocated something, check the size.
+      if (last_alloc != 0) {
+        // Must be `>= 16`, as expected by the Arena.
+        ASSERT_GE(last_alloc, 16);
+        // Must be of a power of two.
+        size_t log2 = Bits::Log2FloorNonZero64(last_alloc);
+        ASSERT_EQ((1 << log2), last_alloc);
+      }
+
+      // The byte size must be a multiple of 8.
+      ASSERT_EQ(rep->Capacity() * sizeof(T) % 8, 0);
+    }
+  }
+}
+
+TEST(RepeatedField, ArenaAllocationSizesMatchExpectedValues) {
+  // RepeatedField guarantees that in 64-bit mode we never allocate anything
+  // smaller than 16 bytes from an arena.
+  // This is important to avoid a branch in the reallocation path.
+  // This is also important because allocating anything less would be wasting
+  // memory.
+  // If the allocation size is wrong, ReturnArrayMemory will GOOGLE_DCHECK.
+  CheckAllocationSizes<RepeatedField<bool>>(false);
+  CheckAllocationSizes<RepeatedField<uint8_t>>(false);
+  CheckAllocationSizes<RepeatedField<uint16_t>>(false);
+  CheckAllocationSizes<RepeatedField<uint32_t>>(false);
+  CheckAllocationSizes<RepeatedField<uint64_t>>(false);
+  CheckAllocationSizes<RepeatedField<std::pair<uint64_t, uint64_t>>>(false);
+}
+
+template <typename Rep>
+void CheckNaturalGrowthOnArenasReuseBlocks(bool is_ptr) {
+  Arena arena;
+  std::vector<Rep*> values;
+  using T = typename Rep::value_type;
+
+  static constexpr int kNumFields = 100;
+  static constexpr int kNumElems = 1000;
+  for (int i = 0; i < kNumFields; ++i) {
+    values.push_back(Arena::CreateMessage<Rep>(&arena));
+    auto& field = *values.back();
+    for (int j = 0; j < kNumElems; ++j) {
+      field.Add(T{});
+    }
+  }
+
+  size_t used_bytes_if_reusing =
+      values.size() * values[0]->Capacity() * (is_ptr ? sizeof(T*) : sizeof(T));
+  // Use a 2% slack for other overhead.
+  // If we were not reusing the blocks, the actual value would be ~2x the
+  // expected.
+  EXPECT_THAT(
+      arena.SpaceUsed() - (is_ptr ? sizeof(T) * kNumElems * kNumFields : 0),
+      AllOf(Ge(used_bytes_if_reusing), Le(1.02 * used_bytes_if_reusing)));
+}
+
+TEST(RepeatedField, NaturalGrowthOnArenasReuseBlocks) {
+  CheckNaturalGrowthOnArenasReuseBlocks<RepeatedField<int>>(false);
 }
 
 // Test swapping between various types of RepeatedFields.
@@ -287,16 +373,38 @@ TEST(RepeatedField, ReserveNothing) {
 }
 
 TEST(RepeatedField, ReserveLowerClamp) {
-  const int clamped_value = internal::CalculateReserveSize(0, 1);
-  EXPECT_EQ(internal::kRepeatedFieldLowerClampLimit, clamped_value);
-  EXPECT_EQ(clamped_value, internal::CalculateReserveSize(clamped_value, 2));
+  int clamped_value = internal::CalculateReserveSize<bool, sizeof(void*)>(0, 1);
+  EXPECT_GE(clamped_value, 8 / sizeof(bool));
+  EXPECT_EQ((internal::RepeatedFieldLowerClampLimit<bool, sizeof(void*)>()),
+            clamped_value);
+  // EXPECT_EQ(clamped_value, (internal::CalculateReserveSize<bool,
+  // sizeof(void*)>( clamped_value, 2)));
+
+  clamped_value = internal::CalculateReserveSize<int, sizeof(void*)>(0, 1);
+  EXPECT_GE(clamped_value, 8 / sizeof(int));
+  EXPECT_EQ((internal::RepeatedFieldLowerClampLimit<int, sizeof(void*)>()),
+            clamped_value);
+  // EXPECT_EQ(clamped_value, (internal::CalculateReserveSize<int,
+  // sizeof(void*)>( clamped_value, 2)));
 }
 
 TEST(RepeatedField, ReserveGrowth) {
   // Make sure the field capacity doubles in size on repeated reservation.
-  for (int size = internal::kRepeatedFieldLowerClampLimit, i = 0; i < 4;
-       ++i, size *= 2) {
-    EXPECT_EQ(size * 2, internal::CalculateReserveSize(size, size + 1));
+  for (int size = internal::RepeatedFieldLowerClampLimit<int, sizeof(void*)>(),
+           i = 0;
+       i < 4; ++i) {
+    int next =
+        sizeof(Arena*) >= sizeof(int)
+            ?
+            // for small enough elements, we double number of total bytes
+            ((2 * (size * sizeof(int) + sizeof(Arena*))) - sizeof(Arena*)) /
+                sizeof(int)
+            :
+            // we just double the number of elements if too large size.
+            size * 2;
+    EXPECT_EQ(next, (internal::CalculateReserveSize<int, sizeof(void*)>(
+                        size, size + 1)));
+    size = next;
   }
 }
 
@@ -306,22 +414,24 @@ TEST(RepeatedField, ReserveLarge) {
   const int new_size = old_size * 3 + 1;
 
   // Reserving more than 2x current capacity should grow directly to that size.
-  EXPECT_EQ(new_size, internal::CalculateReserveSize(old_size, new_size));
+  EXPECT_EQ(new_size, (internal::CalculateReserveSize<int, sizeof(void*)>(
+                          old_size, new_size)));
 }
 
 TEST(RepeatedField, ReserveHuge) {
   // Largest value that does not clamp to the large limit:
-  constexpr int non_clamping_limit = std::numeric_limits<int>::max() / 2;
+  constexpr int non_clamping_limit =
+      (std::numeric_limits<int>::max() - sizeof(Arena*)) / 2;
   ASSERT_LT(2 * non_clamping_limit, std::numeric_limits<int>::max());
-  EXPECT_LT(internal::CalculateReserveSize(non_clamping_limit,
-                                           non_clamping_limit + 1),
+  EXPECT_LT((internal::CalculateReserveSize<int, sizeof(void*)>(
+                non_clamping_limit, non_clamping_limit + 1)),
             std::numeric_limits<int>::max());
 
   // Smallest size that *will* clamp to the upper limit:
   constexpr int min_clamping_size = std::numeric_limits<int>::max() / 2 + 1;
-  EXPECT_EQ(
-      internal::CalculateReserveSize(min_clamping_size, min_clamping_size + 1),
-      std::numeric_limits<int>::max());
+  EXPECT_EQ((internal::CalculateReserveSize<int, sizeof(void*)>(
+                min_clamping_size, min_clamping_size + 1)),
+            std::numeric_limits<int>::max());
 
 #ifdef PROTOBUF_TEST_ALLOW_LARGE_ALLOC
   // The rest of this test may allocate several GB of memory, so it is only
@@ -333,7 +443,7 @@ TEST(RepeatedField, ReserveHuge) {
   EXPECT_GE(huge_field.Capacity(), min_clamping_size);
   ASSERT_LT(huge_field.Capacity(), std::numeric_limits<int>::max() - 1);
 
-#ifndef ADDRESS_SANITIZER
+#ifndef PROTOBUF_ASAN
   // The array containing all the fields is, in theory, up to MAXINT-1 in size.
   // However, some compilers can't handle a struct whose size is larger
   // than 2GB, and the protocol buffer format doesn't handle more than 2GB of
@@ -344,7 +454,7 @@ TEST(RepeatedField, ReserveHuge) {
   // size must still be clamped to a valid range.
   huge_field.Reserve(huge_field.Capacity() + 1);
   EXPECT_EQ(huge_field.Capacity(), std::numeric_limits<int>::max());
-#endif
+#endif  // PROTOBUF_ASAN
 #endif  // PROTOBUF_TEST_ALLOW_LARGE_ALLOC
 }
 
@@ -486,6 +596,30 @@ TEST(RepeatedField, AddRange5) {
   ASSERT_EQ(me.size(), 2);
   ASSERT_EQ(me.Get(0), 1);
   ASSERT_EQ(me.Get(1), 2);
+}
+
+TEST(RepeatedField, AddAndAssignRanges) {
+  RepeatedField<int> field;
+
+  int vals[] = {2, 27, 2875, 609250};
+  field.Assign(std::begin(vals), std::end(vals));
+
+  ASSERT_EQ(field.size(), 4);
+  EXPECT_EQ(field.Get(0), 2);
+  EXPECT_EQ(field.Get(1), 27);
+  EXPECT_EQ(field.Get(2), 2875);
+  EXPECT_EQ(field.Get(3), 609250);
+
+  field.Add(std::begin(vals), std::end(vals));
+  ASSERT_EQ(field.size(), 8);
+  EXPECT_EQ(field.Get(0), 2);
+  EXPECT_EQ(field.Get(1), 27);
+  EXPECT_EQ(field.Get(2), 2875);
+  EXPECT_EQ(field.Get(3), 609250);
+  EXPECT_EQ(field.Get(4), 2);
+  EXPECT_EQ(field.Get(5), 27);
+  EXPECT_EQ(field.Get(6), 2875);
+  EXPECT_EQ(field.Get(7), 609250);
 }
 
 TEST(RepeatedField, CopyConstruct) {
@@ -773,12 +907,12 @@ TEST(RepeatedField, ExtractSubrange) {
     for (int num = 0; num <= sz; ++num) {
       for (int start = 0; start < sz - num; ++start) {
         // Create RepeatedField with sz elements having values 0 through sz-1.
-        RepeatedField<int32> field;
+        RepeatedField<int32_t> field;
         for (int i = 0; i < sz; ++i) field.Add(i);
         EXPECT_EQ(field.size(), sz);
 
         // Create a catcher array and call ExtractSubrange.
-        int32 catcher[10];
+        int32_t catcher[10];
         for (int i = 0; i < 10; ++i) catcher[i] = -1;
         field.ExtractSubrange(start, num, catcher);
 
@@ -835,6 +969,45 @@ TEST(RepeatedField, TestSAddFromSelf) {
 TEST(RepeatedPtrField, ConstInit) {
   PROTOBUF_CONSTINIT static RepeatedPtrField<std::string> field{};  // NOLINT
   EXPECT_TRUE(field.empty());
+}
+
+// This helper overload set tests whether X::f can be called with a braced pair,
+// X::f({a, b}) of std::string iterators (specifically, pointers: That call is
+// ambiguous if and only if the call to ValidResolutionPointerRange is not.
+template <typename X>
+auto ValidResolutionPointerRange(const std::string* p)
+    -> decltype(X::f({p, p + 2}), std::true_type{});
+template <typename X>
+std::false_type ValidResolutionPointerRange(void*);
+
+TEST(RepeatedPtrField, UnambiguousConstructor) {
+  struct X {
+    static bool f(std::vector<std::string>) { return false; }
+    static bool f(google::protobuf::RepeatedPtrField<std::string>) { return true; }
+
+    static bool g(std::vector<int>) { return false; }
+    static bool g(google::protobuf::RepeatedPtrField<std::string>) { return true; }
+  };
+
+  // RepeatedPtrField has no initializer-list constructor, and a constructor
+  // from to const char* values is excluded by its constraints.
+  EXPECT_FALSE(X::f({"abc", "xyz"}));
+
+  // Construction from a pair of int* is also not ambiguous.
+  int a[5] = {};
+  EXPECT_FALSE(X::g({a, a + 5}));
+
+  // Construction from string iterators for the unique string overload "g"
+  // works.
+  // Disabling this for now, this is actually ambiguous with libstdc++.
+  // std::string b[2] = {"abc", "xyz"};
+  // EXPECT_TRUE(X::g({b, b + 2}));
+
+  // Construction from string iterators for "f" is ambiguous, since both
+  // containers are equally good.
+  //
+  // X::f({b, b + 2});  // error => ValidResolutionPointerRange is unambiguous.
+  EXPECT_FALSE(decltype(ValidResolutionPointerRange<X>(nullptr))::value);
 }
 
 TEST(RepeatedPtrField, Small) {
@@ -897,6 +1070,38 @@ TEST(RepeatedPtrField, Large) {
 
   int min_expected_usage = 16 * sizeof(std::string);
   EXPECT_GE(field.SpaceUsedExcludingSelf(), min_expected_usage);
+}
+
+TEST(RepeatedPtrField, ArenaAllocationSizesMatchExpectedValues) {
+  CheckAllocationSizes<RepeatedPtrField<std::string>>(true);
+}
+
+TEST(RepeatedPtrField, NaturalGrowthOnArenasReuseBlocks) {
+  CheckNaturalGrowthOnArenasReuseBlocks<RepeatedPtrField<std::string>>(true);
+}
+
+TEST(RepeatedPtrField, AddAndAssignRanges) {
+  RepeatedPtrField<std::string> field;
+
+  const char* vals[] = {"abc", "x", "yz", "xyzzy"};
+  field.Assign(std::begin(vals), std::end(vals));
+
+  ASSERT_EQ(field.size(), 4);
+  EXPECT_EQ(field.Get(0), "abc");
+  EXPECT_EQ(field.Get(1), "x");
+  EXPECT_EQ(field.Get(2), "yz");
+  EXPECT_EQ(field.Get(3), "xyzzy");
+
+  field.Add(std::begin(vals), std::end(vals));
+  ASSERT_EQ(field.size(), 8);
+  EXPECT_EQ(field.Get(0), "abc");
+  EXPECT_EQ(field.Get(1), "x");
+  EXPECT_EQ(field.Get(2), "yz");
+  EXPECT_EQ(field.Get(3), "xyzzy");
+  EXPECT_EQ(field.Get(4), "abc");
+  EXPECT_EQ(field.Get(5), "x");
+  EXPECT_EQ(field.Get(6), "yz");
+  EXPECT_EQ(field.Get(7), "xyzzy");
 }
 
 TEST(RepeatedPtrField, SwapSmallSmall) {
@@ -1041,19 +1246,19 @@ TEST(RepeatedPtrField, ClearedElements) {
 
   EXPECT_EQ(field.Add(),
             original);  // Should return same string for reuse.
-
-  EXPECT_EQ(field.ReleaseLast(), original);  // We take ownership.
+  EXPECT_EQ(field.UnsafeArenaReleaseLast(), original);  // We take ownership.
   EXPECT_EQ(field.ClearedCount(), 0);
 
   EXPECT_NE(field.Add(), original);  // Should NOT return the same string.
   EXPECT_EQ(field.ClearedCount(), 0);
 
-  field.AddAllocated(original);  // Give ownership back.
+  field.UnsafeArenaAddAllocated(original);  // Give ownership back.
   EXPECT_EQ(field.ClearedCount(), 0);
   EXPECT_EQ(field.Mutable(1), original);
 
   field.Clear();
   EXPECT_EQ(field.ClearedCount(), 2);
+#ifndef PROTOBUF_FUTURE_BREAKING_CHANGES
   EXPECT_EQ(field.ReleaseCleared(), original);  // Take ownership again.
   EXPECT_EQ(field.ClearedCount(), 1);
   EXPECT_NE(field.Add(), original);
@@ -1065,10 +1270,11 @@ TEST(RepeatedPtrField, ClearedElements) {
   EXPECT_EQ(field.ClearedCount(), 1);
   EXPECT_EQ(field.Add(), original);
   EXPECT_EQ(field.ClearedCount(), 0);
+#endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
 }
 
 // Test all code paths in AddAllocated().
-TEST(RepeatedPtrField, AddAlocated) {
+TEST(RepeatedPtrField, AddAllocated) {
   RepeatedPtrField<std::string> field;
   while (field.size() < field.Capacity()) {
     field.Add()->assign("filler");
@@ -1111,6 +1317,13 @@ TEST(RepeatedPtrField, AddAlocated) {
   // We should have discarded the cleared object.
   EXPECT_EQ(0, field.ClearedCount());
   EXPECT_EQ(qux, &field.Get(index));
+}
+
+TEST(RepeatedPtrField, AddAllocatedDifferentArena) {
+  RepeatedPtrField<TestAllTypes> field;
+  Arena arena;
+  auto* msg = Arena::CreateMessage<TestAllTypes>(&arena);
+  field.AddAllocated(msg);
 }
 
 TEST(RepeatedPtrField, MergeFrom) {
@@ -1427,7 +1640,9 @@ TEST(RepeatedPtrField, ExtractSubrange) {
           std::vector<std::string*> subject;
 
           // Create an array with "sz" elements and "extra" cleared elements.
-          RepeatedPtrField<std::string> field;
+          // Use an arena to avoid copies from debug-build stability checks.
+          Arena arena;
+          RepeatedPtrField<std::string> field(&arena);
           for (int i = 0; i < sz + extra; ++i) {
             subject.push_back(new std::string());
             field.AddAllocated(subject[i]);
@@ -1439,7 +1654,7 @@ TEST(RepeatedPtrField, ExtractSubrange) {
 
           // Create a catcher array and call ExtractSubrange.
           std::string* catcher[10];
-          for (int i = 0; i < 10; ++i) catcher[i] = NULL;
+          for (int i = 0; i < 10; ++i) catcher[i] = nullptr;
           field.ExtractSubrange(start, num, catcher);
 
           // Does the resulting array have the right size?
@@ -1447,8 +1662,8 @@ TEST(RepeatedPtrField, ExtractSubrange) {
 
           // Were the removed elements extracted into the catcher array?
           for (int i = 0; i < num; ++i)
-            EXPECT_EQ(catcher[i], subject[start + i]);
-          EXPECT_EQ(NULL, catcher[num]);
+            EXPECT_EQ(*catcher[i], *subject[start + i]);
+          EXPECT_EQ(nullptr, catcher[num]);
 
           // Does the resulting array contain the right values?
           for (int i = 0; i < start; ++i)
@@ -1488,7 +1703,7 @@ TEST(RepeatedPtrField, DeleteSubrange) {
 // Iterator tests stolen from net/proto/proto-array_unittest.
 class RepeatedFieldIteratorTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     for (int i = 0; i < 3; ++i) {
       proto_array_.Add(i);
     }
@@ -1524,8 +1739,8 @@ TEST_F(RepeatedFieldIteratorTest, ConstIteration) {
   EXPECT_EQ(1, *iter++);
   EXPECT_EQ(2, *iter);
   ++iter;
-  EXPECT_TRUE(proto_array_.end() == iter);
-  EXPECT_EQ(2, *(proto_array_.end() - 1));
+  EXPECT_TRUE(const_proto_array.end() == iter);
+  EXPECT_EQ(2, *(const_proto_array.end() - 1));
 }
 
 TEST_F(RepeatedFieldIteratorTest, Mutation) {
@@ -1538,7 +1753,7 @@ TEST_F(RepeatedFieldIteratorTest, Mutation) {
 
 class RepeatedPtrFieldIteratorTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     proto_array_.Add()->assign("foo");
     proto_array_.Add()->assign("bar");
     proto_array_.Add()->assign("baz");
@@ -1569,6 +1784,7 @@ TEST_F(RepeatedPtrFieldIteratorTest, ConstIteration) {
   const RepeatedPtrField<std::string>& const_proto_array = proto_array_;
   RepeatedPtrField<std::string>::const_iterator iter =
       const_proto_array.begin();
+  iter - const_proto_array.cbegin();
   EXPECT_EQ("foo", *iter);
   ++iter;
   EXPECT_EQ("bar", *(iter++));
@@ -1614,11 +1830,44 @@ TEST_F(RepeatedPtrFieldIteratorTest, RandomAccess) {
   EXPECT_EQ(3, proto_array_.end() - proto_array_.begin());
 }
 
+TEST_F(RepeatedPtrFieldIteratorTest, RandomAccessConst) {
+  RepeatedPtrField<std::string>::const_iterator iter = proto_array_.cbegin();
+  RepeatedPtrField<std::string>::const_iterator iter2 = iter;
+  ++iter2;
+  ++iter2;
+  EXPECT_TRUE(iter + 2 == iter2);
+  EXPECT_TRUE(iter == iter2 - 2);
+  EXPECT_EQ("baz", iter[2]);
+  EXPECT_EQ("baz", *(iter + 2));
+  EXPECT_EQ(3, proto_array_.cend() - proto_array_.cbegin());
+}
+
+TEST_F(RepeatedPtrFieldIteratorTest, DifferenceConstConversion) {
+  EXPECT_EQ(3, proto_array_.end() - proto_array_.cbegin());
+  EXPECT_EQ(3, proto_array_.cend() - proto_array_.begin());
+}
+
 TEST_F(RepeatedPtrFieldIteratorTest, Comparable) {
   RepeatedPtrField<std::string>::const_iterator iter = proto_array_.begin();
   RepeatedPtrField<std::string>::const_iterator iter2 = iter + 1;
   EXPECT_TRUE(iter == iter);
   EXPECT_TRUE(iter != iter2);
+  EXPECT_TRUE(iter < iter2);
+  EXPECT_TRUE(iter <= iter2);
+  EXPECT_TRUE(iter <= iter);
+  EXPECT_TRUE(iter2 > iter);
+  EXPECT_TRUE(iter2 >= iter);
+  EXPECT_TRUE(iter >= iter);
+}
+
+TEST_F(RepeatedPtrFieldIteratorTest, ComparableConstConversion) {
+  RepeatedPtrField<std::string>::iterator iter = proto_array_.begin();
+  RepeatedPtrField<std::string>::const_iterator iter2 = iter + 1;
+  EXPECT_TRUE(iter == iter);
+  EXPECT_TRUE(iter == proto_array_.cbegin());
+  EXPECT_TRUE(proto_array_.cbegin() == iter);
+  EXPECT_TRUE(iter != iter2);
+  EXPECT_TRUE(iter2 != iter);
   EXPECT_TRUE(iter < iter2);
   EXPECT_TRUE(iter <= iter2);
   EXPECT_TRUE(iter <= iter);
@@ -1665,7 +1914,7 @@ TEST_F(RepeatedPtrFieldIteratorTest, Mutation) {
 
 class RepeatedPtrFieldPtrsIteratorTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     proto_array_.Add()->assign("foo");
     proto_array_.Add()->assign("bar");
     proto_array_.Add()->assign("baz");
@@ -1738,6 +1987,13 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, RandomConstPtrAccess) {
   EXPECT_EQ(3, const_proto_array_->end() - const_proto_array_->begin());
 }
 
+TEST_F(RepeatedPtrFieldPtrsIteratorTest, DifferenceConstConversion) {
+  EXPECT_EQ(3,
+            proto_array_.pointer_end() - const_proto_array_->pointer_begin());
+  EXPECT_EQ(3,
+            const_proto_array_->pointer_end() - proto_array_.pointer_begin());
+}
+
 TEST_F(RepeatedPtrFieldPtrsIteratorTest, ComparablePtr) {
   RepeatedPtrField<std::string>::pointer_iterator iter =
       proto_array_.pointer_begin();
@@ -1758,6 +2014,23 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, ComparableConstPtr) {
   RepeatedPtrField<std::string>::const_pointer_iterator iter2 = iter + 1;
   EXPECT_TRUE(iter == iter);
   EXPECT_TRUE(iter != iter2);
+  EXPECT_TRUE(iter < iter2);
+  EXPECT_TRUE(iter <= iter2);
+  EXPECT_TRUE(iter <= iter);
+  EXPECT_TRUE(iter2 > iter);
+  EXPECT_TRUE(iter2 >= iter);
+  EXPECT_TRUE(iter >= iter);
+}
+
+TEST_F(RepeatedPtrFieldPtrsIteratorTest, ComparableConstConversion) {
+  RepeatedPtrField<std::string>::pointer_iterator iter =
+      proto_array_.pointer_begin();
+  RepeatedPtrField<std::string>::const_pointer_iterator iter2 = iter + 1;
+  EXPECT_TRUE(iter == iter);
+  EXPECT_TRUE(iter == const_proto_array_->pointer_begin());
+  EXPECT_TRUE(const_proto_array_->pointer_begin() == iter);
+  EXPECT_TRUE(iter != iter2);
+  EXPECT_TRUE(iter2 != iter);
   EXPECT_TRUE(iter < iter2);
   EXPECT_TRUE(iter <= iter2);
   EXPECT_TRUE(iter <= iter);
@@ -1813,7 +2086,7 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound) {
         std::lower_bound(proto_array_.pointer_begin(),
                          proto_array_.pointer_end(), &v, StringLessThan());
 
-    GOOGLE_CHECK(*it != NULL);
+    GOOGLE_CHECK(*it != nullptr);
 
     EXPECT_EQ(**it, "n");
     EXPECT_TRUE(it == proto_array_.pointer_begin() + 3);
@@ -1824,7 +2097,7 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound) {
         const_proto_array_->pointer_begin(), const_proto_array_->pointer_end(),
         &v, StringLessThan());
 
-    GOOGLE_CHECK(*it != NULL);
+    GOOGLE_CHECK(*it != nullptr);
 
     EXPECT_EQ(**it, "n");
     EXPECT_TRUE(it == const_proto_array_->pointer_begin() + 3);
@@ -1883,7 +2156,7 @@ class RepeatedFieldInsertionIteratorsTest : public testing::Test {
   std::vector<Nested*> nested_ptrs;
   TestAllTypes protobuffer;
 
-  virtual void SetUp() {
+  void SetUp() override {
     fibonacci.push_back(1);
     fibonacci.push_back(1);
     fibonacci.push_back(2);
@@ -1926,7 +2199,7 @@ class RepeatedFieldInsertionIteratorsTest : public testing::Test {
                   protobuffer.mutable_repeated_nested_message()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     for (auto ptr : nested_ptrs) {
       delete ptr;
     }
@@ -2020,39 +2293,35 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithStringIntData) {
   std::vector<Nested*> data;
-  TestAllTypes goldenproto;
+  Arena arena;
+  auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
-    Nested* new_data = new Nested;
+    auto* new_data = goldenproto->add_repeated_nested_message();
     new_data->set_bb(i);
     data.push_back(new_data);
-
-    new_data = goldenproto.add_repeated_nested_message();
-    new_data->set_bb(i);
   }
-  TestAllTypes testproto;
+  auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
-                testproto.mutable_repeated_nested_message()));
-  EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
+                testproto->mutable_repeated_nested_message()));
+  EXPECT_EQ(testproto->DebugString(), goldenproto->DebugString());
 }
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithString) {
   std::vector<std::string*> data;
-  TestAllTypes goldenproto;
+  Arena arena;
+  auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
-    std::string* new_data = new std::string;
+    auto* new_data = goldenproto->add_repeated_string();
     *new_data = "name-" + StrCat(i);
     data.push_back(new_data);
-
-    new_data = goldenproto.add_repeated_string();
-    *new_data = "name-" + StrCat(i);
   }
-  TestAllTypes testproto;
+  auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
-                testproto.mutable_repeated_string()));
-  EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
+                testproto->mutable_repeated_string()));
+  EXPECT_EQ(testproto->DebugString(), goldenproto->DebugString());
 }
 
 TEST_F(RepeatedFieldInsertionIteratorsTest, MoveStrings) {
@@ -2067,7 +2336,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, MoveStrings) {
 }
 
 TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
-  auto make_nested = [](int32 x) {
+  auto make_nested = [](int32_t x) {
     Nested ret;
     ret.set_bb(x);
     return ret;

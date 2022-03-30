@@ -6,10 +6,10 @@
   "homepage": "https://developers.google.com/protocol-buffers/",
   "license": "BSD-3-Clause",
   "require": {
-    "php": ">=5.5.0"
+    "php": ">=7.0.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^5|^4.8.0"
+    "phpunit/phpunit": ">=5.0.0"
   },
   "autoload": {
     "psr-4": {
@@ -19,11 +19,13 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "": "tests/generated"
+      "": "tmp"
     }
   },
   "scripts": {
-    "test": "tests/generate_protos.sh && vendor/bin/phpunit",
-    "aggregate_metadata_test": "tests/generate_protos.sh --aggregate_metadata && vendor/bin/phpunit"
+    "test_c": "./generate_test_protos.sh && ./tests/compile_extension.sh && php -dextension=ext/google/protobuf/modules/protobuf.so vendor/bin/phpunit --bootstrap tests/force_c_ext.php tests",
+    "test_valgrind": "./generate_test_protos.sh && ./tests/compile_extension.sh && ZEND_DONT_UNLOAD_MODULES=1 USE_ZEND_ALLOC=0 valgrind --leak-check=full --error-exitcode=1 php -dextension=ext/google/protobuf/modules/protobuf.so vendor/bin/phpunit --bootstrap tests/force_c_ext.php tests",
+    "test": "./generate_test_protos.sh && vendor/bin/phpunit tests",
+    "aggregate_metadata_test": "./generate_test_protos.sh --aggregate_metadata && vendor/bin/phpunit tests"
   }
 }

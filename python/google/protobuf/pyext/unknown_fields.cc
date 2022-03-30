@@ -30,6 +30,7 @@
 
 #include <google/protobuf/pyext/unknown_fields.h>
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <set>
 #include <memory>
@@ -40,10 +41,6 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite.h>
 
-#if PY_MAJOR_VERSION >= 3
-  #define PyInt_FromLong PyLong_FromLong
-#endif
-
 namespace google {
 namespace protobuf {
 namespace python {
@@ -53,7 +50,7 @@ namespace unknown_fields {
 static Py_ssize_t Len(PyObject* pself) {
   PyUnknownFields* self =
       reinterpret_cast<PyUnknownFields*>(pself);
-  if (self->fields == NULL) {
+  if (self->fields == nullptr) {
     PyErr_Format(PyExc_ValueError,
                  "UnknownFields does not exist. "
                  "The parent message might be cleared.");
@@ -68,7 +65,7 @@ void Clear(PyUnknownFields* self) {
        it != self->sub_unknown_fields.end(); it++) {
     Clear(*it);
   }
-  self->fields = NULL;
+  self->fields = nullptr;
   self->sub_unknown_fields.clear();
 }
 
@@ -78,11 +75,11 @@ PyObject* NewPyUnknownFieldRef(PyUnknownFields* parent,
 static PyObject* Item(PyObject* pself, Py_ssize_t index) {
   PyUnknownFields* self =
       reinterpret_cast<PyUnknownFields*>(pself);
-  if (self->fields == NULL) {
+  if (self->fields == nullptr) {
     PyErr_Format(PyExc_ValueError,
                  "UnknownFields does not exist. "
                  "The parent message might be cleared.");
-    return NULL;
+    return nullptr;
   }
   Py_ssize_t total_size = self->fields->field_count();
   if (index < 0) {
@@ -92,7 +89,7 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
     PyErr_Format(PyExc_IndexError,
                  "index (%zd) out of range",
                  index);
-    return NULL;
+    return nullptr;
   }
 
   return unknown_fields::NewPyUnknownFieldRef(self, index);
@@ -101,8 +98,8 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
 PyObject* NewPyUnknownFields(CMessage* c_message) {
   PyUnknownFields* self = reinterpret_cast<PyUnknownFields*>(
       PyType_GenericAlloc(&PyUnknownFields_Type, 0));
-  if (self == NULL) {
-    return NULL;
+  if (self == nullptr) {
+    return nullptr;
   }
   // Call "placement new" to initialize PyUnknownFields.
   new (self) PyUnknownFields;
@@ -120,8 +117,8 @@ PyObject* NewPyUnknownFieldRef(PyUnknownFields* parent,
                                Py_ssize_t index) {
   PyUnknownFieldRef* self = reinterpret_cast<PyUnknownFieldRef*>(
       PyType_GenericAlloc(&PyUnknownFieldRef_Type, 0));
-  if (self == NULL) {
-    return NULL;
+  if (self == nullptr) {
+    return nullptr;
   }
 
   Py_INCREF(parent);
@@ -141,58 +138,63 @@ static void Dealloc(PyObject* pself) {
     reinterpret_cast<CMessage*>(self->parent)->unknown_field_set = nullptr;
   }
   Py_CLEAR(self->parent);
+  auto* py_type = Py_TYPE(pself);
   self->~PyUnknownFields();
-  Py_TYPE(pself)->tp_free(pself);
+  py_type->tp_free(pself);
 }
 
 static PySequenceMethods SqMethods = {
-  Len,        /* sq_length */
-  0,          /* sq_concat */
-  0,          /* sq_repeat */
-  Item,       /* sq_item */
-  0,          /* sq_slice */
-  0,          /* sq_ass_item */
+    Len,     /* sq_length */
+    nullptr, /* sq_concat */
+    nullptr, /* sq_repeat */
+    Item,    /* sq_item */
+    nullptr, /* sq_slice */
+    nullptr, /* sq_ass_item */
 };
 
 }  // namespace unknown_fields
 
 PyTypeObject PyUnknownFields_Type = {
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  FULL_MODULE_NAME ".PyUnknownFields",  // tp_name
-  sizeof(PyUnknownFields),             // tp_basicsize
-  0,                                   //  tp_itemsize
-  unknown_fields::Dealloc,             //  tp_dealloc
-  0,                                   //  tp_print
-  0,                                   //  tp_getattr
-  0,                                   //  tp_setattr
-  0,                                   //  tp_compare
-  0,                                   //  tp_repr
-  0,                                   //  tp_as_number
-  &unknown_fields::SqMethods,          //  tp_as_sequence
-  0,                                   //  tp_as_mapping
-  PyObject_HashNotImplemented,         //  tp_hash
-  0,                                   //  tp_call
-  0,                                   //  tp_str
-  0,                                   //  tp_getattro
-  0,                                   //  tp_setattro
-  0,                                   //  tp_as_buffer
-  Py_TPFLAGS_DEFAULT,                  //  tp_flags
-  "unknown field set",                 //  tp_doc
-  0,                                   //  tp_traverse
-  0,                                   //  tp_clear
-  0,                                   //  tp_richcompare
-  0,                                   //  tp_weaklistoffset
-  0,                                   //  tp_iter
-  0,                                   //  tp_iternext
-  0,                                   //  tp_methods
-  0,                                   //  tp_members
-  0,                                   //  tp_getset
-  0,                                   //  tp_base
-  0,                                   //  tp_dict
-  0,                                   //  tp_descr_get
-  0,                                   //  tp_descr_set
-  0,                                   //  tp_dictoffset
-  0,                                   //  tp_init
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
+    ".PyUnknownFields",       // tp_name
+    sizeof(PyUnknownFields),  // tp_basicsize
+    0,                        //  tp_itemsize
+    unknown_fields::Dealloc,  //  tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
+    nullptr,                      //  tp_getattr
+    nullptr,                      //  tp_setattr
+    nullptr,                      //  tp_compare
+    nullptr,                      //  tp_repr
+    nullptr,                      //  tp_as_number
+    &unknown_fields::SqMethods,   //  tp_as_sequence
+    nullptr,                      //  tp_as_mapping
+    PyObject_HashNotImplemented,  //  tp_hash
+    nullptr,                      //  tp_call
+    nullptr,                      //  tp_str
+    nullptr,                      //  tp_getattro
+    nullptr,                      //  tp_setattro
+    nullptr,                      //  tp_as_buffer
+    Py_TPFLAGS_DEFAULT,           //  tp_flags
+    "unknown field set",          //  tp_doc
+    nullptr,                      //  tp_traverse
+    nullptr,                      //  tp_clear
+    nullptr,                      //  tp_richcompare
+    0,                            //  tp_weaklistoffset
+    nullptr,                      //  tp_iter
+    nullptr,                      //  tp_iternext
+    nullptr,                      //  tp_methods
+    nullptr,                      //  tp_members
+    nullptr,                      //  tp_getset
+    nullptr,                      //  tp_base
+    nullptr,                      //  tp_dict
+    nullptr,                      //  tp_descr_get
+    nullptr,                      //  tp_descr_set
+    0,                            //  tp_dictoffset
+    nullptr,                      //  tp_init
 };
 
 namespace unknown_field {
@@ -200,8 +202,8 @@ static PyObject* PyUnknownFields_FromUnknownFieldSet(
     PyUnknownFields* parent, const UnknownFieldSet& fields) {
   PyUnknownFields* self = reinterpret_cast<PyUnknownFields*>(
       PyType_GenericAlloc(&PyUnknownFields_Type, 0));
-  if (self == NULL) {
-    return NULL;
+  if (self == nullptr) {
+    return nullptr;
   }
   // Call "placement new" to initialize PyUnknownFields.
   new (self) PyUnknownFields;
@@ -216,35 +218,35 @@ static PyObject* PyUnknownFields_FromUnknownFieldSet(
 
 const UnknownField* GetUnknownField(PyUnknownFieldRef* self) {
   const UnknownFieldSet* fields = self->parent->fields;
-  if (fields == NULL) {
+  if (fields == nullptr) {
     PyErr_Format(PyExc_ValueError,
                  "UnknownField does not exist. "
                  "The parent message might be cleared.");
-    return NULL;
+    return nullptr;
   }
-  ssize_t total_size = fields->field_count();
+  Py_ssize_t total_size = fields->field_count();
   if (self->index >= total_size) {
     PyErr_Format(PyExc_ValueError,
                  "UnknownField does not exist. "
                  "The parent message might be cleared.");
-    return NULL;
+    return nullptr;
   }
   return &fields->field(self->index);
 }
 
 static PyObject* GetFieldNumber(PyUnknownFieldRef* self, void *closure) {
   const UnknownField* unknown_field = GetUnknownField(self);
-  if (unknown_field == NULL) {
-    return NULL;
+  if (unknown_field == nullptr) {
+    return nullptr;
   }
-  return PyInt_FromLong(unknown_field->number());
+  return PyLong_FromLong(unknown_field->number());
 }
 
 using internal::WireFormatLite;
 static PyObject* GetWireType(PyUnknownFieldRef* self, void *closure) {
   const UnknownField* unknown_field = GetUnknownField(self);
-  if (unknown_field == NULL) {
-    return NULL;
+  if (unknown_field == nullptr) {
+    return nullptr;
   }
 
   // Assign a default value to suppress may-uninitialized warnings (errors
@@ -267,24 +269,24 @@ static PyObject* GetWireType(PyUnknownFieldRef* self, void *closure) {
       wire_type = WireFormatLite::WIRETYPE_START_GROUP;
       break;
   }
-  return PyInt_FromLong(wire_type);
+  return PyLong_FromLong(wire_type);
 }
 
 static PyObject* GetData(PyUnknownFieldRef* self, void *closure) {
   const UnknownField* field = GetUnknownField(self);
-  if (field == NULL) {
-    return NULL;
+  if (field == nullptr) {
+    return nullptr;
   }
-  PyObject* data = NULL;
+  PyObject* data = nullptr;
   switch (field->type()) {
     case UnknownField::TYPE_VARINT:
-      data = PyInt_FromLong(field->varint());
+      data = PyLong_FromUnsignedLongLong(field->varint());
       break;
     case UnknownField::TYPE_FIXED32:
-      data = PyInt_FromLong(field->fixed32());
+      data = PyLong_FromUnsignedLong(field->fixed32());
       break;
     case UnknownField::TYPE_FIXED64:
-      data = PyInt_FromLong(field->fixed64());
+      data = PyLong_FromUnsignedLongLong(field->fixed64());
       break;
     case UnknownField::TYPE_LENGTH_DELIMITED:
       data = PyBytes_FromStringAndSize(field->length_delimited().data(),
@@ -305,53 +307,56 @@ static void Dealloc(PyObject* pself) {
 }
 
 static PyGetSetDef Getters[] = {
-  {"field_number", (getter)GetFieldNumber, NULL},
-  {"wire_type", (getter)GetWireType, NULL},
-  {"data", (getter)GetData, NULL},
-  {NULL}
+    {"field_number", (getter)GetFieldNumber, nullptr},
+    {"wire_type", (getter)GetWireType, nullptr},
+    {"data", (getter)GetData, nullptr},
+    {nullptr},
 };
 
 }  // namespace unknown_field
 
 PyTypeObject PyUnknownFieldRef_Type = {
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  FULL_MODULE_NAME ".PyUnknownFieldRef",  // tp_name
-  sizeof(PyUnknownFieldRef),           //  tp_basicsize
-  0,                                   //  tp_itemsize
-  unknown_field::Dealloc,              //  tp_dealloc
-  0,                                   //  tp_print
-  0,                                   //  tp_getattr
-  0,                                   //  tp_setattr
-  0,                                   //  tp_compare
-  0,                                   //  tp_repr
-  0,                                   //  tp_as_number
-  0,                                   //  tp_as_sequence
-  0,                                   //  tp_as_mapping
-  PyObject_HashNotImplemented,         //  tp_hash
-  0,                                   //  tp_call
-  0,                                   //  tp_str
-  0,                                   //  tp_getattro
-  0,                                   //  tp_setattro
-  0,                                   //  tp_as_buffer
-  Py_TPFLAGS_DEFAULT,                  //  tp_flags
-  "unknown field",                     //  tp_doc
-  0,                                   //  tp_traverse
-  0,                                   //  tp_clear
-  0,                                   //  tp_richcompare
-  0,                                   //  tp_weaklistoffset
-  0,                                   //  tp_iter
-  0,                                   //  tp_iternext
-  0,                                   //  tp_methods
-  0,                                   //  tp_members
-  unknown_field::Getters,              //  tp_getset
-  0,                                   //  tp_base
-  0,                                   //  tp_dict
-  0,                                   //  tp_descr_get
-  0,                                   //  tp_descr_set
-  0,                                   //  tp_dictoffset
-  0,                                   //  tp_init
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
+    ".PyUnknownFieldRef",       // tp_name
+    sizeof(PyUnknownFieldRef),  //  tp_basicsize
+    0,                          //  tp_itemsize
+    unknown_field::Dealloc,     //  tp_dealloc
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
+    nullptr,                      //  tp_getattr
+    nullptr,                      //  tp_setattr
+    nullptr,                      //  tp_compare
+    nullptr,                      //  tp_repr
+    nullptr,                      //  tp_as_number
+    nullptr,                      //  tp_as_sequence
+    nullptr,                      //  tp_as_mapping
+    PyObject_HashNotImplemented,  //  tp_hash
+    nullptr,                      //  tp_call
+    nullptr,                      //  tp_str
+    nullptr,                      //  tp_getattro
+    nullptr,                      //  tp_setattro
+    nullptr,                      //  tp_as_buffer
+    Py_TPFLAGS_DEFAULT,           //  tp_flags
+    "unknown field",              //  tp_doc
+    nullptr,                      //  tp_traverse
+    nullptr,                      //  tp_clear
+    nullptr,                      //  tp_richcompare
+    0,                            //  tp_weaklistoffset
+    nullptr,                      //  tp_iter
+    nullptr,                      //  tp_iternext
+    nullptr,                      //  tp_methods
+    nullptr,                      //  tp_members
+    unknown_field::Getters,       //  tp_getset
+    nullptr,                      //  tp_base
+    nullptr,                      //  tp_dict
+    nullptr,                      //  tp_descr_get
+    nullptr,                      //  tp_descr_set
+    0,                            //  tp_dictoffset
+    nullptr,                      //  tp_init
 };
-
 
 }  // namespace python
 }  // namespace protobuf

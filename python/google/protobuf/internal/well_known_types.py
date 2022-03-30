@@ -41,16 +41,8 @@ This files defines well known classes which need extra maintenance including:
 __author__ = 'jieluo@google.com (Jie Luo)'
 
 import calendar
-from datetime import datetime
-from datetime import timedelta
-import six
-
-try:
-  # Since python 3
-  import collections.abc as collections_abc
-except ImportError:
-  # Won't work after python 3.8
-  import collections as collections_abc
+import collections.abc
+import datetime
 
 from google.protobuf.descriptor import FieldDescriptor
 
@@ -96,7 +88,9 @@ class Any(object):
     return '/' in self.type_url and self.TypeName() == descriptor.full_name
 
 
-_EPOCH_DATETIME = datetime.utcfromtimestamp(0)
+_EPOCH_DATETIME_NAIVE = datetime.datetime.utcfromtimestamp(0)
+_EPOCH_DATETIME_AWARE = datetime.datetime.fromtimestamp(
+    0, tz=datetime.timezone.utc)
 
 
 class Timestamp(object):
@@ -116,7 +110,7 @@ class Timestamp(object):
     total_sec = self.seconds + (self.nanos - nanos) // _NANOS_PER_SECOND
     seconds = total_sec % _SECONDS_PER_DAY
     days = (total_sec - seconds) // _SECONDS_PER_DAY
-    dt = datetime(1970, 1, 1) + timedelta(days, seconds)
+    dt = datetime.datetime(1970, 1, 1) + datetime.timedelta(days, seconds)
 
     result = dt.isoformat()
     if (nanos % 1e9) == 0:
@@ -143,6 +137,8 @@ class Timestamp(object):
     Raises:
       ValueError: On parsing problems.
     """
+    if not isinstance(value, str):
+      raise ValueError('Timestamp JSON value not a string: {!r}'.format(value))
     timezone_offset = value.find('Z')
     if timezone_offset == -1:
       timezone_offset = value.find('+')
@@ -164,8 +160,8 @@ class Timestamp(object):
       raise ValueError(
           'time data \'{0}\' does not match format \'%Y-%m-%dT%H:%M:%S\', '
           'lowercase \'t\' is not accepted'.format(second_value))
-    date_object = datetime.strptime(second_value, _TIMESTAMPFOMAT)
-    td = date_object - datetime(1970, 1, 1)
+    date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFOMAT)
+    td = date_object - datetime.datetime(1970, 1, 1)
     seconds = td.seconds + td.days * _SECONDS_PER_DAY
     if len(nano_value) > 9:
       raise ValueError(
@@ -196,7 +192,7 @@ class Timestamp(object):
 
   def GetCurrentTime(self):
     """Get the current UTC into Timestamp."""
-    self.FromDatetime(datetime.utcnow())
+    self.FromDatetime(datetime.datetime.utcnow())
 
   def ToNanoseconds(self):
     """Converts Timestamp to nanoseconds since epoch."""
@@ -236,14 +232,32 @@ class Timestamp(object):
     self.seconds = seconds
     self.nanos = 0
 
-  def ToDatetime(self):
-    """Converts Timestamp to datetime."""
-    return _EPOCH_DATETIME + timedelta(
-        seconds=self.seconds, microseconds=_RoundTowardZero(
-            self.nanos, _NANOS_PER_MICROSECOND))
+  def ToDatetime(self, tzinfo=None):
+    """Converts Timestamp to a datetime.
+
+    Args:
+      tzinfo: A datetime.tzinfo subclass; defaults to None.
+
+    Returns:
+      If tzinfo is None, returns a timezone-naive UTC datetime (with no timezone
+      information, i.e. not aware that it's UTC).
+
+      Otherwise, returns a timezone-aware datetime in the input timezone.
+    """
+    delta = datetime.timedelta(
+        seconds=self.seconds,
+        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND))
+    if tzinfo is None:
+      return _EPOCH_DATETIME_NAIVE + delta
+    else:
+      return _EPOCH_DATETIME_AWARE.astimezone(tzinfo) + delta
 
   def FromDatetime(self, dt):
-    """Converts datetime to Timestamp."""
+    """Converts datetime to Timestamp.
+
+    Args:
+      dt: A datetime. If it's timezone-naive, it's assumed to be in UTC.
+    """
     # Using this guide: http://wiki.python.org/moin/WorkingWithTime
     # And this conversion guide: http://docs.python.org/library/time.html
 
@@ -303,6 +317,8 @@ class Duration(object):
     Raises:
       ValueError: On parsing problems.
     """
+    if not isinstance(value, str):
+      raise ValueError('Duration JSON value not a string: {!r}'.format(value))
     if len(value) < 1 or value[-1] != 's':
       raise ValueError(
           'Duration must end with letter "s": {0}.'.format(value))
@@ -366,7 +382,7 @@ class Duration(object):
 
   def ToTimedelta(self):
     """Converts Duration to timedelta."""
-    return timedelta(
+    return datetime.timedelta(
         seconds=self.seconds, microseconds=_RoundTowardZero(
             self.nanos, _NANOS_PER_MICROSECOND))
 
@@ -428,6 +444,8 @@ class FieldMask(object):
 
   def FromJsonString(self, value):
     """Converts string to FieldMask according to proto3 JSON spec."""
+    if not isinstance(value, str):
+      raise ValueError('FieldMask JSON value not a string: {!r}'.format(value))
     self.Clear()
     if value:
       for path in value.split(','):
@@ -712,9 +730,6 @@ def _AddFieldPaths(node, prefix, field_mask):
     _AddFieldPaths(node[name], child_path, field_mask)
 
 
-_INT_OR_FLOAT = six.integer_types + (float,)
-
-
 def _SetStructValue(struct_value, value):
   if value is None:
     struct_value.null_value = 0
@@ -722,9 +737,9 @@ def _SetStructValue(struct_value, value):
     # Note: this check must come before the number check because in Python
     # True and False are also considered numbers.
     struct_value.bool_value = value
-  elif isinstance(value, six.string_types):
+  elif isinstance(value, str):
     struct_value.string_value = value
-  elif isinstance(value, _INT_OR_FLOAT):
+  elif isinstance(value, (int, float)):
     struct_value.number_value = value
   elif isinstance(value, (dict, Struct)):
     struct_value.struct_value.Clear()
@@ -804,7 +819,7 @@ class Struct(object):
     for key, value in dictionary.items():
       _SetStructValue(self.fields[key], value)
 
-collections_abc.MutableMapping.register(Struct)
+collections.abc.MutableMapping.register(Struct)
 
 
 class ListValue(object):
@@ -850,9 +865,10 @@ class ListValue(object):
     list_value.Clear()
     return list_value
 
-collections_abc.MutableSequence.register(ListValue)
+collections.abc.MutableSequence.register(ListValue)
 
 
+# LINT.IfChange(wktbases)
 WKTBASES = {
     'google.protobuf.Any': Any,
     'google.protobuf.Duration': Duration,
@@ -861,3 +877,4 @@ WKTBASES = {
     'google.protobuf.Struct': Struct,
     'google.protobuf.Timestamp': Timestamp,
 }
+# LINT.ThenChange(//depot/google.protobuf/compiler/python/pyi_generator.cc:wktbases)

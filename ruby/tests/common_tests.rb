@@ -115,14 +115,14 @@ module CommonTests
     m = proto_module::TestMessage.new(
       :optional_int32 => -42,
       :optional_enum => :A,
-      :optional_msg => proto_module::TestMessage2.new,
+      :optional_msg => proto_module::TestMessage2.new(foo: 0),
       :repeated_string => ["hello", "there", "world"])
-    expected = "<#{proto_module}::TestMessage: optional_int32: -42, optional_int64: 0, optional_uint32: 0, optional_uint64: 0, optional_bool: false, optional_float: 0.0, optional_double: 0.0, optional_string: \"\", optional_bytes: \"\", optional_msg: <#{proto_module}::TestMessage2: foo: 0>, optional_enum: :A, repeated_int32: [], repeated_int64: [], repeated_uint32: [], repeated_uint64: [], repeated_bool: [], repeated_float: [], repeated_double: [], repeated_string: [\"hello\", \"there\", \"world\"], repeated_bytes: [], repeated_msg: [], repeated_enum: []>"
+    expected = "<#{proto_module}::TestMessage: optional_int32: -42, optional_msg: <#{proto_module}::TestMessage2: foo: 0>, optional_enum: :A, repeated_int32: [], repeated_int64: [], repeated_uint32: [], repeated_uint64: [], repeated_bool: [], repeated_float: [], repeated_double: [], repeated_string: [\"hello\", \"there\", \"world\"], repeated_bytes: [], repeated_msg: [], repeated_enum: []>"
     assert_equal expected, m.inspect
     assert_equal expected, m.to_s
 
     m = proto_module::OneofMessage.new(:b => -42)
-    expected = "<#{proto_module}::OneofMessage: a: \"\", b: -42, c: nil, d: :Default>"
+    expected = "<#{proto_module}::OneofMessage: b: -42>"
     assert_equal expected, m.inspect
     assert_equal expected, m.to_s
   end
@@ -428,12 +428,24 @@ module CommonTests
     assert m.length == 0
     assert m == {}
 
-    assert_raise TypeError do
+    assert_raise Google::Protobuf::TypeError do
       m[1] = 1
     end
     assert_raise RangeError do
       m["asdf"] = 0x1_0000_0000
     end
+  end
+
+  def test_b_8385
+    m1 = Google::Protobuf::Map.new(:string, :string)
+    m2 = Google::Protobuf::Map.new(:string, :string)
+
+    assert_equal m1, m2
+
+    m1["counter"] = "a"
+    m2["counter"] = "aa"
+
+    assert_not_equal m1, m2
   end
 
   def test_map_ctor
@@ -492,7 +504,7 @@ module CommonTests
 
     m = Google::Protobuf::Map.new(:string, :int32)
     m["asdf"] = 1
-    assert_raise TypeError do
+    assert_raise Google::Protobuf::TypeError do
       m[1] = 1
     end
     assert_raise Encoding::UndefinedConversionError do
@@ -505,7 +517,7 @@ module CommonTests
     m[bytestring] = 1
     # Allowed -- we will automatically convert to ASCII-8BIT.
     m["asdf"] = 1
-    assert_raise TypeError do
+    assert_raise Google::Protobuf::TypeError do
       m[1] = 1
     end
   end
@@ -547,6 +559,7 @@ module CommonTests
         "b" => proto_module::TestMessage.new(:optional_int32 => 84) })
 
     m2 = m.dup
+    assert m.to_h == m2.to_h
     assert m == m2
     assert m.object_id != m2.object_id
     assert m["a"].object_id == m2["a"].object_id
@@ -686,12 +699,13 @@ module CommonTests
     assert m.repeated_msg[0].object_id != m2.repeated_msg[0].object_id
   end
 
-  def test_eq
+  def test_message_eq
     m = proto_module::TestMessage.new(:optional_int32 => 42,
                                       :repeated_int32 => [1, 2, 3])
     m2 = proto_module::TestMessage.new(:optional_int32 => 43,
                                        :repeated_int32 => [1, 2, 3])
     assert m != m2
+    assert_not_equal proto_module::TestMessage.new, proto_module::TestMessage2.new
   end
 
   def test_enum_lookup
@@ -782,7 +796,7 @@ module CommonTests
     m.repeated_string += %w[two three]
     assert_equal %w[one two three], m.repeated_string
 
-    m.repeated_string.push *['four', 'five']
+    m.repeated_string.push( *['four', 'five'] )
     assert_equal %w[one two three four five], m.repeated_string
 
     m.repeated_string.push 'six', 'seven'
@@ -802,11 +816,17 @@ module CommonTests
                                       :optional_enum => :B,
                                       :repeated_string => ["a", "b", "c"],
                                       :repeated_int32 => [42, 43, 44],
-                                      :repeated_enum => [:A, :B, :C, 100],
+                                      :repeated_enum => [:A, :B, :C],
                                       :repeated_msg => [proto_module::TestMessage2.new(:foo => 1),
                                                         proto_module::TestMessage2.new(:foo => 2)])
+    if proto_module == ::BasicTest
+      # For proto3 we can add an unknown enum value safely.
+      m.repeated_enum << 100
+    end
+
     data = proto_module::TestMessage.encode m
     m2 = proto_module::TestMessage.decode data
+
     assert_equal m, m2
 
     data = Google::Protobuf.encode m
@@ -850,6 +870,9 @@ module CommonTests
 
     decoded_msg = Google::Protobuf.decode_json(proto_module::TestMessage, encoded_msg)
     assert_equal proto_module::TestMessage.decode_json(m.to_json), decoded_msg
+
+    assert_equal [m].to_json, Google::Protobuf.encode_json([m])
+    assert_equal proto_module::TestMessage.decode_json([m.to_json].first), decoded_msg
   end
 
   def test_def_errors
@@ -1062,8 +1085,6 @@ module CommonTests
   end
 
   def test_json
-    # TODO: Fix JSON in JRuby version.
-    return if RUBY_PLATFORM == "java"
     m = proto_module::TestMessage.new(:optional_int32 => 1234,
                                       :optional_int64 => -0x1_0000_0000,
                                       :optional_uint32 => 0x8000_0000,
@@ -1103,16 +1124,6 @@ module CommonTests
     m = proto_module::TestMessage.new
 
     expected = {
-      optionalInt32: 0,
-      optionalInt64: "0",
-      optionalUint32: 0,
-      optionalUint64: "0",
-      optionalBool: false,
-      optionalFloat: 0,
-      optionalDouble: 0,
-      optionalString: "",
-      optionalBytes: "",
-      optionalEnum: "Default",
       repeatedInt32: [],
       repeatedInt64: [],
       repeatedUint32: [],
@@ -1137,17 +1148,7 @@ module CommonTests
     m = proto_module::TestMessage.new(optional_msg: proto_module::TestMessage2.new)
 
     expected = {
-      optionalInt32: 0,
-      optionalInt64: "0",
-      optionalUint32: 0,
-      optionalUint64: "0",
-      optionalBool: false,
-      optionalFloat: 0,
-      optionalDouble: 0,
-      optionalString: "",
-      optionalBytes: "",
-      optionalMsg: {foo: 0},
-      optionalEnum: "Default",
+      optionalMsg: {},
       repeatedInt32: [],
       repeatedInt64: [],
       repeatedUint32: [],
@@ -1172,16 +1173,6 @@ module CommonTests
     m = proto_module::TestMessage.new(repeated_msg: [proto_module::TestMessage2.new])
 
     expected = {
-      optionalInt32: 0,
-      optionalInt64: "0",
-      optionalUint32: 0,
-      optionalUint64: "0",
-      optionalBool: false,
-      optionalFloat: 0,
-      optionalDouble: 0,
-      optionalString: "",
-      optionalBytes: "",
-      optionalEnum: "Default",
       repeatedInt32: [],
       repeatedInt64: [],
       repeatedUint32: [],
@@ -1191,7 +1182,7 @@ module CommonTests
       repeatedDouble: [],
       repeatedString: [],
       repeatedBytes: [],
-      repeatedMsg: [{foo: 0}],
+      repeatedMsg: [{}],
       repeatedEnum: []
     }
 
@@ -1255,9 +1246,10 @@ module CommonTests
     struct = struct_from_ruby(JSON.parse(json))
     assert_equal json, struct.to_json
 
-    assert_raise(RuntimeError, "Maximum recursion depth exceeded during encoding") do
-      proto_module::MyRepeatedStruct.encode(
-        proto_module::MyRepeatedStruct.new(structs: [proto_module::MyStruct.new(struct: struct)]))
+    assert_raise(RuntimeError, "Recursion limit exceeded during encoding") do
+      struct = Google::Protobuf::Struct.new
+      struct.fields["foobar"] = Google::Protobuf::Value.new(struct_value: struct)
+      Google::Protobuf::Struct.encode(struct)
     end
   end
 
@@ -1294,6 +1286,7 @@ module CommonTests
     m2 = proto_module::Wrapper.decode(m.to_proto)
     run_asserts.call(m2)
     m3 = proto_module::Wrapper.decode_json(m.to_json)
+    run_asserts.call(m3)
   end
 
   def test_wrapper_getters
@@ -1545,8 +1538,6 @@ module CommonTests
       assert_nil m.bytes_as_value
     }
 
-    m = proto_module::Wrapper.new
-
     m2 = proto_module::Wrapper.new(
       double: Google::Protobuf::DoubleValue.new(value: 2.0),
       float: Google::Protobuf::FloatValue.new(value: 4.0),
@@ -1729,6 +1720,12 @@ module CommonTests
     m = proto_module::TimeMessage.new(duration: 1.1)
     assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 100_000_000), m.duration
 
+    m = proto_module::TimeMessage.new(duration: 123.321)
+    assert_equal Google::Protobuf::Duration.new(seconds: 123, nanos: 321_000_000), m.duration
+
+    m = proto_module::TimeMessage.new(duration: -123.321)
+    assert_equal Google::Protobuf::Duration.new(seconds: -123, nanos: -321_000_000), m.duration
+
     assert_raise(Google::Protobuf::TypeError) { m.duration = '2' }
     assert_raise(Google::Protobuf::TypeError) { m.duration = proto_module::TimeMessage.new }
   end
@@ -1785,5 +1782,202 @@ module CommonTests
     assert !m1.eql?(m2)
     assert m1.hash != m2.hash
     assert_nil h[m2]
+  end
+
+  def cruby_or_jruby_9_3_or_higher?
+    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
+    match = RUBY_PLATFORM == "java" &&
+      JRUBY_VERSION.match(/^(\d+)\.(\d+)\.\d+\.\d+$/)
+    match && (match[1].to_i > 9 || (match[1].to_i == 9 && match[2].to_i >= 3))
+  end
+
+  def test_object_gc
+    m = proto_module::TestMessage.new(optional_msg: proto_module::TestMessage2.new)
+    m.optional_msg
+    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
+    GC.start(full_mark: true, immediate_sweep: true) if cruby_or_jruby_9_3_or_higher?
+    m.optional_msg.inspect
+  end
+
+  def test_object_gc_freeze
+    m = proto_module::TestMessage.new
+    m.repeated_float.freeze
+    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
+    GC.start(full_mark: true) if cruby_or_jruby_9_3_or_higher?
+
+    # Make sure we remember that the object is frozen.
+    # The wrapper object contains this information, so we need to ensure that
+    # the previous GC did not collect it.
+    assert m.repeated_float.frozen?
+
+    # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
+    GC.start(full_mark: true, immediate_sweep: true) if cruby_or_jruby_9_3_or_higher?
+    assert m.repeated_float.frozen?
+  end
+
+  def test_optional_fields_respond_to? # regression test for issue 9202
+    msg = proto_module::TestMessage.new
+    assert msg.respond_to? :optional_int32=
+    msg.optional_int32 = 42
+
+    assert msg.respond_to? :optional_int32
+    assert_equal 42, msg.optional_int32
+
+    assert msg.respond_to? :clear_optional_int32
+    msg.clear_optional_int32
+    assert_equal 0, msg.optional_int32
+
+    assert msg.respond_to? :has_optional_int32?
+    assert !msg.has_optional_int32?
+
+    assert !msg.respond_to?( :optional_int32_as_value= )
+    assert_raise NoMethodError do
+      msg.optional_int32_as_value = 42
+    end
+
+    assert !msg.respond_to?( :optional_int32_as_value )
+    assert_raise NoMethodError do
+      msg.optional_int32_as_value
+    end
+
+    assert msg.respond_to? :optional_enum_const
+    assert_equal 0, msg.optional_enum_const
+
+    assert !msg.respond_to?( :foo )
+    assert_raise NoMethodError do
+      msg.foo
+    end
+
+    assert !msg.respond_to?( :foo_const )
+    assert_raise NoMethodError do
+      msg.foo_const
+    end
+
+    assert !msg.respond_to?( :optional_int32_const )
+    assert_raise NoMethodError do
+      msg.optional_int32_const
+    end
+  end
+
+  def test_oneof_fields_respond_to? # regression test for issue 9202
+    msg = proto_module::OneofMessage.new
+
+    # names of the elements of a oneof and the oneof itself are valid actions.
+    assert msg.respond_to? :my_oneof
+    assert_nil msg.my_oneof
+    assert msg.respond_to? :a
+    assert_equal "", msg.a
+    assert msg.respond_to? :b
+    assert_equal 0, msg.b
+    assert msg.respond_to? :c
+    assert_nil msg.c
+    assert msg.respond_to? :d
+    assert_equal :Default, msg.d
+
+    # `clear` prefix actions work on elements of a oneof and the oneof itself.
+    assert msg.respond_to? :clear_my_oneof
+    msg.clear_my_oneof
+    # Repeatedly clearing a oneof used to cause a NoMethodError under JRuby
+    msg.clear_my_oneof
+    assert msg.respond_to? :clear_a
+    msg.clear_a
+    assert msg.respond_to? :clear_b
+    msg.clear_b
+    assert msg.respond_to? :clear_c
+    msg.clear_c
+    assert msg.respond_to? :clear_d
+    msg.clear_d
+
+    # `=` suffix actions should work on elements of a oneof but not the oneof itself.
+    assert !msg.respond_to?( :my_oneof= )
+    error = assert_raise RuntimeError do
+      msg.my_oneof = nil
+    end
+    assert_equal "Oneof accessors are read-only.", error.message
+    assert msg.respond_to? :a=
+    msg.a = "foo"
+    assert msg.respond_to? :b=
+    msg.b = 42
+    assert msg.respond_to? :c=
+    msg.c = proto_module::TestMessage2.new
+    assert msg.respond_to? :d=
+    msg.d = :Default
+
+    # `has_` prefix + "?" suffix actions work for oneofs fields.
+    assert msg.respond_to? :has_my_oneof?
+    assert msg.has_my_oneof?
+
+    # `_as_value` suffix actions should only work for wrapped fields.
+    assert !msg.respond_to?( :my_oneof_as_value )
+    assert_raise NoMethodError do
+      msg.my_oneof_as_value
+    end
+    assert !msg.respond_to?( :a_as_value )
+    assert_raise NoMethodError do
+      msg.a_as_value
+    end
+    assert !msg.respond_to?( :b_as_value )
+    assert_raise NoMethodError do
+      msg.b_as_value
+    end
+    assert !msg.respond_to?( :c_as_value )
+    assert_raise NoMethodError do
+      msg.c_as_value
+    end
+    assert !msg.respond_to?( :d_as_value )
+    assert_raise NoMethodError do
+      msg.d_as_value
+    end
+
+    # `_as_value=` suffix actions should only work for wrapped fields.
+    assert !msg.respond_to?( :my_oneof_as_value= )
+    assert_raise NoMethodError do
+      msg.my_oneof_as_value = :boom
+    end
+    assert !msg.respond_to?( :a_as_value= )
+    assert_raise NoMethodError do
+      msg.a_as_value = ""
+    end
+    assert !msg.respond_to?( :b_as_value= )
+    assert_raise NoMethodError do
+      msg.b_as_value = 42
+    end
+    assert !msg.respond_to?( :c_as_value= )
+    assert_raise NoMethodError do
+      msg.c_as_value = proto_module::TestMessage2.new
+    end
+    assert !msg.respond_to?( :d_as_value= )
+    assert_raise NoMethodError do
+      msg.d_as_value = :Default
+    end
+
+    # `_const` suffix actions should only work for enum fields.
+    assert !msg.respond_to?( :my_oneof_const )
+    assert_raise NoMethodError do
+      msg.my_oneof_const
+    end
+    assert !msg.respond_to?( :a_const )
+    assert_raise NoMethodError do
+      msg.a_const
+    end
+    assert !msg.respond_to?( :b_const )
+    assert_raise NoMethodError do
+      msg.b_const
+    end
+    assert !msg.respond_to?( :c_const )
+    assert_raise NoMethodError do
+      msg.c_const
+    end
+    assert msg.respond_to? :d_const
+    assert_equal 0, msg.d_const
+  end
+
+  def test_wrapped_fields_respond_to? # regression test for issue 9202
+    msg = proto_module::Wrapper.new
+    assert msg.respond_to?( :double_as_value= )
+    msg.double_as_value = 42
+    assert msg.respond_to?( :double_as_value )
+    assert_equal 42, msg.double_as_value
+    assert_equal Google::Protobuf::DoubleValue.new(value: 42), msg.double
   end
 end

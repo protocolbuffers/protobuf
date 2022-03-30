@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.protobuf.UnittestLite.optionalForeignEnumExtensionLite;
 
 import com.google.protobuf.UnittestLite.ForeignEnumLite;
@@ -55,11 +57,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-public class WireFormatLiteTest extends TestCase {
+@RunWith(JUnit4.class)
+public class WireFormatLiteTest {
+
+  @Test
   public void testSerializeExtensionsLite() throws Exception {
     // TestAllTypes and TestAllExtensions should have compatible wire formats,
     // so if we serialize a TestAllExtensions then parse it as TestAllTypes
@@ -67,13 +73,14 @@ public class WireFormatLiteTest extends TestCase {
 
     TestAllExtensionsLite message = TestUtilLite.getAllLiteExtensionsSet();
     ByteString rawBytes = message.toByteString();
-    assertEquals(rawBytes.size(), message.getSerializedSize());
+    assertThat(message.getSerializedSize()).isEqualTo(rawBytes.size());
 
     TestAllTypes message2 = TestAllTypes.parseFrom(rawBytes);
 
     TestUtil.assertAllFieldsSet(message2);
   }
 
+  @Test
   public void testSerializePackedExtensionsLite() throws Exception {
     // TestPackedTypes and TestPackedExtensions should have compatible wire
     // formats; check that they serialize to the same string.
@@ -83,9 +90,10 @@ public class WireFormatLiteTest extends TestCase {
     TestPackedTypes message2 = TestUtil.getPackedSet();
     ByteString rawBytes2 = message2.toByteString();
 
-    assertEquals(rawBytes, rawBytes2);
+    assertThat(rawBytes2).isEqualTo(rawBytes);
   }
 
+  @Test
   public void testParseExtensionsLite() throws Exception {
     // TestAllTypes and TestAllExtensions should have compatible wire formats,
     // so if we serialize a TestAllTypes then parse it as TestAllExtensions
@@ -102,6 +110,7 @@ public class WireFormatLiteTest extends TestCase {
     TestUtil.assertAllExtensionsSet(message2);
   }
 
+  @Test
   public void testParsePackedExtensionsLite() throws Exception {
     // Ensure that packed extensions can be properly parsed.
     TestPackedExtensionsLite message = TestUtilLite.getLitePackedExtensionsSet();
@@ -115,28 +124,31 @@ public class WireFormatLiteTest extends TestCase {
     TestUtil.assertPackedExtensionsSet(message2);
   }
 
+  @Test
   public void testSerialization() throws Exception {
     TestAllTypes message = TestUtil.getAllSet();
 
     ByteString rawBytes = message.toByteString();
-    assertEquals(rawBytes.size(), message.getSerializedSize());
+    assertThat(message.getSerializedSize()).isEqualTo(rawBytes.size());
 
     TestAllTypes message2 = TestAllTypes.parseFrom(rawBytes);
 
     TestUtil.assertAllFieldsSet(message2);
   }
 
+  @Test
   public void testSerializationPacked() throws Exception {
     TestPackedTypes message = TestUtil.getPackedSet();
 
     ByteString rawBytes = message.toByteString();
-    assertEquals(rawBytes.size(), message.getSerializedSize());
+    assertThat(message.getSerializedSize()).isEqualTo(rawBytes.size());
 
     TestPackedTypes message2 = TestPackedTypes.parseFrom(rawBytes);
 
     TestUtil.assertPackedFieldsSet(message2);
   }
 
+  @Test
   public void testSerializeExtensions() throws Exception {
     // TestAllTypes and TestAllExtensions should have compatible wire formats,
     // so if we serialize a TestAllExtensions then parse it as TestAllTypes
@@ -144,13 +156,14 @@ public class WireFormatLiteTest extends TestCase {
 
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     ByteString rawBytes = message.toByteString();
-    assertEquals(rawBytes.size(), message.getSerializedSize());
+    assertThat(message.getSerializedSize()).isEqualTo(rawBytes.size());
 
     TestAllTypes message2 = TestAllTypes.parseFrom(rawBytes);
 
     TestUtil.assertAllFieldsSet(message2);
   }
 
+  @Test
   public void testSerializePackedExtensions() throws Exception {
     // TestPackedTypes and TestPackedExtensions should have compatible wire
     // formats; check that they serialize to the same string.
@@ -160,9 +173,10 @@ public class WireFormatLiteTest extends TestCase {
     TestPackedTypes message2 = TestUtil.getPackedSet();
     ByteString rawBytes2 = message2.toByteString();
 
-    assertEquals(rawBytes, rawBytes2);
+    assertThat(rawBytes2).isEqualTo(rawBytes);
   }
 
+  @Test
   public void testSerializationPackedWithoutGetSerializedSize() throws Exception {
     // Write directly to an OutputStream, without invoking getSerializedSize()
     // This used to be a bug where the size of a packed field was incorrect,
@@ -183,6 +197,7 @@ public class WireFormatLiteTest extends TestCase {
     TestUtil.assertPackedFieldsSet(message2);
   }
 
+  @Test
   public void testParseExtensions() throws Exception {
     // TestAllTypes and TestAllExtensions should have compatible wire formats,
     // so if we serialize a TestAllTypes then parse it as TestAllExtensions
@@ -198,6 +213,7 @@ public class WireFormatLiteTest extends TestCase {
     TestUtil.assertAllExtensionsSet(message2);
   }
 
+  @Test
   public void testParsePackedExtensions() throws Exception {
     // Ensure that packed extensions can be properly parsed.
     TestPackedExtensions message = TestUtil.getPackedExtensionsSet();
@@ -210,6 +226,7 @@ public class WireFormatLiteTest extends TestCase {
     TestUtil.assertPackedExtensionsSet(message2);
   }
 
+  @Test
   public void testSerializeDelimited() throws Exception {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     TestUtil.getAllSet().writeDelimitedTo(output);
@@ -220,13 +237,13 @@ public class WireFormatLiteTest extends TestCase {
     ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 
     TestUtil.assertAllFieldsSet(TestAllTypes.parseDelimitedFrom(input));
-    assertEquals(12, input.read());
+    assertThat(input.read()).isEqualTo(12);
     TestUtil.assertPackedFieldsSet(TestPackedTypes.parseDelimitedFrom(input));
-    assertEquals(34, input.read());
-    assertEquals(-1, input.read());
+    assertThat(input.read()).isEqualTo(34);
+    assertThat(input.read()).isEqualTo(-1);
 
     // We're at EOF, so parsing again should return null.
-    assertNull(TestAllTypes.parseDelimitedFrom(input));
+    assertThat(TestAllTypes.parseDelimitedFrom(input)).isNull();
   }
 
   private ExtensionRegistryLite getTestFieldOrderingsRegistry() {
@@ -236,6 +253,7 @@ public class WireFormatLiteTest extends TestCase {
     return result;
   }
 
+  @Test
   public void testParseMultipleExtensionRanges() throws Exception {
     // Make sure we can parse a message that contains multiple extensions
     // ranges.
@@ -249,7 +267,7 @@ public class WireFormatLiteTest extends TestCase {
             .build();
     TestFieldOrderings dest =
         TestFieldOrderings.parseFrom(source.toByteString(), getTestFieldOrderingsRegistry());
-    assertEquals(source, dest);
+    assertThat(dest).isEqualTo(source);
   }
 
   private static ExtensionRegistryLite getTestExtensionInsideTableRegistry() {
@@ -258,6 +276,7 @@ public class WireFormatLiteTest extends TestCase {
     return result;
   }
 
+  @Test
   public void testExtensionInsideTable() throws Exception {
     // Make sure the extension within the range of table is parsed correctly in experimental
     // runtime.
@@ -269,17 +288,19 @@ public class WireFormatLiteTest extends TestCase {
     TestExtensionInsideTable dest =
         TestExtensionInsideTable.parseFrom(
             source.toByteString(), getTestExtensionInsideTableRegistry());
-    assertEquals(source, dest);
+    assertThat(dest).isEqualTo(source);
   }
 
   private static final int UNKNOWN_TYPE_ID = 1550055;
   private static final int TYPE_ID_1 = 1545008;
   private static final int TYPE_ID_2 = 1547769;
 
+  @Test
   public void testSerializeMessageSetEagerly() throws Exception {
     testSerializeMessageSetWithFlag(true);
   }
 
+  @Test
   public void testSerializeMessageSetNotEagerly() throws Exception {
     testSerializeMessageSetWithFlag(false);
   }
@@ -309,26 +330,28 @@ public class WireFormatLiteTest extends TestCase {
     // Parse back using RawMessageSet and check the contents.
     RawMessageSet raw = RawMessageSet.parseFrom(data);
 
-    assertEquals(3, raw.getItemCount());
-    assertEquals(TYPE_ID_1, raw.getItem(0).getTypeId());
-    assertEquals(TYPE_ID_2, raw.getItem(1).getTypeId());
-    assertEquals(UNKNOWN_TYPE_ID, raw.getItem(2).getTypeId());
+    assertThat(raw.getItemCount()).isEqualTo(3);
+    assertThat(raw.getItem(0).getTypeId()).isEqualTo(TYPE_ID_1);
+    assertThat(raw.getItem(1).getTypeId()).isEqualTo(TYPE_ID_2);
+    assertThat(raw.getItem(2).getTypeId()).isEqualTo(UNKNOWN_TYPE_ID);
 
     TestMessageSetExtension1 message1 =
         TestMessageSetExtension1.parseFrom(raw.getItem(0).getMessage());
-    assertEquals(123, message1.getI());
+    assertThat(message1.getI()).isEqualTo(123);
 
     TestMessageSetExtension2 message2 =
         TestMessageSetExtension2.parseFrom(raw.getItem(1).getMessage());
-    assertEquals("foo", message2.getStr());
+    assertThat(message2.getStr()).isEqualTo("foo");
 
-    assertEquals("bar", raw.getItem(2).getMessage().toStringUtf8());
+    assertThat(raw.getItem(2).getMessage().toStringUtf8()).isEqualTo("bar");
   }
 
+  @Test
   public void testParseMessageSetEagerly() throws Exception {
     testParseMessageSetWithFlag(true);
   }
 
+  @Test
   public void testParseMessageSetNotEagerly() throws Exception {
     testParseMessageSetWithFlag(false);
   }
@@ -366,15 +389,18 @@ public class WireFormatLiteTest extends TestCase {
     // Parse as a TestMessageSet and check the contents.
     TestMessageSet messageSet = TestMessageSet.parseFrom(data, extensionRegistry);
 
-    assertEquals(123, messageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI());
-    assertEquals(
-        "foo", messageSet.getExtension(TestMessageSetExtension2.messageSetExtension).getStr());
+    assertThat(messageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI())
+        .isEqualTo(123);
+    assertThat(messageSet.getExtension(TestMessageSetExtension2.messageSetExtension).getStr())
+        .isEqualTo("foo");
   }
 
+  @Test
   public void testParseMessageSetExtensionEagerly() throws Exception {
     testParseMessageSetExtensionWithFlag(true);
   }
 
+  @Test
   public void testParseMessageSetExtensionNotEagerly() throws Exception {
     testParseMessageSetExtensionWithFlag(false);
   }
@@ -400,13 +426,16 @@ public class WireFormatLiteTest extends TestCase {
 
     // Parse as a TestMessageSet and check the contents.
     TestMessageSet messageSet = TestMessageSet.parseFrom(data, extensionRegistry);
-    assertEquals(123, messageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI());
+    assertThat(messageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI())
+        .isEqualTo(123);
   }
 
+  @Test
   public void testMergeLazyMessageSetExtensionEagerly() throws Exception {
     testMergeLazyMessageSetExtensionWithFlag(true);
   }
 
+  @Test
   public void testMergeLazyMessageSetExtensionNotEagerly() throws Exception {
     testMergeLazyMessageSetExtensionWithFlag(false);
   }
@@ -434,13 +463,16 @@ public class WireFormatLiteTest extends TestCase {
     TestMessageSet messageSet = TestMessageSet.parseFrom(data, extensionRegistry);
     // Merge lazy field check the contents.
     messageSet = messageSet.toBuilder().mergeFrom(data, extensionRegistry).build();
-    assertEquals(123, messageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI());
+    assertThat(messageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI())
+        .isEqualTo(123);
   }
 
+  @Test
   public void testMergeMessageSetExtensionEagerly() throws Exception {
     testMergeMessageSetExtensionWithFlag(true);
   }
 
+  @Test
   public void testMergeMessageSetExtensionNotEagerly() throws Exception {
     testMergeMessageSetExtensionWithFlag(false);
   }
@@ -477,31 +509,34 @@ public class WireFormatLiteTest extends TestCase {
     // Merge bytes into TestMessageSet and check the contents.
     TestMessageSet messageSet =
         TestMessageSet.newBuilder().mergeFrom(data, extensionRegistry).build();
-    assertEquals(123, messageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI());
+    assertThat(messageSet.getExtension(TestMessageSetExtension1.messageSetExtension).getI())
+        .isEqualTo(123);
   }
 
   // ================================================================
   // oneof
+  @Test
   public void testOneofWireFormat() throws Exception {
     TestOneof2.Builder builder = TestOneof2.newBuilder();
     TestUtil.setOneof(builder);
     TestOneof2 message = builder.build();
     ByteString rawBytes = message.toByteString();
 
-    assertEquals(rawBytes.size(), message.getSerializedSize());
+    assertThat(message.getSerializedSize()).isEqualTo(rawBytes.size());
 
     TestOneof2 message2 = TestOneof2.parseFrom(rawBytes);
     TestUtil.assertOneofSet(message2);
   }
 
+  @Test
   public void testOneofOnlyLastSet() throws Exception {
     TestOneofBackwardsCompatible source =
         TestOneofBackwardsCompatible.newBuilder().setFooInt(100).setFooString("101").build();
 
     ByteString rawBytes = source.toByteString();
     TestOneof2 message = TestOneof2.parseFrom(rawBytes);
-    assertFalse(message.hasFooInt());
-    assertTrue(message.hasFooString());
+    assertThat(message.hasFooInt()).isFalse();
+    assertThat(message.hasFooString()).isTrue();
   }
 
   private void assertInvalidWireFormat(
@@ -509,27 +544,27 @@ public class WireFormatLiteTest extends TestCase {
     // Test all combinations: (builder vs parser) x (byte[] vs. InputStream).
     try {
       defaultInstance.newBuilderForType().mergeFrom(data, offset, length);
-      fail("Expected exception");
+      assertWithMessage("Expected exception").fail();
     } catch (InvalidProtocolBufferException e) {
       // Pass.
     }
     try {
       defaultInstance.getParserForType().parseFrom(data, offset, length);
-      fail("Expected exception");
+      assertWithMessage("Expected exception").fail();
     } catch (InvalidProtocolBufferException e) {
       // Pass.
     }
     try {
       InputStream input = new ByteArrayInputStream(data, offset, length);
       defaultInstance.newBuilderForType().mergeFrom(input);
-      fail("Expected exception");
+      assertWithMessage("Expected exception").fail();
     } catch (IOException e) {
       // Pass.
     }
     try {
       InputStream input = new ByteArrayInputStream(data, offset, length);
       defaultInstance.getParserForType().parseFrom(input);
-      fail("Expected exception");
+      assertWithMessage("Expected exception").fail();
     } catch (IOException e) {
       // Pass.
     }
@@ -544,6 +579,7 @@ public class WireFormatLiteTest extends TestCase {
     assertInvalidWireFormat(UnittestProto3.TestAllTypes.getDefaultInstance(), data);
   }
 
+  @Test
   public void testParserRejectInvalidTag() throws Exception {
     byte[] invalidTags =
         new byte[] {
@@ -609,6 +645,7 @@ public class WireFormatLiteTest extends TestCase {
     }
   }
 
+  @Test
   public void testUnmatchedGroupTag() throws Exception {
     int startTag = WireFormat.makeTag(16, WireFormat.WIRETYPE_START_GROUP);
     byte[] data =
@@ -637,11 +674,12 @@ public class WireFormatLiteTest extends TestCase {
         defaultInstance.newBuilderForType().mergeFrom(new ByteArrayInputStream(data)).build();
     MessageLite message4 =
         defaultInstance.getParserForType().parseFrom(new ByteArrayInputStream(data));
-    assertEquals(message1, message2);
-    assertEquals(message2, message3);
-    assertEquals(message3, message4);
+    assertThat(message2).isEqualTo(message1);
+    assertThat(message3).isEqualTo(message2);
+    assertThat(message4).isEqualTo(message3);
   }
 
+  @Test
   public void testUnmatchedWireType() throws Exception {
     // Build a payload with all fields from 1 to 128 being varints. Parsing it into TestAllTypes
     // or other message types should succeed even though the wire type doesn't match for some
@@ -660,6 +698,7 @@ public class WireFormatLiteTest extends TestCase {
     assertAccepted(MapForProto2TestProto.TestMap.getDefaultInstance(), data);
   }
 
+  @Test
   public void testParseTruncatedPackedFields() throws Exception {
     TestPackedTypes all = TestUtil.getPackedSet();
     TestPackedTypes[] messages =
@@ -687,6 +726,7 @@ public class WireFormatLiteTest extends TestCase {
     }
   }
 
+  @Test
   public void testParsePackedFieldsWithIncorrectLength() throws Exception {
     // Set the length-prefix to 1 with a 4-bytes payload to test what happens when reading a packed
     // element moves the reading position past the given length limit. It should result in an
@@ -758,6 +798,7 @@ public class WireFormatLiteTest extends TestCase {
     }
   }
 
+  @Test
   public void testParseVarintMinMax() throws Exception {
     TestAllTypes message =
         TestAllTypes.newBuilder()
@@ -767,55 +808,61 @@ public class WireFormatLiteTest extends TestCase {
             .addRepeatedInt64(Long.MAX_VALUE)
             .build();
     TestAllTypes parsed = TestAllTypes.parseFrom(message.toByteArray());
-    assertEquals(Integer.MIN_VALUE, parsed.getOptionalInt32());
-    assertEquals(Integer.MAX_VALUE, parsed.getRepeatedInt32(0));
-    assertEquals(Long.MIN_VALUE, parsed.getOptionalInt64());
-    assertEquals(Long.MAX_VALUE, parsed.getRepeatedInt64(0));
+    assertThat(parsed.getOptionalInt32()).isEqualTo(Integer.MIN_VALUE);
+    assertThat(parsed.getRepeatedInt32(0)).isEqualTo(Integer.MAX_VALUE);
+    assertThat(parsed.getOptionalInt64()).isEqualTo(Long.MIN_VALUE);
+    assertThat(parsed.getRepeatedInt64(0)).isEqualTo(Long.MAX_VALUE);
   }
 
+  @Test
   public void testParseAllVarintBits() throws Exception {
     for (int i = 0; i < 32; i++) {
       final int value = 1 << i;
       TestAllTypes message = TestAllTypes.newBuilder().setOptionalInt32(value).build();
       TestAllTypes parsed = TestAllTypes.parseFrom(message.toByteArray());
-      assertEquals(value, parsed.getOptionalInt32());
+      assertThat(parsed.getOptionalInt32()).isEqualTo(value);
     }
     for (int i = 0; i < 64; i++) {
       final long value = 1L << i;
       TestAllTypes message = TestAllTypes.newBuilder().setOptionalInt64(value).build();
       TestAllTypes parsed = TestAllTypes.parseFrom(message.toByteArray());
-      assertEquals(value, parsed.getOptionalInt64());
+      assertThat(parsed.getOptionalInt64()).isEqualTo(value);
     }
   }
 
+  @Test
   public void testParseEmptyUnknownLengthDelimitedField() throws Exception {
     byte[] data =
         new byte[] {(byte) WireFormat.makeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED), 0};
     TestAllTypes parsed = TestAllTypes.parseFrom(data);
-    assertTrue(Arrays.equals(data, parsed.toByteArray()));
+    assertThat(parsed.toByteArray()).isEqualTo(data);
   }
 
+  @Test
   public void testParseEmptyString() throws Exception {
     TestAllTypes message = TestAllTypes.newBuilder().setOptionalString("").build();
     TestAllTypes parsed = TestAllTypes.parseFrom(message.toByteArray());
-    assertEquals("", parsed.getOptionalString());
+    assertThat(parsed.getOptionalString()).isEmpty();
   }
 
+  @Test
   public void testParseEmptyStringProto3() throws Exception {
     TestAllTypes message = TestAllTypes.newBuilder().setOptionalString("").build();
     // Note that we are parsing from a proto2 proto to a proto3 proto because empty string field is
     // not serialized in proto3.
     UnittestProto3.TestAllTypes parsed =
         UnittestProto3.TestAllTypes.parseFrom(message.toByteArray());
-    assertEquals("", parsed.getOptionalString());
+    assertThat(parsed.getOptionalString()).isEmpty();
   }
 
+  @Test
   public void testParseEmptyBytes() throws Exception {
     TestAllTypes message = TestAllTypes.newBuilder().setOptionalBytes(ByteString.EMPTY).build();
     TestAllTypes parsed = TestAllTypes.parseFrom(message.toByteArray());
-    assertEquals(ByteString.EMPTY, parsed.getOptionalBytes());
+    assertThat(parsed.getOptionalBytes()).isEqualTo(ByteString.EMPTY);
   }
 
+  @Test
   public void testParseEmptyRepeatedStringField() throws Exception {
     TestAllTypes message =
         TestAllTypes.newBuilder()
@@ -824,12 +871,13 @@ public class WireFormatLiteTest extends TestCase {
             .addRepeatedString("0")
             .build();
     TestAllTypes parsed = TestAllTypes.parseFrom(message.toByteArray());
-    assertEquals(3, parsed.getRepeatedStringCount());
-    assertEquals("", parsed.getRepeatedString(0));
-    assertEquals("", parsed.getRepeatedString(1));
-    assertEquals("0", parsed.getRepeatedString(2));
+    assertThat(parsed.getRepeatedStringCount()).isEqualTo(3);
+    assertThat(parsed.getRepeatedString(0)).isEmpty();
+    assertThat(parsed.getRepeatedString(1)).isEmpty();
+    assertThat(parsed.getRepeatedString(2)).isEqualTo("0");
   }
 
+  @Test
   public void testParseEmptyRepeatedStringFieldProto3() throws Exception {
     TestAllTypes message =
         TestAllTypes.newBuilder()
@@ -840,12 +888,13 @@ public class WireFormatLiteTest extends TestCase {
             .build();
     UnittestProto3.TestAllTypes parsed =
         UnittestProto3.TestAllTypes.parseFrom(message.toByteArray());
-    assertEquals(3, parsed.getRepeatedStringCount());
-    assertEquals("", parsed.getRepeatedString(0));
-    assertEquals("", parsed.getRepeatedString(1));
-    assertEquals("0", parsed.getRepeatedString(2));
+    assertThat(parsed.getRepeatedStringCount()).isEqualTo(3);
+    assertThat(parsed.getRepeatedString(0)).isEmpty();
+    assertThat(parsed.getRepeatedString(1)).isEmpty();
+    assertThat(parsed.getRepeatedString(2)).isEqualTo("0");
   }
 
+  @Test
   public void testParseEmptyRepeatedBytesField() throws Exception {
     ByteString oneByte = ByteString.copyFrom(new byte[] {1});
     TestAllTypes message =
@@ -855,12 +904,13 @@ public class WireFormatLiteTest extends TestCase {
             .addRepeatedBytes(oneByte)
             .build();
     TestAllTypes parsed = TestAllTypes.parseFrom(message.toByteArray());
-    assertEquals(3, parsed.getRepeatedBytesCount());
-    assertEquals(ByteString.EMPTY, parsed.getRepeatedBytes(0));
-    assertEquals(ByteString.EMPTY, parsed.getRepeatedBytes(1));
-    assertEquals(oneByte, parsed.getRepeatedBytes(2));
+    assertThat(parsed.getRepeatedBytesCount()).isEqualTo(3);
+    assertThat(parsed.getRepeatedBytes(0)).isEqualTo(ByteString.EMPTY);
+    assertThat(parsed.getRepeatedBytes(1)).isEqualTo(ByteString.EMPTY);
+    assertThat(parsed.getRepeatedBytes(2)).isEqualTo(oneByte);
   }
 
+  @Test
   public void testSkipUnknownFieldInMessageSetItem() throws Exception {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     // MessageSet item's start tag.
@@ -881,109 +931,119 @@ public class WireFormatLiteTest extends TestCase {
 
     // Convert to RawMessageSet for inspection.
     RawMessageSet raw = RawMessageSet.parseFrom(parsed.toByteArray());
-    assertEquals(1, raw.getItemCount());
-    assertEquals(100, raw.getItem(0).getTypeId());
-    assertEquals(0, raw.getItem(0).getMessage().size());
+    assertThat(raw.getItemCount()).isEqualTo(1);
+    assertThat(raw.getItem(0).getTypeId()).isEqualTo(100);
+    assertThat(raw.getItem(0).getMessage().size()).isEqualTo(0);
   }
 
+  @Test
   public void testProto2UnknownEnumValuesInOptionalField() throws Exception {
     // Proto2 doesn't allow setting unknown enum values so we use proto3 to build a message with
     // unknown enum values
     UnittestProto3.TestAllTypes message =
         UnittestProto3.TestAllTypes.newBuilder().setOptionalNestedEnumValue(4321).build();
     TestAllTypes parsed = TestAllTypes.parseFrom(message.toByteArray());
-    assertFalse(parsed.hasOptionalNestedEnum());
+    assertThat(parsed.hasOptionalNestedEnum()).isFalse();
     // Make sure unknown enum values are preserved.
     UnittestProto3.TestAllTypes actual =
         UnittestProto3.TestAllTypes.parseFrom(parsed.toByteArray());
-    assertEquals(4321, actual.getOptionalNestedEnumValue());
+    assertThat(actual.getOptionalNestedEnumValue()).isEqualTo(4321);
   }
 
+  @Test
   public void testProto2UnknownEnumValuesInRepeatedField() throws Exception {
     // Proto2 doesn't allow setting unknown enum values so we use proto3 to build a message with
     // unknown enum values
     UnittestProto3.TestAllTypes message =
         UnittestProto3.TestAllTypes.newBuilder().addRepeatedNestedEnumValue(5432).build();
     TestAllTypes parsed = TestAllTypes.parseFrom(message.toByteArray());
-    assertEquals(0, parsed.getRepeatedNestedEnumCount());
+    assertThat(parsed.getRepeatedNestedEnumCount()).isEqualTo(0);
     // Make sure unknown enum values are preserved.
     UnittestProto3.TestAllTypes actual =
         UnittestProto3.TestAllTypes.parseFrom(parsed.toByteArray());
-    assertEquals(1, actual.getRepeatedNestedEnumCount());
-    assertEquals(5432, actual.getRepeatedNestedEnumValue(0));
+    assertThat(actual.getRepeatedNestedEnumCount()).isEqualTo(1);
+    assertThat(actual.getRepeatedNestedEnumValue(0)).isEqualTo(5432);
   }
 
+  @Test
   public void testProto2UnknownEnumValuesInMapField() throws Exception {
     // Proto2 doesn't allow setting unknown enum values so we use proto3 to build a message with
     // unknown enum values
     TestMap message = TestMap.newBuilder().putInt32ToEnumFieldValue(1, 4321).build();
     MapForProto2TestProto.TestMap parsed =
         MapForProto2TestProto.TestMap.parseFrom(message.toByteArray());
-    assertEquals(0, parsed.getInt32ToEnumFieldMap().size());
+    assertThat(parsed.getInt32ToEnumFieldMap()).isEmpty();
     // Make sure unknown enum values are preserved.
     TestMap actual = TestMap.parseFrom(parsed.toByteArray());
-    assertEquals(1, actual.getInt32ToEnumFieldMap().size());
-    assertEquals(4321, actual.getInt32ToEnumFieldValueOrThrow(1));
+    assertThat(actual.getInt32ToEnumFieldMap()).hasSize(1);
+    assertThat(actual.getInt32ToEnumFieldValueOrThrow(1)).isEqualTo(4321);
   }
 
+  @Test
   public void testProto2UnknownEnumValuesInOneof() throws Exception {
     // Proto2 doesn't allow setting unknown enum values so we use proto3 to build a message with
     // unknown enum values
     UnittestProto3.TestOneof2 message =
         UnittestProto3.TestOneof2.newBuilder().setFooEnumValue(1234).build();
     TestOneof2 parsed = TestOneof2.parseFrom(message.toByteArray());
-    assertFalse(parsed.hasFooEnum());
+    assertThat(parsed.hasFooEnum()).isFalse();
     // Make sure unknown enum values are preserved.
     UnittestProto3.TestOneof2 actual = UnittestProto3.TestOneof2.parseFrom(parsed.toByteArray());
-    assertEquals(1234, actual.getFooEnumValue());
+    assertThat(actual.getFooEnumValue()).isEqualTo(1234);
   }
 
+  @Test
   public void testProto2UnknownEnumValuesInExtension() throws Exception {
     ExtensionRegistryLite extensionRegistry = TestUtilLite.getExtensionRegistryLite();
     // Raw bytes for "[.optional_foreign_enum_extension_lite]: 10"
     final byte[] rawBytes = new byte[]{-80, 1, 10};
     TestAllExtensionsLite testAllExtensionsLite =
         TestAllExtensionsLite.parseFrom(rawBytes, extensionRegistry);
-    assertEquals(ForeignEnumLite.FOREIGN_LITE_FOO,
-        testAllExtensionsLite.getExtension(optionalForeignEnumExtensionLite));
+    assertThat(testAllExtensionsLite.getExtension(optionalForeignEnumExtensionLite))
+        .isEqualTo(ForeignEnumLite.FOREIGN_LITE_FOO);
     final byte[] resultRawBytes = testAllExtensionsLite.toByteArray();
-    assertEquals(rawBytes.length, resultRawBytes.length);
+    assertThat(resultRawBytes).hasLength(rawBytes.length);
     for (int i = 0; i < rawBytes.length; i++) {
-      assertEquals(rawBytes[i], resultRawBytes[i]);
+      assertThat(resultRawBytes[i]).isEqualTo(rawBytes[i]);
     }
   }
 
+  @Test
   public void testProto3UnknownEnumValuesInOptionalField() throws Exception {
     UnittestProto3.TestAllTypes message =
         UnittestProto3.TestAllTypes.newBuilder().setOptionalNestedEnumValue(4321).build();
     UnittestProto3.TestAllTypes parsed =
         UnittestProto3.TestAllTypes.parseFrom(message.toByteArray());
-    assertEquals(4321, parsed.getOptionalNestedEnumValue());
+    assertThat(parsed.getOptionalNestedEnumValue()).isEqualTo(4321);
   }
 
+  @Test
   public void testProto3UnknownEnumValuesInRepeatedField() throws Exception {
     UnittestProto3.TestAllTypes message =
         UnittestProto3.TestAllTypes.newBuilder().addRepeatedNestedEnumValue(5432).build();
     UnittestProto3.TestAllTypes parsed =
         UnittestProto3.TestAllTypes.parseFrom(message.toByteArray());
-    assertEquals(1, parsed.getRepeatedNestedEnumCount());
-    assertEquals(5432, parsed.getRepeatedNestedEnumValue(0));
+    assertThat(parsed.getRepeatedNestedEnumCount()).isEqualTo(1);
+    assertThat(parsed.getRepeatedNestedEnumValue(0)).isEqualTo(5432);
   }
 
+  @Test
   public void testProto3UnknownEnumValuesInMapField() throws Exception {
     TestMap message = TestMap.newBuilder().putInt32ToEnumFieldValue(1, 4321).build();
     TestMap parsed = TestMap.parseFrom(message.toByteArray());
-    assertEquals(1, parsed.getInt32ToEnumFieldMap().size());
-    assertEquals(4321, parsed.getInt32ToEnumFieldValueOrThrow(1));
+    assertThat(parsed.getInt32ToEnumFieldMap()).hasSize(1);
+    assertThat(parsed.getInt32ToEnumFieldValueOrThrow(1)).isEqualTo(4321);
   }
 
+  @Test
   public void testProto3UnknownEnumValuesInOneof() throws Exception {
     UnittestProto3.TestOneof2 message =
         UnittestProto3.TestOneof2.newBuilder().setFooEnumValue(1234).build();
     UnittestProto3.TestOneof2 parsed = UnittestProto3.TestOneof2.parseFrom(message.toByteArray());
-    assertEquals(1234, parsed.getFooEnumValue());
+    assertThat(parsed.getFooEnumValue()).isEqualTo(1234);
   }
 
+  @Test
   public void testProto3MessageFieldMergeBehavior() throws Exception {
     UnittestProto3.NestedTestAllTypes message1 =
         UnittestProto3.NestedTestAllTypes.newBuilder()
@@ -1006,12 +1066,13 @@ public class WireFormatLiteTest extends TestCase {
             .mergeFrom(message2.toByteArray())
             .build();
     // Field values coming later in the stream override earlier values.
-    assertEquals(4321, merged.getPayload().getOptionalInt32());
+    assertThat(merged.getPayload().getOptionalInt32()).isEqualTo(4321);
     // Field values present in either message should be present in the merged result.
-    assertEquals(5678, merged.getPayload().getOptionalInt64());
-    assertEquals(8765, merged.getPayload().getOptionalUint32());
+    assertThat(merged.getPayload().getOptionalInt64()).isEqualTo(5678);
+    assertThat(merged.getPayload().getOptionalUint32()).isEqualTo(8765);
   }
 
+  @Test
   public void testMergeFromPartialByteArray() throws Exception {
     byte[] data = TestUtil.getAllSet().toByteArray();
     byte[] dataWithPaddings = new byte[data.length + 2];

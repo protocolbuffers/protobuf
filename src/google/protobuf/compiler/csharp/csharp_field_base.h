@@ -85,6 +85,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
       std::map<std::string, std::string>* variables);
 
   std::string oneof_property_name();
+  std::string oneof_case_name(); 
   std::string oneof_name();
   std::string property_name();
   std::string name();

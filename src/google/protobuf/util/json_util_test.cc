@@ -30,19 +30,20 @@
 
 #include <google/protobuf/util/json_util.h>
 
+#include <cstdint>
 #include <list>
 #include <string>
 
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/util/internal/testdata/maps.pb.h>
 #include <google/protobuf/util/json_format.pb.h>
 #include <google/protobuf/util/json_format_proto3.pb.h>
+#include <gtest/gtest.h>
+#include <google/protobuf/descriptor_database.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
-#include <gtest/gtest.h>
 
 namespace google {
 namespace protobuf {
@@ -238,6 +239,25 @@ TEST_F(JsonUtilTest, TestPrintEnumsAsIntsWithDefaultValue) {
   EXPECT_EQ(proto3::FOO, parsed.enum_value1());
   EXPECT_EQ(proto3::FOO, parsed.enum_value2());
   EXPECT_EQ(proto3::BAR, parsed.enum_value3());
+}
+
+TEST_F(JsonUtilTest, TestPrintProto2EnumAsIntWithDefaultValue) {
+  protobuf_unittest::TestDefaultEnumValue orig;
+
+  JsonPrintOptions print_options;
+  // use enum as int
+  print_options.always_print_enums_as_ints = true;
+  print_options.always_print_primitive_fields = true;
+
+  // result should be int rather than string
+  std::string expected_json = "{\"enumValue\":2}";
+  EXPECT_EQ(expected_json, ToJson(orig, print_options));
+
+  protobuf_unittest::TestDefaultEnumValue parsed;
+  JsonParseOptions parse_options;
+  ASSERT_TRUE(FromJson(expected_json, &parsed, parse_options));
+
+  EXPECT_EQ(protobuf_unittest::DEFAULT, parsed.enum_value());
 }
 
 TEST_F(JsonUtilTest, ParseMessage) {
@@ -524,7 +544,7 @@ class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
  private:
   std::list<Segment> segments_;
   Segment last_segment_;
-  int64 byte_count_;
+  int64_t byte_count_;
 };
 
 // This test splits the output buffer and also the input data into multiple
@@ -632,8 +652,7 @@ TEST_F(JsonUtilTest, TestWrongJsonInput) {
   delete resolver;
 
   EXPECT_FALSE(result_status.ok());
-  EXPECT_EQ(result_status.code(),
-            util::error::INVALID_ARGUMENT);
+  EXPECT_TRUE(util::IsInvalidArgument(result_status));
 }
 
 TEST_F(JsonUtilTest, HtmlEscape) {

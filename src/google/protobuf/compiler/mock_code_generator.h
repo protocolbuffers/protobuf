@@ -33,6 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_MOCK_CODE_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_MOCK_CODE_GENERATOR_H__
 
+#include <cstdint>
 #include <string>
 
 #include <google/protobuf/compiler/code_generator.h>
@@ -77,7 +78,7 @@ namespace compiler {
 class MockCodeGenerator : public CodeGenerator {
  public:
   MockCodeGenerator(const std::string& name);
-  virtual ~MockCodeGenerator();
+  ~MockCodeGenerator() override;
 
   // Expect (via gTest) that a MockCodeGenerator with the given name was called
   // with the given parameters by inspecting the output location.
@@ -112,11 +113,11 @@ class MockCodeGenerator : public CodeGenerator {
                 GeneratorContext* context, std::string* error) const override;
 
   uint64_t GetSupportedFeatures() const override;
-  void SuppressFeatures(uint64 features);
+  void SuppressFeatures(uint64_t features);
 
  private:
   std::string name_;
-  uint64 suppressed_features_ = 0;
+  uint64_t suppressed_features_ = 0;
 
   static std::string GetOutputFileContent(const std::string& generator_name,
                                           const std::string& parameter,

@@ -1,26 +1,18 @@
 #!/bin/bash
+#
+# This is the top-level script we give to Kokoro as the entry point for
+# running the "pull request" project:
+#
+# This script selects a specific Dockerfile (for building a Docker image) and
+# a script to run inside that image.  Then we delegate to the general
+# build_and_run_docker.sh script.
 
+# Change to repo root
 cd $(dirname $0)/../../..
 
-# prepare php environments
-sudo apt-get update && sudo apt-get install -y --force-yes php5
-sudo ln -sf /usr/include/x86_64-linux-gnu/gmp.h /usr/include/gmp.h
-mkdir php_temp
-cd php_temp
-curl -sS https://getcomposer.org/installer | php
-sudo mv composer.phar /usr/local/bin/composer
-git clone https://github.com/php/php-src
-cd php-src && git checkout PHP-7.2.13 && ./buildconf --force
-./configure \
-	--enable-bcmatch \
-	--with-gmp --with-openssl \
-	--with-zlib  \
-	--prefix=/usr/local/php-7.2 && \
-make -j8 && sudo make install && make clean
-wget -O phpunit https://phar.phpunit.de/phpunit-7.phar && \
-	chmod +x phpunit && \
-	sudo cp phpunit /usr/local/php-7.2/bin
-sudo apt-get install -y --force-yes valgrind
-cd ../..
-
-./tests.sh benchmark
+export DOCKERHUB_ORGANIZATION=protobuftesting
+export DOCKERFILE_DIR=kokoro/linux/dockerfile/test/java_stretch
+export DOCKER_RUN_SCRIPT=kokoro/linux/pull_request_in_docker.sh
+export OUTPUT_DIR=testoutput
+export TEST_SET="benchmark"
+./kokoro/linux/build_and_run_docker.sh

@@ -58,7 +58,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * For booleans, "true" or "false".
      * For strings, contains the default text contents (not escaped in any way).
      * For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
-     * TODO(kenton):  Base-64 encode?
      *
      * Generated from protobuf field <code>optional string default_value = 7;</code>
      */
@@ -133,7 +132,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *           For booleans, "true" or "false".
      *           For strings, contains the default text contents (not escaped in any way).
      *           For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
-     *           TODO(kenton):  Base-64 encode?
      *     @type int $oneof_index
      *           If set, gives the index of a oneof in the containing type's oneof_decl
      *           list.  This field is a member of that oneof.
@@ -390,7 +388,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * For booleans, "true" or "false".
      * For strings, contains the default text contents (not escaped in any way).
      * For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
-     * TODO(kenton):  Base-64 encode?
      *
      * Generated from protobuf field <code>optional string default_value = 7;</code>
      * @return string
@@ -415,7 +412,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * For booleans, "true" or "false".
      * For strings, contains the default text contents (not escaped in any way).
      * For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
-     * TODO(kenton):  Base-64 encode?
      *
      * Generated from protobuf field <code>optional string default_value = 7;</code>
      * @param string $var
@@ -511,11 +507,11 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions options = 8;</code>
-     * @return \Google\Protobuf\Internal\FieldOptions
+     * @return \Google\Protobuf\Internal\FieldOptions|null
      */
     public function getOptions()
     {
-        return isset($this->options) ? $this->options : null;
+        return $this->options;
     }
 
     public function hasOptions()

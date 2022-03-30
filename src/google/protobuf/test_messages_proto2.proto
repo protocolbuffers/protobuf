@@ -194,6 +194,23 @@ message TestAllTypesProto2 {
     optional uint32 group_uint32 = 203;
   }
 
+  // default values
+  optional int32 default_int32 = 241 [ default = -123456789];
+  optional int64 default_int64 = 242 [ default = -9123456789123456789];
+  optional uint32 default_uint32 = 243 [ default = 2123456789];
+  optional uint64 default_uint64 = 244 [ default = 10123456789123456789];
+  optional sint32 default_sint32 = 245 [ default = -123456789];
+  optional sint64 default_sint64 = 246 [default = -9123456789123456789];
+  optional fixed32 default_fixed32 = 247 [ default = 2123456789];
+  optional fixed64 default_fixed64 = 248 [ default = 10123456789123456789];
+  optional sfixed32 default_sfixed32 = 249 [ default = -123456789];
+  optional sfixed64 default_sfixed64 = 250 [default = -9123456789123456789];
+  optional float default_float = 251 [ default = 9e9];
+  optional double default_double = 252 [ default = 7e22];
+  optional bool default_bool = 253 [ default = true];
+  optional string default_string = 254 [ default = "Rosebud"];
+  optional bytes default_bytes = 255 [ default = "joshua"];
+
   // Test field-name-to-JSON-name convention.
   // (protobuf says names can be any valid C/C++ identifier.)
   optional int32 fieldname1 = 401;
@@ -263,4 +280,18 @@ message UnknownToTestAllTypes {
   }
   optional bool optional_bool = 1006;
   repeated int32 repeated_int32 = 1011;
+}
+
+message NullHypothesisProto2 {
+}
+
+message EnumOnlyProto2 {
+  enum Bool {
+    kFalse = 0;
+    kTrue = 1;
+  }
+}
+
+message OneStringProto2 {
+  optional string data = 1;
 }

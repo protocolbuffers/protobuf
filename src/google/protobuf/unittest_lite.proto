@@ -391,6 +391,12 @@ message TestParsingMergeLite {
   }
 }
 
+// Test that the correct exception is thrown by parseFrom in a corner case
+// involving merging, extensions, and required fields.
+message TestMergeExceptionLite {
+  optional TestAllExtensionsLite all_extensions = 1;
+}
+
 // TestEmptyMessageLite is used to test unknown fields support in lite mode.
 message TestEmptyMessageLite {}
 
@@ -463,6 +469,12 @@ message TestOneofParsingLite {
   }
 }
 
+message TestMessageSetLite {
+  option message_set_wire_format = true;
+
+  extensions 100 to max;
+}
+
 // The following four messages are set up to test for wire compatibility between
 // packed and non-packed repeated fields. We use the field number 2048, because
 // that is large enough to require a 3-byte varint for the tag.
@@ -493,4 +505,9 @@ message DupEnum {
     FOO2 = 1;
     BAR2 = 2;
   }
+}
+
+message RecursiveMessage {
+  optional RecursiveMessage recurse = 1;
+  optional bytes payload = 2;
 }

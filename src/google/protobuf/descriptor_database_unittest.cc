@@ -580,7 +580,7 @@ class MergedDescriptorDatabaseTest : public testing::Test {
       : forward_merged_(&database1_, &database2_),
         reverse_merged_(&database2_, &database1_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     AddToDatabase(
         &database1_,
         "name: \"foo.proto\" "
@@ -797,6 +797,13 @@ TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
     std::vector<int> numbers;
     EXPECT_FALSE(reverse_merged_.FindAllExtensionNumbers("Blah", &numbers));
   }
+}
+
+TEST_F(MergedDescriptorDatabaseTest, FindAllFileNames) {
+  std::vector<std::string> files;
+  EXPECT_TRUE(forward_merged_.FindAllFileNames(&files));
+  EXPECT_THAT(files, ::testing::UnorderedElementsAre("foo.proto", "bar.proto",
+                                                     "baz.proto", "baz.proto"));
 }
 
 

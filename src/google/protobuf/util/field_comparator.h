@@ -33,12 +33,15 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__
 #define GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__
 
+
+#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -97,7 +100,7 @@ class PROTOBUF_EXPORT FieldComparator {
 // Basic implementation of FieldComparator.  Supports three modes of floating
 // point value comparison: exact, approximate using MathUtil::AlmostEqual
 // method, and arbitrarily precise using MathUtil::WithinFractionOrMargin.
-class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
+class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
  public:
   enum FloatComparison {
     EXACT,        // Floats and doubles are compared exactly.
@@ -109,14 +112,9 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   };
 
   // Creates new comparator with float comparison set to EXACT.
-  DefaultFieldComparator();
+  SimpleFieldComparator();
 
-  ~DefaultFieldComparator() override;
-
-  ComparisonResult Compare(const Message& message_1, const Message& message_2,
-                           const FieldDescriptor* field, int index_1,
-                           int index_2,
-                           const util::FieldContext* field_context) override;
+  ~SimpleFieldComparator() override;
 
   void set_float_comparison(FloatComparison float_comparison) {
     float_comparison_ = float_comparison;
@@ -151,12 +149,27 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   void SetDefaultFractionAndMargin(double fraction, double margin);
 
  protected:
+  // Returns the comparison result for the given field in two messages.
+  //
+  // This function is called directly by DefaultFieldComparator::Compare.
+  // Subclasses can call this function to compare fields they do not need to
+  // handle specially.
+  ComparisonResult SimpleCompare(const Message& message_1,
+                                 const Message& message_2,
+                                 const FieldDescriptor* field, int index_1,
+                                 int index_2,
+                                 const util::FieldContext* field_context);
+
   // Compare using the provided message_differencer. For example, a subclass can
   // use this method to compare some field in a certain way using the same
   // message_differencer instance and the field context.
-  bool Compare(MessageDifferencer* differencer, const Message& message1,
-               const Message& message2,
-               const util::FieldContext* field_context);
+  bool CompareWithDifferencer(MessageDifferencer* differencer,
+                              const Message& message1, const Message& message2,
+                              const util::FieldContext* field_context);
+
+  // Returns FieldComparator::SAME if boolean_result is true and
+  // FieldComparator::DIFFERENT otherwise.
+  ComparisonResult ResultFromBoolean(bool boolean_result) const;
 
  private:
   // Defines the tolerance for floating point comparison (fraction and margin).
@@ -193,13 +206,13 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // CompareFloat.
   bool CompareFloat(const FieldDescriptor& field, float value_1, float value_2);
 
-  bool CompareInt32(const FieldDescriptor& /* unused */, int32 value_1,
-                    int32 value_2) {
+  bool CompareInt32(const FieldDescriptor& /* unused */, int32_t value_1,
+                    int32_t value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareInt64(const FieldDescriptor& /* unused */, int64 value_1,
-                    int64 value_2) {
+  bool CompareInt64(const FieldDescriptor& /* unused */, int64_t value_1,
+                    int64_t value_2) {
     return value_1 == value_2;
   }
 
@@ -208,13 +221,13 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
     return value_1 == value_2;
   }
 
-  bool CompareUInt32(const FieldDescriptor& /* unused */, uint32 value_1,
-                     uint32 value_2) {
+  bool CompareUInt32(const FieldDescriptor& /* unused */, uint32_t value_1,
+                     uint32_t value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareUInt64(const FieldDescriptor& /* unused */, uint64 value_1,
-                     uint64 value_2) {
+  bool CompareUInt64(const FieldDescriptor& /* unused */, uint64_t value_1,
+                     uint64_t value_2) {
     return value_1 == value_2;
   }
 
@@ -223,10 +236,6 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // but it's likely to fail if passed non-numeric arguments.
   template <typename T>
   bool CompareDoubleOrFloat(const FieldDescriptor& field, T value_1, T value_2);
-
-  // Returns FieldComparator::SAME if boolean_result is true and
-  // FieldComparator::DIFFERENT otherwise.
-  ComparisonResult ResultFromBoolean(bool boolean_result) const;
 
   FloatComparison float_comparison_;
 
@@ -249,7 +258,25 @@ class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // those particular fields.
   ToleranceMap map_tolerance_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DefaultFieldComparator);
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SimpleFieldComparator);
+};
+
+// Default field comparison: use the basic implementation of FieldComparator.
+#ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
+class PROTOBUF_EXPORT DefaultFieldComparator final
+    : public SimpleFieldComparator
+#else   // PROTOBUF_FUTURE_BREAKING_CHANGES
+class PROTOBUF_EXPORT DefaultFieldComparator : public SimpleFieldComparator
+#endif  // PROTOBUF_FUTURE_BREAKING_CHANGES
+{
+ public:
+  ComparisonResult Compare(const Message& message_1, const Message& message_2,
+                           const FieldDescriptor* field, int index_1,
+                           int index_2,
+                           const util::FieldContext* field_context) override {
+    return SimpleCompare(message_1, message_2, field, index_1, index_2,
+                         field_context);
+  }
 };
 
 }  // namespace util

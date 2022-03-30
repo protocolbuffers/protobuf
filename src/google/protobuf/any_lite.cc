@@ -28,12 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/any.h>
-
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/any.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
@@ -53,13 +52,11 @@ const char kAnyFullTypeName[] = "google.protobuf.Any";
 const char kTypeGoogleApisComPrefix[] = "type.googleapis.com/";
 const char kTypeGoogleProdComPrefix[] = "type.googleprod.com/";
 
-bool AnyMetadata::InternalPackFrom(const MessageLite& message,
+bool AnyMetadata::InternalPackFrom(Arena* arena, const MessageLite& message,
                                    StringPiece type_url_prefix,
                                    StringPiece type_name) {
-  type_url_->Set(&::google::protobuf::internal::GetEmptyString(),
-                 GetTypeUrl(type_name, type_url_prefix), nullptr);
-  return message.SerializeToString(
-      value_->Mutable(ArenaStringPtr::EmptyDefault{}, nullptr));
+  type_url_->Set(GetTypeUrl(type_name, type_url_prefix), arena);
+  return message.SerializeToString(value_->Mutable(arena));
 }
 
 bool AnyMetadata::InternalUnpackTo(StringPiece type_name,
@@ -79,7 +76,7 @@ bool AnyMetadata::InternalIs(StringPiece type_name) const {
 
 bool ParseAnyTypeUrl(StringPiece type_url, std::string* url_prefix,
                      std::string* full_type_name) {
-  size_t pos = type_url.find_last_of("/");
+  size_t pos = type_url.find_last_of('/');
   if (pos == std::string::npos || pos + 1 == type_url.size()) {
     return false;
   }

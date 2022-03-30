@@ -41,20 +41,19 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arena.h>
-#include <google/protobuf/generated_message_table_driven.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/mutex.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -121,6 +120,7 @@ inline StringPiece as_string_view(const void* data, int size) {
 inline bool CheckFieldPresence(const internal::ParseContext& ctx,
                                const MessageLite& msg,
                                MessageLite::ParseFlags parse_flags) {
+  (void)ctx;  // Parameter is used by Google-internal code.
   if (PROTOBUF_PREDICT_FALSE((parse_flags & MessageLite::kMergePartial) != 0)) {
     return true;
   }
@@ -195,14 +195,6 @@ template bool MergeFromImpl<true>(BoundedZCIS input, MessageLite* msg,
 
 }  // namespace internal
 
-MessageLite* MessageLite::New(Arena* arena) const {
-  MessageLite* message = New();
-  if (arena != NULL) {
-    arena->Own(message);
-  }
-  return message;
-}
-
 class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
  public:
   ZeroCopyCodedInputStream(io::CodedInputStream* cis) : cis_(cis) {}
@@ -237,7 +229,7 @@ bool MessageLite::MergeFromImpl(io::CodedInputStream* input,
   if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
   if (!ctx.EndedAtEndOfStream()) {
-    GOOGLE_DCHECK(ctx.LastTag() != 1);  // We can't end on a pushed limit.
+    GOOGLE_DCHECK_NE(ctx.LastTag(), 1);  // We can't end on a pushed limit.
     if (ctx.IsExceedingLimit(ptr)) return false;
     input->SetLastTag(ctx.LastTag());
   } else {
@@ -336,15 +328,15 @@ bool MessageLite::MergeFromString(ConstStringParam data) {
 
 // ===================================================================
 
-inline uint8* SerializeToArrayImpl(const MessageLite& msg, uint8* target,
-                                   int size) {
+inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
+                                     int size) {
   constexpr bool debug = false;
   if (debug) {
     // Force serialization to a stream with a block size of 1, which forces
     // all writes to the stream to cross buffers triggering all fallback paths
     // in the unittests when serializing to string / array.
     io::ArrayOutputStream stream(target, size, 1);
-    uint8* ptr;
+    uint8_t* ptr;
     io::EpsCopyOutputStream out(
         &stream, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
         &ptr);
@@ -362,7 +354,7 @@ inline uint8* SerializeToArrayImpl(const MessageLite& msg, uint8* target,
   }
 }
 
-uint8* MessageLite::SerializeWithCachedSizesToArray(uint8* target) const {
+uint8_t* MessageLite::SerializeWithCachedSizesToArray(uint8_t* target) const {
   // We only optimize this when using optimize_for = SPEED.  In other cases
   // we just use the CodedOutputStream path.
   return SerializeToArrayImpl(*this, target, GetCachedSize());
@@ -389,7 +381,7 @@ bool MessageLite::SerializePartialToCodedStream(
   }
   int final_byte_count = output->ByteCount();
 
-  if (final_byte_count - original_byte_count != static_cast<int64>(size)) {
+  if (final_byte_count - original_byte_count != static_cast<int64_t>(size)) {
     ByteSizeConsistencyError(size, ByteSizeLong(),
                              final_byte_count - original_byte_count, *this);
   }
@@ -412,7 +404,7 @@ bool MessageLite::SerializePartialToZeroCopyStream(
     return false;
   }
 
-  uint8* target;
+  uint8_t* target;
   io::EpsCopyOutputStream stream(
       output, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
       &target);
@@ -459,9 +451,9 @@ bool MessageLite::AppendPartialToString(std::string* output) const {
     return false;
   }
 
-  STLStringResizeUninitialized(output, old_size + byte_size);
-  uint8* start =
-      reinterpret_cast<uint8*>(io::mutable_string_data(output) + old_size);
+  STLStringResizeUninitializedAmortized(output, old_size + byte_size);
+  uint8_t* start =
+      reinterpret_cast<uint8_t*>(io::mutable_string_data(output) + old_size);
   SerializeToArrayImpl(*this, start, byte_size);
   return true;
 }
@@ -488,8 +480,8 @@ bool MessageLite::SerializePartialToArray(void* data, int size) const {
                << " exceeded maximum protobuf size of 2GB: " << byte_size;
     return false;
   }
-  if (size < static_cast<int64>(byte_size)) return false;
-  uint8* start = reinterpret_cast<uint8*>(data);
+  if (size < static_cast<int64_t>(byte_size)) return false;
+  uint8_t* start = reinterpret_cast<uint8_t*>(data);
   SerializeToArrayImpl(*this, start, byte_size);
   return true;
 }
@@ -513,9 +505,8 @@ std::string MessageLite::SerializePartialAsString() const {
 
 namespace internal {
 
-template <>
-MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
-    const MessageLite* prototype, Arena* arena) {
+MessageLite* NewFromPrototypeHelper(const MessageLite* prototype,
+                                    Arena* arena) {
   return prototype->New(arena);
 }
 template <>
@@ -527,6 +518,36 @@ template <>
 void GenericTypeHandler<std::string>::Merge(const std::string& from,
                                             std::string* to) {
   *to = from;
+}
+
+// Non-inline implementations of InternalMetadata routines
+#if defined(NDEBUG) || defined(_MSC_VER)
+// for opt and MSVC builds, the destructor is defined in the header.
+#else
+// This is moved out of the header because the GOOGLE_DCHECK produces a lot of code.
+InternalMetadata::~InternalMetadata() {
+  if (HasMessageOwnedArenaTag()) {
+    GOOGLE_DCHECK(!HasUnknownFieldsTag());
+    delete reinterpret_cast<Arena*>(ptr_ - kMessageOwnedArenaTagMask);
+  }
+}
+#endif
+
+// Non-inline variants of std::string specializations for
+// various InternalMetadata routines.
+template <>
+void InternalMetadata::DoClear<std::string>() {
+  mutable_unknown_fields<std::string>()->clear();
+}
+
+template <>
+void InternalMetadata::DoMergeFrom<std::string>(const std::string& other) {
+  mutable_unknown_fields<std::string>()->append(other);
+}
+
+template <>
+void InternalMetadata::DoSwap<std::string>(std::string* other) {
+  mutable_unknown_fields<std::string>()->swap(*other);
 }
 
 }  // namespace internal

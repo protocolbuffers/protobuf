@@ -31,6 +31,85 @@ module BasicTest
     end
     include CommonTests
 
+    def test_issue_8311_crash
+      Google::Protobuf::DescriptorPool.generated_pool.build do
+        add_file("inner.proto", :syntax => :proto3) do
+          add_message "Inner" do
+            # Removing either of these fixes the segfault.
+            optional :foo, :string, 1
+            optional :bar, :string, 2
+          end
+        end
+      end
+
+      Google::Protobuf::DescriptorPool.generated_pool.build do
+        add_file("outer.proto", :syntax => :proto3) do
+          add_message "Outer" do
+            repeated :inners, :message, 1, "Inner"
+          end
+        end
+      end
+
+      outer = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("Outer").msgclass
+
+      outer.new(
+          inners: []
+      )['inners'].to_s
+
+      assert_raise Google::Protobuf::TypeError do
+        outer.new(
+            inners: [nil]
+        ).to_s
+      end
+    end
+
+    def test_issue_8559_crash
+      msg = TestMessage.new
+      msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
+
+      # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
+      if cruby_or_jruby_9_3_or_higher?
+        GC.start(full_mark: true, immediate_sweep: true)
+      end
+      TestMessage.encode(msg)
+    end
+
+    def test_issue_9440
+      msg = HelloRequest.new
+      msg.id = 8
+      assert_equal 8, msg.id
+      msg.version = '1'
+      assert_equal 8, msg.id
+    end
+
+    def test_issue_9507
+      pool = Google::Protobuf::DescriptorPool.new
+      pool.build do
+        add_message "NpeMessage" do
+          optional :type, :enum, 1, "TestEnum"
+          optional :other, :string, 2
+        end
+        add_enum "TestEnum" do
+          value :Something, 0
+        end
+      end
+
+      msgclass = pool.lookup("NpeMessage").msgclass
+
+      m = msgclass.new(
+        other: "foo"      # must be set, but can be blank
+      )
+
+      begin
+        encoded = msgclass.encode(m)
+      rescue java.lang.NullPointerException
+        flunk "NPE rescued"
+      end
+      decoded = msgclass.decode(encoded)
+      decoded.inspect
+      decoded.to_proto
+    end
+
     def test_has_field
       m = TestSingularFields.new
       assert !m.has_singular_msg?
@@ -97,7 +176,7 @@ module BasicTest
       m = TestSingularFields.new
 
       m.singular_int32 = -42
-      assert_equal -42, m.singular_int32
+      assert_equal( -42, m.singular_int32 )
       m.clear_singular_int32
       assert_equal 0, m.singular_int32
 
@@ -127,6 +206,17 @@ module BasicTest
       assert_equal TestMessage2.new(:foo => 42), m.singular_msg
       TestSingularFields.descriptor.lookup('singular_msg').clear(m)
       assert_equal nil, m.singular_msg
+    end
+
+    def test_import_proto2
+      m = TestMessage.new
+      assert !m.has_optional_proto2_submessage?
+      m.optional_proto2_submessage = ::FooBar::Proto2::TestImportedMessage.new
+      assert m.has_optional_proto2_submessage?
+      assert TestMessage.descriptor.lookup('optional_proto2_submessage').has?(m)
+
+      m.clear_optional_proto2_submessage
+      assert !m.has_optional_proto2_submessage?
     end
 
     def test_clear_repeated_fields
@@ -216,7 +306,7 @@ module BasicTest
         m.map_string_int32 = {}
       end
 
-      assert_raise TypeError do
+      assert_raise Google::Protobuf::TypeError do
         m = MapMessage.new(:map_string_int32 => { 1 => "I am not a number" })
       end
     end
@@ -241,8 +331,12 @@ module BasicTest
         :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
                             "b" => TestMessage2.new(:foo => 2)},
         :map_string_enum => {"a" => :A, "b" => :B})
-      expected = "<BasicTest::MapMessage: map_string_int32: {\"b\"=>2, \"a\"=>1}, map_string_msg: {\"b\"=><BasicTest::TestMessage2: foo: 2>, \"a\"=><BasicTest::TestMessage2: foo: 1>}, map_string_enum: {\"b\"=>:B, \"a\"=>:A}>"
-      assert_equal expected, m.inspect
+
+      # JRuby doesn't keep consistent ordering so check for either version
+      expected_a = "<BasicTest::MapMessage: map_string_int32: {\"b\"=>2, \"a\"=>1}, map_string_msg: {\"b\"=><BasicTest::TestMessage2: foo: 2>, \"a\"=><BasicTest::TestMessage2: foo: 1>}, map_string_enum: {\"b\"=>:B, \"a\"=>:A}>"
+      expected_b = "<BasicTest::MapMessage: map_string_int32: {\"a\"=>1, \"b\"=>2}, map_string_msg: {\"a\"=><BasicTest::TestMessage2: foo: 1>, \"b\"=><BasicTest::TestMessage2: foo: 2>}, map_string_enum: {\"a\"=>:A, \"b\"=>:B}>"
+      inspect_result = m.inspect
+      assert expected_a == inspect_result || expected_b == inspect_result, "Incorrect inspect result: #{inspect_result}"
     end
 
     def test_map_corruption
@@ -443,6 +537,8 @@ module BasicTest
         :optional_int32=>0,
         :optional_int64=>0,
         :optional_msg=>nil,
+        :optional_msg2=>nil,
+        :optional_proto2_submessage=>nil,
         :optional_string=>"foo",
         :optional_uint32=>0,
         :optional_uint64=>0,
@@ -475,14 +571,12 @@ module BasicTest
 
 
     def test_json_maps
-      # TODO: Fix JSON in JRuby version.
-      return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
       expected = {mapStringInt32: {a: 1}, mapStringMsg: {}, mapStringEnum: {}}
       expected_preserve = {map_string_int32: {a: 1}, map_string_msg: {}, map_string_enum: {}}
-      assert_equal JSON.parse(MapMessage.encode_json(m), :symbolize_names => true), expected
+      assert_equal JSON.parse(MapMessage.encode_json(m, :emit_defaults=>true), :symbolize_names => true), expected
 
-      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true)
+      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true, :emit_defaults=>true)
       assert_equal JSON.parse(json, :symbolize_names => true), expected_preserve
 
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
@@ -490,9 +584,7 @@ module BasicTest
     end
 
     def test_json_maps_emit_defaults_submsg
-      # TODO: Fix JSON in JRuby version.
-      return if RUBY_PLATFORM == "java"
-      m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new})
+      m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new(foo: 0)})
       expected = {mapStringInt32: {}, mapStringMsg: {a: {foo: 0}}, mapStringEnum: {}}
 
       actual = MapMessage.encode_json(m, :emit_defaults => true)
@@ -500,9 +592,29 @@ module BasicTest
       assert_equal JSON.parse(actual, :symbolize_names => true), expected
     end
 
+    def test_json_emit_defaults_submsg
+      m = TestSingularFields.new(singular_msg: proto_module::TestMessage2.new)
+
+      expected = {
+        singularInt32: 0,
+        singularInt64: "0",
+        singularUint32: 0,
+        singularUint64: "0",
+        singularBool: false,
+        singularFloat: 0,
+        singularDouble: 0,
+        singularString: "",
+        singularBytes: "",
+        singularMsg: {},
+        singularEnum: "Default",
+      }
+
+      actual = proto_module::TestMessage.encode_json(m, :emit_defaults => true)
+
+      assert_equal expected, JSON.parse(actual, :symbolize_names => true)
+    end
+
     def test_respond_to
-      # This test fails with JRuby 1.7.23, likely because of an old JRuby bug.
-      return if RUBY_PLATFORM == "java"
       msg = MapMessage.new
       assert msg.respond_to?(:map_string_int32)
       assert !msg.respond_to?(:bacon)
@@ -538,6 +650,90 @@ module BasicTest
       assert_raise(FrozenErrorType) { m.map_string_msg['bar'] = proto_module::TestMessage2.new }
       assert_raise(FrozenErrorType) { m.map_string_int32.delete('a') }
       assert_raise(FrozenErrorType) { m.map_string_int32.clear }
+    end
+
+    def test_map_length
+      m = proto_module::MapMessage.new
+      assert_equal 0, m.map_string_int32.length
+      assert_equal 0, m.map_string_msg.length
+      assert_equal 0, m.map_string_int32.size
+      assert_equal 0, m.map_string_msg.size
+
+      m.map_string_int32['a'] = 1
+      m.map_string_int32['b'] = 2
+      m.map_string_msg['a'] = proto_module::TestMessage2.new
+      assert_equal 2, m.map_string_int32.length
+      assert_equal 1, m.map_string_msg.length
+      assert_equal 2, m.map_string_int32.size
+      assert_equal 1, m.map_string_msg.size
+    end
+
+    def test_string_with_singleton_class_enabled
+      str = 'foobar'
+      # NOTE: Accessing a singleton class of an object changes its low level class representation
+      #       as far as the C API's CLASS_OF() method concerned, exposing the issue
+      str.singleton_class
+      m = proto_module::TestMessage.new(
+        optional_string: str,
+        optional_bytes: str
+      )
+
+      assert_equal str, m.optional_string
+      assert_equal str, m.optional_bytes
+    end
+
+    def test_utf8
+      m = proto_module::TestMessage.new(
+        optional_string: "µpb",
+      )
+      m2 = proto_module::TestMessage.decode(proto_module::TestMessage.encode(m))
+      assert_equal m2, m
+    end
+
+    def test_map_fields_respond_to? # regression test for issue 9202
+      msg = proto_module::MapMessage.new
+      assert msg.respond_to?(:map_string_int32=)
+      msg.map_string_int32 = Google::Protobuf::Map.new(:string, :int32)
+      assert msg.respond_to?(:map_string_int32)
+      assert_equal( Google::Protobuf::Map.new(:string, :int32), msg.map_string_int32 )
+      assert msg.respond_to?(:clear_map_string_int32)
+      msg.clear_map_string_int32
+
+      assert !msg.respond_to?(:has_map_string_int32?)
+      assert_raise NoMethodError do
+        msg.has_map_string_int32?
+      end
+      assert !msg.respond_to?(:map_string_int32_as_value)
+      assert_raise NoMethodError do
+        msg.map_string_int32_as_value
+      end
+      assert !msg.respond_to?(:map_string_int32_as_value=)
+      assert_raise NoMethodError do
+        msg.map_string_int32_as_value = :boom
+      end
+    end
+  end
+
+  def test_oneof_fields_respond_to? # regression test for issue 9202
+    msg = proto_module::OneofMessage.new
+    # `has_` prefix + "?" suffix actions should only work for oneofs fields.
+    assert msg.has_my_oneof?
+    assert msg.respond_to? :has_my_oneof?
+    assert !msg.respond_to?( :has_a? )
+    assert_raise NoMethodError do
+      msg.has_a?
+    end
+    assert !msg.respond_to?( :has_b? )
+    assert_raise NoMethodError do
+      msg.has_b?
+    end
+    assert !msg.respond_to?( :has_c? )
+    assert_raise NoMethodError do
+      msg.has_c?
+    end
+    assert !msg.respond_to?( :has_d? )
+    assert_raise NoMethodError do
+      msg.has_d?
     end
   end
 end

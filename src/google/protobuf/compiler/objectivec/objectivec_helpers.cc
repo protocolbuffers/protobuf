@@ -71,8 +71,193 @@ using ::open;
 #endif
 }  // namespace port
 
+namespace {
+
+bool BoolFromEnvVar(const char* env_var, bool default_value) {
+  const char* value = getenv(env_var);
+  if (value) {
+    return std::string("YES") == ToUpper(value);
+  }
+  return default_value;
+}
+
+class SimpleLineCollector : public LineConsumer {
+ public:
+  SimpleLineCollector(std::unordered_set<std::string>* inout_set)
+      : set_(inout_set) {}
+
+  virtual bool ConsumeLine(const StringPiece& line, std::string* out_error) override {
+    set_->insert(std::string(line));
+    return true;
+  }
+
+ private:
+  std::unordered_set<std::string>* set_;
+};
+
+class PackageToPrefixesCollector : public LineConsumer {
+ public:
+  PackageToPrefixesCollector(const std::string &usage,
+                             std::map<std::string, std::string>* inout_package_to_prefix_map)
+      : usage_(usage), prefix_map_(inout_package_to_prefix_map) {}
+
+  virtual bool ConsumeLine(const StringPiece& line, std::string* out_error) override;
+
+ private:
+  const std::string usage_;
+  std::map<std::string, std::string>* prefix_map_;
+};
+
+class PrefixModeStorage {
+ public:
+  PrefixModeStorage();
+
+  const std::string package_to_prefix_mappings_path() const { return package_to_prefix_mappings_path_; }
+  void set_package_to_prefix_mappings_path(const std::string& path) {
+    package_to_prefix_mappings_path_ = path;
+    package_to_prefix_map_.clear();
+  }
+
+  std::string prefix_from_proto_package_mappings(const FileDescriptor* file);
+
+  bool use_package_name() const { return use_package_name_; }
+  void set_use_package_name(bool on_or_off) { use_package_name_ = on_or_off; }
+
+  const std::string exception_path() const { return exception_path_; }
+  void set_exception_path(const std::string& path) {
+    exception_path_ = path;
+    exceptions_.clear();
+  }
+
+  bool is_package_exempted(const std::string& package);
+
+  // When using a proto package as the prefix, this should be added as the
+  // prefix in front of it.
+  const std::string& forced_package_prefix() const { return forced_prefix_; }
+
+ private:
+  bool use_package_name_;
+  std::map<std::string, std::string> package_to_prefix_map_;
+  std::string package_to_prefix_mappings_path_;
+  std::string exception_path_;
+  std::string forced_prefix_;
+  std::unordered_set<std::string> exceptions_;
+};
+
+PrefixModeStorage::PrefixModeStorage() {
+  // Even thought there are generation options, have an env back door since some
+  // of these helpers could be used in other plugins.
+
+  use_package_name_ = BoolFromEnvVar("GPB_OBJC_USE_PACKAGE_AS_PREFIX", false);
+
+  const char* exception_path = getenv("GPB_OBJC_PACKAGE_PREFIX_EXCEPTIONS_PATH");
+  if (exception_path) {
+    exception_path_ = exception_path;
+  }
+
+  // This one is a not expected to be common, so it doesn't get a generation
+  // option, just the env var.
+  const char* prefix = getenv("GPB_OBJC_USE_PACKAGE_AS_PREFIX_PREFIX");
+  if (prefix) {
+    forced_prefix_ = prefix;
+  }
+}
+
+std::string PrefixModeStorage::prefix_from_proto_package_mappings(const FileDescriptor* file) {
+  if (!file) {
+    return "";
+  }
+
+  if (package_to_prefix_map_.empty() && !package_to_prefix_mappings_path_.empty()) {
+    std::string error_str;
+    // Re use the same collector as we use for expected_prefixes_path since the file
+    // format is the same.
+    PackageToPrefixesCollector collector("Package to prefixes", &package_to_prefix_map_);
+    if (!ParseSimpleFile(package_to_prefix_mappings_path_, &collector, &error_str)) {
+      if (error_str.empty()) {
+        error_str = std::string("protoc:0: warning: Failed to parse")
+           + std::string(" prefix to proto package mappings file: ")
+           + package_to_prefix_mappings_path_;
+      }
+      std::cerr << error_str << std::endl;
+      std::cerr.flush();
+      package_to_prefix_map_.clear();
+    }
+  }
+
+  const std::string package = file->package();
+  // For files without packages, the can be registered as "no_package:PATH",
+  // allowing the expected prefixes file.
+  static const std::string no_package_prefix("no_package:");
+  const std::string lookup_key = package.empty() ? no_package_prefix + file->name() : package;
+
+  std::map<std::string, std::string>::const_iterator prefix_lookup =
+      package_to_prefix_map_.find(lookup_key);
+
+  if (prefix_lookup != package_to_prefix_map_.end()) {
+    return prefix_lookup->second;
+  }  
+
+  return "";
+}
+
+bool PrefixModeStorage::is_package_exempted(const std::string& package) {
+  if (exceptions_.empty() && !exception_path_.empty()) {
+    std::string error_str;
+    SimpleLineCollector collector(&exceptions_);
+    if (!ParseSimpleFile(exception_path_, &collector, &error_str)) {
+      if (error_str.empty()) {
+        error_str = std::string("protoc:0: warning: Failed to parse")
+           + std::string(" package prefix exceptions file: ")
+           + exception_path_;
+      }
+      std::cerr << error_str << std::endl;
+      std::cerr.flush();
+      exceptions_.clear();
+    }
+
+    // If the file was empty put something in it so it doesn't get reloaded over
+    // and over.
+    if (exceptions_.empty()) {
+      exceptions_.insert("<not a real package>");
+    }
+  }
+
+  return exceptions_.count(package) != 0;
+}
+
+PrefixModeStorage g_prefix_mode;
+
+}  // namespace
+
+std::string GetPackageToPrefixMappingsPath() {
+  return g_prefix_mode.package_to_prefix_mappings_path();
+}
+
+void SetPackageToPrefixMappingsPath(const std::string& file_path) {
+  g_prefix_mode.set_package_to_prefix_mappings_path(file_path);
+}
+
+bool UseProtoPackageAsDefaultPrefix() {
+  return g_prefix_mode.use_package_name();
+}
+
+void SetUseProtoPackageAsDefaultPrefix(bool on_or_off) {
+  g_prefix_mode.set_use_package_name(on_or_off);
+}
+
+std::string GetProtoPackagePrefixExceptionList() {
+  return g_prefix_mode.exception_path();
+}
+
+void SetProtoPackagePrefixExceptionList(const std::string& file_path) {
+  g_prefix_mode.set_exception_path(file_path);
+}
+
 Options::Options() {
-  // Default is the value of the env for the package prefixes.
+  // While there are generator options, also support env variables to help with
+  // build systems where it isn't as easy to hook in for add the generation
+  // options when invoking protoc.
   const char* file_path = getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES");
   if (file_path) {
     expected_prefixes_path = file_path;
@@ -82,6 +267,9 @@ Options::Options() {
     expected_prefixes_suppressions =
         Split(suppressions, ";", true);
   }
+  prefixes_must_be_registered =
+      BoolFromEnvVar("GPB_OBJC_PREFIXES_MUST_BE_REGISTERED", false);
+  require_prefixes = BoolFromEnvVar("GPB_OBJC_REQUIRE_PREFIXES", false);
 }
 
 namespace {
@@ -213,6 +401,10 @@ const char* const kReservedWordList[] = {
   // Not a keyword, but will break you
   "NULL",
 
+  // C88+ specs call for these to be macros, so depending on what they are
+  // defined to be it can lead to odd errors for some Xcode/SDK versions.
+  "stdin", "stdout", "stderr",
+
   // Objective-C Runtime typedefs
   // From <obc/runtime.h>
   "Category", "Ivar", "Method", "Protocol",
@@ -250,9 +442,9 @@ bool IsReservedCIdentifier(const std::string& input) {
 }
 
 std::string SanitizeNameForObjC(const std::string& prefix,
-                           const std::string& input,
-                           const std::string& extension,
-                           std::string* out_suffix_added) {
+                                const std::string& input,
+                                const std::string& extension,
+                                std::string* out_suffix_added) {
   static const std::unordered_set<std::string> kReservedWords =
       MakeWordsMap(kReservedWordList, GOOGLE_ARRAYSIZE(kReservedWordList));
   static const std::unordered_set<std::string> kNSObjectMethods =
@@ -356,6 +548,15 @@ std::string GetEnumNameForFlagType(const FlagType flag_type) {
   }
 }
 
+void MaybeUnQuote(StringPiece* input) {
+  if ((input->length() >= 2) &&
+      ((*input->data() == '\'' || *input->data() == '"')) &&
+      ((*input)[input->length() - 1] == *input->data())) {
+    input->remove_prefix(1);
+    input->remove_suffix(1);
+  }
+}
+
 }  // namespace
 
 // Escape C++ trigraphs by escaping question marks to \?
@@ -394,9 +595,46 @@ std::string BaseFileName(const FileDescriptor* file) {
 }
 
 std::string FileClassPrefix(const FileDescriptor* file) {
-  // Default is empty string, no need to check has_objc_class_prefix.
-  std::string result = file->options().objc_class_prefix();
-  return result;
+  // Always honor the file option.
+  if (file->options().has_objc_class_prefix()) {
+    return file->options().objc_class_prefix();
+  }
+
+  // If package prefix is specified in an prefix to proto mappings file then use that.
+  std::string objc_class_prefix = g_prefix_mode.prefix_from_proto_package_mappings(file);
+  if (!objc_class_prefix.empty()) {
+    return objc_class_prefix;
+  }
+
+  // If package prefix isn't enabled, done.
+  if (!g_prefix_mode.use_package_name()) {
+    return "";
+  }
+
+  // If the package is in the exceptions list, done.
+  if (g_prefix_mode.is_package_exempted(file->package())) {
+    return "";
+  }
+
+  // Transform the package into a prefix: use the dot segments as part,
+  // camelcase each one and then join them with underscores, and add an
+  // underscore at the end.
+  std::string result;
+  const std::vector<std::string> segments = Split(file->package(), ".", true);
+  for (const auto& segment : segments) {
+    const std::string part = UnderscoresToCamelCase(segment, true);
+    if (part.empty()) {
+      continue;
+    }
+    if (!result.empty()) {
+      result.append("_");
+    }
+    result.append(part);
+  }
+  if (!result.empty()) {
+    result.append("_");
+  }
+  return g_prefix_mode.forced_package_prefix() + result;
 }
 
 std::string FilePath(const FileDescriptor* file) {
@@ -852,7 +1090,7 @@ std::string DefaultValue(const FieldDescriptor* field) {
 
         // Must convert to a standard byte order for packing length into
         // a cstring.
-        uint32 length = ghtonl(default_string.length());
+        uint32_t length = ghtonl(default_string.length());
         std::string bytes((const char*)&length, sizeof(length));
         bytes.append(default_string);
         return "(NSData*)\"" + EscapeTrigraphs(CEscape(bytes)) + "\"";
@@ -1042,53 +1280,55 @@ void RemoveComment(StringPiece* input) {
 
 namespace {
 
-class ExpectedPrefixesCollector : public LineConsumer {
- public:
-  ExpectedPrefixesCollector(std::map<std::string, std::string>* inout_package_to_prefix_map)
-      : prefix_map_(inout_package_to_prefix_map) {}
-
-  virtual bool ConsumeLine(const StringPiece& line, std::string* out_error);
-
- private:
-  std::map<std::string, std::string>* prefix_map_;
-};
-
-bool ExpectedPrefixesCollector::ConsumeLine(
+bool PackageToPrefixesCollector::ConsumeLine(
     const StringPiece& line, std::string* out_error) {
   int offset = line.find('=');
   if (offset == StringPiece::npos) {
-    *out_error = std::string("Expected prefixes file line without equal sign: '") +
-                 std::string(line) + "'.";
+    *out_error = usage_ + " file line without equal sign: '" + StrCat(line) + "'.";
     return false;
   }
   StringPiece package = line.substr(0, offset);
   StringPiece prefix = line.substr(offset + 1);
   TrimWhitespace(&package);
   TrimWhitespace(&prefix);
+  MaybeUnQuote(&prefix);
   // Don't really worry about error checking the package/prefix for
   // being valid.  Assume the file is validated when it is created/edited.
   (*prefix_map_)[std::string(package)] = std::string(prefix);
   return true;
 }
 
-bool LoadExpectedPackagePrefixes(const Options& generation_options,
+bool LoadExpectedPackagePrefixes(const std::string& expected_prefixes_path,
                                  std::map<std::string, std::string>* prefix_map,
                                  std::string* out_error) {
-  if (generation_options.expected_prefixes_path.empty()) {
+  if (expected_prefixes_path.empty()) {
     return true;
   }
 
-  ExpectedPrefixesCollector collector(prefix_map);
+  PackageToPrefixesCollector collector("Expected prefixes", prefix_map);
   return ParseSimpleFile(
-      generation_options.expected_prefixes_path, &collector, out_error);
+      expected_prefixes_path, &collector, out_error);
 }
 
 bool ValidateObjCClassPrefix(
     const FileDescriptor* file, const std::string& expected_prefixes_path,
     const std::map<std::string, std::string>& expected_package_prefixes,
+    bool prefixes_must_be_registered, bool require_prefixes,
     std::string* out_error) {
+  // Reminder: An explicit prefix option of "" is valid in case the default
+  // prefixing is set to use the proto package and a file needs to be generated
+  // without any prefix at all (for legacy reasons).
+
+  bool has_prefix = file->options().has_objc_class_prefix();
+  bool have_expected_prefix_file = !expected_prefixes_path.empty();
+
   const std::string prefix = file->options().objc_class_prefix();
   const std::string package = file->package();
+  // For files without packages, the can be registered as "no_package:PATH",
+  // allowing the expected prefixes file.
+  static const std::string no_package_prefix("no_package:");
+  const std::string lookup_key =
+      package.empty() ? no_package_prefix + file->name() : package;
 
   // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
   // error cases, so it seems to be ok to use as a back door for warnings.
@@ -1096,18 +1336,21 @@ bool ValidateObjCClassPrefix(
   // Check: Error - See if there was an expected prefix for the package and
   // report if it doesn't match (wrong or missing).
   std::map<std::string, std::string>::const_iterator package_match =
-      expected_package_prefixes.find(package);
+      expected_package_prefixes.find(lookup_key);
   if (package_match != expected_package_prefixes.end()) {
     // There was an entry, and...
-    if (package_match->second == prefix) {
+    if (has_prefix && package_match->second == prefix) {
       // ...it matches.  All good, out of here!
       return true;
     } else {
       // ...it didn't match!
       *out_error = "error: Expected 'option objc_class_prefix = \"" +
-                   package_match->second + "\";' for package '" + package +
-                   "' in '" + file->name() + "'";
-      if (prefix.length()) {
+                   package_match->second + "\";'";
+      if (!package.empty()) {
+        *out_error += " for package '" + package + "'";
+      }
+      *out_error += " in '" + file->name() + "'";
+      if (has_prefix) {
         *out_error += "; but found '" + prefix + "' instead";
       }
       *out_error += ".";
@@ -1116,22 +1359,65 @@ bool ValidateObjCClassPrefix(
   }
 
   // If there was no prefix option, we're done at this point.
-  if (prefix.empty()) {
-    // No prefix, nothing left to check.
+  if (!has_prefix) {
+    if (require_prefixes) {
+      *out_error =
+        "error: '" + file->name() + "' does not have a required 'option" +
+        " objc_class_prefix'.";
+      return false;
+    }
     return true;
   }
+
+  // When the prefix is non empty, check it against the expected entries.
+  if (!prefix.empty() && have_expected_prefix_file) {
+    // For a non empty prefix, look for any other package that uses the prefix.
+    std::string other_package_for_prefix;
+    for (std::map<std::string, std::string>::const_iterator i =
+             expected_package_prefixes.begin();
+         i != expected_package_prefixes.end(); ++i) {
+      if (i->second == prefix) {
+        other_package_for_prefix = i->first;
+        // Stop on the first real package listing, if it was a no_package file
+        // specific entry, keep looking to try and find a package one.
+        if (!HasPrefixString(other_package_for_prefix, no_package_prefix)) {
+          break;
+        }
+      }
+    }
+
+    // Check: Error - Make sure the prefix wasn't expected for a different
+    // package (overlap is allowed, but it has to be listed as an expected
+    // overlap).
+    if (!other_package_for_prefix.empty()) {
+      *out_error =
+          "error: Found 'option objc_class_prefix = \"" + prefix +
+          "\";' in '" + file->name() + "'; that prefix is already used for ";
+      if (HasPrefixString(other_package_for_prefix, no_package_prefix)) {
+        *out_error += "file '" +
+          StripPrefixString(other_package_for_prefix, no_package_prefix) +
+          "'.";
+      } else {
+        *out_error += "'package " + other_package_for_prefix + ";'.";
+      }
+      *out_error +=
+        " It can only be reused by adding '" + lookup_key + " = " + prefix +
+        "' to the expected prefixes file (" + expected_prefixes_path + ").";
+      return false;  // Only report first usage of the prefix.
+    }
+  } // !prefix.empty() && have_expected_prefix_file
 
   // Check: Warning - Make sure the prefix is is a reasonable value according
   // to Apple's rules (the checks above implicitly whitelist anything that
   // doesn't meet these rules).
-  if (!ascii_isupper(prefix[0])) {
+  if (!prefix.empty() && !ascii_isupper(prefix[0])) {
     std::cerr
          << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
          << " it should start with a capital letter." << std::endl;
     std::cerr.flush();
   }
-  if (prefix.length() < 3) {
+  if (!prefix.empty() && prefix.length() < 3) {
     // Apple reserves 2 character prefixes for themselves. They do use some
     // 3 character prefixes, but they haven't updated the rules/docs.
     std::cerr
@@ -1142,65 +1428,24 @@ bool ValidateObjCClassPrefix(
     std::cerr.flush();
   }
 
-  // Look for any other package that uses the same prefix.
-  std::string other_package_for_prefix;
-  for (std::map<std::string, std::string>::const_iterator i =
-           expected_package_prefixes.begin();
-       i != expected_package_prefixes.end(); ++i) {
-    if (i->second == prefix) {
-      other_package_for_prefix = i->first;
-      break;
+  // Check: Error/Warning - If the given package/prefix pair wasn't expected,
+  // issue a error/warning to added to the file.
+  if (have_expected_prefix_file) {
+    if (prefixes_must_be_registered) {
+      *out_error =
+        "error: '" + file->name() + "' has 'option objc_class_prefix = \"" +
+        prefix + "\";', but it is not registered. Add '" + lookup_key + " = " +
+        (prefix.empty() ? "\"\"" : prefix) +
+        "' to the expected prefixes file (" + expected_prefixes_path + ").";
+      return false;
     }
-  }
 
-  // Check: Warning - If the file does not have a package, check whether
-  // the prefix declared is being used by another package or not.
-  if (package.empty()) {
-    // The file does not have a package and ...
-    if (other_package_for_prefix.empty()) {
-      // ... no other package has declared that prefix.
-      std::cerr
-           << "protoc:0: warning: File '" << file->name() << "' has no "
-           << "package. Consider adding a new package to the proto and adding '"
-           << "new.package = " << prefix << "' to the expected prefixes file ("
-           << expected_prefixes_path << ")." << std::endl;
-      std::cerr.flush();
-    } else {
-      // ... another package has declared the same prefix.
-      std::cerr
-           << "protoc:0: warning: File '" << file->name() << "' has no package "
-           << "and package '" << other_package_for_prefix << "' already uses '"
-           << prefix << "' as its prefix. Consider either adding a new package "
-           << "to the proto, or reusing one of the packages already using this "
-           << "prefix in the expected prefixes file ("
-           << expected_prefixes_path << ")." << std::endl;
-      std::cerr.flush();
-    }
-    return true;
-  }
-
-  // Check: Error - Make sure the prefix wasn't expected for a different
-  // package (overlap is allowed, but it has to be listed as an expected
-  // overlap).
-  if (!other_package_for_prefix.empty()) {
-    *out_error =
-        "error: Found 'option objc_class_prefix = \"" + prefix +
-        "\";' in '" + file->name() +
-        "'; that prefix is already used for 'package " +
-        other_package_for_prefix + ";'. It can only be reused by listing " +
-        "it in the expected file (" +
-        expected_prefixes_path + ").";
-    return false;  // Only report first usage of the prefix.
-  }
-
-  // Check: Warning - If the given package/prefix pair wasn't expected, issue a
-  // warning issue a warning suggesting it gets added to the file.
-  if (!expected_package_prefixes.empty()) {
     std::cerr
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
-         << prefix << "\";' in '" << file->name() << "';"
-         << " consider adding it to the expected prefixes file ("
-         << expected_prefixes_path << ")." << std::endl;
+         << prefix << "\";' in '" << file->name() << "'; consider adding '"
+         << lookup_key << " = " << (prefix.empty() ? "\"\"" : prefix)
+         << "' to the expected prefixes file (" << expected_prefixes_path
+         << ")." << std::endl;
     std::cerr.flush();
   }
 
@@ -1210,11 +1455,24 @@ bool ValidateObjCClassPrefix(
 }  // namespace
 
 bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
+                               std::string* out_error) {
+    // Options's ctor load from the environment.
+    Options options;
+    return ValidateObjCClassPrefixes(files, options, out_error);
+}
+
+bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
                                const Options& generation_options,
                                std::string* out_error) {
+  // Allow a '-' as the path for the expected prefixes to completely disable
+  // even the most basic of checks.
+  if (generation_options.expected_prefixes_path == "-") {
+    return true;
+  }
+
   // Load the expected package prefixes, if available, to validate against.
   std::map<std::string, std::string> expected_package_prefixes;
-  if (!LoadExpectedPackagePrefixes(generation_options,
+  if (!LoadExpectedPackagePrefixes(generation_options.expected_prefixes_path,
                                    &expected_package_prefixes,
                                    out_error)) {
     return false;
@@ -1234,6 +1492,8 @@ bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
         ValidateObjCClassPrefix(files[i],
                                 generation_options.expected_prefixes_path,
                                 expected_package_prefixes,
+                                generation_options.prefixes_must_be_registered,
+                                generation_options.require_prefixes,
                                 out_error);
     if (!is_valid) {
       return false;
@@ -1246,7 +1506,7 @@ TextFormatDecodeData::TextFormatDecodeData() { }
 
 TextFormatDecodeData::~TextFormatDecodeData() { }
 
-void TextFormatDecodeData::AddString(int32 key,
+void TextFormatDecodeData::AddString(int32_t key,
                                      const std::string& input_for_decode,
                                      const std::string& desired_output) {
   for (std::vector<DataEntry>::const_iterator i = entries_.begin();
@@ -1302,12 +1562,12 @@ class DecodeDataBuilder {
   }
 
  private:
-  static constexpr uint8 kAddUnderscore = 0x80;
+  static constexpr uint8_t kAddUnderscore = 0x80;
 
-  static constexpr uint8 kOpAsIs = 0x00;
-  static constexpr uint8 kOpFirstUpper = 0x40;
-  static constexpr uint8 kOpFirstLower = 0x20;
-  static constexpr uint8 kOpAllUpper = 0x60;
+  static constexpr uint8_t kOpAsIs = 0x00;
+  static constexpr uint8_t kOpFirstUpper = 0x40;
+  static constexpr uint8_t kOpFirstLower = 0x20;
+  static constexpr uint8_t kOpAllUpper = 0x60;
 
   static constexpr int kMaxSegmentLen = 0x1f;
 
@@ -1317,7 +1577,7 @@ class DecodeDataBuilder {
   }
 
   void Push() {
-    uint8 op = (op_ | segment_len_);
+    uint8_t op = (op_ | segment_len_);
     if (need_underscore_) op |= kAddUnderscore;
     if (op != 0) {
       decode_data_ += (char)op;
@@ -1349,7 +1609,7 @@ class DecodeDataBuilder {
 
   bool need_underscore_;
   bool is_all_upper_;
-  uint8 op_;
+  uint8_t op_;
   int segment_len_;
 
   std::string decode_data_;
@@ -1461,69 +1721,69 @@ class Parser {
   Parser(LineConsumer* line_consumer)
       : line_consumer_(line_consumer), line_(0) {}
 
-  // Parses a check of input, returning success/failure.
-  bool ParseChunk(StringPiece chunk);
+  // Feeds in some input, parse what it can, returning success/failure. Calling
+  // again after an error is undefined.
+  bool ParseChunk(StringPiece chunk, std::string* out_error);
 
   // Should be called to finish parsing (after all input has been provided via
-  // ParseChunk()).  Returns success/failure.
-  bool Finish();
+  // successful calls to ParseChunk(), calling after a ParseChunk() failure is
+  // undefined). Returns success/failure.
+  bool Finish(std::string* out_error);
 
   int last_line() const { return line_; }
-  std::string error_str() const { return error_str_; }
 
  private:
-  bool ParseLoop();
-
   LineConsumer* line_consumer_;
   int line_;
-  std::string error_str_;
-  StringPiece p_;
   std::string leftover_;
 };
 
-bool Parser::ParseChunk(StringPiece chunk) {
+bool Parser::ParseChunk(StringPiece chunk, std::string* out_error) {
+  StringPiece full_chunk;
   if (!leftover_.empty()) {
     leftover_ += std::string(chunk);
-    p_ = StringPiece(leftover_);
+    full_chunk = StringPiece(leftover_);
   } else {
-    p_ = chunk;
+    full_chunk = chunk;
   }
-  bool result = ParseLoop();
-  if (p_.empty()) {
-    leftover_.clear();
-  } else {
-    leftover_ = std::string(p_);
-  }
-  return result;
-}
 
-bool Parser::Finish() {
-  if (leftover_.empty()) {
-    return true;
-  }
-  // Force a newline onto the end to finish parsing.
-  leftover_ += "\n";
-  p_ = StringPiece(leftover_);
-  if (!ParseLoop()) {
-    return false;
-  }
-  return p_.empty();  // Everything used?
-}
-
-bool Parser::ParseLoop() {
   StringPiece line;
-  while (ReadLine(&p_, &line)) {
+  while (ReadLine(&full_chunk, &line)) {
     ++line_;
     RemoveComment(&line);
     TrimWhitespace(&line);
-    if (line.empty()) {
-      continue;  // Blank line.
-    }
-    if (!line_consumer_->ConsumeLine(line, &error_str_)) {
+    if (!line.empty() && !line_consumer_->ConsumeLine(line, out_error)) {
+      if (out_error->empty()) {
+        *out_error = "ConsumeLine failed without setting an error.";
+      }
+      leftover_.clear();
       return false;
     }
   }
+
+  if (full_chunk.empty()) {
+    leftover_.clear();
+  } else {
+    leftover_ = std::string(full_chunk);
+  }
   return true;
+}
+
+bool Parser::Finish(std::string* out_error) {
+  // If there is still something to go, flush it with a newline.
+  if (!leftover_.empty() && !ParseChunk("\n", out_error)) {
+    return false;
+  }
+  // This really should never fail if ParseChunk succeeded, but check to be sure.
+  if (!leftover_.empty()) {
+    *out_error = "ParseSimple Internal error: finished with pending data.";
+    return false;
+  }
+  return true;
+}
+
+std::string FullErrorString(const std::string& name, int line_num, const std::string& msg) {
+  return std::string("error: ") + name + " Line " + StrCat(line_num) + ", " + msg;
 }
 
 }  // namespace
@@ -1546,22 +1806,33 @@ bool ParseSimpleFile(const std::string& path, LineConsumer* line_consumer,
   io::FileInputStream file_stream(fd);
   file_stream.SetCloseOnDelete(true);
 
+  return ParseSimpleStream(file_stream, path, line_consumer, out_error);
+}
+
+bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
+                       const std::string& stream_name,
+                       LineConsumer* line_consumer,
+                       std::string* out_error) {
+  std::string local_error;
   Parser parser(line_consumer);
   const void* buf;
   int buf_len;
-  while (file_stream.Next(&buf, &buf_len)) {
+  while (input_stream.Next(&buf, &buf_len)) {
     if (buf_len == 0) {
       continue;
     }
 
-    if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len))) {
-      *out_error =
-          std::string("error: ") + path +
-          " Line " + StrCat(parser.last_line()) + ", " + parser.error_str();
+    if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len),
+                           &local_error)) {
+      *out_error = FullErrorString(stream_name, parser.last_line(), local_error);
       return false;
     }
   }
-  return parser.Finish();
+  if (!parser.Finish(&local_error)) {
+    *out_error = FullErrorString(stream_name, parser.last_line(), local_error);
+    return false;
+  }
+  return true;
 }
 
 ImportWriter::ImportWriter(
@@ -1741,7 +2012,7 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
     TrimWhitespace(&proto_file);
     if (!proto_file.empty()) {
       std::map<std::string, std::string>::iterator existing_entry =
-          map_->find(string(proto_file));
+          map_->find(std::string(proto_file));
       if (existing_entry != map_->end()) {
         std::cerr << "warning: duplicate proto file reference, replacing "
                      "framework entry for '"

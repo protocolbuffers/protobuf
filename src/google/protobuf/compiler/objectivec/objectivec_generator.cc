@@ -28,8 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <fstream>
 #include <iostream>
 #include <string>
+#include <unordered_set>
 #include <google/protobuf/compiler/objectivec/objectivec_generator.h>
 #include <google/protobuf/compiler/objectivec/objectivec_file.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
@@ -41,6 +43,28 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
+
+namespace {
+
+// Convert a string with "yes"/"no" (case insensitive) to a boolean, returning
+// true/false for if the input string was a valid value. If the input string is
+// invalid, `result` is unchanged.
+bool StringToBool(const std::string& value, bool* result) {
+  std::string upper_value(value);
+  UpperString(&upper_value);
+  if (upper_value == "NO") {
+    *result = false;
+    return true;
+  }
+  if (upper_value == "YES") {
+    *result = true;
+    return true;
+  }
+
+  return false;
+}
+
+}  // namespace
 
 ObjectiveCGenerator::ObjectiveCGenerator() {}
 
@@ -70,7 +94,8 @@ bool ObjectiveCGenerator::GenerateAll(
   //
   // e.g. protoc ... --objc_opt=expected_prefixes=file.txt,generate_for_named_framework=MyFramework
 
-  Options generation_options;
+  Options validation_options;
+  FileGenerator::GenerationOptions generation_options;
 
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
@@ -86,18 +111,46 @@ bool ObjectiveCGenerator::GenerateAll(
       //   - Comments start with "#".
       //   - A comment can go on a line after a expected package/prefix pair.
       //     (i.e. - "package=prefix # comment")
+      //   - For files that do NOT have a proto package (not recommended), an
+      //     entry can be made as "no_package:PATH=prefix", where PATH is the
+      //     path for the .proto file.
       //
       // There is no validation that the prefixes are good prefixes, it is
       // assumed that they are when you create the file.
-      generation_options.expected_prefixes_path = options[i].second;
+      validation_options.expected_prefixes_path = options[i].second;
     } else if (options[i].first == "expected_prefixes_suppressions") {
       // A semicolon delimited string that lists the paths of .proto files to
       // exclude from the package prefix validations (expected_prefixes_path).
       // This is provided as an "out", to skip some files being checked.
       for (StringPiece split_piece : Split(
                options[i].second, ";", true)) {
-        generation_options.expected_prefixes_suppressions.push_back(
+        validation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));
+      }
+    } else if (options[i].first == "prefixes_must_be_registered") {
+      // If objc prefix file option value must be registered to be used. This
+      // option has no meaning if an "expected_prefixes_path" isn't set. The
+      // available options are:
+      //   "no": They don't have to be registered.
+      //   "yes": They must be registered and an error will be raised if a files
+      //     tried to use a prefix that isn't registered.
+      // Default is "no".
+      if (!StringToBool(options[i].second,
+                        &validation_options.prefixes_must_be_registered)) {
+        *error = "error: Unknown value for prefixes_must_be_registered: " + options[i].second;
+        return false;
+      }
+    } else if (options[i].first == "require_prefixes") {
+      // If every file must have an objc prefix file option to be used. The
+      // available options are:
+      //   "no": Files can be generated without the prefix option.
+      //   "yes": Files must have the objc prefix option, and an error will be
+      //     raised if a files doesn't have one.
+      // Default is "no".
+      if (!StringToBool(options[i].second,
+                        &validation_options.require_prefixes)) {
+        *error = "error: Unknown value for require_prefixes: " + options[i].second;
+        return false;
       }
     } else if (options[i].first == "generate_for_named_framework") {
       // The name of the framework that protos are being generated for. This
@@ -136,8 +189,53 @@ bool ObjectiveCGenerator::GenerateAll(
       // generated files. When integrating ObjC protos into a build system,
       // this can be used to avoid having to add the runtime directory to the
       // header search path since the generate #import will be more complete.
-      generation_options.runtime_import_prefix =
-          StripSuffixString(options[i].second, "/");
+      generation_options.runtime_import_prefix = StripSuffixString(options[i].second, "/");
+    } else if (options[i].first == "package_to_prefix_mappings_path") {
+      // Path to use for when loading the objc class prefix mappings to use.
+      // The `objc_class_prefix` file option is always honored first if one is present.
+      // This option also has precedent over the use_package_as_prefix option.
+      //
+      // The format of the file is:
+      //   - An entry is a line of "package=prefix".
+      //   - Comments start with "#".
+      //   - A comment can go on a line after a expected package/prefix pair.
+      //     (i.e. - "package=prefix # comment")
+      //   - For files that do NOT have a proto package (not recommended), an
+      //     entry can be made as "no_package:PATH=prefix", where PATH is the
+      //     path for the .proto file.
+      //
+      SetPackageToPrefixMappingsPath(options[i].second);
+    } else if (options[i].first == "use_package_as_prefix") {
+      // Controls how the symbols should be prefixed to avoid symbols
+      // collisions. The objc_class_prefix file option is always honored, this
+      // is just what to do if that isn't set. The available options are:
+      //   "no": Not prefixed (the existing mode).
+      //   "yes": Make a prefix out of the proto package.
+      bool value = false;
+      if (StringToBool(options[i].second, &value)) {
+        SetUseProtoPackageAsDefaultPrefix(value);
+      } else {
+        *error = "error: Unknown use_package_as_prefix: " + options[i].second;
+        return false;
+      }
+    } else if (options[i].first == "proto_package_prefix_exceptions_path") {
+      // Path to find a file containing the list of proto package names that are
+      // exceptions when use_package_as_prefix is enabled. This can be used to
+      // migrate packages one at a time to use_package_as_prefix since there
+      // are likely code updates needed with each one.
+      //
+      // The format of the file is:
+      //   - An entry is a line of "proto.package.name".
+      //   - Comments start with "#".
+      //   - A comment can go on a line after a expected package/prefix pair.
+      //     (i.e. - "some.proto.package # comment")
+      SetProtoPackagePrefixExceptionList(options[i].second);
+    } else if (options[i].first == "headers_use_forward_declarations") {
+      if (!StringToBool(options[i].second,
+                        &generation_options.headers_use_forward_declarations)) {
+        *error = "error: Unknown value for headers_use_forward_declarations: " + options[i].second;
+        return false;
+      }
     } else {
       *error = "error: Unknown generator option: " + options[i].first;
       return false;
@@ -146,8 +244,27 @@ bool ObjectiveCGenerator::GenerateAll(
 
   // -----------------------------------------------------------------
 
+  // These are not official generation options and could be removed/changed in
+  // the future and doing that won't count as a breaking change.
+  bool headers_only = getenv("GPB_OBJC_HEADERS_ONLY") != NULL;
+  std::unordered_set<std::string> skip_impls;
+  if (getenv("GPB_OBJC_SKIP_IMPLS_FILE") != NULL) {
+    std::ifstream skip_file(getenv("GPB_OBJC_SKIP_IMPLS_FILE"));
+    if (skip_file.is_open()) {
+      std::string line;
+      while (std::getline(skip_file, line)) {
+        skip_impls.insert(line);
+      }
+    } else {
+      *error = "error: Failed to open GPB_OBJC_SKIP_IMPLS_FILE file";
+      return false;
+    }
+  }
+
+  // -----------------------------------------------------------------
+
   // Validate the objc prefix/package pairings.
-  if (!ValidateObjCClassPrefixes(files, generation_options, error)) {
+  if (!ValidateObjCClassPrefixes(files, validation_options, error)) {
     // *error will have been filled in.
     return false;
   }
@@ -166,7 +283,7 @@ bool ObjectiveCGenerator::GenerateAll(
     }
 
     // Generate m file.
-    {
+    if (!headers_only && skip_impls.count(file->name()) == 0) {
       std::unique_ptr<io::ZeroCopyOutputStream> output(
           context->Open(filepath + ".pbobjc.m"));
       io::Printer printer(output.get(), '$');

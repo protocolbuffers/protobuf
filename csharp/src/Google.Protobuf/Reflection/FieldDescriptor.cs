@@ -45,7 +45,6 @@ namespace Google.Protobuf.Reflection
         private MessageDescriptor extendeeType;
         private MessageDescriptor messageType;
         private FieldType fieldType;
-        private readonly string propertyName; // Annoyingly, needed in Crosslink.
         private IFieldAccessor accessor;
 
         /// <summary>
@@ -71,6 +70,11 @@ namespace Google.Protobuf.Reflection
         public string JsonName { get; }
 
         /// <summary>
+        /// The name of the property in the <c>ContainingType.ClrType</c> class.
+        /// </summary>
+        public string PropertyName { get; }
+
+        /// <summary>
         /// Indicates whether this field supports presence, either implicitly (e.g. due to it being a message
         /// type field) or explicitly via Has/Clear members. If this returns true, it is safe to call
         /// <see cref="IFieldAccessor.Clear(IMessage)"/> and <see cref="IFieldAccessor.HasValue(IMessage)"/>
@@ -86,6 +90,14 @@ namespace Google.Protobuf.Reflection
             : File.Syntax == Syntax.Proto2;
 
         internal FieldDescriptorProto Proto { get; }
+
+        /// <summary>
+        /// Returns a clone of the underlying <see cref="FieldDescriptorProto"/> describing this field.
+        /// Note that a copy is taken every time this method is called, so clients using it frequently
+        /// (and not modifying it) may want to cache the returned value.
+        /// </summary>
+        /// <returns>A protobuf representation of this field descriptor.</returns>
+        public FieldDescriptorProto ToProto() => Proto.Clone();
 
         /// <summary>
         /// An extension identifier for this field, or <c>null</c> if this field isn't an extension.
@@ -123,7 +135,7 @@ namespace Google.Protobuf.Reflection
             // for later.
             // We could trust the generated code and check whether the type of the property is
             // a MapField, but that feels a tad nasty.
-            this.propertyName = propertyName;
+            PropertyName = propertyName;
             Extension = extension;
             JsonName =  Proto.JsonName == "" ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
         }
@@ -235,7 +247,8 @@ namespace Google.Protobuf.Reflection
                 }
                 else
                 {
-                    return !Proto.Options.HasPacked || Proto.Options.Packed;
+                    // Packed by default with proto3
+                    return Proto.Options == null || !Proto.Options.HasPacked || Proto.Options.Packed;
                 }
             }
         }
@@ -436,19 +449,19 @@ namespace Google.Protobuf.Reflection
             // If we're given no property name, that's because we really don't want an accessor.
             // This could be because it's a map message, or it could be that we're loading a FileDescriptor dynamically.
             // TODO: Support dynamic messages.
-            if (propertyName == null)
+            if (PropertyName == null)
             {
                 return null;
             }
 
-            var property = ContainingType.ClrType.GetProperty(propertyName);
+            var property = ContainingType.ClrType.GetProperty(PropertyName);
             if (property == null)
             {
-                throw new DescriptorValidationException(this, $"Property {propertyName} not found in {ContainingType.ClrType}");
+                throw new DescriptorValidationException(this, $"Property {PropertyName} not found in {ContainingType.ClrType}");
             }
             return IsMap ? new MapFieldAccessor(property, this)
                 : IsRepeated ? new RepeatedFieldAccessor(property, this)
-                : (IFieldAccessor) new SingleFieldAccessor(property, this);
+                : (IFieldAccessor) new SingleFieldAccessor(ContainingType.ClrType, property, this);
         }
     }
 }

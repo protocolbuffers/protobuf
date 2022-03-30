@@ -202,7 +202,11 @@ jspb.utils.splitFloat32 = function(value) {
 
   exp = Math.floor(Math.log(value) / Math.LN2);
   mant = value * Math.pow(2, -exp);
-  mant = Math.round(mant * jspb.BinaryConstants.TWO_TO_23) & 0x7FFFFF;
+  mant = Math.round(mant * jspb.BinaryConstants.TWO_TO_23);
+  if (mant >= 0x1000000) {
+    ++exp;
+  }
+  mant = mant & 0x7FFFFF;
 
   jspb.utils.split64High = 0;
   jspb.utils.split64Low = ((sign << 31) | ((exp + 127) << 23) | mant) >>> 0;
@@ -511,7 +515,7 @@ jspb.utils.joinUnsignedDecimalString = function(bitsLow, bitsHigh) {
   // Skip the expensive conversion if the number is small enough to use the
   // built-in conversions.
   if (bitsHigh <= 0x1FFFFF) {
-    return '' + (jspb.BinaryConstants.TWO_TO_32 * bitsHigh + bitsLow);
+    return '' + jspb.utils.joinUint64(bitsLow, bitsHigh);
   }
 
   // What this code is doing is essentially converting the input number from

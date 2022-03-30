@@ -41,10 +41,12 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 #include <google/protobuf/compiler/parser.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -85,7 +87,7 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
   // the specified source_tree.
   SourceTreeDescriptorDatabase(SourceTree* source_tree,
                                DescriptorDatabase* fallback_database);
-  ~SourceTreeDescriptorDatabase();
+  ~SourceTreeDescriptorDatabase() override;
 
   // Instructs the SourceTreeDescriptorDatabase to report any parse errors
   // to the given MultiFileErrorCollector.  This should be called before
@@ -124,7 +126,7 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
       : public DescriptorPool::ErrorCollector {
    public:
     ValidationErrorCollector(SourceTreeDescriptorDatabase* owner);
-    ~ValidationErrorCollector();
+    ~ValidationErrorCollector() override;
 
     // implements ErrorCollector ---------------------------------------
     void AddError(const std::string& filename, const std::string& element_name,
@@ -202,8 +204,8 @@ class PROTOBUF_EXPORT MultiFileErrorCollector {
   virtual void AddError(const std::string& filename, int line, int column,
                         const std::string& message) = 0;
 
-  virtual void AddWarning(const std::string& filename, int line, int column,
-                          const std::string& message) {}
+  virtual void AddWarning(const std::string& /* filename */, int /* line */,
+                          int /* column */, const std::string& /* message */) {}
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MultiFileErrorCollector);
@@ -241,7 +243,7 @@ class PROTOBUF_EXPORT SourceTree {
 class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
  public:
   DiskSourceTree();
-  ~DiskSourceTree();
+  ~DiskSourceTree() override;
 
   // Map a path on disk to a location in the SourceTree.  The path may be
   // either a file or a directory.  If it is a directory, the entire tree

@@ -4,6 +4,7 @@
         <arg value="--java_out=${generated.testsources.dir}"/>
         <arg value="--proto_path=${protobuf.source.dir}"/>
         <arg value="--proto_path=${test.proto.dir}"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/map_lite_unittest.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_custom_options.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_enormous_descriptor.proto"/>
@@ -22,6 +23,7 @@
         <arg value="${test.proto.dir}/com/google/protobuf/any_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/cached_field_size_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/deprecated_file.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/dynamic_message_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/field_presence_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/lazy_fields_lite.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/lite_equals_and_hash.proto"/>
@@ -30,7 +32,6 @@
         <arg value="${test.proto.dir}/com/google/protobuf/map_initialization_order_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_lite_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_test.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/message_lite_extension_util_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/multiple_files_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/nested_builders_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/nested_extension.proto"/>

@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.14.0</version>
+    <version>3.20.0-rc-1</version>
   </parent>
 
   <artifactId>protobuf-javalite</artifactId>
@@ -23,13 +23,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymock</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymockclassextension</artifactId>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -104,10 +99,13 @@
                     <include>ByteBufferWriter.java</include>
                     <include>ByteOutput.java</include>
                     <include>ByteString.java</include>
+                    <include>CanIgnoreReturnValue.java</include>
+                    <include>CheckReturnValue.java</include>
                     <include>CodedInputStream.java</include>
                     <include>CodedInputStreamReader.java</include>
                     <include>CodedOutputStream.java</include>
                     <include>CodedOutputStreamWriter.java</include>
+                    <include>CompileTimeConstant.java</include>
                     <include>DoubleArrayList.java</include>
                     <include>ExperimentalApi.java</include>
                     <include>ExtensionLite.java</include>
@@ -122,6 +120,7 @@
                     <include>FloatArrayList.java</include>
                     <include>GeneratedMessageInfoFactory.java</include>
                     <include>GeneratedMessageLite.java</include>
+                    <include>InlineMe.java</include>
                     <include>IntArrayList.java</include>
                     <include>Internal.java</include>
                     <include>InvalidProtocolBufferException.java</include>
@@ -173,6 +172,7 @@
                     <include>UnknownFieldSetLite.java</include>
                     <include>UnknownFieldSetLiteSchema.java</include>
                     <include>UnmodifiableLazyStringList.java</include>
+                    <include>UnsafeByteOperations.java</include>
                     <include>UnsafeUtil.java</include>
                     <include>Utf8.java</include>
                     <include>WireFormat.java</include>
@@ -198,6 +198,7 @@
                   and exclude only the full runtime exclusive tests so we don't accidentally miss
                   any test. -->
                   <excludes>
+                    <!-- Keep in sync with //java/core:lite_tests BUILD rule. -->
                     <exclude>AbstractMessageTest.java</exclude>
                     <exclude>AbstractProto2SchemaTest.java</exclude>
                     <exclude>AnyTest.java</exclude>
@@ -233,6 +234,7 @@
                     <exclude>TypeRegistryTest.java</exclude>
                     <exclude>UnknownEnumValueTest.java</exclude>
                     <exclude>UnknownFieldSetLiteTest.java</exclude>
+                    <exclude>UnknownFieldSetPerformanceTest.java</exclude>
                     <exclude>UnknownFieldSetTest.java</exclude>
                     <exclude>WellKnownTypesTest.java</exclude>
                     <exclude>WireFormatTest.java</exclude>

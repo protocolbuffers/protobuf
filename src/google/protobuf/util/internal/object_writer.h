@@ -28,8 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_WRITER_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_WRITER_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_OBJECT_WRITER_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_OBJECT_WRITER_H__
+
+#include <cstdint>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -79,16 +81,18 @@ class PROTOBUF_EXPORT ObjectWriter {
   virtual ObjectWriter* RenderBool(StringPiece name, bool value) = 0;
 
   // Renders an 32-bit integer value.
-  virtual ObjectWriter* RenderInt32(StringPiece name, int32 value) = 0;
+  virtual ObjectWriter* RenderInt32(StringPiece name, int32_t value) = 0;
 
   // Renders an 32-bit unsigned integer value.
-  virtual ObjectWriter* RenderUint32(StringPiece name, uint32 value) = 0;
+  virtual ObjectWriter* RenderUint32(StringPiece name,
+                                     uint32_t value) = 0;
 
   // Renders a 64-bit integer value.
-  virtual ObjectWriter* RenderInt64(StringPiece name, int64 value) = 0;
+  virtual ObjectWriter* RenderInt64(StringPiece name, int64_t value) = 0;
 
   // Renders an 64-bit unsigned integer value.
-  virtual ObjectWriter* RenderUint64(StringPiece name, uint64 value) = 0;
+  virtual ObjectWriter* RenderUint64(StringPiece name,
+                                     uint64_t value) = 0;
 
 
   // Renders a double value.
@@ -144,4 +148,4 @@ class PROTOBUF_EXPORT ObjectWriter {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_WRITER_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_OBJECT_WRITER_H__

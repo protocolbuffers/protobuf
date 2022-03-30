@@ -266,7 +266,7 @@ int open(const char* path, int flags, int mode) {
 #endif
 }
 
-int mkdir(const char* path, int _mode) {
+int mkdir(const char* path, int /*_mode*/) {
 #ifdef SUPPORT_LONGPATHS
   wstring wpath;
   if (!as_windows_path(path, &wpath)) {
@@ -397,7 +397,8 @@ ExpandWildcardsResult ExpandWildcards(
       matched = ExpandWildcardsResult::kSuccess;
       string filename;
       if (!strings::wcs_to_utf8(metadata.cFileName, &filename)) {
-        return ExpandWildcardsResult::kErrorOutputPathConversion;
+        matched = ExpandWildcardsResult::kErrorOutputPathConversion;
+        break;
       }
 
       if (dirname.empty()) {

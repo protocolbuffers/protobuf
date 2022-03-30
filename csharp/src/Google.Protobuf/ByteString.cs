@@ -325,7 +325,7 @@ namespace Google.Protobuf
             if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment) && segment.Count == bytes.Length)
             {
                 // Fast path. ByteString was created with a complete array.
-                return new CodedInputStream(segment.Array);
+                return new CodedInputStream(segment.Array, segment.Offset, segment.Count);
             }
             else
             {

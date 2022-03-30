@@ -16,12 +16,13 @@ release page. If the target is protoc, well-known type .proto files will also be
 included. Each invocation will create 8 zip packages:
   dist/<TARGET>-<VERSION_NUMBER>-win32.zip
   dist/<TARGET>-<VERSION_NUMBER>-win64.zip
+  dist/<TARGET>-<VERSION_NUMBER>-osx-aarch_64.zip
   dist/<TARGET>-<VERSION_NUMBER>-osx-x86_64.zip
   dist/<TARGET>-<VERSION_NUMBER>-linux-x86_32.zip
   dist/<TARGET>-<VERSION_NUMBER>-linux-x86_64.zip
   dist/<TARGET>-<VERSION_NUMBER>-linux-aarch_64.zip
   dist/<TARGET>-<VERSION_NUMBER>-linux-ppcle_64.zip
-  dist/<TARGET>-<VERSION_NUMBER>-linux-s390x.zip
+  dist/<TARGET>-<VERSION_NUMBER>-linux-s390_64.zip
 EOF
   exit 1
 fi
@@ -33,12 +34,13 @@ VERSION_NUMBER=$2
 declare -a FILE_NAMES=( \
   win32.zip windows-x86_32.exe \
   win64.zip windows-x86_64.exe \
+  osx-aarch_64.zip osx-aarch_64.exe \
   osx-x86_64.zip osx-x86_64.exe \
   linux-x86_32.zip linux-x86_32.exe \
   linux-x86_64.zip linux-x86_64.exe \
   linux-aarch_64.zip linux-aarch_64.exe \
   linux-ppcle_64.zip linux-ppcle_64.exe \
-  linux-s390x.zip linux-s390x.exe \
+  linux-s390_64.zip linux-s390_64.exe \
 )
 
 # List of all well-known types to be included.

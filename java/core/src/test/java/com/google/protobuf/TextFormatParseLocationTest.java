@@ -30,55 +30,66 @@
 
 package com.google.protobuf;
 
-import junit.framework.TestCase;
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
-/** Test @{link TextFormatParseLocation}. */
-public class TextFormatParseLocationTest extends TestCase {
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+/** Test {@link TextFormatParseLocation}. */
+@RunWith(JUnit4.class)
+public class TextFormatParseLocationTest {
+
+  @Test
   public void testCreateEmpty() {
     TextFormatParseLocation location = TextFormatParseLocation.create(-1, -1);
-    assertEquals(TextFormatParseLocation.EMPTY, location);
+    assertThat(location).isEqualTo(TextFormatParseLocation.EMPTY);
   }
 
+  @Test
   public void testCreate() {
     TextFormatParseLocation location = TextFormatParseLocation.create(2, 1);
-    assertEquals(2, location.getLine());
-    assertEquals(1, location.getColumn());
+    assertThat(location.getLine()).isEqualTo(2);
+    assertThat(location.getColumn()).isEqualTo(1);
   }
 
+  @Test
   public void testCreateThrowsIllegalArgumentExceptionForInvalidIndex() {
     try {
       TextFormatParseLocation.create(-1, 0);
-      fail("Should throw IllegalArgumentException if line is less than 0");
+      assertWithMessage("Should throw IllegalArgumentException if line is less than 0").fail();
     } catch (IllegalArgumentException unused) {
       // pass
     }
     try {
       TextFormatParseLocation.create(0, -1);
-      fail("Should throw, column < 0");
+      assertWithMessage("Should throw, column < 0").fail();
     } catch (IllegalArgumentException unused) {
       // pass
     }
   }
 
+  @Test
   public void testHashCode() {
     TextFormatParseLocation loc0 = TextFormatParseLocation.create(2, 1);
     TextFormatParseLocation loc1 = TextFormatParseLocation.create(2, 1);
 
-    assertEquals(loc0.hashCode(), loc1.hashCode());
-    assertEquals(
-        TextFormatParseLocation.EMPTY.hashCode(), TextFormatParseLocation.EMPTY.hashCode());
+    assertThat(loc0.hashCode()).isEqualTo(loc1.hashCode());
+    assertThat(TextFormatParseLocation.EMPTY.hashCode())
+        .isEqualTo(TextFormatParseLocation.EMPTY.hashCode());
   }
 
+  @Test
   public void testEquals() {
     TextFormatParseLocation loc0 = TextFormatParseLocation.create(2, 1);
     TextFormatParseLocation loc1 = TextFormatParseLocation.create(1, 2);
     TextFormatParseLocation loc2 = TextFormatParseLocation.create(2, 2);
     TextFormatParseLocation loc3 = TextFormatParseLocation.create(2, 1);
 
-    assertEquals(loc0, loc3);
-    assertNotSame(loc0, loc1);
-    assertNotSame(loc0, loc2);
-    assertNotSame(loc1, loc2);
+    assertThat(loc0).isEqualTo(loc3);
+    assertThat(loc0).isNotSameInstanceAs(loc1);
+    assertThat(loc0).isNotSameInstanceAs(loc2);
+    assertThat(loc1).isNotSameInstanceAs(loc2);
   }
 }

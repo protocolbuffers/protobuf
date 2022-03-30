@@ -47,13 +47,16 @@ final class MessageLiteToString {
   private static final String MAP_SUFFIX = "Map";
   private static final String BYTES_SUFFIX = "Bytes";
 
+  private MessageLiteToString() {
+    // Classes which are not intended to be instantiated should be made non-instantiable with a
+    // private constructor. This includes utility classes (classes with only static members).
+  }
+
   /**
    * Returns a {@link String} representation of the {@link MessageLite} object. The first line of
-   * the {@code String} representation representation includes a comment string to uniquely identify
+   * the {@code String} representation includes a comment string to uniquely identify
    * the object instance. This acts as an indicator that this should not be relied on for
    * comparisons.
-   *
-   * <p>For use by generated code only.
    */
   static String toString(MessageLite messageLite, String commentString) {
     StringBuilder buffer = new StringBuilder();
@@ -73,9 +76,9 @@ final class MessageLiteToString {
     // Build a map of method name to method. We're looking for methods like getFoo(), hasFoo(),
     // getFooList() and getFooMap() which might be useful for building an object's string
     // representation.
-    Map<String, Method> nameToNoArgMethod = new HashMap<String, Method>();
-    Map<String, Method> nameToMethod = new HashMap<String, Method>();
-    Set<String> getters = new TreeSet<String>();
+    Map<String, Method> nameToNoArgMethod = new HashMap<>();
+    Map<String, Method> nameToMethod = new HashMap<>();
+    Set<String> getters = new TreeSet<>();
     for (Method method : messageLite.getClass().getDeclaredMethods()) {
       nameToMethod.put(method.getName(), method);
       if (method.getParameterTypes().length == 0) {
@@ -187,10 +190,10 @@ final class MessageLiteToString {
       return ((Integer) o) == 0;
     }
     if (o instanceof Float) {
-      return ((Float) o) == 0f;
+      return Float.floatToRawIntBits((Float) o) == 0;
     }
     if (o instanceof Double) {
-      return ((Double) o) == 0d;
+      return Double.doubleToRawLongBits((Double) o) == 0;
     }
     if (o instanceof String) {
       return o.equals("");
@@ -263,7 +266,7 @@ final class MessageLiteToString {
       }
       buffer.append("}");
     } else {
-      buffer.append(": ").append(object.toString());
+      buffer.append(": ").append(object);
     }
   }
 

@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import java.lang.reflect.Method;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.AbstractList;
@@ -54,6 +55,7 @@ public final class Internal {
 
   private Internal() {}
 
+  static final Charset US_ASCII = Charset.forName("US-ASCII");
   static final Charset UTF_8 = Charset.forName("UTF-8");
   static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
@@ -138,10 +140,12 @@ public final class Internal {
     ByteBuffer temp = source.duplicate();
     // We want to copy all the data in the source ByteBuffer, not just the
     // remaining bytes.
-    temp.clear();
+    // View ByteBuffer as Buffer to avoid issue with covariant return types
+    // See https://issues.apache.org/jira/browse/MRESOLVER-85
+    ((Buffer) temp).clear();
     ByteBuffer result = ByteBuffer.allocate(temp.capacity());
     result.put(temp);
-    result.clear();
+    ((Buffer) result).clear();
     return result;
   }
 
@@ -255,7 +259,9 @@ public final class Internal {
 
   /** Helper method for implementing {@link Message#equals(Object)} for bytes field. */
   public static boolean equals(List<byte[]> a, List<byte[]> b) {
-    if (a.size() != b.size()) return false;
+    if (a.size() != b.size()) {
+      return false;
+    }
     for (int i = 0; i < a.size(); ++i) {
       if (!Arrays.equals(a.get(i), b.get(i))) {
         return false;
@@ -449,7 +455,6 @@ public final class Internal {
       this.valueConverter = valueConverter;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public V get(Object key) {
       RealValue result = realMap.get(key);
@@ -548,7 +553,6 @@ public final class Internal {
         if (!(o instanceof Map.Entry)) {
           return false;
         }
-        @SuppressWarnings("unchecked")
         Map.Entry<?, ?> other = (Map.Entry<?, ?>) o;
         return getKey().equals(other.getKey()) && getValue().equals(getValue());
       }

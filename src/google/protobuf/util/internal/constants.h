@@ -28,8 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_CONSTANTS_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_CONSTANTS_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_CONSTANTS_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_CONSTANTS_H__
+
+#include <cstdint>
 
 #include <google/protobuf/stubs/common.h>
 
@@ -50,19 +52,19 @@ const char kRfc3339TimeFormat[] = "%E4Y-%m-%dT%H:%M:%S";
 const char kRfc3339TimeFormatNoPadding[] = "%Y-%m-%dT%H:%M:%S";
 
 // Minimum seconds allowed in a google.protobuf.Timestamp value.
-const int64 kTimestampMinSeconds = -62135596800LL;
+const int64_t kTimestampMinSeconds = -62135596800LL;
 
 // Maximum seconds allowed in a google.protobuf.Timestamp value.
-const int64 kTimestampMaxSeconds = 253402300799LL;
+const int64_t kTimestampMaxSeconds = 253402300799LL;
 
 // Minimum seconds allowed in a google.protobuf.Duration value.
-const int64 kDurationMinSeconds = -315576000000LL;
+const int64_t kDurationMinSeconds = -315576000000LL;
 
 // Maximum seconds allowed in a google.protobuf.Duration value.
-const int64 kDurationMaxSeconds = 315576000000LL;
+const int64_t kDurationMaxSeconds = 315576000000LL;
 
 // Nano seconds in a second.
-const int32 kNanosPerSecond = 1000000000;
+const int32_t kNanosPerSecond = 1000000000;
 
 // Type url representing NULL values in google.protobuf.Struct type.
 const char kStructNullValueTypeUrl[] =
@@ -96,4 +98,4 @@ const char kOptionJspbMessageId[] = "jspb.message_id";
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_CONSTANTS_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_CONSTANTS_H__

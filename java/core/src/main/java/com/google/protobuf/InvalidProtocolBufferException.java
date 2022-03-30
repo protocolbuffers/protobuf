@@ -33,24 +33,33 @@ package com.google.protobuf;
 import java.io.IOException;
 
 /**
- * Thrown when a protocol message being parsed is invalid in some way, e.g. it contains a malformed
- * varint or a negative byte length.
+ * Thrown when a protocol message being parsed is invalid in some way. For instance,
+ * it contains a malformed varint or a negative byte length.
  *
  * @author kenton@google.com Kenton Varda
  */
 public class InvalidProtocolBufferException extends IOException {
   private static final long serialVersionUID = -1616151763072450476L;
   private MessageLite unfinishedMessage = null;
+  private boolean wasThrownFromInputStream;
 
-  public InvalidProtocolBufferException(final String description) {
+  public InvalidProtocolBufferException(String description) {
     super(description);
+  }
+
+  public InvalidProtocolBufferException(Exception e) {
+    super(e.getMessage(), e);
+  }
+
+  public InvalidProtocolBufferException(String description, Exception e) {
+    super(description, e);
   }
 
   public InvalidProtocolBufferException(IOException e) {
     super(e.getMessage(), e);
   }
 
-  public InvalidProtocolBufferException(final String description, IOException e) {
+  public InvalidProtocolBufferException(String description, IOException e) {
     super(description, e);
   }
 
@@ -70,6 +79,28 @@ public class InvalidProtocolBufferException extends IOException {
    */
   public MessageLite getUnfinishedMessage() {
     return unfinishedMessage;
+  }
+
+  /** Set by CodedInputStream */
+  void setThrownFromInputStream() {
+    /* This write can be racy if the same exception is stored and then thrown by multiple custom
+     * InputStreams on different threads. But since it only ever moves from false->true, there's no
+     * problem. A thread checking this condition after catching this exception from a delegate
+     * stream of CodedInputStream is guaranteed to always observe true, because a write on the same
+     * thread set the value when the exception left the delegate. A thread checking the same
+     * condition with an exception created by CodedInputStream is guaranteed to always see false,
+     * because the exception has not been exposed to any code that could publish it to other threads
+     * and cause a write.
+     */
+    wasThrownFromInputStream = true;
+  }
+
+  /**
+   * Allows code catching IOException from CodedInputStream to tell whether this instance was thrown
+   * by a delegate InputStream, rather than directly by a parse failure.
+   */
+  boolean getThrownFromInputStream() {
+    return wasThrownFromInputStream;
   }
 
   /**
@@ -111,7 +142,7 @@ public class InvalidProtocolBufferException extends IOException {
     return new InvalidWireTypeException("Protocol message tag had invalid wire type.");
   }
 
-  /** Exception indicating that and unexpected wire type was encountered for a field. */
+  /** Exception indicating that an unexpected wire type was encountered for a field. */
   @ExperimentalApi
   public static class InvalidWireTypeException extends InvalidProtocolBufferException {
     private static final long serialVersionUID = 3283890091615336259L;

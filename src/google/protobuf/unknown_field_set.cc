@@ -36,14 +36,19 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/extension_set.h>
+#include <google/protobuf/generated_message_tctable_decl.h>
+#include <google/protobuf/generated_message_tctable_impl.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/wire_format.h>
+#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -129,7 +134,7 @@ size_t UnknownFieldSet::SpaceUsedLong() const {
   return sizeof(*this) + SpaceUsedExcludingSelf();
 }
 
-void UnknownFieldSet::AddVarint(int number, uint64 value) {
+void UnknownFieldSet::AddVarint(int number, uint64_t value) {
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_VARINT);
@@ -137,7 +142,7 @@ void UnknownFieldSet::AddVarint(int number, uint64 value) {
   fields_.push_back(field);
 }
 
-void UnknownFieldSet::AddFixed32(int number, uint32 value) {
+void UnknownFieldSet::AddFixed32(int number, uint32_t value) {
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED32);
@@ -145,7 +150,7 @@ void UnknownFieldSet::AddFixed32(int number, uint32 value) {
   fields_.push_back(field);
 }
 
-void UnknownFieldSet::AddFixed64(int number, uint64 value) {
+void UnknownFieldSet::AddFixed64(int number, uint64_t value) {
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED64);
@@ -235,6 +240,20 @@ bool UnknownFieldSet::ParseFromArray(const void* data, int size) {
   return ParseFromZeroCopyStream(&input);
 }
 
+bool UnknownFieldSet::SerializeToString(std::string* output) const {
+  const size_t size =
+      google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(*this);
+  STLStringResizeUninitializedAmortized(output, size);
+  google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+      *this, reinterpret_cast<uint8_t*>(const_cast<char*>(output->data())));
+  return true;
+}
+
+bool UnknownFieldSet::SerializeToCodedStream(
+    io::CodedOutputStream* output) const {
+  google::protobuf::internal::WireFormat::SerializeUnknownFields(*this, output);
+  return !output->HadError();
+}
 void UnknownField::Delete() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
@@ -249,6 +268,7 @@ void UnknownField::Delete() {
 }
 
 void UnknownField::DeepCopy(const UnknownField& other) {
+  (void)other;  // Parameter is used by Google-internal code.
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
       data_.length_delimited_.string_value =
@@ -266,8 +286,8 @@ void UnknownField::DeepCopy(const UnknownField& other) {
 }
 
 
-uint8* UnknownField::InternalSerializeLengthDelimitedNoTag(
-    uint8* target, io::EpsCopyOutputStream* stream) const {
+uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
+    uint8_t* target, io::EpsCopyOutputStream* stream) const {
   GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
   const std::string& data = *data_.length_delimited_.string_value;
   target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
@@ -282,22 +302,24 @@ class UnknownFieldParserHelper {
   explicit UnknownFieldParserHelper(UnknownFieldSet* unknown)
       : unknown_(unknown) {}
 
-  void AddVarint(uint32 num, uint64 value) { unknown_->AddVarint(num, value); }
-  void AddFixed64(uint32 num, uint64 value) {
+  void AddVarint(uint32_t num, uint64_t value) {
+    unknown_->AddVarint(num, value);
+  }
+  void AddFixed64(uint32_t num, uint64_t value) {
     unknown_->AddFixed64(num, value);
   }
-  const char* ParseLengthDelimited(uint32 num, const char* ptr,
+  const char* ParseLengthDelimited(uint32_t num, const char* ptr,
                                    ParseContext* ctx) {
     std::string* s = unknown_->AddLengthDelimited(num);
     int size = ReadSize(&ptr);
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     return ctx->ReadString(ptr, size, s);
   }
-  const char* ParseGroup(uint32 num, const char* ptr, ParseContext* ctx) {
+  const char* ParseGroup(uint32_t num, const char* ptr, ParseContext* ctx) {
     UnknownFieldParserHelper child(unknown_->AddGroup(num));
     return ctx->ParseGroup(&child, ptr, num * 8 + 3);
   }
-  void AddFixed32(uint32 num, uint32 value) {
+  void AddFixed32(uint32_t num, uint32_t value) {
     unknown_->AddFixed32(num, value);
   }
 
@@ -315,7 +337,7 @@ const char* UnknownGroupParse(UnknownFieldSet* unknown, const char* ptr,
   return WireFormatParser(field_parser, ptr, ctx);
 }
 
-const char* UnknownFieldParse(uint64 tag, UnknownFieldSet* unknown,
+const char* UnknownFieldParse(uint64_t tag, UnknownFieldSet* unknown,
                               const char* ptr, ParseContext* ctx) {
   UnknownFieldParserHelper field_parser(unknown);
   return FieldParser(tag, field_parser, ptr, ctx);

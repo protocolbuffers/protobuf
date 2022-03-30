@@ -35,6 +35,7 @@ using System.IO;
 using Google.Protobuf.TestProtos;
 using Google.Protobuf.Buffers;
 using NUnit.Framework;
+using System.Text;
 
 namespace Google.Protobuf
 {
@@ -57,7 +58,7 @@ namespace Google.Protobuf
                 Assert.AreEqual(data, rawOutput.ToArray());
 
                 // IBufferWriter
-                var bufferWriter = new ArrayBufferWriter<byte>();
+                var bufferWriter = new TestArrayBufferWriter<byte>();
                 WriteContext.Initialize(bufferWriter, out WriteContext ctx);
                 ctx.WriteUInt32((uint) value);
                 ctx.Flush();
@@ -76,7 +77,7 @@ namespace Google.Protobuf
                 Assert.AreEqual(data, rawOutput.ToArray());
 
                 // IBufferWriter
-                var bufferWriter = new ArrayBufferWriter<byte>();
+                var bufferWriter = new TestArrayBufferWriter<byte>();
                 WriteContext.Initialize(bufferWriter, out WriteContext ctx);
                 ctx.WriteUInt64(value);
                 ctx.Flush();
@@ -99,7 +100,7 @@ namespace Google.Protobuf
                     output.Flush();
                     Assert.AreEqual(data, rawOutput.ToArray());
 
-                    var bufferWriter = new ArrayBufferWriter<byte>();
+                    var bufferWriter = new TestArrayBufferWriter<byte>();
                     bufferWriter.MaxGrowBy = bufferSize;
                     WriteContext.Initialize(bufferWriter, out WriteContext ctx);
                     ctx.WriteUInt32((uint) value);
@@ -114,7 +115,7 @@ namespace Google.Protobuf
                     output.Flush();
                     Assert.AreEqual(data, rawOutput.ToArray());
 
-                    var bufferWriter = new ArrayBufferWriter<byte>();
+                    var bufferWriter = new TestArrayBufferWriter<byte>();
                     bufferWriter.MaxGrowBy = bufferSize;
                     WriteContext.Initialize(bufferWriter, out WriteContext ctx);
                     ctx.WriteUInt64(value);
@@ -173,7 +174,7 @@ namespace Google.Protobuf
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
 
-                var bufferWriter = new ArrayBufferWriter<byte>();
+                var bufferWriter = new TestArrayBufferWriter<byte>();
                 WriteContext.Initialize(bufferWriter, out WriteContext ctx);
                 ctx.WriteFixed32(value);
                 ctx.Flush();
@@ -189,7 +190,7 @@ namespace Google.Protobuf
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
 
-                var bufferWriter = new ArrayBufferWriter<byte>();
+                var bufferWriter = new TestArrayBufferWriter<byte>();
                 bufferWriter.MaxGrowBy = bufferSize;
                 WriteContext.Initialize(bufferWriter, out WriteContext ctx);
                 ctx.WriteFixed32(value);
@@ -211,7 +212,7 @@ namespace Google.Protobuf
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
 
-                var bufferWriter = new ArrayBufferWriter<byte>();
+                var bufferWriter = new TestArrayBufferWriter<byte>();
                 WriteContext.Initialize(bufferWriter, out WriteContext ctx);
                 ctx.WriteFixed64(value);
                 ctx.Flush();
@@ -227,7 +228,7 @@ namespace Google.Protobuf
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
 
-                var bufferWriter = new ArrayBufferWriter<byte>();
+                var bufferWriter = new TestArrayBufferWriter<byte>();
                 bufferWriter.MaxGrowBy = blockSize;
                 WriteContext.Initialize(bufferWriter, out WriteContext ctx);
                 ctx.WriteFixed64(value);
@@ -269,7 +270,7 @@ namespace Google.Protobuf
                 output.Flush();
                 Assert.AreEqual(rawBytes, rawOutput.ToArray());
 
-                var bufferWriter = new ArrayBufferWriter<byte>();
+                var bufferWriter = new TestArrayBufferWriter<byte>();
                 bufferWriter.MaxGrowBy = blockSize;
                 message.WriteTo(bufferWriter);
                 Assert.AreEqual(rawBytes, bufferWriter.WrittenSpan.ToArray()); 
@@ -291,7 +292,7 @@ namespace Google.Protobuf
             output.Flush();
             byte[] expectedBytes2 = expectedOutput.ToArray();
 
-            var bufferWriter = new ArrayBufferWriter<byte>();
+            var bufferWriter = new TestArrayBufferWriter<byte>();
             WriteContext.Initialize(bufferWriter, out WriteContext ctx);
             ctx.WriteMessage(message);
             ctx.Flush();
@@ -515,6 +516,68 @@ namespace Google.Protobuf
         {
             var stream = new CodedOutputStream(new byte[10]);
             stream.Dispose();
+        }
+
+        [Test]
+        public void WriteString_AsciiSmall_MaxUtf8SizeExceedsBuffer()
+        {
+            var buffer = new byte[5];
+            var output = new CodedOutputStream(buffer);
+            output.WriteString("ABC");
+
+            output.Flush();
+
+            // Verify written content
+            var input = new CodedInputStream(buffer);
+            Assert.AreEqual("ABC", input.ReadString());
+        }
+
+        [Test]
+        public void WriteStringsOfDifferentSizes_Ascii()
+        {
+            for (int i = 1; i <= 1024; i++)
+            {
+                var buffer = new byte[4096];
+                var output = new CodedOutputStream(buffer);
+                var sb = new StringBuilder();
+                for (int j = 0; j < i; j++)
+                {
+                    sb.Append((j % 10).ToString()); // incrementing numbers, repeating
+                }
+                var s = sb.ToString();
+                output.WriteString(s);
+
+                output.Flush();
+
+                // Verify written content
+                var input = new CodedInputStream(buffer);
+                Assert.AreEqual(s, input.ReadString());
+            }
+        }
+
+        [Test]
+        public void WriteStringsOfDifferentSizes_Unicode()
+        {
+            for (int i = 1; i <= 1024; i++)
+            {
+                var buffer = new byte[4096];
+                var output = new CodedOutputStream(buffer);
+                var sb = new StringBuilder();
+                for (int j = 0; j < i; j++)
+                {
+                    char c = (char)((j % 10) + 10112);
+                    sb.Append(c.ToString()); // incrementing unicode numbers, repeating
+                }
+                var s = sb.ToString();
+                output.WriteString(s);
+
+                output.Flush();
+
+                // Verify written content
+                var input = new CodedInputStream(buffer);
+
+                Assert.AreEqual(s, input.ReadString());
+            }
         }
     }
 }

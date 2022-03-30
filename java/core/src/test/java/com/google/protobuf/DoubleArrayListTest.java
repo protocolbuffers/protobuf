@@ -30,39 +30,44 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static java.util.Arrays.asList;
 
 import com.google.protobuf.Internal.DoubleList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-/**
- * Tests for {@link DoubleArrayList}.
- *
- * @author dweis@google.com (Daniel Weis)
- */
-public class DoubleArrayListTest extends TestCase {
+/** Tests for {@link DoubleArrayList}. */
+@RunWith(JUnit4.class)
+public class DoubleArrayListTest {
 
   private static final DoubleArrayList UNARY_LIST = newImmutableDoubleArrayList(1);
   private static final DoubleArrayList TERTIARY_LIST = newImmutableDoubleArrayList(1, 2, 3);
 
   private DoubleArrayList list;
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     list = new DoubleArrayList();
   }
 
+  @Test
   public void testEmptyListReturnsSameInstance() {
-    assertSame(DoubleArrayList.emptyList(), DoubleArrayList.emptyList());
+    assertThat(DoubleArrayList.emptyList()).isSameInstanceAs(DoubleArrayList.emptyList());
   }
 
+  @Test
   public void testEmptyListIsImmutable() {
     assertImmutable(DoubleArrayList.emptyList());
   }
 
+  @Test
   public void testMakeImmutable() {
     list.addDouble(3);
     list.addDouble(4);
@@ -72,19 +77,20 @@ public class DoubleArrayListTest extends TestCase {
     assertImmutable(list);
   }
 
+  @Test
   public void testModificationWithIteration() {
     list.addAll(asList(1D, 2D, 3D, 4D));
     Iterator<Double> iterator = list.iterator();
-    assertEquals(4, list.size());
-    assertEquals(1D, (double) list.get(0), 0.0);
-    assertEquals(1D, (double) iterator.next(), 0.0);
+    assertThat(list).hasSize(4);
+    assertThat((double) list.get(0)).isEqualTo(1D);
+    assertThat((double) iterator.next()).isEqualTo(1D);
     list.set(0, 1D);
-    assertEquals(2D, (double) iterator.next(), 0.0);
+    assertThat((double) iterator.next()).isEqualTo(2D);
 
     list.remove(0);
     try {
       iterator.next();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (ConcurrentModificationException e) {
       // expected
     }
@@ -93,191 +99,211 @@ public class DoubleArrayListTest extends TestCase {
     list.add(0, 0D);
     try {
       iterator.next();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (ConcurrentModificationException e) {
       // expected
     }
   }
 
+  @Test
   public void testGet() {
-    assertEquals(1D, (double) TERTIARY_LIST.get(0), 0.0);
-    assertEquals(2D, (double) TERTIARY_LIST.get(1), 0.0);
-    assertEquals(3D, (double) TERTIARY_LIST.get(2), 0.0);
+    assertThat((double) TERTIARY_LIST.get(0)).isEqualTo(1D);
+    assertThat((double) TERTIARY_LIST.get(1)).isEqualTo(2D);
+    assertThat((double) TERTIARY_LIST.get(2)).isEqualTo(3D);
 
     try {
       TERTIARY_LIST.get(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       TERTIARY_LIST.get(3);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testGetDouble() {
-    assertEquals(1D, TERTIARY_LIST.getDouble(0), 0.0);
-    assertEquals(2D, TERTIARY_LIST.getDouble(1), 0.0);
-    assertEquals(3D, TERTIARY_LIST.getDouble(2), 0.0);
+    assertThat(TERTIARY_LIST.getDouble(0)).isEqualTo(1D);
+    assertThat(TERTIARY_LIST.getDouble(1)).isEqualTo(2D);
+    assertThat(TERTIARY_LIST.getDouble(2)).isEqualTo(3D);
 
     try {
       TERTIARY_LIST.get(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       TERTIARY_LIST.get(3);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testIndexOf_nullElement() {
-    assertEquals(-1, TERTIARY_LIST.indexOf(null));
+    assertThat(TERTIARY_LIST.indexOf(null)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_incompatibleElementType() {
-    assertEquals(-1, TERTIARY_LIST.indexOf(new Object()));
+    assertThat(TERTIARY_LIST.indexOf(new Object())).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_notInList() {
-    assertEquals(-1, UNARY_LIST.indexOf(2D));
+    assertThat(UNARY_LIST.indexOf(2D)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_notInListWithDuplicates() {
     DoubleArrayList listWithDupes = newImmutableDoubleArrayList(1D, 1D);
-    assertEquals(-1, listWithDupes.indexOf(2D));
+    assertThat(listWithDupes.indexOf(2D)).isEqualTo(-1);
   }
 
+  @Test
   public void testIndexOf_inList() {
-    assertEquals(1, TERTIARY_LIST.indexOf(2D));
+    assertThat(TERTIARY_LIST.indexOf(2D)).isEqualTo(1);
   }
 
+  @Test
   public void testIndexOf_inListWithDuplicates_matchAtHead() {
     DoubleArrayList listWithDupes = newImmutableDoubleArrayList(1D, 1D, 2D);
-    assertEquals(0, listWithDupes.indexOf(1D));
+    assertThat(listWithDupes.indexOf(1D)).isEqualTo(0);
   }
 
+  @Test
   public void testIndexOf_inListWithDuplicates_matchMidList() {
     DoubleArrayList listWithDupes = newImmutableDoubleArrayList(2D, 1D, 1D, 2D);
-    assertEquals(1, listWithDupes.indexOf(1D));
+    assertThat(listWithDupes.indexOf(1D)).isEqualTo(1);
   }
 
+  @Test
   public void testContains_nullElement() {
-    assertEquals(false, TERTIARY_LIST.contains(null));
+    assertThat(TERTIARY_LIST).doesNotContain(null);
   }
 
+  @Test
   public void testContains_incompatibleElementType() {
-    assertEquals(false, TERTIARY_LIST.contains(new Object()));
+    assertThat(TERTIARY_LIST).doesNotContain(new Object());
   }
 
+  @Test
   public void testContains_notInList() {
-    assertEquals(false, UNARY_LIST.contains(2D));
+    assertThat(UNARY_LIST).doesNotContain(2D);
   }
 
+  @Test
   public void testContains_notInListWithDuplicates() {
     DoubleArrayList listWithDupes = newImmutableDoubleArrayList(1D, 1D);
-    assertEquals(false, listWithDupes.contains(2D));
+    assertThat(listWithDupes).doesNotContain(2D);
   }
 
+  @Test
   public void testContains_inList() {
-    assertEquals(true, TERTIARY_LIST.contains(2D));
+    assertThat(TERTIARY_LIST).contains(2D);
   }
 
+  @Test
   public void testContains_inListWithDuplicates_matchAtHead() {
     DoubleArrayList listWithDupes = newImmutableDoubleArrayList(1D, 1D, 2D);
-    assertEquals(true, listWithDupes.contains(1D));
+    assertThat(listWithDupes).contains(1D);
   }
 
+  @Test
   public void testContains_inListWithDuplicates_matchMidList() {
     DoubleArrayList listWithDupes = newImmutableDoubleArrayList(2D, 1D, 1D, 2D);
-    assertEquals(true, listWithDupes.contains(1D));
+    assertThat(listWithDupes).contains(1D);
   }
 
+  @Test
   public void testSize() {
-    assertEquals(0, DoubleArrayList.emptyList().size());
-    assertEquals(1, UNARY_LIST.size());
-    assertEquals(3, TERTIARY_LIST.size());
+    assertThat(DoubleArrayList.emptyList()).isEmpty();
+    assertThat(UNARY_LIST).hasSize(1);
+    assertThat(TERTIARY_LIST).hasSize(3);
 
     list.addDouble(3);
     list.addDouble(4);
     list.addDouble(6);
     list.addDouble(8);
-    assertEquals(4, list.size());
+    assertThat(list).hasSize(4);
 
     list.remove(0);
-    assertEquals(3, list.size());
+    assertThat(list).hasSize(3);
 
     list.add(17D);
-    assertEquals(4, list.size());
+    assertThat(list).hasSize(4);
   }
 
+  @Test
   public void testSet() {
     list.addDouble(2);
     list.addDouble(4);
 
-    assertEquals(2D, (double) list.set(0, 3D), 0.0);
-    assertEquals(3D, list.getDouble(0), 0.0);
+    assertThat((double) list.set(0, 3D)).isEqualTo(2D);
+    assertThat(list.getDouble(0)).isEqualTo(3D);
 
-    assertEquals(4D, (double) list.set(1, 0D), 0.0);
-    assertEquals(0D, list.getDouble(1), 0.0);
+    assertThat((double) list.set(1, 0D)).isEqualTo(4D);
+    assertThat(list.getDouble(1)).isEqualTo(0D);
 
     try {
       list.set(-1, 0D);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.set(2, 0D);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testSetDouble() {
     list.addDouble(1);
     list.addDouble(3);
 
-    assertEquals(1D, list.setDouble(0, 0), 0.0);
-    assertEquals(0D, list.getDouble(0), 0.0);
+    assertThat(list.setDouble(0, 0)).isEqualTo(1D);
+    assertThat(list.getDouble(0)).isEqualTo(0D);
 
-    assertEquals(3D, list.setDouble(1, 0), 0.0);
-    assertEquals(0D, list.getDouble(1), 0.0);
+    assertThat(list.setDouble(1, 0)).isEqualTo(3D);
+    assertThat(list.getDouble(1)).isEqualTo(0D);
 
     try {
       list.setDouble(-1, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.setDouble(2, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testAdd() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
-    assertTrue(list.add(2D));
-    assertEquals(asList(2D), list);
+    assertThat(list.add(2D)).isTrue();
+    assertThat(list).containsExactly(2D);
 
-    assertTrue(list.add(3D));
+    assertThat(list.add(3D)).isTrue();
     list.add(0, 4D);
-    assertEquals(asList(4D, 2D, 3D), list);
+    assertThat(list).containsExactly(4D, 2D, 3D).inOrder();
 
     list.add(0, 1D);
     list.add(0, 0D);
@@ -285,7 +311,7 @@ public class DoubleArrayListTest extends TestCase {
     for (int i = 0; i < 6; i++) {
       list.add(Double.valueOf(5 + i));
     }
-    assertEquals(asList(0D, 1D, 4D, 2D, 3D, 5D, 6D, 7D, 8D, 9D, 10D), list);
+    assertThat(list).containsExactly(0D, 1D, 4D, 2D, 3D, 5D, 6D, 7D, 8D, 9D, 10D).inOrder();
 
     try {
       list.add(-1, 5D);
@@ -300,92 +326,100 @@ public class DoubleArrayListTest extends TestCase {
     }
   }
 
+  @Test
   public void testAddDouble() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
     list.addDouble(2);
-    assertEquals(asList(2D), list);
+    assertThat(list).containsExactly(2D);
 
     list.addDouble(3);
-    assertEquals(asList(2D, 3D), list);
+    assertThat(list).containsExactly(2D, 3D).inOrder();
   }
 
+  @Test
   public void testAddAll() {
-    assertEquals(0, list.size());
+    assertThat(list).isEmpty();
 
-    assertTrue(list.addAll(Collections.singleton(1D)));
-    assertEquals(1, list.size());
-    assertEquals(1D, (double) list.get(0), 0.0);
-    assertEquals(1D, list.getDouble(0), 0.0);
+    assertThat(list.addAll(Collections.singleton(1D))).isTrue();
+    assertThat(list).hasSize(1);
+    assertThat((double) list.get(0)).isEqualTo(1D);
+    assertThat(list.getDouble(0)).isEqualTo(1D);
 
-    assertTrue(list.addAll(asList(2D, 3D, 4D, 5D, 6D)));
-    assertEquals(asList(1D, 2D, 3D, 4D, 5D, 6D), list);
+    assertThat(list.addAll(asList(2D, 3D, 4D, 5D, 6D))).isTrue();
+    assertThat(list).containsExactly(1D, 2D, 3D, 4D, 5D, 6D).inOrder();
 
-    assertTrue(list.addAll(TERTIARY_LIST));
-    assertEquals(asList(1D, 2D, 3D, 4D, 5D, 6D, 1D, 2D, 3D), list);
+    assertThat(list.addAll(TERTIARY_LIST)).isTrue();
+    assertThat(list).containsExactly(1D, 2D, 3D, 4D, 5D, 6D, 1D, 2D, 3D).inOrder();
 
-    assertFalse(list.addAll(Collections.<Double>emptyList()));
-    assertFalse(list.addAll(DoubleArrayList.emptyList()));
+    assertThat(list.addAll(Collections.<Double>emptyList())).isFalse();
+    assertThat(list.addAll(DoubleArrayList.emptyList())).isFalse();
   }
 
+  @Test
   public void testEquals() {
     DoubleArrayList list1 = new DoubleArrayList();
     DoubleArrayList list2 = new DoubleArrayList();
 
     list1.addDouble(Double.longBitsToDouble(0x7ff0000000000001L));
     list2.addDouble(Double.longBitsToDouble(0x7ff0000000000002L));
-    assertEquals(list1, list2);
+    assertThat(list1).isEqualTo(list2);
   }
 
+  @Test
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
-    assertEquals(1D, (double) list.remove(0), 0.0);
-    assertEquals(asList(2D, 3D), list);
+    assertThat((double) list.remove(0)).isEqualTo(1D);
+    assertThat(list).containsExactly(2D, 3D).inOrder();
 
-    assertTrue(list.remove(Double.valueOf(3)));
-    assertEquals(asList(2D), list);
+    assertThat(list.remove(Double.valueOf(3))).isTrue();
+    assertThat(list).containsExactly(2D);
 
-    assertFalse(list.remove(Double.valueOf(3)));
-    assertEquals(asList(2D), list);
+    assertThat(list.remove(Double.valueOf(3))).isFalse();
+    assertThat(list).containsExactly(2D);
 
-    assertEquals(2D, (double) list.remove(0), 0.0);
-    assertEquals(asList(), list);
+    assertThat((double) list.remove(0)).isEqualTo(2D);
+    assertThat(list).isEmpty();
 
     try {
       list.remove(-1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
 
     try {
       list.remove(0);
+      assertWithMessage("expected exception").fail();
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
   }
 
+  @Test
   public void testRemoveEnd_listAtCapacity() {
     DoubleList toRemove = DoubleArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addDouble(3);
     toRemove.remove(0);
-    assertEquals(0, toRemove.size());
+    assertThat(toRemove).isEmpty();
   }
 
+  @Test
   public void testRemove_listAtCapacity() {
     DoubleList toRemove = DoubleArrayList.emptyList().mutableCopyWithCapacity(2);
     toRemove.addDouble(3);
     toRemove.addDouble(4);
     toRemove.remove(0);
-    assertEquals(1, toRemove.size());
-    assertEquals(4D, (double) toRemove.get(0));
+    assertThat(toRemove).hasSize(1);
+    assertThat((double) toRemove.get(0)).isEqualTo(4D);
   }
 
+  @Test
   public void testSublistRemoveEndOfCapacity() {
     DoubleList toRemove = DoubleArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addDouble(3);
     toRemove.subList(0, 1).clear();
-    assertEquals(0, toRemove.size());
+    assertThat(toRemove).isEmpty();
   }
 
   private void assertImmutable(DoubleList list) {
@@ -395,147 +429,147 @@ public class DoubleArrayListTest extends TestCase {
 
     try {
       list.add(1D);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.add(0, 1D);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(Collections.<Double>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(Collections.singletonList(1D));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(new DoubleArrayList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, Collections.singleton(1D));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addAll(0, Collections.<Double>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.addDouble(0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.clear();
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.remove(1);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.remove(new Object());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(Collections.<Double>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(Collections.singleton(1D));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.removeAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(Collections.<Double>emptyList());
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(Collections.singleton(1D));
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.retainAll(UNARY_LIST);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.set(0, 0D);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
 
     try {
       list.setDouble(0, 0);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }

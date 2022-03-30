@@ -1,0 +1,5 @@
+# This is the list of conformance tests that are known to fail for the Java
+# Lite TextFormat implementation right now. These should be fixed.
+#
+# By listing them here we can keep tabs on which ones are failing and be sure
+# that we don't introduce regressions in other tests.

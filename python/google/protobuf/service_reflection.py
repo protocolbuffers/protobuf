@@ -38,12 +38,6 @@ compiler at compile-time.
 
 __author__ = 'petar@google.com (Petar Petrov)'
 
-from google.protobuf.internal import api_implementation
-
-if api_implementation.Type() == 'cpp':
-  # pylint: disable=g-import-not-at-top
-  from google.protobuf.pyext import _message
-
 
 class GeneratedServiceType(type):
 
@@ -84,10 +78,6 @@ class GeneratedServiceType(type):
       return
 
     descriptor = dictionary[GeneratedServiceType._DESCRIPTOR_KEY]
-    if isinstance(descriptor, str):
-      descriptor = _message.default_pool.FindServiceByName(descriptor)
-      dictionary[GeneratedServiceType._DESCRIPTOR_KEY] = descriptor
-
     service_builder = _ServiceBuilder(descriptor)
     service_builder.BuildService(cls)
     cls.DESCRIPTOR = descriptor
@@ -113,16 +103,13 @@ class GeneratedServiceStubType(GeneratedServiceType):
         dictionary[_DESCRIPTOR_KEY] must contain a ServiceDescriptor object
         describing this protocol service type.
     """
-    descriptor = dictionary.get(cls._DESCRIPTOR_KEY)
-    if isinstance(descriptor, str):
-      descriptor = _message.default_pool.FindServiceByName(descriptor)
-      dictionary[GeneratedServiceStubType._DESCRIPTOR_KEY] = descriptor
     super(GeneratedServiceStubType, cls).__init__(name, bases, dictionary)
     # Don't do anything if this class doesn't have a descriptor. This happens
     # when a service stub is subclassed.
     if GeneratedServiceStubType._DESCRIPTOR_KEY not in dictionary:
       return
 
+    descriptor = dictionary[GeneratedServiceStubType._DESCRIPTOR_KEY]
     service_stub_builder = _ServiceStubBuilder(descriptor)
     service_stub_builder.BuildServiceStub(cls)
 
@@ -146,7 +133,7 @@ class _ServiceBuilder(object):
     """
     self.descriptor = service_descriptor
 
-  def BuildService(self, cls):
+  def BuildService(builder, cls):
     """Constructs the service class.
 
     Args:
@@ -156,18 +143,26 @@ class _ServiceBuilder(object):
     # CallMethod needs to operate with an instance of the Service class. This
     # internal wrapper function exists only to be able to pass the service
     # instance to the method that does the real CallMethod work.
-    def _WrapCallMethod(srvc, method_descriptor,
-                        rpc_controller, request, callback):
-      return self._CallMethod(srvc, method_descriptor,
-                       rpc_controller, request, callback)
-    self.cls = cls
+    # Making sure to use exact argument names from the abstract interface in
+    # service.py to match the type signature
+    def _WrapCallMethod(self, method_descriptor, rpc_controller, request, done):
+      return builder._CallMethod(self, method_descriptor, rpc_controller,
+                                 request, done)
+
+    def _WrapGetRequestClass(self, method_descriptor):
+      return builder._GetRequestClass(method_descriptor)
+
+    def _WrapGetResponseClass(self, method_descriptor):
+      return builder._GetResponseClass(method_descriptor)
+
+    builder.cls = cls
     cls.CallMethod = _WrapCallMethod
-    cls.GetDescriptor = staticmethod(lambda: self.descriptor)
-    cls.GetDescriptor.__doc__ = "Returns the service descriptor."
-    cls.GetRequestClass = self._GetRequestClass
-    cls.GetResponseClass = self._GetResponseClass
-    for method in self.descriptor.methods:
-      setattr(cls, method.name, self._GenerateNonImplementedMethod(method))
+    cls.GetDescriptor = staticmethod(lambda: builder.descriptor)
+    cls.GetDescriptor.__doc__ = 'Returns the service descriptor.'
+    cls.GetRequestClass = _WrapGetRequestClass
+    cls.GetResponseClass = _WrapGetResponseClass
+    for method in builder.descriptor.methods:
+      setattr(cls, method.name, builder._GenerateNonImplementedMethod(method))
 
   def _CallMethod(self, srvc, method_descriptor,
                   rpc_controller, request, callback):

@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -34,6 +34,7 @@ using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security;
 
 namespace Google.Protobuf
@@ -63,7 +64,39 @@ namespace Google.Protobuf
             IExtensionValue value;
             if (TryGetValue(ref set, extension, out value))
             {
-                return ((ExtensionValue<TValue>)value).GetValue();
+                // The stored ExtensionValue can be a different type to what is being requested.
+                // This happens when the same extension proto is compiled in different assemblies.
+                // To allow consuming assemblies to still get the value when the TValue type is
+                // different, this get method:
+                // 1. Attempts to cast the value to the expected ExtensionValue<TValue>.
+                //    This is the usual case. It is used first because it avoids possibly boxing the value.
+                // 2. Fallback to get the value as object from IExtensionValue then casting.
+                //    This allows for someone to specify a TValue of object. They can then convert
+                //    the values to bytes and reparse using expected value.
+                // 3. If neither of these work, throw a user friendly error that the types aren't compatible.
+                if (value is ExtensionValue<TValue> extensionValue)
+                {
+                    return extensionValue.GetValue();
+                }
+                else if (value.GetValue() is TValue underlyingValue)
+                {
+                    return underlyingValue;
+                }
+                else
+                {
+                    var valueType = value.GetType().GetTypeInfo();
+                    if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(ExtensionValue<>))
+                    {
+                        var storedType = valueType.GenericTypeArguments[0];
+                        throw new InvalidOperationException(
+                            "The stored extension value has a type of '" + storedType.AssemblyQualifiedName + "'. " +
+                            "This a different from the requested type of '" + typeof(TValue).AssemblyQualifiedName + "'.");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unexpected extension value type: " + valueType.AssemblyQualifiedName);
+                    }
+                }
             }
             else 
             {
@@ -79,7 +112,25 @@ namespace Google.Protobuf
             IExtensionValue value;
             if (TryGetValue(ref set, extension, out value))
             {
-                return ((RepeatedExtensionValue<TValue>)value).GetValue();
+                if (value is RepeatedExtensionValue<TValue> extensionValue)
+                {
+                    return extensionValue.GetValue();
+                }
+                else
+                {
+                    var valueType = value.GetType().GetTypeInfo();
+                    if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(RepeatedExtensionValue<>))
+                    {
+                        var storedType = valueType.GenericTypeArguments[0];
+                        throw new InvalidOperationException(
+                            "The stored extension value has a type of '" + storedType.AssemblyQualifiedName + "'. " +
+                            "This a different from the requested type of '" + typeof(TValue).AssemblyQualifiedName + "'.");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unexpected extension value type: " + valueType.AssemblyQualifiedName);
+                    }
+                }
             }
             else 
             {

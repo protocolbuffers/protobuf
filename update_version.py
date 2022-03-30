@@ -13,25 +13,25 @@ import sys
 from xml.dom import minidom
 
 if len(sys.argv) < 2 or len(sys.argv) > 3:
-  print """
+  print("""
 [ERROR] Please specify a version.
 
 ./update_version.py <MAJOR>.<MINOR>.<MICRO> [<RC version>]
 
 Example:
 ./update_version.py 3.7.1 2
-"""
+""")
   exit(1)
 
 NEW_VERSION = sys.argv[1]
 NEW_VERSION_INFO = [int(x) for x in NEW_VERSION.split('.')]
 if len(NEW_VERSION_INFO) != 3:
-  print """
+  print("""
 [ERROR] Version must be in the format <MAJOR>.<MINOR>.<MICRO>
 
 Example:
 ./update_version.py 3.7.3
-"""
+""")
   exit(1)
 
 RC_VERSION = -1
@@ -61,6 +61,19 @@ def GetFullVersion(rc_suffix = '-rc-'):
     return '%s%s%s' % (NEW_VERSION, rc_suffix, RC_VERSION)
 
 
+def GetSharedObjectVersion():
+  protobuf_version_offset = 11
+  expected_major_version = 3
+  if NEW_VERSION_INFO[0] != expected_major_version:
+    print("""[ERROR] Major protobuf version has changed. Please update
+update_version.py to readjust the protobuf_version_offset and
+expected_major_version such that the PROTOBUF_VERSION in src/Makefile.am is
+always increasing.
+    """)
+    exit(1)
+  return [NEW_VERSION_INFO[1] + protobuf_version_offset, NEW_VERSION_INFO[2], 0]
+
+
 def RewriteXml(filename, rewriter, add_xml_prefix=True):
   document = minidom.parse(filename)
   rewriter(document)
@@ -71,9 +84,9 @@ def RewriteXml(filename, rewriter, add_xml_prefix=True):
   content = document.toxml().replace('<?xml version="1.0" ?>', '')
   file_handle = open(filename, 'wb')
   if add_xml_prefix:
-    file_handle.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-  file_handle.write(content)
-  file_handle.write('\n')
+    file_handle.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
+  file_handle.write(content.encode('utf-8'))
+  file_handle.write(b'\n')
   file_handle.close()
 
 
@@ -83,10 +96,24 @@ def RewriteTextFile(filename, line_rewriter):
   for line in lines:
     updated_lines.append(line_rewriter(line))
   if lines == updated_lines:
-    print '%s was not updated. Please double check.' % filename
+    print('%s was not updated. Please double check.' % filename)
   f = open(filename, 'w')
   f.write(''.join(updated_lines))
   f.close()
+
+
+def UpdateCMake():
+  cmake_files = (
+    'cmake/libprotobuf.cmake',
+    'cmake/libprotobuf-lite.cmake',
+    'cmake/libprotoc.cmake'
+  )
+  for cmake_file in cmake_files:
+    RewriteTextFile(cmake_file,
+      lambda line : re.sub(
+        r'SOVERSION ([0-9]+)$',
+        'SOVERSION %s' % GetSharedObjectVersion()[0],
+        line))
 
 
 def UpdateConfigure():
@@ -228,9 +255,37 @@ def UpdateJava():
       Find(Find(document.documentElement, 'parent'), 'version'),
       GetFullVersion()))
 
+  RewriteXml('java/kotlin/pom.xml',
+    lambda document : ReplaceText(
+      Find(Find(document.documentElement, 'parent'), 'version'),
+      GetFullVersion()))
+
+  RewriteXml('java/kotlin-lite/pom.xml',
+    lambda document : ReplaceText(
+      Find(Find(document.documentElement, 'parent'), 'version'),
+      GetFullVersion()))
+
   RewriteXml('protoc-artifacts/pom.xml',
     lambda document : ReplaceText(
       Find(document.documentElement, 'version'), GetFullVersion()))
+  
+  RewriteTextFile('java/README.md',
+    lambda line : re.sub(
+      r'<version>.*</version>',
+      '<version>%s</version>' % GetFullVersion(),
+      line))
+
+  RewriteTextFile('java/README.md',
+    lambda line : re.sub(
+      r'implementation \'com.google.protobuf:protobuf-java:.*\'',
+      'implementation \'com.google.protobuf:protobuf-java:%s\'' % GetFullVersion(),
+      line))
+
+  RewriteTextFile('java/lite.md',
+    lambda line : re.sub(
+      r'<version>.*</version>',
+      '<version>%s</version>' % GetFullVersion(),
+      line))
 
 
 def UpdateJavaScript():
@@ -242,22 +297,10 @@ def UpdateJavaScript():
 
 
 def UpdateMakefile():
-  protobuf_version_offset = 11
-  expected_major_version = 3
-  if NEW_VERSION_INFO[0] != expected_major_version:
-    print """[ERROR] Major protobuf version has changed. Please update
-update_version.py to readjust the protobuf_version_offset and
-expected_major_version such that the PROTOBUF_VERSION in src/Makefile.am is
-always increasing.
-    """
-    exit(1)
-
-  protobuf_version_info = '%d:%d:0' % (
-    NEW_VERSION_INFO[1] + protobuf_version_offset, NEW_VERSION_INFO[2])
   RewriteTextFile('src/Makefile.am',
     lambda line : re.sub(
       r'^PROTOBUF_VERSION = .*$',
-      'PROTOBUF_VERSION = %s' % protobuf_version_info,
+      'PROTOBUF_VERSION = %s' % ":".join(map(str,GetSharedObjectVersion())),
       line))
 
 
@@ -324,18 +367,6 @@ def UpdatePhp():
   RewriteXml('php/ext/google/protobuf/package.xml', Callback)
   RewriteTextFile('php/ext/google/protobuf/protobuf.h',
     lambda line : re.sub(
-      r'PHP_PROTOBUF_VERSION ".*"$',
-      'PHP_PROTOBUF_VERSION "%s"' % NEW_VERSION,
-      line))
-
-  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
-    lambda line : re.sub(
-      r"^#define PHP_PROTOBUF_VERSION .*$",
-      "#define PHP_PROTOBUF_VERSION \"%s\"" % GetFullVersion(rc_suffix = 'RC'),
-      line))
-
-  RewriteTextFile('php/ext/google/protobuf/protobuf.h',
-    lambda line : re.sub(
       r"^#define PHP_PROTOBUF_VERSION .*$",
       "#define PHP_PROTOBUF_VERSION \"%s\"" % GetFullVersion(rc_suffix = 'RC'),
       line))
@@ -348,13 +379,28 @@ def UpdatePython():
       line))
 
 def UpdateRuby():
+  RewriteXml('ruby/pom.xml',
+             lambda document : ReplaceText(
+                 Find(document.documentElement, 'version'), GetFullVersion()))
+  RewriteXml('ruby/pom.xml',
+             lambda document : ReplaceText(
+                 Find(Find(Find(document.documentElement, 'dependencies'), 'dependency'), 'version'),
+                 GetFullVersion()))
   RewriteTextFile('ruby/google-protobuf.gemspec',
     lambda line : re.sub(
       r'^  s.version     = ".*"$',
       '  s.version     = "%s"' % GetFullVersion(rc_suffix = '.rc.'),
       line))
 
+def UpdateBazel():
+  RewriteTextFile('protobuf_version.bzl',
+    lambda line : re.sub(
+     r"^PROTOBUF_VERSION = '.*'$",
+     "PROTOBUF_VERSION = '%s'" % GetFullVersion(),
+     line))
 
+
+UpdateCMake()
 UpdateConfigure()
 UpdateCsharp()
 UpdateCpp()
@@ -365,3 +411,4 @@ UpdateObjectiveC()
 UpdatePhp()
 UpdatePython()
 UpdateRuby()
+UpdateBazel()

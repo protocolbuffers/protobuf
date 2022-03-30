@@ -26,6 +26,13 @@ mkdir artifacts
 export ARTIFACT_DIR=$(pwd)/artifacts
 
 git clone https://github.com/matthew-brett/multibuild.git
+# Pin multibuild scripts at a known commit to avoid potentially unwanted future changes from
+# silently creeping in (see https://github.com/protocolbuffers/protobuf/issues/9180).
+# IMPORTANT: always pin multibuild at the same commit for:
+# - linux/build_artifacts.sh
+# - linux/build_artifacts.sh
+# - windows/build_artifacts.bat
+(cd multibuild; git checkout b89bb903e94308be79abefa4f436bf123ebb1313)
 cp kokoro/release/python/macos/config.sh config.sh
 
 OLD_PATH=$PATH
@@ -51,12 +58,8 @@ build_artifact_version() {
 }
 
 export MB_PYTHON_OSX_VER=10.9
-build_artifact_version 2.7
 build_artifact_version 3.6
 build_artifact_version 3.7
 build_artifact_version 3.8
-
-# python OSX10.9 does not have python 3.5
-export MB_PYTHON_OSX_VER=10.6
-build_artifact_version 3.5
-
+build_artifact_version 3.9
+build_artifact_version 3.10

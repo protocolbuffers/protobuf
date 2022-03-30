@@ -35,24 +35,22 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
 namespace internal {
 
-bool AnyMetadata::PackFrom(const Message& message) {
-  return PackFrom(message, kTypeGoogleApisComPrefix);
+bool AnyMetadata::PackFrom(Arena* arena, const Message& message) {
+  return PackFrom(arena, message, kTypeGoogleApisComPrefix);
 }
 
-bool AnyMetadata::PackFrom(const Message& message,
+bool AnyMetadata::PackFrom(Arena* arena, const Message& message,
                            StringPiece type_url_prefix) {
   type_url_->Set(
-      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString(),
-      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix),
-      nullptr);
-  return message.SerializeToString(
-      value_->Mutable(ArenaStringPtr::EmptyDefault{}, nullptr));
+      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix), arena);
+  return message.SerializeToString(value_->Mutable(arena));
 }
 
 bool AnyMetadata::UnpackTo(Message* message) const {
@@ -71,9 +69,9 @@ bool GetAnyFieldDescriptors(const Message& message,
   }
   *type_url_field = descriptor->FindFieldByNumber(1);
   *value_field = descriptor->FindFieldByNumber(2);
-  return (*type_url_field != NULL &&
+  return (*type_url_field != nullptr &&
           (*type_url_field)->type() == FieldDescriptor::TYPE_STRING &&
-          *value_field != NULL &&
+          *value_field != nullptr &&
           (*value_field)->type() == FieldDescriptor::TYPE_BYTES);
 }
 

@@ -28,15 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_JSON_OBJECTWRITER_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_JSON_OBJECTWRITER_H__
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/util/internal/structured_objectwriter.h>
 
 // clang-format off
 #include <google/protobuf/port_def.inc>
@@ -110,7 +111,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
       }
     }
   }
-  virtual ~JsonObjectWriter();
+  ~JsonObjectWriter() override;
 
   // ObjectWriter methods.
   JsonObjectWriter* StartObject(StringPiece name) override;
@@ -118,10 +119,12 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   JsonObjectWriter* StartList(StringPiece name) override;
   JsonObjectWriter* EndList() override;
   JsonObjectWriter* RenderBool(StringPiece name, bool value) override;
-  JsonObjectWriter* RenderInt32(StringPiece name, int32 value) override;
-  JsonObjectWriter* RenderUint32(StringPiece name, uint32 value) override;
-  JsonObjectWriter* RenderInt64(StringPiece name, int64 value) override;
-  JsonObjectWriter* RenderUint64(StringPiece name, uint64 value) override;
+  JsonObjectWriter* RenderInt32(StringPiece name, int32_t value) override;
+  JsonObjectWriter* RenderUint32(StringPiece name,
+                                 uint32_t value) override;
+  JsonObjectWriter* RenderInt64(StringPiece name, int64_t value) override;
+  JsonObjectWriter* RenderUint64(StringPiece name,
+                                 uint64_t value) override;
   JsonObjectWriter* RenderDouble(StringPiece name, double value) override;
   JsonObjectWriter* RenderFloat(StringPiece name, float value) override;
   JsonObjectWriter* RenderString(StringPiece name,
@@ -218,7 +221,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
       // Take the slow-path if we don't have sufficient characters remaining in
       // our buffer or we have a non-trivial indent string which would prevent
       // us from using memset.
-      uint8* out = nullptr;
+      uint8_t* out = nullptr;
       if (indent_count_ > 0) {
         out = stream_->GetDirectBufferForNBytesAndAdvance(len);
       }
@@ -272,4 +275,4 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_JSON_OBJECTWRITER_H__

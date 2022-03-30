@@ -111,8 +111,10 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/port_def.inc>
 
+
+// Must be included last.
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -153,6 +155,13 @@ class PROTOBUF_EXPORT ZeroCopyInputStream {
   // to a certain point in the input, then return.  If Next() returns a
   // buffer that goes beyond what you wanted to read, you can use BackUp()
   // to return to the point where you intended to finish.
+  //
+  // This method can be called with `count = 0` to finalize (flush) any
+  // previously returned buffer. For example, a file output stream can
+  // flush buffers returned from a previous call to Next() upon such
+  // BackUp(0) invocations. ZeroCopyOutputStream callers should always
+  // invoke BackUp() after a final Next() call, even if there is no
+  // excess buffer data to be backed up to indicate a flush point.
   //
   // Preconditions:
   // * The last method called must have been Next().

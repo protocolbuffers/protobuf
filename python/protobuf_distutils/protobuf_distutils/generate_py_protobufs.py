@@ -120,7 +120,7 @@ class generate_py_protobufs(Command):
         if self.proto_files is None:
             files = glob.glob(os.path.join(self.source_dir, '*.proto'))
             if self.recurse:
-                files.extend(glob.glob(os.path.join(self.source_dir, '**', '*.proto')))
+                files.extend(glob.glob(os.path.join(self.source_dir, '**', '*.proto'), recursive=True))
             self.proto_files = [f.partition(self.proto_root_path + os.path.sep)[-1] for f in files]
             if not self.proto_files:
                 raise DistutilsOptionError('no .proto files were found under ' + self.source_dir)

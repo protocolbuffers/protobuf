@@ -61,7 +61,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
     part_tag_size /= 2;
   }
   uint tag = internal::WireFormat::MakeTag(descriptor_);
-  uint8 tag_array[5];
+  uint8_t tag_array[5];
   io::CodedOutputStream::WriteTagToArray(tag, tag_array);
   std::string tag_bytes = StrCat(tag_array[0]);
   for (int i = 1; i < part_tag_size; i++) {
@@ -130,14 +130,15 @@ void FieldGeneratorBase::SetCommonOneofFieldVariables(
   } else {
     (*variables)["has_property_check"] =
       oneof_name() + "Case_ == " + oneof_property_name() +
-      "OneofCase." + property_name();
+      "OneofCase." + oneof_case_name();
   }
+  (*variables)["oneof_case_name"] = oneof_case_name();
   (*variables)["oneof_property_name"] = oneof_property_name();
 }
 
 FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
                                        int presenceIndex, const Options* options)
-    : SourceGeneratorBase(descriptor->file(), options),
+    : SourceGeneratorBase(options),
       descriptor_(descriptor),
       presenceIndex_(presenceIndex) {
   SetCommonFieldVariables(&variables_);
@@ -185,6 +186,10 @@ void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
 void FieldGeneratorBase::AddPublicMemberAttributes(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   WriteGeneratedCodeAttributes(printer);
+}
+
+std::string FieldGeneratorBase::oneof_case_name() {
+  return GetOneofCaseName(descriptor_);
 }
 
 std::string FieldGeneratorBase::oneof_property_name() {

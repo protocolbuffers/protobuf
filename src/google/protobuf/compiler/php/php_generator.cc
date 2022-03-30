@@ -48,27 +48,29 @@ const std::string kDescriptorMetadataFile =
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {
-    "abstract",   "and",        "array",        "as",           "break",
-    "callable",   "case",       "catch",        "class",        "clone",
-    "const",      "continue",   "declare",      "default",      "die",
-    "do",         "echo",       "else",         "elseif",       "empty",
-    "enddeclare", "endfor",     "endforeach",   "endif",        "endswitch",
-    "endwhile",   "eval",       "exit",         "extends",      "final",
-    "for",        "foreach",    "function",     "global",       "goto",
-    "if",         "implements", "include",      "include_once", "instanceof",
-    "insteadof",  "interface",  "isset",        "list",         "namespace",
-    "new",        "or",         "print",        "private",      "protected",
-    "public",     "require",    "require_once", "return",       "static",
-    "switch",     "throw",      "trait",        "try",          "unset",
-    "use",        "var",        "while",        "xor",          "int",
-    "float",      "bool",       "string",       "true",         "false",
-    "null",       "void",       "iterable"};
+    "abstract",     "and",          "array",      "as",         "break",
+    "callable",     "case",         "catch",      "class",      "clone",
+    "const",        "continue",     "declare",    "default",    "die",
+    "do",           "echo",         "else",       "elseif",     "empty",
+    "enddeclare",   "endfor",       "endforeach", "endif",      "endswitch",
+    "endwhile",     "eval",         "exit",       "extends",    "final",
+    "finally",      "fn",           "for",        "foreach",    "function",
+    "global",       "goto",         "if",         "implements", "include",
+    "include_once", "instanceof",   "insteadof",  "interface",  "isset",
+    "list",         "match",        "namespace",  "new",        "or",
+    "parent",       "print",        "private",    "protected",  "public",
+    "require",      "require_once", "return",     "self",       "static",
+    "switch",       "throw",        "trait",      "try",        "unset",
+    "use",          "var",          "while",      "xor",        "yield",
+    "int",          "float",        "bool",       "string",     "true",
+    "false",        "null",         "void",       "iterable"};
 const char* const kValidConstantNames[] = {
     "int",   "float", "bool", "string",   "true",
-    "false", "null",  "void", "iterable",
+    "false", "null",  "void", "iterable", "parent",
+    "self"
 };
-const int kReservedNamesSize = 73;
-const int kValidConstantNamesSize = 9;
+const int kReservedNamesSize = 79;
+const int kValidConstantNamesSize = 11;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;
@@ -82,20 +84,19 @@ struct Options {
   bool is_descriptor = false;
   bool aggregate_metadata = false;
   bool gen_c_wkt = false;
-  std::set<string> aggregate_metadata_prefixes;
+  std::set<std::string> aggregate_metadata_prefixes;
 };
 
 namespace {
 
 // Forward decls.
 std::string PhpName(const std::string& full_name, const Options& options);
-std::string IntToString(int32 value);
+std::string IntToString(int32_t value);
 std::string FilenameToClassname(const std::string& filename);
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options);
 std::string UnderscoresToCamelCase(const std::string& name,
                                    bool cap_first_letter);
-std::string BinaryToHex(const std::string& binary);
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
 void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
@@ -430,7 +431,7 @@ std::string GeneratedServiceFileName(const ServiceDescriptor* service,
   return result + ".php";
 }
 
-std::string IntToString(int32 value) {
+std::string IntToString(int32_t value) {
   std::ostringstream os;
   os << value;
   return os.str();
@@ -600,27 +601,6 @@ std::string UnderscoresToCamelCase(const std::string& name,
   return result;
 }
 
-std::string BinaryToHex(const std::string& binary) {
-  std::string dest;
-  size_t i;
-  unsigned char symbol[16] = {
-    '0', '1', '2', '3',
-    '4', '5', '6', '7',
-    '8', '9', 'a', 'b',
-    'c', 'd', 'e', 'f',
-  };
-
-  dest.resize(binary.size() * 2);
-  char* append_ptr = &dest[0];
-
-  for (i = 0; i < binary.size(); i++) {
-    *append_ptr++ = symbol[(binary[i] & 0xf0) >> 4];
-    *append_ptr++ = symbol[binary[i] & 0x0f];
-  }
-
-  return dest;
-}
-
 void Indent(io::Printer* printer) {
   printer->Indent();
   printer->Indent();
@@ -666,43 +646,65 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   // Generate getter.
   GenerateFieldDocComment(printer, field, options, kFieldGetter);
 
+  // deprecation
+  std::string deprecation_trigger = (field->options().deprecated()) ? "@trigger_error('" +
+      field->name() + " is deprecated.', E_USER_DEPRECATED);\n        " : "";
+
+  // Emit getter.
   if (oneof != NULL) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
-        "    return $this->readOneof(^number^);\n"
-        "}\n\n"
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    return $this->hasOneof(^number^);\n"
+        "    ^deprecation_trigger^return $this->readOneof(^number^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "number", IntToString(field->number()));
-  } else if (field->has_presence()) {
+        "number", IntToString(field->number()),
+        "deprecation_trigger", deprecation_trigger);
+  } else if (field->has_presence() && !field->message_type()) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
-        "    return isset($this->^name^) ? $this->^name^ : ^default_value^;\n"
-        "}\n\n"
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    return isset($this->^name^);\n"
-        "}\n\n"
-        "public function clear^camel_name^()\n"
-        "{\n"
-        "    unset($this->^name^);\n"
+        "    ^deprecation_trigger^return isset($this->^name^) ? $this->^name^ : ^default_value^;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
-        "default_value", DefaultForField(field));
+        "default_value", DefaultForField(field),
+        "deprecation_trigger", deprecation_trigger);
   } else {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
-        "    return $this->^name^;\n"
+        "    ^deprecation_trigger^return $this->^name^;\n"
         "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
-        field->name());
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "name", field->name(),
+        "deprecation_trigger", deprecation_trigger);
+  }
+
+  // Emit hazzers/clear.
+  if (oneof) {
+    printer->Print(
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^return $this->hasOneof(^number^);\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "number", IntToString(field->number()),
+        "deprecation_trigger", deprecation_trigger);
+  } else if (field->has_presence()) {
+    printer->Print(
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^return isset($this->^name^);\n"
+        "}\n\n"
+        "public function clear^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^unset($this->^name^);\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "name", field->name(),
+        "default_value", DefaultForField(field),
+        "deprecation_trigger", deprecation_trigger);
   }
 
   // For wrapper types, generate an additional getXXXUnwrapped getter
@@ -714,10 +716,11 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
     printer->Print(
         "public function get^camel_name^Unwrapped()\n"
         "{\n"
-        "    return $this->readWrapperValue(\"^field_name^\");\n"
+        "    ^deprecation_trigger^return $this->readWrapperValue(\"^field_name^\");\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "field_name", field->name());
+        "field_name", field->name(),
+        "deprecation_trigger", deprecation_trigger);
   }
 
   // Generate setter.
@@ -729,11 +732,18 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
 
   Indent(printer);
 
+  if (field->options().deprecated()) {
+      printer->Print(
+          "^deprecation_trigger^",
+          "deprecation_trigger", deprecation_trigger
+      );
+  }
+
   // Type check.
   if (field->is_map()) {
     const Descriptor* map_entry = field->message_type();
-    const FieldDescriptor* key = map_entry->FindFieldByName("key");
-    const FieldDescriptor* value = map_entry->FindFieldByName("value");
+    const FieldDescriptor* key = map_entry->map_key();
+    const FieldDescriptor* value = map_entry->map_value();
     printer->Print(
         "$arr = GPBUtil::checkMapField($var, "
         "\\Google\\Protobuf\\Internal\\GPBType::^key_type^, "
@@ -880,9 +890,9 @@ void GenerateMessageToPool(const std::string& name_prefix,
     const FieldDescriptor* field = message->field(i);
     if (field->is_map()) {
       const FieldDescriptor* key =
-          field->message_type()->FindFieldByName("key");
+          field->message_type()->map_key();
       const FieldDescriptor* val =
-          field->message_type()->FindFieldByName("value");
+          field->message_type()->map_value();
       printer->Print(
           "->map('^field^', \\Google\\Protobuf\\Internal\\GPBType::^key^, "
           "\\Google\\Protobuf\\Internal\\GPBType::^value^, ^number^^other^)\n",
@@ -1105,14 +1115,14 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
   std::map<const FileDescriptor*, int> dependency_count;
   std::set<const FileDescriptor*> nodes_without_dependency;
   FileDescriptorSet sorted_file_set;
-  
+
   AnalyzeDependencyForFile(
       file, &nodes_without_dependency, &deps, &dependency_count);
 
   while (!nodes_without_dependency.empty()) {
-    auto file = *nodes_without_dependency.begin();
-    nodes_without_dependency.erase(file);
-    for (auto dependent : deps[file]) {
+    auto file_node = *nodes_without_dependency.begin();
+    nodes_without_dependency.erase(file_node);
+    for (auto dependent : deps[file_node]) {
       if (dependency_count[dependent] == 1) {
         dependency_count.erase(dependent);
         nodes_without_dependency.insert(dependent);
@@ -1121,11 +1131,11 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
       }
     }
 
-    bool needs_aggregate = NeedsUnwrapping(file, options);
+    bool needs_aggregate = NeedsUnwrapping(file_node, options);
 
     if (needs_aggregate) {
       auto file_proto = sorted_file_set.add_file();
-      file->CopyTo(file_proto);
+      file_node->CopyTo(file_proto);
 
       // Filter out descriptor.proto as it cannot be depended on for now.
       RepeatedPtrField<std::string>* dependency =
@@ -1147,7 +1157,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
         it->clear_extension();
       }
     } else {
-      std::string dependency_filename = GeneratedMetadataFileName(file, false);
+      std::string dependency_filename = GeneratedMetadataFileName(file_node, false);
       printer->Print(
           "\\^name^::initOnce();\n",
           "name", FilenameToClassname(dependency_filename));
@@ -1757,8 +1767,14 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
       "php_type", PhpSetterTypeName(field, options));
     printer->Print(" * @return $this\n");
   } else if (function_type == kFieldGetter) {
-    printer->Print(" * @return ^php_type^\n",
-      "php_type", PhpGetterTypeName(field, options));
+    bool can_return_null = field->has_presence() &&
+                           field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
+    printer->Print(" * @return ^php_type^^maybe_null^\n",
+      "php_type", PhpGetterTypeName(field, options),
+      "maybe_null", can_return_null ? "|null" : "");
+  }
+  if (field->options().deprecated()) {
+    printer->Print(" * @deprecated\n");
   }
   printer->Print(" */\n");
 }
@@ -1854,49 +1870,50 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
       "\n"
       "PHP_METHOD($c_name$, name) {\n"
       "  $file_c_name$_AddDescriptor();\n"
-      "  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();\n"
-      "  const upb_enumdef *e = upb_symtab_lookupenum(symtab, \"$name$\");\n"
-      "  const char *name;\n"
+      "  const upb_DefPool *symtab = DescriptorPool_GetSymbolTable();\n"
+      "  const upb_EnumDef *e = upb_DefPool_FindEnumByName(symtab, \"$name$\");\n"
       "  zend_long value;\n"
-      "  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, \"l\", &value) ==\n"
+      "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"l\", &value) ==\n"
       "      FAILURE) {\n"
       "    return;\n"
       "  }\n"
-      "  name = upb_enumdef_iton(e, value);\n"
-      "  if (!name) {\n"
+      "  const upb_EnumValueDef* ev =\n"
+      "      upb_EnumDef_FindValueByNumber(e, value);\n"
+      "  if (!ev) {\n"
       "    zend_throw_exception_ex(NULL, 0,\n"
       "                            \"$php_name$ has no name \"\n"
       "                            \"defined for value \" ZEND_LONG_FMT \".\",\n"
       "                            value);\n"
       "    return;\n"
       "  }\n"
-      "  RETURN_STRING(name);\n"
+      "  RETURN_STRING(upb_EnumValueDef_Name(ev));\n"
       "}\n"
       "\n"
       "PHP_METHOD($c_name$, value) {\n"
       "  $file_c_name$_AddDescriptor();\n"
-      "  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();\n"
-      "  const upb_enumdef *e = upb_symtab_lookupenum(symtab, \"$name$\");\n"
+      "  const upb_DefPool *symtab = DescriptorPool_GetSymbolTable();\n"
+      "  const upb_EnumDef *e = upb_DefPool_FindEnumByName(symtab, \"$name$\");\n"
       "  char *name = NULL;\n"
       "  size_t name_len;\n"
-      "  int32_t num;\n"
-      "  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, \"s\", &name,\n"
+      "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"s\", &name,\n"
       "                            &name_len) == FAILURE) {\n"
       "    return;\n"
       "  }\n"
-      "  if (!upb_enumdef_ntoi(e, name, name_len, &num)) {\n"
+      "  const upb_EnumValueDef* ev = upb_EnumDef_FindValueByNameWithSize(\n"
+      "      e, name, name_len);\n"
+      "  if (!ev) {\n"
       "    zend_throw_exception_ex(NULL, 0,\n"
       "                            \"$php_name$ has no value \"\n"
       "                            \"defined for name %s.\",\n"
       "                            name);\n"
       "    return;\n"
       "  }\n"
-      "  RETURN_LONG(num);\n"
+      "  RETURN_LONG(upb_EnumValueDef_Number(ev));\n"
       "}\n"
       "\n"
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
-      "  PHP_ME($c_name$, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
-      "  PHP_ME($c_name$, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  PHP_ME($c_name$, name, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  PHP_ME($c_name$, value, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
       "  ZEND_FE_END\n"
       "};\n"
       "\n"
@@ -1950,24 +1967,24 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
     printer->Print(
       "static PHP_METHOD($c_name$, get$camel_name$) {\n"
       "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
-      "  const upb_fielddef *f = upb_msgdef_ntofz(intern->desc->msgdef,\n"
-      "                                           \"$name$\");\n"
+      "  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(\n"
+      "      intern->desc->msgdef, \"$name$\");\n"
       "  zval ret;\n"
       "  Message_get(intern, f, &ret);\n"
-      "  RETURN_ZVAL(&ret, 1, 0);\n"
+      "  RETURN_COPY_VALUE(&ret);\n"
       "}\n"
       "\n"
       "static PHP_METHOD($c_name$, set$camel_name$) {\n"
       "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
-      "  const upb_fielddef *f = upb_msgdef_ntofz(intern->desc->msgdef,\n"
-      "                                           \"$name$\");\n"
+      "  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(\n"
+      "      intern->desc->msgdef, \"$name$\");\n"
       "  zval *val;\n"
       "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"z\", &val)\n"
       "      == FAILURE) {\n"
       "    return;\n"
       "  }\n"
       "  Message_set(intern, f, val);\n"
-      "  RETURN_ZVAL(getThis(), 1, 0);\n"
+      "  RETURN_COPY(getThis());\n"
       "}\n"
       "\n",
       "c_name", c_name,
@@ -1980,26 +1997,48 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
     printer->Print(
       "static PHP_METHOD($c_name$, get$camel_name$) {\n"
       "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
-      "  const upb_oneofdef *oneof = upb_msgdef_ntooz(intern->desc->msgdef,\n"
-      "                                              \"$name$\");\n"
-      "  const upb_fielddef *field = upb_msg_whichoneof(intern->msg, oneof);\n"
-      "  RETURN_STRING(field ? upb_fielddef_name(field) : \"\");\n"
+      "  const upb_OneofDef *oneof = upb_MessageDef_FindOneofByName(\n"
+      "      intern->desc->msgdef, \"$name$\");\n"
+      "  const upb_FieldDef *field = \n"
+      "      upb_Message_WhichOneof(intern->msg, oneof);\n"
+      "  RETURN_STRING(field ? upb_FieldDef_Name(field) : \"\");\n"
       "}\n",
       "c_name", c_name,
       "name", oneof->name(),
       "camel_name", UnderscoresToCamelCase(oneof->name(), true));
   }
 
+  switch (message->well_known_type()) {
+    case Descriptor::WELLKNOWNTYPE_ANY:
+      printer->Print(
+          "ZEND_BEGIN_ARG_INFO_EX(arginfo_is, 0, 0, 1)\n"
+          "  ZEND_ARG_INFO(0, proto)\n"
+          "ZEND_END_ARG_INFO()\n"
+          "\n"
+      );
+      break;
+    case Descriptor::WELLKNOWNTYPE_TIMESTAMP:
+      printer->Print(
+          "ZEND_BEGIN_ARG_INFO_EX(arginfo_timestamp_fromdatetime, 0, 0, 1)\n"
+          "  ZEND_ARG_INFO(0, datetime)\n"
+          "ZEND_END_ARG_INFO()\n"
+          "\n"
+      );
+      break;
+    default:
+      break;
+  }
+
   printer->Print(
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
-      "  PHP_ME($c_name$, __construct, NULL, ZEND_ACC_PUBLIC)\n",
+      "  PHP_ME($c_name$, __construct, arginfo_construct, ZEND_ACC_PUBLIC)\n",
       "c_name", c_name);
 
   for (int i = 0; i < message->field_count(); i++) {
     auto field = message->field(i);
     printer->Print(
-      "  PHP_ME($c_name$, get$camel_name$, NULL, ZEND_ACC_PUBLIC)\n"
-      "  PHP_ME($c_name$, set$camel_name$, NULL, ZEND_ACC_PUBLIC)\n",
+      "  PHP_ME($c_name$, get$camel_name$, arginfo_void, ZEND_ACC_PUBLIC)\n"
+      "  PHP_ME($c_name$, set$camel_name$, arginfo_setter, ZEND_ACC_PUBLIC)\n",
       "c_name", c_name,
       "camel_name", UnderscoresToCamelCase(field->name(), true));
   }
@@ -2007,7 +2046,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     auto oneof = message->oneof_decl(i);
     printer->Print(
-      "  PHP_ME($c_name$, get$camel_name$, NULL, ZEND_ACC_PUBLIC)\n",
+      "  PHP_ME($c_name$, get$camel_name$, arginfo_void, ZEND_ACC_PUBLIC)\n",
       "c_name", c_name,
       "camel_name", UnderscoresToCamelCase(oneof->name(), true));
   }
@@ -2016,20 +2055,20 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
   switch (message->well_known_type()) {
     case Descriptor::WELLKNOWNTYPE_ANY:
       printer->Print(
-        "  PHP_ME($c_name$, is, NULL, ZEND_ACC_PUBLIC)\n"
-        "  PHP_ME($c_name$, pack, NULL, ZEND_ACC_PUBLIC)\n"
-        "  PHP_ME($c_name$, unpack, NULL, ZEND_ACC_PUBLIC)\n",
+        "  PHP_ME($c_name$, is, arginfo_is, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, pack, arginfo_setter, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, unpack, arginfo_void, ZEND_ACC_PUBLIC)\n",
         "c_name", c_name);
       break;
     case Descriptor::WELLKNOWNTYPE_TIMESTAMP:
       printer->Print(
-        "  PHP_ME($c_name$, fromDateTime, NULL, ZEND_ACC_PUBLIC)\n"
-        "  PHP_ME($c_name$, toDateTime, NULL, ZEND_ACC_PUBLIC)\n",
+        "  PHP_ME($c_name$, fromDateTime, arginfo_timestamp_fromdatetime, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, toDateTime, arginfo_void, ZEND_ACC_PUBLIC)\n",
         "c_name", c_name);
       break;
     default:
       break;
-  } 
+  }
 
   printer->Print(
       "  ZEND_FE_END\n"
@@ -2091,7 +2130,14 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
 
   printer.Print(
       "// This file is generated from the .proto files for the well-known\n"
-      "// types. Do not edit!\n");
+      "// types. Do not edit!\n\n");
+
+  printer.Print(
+      "ZEND_BEGIN_ARG_INFO_EX(arginfo_lookup, 0, 0, 1)\n"
+      "  ZEND_ARG_INFO(0, key)\n"
+      "ZEND_END_ARG_INFO()\n"
+      "\n"
+  );
 
   for (auto file : files) {
     printer.Print(
@@ -2154,7 +2200,7 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
         "}\n"
         "\n"
         "static zend_function_entry $metadata_c_name$_methods[] = {\n"
-        "  PHP_ME($metadata_c_name$, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+        "  PHP_ME($metadata_c_name$, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
         "  ZEND_FE_END\n"
         "};\n"
         "\n"

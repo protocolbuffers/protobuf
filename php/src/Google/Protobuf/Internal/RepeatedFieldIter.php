@@ -70,7 +70,9 @@ class RepeatedFieldIter implements \Iterator
      * Reset the status of the iterator
      *
      * @return void
+     * @todo need to add return type void (require update php version to 7.1)
      */
+    #[\ReturnTypeWillChange]
     public function rewind()
     {
         $this->position = 0;
@@ -80,7 +82,9 @@ class RepeatedFieldIter implements \Iterator
      * Return the element at the current position.
      *
      * @return object The element at the current position.
+     * @todo need to add return type mixed (require update php version to 8.0)
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return $this->container[$this->position];
@@ -90,7 +94,9 @@ class RepeatedFieldIter implements \Iterator
      * Return the current position.
      *
      * @return integer The current position.
+     * @todo need to add return type mixed (require update php version to 8.0)
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->position;
@@ -100,7 +106,9 @@ class RepeatedFieldIter implements \Iterator
      * Move to the next position.
      *
      * @return void
+     * @todo need to add return type void (require update php version to 7.1)
      */
+    #[\ReturnTypeWillChange]
     public function next()
     {
         ++$this->position;
@@ -111,7 +119,7 @@ class RepeatedFieldIter implements \Iterator
      *
      * @return bool True if there are more elements to iterate.
      */
-    public function valid()
+    public function valid(): bool
     {
         return isset($this->container[$this->position]);
     }

@@ -187,6 +187,8 @@ message NestedTestAllTypes {
   optional NestedTestAllTypes child = 1;
   optional TestAllTypes payload = 2;
   repeated NestedTestAllTypes repeated_child = 3;
+  optional NestedTestAllTypes lazy_child = 4 [lazy=true];
+  optional TestAllTypes eager_child = 5 [lazy=false];
 }
 
 message TestDeprecatedFields {
@@ -364,6 +366,39 @@ message TestNestedExtension {
   }
 }
 
+message TestChildExtension {
+  optional string a = 1;
+  optional string b = 2;
+  optional TestAllExtensions optional_extension = 3;
+}
+
+// Emulates wireformat data of TestChildExtension with dynamic extension
+// (DynamicExtension).
+message TestChildExtensionData {
+  message NestedTestAllExtensionsData {
+    message NestedDynamicExtensions {
+      optional int32 a = 1;
+      optional int32 b = 2;
+    }
+    optional NestedDynamicExtensions dynamic = 409707008;
+  }
+  optional string a = 1;
+  optional string b = 2;
+  optional NestedTestAllExtensionsData optional_extension = 3;
+}
+
+message TestNestedChildExtension {
+  optional int32 a = 1;
+  optional TestChildExtension child = 2;
+}
+
+// Emulates wireformat data of TestNestedChildExtension with dynamic extension
+// (DynamicExtension).
+message TestNestedChildExtensionData {
+  optional int32 a = 1;
+  optional TestChildExtensionData child = 2;
+}
+
 // We have separate messages for testing required fields because it's
 // annoying to have to fill in required fields in TestProto in order to
 // do anything with it.  Note that we don't need to test every type of
@@ -412,6 +447,9 @@ message TestRequired {
   optional int32 dummy32 = 32;
 
   required int32 c = 33;
+
+  // Add an optional child message to make this non-trivial for go/pdlazy.
+  optional ForeignMessage optional_foreign = 34;
 }
 
 message TestRequiredForeign {
@@ -424,6 +462,12 @@ message TestRequiredMessage {
   optional TestRequired optional_message = 1;
   repeated TestRequired repeated_message = 2;
   required TestRequired required_message = 3;
+}
+
+message TestNestedRequiredForeign {
+  optional TestNestedRequiredForeign child = 1;
+  optional TestRequiredForeign payload = 2;
+  optional int32 dummy = 3;
 }
 
 // Test that we can use NestedMessage from outside TestAllTypes.
@@ -513,7 +557,14 @@ message TestEagerMessage {
 message TestLazyMessage {
   optional TestAllTypes sub_message = 1 [lazy=true];
 }
-
+message TestEagerMaybeLazy {
+  message NestedMessage {
+    optional TestPackedTypes packed = 1;
+  }
+  optional TestAllTypes message_foo = 1;
+  optional TestAllTypes message_bar = 2;
+  optional NestedMessage message_baz = 3;
+}
 // Needed for a Python test.
 message TestNestedMessageHasBits {
   message NestedMessage {
@@ -679,6 +730,41 @@ message MoreBytes {
   repeated bytes data = 1;
 }
 
+message ManyOptionalString {
+  optional string str1 = 1;
+  optional string str2 = 2;
+  optional string str3 = 3;
+  optional string str4 = 4;
+  optional string str5 = 5;
+  optional string str6 = 6;
+  optional string str7 = 7;
+  optional string str8 = 8;
+  optional string str9 = 9;
+  optional string str10 = 10;
+  optional string str11 = 11;
+  optional string str12 = 12;
+  optional string str13 = 13;
+  optional string str14 = 14;
+  optional string str15 = 15;
+  optional string str16 = 16;
+  optional string str17 = 17;
+  optional string str18 = 18;
+  optional string str19 = 19;
+  optional string str20 = 20;
+  optional string str21 = 21;
+  optional string str22 = 22;
+  optional string str23 = 23;
+  optional string str24 = 24;
+  optional string str25 = 25;
+  optional string str26 = 26;
+  optional string str27 = 27;
+  optional string str28 = 28;
+  optional string str29 = 29;
+  optional string str30 = 30;
+  optional string str31 = 31;
+  optional string str32 = 32;
+}
+
 // Test int32, uint32, int64, uint64, and bool are all compatible
 message Int32Message {
   optional int32 data = 1;
@@ -746,6 +832,10 @@ message TestOneof2 {
     string bar_string_piece = 15 [ctype=STRING_PIECE, default = "SPIECE"];
     bytes bar_bytes = 16 [default = "BYTES"];
     NestedEnum bar_enum = 17 [default = BAR];
+    string bar_string_with_empty_default = 20 [default = ""];
+    string bar_cord_with_empty_default = 21 [ctype=CORD, default = ""];
+    string bar_string_piece_with_empty_default = 22 [ctype=STRING_PIECE, default = ""];
+    bytes bar_bytes_with_empty_default = 23 [default = ""];
   }
 
   optional int32 baz_int = 18;
@@ -933,6 +1023,12 @@ message TestParsingMerge {
   }
 }
 
+// Test that the correct exception is thrown by parseFrom in a corner case
+// involving merging, extensions, and required fields.
+message TestMergeException {
+  optional TestAllExtensions all_extensions = 1;
+}
+
 message TestCommentInjectionMessage {
   // */ <- This should not close the generated doc comment
   optional string a = 1 [default="*/ <- Neither should this."];
@@ -962,6 +1058,7 @@ message TestJsonName {
   optional int32 _field_name4 = 4;
   optional int32 FIELD_NAME5 = 5;
   optional int32 field_name6 = 6 [json_name = "@type"];
+  optional int32 fieldname7 = 7;
 }
 
 message TestHugeFieldNumbers {
@@ -1010,6 +1107,37 @@ message TestExtensionInsideTable {
 
 extend TestExtensionInsideTable {
   optional int32 test_extension_inside_table_extension = 5;
+}
+
+// NOTE(b/202996544): Intentionally nested to mirror go/glep.
+message TestNestedGroupExtensionOuter {
+  optional group Layer1OptionalGroup = 1 {
+    repeated group Layer2RepeatedGroup = 2 {
+      extensions 3
+        // NOTE: extension metadata is not supported due to targets such as
+        // `//third_party/protobuf_legacy_opensource/src:shell_scripts_test`,
+        // eee https://screenshot.googleplex.com/Axz2QD8nxjdpyFF
+        //[metadata = {
+        // NOTE: can't write type there due to some clever build gen code at
+        // http://google3/net/proto2/internal/BUILD;l=1247;rcl=411090862
+        // type: "protobuf_unittest.TestNestedGroupExtensionInnerExtension",
+        // name: "inner",
+        // }]
+        ;
+      optional string another_field = 6;
+    }
+    repeated group Layer2AnotherOptionalRepeatedGroup = 4 {
+      optional string but_why_tho = 5;
+    }
+  }
+}
+
+message TestNestedGroupExtensionInnerExtension {
+  optional string inner_name= 1;
+}
+
+extend TestNestedGroupExtensionOuter.Layer1OptionalGroup.Layer2RepeatedGroup {
+  optional TestNestedGroupExtensionInnerExtension inner = 3;
 }
 
 enum VeryLargeEnum {
@@ -1115,3 +1243,33 @@ enum VeryLargeEnum {
   ENUM_LABEL_99 = 99;
   ENUM_LABEL_100 = 100;
 };
+
+message TestExtensionRangeSerialize {
+  optional int32 foo_one = 1;
+
+  extensions 2 to 2;
+  extensions 3 to 4;
+
+  optional int32 foo_two = 6;
+  optional int32 foo_three = 7;
+
+  extensions 9 to 10;
+
+  optional int32 foo_four = 13;
+
+  extensions 15 to 15;
+  extensions 17 to 17;
+  extensions 19 to 19;
+
+  extend TestExtensionRangeSerialize {
+    optional int32 bar_one = 2;
+    optional int32 bar_two = 4;
+
+    optional int32 bar_three = 10;
+
+    optional int32 bar_four = 15;
+    optional int32 bar_five = 19;
+  }
+}
+
+

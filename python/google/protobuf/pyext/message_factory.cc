@@ -30,6 +30,7 @@
 
 #include <unordered_map>
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <google/protobuf/dynamic_message.h>
@@ -38,17 +39,13 @@
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
-#if PY_MAJOR_VERSION >= 3
-  #if PY_VERSION_HEX < 0x03030000
-    #error "Python 3.0 - 3.2 are not supported."
-  #endif
-  #define PyString_AsStringAndSize(ob, charpp, sizep) \
-    (PyUnicode_Check(ob) ? ((*(charpp) = const_cast<char*>(                   \
-                               PyUnicode_AsUTF8AndSize(ob, (sizep)))) == NULL \
-                              ? -1                                            \
-                              : 0)                                            \
-                        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
-#endif
+#define PyString_AsStringAndSize(ob, charpp, sizep)              \
+  (PyUnicode_Check(ob)                                           \
+       ? ((*(charpp) = const_cast<char*>(                        \
+               PyUnicode_AsUTF8AndSize(ob, (sizep)))) == nullptr \
+              ? -1                                               \
+              : 0)                                               \
+       : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
 
 namespace google {
 namespace protobuf {
@@ -59,8 +56,8 @@ namespace message_factory {
 PyMessageFactory* NewMessageFactory(PyTypeObject* type, PyDescriptorPool* pool) {
   PyMessageFactory* factory = reinterpret_cast<PyMessageFactory*>(
       PyType_GenericAlloc(type, 0));
-  if (factory == NULL) {
-    return NULL;
+  if (factory == nullptr) {
+    return nullptr;
   }
 
   DynamicMessageFactory* message_factory = new DynamicMessageFactory();
@@ -77,24 +74,25 @@ PyMessageFactory* NewMessageFactory(PyTypeObject* type, PyDescriptorPool* pool) 
 }
 
 PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
-  static char* kwlist[] = {"pool", 0};
-  PyObject* pool = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &pool)) {
-    return NULL;
+  static const char* kwlist[] = {"pool", nullptr};
+  PyObject* pool = nullptr;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O",
+                                   const_cast<char**>(kwlist), &pool)) {
+    return nullptr;
   }
   ScopedPyObjectPtr owned_pool;
-  if (pool == NULL || pool == Py_None) {
+  if (pool == nullptr || pool == Py_None) {
     owned_pool.reset(PyObject_CallFunction(
-        reinterpret_cast<PyObject*>(&PyDescriptorPool_Type), NULL));
-    if (owned_pool == NULL) {
-      return NULL;
+        reinterpret_cast<PyObject*>(&PyDescriptorPool_Type), nullptr));
+    if (owned_pool == nullptr) {
+      return nullptr;
     }
     pool = owned_pool.get();
   } else {
     if (!PyObject_TypeCheck(pool, &PyDescriptorPool_Type)) {
       PyErr_Format(PyExc_TypeError, "Expected a DescriptorPool, got %s",
                    pool->ob_type->tp_name);
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -165,8 +163,8 @@ CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
   }
   ScopedPyObjectPtr py_descriptor(
       PyMessageDescriptor_FromDescriptor(descriptor));
-  if (py_descriptor == NULL) {
-    return NULL;
+  if (py_descriptor == nullptr) {
+    return nullptr;
   }
   // Create a new message class.
   ScopedPyObjectPtr args(Py_BuildValue(
@@ -174,24 +172,24 @@ CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
       "DESCRIPTOR", py_descriptor.get(),
       "__module__", Py_None,
       "message_factory", self));
-  if (args == NULL) {
-    return NULL;
+  if (args == nullptr) {
+    return nullptr;
   }
   ScopedPyObjectPtr message_class(PyObject_CallObject(
       reinterpret_cast<PyObject*>(CMessageClass_Type), args.get()));
-  if (message_class == NULL) {
-    return NULL;
+  if (message_class == nullptr) {
+    return nullptr;
   }
   // Create messages class for the messages used by the fields, and registers
   // all extensions for these messages during the recursion.
   for (int field_idx = 0; field_idx < descriptor->field_count(); field_idx++) {
     const Descriptor* sub_descriptor =
         descriptor->field(field_idx)->message_type();
-    // It is NULL if the field type is not a message.
-    if (sub_descriptor != NULL) {
+    // It is null if the field type is not a message.
+    if (sub_descriptor != nullptr) {
       CMessageClass* result = GetOrCreateMessageClass(self, sub_descriptor);
-      if (result == NULL) {
-        return NULL;
+      if (result == nullptr) {
+        return nullptr;
       }
       Py_DECREF(result);
     }
@@ -203,17 +201,17 @@ CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
     ScopedPyObjectPtr py_extended_class(
         GetOrCreateMessageClass(self, extension->containing_type())
             ->AsPyObject());
-    if (py_extended_class == NULL) {
-      return NULL;
+    if (py_extended_class == nullptr) {
+      return nullptr;
     }
     ScopedPyObjectPtr py_extension(PyFieldDescriptor_FromDescriptor(extension));
-    if (py_extension == NULL) {
-      return NULL;
+    if (py_extension == nullptr) {
+      return nullptr;
     }
     ScopedPyObjectPtr result(cmessage::RegisterExtension(
         py_extended_class.get(), py_extension.get()));
-    if (result == NULL) {
-      return NULL;
+    if (result == nullptr) {
+      return nullptr;
     }
   }
   return reinterpret_cast<CMessageClass*>(message_class.release());
@@ -227,14 +225,15 @@ CMessageClass* GetMessageClass(PyMessageFactory* self,
   if (ret == self->classes_by_descriptor->end()) {
     PyErr_Format(PyExc_TypeError, "No message class registered for '%s'",
                  message_descriptor->full_name().c_str());
-    return NULL;
+    return nullptr;
   } else {
     return ret->second;
   }
 }
 
 static PyMethodDef Methods[] = {
-    {NULL}};
+    {nullptr},
+};
 
 static PyObject* GetPool(PyMessageFactory* self, void* closure) {
   Py_INCREF(self->pool);
@@ -242,8 +241,8 @@ static PyObject* GetPool(PyMessageFactory* self, void* closure) {
 }
 
 static PyGetSetDef Getters[] = {
-    {"pool", (getter)GetPool, NULL, "DescriptorPool"},
-    {NULL}
+    {"pool", (getter)GetPool, nullptr, "DescriptorPool"},
+    {nullptr},
 };
 
 }  // namespace message_factory
@@ -254,38 +253,42 @@ PyTypeObject PyMessageFactory_Type = {
     sizeof(PyMessageFactory),  // tp_basicsize
     0,                         // tp_itemsize
     message_factory::Dealloc,  // tp_dealloc
-    0,                         // tp_print
-    0,                         // tp_getattr
-    0,                         // tp_setattr
-    0,                         // tp_compare
-    0,                         // tp_repr
-    0,                         // tp_as_number
-    0,                         // tp_as_sequence
-    0,                         // tp_as_mapping
-    0,                         // tp_hash
-    0,                         // tp_call
-    0,                         // tp_str
-    0,                         // tp_getattro
-    0,                         // tp_setattro
-    0,                         // tp_as_buffer
+#if PY_VERSION_HEX < 0x03080000
+    nullptr,  // tp_print
+#else
+    0,  // tp_vectorcall_offset
+#endif
+    nullptr,  // tp_getattr
+    nullptr,  // tp_setattr
+    nullptr,  // tp_compare
+    nullptr,  // tp_repr
+    nullptr,  // tp_as_number
+    nullptr,  // tp_as_sequence
+    nullptr,  // tp_as_mapping
+    nullptr,  // tp_hash
+    nullptr,  // tp_call
+    nullptr,  // tp_str
+    nullptr,  // tp_getattro
+    nullptr,  // tp_setattro
+    nullptr,  // tp_as_buffer
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,  // tp_flags
     "A static Message Factory",                                     // tp_doc
     message_factory::GcTraverse,  // tp_traverse
     message_factory::GcClear,     // tp_clear
-    0,                            // tp_richcompare
+    nullptr,                      // tp_richcompare
     0,                            // tp_weaklistoffset
-    0,                            // tp_iter
-    0,                            // tp_iternext
+    nullptr,                      // tp_iter
+    nullptr,                      // tp_iternext
     message_factory::Methods,     // tp_methods
-    0,                            // tp_members
+    nullptr,                      // tp_members
     message_factory::Getters,     // tp_getset
-    0,                            // tp_base
-    0,                            // tp_dict
-    0,                            // tp_descr_get
-    0,                            // tp_descr_set
+    nullptr,                      // tp_base
+    nullptr,                      // tp_dict
+    nullptr,                      // tp_descr_get
+    nullptr,                      // tp_descr_set
     0,                            // tp_dictoffset
-    0,                            // tp_init
-    0,                            // tp_alloc
+    nullptr,                      // tp_init
+    nullptr,                      // tp_alloc
     message_factory::New,         // tp_new
     PyObject_GC_Del,              // tp_free
 };

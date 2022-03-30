@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_STRUCTURED_OBJECTWRITER_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_STRUCTURED_OBJECTWRITER_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_STRUCTURED_OBJECTWRITER_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_STRUCTURED_OBJECTWRITER_H__
 
 #include <memory>
 
@@ -37,6 +37,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/internal/object_writer.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -57,7 +58,7 @@ namespace converter {
 // Derived classes could be thread-unsafe.
 class PROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
  public:
-  virtual ~StructuredObjectWriter() {}
+  ~StructuredObjectWriter() override {}
 
  protected:
   // A base element class for subclasses to extend, makes tracking state easier.
@@ -117,4 +118,4 @@ class PROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_STRUCTURED_OBJECTWRITER_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_STRUCTURED_OBJECTWRITER_H__

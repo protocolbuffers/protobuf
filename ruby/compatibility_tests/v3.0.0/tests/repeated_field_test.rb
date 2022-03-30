@@ -21,6 +21,7 @@ class RepeatedFieldTest < Test::Unit::TestCase
       :nitems, :iter_for_reverse_each, :indexes, :append, :prepend]
     arr_methods -= [:union, :difference, :filter!]
     arr_methods -= [:intersection, :deconstruct] # ruby 2.7 methods we can ignore
+    arr_methods -= [:intersect?] # ruby 3.1 methods we can ignore
     arr_methods.each do |method_name|
       assert m.repeated_string.respond_to?(method_name) == true, "does not respond to #{method_name}"
     end
@@ -323,18 +324,6 @@ class RepeatedFieldTest < Test::Unit::TestCase
     end
     check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
       arr.collect!.with_index{|x, i| x[0...i] }
-    end
-  end
-
-  def test_compact!
-    m = TestMessage.new
-    m.repeated_msg << TestMessage2.new(:foo => 1)
-    m.repeated_msg << nil
-    m.repeated_msg << TestMessage2.new(:foo => 2)
-    reference_arr = m.repeated_string.to_a
-
-    check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
-      arr.compact!
     end
   end
 

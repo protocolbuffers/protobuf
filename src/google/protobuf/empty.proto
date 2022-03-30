@@ -48,5 +48,4 @@ option cc_enable_arenas = true;
 //       rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);
 //     }
 //
-// The JSON representation for `Empty` is empty JSON object `{}`.
 message Empty {}

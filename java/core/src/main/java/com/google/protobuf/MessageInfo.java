@@ -30,7 +30,8 @@
 
 package com.google.protobuf;
 
-/** A MesageInfo object describes a proto message type. */
+/** A MessageInfo object describes a proto message type. */
+@CheckReturnValue
 interface MessageInfo {
   /** Gets syntax for this type. */
   ProtoSyntax getSyntax();

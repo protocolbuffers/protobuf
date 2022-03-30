@@ -51,10 +51,11 @@
 #endif
 #include <ctype.h>
 #include <errno.h>
+
 #include <fstream>
 #include <iostream>
 
-#include <limits.h>  //For PATH_MAX
+#include <limits.h>  // For PATH_MAX
 
 #include <memory>
 
@@ -66,25 +67,26 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/compiler/subprocess.h>
-#include <google/protobuf/compiler/zip_writer.h>
 #include <google/protobuf/compiler/plugin.pb.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/stringprintf.h>
+#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/compiler/zip_writer.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/io_win32.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/text_format.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -193,7 +195,7 @@ bool TryCreateParentDirectory(const std::string& prefix,
 bool GetProtocAbsolutePath(std::string* path) {
 #ifdef _WIN32
   char buffer[MAX_PATH];
-  int len = GetModuleFileNameA(NULL, buffer, MAX_PATH);
+  int len = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
 #elif defined(__APPLE__)
   char buffer[PATH_MAX];
   int len = 0;
@@ -208,7 +210,7 @@ bool GetProtocAbsolutePath(std::string* path) {
   char buffer[PATH_MAX];
   size_t len = PATH_MAX;
   int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
-  if (sysctl(mib, 4, &buffer, &len, NULL, 0) != 0) {
+  if (sysctl(mib, 4, &buffer, &len, nullptr, 0) != 0) {
     len = 0;
   }
 #else
@@ -234,7 +236,7 @@ bool IsInstalledProtoPath(const std::string& path) {
 // Add the paths where google/protobuf/descriptor.proto and other well-known
 // type protos are installed.
 void AddDefaultProtoPaths(
-    std::vector<std::pair<std::string, std::string> >* paths) {
+    std::vector<std::pair<std::string, std::string>>* paths) {
   // TODO(xiaofeng): The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.
@@ -287,45 +289,51 @@ class CommandLineInterface::ErrorPrinter
       public io::ErrorCollector,
       public DescriptorPool::ErrorCollector {
  public:
-  ErrorPrinter(ErrorFormat format, DiskSourceTree* tree = NULL)
-      : format_(format), tree_(tree), found_errors_(false) {}
-  ~ErrorPrinter() {}
+  ErrorPrinter(ErrorFormat format, DiskSourceTree* tree = nullptr)
+      : format_(format),
+        tree_(tree),
+        found_errors_(false),
+        found_warnings_(false) {}
+  ~ErrorPrinter() override {}
 
   // implements MultiFileErrorCollector ------------------------------
   void AddError(const std::string& filename, int line, int column,
-                const std::string& message) {
+                const std::string& message) override {
     found_errors_ = true;
     AddErrorOrWarning(filename, line, column, message, "error", std::cerr);
   }
 
   void AddWarning(const std::string& filename, int line, int column,
-                  const std::string& message) {
+                  const std::string& message) override {
+    found_warnings_ = true;
     AddErrorOrWarning(filename, line, column, message, "warning", std::clog);
   }
 
   // implements io::ErrorCollector -----------------------------------
-  void AddError(int line, int column, const std::string& message) {
+  void AddError(int line, int column, const std::string& message) override {
     AddError("input", line, column, message);
   }
 
-  void AddWarning(int line, int column, const std::string& message) {
+  void AddWarning(int line, int column, const std::string& message) override {
     AddErrorOrWarning("input", line, column, message, "warning", std::clog);
   }
 
   // implements DescriptorPool::ErrorCollector-------------------------
   void AddError(const std::string& filename, const std::string& element_name,
                 const Message* descriptor, ErrorLocation location,
-                const std::string& message) {
+                const std::string& message) override {
     AddErrorOrWarning(filename, -1, -1, message, "error", std::cerr);
   }
 
   void AddWarning(const std::string& filename, const std::string& element_name,
                   const Message* descriptor, ErrorLocation location,
-                  const std::string& message) {
+                  const std::string& message) override {
     AddErrorOrWarning(filename, -1, -1, message, "warning", std::clog);
   }
 
   bool FoundErrors() const { return found_errors_; }
+
+  bool FoundWarnings() const { return found_warnings_; }
 
  private:
   void AddErrorOrWarning(const std::string& filename, int line, int column,
@@ -333,8 +341,8 @@ class CommandLineInterface::ErrorPrinter
                          std::ostream& out) {
     // Print full path when running under MSVS
     std::string dfile;
-    if (format_ == CommandLineInterface::ERROR_FORMAT_MSVS && tree_ != NULL &&
-        tree_->VirtualFileToDiskFile(filename, &dfile)) {
+    if (format_ == CommandLineInterface::ERROR_FORMAT_MSVS &&
+        tree_ != nullptr && tree_->VirtualFileToDiskFile(filename, &dfile)) {
       out << dfile;
     } else {
       out << filename;
@@ -365,6 +373,7 @@ class CommandLineInterface::ErrorPrinter
   const ErrorFormat format_;
   DiskSourceTree* tree_;
   bool found_errors_;
+  bool found_warnings_;
 };
 
 // -------------------------------------------------------------------
@@ -391,14 +400,14 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   void GetOutputFilenames(std::vector<std::string>* output_filenames);
 
   // implements GeneratorContext --------------------------------------
-  io::ZeroCopyOutputStream* Open(const std::string& filename);
-  io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename);
-  io::ZeroCopyOutputStream* OpenForInsert(const std::string& filename,
-                                          const std::string& insertion_point);
+  io::ZeroCopyOutputStream* Open(const std::string& filename) override;
+  io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename) override;
+  io::ZeroCopyOutputStream* OpenForInsert(
+      const std::string& filename, const std::string& insertion_point) override;
   io::ZeroCopyOutputStream* OpenForInsertWithGeneratedCodeInfo(
       const std::string& filename, const std::string& insertion_point,
-      const google::protobuf::GeneratedCodeInfo& info);
-  void ListParsedFiles(std::vector<const FileDescriptor*>* output) {
+      const google::protobuf::GeneratedCodeInfo& info) override;
+  void ListParsedFiles(std::vector<const FileDescriptor*>* output) override {
     *output = parsed_files_;
   }
 
@@ -425,7 +434,7 @@ class CommandLineInterface::MemoryOutputStream
                      const std::string& filename,
                      const std::string& insertion_point,
                      const google::protobuf::GeneratedCodeInfo& info);
-  virtual ~MemoryOutputStream();
+  ~MemoryOutputStream() override;
 
   // implements ZeroCopyOutputStream ---------------------------------
   bool Next(void** data, int* size) override {
@@ -582,10 +591,12 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
 
   if (stream.GetErrno() != 0) {
     std::cerr << filename << ": " << strerror(stream.GetErrno()) << std::endl;
+    return false;
   }
 
   if (!stream.Close()) {
     std::cerr << filename << ": " << strerror(stream.GetErrno()) << std::endl;
+    return false;
   }
 
   return true;
@@ -1036,16 +1047,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
 
-  for (auto fd : parsed_files) {
-    if (!AllowProto3Optional(*fd) && ContainsProto3Optional(fd)) {
-      std::cerr << fd->name()
-                << ": This file contains proto3 optional fields, but "
-                   "--experimental_allow_proto3_optional was not set."
-                << std::endl;
-      return 1;
-    }
-  }
-
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
   // they should share a single GeneratorContext so that OpenForInsert() works.
@@ -1115,7 +1116,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       FileDescriptorProto file;
       file.set_name("empty_message.proto");
       file.add_message_type()->set_name("EmptyMessage");
-      GOOGLE_CHECK(pool.BuildFile(file) != NULL);
+      GOOGLE_CHECK(pool.BuildFile(file) != nullptr);
       codec_type_ = "EmptyMessage";
       if (!EncodeOrDecode(&pool)) {
         return 1;
@@ -1127,7 +1128,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
-  if (error_collector->FoundErrors()) {
+  if (error_collector->FoundErrors() ||
+      (fatal_warnings_ && error_collector->FoundWarnings())) {
     return 1;
   }
 
@@ -1214,25 +1216,6 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
 
 }  // namespace
 
-bool CommandLineInterface::AllowProto3Optional(
-    const FileDescriptor& file) const {
-  // If the --experimental_allow_proto3_optional flag was set, we allow.
-  if (allow_proto3_optional_) return true;
-
-  // Whitelist all ads protos. Ads is an early adopter of this feature.
-  if (file.name().find("google/ads/googleads") != std::string::npos) {
-    return true;
-  }
-
-  // Whitelist all protos testing proto3 optional.
-  if (file.name().find("test_proto3_optional") != std::string::npos) {
-    return true;
-  }
-
-
-  return false;
-}
-
 
 bool CommandLineInterface::VerifyInputFilesInDescriptors(
     DescriptorDatabase* database) {
@@ -1287,7 +1270,7 @@ bool CommandLineInterface::ParseInputFiles(
     // Import the file.
     const FileDescriptor* parsed_file =
         descriptor_pool->FindFileByName(input_file);
-    if (parsed_file == NULL) {
+    if (parsed_file == nullptr) {
       result = false;
       break;
     }
@@ -1349,7 +1332,6 @@ void CommandLineInterface::Clear() {
   source_info_in_descriptor_set_ = false;
   disallow_services_ = false;
   direct_dependencies_explicitly_set_ = false;
-  allow_proto3_optional_ = false;
   deterministic_output_ = false;
 }
 
@@ -1514,7 +1496,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     for (std::vector<OutputDirective>::const_iterator j =
              output_directives_.begin();
          j != output_directives_.end(); ++j) {
-      if (j->generator == NULL) {
+      if (j->generator == nullptr) {
         std::string plugin_name = PluginName(plugin_prefix_, j->name);
         if (plugin_name == i->first) {
           foundImplicitPlugin = true;
@@ -1624,7 +1606,7 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
     // Two dashes:  Multi-character name, with '=' separating name and
     //   value.
     const char* equals_pos = strchr(arg, '=');
-    if (equals_pos != NULL) {
+    if (equals_pos != nullptr) {
       *name = std::string(arg, equals_pos - arg);
       *value = equals_pos + 1;
       parsed_value = true;
@@ -1660,7 +1642,7 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--version" || *name == "--decode_raw" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
-      *name == "--deterministic_output") {
+      *name == "--deterministic_output" || *name == "--fatal_warnings") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -1692,8 +1674,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     // On Windows, the shell (typically cmd.exe) does not expand wildcards in
     // file names (e.g. foo\*.proto), so we do it ourselves.
     switch (google::protobuf::io::win32::ExpandWildcards(
-        value,
-        [this](const string& path) { this->input_files_.push_back(path); })) {
+        value, [this](const std::string& path) {
+          this->input_files_.push_back(path);
+        })) {
       case google::protobuf::io::win32::ExpandWildcardsResult::kSuccess:
         break;
       case google::protobuf::io::win32::ExpandWildcardsResult::
@@ -1869,8 +1852,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
 
   } else if (name == "--experimental_allow_proto3_optional") {
-    allow_proto3_optional_ = true;
-
+    // Flag is no longer observed, but we allow it for backward compat.
   } else if (name == "--encode" || name == "--decode" ||
              name == "--decode_raw") {
     if (mode_ != MODE_COMPILE) {
@@ -1914,6 +1896,12 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
 
+  } else if (name == "--fatal_warnings") {
+    if (fatal_warnings_) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    fatal_warnings_ = true;
   } else if (name == "--plugin") {
     if (plugin_prefix_.empty()) {
       std::cerr << "This compiler does not support plugins." << std::endl;
@@ -1959,11 +1947,11 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     // Some other flag.  Look it up in the generators list.
     const GeneratorInfo* generator_info =
         FindOrNull(generators_by_flag_name_, name);
-    if (generator_info == NULL &&
+    if (generator_info == nullptr &&
         (plugin_prefix_.empty() || !HasSuffixString(name, "_out"))) {
       // Check if it's a generator option flag.
       generator_info = FindOrNull(generators_by_option_name_, name);
-      if (generator_info != NULL) {
+      if (generator_info != nullptr) {
         std::string* parameters =
             &generator_parameters_[generator_info->flag_name];
         if (!parameters->empty()) {
@@ -1992,8 +1980,8 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
       OutputDirective directive;
       directive.name = name;
-      if (generator_info == NULL) {
-        directive.generator = NULL;
+      if (generator_info == nullptr) {
+        directive.generator = nullptr;
       } else {
         directive.generator = generator_info->generator;
       }
@@ -2073,6 +2061,10 @@ Parse PROTO_FILES and generate output based on the options given:
   --error_format=FORMAT       Set the format in which to print errors.
                               FORMAT may be 'gcc' (the default) or 'msvs'
                               (Microsoft Visual Studio format).
+  --fatal_warnings            Make warnings be fatal (similar to -Werr in
+                              gcc). This flag will make protoc return
+                              with a non-zero exit code if any warnings
+                              are generated.
   --print_free_field_numbers  Print the free field numbers of the messages
                               defined in the given proto files. Groups share
                               the same field number space with the parent
@@ -2118,7 +2110,7 @@ Parse PROTO_FILES and generate output based on the options given:
 }
 
 bool CommandLineInterface::EnforceProto3OptionalSupport(
-    const std::string& codegen_name, uint64 supported_features,
+    const std::string& codegen_name, uint64_t supported_features,
     const std::vector<const FileDescriptor*>& parsed_files) const {
   bool supports_proto3_optional =
       supported_features & CodeGenerator::FEATURE_PROTO3_OPTIONAL;
@@ -2145,7 +2137,7 @@ bool CommandLineInterface::GenerateOutput(
     GeneratorContext* generator_context) {
   // Call the generator.
   std::string error;
-  if (output_directive.generator == NULL) {
+  if (output_directive.generator == nullptr) {
     // This is a plugin.
     GOOGLE_CHECK(HasPrefixString(output_directive.name, "--") &&
           HasSuffixString(output_directive.name, "_out"))
@@ -2215,6 +2207,10 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
       }
       output_filenames.push_back(output_filename);
     }
+  }
+
+  if (!descriptor_set_out_name_.empty()) {
+    output_filenames.push_back(descriptor_set_out_name_);
   }
 
   int fd;
@@ -2313,7 +2309,7 @@ bool CommandLineInterface::GeneratePluginOutput(
     if (!output_file.insertion_point().empty()) {
       std::string filename = output_file.name();
       // Open a file for insert.
-      // We reset current_output to NULL first so that the old file is closed
+      // We reset current_output to nullptr first so that the old file is closed
       // before the new one is opened.
       current_output.reset();
       current_output.reset(
@@ -2322,11 +2318,11 @@ bool CommandLineInterface::GeneratePluginOutput(
               output_file.generated_code_info()));
     } else if (!output_file.name().empty()) {
       // Starting a new file.  Open it.
-      // We reset current_output to NULL first so that the old file is closed
+      // We reset current_output to nullptr first so that the old file is closed
       // before the new one is opened.
       current_output.reset();
       current_output.reset(generator_context->Open(output_file.name()));
-    } else if (current_output == NULL) {
+    } else if (current_output == nullptr) {
       *error = strings::Substitute(
           "$0: First file chunk returned by plugin did not specify a file "
           "name.",
@@ -2356,7 +2352,7 @@ bool CommandLineInterface::GeneratePluginOutput(
 bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
   // Look up the type.
   const Descriptor* type = pool->FindMessageTypeByName(codec_type_);
-  if (type == NULL) {
+  if (type == nullptr) {
     std::cerr << "Type not defined: " << codec_type_ << std::endl;
     return false;
   }
@@ -2432,8 +2428,8 @@ bool CommandLineInterface::WriteDescriptorSet(
     to_output.insert(parsed_files.begin(), parsed_files.end());
     for (int i = 0; i < parsed_files.size(); i++) {
       const FileDescriptor* file = parsed_files[i];
-      for (int i = 0; i < file->dependency_count(); i++) {
-        const FileDescriptor* dependency = file->dependency(i);
+      for (int j = 0; j < file->dependency_count(); j++) {
+        const FileDescriptor* dependency = file->dependency(j);
         // if the dependency isn't in parsed files, mark it as already seen
         if (to_output.find(dependency) == to_output.end()) {
           already_seen.insert(dependency);
@@ -2595,7 +2591,8 @@ void FormatFreeFieldNumbers(const std::string& name,
         StringAppendF(&output, " %d", next_free_number);
       } else {
         // Range
-        StringAppendF(&output, " %d-%d", next_free_number, i->first - 1);
+        StringAppendF(&output, " %d-%d", next_free_number,
+                              i->first - 1);
       }
     }
     next_free_number = i->second;

@@ -32,6 +32,8 @@ syntax = "proto3";
 
 package protobuf_unittest;
 
+import "google/protobuf/descriptor.proto";
+
 option java_multiple_files = true;
 option java_package = "com.google.protobuf.testing.proto";
 
@@ -85,4 +87,14 @@ message TestProto3OptionalMessage {
 
   NestedMessage nested_message = 1;
   optional NestedMessage optional_nested_message = 2;
+}
+
+message Proto3OptionalExtensions {
+  option (protobuf_unittest.Proto3OptionalExtensions.ext_no_optional) = 8;
+  option (protobuf_unittest.Proto3OptionalExtensions.ext_with_optional) = 16;
+
+  extend google.protobuf.MessageOptions {
+    int32 ext_no_optional = 355886728;
+    optional int32 ext_with_optional = 355886729;
+  }
 }

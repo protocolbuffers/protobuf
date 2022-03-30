@@ -36,11 +36,11 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/util/internal/default_value_objectwriter.h>
-#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/internal/constants.h>
+#include <google/protobuf/util/internal/default_value_objectwriter.h>
 #include <google/protobuf/util/internal/protostream_objectsource.h>
 #include <google/protobuf/util/internal/protostream_objectwriter.h>
+#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
 
@@ -86,12 +86,13 @@ void TypeInfoTestHelper::ResetTypeInfo(const Descriptor* descriptor1,
 TypeInfo* TypeInfoTestHelper::GetTypeInfo() { return typeinfo_.get(); }
 
 ProtoStreamObjectSource* TypeInfoTestHelper::NewProtoSource(
-    io::CodedInputStream* coded_input, const std::string& type_url) {
+    io::CodedInputStream* coded_input, const std::string& type_url,
+    ProtoStreamObjectSource::RenderOptions render_options) {
   const google::protobuf::Type* type = typeinfo_->GetTypeByTypeUrl(type_url);
   switch (type_) {
     case USE_TYPE_RESOLVER: {
       return new ProtoStreamObjectSource(coded_input, type_resolver_.get(),
-                                         *type);
+                                         *type, render_options);
     }
   }
   GOOGLE_LOG(FATAL) << "Can not reach here.";

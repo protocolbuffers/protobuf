@@ -32,55 +32,47 @@
 
 package com.google.protobuf.jruby;
 
-import com.google.protobuf.Descriptors;
 import org.jruby.RubyModule;
-import org.jruby.RubyNumeric;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 public class RubyEnum {
-    /*
-     * call-seq:
-     *     Enum.lookup(number) => name
-     *
-     * This module method, provided on each generated enum module, looks up an enum
-     * value by number and returns its name as a Ruby symbol, or nil if not found.
-     */
-    @JRubyMethod(meta = true)
-    public static IRubyObject lookup(ThreadContext context, IRubyObject recv, IRubyObject number) {
-        RubyEnumDescriptor rubyEnumDescriptorescriptor = (RubyEnumDescriptor) getDescriptor(context, recv);
-        Descriptors.EnumDescriptor descriptor = rubyEnumDescriptorescriptor.getDescriptor();
-        Descriptors.EnumValueDescriptor value = descriptor.findValueByNumber(RubyNumeric.num2int(number));
-        if (value == null) return context.runtime.getNil();
-        return context.runtime.newSymbol(value.getName());
-    }
+  /*
+   * call-seq:
+   *     Enum.lookup(number) => name
+   *
+   * This module method, provided on each generated enum module, looks up an enum
+   * value by number and returns its name as a Ruby symbol, or nil if not found.
+   */
+  @JRubyMethod(meta = true)
+  public static IRubyObject lookup(ThreadContext context, IRubyObject recv, IRubyObject number) {
+    RubyEnumDescriptor rubyEnumDescriptor = (RubyEnumDescriptor) getDescriptor(context, recv);
+    return rubyEnumDescriptor.numberToName(context, number);
+  }
 
-    /*
-     * call-seq:
-     *     Enum.resolve(name) => number
-     *
-     * This module method, provided on each generated enum module, looks up an enum
-     * value by name (as a Ruby symbol) and returns its name, or nil if not found.
-     */
-    @JRubyMethod(meta = true)
-    public static IRubyObject resolve(ThreadContext context, IRubyObject recv, IRubyObject name) {
-        RubyEnumDescriptor rubyEnumDescriptorescriptor = (RubyEnumDescriptor) getDescriptor(context, recv);
-        Descriptors.EnumDescriptor descriptor = rubyEnumDescriptorescriptor.getDescriptor();
-        Descriptors.EnumValueDescriptor value = descriptor.findValueByName(name.asJavaString());
-        if (value == null) return context.runtime.getNil();
-        return context.runtime.newFixnum(value.getNumber());
-    }
+  /*
+   * call-seq:
+   *     Enum.resolve(name) => number
+   *
+   * This module method, provided on each generated enum module, looks up an enum
+   * value by name (as a Ruby symbol) and returns its name, or nil if not found.
+   */
+  @JRubyMethod(meta = true)
+  public static IRubyObject resolve(ThreadContext context, IRubyObject recv, IRubyObject name) {
+    RubyEnumDescriptor rubyEnumDescriptor = (RubyEnumDescriptor) getDescriptor(context, recv);
+    return rubyEnumDescriptor.nameToNumber(context, name);
+  }
 
-    /*
-     * call-seq:
-     *     Enum.descriptor
-     *
-     * This module method, provided on each generated enum module, returns the
-     * EnumDescriptor corresponding to this enum type.
-     */
-    @JRubyMethod(meta = true, name = "descriptor")
-    public static IRubyObject getDescriptor(ThreadContext context, IRubyObject recv) {
-        return ((RubyModule) recv).getInstanceVariable(Utils.DESCRIPTOR_INSTANCE_VAR);
-    }
+  /*
+   * call-seq:
+   *     Enum.descriptor
+   *
+   * This module method, provided on each generated enum module, returns the
+   * EnumDescriptor corresponding to this enum type.
+   */
+  @JRubyMethod(meta = true, name = "descriptor")
+  public static IRubyObject getDescriptor(ThreadContext context, IRubyObject recv) {
+    return ((RubyModule) recv).getInstanceVariable(Utils.DESCRIPTOR_INSTANCE_VAR);
+  }
 }

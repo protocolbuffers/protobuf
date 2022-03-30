@@ -28,10 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_SOURCE_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_SOURCE_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_OBJECT_SOURCE_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_OBJECT_SOURCE_H__
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status.h>
 
@@ -64,7 +65,7 @@ class PROTOBUF_EXPORT ObjectSource {
   // This is useful when you chain ObjectSource together by embedding one
   // within another.
   virtual util::Status NamedWriteTo(StringPiece name,
-                                      ObjectWriter* ow) const = 0;
+                                    ObjectWriter* ow) const = 0;
 
  protected:
   ObjectSource() {}
@@ -81,4 +82,4 @@ class PROTOBUF_EXPORT ObjectSource {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_SOURCE_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_OBJECT_SOURCE_H__

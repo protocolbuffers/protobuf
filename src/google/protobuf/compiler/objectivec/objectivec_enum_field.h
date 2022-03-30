@@ -41,33 +41,33 @@ namespace compiler {
 namespace objectivec {
 
 class EnumFieldGenerator : public SingleFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field,
-                                              const Options& options);
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
   EnumFieldGenerator(const EnumFieldGenerator&) = delete;
   EnumFieldGenerator& operator=(const EnumFieldGenerator&) = delete;
 
  public:
-  virtual void GenerateCFunctionDeclarations(io::Printer* printer) const;
-  virtual void GenerateCFunctionImplementations(io::Printer* printer) const;
+  virtual void GenerateCFunctionDeclarations(
+      io::Printer* printer) const override;
+  virtual void GenerateCFunctionImplementations(
+      io::Printer* printer) const override;
   virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls) const;
+      std::set<std::string>* fwd_decls,
+      bool include_external_types) const override;
 
  protected:
-  EnumFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
+  EnumFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~EnumFieldGenerator();
 };
 
 class RepeatedEnumFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field,
-                                              const Options& options);
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  public:
-  virtual void FinishInitialization();
+  virtual void FinishInitialization() override;
 
  protected:
-  RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
-                             const Options& options);
+  RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~RepeatedEnumFieldGenerator();
 };
 

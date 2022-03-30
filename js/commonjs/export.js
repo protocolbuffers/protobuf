@@ -5,8 +5,6 @@
  * the google-protobuf.js file that we build at distribution time.
  */
 
-// Include a dummy provide statement so that closurebuilder.py does not skip over this
-// file.
 goog.provide('jspb.Export');
 
 goog.require('goog.object');
@@ -17,15 +15,18 @@ goog.require('jspb.ExtensionFieldInfo');
 goog.require('jspb.Message');
 goog.require('jspb.Map');
 
-exports.Map = jspb.Map;
-exports.Message = jspb.Message;
-exports.BinaryReader = jspb.BinaryReader;
-exports.BinaryWriter = jspb.BinaryWriter;
-exports.ExtensionFieldInfo = jspb.ExtensionFieldInfo;
-exports.ExtensionFieldBinaryInfo = jspb.ExtensionFieldBinaryInfo;
+if (typeof exports === 'object') {
+  exports.Map = jspb.Map;
+  exports.Message = jspb.Message;
+  exports.BinaryReader = jspb.BinaryReader;
+  exports.BinaryWriter = jspb.BinaryWriter;
+  exports.ExtensionFieldInfo = jspb.ExtensionFieldInfo;
+  exports.ExtensionFieldBinaryInfo = jspb.ExtensionFieldBinaryInfo;
 
-// These are used by generated code but should not be used directly by clients.
-exports.exportSymbol = goog.exportSymbol;
-exports.inherits = goog.inherits;
-exports.object = {extend: goog.object.extend};
-exports.typeOf = goog.typeOf;
+  // These are used by generated code but should not be used directly by
+  // clients.
+  exports.exportSymbol = goog.exportSymbol;
+  exports.inherits = goog.inherits;
+  exports.object = {extend: goog.object.extend};
+  exports.typeOf = goog.typeOf;
+}

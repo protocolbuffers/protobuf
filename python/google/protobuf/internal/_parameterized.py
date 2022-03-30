@@ -148,13 +148,8 @@ __author__ = 'tmarek@google.com (Torsten Marek)'
 import functools
 import re
 import types
-try:
-  import unittest2 as unittest
-except ImportError:
-  import unittest
+import unittest
 import uuid
-
-import six
 
 try:
   # Since python 3
@@ -180,8 +175,8 @@ def _StrClass(cls):
 
 
 def _NonStringIterable(obj):
-  return (isinstance(obj, collections_abc.Iterable) and not
-          isinstance(obj, six.string_types))
+  return (isinstance(obj, collections_abc.Iterable) and
+          not isinstance(obj, str))
 
 
 def _FormatParameterList(testcase_params):
@@ -359,7 +354,7 @@ class TestGeneratorMetaclass(type):
 
   def __new__(mcs, class_name, bases, dct):
     dct['_id_suffix'] = id_suffix = {}
-    for name, obj in dct.items():
+    for name, obj in dct.copy().items():
       if (name.startswith(unittest.TestLoader.testMethodPrefix) and
           _NonStringIterable(obj)):
         iterator = iter(obj)
@@ -391,9 +386,8 @@ def _UpdateClassDictForParamTestCase(dct, id_suffix, name, iterator):
     id_suffix[new_name] = getattr(func, '__x_extra_id__', '')
 
 
-class TestCase(unittest.TestCase):
+class TestCase(unittest.TestCase, metaclass=TestGeneratorMetaclass):
   """Base class for test cases using the parameters decorator."""
-  __metaclass__ = TestGeneratorMetaclass
 
   def _OriginalName(self):
     return self._testMethodName.split(_SEPARATOR)[0]

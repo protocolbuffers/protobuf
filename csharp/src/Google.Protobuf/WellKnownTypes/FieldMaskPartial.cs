@@ -33,6 +33,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Google.Protobuf.Reflection;
@@ -115,7 +116,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// Parses from a string to a FieldMask and validates all field paths.
         /// </summary>
         /// <typeparam name="T">The type to validate the field paths against.</typeparam>
-        public static FieldMask FromString<T>(string value) where T : IMessage
+        public static FieldMask FromString<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]T>(string value) where T : IMessage
         {
             return FromStringEnumerable<T>(new List<string>(value.Split(FIELD_PATH_SEPARATOR)));
         }
@@ -124,7 +125,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// Constructs a FieldMask for a list of field paths in a certain type.
         /// </summary>
         /// <typeparam name="T">The type to validate the field paths against.</typeparam>
-        public static FieldMask FromStringEnumerable<T>(IEnumerable<string> paths) where T : IMessage
+        public static FieldMask FromStringEnumerable<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]T>(IEnumerable<string> paths) where T : IMessage
         {
             var mask = new FieldMask();
             foreach (var path in paths)
@@ -151,7 +152,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// Constructs a FieldMask from the passed field numbers.
         /// </summary>
         /// <typeparam name="T">The type to validate the field paths against.</typeparam>
-        public static FieldMask FromFieldNumbers<T>(params int[] fieldNumbers) where T : IMessage
+        public static FieldMask FromFieldNumbers<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]T>(params int[] fieldNumbers) where T : IMessage
         {
             return FromFieldNumbers<T>((IEnumerable<int>)fieldNumbers);
         }
@@ -160,7 +161,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// Constructs a FieldMask from the passed field numbers.
         /// </summary>
         /// <typeparam name="T">The type to validate the field paths against.</typeparam>
-        public static FieldMask FromFieldNumbers<T>(IEnumerable<int> fieldNumbers) where T : IMessage
+        public static FieldMask FromFieldNumbers<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]T>(IEnumerable<int> fieldNumbers) where T : IMessage
         {
             var descriptor = Activator.CreateInstance<T>().Descriptor;
 
@@ -208,7 +209,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// Checks whether paths in a given fields mask are valid.
         /// </summary>
         /// <typeparam name="T">The type to validate the field paths against.</typeparam>
-        public static bool IsValid<T>(FieldMask fieldMask) where T : IMessage
+        public static bool IsValid<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]T>(FieldMask fieldMask) where T : IMessage
         {
             var descriptor = Activator.CreateInstance<T>().Descriptor;
 
@@ -235,7 +236,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// Checks whether a given field path is valid.
         /// </summary>
         /// <typeparam name="T">The type to validate the field paths against.</typeparam>
-        public static bool IsValid<T>(string path) where T : IMessage
+        public static bool IsValid<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]T>(string path) where T : IMessage
         {
             var descriptor = Activator.CreateInstance<T>().Descriptor;
 

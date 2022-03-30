@@ -161,11 +161,20 @@ namespace Google.Protobuf
 
         private static void AssertReadFromParseContext(ReadOnlySequence<byte> input, ParseContextAssertAction assertAction, bool assertIsAtEnd)
         {
+            // Check as ReadOnlySequence<byte>
             ParseContext.Initialize(input, out ParseContext parseCtx);
             assertAction(ref parseCtx);
             if (assertIsAtEnd)
             {
                 Assert.IsTrue(SegmentedBufferHelper.IsAtEnd(ref parseCtx.buffer, ref parseCtx.state));
+            }
+
+            // Check as ReadOnlySpan<byte>
+            ParseContext.Initialize(input.ToArray().AsSpan(), out ParseContext spanParseContext);
+            assertAction(ref spanParseContext);
+            if (assertIsAtEnd)
+            {
+                Assert.IsTrue(SegmentedBufferHelper.IsAtEnd(ref spanParseContext.buffer, ref spanParseContext.state));
             }
         }
 
@@ -705,6 +714,25 @@ namespace Google.Protobuf
                 Assert.AreEqual(2, WireFormat.GetTagFieldNumber(tag));
                 Assert.AreEqual(100, input.ReadBytes().Length);
             }
+        }
+
+        [Test]
+        public void MaximumFieldNumber()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+
+            int fieldNumber = 0x1FFFFFFF;
+            uint tag = WireFormat.MakeTag(fieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(tag);
+            output.WriteString("field 1");
+            output.Flush();
+            ms.Position = 0;
+
+            CodedInputStream input = new CodedInputStream(ms);
+
+            Assert.AreEqual(tag, input.ReadTag());
+            Assert.AreEqual(fieldNumber, WireFormat.GetTagFieldNumber(tag));
         }
 
         [Test]

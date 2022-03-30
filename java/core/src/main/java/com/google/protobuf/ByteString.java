@@ -73,6 +73,7 @@ import java.util.NoSuchElementException;
  * @author carlanton@google.com Carl Haverl
  * @author martinrb@google.com Martin Buchholz
  */
+@CheckReturnValue
 public abstract class ByteString implements Iterable<Byte>, Serializable {
 
   /**
@@ -235,6 +236,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     return size() == 0;
   }
 
+  /** Returns an empty {@code ByteString} of size {@code 0}. */
+  public static final ByteString empty() {
+    return EMPTY;
+  }
+
   // =================================================================
   // Comparison
 
@@ -252,6 +258,38 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     return value & UNSIGNED_BYTE_MASK;
   }
 
+  /** Returns the numeric value of the given character in hex, or -1 if invalid. */
+  private static int hexDigit(char c) {
+    if (c >= '0' && c <= '9') {
+      return c - '0';
+    } else if (c >= 'A' && c <= 'F') {
+      return c - 'A' + 10;
+    } else if (c >= 'a' && c <= 'f') {
+      return c - 'a' + 10;
+    } else {
+      return -1;
+    }
+  }
+
+  /**
+   * Returns the numeric value of the given character at index in hexString.
+   *
+   * @throws NumberFormatException if the hexString character is invalid.
+   */
+  private static int extractHexDigit(String hexString, int index) {
+    int digit = hexDigit(hexString.charAt(index));
+    if (digit == -1) {
+      throw new NumberFormatException(
+          "Invalid hexString "
+              + hexString
+              + " must only contain [0-9a-fA-F] but contained "
+              + hexString.charAt(index)
+              + " at index "
+              + index);
+    }
+    return digit;
+  }
+
   /**
    * Compares two {@link ByteString}s lexicographically, treating their contents as unsigned byte
    * values between 0 and 255 (inclusive).
@@ -267,22 +305,20 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
           ByteIterator latterBytes = latter.iterator();
 
           while (formerBytes.hasNext() && latterBytes.hasNext()) {
-            // Note: This code was copied from com.google.common.primitives.UnsignedBytes#compare,
-            // as Guava libraries cannot be used in the {@code com.google.protobuf} package.
             int result =
-                Integer.compare(toInt(formerBytes.nextByte()), toInt(latterBytes.nextByte()));
+                Integer.valueOf(toInt(formerBytes.nextByte()))
+                    .compareTo(toInt(latterBytes.nextByte()));
             if (result != 0) {
               return result;
             }
           }
-
-          return Integer.compare(former.size(), latter.size());
+          return Integer.valueOf(former.size()).compareTo(Integer.valueOf(latter.size()));
         }
       };
 
   /**
-   * Returns a {@link Comparator} which compares {@link ByteString}-s lexicographically
-   * as sequences of unsigned bytes (i.e. values between 0 and 255, inclusive).
+   * Returns a {@link Comparator} which compares {@link ByteString}-s lexicographically as sequences
+   * of unsigned bytes (i.e. values between 0 and 255, inclusive).
    *
    * <p>For example, {@code (byte) -1} is considered to be greater than {@code (byte) 1} because it
    * is interpreted as an unsigned value, {@code 255}:
@@ -343,6 +379,30 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   public final boolean endsWith(ByteString suffix) {
     return size() >= suffix.size() && substring(size() - suffix.size()).equals(suffix);
+  }
+
+  // =================================================================
+  // String -> ByteString
+
+  /**
+   * Returns a {@code ByteString} from a hexadecimal String. Alternative CharSequences should use
+   * {@link ByteStrings#decode(CharSequence, BaseEncoding)}
+   *
+   * @param hexString String of hexadecimal digits to create {@code ByteString} from.
+   * @throws NumberFormatException if the hexString does not contain a parsable hex String.
+   */
+  public static ByteString fromHex(@CompileTimeConstant String hexString) {
+    if (hexString.length() % 2 != 0) {
+      throw new NumberFormatException(
+          "Invalid hexString " + hexString + " of length " + hexString.length() + " must be even.");
+    }
+    byte[] bytes = new byte[hexString.length() / 2];
+    for (int i = 0; i < bytes.length; i++) {
+      int d1 = extractHexDigit(hexString, 2 * i);
+      int d2 = extractHexDigit(hexString, 2 * i + 1);
+      bytes[i] = (byte) (d1 << 4 | d2);
+    }
+    return new LiteralByteString(bytes);
   }
 
   // =================================================================
@@ -479,7 +539,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param streamToDrain The source stream, which is read completely but not closed.
    * @return A new {@code ByteString} which is made up of chunks of various sizes, depending on the
    *     behavior of the underlying stream.
-   * @throws IOException IOException is thrown if there is a problem reading the underlying stream.
+   * @throws IOException if there is a problem reading the underlying stream
+   * @throws IllegalArgumentException if the stream supplies more than Integer.MAX_VALUE bytes
    */
   public static ByteString readFrom(InputStream streamToDrain) throws IOException {
     return readFrom(streamToDrain, MIN_READ_FROM_CHUNK_SIZE, MAX_READ_FROM_CHUNK_SIZE);
@@ -499,13 +560,23 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param streamToDrain The source stream, which is read completely but not closed.
    * @param chunkSize The size of the chunks in which to read the stream.
    * @return A new {@code ByteString} which is made up of chunks of the given size.
-   * @throws IOException IOException is thrown if there is a problem reading the underlying stream.
+   * @throws IOException if there is a problem reading the underlying stream
+   * @throws IllegalArgumentException if the stream supplies more than Integer.MAX_VALUE bytes
    */
   public static ByteString readFrom(InputStream streamToDrain, int chunkSize) throws IOException {
     return readFrom(streamToDrain, chunkSize, chunkSize);
   }
 
-  // Helper method that takes the chunk size range as a parameter.
+  /**
+   * Helper method that takes the chunk size range as a parameter.
+   *
+   * @param streamToDrain the source stream, which is read completely but not closed
+   * @param minChunkSize the minimum size of the chunks in which to read the stream
+   * @param maxChunkSize the maximum size of the chunks in which to read the stream
+   * @return a new {@code ByteString} which is made up of chunks within the given size range
+   * @throws IOException if there is a problem reading the underlying stream
+   * @throws IllegalArgumentException if the stream supplies more than Integer.MAX_VALUE bytes
+   */
   public static ByteString readFrom(InputStream streamToDrain, int minChunkSize, int maxChunkSize)
       throws IOException {
     Collection<ByteString> results = new ArrayList<ByteString>();
@@ -564,6 +635,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * @param other string to concatenate
    * @return a new {@code ByteString} instance
+   * @throws IllegalArgumentException if the combined size of the two byte strings exceeds
+   *     Integer.MAX_VALUE
    */
   public final ByteString concat(ByteString other) {
     if (Integer.MAX_VALUE - size() < other.size()) {
@@ -584,6 +657,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * @param byteStrings strings to be concatenated
    * @return new {@code ByteString}
+   * @throws IllegalArgumentException if the combined size of the byte strings exceeds
+   *     Integer.MAX_VALUE
    */
   public static ByteString copyFrom(Iterable<ByteString> byteStrings) {
     // Determine the size;
@@ -1043,8 +1118,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
 
     /**
-     * Creates a byte string. Its size is the current size of this output stream and its output has
-     * been copied to it.
+     * Creates a byte string with the size and contents of this output stream. This does not create
+     * a new copy of the underlying bytes. If the stream size grows dynamically, the runtime is
+     * O(log n) in respect to the number of bytes written to the {@link Output}. If the stream size
+     * stays within the initial capacity, the runtime is O(1).
      *
      * @return the current contents of this output stream, as a byte string.
      */
@@ -1258,6 +1335,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return the length of the range.
    * @throws IndexOutOfBoundsException some or all of the range falls outside of the array.
    */
+  @CanIgnoreReturnValue
   static int checkRange(int startIndex, int endIndex, int size) {
     final int length = endIndex - startIndex;
     if ((startIndex | endIndex | length | (size - endIndex)) < 0) {

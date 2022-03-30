@@ -245,7 +245,7 @@ TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
   // SetRepeatedEnumValue.
   const EnumValueDescriptor* enum_value =
       repeated_field->enum_type()->FindValueByName("BAR");
-  EXPECT_TRUE(enum_value != NULL);
+  EXPECT_TRUE(enum_value != nullptr);
   r->AddEnum(&message, repeated_field, enum_value);
 
   const FieldDescriptor* singular_field =

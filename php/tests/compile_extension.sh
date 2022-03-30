@@ -1,20 +1,38 @@
 #!/bin/bash
 
-set -ex
+set -e
 
-cd $(dirname $0)
+cd $(dirname $0)/..
 
-../prepare_c_extension.sh
-pushd  ../ext/google/protobuf
-phpize --clean
-rm -f configure.in configure.ac
-phpize
-if [ "$1" = "--release" ]; then
-  ./configure --with-php-config=$(which php-config)
-else
-  # To get debugging symbols in PHP itself, build PHP with:
-  #   $ ./configure --enable-debug CFLAGS='-g -O0'
-  ./configure --with-php-config=$(which php-config) CFLAGS="-g -O0 -Wall"
+# utf8_range has to live in the base third_party directory.
+# We copy it into the ext/google/protobuf directory for the build
+# (and for the release to PECL).
+rm -rf ext/google/protobuf/third_party
+mkdir -p ext/google/protobuf/third_party/utf8_range
+cp ../third_party/utf8_range/* ext/google/protobuf/third_party/utf8_range
+
+echo "Copied utf8_range from ../third_party -> ext/google/protobuf/third_party"
+
+pushd  ext/google/protobuf > /dev/null
+
+CONFIGURE_OPTIONS=("./configure" "--with-php-config=$(which php-config)")
+
+if [ "$1" != "--release" ]; then
+  CONFIGURE_OPTIONS+=("CFLAGS=-g -O0 -Wall -DPBPHP_ENABLE_ASSERTS")
 fi
+
+FINGERPRINT="$(sha256sum $(which php)) ${CONFIGURE_OPTIONS[@]}"
+
+# If the PHP interpreter we are building against or the arguments
+# have changed, we must regenerated the Makefile.
+if [[ ! -f BUILD_STAMP ]] || [[ "$(cat BUILD_STAMP)" != "$FINGERPRINT" ]]; then
+  phpize --clean
+  rm -f configure.in configure.ac
+  phpize
+  "${CONFIGURE_OPTIONS[@]}"
+  echo "$FINGERPRINT" > BUILD_STAMP
+fi
+
 make
-popd
+TEST_PHP_ARGS="-q" make test
+popd > /dev/null

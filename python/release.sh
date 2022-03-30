@@ -11,10 +11,7 @@ function run_install_test() {
   local PYTHON=$2
   local PYPI=$3
 
-  # Setuptools 45.0 removed support for Python 2, so to test with Python 2 we
-  # pass --no-setuptools here and then install an older setuptools version
-  # below.
-  virtualenv -p `which $PYTHON` --no-setuptools test-venv
+  virtualenv -p `which $PYTHON` test-venv
 
   # Intentionally put a broken protoc in the path to make sure installation
   # doesn't require protoc installed.
@@ -22,7 +19,6 @@ function run_install_test() {
   chmod +x test-venv/bin/protoc
 
   source test-venv/bin/activate
-  pip install "setuptools<45"
   pip install -i ${PYPI} protobuf==${VERSION} --no-cache-dir
   deactivate
   rm -fr test-venv
@@ -77,6 +73,9 @@ else
   sed -i -r "s/__version__ = '.*'/__version__ = '${VERSION}.${DEV}'/" python/google/protobuf/__init__.py
 fi
 
+# Copy LICENSE
+cp LICENSE python/LICENSE
+
 cd python
 
 # Run tests locally.
@@ -88,14 +87,12 @@ python3 setup.py sdist
 twine upload --skip-existing -r testpypi -u protobuf-wheel-test dist/*
 
 # Test locally with different python versions.
-run_install_test ${TESTING_VERSION} python2.7 https://test.pypi.org/simple
 run_install_test ${TESTING_VERSION} python3 https://test.pypi.org/simple
 
 # Deploy egg/wheel packages to testing PyPI and test again.
 python3 setup.py clean build bdist_wheel
 twine upload --skip-existing -r testpypi -u protobuf-wheel-test dist/*
 
-run_install_test ${TESTING_VERSION} python2.7 https://test.pypi.org/simple
 run_install_test ${TESTING_VERSION} python3 https://test.pypi.org/simple
 
 echo "All install tests have passed using testing PyPI."

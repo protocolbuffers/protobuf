@@ -124,11 +124,11 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.ExtensionRangeOptions options = 3;</code>
-     * @return \Google\Protobuf\Internal\ExtensionRangeOptions
+     * @return \Google\Protobuf\Internal\ExtensionRangeOptions|null
      */
     public function getOptions()
     {
-        return isset($this->options) ? $this->options : null;
+        return $this->options;
     }
 
     public function hasOptions()

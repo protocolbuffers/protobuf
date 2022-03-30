@@ -33,271 +33,375 @@
 package com.google.protobuf.jruby;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.DescriptorProtos;
-import com.google.protobuf.Descriptors;
-import org.jcodings.Encoding;
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import java.math.BigInteger;
 import org.jcodings.specific.ASCIIEncoding;
-import org.jcodings.specific.USASCIIEncoding;
-import org.jcodings.specific.UTF8Encoding;
 import org.jruby.*;
+import org.jruby.exceptions.RaiseException;
+import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.Helpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
-import java.math.BigInteger;
-
 public class Utils {
-    public static Descriptors.FieldDescriptor.Type rubyToFieldType(IRubyObject typeClass) {
-        return Descriptors.FieldDescriptor.Type.valueOf(typeClass.asJavaString().toUpperCase());
-    }
+  public static FieldDescriptor.Type rubyToFieldType(IRubyObject typeClass) {
+    return FieldDescriptor.Type.valueOf(typeClass.asJavaString().toUpperCase());
+  }
 
-    public static IRubyObject fieldTypeToRuby(ThreadContext context, Descriptors.FieldDescriptor.Type type) {
-        return fieldTypeToRuby(context, type.name());
-    }
+  public static IRubyObject fieldTypeToRuby(ThreadContext context, FieldDescriptor.Type type) {
+    return fieldTypeToRuby(context, type.name());
+  }
 
-    public static IRubyObject fieldTypeToRuby(ThreadContext context, DescriptorProtos.FieldDescriptorProto.Type type) {
-        return fieldTypeToRuby(context, type.name());
-    }
+  public static IRubyObject fieldTypeToRuby(ThreadContext context, FieldDescriptorProto.Type type) {
+    return fieldTypeToRuby(context, type.name());
+  }
 
-    private static IRubyObject fieldTypeToRuby(ThreadContext context, String typeName) {
+  private static IRubyObject fieldTypeToRuby(ThreadContext context, String typeName) {
 
-        return context.runtime.newSymbol(typeName.replace("TYPE_", "").toLowerCase());
-    }
+    return context.runtime.newSymbol(typeName.replace("TYPE_", "").toLowerCase());
+  }
 
-    public static IRubyObject checkType(ThreadContext context, Descriptors.FieldDescriptor.Type fieldType,
-                                        IRubyObject value, RubyModule typeClass) {
-        Ruby runtime = context.runtime;
-        Object val;
-        switch(fieldType) {
-            case INT32:
-            case INT64:
-            case UINT32:
-            case UINT64:
-                if (!isRubyNum(value)) {
-                    throw runtime.newTypeError("Expected number type for integral field.");
-                }
-                switch(fieldType) {
-                    case INT32:
-                        RubyNumeric.num2int(value);
-                        break;
-                    case INT64:
-                        RubyNumeric.num2long(value);
-                        break;
-                    case UINT32:
-                        num2uint(value);
-                        break;
-                    default:
-                        num2ulong(context.runtime, value);
-                        break;
-                }
-                checkIntTypePrecision(context, fieldType, value);
-                break;
-            case FLOAT:
-                if (!isRubyNum(value))
-                    throw runtime.newTypeError("Expected number type for float field.");
-                break;
-            case DOUBLE:
-                if (!isRubyNum(value))
-                    throw runtime.newTypeError("Expected number type for double field.");
-                break;
-            case BOOL:
-                if (!(value instanceof RubyBoolean))
-                    throw runtime.newTypeError("Invalid argument for boolean field.");
-                break;
-            case BYTES:
-            case STRING:
-                value = validateStringEncoding(context, fieldType, value);
-                break;
-            case MESSAGE:
-                if (value.getMetaClass() != typeClass) {
-                    throw runtime.newTypeError(value, typeClass);
-                }
-                break;
-            case ENUM:
-                if (value instanceof RubySymbol) {
-                    Descriptors.EnumDescriptor enumDescriptor =
-                            ((RubyEnumDescriptor) typeClass.getInstanceVariable(DESCRIPTOR_INSTANCE_VAR)).getDescriptor();
-                    val = enumDescriptor.findValueByName(value.asJavaString());
-                    if (val == null)
-                        throw runtime.newRangeError("Enum value " + value + " is not found.");
-                } else if(!isRubyNum(value)) {
-                    throw runtime.newTypeError("Expected number or symbol type for enum field.");
-                }
-                break;
-            default:
-                break;
+  public static IRubyObject checkType(
+      ThreadContext context,
+      FieldDescriptor.Type fieldType,
+      String fieldName,
+      IRubyObject value,
+      RubyModule typeClass) {
+    Ruby runtime = context.runtime;
+
+    switch (fieldType) {
+      case SFIXED32:
+      case SFIXED64:
+      case FIXED64:
+      case SINT64:
+      case SINT32:
+      case FIXED32:
+      case INT32:
+      case INT64:
+      case UINT32:
+      case UINT64:
+        if (!isRubyNum(value))
+          throw createExpectedTypeError(context, "number", "integral", fieldName, value);
+
+        if (value instanceof RubyFloat) {
+          double doubleVal = RubyNumeric.num2dbl(value);
+          if (Math.floor(doubleVal) != doubleVal) {
+            throw runtime.newRangeError(
+                "Non-integral floating point value assigned to integer field '"
+                    + fieldName
+                    + "' (given "
+                    + value.getMetaClass()
+                    + ").");
+          }
         }
-        return value;
-    }
+        if (fieldType == FieldDescriptor.Type.UINT32
+            || fieldType == FieldDescriptor.Type.UINT64
+            || fieldType == FieldDescriptor.Type.FIXED32
+            || fieldType == FieldDescriptor.Type.FIXED64) {
+          if (((RubyNumeric) value).isNegative()) {
+            throw runtime.newRangeError(
+                "Assigning negative value to unsigned integer field '"
+                    + fieldName
+                    + "' (given "
+                    + value.getMetaClass()
+                    + ").");
+          }
+        }
 
-    public static IRubyObject wrapPrimaryValue(ThreadContext context, Descriptors.FieldDescriptor.Type fieldType, Object value) {
-        Ruby runtime = context.runtime;
         switch (fieldType) {
-            case INT32:
-                return runtime.newFixnum((Integer) value);
-            case INT64:
-                return runtime.newFixnum((Long) value);
-            case UINT32:
-                return runtime.newFixnum(((Integer) value) & (-1l >>> 32));
-            case UINT64:
-                long ret = (Long) value;
-                return ret >= 0 ? runtime.newFixnum(ret) :
-                        RubyBignum.newBignum(runtime, UINT64_COMPLEMENTARY.add(new BigInteger(ret + "")));
-            case FLOAT:
-                return runtime.newFloat((Float) value);
-            case DOUBLE:
-                return runtime.newFloat((Double) value);
-            case BOOL:
-                return (Boolean) value ? runtime.getTrue() : runtime.getFalse();
-            case BYTES: {
-                IRubyObject wrapped = runtime.newString(((ByteString) value).toStringUtf8());
-                wrapped.setFrozen(true);
-                return wrapped;
+          case INT32:
+            RubyNumeric.num2int(value);
+            break;
+          case UINT32:
+          case FIXED32:
+            num2uint(value);
+            break;
+          case UINT64:
+          case FIXED64:
+            num2ulong(context.runtime, value);
+            break;
+          default:
+            RubyNumeric.num2long(value);
+            break;
+        }
+        break;
+      case FLOAT:
+        if (!isRubyNum(value))
+          throw createExpectedTypeError(context, "number", "float", fieldName, value);
+        break;
+      case DOUBLE:
+        if (!isRubyNum(value))
+          throw createExpectedTypeError(context, "number", "double", fieldName, value);
+        break;
+      case BOOL:
+        if (!(value instanceof RubyBoolean))
+          throw createInvalidTypeError(context, "boolean", fieldName, value);
+        break;
+      case BYTES:
+        value = validateAndEncodeString(context, "bytes", fieldName, value, "Encoding::ASCII_8BIT");
+        break;
+      case STRING:
+        value =
+            validateAndEncodeString(
+                context, "string", fieldName, symToString(value), "Encoding::UTF_8");
+        break;
+      case MESSAGE:
+        if (value.getMetaClass() != typeClass) {
+          // See if we can convert the value before flagging it as invalid
+          String className = typeClass.getName();
+
+          if (className.equals("Google::Protobuf::Timestamp") && value instanceof RubyTime) {
+            RubyTime rt = (RubyTime) value;
+            RubyHash timestampArgs =
+                Helpers.constructHash(
+                    runtime,
+                    runtime.newString("nanos"),
+                    rt.nsec(),
+                    false,
+                    runtime.newString("seconds"),
+                    rt.to_i(),
+                    false);
+            return ((RubyClass) typeClass).newInstance(context, timestampArgs, Block.NULL_BLOCK);
+
+          } else if (className.equals("Google::Protobuf::Duration")
+              && value instanceof RubyNumeric) {
+            IRubyObject seconds;
+            if (value instanceof RubyFloat) {
+              seconds = ((RubyFloat) value).truncate(context);
+            } else if (value instanceof RubyRational) {
+              seconds = ((RubyRational) value).to_i(context);
+            } else if (value instanceof RubyBigDecimal) {
+              seconds = ((RubyBigDecimal) value).to_int(context);
+            } else {
+              seconds = ((RubyInteger) value).to_i();
             }
-            case STRING: {
-                IRubyObject wrapped = runtime.newString(value.toString());
-                wrapped.setFrozen(true);
-                return wrapped;
+
+            IRubyObject nanos = ((RubyNumeric) value).remainder(context, RubyFixnum.one(runtime));
+            if (nanos instanceof RubyFloat) {
+              nanos = ((RubyFloat) nanos).op_mul(context, 1000000000);
+            } else if (nanos instanceof RubyRational) {
+              nanos = ((RubyRational) nanos).op_mul(context, runtime.newFixnum(1000000000));
+            } else if (nanos instanceof RubyBigDecimal) {
+              nanos = ((RubyBigDecimal) nanos).op_mul(context, runtime.newFixnum(1000000000));
+            } else {
+              nanos = ((RubyInteger) nanos).op_mul(context, 1000000000);
             }
-            default:
-                return runtime.getNil();
+
+            RubyHash durationArgs =
+                Helpers.constructHash(
+                    runtime,
+                    runtime.newString("nanos"),
+                    ((RubyNumeric) nanos).round(context),
+                    false,
+                    runtime.newString("seconds"),
+                    seconds,
+                    false);
+            return ((RubyClass) typeClass).newInstance(context, durationArgs, Block.NULL_BLOCK);
+          }
+
+          // Not able to convert so flag as invalid
+          throw createTypeError(
+              context,
+              "Invalid type "
+                  + value.getMetaClass()
+                  + " to assign to submessage field '"
+                  + fieldName
+                  + "'.");
         }
-    }
 
-    public static int num2uint(IRubyObject value) {
-        long longVal = RubyNumeric.num2long(value);
-        if (longVal > UINT_MAX)
-            throw value.getRuntime().newRangeError("Integer " + longVal + " too big to convert to 'unsigned int'");
-        long num = longVal;
-        if (num > Integer.MAX_VALUE || num < Integer.MIN_VALUE)
-            // encode to UINT32
-            num = (-longVal ^ (-1l >>> 32) ) + 1;
-        RubyNumeric.checkInt(value, num);
-        return (int) num;
-    }
-
-    public static long num2ulong(Ruby runtime, IRubyObject value) {
-        if (value instanceof RubyFloat) {
-            RubyBignum bignum = RubyBignum.newBignum(runtime, ((RubyFloat) value).getDoubleValue());
-            return RubyBignum.big2ulong(bignum);
-        } else if (value instanceof RubyBignum) {
-            return RubyBignum.big2ulong((RubyBignum) value);
-        } else {
-            return RubyNumeric.num2long(value);
+        break;
+      case ENUM:
+        boolean isValid =
+            ((RubyEnumDescriptor) typeClass.getInstanceVariable(DESCRIPTOR_INSTANCE_VAR))
+                .isValidValue(context, value);
+        if (!isValid) {
+          throw runtime.newRangeError("Unknown symbol value for enum field '" + fieldName + "'.");
         }
+        break;
+      default:
+        break;
     }
+    return value;
+  }
 
-    public static IRubyObject validateStringEncoding(ThreadContext context, Descriptors.FieldDescriptor.Type type, IRubyObject value) {
-        if (!(value instanceof RubyString))
-            throw context.runtime.newTypeError("Invalid argument for string field.");
-        switch(type) {
-            case BYTES:
-                value = ((RubyString)value).encode(context, context.runtime.evalScriptlet("Encoding::ASCII_8BIT"));
-                break;
-            case STRING:
-                value = ((RubyString)value).encode(context, context.runtime.evalScriptlet("Encoding::UTF_8"));
-                break;
-            default:
-                break;
+  public static IRubyObject wrapPrimaryValue(
+      ThreadContext context, FieldDescriptor.Type fieldType, Object value) {
+    return wrapPrimaryValue(context, fieldType, value, false);
+  }
+
+  public static IRubyObject wrapPrimaryValue(
+      ThreadContext context, FieldDescriptor.Type fieldType, Object value, boolean encodeBytes) {
+    Ruby runtime = context.runtime;
+    switch (fieldType) {
+      case INT32:
+      case SFIXED32:
+      case SINT32:
+        return runtime.newFixnum((Integer) value);
+      case SFIXED64:
+      case SINT64:
+      case INT64:
+        return runtime.newFixnum((Long) value);
+      case FIXED32:
+      case UINT32:
+        return runtime.newFixnum(((Integer) value) & (-1l >>> 32));
+      case FIXED64:
+      case UINT64:
+        long ret = (Long) value;
+        return ret >= 0
+            ? runtime.newFixnum(ret)
+            : RubyBignum.newBignum(runtime, UINT64_COMPLEMENTARY.add(new BigInteger(ret + "")));
+      case FLOAT:
+        return runtime.newFloat((Float) value);
+      case DOUBLE:
+        return runtime.newFloat((Double) value);
+      case BOOL:
+        return (Boolean) value ? runtime.getTrue() : runtime.getFalse();
+      case BYTES:
+        {
+          IRubyObject wrapped =
+              encodeBytes
+                  ? RubyString.newString(
+                      runtime, ((ByteString) value).toStringUtf8(), ASCIIEncoding.INSTANCE)
+                  : RubyString.newString(runtime, ((ByteString) value).toByteArray());
+          wrapped.setFrozen(true);
+          return wrapped;
         }
-        value.setFrozen(true);
-        return value;
-    }
-
-    public static void checkNameAvailability(ThreadContext context, String name) {
-        if (context.runtime.getObject().getConstantAt(name) != null)
-            throw context.runtime.newNameError(name + " is already defined", name);
-    }
-
-    /**
-     * Replace invalid "." in descriptor with __DOT__
-     * @param name
-     * @return
-     */
-    public static String escapeIdentifier(String name) {
-        return name.replace(".", BADNAME_REPLACEMENT);
-    }
-
-    /**
-     * Replace __DOT__ in descriptor name with "."
-     * @param name
-     * @return
-     */
-    public static String unescapeIdentifier(String name) {
-        return name.replace(BADNAME_REPLACEMENT, ".");
-    }
-
-    public static boolean isMapEntry(Descriptors.FieldDescriptor fieldDescriptor) {
-        return fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE &&
-                fieldDescriptor.isRepeated() &&
-                fieldDescriptor.getMessageType().getOptions().getMapEntry();
-    }
-
-    public static RubyFieldDescriptor msgdefCreateField(ThreadContext context, String label, IRubyObject name,
-                                      IRubyObject type, IRubyObject number, IRubyObject typeClass, RubyClass cFieldDescriptor) {
-        Ruby runtime = context.runtime;
-        RubyFieldDescriptor fieldDef = (RubyFieldDescriptor) cFieldDescriptor.newInstance(context, Block.NULL_BLOCK);
-        fieldDef.setLabel(context, runtime.newString(label));
-        fieldDef.setName(context, name);
-        fieldDef.setType(context, type);
-        fieldDef.setNumber(context, number);
-
-        if (!typeClass.isNil()) {
-            if (!(typeClass instanceof RubyString)) {
-                throw runtime.newArgumentError("expected string for type class");
-            }
-            fieldDef.setSubmsgName(context, typeClass);
+      case STRING:
+        {
+          IRubyObject wrapped = runtime.newString(value.toString());
+          wrapped.setFrozen(true);
+          return wrapped;
         }
-        return fieldDef;
+      default:
+        return runtime.getNil();
     }
+  }
 
-    protected static void checkIntTypePrecision(ThreadContext context, Descriptors.FieldDescriptor.Type type, IRubyObject value) {
-        if (value instanceof RubyFloat) {
-            double doubleVal = RubyNumeric.num2dbl(value);
-            if (Math.floor(doubleVal) != doubleVal) {
-                throw context.runtime.newRangeError("Non-integral floating point value assigned to integer field.");
-            }
-        }
-        if (type == Descriptors.FieldDescriptor.Type.UINT32 || type == Descriptors.FieldDescriptor.Type.UINT64) {
-            if (RubyNumeric.num2dbl(value) < 0) {
-                throw context.runtime.newRangeError("Assigning negative value to unsigned integer field.");
-            }
-        }
+  public static int num2uint(IRubyObject value) {
+    long longVal = RubyNumeric.num2long(value);
+    if (longVal > UINT_MAX)
+      throw value
+          .getRuntime()
+          .newRangeError("Integer " + longVal + " too big to convert to 'unsigned int'");
+    long num = longVal;
+    if (num > Integer.MAX_VALUE || num < Integer.MIN_VALUE)
+      // encode to UINT32
+      num = (-longVal ^ (-1l >>> 32)) + 1;
+    RubyNumeric.checkInt(value, num);
+    return (int) num;
+  }
+
+  public static long num2ulong(Ruby runtime, IRubyObject value) {
+    if (value instanceof RubyFloat) {
+      RubyBignum bignum = RubyBignum.newBignum(runtime, ((RubyFloat) value).getDoubleValue());
+      return RubyBignum.big2ulong(bignum);
+    } else if (value instanceof RubyBignum) {
+      return RubyBignum.big2ulong((RubyBignum) value);
+    } else {
+      return RubyNumeric.num2long(value);
     }
+  }
 
-    protected static boolean isRubyNum(Object value) {
-        return value instanceof RubyFixnum || value instanceof RubyFloat || value instanceof RubyBignum;
+  /*
+   * Helper to make it easier to support symbols being passed instead of strings
+   */
+  public static IRubyObject symToString(IRubyObject sym) {
+    if (sym instanceof RubySymbol) {
+      return ((RubySymbol) sym).id2name();
     }
+    return sym;
+  }
 
-    protected static void validateTypeClass(ThreadContext context, Descriptors.FieldDescriptor.Type type, IRubyObject value) {
-        Ruby runtime = context.runtime;
-        if (!(value instanceof RubyModule)) {
-            throw runtime.newArgumentError("TypeClass has incorrect type");
-        }
-        RubyModule klass = (RubyModule) value;
-        IRubyObject descriptor = klass.getInstanceVariable(DESCRIPTOR_INSTANCE_VAR);
-        if (descriptor.isNil()) {
-            throw runtime.newArgumentError("Type class has no descriptor. Please pass a " +
-                    "class or enum as returned by the DescriptorPool.");
-        }
-        if (type == Descriptors.FieldDescriptor.Type.MESSAGE) {
-            if (! (descriptor instanceof RubyDescriptor)) {
-                throw runtime.newArgumentError("Descriptor has an incorrect type");
-            }
-        } else if (type == Descriptors.FieldDescriptor.Type.ENUM) {
-            if (! (descriptor instanceof RubyEnumDescriptor)) {
-                throw runtime.newArgumentError("Descriptor has an incorrect type");
-            }
-        }
+  public static void checkNameAvailability(ThreadContext context, String name) {
+    if (context.runtime.getObject().getConstantAt(name) != null)
+      throw context.runtime.newNameError(name + " is already defined", name);
+  }
+
+  public static boolean isMapEntry(FieldDescriptor fieldDescriptor) {
+    return fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE
+        && fieldDescriptor.isRepeated()
+        && fieldDescriptor.getMessageType().getOptions().getMapEntry();
+  }
+
+  public static RaiseException createTypeError(ThreadContext context, String message) {
+    if (cTypeError == null) {
+      cTypeError = (RubyClass) context.runtime.getClassFromPath("Google::Protobuf::TypeError");
     }
+    return RaiseException.from(context.runtime, cTypeError, message);
+  }
 
-    public static String BADNAME_REPLACEMENT = "__DOT__";
+  public static RaiseException createExpectedTypeError(
+      ThreadContext context, String type, String fieldType, String fieldName, IRubyObject value) {
+    return createTypeError(
+        context,
+        String.format(
+            EXPECTED_TYPE_ERROR_FORMAT, type, fieldType, fieldName, value.getMetaClass()));
+  }
 
-    public static String DESCRIPTOR_INSTANCE_VAR = "@descriptor";
+  public static RaiseException createInvalidTypeError(
+      ThreadContext context, String fieldType, String fieldName, IRubyObject value) {
+    return createTypeError(
+        context,
+        String.format(INVALID_TYPE_ERROR_FORMAT, fieldType, fieldName, value.getMetaClass()));
+  }
 
-    public static String EQUAL_SIGN = "=";
+  protected static boolean isRubyNum(Object value) {
+    return value instanceof RubyFixnum || value instanceof RubyFloat || value instanceof RubyBignum;
+  }
 
-    private static BigInteger UINT64_COMPLEMENTARY = new BigInteger("18446744073709551616"); //Math.pow(2, 64)
+  protected static void validateTypeClass(
+      ThreadContext context, FieldDescriptor.Type type, IRubyObject value) {
+    Ruby runtime = context.runtime;
+    if (!(value instanceof RubyModule)) {
+      throw runtime.newArgumentError("TypeClass has incorrect type");
+    }
+    RubyModule klass = (RubyModule) value;
+    IRubyObject descriptor = klass.getInstanceVariable(DESCRIPTOR_INSTANCE_VAR);
+    if (descriptor.isNil()) {
+      throw runtime.newArgumentError(
+          "Type class has no descriptor. Please pass a "
+              + "class or enum as returned by the DescriptorPool.");
+    }
+    if (type == FieldDescriptor.Type.MESSAGE) {
+      if (!(descriptor instanceof RubyDescriptor)) {
+        throw runtime.newArgumentError("Descriptor has an incorrect type");
+      }
+    } else if (type == FieldDescriptor.Type.ENUM) {
+      if (!(descriptor instanceof RubyEnumDescriptor)) {
+        throw runtime.newArgumentError("Descriptor has an incorrect type");
+      }
+    }
+  }
 
-    private static long UINT_MAX = 0xffffffffl;
+  private static IRubyObject validateAndEncodeString(
+      ThreadContext context,
+      String fieldType,
+      String fieldName,
+      IRubyObject value,
+      String encoding) {
+    if (!(value instanceof RubyString))
+      throw createInvalidTypeError(context, fieldType, fieldName, value);
+
+    value = ((RubyString) value).encode(context, context.runtime.evalScriptlet(encoding));
+    value.setFrozen(true);
+    return value;
+  }
+
+  public static final String DESCRIPTOR_INSTANCE_VAR = "@descriptor";
+
+  public static final String EQUAL_SIGN = "=";
+
+  private static final BigInteger UINT64_COMPLEMENTARY =
+      new BigInteger("18446744073709551616"); // Math.pow(2, 64)
+
+  private static final String EXPECTED_TYPE_ERROR_FORMAT =
+      "Expected %s type for %s field '%s' (given %s).";
+  private static final String INVALID_TYPE_ERROR_FORMAT =
+      "Invalid argument for %s field '%s' (given %s).";
+
+  private static final long UINT_MAX = 0xffffffffl;
+
+  private static RubyClass cTypeError;
 }

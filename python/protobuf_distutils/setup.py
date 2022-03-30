@@ -46,14 +46,12 @@ setup(
     packages=find_packages(),
     maintainer='protobuf@googlegroups.com',
     maintainer_email='protobuf@googlegroups.com',
-    license='3-Clause BSD License',
+    license='BSD-3-Clause',
     classifiers=[
         "Framework :: Setuptools Plugin",
         "Operating System :: OS Independent",
         # These Python versions should match the protobuf package:
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",

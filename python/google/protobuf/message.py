@@ -194,6 +194,9 @@ class Message(object):
     """Parse serialized protocol buffer data into this message.
 
     Like :func:`MergeFromString()`, except we clear the object first.
+
+    Raises:
+      message.DecodeError if the input cannot be parsed.
     """
     self.Clear()
     return self.MergeFromString(serialized)
@@ -357,6 +360,14 @@ class Message(object):
     Returns:
       int: The number of bytes required to serialize this message.
     """
+    raise NotImplementedError
+
+  @classmethod
+  def FromString(cls, s):
+    raise NotImplementedError
+
+  @staticmethod
+  def RegisterExtension(extension_handle):
     raise NotImplementedError
 
   def _SetListener(self, message_listener):

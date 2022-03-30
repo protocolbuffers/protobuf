@@ -61,8 +61,32 @@ import java.util.concurrent.ConcurrentHashMap;
 final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   private static final String GET_DEFAULT_INSTANCE_METHOD_NAME = "getDefaultInstance";
   private static final DescriptorMessageInfoFactory instance = new DescriptorMessageInfoFactory();
+
+  /**
+   * Names that should be avoided (in UpperCamelCase format). Using them causes the compiler to
+   * generate accessors whose names collide with methods defined in base classes.
+   *
+   * <p>Keep this list in sync with kForbiddenWordList in
+   * src/google/protobuf/compiler/java/java_helpers.cc
+   */
   private static final Set<String> specialFieldNames =
-      new HashSet<>(Arrays.asList("cached_size", "serialized_size", "class"));
+      new HashSet<>(
+          Arrays.asList(
+              // java.lang.Object:
+              "Class",
+              // com.google.protobuf.MessageLiteOrBuilder:
+              "DefaultInstanceForType",
+              // com.google.protobuf.MessageLite:
+              "ParserForType",
+              "SerializedSize",
+              // com.google.protobuf.MessageOrBuilder:
+              "AllFields",
+              "DescriptorForType",
+              "InitializationErrorString",
+              // TODO(b/219045204): re-enable
+              // "UnknownFields",
+              // obsolete. kept for backwards compatibility of generated code
+              "CachedSize"));
 
   // Disallow construction - it's a singleton.
   private DescriptorMessageInfoFactory() {}
@@ -125,6 +149,8 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
    *
    * <p>This class is thread-safe.
    */
+  // <p>The code is adapted from the C++ implementation:
+  // https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/compiler/java/java_helpers.h
   static class IsInitializedCheckAnalyzer {
 
     private final Map<Descriptor, Boolean> resultCache =
@@ -593,21 +619,104 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
     String name = (fd.getType() == FieldDescriptor.Type.GROUP)
                   ? fd.getMessageType().getName()
                   : fd.getName();
-    String suffix = specialFieldNames.contains(name) ? "__" : "_";
-    return snakeCaseToCamelCase(name) + suffix;
+
+    // convert to UpperCamelCase for comparison to the specialFieldNames
+    // (which are in UpperCamelCase)
+    String upperCamelCaseName = snakeCaseToUpperCamelCase(name);
+
+    // Append underscores to match the behavior of the protoc java compiler
+    final String suffix;
+    if (specialFieldNames.contains(upperCamelCaseName)) {
+      // For proto field names that match the specialFieldNames,
+      // the protoc java compiler appends "__" to the java field name
+      // to prevent the field's accessor method names from clashing with other methods.
+      // For example:
+      //     proto field name = "class"
+      //     java field name = "class__"
+      //     accessor method name = "getClass_()"  (so that it does not clash with
+      // Object.getClass())
+      suffix = "__";
+    } else {
+      // For other proto field names,
+      // the protoc java compiler appends "_" to the java field name
+      // to prevent field names from clashing with java keywords.
+      // For example:
+      //     proto field name = "int"
+      //     java field name = "int_" (so that it does not clash with int keyword)
+      //     accessor method name = "getInt()"
+      suffix = "_";
+    }
+    return snakeCaseToLowerCamelCase(name) + suffix;
   }
 
   private static String getCachedSizeFieldName(FieldDescriptor fd) {
-    return snakeCaseToCamelCase(fd.getName()) + "MemoizedSerializedSize";
+    return snakeCaseToLowerCamelCase(fd.getName()) + "MemoizedSerializedSize";
   }
 
   /**
-   * This method must match exactly with the corresponding function in protocol compiler. See:
-   * https://github.com/google/protobuf/blob/v3.0.0/src/google/protobuf/compiler/java/java_helpers.cc#L153
+   * Converts a snake case string into lower camel case.
+   *
+   * <p>Some examples:
+   *
+   * <pre>
+   *     snakeCaseToLowerCamelCase("foo_bar") => "fooBar"
+   *     snakeCaseToLowerCamelCase("foo") => "foo"
+   * </pre>
+   *
+   * @param snakeCase the string in snake case to convert
+   * @return the string converted to camel case, with a lowercase first character
    */
-  private static String snakeCaseToCamelCase(String snakeCase) {
+  private static String snakeCaseToLowerCamelCase(String snakeCase) {
+    return snakeCaseToCamelCase(snakeCase, false);
+  }
+
+  /**
+   * Converts a snake case string into upper camel case.
+   *
+   * <p>Some examples:
+   *
+   * <pre>
+   *     snakeCaseToUpperCamelCase("foo_bar") => "FooBar"
+   *     snakeCaseToUpperCamelCase("foo") => "Foo"
+   * </pre>
+   *
+   * @param snakeCase the string in snake case to convert
+   * @return the string converted to camel case, with an uppercase first character
+   */
+  private static String snakeCaseToUpperCamelCase(String snakeCase) {
+    return snakeCaseToCamelCase(snakeCase, true);
+  }
+
+  /**
+   * Converts a snake case string into camel case.
+   *
+   * <p>For better readability, prefer calling either {@link #snakeCaseToLowerCamelCase(String)} or
+   * {@link #snakeCaseToUpperCamelCase(String)}.
+   *
+   * <p>Some examples:
+   *
+   * <pre>
+   *     snakeCaseToCamelCase("foo_bar", false) => "fooBar"
+   *     snakeCaseToCamelCase("foo_bar", true) => "FooBar"
+   *     snakeCaseToCamelCase("foo", false) => "foo"
+   *     snakeCaseToCamelCase("foo", true) => "Foo"
+   *     snakeCaseToCamelCase("Foo", false) => "foo"
+   *     snakeCaseToCamelCase("fooBar", false) => "fooBar"
+   * </pre>
+   *
+   * <p>This implementation of this method must exactly match the corresponding function in the
+   * protocol compiler. Specifically, the {@code UnderscoresToCamelCase} function in {@code
+   * src/google/protobuf/compiler/java/java_helpers.cc}.
+   *
+   * @param snakeCase the string in snake case to convert
+   * @param capFirst true if the first letter of the returned string should be uppercase. false if
+   *     the first letter of the returned string should be lowercase.
+   * @return the string converted to camel case, with an uppercase or lowercase first character
+   *     depending on if {@code capFirst} is true or false, respectively
+   */
+  private static String snakeCaseToCamelCase(String snakeCase, boolean capFirst) {
     StringBuilder sb = new StringBuilder(snakeCase.length() + 1);
-    boolean capNext = false;
+    boolean capNext = capFirst;
     for (int ctr = 0; ctr < snakeCase.length(); ctr++) {
       char next = snakeCase.charAt(ctr);
       if (next == '_') {
@@ -653,7 +762,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
 
   /** Constructs the name of the get method for the given field in the proto. */
   private static String getterForField(String snakeCase) {
-    String camelCase = snakeCaseToCamelCase(snakeCase);
+    String camelCase = snakeCaseToLowerCamelCase(snakeCase);
     StringBuilder builder = new StringBuilder("get");
     // Capitalize the first character in the field name.
     builder.append(Character.toUpperCase(camelCase.charAt(0)));
@@ -679,7 +788,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
     }
 
     private static OneofInfo newInfo(Class<?> messageType, OneofDescriptor desc) {
-      String camelCase = snakeCaseToCamelCase(desc.getName());
+      String camelCase = snakeCaseToLowerCamelCase(desc.getName());
       String valueFieldName = camelCase + "_";
       String caseFieldName = camelCase + "Case_";
 

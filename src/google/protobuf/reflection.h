@@ -33,6 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_H__
 #define GOOGLE_PROTOBUF_REFLECTION_H__
 
+
 #include <memory>
 
 #include <google/protobuf/message.h>
@@ -42,6 +43,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -92,7 +94,7 @@ class RepeatedFieldRef<
     const Reflection* reflection = message.GetReflection();
     data_ = reflection->RepeatedFieldData(const_cast<Message*>(&message), field,
                                           internal::RefTypeTraits<T>::cpp_type,
-                                          NULL);
+                                          nullptr);
     accessor_ = reflection->RepeatedFieldAccessor(field);
   }
 
@@ -143,7 +145,7 @@ class MutableRepeatedFieldRef<
   MutableRepeatedFieldRef(Message* message, const FieldDescriptor* field) {
     const Reflection* reflection = message->GetReflection();
     data_ = reflection->RepeatedFieldData(
-        message, field, internal::RefTypeTraits<T>::cpp_type, NULL);
+        message, field, internal::RefTypeTraits<T>::cpp_type, nullptr);
     accessor_ = reflection->RepeatedFieldAccessor(field);
   }
 
@@ -282,19 +284,19 @@ namespace internal {
 // cpp_type to the type that should be used in this interface:
 //
 //   field->cpp_type()      T                Actual type of void*
-//   CPPTYPE_INT32        int32                   int32
-//   CPPTYPE_UINT32       uint32                  uint32
-//   CPPTYPE_INT64        int64                   int64
-//   CPPTYPE_UINT64       uint64                  uint64
+//   CPPTYPE_INT32        int32_t                 int32_t
+//   CPPTYPE_UINT32       uint32_t                uint32_t
+//   CPPTYPE_INT64        int64_t                 int64_t
+//   CPPTYPE_UINT64       uint64_t                uint64_t
 //   CPPTYPE_DOUBLE       double                  double
 //   CPPTYPE_FLOAT        float                   float
 //   CPPTYPE_BOOL         bool                    bool
-//   CPPTYPE_ENUM         generated enum type     int32
+//   CPPTYPE_ENUM         generated enum type     int32_t
 //   CPPTYPE_STRING       string                  std::string
 //   CPPTYPE_MESSAGE      generated message type  google::protobuf::Message
 //                        or google::protobuf::Message
 //
-// Note that for enums we use int32 in the interface.
+// Note that for enums we use int32_t in the interface.
 //
 // You can map from T to the actual type using RefTypeTraits:
 //   typedef RefTypeTraits<T>::AccessorValueType ActualType;
@@ -362,7 +364,7 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
     // be ActualType. Here we have a ValueType object and want a ActualType
     // pointer. We can't cast a ValueType pointer to an ActualType pointer
     // directly because their type might be different (for enums ValueType
-    // may be a generated enum type while ActualType is int32). To be safe
+    // may be a generated enum type while ActualType is int32_t). To be safe
     // we make a copy to get a temporary ActualType object and use it.
     ActualType tmp = static_cast<ActualType>(value);
     Set(data, index, static_cast<const Value*>(&tmp));
@@ -376,7 +378,7 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
     // be ActualType. Here we have a ValueType object and want a ActualType
     // pointer. We can't cast a ValueType pointer to an ActualType pointer
     // directly because their type might be different (for enums ValueType
-    // may be a generated enum type while ActualType is int32). To be safe
+    // may be a generated enum type while ActualType is int32_t). To be safe
     // we make a copy to get a temporary ActualType object and use it.
     ActualType tmp = static_cast<ActualType>(value);
     Add(data, static_cast<const Value*>(&tmp));
@@ -392,13 +394,18 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
 
 // Implement (Mutable)RepeatedFieldRef::iterator
 template <typename T>
-class RepeatedFieldRefIterator
-    : public std::iterator<std::forward_iterator_tag, T> {
+class RepeatedFieldRefIterator {
   typedef typename RefTypeTraits<T>::AccessorValueType AccessorValueType;
   typedef typename RefTypeTraits<T>::IteratorValueType IteratorValueType;
   typedef typename RefTypeTraits<T>::IteratorPointerType IteratorPointerType;
 
  public:
+  using iterator_category = std::forward_iterator_tag;
+  using value_type = T;
+  using pointer = T*;
+  using reference = T&;
+  using difference_type = std::ptrdiff_t;
+
   // Constructor for non-message fields.
   RepeatedFieldRefIterator(const void* data,
                            const RepeatedFieldAccessor* accessor, bool begin)
@@ -480,10 +487,10 @@ struct PrimitiveTraits {
     static const FieldDescriptor::CppType cpp_type = \
         FieldDescriptor::CPPTYPE_##TYPE;             \
   };
-DEFINE_PRIMITIVE(INT32, int32)
-DEFINE_PRIMITIVE(UINT32, uint32)
-DEFINE_PRIMITIVE(INT64, int64)
-DEFINE_PRIMITIVE(UINT64, uint64)
+DEFINE_PRIMITIVE(INT32, int32_t)
+DEFINE_PRIMITIVE(UINT32, uint32_t)
+DEFINE_PRIMITIVE(INT64, int64_t)
+DEFINE_PRIMITIVE(UINT64, uint64_t)
 DEFINE_PRIMITIVE(FLOAT, float)
 DEFINE_PRIMITIVE(DOUBLE, double)
 DEFINE_PRIMITIVE(BOOL, bool)
@@ -499,7 +506,7 @@ struct RefTypeTraits<
   typedef T* IteratorPointerType;
   static constexpr FieldDescriptor::CppType cpp_type =
       PrimitiveTraits<T>::cpp_type;
-  static const Descriptor* GetMessageFieldDescriptor() { return NULL; }
+  static const Descriptor* GetMessageFieldDescriptor() { return nullptr; }
 };
 
 template <typename T>
@@ -507,13 +514,13 @@ struct RefTypeTraits<
     T, typename std::enable_if<is_proto_enum<T>::value>::type> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
-  // We use int32 for repeated enums in RepeatedFieldAccessor.
-  typedef int32 AccessorValueType;
+  // We use int32_t for repeated enums in RepeatedFieldAccessor.
+  typedef int32_t AccessorValueType;
   typedef T IteratorValueType;
-  typedef int32* IteratorPointerType;
+  typedef int32_t* IteratorPointerType;
   static constexpr FieldDescriptor::CppType cpp_type =
       FieldDescriptor::CPPTYPE_ENUM;
-  static const Descriptor* GetMessageFieldDescriptor() { return NULL; }
+  static const Descriptor* GetMessageFieldDescriptor() { return nullptr; }
 };
 
 template <typename T>
@@ -526,7 +533,7 @@ struct RefTypeTraits<
   typedef const std::string* IteratorPointerType;
   static constexpr FieldDescriptor::CppType cpp_type =
       FieldDescriptor::CPPTYPE_STRING;
-  static const Descriptor* GetMessageFieldDescriptor() { return NULL; }
+  static const Descriptor* GetMessageFieldDescriptor() { return nullptr; }
 };
 
 template <typename T>
@@ -537,7 +544,7 @@ struct MessageDescriptorGetter {
 };
 template <>
 struct MessageDescriptorGetter<Message> {
-  static const Descriptor* get() { return NULL; }
+  static const Descriptor* get() { return nullptr; }
 };
 
 template <typename T>

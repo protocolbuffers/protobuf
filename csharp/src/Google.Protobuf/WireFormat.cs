@@ -90,7 +90,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int GetTagFieldNumber(uint tag)
         {
-            return (int) tag >> TagTypeBits;
+            return (int) (tag >> TagTypeBits);
         }
 
         /// <summary>

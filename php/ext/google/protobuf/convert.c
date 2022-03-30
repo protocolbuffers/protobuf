@@ -76,7 +76,7 @@ PHP_METHOD(Util, checkMapField) {
                             &val_type, &klass) == FAILURE) {
     return;
   }
-  RETURN_ZVAL(val, 1, 0);
+  RETURN_COPY(val);
 }
 
 // The result of checkRepeatedField() is assigned, so we need to return the
@@ -89,11 +89,16 @@ PHP_METHOD(Util, checkRepeatedField) {
       FAILURE) {
     return;
   }
-  RETURN_ZVAL(val, 1, 0);
+  RETURN_COPY(val);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_checkPrimitive, 0, 0, 1)
   ZEND_ARG_INFO(0, value)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_checkString, 0, 0, 1)
+  ZEND_ARG_INFO(0, value)
+  ZEND_ARG_INFO(0, check_utf8)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_checkMessage, 0, 0, 2)
@@ -123,7 +128,7 @@ static zend_function_entry util_methods[] = {
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkUint64, arginfo_checkPrimitive,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkEnum,   arginfo_checkPrimitive,
+  PHP_ME(Util, checkEnum,   arginfo_checkMessage,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkFloat,  arginfo_checkPrimitive,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
@@ -131,7 +136,7 @@ static zend_function_entry util_methods[] = {
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkBool,   arginfo_checkPrimitive,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkString, arginfo_checkPrimitive,
+  PHP_ME(Util, checkString, arginfo_checkString,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkBytes,  arginfo_checkPrimitive,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
@@ -148,30 +153,30 @@ static zend_function_entry util_methods[] = {
 // Conversion functions used from C
 // -----------------------------------------------------------------------------
 
-upb_fieldtype_t pbphp_dtype_to_type(upb_descriptortype_t type) {
+upb_CType pbphp_dtype_to_type(upb_FieldType type) {
   switch (type) {
 #define CASE(descriptor_type, type)           \
-  case UPB_DESCRIPTOR_TYPE_##descriptor_type: \
-    return UPB_TYPE_##type;
+  case kUpb_FieldType_##descriptor_type: \
+    return kUpb_CType_##type;
 
-  CASE(FLOAT,    FLOAT);
-  CASE(DOUBLE,   DOUBLE);
-  CASE(BOOL,     BOOL);
-  CASE(STRING,   STRING);
-  CASE(BYTES,    BYTES);
-  CASE(MESSAGE,  MESSAGE);
-  CASE(GROUP,    MESSAGE);
-  CASE(ENUM,     ENUM);
-  CASE(INT32,    INT32);
-  CASE(INT64,    INT64);
-  CASE(UINT32,   UINT32);
-  CASE(UINT64,   UINT64);
-  CASE(SINT32,   INT32);
-  CASE(SINT64,   INT64);
-  CASE(FIXED32,  UINT32);
-  CASE(FIXED64,  UINT64);
-  CASE(SFIXED32, INT32);
-  CASE(SFIXED64, INT64);
+  CASE(Float,    Float);
+  CASE(Double,   Double);
+  CASE(Bool,     Bool);
+  CASE(String,   String);
+  CASE(Bytes,    Bytes);
+  CASE(Message,  Message);
+  CASE(Group,    Message);
+  CASE(Enum,     Enum);
+  CASE(Int32,    Int32);
+  CASE(Int64,    Int64);
+  CASE(UInt32,   Int32);
+  CASE(UInt64,   UInt64);
+  CASE(SInt32,   Int32);
+  CASE(SInt64,   Int64);
+  CASE(Fixed32,  UInt32);
+  CASE(Fixed64,  UInt64);
+  CASE(SFixed32, Int32);
+  CASE(SFixed64, Int64);
 
 #undef CASE
 
@@ -348,46 +353,46 @@ static bool to_string(zval* from) {
   }
 }
 
-bool Convert_PhpToUpb(zval *php_val, upb_msgval *upb_val, upb_fieldtype_t type,
-                      const Descriptor *desc, upb_arena *arena) {
+bool Convert_PhpToUpb(zval *php_val, upb_MessageValue *upb_val, TypeInfo type,
+                      upb_Arena *arena) {
   int64_t i64;
 
   if (Z_ISREF_P(php_val)) {
     ZVAL_DEREF(php_val);
   }
 
-  switch (type) {
-    case UPB_TYPE_INT64:
+  switch (type.type) {
+    case kUpb_CType_Int64:
       return Convert_PhpToInt64(php_val, &upb_val->int64_val);
-    case UPB_TYPE_INT32:
-    case UPB_TYPE_ENUM:
+    case kUpb_CType_Int32:
+    case kUpb_CType_Enum:
       if (!Convert_PhpToInt64(php_val, &i64)) {
         return false;
       }
       upb_val->int32_val = i64;
       return true;
-    case UPB_TYPE_UINT64:
+    case kUpb_CType_UInt64:
       if (!Convert_PhpToInt64(php_val, &i64)) {
         return false;
       }
       upb_val->uint64_val = i64;
       return true;
-    case UPB_TYPE_UINT32:
+    case kUpb_CType_UInt32:
       if (!Convert_PhpToInt64(php_val, &i64)) {
         return false;
       }
       upb_val->uint32_val = i64;
       return true;
-    case UPB_TYPE_DOUBLE:
+    case kUpb_CType_Double:
       return to_double(php_val, &upb_val->double_val);
-    case UPB_TYPE_FLOAT:
+    case kUpb_CType_Float:
       if (!to_double(php_val, &upb_val->double_val)) return false;
       upb_val->float_val = upb_val->double_val;
       return true;
-    case UPB_TYPE_BOOL:
+    case kUpb_CType_Bool:
       return to_bool(php_val, &upb_val->bool_val);
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES: {
+    case kUpb_CType_String:
+    case kUpb_CType_Bytes: {
       char *ptr;
       size_t size;
 
@@ -396,30 +401,30 @@ bool Convert_PhpToUpb(zval *php_val, upb_msgval *upb_val, upb_fieldtype_t type,
       size = Z_STRLEN_P(php_val);
 
       // If arena is NULL we reference the input zval.
-      // The resulting upb_strview will only be value while the zval is alive.
+      // The resulting upb_StringView will only be value while the zval is alive.
       if (arena) {
-        ptr = upb_arena_malloc(arena, size);
+        ptr = upb_Arena_Malloc(arena, size);
         memcpy(ptr, Z_STRVAL_P(php_val), size);
       } else {
         ptr = Z_STRVAL_P(php_val);
       }
 
-      upb_val->str_val = upb_strview_make(ptr, size);
+      upb_val->str_val = upb_StringView_FromDataAndSize(ptr, size);
       return true;
     }
-    case UPB_TYPE_MESSAGE:
-      PBPHP_ASSERT(desc);
-      return Message_GetUpbMessage(php_val, desc, arena,
-                                   (upb_msg **)&upb_val->msg_val);
+    case kUpb_CType_Message:
+      PBPHP_ASSERT(type.desc);
+      return Message_GetUpbMessage(php_val, type.desc, arena,
+                                   (upb_Message **)&upb_val->msg_val);
   }
 
   return false;
 }
 
-void Convert_UpbToPhp(upb_msgval upb_val, zval *php_val, upb_fieldtype_t type,
-                      const Descriptor *desc, zval *arena) {
-  switch (type) {
-    case UPB_TYPE_INT64:
+void Convert_UpbToPhp(upb_MessageValue upb_val, zval *php_val, TypeInfo type,
+                      zval *arena) {
+  switch (type.type) {
+    case kUpb_CType_Int64:
 #if SIZEOF_ZEND_LONG == 8
       ZVAL_LONG(php_val, upb_val.int64_val);
 #else
@@ -430,7 +435,7 @@ void Convert_UpbToPhp(upb_msgval upb_val, zval *php_val, upb_fieldtype_t type,
       }
 #endif
       break;
-    case UPB_TYPE_UINT64:
+    case kUpb_CType_UInt64:
 #if SIZEOF_ZEND_LONG == 8
       ZVAL_LONG(php_val, upb_val.uint64_val);
 #else
@@ -441,52 +446,70 @@ void Convert_UpbToPhp(upb_msgval upb_val, zval *php_val, upb_fieldtype_t type,
       }
 #endif
       break;
-    case UPB_TYPE_INT32:
-    case UPB_TYPE_ENUM:
+    case kUpb_CType_Int32:
+    case kUpb_CType_Enum:
       ZVAL_LONG(php_val, upb_val.int32_val);
       break;
-    case UPB_TYPE_UINT32: {
+    case kUpb_CType_UInt32: {
       // Sign-extend for consistency between 32/64-bit builds.
       zend_long val = (int32_t)upb_val.uint32_val;
       ZVAL_LONG(php_val, val);
       break;
     }
-    case UPB_TYPE_DOUBLE:
+    case kUpb_CType_Double:
       ZVAL_DOUBLE(php_val, upb_val.double_val);
       break;
-    case UPB_TYPE_FLOAT:
+    case kUpb_CType_Float:
       ZVAL_DOUBLE(php_val, upb_val.float_val);
       break;
-    case UPB_TYPE_BOOL:
+    case kUpb_CType_Bool:
       ZVAL_BOOL(php_val, upb_val.bool_val);
       break;
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES: {
-      upb_strview str = upb_val.str_val;
+    case kUpb_CType_String:
+    case kUpb_CType_Bytes: {
+      upb_StringView str = upb_val.str_val;
       ZVAL_NEW_STR(php_val, zend_string_init(str.data, str.size, 0));
       break;
     }
-    case UPB_TYPE_MESSAGE:
-      PBPHP_ASSERT(desc);
-      Message_GetPhpWrapper(php_val, desc, (upb_msg*)upb_val.msg_val, arena);
+    case kUpb_CType_Message:
+      PBPHP_ASSERT(type.desc);
+      Message_GetPhpWrapper(php_val, type.desc, (upb_Message *)upb_val.msg_val,
+                            arena);
       break;
   }
 }
 
-bool Convert_PhpToUpbAutoWrap(zval *val, upb_msgval *upb_val,
-                              upb_fieldtype_t type, const Descriptor *desc,
-                              upb_arena *arena) {
-  const upb_msgdef *subm = desc ? desc->msgdef : NULL;
-  if (subm && upb_msgdef_iswrapper(subm) && Z_TYPE_P(val) != IS_OBJECT) {
+// Check if the field is a well known wrapper type
+static bool IsWrapper(const upb_MessageDef* m) {
+  if (!m) return false;
+  switch (upb_MessageDef_WellKnownType(m)) {
+    case kUpb_WellKnown_DoubleValue:
+    case kUpb_WellKnown_FloatValue:
+    case kUpb_WellKnown_Int64Value:
+    case kUpb_WellKnown_UInt64Value:
+    case kUpb_WellKnown_Int32Value:
+    case kUpb_WellKnown_UInt32Value:
+    case kUpb_WellKnown_StringValue:
+    case kUpb_WellKnown_BytesValue:
+    case kUpb_WellKnown_BoolValue:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool Convert_PhpToUpbAutoWrap(zval *val, upb_MessageValue *upb_val, TypeInfo type,
+                              upb_Arena *arena) {
+  const upb_MessageDef *subm = type.desc ? type.desc->msgdef : NULL;
+  if (subm && IsWrapper(subm) && Z_TYPE_P(val) != IS_OBJECT) {
     // Assigning a scalar to a wrapper-typed value. We will automatically wrap
     // the value, so the user doesn't need to create a FooWrapper(['value': X])
     // message manually.
-    upb_msg *wrapper = upb_msg_new(subm, arena);
-    const upb_fielddef *val_f = upb_msgdef_itof(subm, 1);
-    upb_fieldtype_t type_f = upb_fielddef_type(val_f);
-    upb_msgval msgval;
-    if (!Convert_PhpToUpb(val, &msgval, type_f, NULL, arena)) return false;
-    upb_msg_set(wrapper, val_f, msgval, arena);
+    upb_Message *wrapper = upb_Message_New(subm, arena);
+    const upb_FieldDef *val_f = upb_MessageDef_FindFieldByNumber(subm, 1);
+    upb_MessageValue msgval;
+    if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(val_f), arena)) return false;
+    upb_Message_Set(wrapper, val_f, msgval, arena);
     upb_val->msg_val = wrapper;
     return true;
   } else {
@@ -495,7 +518,7 @@ bool Convert_PhpToUpbAutoWrap(zval *val, upb_msgval *upb_val,
     //   ['foo_submsg': new Foo(['a' => 1])]
     // not:
     //   ['foo_submsg': ['a' => 1]]
-    return Convert_PhpToUpb(val, upb_val, type, desc, arena);
+    return Convert_PhpToUpb(val, upb_val, type, arena);
   }
 }
 

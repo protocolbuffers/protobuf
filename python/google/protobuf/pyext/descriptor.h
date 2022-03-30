@@ -33,6 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_H__
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <google/protobuf/descriptor.h>

@@ -2,7 +2,7 @@ if(protobuf_VERBOSE)
   message(STATUS "Protocol Buffers Examples Configuring...")
 endif()
 
-get_filename_component(examples_dir "../examples" ABSOLUTE)
+get_filename_component(examples_dir "${protobuf_SOURCE_DIR}/examples" ABSOLUTE)
 
 if(protobuf_VERBOSE)
   message(STATUS "Protocol Buffers Examples Configuring done")

@@ -36,7 +36,6 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import threading
 import warnings
-import six
 
 from google.protobuf.internal import api_implementation
 
@@ -45,7 +44,10 @@ if api_implementation.Type() == 'cpp':
   # Used by MakeDescriptor in cpp mode
   import binascii
   import os
-  from google.protobuf.pyext import _message
+  if api_implementation._Version() == 3:
+    from google3.third_party.upb.python import _message
+  else:
+    from google.protobuf.pyext import _message
   _USE_C_DESCRIPTORS = True
 
 
@@ -111,7 +113,7 @@ _Deprecated.count = 100
 _internal_create_key = object()
 
 
-class DescriptorBase(six.with_metaclass(DescriptorMetaclass)):
+class DescriptorBase(metaclass=DescriptorMetaclass):
 
   """Descriptors base class.
 
@@ -287,12 +289,26 @@ class Descriptor(_NestedDescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.Descriptor
 
-    def __new__(cls, name, full_name, filename, containing_type, fields,
-                nested_types, enum_types, extensions, options=None,
-                serialized_options=None,
-                is_extendable=True, extension_ranges=None, oneofs=None,
-                file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
-                syntax=None, create_key=None):
+    def __new__(
+        cls,
+        name=None,
+        full_name=None,
+        filename=None,
+        containing_type=None,
+        fields=None,
+        nested_types=None,
+        enum_types=None,
+        extensions=None,
+        options=None,
+        serialized_options=None,
+        is_extendable=True,
+        extension_ranges=None,
+        oneofs=None,
+        file=None,  # pylint: disable=redefined-builtin
+        serialized_start=None,
+        serialized_end=None,
+        syntax=None,
+        create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindMessageTypeByName(full_name)
 
@@ -604,6 +620,26 @@ class FieldDescriptor(DescriptorBase):
       self._camelcase_name = _ToCamelCase(self.name)
     return self._camelcase_name
 
+  @property
+  def has_presence(self):
+    """Whether the field distinguishes between unpopulated and default values.
+
+    Raises:
+      RuntimeError: singular field that is not linked with message nor file.
+    """
+    if self.label == FieldDescriptor.LABEL_REPEATED:
+      return False
+    if (self.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE or
+        self.containing_oneof):
+      return True
+    if hasattr(self.file, 'syntax'):
+      return self.file.syntax == 'proto2'
+    if hasattr(self.message_type, 'syntax'):
+      return self.message_type.syntax == 'proto2'
+    raise RuntimeError(
+        'has_presence is not ready to use because field %s is not'
+        ' linked with message type nor file' % self.full_name)
+
   @staticmethod
   def ProtoTypeToCppProtoType(proto_type):
     """Converts from a Python proto type to a C++ Proto Type.
@@ -634,7 +670,7 @@ class EnumDescriptor(_NestedDescriptorBase):
     full_name (str): Full name of the type, including package name
       and any enclosing type(s).
 
-    values (list[EnumValueDescriptors]): List of the values
+    values (list[EnumValueDescriptor]): List of the values
       in this enum.
     values_by_name (dict(str, EnumValueDescriptor)): Same as :attr:`values`,
       but indexed by the "name" field of each EnumValueDescriptor.
@@ -799,9 +835,18 @@ class ServiceDescriptor(_NestedDescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.ServiceDescriptor
 
-    def __new__(cls, name, full_name, index, methods, options=None,
-                serialized_options=None, file=None,  # pylint: disable=redefined-builtin
-                serialized_start=None, serialized_end=None, create_key=None):
+    def __new__(
+        cls,
+        name=None,
+        full_name=None,
+        index=None,
+        methods=None,
+        options=None,
+        serialized_options=None,
+        file=None,  # pylint: disable=redefined-builtin
+        serialized_start=None,
+        serialized_end=None,
+        create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindServiceByName(full_name)
 
@@ -857,6 +902,8 @@ class MethodDescriptor(DescriptorBase):
       accepts.
     output_type (Descriptor): The descriptor of the message that this method
       returns.
+    client_streaming (bool): Whether this method uses client streaming.
+    server_streaming (bool): Whether this method uses server streaming.
     options (descriptor_pb2.MethodOptions or None): Method options message, or
       None to use default method options.
   """
@@ -864,14 +911,32 @@ class MethodDescriptor(DescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.MethodDescriptor
 
-    def __new__(cls, name, full_name, index, containing_service,
-                input_type, output_type, options=None, serialized_options=None,
+    def __new__(cls,
+                name,
+                full_name,
+                index,
+                containing_service,
+                input_type,
+                output_type,
+                client_streaming=False,
+                server_streaming=False,
+                options=None,
+                serialized_options=None,
                 create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindMethodByName(full_name)
 
-  def __init__(self, name, full_name, index, containing_service,
-               input_type, output_type, options=None, serialized_options=None,
+  def __init__(self,
+               name,
+               full_name,
+               index,
+               containing_service,
+               input_type,
+               output_type,
+               client_streaming=False,
+               server_streaming=False,
+               options=None,
+               serialized_options=None,
                create_key=None):
     """The arguments are as described in the description of MethodDescriptor
     attributes above.
@@ -889,6 +954,26 @@ class MethodDescriptor(DescriptorBase):
     self.containing_service = containing_service
     self.input_type = input_type
     self.output_type = output_type
+    self.client_streaming = client_streaming
+    self.server_streaming = server_streaming
+
+  def CopyToProto(self, proto):
+    """Copies this to a descriptor_pb2.MethodDescriptorProto.
+
+    Args:
+      proto (descriptor_pb2.MethodDescriptorProto): An empty descriptor proto.
+
+    Raises:
+      Error: If self couldn't be serialized, due to too few constructor
+        arguments.
+    """
+    if self.containing_service is not None:
+      from google.protobuf import descriptor_pb2
+      service_proto = descriptor_pb2.ServiceDescriptorProto()
+      self.containing_service.CopyToProto(service_proto)
+      proto.CopyFrom(service_proto.method[self.index])
+    else:
+      raise Error('Descriptor does not contain a service.')
 
 
 class FileDescriptor(DescriptorBase):
@@ -911,7 +996,7 @@ class FileDescriptor(DescriptorBase):
     public_dependencies (list[FileDescriptor]): A subset of
       :attr:`dependencies`, which were declared as "public".
     message_types_by_name (dict(str, Descriptor)): Mapping from message names
-      to their :class:`Desctiptor`.
+      to their :class:`Descriptor`.
     enum_types_by_name (dict(str, EnumDescriptor)): Mapping from enum names to
       their :class:`EnumDescriptor`.
     extensions_by_name (dict(str, FieldDescriptor)): Mapping from extension

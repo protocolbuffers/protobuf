@@ -30,30 +30,23 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import protobuf_unittest.LazyFieldsLite.LazyExtension;
 import protobuf_unittest.LazyFieldsLite.LazyInnerMessageLite;
 import protobuf_unittest.LazyFieldsLite.LazyMessageLite;
 import protobuf_unittest.LazyFieldsLite.LazyNestedInnerMessageLite;
 import java.util.ArrayList;
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-/**
- * Unit test for messages with lazy fields.
- *
- * @author niwasaki@google.com (Naoki Iwasaki)
- */
-public class LazyMessageLiteTest extends TestCase {
+/** Unit test for messages with lazy fields. */
+@RunWith(JUnit4.class)
+public class LazyMessageLiteTest {
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-  }
-
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
-  }
-
+  @Test
   public void testSetValues() {
     LazyNestedInnerMessageLite nested = LazyNestedInnerMessageLite.newBuilder().setNum(3).build();
     LazyInnerMessageLite inner =
@@ -66,24 +59,28 @@ public class LazyMessageLiteTest extends TestCase {
             .setOneofInner(inner)
             .build();
 
-    assertEquals(1, outer.getNum());
-    assertEquals(421, outer.getNumWithDefault());
+    assertThat(outer.getNum()).isEqualTo(1);
+    assertThat(outer.getNumWithDefault()).isEqualTo(421);
 
-    assertEquals(2, outer.getInner().getNum());
-    assertEquals(42, outer.getInner().getNumWithDefault());
+    assertThat(outer.getInner().getNum()).isEqualTo(2);
+    assertThat(outer.getInner().getNumWithDefault()).isEqualTo(42);
 
-    assertEquals(3, outer.getInner().getNested().getNum());
-    assertEquals(4, outer.getInner().getNested().getNumWithDefault());
+    assertThat(outer.getInner().getNum()).isEqualTo(2);
+    assertThat(outer.getInner().getNumWithDefault()).isEqualTo(42);
 
-    assertFalse(outer.hasOneofNum());
-    assertTrue(outer.hasOneofInner());
+    assertThat(outer.getInner().getNested().getNum()).isEqualTo(3);
+    assertThat(outer.getInner().getNested().getNumWithDefault()).isEqualTo(4);
 
-    assertEquals(2, outer.getOneofInner().getNum());
-    assertEquals(42, outer.getOneofInner().getNumWithDefault());
-    assertEquals(3, outer.getOneofInner().getNested().getNum());
-    assertEquals(4, outer.getOneofInner().getNested().getNumWithDefault());
+    assertThat(outer.hasOneofNum()).isFalse();
+    assertThat(outer.hasOneofInner()).isTrue();
+
+    assertThat(outer.getOneofInner().getNum()).isEqualTo(2);
+    assertThat(outer.getOneofInner().getNumWithDefault()).isEqualTo(42);
+    assertThat(outer.getOneofInner().getNested().getNum()).isEqualTo(3);
+    assertThat(outer.getOneofInner().getNested().getNumWithDefault()).isEqualTo(4);
   }
 
+  @Test
   public void testSetRepeatedValues() {
     LazyMessageLite outer =
         LazyMessageLite.newBuilder()
@@ -92,12 +89,13 @@ public class LazyMessageLiteTest extends TestCase {
             .addRepeatedInner(LazyInnerMessageLite.newBuilder().setNum(122))
             .build();
 
-    assertEquals(1, outer.getNum());
-    assertEquals(2, outer.getRepeatedInnerCount());
-    assertEquals(119, outer.getRepeatedInner(0).getNum());
-    assertEquals(122, outer.getRepeatedInner(1).getNum());
+    assertThat(outer.getNum()).isEqualTo(1);
+    assertThat(outer.getRepeatedInnerCount()).isEqualTo(2);
+    assertThat(outer.getRepeatedInner(0).getNum()).isEqualTo(119);
+    assertThat(outer.getRepeatedInner(1).getNum()).isEqualTo(122);
   }
 
+  @Test
   public void testRepeatedMutability() throws Exception {
     LazyMessageLite outer =
         LazyMessageLite.newBuilder()
@@ -105,14 +103,17 @@ public class LazyMessageLiteTest extends TestCase {
             .addRepeatedInner(LazyInnerMessageLite.newBuilder().setNum(122))
             .build();
 
-    outer = LazyMessageLite.parseFrom(outer.toByteArray());
+    outer =
+        LazyMessageLite.parseFrom(outer.toByteArray(),
+            ExtensionRegistryLite.getEmptyRegistry());
     try {
       outer.getRepeatedInnerList().set(1, null);
-      fail();
+      assertWithMessage("expected exception").fail();
     } catch (UnsupportedOperationException expected) {
     }
   }
 
+  @Test
   public void testAddAll() {
     ArrayList<LazyInnerMessageLite> inners = new ArrayList<>();
     int count = 4;
@@ -122,51 +123,53 @@ public class LazyMessageLiteTest extends TestCase {
     }
 
     LazyMessageLite outer = LazyMessageLite.newBuilder().addAllRepeatedInner(inners).build();
-    assertEquals(count, outer.getRepeatedInnerCount());
+    assertThat(outer.getRepeatedInnerCount()).isEqualTo(count);
     for (int i = 0; i < count; i++) {
-      assertEquals(i, outer.getRepeatedInner(i).getNum());
+      assertThat(outer.getRepeatedInner(i).getNum()).isEqualTo(i);
     }
   }
 
+  @Test
   public void testGetDefaultValues() {
     LazyMessageLite outer = LazyMessageLite.getDefaultInstance();
 
-    assertEquals(0, outer.getNum());
-    assertEquals(421, outer.getNumWithDefault());
+    assertThat(outer.getNum()).isEqualTo(0);
+    assertThat(outer.getNumWithDefault()).isEqualTo(421);
 
-    assertEquals(0, outer.getInner().getNum());
-    assertEquals(42, outer.getInner().getNumWithDefault());
+    assertThat(outer.getInner().getNum()).isEqualTo(0);
+    assertThat(outer.getInner().getNumWithDefault()).isEqualTo(42);
 
-    assertEquals(0, outer.getInner().getNested().getNum());
-    assertEquals(4, outer.getInner().getNested().getNumWithDefault());
+    assertThat(outer.getInner().getNested().getNum()).isEqualTo(0);
+    assertThat(outer.getInner().getNested().getNumWithDefault()).isEqualTo(4);
 
-    assertEquals(0, outer.getOneofNum());
+    assertThat(outer.getOneofNum()).isEqualTo(0);
 
-    assertEquals(0, outer.getOneofInner().getNum());
-    assertEquals(42, outer.getOneofInner().getNumWithDefault());
-    assertEquals(0, outer.getOneofInner().getNested().getNum());
-    assertEquals(4, outer.getOneofInner().getNested().getNumWithDefault());
+    assertThat(outer.getOneofInner().getNum()).isEqualTo(0);
+    assertThat(outer.getOneofInner().getNumWithDefault()).isEqualTo(42);
+    assertThat(outer.getOneofInner().getNested().getNum()).isEqualTo(0);
+    assertThat(outer.getOneofInner().getNested().getNumWithDefault()).isEqualTo(4);
   }
 
+  @Test
   public void testClearValues() {
     LazyInnerMessageLite inner = LazyInnerMessageLite.newBuilder().setNum(115).build();
 
     LazyMessageLite.Builder outerBuilder = LazyMessageLite.newBuilder();
 
-    assertEquals(0, outerBuilder.build().getNum());
+    assertThat(outerBuilder.build().getNum()).isEqualTo(0);
 
     // Set/Clear num
     outerBuilder.setNum(100);
 
-    assertEquals(100, outerBuilder.build().getNum());
-    assertEquals(421, outerBuilder.build().getNumWithDefault());
-    assertFalse(outerBuilder.build().hasInner());
+    assertThat(outerBuilder.build().getNum()).isEqualTo(100);
+    assertThat(outerBuilder.build().getNumWithDefault()).isEqualTo(421);
+    assertThat(outerBuilder.build().hasInner()).isFalse();
 
     outerBuilder.clearNum();
 
-    assertEquals(0, outerBuilder.build().getNum());
-    assertEquals(421, outerBuilder.build().getNumWithDefault());
-    assertFalse(outerBuilder.build().hasInner());
+    assertThat(outerBuilder.build().getNum()).isEqualTo(0);
+    assertThat(outerBuilder.build().getNumWithDefault()).isEqualTo(421);
+    assertThat(outerBuilder.build().hasInner()).isFalse();
 
     // Set/Clear all
     outerBuilder
@@ -177,28 +180,29 @@ public class LazyMessageLiteTest extends TestCase {
         .setOneofInner(LazyInnerMessageLite.newBuilder().setNum(123));
 
     LazyMessageLite outer = outerBuilder.build();
-    assertEquals(100, outer.getNum());
-    assertEquals(421, outer.getNumWithDefault());
-    assertTrue(outer.hasInner());
-    assertEquals(115, outer.getInner().getNum());
-    assertEquals(2, outer.getRepeatedInnerCount());
-    assertEquals(119, outer.getRepeatedInner(0).getNum());
-    assertEquals(122, outer.getRepeatedInner(1).getNum());
-    assertTrue(outer.hasOneofInner());
-    assertEquals(123, outer.getOneofInner().getNum());
+    assertThat(outer.getNum()).isEqualTo(100);
+    assertThat(outer.getNumWithDefault()).isEqualTo(421);
+    assertThat(outer.hasInner()).isTrue();
+    assertThat(outer.getInner().getNum()).isEqualTo(115);
+    assertThat(outer.getRepeatedInnerCount()).isEqualTo(2);
+    assertThat(outer.getRepeatedInner(0).getNum()).isEqualTo(119);
+    assertThat(outer.getRepeatedInner(1).getNum()).isEqualTo(122);
+    assertThat(outer.hasOneofInner()).isTrue();
+    assertThat(outer.getOneofInner().getNum()).isEqualTo(123);
 
     outerBuilder.clear();
 
     outer = outerBuilder.build();
 
-    assertEquals(0, outer.getNum());
-    assertEquals(421, outer.getNumWithDefault());
-    assertFalse(outer.hasInner());
-    assertEquals(0, outer.getRepeatedInnerCount());
-    assertFalse(outer.hasOneofInner());
-    assertEquals(0, outer.getOneofInner().getNum());
+    assertThat(outer.getNum()).isEqualTo(0);
+    assertThat(outer.getNumWithDefault()).isEqualTo(421);
+    assertThat(outer.hasInner()).isFalse();
+    assertThat(outer.getRepeatedInnerCount()).isEqualTo(0);
+    assertThat(outer.hasOneofInner()).isFalse();
+    assertThat(outer.getOneofInner().getNum()).isEqualTo(0);
   }
 
+  @Test
   public void testMergeValues() {
     LazyMessageLite outerBase = LazyMessageLite.newBuilder().setNumWithDefault(122).build();
 
@@ -211,14 +215,15 @@ public class LazyMessageLiteTest extends TestCase {
             .build();
 
     LazyMessageLite merged = LazyMessageLite.newBuilder(outerBase).mergeFrom(outerMerging).build();
-    assertEquals(119, merged.getNum());
-    assertEquals(122, merged.getNumWithDefault());
-    assertEquals(115, merged.getInner().getNum());
-    assertEquals(42, merged.getInner().getNumWithDefault());
-    assertEquals(115, merged.getOneofInner().getNum());
-    assertEquals(42, merged.getOneofInner().getNumWithDefault());
+    assertThat(merged.getNum()).isEqualTo(119);
+    assertThat(merged.getNumWithDefault()).isEqualTo(122);
+    assertThat(merged.getInner().getNum()).isEqualTo(115);
+    assertThat(merged.getInner().getNumWithDefault()).isEqualTo(42);
+    assertThat(merged.getOneofInner().getNum()).isEqualTo(115);
+    assertThat(merged.getOneofInner().getNumWithDefault()).isEqualTo(42);
   }
 
+  @Test
   public void testMergeDefaultValues() {
     LazyInnerMessageLite innerBase = LazyInnerMessageLite.newBuilder().setNum(115).build();
     LazyMessageLite outerBase =
@@ -233,31 +238,33 @@ public class LazyMessageLiteTest extends TestCase {
 
     LazyMessageLite merged = LazyMessageLite.newBuilder(outerBase).mergeFrom(outerMerging).build();
     // Merging default-instance shouldn't overwrite values in the base message.
-    assertEquals(119, merged.getNum());
-    assertEquals(122, merged.getNumWithDefault());
-    assertEquals(115, merged.getInner().getNum());
-    assertEquals(42, merged.getInner().getNumWithDefault());
-    assertEquals(115, merged.getOneofInner().getNum());
-    assertEquals(42, merged.getOneofInner().getNumWithDefault());
+    assertThat(merged.getNum()).isEqualTo(119);
+    assertThat(merged.getNumWithDefault()).isEqualTo(122);
+    assertThat(merged.getInner().getNum()).isEqualTo(115);
+    assertThat(merged.getInner().getNumWithDefault()).isEqualTo(42);
+    assertThat(merged.getOneofInner().getNum()).isEqualTo(115);
+    assertThat(merged.getOneofInner().getNumWithDefault()).isEqualTo(42);
   }
 
   // Regression test for b/28198805.
+  @Test
   public void testMergeOneofMessages() throws Exception {
     LazyInnerMessageLite inner = LazyInnerMessageLite.getDefaultInstance();
     LazyMessageLite outer = LazyMessageLite.newBuilder().setOneofInner(inner).build();
     ByteString data1 = outer.toByteString();
 
     // The following should not alter the content of the 'outer' message.
-    LazyMessageLite.Builder merged = LazyMessageLite.newBuilder().mergeFrom(outer);
+    LazyMessageLite.Builder merged = outer.toBuilder();
     LazyInnerMessageLite anotherInner = LazyInnerMessageLite.newBuilder().setNum(12345).build();
     merged.setOneofInner(anotherInner);
 
     // Check that the 'outer' stays the same.
     ByteString data2 = outer.toByteString();
-    assertEquals(data1, data2);
-    assertEquals(0, outer.getOneofInner().getNum());
+    assertThat(data1).isEqualTo(data2);
+    assertThat(outer.getOneofInner().getNum()).isEqualTo(0);
   }
 
+  @Test
   public void testSerialize() throws InvalidProtocolBufferException {
     LazyNestedInnerMessageLite nested = LazyNestedInnerMessageLite.newBuilder().setNum(3).build();
     LazyInnerMessageLite inner =
@@ -266,40 +273,42 @@ public class LazyMessageLiteTest extends TestCase {
         LazyMessageLite.newBuilder().setNum(1).setInner(inner).setOneofInner(inner).build();
 
     ByteString bytes = outer.toByteString();
-    assertEquals(bytes.size(), outer.getSerializedSize());
+    assertThat(bytes.size()).isEqualTo(outer.getSerializedSize());
 
-    LazyMessageLite deserialized = LazyMessageLite.parseFrom(bytes);
+    LazyMessageLite deserialized =
+        LazyMessageLite.parseFrom(bytes, ExtensionRegistryLite.getEmptyRegistry());
 
-    assertEquals(1, deserialized.getNum());
-    assertEquals(421, deserialized.getNumWithDefault());
+    assertThat(deserialized.getNum()).isEqualTo(1);
+    assertThat(deserialized.getNumWithDefault()).isEqualTo(421);
 
-    assertEquals(2, deserialized.getInner().getNum());
-    assertEquals(42, deserialized.getInner().getNumWithDefault());
+    assertThat(deserialized.getInner().getNum()).isEqualTo(2);
+    assertThat(deserialized.getInner().getNumWithDefault()).isEqualTo(42);
 
-    assertEquals(3, deserialized.getInner().getNested().getNum());
-    assertEquals(4, deserialized.getInner().getNested().getNumWithDefault());
+    assertThat(deserialized.getInner().getNested().getNum()).isEqualTo(3);
+    assertThat(deserialized.getInner().getNested().getNumWithDefault()).isEqualTo(4);
 
-    assertEquals(2, deserialized.getOneofInner().getNum());
-    assertEquals(42, deserialized.getOneofInner().getNumWithDefault());
-    assertEquals(3, deserialized.getOneofInner().getNested().getNum());
-    assertEquals(4, deserialized.getOneofInner().getNested().getNumWithDefault());
+    assertThat(deserialized.getOneofInner().getNum()).isEqualTo(2);
+    assertThat(deserialized.getOneofInner().getNumWithDefault()).isEqualTo(42);
+    assertThat(deserialized.getOneofInner().getNested().getNum()).isEqualTo(3);
+    assertThat(deserialized.getOneofInner().getNested().getNumWithDefault()).isEqualTo(4);
 
-    assertEquals(bytes, deserialized.toByteString());
+    assertThat(deserialized.toByteString()).isEqualTo(bytes);
   }
 
+  @Test
   public void testExtensions() throws Exception {
     LazyInnerMessageLite.Builder innerBuilder = LazyInnerMessageLite.newBuilder();
     innerBuilder.setExtension(
         LazyExtension.extension, LazyExtension.newBuilder().setName("name").build());
-    assertTrue(innerBuilder.hasExtension(LazyExtension.extension));
-    assertEquals("name", innerBuilder.getExtension(LazyExtension.extension).getName());
+    assertThat(innerBuilder.hasExtension(LazyExtension.extension)).isTrue();
+    assertThat(innerBuilder.getExtension(LazyExtension.extension).getName()).isEqualTo("name");
 
     LazyInnerMessageLite innerMessage = innerBuilder.build();
-    assertTrue(innerMessage.hasExtension(LazyExtension.extension));
-    assertEquals("name", innerMessage.getExtension(LazyExtension.extension).getName());
+    assertThat(innerMessage.hasExtension(LazyExtension.extension)).isTrue();
+    assertThat(innerMessage.getExtension(LazyExtension.extension).getName()).isEqualTo("name");
 
     LazyMessageLite lite = LazyMessageLite.newBuilder().setInner(innerMessage).build();
-    assertTrue(lite.getInner().hasExtension(LazyExtension.extension));
-    assertEquals("name", lite.getInner().getExtension(LazyExtension.extension).getName());
+    assertThat(lite.getInner().hasExtension(LazyExtension.extension)).isTrue();
+    assertThat(lite.getInner().getExtension(LazyExtension.extension).getName()).isEqualTo("name");
   }
 }

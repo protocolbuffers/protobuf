@@ -36,7 +36,7 @@ namespace Google.Protobuf.Benchmarks
 {
     class Program
     {
-        // typical usage: dotnet run -c Release -f netcoreapp2.1
+        // typical usage: dotnet run -c Release -f netcoreapp3.1
         // (this can profile both .net core and .net framework; for some reason
         // if you start from "-f net461", it goes horribly wrong)
         public static void Main(string[] args)

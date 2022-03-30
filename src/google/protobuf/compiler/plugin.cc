@@ -45,9 +45,10 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/io_win32.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 
 
 namespace google {
@@ -68,27 +69,28 @@ class GeneratorResponseContext : public GeneratorContext {
       : compiler_version_(compiler_version),
         response_(response),
         parsed_files_(parsed_files) {}
-  virtual ~GeneratorResponseContext() {}
+  ~GeneratorResponseContext() override {}
 
   // implements GeneratorContext --------------------------------------
 
-  virtual io::ZeroCopyOutputStream* Open(const std::string& filename) {
+  io::ZeroCopyOutputStream* Open(const std::string& filename) override {
     CodeGeneratorResponse::File* file = response_->add_file();
     file->set_name(filename);
     return new io::StringOutputStream(file->mutable_content());
   }
 
-  virtual io::ZeroCopyOutputStream* OpenForInsert(
-      const std::string& filename, const std::string& insertion_point) {
+  io::ZeroCopyOutputStream* OpenForInsert(
+      const std::string& filename,
+      const std::string& insertion_point) override {
     CodeGeneratorResponse::File* file = response_->add_file();
     file->set_name(filename);
     file->set_insertion_point(insertion_point);
     return new io::StringOutputStream(file->mutable_content());
   }
 
-  virtual io::ZeroCopyOutputStream* OpenForInsertWithGeneratedCodeInfo(
+  io::ZeroCopyOutputStream* OpenForInsertWithGeneratedCodeInfo(
       const std::string& filename, const std::string& insertion_point,
-      const google::protobuf::GeneratedCodeInfo& info) {
+      const google::protobuf::GeneratedCodeInfo& info) override {
     CodeGeneratorResponse::File* file = response_->add_file();
     file->set_name(filename);
     file->set_insertion_point(insertion_point);
@@ -96,11 +98,11 @@ class GeneratorResponseContext : public GeneratorContext {
     return new io::StringOutputStream(file->mutable_content());
   }
 
-  void ListParsedFiles(std::vector<const FileDescriptor*>* output) {
+  void ListParsedFiles(std::vector<const FileDescriptor*>* output) override {
     *output = parsed_files_;
   }
 
-  void GetCompilerVersion(Version* version) const {
+  void GetCompilerVersion(Version* version) const override {
     *version = compiler_version_;
   }
 
@@ -116,7 +118,7 @@ bool GenerateCode(const CodeGeneratorRequest& request,
   DescriptorPool pool;
   for (int i = 0; i < request.proto_file_size(); i++) {
     const FileDescriptor* file = pool.BuildFile(request.proto_file(i));
-    if (file == NULL) {
+    if (file == nullptr) {
       // BuildFile() already wrote an error message.
       return false;
     }
@@ -125,7 +127,7 @@ bool GenerateCode(const CodeGeneratorRequest& request,
   std::vector<const FileDescriptor*> parsed_files;
   for (int i = 0; i < request.file_to_generate_size(); i++) {
     parsed_files.push_back(pool.FindFileByName(request.file_to_generate(i)));
-    if (parsed_files.back() == NULL) {
+    if (parsed_files.back() == nullptr) {
       *error_msg =
           "protoc asked plugin to generate a file but "
           "did not provide a descriptor for the file: " +
@@ -174,6 +176,7 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
               << std::endl;
     return 1;
   }
+
 
   std::string error_msg;
   CodeGeneratorResponse response;

@@ -141,6 +141,9 @@ void UsageError() {
           "                              strictly conforming to protobuf\n");
   fprintf(stderr,
           "                              spec.\n");
+  fprintf(stderr,
+          "  --output_dir                <dirname> Directory to write\n"
+          "                              output files.\n");
   exit(1);
 }
 
@@ -162,7 +165,7 @@ void ForkPipeRunner::RunTest(
     // We failed to read from the child, assume a crash and try to reap.
     GOOGLE_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
 
-    int status;
+    int status = 0;
     waitpid(child_pid_, &status, WEXITED);
 
     string error_msg;
@@ -208,6 +211,9 @@ int ForkPipeRunner::Run(
         suite->SetVerbose(true);
       } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
         suite->SetEnforceRecommended(true);
+      } else if (strcmp(argv[arg], "--output_dir") == 0) {
+        if (++arg == argc) UsageError();
+        suite->SetOutputDir(argv[arg]);
       } else if (argv[arg][0] == '-') {
         bool recognized_flag = false;
         for (ConformanceTestSuite* suite : suites) {
@@ -297,7 +303,7 @@ void ForkPipeRunner::SpawnTestProgram() {
 
     std::vector<const char *> argv;
     argv.push_back(executable.get());
-    for (int i = 0; i < executable_args_.size(); ++i) {
+    for (size_t i = 0; i < executable_args_.size(); ++i) {
       argv.push_back(executable_args_[i].c_str());
     }
     argv.push_back(nullptr);
@@ -307,7 +313,7 @@ void ForkPipeRunner::SpawnTestProgram() {
 }
 
 void ForkPipeRunner::CheckedWrite(int fd, const void *buf, size_t len) {
-  if (write(fd, buf, len) != len) {
+  if (static_cast<size_t>(write(fd, buf, len)) != len) {
     GOOGLE_LOG(FATAL) << current_test_name_
                << ": error writing to test program: " << strerror(errno);
   }

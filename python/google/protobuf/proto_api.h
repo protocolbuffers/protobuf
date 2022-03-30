@@ -45,6 +45,7 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
 #define GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <google/protobuf/descriptor_database.h>
@@ -78,10 +79,57 @@ struct PyProto_API {
   // With the current implementation, only empty messages are in this case.
   virtual Message* GetMutableMessagePointer(PyObject* msg) const = 0;
 
+  // If the passed object is a Python Message Descriptor, returns its internal
+  // pointer.
+  // Otherwise, returns NULL with an exception set.
+  virtual const Descriptor* MessageDescriptor_AsDescriptor(
+      PyObject* desc) const = 0;
+
+  // If the passed object is a Python Enum Descriptor, returns its internal
+  // pointer.
+  // Otherwise, returns NULL with an exception set.
+  virtual const EnumDescriptor* EnumDescriptor_AsDescriptor(
+      PyObject* enum_desc) const = 0;
+
   // Expose the underlying DescriptorPool and MessageFactory to enable C++ code
   // to create Python-compatible message.
   virtual const DescriptorPool* GetDefaultDescriptorPool() const = 0;
   virtual MessageFactory* GetDefaultMessageFactory() const = 0;
+
+  // Allocate a new protocol buffer as a python object for the provided
+  // descriptor. This function works even if no Python module has been imported
+  // for the corresponding protocol buffer class.
+  // The factory is usually null; when provided, it is the MessageFactory which
+  // owns the Python class, and will be used to find and create Extensions for
+  // this message.
+  // When null is returned, a python error has already been set.
+  virtual PyObject* NewMessage(const Descriptor* descriptor,
+                               PyObject* py_message_factory) const = 0;
+
+  // Allocate a new protocol buffer where the underlying object is owned by C++.
+  // The factory must currently be null.  This function works even if no Python
+  // module has been imported for the corresponding protocol buffer class.
+  // When null is returned, a python error has already been set.
+  //
+  // Since this call returns a python object owned by C++, some operations
+  // are risky, and it must be used carefully. In particular:
+  // * Avoid modifying the returned object from the C++ side while there are
+  // existing python references to it or it's subobjects.
+  // * Avoid using python references to this object or any subobjects after the
+  // C++ object has been freed.
+  // * Calling this with the same C++ pointer will result in multiple distinct
+  // python objects referencing the same C++ object.
+  virtual PyObject* NewMessageOwnedExternally(
+      Message* msg, PyObject* py_message_factory) const = 0;
+
+  // Returns a new reference for the given DescriptorPool.
+  // The returned object does not manage the C++ DescriptorPool: it is the
+  // responsibility of the caller to keep it alive.
+  // As long as the returned Python DescriptorPool object is kept alive,
+  // functions that process C++ descriptors or messages created from this pool
+  // can work and return their Python counterparts.
+  virtual PyObject* DescriptorPool_FromPool(
+      const google::protobuf::DescriptorPool* pool) const = 0;
 };
 
 inline const char* PyProtoAPICapsuleName() {

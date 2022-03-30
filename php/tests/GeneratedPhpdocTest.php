@@ -1,7 +1,5 @@
 <?php
 
-require_once('generated/NoNamespaceEnum.php');
-require_once('generated/NoNamespaceMessage.php');
 require_once('test_base.php');
 require_once('test_util.php');
 
@@ -13,15 +11,15 @@ class GeneratedPhpdocTest extends TestBase
     {
         $class = new ReflectionClass('Foo\TestMessage');
         $doc = $class->getDocComment();
-        $this->assertContains('foo.TestMessage', $doc);
+        $this->assertStringContains('foo.TestMessage', $doc);
     }
 
     public function testPhpDocForConstructor()
     {
         $class = new ReflectionClass('Foo\TestMessage');
         $doc = $class->getMethod('__construct')->getDocComment();
-        $this->assertContains('@param array $data', $doc);
-        $this->assertContains('@type int $optional_int32', $doc);
+        $this->assertStringContains('@param array $data', $doc);
+        $this->assertStringContains('@type int $optional_int32', $doc);
     }
 
     /**
@@ -32,7 +30,7 @@ class GeneratedPhpdocTest extends TestBase
         $class = new ReflectionClass('Foo\TestMessage');
         foreach ($methods as $method) {
             $doc = $class->getMethod($method)->getDocComment();
-            $this->assertContains($expectedDoc, $doc);
+            $this->assertStringContains($expectedDoc, $doc);
         }
     }
 
@@ -339,6 +337,13 @@ class GeneratedPhpdocTest extends TestBase
                     'setOptionalNoNamespaceMessage'
                 ],
                 '@param \NoNamespaceMessage $var'
+            ],
+            [
+                [
+                    'setDeprecatedOptionalInt32',
+                    'getDeprecatedOptionalInt32',
+                ],
+                '@deprecated'
             ],
         ];
     }

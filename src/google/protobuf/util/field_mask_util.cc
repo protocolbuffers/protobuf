@@ -30,10 +30,13 @@
 
 #include <google/protobuf/util/field_mask_util.h>
 
-#include <google/protobuf/message.h>
+#include <cstdint>
+
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/message.h>
 #include <google/protobuf/stubs/map_util.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -49,9 +52,9 @@ std::string FieldMaskUtil::ToString(const FieldMask& mask) {
 void FieldMaskUtil::FromString(StringPiece str, FieldMask* out) {
   out->Clear();
   std::vector<std::string> paths = Split(str, ",");
-  for (int i = 0; i < paths.size(); ++i) {
-    if (paths[i].empty()) continue;
-    out->add_paths(paths[i]);
+  for (const std::string& path : paths) {
+    if (path.empty()) continue;
+    out->add_paths(path);
   }
 }
 
@@ -59,23 +62,23 @@ bool FieldMaskUtil::SnakeCaseToCamelCase(StringPiece input,
                                          std::string* output) {
   output->clear();
   bool after_underscore = false;
-  for (int i = 0; i < input.size(); ++i) {
-    if (input[i] >= 'A' && input[i] <= 'Z') {
+  for (char input_char : input) {
+    if (input_char >= 'A' && input_char <= 'Z') {
       // The field name must not contain uppercase letters.
       return false;
     }
     if (after_underscore) {
-      if (input[i] >= 'a' && input[i] <= 'z') {
-        output->push_back(input[i] + 'A' - 'a');
+      if (input_char >= 'a' && input_char <= 'z') {
+        output->push_back(input_char + 'A' - 'a');
         after_underscore = false;
       } else {
         // The character after a "_" must be a lowercase letter.
         return false;
       }
-    } else if (input[i] == '_') {
+    } else if (input_char == '_') {
       after_underscore = true;
     } else {
-      output->push_back(input[i]);
+      output->push_back(input_char);
     }
   }
   if (after_underscore) {
@@ -88,16 +91,16 @@ bool FieldMaskUtil::SnakeCaseToCamelCase(StringPiece input,
 bool FieldMaskUtil::CamelCaseToSnakeCase(StringPiece input,
                                          std::string* output) {
   output->clear();
-  for (int i = 0; i < input.size(); ++i) {
-    if (input[i] == '_') {
+  for (const char c : input) {
+    if (c == '_') {
       // The field name must not contain "_"s.
       return false;
     }
-    if (input[i] >= 'A' && input[i] <= 'Z') {
+    if (c >= 'A' && c <= 'Z') {
       output->push_back('_');
-      output->push_back(input[i] + 'a' - 'A');
+      output->push_back(c + 'a' - 'A');
     } else {
-      output->push_back(input[i]);
+      output->push_back(c);
     }
   }
   return true;
@@ -122,10 +125,10 @@ bool FieldMaskUtil::ToJsonString(const FieldMask& mask, std::string* out) {
 bool FieldMaskUtil::FromJsonString(StringPiece str, FieldMask* out) {
   out->Clear();
   std::vector<std::string> paths = Split(str, ",");
-  for (int i = 0; i < paths.size(); ++i) {
-    if (paths[i].empty()) continue;
+  for (const std::string& path : paths) {
+    if (path.empty()) continue;
     std::string snakecase_path;
-    if (!CamelCaseToSnakeCase(paths[i], &snakecase_path)) {
+    if (!CamelCaseToSnakeCase(path, &snakecase_path)) {
       return false;
     }
     out->add_paths(snakecase_path);
@@ -140,8 +143,7 @@ bool FieldMaskUtil::GetFieldDescriptors(
     field_descriptors->clear();
   }
   std::vector<std::string> parts = Split(path, ".");
-  for (int i = 0; i < parts.size(); ++i) {
-    const std::string& field_name = parts[i];
+  for (const std::string& field_name : parts) {
     if (descriptor == nullptr) {
       return false;
     }
@@ -329,16 +331,15 @@ void FieldMaskTree::AddPath(const std::string& path) {
   }
   bool new_branch = false;
   Node* node = &root_;
-  for (int i = 0; i < parts.size(); ++i) {
+  for (const std::string& node_name : parts) {
     if (!new_branch && node != &root_ && node->children.empty()) {
       // Path matches an existing leaf node. This means the path is already
       // covered by this tree (for example, adding "foo.bar.baz" to a tree
       // which already contains "foo.bar").
       return;
     }
-    const std::string& node_name = parts[i];
     Node*& child = node->children[node_name];
-    if (child == NULL) {
+    if (child == nullptr) {
       new_branch = true;
       child = new Node();
     }
@@ -384,8 +385,8 @@ void FieldMaskTree::RemovePath(const std::string& path,
       if (new_branch_node == nullptr) {
         new_branch_node = node;
       }
-      for (int i = 0; i < current_descriptor->field_count(); ++i) {
-        node->children[current_descriptor->field(i)->name()] = new Node();
+      for (int j = 0; j < current_descriptor->field_count(); ++j) {
+        node->children[current_descriptor->field(j)->name()] = new Node();
       }
     }
     if (ContainsKey(node->children, parts[i])) {
@@ -414,16 +415,15 @@ void FieldMaskTree::IntersectPath(const std::string& path, FieldMaskTree* out) {
     return;
   }
   const Node* node = &root_;
-  for (int i = 0; i < parts.size(); ++i) {
+  for (const std::string& node_name : parts) {
     if (node->children.empty()) {
       if (node != &root_) {
         out->AddPath(path);
       }
       return;
     }
-    const std::string& node_name = parts[i];
     const Node* result = FindPtrOrNull(node->children, node_name);
-    if (result == NULL) {
+    if (result == nullptr) {
       // No intersection found.
       return;
     }
@@ -459,7 +459,7 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
     const std::string& field_name = it->first;
     const Node* child = it->second;
     const FieldDescriptor* field = descriptor->FindFieldByName(field_name);
-    if (field == NULL) {
+    if (field == nullptr) {
       GOOGLE_LOG(ERROR) << "Cannot find field \"" << field_name << "\" in message "
                  << descriptor->full_name();
       continue;
@@ -552,7 +552,7 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
 
 void FieldMaskTree::AddRequiredFieldPath(Node* node,
                                          const Descriptor* descriptor) {
-  const int32 field_count = descriptor->field_count();
+  const int32_t field_count = descriptor->field_count();
   for (int index = 0; index < field_count; ++index) {
     const FieldDescriptor* field = descriptor->field(index);
     if (field->is_required()) {
@@ -589,7 +589,7 @@ bool FieldMaskTree::TrimMessage(const Node* node, Message* message) {
   GOOGLE_DCHECK(!node->children.empty());
   const Reflection* reflection = message->GetReflection();
   const Descriptor* descriptor = message->GetDescriptor();
-  const int32 field_count = descriptor->field_count();
+  const int32_t field_count = descriptor->field_count();
   bool modified = false;
   for (int index = 0; index < field_count; ++index) {
     const FieldDescriptor* field = descriptor->field(index);

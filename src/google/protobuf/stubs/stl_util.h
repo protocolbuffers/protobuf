@@ -35,6 +35,11 @@
 
 #include <google/protobuf/stubs/common.h>
 
+#include <algorithm>
+
+// Must be last.
+#include <google/protobuf/port_def.inc>  // NOLINT
+
 namespace google {
 namespace protobuf {
 
@@ -46,6 +51,18 @@ namespace protobuf {
 // own disgusting hack if you want the perf boost.
 inline void STLStringResizeUninitialized(std::string* s, size_t new_size) {
   s->resize(new_size);
+}
+
+// As above, but we make sure to follow amortized growth in which we always
+// increase the capacity by at least a constant factor >1.
+inline void STLStringResizeUninitializedAmortized(std::string* s,
+                                                  size_t new_size) {
+  const size_t cap = s->capacity();
+  if (new_size > cap) {
+    // Make sure to always grow by at least a factor of 2x.
+    s->reserve(std::max<size_t>(new_size, 2 * cap));
+  }
+  STLStringResizeUninitialized(s, new_size);
 }
 
 // Return a mutable char* pointing to a string's internal buffer,
@@ -67,5 +84,7 @@ inline char* string_as_array(std::string* str) {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>  // NOLINT
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STL_UTIL_H__

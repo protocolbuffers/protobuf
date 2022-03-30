@@ -20,49 +20,6 @@ export CC=gcc
 export CXX=g++
 
 ##
-# Brew: update, then upgrade the installed tools to current version and install
-# some needed ones not in the Kokoro base image. This ensure current versions
-# of CMake, autotools, etc.
-
-# But first...
-#
-# The transitive deps of the installed tools need protobuf, but Kokoro manually
-# installed it outside of brew so it needs to be removed so brew can install the
-# tools (and a newer version of protobuf). g/kokoro-users/7FRvQMUdN40 about why
-# it is a manual install vs. a brew install in the first place.
-sudo rm -rf \
-    /usr/local/include/google/protobuf \
-    /usr/local/bin/protoc
-# Likewise, updating python can have issues because of some existing binaries.
-sudo rm -rf \
-    /usr/local/bin/2to3* \
-    /usr/local/bin/idle3* \
-    /usr/local/bin/pydoc3* \
-    /usr/local/bin/python3* \
-    /usr/local/bin/pyvenv*
-
-brew update
-brew upgrade
-
-##
-# Install Ruby
-
-if [[ "${KOKORO_INSTALL_RUBY:-}" == "yes" ]] ; then
-  brew install ruby
-fi
-
-##
-# Install Cocoapods
-
-if [[ "${KOKORO_INSTALL_COCOAPODS:-}" == "yes" ]] ; then
-  # The existing cocoapods was installed via gem, but that doesn't work well
-  # with the overlap in deps with things managed by brew (errors around ruby
-  # versions, etc.); so remove it and install in via brew instead.
-  gem uninstall -a "$(gem list | grep cocoapods | cut -d ' ' -f 1)"
-  brew install cocoapods
-fi
-
-##
 # Install Tox
 
 if [[ "${KOKORO_INSTALL_TOX:-}" == "yes" ]] ; then
@@ -76,5 +33,8 @@ if [[ "${KOKORO_INSTALL_RVM:-}" == "yes" ]] ; then
   curl -sSL https://rvm.io/mpapis.asc | gpg --import -
   curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
 
-  curl -sSL https://get.rvm.io | bash -s stable --ruby
+  # Old OpenSSL versions cannot handle the SSL certificate used by
+  # https://get.rvm.io, so as a workaround we download RVM directly from
+  # GitHub. See this issue for details: https://github.com/rvm/rvm/issues/5133
+  curl -sSL https://raw.githubusercontent.com/rvm/rvm/master/binscripts/rvm-installer | bash -s master --ruby
 fi

@@ -29,8 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: kenton@google.com (Kenton Varda)
+#ifndef GOOGLE_PROTOBUF_COMPILER_ZIP_WRITER_H__
+#define GOOGLE_PROTOBUF_COMPILER_ZIP_WRITER_H__
 
+#include <cstdint>
 #include <vector>
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 
@@ -49,9 +53,9 @@ class ZipWriter {
  private:
   struct FileInfo {
     std::string name;
-    uint32 offset;
-    uint32 size;
-    uint32 crc32;
+    uint32_t offset;
+    uint32_t size;
+    uint32_t crc32;
   };
 
   io::ZeroCopyOutputStream* raw_output_;
@@ -61,3 +65,5 @@ class ZipWriter {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#endif  // GOOGLE_PROTOBUF_COMPILER_ZIP_WRITER_H__

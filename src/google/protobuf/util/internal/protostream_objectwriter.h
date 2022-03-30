@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTWRITER_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTWRITER_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_PROTOSTREAM_OBJECTWRITER_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_PROTOSTREAM_OBJECTWRITER_H__
 
 #include <deque>
 #include <string>
@@ -41,15 +41,17 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/util/internal/type_info.h>
+#include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/util/internal/datapiece.h>
 #include <google/protobuf/util/internal/error_listener.h>
 #include <google/protobuf/util/internal/proto_writer.h>
 #include <google/protobuf/util/internal/structured_objectwriter.h>
+#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/stubs/bytestream.h>
 #include <google/protobuf/stubs/hash.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -107,6 +109,13 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // is disabled.
     bool suppress_implicit_message_list_error;
 
+    // If true, disable implicitly creating scalar list.
+    bool disable_implicit_scalar_list;
+
+    // If true, suppress the error of implicitly creating scalar list when it
+    // is disabled.
+    bool suppress_implicit_scalar_list_error;
+
     // If true, suppress the error of rendering scalar field if the source is an
     // object.
     bool suppress_object_to_scalar_error;
@@ -124,6 +133,8 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
           use_legacy_json_map_format(false),
           disable_implicit_message_list(false),
           suppress_implicit_message_list_error(false),
+          disable_implicit_scalar_list(false),
+          suppress_implicit_scalar_list_error(false),
           suppress_object_to_scalar_error(false),
           use_json_name_in_missing_fields(false) {}
 
@@ -156,7 +167,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
  protected:
   // Function that renders a well known type with modified behavior.
   typedef util::Status (*TypeRenderer)(ProtoStreamObjectWriter*,
-                                         const DataPiece&);
+                                       const DataPiece&);
 
   // Handles writing Anys out using nested object writers and the like.
   class PROTOBUF_EXPORT AnyWriter {
@@ -365,24 +376,24 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
   // Renders google.protobuf.Value in struct.proto. It picks the right oneof
   // type based on value's type.
   static util::Status RenderStructValue(ProtoStreamObjectWriter* ow,
-                                          const DataPiece& data);
+                                        const DataPiece& data);
 
   // Renders google.protobuf.Timestamp value.
   static util::Status RenderTimestamp(ProtoStreamObjectWriter* ow,
-                                        const DataPiece& data);
+                                      const DataPiece& data);
 
   // Renders google.protobuf.FieldMask value.
   static util::Status RenderFieldMask(ProtoStreamObjectWriter* ow,
-                                        const DataPiece& data);
+                                      const DataPiece& data);
 
   // Renders google.protobuf.Duration value.
   static util::Status RenderDuration(ProtoStreamObjectWriter* ow,
-                                       const DataPiece& data);
+                                     const DataPiece& data);
 
   // Renders wrapper message types for primitive types in
   // google/protobuf/wrappers.proto.
   static util::Status RenderWrapperType(ProtoStreamObjectWriter* ow,
-                                          const DataPiece& data);
+                                        const DataPiece& data);
 
   static void InitRendererMap();
   static void DeleteRendererMap();
@@ -439,4 +450,4 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTWRITER_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_PROTOSTREAM_OBJECTWRITER_H__

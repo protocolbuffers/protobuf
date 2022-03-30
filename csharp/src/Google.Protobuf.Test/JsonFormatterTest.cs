@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -663,6 +663,13 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void WriteValue_Message_PreserveNames()
+        {
+            var value = new TestAllTypes { SingleInt32 = 100, SingleInt64 = 3210987654321L };
+            AssertWriteValue(value, "{ 'single_int32': 100, 'single_int64': '3210987654321' }", JsonFormatter.Settings.Default.WithPreserveProtoFieldNames(true));
+        }
+
+        [Test]
         public void WriteValue_List()
         {
             var value = new RepeatedField<int> { 1, 2, 3 };
@@ -676,10 +683,10 @@ namespace Google.Protobuf
             AssertWriteValue(value, "{ 'FieldName13': 0 }");
         }
 
-        private static void AssertWriteValue(object value, string expectedJson)
+        private static void AssertWriteValue(object value, string expectedJson, JsonFormatter.Settings settings = null)
         {
             var writer = new StringWriter();
-            JsonFormatter.Default.WriteValue(writer, value);
+            new JsonFormatter(settings ?? JsonFormatter.Settings.Default).WriteValue(writer, value);
             string actual = writer.ToString();
             AssertJson(expectedJson, actual);
         }
