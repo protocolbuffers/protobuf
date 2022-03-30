@@ -9,7 +9,6 @@
 : ${BUILD_LOGDIR:=$KOKORO_ARTIFACTS_DIR/logs}
 mkdir -p ${BUILD_LOGDIR}
 
-
 #
 # Change to repo root
 #
@@ -31,7 +30,7 @@ git submodule update --init --recursive
 mkdir -p cmake/build
 cd cmake/build
 
-cmake -G Xcode ../.. \
+cmake -G Xcode ../.. -Dprotobuf_TEST_XML_OUTDIR=${BUILD_LOGDIR} \
   2>&1 | tee ${BUILD_LOGDIR}/01_configure.log
 
 cp CMakeFiles/CMake*.log ${BUILD_LOGDIR}
@@ -42,10 +41,12 @@ cmake --build . --config Debug \
 #
 # Run tests
 #
-ctest -C Debug --verbose --quiet \
+ctest -C Debug --verbose \
   --output-log ${BUILD_LOGDIR}/03_test.log
 
 #
-# Compress outputs
+# Rename test XML output
 #
-gzip ${BUILD_LOGDIR}/*.log
+find ${BUILD_LOGDIR} -name '*.xml' | while read xmllog; do
+  mv -v ${xmllog} ${xmllog%/*}/sponge_log_${xmllog##*/}
+done
