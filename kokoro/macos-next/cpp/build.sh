@@ -35,6 +35,19 @@ recursive-ls /usr/local/Cellar/cmake/3.22.2/share/cmake/Modules/CMakeCXXCompiler
 #recursive-ls /Volumes/BuildData/usr/local/Cellar/cmake/3.22.2/share/cmake/Modules/CMakeCXXCompilerABI.cpp || true
 set -x
 
+cat > $TEMP/print-all.cmake <<EOF
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_vN ${_variableNames})
+    message(STATUS "${_vN}=${${_vN}}")
+endforeach()
+EOF
+
+cmake -P $TEMP/print-all.cmake
+
+CMAKE_ROOT=/usr/local/Cellar/cmake/3.22.2/share/cmake \
+  cmake -P $TEMP/print-all.cmake
+
 # Update submodules
 git submodule update --init --recursive
 
