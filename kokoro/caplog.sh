@@ -39,7 +39,7 @@
 #   # Use ${...:-} form under `set -u`:
 #   caplog build/01_configure cmake -G Ninja ${CAPLOG_CMAKE_ARGS:-}
 #   caplog build/02_build     cmake --build
-#   caplot test/03_test       ctest ${CAPLOG_CTEST_ARGS:-}
+#   caplog test/03_test       ctest ${CAPLOG_CTEST_ARGS:-}
 
 if [[ -z ${KOKORO_ARTIFACTS_DIR:-} ]]; then
   function caplog() { shift; "$@"; }
