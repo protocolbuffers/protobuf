@@ -37,7 +37,7 @@ mkdir -p "${BUILD_DIR}"
 caplog 01_configure \
   cmake -S "${SOURCE_DIR}" -B "${BUILD_DIR}" ${CAPLOG_CMAKE_ARGS:-}
 
-if [[ -v CAPLOG_DIR ]]; then
+if [[ -n ${CAPLOG_DIR:-} ]]; then
   mkdir -p "${CAPLOG_DIR}/CMakeFiles"
   cp "${BUILD_DIR}"/CMakeFiles/CMake*.log "${CAPLOG_DIR}/CMakeFiles"
 fi
