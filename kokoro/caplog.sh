@@ -64,6 +64,7 @@ else
 
   # Trap handler: renames logs on script exit so they will be found by Kokoro.
   function _caplog_onexit() {
+    _rc=$?
     set +x
     echo "Collecting logs [${BASH_SOURCE}]"
 
@@ -84,6 +85,7 @@ else
       mv -v "${_src}" "${_stem}/sponge_log.${_ext}"
     done
     rm -rv "${CAPLOG_DIR}"
+    exit ${_rc}
   }
   trap _caplog_onexit EXIT
 
