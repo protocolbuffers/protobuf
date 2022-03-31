@@ -66,6 +66,13 @@ else
   function _caplog_onexit() {
     set +x
     echo "Collecting logs [${BASH_SOURCE}]"
+
+    find "${CAPLOG_DIR}" -type f -name '*.log' \
+      | while read _textlog; do
+      # Ensure an XML file exists for each .log file.
+      touch ${_textlog%.log}.xml
+    done
+
     find "${CAPLOG_DIR}" -type f \( -name '*.xml' -or -name '*.log' \) \
       | while read _src; do
       # Move to artifacts dir, preserving the path relative to CAPLOG_DIR.
