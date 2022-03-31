@@ -51,5 +51,5 @@ caplog 02_build \
 (
   cd "${BUILD_DIR}"
   caplog 03_combined_testlog \
-    ctest "${BUILD_DIR}" -C "${BUILD_CONFIG}" -j4 ${CAPLOG_CTEST_ARGS:-}
+    ctest -C "${BUILD_CONFIG}" -j4 ${CAPLOG_CTEST_ARGS:-}
 )

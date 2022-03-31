@@ -46,7 +46,7 @@ if [[ -z ${KOKORO_ARTIFACTS_DIR:-} ]]; then
 else
 
   CAPLOG_DIR="$(mktemp -d)"
-  CAPLOG_CMAKE_ARGS="-Dprotobuf_TEST_XML_OUTDIR=${CAPLOG_DIR}/tests"
+  CAPLOG_CMAKE_ARGS="-Dprotobuf_TEST_XML_OUTDIR=${CAPLOG_DIR}/tests/"
   CAPLOG_CTEST_ARGS="--verbose"
 
   # Captures the stdout/stderr of a command to a named log file.
