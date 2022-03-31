@@ -32,7 +32,7 @@ git submodule update --init --recursive
 mkdir -p cmake/build
 cd cmake/build
 
-cmake -G Xcode ../.. -Dprotobuf_TEST_XML_OUTDIR=${BUILD_LOGDIR} \
+cmake -G Xcode ../.. -Dprotobuf_TEST_XML_OUTDIR=${TEST_LOGDIR} \
   2>&1 | tee ${BUILD_LOGDIR}/01_configure.log
 
 cp CMakeFiles/CMake*.log ${BUILD_LOGDIR}
@@ -44,7 +44,7 @@ cmake --build . --config Debug \
 # Run tests
 #
 ctest -C Debug -j4 --verbose \
-  --output-log ${TEST_LOGDIR}/03_test.log
+  --output-log ${BUILD_LOGDIR}/03_test.log
 
 #
 # Rename test XML output
