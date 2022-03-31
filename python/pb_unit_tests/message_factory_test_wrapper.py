@@ -30,6 +30,8 @@ message_factory_test.MessageFactoryTest.testCreatePrototypeOverride.__unittest_e
 message_factory_test.MessageFactoryTest.testDuplicateExtensionNumber.__unittest_expecting_failure__ = True
 message_factory_test.MessageFactoryTest.testGetMessages.__unittest_expecting_failure__ = True
 message_factory_test.MessageFactoryTest.testGetPrototype.__unittest_expecting_failure__ = True
+if hasattr(message_factory_test.MessageFactoryTest, 'testExtensionValueInDifferentFile'):
+  message_factory_test.MessageFactoryTest.testExtensionValueInDifferentFile.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(module=message_factory_test, verbosity=2)
