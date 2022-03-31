@@ -296,7 +296,7 @@ set(lite_arena_test_files
 )
 add_executable(lite_arena_test ${lite_arena_test_files})
 target_link_libraries(lite_arena_test protobuf-lite-test-common libprotobuf-lite GTest::gmock_main)
-add_test(NAME lite_arena_test COMMAND lite-arena-test ${protobuf_GTEST_ARGS})
+add_test(NAME lite_arena_test COMMAND lite_arena_test ${protobuf_GTEST_ARGS})
 
 add_executable(io_test ${io_test_files})
 target_link_libraries(io_test protobuf-lite-test-common protobuf-test-common libprotobuf libprotobuf-lite GTest::gmock_main)
