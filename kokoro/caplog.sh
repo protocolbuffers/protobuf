@@ -41,7 +41,7 @@
 #   caplog build/02_build     cmake --build
 #   caplot test/03_test       ctest ${CAPLOG_CTEST_ARGS:-}
 
-if ! [[ -v KOKORO_ARTIFACTS_DIR ]]; then
+if [[ -z ${KOKORO_ARTIFACTS_DIR:-} ]]; then
   function caplog() { shift; "$@"; }
 else
 
