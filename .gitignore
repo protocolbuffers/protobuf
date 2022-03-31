@@ -2,3 +2,5 @@
 obj/
 lib/
 bazel-*
+_build
+.vscode
