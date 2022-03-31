@@ -55,7 +55,7 @@ else
     _name="${CAPLOG_DIR}/${1%.log}.log"; shift
     mkdir -p "${_name%/*}"
     date
-    time ( "$@" > "${_name}" 2>&1 )
+    time ( "$@" 2>&1 | tee "${_name}" )
     if [[ $? != 0 ]] ; then
       cat "${_name}"
       return 1
