@@ -48,6 +48,10 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal TestMessage2.new(:foo => 1), m.repeated_msg.first
     assert_equal :A, m.repeated_enum.first
 
+    err = assert_raises(ArgumentError) do
+      m.repeated_int32.first(-1)
+    end
+    assert_equal "negative array size", err.message
     assert_equal [], m.repeated_int32.first(0)
     assert_equal [-10], m.repeated_int32.first(1)
     assert_equal [-10, -11], m.repeated_int32.first(2)
@@ -72,6 +76,15 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal "foo".encode!('ASCII-8BIT'), m.repeated_bytes.last
     assert_equal TestMessage2.new(:foo => 2), m.repeated_msg.last
     assert_equal :B, m.repeated_enum.last
+
+    err = assert_raises(ArgumentError) do
+      m.repeated_int32.last(-1)
+    end
+    assert_equal "negative array size", err.message
+    assert_equal [], m.repeated_int32.last(0)
+    assert_equal [-11], m.repeated_int32.last(1)
+    assert_equal [-10, -11], m.repeated_int32.last(2)
+    assert_equal [-10, -11], m.repeated_int32.last(3)
   end
 
 
