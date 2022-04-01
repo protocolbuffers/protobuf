@@ -17,4 +17,4 @@ jobs:
       - name: Rebuild generated CMake files
         run: cd ${{ github.workspace }} && bazel test cmake:test_generated_files || bazel-bin/cmake/test_generated_files --fix
       - name: Commit and push changes to generated files
-        run: cd ${{ github.workspace }} && git add -A && git diff --staged --quiet || (git commit -am "Regenerated files" && git push)
+        run: cd ${{ github.workspace }} && git add -A && (git diff --staged --quiet || git commit -am "Regenerated files") && git push

@@ -70,13 +70,14 @@ class BuildFileFunctions(object):
       return
     files = kwargs.get("srcs", []) + kwargs.get("hdrs", [])
     found_files = []
+    pregenerated_files = [
+        "CMakeLists.txt", "descriptor.upb.h", "descriptor.upb.c"
+    ]
     for file in files:
-        if os.path.isfile(file):
-            found_files.append("../" + file)
-        elif os.path.isfile("cmake/" + file):
-            found_files.append("../cmake/" + file)
-        else:
-            print("Warning: no such file: " + file)
+      if os.path.basename(file) in pregenerated_files:
+        found_files.append("../cmake/" + file)
+      else:
+        found_files.append("../" + file)
 
     if list(filter(IsSourceFile, files)):
       # Has sources, make this a normal library.

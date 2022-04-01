@@ -23,7 +23,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-def generated_file_staleness_test(name, outs, generated_pattern):
+"""Bazel support functions related to CMake support."""
+
+def generated_file_staleness_test(name, outs, generated_pattern, **kwargs):
     """Tests that checked-in file(s) match the contents of generated file(s).
 
     The resulting test will verify that all output files exist and have the
@@ -36,6 +38,7 @@ def generated_file_staleness_test(name, outs, generated_pattern):
       generated_pattern: the pattern for transforming each "out" file into a
         generated file.  For example, if generated_pattern="generated/%s" then
         a file foo.txt will look for generated file generated/foo.txt.
+      **kwargs: Additional keyword arguments to pass through to py_test().
     """
 
     script_name = name + ".py"
@@ -66,4 +69,5 @@ def generated_file_staleness_test(name, outs, generated_pattern):
         deps = [
             ":staleness_test_lib",
         ],
+        **kwargs
     )
