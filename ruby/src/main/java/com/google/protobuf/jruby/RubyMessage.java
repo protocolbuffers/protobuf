@@ -62,6 +62,9 @@ import java.util.List;
 import java.util.Map;
 
 public class RubyMessage extends RubyObject {
+    private final String DEFAULT_VALUE = "google.protobuf.FieldDescriptorProto.default_value";
+    private final String TYPE = "type";
+
     public RubyMessage(Ruby runtime, RubyClass klazz, Descriptor descriptor) {
         super(runtime, klazz);
 
@@ -259,6 +262,86 @@ public class RubyMessage extends RubyObject {
 
     /*
      * call-seq:
+     *     Message.respond_to?(method_name, search_private_and_protected) => boolean
+     *
+     *  Parallels method_missing, returning true when this object implements a method with the given
+     *  method_name.
+     */
+    @JRubyMethod(name="respond_to?", required = 1, optional = 1)
+    public IRubyObject respondTo(ThreadContext context, IRubyObject [] args) {
+        String methodName = args[0].asJavaString();
+        if (descriptor.findFieldByName(methodName) != null) {
+            return context.runtime.getTrue();
+        }
+        RubyDescriptor rubyDescriptor = (RubyDescriptor) getDescriptor(context, metaClass);
+        IRubyObject oneofDescriptor = rubyDescriptor.lookupOneof(context, args[0]);
+        if (!oneofDescriptor.isNil()) {
+            return context.runtime.getTrue();
+        }
+        if (methodName.startsWith(CLEAR_PREFIX)) {
+            String strippedMethodName = methodName.substring(6);
+            oneofDescriptor = rubyDescriptor.lookupOneof(context, context.runtime.newSymbol(strippedMethodName));
+            if (!oneofDescriptor.isNil()) {
+                return context.runtime.getTrue();
+            }
+
+            if (descriptor.findFieldByName(strippedMethodName) != null) {
+                return context.runtime.getTrue();
+            }
+        }
+        if (methodName.startsWith(HAS_PREFIX) && methodName.endsWith(QUESTION_MARK)) {
+            String strippedMethodName = methodName.substring(4, methodName.length() - 1);
+            FieldDescriptor fieldDescriptor = descriptor.findFieldByName(strippedMethodName);
+            if (fieldDescriptor != null &&
+                (!proto3 || fieldDescriptor.getContainingOneof() == null || fieldDescriptor
+                    .getContainingOneof().isSynthetic()) &&
+                    fieldDescriptor.hasPresence()) {
+                return context.runtime.getTrue();
+            }
+            oneofDescriptor = rubyDescriptor.lookupOneof(context, RubyString.newString(context.runtime, strippedMethodName));
+            if (!oneofDescriptor.isNil()) {
+                return context.runtime.getTrue();
+            }
+        }
+        if (methodName.endsWith(AS_VALUE_SUFFIX)) {
+            FieldDescriptor fieldDescriptor = descriptor.findFieldByName(
+                methodName.substring(0, methodName.length() - 9));
+            if (fieldDescriptor != null && isWrappable(fieldDescriptor)) {
+                return context.runtime.getTrue();
+            }
+        }
+        if (methodName.endsWith(CONST_SUFFIX)) {
+            FieldDescriptor fieldDescriptor = descriptor.findFieldByName(
+                methodName.substring(0, methodName.length() - 6));
+            if (fieldDescriptor != null) {
+                if (fieldDescriptor.getType() == FieldDescriptor.Type.ENUM) {
+                    return context.runtime.getTrue();
+                }
+            }
+        }
+        if (methodName.endsWith(Utils.EQUAL_SIGN)) {
+            String strippedMethodName = methodName.substring(0, methodName.length() - 1);
+            FieldDescriptor fieldDescriptor = descriptor.findFieldByName(strippedMethodName);
+            if (fieldDescriptor != null) {
+                return context.runtime.getTrue();
+            }
+            if (strippedMethodName.endsWith(AS_VALUE_SUFFIX)) {
+                strippedMethodName = methodName.substring(0, strippedMethodName.length() - 9);
+                fieldDescriptor = descriptor.findFieldByName(strippedMethodName);
+                if (fieldDescriptor != null && isWrappable(fieldDescriptor)) {
+                    return context.runtime.getTrue();
+                }
+            }
+        }
+        boolean includePrivate = false;
+        if (args.length == 2) {
+            includePrivate = context.runtime.getTrue().equals(args[1]);
+        }
+        return metaClass.respondsToMethod(methodName, includePrivate) ? context.runtime.getTrue() : context.runtime.getFalse();
+    }
+
+    /*
+     * call-seq:
      *     Message.method_missing(*args)
      *
      * Provides accessors and setters and methods to clear and check for presence of
@@ -288,10 +371,9 @@ public class RubyMessage extends RubyObject {
     public IRubyObject methodMissing(ThreadContext context, IRubyObject[] args) {
         Ruby runtime = context.runtime;
         String methodName = args[0].asJavaString();
+        RubyDescriptor rubyDescriptor = (RubyDescriptor) getDescriptor(context, metaClass);
 
         if (args.length == 1) {
-            RubyDescriptor rubyDescriptor = (RubyDescriptor) getDescriptor(context, metaClass);
-
             // If we find a Oneof return it's name (use lookupOneof because it has an index)
             IRubyObject oneofDescriptor = rubyDescriptor.lookupOneof(context, args[0]);
 
@@ -328,9 +410,12 @@ public class RubyMessage extends RubyObject {
             if (methodName.startsWith(CLEAR_PREFIX)) {
                 methodName = methodName.substring(6);
                 oneofDescriptor = rubyDescriptor.lookupOneof(context, runtime.newSymbol(methodName));
-
                 if (!oneofDescriptor.isNil()) {
                     fieldDescriptor = oneofCases.get(((RubyOneofDescriptor) oneofDescriptor).getDescriptor());
+                    if (fieldDescriptor == null) {
+                        // Clearing an already cleared oneof; return here to avoid NoMethodError.
+                        return context.nil;
+                    }
                 }
 
                 if (fieldDescriptor == null) {
@@ -376,8 +461,7 @@ public class RubyMessage extends RubyObject {
             } else if (methodName.endsWith(CONST_SUFFIX)) {
                 methodName = methodName.substring(0, methodName.length() - 6);
                 fieldDescriptor = descriptor.findFieldByName(methodName);
-
-                if (fieldDescriptor.getType() == FieldDescriptor.Type.ENUM) {
+                if (fieldDescriptor != null && fieldDescriptor.getType() == FieldDescriptor.Type.ENUM) {
                     IRubyObject enumValue = getFieldInternal(context, fieldDescriptor);
 
                     if (!enumValue.isNil()) {
@@ -401,9 +485,13 @@ public class RubyMessage extends RubyObject {
 
             methodName = methodName.substring(0, methodName.length() - 1); // Trim equals sign
             FieldDescriptor fieldDescriptor = descriptor.findFieldByName(methodName);
-
             if (fieldDescriptor != null) {
                 return setFieldInternal(context, fieldDescriptor, args[1]);
+            }
+
+            IRubyObject oneofDescriptor = rubyDescriptor.lookupOneof(context, RubyString.newString(context.runtime, methodName));
+            if (!oneofDescriptor.isNil()) {
+                throw runtime.newRuntimeError("Oneof accessors are read-only.");
             }
 
             if (methodName.endsWith(AS_VALUE_SUFFIX)) {
@@ -411,7 +499,7 @@ public class RubyMessage extends RubyObject {
 
                 fieldDescriptor = descriptor.findFieldByName(methodName);
 
-                if (fieldDescriptor != null) {
+                if (fieldDescriptor != null && isWrappable(fieldDescriptor)) {
                     if (args[1].isNil()) {
                         return setFieldInternal(context, fieldDescriptor, args[1]);
                     }
@@ -677,6 +765,8 @@ public class RubyMessage extends RubyObject {
             throw context.runtime.newRuntimeError("Recursion limit exceeded during encoding.");
         }
 
+        RubySymbol typeBytesSymbol = RubySymbol.newSymbol(context.runtime, "TYPE_BYTES");
+
         // Handle the typical case where the fields.keySet contain the fieldDescriptors
         for (FieldDescriptor fieldDescriptor : fields.keySet()) {
             IRubyObject value = fields.get(fieldDescriptor);
@@ -707,13 +797,12 @@ public class RubyMessage extends RubyObject {
                  * stringDefaultValue}.
                  */
                 boolean isDefaultStringForBytes = false;
-                FieldDescriptor enumFieldDescriptorForType =
-                    this.builder.getDescriptorForType().findFieldByName("type");
-                String type = enumFieldDescriptorForType == null ?
-                    null : fields.get(enumFieldDescriptorForType).toString();
-                if (type != null && type.equals("TYPE_BYTES") &&
-                    fieldDescriptor.getFullName().equals("google.protobuf.FieldDescriptorProto.default_value")) {
-                    isDefaultStringForBytes = true;
+                if (DEFAULT_VALUE.equals(fieldDescriptor.getFullName())) {
+                    FieldDescriptor enumFieldDescriptorForType =
+                        this.builder.getDescriptorForType().findFieldByName(TYPE);
+                    if (typeBytesSymbol.equals(fields.get(enumFieldDescriptorForType))) {
+                        isDefaultStringForBytes = true;
+                    }
                 }
                 builder.setField(fieldDescriptor, convert(context, fieldDescriptor, value, depth, recursionLimit, isDefaultStringForBytes));
             }
