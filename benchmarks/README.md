@@ -69,18 +69,6 @@ solution. It requires the .NET Core SDK, and depends on
 [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNet), which
 will be downloaded automatically.
 
-### Big data
-
-There's some optional big testing data which is not included in the directory
-initially, you need to run the following command to download the testing data:
-
-```
-$ ./download_data.sh
-```
-
-After doing this the big data file will automatically generated in the
-benchmark directory.
-
 ## Run instructions
 
 To run all the benchmark dataset:

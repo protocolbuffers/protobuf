@@ -192,7 +192,7 @@ public class ParserLiteTest {
     // Parse TestParsingMergeLite.
     ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
     UnittestLite.registerAllExtensions(registry);
-    TestParsingMergeLite parsingMerge = TestParsingMergeLite.parser().parseFrom(data, registry);
+    TestParsingMergeLite parsingMerge = TestParsingMergeLite.parseFrom(data, registry);
 
     // Required and optional fields should be merged.
     assertMessageMerged(parsingMerge.getRequiredAllTypes());

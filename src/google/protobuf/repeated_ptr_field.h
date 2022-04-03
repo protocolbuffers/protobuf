@@ -749,7 +749,7 @@ class GenericTypeHandler {
   static inline GenericType* New(Arena* arena, GenericType&& value) {
     return Arena::Create<GenericType>(arena, std::move(value));
   }
-  static inline GenericType* NewFromPrototype(const GenericType* prototype,
+  static inline GenericType* NewFromPrototype(const GenericType* /*prototype*/,
                                               Arena* arena = nullptr) {
     return New(arena);
   }
@@ -872,8 +872,28 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   const Element& Get(int index) const;
   Element* Mutable(int index);
+
+  // Unlike std::vector, adding an element to a RepeatedPtrField doesn't always
+  // make a new element; it might re-use an element left over from when the
+  // field was Clear()'d or reize()'d smaller.  For this reason, Add() is the
+  // fastest API for adding a new element.
   Element* Add();
+
+  // `Add(std::move(value));` is equivalent to `*Add() = std::move(value);`
+  // It will either move-construct to the end of this field, or swap value
+  // with the new-or-recycled element at the end of this field.  Note that
+  // this operation is very slow if this RepeatedPtrField is not on the
+  // same Arena, if any, as `value`.
   void Add(Element&& value);
+
+  // Copying to the end of this RepeatedPtrField is slowest of all; it can't
+  // reliably copy-construct to the last element of this RepeatedPtrField, for
+  // example (unlike std::vector).
+  // We currently block this API.  The right way to add to the end is to call
+  // Add() and modify the element it points to.
+  // If you must add an existing value, call `*Add() = value;`
+  void Add(const Element& value) = delete;
+
   // Append elements in the range [begin, end) after reserving
   // the appropriate number of elements.
   template <typename Iter>

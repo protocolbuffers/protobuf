@@ -172,7 +172,7 @@
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
 #endif
-#define PROTOBUF_VERSION_SUFFIX "-rc1"
+#define PROTOBUF_VERSION_SUFFIX ""
 
 #if defined(PROTOBUF_NAMESPACE) || defined(PROTOBUF_NAMESPACE_ID)
 #error PROTOBUF_NAMESPACE or PROTOBUF_NAMESPACE_ID was previously defined
@@ -771,6 +771,8 @@
 #undef ERROR_INSTALL_FAILED
 #pragma push_macro("ERROR_NOT_FOUND")
 #undef ERROR_NOT_FOUND
+#pragma push_macro("GetClassName")
+#undef GetClassName
 #pragma push_macro("GetMessage")
 #undef GetMessage
 #pragma push_macro("IGNORE")

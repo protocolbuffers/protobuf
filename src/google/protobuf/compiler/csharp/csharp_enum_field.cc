@@ -109,7 +109,7 @@ void EnumOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "$oneof_name$_ = input.ReadEnum();\n"
-    "$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n");
+    "$oneof_name$Case_ = $oneof_property_name$OneofCase.$oneof_case_name$;\n");
 }
 
 void EnumOneofFieldGenerator::GenerateSerializationCode(io::Printer* printer) {

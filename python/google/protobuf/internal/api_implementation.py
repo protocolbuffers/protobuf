@@ -31,6 +31,7 @@
 """Determine which implementation of the protobuf API is used in this process.
 """
 
+import importlib
 import os
 import sys
 import warnings
@@ -46,6 +47,7 @@ except ImportError:
 
 if _api_version == 1:
   raise ValueError('api_version=1 is no longer supported.')
+
 
 
 _default_implementation_type = ('cpp' if _api_version > 0 else 'python')
@@ -100,6 +102,11 @@ def _SetType(implementation_type):
   """Never use! Only for protobuf benchmark."""
   global _implementation_type
   _implementation_type = implementation_type
+
+
+def _Version():
+  """Never use! For protobuf internal use only."""
+  return _api_version
 
 
 # See comment on 'Type' above.

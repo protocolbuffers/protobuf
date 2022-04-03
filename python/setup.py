@@ -115,8 +115,11 @@ def GenerateUnittestProtos():
   GenProto('google/protobuf/internal/factory_test1.proto', False)
   GenProto('google/protobuf/internal/factory_test2.proto', False)
   GenProto('google/protobuf/internal/file_options_test.proto', False)
-  GenProto('google/protobuf/internal/import_test_package/import_public.proto', False)
-  GenProto('google/protobuf/internal/import_test_package/import_public_nested.proto', False)
+  GenProto('google/protobuf/internal/import_test_package/import_public.proto',
+           False)
+  GenProto(
+      'google/protobuf/internal/import_test_package/import_public_nested.proto',
+      False)
   GenProto('google/protobuf/internal/import_test_package/inner.proto', False)
   GenProto('google/protobuf/internal/import_test_package/outer.proto', False)
   GenProto('google/protobuf/internal/missing_enum_values.proto', False)

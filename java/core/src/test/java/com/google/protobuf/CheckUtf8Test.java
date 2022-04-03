@@ -64,8 +64,7 @@ public class CheckUtf8Test {
   public void testParseRequiredStringWithGoodUtf8() throws Exception {
     ByteString serialized =
         BytesWrapper.newBuilder().setReq(UTF8_BYTE_STRING).build().toByteString();
-    assertThat(StringWrapper.parser().parseFrom(serialized).getReq())
-        .isEqualTo(UTF8_BYTE_STRING_TEXT);
+    assertThat(StringWrapper.parseFrom(serialized).getReq()).isEqualTo(UTF8_BYTE_STRING_TEXT);
   }
 
   @Test

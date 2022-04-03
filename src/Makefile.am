@@ -74,18 +74,18 @@ nobase_include_HEADERS =                                         \
   google/protobuf/arenaz_sampler.h                               \
   google/protobuf/compiler/code_generator.h                      \
   google/protobuf/compiler/command_line_interface.h              \
-  google/protobuf/compiler/cpp/cpp_file.h                        \
-  google/protobuf/compiler/cpp/cpp_generator.h                   \
-  google/protobuf/compiler/cpp/cpp_helpers.h                     \
-  google/protobuf/compiler/cpp/cpp_names.h                       \
+  google/protobuf/compiler/cpp/file.h                            \
+  google/protobuf/compiler/cpp/generator.h                       \
+  google/protobuf/compiler/cpp/helpers.h                         \
+  google/protobuf/compiler/cpp/names.h                           \
   google/protobuf/compiler/csharp/csharp_doc_comment.h           \
   google/protobuf/compiler/csharp/csharp_generator.h             \
   google/protobuf/compiler/csharp/csharp_names.h                 \
   google/protobuf/compiler/csharp/csharp_options.h               \
   google/protobuf/compiler/importer.h                            \
-  google/protobuf/compiler/java/java_generator.h                 \
-  google/protobuf/compiler/java/java_kotlin_generator.h          \
-  google/protobuf/compiler/java/java_names.h                     \
+  google/protobuf/compiler/java/generator.h                      \
+  google/protobuf/compiler/java/kotlin_generator.h               \
+  google/protobuf/compiler/java/names.h                          \
   google/protobuf/compiler/js/js_generator.h                     \
   google/protobuf/compiler/objectivec/objectivec_generator.h     \
   google/protobuf/compiler/objectivec/objectivec_helpers.h       \
@@ -93,8 +93,8 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/php/php_generator.h                   \
   google/protobuf/compiler/plugin.h                              \
   google/protobuf/compiler/plugin.pb.h                           \
-  google/protobuf/compiler/python/python_generator.h             \
-  google/protobuf/compiler/python/python_pyi_generator.h         \
+  google/protobuf/compiler/python/generator.h                    \
+  google/protobuf/compiler/python/pyi_generator.h                \
   google/protobuf/compiler/ruby/ruby_generator.h                 \
   google/protobuf/descriptor.h                                   \
   google/protobuf/descriptor.pb.h                                \
@@ -325,35 +325,35 @@ endif
 libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/code_generator.cc                   \
   google/protobuf/compiler/command_line_interface.cc           \
-  google/protobuf/compiler/cpp/cpp_enum.cc                     \
-  google/protobuf/compiler/cpp/cpp_enum.h                      \
-  google/protobuf/compiler/cpp/cpp_enum_field.cc               \
-  google/protobuf/compiler/cpp/cpp_enum_field.h                \
-  google/protobuf/compiler/cpp/cpp_extension.cc                \
-  google/protobuf/compiler/cpp/cpp_extension.h                 \
-  google/protobuf/compiler/cpp/cpp_field.cc                    \
-  google/protobuf/compiler/cpp/cpp_field.h                     \
-  google/protobuf/compiler/cpp/cpp_file.cc                     \
-  google/protobuf/compiler/cpp/cpp_generator.cc                \
-  google/protobuf/compiler/cpp/cpp_helpers.cc                  \
-  google/protobuf/compiler/cpp/cpp_map_field.cc                \
-  google/protobuf/compiler/cpp/cpp_map_field.h                 \
-  google/protobuf/compiler/cpp/cpp_message.cc                  \
-  google/protobuf/compiler/cpp/cpp_message.h                   \
-  google/protobuf/compiler/cpp/cpp_message_field.cc            \
-  google/protobuf/compiler/cpp/cpp_message_field.h             \
-  google/protobuf/compiler/cpp/cpp_message_layout_helper.h     \
-  google/protobuf/compiler/cpp/cpp_options.h                   \
-  google/protobuf/compiler/cpp/cpp_padding_optimizer.cc        \
-  google/protobuf/compiler/cpp/cpp_padding_optimizer.h         \
-  google/protobuf/compiler/cpp/cpp_parse_function_generator.cc \
-  google/protobuf/compiler/cpp/cpp_parse_function_generator.h  \
-  google/protobuf/compiler/cpp/cpp_primitive_field.cc          \
-  google/protobuf/compiler/cpp/cpp_primitive_field.h           \
-  google/protobuf/compiler/cpp/cpp_service.cc                  \
-  google/protobuf/compiler/cpp/cpp_service.h                   \
-  google/protobuf/compiler/cpp/cpp_string_field.cc             \
-  google/protobuf/compiler/cpp/cpp_string_field.h              \
+  google/protobuf/compiler/cpp/enum.cc                         \
+  google/protobuf/compiler/cpp/enum.h                          \
+  google/protobuf/compiler/cpp/enum_field.cc                   \
+  google/protobuf/compiler/cpp/enum_field.h                    \
+  google/protobuf/compiler/cpp/extension.cc                    \
+  google/protobuf/compiler/cpp/extension.h                     \
+  google/protobuf/compiler/cpp/field.cc                        \
+  google/protobuf/compiler/cpp/field.h                         \
+  google/protobuf/compiler/cpp/file.cc                         \
+  google/protobuf/compiler/cpp/generator.cc                    \
+  google/protobuf/compiler/cpp/helpers.cc                      \
+  google/protobuf/compiler/cpp/map_field.cc                    \
+  google/protobuf/compiler/cpp/map_field.h                     \
+  google/protobuf/compiler/cpp/message.cc                      \
+  google/protobuf/compiler/cpp/message.h                       \
+  google/protobuf/compiler/cpp/message_field.cc                \
+  google/protobuf/compiler/cpp/message_field.h                 \
+  google/protobuf/compiler/cpp/message_layout_helper.h         \
+  google/protobuf/compiler/cpp/options.h                       \
+  google/protobuf/compiler/cpp/padding_optimizer.cc            \
+  google/protobuf/compiler/cpp/padding_optimizer.h             \
+  google/protobuf/compiler/cpp/parse_function_generator.cc     \
+  google/protobuf/compiler/cpp/parse_function_generator.h      \
+  google/protobuf/compiler/cpp/primitive_field.cc              \
+  google/protobuf/compiler/cpp/primitive_field.h               \
+  google/protobuf/compiler/cpp/service.cc                      \
+  google/protobuf/compiler/cpp/service.h                       \
+  google/protobuf/compiler/cpp/string_field.cc                 \
+  google/protobuf/compiler/cpp/string_field.h                  \
   google/protobuf/compiler/csharp/csharp_doc_comment.cc        \
   google/protobuf/compiler/csharp/csharp_enum.cc               \
   google/protobuf/compiler/csharp/csharp_enum.h                \
@@ -384,63 +384,63 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_source_generator_base.h \
   google/protobuf/compiler/csharp/csharp_wrapper_field.cc      \
   google/protobuf/compiler/csharp/csharp_wrapper_field.h       \
-  google/protobuf/compiler/java/java_context.cc                \
-  google/protobuf/compiler/java/java_context.h                 \
-  google/protobuf/compiler/java/java_doc_comment.cc            \
-  google/protobuf/compiler/java/java_doc_comment.h             \
-  google/protobuf/compiler/java/java_enum.cc                   \
-  google/protobuf/compiler/java/java_enum.h                    \
-  google/protobuf/compiler/java/java_enum_field.cc             \
-  google/protobuf/compiler/java/java_enum_field.h              \
-  google/protobuf/compiler/java/java_enum_field_lite.cc        \
-  google/protobuf/compiler/java/java_enum_field_lite.h         \
-  google/protobuf/compiler/java/java_enum_lite.cc              \
-  google/protobuf/compiler/java/java_enum_lite.h               \
-  google/protobuf/compiler/java/java_extension.cc              \
-  google/protobuf/compiler/java/java_extension.h               \
-  google/protobuf/compiler/java/java_extension_lite.cc         \
-  google/protobuf/compiler/java/java_extension_lite.h          \
-  google/protobuf/compiler/java/java_field.cc                  \
-  google/protobuf/compiler/java/java_field.h                   \
-  google/protobuf/compiler/java/java_file.cc                   \
-  google/protobuf/compiler/java/java_file.h                    \
-  google/protobuf/compiler/java/java_generator.cc              \
-  google/protobuf/compiler/java/java_generator_factory.cc      \
-  google/protobuf/compiler/java/java_generator_factory.h       \
-  google/protobuf/compiler/java/java_helpers.cc                \
-  google/protobuf/compiler/java/java_helpers.h                 \
-  google/protobuf/compiler/java/java_kotlin_generator.cc       \
-  google/protobuf/compiler/java/java_map_field.cc              \
-  google/protobuf/compiler/java/java_map_field.h               \
-  google/protobuf/compiler/java/java_map_field_lite.cc         \
-  google/protobuf/compiler/java/java_map_field_lite.h          \
-  google/protobuf/compiler/java/java_message.cc                \
-  google/protobuf/compiler/java/java_message.h                 \
-  google/protobuf/compiler/java/java_message_builder.cc        \
-  google/protobuf/compiler/java/java_message_builder.h         \
-  google/protobuf/compiler/java/java_message_builder_lite.cc   \
-  google/protobuf/compiler/java/java_message_builder_lite.h    \
-  google/protobuf/compiler/java/java_message_field.cc          \
-  google/protobuf/compiler/java/java_message_field.h           \
-  google/protobuf/compiler/java/java_message_field_lite.cc     \
-  google/protobuf/compiler/java/java_message_field_lite.h      \
-  google/protobuf/compiler/java/java_message_lite.cc           \
-  google/protobuf/compiler/java/java_message_lite.h            \
-  google/protobuf/compiler/java/java_name_resolver.cc          \
-  google/protobuf/compiler/java/java_name_resolver.h           \
-  google/protobuf/compiler/java/java_options.h                 \
-  google/protobuf/compiler/java/java_primitive_field.cc        \
-  google/protobuf/compiler/java/java_primitive_field.h         \
-  google/protobuf/compiler/java/java_primitive_field_lite.cc   \
-  google/protobuf/compiler/java/java_primitive_field_lite.h    \
-  google/protobuf/compiler/java/java_service.cc                \
-  google/protobuf/compiler/java/java_service.h                 \
-  google/protobuf/compiler/java/java_shared_code_generator.cc  \
-  google/protobuf/compiler/java/java_shared_code_generator.h   \
-  google/protobuf/compiler/java/java_string_field.cc           \
-  google/protobuf/compiler/java/java_string_field.h            \
-  google/protobuf/compiler/java/java_string_field_lite.cc      \
-  google/protobuf/compiler/java/java_string_field_lite.h       \
+  google/protobuf/compiler/java/context.cc                     \
+  google/protobuf/compiler/java/context.h                      \
+  google/protobuf/compiler/java/doc_comment.cc                 \
+  google/protobuf/compiler/java/doc_comment.h                  \
+  google/protobuf/compiler/java/enum.cc                        \
+  google/protobuf/compiler/java/enum.h                         \
+  google/protobuf/compiler/java/enum_field.cc                  \
+  google/protobuf/compiler/java/enum_field.h                   \
+  google/protobuf/compiler/java/enum_field_lite.cc             \
+  google/protobuf/compiler/java/enum_field_lite.h              \
+  google/protobuf/compiler/java/enum_lite.cc                   \
+  google/protobuf/compiler/java/enum_lite.h                    \
+  google/protobuf/compiler/java/extension.cc                   \
+  google/protobuf/compiler/java/extension.h                    \
+  google/protobuf/compiler/java/extension_lite.cc              \
+  google/protobuf/compiler/java/extension_lite.h               \
+  google/protobuf/compiler/java/field.cc                       \
+  google/protobuf/compiler/java/field.h                        \
+  google/protobuf/compiler/java/file.cc                        \
+  google/protobuf/compiler/java/file.h                         \
+  google/protobuf/compiler/java/generator.cc                   \
+  google/protobuf/compiler/java/generator_factory.cc           \
+  google/protobuf/compiler/java/generator_factory.h            \
+  google/protobuf/compiler/java/helpers.cc                     \
+  google/protobuf/compiler/java/helpers.h                      \
+  google/protobuf/compiler/java/kotlin_generator.cc            \
+  google/protobuf/compiler/java/map_field.cc                   \
+  google/protobuf/compiler/java/map_field.h                    \
+  google/protobuf/compiler/java/map_field_lite.cc              \
+  google/protobuf/compiler/java/map_field_lite.h               \
+  google/protobuf/compiler/java/message.cc                     \
+  google/protobuf/compiler/java/message.h                      \
+  google/protobuf/compiler/java/message_builder.cc             \
+  google/protobuf/compiler/java/message_builder.h              \
+  google/protobuf/compiler/java/message_builder_lite.cc        \
+  google/protobuf/compiler/java/message_builder_lite.h         \
+  google/protobuf/compiler/java/message_field.cc               \
+  google/protobuf/compiler/java/message_field.h                \
+  google/protobuf/compiler/java/message_field_lite.cc          \
+  google/protobuf/compiler/java/message_field_lite.h           \
+  google/protobuf/compiler/java/message_lite.cc                \
+  google/protobuf/compiler/java/message_lite.h                 \
+  google/protobuf/compiler/java/name_resolver.cc               \
+  google/protobuf/compiler/java/name_resolver.h                \
+  google/protobuf/compiler/java/options.h                      \
+  google/protobuf/compiler/java/primitive_field.cc             \
+  google/protobuf/compiler/java/primitive_field.h              \
+  google/protobuf/compiler/java/primitive_field_lite.cc        \
+  google/protobuf/compiler/java/primitive_field_lite.h         \
+  google/protobuf/compiler/java/service.cc                     \
+  google/protobuf/compiler/java/service.h                      \
+  google/protobuf/compiler/java/shared_code_generator.cc       \
+  google/protobuf/compiler/java/shared_code_generator.h        \
+  google/protobuf/compiler/java/string_field.cc                \
+  google/protobuf/compiler/java/string_field.h                 \
+  google/protobuf/compiler/java/string_field_lite.cc           \
+  google/protobuf/compiler/java/string_field_lite.h            \
   google/protobuf/compiler/js/js_generator.cc                  \
   google/protobuf/compiler/js/well_known_types_embed.cc        \
   google/protobuf/compiler/js/well_known_types_embed.h         \
@@ -470,10 +470,10 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/php/php_generator.cc                \
   google/protobuf/compiler/plugin.cc                           \
   google/protobuf/compiler/plugin.pb.cc                        \
-  google/protobuf/compiler/python/python_generator.cc          \
-  google/protobuf/compiler/python/python_helpers.cc            \
-  google/protobuf/compiler/python/python_helpers.h             \
-  google/protobuf/compiler/python/python_pyi_generator.cc      \
+  google/protobuf/compiler/python/generator.cc                 \
+  google/protobuf/compiler/python/helpers.cc                   \
+  google/protobuf/compiler/python/helpers.h                    \
+  google/protobuf/compiler/python/pyi_generator.cc             \
   google/protobuf/compiler/ruby/ruby_generator.cc              \
   google/protobuf/compiler/scc.h                               \
   google/protobuf/compiler/subprocess.cc                       \
@@ -489,8 +489,8 @@ protoc_SOURCES = google/protobuf/compiler/main.cc
 
 protoc_inputs =                                                   \
   google/protobuf/any_test.proto                                  \
-  google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto     \
-  google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto    \
+  google/protobuf/compiler/cpp/test_bad_identifiers.proto         \
+  google/protobuf/compiler/cpp/test_large_enum_value.proto        \
   google/protobuf/map_lite_unittest.proto                         \
   google/protobuf/map_proto2_unittest.proto                       \
   google/protobuf/map_unittest.proto                              \
@@ -593,10 +593,10 @@ protoc_outputs =                                                  \
   $(protoc_lite_outputs)                                          \
   google/protobuf/any_test.pb.cc                                  \
   google/protobuf/any_test.pb.h                                   \
-  google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc     \
-  google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h      \
-  google/protobuf/compiler/cpp/cpp_test_large_enum_value.pb.cc    \
-  google/protobuf/compiler/cpp/cpp_test_large_enum_value.pb.h     \
+  google/protobuf/compiler/cpp/test_bad_identifiers.pb.cc         \
+  google/protobuf/compiler/cpp/test_bad_identifiers.pb.h          \
+  google/protobuf/compiler/cpp/test_large_enum_value.pb.cc        \
+  google/protobuf/compiler/cpp/test_large_enum_value.pb.h         \
   google/protobuf/map_proto2_unittest.pb.cc                       \
   google/protobuf/map_proto2_unittest.pb.h                        \
   google/protobuf/map_unittest.pb.cc                              \
@@ -703,7 +703,7 @@ $(protoc_outputs): unittest_proto_middleman
 
 COMMON_TEST_SOURCES =                                          \
   $(COMMON_LITE_TEST_SOURCES)                                  \
-  google/protobuf/compiler/cpp/cpp_unittest.h                  \
+  google/protobuf/compiler/cpp/unittest.h                      \
   google/protobuf/map_test_util.h                              \
   google/protobuf/map_test_util.inc                            \
   google/protobuf/reflection_tester.cc                         \
@@ -743,22 +743,22 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/annotation_test_util.cc             \
   google/protobuf/compiler/annotation_test_util.h              \
   google/protobuf/compiler/command_line_interface_unittest.cc  \
-  google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc       \
-  google/protobuf/compiler/cpp/cpp_move_unittest.cc            \
-  google/protobuf/compiler/cpp/cpp_plugin_unittest.cc          \
-  google/protobuf/compiler/cpp/cpp_unittest.cc                 \
-  google/protobuf/compiler/cpp/cpp_unittest.inc                \
+  google/protobuf/compiler/cpp/bootstrap_unittest.cc           \
   google/protobuf/compiler/cpp/metadata_test.cc                \
+  google/protobuf/compiler/cpp/move_unittest.cc                \
+  google/protobuf/compiler/cpp/plugin_unittest.cc              \
+  google/protobuf/compiler/cpp/unittest.cc                     \
+  google/protobuf/compiler/cpp/unittest.inc                    \
   google/protobuf/compiler/csharp/csharp_bootstrap_unittest.cc \
   google/protobuf/compiler/csharp/csharp_generator_unittest.cc \
   google/protobuf/compiler/importer_unittest.cc                \
-  google/protobuf/compiler/java/java_doc_comment_unittest.cc   \
-  google/protobuf/compiler/java/java_plugin_unittest.cc        \
+  google/protobuf/compiler/java/doc_comment_unittest.cc        \
+  google/protobuf/compiler/java/plugin_unittest.cc             \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/compiler/mock_code_generator.h               \
   google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc \
   google/protobuf/compiler/parser_unittest.cc                  \
-  google/protobuf/compiler/python/python_plugin_unittest.cc    \
+  google/protobuf/compiler/python/plugin_unittest.cc           \
   google/protobuf/compiler/ruby/ruby_generator_unittest.cc     \
   google/protobuf/descriptor_database_unittest.cc              \
   google/protobuf/descriptor_unittest.cc                       \
@@ -831,7 +831,7 @@ protobuf_lazy_descriptor_test_CPPFLAGS = -I$(GOOGLEMOCK_SRC_DIR)/include \
                                          -DPROTOBUF_TEST_NO_DESCRIPTORS
 protobuf_lazy_descriptor_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lazy_descriptor_test_SOURCES =                        \
-  google/protobuf/compiler/cpp/cpp_unittest.cc                 \
+  google/protobuf/compiler/cpp/unittest.cc                     \
   $(COMMON_TEST_SOURCES)
 nodist_protobuf_lazy_descriptor_test_SOURCES = $(protoc_outputs)
 $(am_protobuf_lazy_descriptor_test_OBJECTS): unittest_proto_middleman

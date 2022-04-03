@@ -238,8 +238,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print("None = 0,\n");
     for (int j = 0; j < oneof->field_count(); j++) {
       const FieldDescriptor* field = oneof->field(j);
-      printer->Print("$field_property_name$ = $index$,\n",
-                     "field_property_name", GetPropertyName(field),
+      printer->Print("$oneof_case_name$ = $index$,\n",
+                     "oneof_case_name", GetOneofCaseName(field),
                      "index", StrCat(field->number()));
     }
     printer->Outdent();
@@ -403,10 +403,10 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
     for (int j = 0; j < oneof->field_count(); j++) {
       const FieldDescriptor* field = oneof->field(j);
       std::unique_ptr<FieldGeneratorBase> generator(CreateFieldGeneratorInternal(field));
-      vars["field_property_name"] = GetPropertyName(field);
+      vars["oneof_case_name"] = GetOneofCaseName(field);
       printer->Print(
           vars,
-          "case $property_name$OneofCase.$field_property_name$:\n");
+          "case $property_name$OneofCase.$oneof_case_name$:\n");
       printer->Indent();
       generator->GenerateCloningCode(printer);
       printer->Print("break;\n");
@@ -635,10 +635,10 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     printer->Indent();
     for (int j = 0; j < oneof->field_count(); j++) {
       const FieldDescriptor* field = oneof->field(j);
-      vars["field_property_name"] = GetPropertyName(field);
+      vars["oneof_case_name"] = GetOneofCaseName(field);
       printer->Print(
         vars,
-        "case $property_name$OneofCase.$field_property_name$:\n");
+        "case $property_name$OneofCase.$oneof_case_name$:\n");
       printer->Indent();
       std::unique_ptr<FieldGeneratorBase> generator(CreateFieldGeneratorInternal(field));
       generator->GenerateMergingCode(printer);

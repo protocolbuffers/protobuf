@@ -66,8 +66,11 @@ module BasicTest
     def test_issue_8559_crash
       msg = TestMessage.new
       msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
-      # TODO: Remove the platform check once https://github.com/jruby/jruby/issues/6818 is released in JRuby 9.3.0.0
-      GC.start(full_mark: true, immediate_sweep: true) unless RUBY_PLATFORM == "java"
+
+      # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
+      if cruby_or_jruby_9_3_or_higher?
+        GC.start(full_mark: true, immediate_sweep: true)
+      end
       TestMessage.encode(msg)
     end
 
@@ -77,6 +80,34 @@ module BasicTest
       assert_equal 8, msg.id
       msg.version = '1'
       assert_equal 8, msg.id
+    end
+
+    def test_issue_9507
+      pool = Google::Protobuf::DescriptorPool.new
+      pool.build do
+        add_message "NpeMessage" do
+          optional :type, :enum, 1, "TestEnum"
+          optional :other, :string, 2
+        end
+        add_enum "TestEnum" do
+          value :Something, 0
+        end
+      end
+
+      msgclass = pool.lookup("NpeMessage").msgclass
+
+      m = msgclass.new(
+        other: "foo"      # must be set, but can be blank
+      )
+
+      begin
+        encoded = msgclass.encode(m)
+      rescue java.lang.NullPointerException
+        flunk "NPE rescued"
+      end
+      decoded = msgclass.decode(encoded)
+      decoded.inspect
+      decoded.to_proto
     end
 
     def test_has_field
@@ -145,7 +176,7 @@ module BasicTest
       m = TestSingularFields.new
 
       m.singular_int32 = -42
-      assert_equal -42, m.singular_int32
+      assert_equal( -42, m.singular_int32 )
       m.clear_singular_int32
       assert_equal 0, m.singular_int32
 
@@ -540,8 +571,6 @@ module BasicTest
 
 
     def test_json_maps
-      # TODO: Fix JSON in JRuby version.
-      return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
       expected = {mapStringInt32: {a: 1}, mapStringMsg: {}, mapStringEnum: {}}
       expected_preserve = {map_string_int32: {a: 1}, map_string_msg: {}, map_string_enum: {}}
@@ -555,8 +584,6 @@ module BasicTest
     end
 
     def test_json_maps_emit_defaults_submsg
-      # TODO: Fix JSON in JRuby version.
-      return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new(foo: 0)})
       expected = {mapStringInt32: {}, mapStringMsg: {a: {foo: 0}}, mapStringEnum: {}}
 
@@ -566,8 +593,6 @@ module BasicTest
     end
 
     def test_json_emit_defaults_submsg
-      # TODO: Fix JSON in JRuby version.
-      return if RUBY_PLATFORM == "java"
       m = TestSingularFields.new(singular_msg: proto_module::TestMessage2.new)
 
       expected = {
@@ -590,8 +615,6 @@ module BasicTest
     end
 
     def test_respond_to
-      # This test fails with JRuby 1.7.23, likely because of an old JRuby bug.
-      return if RUBY_PLATFORM == "java"
       msg = MapMessage.new
       assert msg.respond_to?(:map_string_int32)
       assert !msg.respond_to?(:bacon)
@@ -665,6 +688,52 @@ module BasicTest
       )
       m2 = proto_module::TestMessage.decode(proto_module::TestMessage.encode(m))
       assert_equal m2, m
+    end
+
+    def test_map_fields_respond_to? # regression test for issue 9202
+      msg = proto_module::MapMessage.new
+      assert msg.respond_to?(:map_string_int32=)
+      msg.map_string_int32 = Google::Protobuf::Map.new(:string, :int32)
+      assert msg.respond_to?(:map_string_int32)
+      assert_equal( Google::Protobuf::Map.new(:string, :int32), msg.map_string_int32 )
+      assert msg.respond_to?(:clear_map_string_int32)
+      msg.clear_map_string_int32
+
+      assert !msg.respond_to?(:has_map_string_int32?)
+      assert_raise NoMethodError do
+        msg.has_map_string_int32?
+      end
+      assert !msg.respond_to?(:map_string_int32_as_value)
+      assert_raise NoMethodError do
+        msg.map_string_int32_as_value
+      end
+      assert !msg.respond_to?(:map_string_int32_as_value=)
+      assert_raise NoMethodError do
+        msg.map_string_int32_as_value = :boom
+      end
+    end
+  end
+
+  def test_oneof_fields_respond_to? # regression test for issue 9202
+    msg = proto_module::OneofMessage.new
+    # `has_` prefix + "?" suffix actions should only work for oneofs fields.
+    assert msg.has_my_oneof?
+    assert msg.respond_to? :has_my_oneof?
+    assert !msg.respond_to?( :has_a? )
+    assert_raise NoMethodError do
+      msg.has_a?
+    end
+    assert !msg.respond_to?( :has_b? )
+    assert_raise NoMethodError do
+      msg.has_b?
+    end
+    assert !msg.respond_to?( :has_c? )
+    assert_raise NoMethodError do
+      msg.has_c?
+    end
+    assert !msg.respond_to?( :has_d? )
+    assert_raise NoMethodError do
+      msg.has_d?
     end
   end
 end

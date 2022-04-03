@@ -169,6 +169,9 @@ class PROTOBUF_EXPORT Empty final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
+  struct Impl_ {
+  };
+  union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fempty_2eproto;
 };
 // ===================================================================

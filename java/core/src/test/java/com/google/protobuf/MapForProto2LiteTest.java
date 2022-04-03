@@ -392,21 +392,21 @@ public final class MapForProto2LiteTest {
     setMapValues(builder);
     TestMap message = builder.build();
     assertThat(message.toByteString().size()).isEqualTo(message.getSerializedSize());
-    message = TestMap.parser().parseFrom(message.toByteString());
+    message = TestMap.parseFrom(message.toByteString());
     assertMapValuesSet(message);
 
     builder = message.toBuilder();
     updateMapValues(builder);
     message = builder.build();
     assertThat(message.toByteString().size()).isEqualTo(message.getSerializedSize());
-    message = TestMap.parser().parseFrom(message.toByteString());
+    message = TestMap.parseFrom(message.toByteString());
     assertMapValuesUpdated(message);
 
     builder = message.toBuilder();
     builder.clear();
     message = builder.build();
     assertThat(message.toByteString().size()).isEqualTo(message.getSerializedSize());
-    message = TestMap.parser().parseFrom(message.toByteString());
+    message = TestMap.parseFrom(message.toByteString());
     assertMapValuesCleared(message);
   }
 
@@ -415,7 +415,7 @@ public final class MapForProto2LiteTest {
     CodedOutputStream output = CodedOutputStream.newInstance(byteArrayOutputStream);
     bizarroMap.writeTo(output);
     output.flush();
-    return TestMap.parser().parseFrom(ByteString.copyFrom(byteArrayOutputStream.toByteArray()));
+    return TestMap.parseFrom(ByteString.copyFrom(byteArrayOutputStream.toByteArray()));
   }
 
   @Test

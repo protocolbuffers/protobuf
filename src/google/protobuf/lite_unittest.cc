@@ -35,18 +35,18 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/arena_test_util.h>
-#include <google/protobuf/map_lite_test_util.h>
 #include <google/protobuf/map_lite_unittest.pb.h>
-#include <google/protobuf/test_util_lite.h>
 #include <google/protobuf/unittest_lite.pb.h>
+#include <gtest/gtest.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/map_lite_test_util.h>
+#include <google/protobuf/test_util_lite.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <gtest/gtest.h>
-#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {

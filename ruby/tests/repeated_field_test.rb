@@ -21,6 +21,7 @@ class RepeatedFieldTest < Test::Unit::TestCase
       :nitems, :iter_for_reverse_each, :indexes, :append, :prepend]
     arr_methods -= [:union, :difference, :filter!]
     arr_methods -= [:intersection, :deconstruct] # ruby 2.7 methods we can ignore
+    arr_methods -= [:intersect?] # ruby 3.1 methods we can ignore
     arr_methods.each do |method_name|
       assert m.repeated_string.respond_to?(method_name) == true, "does not respond to #{method_name}"
     end
@@ -35,13 +36,13 @@ class RepeatedFieldTest < Test::Unit::TestCase
     end
 
     fill_test_msg(m)
-    assert_equal -10, m.repeated_int32.first
-    assert_equal -1_000_000, m.repeated_int64.first
+    assert_equal( -10, m.repeated_int32.first )
+    assert_equal( -1_000_000, m.repeated_int64.first )
     assert_equal 10, m.repeated_uint32.first
     assert_equal 1_000_000, m.repeated_uint64.first
     assert_equal true, m.repeated_bool.first
-    assert_equal -1.01,  m.repeated_float.first.round(2)
-    assert_equal -1.0000000000001, m.repeated_double.first
+    assert_equal( -1.01,  m.repeated_float.first.round(2) )
+    assert_equal( -1.0000000000001, m.repeated_double.first )
     assert_equal 'foo', m.repeated_string.first
     assert_equal "bar".encode!('ASCII-8BIT'), m.repeated_bytes.first
     assert_equal TestMessage2.new(:foo => 1), m.repeated_msg.first
@@ -60,13 +61,13 @@ class RepeatedFieldTest < Test::Unit::TestCase
       assert_nil m.send(field_name).first
     end
     fill_test_msg(m)
-    assert_equal -11, m.repeated_int32.last
-    assert_equal -1_000_001, m.repeated_int64.last
+    assert_equal( -11, m.repeated_int32.last )
+    assert_equal( -1_000_001, m.repeated_int64.last )
     assert_equal 11, m.repeated_uint32.last
     assert_equal 1_000_001, m.repeated_uint64.last
     assert_equal false, m.repeated_bool.last
-    assert_equal -1.02, m.repeated_float.last.round(2)
-    assert_equal -1.0000000000002, m.repeated_double.last
+    assert_equal( -1.02, m.repeated_float.last.round(2) )
+    assert_equal( -1.0000000000002, m.repeated_double.last )
     assert_equal 'bar', m.repeated_string.last
     assert_equal "foo".encode!('ASCII-8BIT'), m.repeated_bytes.last
     assert_equal TestMessage2.new(:foo => 2), m.repeated_msg.last
@@ -81,20 +82,20 @@ class RepeatedFieldTest < Test::Unit::TestCase
     end
     fill_test_msg(m)
 
-    assert_equal -11, m.repeated_int32.pop
-    assert_equal -10, m.repeated_int32.pop
-    assert_equal -1_000_001, m.repeated_int64.pop
-    assert_equal -1_000_000, m.repeated_int64.pop
+    assert_equal( -11, m.repeated_int32.pop )
+    assert_equal( -10, m.repeated_int32.pop )
+    assert_equal( -1_000_001, m.repeated_int64.pop )
+    assert_equal( -1_000_000, m.repeated_int64.pop )
     assert_equal 11, m.repeated_uint32.pop
     assert_equal 10, m.repeated_uint32.pop
     assert_equal 1_000_001, m.repeated_uint64.pop
     assert_equal 1_000_000, m.repeated_uint64.pop
     assert_equal false, m.repeated_bool.pop
     assert_equal true, m.repeated_bool.pop
-    assert_equal -1.02,  m.repeated_float.pop.round(2)
-    assert_equal -1.01,  m.repeated_float.pop.round(2)
-    assert_equal -1.0000000000002, m.repeated_double.pop
-    assert_equal -1.0000000000001, m.repeated_double.pop
+    assert_equal( -1.02,  m.repeated_float.pop.round(2) )
+    assert_equal( -1.01,  m.repeated_float.pop.round(2) )
+    assert_equal( -1.0000000000002, m.repeated_double.pop )
+    assert_equal( -1.0000000000001, m.repeated_double.pop )
     assert_equal 'bar', m.repeated_string.pop
     assert_equal 'foo', m.repeated_string.pop
     assert_equal "foo".encode!('ASCII-8BIT'), m.repeated_bytes.pop
@@ -486,11 +487,8 @@ class RepeatedFieldTest < Test::Unit::TestCase
   def test_shuffle!
     m = TestMessage.new
     m.repeated_string += %w(foo bar baz)
-    orig_repeated_string = m.repeated_string.clone
     result = m.repeated_string.shuffle!
     assert_equal m.repeated_string, result
-    # NOTE: sometimes it doesn't change the order...
-    # assert_not_equal m.repeated_string.to_a, orig_repeated_string.to_a
   end
 
   def test_slice!

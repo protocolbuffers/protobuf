@@ -48,6 +48,7 @@ from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import any_test_pb2 as test_extend_any
+from google.protobuf.internal import api_implementation
 from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
@@ -582,6 +583,10 @@ class TextFormatMessageToStringTests(TextFormatBase):
     text_format.Parse(expected_text, parsed_proto)
     self.assertEqual(message_proto, parsed_proto)
 
+  @unittest.skipIf(
+      api_implementation._Version() == 3,
+      "upb API doesn't support old UnknownField API. The TextFormat library "
+      "needs to convert to the new API.")
   def testPrintUnknownFieldsEmbeddedMessageInBytes(self, message_module):
     inner_msg = message_module.TestAllTypes()
     inner_msg.optional_int32 = 101
@@ -1470,9 +1475,11 @@ class Proto2Tests(TextFormatBase):
     text = ('message_set {\n'
             '  [unknown_extension] {\n'
             '    i: 23\n'
-            '    bin: "\xe0"'
+            '    repeated_i: []\n'
+            '    bin: "\xe0"\n'
             '    [nested_unknown_ext]: {\n'
             '      i: 23\n'
+            '      repeated_i: [1, 2]\n'
             '      x: x\n'
             '      test: "test_string"\n'
             '      floaty_float: -0.315\n'
@@ -1485,6 +1492,7 @@ class Proto2Tests(TextFormatBase):
             '        i: 24\n'
             '        pointfloat: .3\n'
             '        test: "test_string"\n'
+            '        repeated_test: ["test_string1", "test_string2"]\n'
             '        floaty_float: -0.315\n'
             '        num: -inf\n'
             '        long_string: "test" "test2" \n'

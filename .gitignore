@@ -46,7 +46,7 @@ src/.libs
 any_test.pb.*
 map*unittest.pb.*
 unittest*.pb.*
-cpp_test*.pb.*
+src/google/protobuf/compiler/cpp/test*.pb.*
 src/google/protobuf/util/**/*.pb.cc
 src/google/protobuf/util/**/*.pb.h
 
@@ -89,6 +89,10 @@ java/**/*.iml
 # Windows native output.
 cmake/build
 build_msvc
+# Directories suggested by cmake/README.md
+/debug/
+/solution/
+/release/
 
 # NuGet packages: we want the repository configuration, but not the
 # packages themselves.

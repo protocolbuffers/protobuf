@@ -7,10 +7,10 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.gson:gson:2.8.9",
     "com.google.errorprone:error_prone_annotations:2.3.2",
     "com.google.j2objc:j2objc-annotations:1.3",
-    "com.google.guava:guava:30.1.1-jre",
-    "com.google.guava:guava-testlib:30.1.1-jre",
+    "com.google.guava:guava:31.1-jre",
+    "com.google.guava:guava-testlib:31.1-jre",
     "com.google.truth:truth:1.1.2",
-    "junit:junit:4.12",
+    "junit:junit:4.13.2",
     "org.mockito:mockito-core:4.3.1",
 ]
 
@@ -30,7 +30,7 @@ def protobuf_deps():
     if not native.existing_rule("zlib"):
         http_archive(
             name = "zlib",
-            build_file = Label("//:third_party/zlib.BUILD"),
+            build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
             sha256 = "629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff",
             strip_prefix = "zlib-1.2.11",
             urls = ["https://github.com/madler/zlib/archive/v1.2.11.tar.gz"],

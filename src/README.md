@@ -131,7 +131,7 @@ Mac installations.
 
 Alternative for Homebrew users:
 
-    brew intall autoconf automake libtool
+    brew install autoconf automake libtool
 
 Then follow the Unix instructions above.
 

@@ -1753,6 +1753,28 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
                     "$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 }
+
+TEST_F(CommandLineInterfaceTest,
+       WriteDependencyManifestFileWithDescriptorSetOut) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest "
+      "--descriptor_set_out=$tmpdir/bar.pb --proto_path=$tmpdir bar.proto");
+
+  ExpectNoErrors();
+
+  ExpectFileContent("manifest",
+                    "$tmpdir/bar.pb: "
+                    "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
+}
 #endif  // !_WIN32
 
 TEST_F(CommandLineInterfaceTest, TestArgumentFile) {
