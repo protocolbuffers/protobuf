@@ -1933,17 +1933,17 @@ class Proto2ReflectionTest(unittest.TestCase):
 
   def testDisconnectingInOneof(self):
     m = unittest_pb2.TestOneof2()  # This message has two messages in a oneof.
-    m.foo_message.qux_int = 5
+    m.foo_message.moo_int = 5
     sub_message = m.foo_message
     # Accessing another message's field does not clear the first one
-    self.assertEqual(m.foo_lazy_message.qux_int, 0)
-    self.assertEqual(m.foo_message.qux_int, 5)
+    self.assertEqual(m.foo_lazy_message.moo_int, 0)
+    self.assertEqual(m.foo_message.moo_int, 5)
     # But mutating another message in the oneof detaches the first one.
-    m.foo_lazy_message.qux_int = 6
-    self.assertEqual(m.foo_message.qux_int, 0)
+    m.foo_lazy_message.moo_int = 6
+    self.assertEqual(m.foo_message.moo_int, 0)
     # The reference we got above was detached and is still valid.
-    self.assertEqual(sub_message.qux_int, 5)
-    sub_message.qux_int = 7
+    self.assertEqual(sub_message.moo_int, 5)
+    sub_message.moo_int = 7
 
   def assertInitialized(self, proto):
     self.assertTrue(proto.IsInitialized())

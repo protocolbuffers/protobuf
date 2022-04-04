@@ -49,7 +49,6 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/file.h>
-#include <google/protobuf/test_util2.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
@@ -57,21 +56,22 @@
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/arena_test_util.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/tokenizer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/reflection.h>
 #include <google/protobuf/reflection_ops.h>
+#include <google/protobuf/test_util2.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/wire_format.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/util/time_util.h>
+#include <google/protobuf/wire_format.h>
 
 
 // Must be included last.

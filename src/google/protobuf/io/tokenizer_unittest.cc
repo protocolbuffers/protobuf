@@ -844,7 +844,9 @@ TEST_F(TokenizerTest, ParseInteger) {
 
   // Test near the limits of signed parsing (values in kint64max +/- 1600)
   for (int64_t offset = -1600; offset <= 1600; ++offset) {
-    uint64_t i = 0x7FFFFFFFFFFFFFFF + offset;
+    // We make sure to perform an unsigned addition so that we avoid signed
+    // overflow, which would be undefined behavior.
+    uint64_t i = 0x7FFFFFFFFFFFFFFFu + static_cast<uint64_t>(offset);
     char decimal[32];
     snprintf(decimal, 32, "%llu", static_cast<unsigned long long>(i));
     if (offset > 0) {

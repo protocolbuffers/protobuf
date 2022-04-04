@@ -80,8 +80,8 @@ message TestAllTypesProto3 {
     ALIAS_FOO = 0;
     ALIAS_BAR = 1;
     ALIAS_BAZ = 2;
-    QUX = 2;
-    qux = 2;
+    MOO = 2;
+    moo = 2;
     bAz = 2;
   }
 
@@ -278,8 +278,7 @@ enum ForeignEnum {
   FOREIGN_BAZ = 2;
 }
 
-message NullHypothesisProto3 {
-}
+message NullHypothesisProto3 {}
 
 message EnumOnlyProto3 {
   enum Bool {

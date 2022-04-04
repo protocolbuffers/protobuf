@@ -30,6 +30,7 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
+#include <climits>
 #include <iostream>
 #include <string>
 
@@ -45,6 +46,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/map_lite_test_util.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/test_util_lite.h>
 #include <google/protobuf/wire_format_lite.h>
 
@@ -86,6 +88,61 @@ void SetSomeTypesInEmptyMessageUnknownFields(
   message.set_optional_uint64(104);
   std::string data = message.SerializeAsString();
   empty_message->ParseFromString(data);
+}
+
+
+TEST(ParseVarintTest, Varint32) {
+  auto test_value = [](uint32_t value, int varint_length) {
+    uint8_t buffer[10];
+    uint8_t* p = io::CodedOutputStream::WriteVarint32ToArray(value, buffer);
+    ASSERT_EQ(p - buffer, varint_length) << "Value = " << value;
+
+    const char* cbuffer = reinterpret_cast<const char*>(buffer);
+    uint32_t parsed = ~value;
+    const char* r = internal::VarintParse(cbuffer, &parsed);
+    ASSERT_EQ(r - cbuffer, varint_length) << "Value = " << value;
+    ASSERT_EQ(parsed, value);
+  };
+
+  uint32_t base = 73;  // 1001011b
+  for (int varint_length = 1; varint_length <= 5; ++varint_length) {
+    uint32_t values[] = {
+        base - 73, base - 72, base, base + 126 - 73, base + 126 - 72,
+    };
+    for (uint32_t value : values) {
+      test_value(value, varint_length);
+    }
+    base = (base << 7) + 73;
+  }
+
+  test_value(std::numeric_limits<uint32_t>::max(), 5);
+}
+
+TEST(ParseVarintTest, Varint64) {
+  auto test_value = [](uint64_t value, int varint_length) {
+    uint8_t buffer[10];
+    uint8_t* p = io::CodedOutputStream::WriteVarint64ToArray(value, buffer);
+    ASSERT_EQ(p - buffer, varint_length) << "Value = " << value;
+
+    const char* cbuffer = reinterpret_cast<const char*>(buffer);
+    uint64_t parsed = ~value;
+    const char* r = internal::VarintParse(cbuffer, &parsed);
+    ASSERT_EQ(r - cbuffer, varint_length) << "Value = " << value;
+    ASSERT_EQ(parsed, value);
+  };
+
+  uint64_t base = 73;  // 1001011b
+  for (int varint_length = 1; varint_length <= 10; ++varint_length) {
+    uint64_t values[] = {
+        base - 73, base - 72, base, base + 126 - 73, base + 126 - 72,
+    };
+    for (uint64_t value : values) {
+      test_value(value, varint_length);
+    }
+    base = (base << 7) + 73;
+  }
+
+  test_value(std::numeric_limits<uint64_t>::max(), 10);
 }
 
 TEST(Lite, AllLite1) {

@@ -198,7 +198,7 @@ TEST(CppPluginTest, PluginTest) {
                              "    ctype = CORD\n"
                              "  ];\n"
                              "\n"
-                             "  oneof Qux {\n"
+                             "  oneof Moo {\n"
                              "    int64 oneOfInt = 20;\n"
                              "    string oneOfString = 21;\n"
                              "    Baz oneOfMessage = 22;\n"

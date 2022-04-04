@@ -30,9 +30,9 @@
 
 #include <google/protobuf/reflection_tester.h>
 
+#include <gtest/gtest.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/message.h>
-#include <gtest/gtest.h>
 
 // Must include last.
 #include <google/protobuf/port_def.inc>

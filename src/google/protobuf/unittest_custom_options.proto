@@ -245,7 +245,7 @@ message ComplexOptionType2 {
 }
 
 message ComplexOptionType3 {
-  optional int32 qux = 1;
+  optional int32 moo = 1;
 
   optional group ComplexOptionType5 = 2 {
     optional int32 plugh = 3;
@@ -253,7 +253,7 @@ message ComplexOptionType3 {
 }
 
 extend ComplexOptionType1 {
-  optional int32 quux = 7663707;
+  optional int32 mooo = 7663707;
   optional ComplexOptionType3 corge = 7663442;
 }
 
@@ -274,18 +274,18 @@ extend google.protobuf.MessageOptions {
 // Note that we try various different ways of naming the same extension.
 message VariousComplexOptions {
   option (.protobuf_unittest.complex_opt1).foo = 42;
-  option (protobuf_unittest.complex_opt1).(.protobuf_unittest.quux) = 324;
-  option (.protobuf_unittest.complex_opt1).(protobuf_unittest.corge).qux = 876;
+  option (protobuf_unittest.complex_opt1).(.protobuf_unittest.mooo) = 324;
+  option (.protobuf_unittest.complex_opt1).(protobuf_unittest.corge).moo = 876;
   option (protobuf_unittest.complex_opt1).foo4 = 99;
   option (protobuf_unittest.complex_opt1).foo4 = 88;
   option (complex_opt2).baz = 987;
   option (complex_opt2).(grault) = 654;
   option (complex_opt2).bar.foo = 743;
-  option (complex_opt2).bar.(quux) = 1999;
-  option (complex_opt2).bar.(protobuf_unittest.corge).qux = 2008;
+  option (complex_opt2).bar.(mooo) = 1999;
+  option (complex_opt2).bar.(protobuf_unittest.corge).moo = 2008;
   option (complex_opt2).(garply).foo = 741;
-  option (complex_opt2).(garply).(.protobuf_unittest.quux) = 1998;
-  option (complex_opt2).(protobuf_unittest.garply).(corge).qux = 2121;
+  option (complex_opt2).(garply).(.protobuf_unittest.mooo) = 1998;
+  option (complex_opt2).(protobuf_unittest.garply).(corge).moo = 2121;
   option (ComplexOptionType2.ComplexOptionType4.complex_opt4).waldo = 1971;
   option (complex_opt2).fred.waldo = 321;
   option (complex_opt2).barney = {
@@ -294,7 +294,7 @@ message VariousComplexOptions {
   option (complex_opt2).barney = {
     waldo: 212
   };
-  option (protobuf_unittest.complex_opt3).qux = 9;
+  option (protobuf_unittest.complex_opt3).moo = 9;
   option (complex_opt3).complexoptiontype5.plugh = 22;
   option (complexopt6).xyzzy = 24;
 }
@@ -439,7 +439,9 @@ message NestedOptionType {
 // Custom message option that has a required enum field.
 // WARNING: this is strongly discouraged!
 message OldOptionType {
-  enum TestEnum { OLD_VALUE = 0; }
+  enum TestEnum {
+    OLD_VALUE = 0;
+  }
   required TestEnum value = 1;
 }
 

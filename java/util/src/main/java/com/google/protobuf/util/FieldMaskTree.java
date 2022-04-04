@@ -142,7 +142,7 @@ final class FieldMaskTree {
    *   <li>If all children of a node have been removed, the node itself will be removed as well.
    *       That is, if "foo" only has one child "bar" and "foo.bar" only has one child "baz",
    *       removing "foo.bar.barz" would remove both "foo" and "foo.bar". If "foo" has both "bar"
-   *       and "qux" as children, removing "foo.bar" would leave the path "foo.qux" intact.
+   *       and "moo" as children, removing "foo.bar" would leave the path "foo.moo" intact.
    *   <li>If the field path to remove is a non-exist sub-path, nothing will be changed.
    * </ul>
    */
