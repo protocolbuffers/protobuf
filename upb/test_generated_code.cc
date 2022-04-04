@@ -31,6 +31,7 @@
  */
 
 #include "gtest/gtest.h"
+#include "src/google/protobuf/test_messages_proto2.upb.h"
 #include "src/google/protobuf/test_messages_proto3.upb.h"
 #include "upb/test.upb.h"
 #include "upb/upb.hpp"
@@ -54,7 +55,7 @@ const int32_t test_int32_2 = -20;
 const int32_t test_int32_3 = 30;
 const int32_t test_int32_4 = -40;
 
-TEST(GeneratedCode, Scalars) {
+TEST(GeneratedCode, ScalarsProto3) {
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
       protobuf_test_messages_proto3_TestAllTypesProto3_new(arena);
@@ -62,6 +63,7 @@ TEST(GeneratedCode, Scalars) {
   upb_StringView serialized;
   upb_StringView val;
 
+  // Test serialization.
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 10);
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int64(msg, 20);
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_uint32(msg, 30);
@@ -102,6 +104,401 @@ TEST(GeneratedCode, Scalars) {
   val = protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(msg2);
   EXPECT_TRUE(upb_StringView_IsEqual(val, test_str_view));
 
+  // Test clear.
+  protobuf_test_messages_proto3_TestAllTypesProto3_clear_optional_int32(msg);
+  EXPECT_EQ(
+      0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int32(msg));
+  protobuf_test_messages_proto3_TestAllTypesProto3_clear_optional_int64(msg);
+  EXPECT_EQ(
+      0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(msg));
+  protobuf_test_messages_proto3_TestAllTypesProto3_clear_optional_uint32(msg);
+  EXPECT_EQ(
+      0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint32(msg));
+  protobuf_test_messages_proto3_TestAllTypesProto3_clear_optional_uint64(msg);
+  EXPECT_EQ(
+      0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint64(msg));
+  protobuf_test_messages_proto3_TestAllTypesProto3_clear_optional_float(msg);
+  EXPECT_EQ(
+      0.0f,
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_float(msg));
+  protobuf_test_messages_proto3_TestAllTypesProto3_clear_optional_double(msg);
+  EXPECT_EQ(
+      0.0,
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_double(msg));
+  protobuf_test_messages_proto3_TestAllTypesProto3_clear_optional_bool(msg);
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_bool(msg));
+  protobuf_test_messages_proto3_TestAllTypesProto3_clear_optional_string(msg);
+  EXPECT_EQ(
+      0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(msg)
+             .size);
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, ScalarsProto2) {
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg2;
+  upb_StringView serialized;
+
+  // Test hazzer and serialization.
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_int32(msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(msg, 10);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_int32(msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_int64(msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int64(msg, 20);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_int64(msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_uint32(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_uint32(msg, 30);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_uint32(
+          msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_uint64(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_uint64(msg, 40);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_uint64(
+          msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_sint32(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_sint32(msg, 50);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_sint32(
+          msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_sint64(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_sint64(msg, 60);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_sint64(
+          msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_fixed32(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_fixed32(msg,
+                                                                        70);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_fixed32(
+          msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_fixed64(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_fixed64(msg,
+                                                                        80);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_fixed64(
+          msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_sfixed32(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_sfixed32(msg,
+                                                                         90);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_sfixed32(
+          msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_sfixed64(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_sfixed64(msg,
+                                                                         100);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_sfixed64(
+          msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_float(msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_float(msg,
+                                                                      50.5);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_float(msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_double(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_double(msg,
+                                                                       60.6);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_double(
+          msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_bool(msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_bool(msg, 1);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_bool(msg));
+
+  serialized.data = protobuf_test_messages_proto2_TestAllTypesProto2_serialize(
+      msg, arena, &serialized.size);
+
+  msg2 = protobuf_test_messages_proto2_TestAllTypesProto2_parse(
+      serialized.data, serialized.size, arena);
+
+  EXPECT_EQ(10, protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(
+                    msg2));
+  EXPECT_EQ(20, protobuf_test_messages_proto2_TestAllTypesProto2_optional_int64(
+                    msg2));
+  EXPECT_EQ(
+      30,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_uint32(msg2));
+  EXPECT_EQ(
+      40,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_uint64(msg2));
+  EXPECT_EQ(
+      50,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_sint32(msg2));
+  EXPECT_EQ(
+      60,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_sint64(msg2));
+  EXPECT_EQ(
+      70,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_fixed32(msg2));
+  EXPECT_EQ(
+      80,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_fixed64(msg2));
+  EXPECT_EQ(
+      90,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_sfixed32(msg2));
+  EXPECT_EQ(
+      100,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_sfixed64(msg2));
+  EXPECT_EQ(
+      50.5,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_float(msg2));
+  EXPECT_EQ(
+      60.6,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_double(msg2));
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_bool(msg2));
+
+  // Test clear.
+  protobuf_test_messages_proto2_TestAllTypesProto2_clear_optional_int32(msg);
+  EXPECT_EQ(
+      0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_int32(msg));
+
+  protobuf_test_messages_proto2_TestAllTypesProto2_clear_optional_int64(msg);
+  EXPECT_EQ(
+      0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_int64(msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_int64(msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_clear_optional_uint32(msg);
+  EXPECT_EQ(
+      0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_uint32(msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_uint32(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_clear_optional_uint64(msg);
+  EXPECT_EQ(
+      0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_uint64(msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_uint64(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_clear_optional_float(msg);
+  EXPECT_EQ(
+      0.0f,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_float(msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_float(msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_clear_optional_double(msg);
+  EXPECT_EQ(
+      0.0,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_double(msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_double(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_clear_optional_bool(msg);
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_bool(msg));
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_bool(msg));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, Bytes) {
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg2;
+  upb_StringView serialized;
+  const char data[] = "ABCDEF";
+  upb_StringView bytes = upb_StringView_FromString(data);
+  upb_StringView val;
+
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_bytes(msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_bytes(msg,
+                                                                      bytes);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_bytes(msg));
+
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_string(
+          msg));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_string(
+      msg, test_str_view);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_string(
+          msg));
+
+  serialized.data = protobuf_test_messages_proto2_TestAllTypesProto2_serialize(
+      msg, arena, &serialized.size);
+
+  msg2 = protobuf_test_messages_proto2_TestAllTypesProto2_parse(
+      serialized.data, serialized.size, arena);
+
+  EXPECT_EQ(bytes.size,
+            protobuf_test_messages_proto2_TestAllTypesProto2_optional_bytes(msg)
+                .size);
+  EXPECT_EQ(
+      0, memcmp(bytes.data,
+                protobuf_test_messages_proto2_TestAllTypesProto2_optional_bytes(
+                    msg)
+                    .data,
+                bytes.size));
+  protobuf_test_messages_proto2_TestAllTypesProto2_clear_optional_bytes(msg);
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_bytes(msg));
+
+  val = protobuf_test_messages_proto2_TestAllTypesProto2_optional_string(msg2);
+  EXPECT_TRUE(upb_StringView_IsEqual(val, test_str_view));
+
+  protobuf_test_messages_proto2_TestAllTypesProto2_clear_optional_string(msg);
+  EXPECT_EQ(
+      0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_string(msg)
+             .size);
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_string(
+          msg));
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, Extension) {
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_new(
+          arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect* msg2;
+  upb_StringView serialized;
+
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2_has_message_set_extension(
+          msg));
+
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2* ext =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2_new(
+          arena);
+  EXPECT_EQ(
+      0,
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2_i(
+          ext));
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2_set_i(
+      ext, 5);
+  EXPECT_EQ(
+      5,
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2_i(
+          ext));
+  // Test setter/hazzer.
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2_set_message_set_extension(
+      msg, ext, arena);
+  EXPECT_EQ(
+      true,
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2_has_message_set_extension(
+          msg));
+  // Test serialize.
+  serialized.data =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_serialize(
+          msg, arena, &serialized.size);
+  msg2 =
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrect_parse(
+          serialized.data, serialized.size, arena);
+  const protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2*
+      ext2 =
+          protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2_message_set_extension(
+              msg);
+  EXPECT_EQ(
+      5,
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2_i(
+          ext2));
+
+  // Test Clear.
+  protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2_clear_message_set_extension(
+      msg);
+  EXPECT_EQ(
+      false,
+      protobuf_test_messages_proto2_TestAllTypesProto2_MessageSetCorrectExtension2_has_message_set_extension(
+          msg));
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, RepeatedClear) {
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+  size_t len = 0;
+  protobuf_test_messages_proto2_TestAllTypesProto2_repeated_int32(msg, &len);
+  EXPECT_EQ(0, len);
+  protobuf_test_messages_proto2_TestAllTypesProto2_add_repeated_int32(msg, 2,
+                                                                      arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_add_repeated_int32(msg, 3,
+                                                                      arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_add_repeated_int32(msg, 4,
+                                                                      arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_repeated_int32(msg, &len);
+  EXPECT_EQ(3, len);
+  protobuf_test_messages_proto2_TestAllTypesProto2_clear_repeated_int32(msg);
+  protobuf_test_messages_proto2_TestAllTypesProto2_repeated_int32(msg, &len);
+  EXPECT_EQ(0, len);
   upb_Arena_Free(arena);
 }
 

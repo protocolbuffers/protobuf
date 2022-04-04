@@ -482,6 +482,10 @@ UPB_INLINE bool _upb_Array_Resize(upb_Array* arr, size_t size,
   return true;
 }
 
+UPB_INLINE void _upb_array_detach(const void* msg, size_t ofs) {
+  *UPB_PTR_AT(msg, ofs, upb_Array*) = NULL;
+}
+
 UPB_INLINE const void* _upb_array_accessor(const void* msg, size_t ofs,
                                            size_t* size) {
   const upb_Array* arr = *UPB_PTR_AT(msg, ofs, const upb_Array*);

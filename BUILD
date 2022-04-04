@@ -299,6 +299,7 @@ cc_test(
     srcs = ["upb/test_generated_code.cc"],
     deps = [
         ":empty_upbdefs_proto",
+        ":test_messages_proto2_proto_upb",
         ":test_messages_proto3_proto_upb",
         ":test_upb_proto",
         ":upb",
@@ -327,6 +328,12 @@ upb_proto_reflection_library(
     name = "empty_upbdefs_proto",
     testonly = 1,
     deps = [":empty_proto"],
+)
+
+upb_proto_library(
+    name = "test_messages_proto2_proto_upb",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:test_messages_proto2_proto"],
 )
 
 upb_proto_library(
