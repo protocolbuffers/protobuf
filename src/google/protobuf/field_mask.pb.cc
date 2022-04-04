@@ -229,7 +229,7 @@ size_t FieldMask::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData FieldMask::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     FieldMask::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FieldMask::GetClassData() const { return &_class_data_; }

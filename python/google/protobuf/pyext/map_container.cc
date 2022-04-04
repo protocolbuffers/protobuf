@@ -264,7 +264,7 @@ static bool PythonToMapValueRef(MapContainer* self, PyObject* obj,
     case FieldDescriptor::CPPTYPE_BOOL: {
       GOOGLE_CHECK_GET_BOOL(obj, value, false);
       value_ref->SetBoolValue(value);
-      return true;;
+      return true;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
       std::string str;

@@ -64,31 +64,32 @@ namespace {
 
 typedef std::unordered_map<std::string, FieldDescriptorProto::Type> TypeNameMap;
 
-TypeNameMap MakeTypeNameTable() {
-  TypeNameMap result;
+const TypeNameMap& GetTypeNameTable() {
+  static auto* table = new auto([]() {
+    TypeNameMap result;
 
-  result["double"] = FieldDescriptorProto::TYPE_DOUBLE;
-  result["float"] = FieldDescriptorProto::TYPE_FLOAT;
-  result["uint64"] = FieldDescriptorProto::TYPE_UINT64;
-  result["fixed64"] = FieldDescriptorProto::TYPE_FIXED64;
-  result["fixed32"] = FieldDescriptorProto::TYPE_FIXED32;
-  result["bool"] = FieldDescriptorProto::TYPE_BOOL;
-  result["string"] = FieldDescriptorProto::TYPE_STRING;
-  result["group"] = FieldDescriptorProto::TYPE_GROUP;
+    result["double"] = FieldDescriptorProto::TYPE_DOUBLE;
+    result["float"] = FieldDescriptorProto::TYPE_FLOAT;
+    result["uint64"] = FieldDescriptorProto::TYPE_UINT64;
+    result["fixed64"] = FieldDescriptorProto::TYPE_FIXED64;
+    result["fixed32"] = FieldDescriptorProto::TYPE_FIXED32;
+    result["bool"] = FieldDescriptorProto::TYPE_BOOL;
+    result["string"] = FieldDescriptorProto::TYPE_STRING;
+    result["group"] = FieldDescriptorProto::TYPE_GROUP;
 
-  result["bytes"] = FieldDescriptorProto::TYPE_BYTES;
-  result["uint32"] = FieldDescriptorProto::TYPE_UINT32;
-  result["sfixed32"] = FieldDescriptorProto::TYPE_SFIXED32;
-  result["sfixed64"] = FieldDescriptorProto::TYPE_SFIXED64;
-  result["int32"] = FieldDescriptorProto::TYPE_INT32;
-  result["int64"] = FieldDescriptorProto::TYPE_INT64;
-  result["sint32"] = FieldDescriptorProto::TYPE_SINT32;
-  result["sint64"] = FieldDescriptorProto::TYPE_SINT64;
+    result["bytes"] = FieldDescriptorProto::TYPE_BYTES;
+    result["uint32"] = FieldDescriptorProto::TYPE_UINT32;
+    result["sfixed32"] = FieldDescriptorProto::TYPE_SFIXED32;
+    result["sfixed64"] = FieldDescriptorProto::TYPE_SFIXED64;
+    result["int32"] = FieldDescriptorProto::TYPE_INT32;
+    result["int64"] = FieldDescriptorProto::TYPE_INT64;
+    result["sint32"] = FieldDescriptorProto::TYPE_SINT32;
+    result["sint64"] = FieldDescriptorProto::TYPE_SINT64;
 
-  return result;
+    return result;
+  }());
+  return *table;
 }
-
-const TypeNameMap kTypeNames = MakeTypeNameTable();
 
 // Camel-case the field name and append "Entry" for generated map entry name.
 // e.g. map<KeyType, ValueType> foo_map => FooMapEntry
@@ -2270,8 +2271,9 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
 
 bool Parser::ParseType(FieldDescriptorProto::Type* type,
                        std::string* type_name) {
-  TypeNameMap::const_iterator iter = kTypeNames.find(input_->current().text);
-  if (iter != kTypeNames.end()) {
+  const auto& type_names_table = GetTypeNameTable();
+  auto iter = type_names_table.find(input_->current().text);
+  if (iter != type_names_table.end()) {
     *type = iter->second;
     input_->Next();
   } else {
@@ -2283,8 +2285,9 @@ bool Parser::ParseType(FieldDescriptorProto::Type* type,
 bool Parser::ParseUserDefinedType(std::string* type_name) {
   type_name->clear();
 
-  TypeNameMap::const_iterator iter = kTypeNames.find(input_->current().text);
-  if (iter != kTypeNames.end()) {
+  const auto& type_names_table = GetTypeNameTable();
+  auto iter = type_names_table.find(input_->current().text);
+  if (iter != type_names_table.end()) {
     // Note:  The only place enum types are allowed is for field types, but
     //   if we are parsing a field type then we would not get here because
     //   primitives are allowed there as well.  So this error message doesn't

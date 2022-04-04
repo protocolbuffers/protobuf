@@ -118,18 +118,21 @@ void Message::CopyFrom(const Message& from) {
   copy_to_from(this, from);
 }
 
-void Message::CopyWithSizeCheck(Message* to, const Message& from) {
+void Message::CopyWithSourceCheck(Message* to, const Message& from) {
 #ifndef NDEBUG
-  size_t from_size = from.ByteSizeLong();
+  FailIfCopyFromDescendant(to, from);
 #endif
   to->Clear();
-#ifndef NDEBUG
-  GOOGLE_CHECK_EQ(from_size, from.ByteSizeLong())
-      << "Source of CopyFrom changed when clearing target.  Either "
-         "source is a nested message in target (not allowed), or "
-         "another thread is modifying the source.";
-#endif
   to->GetClassData()->merge_to_from(to, from);
+}
+
+void Message::FailIfCopyFromDescendant(Message* to, const Message& from) {
+  auto* arena = to->GetArenaForAllocation();
+  bool same_message_owned_arena = to->GetOwningArena() == nullptr &&
+                                  arena != nullptr &&
+                                  arena == from.GetOwningArena();
+  GOOGLE_CHECK(!same_message_owned_arena && !internal::IsDescendant(to, from))
+      << "Source of CopyFrom cannot be a descendant of the target.";
 }
 
 std::string Message::GetTypeName() const {

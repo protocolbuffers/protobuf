@@ -3107,6 +3107,56 @@ void UnknownFieldSetSerializer(const uint8_t* base, uint32_t offset,
   }
 }
 
+bool IsDescendant(Message* root, const Message& message) {
+  const Reflection* reflection = root->GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+  reflection->ListFieldsOmitStripped(*root, &fields);
+
+  for (const auto* field : fields) {
+    // Skip non-message fields.
+    if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
+
+    // Optional messages.
+    if (!field->is_repeated()) {
+      Message* sub_message = reflection->MutableMessage(root, field);
+      if (sub_message == &message || IsDescendant(sub_message, message)) {
+        return true;
+      }
+      continue;
+    }
+
+    // Repeated messages.
+    if (!IsMapFieldInApi(field)) {
+      int count = reflection->FieldSize(*root, field);
+      for (int i = 0; i < count; i++) {
+        Message* sub_message =
+            reflection->MutableRepeatedMessage(root, field, i);
+        if (sub_message == &message || IsDescendant(sub_message, message)) {
+          return true;
+        }
+      }
+      continue;
+    }
+
+    // Map field: if accessed as repeated fields, messages are *copied* and
+    // matching pointer won't work. Must directly access map.
+    constexpr int kValIdx = 1;
+    const FieldDescriptor* val_field = field->message_type()->field(kValIdx);
+    // Skip map fields whose value type is not message.
+    if (val_field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
+
+    MapIterator end = reflection->MapEnd(root, field);
+    for (auto iter = reflection->MapBegin(root, field); iter != end; ++iter) {
+      Message* sub_message = iter.MutableValueRef()->MutableMessageValue();
+      if (sub_message == &message || IsDescendant(sub_message, message)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

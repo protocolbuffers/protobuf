@@ -484,7 +484,7 @@ size_t Version::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Version::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     Version::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Version::GetClassData() const { return &_class_data_; }
@@ -844,7 +844,7 @@ size_t CodeGeneratorRequest::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData CodeGeneratorRequest::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     CodeGeneratorRequest::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*CodeGeneratorRequest::GetClassData() const { return &_class_data_; }
@@ -1228,7 +1228,7 @@ size_t CodeGeneratorResponse_File::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData CodeGeneratorResponse_File::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     CodeGeneratorResponse_File::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*CodeGeneratorResponse_File::GetClassData() const { return &_class_data_; }
@@ -1533,7 +1533,7 @@ size_t CodeGeneratorResponse::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData CodeGeneratorResponse::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     CodeGeneratorResponse::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*CodeGeneratorResponse::GetClassData() const { return &_class_data_; }

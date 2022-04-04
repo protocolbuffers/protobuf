@@ -555,7 +555,7 @@ void PyiGenerator::PrintMessage(
 
 void PyiGenerator::PrintMessages(
     const std::map<std::string, std::string>& import_map) const {
-  // Order the descriptors by name to have same output with proto_to_pyi.py
+  // Deterministically order the descriptors.
   std::vector<const Descriptor*> messages;
   messages.reserve(file_->message_type_count());
   for (int i = 0; i < file_->message_type_count(); ++i) {
@@ -593,9 +593,6 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   MutexLock lock(&mutex_);
   // Calculate file name.
   file_ = file;
-  // proto_to_pyi.py may set the output file name directly. To replace
-  // proto_to_pyi.py in google3, protoc also accept --pyi_out to set
-  // the output file name.
   std::string filename =
       parameter.empty() ? GetFileName(file, ".pyi") : parameter;
 

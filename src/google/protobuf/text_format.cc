@@ -245,8 +245,8 @@ class TextFormat::Parser::ParserImpl {
  public:
   // Determines if repeated values for non-repeated fields and
   // oneofs are permitted, e.g., the string "foo: 1 foo: 2" for a
-  // required/optional field named "foo", or "baz: 1 qux: 2"
-  // where "baz" and "qux" are members of the same oneof.
+  // required/optional field named "foo", or "baz: 1 bar: 2"
+  // where "baz" and "bar" are members of the same oneof.
   enum SingularOverwritePolicy {
     ALLOW_SINGULAR_OVERWRITES = 0,   // the last value is retained
     FORBID_SINGULAR_OVERWRITES = 1,  // an error is issued

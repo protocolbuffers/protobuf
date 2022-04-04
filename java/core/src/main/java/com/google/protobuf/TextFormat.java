@@ -472,7 +472,7 @@ public final class TextFormat {
 
       private final FieldDescriptor.JavaType fieldType;
 
-      public MapEntryAdapter(Object entry, FieldDescriptor fieldDescriptor) {
+      MapEntryAdapter(Object entry, FieldDescriptor fieldDescriptor) {
         if (entry instanceof MapEntry) {
           this.mapEntry = (MapEntry) entry;
         } else {
@@ -485,14 +485,14 @@ public final class TextFormat {
         return fieldDescriptor.getMessageType().getFields().get(0).getJavaType();
       }
 
-      public Object getKey() {
+      Object getKey() {
         if (mapEntry != null) {
           return mapEntry.getKey();
         }
         return null;
       }
 
-      public Object getEntry() {
+      Object getEntry() {
         if (mapEntry != null) {
           return mapEntry;
         }
@@ -1557,13 +1557,13 @@ public final class TextFormat {
 
     /**
      * Determines if repeated values for non-repeated fields and oneofs are permitted. For example,
-     * given required/optional field "foo" and a oneof containing "baz" and "qux":
+     * given required/optional field "foo" and a oneof containing "baz" and "moo":
      *
      * <ul>
      *   <li>"foo: 1 foo: 2"
-     *   <li>"baz: 1 qux: 2"
+     *   <li>"baz: 1 moo: 2"
      *   <li>merging "foo: 2" into a proto in which foo is already set, or
-     *   <li>merging "qux: 2" into a proto in which baz is already set.
+     *   <li>merging "moo: 2" into a proto in which baz is already set.
      * </ul>
      */
     public enum SingularOverwritePolicy {

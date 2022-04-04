@@ -171,7 +171,6 @@ class PROTOBUF_EXPORT Empty final :
   typedef void DestructorSkippable_;
   struct Impl_ {
   };
-  union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fempty_2eproto;
 };
 // ===================================================================
