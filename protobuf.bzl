@@ -89,7 +89,7 @@ def _proto_gen_impl(ctx):
             import_flags += ["-I" + gen_dir]
         import_flags = depset(direct=import_flags)
     else:
-        import_flags = depset(direct=["-I."])
+        import_flags = depset(direct=["-I.", "-I" + gen_dir])
 
     for dep in ctx.attr.deps:
         if type(dep.proto.import_flags) == "list":
