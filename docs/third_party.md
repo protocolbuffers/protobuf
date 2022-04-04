@@ -71,6 +71,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Kotlin: https://github.com/Kotlin/kotlinx.serialization
 * Kotlin: https://github.com/ButterCam/sisyphus
 * Kotlin: https://github.com/open-toast/protokt
+* Kotlin Multiplatform: https://github.com/streem/pbandk
 * Lua: https://code.google.com/p/protoc-gen-lua/
 * Lua: http://github.com/indygreg/lua-protobuf
 * Lua: https://github.com/Neopallium/lua-pb

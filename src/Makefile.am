@@ -744,6 +744,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/annotation_test_util.h              \
   google/protobuf/compiler/command_line_interface_unittest.cc  \
   google/protobuf/compiler/cpp/bootstrap_unittest.cc           \
+  google/protobuf/compiler/cpp/message_size_unittest.cc        \
   google/protobuf/compiler/cpp/metadata_test.cc                \
   google/protobuf/compiler/cpp/move_unittest.cc                \
   google/protobuf/compiler/cpp/plugin_unittest.cc              \

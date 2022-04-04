@@ -1311,12 +1311,12 @@ TEST(RepeatedPtrField, AddAllocated) {
   }
   field.RemoveLast();
   index = field.size();
-  std::string* qux = new std::string("qux");
-  field.AddAllocated(qux);
+  std::string* moo = new std::string("moo");
+  field.AddAllocated(moo);
   EXPECT_EQ(index + 1, field.size());
   // We should have discarded the cleared object.
   EXPECT_EQ(0, field.ClearedCount());
-  EXPECT_EQ(qux, &field.Get(index));
+  EXPECT_EQ(moo, &field.Get(index));
 }
 
 TEST(RepeatedPtrField, AddAllocatedDifferentArena) {
@@ -1906,8 +1906,8 @@ TEST_F(RepeatedPtrFieldIteratorTest, STLAlgorithms_lower_bound) {
 
 TEST_F(RepeatedPtrFieldIteratorTest, Mutation) {
   RepeatedPtrField<std::string>::iterator iter = proto_array_.begin();
-  *iter = "qux";
-  EXPECT_EQ("qux", proto_array_.Get(0));
+  *iter = "moo";
+  EXPECT_EQ("moo", proto_array_.Get(0));
 }
 
 // -------------------------------------------------------------------
@@ -2107,8 +2107,8 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound) {
 TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrMutation) {
   RepeatedPtrField<std::string>::pointer_iterator iter =
       proto_array_.pointer_begin();
-  **iter = "qux";
-  EXPECT_EQ("qux", proto_array_.Get(0));
+  **iter = "moo";
+  EXPECT_EQ("moo", proto_array_.Get(0));
 
   EXPECT_EQ("bar", proto_array_.Get(1));
   EXPECT_EQ("baz", proto_array_.Get(2));

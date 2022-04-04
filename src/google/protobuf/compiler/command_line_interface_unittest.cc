@@ -50,23 +50,26 @@
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/any.pb.h>
-#include <google/protobuf/compiler/mock_code_generator.h>
-#include <google/protobuf/compiler/subprocess.h>
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_custom_options.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/compiler/command_line_interface.h>
+#include <google/protobuf/compiler/mock_code_generator.h>
+#include <google/protobuf/compiler/subprocess.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/io_win32.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
+
+// Must be included last.
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -2776,6 +2779,8 @@ INSTANTIATE_TEST_SUITE_P(FileDescriptorSetSource, EncodeDecodeTest,
 }  // anonymous namespace
 
 #endif  // !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
+
+#include <google/protobuf/port_undef.inc>
 
 }  // namespace compiler
 }  // namespace protobuf

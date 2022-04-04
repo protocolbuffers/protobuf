@@ -165,6 +165,14 @@ build_csharp() {
 
   # Run csharp compatibility test between last released and the current version.
   csharp/compatibility_tests/v3.0.0/test.sh $LAST_RELEASED
+  
+  # Regression test for https://github.com/protocolbuffers/protobuf/issues/9526
+  # - all line endings in .proto and .cs (and .csproj) files should be LF.
+  if git ls-files --eol csharp | grep -E '\.cs|\.proto' | grep -v w/lf
+  then
+    echo "The files listed above have mixed or CRLF line endings; please change to LF."
+    exit 1
+  fi
 }
 
 build_golang() {
@@ -436,7 +444,7 @@ build_jruby92() {
 build_jruby93() {
   internal_build_cpp                # For conformance tests.
   internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
-  cd ruby && bash travis-test.sh jruby-9.3.3.0 && cd ..
+  cd ruby && bash travis-test.sh jruby-9.3.4.0 && cd ..
 }
 
 build_javascript() {

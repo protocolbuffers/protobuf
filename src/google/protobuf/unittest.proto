@@ -842,7 +842,7 @@ message TestOneof2 {
   optional string baz_string = 19 [default = "BAZ"];
 
   message NestedMessage {
-    optional int64 qux_int = 1;
+    optional int64 moo_int = 1;
     repeated int32 corge_int = 2;
   }
 
@@ -1032,6 +1032,17 @@ message TestMergeException {
 message TestCommentInjectionMessage {
   // */ <- This should not close the generated doc comment
   optional string a = 1 [default="*/ <- Neither should this."];
+}
+
+// Used to check that the c++ code generator re-orders messages to reduce
+// padding.
+message TestMessageSize {
+  optional bool m1 = 1;
+  optional int64 m2 = 2;
+  optional bool m3 = 3;
+  optional string m4 = 4;
+  optional int32 m5 = 5;
+  optional int64 m6 = 6;
 }
 
 

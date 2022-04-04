@@ -39,9 +39,9 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <gtest/gtest.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
-#include <gtest/gtest.h>
 
 namespace google {
 namespace protobuf {
@@ -2315,7 +2315,7 @@ inline void TestUtil::ExpectRepeatedExtensionsSwapped(
 }
 
 inline void TestUtil::SetOneof1(UNITTEST::TestOneof2* message) {
-  message->mutable_foo_lazy_message()->set_qux_int(100);
+  message->mutable_foo_lazy_message()->set_moo_int(100);
   message->set_bar_string("101");
   message->set_baz_int(102);
   message->set_baz_string("103");
@@ -2332,7 +2332,7 @@ inline void TestUtil::ExpectOneofSet1(const UNITTEST::TestOneof2& message) {
   ExpectAtMostOneFieldSetInOneof(message);
 
   EXPECT_TRUE(message.has_foo_lazy_message());
-  EXPECT_TRUE(message.foo_lazy_message().has_qux_int());
+  EXPECT_TRUE(message.foo_lazy_message().has_moo_int());
 
   EXPECT_TRUE(message.has_bar_string());
   EXPECT_TRUE(message.has_baz_int());
@@ -2340,7 +2340,7 @@ inline void TestUtil::ExpectOneofSet1(const UNITTEST::TestOneof2& message) {
 
   ASSERT_EQ(0, message.foo_lazy_message().corge_int_size());
 
-  EXPECT_EQ(100, message.foo_lazy_message().qux_int());
+  EXPECT_EQ(100, message.foo_lazy_message().moo_int());
   EXPECT_EQ("101", message.bar_string());
   EXPECT_EQ(102, message.baz_int());
   EXPECT_EQ("103", message.baz_string());

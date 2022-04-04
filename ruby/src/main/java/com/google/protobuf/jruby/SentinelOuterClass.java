@@ -37,74 +37,53 @@ package com.google.protobuf.jruby;
 
 public final class SentinelOuterClass {
   private SentinelOuterClass() {}
-  public static void registerAllExtensions(
-      com.google.protobuf.ExtensionRegistry registry) {
-  }
-  public interface SentinelOrBuilder extends
+
+  public static void registerAllExtensions(com.google.protobuf.ExtensionRegistry registry) {}
+
+  public interface SentinelOrBuilder
+      extends
       // @@protoc_insertion_point(interface_extends:com.google.protobuf.jruby.Sentinel)
       com.google.protobuf.MessageOrBuilder {
 
-    /**
-     * <code>optional int32 default_int32 = 1;</code>
-     */
+    /** <code>optional int32 default_int32 = 1;</code> */
     int getDefaultInt32();
 
-    /**
-     * <code>optional int64 default_int64 = 2;</code>
-     */
+    /** <code>optional int64 default_int64 = 2;</code> */
     long getDefaultInt64();
 
-    /**
-     * <code>optional uint32 default_unit32 = 3;</code>
-     */
+    /** <code>optional uint32 default_unit32 = 3;</code> */
     int getDefaultUnit32();
 
-    /**
-     * <code>optional uint64 default_uint64 = 4;</code>
-     */
+    /** <code>optional uint64 default_uint64 = 4;</code> */
     long getDefaultUint64();
 
-    /**
-     * <code>optional string default_string = 5;</code>
-     */
+    /** <code>optional string default_string = 5;</code> */
     java.lang.String getDefaultString();
-    /**
-     * <code>optional string default_string = 5;</code>
-     */
-    com.google.protobuf.ByteString
-        getDefaultStringBytes();
+    /** <code>optional string default_string = 5;</code> */
+    com.google.protobuf.ByteString getDefaultStringBytes();
 
-    /**
-     * <code>optional bool default_bool = 6;</code>
-     */
+    /** <code>optional bool default_bool = 6;</code> */
     boolean getDefaultBool();
 
-    /**
-     * <code>optional float default_float = 7;</code>
-     */
+    /** <code>optional float default_float = 7;</code> */
     float getDefaultFloat();
 
-    /**
-     * <code>optional double default_double = 8;</code>
-     */
+    /** <code>optional double default_double = 8;</code> */
     double getDefaultDouble();
 
-    /**
-     * <code>optional bytes default_bytes = 9;</code>
-     */
+    /** <code>optional bytes default_bytes = 9;</code> */
     com.google.protobuf.ByteString getDefaultBytes();
   }
-  /**
-   * Protobuf type {@code com.google.protobuf.jruby.Sentinel}
-   */
-  public  static final class Sentinel extends
-      com.google.protobuf.GeneratedMessage implements
+  /** Protobuf type {@code com.google.protobuf.jruby.Sentinel} */
+  public static final class Sentinel extends com.google.protobuf.GeneratedMessage
+      implements
       // @@protoc_insertion_point(message_implements:com.google.protobuf.jruby.Sentinel)
       SentinelOrBuilder {
     // Use Sentinel.newBuilder() to construct.
     private Sentinel(com.google.protobuf.GeneratedMessage.Builder builder) {
       super(builder);
     }
+
     private Sentinel() {
       defaultInt32_ = 0;
       defaultInt64_ = 0L;
@@ -118,40 +97,42 @@ public final class SentinelOuterClass {
     }
 
     @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-    getUnknownFields() {
+    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return com.google.protobuf.jruby.SentinelOuterClass.internal_static_com_google_protobuf_jruby_Sentinel_descriptor;
+
+    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+      return com.google.protobuf.jruby.SentinelOuterClass
+          .internal_static_com_google_protobuf_jruby_Sentinel_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.google.protobuf.jruby.SentinelOuterClass.internal_static_com_google_protobuf_jruby_Sentinel_fieldAccessorTable
+      return com.google.protobuf.jruby.SentinelOuterClass
+          .internal_static_com_google_protobuf_jruby_Sentinel_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.google.protobuf.jruby.SentinelOuterClass.Sentinel.class, com.google.protobuf.jruby.SentinelOuterClass.Sentinel.Builder.class);
+              com.google.protobuf.jruby.SentinelOuterClass.Sentinel.class,
+              com.google.protobuf.jruby.SentinelOuterClass.Sentinel.Builder.class);
     }
 
     public static final com.google.protobuf.Parser<Sentinel> PARSER =
         new com.google.protobuf.AbstractParser<Sentinel>() {
-      public Sentinel parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e.getMessage()).setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
-      }
-    };
+          public Sentinel parsePartialFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e.getMessage())
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
+          }
+        };
 
     @java.lang.Override
     public com.google.protobuf.Parser<Sentinel> getParserForType() {
@@ -160,52 +141,41 @@ public final class SentinelOuterClass {
 
     public static final int DEFAULT_INT32_FIELD_NUMBER = 1;
     private int defaultInt32_;
-    /**
-     * <code>optional int32 default_int32 = 1;</code>
-     */
+    /** <code>optional int32 default_int32 = 1;</code> */
     public int getDefaultInt32() {
       return defaultInt32_;
     }
 
     public static final int DEFAULT_INT64_FIELD_NUMBER = 2;
     private long defaultInt64_;
-    /**
-     * <code>optional int64 default_int64 = 2;</code>
-     */
+    /** <code>optional int64 default_int64 = 2;</code> */
     public long getDefaultInt64() {
       return defaultInt64_;
     }
 
     public static final int DEFAULT_UNIT32_FIELD_NUMBER = 3;
     private int defaultUnit32_;
-    /**
-     * <code>optional uint32 default_unit32 = 3;</code>
-     */
+    /** <code>optional uint32 default_unit32 = 3;</code> */
     public int getDefaultUnit32() {
       return defaultUnit32_;
     }
 
     public static final int DEFAULT_UINT64_FIELD_NUMBER = 4;
     private long defaultUint64_;
-    /**
-     * <code>optional uint64 default_uint64 = 4;</code>
-     */
+    /** <code>optional uint64 default_uint64 = 4;</code> */
     public long getDefaultUint64() {
       return defaultUint64_;
     }
 
     public static final int DEFAULT_STRING_FIELD_NUMBER = 5;
     private java.lang.Object defaultString_;
-    /**
-     * <code>optional string default_string = 5;</code>
-     */
+    /** <code>optional string default_string = 5;</code> */
     public java.lang.String getDefaultString() {
       java.lang.Object ref = defaultString_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           defaultString_ = s;
@@ -213,16 +183,12 @@ public final class SentinelOuterClass {
         return s;
       }
     }
-    /**
-     * <code>optional string default_string = 5;</code>
-     */
-    public com.google.protobuf.ByteString
-        getDefaultStringBytes() {
+    /** <code>optional string default_string = 5;</code> */
+    public com.google.protobuf.ByteString getDefaultStringBytes() {
       java.lang.Object ref = defaultString_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b =
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         defaultString_ = b;
         return b;
       } else {
@@ -232,36 +198,28 @@ public final class SentinelOuterClass {
 
     public static final int DEFAULT_BOOL_FIELD_NUMBER = 6;
     private boolean defaultBool_;
-    /**
-     * <code>optional bool default_bool = 6;</code>
-     */
+    /** <code>optional bool default_bool = 6;</code> */
     public boolean getDefaultBool() {
       return defaultBool_;
     }
 
     public static final int DEFAULT_FLOAT_FIELD_NUMBER = 7;
     private float defaultFloat_;
-    /**
-     * <code>optional float default_float = 7;</code>
-     */
+    /** <code>optional float default_float = 7;</code> */
     public float getDefaultFloat() {
       return defaultFloat_;
     }
 
     public static final int DEFAULT_DOUBLE_FIELD_NUMBER = 8;
     private double defaultDouble_;
-    /**
-     * <code>optional double default_double = 8;</code>
-     */
+    /** <code>optional double default_double = 8;</code> */
     public double getDefaultDouble() {
       return defaultDouble_;
     }
 
     public static final int DEFAULT_BYTES_FIELD_NUMBER = 9;
     private com.google.protobuf.ByteString defaultBytes_;
-    /**
-     * <code>optional bytes default_bytes = 9;</code>
-     */
+    /** <code>optional bytes default_bytes = 9;</code> */
     public com.google.protobuf.ByteString getDefaultBytes() {
       return defaultBytes_;
     }
@@ -271,47 +229,52 @@ public final class SentinelOuterClass {
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
+
     public static com.google.protobuf.jruby.SentinelOuterClass.Sentinel parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
+
     public static com.google.protobuf.jruby.SentinelOuterClass.Sentinel parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
+
     public static com.google.protobuf.jruby.SentinelOuterClass.Sentinel parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.google.protobuf.jruby.SentinelOuterClass.Sentinel parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
+
+    public static com.google.protobuf.jruby.SentinelOuterClass.Sentinel parseFrom(
+        java.io.InputStream input) throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
+
     public static com.google.protobuf.jruby.SentinelOuterClass.Sentinel parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static com.google.protobuf.jruby.SentinelOuterClass.Sentinel parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
+
+    public static com.google.protobuf.jruby.SentinelOuterClass.Sentinel parseDelimitedFrom(
+        java.io.InputStream input) throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
+
     public static com.google.protobuf.jruby.SentinelOuterClass.Sentinel parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
+
     public static com.google.protobuf.jruby.SentinelOuterClass.Sentinel parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+        com.google.protobuf.CodedInputStream input) throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
+
     public static com.google.protobuf.jruby.SentinelOuterClass.Sentinel parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -319,36 +282,45 @@ public final class SentinelOuterClass {
       return PARSER.parseFrom(input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return new Builder(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(com.google.protobuf.jruby.SentinelOuterClass.Sentinel prototype) {
+    public static Builder newBuilder() {
+      return new Builder();
+    }
+
+    public Builder newBuilderForType() {
+      return newBuilder();
+    }
+
+    public static Builder newBuilder(
+        com.google.protobuf.jruby.SentinelOuterClass.Sentinel prototype) {
       return newBuilder().mergeFrom(prototype);
     }
-    public Builder toBuilder() { return newBuilder(this); }
+
+    public Builder toBuilder() {
+      return newBuilder(this);
+    }
 
     @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+    protected Builder newBuilderForType(com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
-    /**
-     * Protobuf type {@code com.google.protobuf.jruby.Sentinel}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+    /** Protobuf type {@code com.google.protobuf.jruby.Sentinel} */
+    public static final class Builder extends com.google.protobuf.GeneratedMessage.Builder<Builder>
+        implements
         // @@protoc_insertion_point(builder_implements:com.google.protobuf.jruby.Sentinel)
         com.google.protobuf.jruby.SentinelOuterClass.SentinelOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return com.google.protobuf.jruby.SentinelOuterClass.internal_static_com_google_protobuf_jruby_Sentinel_descriptor;
+      public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+        return com.google.protobuf.jruby.SentinelOuterClass
+            .internal_static_com_google_protobuf_jruby_Sentinel_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.google.protobuf.jruby.SentinelOuterClass.internal_static_com_google_protobuf_jruby_Sentinel_fieldAccessorTable
+        return com.google.protobuf.jruby.SentinelOuterClass
+            .internal_static_com_google_protobuf_jruby_Sentinel_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.google.protobuf.jruby.SentinelOuterClass.Sentinel.class, com.google.protobuf.jruby.SentinelOuterClass.Sentinel.Builder.class);
+                com.google.protobuf.jruby.SentinelOuterClass.Sentinel.class,
+                com.google.protobuf.jruby.SentinelOuterClass.Sentinel.Builder.class);
       }
 
       // Construct using com.google.protobuf.jruby.SentinelOuterClass.Sentinel.newBuilder()
@@ -356,15 +328,15 @@ public final class SentinelOuterClass {
         maybeForceBuilderInitialization();
       }
 
-      private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      private Builder(com.google.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
+
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {}
       }
+
       public Builder clear() {
         super.clear();
         defaultInt32_ = 0;
@@ -388,9 +360,9 @@ public final class SentinelOuterClass {
         return this;
       }
 
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return com.google.protobuf.jruby.SentinelOuterClass.internal_static_com_google_protobuf_jruby_Sentinel_descriptor;
+      public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
+        return com.google.protobuf.jruby.SentinelOuterClass
+            .internal_static_com_google_protobuf_jruby_Sentinel_descriptor;
       }
 
       public com.google.protobuf.jruby.SentinelOuterClass.Sentinel getDefaultInstanceForType() {
@@ -406,7 +378,8 @@ public final class SentinelOuterClass {
       }
 
       public com.google.protobuf.jruby.SentinelOuterClass.Sentinel buildPartial() {
-        com.google.protobuf.jruby.SentinelOuterClass.Sentinel result = new com.google.protobuf.jruby.SentinelOuterClass.Sentinel(this);
+        com.google.protobuf.jruby.SentinelOuterClass.Sentinel result =
+            new com.google.protobuf.jruby.SentinelOuterClass.Sentinel(this);
         result.defaultInt32_ = defaultInt32_;
         result.defaultInt64_ = defaultInt64_;
         result.defaultUnit32_ = defaultUnit32_;
@@ -420,26 +393,19 @@ public final class SentinelOuterClass {
         return result;
       }
 
-
-      private int defaultInt32_ ;
-      /**
-       * <code>optional int32 default_int32 = 1;</code>
-       */
+      private int defaultInt32_;
+      /** <code>optional int32 default_int32 = 1;</code> */
       public int getDefaultInt32() {
         return defaultInt32_;
       }
-      /**
-       * <code>optional int32 default_int32 = 1;</code>
-       */
+      /** <code>optional int32 default_int32 = 1;</code> */
       public Builder setDefaultInt32(int value) {
 
         defaultInt32_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>optional int32 default_int32 = 1;</code>
-       */
+      /** <code>optional int32 default_int32 = 1;</code> */
       public Builder clearDefaultInt32() {
 
         defaultInt32_ = 0;
@@ -447,25 +413,19 @@ public final class SentinelOuterClass {
         return this;
       }
 
-      private long defaultInt64_ ;
-      /**
-       * <code>optional int64 default_int64 = 2;</code>
-       */
+      private long defaultInt64_;
+      /** <code>optional int64 default_int64 = 2;</code> */
       public long getDefaultInt64() {
         return defaultInt64_;
       }
-      /**
-       * <code>optional int64 default_int64 = 2;</code>
-       */
+      /** <code>optional int64 default_int64 = 2;</code> */
       public Builder setDefaultInt64(long value) {
 
         defaultInt64_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>optional int64 default_int64 = 2;</code>
-       */
+      /** <code>optional int64 default_int64 = 2;</code> */
       public Builder clearDefaultInt64() {
 
         defaultInt64_ = 0L;
@@ -473,25 +433,19 @@ public final class SentinelOuterClass {
         return this;
       }
 
-      private int defaultUnit32_ ;
-      /**
-       * <code>optional uint32 default_unit32 = 3;</code>
-       */
+      private int defaultUnit32_;
+      /** <code>optional uint32 default_unit32 = 3;</code> */
       public int getDefaultUnit32() {
         return defaultUnit32_;
       }
-      /**
-       * <code>optional uint32 default_unit32 = 3;</code>
-       */
+      /** <code>optional uint32 default_unit32 = 3;</code> */
       public Builder setDefaultUnit32(int value) {
 
         defaultUnit32_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>optional uint32 default_unit32 = 3;</code>
-       */
+      /** <code>optional uint32 default_unit32 = 3;</code> */
       public Builder clearDefaultUnit32() {
 
         defaultUnit32_ = 0;
@@ -499,25 +453,19 @@ public final class SentinelOuterClass {
         return this;
       }
 
-      private long defaultUint64_ ;
-      /**
-       * <code>optional uint64 default_uint64 = 4;</code>
-       */
+      private long defaultUint64_;
+      /** <code>optional uint64 default_uint64 = 4;</code> */
       public long getDefaultUint64() {
         return defaultUint64_;
       }
-      /**
-       * <code>optional uint64 default_uint64 = 4;</code>
-       */
+      /** <code>optional uint64 default_uint64 = 4;</code> */
       public Builder setDefaultUint64(long value) {
 
         defaultUint64_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>optional uint64 default_uint64 = 4;</code>
-       */
+      /** <code>optional uint64 default_uint64 = 4;</code> */
       public Builder clearDefaultUint64() {
 
         defaultUint64_ = 0L;
@@ -526,14 +474,11 @@ public final class SentinelOuterClass {
       }
 
       private java.lang.Object defaultString_ = "";
-      /**
-       * <code>optional string default_string = 5;</code>
-       */
+      /** <code>optional string default_string = 5;</code> */
       public java.lang.String getDefaultString() {
         java.lang.Object ref = defaultString_;
         if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
+          com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             defaultString_ = s;
@@ -543,77 +488,59 @@ public final class SentinelOuterClass {
           return (java.lang.String) ref;
         }
       }
-      /**
-       * <code>optional string default_string = 5;</code>
-       */
-      public com.google.protobuf.ByteString
-          getDefaultStringBytes() {
+      /** <code>optional string default_string = 5;</code> */
+      public com.google.protobuf.ByteString getDefaultStringBytes() {
         java.lang.Object ref = defaultString_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b =
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+              com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
           defaultString_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
-      /**
-       * <code>optional string default_string = 5;</code>
-       */
-      public Builder setDefaultString(
-          java.lang.String value) {
+      /** <code>optional string default_string = 5;</code> */
+      public Builder setDefaultString(java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
+          throw new NullPointerException();
+        }
 
         defaultString_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>optional string default_string = 5;</code>
-       */
+      /** <code>optional string default_string = 5;</code> */
       public Builder clearDefaultString() {
 
         defaultString_ = getDefaultInstance().getDefaultString();
         onChanged();
         return this;
       }
-      /**
-       * <code>optional string default_string = 5;</code>
-       */
-      public Builder setDefaultStringBytes(
-          com.google.protobuf.ByteString value) {
+      /** <code>optional string default_string = 5;</code> */
+      public Builder setDefaultStringBytes(com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
+          throw new NullPointerException();
+        }
 
         defaultString_ = value;
         onChanged();
         return this;
       }
 
-      private boolean defaultBool_ ;
-      /**
-       * <code>optional bool default_bool = 6;</code>
-       */
+      private boolean defaultBool_;
+      /** <code>optional bool default_bool = 6;</code> */
       public boolean getDefaultBool() {
         return defaultBool_;
       }
-      /**
-       * <code>optional bool default_bool = 6;</code>
-       */
+      /** <code>optional bool default_bool = 6;</code> */
       public Builder setDefaultBool(boolean value) {
 
         defaultBool_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>optional bool default_bool = 6;</code>
-       */
+      /** <code>optional bool default_bool = 6;</code> */
       public Builder clearDefaultBool() {
 
         defaultBool_ = false;
@@ -621,25 +548,19 @@ public final class SentinelOuterClass {
         return this;
       }
 
-      private float defaultFloat_ ;
-      /**
-       * <code>optional float default_float = 7;</code>
-       */
+      private float defaultFloat_;
+      /** <code>optional float default_float = 7;</code> */
       public float getDefaultFloat() {
         return defaultFloat_;
       }
-      /**
-       * <code>optional float default_float = 7;</code>
-       */
+      /** <code>optional float default_float = 7;</code> */
       public Builder setDefaultFloat(float value) {
 
         defaultFloat_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>optional float default_float = 7;</code>
-       */
+      /** <code>optional float default_float = 7;</code> */
       public Builder clearDefaultFloat() {
 
         defaultFloat_ = 0F;
@@ -647,25 +568,19 @@ public final class SentinelOuterClass {
         return this;
       }
 
-      private double defaultDouble_ ;
-      /**
-       * <code>optional double default_double = 8;</code>
-       */
+      private double defaultDouble_;
+      /** <code>optional double default_double = 8;</code> */
       public double getDefaultDouble() {
         return defaultDouble_;
       }
-      /**
-       * <code>optional double default_double = 8;</code>
-       */
+      /** <code>optional double default_double = 8;</code> */
       public Builder setDefaultDouble(double value) {
 
         defaultDouble_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>optional double default_double = 8;</code>
-       */
+      /** <code>optional double default_double = 8;</code> */
       public Builder clearDefaultDouble() {
 
         defaultDouble_ = 0D;
@@ -674,33 +589,28 @@ public final class SentinelOuterClass {
       }
 
       private com.google.protobuf.ByteString defaultBytes_ = com.google.protobuf.ByteString.EMPTY;
-      /**
-       * <code>optional bytes default_bytes = 9;</code>
-       */
+      /** <code>optional bytes default_bytes = 9;</code> */
       public com.google.protobuf.ByteString getDefaultBytes() {
         return defaultBytes_;
       }
-      /**
-       * <code>optional bytes default_bytes = 9;</code>
-       */
+      /** <code>optional bytes default_bytes = 9;</code> */
       public Builder setDefaultBytes(com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
+          throw new NullPointerException();
+        }
 
         defaultBytes_ = value;
         onChanged();
         return this;
       }
-      /**
-       * <code>optional bytes default_bytes = 9;</code>
-       */
+      /** <code>optional bytes default_bytes = 9;</code> */
       public Builder clearDefaultBytes() {
 
         defaultBytes_ = getDefaultInstance().getDefaultBytes();
         onChanged();
         return this;
       }
+
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -711,12 +621,13 @@ public final class SentinelOuterClass {
         return this;
       }
 
-
       // @@protoc_insertion_point(builder_scope:com.google.protobuf.jruby.Sentinel)
     }
 
     // @@protoc_insertion_point(class_scope:com.google.protobuf.jruby.Sentinel)
-    private static final com.google.protobuf.jruby.SentinelOuterClass.Sentinel defaultInstance;static {
+    private static final com.google.protobuf.jruby.SentinelOuterClass.Sentinel defaultInstance;
+
+    static {
       defaultInstance = new com.google.protobuf.jruby.SentinelOuterClass.Sentinel();
     }
 
@@ -727,49 +638,55 @@ public final class SentinelOuterClass {
     public com.google.protobuf.jruby.SentinelOuterClass.Sentinel getDefaultInstanceForType() {
       return defaultInstance;
     }
-
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_com_google_protobuf_jruby_Sentinel_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_com_google_protobuf_jruby_Sentinel_descriptor;
+  private static com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_com_google_protobuf_jruby_Sentinel_fieldAccessorTable;
 
-  public static com.google.protobuf.Descriptors.FileDescriptor
-      getDescriptor() {
+  public static com.google.protobuf.Descriptors.FileDescriptor getDescriptor() {
     return descriptor;
   }
-  private static com.google.protobuf.Descriptors.FileDescriptor
-      descriptor;
+
+  private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
+
   static {
     java.lang.String[] descriptorData = {
-      "\n\016sentinel.proto\022\031com.google.protobuf.jr" +
-      "uby\"\334\001\n\010Sentinel\022\025\n\rdefault_int32\030\001 \001(\005\022" +
-      "\025\n\rdefault_int64\030\002 \001(\003\022\026\n\016default_unit32" +
-      "\030\003 \001(\r\022\026\n\016default_uint64\030\004 \001(\004\022\026\n\016defaul" +
-      "t_string\030\005 \001(\t\022\024\n\014default_bool\030\006 \001(\010\022\025\n\r" +
-      "default_float\030\007 \001(\002\022\026\n\016default_double\030\010 " +
-      "\001(\001\022\025\n\rdefault_bytes\030\t \001(\014B\002H\002b\006proto3"
+      "\n\016sentinel.proto\022\031com.google.protobuf.jr"
+          + "uby\"\334\001\n\010Sentinel\022\025\n\rdefault_int32\030\001 \001(\005\022"
+          + "\025\n\rdefault_int64\030\002 \001(\003\022\026\n\016default_unit32"
+          + "\030\003 \001(\r\022\026\n\016default_uint64\030\004 \001(\004\022\026\n\016defaul"
+          + "t_string\030\005 \001(\t\022\024\n\014default_bool\030\006 \001(\010\022\025\n\r"
+          + "default_float\030\007 \001(\002\022\026\n\016default_double\030\010 "
+          + "\001(\001\022\025\n\rdefault_bytes\030\t \001(\014B\002H\002b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+        new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
           public com.google.protobuf.ExtensionRegistry assignDescriptors(
               com.google.protobuf.Descriptors.FileDescriptor root) {
             descriptor = root;
             return null;
           }
         };
-    com.google.protobuf.Descriptors.FileDescriptor
-      .internalBuildGeneratedFileFrom(descriptorData,
-        new com.google.protobuf.Descriptors.FileDescriptor[] {
-        }, assigner);
+    com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
+        descriptorData, new com.google.protobuf.Descriptors.FileDescriptor[] {}, assigner);
     internal_static_com_google_protobuf_jruby_Sentinel_descriptor =
-      getDescriptor().getMessageTypes().get(0);
-    internal_static_com_google_protobuf_jruby_Sentinel_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_com_google_protobuf_jruby_Sentinel_descriptor,
-        new java.lang.String[] { "DefaultInt32", "DefaultInt64", "DefaultUnit32", "DefaultUint64", "DefaultString", "DefaultBool", "DefaultFloat", "DefaultDouble", "DefaultBytes", });
+        getDescriptor().getMessageTypes().get(0);
+    internal_static_com_google_protobuf_jruby_Sentinel_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+            internal_static_com_google_protobuf_jruby_Sentinel_descriptor,
+            new java.lang.String[] {
+              "DefaultInt32",
+              "DefaultInt64",
+              "DefaultUnit32",
+              "DefaultUint64",
+              "DefaultString",
+              "DefaultBool",
+              "DefaultFloat",
+              "DefaultDouble",
+              "DefaultBytes",
+            });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

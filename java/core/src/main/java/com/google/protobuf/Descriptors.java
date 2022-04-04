@@ -1295,13 +1295,13 @@ public final class Descriptors {
      *   }
      *   message Bar {
      *     extend Foo {
-     *       optional int32 qux = 4321;
+     *       optional int32 moo = 4321;
      *     }
      *   }
      * </pre>
      *
-     * Both {@code baz}'s and {@code qux}'s containing type is {@code Foo}. However, {@code baz}'s
-     * extension scope is {@code null} while {@code qux}'s extension scope is {@code Bar}.
+     * Both {@code baz}'s and {@code moo}'s containing type is {@code Foo}. However, {@code baz}'s
+     * extension scope is {@code null} while {@code moo}'s extension scope is {@code Bar}.
      */
     public Descriptor getExtensionScope() {
       if (!isExtension()) {

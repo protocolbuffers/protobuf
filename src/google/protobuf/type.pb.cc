@@ -667,7 +667,7 @@ size_t Type::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Type::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     Type::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Type::GetClassData() const { return &_class_data_; }
@@ -1169,7 +1169,7 @@ size_t Field::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Field::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     Field::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Field::GetClassData() const { return &_class_data_; }
@@ -1552,7 +1552,7 @@ size_t Enum::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Enum::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     Enum::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Enum::GetClassData() const { return &_class_data_; }
@@ -1829,7 +1829,7 @@ size_t EnumValue::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData EnumValue::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     EnumValue::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumValue::GetClassData() const { return &_class_data_; }
@@ -2084,7 +2084,7 @@ size_t Option::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Option::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     Option::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Option::GetClassData() const { return &_class_data_; }

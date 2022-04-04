@@ -348,7 +348,7 @@ inline void TestUtil::ReflectionTester::SetOneofViaReflection(
   Message* sub_message = reflection->MutableMessage(
       message, descriptor->FindFieldByName("foo_lazy_message"));
   sub_message->GetReflection()->SetInt64(
-      sub_message, sub_message->GetDescriptor()->FindFieldByName("qux_int"),
+      sub_message, sub_message->GetDescriptor()->FindFieldByName("moo_int"),
       100);
 
   reflection->SetString(message, descriptor->FindFieldByName("bar_cord"),
@@ -376,7 +376,7 @@ inline void TestUtil::ReflectionTester::ExpectOneofSetViaReflection(
       message, descriptor->FindFieldByName("foo_lazy_message"));
   EXPECT_EQ(100, sub_message->GetReflection()->GetInt64(
                      *sub_message,
-                     sub_message->GetDescriptor()->FindFieldByName("qux_int")));
+                     sub_message->GetDescriptor()->FindFieldByName("moo_int")));
 
   EXPECT_EQ("101", reflection->GetString(
                        message, descriptor->FindFieldByName("bar_cord")));

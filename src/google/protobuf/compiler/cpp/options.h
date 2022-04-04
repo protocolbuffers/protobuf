@@ -79,7 +79,7 @@ struct Options {
   bool opensource_runtime = false;
   bool annotate_accessor = false;
   bool unused_field_stripping = false;
-  bool unverified_lazy_message_sets = true;
+  bool unverified_lazy_message_sets = false;
   bool eagerly_verified_lazy = true;
   bool profile_driven_inline_string = true;
   bool message_owned_arena_trial = false;

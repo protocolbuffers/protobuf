@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
