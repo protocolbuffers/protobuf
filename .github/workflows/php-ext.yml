@@ -1,0 +1,43 @@
+name: PHP extension
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build-php:
+    name: Build PHP extension
+    runs-on: ubuntu-latest
+    container: ${{ matrix.php-image }}
+    strategy:
+      matrix:
+        php-image:
+          - php:7.4-cli
+          - php:8.1-cli
+    steps:
+      - name: Install git
+        run: |
+          apt-get update -q
+          apt-get install -qy --no-install-recommends git
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Prepare source code
+        run: |
+          rm -rf "$GITHUB_WORKSPACE/php/ext/google/protobuf/third_party"
+          cp -r "$GITHUB_WORKSPACE/third_party" "$GITHUB_WORKSPACE/php/ext/google/protobuf"
+          cp "$GITHUB_WORKSPACE/LICENSE" "$GITHUB_WORKSPACE/php/ext/google/protobuf"
+      - name: Create package
+        run: |
+          cd /tmp
+          rm -rf protobuf-*.tgz
+          pecl package "$GITHUB_WORKSPACE/php/ext/google/protobuf/package.xml"
+      - name: Compile extension
+        run: |
+          cd /tmp
+          MAKE="make -j$(nproc)" pecl install protobuf-*.tgz
+      - name: Enable extension
+        run: docker-php-ext-enable protobuf
+      - name: Inspect extension
+        run: php --ri protobuf
