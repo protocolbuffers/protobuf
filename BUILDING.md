@@ -13,8 +13,7 @@ Likely incomplete
 * bazel
 * clang
 
-At the top level, this project is built with bazel. Java parts 
-are built with Maven. All languages assume that protoc is built and
+This project is built with bazel. Individual language builds assume that protoc is built and
 installed first. 
 
 
@@ -34,6 +33,6 @@ Now run the tests:
 
 ## Building subprojects
 
-After the initial build, it's not always necessary to build everything.
-For instance, you can build and test the Java runtime without
-rebuilding protoc as long as the build artifacts are still available. 
+After the initial build, it's not always necessary to rebuild everything after a change.
+For instance, you can build and test changes to the Java runtime without
+rebuilding protoc as long as you've built it once and the build artifacts are still available. 
