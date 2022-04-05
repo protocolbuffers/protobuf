@@ -192,7 +192,7 @@ public class JsonFormatTest {
     return JsonFormat.printer().sortingMapKeys().print(message);
   }
   private String toUnescapedJsonString(Message message) throws IOException {
-    return JsonFormat.printer().disablingHtmlEscaping().print(message);
+    return JsonFormat.printer().withoutHtmlEscaping().print(message);
   }
 
   private void mergeFromJson(String json, Message.Builder builder) throws IOException {
