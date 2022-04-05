@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/env python3
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2015 Google Inc.  All rights reserved.
