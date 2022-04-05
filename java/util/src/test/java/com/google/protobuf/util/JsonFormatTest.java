@@ -191,6 +191,9 @@ public class JsonFormatTest {
   private String toSortedJsonString(Message message) throws IOException {
     return JsonFormat.printer().sortingMapKeys().print(message);
   }
+  private String toUnescapedJsonString(Message message) throws IOException {
+    return JsonFormat.printer().disablingHtmlEscaping().print(message);
+  }
 
   private void mergeFromJson(String json, Message.Builder builder) throws IOException {
     JsonFormat.parser().merge(json, builder);
@@ -1503,6 +1506,17 @@ public class JsonFormatTest {
 
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     JsonFormat.parser().merge(toJsonString(message), builder);
+    assertThat(builder.getOptionalString()).isEqualTo(message.getOptionalString());
+  }
+
+  @Test
+  public void testUnescapedStringValue() throws Exception {
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalString("=</script>").build();
+    assertThat(toUnescapedJsonString(message))
+        .isEqualTo("{\n  \"optionalString\": \"=</script>\"\n}");
+
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    JsonFormat.parser().merge(toUnescapedJsonString(message), builder);
     assertThat(builder.getOptionalString()).isEqualTo(message.getOptionalString());
   }
 
