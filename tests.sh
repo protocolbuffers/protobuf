@@ -272,10 +272,17 @@ build_java_jdk7() {
   use_java jdk7
   build_java_with_conformance_tests
 }
+
 build_java_oracle7() {
   use_java oracle7
   build_java oracle7
 }
+
+build_java_jdk8() {
+  use_java jdk8
+  build_java_with_conformance_tests
+}
+
 build_java_linkage_monitor() {
   # Linkage Monitor checks compatibility with other Google libraries
   # https://github.com/GoogleCloudPlatform/cloud-opensource-java/tree/master/linkage-monitor
@@ -404,7 +411,6 @@ build_python39_cpp() {
 build_python310_cpp() {
   build_python_cpp_version py310-cpp
 }
-
 
 build_ruby23() {
   internal_build_cpp  # For conformance tests.
@@ -587,6 +593,7 @@ Usage: $0 { cpp |
             csharp |
             java_jdk7 |
             java_oracle7 |
+            java_jdk8 |
             java_linkage_monitor |
             objectivec_ios |
             objectivec_ios_debug |
