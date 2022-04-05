@@ -115,7 +115,8 @@ public class JsonFormat {
         /* preservingProtoFieldNames */ false,
         /* omittingInsignificantWhitespace */ false,
         /* printingEnumsAsInts */ false,
-        /* sortingMapKeys */ false);
+        /* sortingMapKeys */ false,
+        /* disablingHtmlEscaping */ false);
   }
 
   /**
@@ -138,6 +139,7 @@ public class JsonFormat {
     private final boolean omittingInsignificantWhitespace;
     private final boolean printingEnumsAsInts;
     private final boolean sortingMapKeys;
+    private final boolean disablingHtmlEscaping;
 
     private Printer(
         com.google.protobuf.TypeRegistry registry,
@@ -147,7 +149,8 @@ public class JsonFormat {
         boolean preservingProtoFieldNames,
         boolean omittingInsignificantWhitespace,
         boolean printingEnumsAsInts,
-        boolean sortingMapKeys) {
+        boolean sortingMapKeys,
+        boolean disablingHtmlEscaping) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
@@ -156,6 +159,7 @@ public class JsonFormat {
       this.omittingInsignificantWhitespace = omittingInsignificantWhitespace;
       this.printingEnumsAsInts = printingEnumsAsInts;
       this.sortingMapKeys = sortingMapKeys;
+      this.disablingHtmlEscaping = disablingHtmlEscaping;
     }
 
     /**
@@ -177,7 +181,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          disablingHtmlEscaping);
     }
 
     /**
@@ -199,7 +204,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          disablingHtmlEscaping);
     }
 
     /**
@@ -218,7 +224,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          disablingHtmlEscaping);
     }
 
     /**
@@ -235,7 +242,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           true,
-          sortingMapKeys);
+          sortingMapKeys,
+          disablingHtmlEscaping);
     }
 
     private void checkUnsetPrintingEnumsAsInts() {
@@ -265,7 +273,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          disablingHtmlEscaping);
     }
 
     private void checkUnsetIncludingDefaultValueFields() {
@@ -290,7 +299,8 @@ public class JsonFormat {
           true,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          disablingHtmlEscaping);
     }
 
 
@@ -319,7 +329,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           true,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          disablingHtmlEscaping);
     }
 
     /**
@@ -342,6 +353,27 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
+          true,
+          disablingHtmlEscaping);
+    }
+
+    /**
+     * Create a new {@link Printer} that will disable HTML escaping in the JSON output.
+     *
+     * <p>The new printer has its underlying {@link Gson#htmlSafe()} returning false.
+     *
+     * <p>This new Printer clones all other configurations from the current {@link Printer}.
+     */
+    public Printer disablingHtmlEscaping() {
+      return new Printer(
+          registry,
+          oldRegistry,
+          alwaysOutputDefaultValueFields,
+          includingDefaultValueFields,
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts,
+          sortingMapKeys,
           true);
     }
 
@@ -364,7 +396,8 @@ public class JsonFormat {
               output,
               omittingInsignificantWhitespace,
               printingEnumsAsInts,
-              sortingMapKeys)
+              sortingMapKeys,
+              disablingHtmlEscaping)
           .print(message);
     }
 
@@ -723,6 +756,8 @@ public class JsonFormat {
 
     private static class GsonHolder {
       private static final Gson DEFAULT_GSON = new GsonBuilder().create();
+      private static final Gson DEFAULT_NO_HTML_ESCAPING_GSON =
+          DEFAULT_GSON.newBuilder().disableHtmlEscaping().create();
     }
 
     PrinterImpl(
@@ -734,7 +769,8 @@ public class JsonFormat {
         Appendable jsonOutput,
         boolean omittingInsignificantWhitespace,
         boolean printingEnumsAsInts,
-        boolean sortingMapKeys) {
+        boolean sortingMapKeys,
+        boolean disablingHtmlEscaping) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
@@ -742,7 +778,10 @@ public class JsonFormat {
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.printingEnumsAsInts = printingEnumsAsInts;
       this.sortingMapKeys = sortingMapKeys;
-      this.gson = GsonHolder.DEFAULT_GSON;
+      this.gson =
+          disablingHtmlEscaping
+              ? GsonHolder.DEFAULT_NO_HTML_ESCAPING_GSON
+              : GsonHolder.DEFAULT_GSON;
       // json format related properties, determined by printerType
       if (omittingInsignificantWhitespace) {
         this.generator = new CompactTextGenerator(jsonOutput);
