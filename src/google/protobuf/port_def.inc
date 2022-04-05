@@ -779,6 +779,8 @@
 #undef GetClassName
 #pragma push_macro("GetMessage")
 #undef GetMessage
+#pragma push_macro("GetObject")
+#undef GetObject
 #pragma push_macro("IGNORE")
 #undef IGNORE
 #pragma push_macro("IN")

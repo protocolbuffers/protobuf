@@ -114,6 +114,7 @@
 #pragma pop_macro("ERROR_NOT_FOUND")
 #pragma pop_macro("GetClassName")
 #pragma pop_macro("GetMessage")
+#pragma pop_macro("GetObject")
 #pragma pop_macro("IGNORE")
 #pragma pop_macro("IN")
 #pragma pop_macro("INPUT_KEYBOARD")
