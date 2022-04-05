@@ -821,6 +821,23 @@ public class JsonFormatTest {
   }
 
   @Test
+  // https://github.com/protocolbuffers/protobuf/issues/7456
+  public void testArrayTypeMismatch() throws IOException {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    try {
+      mergeFromJson(
+          "{\n"
+              + "  \"repeated_int32\": 5\n"
+              + "}",
+          builder);
+      assertWithMessage("should have thrown exception for incorrect type").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected).hasMessageThat()
+          .isEqualTo("Expected an array for repeated_int32 but found 5");
+    }
+  }
+
+  @Test
   public void testParserAcceptNonQuotedObjectKey() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     mergeFromJson(

@@ -51,9 +51,9 @@ namespace cpp {
 //
 // For example, if you had:
 //   package foo.bar;
-//   message Baz { message Qux {} }
+//   message Baz { message Moo {} }
 // Then the non-qualified version would be:
-//   Baz_Qux
+//   Baz_Moo
 std::string ClassName(const Descriptor* descriptor);
 std::string ClassName(const EnumDescriptor* enum_descriptor);
 
@@ -61,9 +61,9 @@ std::string ClassName(const EnumDescriptor* enum_descriptor);
 //
 // For example, if you had:
 //   package foo.bar;
-//   message Baz { message Qux {} }
-// Then the qualified ClassName for Qux would be:
-//   ::foo::bar::Baz_Qux
+//   message Baz { message Moo {} }
+// Then the qualified ClassName for Moo would be:
+//   ::foo::bar::Baz_Moo
 std::string QualifiedClassName(const Descriptor* d);
 std::string QualifiedClassName(const EnumDescriptor* d);
 std::string QualifiedExtensionName(const FieldDescriptor* d);

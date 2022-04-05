@@ -128,11 +128,11 @@ std::string QualifiedClassName(const EnumDescriptor* d);
 // Returns the non-nested type name for the given type.  If "qualified" is
 // true, prefix the type with the full namespace.  For example, if you had:
 //   package foo.bar;
-//   message Baz { message Qux {} }
-// Then the qualified ClassName for Qux would be:
-//   ::foo::bar::Baz_Qux
+//   message Baz { message Moo {} }
+// Then the qualified ClassName for Moo would be:
+//   ::foo::bar::Baz_Moo
 // While the non-qualified version would be:
-//   Baz_Qux
+//   Baz_Moo
 inline std::string ClassName(const Descriptor* descriptor, bool qualified) {
   return qualified ? QualifiedClassName(descriptor, Options())
                    : ClassName(descriptor);
@@ -735,6 +735,18 @@ inline std::string SimpleBaseClass(const Descriptor* desc,
   return "";
 }
 
+// Returns true if this message has a _tracker_ field.
+inline bool HasTracker(const Descriptor* desc, const Options& options) {
+  return options.field_listener_options.inject_field_listener_events &&
+         desc->file()->options().optimize_for() !=
+             google::protobuf::FileOptions::LITE_RUNTIME;
+}
+
+// Returns true if this message needs an Impl_ struct for it's data.
+inline bool HasImplData(const Descriptor* desc, const Options& options) {
+  return !HasSimpleBaseClass(desc, options);
+}
+
 // Formatter is a functor class which acts as a closure around printer and
 // the variable map. It's much like printer->Print except it supports both named
 // variables that are substituted using a key value map and direct arguments. In
@@ -1023,6 +1035,8 @@ bool ShouldVerify(const FileDescriptor* file, const Options& options,
 bool ShouldVerifySimple(const Descriptor* descriptor);
 
 bool IsUtf8String(const FieldDescriptor* field);
+
+bool HasMessageFieldOrExtension(const Descriptor* desc);
 
 }  // namespace cpp
 }  // namespace compiler

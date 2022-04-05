@@ -405,7 +405,7 @@ size_t DoubleValue::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData DoubleValue::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     DoubleValue::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*DoubleValue::GetClassData() const { return &_class_data_; }
@@ -598,7 +598,7 @@ size_t FloatValue::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData FloatValue::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     FloatValue::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FloatValue::GetClassData() const { return &_class_data_; }
@@ -783,7 +783,7 @@ size_t Int64Value::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Int64Value::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     Int64Value::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Int64Value::GetClassData() const { return &_class_data_; }
@@ -964,7 +964,7 @@ size_t UInt64Value::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData UInt64Value::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     UInt64Value::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UInt64Value::GetClassData() const { return &_class_data_; }
@@ -1145,7 +1145,7 @@ size_t Int32Value::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Int32Value::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     Int32Value::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Int32Value::GetClassData() const { return &_class_data_; }
@@ -1326,7 +1326,7 @@ size_t UInt32Value::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData UInt32Value::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     UInt32Value::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UInt32Value::GetClassData() const { return &_class_data_; }
@@ -1507,7 +1507,7 @@ size_t BoolValue::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData BoolValue::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     BoolValue::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*BoolValue::GetClassData() const { return &_class_data_; }
@@ -1708,7 +1708,7 @@ size_t StringValue::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData StringValue::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     StringValue::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*StringValue::GetClassData() const { return &_class_data_; }
@@ -1909,7 +1909,7 @@ size_t BytesValue::ByteSizeLong() const {
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData BytesValue::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     BytesValue::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*BytesValue::GetClassData() const { return &_class_data_; }

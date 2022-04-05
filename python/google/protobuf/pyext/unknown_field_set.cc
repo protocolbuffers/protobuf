@@ -133,6 +133,8 @@ static void Dealloc(PyObject* pself) {
   PyUnknownFieldSet* self = reinterpret_cast<PyUnknownFieldSet*>(pself);
   if (self->parent == nullptr) {
     delete self->fields;
+  } else {
+    Py_CLEAR(self->parent);
   }
   auto* py_type = Py_TYPE(pself);
   self->~PyUnknownFieldSet();

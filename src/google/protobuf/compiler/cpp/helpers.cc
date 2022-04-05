@@ -1529,7 +1529,8 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
 inline bool IsMessageOwnedArenaEligible(const Descriptor* desc,
                                         const Options& options) {
   return GetOptimizeFor(desc->file(), options) != FileOptions::LITE_RUNTIME &&
-         AllocExpected(desc) && !options.bootstrap;
+         !options.bootstrap && !options.opensource_runtime &&
+         AllocExpected(desc);
 }
 
 bool EnableMessageOwnedArena(const Descriptor* desc, const Options& options) {
@@ -1540,6 +1541,14 @@ bool EnableMessageOwnedArena(const Descriptor* desc, const Options& options) {
 
 bool EnableMessageOwnedArenaTrial(const Descriptor* desc,
                                   const Options& options) {
+  return false;
+}
+
+bool HasMessageFieldOrExtension(const Descriptor* desc) {
+  if (desc->extension_range_count() > 0) return true;
+  for (const auto* f : FieldRange(desc)) {
+    if (f->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) return true;
+  }
   return false;
 }
 

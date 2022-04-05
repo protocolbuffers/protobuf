@@ -63,10 +63,14 @@ namespace internal {
 class InternalMetadata {
  public:
   constexpr InternalMetadata() : ptr_(0) {}
-  explicit InternalMetadata(Arena* arena, bool is_message_owned = false)
-      : ptr_(is_message_owned
-                 ? reinterpret_cast<intptr_t>(arena) | kMessageOwnedArenaTagMask
-                 : reinterpret_cast<intptr_t>(arena)) {
+  explicit InternalMetadata(Arena* arena, bool is_message_owned = false) {
+    SetArena(arena, is_message_owned);
+  }
+
+  void SetArena(Arena* arena, bool is_message_owned) {
+    ptr_ = is_message_owned
+               ? reinterpret_cast<intptr_t>(arena) | kMessageOwnedArenaTagMask
+               : reinterpret_cast<intptr_t>(arena);
     GOOGLE_DCHECK(!is_message_owned || arena != nullptr);
   }
 

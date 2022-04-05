@@ -331,7 +331,7 @@ static PyObject* RichCompare(ExtensionDict* self, PyObject* other, int opid) {
   }
   bool equals = false;
   if (PyObject_TypeCheck(other, &ExtensionDict_Type)) {
-    equals = self->parent == reinterpret_cast<ExtensionDict*>(other)->parent;;
+    equals = self->parent == reinterpret_cast<ExtensionDict*>(other)->parent;
   }
   if (equals ^ (opid == Py_EQ)) {
     Py_RETURN_FALSE;

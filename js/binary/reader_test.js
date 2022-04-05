@@ -57,8 +57,8 @@ describe('binaryReaderTest', function() {
   it('testInstanceCaches', /** @suppress {visibility} */ function() {
     var writer = new jspb.BinaryWriter();
     var dummyMessage = /** @type {!jspb.BinaryMessage} */ ({});
-    writer.writeMessage(1, dummyMessage, goog.nullFunction);
-    writer.writeMessage(2, dummyMessage, goog.nullFunction);
+    writer.writeMessage(1, dummyMessage, () => {});
+    writer.writeMessage(2, dummyMessage, () => {});
 
     var buffer = writer.getResultBuffer();
 
@@ -139,7 +139,7 @@ describe('binaryReaderTest', function() {
     var dummyMessage = /** @type {!jspb.BinaryMessage} */ ({});
     reader.nextField();
     assertThrows(function() {
-      reader.readMessage(dummyMessage, goog.nullFunction);
+      reader.readMessage(dummyMessage, () => {});
     });
 
     // Reading past the end of the stream should trigger an assertion.
@@ -651,7 +651,7 @@ describe('binaryReaderTest', function() {
     });
 
     // Add one empty message.
-    writer.writeMessage(6, dummyMessage, goog.nullFunction);
+    writer.writeMessage(6, dummyMessage, () => {});
 
     writer.writeInt32(7, 700);
 
