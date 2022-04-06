@@ -168,7 +168,10 @@ def _impl(ctx):
       )
   else:
       features.append(
-          feature(name = "supports_pic", enabled = True)
+          feature(
+              name = "supports_pic",
+              enabled = True
+          )
       )
 
   return cc_common.create_cc_toolchain_config_info(
