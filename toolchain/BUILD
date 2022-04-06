@@ -14,6 +14,7 @@ TOOLCHAINS = {
     "linux-x86_64": "cc-compiler-linux-x86_64",
     "win32": "cc-compiler-windows-x86_32",
     "win64": "cc-compiler-windows-x86_64",
+    "k8": "cc-compiler-k8",
 }
 
 cc_toolchain_suite(
@@ -38,6 +39,14 @@ cc_toolchain_suite(
     )
     for cpu, toolchain in TOOLCHAINS.items()
 ]
+
+cc_toolchain_config(
+    name = "k8-config",
+    linker_path = "/usr/bin/ld",
+    sysroot = "/opt/manylinux/2014/x86_64",
+    target_cpu = "x86_64",
+    target_full_name = "x86_64-linux-gnu",
+)
 
 cc_toolchain_config(
     name = "linux-aarch_64-config",
