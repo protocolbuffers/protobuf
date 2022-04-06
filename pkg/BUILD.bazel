@@ -357,10 +357,14 @@ cc_dist_library(
         "//build_defs:config_msvc": [],
         "//conditions:default": ["-lpthread"],
     }),
-    deps = [
-        "//:protobuf_lite",
-    ],
     tags = ["manual"],
+    deps = [
+        "//:arena",
+        "//:protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/stubs:lite",
+    ],
 )
 
 cc_dist_library(
@@ -372,11 +376,19 @@ cc_dist_library(
             "-lpthread",
         ],
     }),
+    tags = ["manual"],
     deps = [
+        "//:arena",
         "//:protobuf",
         "//:protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:gzip_stream",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/stubs:lite",
     ],
-    tags = ["manual"],
 )
 
 ################################################################################

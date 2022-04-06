@@ -20,6 +20,9 @@ TEST_TARGETS=(
   //java:tests
   //python:all
   //:protobuf_test
+  //src/google/protobuf/io:all
+  //src/google/protobuf/stubs:all
+  //src/google/protobuf/testing:all
   @com_google_protobuf_examples//...
 )
 
