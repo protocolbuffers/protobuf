@@ -19,6 +19,9 @@ TEST_TARGETS=(
   //conformance:all
   //java:tests
   //:protobuf_test
+  //src/google/protobuf/io:all
+  //src/google/protobuf/stubs:all
+  //src/google/protobuf/testing:all
 )
 
 use_bazel.sh 5.0.0 || true

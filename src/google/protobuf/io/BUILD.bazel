@@ -1,0 +1,106 @@
+# Protobuf IO library.
+
+load(
+    "@rules_cc//cc:defs.bzl",
+    "cc_library",
+    "cc_test",
+)
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "lite",
+    srcs = [
+        "coded_stream.cc",
+        "io_win32.cc",
+        "strtod.cc",
+        "zero_copy_stream.cc",
+        "zero_copy_stream_impl.cc",
+        "zero_copy_stream_impl_lite.cc",
+    ],
+    hdrs = [
+        "coded_stream.h",
+        "io_win32.h",
+        "strtod.h",
+        "zero_copy_stream.h",
+        "zero_copy_stream_impl.h",
+        "zero_copy_stream_impl_lite.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/io",
+    deps = [
+        "//:arena",
+        "//src/google/protobuf/stubs:lite",
+    ],
+)
+
+cc_library(
+    name = "io",
+    srcs = [
+        "gzip_stream.cc",
+        "printer.cc",
+        "tokenizer.cc",
+    ],
+    hdrs = [
+        "gzip_stream.h",
+        "printer.h",
+        "tokenizer.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/io",
+    textual_hdrs = [
+        "coded_stream.h",
+        "io_win32.h",
+        "strtod.h",
+        "zero_copy_stream.h",
+        "zero_copy_stream_impl.h",
+        "zero_copy_stream_impl_lite.h",
+    ],
+    deps = [
+        ":lite",
+        "//:arena",
+        "//src/google/protobuf/stubs",
+    ] + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["@zlib//:zlib"],
+    }),
+)
+
+cc_test(
+    name = "io_test",
+    srcs = [
+        "coded_stream_unittest.cc",
+        "printer_unittest.cc",
+        "tokenizer_unittest.cc",
+        "zero_copy_stream_unittest.cc",
+    ],
+    copts = COPTS,
+    data = [
+        "//:testdata",
+    ],
+    deps = [
+        ":io",
+        ":lite",
+        "//:protobuf",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "win32_test",
+    srcs = ["io_win32_unittest.cc"],
+    tags = [
+        "manual",
+        "windows",
+    ],
+    deps = [
+        "//:protobuf_lite",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
