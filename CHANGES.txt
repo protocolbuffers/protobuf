@@ -1,3 +1,11 @@
+2022-04-05 version 3.20.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  PHP
+  * Fix building packaged PHP extension (#9727)
+
+  Other
+  * Fix versioning issues in 3.20.0
+
 2022-03-04 version 3.20.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Ruby
