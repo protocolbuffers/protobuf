@@ -157,6 +157,21 @@ def _impl(ctx):
       ],
   )
 
+  features = [linker_flags, compiler_flags, sysroot_flags]
+
+  if "mingw" in ctx.attr.target_full_name:
+      features.append(
+          feature(
+              name = "targets_windows",
+              enabled = True,
+              #implies = ["copy_dynamic_libraries_to_binary"],
+          )
+      )
+  else:
+      features.append(
+          feature(name = "supports_pic", enabled = True)
+      )
+
   return cc_common.create_cc_toolchain_config_info(
       abi_libc_version = ctx.attr.abi_version,
       abi_version = ctx.attr.abi_version,
@@ -169,7 +184,7 @@ def _impl(ctx):
           "/usr/local/include",
           "/usr/local/lib/clang",
       ],
-      features = [linker_flags, compiler_flags, sysroot_flags],
+      features = features,
       host_system_name = "local",
       target_cpu = ctx.attr.target_cpu,
       target_libc = ctx.attr.target_cpu,
