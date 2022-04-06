@@ -96,7 +96,7 @@ module Google
           raise ArgumentError, "negative array size"
         else
           start = [self.size-n, 0].max
-          return self[start..-1]
+          return self[start...self.size]
         end
       end
 
