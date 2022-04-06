@@ -84,7 +84,7 @@ module Google
 
 
       def last(n=nil)
-        n ? self[(self.size-n-1)..-1] : self[-1]
+        n ? self[(self.size-n)..-1] : self[-1]
       end
 
 

@@ -71,6 +71,7 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal "foo".encode!('ASCII-8BIT'), m.repeated_bytes.last
     assert_equal TestMessage2.new(:foo => 2), m.repeated_msg.last
     assert_equal :B, m.repeated_enum.last
+    assert_equal [-1.0000000000002], m.repeated_double.last(1)
   end
 
 
