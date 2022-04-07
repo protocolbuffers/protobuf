@@ -375,18 +375,23 @@ def UpdatePhp():
     ReplaceText(Find(root, 'time'), now.strftime('%H:%M:%S'))
     version = Find(root, 'version')
     ReplaceText(Find(version, 'release'), GetFullVersion('php', dev_suffix = 'DEV', rc_suffix = 'RC'))
-    ReplaceText(Find(version, 'api'), PROTOC_VERSION)
+    ReplaceText(Find(version, 'api'), '%d.%s' % (major_versions['php'], PROTOC_VERSION))
     stability = Find(root, 'stability')
+    stability_text = 'beta'
+    if IS_DEV:
+      stability_text = 'devel'
+    elif RC_VERSION < 0:
+      stability_text = 'stable'
     ReplaceText(Find(stability, 'release'),
-        'stable' if RC_VERSION < 0 else 'beta')
-    ReplaceText(Find(stability, 'api'), 'stable' if RC_VERSION < 0 else 'beta')
+        stability_text)
+    ReplaceText(Find(stability, 'api'), stability_text)
     changelog = Find(root, 'changelog')
     for old_version in changelog.getElementsByTagName('version'):
-      if Find(old_version, 'release').firstChild.nodeValue == PROTOC_VERSION:
+      if Find(old_version, 'release').firstChild.nodeValue == '%d.%s' % (major_versions['php'], PROTOC_VERSION):
         print ('[WARNING] Version %s already exists in the change log.'
           % PROTOC_VERSION)
         return
-    if RC_VERSION != 0:
+    if not IS_DEV and RC_VERSION != 0:
       changelog.appendChild(document.createTextNode(' '))
       release = CreateNode('release', 2, [
           CreateNode('version', 3, [
