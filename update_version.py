@@ -74,7 +74,6 @@ PROTOC_VERSION_INFO = [int(x) for x in PROTOC_VERSION.split('.')]
 
 major_versions = {}
 for language, version in branch_version['languages'].items():
-  print('.'.join(version.split('.')[1:]), protoc_version)
   if '.'.join(version.split('.')[1:]) != protoc_version:
     print("""[ERROR] language versions must match protoc_version""")
     exit(1)
