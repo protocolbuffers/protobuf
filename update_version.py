@@ -158,7 +158,7 @@ def UpdateConfigure():
     lambda line : re.sub(
       r'^AC_INIT\(\[Protocol Buffers\],\[.*\],\[protobuf@googlegroups.com\],\[protobuf\]\)$',
       ('AC_INIT([Protocol Buffers],[%s],[protobuf@googlegroups.com],[protobuf])'
-        % GetFullVersion('cpp')), # TODO(sandyzhang) : Check with Adam on why this is cpp and not protoc version
+        % GetFullVersion('protoc')),
       line))
 
 
