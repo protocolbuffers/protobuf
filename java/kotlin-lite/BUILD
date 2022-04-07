@@ -1,7 +1,7 @@
 load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_java//java:defs.bzl", "java_lite_proto_library")
 load("@rules_jvm_external//:kt_defs.bzl", "kt_jvm_export")
-load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
+load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//:protobuf.bzl", "internal_gen_kt_protos")
 
 java_lite_proto_library(
@@ -29,7 +29,7 @@ kt_jvm_library(
 
 kt_jvm_export(
     name = "kotlin-lite_mvn",
-    maven_coordinates = "com.google.protobuf:protobuf-kotlin-lite:%s" % PROTOBUF_VERSION,
+    maven_coordinates = "com.google.protobuf:protobuf-kotlin-lite:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/kotlin-lite:pom_template.xml",
     resources = ["//:well_known_protos"],
     runtime_deps = [
