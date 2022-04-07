@@ -74,6 +74,7 @@ PROTOC_VERSION_INFO = [int(x) for x in PROTOC_VERSION.split('.')]
 
 major_versions = {}
 for language, version in branch_version['languages'].items():
+  print('.'.join(version.split('.')[1:]), protoc_version)
   if '.'.join(version.split('.')[1:]) != protoc_version:
     print("""[ERROR] language versions must match protoc_version""")
     exit(1)
@@ -94,13 +95,13 @@ def ReplaceText(elem, text):
   elem.firstChild.replaceWholeText(text)
 
 
-def GetFullVersion(language, rc_suffix = '-rc-'):
+def GetFullVersion(language, dev_suffix = '-dev', rc_suffix = '-rc-'):
   version = PROTOC_VERSION
   if language != 'protoc':
     version = '%d.%s' % (major_versions[language], PROTOC_VERSION)
 
   if IS_DEV:
-    return '%s-dev' % version
+    return '%s%s' % (version, dev_suffix)
   elif RC_VERSION < 0:
     return version
   else:
@@ -138,6 +139,7 @@ def RewriteTextFile(filename, line_rewriter):
   f = open(filename, 'w')
   f.write(''.join(updated_lines))
   f.close()
+
 
 def UpdateCMake():
   cmake_files = (
@@ -373,7 +375,7 @@ def UpdatePhp():
     ReplaceText(Find(root, 'date'), now.strftime('%Y-%m-%d'))
     ReplaceText(Find(root, 'time'), now.strftime('%H:%M:%S'))
     version = Find(root, 'version')
-    ReplaceText(Find(version, 'release'), GetFullVersion('php', rc_suffix = 'RC'))
+    ReplaceText(Find(version, 'release'), GetFullVersion('php', dev_suffix = 'DEV', rc_suffix = 'RC'))
     ReplaceText(Find(version, 'api'), PROTOC_VERSION)
     stability = Find(root, 'stability')
     ReplaceText(Find(stability, 'release'),
@@ -407,14 +409,14 @@ def UpdatePhp():
   RewriteTextFile('php/ext/google/protobuf/protobuf.h',
     lambda line : re.sub(
       r"^#define PHP_PROTOBUF_VERSION .*$",
-      "#define PHP_PROTOBUF_VERSION \"%s\"" % GetFullVersion('php', rc_suffix = 'RC'),
+      "#define PHP_PROTOBUF_VERSION \"%s\"" % GetFullVersion('php', dev_suffix = 'DEV', rc_suffix = 'RC'),
       line))
 
 def UpdatePython():
   RewriteTextFile('python/google/protobuf/__init__.py',
     lambda line : re.sub(
       r"^__version__ = '.*'$",
-      "__version__ = '%s'" % GetFullVersion('python', rc_suffix = 'rc'),
+      "__version__ = '%s'" % GetFullVersion('python', dev_suffix = 'dev', rc_suffix = 'rc'),
       line))
 
 def UpdateRuby():
@@ -428,7 +430,7 @@ def UpdateRuby():
   RewriteTextFile('ruby/google-protobuf.gemspec',
     lambda line : re.sub(
       r'^  s.version     = ".*"$',
-      '  s.version     = "%s"' % GetFullVersion('ruby', rc_suffix = '.rc.'),
+      '  s.version     = "%s"' % GetFullVersion('ruby', dev_suffix = '.dev', rc_suffix = '.rc.'),
       line))
 
 def UpdateBazel():
@@ -442,6 +444,7 @@ def UpdateBazel():
      r"^PROTOBUF_JAVA_VERSION = '.*'$",
      "PROTOBUF_JAVA_VERSION = '%s'" % GetFullVersion('java'),
      line))
+
 
 UpdateCMake()
 UpdateConfigure()
