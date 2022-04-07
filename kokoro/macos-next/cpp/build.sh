@@ -1,51 +1,55 @@
-#!/bin/bash -ex -o pipefail
+#!/bin/bash -eux
 #
 # Build file to set up and run tests
 
-#
-# Set up logging output location
-#
-: ${KOKORO_ARTIFACTS_DIR:=/tmp/protobuf_test_logs}
-: ${BUILD_LOGDIR:=$KOKORO_ARTIFACTS_DIR/logs}
-mkdir -p ${BUILD_LOGDIR}
+set -o pipefail
 
-
-#
-# Change to repo root
-#
 if [[ -h /tmpfs ]] && [[ ${PWD} == /tmpfs/src ]]; then
   # Workaround for internal Kokoro bug: b/227401944
-  cd /Volumes/BuildData/tmpfs/src/github/protobuf
-else
-  cd $(dirname $0)/../../..
+  cd /Volumes/BuildData/tmpfs/src
 fi
+
+# These vars can be changed when running manually, e.g.:
+#
+#   % BUILD_CONFIG=RelWithDebInfo path/to/build.sh
+
+# By default, build using Debug config.
+: ${BUILD_CONFIG:=Debug}
+
+# By default, find the sources based on this script path.
+: ${SOURCE_DIR:=$(cd $(dirname $0)/../../..; pwd)}
+
+# By default, put outputs under <git root>/cmake/build.
+: ${BUILD_DIR:=${SOURCE_DIR}/cmake/build}
+
+source ${SOURCE_DIR}/kokoro/caplog.sh
 
 #
 # Update submodules
 #
-git submodule update --init --recursive
+git -C "${SOURCE_DIR}" submodule update --init --recursive
 
 #
 # Configure and build in a separate directory
 #
-mkdir -p cmake/build
-cd cmake/build
+mkdir -p "${BUILD_DIR}"
 
-cmake -G Xcode ../.. \
-  2>&1 | tee ${BUILD_LOGDIR}/01_configure.log
+caplog 01_configure \
+  cmake -S "${SOURCE_DIR}" -B "${BUILD_DIR}" ${CAPLOG_CMAKE_ARGS:-}
 
-cp CMakeFiles/CMake*.log ${BUILD_LOGDIR}
+if [[ -n ${CAPLOG_DIR:-} ]]; then
+  mkdir -p "${CAPLOG_DIR}/CMakeFiles"
+  cp "${BUILD_DIR}"/CMakeFiles/CMake*.log "${CAPLOG_DIR}/CMakeFiles"
+fi
 
-cmake --build . --config Debug \
-  2>&1 | tee ${BUILD_LOGDIR}/02_build.log
+caplog 02_build \
+  cmake --build "${BUILD_DIR}" --config "${BUILD_CONFIG}"
 
 #
 # Run tests
 #
-ctest -C Debug --verbose --quiet \
-  --output-log ${BUILD_LOGDIR}/03_test.log
-
-#
-# Compress outputs
-#
-gzip ${BUILD_LOGDIR}/*.log
+(
+  cd "${BUILD_DIR}"
+  caplog 03_combined_testlog \
+    ctest -C "${BUILD_CONFIG}" -j4 ${CAPLOG_CTEST_ARGS:-}
+)

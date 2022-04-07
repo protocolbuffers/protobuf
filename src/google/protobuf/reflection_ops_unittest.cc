@@ -33,14 +33,14 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/reflection_ops.h>
-#include <google/protobuf/test_util.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/descriptor.h>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/test_util.h>
 
 #include <google/protobuf/stubs/strutil.h>
 

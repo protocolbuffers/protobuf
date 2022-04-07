@@ -484,7 +484,7 @@ class PROTOBUF_EXPORT Parser {
   // Parses a single part of a multipart option name. A multipart name consists
   // of names separated by dots. Each name is either an identifier or a series
   // of identifiers separated by dots and enclosed in parentheses. E.g.,
-  // "foo.(bar.baz).qux".
+  // "foo.(bar.baz).moo".
   bool ParseOptionNamePart(UninterpretedOption* uninterpreted_option,
                            const LocationRecorder& part_location,
                            const FileDescriptorProto* containing_file);

@@ -10,15 +10,15 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2022-03-04</date>
- <time>16:28:14</time>
+ <date>2022-03-25</date>
+ <time>19:17:44</time>
  <version>
-  <release>3.20.0RC1</release>
+  <release>3.20.0</release>
   <api>3.20.0</api>
  </version>
  <stability>
-  <release>beta</release>
-  <api>beta</api>
+  <release>stable</release>
+  <api>stable</api>
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
  <notes>
@@ -46,10 +46,12 @@
     <file baseinstalldir="/" name="protobuf.c" role="src"/>
     <file baseinstalldir="/" name="protobuf.h" role="src"/>
     <file baseinstalldir="/" name="wkt.inc" role="src"/>
-    <file baseinstalldir="/" name="third_party/utf8_range/naive.c" role="doc"/>
-    <file baseinstalldir="/" name="third_party/utf8_range/range2-neon.c" role="doc"/>
-    <file baseinstalldir="/" name="third_party/utf8_range/range2-sse.c" role="doc"/>
     <file baseinstalldir="/" name="LICENSE" role="doc"/>
+    <file baseinstalldir="/" name="third_party/utf8_range/naive.c" role="src"/>
+    <file baseinstalldir="/" name="third_party/utf8_range/range2-neon.c" role="src"/>
+    <file baseinstalldir="/" name="third_party/utf8_range/range2-sse.c" role="src"/>
+    <file baseinstalldir="/" name="third_party/utf8_range/utf8_range.h" role="src"/>
+    <file baseinstalldir="/" name="third_party/utf8_range/LICENSE" role="doc"/>
   </dir>
  </contents>
  <dependencies>
@@ -1217,6 +1219,36 @@ G  A release.
    </stability>
    <date>2022-03-04</date>
    <time>16:28:14</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.20.0RC2</release>
+    <api>3.20.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2022-03-15</date>
+   <time>21:10:15</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.20.0</release>
+    <api>3.20.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2022-03-25</date>
+   <time>19:17:44</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
    <notes>
    </notes>

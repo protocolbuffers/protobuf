@@ -79,17 +79,20 @@ def _proto_gen_impl(ctx):
     deps = depset(direct=ctx.files.srcs)
     source_dir = _SourceDir(ctx)
     gen_dir = _GenDir(ctx).rstrip("/")
+    import_flags = []
+        
     if source_dir:
         has_sources = any([src.is_source for src in srcs])
-        has_generated = any([not src.is_source for src in srcs])
-        import_flags = []
         if has_sources:
             import_flags += ["-I" + source_dir]
-        if has_generated:
-            import_flags += ["-I" + gen_dir]
-        import_flags = depset(direct=import_flags)
     else:
-        import_flags = depset(direct=["-I."])
+        import_flags += ["-I."]
+
+    has_generated = any([not src.is_source for src in srcs])
+    if has_generated:
+        import_flags += ["-I" + gen_dir]
+
+    import_flags = depset(direct=import_flags)
 
     for dep in ctx.attr.deps:
         if type(dep.proto.import_flags) == "list":
@@ -163,7 +166,7 @@ def _proto_gen_impl(ctx):
             for out in outs:
                 orig_command = " ".join(
                     ["$(realpath %s)" % ctx.executable.protoc.path] + args +
-                    import_flags_real + ["-I.", src.basename],
+                    import_flags_real + [src.basename],
                 )
                 command = ";".join([
                     'CMD="%s"' % orig_command,
@@ -266,9 +269,9 @@ def cc_proto_library(
         deps = [],
         cc_libs = [],
         include = None,
-        protoc = Label("//:protoc"),
+        protoc = "@com_google_protobuf//:protoc",
         use_grpc_plugin = False,
-        default_runtime = Label("//:protobuf"),
+        default_runtime = "@com_google_protobuf//:protobuf",
         **kargs):
     """Bazel rule to create a C++ protobuf library from proto source files
 
@@ -386,7 +389,7 @@ internal_gen_well_known_protos_java = rule(
         "_protoc": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//:protoc",
+            default = "@com_google_protobuf//:protoc",
         ),
     },
 )
@@ -493,8 +496,8 @@ def py_proto_library(
         py_libs = [],
         py_extra_srcs = [],
         include = None,
-        default_runtime = Label("//:protobuf_python"),
-        protoc = Label("//:protoc"),
+        default_runtime = "@com_google_protobuf//:protobuf_python",
+        protoc = "@com_google_protobuf//:protoc",
         use_grpc_plugin = False,
         **kargs):
     """Bazel rule to create a Python protobuf library from proto source files

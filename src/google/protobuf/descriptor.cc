@@ -1101,8 +1101,9 @@ typedef HASH_MAP<std::string, const SourceCodeInfo_Location*>
 std::set<std::string>* NewAllowedProto3Extendee() {
   auto allowed_proto3_extendees = new std::set<std::string>;
   const char* kOptionNames[] = {
-      "FileOptions",      "MessageOptions", "FieldOptions",  "EnumOptions",
-      "EnumValueOptions", "ServiceOptions", "MethodOptions", "OneofOptions"};
+      "FileOptions",   "MessageOptions",   "FieldOptions",
+      "EnumOptions",   "EnumValueOptions", "ServiceOptions",
+      "MethodOptions", "OneofOptions",     "ExtensionRangeOptions"};
   for (const char* option_name : kOptionNames) {
     // descriptor.proto has a different package name in opensource. We allow
     // both so the opensource protocol compiler can also compile internal
@@ -3772,9 +3773,9 @@ class DescriptorBuilder {
 
   // Like FindSymbol(), but looks up the name relative to some other symbol
   // name.  This first searches siblings of relative_to, then siblings of its
-  // parents, etc.  For example, LookupSymbol("foo.bar", "baz.qux.corge") makes
+  // parents, etc.  For example, LookupSymbol("foo.bar", "baz.moo.corge") makes
   // the following calls, returning the first non-null result:
-  // FindSymbol("baz.qux.foo.bar"), FindSymbol("baz.foo.bar"),
+  // FindSymbol("baz.moo.foo.bar"), FindSymbol("baz.foo.bar"),
   // FindSymbol("foo.bar").  If AllowUnknownDependencies() has been called
   // on the DescriptorPool, this will generate a placeholder type if
   // the name is not found (unless the name itself is malformed).  The

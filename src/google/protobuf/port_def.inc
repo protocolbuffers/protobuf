@@ -172,7 +172,7 @@
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
 #endif
-#define PROTOBUF_VERSION_SUFFIX "-rc1"
+#define PROTOBUF_VERSION_SUFFIX ""
 
 #if defined(PROTOBUF_NAMESPACE) || defined(PROTOBUF_NAMESPACE_ID)
 #error PROTOBUF_NAMESPACE or PROTOBUF_NAMESPACE_ID was previously defined
@@ -501,6 +501,10 @@
 #error PROTOBUF_FORCE_COPY_IN_MOVE was previously defined
 #endif
 
+#ifdef PROTOBUF_FORCE_RESET_IN_CLEAR
+#error PROTOBUF_FORCE_RESET_IN_CLEAR was previously defined
+#endif
+
 // Force copy the default string to a string field so that non-optimized builds
 // have harder-to-rely-on address stability.
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -775,6 +779,8 @@
 #undef GetClassName
 #pragma push_macro("GetMessage")
 #undef GetMessage
+#pragma push_macro("GetObject")
+#undef GetObject
 #pragma push_macro("IGNORE")
 #undef IGNORE
 #pragma push_macro("IN")

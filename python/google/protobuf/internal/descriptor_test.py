@@ -328,10 +328,10 @@ class DescriptorTest(unittest.TestCase):
         unittest_custom_options_pb2.complex_opt1].foo)
     self.assertEqual(324, options.Extensions[
         unittest_custom_options_pb2.complex_opt1].Extensions[
-            unittest_custom_options_pb2.quux])
+            unittest_custom_options_pb2.mooo])
     self.assertEqual(876, options.Extensions[
         unittest_custom_options_pb2.complex_opt1].Extensions[
-            unittest_custom_options_pb2.corge].qux)
+            unittest_custom_options_pb2.corge].moo)
     self.assertEqual(987, options.Extensions[
         unittest_custom_options_pb2.complex_opt2].baz)
     self.assertEqual(654, options.Extensions[
@@ -341,28 +341,28 @@ class DescriptorTest(unittest.TestCase):
         unittest_custom_options_pb2.complex_opt2].bar.foo)
     self.assertEqual(1999, options.Extensions[
         unittest_custom_options_pb2.complex_opt2].bar.Extensions[
-            unittest_custom_options_pb2.quux])
+            unittest_custom_options_pb2.mooo])
     self.assertEqual(2008, options.Extensions[
         unittest_custom_options_pb2.complex_opt2].bar.Extensions[
-            unittest_custom_options_pb2.corge].qux)
+            unittest_custom_options_pb2.corge].moo)
     self.assertEqual(741, options.Extensions[
         unittest_custom_options_pb2.complex_opt2].Extensions[
             unittest_custom_options_pb2.garply].foo)
     self.assertEqual(1998, options.Extensions[
         unittest_custom_options_pb2.complex_opt2].Extensions[
             unittest_custom_options_pb2.garply].Extensions[
-                unittest_custom_options_pb2.quux])
+                unittest_custom_options_pb2.mooo])
     self.assertEqual(2121, options.Extensions[
         unittest_custom_options_pb2.complex_opt2].Extensions[
             unittest_custom_options_pb2.garply].Extensions[
-                unittest_custom_options_pb2.corge].qux)
+                unittest_custom_options_pb2.corge].moo)
     self.assertEqual(1971, options.Extensions[
         unittest_custom_options_pb2.ComplexOptionType2
         .ComplexOptionType4.complex_opt4].waldo)
     self.assertEqual(321, options.Extensions[
         unittest_custom_options_pb2.complex_opt2].fred.waldo)
     self.assertEqual(9, options.Extensions[
-        unittest_custom_options_pb2.complex_opt3].qux)
+        unittest_custom_options_pb2.complex_opt3].moo)
     self.assertEqual(22, options.Extensions[
         unittest_custom_options_pb2.complex_opt3].complexoptiontype5.plugh)
     self.assertEqual(24, options.Extensions[

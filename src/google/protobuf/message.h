@@ -219,6 +219,9 @@ const To& GetConstRefAtOffset(const Message& message, uint32_t offset) {
 }
 
 bool CreateUnknownEnumValues(const FieldDescriptor* field);
+
+// Returns true if "message" is a descendant of "root".
+PROTOBUF_EXPORT bool IsDescendant(Message* root, const Message& message);
 }  // namespace internal
 
 // Abstract interface for protocol messages.
@@ -252,7 +255,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Make this message into a copy of the given message.  The given message
   // must have the same descriptor, but need not necessarily be the same class.
   // By default this is just implemented as "Clear(); MergeFrom(from);".
-  virtual void CopyFrom(const Message& from);
+  void CopyFrom(const Message& from);
 
   // Merge the fields from the given message into this message.  Singular
   // fields will be overwritten, if specified in from, except for embedded
@@ -302,8 +305,11 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Debugging & Testing----------------------------------------------
 
-  // Generates a human readable form of this message, useful for debugging
-  // and other purposes.
+  // Generates a human-readable form of this message for debugging purposes.
+  // Note that the format and content of a debug string is not guaranteed, may
+  // change without notice, and should not be depended on. Code that does
+  // anything except display a string to assist in debugging should use
+  // TextFormat instead.
   std::string DebugString() const;
   // Like DebugString(), but with less whitespace.
   std::string ShortDebugString() const;
@@ -375,11 +381,14 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // TODO(jorg): change to pure virtual
   virtual const ClassData* GetClassData() const { return nullptr; }
 
-  // CopyWithSizeCheck calls Clear() and then MergeFrom(), and in debug
+  // CopyWithSourceCheck calls Clear() and then MergeFrom(), and in debug
   // builds, checks that calling Clear() on the destination message doesn't
-  // alter the size of the source.  It assumes the messages are known to be
-  // of the same type, and thus uses GetClassData().
-  static void CopyWithSizeCheck(Message* to, const Message& from);
+  // alter the source.  It assumes the messages are known to be of the same
+  // type, and thus uses GetClassData().
+  static void CopyWithSourceCheck(Message* to, const Message& from);
+
+  // Fail if "from" is a descendant of "to" as such copy is not allowed.
+  static void FailIfCopyFromDescendant(Message* to, const Message& from);
 
   inline explicit Message(Arena* arena, bool is_message_owned = false)
       : MessageLite(arena, is_message_owned) {}
@@ -1021,6 +1030,7 @@ class PROTOBUF_EXPORT Reflection final {
   bool IsEagerlyVerifiedLazyField(const FieldDescriptor* field) const;
 
   friend class FastReflectionMessageMutator;
+  friend bool internal::IsDescendant(Message* root, const Message& message);
 
   const Descriptor* const descriptor_;
   const internal::ReflectionSchema schema_;

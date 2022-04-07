@@ -2537,7 +2537,7 @@ public final class TestUtil {
   // ===================================================================
   // oneof
   public static void setOneof(TestOneof2.Builder message) {
-    message.setFooLazyMessage(TestOneof2.NestedMessage.newBuilder().setQuxInt(100).build());
+    message.setFooLazyMessage(TestOneof2.NestedMessage.newBuilder().setMooInt(100).build());
     message.setBarString("101");
     message.setBazInt(102);
     message.setBazString("103");
@@ -2545,13 +2545,13 @@ public final class TestUtil {
 
   public static void assertOneofSet(TestOneof2 message) {
     Assert.assertTrue(message.hasFooLazyMessage());
-    Assert.assertTrue(message.getFooLazyMessage().hasQuxInt());
+    Assert.assertTrue(message.getFooLazyMessage().hasMooInt());
 
     Assert.assertTrue(message.hasBarString());
     Assert.assertTrue(message.hasBazInt());
     Assert.assertTrue(message.hasBazString());
 
-    Assert.assertEquals(100, message.getFooLazyMessage().getQuxInt());
+    Assert.assertEquals(100, message.getFooLazyMessage().getMooInt());
     Assert.assertEquals("101", message.getBarString());
     Assert.assertEquals(102, message.getBazInt());
     Assert.assertEquals("103", message.getBazString());
