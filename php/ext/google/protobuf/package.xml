@@ -10,15 +10,15 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2022-04-07</date>
- <time>23:38:33</time>
+ <date>2022-04-05</date>
+ <time>17:06:47</time>
  <version>
-  <release>3.21DEV</release>
-  <api>3.21</api>
+  <release>3.20.1RC1</release>
+  <api>3.20.1</api>
  </version>
  <stability>
-  <release>devel</release>
-  <api>devel</api>
+  <release>beta</release>
+  <api>beta</api>
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
  <notes>
