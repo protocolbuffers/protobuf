@@ -67,11 +67,19 @@ if len(versions) != 1:
 branch_name, branch_version = versions.popitem()
 protoc_version = branch_version['protoc_version']
 protoc_version_suffix_array = protoc_version.split('-')
-IS_DEV = len(protoc_version_suffix_array) > 1 and protoc_version_suffix_array[1] == 'dev'
-RC_VERSION = int(protoc_version_suffix_array[1][2:]) if len(protoc_version_suffix_array) > 1 and not IS_DEV else -1
+suffix = ''
+if len(protoc_version_suffix_array) > 2:
+   print("""[ERROR] protoc version may have a maximum of 1 dashed suffix e.g. -dev, -rcN.""")
+   exit(1)
+if len(protoc_version_suffix_array) > 1:
+  suffix = protoc_version_suffix_array[1]
+  if suffix != 'dev' and suffix[:2] != 'rc':
+    print("""[ERROR] protoc version suffix must be one of -dev, -rcN.""")
+    exit(1)
+IS_DEV = suffix == 'dev'
+RC_VERSION = int(suffix[2:]) if suffix and suffix[:2] == 'rc' else -1
 PROTOC_VERSION = protoc_version_suffix_array[0]
 PROTOC_VERSION_INFO = [int(x) for x in PROTOC_VERSION.split('.')]
-
 major_versions = {}
 for language, version in branch_version['languages'].items():
   if '.'.join(version.split('.')[1:]) != protoc_version:
