@@ -734,7 +734,7 @@ void GenerateExtensionInHeader(const protobuf::FieldDescriptor* ext,
         R"cc(
           UPB_INLINE void $1_set_$2(struct $3* msg, $0 ext, upb_Arena* arena) {
             const upb_Message_Extension* msg_ext =
-                _upb_Message_Getorcreateext(msg, &$4, arena);
+                _upb_Message_GetOrCreateExtension(msg, &$4, arena);
             UPB_ASSERT(msg_ext);
             *UPB_PTR_AT(&msg_ext->data, 0, $0) = ext;
           }
