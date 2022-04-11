@@ -25,8 +25,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// LINT: ALLOW_GROUPS
-
 syntax = "proto2";
 
 package upb_test;
@@ -60,18 +58,6 @@ message MessageSetMember {
   optional int32 optional_int32 = 1;
   extend TestMessageSet {
     optional MessageSetMember message_set_extension = 4;
-  }
-}
-
-message FakeMessageSet {
-  repeated group Item = 1 {
-    optional int32 type_id = 2;
-    optional bytes message = 3;
-    optional int32 unknown_varint = 4;
-    optional fixed32 unknown_fixed32 = 5;
-    optional fixed64 unknown_fixed64 = 6;
-    optional bytes unknown_bytes = 7;
-    optional group UnknownGroup = 8 {}
   }
 }
 

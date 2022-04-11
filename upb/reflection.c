@@ -202,7 +202,7 @@ make:
 bool upb_Message_Set(upb_Message* msg, const upb_FieldDef* f,
                      upb_MessageValue val, upb_Arena* a) {
   if (upb_FieldDef_IsExtension(f)) {
-    upb_Message_Extension* ext = _upb_Message_GetOrCreateExtension(
+    upb_Message_Extension* ext = _upb_Message_Getorcreateext(
         msg, _upb_FieldDef_ExtensionMiniTable(f), a);
     if (!ext) return false;
     memcpy(&ext->data, &val, sizeof(val));

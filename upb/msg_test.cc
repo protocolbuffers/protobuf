@@ -102,7 +102,6 @@ TEST(MessageTest, Extensions) {
 }
 
 void VerifyMessageSet(const upb_test_TestMessageSet* mset_msg) {
-  ASSERT_TRUE(mset_msg != nullptr);
   bool has = upb_test_MessageSetMember_has_message_set_extension(mset_msg);
   EXPECT_TRUE(has);
   if (!has) return;
@@ -159,67 +158,6 @@ TEST(MessageTest, MessageSet) {
                              symtab.ptr(), 0, arena.ptr(), status.ptr()))
       << status.error_message();
   VerifyMessageSet(ext_msg3);
-}
-
-TEST(MessageTest, UnknownMessageSet) {
-  static const char data[] = "ABCDE";
-  upb_StringView data_view = upb_StringView_FromString(data);
-  upb::Arena arena;
-  upb_test_FakeMessageSet* fake = upb_test_FakeMessageSet_new(arena.ptr());
-
-  // Add a MessageSet item that is unknown (there is no matching extension in
-  // the .proto file)
-  upb_test_FakeMessageSet_Item* item =
-      upb_test_FakeMessageSet_add_item(fake, arena.ptr());
-  upb_test_FakeMessageSet_Item_set_type_id(item, 12345);
-  upb_test_FakeMessageSet_Item_set_message(item, data_view);
-
-  // Set unknown fields inside the message set to test that we can skip them.
-  upb_test_FakeMessageSet_Item_set_unknown_varint(item, 12345678);
-  upb_test_FakeMessageSet_Item_set_unknown_fixed32(item, 12345678);
-  upb_test_FakeMessageSet_Item_set_unknown_fixed64(item, 12345678);
-  upb_test_FakeMessageSet_Item_set_unknown_bytes(item, data_view);
-  upb_test_FakeMessageSet_Item_mutable_unknowngroup(item, arena.ptr());
-
-  // Round trip through a true MessageSet where this item_id is unknown.
-  size_t size;
-  char* serialized =
-      upb_test_FakeMessageSet_serialize(fake, arena.ptr(), &size);
-  ASSERT_TRUE(serialized != nullptr);
-  ASSERT_GE(size, 0);
-
-  upb::SymbolTable symtab;
-  upb::MessageDefPtr m(upb_test_TestMessageSet_getmsgdef(symtab.ptr()));
-  EXPECT_TRUE(m.ptr() != nullptr);
-  upb_test_TestMessageSet* message_set = upb_test_TestMessageSet_parse_ex(
-      serialized, size, upb_DefPool_ExtensionRegistry(symtab.ptr()), 0,
-      arena.ptr());
-  ASSERT_TRUE(message_set != nullptr);
-
-  char* serialized2 =
-      upb_test_TestMessageSet_serialize(message_set, arena.ptr(), &size);
-  ASSERT_TRUE(serialized2 != nullptr);
-  ASSERT_GE(size, 0);
-
-  // Parse back into a fake MessageSet and verify that the unknown MessageSet
-  // item was preserved in full (both type_id and message).
-  upb_test_FakeMessageSet* fake2 =
-      upb_test_FakeMessageSet_parse(serialized2, size, arena.ptr());
-  ASSERT_TRUE(fake2 != nullptr);
-
-  const upb_test_FakeMessageSet_Item* const* items =
-      upb_test_FakeMessageSet_item(fake2, &size);
-  ASSERT_EQ(1, size);
-  EXPECT_EQ(12345, upb_test_FakeMessageSet_Item_type_id(items[0]));
-  EXPECT_TRUE(upb_StringView_IsEqual(
-      data_view, upb_test_FakeMessageSet_Item_message(items[0])));
-
-  // The non-MessageSet unknown fields should have been discarded.
-  EXPECT_FALSE(upb_test_FakeMessageSet_Item_has_unknown_varint(items[0]));
-  EXPECT_FALSE(upb_test_FakeMessageSet_Item_has_unknown_fixed32(items[0]));
-  EXPECT_FALSE(upb_test_FakeMessageSet_Item_has_unknown_fixed64(items[0]));
-  EXPECT_FALSE(upb_test_FakeMessageSet_Item_has_unknown_bytes(items[0]));
-  EXPECT_FALSE(upb_test_FakeMessageSet_Item_has_unknowngroup(items[0]));
 }
 
 TEST(MessageTest, Proto2Enum) {

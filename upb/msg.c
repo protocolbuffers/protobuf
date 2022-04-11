@@ -153,7 +153,7 @@ void _upb_Message_Clearext(upb_Message* msg,
   }
 }
 
-upb_Message_Extension* _upb_Message_GetOrCreateExtension(
+upb_Message_Extension* _upb_Message_Getorcreateext(
     upb_Message* msg, const upb_MiniTable_Extension* e, upb_Arena* arena) {
   upb_Message_Extension* ext =
       (upb_Message_Extension*)_upb_Message_Getext(msg, e);
