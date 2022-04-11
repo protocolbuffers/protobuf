@@ -91,21 +91,21 @@ namespace Google.Protobuf
         // Objects are name/value sequences.
 
         private readonly TokenType type;
-        private readonly string stringValue;
+        private readonly string? stringValue;
         private readonly double numberValue;
 
-        internal TokenType Type { get { return type; } }
-        internal string StringValue { get { return stringValue; } }
-        internal double NumberValue { get { return numberValue; } }
+        internal TokenType Type => type;
+        internal string? StringValue => stringValue;
+        internal double NumberValue => numberValue;
 
-        private JsonToken(TokenType type, string stringValue = null, double numberValue = 0)
+        private JsonToken(TokenType type, string? stringValue = null, double numberValue = 0)
         {
             this.type = type;
             this.stringValue = stringValue;
             this.numberValue = numberValue;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as JsonToken);
         }
@@ -116,7 +116,7 @@ namespace Google.Protobuf
             {
                 int hash = 17;
                 hash = hash * 31 + (int) type;
-                hash = hash * 31 + stringValue == null ? 0 : stringValue.GetHashCode();
+                hash = hash * 31 + stringValue == null ? 0 : stringValue!.GetHashCode();
                 hash = hash * 31 + numberValue.GetHashCode();
                 return hash;
             }
@@ -153,9 +153,9 @@ namespace Google.Protobuf
             }
         }
 
-        public bool Equals(JsonToken other)
+        public bool Equals(JsonToken? other)
         {
-            if (ReferenceEquals(other, null))
+            if (other is null)
             {
                 return false;
             }

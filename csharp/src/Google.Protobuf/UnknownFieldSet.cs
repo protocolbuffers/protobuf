@@ -32,9 +32,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Security;
-using Google.Protobuf.Reflection;
 
 namespace Google.Protobuf
 {
@@ -111,22 +109,24 @@ namespace Google.Protobuf
         /// <summary>
         /// Checks if two unknown field sets are equal.
         /// </summary>
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
             if (ReferenceEquals(this, other))
             {
                 return true;
             }
-            UnknownFieldSet otherSet = other as UnknownFieldSet;
+            if (other is not UnknownFieldSet otherSet)
+            {
+                return false;
+            }
             IDictionary<int, UnknownField> otherFields = otherSet.fields;
-            if (fields.Count  != otherFields.Count)
+            if (fields.Count != otherFields.Count)
             {
                 return false;
             }
             foreach (KeyValuePair<int, UnknownField> leftEntry in fields)
             {
-                UnknownField rightValue;
-                if (!otherFields.TryGetValue(leftEntry.Key, out rightValue))
+                if (!otherFields.TryGetValue(leftEntry.Key, out UnknownField? rightValue))
                 {
                     return false;
                 }
@@ -157,7 +157,7 @@ namespace Google.Protobuf
         // modified so that we can efficiently add to it multiple times in a
         // row (important when parsing an unknown repeated field).
         private int lastFieldNumber;
-        private UnknownField lastField;
+        private UnknownField? lastField;
 
         private UnknownField GetOrAddField(int number)
         {
@@ -167,11 +167,11 @@ namespace Google.Protobuf
             }
             if (number == 0)
             {
-                return null;
+                // Unexpected, cause NullReferenceException in caller.
+                return null!;
             }
 
-            UnknownField existing;
-            if (fields.TryGetValue(number, out existing))
+            if (fields.TryGetValue(number, out UnknownField? existing))
             {
                 return existing;
             }
@@ -378,7 +378,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Clone an unknown field set from <paramref name="other"/>.
         /// </summary>
-        public static UnknownFieldSet Clone(UnknownFieldSet other)
+        public static UnknownFieldSet? Clone(UnknownFieldSet? other)
         {
             if (other == null)
             {
@@ -390,4 +390,3 @@ namespace Google.Protobuf
         }
     }
 }
-

@@ -80,7 +80,7 @@ namespace Google.Protobuf.Reflection
 
         private readonly Lazy<Dictionary<IDescriptor, DescriptorDeclaration>> declarations;
 
-        private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, IEnumerable<FileDescriptor> dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedClrTypeInfo generatedCodeInfo)
+        private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, IEnumerable<FileDescriptor> dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedClrTypeInfo? generatedCodeInfo)
         {
             SerializedData = descriptorData;
             DescriptorPool = pool;
@@ -135,7 +135,7 @@ namespace Google.Protobuf.Reflection
             return dictionary;
         }
 
-        private IDescriptor FindDescriptorForPath(IList<int> path)
+        private IDescriptor? FindDescriptorForPath(IList<int> path)
         {
             // All complete declarations have an even, non-empty path length
             // (There can be an empty path for a descriptor declaration, but that can't have any comments,
@@ -144,8 +144,8 @@ namespace Google.Protobuf.Reflection
             {
                 return null;
             }
-            IReadOnlyList<DescriptorBase> topLevelList = GetNestedDescriptorListForField(path[0]);
-            DescriptorBase current = GetDescriptorFromList(topLevelList, path[1]);
+            IReadOnlyList<DescriptorBase>? topLevelList = GetNestedDescriptorListForField(path[0]);
+            DescriptorBase? current = GetDescriptorFromList(topLevelList, path[1]);
 
             for (int i = 2; current != null && i < path.Count; i += 2)
             {
@@ -155,7 +155,7 @@ namespace Google.Protobuf.Reflection
             return current;
         }
 
-        private DescriptorBase GetDescriptorFromList(IReadOnlyList<DescriptorBase> list, int index)
+        private DescriptorBase? GetDescriptorFromList(IReadOnlyList<DescriptorBase>? list, int index)
         {
             // This is fine: it may be a newer version of protobuf than we understand, with a new descriptor
             // field.
@@ -173,7 +173,7 @@ namespace Google.Protobuf.Reflection
             return list[index];
         }
 
-        private IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
+        private IReadOnlyList<DescriptorBase>? GetNestedDescriptorListForField(int fieldNumber)
         {
             switch (fieldNumber)
             {
@@ -188,17 +188,16 @@ namespace Google.Protobuf.Reflection
             }
         }
 
-        internal DescriptorDeclaration GetDeclaration(IDescriptor descriptor)
+        internal DescriptorDeclaration? GetDeclaration(IDescriptor descriptor)
         {
-            DescriptorDeclaration declaration;
-            declarations.Value.TryGetValue(descriptor, out declaration);
+            declarations.Value.TryGetValue(descriptor, out DescriptorDeclaration? declaration);
             return declaration;
         }
 
         /// <summary>
         /// Computes the full name of a descriptor within this file, with an optional parent message.
         /// </summary>
-        internal string ComputeFullName(MessageDescriptor parent, string name)
+        internal string ComputeFullName(MessageDescriptor? parent, string name)
         {
             if (parent != null)
             {
@@ -227,8 +226,7 @@ namespace Google.Protobuf.Reflection
                     throw new DescriptorValidationException(@this, "Invalid public dependency index.");
                 }
                 string name = proto.Dependency[index];
-                FileDescriptor file;
-                if (!nameToFileMap.TryGetValue(name, out file))
+                if (!nameToFileMap.TryGetValue(name, out FileDescriptor? file))
                 {
                     if (!allowUnknownDependencies)
                     {
@@ -332,7 +330,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="name">The unqualified type name to look for.</param>
         /// <typeparam name="T">The type of descriptor to look for</typeparam>
         /// <returns>The type's descriptor, or null if not found.</returns>
-        public T FindTypeByName<T>(String name)
+        public T? FindTypeByName<T>(String name)
             where T : class, IDescriptor
         {
             // Don't allow looking up nested types.  This will make optimization
@@ -345,7 +343,7 @@ namespace Google.Protobuf.Reflection
             {
                 name = Package + "." + name;
             }
-            T result = DescriptorPool.FindSymbol<T>(name);
+            T? result = DescriptorPool.FindSymbol<T>(name);
             if (result != null && result.File == this)
             {
                 return result;
@@ -470,7 +468,7 @@ namespace Google.Protobuf.Reflection
                 .Select(s => s.Extension)
                 .Where(e => e != null)
                 .Concat(descriptor.Dependencies.Concat(descriptor.PublicDependencies).SelectMany(GetAllDependedExtensions))
-                .Concat(descriptor.MessageTypes.SelectMany(GetAllDependedExtensionsFromMessage));
+                .Concat(descriptor.MessageTypes.SelectMany(GetAllDependedExtensionsFromMessage))!;
         }
 
         private static IEnumerable<Extension> GetAllDependedExtensionsFromMessage(MessageDescriptor descriptor)
@@ -478,7 +476,7 @@ namespace Google.Protobuf.Reflection
             return descriptor.Extensions.UnorderedExtensions
                 .Select(s => s.Extension)
                 .Where(e => e != null)
-                .Concat(descriptor.NestedTypes.SelectMany(GetAllDependedExtensionsFromMessage));
+                .Concat(descriptor.NestedTypes.SelectMany(GetAllDependedExtensionsFromMessage))!;
         }
 
         /// <summary>
@@ -491,7 +489,7 @@ namespace Google.Protobuf.Reflection
         /// with the order in which protoc provides descriptors to plugins.</param>
         /// <param name="registry">The extension registry to use when parsing, or null if no extensions are required.</param>
         /// <returns>The file descriptors corresponding to <paramref name="descriptorData"/>.</returns>
-        public static IReadOnlyList<FileDescriptor> BuildFromByteStrings(IEnumerable<ByteString> descriptorData, ExtensionRegistry registry)
+        public static IReadOnlyList<FileDescriptor> BuildFromByteStrings(IEnumerable<ByteString> descriptorData, ExtensionRegistry? registry)
         {
             ProtoPreconditions.CheckNotNull(descriptorData, nameof(descriptorData));
 
@@ -507,8 +505,7 @@ namespace Google.Protobuf.Reflection
                 var dependencies = new List<FileDescriptor>();
                 foreach (var dependencyName in proto.Dependency)
                 {
-                    FileDescriptor dependency;
-                    if (!descriptorsByName.TryGetValue(dependencyName, out dependency))
+                    if (!descriptorsByName.TryGetValue(dependencyName, out FileDescriptor? dependency))
                     {
                         throw new ArgumentException($"Dependency missing: {dependencyName}");
                     }
@@ -579,7 +576,7 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public FileOptions GetOptions() => Proto.Options?.Clone();
+        public FileOptions? GetOptions() => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value file option for this descriptor
@@ -588,7 +585,7 @@ namespace Google.Protobuf.Reflection
         public T GetOption<T>(Extension<FileOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+            return value is IDeepCloneable<T> cloneable ? cloneable.Clone() : value;
         }
 
         /// <summary>
@@ -596,6 +593,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public RepeatedField<T> GetOption<T>(RepeatedExtension<FileOptions, T> extension)
+            where T : notnull
         {
             return Proto.Options.GetExtension(extension).Clone();
         }

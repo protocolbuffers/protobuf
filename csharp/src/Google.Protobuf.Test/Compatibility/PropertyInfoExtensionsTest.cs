@@ -37,12 +37,12 @@ namespace Google.Protobuf.Compatibility
 {
     public class PropertyInfoExtensionsTest
     {
-        public string PublicReadWrite { get; set; }
-        private string PrivateReadWrite { get; set; }
-        public string PublicReadPrivateWrite { get; private set; }
-        public string PrivateReadPublicWrite { private get; set; }
-        public string PublicReadOnly { get { return null; } }
-        private string PrivateReadOnly { get { return null; } }
+        public string? PublicReadWrite { get; set; }
+        private string? PrivateReadWrite { get; set; }
+        public string? PublicReadPrivateWrite { get; private set; }
+        public string? PrivateReadPublicWrite { private get; set; }
+        public string? PublicReadOnly { get { return null; } }
+        private string? PrivateReadOnly { get { return null; } }
         public string PublicWriteOnly { set { } }
         private string PrivateWriteOnly { set {  } }
 
@@ -54,7 +54,8 @@ namespace Google.Protobuf.Compatibility
         {
             var propertyInfo = typeof(PropertyInfoExtensionsTest)
                 .GetProperty(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            Assert.IsNotNull(PropertyInfoExtensions.GetGetMethod(propertyInfo));
+            Assert.IsNotNull(propertyInfo);
+            Assert.IsNotNull(PropertyInfoExtensions.GetGetMethod(propertyInfo!));
         }
 
         [Test]
@@ -67,7 +68,8 @@ namespace Google.Protobuf.Compatibility
         {
             var propertyInfo = typeof(PropertyInfoExtensionsTest)
                 .GetProperty(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            Assert.IsNull(PropertyInfoExtensions.GetGetMethod(propertyInfo));
+            Assert.IsNotNull(propertyInfo);
+            Assert.IsNull(PropertyInfoExtensions.GetGetMethod(propertyInfo!));
         }
 
         [Test]
@@ -78,7 +80,8 @@ namespace Google.Protobuf.Compatibility
         {
             var propertyInfo = typeof(PropertyInfoExtensionsTest)
                 .GetProperty(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            Assert.IsNotNull(PropertyInfoExtensions.GetSetMethod(propertyInfo));
+            Assert.IsNotNull(propertyInfo);
+            Assert.IsNotNull(PropertyInfoExtensions.GetSetMethod(propertyInfo!));
         }
 
         [Test]
@@ -91,8 +94,8 @@ namespace Google.Protobuf.Compatibility
         {
             var propertyInfo = typeof(PropertyInfoExtensionsTest)
                 .GetProperty(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            Assert.IsNull(PropertyInfoExtensions.GetSetMethod(propertyInfo));
+            Assert.IsNotNull(propertyInfo);
+            Assert.IsNull(PropertyInfoExtensions.GetSetMethod(propertyInfo!));
         }
     }
-
 }

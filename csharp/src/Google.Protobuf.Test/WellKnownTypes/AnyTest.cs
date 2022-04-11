@@ -98,7 +98,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var any = Any.Pack(message);
-            Assert.False(any.TryUnpack(out TestOneof unpacked));
+            Assert.False(any.TryUnpack(out TestOneof? unpacked));
             Assert.Null(unpacked);
         }
 
@@ -107,7 +107,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var any = Any.Pack(message);
-            Assert.IsTrue(any.TryUnpack(out TestAllTypes unpacked));
+            Assert.IsTrue(any.TryUnpack(out TestAllTypes? unpacked));
             Assert.AreEqual(message, unpacked);
         }
 

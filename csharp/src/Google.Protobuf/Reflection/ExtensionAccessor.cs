@@ -40,7 +40,7 @@ namespace Google.Protobuf.Reflection
         internal ExtensionAccessor(FieldDescriptor descriptor)
         {
             Descriptor = descriptor;
-            extension = descriptor.Extension;
+            extension = descriptor.Extension!;
             helper = ReflectionUtil.CreateExtensionHelper(extension);
         }
 
@@ -56,12 +56,12 @@ namespace Google.Protobuf.Reflection
             return helper.HasExtension(message);
         }
 
-        public object GetValue(IMessage message)
+        public object? GetValue(IMessage message)
         {
             return helper.GetExtension(message);
         }
 
-        public void SetValue(IMessage message, object value)
+        public void SetValue(IMessage message, object? value)
         {
             helper.SetExtension(message, value);
         }

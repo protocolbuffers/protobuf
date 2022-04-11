@@ -6,7 +6,7 @@
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
     <VersionPrefix>3.21.1</VersionPrefix>
     <!-- C# 7.2 is required for Span/BufferWriter/ReadOnlySequence -->
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <Authors>Google Inc.</Authors>
     <TargetFrameworks>netstandard1.1;netstandard2.0;net45;net50</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -23,6 +23,10 @@
     <!-- Include PDB in the built .nupkg -->
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IsTrimmable>true</IsTrimmable>
+
+    <!-- C# 7.3+ is required for Span/BufferWriter/ReadOnlySequence -->
+    <!-- v10 is compatible with Visual Studio 2022+ -->
+    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">

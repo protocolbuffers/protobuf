@@ -67,7 +67,7 @@ namespace Google.Protobuf
         /// with a value type - but it gets in the way if either you want to use it with a nullable
         /// value type, or you want to use it with an unconstrained type parameter.
         /// </remarks>
-        internal static T CheckNotNullUnconstrained<T>(T value, string name)
+        internal static T CheckNotNullUnconstrained<T>(T? value, string name)
         {
             if (value == null)
             {

@@ -31,7 +31,6 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace Google.Protobuf.Collections
 {
@@ -44,9 +43,9 @@ namespace Google.Protobuf.Collections
         /// <summary>
         /// Checks if two lists are equal.
         /// </summary>
-        public static bool Equals<T>(List<T> left, List<T> right)
+        public static bool Equals<T>(List<T>? left, List<T>? right)
         {
-            if (left == right)
+            if (ReferenceEquals(left, right))
             {
                 return true;
             }
@@ -72,7 +71,7 @@ namespace Google.Protobuf.Collections
         /// <summary>
         /// Gets the list's hash code.
         /// </summary>
-        public static int GetHashCode<T>(List<T> list)
+        public static int GetHashCode<T>(List<T>? list)
         {
             if (list == null)
             {
@@ -81,7 +80,7 @@ namespace Google.Protobuf.Collections
             int hash = 31;
             foreach (T element in list)
             {
-                hash = hash * 29 + element.GetHashCode();
+                hash = hash * 29 + element!.GetHashCode();
             }
             return hash;
         }

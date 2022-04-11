@@ -57,7 +57,7 @@ namespace Google.Protobuf.Reflection
             MethodInfo clearMethod) =>
             new OneofAccessor(
                 descriptor,
-                ReflectionUtil.CreateFuncIMessageInt32(caseProperty.GetGetMethod()),
+                ReflectionUtil.CreateFuncIMessageInt32(caseProperty.GetGetMethod()!),
                 ReflectionUtil.CreateActionIMessage(clearMethod));
 
         internal static OneofAccessor ForSyntheticOneof(OneofDescriptor descriptor)
@@ -66,8 +66,8 @@ namespace Google.Protobuf.Reflection
             // cross-linked yet. But by the time the delegates are called by user code, all will be
             // well. (That's why we capture the descriptor itself rather than a field.)
             return new OneofAccessor(descriptor,
-                message => descriptor.Fields[0].Accessor.HasValue(message) ? descriptor.Fields[0].FieldNumber : 0,
-                message => descriptor.Fields[0].Accessor.Clear(message));
+                message => descriptor.Fields![0].Accessor!.HasValue(message) ? descriptor.Fields[0].FieldNumber : 0,
+                message => descriptor.Fields![0].Accessor!.Clear(message));
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Indicates which field in the oneof is set for specified message
         /// </summary>
-        public FieldDescriptor GetCaseFieldDescriptor(IMessage message)
+        public FieldDescriptor? GetCaseFieldDescriptor(IMessage message)
         {
             int fieldNumber = caseDelegate(message);
             return fieldNumber > 0

@@ -1,0 +1,11 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- C# 7.3+ is required for Span/BufferWriter/ReadOnlySequence -->
+    <!-- v10 is compatible with Visual Studio 2022+ -->
+    <LangVersion>10.0</LangVersion>
+
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

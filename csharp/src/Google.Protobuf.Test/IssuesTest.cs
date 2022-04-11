@@ -48,9 +48,9 @@ namespace Google.Protobuf
         public void FieldCalledItem()
         {
             ItemField message = new ItemField { Item = 3 };
-            FieldDescriptor field = ItemField.Descriptor.FindFieldByName("item");
+            FieldDescriptor? field = ItemField.Descriptor.FindFieldByName("item");
             Assert.NotNull(field);
-            Assert.AreEqual(3, (int)field.Accessor.GetValue(message));
+            Assert.AreEqual(3, (int?)field!.Accessor!.GetValue(message));
         }
 
         [Test]

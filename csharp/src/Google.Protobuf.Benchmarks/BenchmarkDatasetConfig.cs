@@ -49,14 +49,14 @@ namespace Google.Protobuf.Benchmarks
             typeof(GoogleMessageBenchmark).Assembly.GetTypes()
                 .Where(t => typeof(IMessage).IsAssignableFrom(t))
                 .ToDictionary(
-                    t => ((MessageDescriptor) t.GetProperty("Descriptor", BindingFlags.Static | BindingFlags.Public).GetValue(null)).FullName,
-                    t => ((MessageParser) t.GetProperty("Parser", BindingFlags.Static | BindingFlags.Public).GetValue(null)));
+                    t => ((MessageDescriptor) t.GetProperty("Descriptor", BindingFlags.Static | BindingFlags.Public)!.GetValue(null)!).FullName,
+                    t => ((MessageParser) t.GetProperty("Parser", BindingFlags.Static | BindingFlags.Public)!.GetValue(null)!));
 
         public MessageParser Parser { get; }
         public List<byte[]> Payloads { get; }
         public string Name { get; }
 
-        public BenchmarkDatasetConfig(string resource, string shortName = null)
+        public BenchmarkDatasetConfig(string resource, string? shortName = null)
         {
             var data = LoadData(resource);
             var dataset = BenchmarkDataset.Parser.ParseFrom(data);

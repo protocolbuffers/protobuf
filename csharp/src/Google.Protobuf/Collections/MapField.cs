@@ -31,9 +31,7 @@
 #endregion
 
 using Google.Protobuf.Compatibility;
-using Google.Protobuf.Reflection;
 using System;
-using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -72,6 +70,8 @@ namespace Google.Protobuf.Collections
 #if !NET35
         , IReadOnlyDictionary<TKey, TValue>
 #endif
+        where TKey : notnull
+        where TValue : notnull
     {
         private static readonly EqualityComparer<TValue> ValueEqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<TValue>();
         private static readonly EqualityComparer<TKey> KeyEqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<TKey>();
@@ -95,7 +95,7 @@ namespace Google.Protobuf.Collections
             {
                 foreach (var pair in list)
                 {
-                    clone.Add(pair.Key, ((IDeepCloneable<TValue>)pair.Value).Clone());
+                    clone.Add(pair.Key, ((IDeepCloneable<TValue>)pair.Value!).Clone());
                 }
             }
             else
@@ -147,11 +147,10 @@ namespace Google.Protobuf.Collections
         public bool Remove(TKey key)
         {
             ProtoPreconditions.CheckNotNullUnconstrained(key, nameof(key));
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (map.TryGetValue(key, out node))
+            if (map.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>>? node))
             {
                 map.Remove(key);
-                node.List.Remove(node);
+                node.List!.Remove(node);
                 return true;
             }
             else
@@ -170,15 +169,14 @@ namespace Google.Protobuf.Collections
         /// <returns><c>true</c> if the map contains an element with the specified key; otherwise, <c>false</c>.</returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (map.TryGetValue(key, out node))
+            if (map.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>>? node))
             {
                 value = node.Value.Value;
                 return true;
             }
             else
             {
-                value = default(TValue);
+                value = default(TValue)!;
                 return false;
             }
         }
@@ -195,8 +193,7 @@ namespace Google.Protobuf.Collections
             get
             {
                 ProtoPreconditions.CheckNotNullUnconstrained(key, nameof(key));
-                TValue value;
-                if (TryGetValue(key, out value))
+                if (TryGetValue(key, out TValue? value))
                 {
                     return value;
                 }
@@ -210,9 +207,8 @@ namespace Google.Protobuf.Collections
                 {
                     ProtoPreconditions.CheckNotNullUnconstrained(value, nameof(value));
                 }
-                LinkedListNode<KeyValuePair<TKey, TValue>> node;
-                var pair = new KeyValuePair<TKey, TValue>(key, value);
-                if (map.TryGetValue(key, out node))
+                var pair = new KeyValuePair<TKey, TValue>(key, value!);
+                if (map.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>>? node))
                 {
                     node.Value = pair;
                 }
@@ -294,8 +290,7 @@ namespace Google.Protobuf.Collections
         /// <returns></returns>
         bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
-            TValue value;
-            return TryGetValue(item.Key, out value) && ValueEqualityComparer.Equals(item.Value, value);
+            return TryGetValue(item.Key, out TValue? value) && ValueEqualityComparer.Equals(item.Value, value);
         }
 
         /// <summary>
@@ -320,12 +315,11 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentException("Key is null", nameof(item));
             }
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (map.TryGetValue(item.Key, out node) &&
+            if (map.TryGetValue(item.Key, out LinkedListNode<KeyValuePair<TKey, TValue>>? node) &&
                 EqualityComparer<TValue>.Default.Equals(item.Value, node.Value.Value))
             {
                 map.Remove(item.Key);
-                node.List.Remove(node);
+                node.List!.Remove(node);
                 return true;
             }
             else
@@ -351,7 +345,7 @@ namespace Google.Protobuf.Collections
         /// <returns>
         ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
             return Equals(other as MapField<TKey, TValue>);
         }
@@ -367,9 +361,9 @@ namespace Google.Protobuf.Collections
             var keyComparer = KeyEqualityComparer;
             var valueComparer = ValueEqualityComparer;
             int hash = 0;
-            foreach (var pair in list)
+            foreach (KeyValuePair<TKey, TValue> pair in list)
             {
-                hash ^= keyComparer.GetHashCode(pair.Key) * 31 + valueComparer.GetHashCode(pair.Value);
+                hash ^= keyComparer.GetHashCode(pair.Key!) * 31 + valueComparer.GetHashCode(pair.Value!);
             }
             return hash;
         }
@@ -382,13 +376,13 @@ namespace Google.Protobuf.Collections
         /// </remarks>
         /// <param name="other">The map to compare this with.</param>
         /// <returns><c>true</c> if <paramref name="other"/> refers to an equal map; <c>false</c> otherwise.</returns>
-        public bool Equals(MapField<TKey, TValue> other)
+        public bool Equals(MapField<TKey, TValue>? other)
         {
             if (other == null)
             {
                 return false;
             }
-            if (other == this)
+            if (ReferenceEquals(other, this))
             {
                 return true;
             }
@@ -399,8 +393,7 @@ namespace Google.Protobuf.Collections
             var valueComparer = ValueEqualityComparer;
             foreach (var pair in this)
             {
-                TValue value;
-                if (!other.TryGetValue(pair.Key, out value))
+                if (!other.TryGetValue(pair.Key, out TValue? value))
                 {
                     return false;
                 }
@@ -532,14 +525,14 @@ namespace Google.Protobuf.Collections
         }
 
         #region IDictionary explicit interface implementation
-        void IDictionary.Add(object key, object value)
+        void IDictionary.Add(object key, object? value)
         {
-            Add((TKey)key, (TValue)value);
+            Add((TKey)key, (TValue)value!);
         }
 
         bool IDictionary.Contains(object key)
         {
-            if (!(key is TKey))
+            if (key is not TKey)
             {
                 return false;
             }
@@ -554,7 +547,7 @@ namespace Google.Protobuf.Collections
         void IDictionary.Remove(object key)
         {
             ProtoPreconditions.CheckNotNull(key, nameof(key));
-            if (!(key is TKey))
+            if (key is not TKey)
             {
                 return;
             }
@@ -564,7 +557,7 @@ namespace Google.Protobuf.Collections
         void ICollection.CopyTo(Array array, int index)
         {
             // This is ugly and slow as heck, but with any luck it will never be used anyway.
-            ICollection temp = this.Select(pair => new DictionaryEntry(pair.Key, pair.Value)).ToList();
+            ICollection temp = this.Select(pair => new DictionaryEntry(pair.Key!, pair.Value)).ToList();
             temp.CopyTo(array, index);
         }
 
@@ -578,23 +571,22 @@ namespace Google.Protobuf.Collections
 
         object ICollection.SyncRoot { get { return this; } }
 
-        object IDictionary.this[object key]
+        object? IDictionary.this[object key]
         {
             get
             {
                 ProtoPreconditions.CheckNotNull(key, nameof(key));
-                if (!(key is TKey))
+                if (key is not TKey)
                 {
                     return null;
                 }
-                TValue value;
-                TryGetValue((TKey)key, out value);
+                TryGetValue((TKey)key, out TValue? value);
                 return value;
             }
 
             set
             {
-                this[(TKey)key] = (TValue)value;
+                this[(TKey)key] = (TValue)value!;
             }
         }
         #endregion
@@ -626,10 +618,10 @@ namespace Google.Protobuf.Collections
                 enumerator.Reset();
             }
 
-            public object Current { get { return Entry; } }
-            public DictionaryEntry Entry { get { return new DictionaryEntry(Key, Value); } }
-            public object Key { get { return enumerator.Current.Key; } }
-            public object Value { get { return enumerator.Current.Value; } }
+            public object Current => Entry;
+            public DictionaryEntry Entry => new DictionaryEntry(Key!, Value!);
+            public object Key => enumerator.Current.Key!;
+            public object Value => enumerator.Current.Value!;
         }
 
         /// <summary>

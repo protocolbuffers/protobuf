@@ -47,7 +47,7 @@ namespace Google.Protobuf.Reflection
 
         public override void Clear(IMessage message)
         {
-            IDictionary list = (IDictionary) GetValue(message);
+            IDictionary list = (IDictionary) GetValue(message)!;
             list.Clear();
         }
 
@@ -56,7 +56,7 @@ namespace Google.Protobuf.Reflection
             throw new InvalidOperationException("HasValue is not implemented for map fields");
         }
 
-        public override void SetValue(IMessage message, object value)
+        public override void SetValue(IMessage message, object? value)
         {
             throw new InvalidOperationException("SetValue is not implemented for map fields");
         }

@@ -86,7 +86,7 @@ namespace Google.Protobuf.Reflection
 
             var descriptor = FileDescriptor.BuildFromByteStrings(byteStrings, registry).Last();
             var message = descriptor.MessageTypes.Single(t => t.Name == nameof(TestMessageWithCustomOptions));
-            var extensionValue = message.GetOptions().GetExtension(extension);
+            var extensionValue = message.GetOptions()?.GetExtension(extension);
             Assert.AreEqual(-56, extensionValue);
         }
 
@@ -262,17 +262,22 @@ namespace Google.Protobuf.Reflection
 
         public void TestFieldDescriptor(
             FileDescriptor unitTestProto3Descriptor,
-            MessageDescriptor testAllTypesDescriptor,
-            MessageDescriptor foreignMessageDescriptor,
-            MessageDescriptor importMessageDescriptor)
+            MessageDescriptor? testAllTypesDescriptor,
+            MessageDescriptor? foreignMessageDescriptor,
+            MessageDescriptor? importMessageDescriptor)
         {
-            FieldDescriptor primitiveField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_int32");
-            FieldDescriptor enumField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_nested_enum");
-            FieldDescriptor foreignMessageField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_foreign_message");
-            FieldDescriptor importMessageField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_import_message");
-            FieldDescriptor fieldInOneof = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("oneof_string");
+            Assert.NotNull(testAllTypesDescriptor);
+            Assert.NotNull(foreignMessageDescriptor);
+            Assert.NotNull(importMessageDescriptor);
 
-            Assert.AreEqual("single_int32", primitiveField.Name);
+            FieldDescriptor? primitiveField = testAllTypesDescriptor!.FindDescriptor<FieldDescriptor>("single_int32");
+            FieldDescriptor? enumField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_nested_enum");
+            FieldDescriptor? foreignMessageField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_foreign_message");
+            FieldDescriptor? importMessageField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_import_message");
+            FieldDescriptor? fieldInOneof = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("oneof_string");
+
+            Assert.NotNull(primitiveField);
+            Assert.AreEqual("single_int32", primitiveField!.Name);
             Assert.AreEqual("protobuf_unittest3.TestAllTypes.single_int32",
                             primitiveField.FullName);
             Assert.AreEqual(1, primitiveField.FieldNumber);
@@ -281,20 +286,25 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(FieldType.Int32, primitiveField.FieldType);
             Assert.IsNull(primitiveField.Proto.Options);
 
-            Assert.AreEqual("single_nested_enum", enumField.Name);
+            Assert.NotNull(enumField);
+            Assert.AreEqual("single_nested_enum", enumField!.Name);
             Assert.AreEqual(FieldType.Enum, enumField.FieldType);
             Assert.AreEqual(testAllTypesDescriptor.EnumTypes[0], enumField.EnumType);
 
-            Assert.AreEqual("single_foreign_message", foreignMessageField.Name);
+            Assert.NotNull(foreignMessageField);
+            Assert.AreEqual("single_foreign_message", foreignMessageField!.Name);
             Assert.AreEqual(FieldType.Message, foreignMessageField.FieldType);
             Assert.AreEqual(foreignMessageDescriptor, foreignMessageField.MessageType);
 
-            Assert.AreEqual("single_import_message", importMessageField.Name);
+            Assert.NotNull(importMessageField);
+            Assert.AreEqual("single_import_message", importMessageField!.Name);
             Assert.AreEqual(FieldType.Message, importMessageField.FieldType);
             Assert.AreEqual(importMessageDescriptor, importMessageField.MessageType);
 
             // For a field in a regular onoef, ContainingOneof and RealContainingOneof should be the same.
-            Assert.AreEqual("oneof_field", fieldInOneof.ContainingOneof.Name);
+            Assert.NotNull(fieldInOneof);
+            Assert.NotNull(fieldInOneof!.ContainingOneof);
+            Assert.AreEqual("oneof_field", fieldInOneof.ContainingOneof!.Name);
             Assert.AreSame(fieldInOneof.ContainingOneof, fieldInOneof.RealContainingOneof);
 
             TestDescriptorToProto(primitiveField.ToProto, primitiveField.Proto);
@@ -306,37 +316,41 @@ namespace Google.Protobuf.Reflection
         [Test]
         public void FieldDescriptorLabel()
         {
-            FieldDescriptor singleField =
+            FieldDescriptor? singleField =
                 TestAllTypes.Descriptor.FindDescriptor<FieldDescriptor>("single_int32");
-            FieldDescriptor repeatedField =
+            FieldDescriptor? repeatedField =
                 TestAllTypes.Descriptor.FindDescriptor<FieldDescriptor>("repeated_int32");
 
-            Assert.IsFalse(singleField.IsRepeated);
-            Assert.IsTrue(repeatedField.IsRepeated);
+            Assert.NotNull(singleField);
+            Assert.NotNull(repeatedField);
+            Assert.IsFalse(singleField!.IsRepeated);
+            Assert.IsTrue(repeatedField!.IsRepeated);
         }
 
         [Test]
         public void EnumDescriptor()
         {
             // Note: this test is a bit different to the Java version because there's no static way of getting to the descriptor
-            EnumDescriptor enumType = UnittestProto3Reflection.Descriptor.FindTypeByName<EnumDescriptor>("ForeignEnum");
-            EnumDescriptor nestedType = TestAllTypes.Descriptor.FindDescriptor<EnumDescriptor>("NestedEnum");
-
-            Assert.AreEqual("ForeignEnum", enumType.Name);
+            EnumDescriptor? enumType = UnittestProto3Reflection.Descriptor.FindTypeByName<EnumDescriptor>("ForeignEnum");
+            EnumDescriptor? nestedType = TestAllTypes.Descriptor.FindDescriptor<EnumDescriptor>("NestedEnum");
+            Assert.NotNull(enumType);
+            Assert.AreEqual("ForeignEnum", enumType!.Name);
             Assert.AreEqual("protobuf_unittest3.ForeignEnum", enumType.FullName);
             Assert.AreEqual(UnittestProto3Reflection.Descriptor, enumType.File);
             Assert.Null(enumType.ContainingType);
             Assert.Null(enumType.Proto.Options);
 
-            Assert.AreEqual("NestedEnum", nestedType.Name);
+            Assert.NotNull(nestedType);
+            Assert.AreEqual("NestedEnum", nestedType!.Name);
             Assert.AreEqual("protobuf_unittest3.TestAllTypes.NestedEnum",
                             nestedType.FullName);
             Assert.AreEqual(UnittestProto3Reflection.Descriptor, nestedType.File);
             Assert.AreEqual(TestAllTypes.Descriptor, nestedType.ContainingType);
 
-            EnumValueDescriptor value = enumType.FindValueByName("FOREIGN_FOO");
+            EnumValueDescriptor? value = enumType.FindValueByName("FOREIGN_FOO");
+            Assert.NotNull(value);
             Assert.AreEqual(value, enumType.Values[1]);
-            Assert.AreEqual("FOREIGN_FOO", value.Name);
+            Assert.AreEqual("FOREIGN_FOO", value!.Name);
             Assert.AreEqual(4, value.Number);
             Assert.AreEqual((int) ForeignEnum.ForeignFoo, value.Number);
             Assert.AreEqual(value, enumType.FindValueByNumber(4));
@@ -352,8 +366,9 @@ namespace Google.Protobuf.Reflection
         [Test]
         public void OneofDescriptor()
         {
-            OneofDescriptor descriptor = TestAllTypes.Descriptor.FindDescriptor<OneofDescriptor>("oneof_field");
-            Assert.IsFalse(descriptor.IsSynthetic);
+            OneofDescriptor? descriptor = TestAllTypes.Descriptor.FindDescriptor<OneofDescriptor>("oneof_field");
+            Assert.NotNull(descriptor);
+            Assert.IsFalse(descriptor!.IsSynthetic);
             Assert.AreEqual("oneof_field", descriptor.Name);
             Assert.AreEqual("protobuf_unittest3.TestAllTypes.oneof_field", descriptor.FullName);
 
@@ -364,9 +379,10 @@ namespace Google.Protobuf.Reflection
                 TestAllTypes.OneofUint32FieldNumber }
                 .Select(fieldNumber => TestAllTypes.Descriptor.FindFieldByNumber(fieldNumber))
                 .ToList();
-            foreach (var field in expectedFields)
+            foreach (FieldDescriptor? field in expectedFields)
             {
-                Assert.AreSame(descriptor, field.ContainingOneof);
+                Assert.NotNull(field);
+                Assert.AreSame(descriptor, field!.ContainingOneof);
             }
 
             CollectionAssert.AreEquivalent(expectedFields, descriptor.Fields);
@@ -429,10 +445,9 @@ namespace Google.Protobuf.Reflection
             var descriptor = TestProto3Optional.Descriptor;
             var field = descriptor.Fields[TestProto3Optional.OptionalInt32FieldNumber];
             Assert.NotNull(field.ContainingOneof);
-            Assert.IsTrue(field.ContainingOneof.IsSynthetic);
+            Assert.IsTrue(field.ContainingOneof!.IsSynthetic);
             Assert.Null(field.RealContainingOneof);
         }
-
 
         [Test]
         public void SyntheticOneofReflection()

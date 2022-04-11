@@ -81,8 +81,8 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <param name="method">The method to create a delegate for, which must be declared in an IMessage
         /// implementation.</param>
-        internal static Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method) =>
-            GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageObject(method);
+        internal static Func<IMessage, object?> CreateFuncIMessageObject(MethodInfo method) =>
+            GetReflectionHelper(method.DeclaringType!, method.ReturnType).CreateFuncIMessageObject(method);
 
         /// <summary>
         /// Creates a delegate which will cast the argument to the type that declares the method,
@@ -93,7 +93,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="method">The method to create a delegate for, which must be declared in an IMessage
         /// implementation.</param>
         internal static Func<IMessage, int> CreateFuncIMessageInt32(MethodInfo method) =>
-            GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageInt32(method);
+            GetReflectionHelper(method.DeclaringType!, method.ReturnType).CreateFuncIMessageInt32(method);
 
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
@@ -101,8 +101,8 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <param name="method">The method to create a delegate for, which must be declared in an IMessage
         /// implementation.</param>
-        internal static Action<IMessage, object> CreateActionIMessageObject(MethodInfo method) =>
-            GetReflectionHelper(method.DeclaringType, method.GetParameters()[0].ParameterType).CreateActionIMessageObject(method);
+        internal static Action<IMessage, object?> CreateActionIMessageObject(MethodInfo method) =>
+            GetReflectionHelper(method.DeclaringType!, method.GetParameters()[0].ParameterType).CreateActionIMessageObject(method);
 
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
@@ -111,14 +111,14 @@ namespace Google.Protobuf.Reflection
         /// <param name="method">The method to create a delegate for, which must be declared in an IMessage
         /// implementation.</param>
         internal static Action<IMessage> CreateActionIMessage(MethodInfo method) =>
-            GetReflectionHelper(method.DeclaringType, typeof(object)).CreateActionIMessage(method);
+            GetReflectionHelper(method.DeclaringType!, typeof(object)).CreateActionIMessage(method);
 
         internal static Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method) =>
-            GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageBool(method);
+            GetReflectionHelper(method.DeclaringType!, method.ReturnType).CreateFuncIMessageBool(method);
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
         internal static Func<IMessage, bool> CreateIsInitializedCaller([DynamicallyAccessedMembers(GeneratedClrTypeInfo.MessageAccessibility)]Type msg) =>
-            ((IExtensionSetReflector)Activator.CreateInstance(typeof(ExtensionSetReflector<>).MakeGenericType(msg))).CreateIsInitializedCaller();
+            ((IExtensionSetReflector)Activator.CreateInstance(typeof(ExtensionSetReflector<>).MakeGenericType(msg))!)!.CreateIsInitializedCaller();
 
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
@@ -126,7 +126,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
         internal static IExtensionReflectionHelper CreateExtensionHelper(Extension extension) =>
-            (IExtensionReflectionHelper)Activator.CreateInstance(typeof(ExtensionReflectionHelper<,>).MakeGenericType(extension.TargetType, extension.GetType().GenericTypeArguments[1]), extension);
+            (IExtensionReflectionHelper)Activator.CreateInstance(typeof(ExtensionReflectionHelper<,>).MakeGenericType(extension.TargetType, extension.GetType().GenericTypeArguments[1]), extension)!;
 
         /// <summary>
         /// Creates a reflection helper for the given type arguments. Currently these are created on demand
@@ -136,7 +136,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Type parameter members are preserved with DynamicallyAccessedMembers on GeneratedClrTypeInfo.ctor clrType parameter.")]
         private static IReflectionHelper GetReflectionHelper(Type t1, Type t2) =>
-            (IReflectionHelper) Activator.CreateInstance(typeof(ReflectionHelper<,>).MakeGenericType(t1, t2));
+            (IReflectionHelper) Activator.CreateInstance(typeof(ReflectionHelper<,>).MakeGenericType(t1, t2))!;
 
         // Non-generic interface allowing us to use an instance of ReflectionHelper<T1, T2> without statically
         // knowing the types involved.
@@ -144,15 +144,15 @@ namespace Google.Protobuf.Reflection
         {
             Func<IMessage, int> CreateFuncIMessageInt32(MethodInfo method);
             Action<IMessage> CreateActionIMessage(MethodInfo method);
-            Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method);
-            Action<IMessage, object> CreateActionIMessageObject(MethodInfo method);
+            Func<IMessage, object?> CreateFuncIMessageObject(MethodInfo method);
+            Action<IMessage, object?> CreateActionIMessageObject(MethodInfo method);
             Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method);
         }
 
         internal interface IExtensionReflectionHelper
         {
-            object GetExtension(IMessage message);
-            void SetExtension(IMessage message, object value);
+            object? GetExtension(IMessage message);
+            void SetExtension(IMessage message, object? value);
             bool HasExtension(IMessage message);
             void ClearExtension(IMessage message);
         }
@@ -180,7 +180,7 @@ namespace Google.Protobuf.Reflection
                     // so we go via boxing. Reflection is already fairly inefficient, and this is
                     // only used for one-of case checking, fortunately.
                     var del = (Func<T1, T2>) method.CreateDelegate(typeof(Func<T1, T2>));
-                    return message => (int) (object) del((T1) message);
+                    return message => (int) (object) del((T1) message)!;
                 }
             }
 
@@ -193,13 +193,13 @@ namespace Google.Protobuf.Reflection
             public Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method)
             {
                 var del = (Func<T1, T2>) method.CreateDelegate(typeof(Func<T1, T2>));
-                return message => del((T1) message);
+                return message => del((T1) message)!;
             }
 
-            public Action<IMessage, object> CreateActionIMessageObject(MethodInfo method)
+            public Action<IMessage, object?> CreateActionIMessageObject(MethodInfo method)
             {
-                var del = (Action<T1, T2>) method.CreateDelegate(typeof(Action<T1, T2>));
-                return (message, arg) => del((T1) message, (T2) arg);
+                var del = (Action<T1, T2?>) method.CreateDelegate(typeof(Action<T1, T2?>));
+                return (message, arg) => del((T1) message, (T2?) arg);
             }
 
             public Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method)
@@ -211,6 +211,7 @@ namespace Google.Protobuf.Reflection
 
         private class ExtensionReflectionHelper<T1, T3> : IExtensionReflectionHelper
             where T1 : IExtendableMessage<T1>
+            where T3 : notnull
         {
             private readonly Extension extension;
 
@@ -219,22 +220,22 @@ namespace Google.Protobuf.Reflection
                 this.extension = extension;
             }
 
-            public object GetExtension(IMessage message)
+            public object? GetExtension(IMessage message)
             {
-                if (!(message is T1))
+                if (message is not T1)
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
                 T1 extensionMessage = (T1)message;
 
-                if (extension is Extension<T1, T3>)
+                if (extension is Extension<T1, T3> ext)
                 {
-                    return extensionMessage.GetExtension(extension as Extension<T1, T3>);
+                    return extensionMessage.GetExtension(ext);
                 }
-                else if (extension is RepeatedExtension<T1, T3>)
+                else if (extension is RepeatedExtension<T1, T3> repeated)
                 {
-                    return extensionMessage.GetOrInitializeExtension(extension as RepeatedExtension<T1, T3>);
+                    return extensionMessage.GetOrInitializeExtension(repeated);
                 }
                 else
                 {
@@ -244,16 +245,16 @@ namespace Google.Protobuf.Reflection
 
             public bool HasExtension(IMessage message)
             {
-                if (!(message is T1))
+                if (message is not T1)
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
                 T1 extensionMessage = (T1)message;
 
-                if (extension is Extension<T1, T3>)
+                if (extension is Extension<T1, T3> ext)
                 {
-                    return extensionMessage.HasExtension(extension as Extension<T1, T3>);
+                    return extensionMessage.HasExtension(ext);
                 }
                 else if (extension is RepeatedExtension<T1, T3>)
                 {
@@ -265,18 +266,18 @@ namespace Google.Protobuf.Reflection
                 }
             }
 
-            public void SetExtension(IMessage message, object value)
+            public void SetExtension(IMessage message, object? value)
             {
-                if (!(message is T1))
+                if (message is not T1)
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
                 T1 extensionMessage = (T1)message;
 
-                if (extension is Extension<T1, T3>)
+                if (extension is Extension<T1, T3?> ext)
                 {
-                    extensionMessage.SetExtension(extension as Extension<T1, T3>, (T3)value);
+                    extensionMessage.SetExtension(ext, (T3?)value);
                 }
                 else if (extension is RepeatedExtension<T1, T3>)
                 {
@@ -290,20 +291,20 @@ namespace Google.Protobuf.Reflection
 
             public void ClearExtension(IMessage message)
             {
-                if (!(message is T1))
+                if (message is not T1)
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
                 T1 extensionMessage = (T1)message;
 
-                if (extension is Extension<T1, T3>)
+                if (extension is Extension<T1, T3> ext)
                 {
-                    extensionMessage.ClearExtension(extension as Extension<T1, T3>);
+                    extensionMessage.ClearExtension(ext);
                 }
-                else if (extension is RepeatedExtension<T1, T3>)
+                else if (extension is RepeatedExtension<T1, T3> repeated)
                 {
-                    extensionMessage.GetExtension(extension as RepeatedExtension<T1, T3>).Clear();
+                    extensionMessage.GetExtension(repeated).Clear();
                 }
                 else
                 {
@@ -318,13 +319,13 @@ namespace Google.Protobuf.Reflection
         {
             public Func<IMessage, bool> CreateIsInitializedCaller()
             {
-                var prop = typeof(T1).GetTypeInfo().GetDeclaredProperty("_Extensions");
-                var getFunc = (Func<T1, ExtensionSet<T1>>)prop.GetMethod.CreateDelegate(typeof(Func<T1, ExtensionSet<T1>>));
+                PropertyInfo prop = typeof(T1).GetTypeInfo().GetDeclaredProperty("_Extensions")!;
+                var getFunc = (Func<T1, ExtensionSet<T1>>)prop.GetMethod!.CreateDelegate(typeof(Func<T1, ExtensionSet<T1>>))!;
                 var initializedFunc = (Func<ExtensionSet<T1>, bool>)
                     typeof(ExtensionSet<T1>)
                         .GetTypeInfo()
-                        .GetDeclaredMethod("IsInitialized")
-                        .CreateDelegate(typeof(Func<ExtensionSet<T1>, bool>));
+                        .GetDeclaredMethod("IsInitialized")!
+                        .CreateDelegate(typeof(Func<ExtensionSet<T1>, bool>))!;
                 return (m) => {
                     var set = getFunc((T1)m);
                     return set == null || initializedFunc(set);
@@ -343,7 +344,7 @@ namespace Google.Protobuf.Reflection
             try
             {
                 // Try to do the conversion using reflection, so we can see whether it's supported.
-                MethodInfo method = typeof(ReflectionUtil).GetMethod(nameof(SampleEnumMethod));
+                MethodInfo method = typeof(ReflectionUtil).GetMethod(nameof(SampleEnumMethod))!;
                 // If this passes, we're in a reasonable runtime.
                 method.CreateDelegate(typeof(Func<int>));
                 return true;

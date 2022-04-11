@@ -52,7 +52,7 @@ namespace Google.Protobuf
     /// </remarks>
     internal abstract class JsonTokenizer
     {
-        private JsonToken bufferedToken;
+        private JsonToken? bufferedToken;
 
         /// <summary>
         ///  Creates a tokenizer that reads from the given text reader.

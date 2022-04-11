@@ -230,7 +230,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// </remarks>
         /// <param name="other">Timestamp to compare</param>
         /// <returns>an integer indicating whether this timestamp precedes or follows the other</returns>
-        public int CompareTo(Timestamp other)
+        public int CompareTo(Timestamp? other)
         {
             return other == null ? 1
                 : Seconds < other.Seconds ? -1
@@ -263,7 +263,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns>true if a follows b</returns>
-        public static bool operator >(Timestamp a, Timestamp b)
+        public static bool operator >(Timestamp a, Timestamp? b)
         {
             return a.CompareTo(b) > 0;
         }
@@ -291,7 +291,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns>true if a follows b</returns>
-        public static bool operator >=(Timestamp a, Timestamp b)
+        public static bool operator >=(Timestamp a, Timestamp? b)
         {
             return a.CompareTo(b) >= 0;
         }
@@ -306,9 +306,9 @@ namespace Google.Protobuf.WellKnownTypes
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns>true if the two timestamps refer to the same nanosecond</returns>
-        public static bool operator ==(Timestamp a, Timestamp b)
+        public static bool operator ==(Timestamp? a, Timestamp? b)
         {
-            return ReferenceEquals(a, b) || (ReferenceEquals(a, null) ? (ReferenceEquals(b, null) ? true : false) : a.Equals(b));
+            return ReferenceEquals(a, b) || (a is null ? (b is null) : a.Equals(b));
         }
 
         /// <summary>
@@ -320,7 +320,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns>true if the two timestamps differ</returns>
-        public static bool operator !=(Timestamp a, Timestamp b)
+        public static bool operator !=(Timestamp? a, Timestamp? b)
         {
             return !(a == b);
         }

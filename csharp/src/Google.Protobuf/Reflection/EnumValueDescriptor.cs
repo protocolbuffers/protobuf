@@ -90,16 +90,17 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public EnumValueOptions GetOptions() => Proto.Options?.Clone();
+        public EnumValueOptions? GetOptions() => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value enum value option for this descriptor
         /// </summary>
         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public T GetOption<T>(Extension<EnumValueOptions, T> extension)
+            where T : notnull
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+            return value is IDeepCloneable<T> cloneable ? cloneable.Clone() : value;
         }
 
         /// <summary>
@@ -107,6 +108,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public RepeatedField<T> GetOption<T>(RepeatedExtension<EnumValueOptions, T> extension)
+            where T : notnull
         {
             return Proto.Options.GetExtension(extension).Clone();
         }

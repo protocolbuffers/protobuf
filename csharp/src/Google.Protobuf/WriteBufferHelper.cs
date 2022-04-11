@@ -44,10 +44,10 @@ namespace Google.Protobuf
     [SecuritySafeCritical]
     internal struct WriteBufferHelper
     {
-        private IBufferWriter<byte> bufferWriter;
-        private CodedOutputStream codedOutputStream;
+        private IBufferWriter<byte>? bufferWriter;
+        private CodedOutputStream? codedOutputStream;
 
-        public CodedOutputStream CodedOutputStream => codedOutputStream;
+        public CodedOutputStream? CodedOutputStream => codedOutputStream;
 
         /// <summary>
         /// Initialize an instance with a coded output stream.

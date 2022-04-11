@@ -44,8 +44,16 @@ namespace Google.Protobuf
     {
         internal sealed class ExtensionComparer : IEqualityComparer<Extension>
         {
-            public bool Equals(Extension a, Extension b)
+            public bool Equals(Extension? a, Extension? b)
             {
+                if (ReferenceEquals(a, b))
+                {
+                    return true;
+                }
+                if (a is null || b is null)
+                {
+                    return false;
+                }
                 return new ObjectIntPair<Type>(a.TargetType, a.FieldNumber).Equals(new ObjectIntPair<Type>(b.TargetType, b.FieldNumber));
             }
             public int GetHashCode(Extension a)
@@ -55,7 +63,7 @@ namespace Google.Protobuf
 
             internal static ExtensionComparer Instance = new ExtensionComparer();
         }
-        private IDictionary<ObjectIntPair<Type>, Extension> extensions;
+        private readonly IDictionary<ObjectIntPair<Type>, Extension> extensions;
 
         /// <summary>
         /// Creates a new empty extension registry
@@ -80,7 +88,7 @@ namespace Google.Protobuf
         /// </summary>
         bool ICollection<Extension>.IsReadOnly => false;
 
-        internal bool ContainsInputField(uint lastTag, Type target, out Extension extension)
+        internal bool ContainsInputField(uint lastTag, Type target, out Extension? extension)
         {
             return extensions.TryGetValue(new ObjectIntPair<Type>(target, WireFormat.GetTagFieldNumber(lastTag)), out extension);
         }

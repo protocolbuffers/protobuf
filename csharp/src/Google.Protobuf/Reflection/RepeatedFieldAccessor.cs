@@ -47,7 +47,7 @@ namespace Google.Protobuf.Reflection
 
         public override void Clear(IMessage message)
         {
-            IList list = (IList) GetValue(message);
+            IList list = (IList) GetValue(message)!;
             list.Clear();
         }
 
@@ -56,10 +56,9 @@ namespace Google.Protobuf.Reflection
             throw new InvalidOperationException("HasValue is not implemented for repeated fields");
         }
 
-        public override void SetValue(IMessage message, object value)
+        public override void SetValue(IMessage message, object? value)
         {
             throw new InvalidOperationException("SetValue is not implemented for repeated fields");
         }
-
     }
 }

@@ -30,9 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Google.Protobuf.Collections;
 
 namespace Google.Protobuf
@@ -51,11 +49,11 @@ namespace Google.Protobuf
     /// </summary>
     internal sealed class UnknownField
     {
-        private List<ulong> varintList;
-        private List<uint> fixed32List;
-        private List<ulong> fixed64List;
-        private List<ByteString> lengthDelimitedList;
-        private List<UnknownFieldSet> groupList;
+        private List<ulong>? varintList;
+        private List<uint>? fixed32List;
+        private List<ulong>? fixed64List;
+        private List<ByteString>? lengthDelimitedList;
+        private List<UnknownFieldSet>? groupList;
 
         /// <summary>
         /// Creates a new UnknownField.
@@ -65,15 +63,15 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Checks if two unknown field are equal.
+        /// Checks if two unknown fields are equal.
         /// </summary>
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
             if (ReferenceEquals(this, other))
             {
                 return true;
             }
-            UnknownField otherField = other as UnknownField;
+            var otherField = other as UnknownField;
             return otherField != null
                    && Lists.Equals(varintList, otherField.varintList)
                    && Lists.Equals(fixed32List, otherField.fixed32List)
@@ -213,7 +211,7 @@ namespace Google.Protobuf
         /// null is returned. Otherwise, either a new list is created (if <paramref name="current" />
         /// is null) or the elements of <paramref name="extras"/> are added to <paramref name="current" />.
         /// </summary>
-        private static List<T> AddAll<T>(List<T> current, IList<T> extras)
+        private static List<T>? AddAll<T>(List<T>? current, IList<T>? extras)
         {
             if (extras == null || extras.Count == 0)
             {
@@ -277,7 +275,7 @@ namespace Google.Protobuf
         /// a new list if <paramref name="list"/> is null. The list is returned - either
         /// the original reference or the new list.
         /// </summary>
-        private static List<T> Add<T>(List<T> list, T value)
+        private static List<T> Add<T>(List<T>? list, T value)
         {
             if (list == null)
             {

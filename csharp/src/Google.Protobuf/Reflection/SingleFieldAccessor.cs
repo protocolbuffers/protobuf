@@ -31,7 +31,6 @@
 #endregion
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Google.Protobuf.Compatibility;
@@ -48,7 +47,7 @@ namespace Google.Protobuf.Reflection
         // and proto2 vs proto3 for non-message types, as proto3 doesn't support "full" presence detection or default
         // values.
 
-        private readonly Action<IMessage, object> setValueDelegate;
+        private readonly Action<IMessage, object?> setValueDelegate;
         private readonly Action<IMessage> clearDelegate;
         private readonly Func<IMessage, bool> hasDelegate;
 
@@ -60,7 +59,7 @@ namespace Google.Protobuf.Reflection
             {
                 throw new ArgumentException("Not all required properties/methods available");
             }
-            setValueDelegate = ReflectionUtil.CreateActionIMessageObject(property.GetSetMethod());
+            setValueDelegate = ReflectionUtil.CreateActionIMessageObject(property.GetSetMethod()!);
 
             // Note: this looks worrying in that we access the containing oneof, which isn't valid until cross-linking
             // is complete... but field accessors aren't created until after cross-linking.
@@ -78,11 +77,11 @@ namespace Google.Protobuf.Reflection
             else if (descriptor.RealContainingOneof != null)
             {
                 var oneofAccessor = descriptor.RealContainingOneof.Accessor;
-                hasDelegate = message => oneofAccessor.GetCaseFieldDescriptor(message) == descriptor;
+                hasDelegate = message => oneofAccessor!.GetCaseFieldDescriptor(message) == descriptor;
                 clearDelegate = message =>
                 {
                     // Clear on a field only affects the oneof itself if the current case is the field we're accessing.
-                    if (oneofAccessor.GetCaseFieldDescriptor(message) == descriptor)
+                    if (oneofAccessor!.GetCaseFieldDescriptor(message) == descriptor)
                     {
                         oneofAccessor.Clear(message);
                     }
@@ -91,13 +90,13 @@ namespace Google.Protobuf.Reflection
             // Primitive fields always support presence in proto2, and support presence in proto3 for optional fields.
             else if (descriptor.File.Syntax == Syntax.Proto2 || descriptor.Proto.Proto3Optional)
             {
-                MethodInfo hasMethod = messageType.GetRuntimeProperty("Has" + property.Name).GetMethod;
+                MethodInfo? hasMethod = messageType.GetRuntimeProperty("Has" + property.Name)?.GetMethod;
                 if (hasMethod == null)
                 {
                     throw new ArgumentException("Not all required properties/methods are available");
                 }
                 hasDelegate = ReflectionUtil.CreateFuncIMessageBool(hasMethod);
-                MethodInfo clearMethod = messageType.GetRuntimeMethod("Clear" + property.Name, ReflectionUtil.EmptyTypes);
+                MethodInfo? clearMethod = messageType.GetRuntimeMethod("Clear" + property.Name, ReflectionUtil.EmptyTypes);
                 if (clearMethod == null)
                 {
                     throw new ArgumentException("Not all required properties/methods are available");
@@ -111,12 +110,12 @@ namespace Google.Protobuf.Reflection
                 hasDelegate = message => { throw new InvalidOperationException("Presence is not implemented for this field"); };
 
                 // While presence isn't supported, clearing still is; it's just setting to a default value.
-                object defaultValue = GetDefaultValue(descriptor);
+                object? defaultValue = GetDefaultValue(descriptor);
                 clearDelegate = message => SetValue(message, defaultValue);
             }
         }
 
-        private static object GetDefaultValue(FieldDescriptor descriptor)
+        private static object? GetDefaultValue(FieldDescriptor descriptor)
         {
             switch (descriptor.FieldType)
             {
@@ -155,6 +154,6 @@ namespace Google.Protobuf.Reflection
 
         public override void Clear(IMessage message) => clearDelegate(message);
         public override bool HasValue(IMessage message) => hasDelegate(message);
-        public override void SetValue(IMessage message, object value) => setValueDelegate(message, value);
+        public override void SetValue(IMessage message, object? value) => setValueDelegate(message, value);
     }
 }

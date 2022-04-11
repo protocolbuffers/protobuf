@@ -46,7 +46,7 @@ namespace Google.Protobuf.Benchmarks
         private const int Megabyte = 1024 * 1024;
         private const int _10Megabytes = 1024 * 1024 * 10;
 
-        byte[] byteBuffer;
+        byte[]? byteBuffer;
 
         [GlobalSetup]
         public void GlobalSetup()
@@ -60,7 +60,7 @@ namespace Google.Protobuf.Benchmarks
         [Benchmark]
         public ByteString CopyFrom()
         {
-            return ByteString.CopyFrom(byteBuffer);
+            return ByteString.CopyFrom(byteBuffer!);
         }
 
         [Benchmark]

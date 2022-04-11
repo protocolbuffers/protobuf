@@ -58,34 +58,34 @@ namespace Google.Protobuf.Benchmarks
         };
 
         [ParamsSource(nameof(DatasetConfigurations))]
-        public BenchmarkDatasetConfig Dataset { get; set; }
+        public BenchmarkDatasetConfig? Dataset { get; set; }
 
-        private MessageParser parser;
+        private MessageParser? parser;
         /// <summary>
         /// Each data set can contain multiple messages in a single file.
         /// Each "write" operation should write each message in turn, and each "parse"
         /// operation should parse each message in turn.
         /// </summary>
-        private List<SubTest> subTests;
+        private List<SubTest>? subTests;
 
         [GlobalSetup]
         public void GlobalSetup()
         {
-            parser = Dataset.Parser;
+            parser = Dataset!.Parser;
             subTests = Dataset.Payloads.Select(p => new SubTest(p, parser.ParseFrom(p))).ToList();
         }
 
         [Benchmark]
-        public void WriteToStream() => subTests.ForEach(item => item.WriteToStream());
+        public void WriteToStream() => subTests!.ForEach(item => item.WriteToStream());
 
         [Benchmark]
-        public void ToByteArray() => subTests.ForEach(item => item.ToByteArray());
+        public void ToByteArray() => subTests!.ForEach(item => item.ToByteArray());
 
         [Benchmark]
-        public void ParseFromByteArray() => subTests.ForEach(item => item.ParseFromByteArray(parser));
+        public void ParseFromByteArray() => subTests!.ForEach(item => item.ParseFromByteArray(parser!));
 
         [Benchmark]
-        public void ParseFromStream() => subTests.ForEach(item => item.ParseFromStream(parser));
+        public void ParseFromStream() => subTests!.ForEach(item => item.ParseFromStream(parser!));
 
         private class SubTest
         {

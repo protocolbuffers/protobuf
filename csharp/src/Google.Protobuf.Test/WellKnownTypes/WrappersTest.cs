@@ -147,8 +147,8 @@ namespace Google.Protobuf.WellKnownTypes
             var message = new RepeatedWellKnownTypes();
             Assert.Throws<ArgumentNullException>(() => message.BoolField.Add((bool?) null));
             Assert.Throws<ArgumentNullException>(() => message.Int32Field.Add((int?) null));
-            Assert.Throws<ArgumentNullException>(() => message.StringField.Add((string) null));
-            Assert.Throws<ArgumentNullException>(() => message.BytesField.Add((ByteString) null));
+            Assert.Throws<ArgumentNullException>(() => message.StringField.Add((string) null!));
+            Assert.Throws<ArgumentNullException>(() => message.BytesField.Add((ByteString) null!));
         }
 
         [Test]
@@ -248,21 +248,21 @@ namespace Google.Protobuf.WellKnownTypes
             };
             var fields = TestWellKnownTypes.Descriptor.Fields;
 
-            Assert.AreEqual("x", fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor.GetValue(message));
-            Assert.AreEqual(ByteString.CopyFrom(1, 2, 3), fields[TestWellKnownTypes.BytesFieldFieldNumber].Accessor.GetValue(message));
-            Assert.AreEqual(true, fields[TestWellKnownTypes.BoolFieldFieldNumber].Accessor.GetValue(message));
-            Assert.AreEqual(12.5f, fields[TestWellKnownTypes.FloatFieldFieldNumber].Accessor.GetValue(message));
-            Assert.AreEqual(12.25d, fields[TestWellKnownTypes.DoubleFieldFieldNumber].Accessor.GetValue(message));
-            Assert.AreEqual(1, fields[TestWellKnownTypes.Int32FieldFieldNumber].Accessor.GetValue(message));
-            Assert.AreEqual(2L, fields[TestWellKnownTypes.Int64FieldFieldNumber].Accessor.GetValue(message));
-            Assert.AreEqual(3U, fields[TestWellKnownTypes.Uint32FieldFieldNumber].Accessor.GetValue(message));
-            Assert.AreEqual(4UL, fields[TestWellKnownTypes.Uint64FieldFieldNumber].Accessor.GetValue(message));
+            Assert.AreEqual("x", fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor?.GetValue(message));
+            Assert.AreEqual(ByteString.CopyFrom(1, 2, 3), fields[TestWellKnownTypes.BytesFieldFieldNumber].Accessor?.GetValue(message));
+            Assert.AreEqual(true, fields[TestWellKnownTypes.BoolFieldFieldNumber].Accessor?.GetValue(message));
+            Assert.AreEqual(12.5f, fields[TestWellKnownTypes.FloatFieldFieldNumber].Accessor?.GetValue(message));
+            Assert.AreEqual(12.25d, fields[TestWellKnownTypes.DoubleFieldFieldNumber].Accessor?.GetValue(message));
+            Assert.AreEqual(1, fields[TestWellKnownTypes.Int32FieldFieldNumber].Accessor?.GetValue(message));
+            Assert.AreEqual(2L, fields[TestWellKnownTypes.Int64FieldFieldNumber].Accessor?.GetValue(message));
+            Assert.AreEqual(3U, fields[TestWellKnownTypes.Uint32FieldFieldNumber].Accessor?.GetValue(message));
+            Assert.AreEqual(4UL, fields[TestWellKnownTypes.Uint64FieldFieldNumber].Accessor?.GetValue(message));
 
             // And a couple of null fields...
             message.StringField = null;
             message.FloatField = null;
-            Assert.IsNull(fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor.GetValue(message));
-            Assert.IsNull(fields[TestWellKnownTypes.FloatFieldFieldNumber].Accessor.GetValue(message));
+            Assert.IsNull(fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor?.GetValue(message));
+            Assert.IsNull(fields[TestWellKnownTypes.FloatFieldFieldNumber].Accessor?.GetValue(message));
         }
 
         [Test]
@@ -271,7 +271,8 @@ namespace Google.Protobuf.WellKnownTypes
             // Just a single example... note that we can't have a null value here
             var message = new RepeatedWellKnownTypes { Int32Field = { 1, 2 } };
             var fields = RepeatedWellKnownTypes.Descriptor.Fields;
-            var list = (IList) fields[RepeatedWellKnownTypes.Int32FieldFieldNumber].Accessor.GetValue(message);
+            var list = (IList?) fields[RepeatedWellKnownTypes.Int32FieldFieldNumber].Accessor?.GetValue(message);
+            Assert.NotNull(list);
             CollectionAssert.AreEqual(new[] { 1, 2 }, list);
         }
 
@@ -281,8 +282,9 @@ namespace Google.Protobuf.WellKnownTypes
             // Just a single example... note that we can't have a null value here despite the value type being int?
             var message = new MapWellKnownTypes { Int32Field = { { 1, 2 } } };
             var fields = MapWellKnownTypes.Descriptor.Fields;
-            var dictionary = (IDictionary) fields[MapWellKnownTypes.Int32FieldFieldNumber].Accessor.GetValue(message);
-            Assert.AreEqual(2, dictionary[1]);
+            var dictionary = (IDictionary?) fields[MapWellKnownTypes.Int32FieldFieldNumber].Accessor?.GetValue(message);
+            Assert.NotNull(dictionary);
+            Assert.AreEqual(2, dictionary![1]);
         }
 
         [Test]
@@ -528,7 +530,7 @@ namespace Google.Protobuf.WellKnownTypes
             // String and Bytes are the tricky ones here, as the CLR type of the property
             // is the same between the wrapper and non-wrapper types.
             var message = new TestWellKnownTypes { StringField = "foo" };
-            TestWellKnownTypes.Descriptor.Fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor.Clear(message);
+            TestWellKnownTypes.Descriptor.Fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor?.Clear(message);
             Assert.IsNull(message.StringField);
         }
 

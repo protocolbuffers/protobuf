@@ -42,8 +42,8 @@ namespace Google.Protobuf.Reflection
     {
         private readonly MethodDescriptorProto proto;
         private readonly ServiceDescriptor service;
-        private MessageDescriptor inputType;
-        private MessageDescriptor outputType;
+        private MessageDescriptor? inputType;
+        private MessageDescriptor? outputType;
 
         /// <value>
         /// The service this method belongs to.
@@ -53,12 +53,12 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// The method's input type.
         /// </value>
-        public MessageDescriptor InputType { get { return inputType; } }
+        public MessageDescriptor? InputType { get { return inputType; } }
 
         /// <value>
         /// The method's input type.
         /// </value>
-        public MessageDescriptor OutputType { get { return outputType; } }
+        public MessageDescriptor? OutputType { get { return outputType; } }
 
         /// <value>
         /// Indicates if client streams multiple requests.
@@ -82,7 +82,7 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public MethodOptions GetOptions() => Proto.Options?.Clone();
+        public MethodOptions? GetOptions() => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value method option for this descriptor
@@ -91,7 +91,7 @@ namespace Google.Protobuf.Reflection
         public T GetOption<T>(Extension<MethodOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+            return value is IDeepCloneable<T> cloneable ? cloneable.Clone() : value;
         }
 
         /// <summary>
@@ -99,6 +99,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public RepeatedField<T> GetOption<T>(RepeatedExtension<MethodOptions, T> extension)
+            where T : notnull
         {
             return Proto.Options.GetExtension(extension).Clone();
         }
@@ -130,14 +131,14 @@ namespace Google.Protobuf.Reflection
         internal void CrossLink()
         {
             IDescriptor lookup = File.DescriptorPool.LookupSymbol(Proto.InputType, this);
-            if (!(lookup is MessageDescriptor))
+            if (lookup is not MessageDescriptor)
             {
                 throw new DescriptorValidationException(this, "\"" + Proto.InputType + "\" is not a message type.");
             }
             inputType = (MessageDescriptor) lookup;
 
             lookup = File.DescriptorPool.LookupSymbol(Proto.OutputType, this);
-            if (!(lookup is MessageDescriptor))
+            if (lookup is not MessageDescriptor)
             {
                 throw new DescriptorValidationException(this, "\"" + Proto.OutputType + "\" is not a message type.");
             }

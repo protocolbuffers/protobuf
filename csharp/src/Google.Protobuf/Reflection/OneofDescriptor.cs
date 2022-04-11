@@ -45,11 +45,11 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class OneofDescriptor : DescriptorBase
     {
-        private MessageDescriptor containingType;
-        private IList<FieldDescriptor> fields;
-        private readonly OneofAccessor accessor;
+        private readonly MessageDescriptor containingType;
+        private IList<FieldDescriptor>? fields;
+        private readonly OneofAccessor? accessor;
 
-        internal OneofDescriptor(OneofDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, string clrName)
+        internal OneofDescriptor(OneofDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, string? clrName)
             : base(file, file.ComputeFullName(parent, proto.Name), index)
         {
             this.Proto = proto;
@@ -97,7 +97,7 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// The fields within this oneof, in declaration order.
         /// </value>
-        public IList<FieldDescriptor> Fields { get { return fields; } }
+        public IList<FieldDescriptor>? Fields { get { return fields; } }
 
         /// <summary>
         /// Returns <c>true</c> if this oneof is a synthetic oneof containing a proto3 optional field;
@@ -122,7 +122,7 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// The accessor used for reflective access.
         /// </value>
-        public OneofAccessor Accessor { get { return accessor; } }
+        public OneofAccessor? Accessor => accessor;
 
         /// <summary>
         /// The (possibly empty) set of custom options for this oneof.
@@ -136,7 +136,7 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public OneofOptions GetOptions() => Proto.Options?.Clone();
+        public OneofOptions? GetOptions() => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value oneof option for this descriptor
@@ -145,7 +145,7 @@ namespace Google.Protobuf.Reflection
         public T GetOption<T>(Extension<OneofOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+            return value is IDeepCloneable<T> cloneable ? cloneable.Clone() : value;
         }
 
         /// <summary>
@@ -153,6 +153,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public RepeatedField<T> GetOption<T>(RepeatedExtension<OneofOptions, T> extension)
+            where T : notnull
         {
             return Proto.Options.GetExtension(extension).Clone();
         }
@@ -170,7 +171,7 @@ namespace Google.Protobuf.Reflection
             fields = new ReadOnlyCollection<FieldDescriptor>(fieldCollection);
         }
 
-        private OneofAccessor CreateAccessor(string clrName)
+        private OneofAccessor? CreateAccessor(string? clrName)
         {
             // We won't have a CLR name if this is from a dynamically-loaded FileDescriptor.
             // TODO: Support dynamic messages.
@@ -184,7 +185,7 @@ namespace Google.Protobuf.Reflection
             }
             else
             {
-                var caseProperty = containingType.ClrType.GetProperty(clrName + "Case");
+                var caseProperty = containingType.ClrType!.GetProperty(clrName + "Case");
                 if (caseProperty == null)
                 {
                     throw new DescriptorValidationException(this, $"Property {clrName}Case not found in {containingType.ClrType}");
@@ -193,7 +194,7 @@ namespace Google.Protobuf.Reflection
                 {
                     throw new ArgumentException($"Cannot read from property {clrName}Case in {containingType.ClrType}");
                 }
-                var clearMethod = containingType.ClrType.GetMethod("Clear" + clrName);
+                var clearMethod = containingType.ClrType!.GetMethod("Clear" + clrName);
                 if (clearMethod == null)
                 {
                     throw new DescriptorValidationException(this, $"Method Clear{clrName} not found in {containingType.ClrType}");

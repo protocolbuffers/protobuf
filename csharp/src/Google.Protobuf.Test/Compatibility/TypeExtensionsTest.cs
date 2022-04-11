@@ -40,8 +40,8 @@ namespace Google.Protobuf.Compatibility
     public class TypeExtensionsTest
     {
         public class DerivedList : List<string> { }
-        public string PublicProperty { get; set; }
-        private string PrivateProperty { get; set; }
+        public string? PublicProperty { get; set; }
+        private string? PrivateProperty { get; set; }
 
         public void PublicMethod()
         {
@@ -74,7 +74,7 @@ namespace Google.Protobuf.Compatibility
         {
             var property = TypeExtensions.GetProperty(type, name);
             Assert.IsNotNull(property);
-            Assert.AreEqual(name, property.Name);
+            Assert.AreEqual(name, property!.Name);
         }
 
         [Test]
@@ -94,7 +94,7 @@ namespace Google.Protobuf.Compatibility
         {
             var method = TypeExtensions.GetMethod(type, name);
             Assert.IsNotNull(method);
-            Assert.AreEqual(name, method.Name);
+            Assert.AreEqual(name, method!.Name);
         }
 
         [Test]

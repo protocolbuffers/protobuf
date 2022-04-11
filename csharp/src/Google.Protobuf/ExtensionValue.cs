@@ -32,7 +32,6 @@
 
 using Google.Protobuf.Collections;
 using System;
-using System.Linq;
 
 namespace Google.Protobuf
 {
@@ -44,13 +43,13 @@ namespace Google.Protobuf
         void WriteTo(ref WriteContext ctx);
         int CalculateSize();
         bool IsInitialized();
-        object GetValue();
+        object? GetValue();
     }
 
     internal sealed class ExtensionValue<T> : IExtensionValue
     {
-        private T field;
-        private FieldCodec<T> codec;
+        private T? field;
+        private readonly FieldCodec<T> codec;
 
         internal ExtensionValue(FieldCodec<T> codec)
         {
@@ -67,18 +66,18 @@ namespace Google.Protobuf
         {
             return new ExtensionValue<T>(codec)
             {
-                field = field is IDeepCloneable<T> ? (field as IDeepCloneable<T>).Clone() : field
+                field = field is IDeepCloneable<T> dc ? dc.Clone() : field
             };
         }
 
-        public bool Equals(IExtensionValue other)
+        public bool Equals(IExtensionValue? other)
         {
             if (ReferenceEquals(this, other))
                 return true;
 
-            return other is ExtensionValue<T>
-                && codec.Equals((other as ExtensionValue<T>).codec)
-                && Equals(field, (other as ExtensionValue<T>).field);
+            return other is ExtensionValue<T> ext
+                && codec.Equals(ext.codec)
+                && Equals(field, ext.field);
             // we check for equality in the codec since we could have equal field values however the values could be written in different ways
         }
 
@@ -87,7 +86,7 @@ namespace Google.Protobuf
             unchecked
             {
                 int hash = 17;
-                hash = hash * 31 + field.GetHashCode();
+                hash = hash * 31 + field!.GetHashCode();
                 hash = hash * 31 + codec.GetHashCode();
                 return hash;
             }
@@ -100,9 +99,8 @@ namespace Google.Protobuf
 
         public void MergeFrom(IExtensionValue value)
         {
-            if (value is ExtensionValue<T>)
+            if (value is ExtensionValue<T> extensionValue)
             {
-                var extensionValue = value as ExtensionValue<T>;
                 codec.FieldMerger(ref field, extensionValue.field);
             }
         }
@@ -117,9 +115,9 @@ namespace Google.Protobuf
             }
         }
 
-        public T GetValue() => field;
+        public T? GetValue() => field;
 
-        object IExtensionValue.GetValue() => field;
+        object? IExtensionValue.GetValue() => field;
 
         public void SetValue(T value)
         {
@@ -128,9 +126,9 @@ namespace Google.Protobuf
 
         public bool IsInitialized()
         {
-            if (field is IMessage)
+            if (field is IMessage message)
             {
-                return (field as IMessage).IsInitialized();
+                return message.IsInitialized();
             }
             else
             {
@@ -140,6 +138,7 @@ namespace Google.Protobuf
     }
 
     internal sealed class RepeatedExtensionValue<T> : IExtensionValue
+        where T : notnull
     {
         private RepeatedField<T> field;
         private readonly FieldCodec<T> codec;
@@ -163,14 +162,14 @@ namespace Google.Protobuf
             };
         }
 
-        public bool Equals(IExtensionValue other)
+        public bool Equals(IExtensionValue? other)
         {
             if (ReferenceEquals(this, other))
                 return true;
 
-            return other is RepeatedExtensionValue<T> 
-                && field.Equals((other as RepeatedExtensionValue<T>).field) 
-                && codec.Equals((other as RepeatedExtensionValue<T>).codec);
+            return other is RepeatedExtensionValue<T> v
+                && field.Equals(v.field) 
+                && codec.Equals(v.codec);
         }
 
         public override int GetHashCode()
@@ -191,9 +190,9 @@ namespace Google.Protobuf
 
         public void MergeFrom(IExtensionValue value)
         {
-            if (value is RepeatedExtensionValue<T>)
+            if (value is RepeatedExtensionValue<T> v)
             {
-                field.Add((value as RepeatedExtensionValue<T>).field);
+                field.Add(v.field);
             }
         }
 
@@ -211,9 +210,9 @@ namespace Google.Protobuf
             for (int i = 0; i < field.Count; i++)
             {
                 var element = field[i];
-                if (element is IMessage)
+                if (element is IMessage message)
                 {
-                    if (!(element as IMessage).IsInitialized())
+                    if (!message.IsInitialized())
                     {
                         return false;
                     }

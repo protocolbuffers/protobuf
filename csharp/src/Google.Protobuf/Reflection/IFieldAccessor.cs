@@ -56,7 +56,7 @@ namespace Google.Protobuf.Reflection
         /// <see cref="IList"/> implementation. For map values, this will be an
         /// <see cref="IDictionary"/> implementation.
         /// </summary>
-        object GetValue(IMessage message);
+        object? GetValue(IMessage message);
 
         /// <summary>
         /// Indicates whether the field in the specified message is set.
@@ -72,6 +72,6 @@ namespace Google.Protobuf.Reflection
         /// Map fields are mutated by fetching the value and manipulating it as a dictionary.
         /// </remarks>
         /// <exception cref="InvalidOperationException">The field is not a "simple" field.</exception>
-        void SetValue(IMessage message, object value);
+        void SetValue(IMessage message, object? value);
     }
 }

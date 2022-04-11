@@ -120,11 +120,11 @@ namespace Google.Protobuf
         {
             CodedInputStream input = new CodedInputStream(data);
             var exception = Assert.Throws<InvalidProtocolBufferException>(() => input.ReadRawVarint32());
-            Assert.AreEqual(expected.Message, exception.Message);
+            Assert.AreEqual(expected.Message, exception!.Message);
 
             input = new CodedInputStream(data);
             exception = Assert.Throws<InvalidProtocolBufferException>(() => input.ReadRawVarint64());
-            Assert.AreEqual(expected.Message, exception.Message);
+            Assert.AreEqual(expected.Message, exception!.Message);
 
             AssertReadFromParseContext(new ReadOnlySequence<byte>(data), (ref ParseContext ctx) =>
             {
@@ -154,7 +154,7 @@ namespace Google.Protobuf
 
             // Make sure we get the same error when reading directly from a Stream.
             exception = Assert.Throws<InvalidProtocolBufferException>(() => CodedInputStream.ReadRawVarint32(new MemoryStream(data)));
-            Assert.AreEqual(expected.Message, exception.Message);
+            Assert.AreEqual(expected.Message, exception!.Message);
         }
 
         private delegate void ParseContextAssertAction(ref ParseContext ctx);
@@ -878,9 +878,9 @@ namespace Google.Protobuf
         [Test]
         public void Construction_Invalid()
         {
-            Assert.Throws<ArgumentNullException>(() => new CodedInputStream((byte[]) null));
-            Assert.Throws<ArgumentNullException>(() => new CodedInputStream(null, 0, 0));
-            Assert.Throws<ArgumentNullException>(() => new CodedInputStream((Stream) null));
+            Assert.Throws<ArgumentNullException>(() => new CodedInputStream((byte[]) null!));
+            Assert.Throws<ArgumentNullException>(() => new CodedInputStream(null!, 0, 0));
+            Assert.Throws<ArgumentNullException>(() => new CodedInputStream((Stream) null!));
             Assert.Throws<ArgumentOutOfRangeException>(() => new CodedInputStream(new byte[10], 100, 0));
             Assert.Throws<ArgumentOutOfRangeException>(() => new CodedInputStream(new byte[10], 5, 10));
         }

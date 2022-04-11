@@ -45,13 +45,13 @@ namespace Google.Protobuf.Examples.AddressBook
             Person person = new Person();
 
             output.Write("Enter person ID: ");
-            person.Id = int.Parse(input.ReadLine());
+            person.Id = int.Parse(input.ReadLine() ?? string.Empty);
 
             output.Write("Enter name: ");
             person.Name = input.ReadLine();
 
             output.Write("Enter email address (blank for none): ");
-            string email = input.ReadLine();
+            string email = input.ReadLine() ?? string.Empty;
             if (email.Length > 0)
             {
                 person.Email = email;
@@ -60,7 +60,7 @@ namespace Google.Protobuf.Examples.AddressBook
             while (true)
             {
                 output.Write("Enter a phone number (or leave blank to finish): ");
-                string number = input.ReadLine();
+                string number = input.ReadLine() ?? string.Empty;
                 if (number.Length == 0)
                 {
                     break;
@@ -69,7 +69,7 @@ namespace Google.Protobuf.Examples.AddressBook
                 Person.Types.PhoneNumber phoneNumber = new Person.Types.PhoneNumber { Number = number };
 
                 output.Write("Is this a mobile, home, or work phone? ");
-                String type = input.ReadLine();
+                String type = input.ReadLine() ?? string.Empty;
                 switch (type)
                 {
                     case "mobile":

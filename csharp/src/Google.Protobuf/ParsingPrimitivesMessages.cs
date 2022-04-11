@@ -139,6 +139,8 @@ namespace Google.Protobuf
         }
 
         public static KeyValuePair<TKey, TValue> ReadMapEntry<TKey, TValue>(ref ParseContext ctx, MapField<TKey, TValue>.Codec codec)
+            where TKey : notnull
+            where TValue : notnull
         {
             int length = ParsingPrimitives.ParseLength(ref ctx.buffer, ref ctx.state);
             if (ctx.state.recursionDepth >= ctx.state.recursionLimit)
@@ -148,8 +150,8 @@ namespace Google.Protobuf
             int oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
             ++ctx.state.recursionDepth;
 
-            TKey key = codec.KeyCodec.DefaultValue;
-            TValue value = codec.ValueCodec.DefaultValue;
+            TKey? key = codec.KeyCodec.DefaultValue;
+            TValue? value = codec.ValueCodec.DefaultValue;
 
             uint tag;
             while ((tag = ctx.ReadTag()) != 0)
@@ -194,7 +196,7 @@ namespace Google.Protobuf
             --ctx.state.recursionDepth;
             SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
 
-            return new KeyValuePair<TKey, TValue>(key, value);
+            return new KeyValuePair<TKey, TValue>(key!, value!);
         }
 
         public static void ReadGroup(ref ParseContext ctx, IMessage message)

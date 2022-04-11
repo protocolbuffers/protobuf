@@ -105,7 +105,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// </summary>
         /// <typeparam name="T">The type of message to attempt to unpack the content into.</typeparam>
         /// <returns><c>true</c> if the message was successfully unpacked; <c>false</c> if the type name didn't match</returns>
-        public bool TryUnpack<T>(out T result) where T : IMessage, new()
+        public bool TryUnpack<T>(out T? result) where T : IMessage, new()
         {
             // Note: deliberately avoid writing anything to result until the end, in case it's being
             // monitored by other threads. (That would be a bug in the calling code, but let's not make it worse.)

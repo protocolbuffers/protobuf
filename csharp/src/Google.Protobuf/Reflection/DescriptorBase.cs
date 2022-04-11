@@ -80,13 +80,13 @@ namespace Google.Protobuf.Reflection
         /// for example within a protoc plugin where the full descriptors, including source info,
         /// are passed to the code by protoc.
         /// </remarks>
-        public DescriptorDeclaration Declaration => File.GetDeclaration(this);
+        public DescriptorDeclaration? Declaration => File.GetDeclaration(this);
 
         /// <summary>
         /// Retrieves the list of nested descriptors corresponding to the given field number, if any.
         /// If the field is unknown or not a nested descriptor list, return null to terminate the search.
         /// The default implementation returns null.
         /// </summary>
-        internal virtual IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber) => null;
+        internal virtual IReadOnlyList<DescriptorBase>? GetNestedDescriptorListForField(int fieldNumber) => null;
     }
 }

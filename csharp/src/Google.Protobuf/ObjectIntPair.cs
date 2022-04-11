@@ -23,7 +23,7 @@ namespace Google.Protobuf
                    && number == other.number;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is ObjectIntPair<T>)
             {

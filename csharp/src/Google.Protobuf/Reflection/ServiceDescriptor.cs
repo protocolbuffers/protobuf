@@ -33,7 +33,6 @@
 using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace Google.Protobuf.Reflection
 {
@@ -60,7 +59,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public override string Name { get { return proto.Name; } }
 
-        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
+        internal override IReadOnlyList<DescriptorBase>? GetNestedDescriptorListForField(int fieldNumber)
         {
             switch (fieldNumber)
             {
@@ -94,7 +93,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <param name="name">The unqualified name of the method (e.g. "Foo").</param>
         /// <returns>The method's descriptor, or null if not found.</returns>
-        public MethodDescriptor FindMethodByName(String name)
+        public MethodDescriptor? FindMethodByName(String name)
         {
             return File.DescriptorPool.FindSymbol<MethodDescriptor>(FullName + "." + name);
         }
@@ -111,7 +110,7 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public ServiceOptions GetOptions() => Proto.Options?.Clone();
+        public ServiceOptions? GetOptions() => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value service option for this descriptor
@@ -120,14 +119,14 @@ namespace Google.Protobuf.Reflection
         public T GetOption<T>(Extension<ServiceOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+            return value is IDeepCloneable<T> cloneable ? cloneable.Clone() : value;
         }
 
         /// <summary>
         /// Gets a repeated value service option for this descriptor
         /// </summary>
         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
-        public RepeatedField<T> GetOption<T>(RepeatedExtension<ServiceOptions, T> extension)
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<ServiceOptions, T> extension) where T : notnull
         {
             return Proto.Options.GetExtension(extension).Clone();
         }

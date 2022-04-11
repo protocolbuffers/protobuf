@@ -62,10 +62,10 @@ namespace Google.Protobuf
 
         internal sealed class Node
         {
-            public Dictionary<string, Node> Children { get; } = new Dictionary<string, Node>();
+            public Dictionary<string, Node> Children { get; } = new ();
         }
 
-        private readonly Node root = new Node();
+        private readonly Node root = new ();
 
         /// <summary>
         /// Creates an empty FieldMaskTree.
@@ -120,8 +120,7 @@ namespace Google.Protobuf
                     return this;
                 }
 
-                Node childNode;
-                if (!node.Children.TryGetValue(part, out childNode))
+                if (!node.Children.TryGetValue(part, out Node? childNode))
                 {
                     createNewBranch = true;
                     childNode = new Node();
@@ -277,8 +276,8 @@ namespace Google.Protobuf
                         continue;
                     }
 
-                    var sourceField = field.Accessor.GetValue(source);
-                    var destinationField = field.Accessor.GetValue(destination);
+                    var sourceField = field.Accessor?.GetValue(source);
+                    var destinationField = field.Accessor?.GetValue(destination);
                     if (sourceField == null
                         && destinationField == null)
                     {
@@ -290,12 +289,12 @@ namespace Google.Protobuf
                     if (destinationField == null)
                     {
                         // If we have to merge but the destination does not contain the field, create it.
-                        destinationField = field.MessageType.Parser.CreateTemplate();
-                        field.Accessor.SetValue(destination, destinationField);
+                        destinationField = field.MessageType!.Parser!.CreateTemplate();
+                        field.Accessor?.SetValue(destination, destinationField);
                     }
 
                     var childPath = path.Length == 0 ? entry.Key : path + "." + entry.Key;
-                    Merge(entry.Value, childPath, (IMessage)sourceField, (IMessage)destinationField, options);
+                    Merge(entry.Value, childPath, (IMessage)sourceField!, (IMessage)destinationField, options);
                     continue;
                 }
 
@@ -303,11 +302,11 @@ namespace Google.Protobuf
                 {
                     if (options.ReplaceRepeatedFields)
                     {
-                        field.Accessor.Clear(destination);
+                        field.Accessor?.Clear(destination);
                     }
 
-                    var sourceField = (IList)field.Accessor.GetValue(source);
-                    var destinationField = (IList)field.Accessor.GetValue(destination);
+                    var sourceField = (IList?)field.Accessor!.GetValue(source)!;
+                    var destinationField = (IList)field.Accessor!.GetValue(destination)!;
                     foreach (var element in sourceField)
                     {
                         destinationField.Add(element);
@@ -315,18 +314,18 @@ namespace Google.Protobuf
                 }
                 else
                 {
-                    var sourceField = field.Accessor.GetValue(source);
+                    var sourceField = field.Accessor!.GetValue(source);
                     if (field.FieldType == FieldType.Message)
                     {
                         if (options.ReplaceMessageFields)
                         {
                             if (sourceField == null)
                             {
-                                field.Accessor.Clear(destination);
+                                field.Accessor?.Clear(destination);
                             }
                             else
                             {
-                                field.Accessor.SetValue(destination, sourceField);
+                                field.Accessor?.SetValue(destination, sourceField);
                             }
                         }
                         else
@@ -335,21 +334,21 @@ namespace Google.Protobuf
                             {
                                 // Well-known wrapper types are represented as nullable primitive types, so we do not "merge" them.
                                 // Instead, any non-null value just overwrites the previous value directly.
-                                if (field.MessageType.IsWrapperType)
+                                if (field.MessageType!.IsWrapperType)
                                 {
                                     field.Accessor.SetValue(destination, sourceField);
                                 }
                                 else
                                 {
                                     var sourceByteString = ((IMessage)sourceField).ToByteString();
-                                    var destinationValue = (IMessage)field.Accessor.GetValue(destination);
+                                    var destinationValue = (IMessage?)field.Accessor.GetValue(destination);
                                     if (destinationValue != null)
                                     {
                                         destinationValue.MergeFrom(sourceByteString);
                                     }
                                     else
                                     {
-                                        field.Accessor.SetValue(destination, field.MessageType.Parser.ParseFrom(sourceByteString));
+                                        field.Accessor.SetValue(destination, field.MessageType.Parser!.ParseFrom(sourceByteString));
                                     }
                                 }
                             }
@@ -360,11 +359,11 @@ namespace Google.Protobuf
                         if (sourceField != null
                             || !options.ReplacePrimitiveFields)
                         {
-                            field.Accessor.SetValue(destination, sourceField);
+                            field.Accessor!.SetValue(destination, sourceField);
                         }
                         else
                         {
-                            field.Accessor.Clear(destination);
+                            field.Accessor!.Clear(destination);
                         }
                     }
                 }

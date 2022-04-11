@@ -45,7 +45,7 @@ namespace Google.Protobuf.Compatibility
         /// Returns the public getter of a property, or null if there is no such getter
         /// (either because it's read-only, or the getter isn't public).
         /// </summary>
-        internal static MethodInfo GetGetMethod(this PropertyInfo target)
+        internal static MethodInfo? GetGetMethod(this PropertyInfo target)
         {
 #if NET35
             var method = target.GetGetMethod();
@@ -59,7 +59,7 @@ namespace Google.Protobuf.Compatibility
         /// Returns the public setter of a property, or null if there is no such setter
         /// (either because it's write-only, or the setter isn't public).
         /// </summary>
-        internal static MethodInfo GetSetMethod(this PropertyInfo target)
+        internal static MethodInfo? GetSetMethod(this PropertyInfo target)
         {
 #if NET35
             var method = target.GetSetMethod();

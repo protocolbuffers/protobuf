@@ -163,7 +163,7 @@ namespace Google.Protobuf
         {
             if (useDynamicMessage)
             {
-                var newSource = source.Descriptor.Parser.CreateTemplate();
+                var newSource = source.Descriptor.Parser!.CreateTemplate();
                 newSource.MergeFrom(source.ToByteString());
 
                 var newDestination = source.Descriptor.Parser.CreateTemplate();
@@ -174,7 +174,7 @@ namespace Google.Protobuf
                 // Clear before merging:
                 foreach (var fieldDescriptor in destination.Descriptor.Fields.InFieldNumberOrder())
                 {
-                    fieldDescriptor.Accessor.Clear(destination);
+                    fieldDescriptor.Accessor!.Clear(destination);
                 }
                 destination.MergeFrom(newDestination.ToByteString());
             }

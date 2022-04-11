@@ -31,7 +31,6 @@
 #endregion
 
 using Google.Protobuf.Collections;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -67,9 +66,9 @@ namespace Google.Protobuf.Reflection
         private const string UnreferencedCodeMessage = "CustomOptions is incompatible with trimming.";
 
         private static readonly object[] EmptyParameters = new object[0];
-        private readonly IDictionary<int, IExtensionValue> values;
+        private readonly IDictionary<int, IExtensionValue>? values;
 
-        internal CustomOptions(IDictionary<int, IExtensionValue> values)
+        internal CustomOptions(IDictionary<int, IExtensionValue>? values)
         {
             this.values = values;
         }
@@ -204,7 +203,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-        public bool TryGetString(int field, out string value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetString(int field, out string? value) => TryGetPrimitiveValue(field, out value);
 
         /// <summary>
         /// Retrieves a bytes value for the specified option field.
@@ -213,7 +212,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-        public bool TryGetBytes(int field, out ByteString value) => TryGetPrimitiveValue(field, out value);
+        public bool TryGetBytes(int field, out ByteString? value) => TryGetPrimitiveValue(field, out value);
 
         /// <summary>
         /// Retrieves a message value for the specified option field.
@@ -222,28 +221,25 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-        public bool TryGetMessage<T>(int field, out T value) where T : class, IMessage, new()
+        public bool TryGetMessage<T>(int field, out T? value) where T : class, IMessage, new()
         {
             if (values == null)
             {
-                value = default(T);
+                value = default;
                 return false;
             }
 
-            IExtensionValue extensionValue;
-            if (values.TryGetValue(field, out extensionValue))
+            if (values.TryGetValue(field, out IExtensionValue? extensionValue))
             {
-                if (extensionValue is ExtensionValue<T>)
+                if (extensionValue is ExtensionValue<T> single)
                 {
-                    ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
-                    ByteString bytes = single.GetValue().ToByteString();
+                    ByteString bytes = single.GetValue()!.ToByteString();
                     value = new T();
                     value.MergeFrom(bytes);
                     return true;
                 }
-                else if (extensionValue is RepeatedExtensionValue<T>)
+                else if (extensionValue is RepeatedExtensionValue<T> repeated)
                 {
-                    RepeatedExtensionValue<T> repeated = extensionValue as RepeatedExtensionValue<T>;
                     value = repeated.GetValue()
                         .Select(v => v.ToByteString())
                         .Aggregate(new T(), (t, b) =>
@@ -260,26 +256,23 @@ namespace Google.Protobuf.Reflection
         }
 
         [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-        private bool TryGetPrimitiveValue<T>(int field, out T value)
+        private bool TryGetPrimitiveValue<T>(int field, out T? value) where T : notnull
         {
             if (values == null)
             {
-                value = default(T);
+                value = default;
                 return false;
             }
 
-            IExtensionValue extensionValue;
-            if (values.TryGetValue(field, out extensionValue))
+            if (values.TryGetValue(field, out IExtensionValue? extensionValue))
             {
-                if (extensionValue is ExtensionValue<T>)
+                if (extensionValue is ExtensionValue<T> single)
                 {
-                    ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
                     value = single.GetValue();
                     return true;
                 }
-                else if (extensionValue is RepeatedExtensionValue<T>)
+                else if (extensionValue is RepeatedExtensionValue<T> repeated)
                 {
-                    RepeatedExtensionValue<T> repeated = extensionValue as RepeatedExtensionValue<T>;
                     if (repeated.GetValue().Count != 0)
                     {
                         RepeatedField<T> repeatedField = repeated.GetValue();
@@ -296,7 +289,7 @@ namespace Google.Protobuf.Reflection
                         var typeArgs = typeInfo.GenericTypeArguments;
                         if (typeArgs.Length == 1 && typeArgs[0].GetTypeInfo().IsEnum)
                         {
-                            value = (T)typeInfo.GetDeclaredMethod(nameof(ExtensionValue<T>.GetValue)).Invoke(extensionValue, EmptyParameters);
+                            value = (T?)typeInfo.GetDeclaredMethod(nameof(ExtensionValue<T>.GetValue))!.Invoke(extensionValue, EmptyParameters);
                             return true;
                         }
                     }
@@ -306,10 +299,10 @@ namespace Google.Protobuf.Reflection
                         var typeArgs = typeInfo.GenericTypeArguments;
                         if (typeArgs.Length == 1 && typeArgs[0].GetTypeInfo().IsEnum)
                         {
-                            var values = (IList)typeInfo.GetDeclaredMethod(nameof(RepeatedExtensionValue<T>.GetValue)).Invoke(extensionValue, EmptyParameters);
+                            var values = (IList)typeInfo.GetDeclaredMethod(nameof(RepeatedExtensionValue<T>.GetValue))!.Invoke(extensionValue, EmptyParameters)!;
                             if (values.Count != 0)
                             {
-                                value = (T)values[values.Count - 1];
+                                value = (T?)values[values.Count - 1];
                                 return true;
                             }
                         }
@@ -317,7 +310,7 @@ namespace Google.Protobuf.Reflection
                 }
             }
 
-            value = default(T);
+            value = default;
             return false;
         }
     }

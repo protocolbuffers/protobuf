@@ -41,10 +41,10 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class ExtensionCollection
     {
-        private IDictionary<MessageDescriptor, IList<FieldDescriptor>> extensionsByTypeInDeclarationOrder;
-        private IDictionary<MessageDescriptor, IList<FieldDescriptor>> extensionsByTypeInNumberOrder;
+        private IDictionary<MessageDescriptor, IList<FieldDescriptor>>? extensionsByTypeInDeclarationOrder;
+        private IDictionary<MessageDescriptor, IList<FieldDescriptor>>? extensionsByTypeInNumberOrder;
 
-        internal ExtensionCollection(FileDescriptor file, Extension[] extensions)
+        internal ExtensionCollection(FileDescriptor file, Extension[]? extensions)
         {
             UnorderedExtensions = DescriptorUtil.ConvertAndMakeReadOnly(
                 file.Proto.Extension,
@@ -60,7 +60,7 @@ namespace Google.Protobuf.Reflection
                 });
         }
 
-        internal ExtensionCollection(MessageDescriptor message, Extension[] extensions)
+        internal ExtensionCollection(MessageDescriptor message, Extension[]? extensions)
         {
             UnorderedExtensions = DescriptorUtil.ConvertAndMakeReadOnly(
                 message.Proto.Extension,
@@ -88,7 +88,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public IList<FieldDescriptor> GetExtensionsInDeclarationOrder(MessageDescriptor descriptor)
         {
-            return extensionsByTypeInDeclarationOrder[descriptor];
+            return extensionsByTypeInDeclarationOrder![descriptor];
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public IList<FieldDescriptor> GetExtensionsInNumberOrder(MessageDescriptor descriptor)
         {
-            return extensionsByTypeInNumberOrder[descriptor];
+            return extensionsByTypeInNumberOrder![descriptor];
         }
 
         internal void CrossLink()
@@ -107,8 +107,7 @@ namespace Google.Protobuf.Reflection
             {
                 descriptor.CrossLink();
 
-                IList<FieldDescriptor> list;
-                if (!declarationOrder.TryGetValue(descriptor.ExtendeeType, out list))
+                if (!declarationOrder.TryGetValue(descriptor.ExtendeeType, out IList<FieldDescriptor>? list))
                 {
                     list = new List<FieldDescriptor>();
                     declarationOrder.Add(descriptor.ExtendeeType, list);

@@ -35,7 +35,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 #if NET35
 // Needed for ReadOnlyDictionary, which does not exist in .NET 3.5
 using Google.Protobuf.Collections;
@@ -65,9 +64,9 @@ namespace Google.Protobuf.Reflection
         private readonly IList<FieldDescriptor> fieldsInDeclarationOrder;
         private readonly IList<FieldDescriptor> fieldsInNumberOrder;
         private readonly IDictionary<string, FieldDescriptor> jsonFieldMap;
-        private Func<IMessage, bool> extensionSetIsInitialized;
+        private Func<IMessage, bool>? extensionSetIsInitialized;
 
-        internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedClrTypeInfo generatedCodeInfo)
+        internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor? parent, int typeIndex, GeneratedClrTypeInfo? generatedCodeInfo)
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
         {
             Proto = proto;
@@ -134,7 +133,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public override string Name => Proto.Name;
 
-        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
+        internal override IReadOnlyList<DescriptorBase>? GetNestedDescriptorListForField(int fieldNumber)
         {
             switch (fieldNumber)
             {
@@ -168,7 +167,7 @@ namespace Google.Protobuf.Reflection
 
             if (extensionSetIsInitialized == null)
             {
-                extensionSetIsInitialized = ReflectionUtil.CreateIsInitializedCaller(ClrType);
+                extensionSetIsInitialized = ReflectionUtil.CreateIsInitializedCaller(ClrType!);
             }
 
             return extensionSetIsInitialized(message);
@@ -192,7 +191,7 @@ namespace Google.Protobuf.Reflection
         /// </para>
         /// </remarks>
         [DynamicallyAccessedMembers(GeneratedClrTypeInfo.MessageAccessibility)]
-        public Type ClrType { get; }
+        public Type? ClrType { get; }
 
         /// <summary>
         /// A parser for this message type.
@@ -215,7 +214,7 @@ namespace Google.Protobuf.Reflection
         /// a wrapper type, and handle the result appropriately.
         /// </para>
         /// </remarks>
-        public MessageParser Parser { get; }
+        public MessageParser? Parser { get; }
 
         /// <summary>
         /// Returns whether this message is one of the "well known types" which may have runtime/protoc support.
@@ -231,7 +230,7 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// If this is a nested type, get the outer descriptor, otherwise null.
         /// </value>
-        public MessageDescriptor ContainingType { get; }
+        public MessageDescriptor? ContainingType { get; }
 
         /// <value>
         /// A collection of fields, which can be retrieved by name or field number.
@@ -276,14 +275,14 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <param name="name">The unqualified name of the field (e.g. "foo").</param>
         /// <returns>The field's descriptor, or null if not found.</returns>
-        public FieldDescriptor FindFieldByName(String name) => File.DescriptorPool.FindSymbol<FieldDescriptor>(FullName + "." + name);
+        public FieldDescriptor? FindFieldByName(String name) => File.DescriptorPool.FindSymbol<FieldDescriptor>(FullName + "." + name);
 
         /// <summary>
         /// Finds a field by field number.
         /// </summary>
         /// <param name="number">The field number within this message type.</param>
         /// <returns>The field's descriptor, or null if not found.</returns>
-        public FieldDescriptor FindFieldByNumber(int number) => File.DescriptorPool.FindFieldByNumber(this, number);
+        public FieldDescriptor? FindFieldByNumber(int number) => File.DescriptorPool.FindFieldByNumber(this, number);
 
         /// <summary>
         /// Finds a nested descriptor by name. The is valid for fields, nested
@@ -291,7 +290,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <param name="name">The unqualified name of the descriptor, e.g. "Foo"</param>
         /// <returns>The descriptor, or null if not found.</returns>
-        public T FindDescriptor<T>(string name)  where T : class, IDescriptor =>
+        public T? FindDescriptor<T>(string name)  where T : class, IDescriptor =>
             File.DescriptorPool.FindSymbol<T>(FullName + "." + name);
 
         /// <summary>
@@ -306,7 +305,7 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public MessageOptions GetOptions() => Proto.Options?.Clone();
+        public MessageOptions? GetOptions() => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value message option for this descriptor
@@ -315,7 +314,7 @@ namespace Google.Protobuf.Reflection
         public T GetOption<T>(Extension<MessageOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+            return value is IDeepCloneable<T> cloneable ? cloneable.Clone() : value;
         }
 
         /// <summary>
@@ -323,6 +322,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public Collections.RepeatedField<T> GetOption<T>(RepeatedExtension<MessageOptions, T> extension)
+            where T : notnull
         {
             return Proto.Options.GetExtension(extension).Clone();
         }

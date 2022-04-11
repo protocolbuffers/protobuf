@@ -140,7 +140,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Internal-only property; provides extension identifiers to compatible messages while parsing.
         /// </summary>
-        internal ExtensionRegistry ExtensionRegistry
+        internal ExtensionRegistry? ExtensionRegistry
         {
             get { return state.ExtensionRegistry; }
             set { state.ExtensionRegistry = value; }

@@ -62,7 +62,6 @@ namespace Google.Protobuf
         internal const string AnyTypeUrlField = "@type";
         internal const string AnyDiagnosticValueField = "@value";
         internal const string AnyWellKnownTypeValueField = "value";
-        private const string TypeUrlPrefix = "type.googleapis.com";
         private const string NameValueSeparator = ": ";
         private const string PropertySeparator = ", ";
 
@@ -202,8 +201,7 @@ namespace Google.Protobuf
             }
             if (DiagnosticOnly)
             {
-                ICustomDiagnosticMessage customDiagnosticMessage = message as ICustomDiagnosticMessage;
-                if (customDiagnosticMessage != null)
+                if (message is ICustomDiagnosticMessage customDiagnosticMessage)
                 {
                     writer.Write(customDiagnosticMessage.ToDiagnosticString());
                     return;
@@ -221,7 +219,7 @@ namespace Google.Protobuf
             // First non-oneof fields
             foreach (var field in fields.InFieldNumberOrder())
             {
-                var accessor = field.Accessor;
+                var accessor = field.Accessor!;
                 var value = accessor.GetValue(message);
                 if (!ShouldFormatFieldValue(message, field, value))
                 {
@@ -253,15 +251,16 @@ namespace Google.Protobuf
         /// Determines whether or not a field value should be serialized according to the field,
         /// its value in the message, and the settings of this formatter.
         /// </summary>
-        private bool ShouldFormatFieldValue(IMessage message, FieldDescriptor field, object value) =>
+        private bool ShouldFormatFieldValue(IMessage message, FieldDescriptor field, object? value) =>
             field.HasPresence
             // Fields that support presence *just* use that
-            ? field.Accessor.HasValue(message)
+            ? field.Accessor!.HasValue(message)
             // Otherwise, format if either we've been asked to format default values, or if it's
             // not a default value anyway.
             : settings.FormatDefaultValues || !IsDefaultValue(field, value);
 
         // Converted from java/core/src/main/java/com/google/protobuf/Descriptors.java
+#pragma warning disable CS8619 // "Nullability of reference types in value doesn't match target type." - nonsensical recommendation for 'ch'
         internal static string ToJsonName(string name)
         {
             StringBuilder result = new StringBuilder(name.Length);
@@ -302,51 +301,52 @@ namespace Google.Protobuf
             }
             return result.ToString();
         }
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
 
         private static void WriteNull(TextWriter writer)
         {
             writer.Write("null");
         }
 
-        private static bool IsDefaultValue(FieldDescriptor descriptor, object value)
+        private static bool IsDefaultValue(FieldDescriptor descriptor, object? value)
         {
             if (descriptor.IsMap)
             {
-                IDictionary dictionary = (IDictionary) value;
+                IDictionary dictionary = (IDictionary) value!;
                 return dictionary.Count == 0;
             }
             if (descriptor.IsRepeated)
             {
-                IList list = (IList) value;
+                IList list = (IList) value!;
                 return list.Count == 0;
             }
             switch (descriptor.FieldType)
             {
                 case FieldType.Bool:
-                    return (bool) value == false;
+                    return (bool) value! == false;
                 case FieldType.Bytes:
-                    return (ByteString) value == ByteString.Empty;
+                    return (ByteString) value! == ByteString.Empty;
                 case FieldType.String:
-                    return (string) value == "";
+                    return (string) value! == "";
                 case FieldType.Double:
-                    return (double) value == 0.0;
+                    return (double) value! == 0.0;
                 case FieldType.SInt32:
                 case FieldType.Int32:
                 case FieldType.SFixed32:
                 case FieldType.Enum:
-                    return (int) value == 0;
+                    return (int) value! == 0;
                 case FieldType.Fixed32:
                 case FieldType.UInt32:
-                    return (uint) value == 0;
+                    return (uint) value! == 0;
                 case FieldType.Fixed64:
                 case FieldType.UInt64:
-                    return (ulong) value == 0;
+                    return (ulong) value! == 0;
                 case FieldType.SFixed64:
                 case FieldType.Int64:
                 case FieldType.SInt64:
-                    return (long) value == 0;
+                    return (long) value! == 0;
                 case FieldType.Float:
-                    return (float) value == 0f;
+                    return (float) value! == 0f;
                 case FieldType.Message:
                 case FieldType.Group: // Never expect to get this, but...
                     return value == null;
@@ -363,34 +363,34 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="writer">The writer to write the value to. Must not be null.</param>
         /// <param name="value">The value to write. May be null.</param>
-        public void WriteValue(TextWriter writer, object value)
+        public void WriteValue(TextWriter writer, object? value)
         {
             if (value == null || value is NullValue)
             {
                 WriteNull(writer);
             }
-            else if (value is bool)
+            else if (value is bool b)
             {
-                writer.Write((bool)value ? "true" : "false");
+                writer.Write(b ? "true" : "false");
             }
-            else if (value is ByteString)
+            else if (value is ByteString byteString)
             {
                 // Nothing in Base64 needs escaping
                 writer.Write('"');
-                writer.Write(((ByteString)value).ToBase64());
+                writer.Write(byteString.ToBase64());
                 writer.Write('"');
             }
-            else if (value is string)
+            else if (value is string s)
             {
-                WriteString(writer, (string)value);
+                WriteString(writer, s);
             }
-            else if (value is IDictionary)
+            else if (value is IDictionary d)
             {
-                WriteDictionary(writer, (IDictionary)value);
+                WriteDictionary(writer, d);
             }
-            else if (value is IList)
+            else if (value is IList list)
             {
-                WriteList(writer, (IList)value);
+                WriteList(writer, list);
             }
             else if (value is int || value is uint)
             {
@@ -412,7 +412,7 @@ namespace Google.Protobuf
                 }
                 else
                 {
-                    string name = OriginalEnumValueHelper.GetOriginalName(value);
+                    string? name = OriginalEnumValueHelper.GetOriginalName(value);
                     if (name != null)
                     {
                         WriteString(writer, name);
@@ -437,9 +437,9 @@ namespace Google.Protobuf
                     writer.Write(text);
                 }
             }
-            else if (value is IMessage)
+            else if (value is IMessage message)
             {
-                Format((IMessage)value, writer);
+                Format(message, writer);
             }
             else
             {
@@ -453,7 +453,7 @@ namespace Google.Protobuf
         /// values are using the embedded well-known types, in order to allow for dynamic messages
         /// in the future.
         /// </summary>
-        private void WriteWellKnownTypeValue(TextWriter writer, MessageDescriptor descriptor, object value)
+        private void WriteWellKnownTypeValue(TextWriter writer, MessageDescriptor descriptor, object? value)
         {
             // Currently, we can never actually get here, because null values are always handled by the caller. But if we *could*,
             // this would do the right thing.
@@ -469,10 +469,9 @@ namespace Google.Protobuf
             // WriteValue will do the right thing.)
             if (descriptor.IsWrapperType)
             {
-                if (value is IMessage)
+                if (value is IMessage message)
                 {
-                    var message = (IMessage) value;
-                    value = message.Descriptor.Fields[WrappersReflection.WrapperValueFieldNumber].Accessor.GetValue(message);
+                    value = message.Descriptor.Fields[WrappersReflection.WrapperValueFieldNumber].Accessor!.GetValue(message);
                 }
                 WriteValue(writer, value);
                 return;
@@ -499,8 +498,8 @@ namespace Google.Protobuf
             }
             if (descriptor.FullName == ListValue.Descriptor.FullName)
             {
-                var fieldAccessor = descriptor.Fields[ListValue.ValuesFieldNumber].Accessor;
-                WriteList(writer, (IList)fieldAccessor.GetValue((IMessage)value));
+                var fieldAccessor = descriptor.Fields[ListValue.ValuesFieldNumber].Accessor!;
+                WriteList(writer, (IList)fieldAccessor.GetValue((IMessage)value)!);
                 return;
             }
             if (descriptor.FullName == Value.Descriptor.FullName)
@@ -522,22 +521,22 @@ namespace Google.Protobuf
             // avoid all the reflection at this point, by casting to Timestamp. In the interests of
             // avoiding subtle bugs, don't do that until we've implemented DynamicMessage so that we can prove
             // it still works in that case.
-            int nanos = (int) value.Descriptor.Fields[Timestamp.NanosFieldNumber].Accessor.GetValue(value);
-            long seconds = (long) value.Descriptor.Fields[Timestamp.SecondsFieldNumber].Accessor.GetValue(value);
+            int nanos = (int) value.Descriptor.Fields[Timestamp.NanosFieldNumber].Accessor!.GetValue(value)!;
+            long seconds = (long) value.Descriptor.Fields[Timestamp.SecondsFieldNumber].Accessor!.GetValue(value)!;
             writer.Write(Timestamp.ToJson(seconds, nanos, DiagnosticOnly));
         }
 
         private void WriteDuration(TextWriter writer, IMessage value)
         {
             // TODO: Same as for WriteTimestamp
-            int nanos = (int) value.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.GetValue(value);
-            long seconds = (long) value.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.GetValue(value);
+            int nanos = (int) value.Descriptor.Fields[Duration.NanosFieldNumber].Accessor!.GetValue(value)!;
+            long seconds = (long) value.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor!.GetValue(value)!;
             writer.Write(Duration.ToJson(seconds, nanos, DiagnosticOnly));
         }
 
         private void WriteFieldMask(TextWriter writer, IMessage value)
         {
-            var paths = (IList<string>) value.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor.GetValue(value);
+            var paths = (IList<string>) value.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor!.GetValue(value)!;
             writer.Write(FieldMask.ToJson(paths, DiagnosticOnly));
         }
 
@@ -549,15 +548,15 @@ namespace Google.Protobuf
                 return;
             }
 
-            string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
-            ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
+            string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor!.GetValue(value)!;
+            ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor!.GetValue(value)!;
             string typeName = Any.GetTypeName(typeUrl);
-            MessageDescriptor descriptor = settings.TypeRegistry.Find(typeName);
+            MessageDescriptor? descriptor = settings.TypeRegistry.Find(typeName);
             if (descriptor == null)
             {
                 throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'");
             }
-            IMessage message = descriptor.Parser.ParseFrom(data);
+            IMessage message = descriptor.Parser!.ParseFrom(data);
             writer.Write("{ ");
             WriteString(writer, AnyTypeUrlField);
             writer.Write(NameValueSeparator);
@@ -579,8 +578,8 @@ namespace Google.Protobuf
 
         private void WriteDiagnosticOnlyAny(TextWriter writer, IMessage value)
         {
-            string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
-            ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
+            string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor!.GetValue(value)!;
+            ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor!.GetValue(value)!;
             writer.Write("{ ");
             WriteString(writer, AnyTypeUrlField);
             writer.Write(NameValueSeparator);
@@ -597,12 +596,12 @@ namespace Google.Protobuf
         private void WriteStruct(TextWriter writer, IMessage message)
         {
             writer.Write("{ ");
-            IDictionary fields = (IDictionary) message.Descriptor.Fields[Struct.FieldsFieldNumber].Accessor.GetValue(message);
+            IDictionary fields = (IDictionary) message.Descriptor.Fields[Struct.FieldsFieldNumber].Accessor!.GetValue(message)!;
             bool first = true;
             foreach (DictionaryEntry entry in fields)
             {
                 string key = (string) entry.Key;
-                IMessage value = (IMessage) entry.Value;
+                IMessage? value = (IMessage?) entry.Value;
                 if (string.IsNullOrEmpty(key) || value == null)
                 {
                     throw new InvalidOperationException("Struct fields cannot have an empty key or a null value.");
@@ -622,13 +621,13 @@ namespace Google.Protobuf
 
         private void WriteStructFieldValue(TextWriter writer, IMessage message)
         {
-            var specifiedField = message.Descriptor.Oneofs[0].Accessor.GetCaseFieldDescriptor(message);
+            var specifiedField = message.Descriptor.Oneofs[0].Accessor!.GetCaseFieldDescriptor(message);
             if (specifiedField == null)
             {
                 throw new InvalidOperationException("Value message must contain a value for the oneof.");
             }
 
-            object value = specifiedField.Accessor.GetValue(message);
+            object? value = specifiedField.Accessor!.GetValue(message);
 
             switch (specifiedField.FieldNumber)
             {
@@ -640,7 +639,7 @@ namespace Google.Protobuf
                 case Value.StructValueFieldNumber:
                 case Value.ListValueFieldNumber:
                     // Structs and ListValues are nested messages, and already well-known types.
-                    var nestedMessage = (IMessage) specifiedField.Accessor.GetValue(message);
+                    var nestedMessage = (IMessage) specifiedField.Accessor!.GetValue(message)!;
                     WriteWellKnownTypeValue(writer, nestedMessage.Descriptor, nestedMessage);
                     return;
                 case Value.NullValueFieldNumber:
@@ -679,13 +678,13 @@ namespace Google.Protobuf
                     writer.Write(PropertySeparator);
                 }
                 string keyText;
-                if (pair.Key is string)
+                if (pair.Key is string s)
                 {
-                    keyText = (string) pair.Key;
+                    keyText = s;
                 }
-                else if (pair.Key is bool)
+                else if (pair.Key is bool b)
                 {
-                    keyText = (bool) pair.Key ? "true" : "false";
+                    keyText = b ? "true" : "false";
                 }
                 else if (pair.Key is int || pair.Key is uint | pair.Key is long || pair.Key is ulong)
                 {
@@ -903,10 +902,10 @@ namespace Google.Protobuf
 
             [UnconditionalSuppressMessage("Trimming", "IL2072",
                 Justification = "The field for the value must still be present. It will be returned by reflection, will be in this collection, and its name can be resolved.")]
-            internal static string GetOriginalName(object value)
+            internal static string? GetOriginalName(object value)
             {
                 var enumType = value.GetType();
-                Dictionary<object, string> nameMapping;
+                Dictionary<object, string>? nameMapping;
                 lock (dictionaries)
                 {
                     if (!dictionaries.TryGetValue(enumType, out nameMapping))
@@ -916,9 +915,8 @@ namespace Google.Protobuf
                     }
                 }
 
-                string originalName;
                 // If this returns false, originalName will be null, which is what we want.
-                nameMapping.TryGetValue(value, out originalName);
+                nameMapping.TryGetValue(value, out string? originalName);
                 return originalName;
             }
 
@@ -932,7 +930,7 @@ namespace Google.Protobuf
                     .Where(f => f.IsStatic)
                     .Where(f => f.GetCustomAttributes<OriginalNameAttribute>()
                                  .FirstOrDefault()?.PreferredAlias ?? true)
-                    .ToDictionary(f => f.GetValue(null),
+                    .ToDictionary(f => f.GetValue(null)!,
                                   f => f.GetCustomAttributes<OriginalNameAttribute>()
                                         .FirstOrDefault()
                                         // If the attribute hasn't been applied, fall back to the name of the field.

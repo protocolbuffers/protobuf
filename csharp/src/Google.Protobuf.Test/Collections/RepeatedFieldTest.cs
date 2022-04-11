@@ -33,7 +33,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -49,11 +48,11 @@ namespace Google.Protobuf.Collections
         public void NullValuesRejected()
         {
             var list = new RepeatedField<string>();
-            Assert.Throws<ArgumentNullException>(() => list.Add((string)null));
-            Assert.Throws<ArgumentNullException>(() => list.Add((IEnumerable<string>)null));
-            Assert.Throws<ArgumentNullException>(() => list.Add((RepeatedField<string>)null));
-            Assert.Throws<ArgumentNullException>(() => list.Contains(null));
-            Assert.Throws<ArgumentNullException>(() => list.IndexOf(null));
+            Assert.Throws<ArgumentNullException>(() => list.Add((string)null!));
+            Assert.Throws<ArgumentNullException>(() => list.Add((IEnumerable<string>)null!));
+            Assert.Throws<ArgumentNullException>(() => list.Add((RepeatedField<string>)null!));
+            Assert.Throws<ArgumentNullException>(() => list.Contains(null!));
+            Assert.Throws<ArgumentNullException>(() => list.IndexOf(null!));
         }
 
         [Test]
@@ -91,13 +90,16 @@ namespace Google.Protobuf.Collections
             var list = new RepeatedField<string>();
             // It's okay for this to throw ArgumentNullException if necessary.
             // It's not ideal, but not awful.
-            Assert.Catch<ArgumentException>(() => list.AddRange(new[] { "foo", null }.Select(x => x)));
+            Assert.Catch<ArgumentException>(() => list.AddRange(new[] { "foo", null! }.Select(x => x)));
         }
 
         [Test]
         public void AddRange_SlowPath_NullsProhibited_NullableValueType()
         {
+#pragma warning disable CS8714 // Override for null value testing.
             var list = new RepeatedField<int?>();
+#pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+
             // It's okay for this to throw ArgumentNullException if necessary.
             // It's not ideal, but not awful.
             Assert.Catch<ArgumentException>(() => list.AddRange(new[] { 20, (int?)null }.Select(x => x)));
@@ -126,7 +128,10 @@ namespace Google.Protobuf.Collections
         [Test]
         public void AddRange_Optimized_NullableValueType()
         {
+#pragma warning disable CS8714 // Override for null value testing.
             var list = new RepeatedField<int?>();
+#pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+
             list.AddRange(new List<int?> { 20, 30 });
             Assert.AreEqual(2, list.Count);
             Assert.AreEqual((int?) 20, list[0]);
@@ -140,14 +145,17 @@ namespace Google.Protobuf.Collections
             var list = new RepeatedField<string>();
             // It's okay for this to throw ArgumentNullException if necessary.
             // It's not ideal, but not awful.
-            Assert.Catch<ArgumentException>(() => list.AddRange(new List<string> { "foo", null }));
+            Assert.Catch<ArgumentException>(() => list.AddRange(new List<string> { "foo", null! }));
         }
 
         [Test]
         public void AddRange_Optimized_NullsProhibited_NullableValueType()
         {
             // We don't just trust that a collection with a nullable element type doesn't contain nulls
+#pragma warning disable CS8714 // Override for null value testing.
             var list = new RepeatedField<int?>();
+#pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+
             // It's okay for this to throw ArgumentNullException if necessary.
             // It's not ideal, but not awful.
             Assert.Catch<ArgumentException>(() => list.AddRange(new List<int?> { 20, null }));
@@ -210,15 +218,15 @@ namespace Google.Protobuf.Collections
             var list = new RepeatedField<string> { "first", "second" };
             Assert.Throws<ArgumentOutOfRangeException>(() => list.Insert(-1, "foo"));
             Assert.Throws<ArgumentOutOfRangeException>(() => list.Insert(3, "foo"));
-            Assert.Throws<ArgumentNullException>(() => list.Insert(0, null));
+            Assert.Throws<ArgumentNullException>(() => list.Insert(0, null!));
         }
 
         [Test]
         public void Equals_RepeatedField()
         {
             var list = new RepeatedField<string> { "first", "second" };
-            Assert.IsFalse(list.Equals((RepeatedField<string>) null));
-            Assert.IsTrue(list.Equals(list));
+            Assert.IsFalse(list.Equals((RepeatedField<string>) null!));
+            Assert.IsTrue(list!.Equals(list));
             Assert.IsFalse(list.Equals(new RepeatedField<string> { "first", "third" }));
             Assert.IsFalse(list.Equals(new RepeatedField<string> { "first" }));
             Assert.IsTrue(list.Equals(new RepeatedField<string> { "first", "second" }));
@@ -228,8 +236,8 @@ namespace Google.Protobuf.Collections
         public void Equals_Object()
         {
             var list = new RepeatedField<string> { "first", "second" };
-            Assert.IsFalse(list.Equals((object) null));
-            Assert.IsTrue(list.Equals((object) list));
+            Assert.IsFalse(list.Equals((object) null!));
+            Assert.IsTrue(list!.Equals((object) list));
             Assert.IsFalse(list.Equals((object) new RepeatedField<string> { "first", "third" }));
             Assert.IsFalse(list.Equals((object) new RepeatedField<string> { "first" }));
             Assert.IsTrue(list.Equals((object) new RepeatedField<string> { "first", "second" }));
@@ -276,7 +284,7 @@ namespace Google.Protobuf.Collections
             var list = new RepeatedField<string> { "first", "second" };
             list[0] = "changed";
             Assert.AreEqual("changed", list[0]);
-            Assert.Throws<ArgumentNullException>(() => list[0] = null);
+            Assert.Throws<ArgumentNullException>(() => list[0] = null!);
             Assert.Throws<ArgumentOutOfRangeException>(() => list[-1] = "bad");
             Assert.Throws<ArgumentOutOfRangeException>(() => list[2] = "bad");
         }
@@ -556,7 +564,6 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(((SampleEnum)(-4)), values[4]);
             Assert.AreEqual(((SampleEnum)(-5)), values[5]);
         }
-
 
         [Test]
         public void TestNegativeEnumPackedArray()

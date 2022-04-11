@@ -49,12 +49,12 @@ namespace Google.Protobuf
         /// Gets the value of the specified repeated extension or null if the extension isn't registered in this set.
         /// For a version of this method that never returns null, use <see cref="IExtendableMessage{T}.GetOrInitializeExtension{TValue}(RepeatedExtension{T, TValue})"/>
         /// </summary>
-        RepeatedField<TValue> GetExtension<TValue>(RepeatedExtension<T, TValue> extension);
+        RepeatedField<TValue> GetExtension<TValue>(RepeatedExtension<T, TValue> extension) where TValue : notnull;
 
         /// <summary>
         /// Gets the value of the specified repeated extension, registering it if it hasn't already been registered.
         /// </summary>
-        RepeatedField<TValue> GetOrInitializeExtension<TValue>(RepeatedExtension<T, TValue> extension);
+        RepeatedField<TValue> GetOrInitializeExtension<TValue>(RepeatedExtension<T, TValue> extension) where TValue : notnull;
 
         /// <summary>
         /// Sets the value of the specified extension
@@ -74,6 +74,6 @@ namespace Google.Protobuf
         /// <summary>
         /// Clears the value of the specified repeated extension
         /// </summary>
-        void ClearExtension<TValue>(RepeatedExtension<T, TValue> extension);
+        void ClearExtension<TValue>(RepeatedExtension<T, TValue> extension) where TValue : notnull;
     }
 }

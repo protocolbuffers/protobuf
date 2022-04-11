@@ -83,7 +83,7 @@ namespace System.Diagnostics.CodeAnalysis
         /// The Scope property is an optional argument that specifies the metadata scope for which
         /// the attribute is relevant.
         /// </remarks>
-        public string Scope { get; set; }
+        public string? Scope { get; set; }
 
         /// <summary>
         /// Gets or sets a fully qualified path that represents the target of the attribute.
@@ -94,7 +94,7 @@ namespace System.Diagnostics.CodeAnalysis
         /// Because it is fully qualified, it can be long, particularly for targets such as parameters.
         /// The analysis tool user interface should be capable of automatically formatting the parameter.
         /// </remarks>
-        public string Target { get; set; }
+        public string? Target { get; set; }
 
         /// <summary>
         /// Gets or sets an optional argument expanding on exclusion criteria.
@@ -106,12 +106,12 @@ namespace System.Diagnostics.CodeAnalysis
         /// and it may be desirable to suppress a violation against a statement in the method that will
         /// give a rule violation, but not against all statements in the method.
         /// </remarks>
-        public string MessageId { get; set; }
+        public string? MessageId { get; set; }
 
         /// <summary>
         /// Gets or sets the justification for suppressing the code analysis message.
         /// </summary>
-        public string Justification { get; set; }
+        public string? Justification { get; set; }
     }
 }
 #endif

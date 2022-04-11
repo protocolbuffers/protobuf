@@ -156,8 +156,7 @@ namespace Google.Protobuf
             }
             if (message.Descriptor.IsWellKnownType)
             {
-                Action<JsonParser, IMessage, JsonTokenizer> handler;
-                if (WellKnownTypeHandlers.TryGetValue(message.Descriptor.FullName, out handler))
+                if (WellKnownTypeHandlers.TryGetValue(message.Descriptor.FullName, out Action<JsonParser, IMessage, JsonTokenizer>? handler))
                 {
                     handler(this, message, tokenizer);
                     return;
@@ -174,7 +173,7 @@ namespace Google.Protobuf
             // All the oneof fields we've already accounted for - we can only see each of them once.
             // The set is created lazily to avoid the overhead of creating a set for every message
             // we parsed, when oneofs are relatively rare.
-            HashSet<OneofDescriptor> seenOneofs = null;
+            HashSet<OneofDescriptor>? seenOneofs = null;
             while (true)
             {
                 token = tokenizer.Next();
@@ -186,9 +185,8 @@ namespace Google.Protobuf
                 {
                     throw new InvalidOperationException("Unexpected token type " + token.Type);
                 }
-                string name = token.StringValue;
-                FieldDescriptor field;
-                if (jsonFieldMap.TryGetValue(name, out field))
+                string name = token.StringValue!;
+                if (jsonFieldMap.TryGetValue(name, out FieldDescriptor? field))
                 {
                     if (field.ContainingOneof != null)
                     {
@@ -229,7 +227,7 @@ namespace Google.Protobuf
                 if (field.IsMap || field.IsRepeated ||
                     !(IsGoogleProtobufValueField(field) || IsGoogleProtobufNullValueField(field)))
                 {
-                    field.Accessor.Clear(message);
+                    field.Accessor!.Clear(message);
                     return;
                 }
             }
@@ -246,7 +244,7 @@ namespace Google.Protobuf
             else
             {
                 var value = ParseSingleValue(field, tokenizer);
-                field.Accessor.SetValue(message, value);
+                field.Accessor!.SetValue(message, value);
             }
         }
 
@@ -258,7 +256,7 @@ namespace Google.Protobuf
                 throw new InvalidProtocolBufferException("Repeated field value was not an array. Token type: " + token.Type);
             }
 
-            IList list = (IList) field.Accessor.GetValue(message);
+            IList list = (IList) field.Accessor!.GetValue(message)!;
             while (true)
             {
                 token = tokenizer.Next();
@@ -267,7 +265,7 @@ namespace Google.Protobuf
                     return;
                 }
                 tokenizer.PushBack(token);
-                object value = ParseSingleValue(field, tokenizer);
+                object? value = ParseSingleValue(field, tokenizer);
                 if (value == null)
                 {
                     throw new InvalidProtocolBufferException("Repeated field elements cannot be null");
@@ -285,14 +283,14 @@ namespace Google.Protobuf
                 throw new InvalidProtocolBufferException("Expected an object to populate a map");
             }
 
-            var type = field.MessageType;
+            var type = field.MessageType!;
             var keyField = type.FindFieldByNumber(1);
             var valueField = type.FindFieldByNumber(2);
             if (keyField == null || valueField == null)
             {
                 throw new InvalidProtocolBufferException("Invalid map field: " + field.FullName);
             }
-            IDictionary dictionary = (IDictionary) field.Accessor.GetValue(message);
+            IDictionary dictionary = (IDictionary) field.Accessor!.GetValue(message)!;
 
             while (true)
             {
@@ -301,8 +299,8 @@ namespace Google.Protobuf
                 {
                     return;
                 }
-                object key = ParseMapKey(keyField, token.StringValue);
-                object value = ParseSingleValue(valueField, tokenizer);
+                object key = ParseMapKey(keyField, token.StringValue!);
+                object? value = ParseSingleValue(valueField, tokenizer);
                 if (value == null)
                 {
                     throw new InvalidProtocolBufferException("Map values must not be null");
@@ -314,16 +312,16 @@ namespace Google.Protobuf
         private static bool IsGoogleProtobufValueField(FieldDescriptor field)
         {
             return field.FieldType == FieldType.Message &&
-                field.MessageType.FullName == Value.Descriptor.FullName;
+                field.MessageType!.FullName == Value.Descriptor.FullName;
         }
 
         private static bool IsGoogleProtobufNullValueField(FieldDescriptor field)
         {
             return field.FieldType == FieldType.Enum &&
-                field.EnumType.FullName == NullValueDescriptor.FullName;
+                field.EnumType!.FullName == NullValueDescriptor.FullName;
         }
 
-        private object ParseSingleValue(FieldDescriptor field, JsonTokenizer tokenizer)
+        private object? ParseSingleValue(FieldDescriptor field, JsonTokenizer tokenizer)
         {
             var token = tokenizer.Next();
             if (token.Type == JsonToken.TokenType.Null)
@@ -346,7 +344,7 @@ namespace Google.Protobuf
             {
                 // Parse wrapper types as their constituent types.
                 // TODO: What does this mean for null?
-                if (field.MessageType.IsWrapperType)
+                if (field.MessageType!.IsWrapperType)
                 {
                     field = field.MessageType.Fields[WrappersReflection.WrapperValueFieldNumber];
                     fieldType = field.FieldType;
@@ -373,7 +371,7 @@ namespace Google.Protobuf
                     // case instead, but this way we'd only need to change one place.
                     goto default;
                 case JsonToken.TokenType.StringValue:
-                    return ParseSingleStringValue(field, token.StringValue);
+                    return ParseSingleStringValue(field, token.StringValue!);
                 // Note: not passing the number value itself here, as we may end up storing the string value in the token too.
                 case JsonToken.TokenType.Number:
                     return ParseSingleNumberValue(field, token);
@@ -437,7 +435,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(jsonReader, nameof(jsonReader));
             ProtoPreconditions.CheckNotNull(descriptor, nameof(descriptor));
-            IMessage message = descriptor.Parser.CreateTemplate();
+            IMessage message = descriptor.Parser!.CreateTemplate();
             Merge(message, jsonReader);
             return message;
         }
@@ -449,17 +447,17 @@ namespace Google.Protobuf
             switch (firstToken.Type)
             {
                 case JsonToken.TokenType.Null:
-                    fields[Value.NullValueFieldNumber].Accessor.SetValue(message, 0);
+                    fields[Value.NullValueFieldNumber].Accessor!.SetValue(message, 0);
                     return;
                 case JsonToken.TokenType.StringValue:
-                    fields[Value.StringValueFieldNumber].Accessor.SetValue(message, firstToken.StringValue);
+                    fields[Value.StringValueFieldNumber].Accessor!.SetValue(message, firstToken.StringValue!);
                     return;
                 case JsonToken.TokenType.Number:
-                    fields[Value.NumberValueFieldNumber].Accessor.SetValue(message, firstToken.NumberValue);
+                    fields[Value.NumberValueFieldNumber].Accessor!.SetValue(message, firstToken.NumberValue);
                     return;
                 case JsonToken.TokenType.False:
                 case JsonToken.TokenType.True:
-                    fields[Value.BoolValueFieldNumber].Accessor.SetValue(message, firstToken.Type == JsonToken.TokenType.True);
+                    fields[Value.BoolValueFieldNumber].Accessor!.SetValue(message, firstToken.Type == JsonToken.TokenType.True);
                     return;
                 case JsonToken.TokenType.StartObject:
                     {
@@ -467,7 +465,7 @@ namespace Google.Protobuf
                         var structMessage = NewMessageForField(field);
                         tokenizer.PushBack(firstToken);
                         Merge(structMessage, tokenizer);
-                        field.Accessor.SetValue(message, structMessage);
+                        field.Accessor!.SetValue(message, structMessage);
                         return;
                     }
                 case JsonToken.TokenType.StartArray:
@@ -476,7 +474,7 @@ namespace Google.Protobuf
                         var list = NewMessageForField(field);
                         tokenizer.PushBack(firstToken);
                         Merge(list, tokenizer);
-                        field.Accessor.SetValue(message, list);
+                        field.Accessor!.SetValue(message, list);
                         return;
                     }
                 default:
@@ -531,10 +529,10 @@ namespace Google.Protobuf
             {
                 throw new InvalidProtocolBufferException("Expected string value for Any.@type");
             }
-            string typeUrl = token.StringValue;
+            string typeUrl = token.StringValue!;
             string typeName = Any.GetTypeName(typeUrl);
 
-            MessageDescriptor descriptor = settings.TypeRegistry.Find(typeName);
+            MessageDescriptor? descriptor = settings.TypeRegistry.Find(typeName);
             if (descriptor == null)
             {
                 throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'");
@@ -543,7 +541,7 @@ namespace Google.Protobuf
             // Now replay the token stream we've already read and anything that remains of the object, just parsing it
             // as normal. Our original tokenizer should end up at the end of the object.
             var replay = JsonTokenizer.FromReplayedTokens(tokens, tokenizer);
-            var body = descriptor.Parser.CreateTemplate();
+            var body = descriptor.Parser!.CreateTemplate();
             if (descriptor.IsWellKnownType)
             {
                 MergeWellKnownTypeAnyBody(body, replay);
@@ -555,8 +553,8 @@ namespace Google.Protobuf
             var data = body.ToByteString();
 
             // Now that we have the message data, we can pack it into an Any (the message received as a parameter).
-            message.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.SetValue(message, typeUrl);
-            message.Descriptor.Fields[Any.ValueFieldNumber].Accessor.SetValue(message, data);
+            message.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor!.SetValue(message, typeUrl);
+            message.Descriptor.Fields[Any.ValueFieldNumber].Accessor!.SetValue(message, data);
         }
 
         // Well-known types end up in a property called "value" in the JSON. As there's no longer a @type property
@@ -728,7 +726,7 @@ namespace Google.Protobuf
                     ValidateInfinityAndNan(text, float.IsPositiveInfinity(f), float.IsNegativeInfinity(f), float.IsNaN(f));
                     return f;
                 case FieldType.Enum:
-                    var enumValue = field.EnumType.FindValueByName(text);
+                    var enumValue = field.EnumType!.FindValueByName(text);
                     if (enumValue == null)
                     {
                         throw new InvalidProtocolBufferException($"Invalid enum value: {text} for enum type: {field.EnumType.FullName}");
@@ -745,7 +743,7 @@ namespace Google.Protobuf
         /// </summary>
         private static IMessage NewMessageForField(FieldDescriptor field)
         {
-            return field.MessageType.Parser.CreateTemplate();
+            return field.MessageType!.Parser!.CreateTemplate();
         }
 
         private static T ParseNumericString<T>(string text, Func<string, NumberStyles, IFormatProvider, T> parser)
@@ -804,7 +802,7 @@ namespace Google.Protobuf
             {
                 throw new InvalidProtocolBufferException("Expected string value for Timestamp");
             }
-            var match = TimestampRegex.Match(token.StringValue);
+            var match = TimestampRegex.Match(token.StringValue!);
             if (!match.Success)
             {
                 throw new InvalidProtocolBufferException($"Invalid Timestamp value: {token.StringValue}");
@@ -865,8 +863,8 @@ namespace Google.Protobuf
                         throw new InvalidProtocolBufferException("Invalid Timestamp value: " + token.StringValue);
                     }
                 }
-                message.Descriptor.Fields[Timestamp.SecondsFieldNumber].Accessor.SetValue(message, timestamp.Seconds);
-                message.Descriptor.Fields[Timestamp.NanosFieldNumber].Accessor.SetValue(message, timestamp.Nanos);
+                message.Descriptor.Fields[Timestamp.SecondsFieldNumber].Accessor!.SetValue(message, timestamp.Seconds);
+                message.Descriptor.Fields[Timestamp.NanosFieldNumber].Accessor!.SetValue(message, timestamp.Nanos);
             }
             catch (FormatException)
             {
@@ -880,7 +878,7 @@ namespace Google.Protobuf
             {
                 throw new InvalidProtocolBufferException("Expected string value for Duration");
             }
-            var match = DurationRegex.Match(token.StringValue);
+            var match = DurationRegex.Match(token.StringValue!);
             if (!match.Success)
             {
                 throw new InvalidProtocolBufferException("Invalid Duration value: " + token.StringValue);
@@ -909,8 +907,8 @@ namespace Google.Protobuf
                 {
                     throw new InvalidProtocolBufferException($"Invalid Duration value: {token.StringValue}");
                 }
-                message.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.SetValue(message, seconds);
-                message.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.SetValue(message, nanos);
+                message.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor!.SetValue(message, seconds);
+                message.Descriptor.Fields[Duration.NanosFieldNumber].Accessor!.SetValue(message, nanos);
             }
             catch (FormatException)
             {
@@ -925,8 +923,8 @@ namespace Google.Protobuf
                 throw new InvalidProtocolBufferException("Expected string value for FieldMask");
             }
             // TODO: Do we *want* to remove empty entries? Probably okay to treat "" as "no paths", but "foo,,bar"?
-            string[] jsonPaths = token.StringValue.Split(FieldMaskPathSeparators, StringSplitOptions.RemoveEmptyEntries);
-            IList messagePaths = (IList) message.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor.GetValue(message);
+            string[] jsonPaths = token.StringValue!.Split(FieldMaskPathSeparators, StringSplitOptions.RemoveEmptyEntries);
+            IList messagePaths = (IList) message.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor!.GetValue(message)!;
             foreach (var path in jsonPaths)
             {
                 messagePaths.Add(ToSnakeCase(path));

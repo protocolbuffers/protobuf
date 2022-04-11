@@ -62,20 +62,24 @@ namespace Google.Protobuf.Compatibility
         /// </summary>
         [UnconditionalSuppressMessage("Trimming", "IL2072",
             Justification = "The BaseType of the target will have all properties because of the annotation.")]
-        internal static PropertyInfo GetProperty(
+        internal static PropertyInfo? GetProperty(
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)]
             this Type target, string name)
         {
             // GetDeclaredProperty only returns properties declared in the given type, so we need to recurse.
-            while (target != null)
+            Type? t = target;
+            while (t != null)
             {
-                var typeInfo = target.GetTypeInfo();
-                var ret = typeInfo.GetDeclaredProperty(name);
-                if (ret != null && ((ret.CanRead && ret.GetMethod.IsPublic) || (ret.CanWrite && ret.SetMethod.IsPublic)))
+                TypeInfo typeInfo = t.GetTypeInfo();
+                PropertyInfo? ret = typeInfo.GetDeclaredProperty(name);
+                if (ret != null)
                 {
-                    return ret;
+                    if ((ret.CanRead && ret.GetMethod!.IsPublic) || (ret.CanWrite && ret.SetMethod!.IsPublic))
+                    {
+                        return ret;
+                    }
                 }
-                target = typeInfo.BaseType;
+                t = typeInfo.BaseType;
             }
             return null;
         }
@@ -93,20 +97,21 @@ namespace Google.Protobuf.Compatibility
         /// <exception cref="AmbiguousMatchException">One type in the hierarchy declared more than one method with the same name</exception>
         [UnconditionalSuppressMessage("Trimming", "IL2072",
             Justification = "The BaseType of the target will have all properties because of the annotation.")]
-        internal static MethodInfo GetMethod(
+        internal static MethodInfo? GetMethod(
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
             this Type target, string name)
         {
             // GetDeclaredMethod only returns methods declared in the given type, so we need to recurse.
-            while (target != null)
+            Type? t = target;
+            while (t != null)
             {
-                var typeInfo = target.GetTypeInfo();
-                var ret = typeInfo.GetDeclaredMethod(name);
+                var typeInfo = t.GetTypeInfo();
+                MethodInfo? ret = typeInfo.GetDeclaredMethod(name);
                 if (ret != null && ret.IsPublic)
                 {
                     return ret;
                 }
-                target = typeInfo.BaseType;
+                t = typeInfo.BaseType;
             }
             return null;
         }

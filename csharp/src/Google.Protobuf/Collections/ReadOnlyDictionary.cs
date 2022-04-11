@@ -70,7 +70,7 @@ namespace Google.Protobuf.Collections
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            return wrapped.TryGetValue(key, out value);
+            return wrapped.TryGetValue(key, out value!);
         }
 
         public ICollection<TValue> Values
@@ -129,7 +129,7 @@ namespace Google.Protobuf.Collections
             return ((IEnumerable) wrapped).GetEnumerator();
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return wrapped.Equals(obj);
         }
@@ -139,7 +139,7 @@ namespace Google.Protobuf.Collections
             return wrapped.GetHashCode();
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
             return wrapped.ToString();
         }

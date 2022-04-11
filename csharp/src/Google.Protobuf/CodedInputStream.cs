@@ -72,7 +72,7 @@ namespace Google.Protobuf
         /// The stream to read further input from, or null if the byte array buffer was provided
         /// directly on construction, with no further data available.
         /// </summary>
-        private readonly Stream input;
+        private readonly Stream? input;
 
         /// <summary>
         /// The parser state is kept separately so that other parse implementations can reuse the same
@@ -136,7 +136,7 @@ namespace Google.Protobuf
         /// Creates a new CodedInputStream reading data from the given
         /// stream and buffer, using the default limits.
         /// </summary>
-        internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize, bool leaveOpen)
+        internal CodedInputStream(Stream? input, byte[] buffer, int bufferPos, int bufferSize, bool leaveOpen)
         {
             this.input = input;
             this.buffer = buffer;
@@ -252,7 +252,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Internal-only property; provides extension identifiers to compatible messages while parsing.
         /// </summary>
-        internal ExtensionRegistry ExtensionRegistry
+        internal ExtensionRegistry? ExtensionRegistry
         {
             get { return state.ExtensionRegistry; }
             set { state.ExtensionRegistry = value; }
@@ -260,7 +260,7 @@ namespace Google.Protobuf
 
         internal byte[] InternalBuffer => buffer;
 
-        internal Stream InternalInputStream => input;
+        internal Stream? InternalInputStream => input;
 
         internal ref ParserInternalState InternalState => ref state;
 
@@ -276,7 +276,7 @@ namespace Google.Protobuf
         {
             if (!leaveOpen)
             {
-                input.Dispose();
+                input?.Dispose();
             }
         }
 
@@ -647,21 +647,6 @@ namespace Google.Protobuf
                 var span = new ReadOnlySpan<byte>(buffer);
                 return SegmentedBufferHelper.IsAtEnd(ref span, ref state);
             }
-        }
-
-        /// <summary>
-        /// Called when buffer is empty to read more bytes from the
-        /// input.  If <paramref name="mustSucceed"/> is true, RefillBuffer() guarantees that
-        /// either there will be at least one byte in the buffer when it returns
-        /// or it will throw an exception.  If <paramref name="mustSucceed"/> is false,
-        /// RefillBuffer() returns false if no more bytes were available.
-        /// </summary>
-        /// <param name="mustSucceed"></param>
-        /// <returns></returns>
-        private bool RefillBuffer(bool mustSucceed)
-        {
-            var span = new ReadOnlySpan<byte>(buffer);
-            return state.segmentedBufferHelper.RefillBuffer(ref span, ref state, mustSucceed);
         }
 
         /// <summary>

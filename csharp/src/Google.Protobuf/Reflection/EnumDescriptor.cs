@@ -42,11 +42,11 @@ namespace Google.Protobuf.Reflection
     public sealed class EnumDescriptor : DescriptorBase
     {
         private readonly EnumDescriptorProto proto;
-        private readonly MessageDescriptor containingType;
+        private readonly MessageDescriptor? containingType;
         private readonly IList<EnumValueDescriptor> values;
-        private readonly Type clrType;
+        private readonly Type? clrType;
 
-        internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, Type clrType)
+        internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor? parent, int index, Type? clrType)
             : base(file, file.ComputeFullName(parent, proto.Name), index)
         {
             this.proto = proto;
@@ -79,9 +79,9 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The brief name of the descriptor's target.
         /// </summary>
-        public override string Name { get { return proto.Name; } }
+        public override string Name => proto.Name;
 
-        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
+        internal override IReadOnlyList<DescriptorBase>? GetNestedDescriptorListForField(int fieldNumber)
         {
             switch (fieldNumber)
             {
@@ -95,15 +95,12 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The CLR type for this enum. For generated code, this will be a CLR enum type.
         /// </summary>
-        public Type ClrType { get { return clrType; } }
+        public Type? ClrType => clrType;
 
         /// <value>
         /// If this is a nested type, get the outer descriptor, otherwise null.
         /// </value>
-        public MessageDescriptor ContainingType
-        {
-            get { return containingType; }
-        }
+        public MessageDescriptor? ContainingType => containingType;
 
         /// <value>
         /// An unmodifiable list of defined value descriptors for this enum.
@@ -118,7 +115,7 @@ namespace Google.Protobuf.Reflection
         /// same number, this returns the first defined value with that number.
         /// If there is no value for the given number, this returns <c>null</c>.
         /// </summary>
-        public EnumValueDescriptor FindValueByNumber(int number)
+        public EnumValueDescriptor? FindValueByNumber(int number)
         {
             return File.DescriptorPool.FindEnumValueByNumber(this, number);
         }
@@ -128,7 +125,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <param name="name">The unqualified name of the value (e.g. "FOO").</param>
         /// <returns>The value's descriptor, or null if not found.</returns>
-        public EnumValueDescriptor FindValueByName(string name)
+        public EnumValueDescriptor? FindValueByName(string name)
         {
             return File.DescriptorPool.FindSymbol<EnumValueDescriptor>(FullName + "." + name);
         }
@@ -145,7 +142,7 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public EnumOptions GetOptions() => Proto.Options?.Clone();
+        public EnumOptions? GetOptions() => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value enum option for this descriptor
@@ -154,14 +151,14 @@ namespace Google.Protobuf.Reflection
         public T GetOption<T>(Extension<EnumOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+            return value is IDeepCloneable<T> cloneable ? cloneable.Clone() : value;
         }
 
         /// <summary>
         /// Gets a repeated value enum option for this descriptor
         /// </summary>
         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
-        public RepeatedField<T> GetOption<T>(RepeatedExtension<EnumOptions, T> extension)
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<EnumOptions, T> extension) where T : notnull
         {
             return Proto.Options.GetExtension(extension).Clone();
         }

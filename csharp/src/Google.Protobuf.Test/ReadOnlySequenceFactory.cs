@@ -85,8 +85,8 @@ namespace Google.Protobuf
 
             int i = 0;
 
-            BufferSegment last = null;
-            BufferSegment first = null;
+            BufferSegment? last = null;
+            BufferSegment? first = null;
 
             do
             {
@@ -110,7 +110,7 @@ namespace Google.Protobuf
                 }
                 else
                 {
-                    last = last.Append(memory);
+                    last = last!.Append(memory);
                 }
                 i++;
             } while (i < inputs.Length);

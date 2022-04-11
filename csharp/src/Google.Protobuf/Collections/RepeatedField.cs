@@ -35,7 +35,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Security;
-using System.Threading;
 
 namespace Google.Protobuf.Collections
 {
@@ -52,12 +51,13 @@ namespace Google.Protobuf.Collections
 #if !NET35
         , IReadOnlyList<T>
 #endif
+        where T : notnull
     {
         private static readonly EqualityComparer<T> EqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<T>();
-        private static readonly T[] EmptyArray = new T[0];
+        private static readonly T?[] EmptyArray = new T[0];
         private const int MinArraySize = 8;
 
-        private T[] array = EmptyArray;
+        private T?[] array = EmptyArray;
         private int count = 0;
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Google.Protobuf.Collections
             if (array != EmptyArray)
             {
                 clone.array = (T[])array.Clone();
-                IDeepCloneable<T>[] cloneableArray = clone.array as IDeepCloneable<T>[];
+                IDeepCloneable<T>[]? cloneableArray = clone.array as IDeepCloneable<T>[];
                 if (cloneableArray != null)
                 {
                     for (int i = 0; i < count; i++)
@@ -119,7 +119,7 @@ namespace Google.Protobuf.Collections
             // TODO: Inline some of the Add code, so we can avoid checking the size on every
             // iteration.
             uint tag = ctx.state.lastTag;
-            var reader = codec.ValueReader;
+            ValueReader<T> reader = codec.ValueReader;
             // Non-nullable value types can be packed or not.
             if (FieldCodec<T>.IsPackedRepeatedField(tag))
             {
@@ -150,7 +150,7 @@ namespace Google.Protobuf.Collections
                         // Content is variable size so add until we reach the limit.
                         while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                         {
-                            Add(reader(ref ctx));
+                            Add(reader(ref ctx)!);
                         }
                     }
                     SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
@@ -162,7 +162,7 @@ namespace Google.Protobuf.Collections
                 // Not packed... (possibly not packable)
                 do
                 {
-                    Add(reader(ref ctx));
+                    Add(reader(ref ctx)!);
                 } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
             }
         }
@@ -197,7 +197,7 @@ namespace Google.Protobuf.Collections
                 }
                 for (int i = 0; i < count; i++)
                 {
-                    size += sizeCalculator(array[i]);
+                    size += sizeCalculator(array[i]!);
                 }
                 return size;
             }
@@ -212,7 +212,7 @@ namespace Google.Protobuf.Collections
                 int tmp = 0;
                 for (int i = 0; i < count; i++)
                 {
-                    tmp += calculator(array[i]);
+                    tmp += calculator(array[i]!);
                 }
                 return tmp;
             }
@@ -381,7 +381,7 @@ namespace Google.Protobuf.Collections
             }            
             Array.Copy(array, index + 1, array, index, count - index - 1);
             count--;
-            array[count] = default(T);
+            array[count] = default;
             return true;
         }
 
@@ -405,8 +405,7 @@ namespace Google.Protobuf.Collections
 
             // Optimization 1: If the collection we're adding is already a RepeatedField<T>,
             // we know the values are valid.
-            var otherRepeatedField = values as RepeatedField<T>;
-            if (otherRepeatedField != null)
+            if (values is RepeatedField<T> otherRepeatedField)
             {
                 EnsureSize(count + otherRepeatedField.count);
                 Array.Copy(otherRepeatedField.array, 0, array, count, otherRepeatedField.count);
@@ -416,8 +415,7 @@ namespace Google.Protobuf.Collections
 
             // Optimization 2: The collection is an ICollection, so we can expand
             // just once and ask the collection to copy itself into the array.
-            var collection = values as ICollection;
-            if (collection != null)
+            if (values is ICollection collection)
             {
                 var extraCount = collection.Count;
                 // For reference types and nullable value types, we need to check that there are no nulls
@@ -476,7 +474,7 @@ namespace Google.Protobuf.Collections
         {
             for (int i = 0; i < count; i++)
             {
-                yield return array[i];
+                yield return array[i]!;
             }
         }
 
@@ -487,7 +485,7 @@ namespace Google.Protobuf.Collections
         /// <returns>
         ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as RepeatedField<T>);
         }
@@ -514,7 +512,7 @@ namespace Google.Protobuf.Collections
             int hash = 0;
             for (int i = 0; i < count; i++)
             {
-                hash = hash * 31 + array[i].GetHashCode();
+                hash = hash * 31 + array[i]!.GetHashCode();
             }
             return hash;
         }
@@ -524,9 +522,9 @@ namespace Google.Protobuf.Collections
         /// </summary>
         /// <param name="other">The repeated field to compare this with.</param>
         /// <returns><c>true</c> if <paramref name="other"/> refers to an equal repeated field; <c>false</c> otherwise.</returns>
-        public bool Equals(RepeatedField<T> other)
+        public bool Equals(RepeatedField<T>? other)
         {
-            if (ReferenceEquals(other, null))
+            if (other is null)
             {
                 return false;
             }
@@ -541,7 +539,7 @@ namespace Google.Protobuf.Collections
             EqualityComparer<T> comparer = EqualityComparer;
             for (int i = 0; i < count; i++)
             {
-                if (!comparer.Equals(array[i], other.array[i]))
+                if (!comparer.Equals(array[i]!, other.array[i]!))
                 {
                     return false;
                 }
@@ -561,7 +559,7 @@ namespace Google.Protobuf.Collections
             EqualityComparer<T> comparer = EqualityComparer;
             for (int i = 0; i < count; i++)
             {
-                if (comparer.Equals(array[i], item))
+                if (comparer.Equals(array[i]!, item))
                 {
                     return i;
                 }
@@ -608,7 +606,7 @@ namespace Google.Protobuf.Collections
         /// </summary>
         public override string ToString()
         {
-            var writer = new StringWriter();
+            using var writer = new StringWriter();
             JsonFormatter.Default.WriteList(writer, this);
             return writer.ToString();
         }
@@ -629,7 +627,7 @@ namespace Google.Protobuf.Collections
                 {
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
-                return array[index];
+                return array[index]!;
             }
             set
             {
@@ -654,40 +652,40 @@ namespace Google.Protobuf.Collections
 
         object ICollection.SyncRoot => this;
 
-        object IList.this[int index]
+        object? IList.this[int index]
         {
             get { return this[index]; }
-            set { this[index] = (T)value; }
+            set { this[index] = (T)value!; }
         }
 
-        int IList.Add(object value)
+        int IList.Add(object? value)
         {
-            Add((T) value);
+            Add((T) value!);
             return count - 1;
         }
 
-        bool IList.Contains(object value)
+        bool IList.Contains(object? value)
         {
             return (value is T && Contains((T)value));
         }
 
-        int IList.IndexOf(object value)
+        int IList.IndexOf(object? value)
         {
-            if (!(value is T))
+            if (value is not T)
             {
                 return -1;
             }
             return IndexOf((T)value);
         }
 
-        void IList.Insert(int index, object value)
+        void IList.Insert(int index, object? value)
         {
-            Insert(index, (T) value);
+            Insert(index, (T) value!);
         }
 
-        void IList.Remove(object value)
+        void IList.Remove(object? value)
         {
-            if (!(value is T))
+            if (value is not T)
             {
                 return;
             }

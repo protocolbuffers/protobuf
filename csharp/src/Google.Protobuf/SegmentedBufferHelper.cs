@@ -47,7 +47,7 @@ namespace Google.Protobuf
     {
         private int? totalLength;
         private ReadOnlySequence<byte>.Enumerator readOnlySequenceEnumerator;
-        private CodedInputStream codedInputStream;
+        private CodedInputStream? codedInputStream;
 
         /// <summary>
         /// Initialize an instance with a coded input stream.
@@ -102,7 +102,7 @@ namespace Google.Protobuf
 
         public int? TotalLength => totalLength;
 
-        public CodedInputStream CodedInputStream => codedInputStream;
+        public CodedInputStream? CodedInputStream => codedInputStream;
 
         /// <summary>
         /// Sets currentLimit to (current position) + byteLimit. This is called
@@ -235,7 +235,7 @@ namespace Google.Protobuf
                 }
             }
 
-            Stream input = codedInputStream.InternalInputStream;
+            Stream? input = codedInputStream!.InternalInputStream;
 
             state.totalBytesRetired += state.bufferSize;
 

@@ -32,10 +32,7 @@
 
 using BenchmarkDotNet.Attributes;
 using System;
-using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.IO;
-using System.Buffers;
 using System.Text;
 
 namespace Google.Protobuf.Benchmarks
@@ -47,23 +44,23 @@ namespace Google.Protobuf.Benchmarks
     public class WriteRawPrimitivesBenchmark
     {
         // key is the encodedSize of varint values
-        Dictionary<int, uint[]> varint32Values;
-        Dictionary<int, ulong[]> varint64Values;
+        Dictionary<int, uint[]>? varint32Values;
+        Dictionary<int, ulong[]>? varint64Values;
 
-        double[] doubleValues;
-        float[] floatValues;
-
-        // key is the encodedSize of string values
-        Dictionary<int, string[]> stringValues;
+        double[]? doubleValues;
+        float[]? floatValues;
 
         // key is the encodedSize of string values
-        Dictionary<int, string[]> nonAsciiStringValues;
+        Dictionary<int, string[]>? stringValues;
 
         // key is the encodedSize of string values
-        Dictionary<int, ByteString[]> byteStringValues;
+        Dictionary<int, string[]>? nonAsciiStringValues;
+
+        // key is the encodedSize of string values
+        Dictionary<int, ByteString[]>? byteStringValues;
 
         // the buffer to which all the data will be written
-        byte[] outputBuffer;
+        byte[]? outputBuffer;
 
         Random random = new Random(417384220);  // random but deterministic seed
 
@@ -121,8 +118,8 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(5)]
         public void WriteRawVarint32_CodedOutputStream(int encodedSize)
         {
-            var values = varint32Values[encodedSize];
-            var cos = new CodedOutputStream(outputBuffer);
+            var values = varint32Values![encodedSize];
+            var cos = new CodedOutputStream(outputBuffer!);
             for (int i = 0; i < values.Length; i++)
             {
                 cos.WriteRawVarint32(values[i]);
@@ -139,7 +136,7 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(5)]
         public void WriteRawVarint32_WriteContext(int encodedSize)
         {
-            var values = varint32Values[encodedSize];
+            var values = varint32Values![encodedSize];
             var span = new Span<byte>(outputBuffer);
             WriteContext.Initialize(ref span, out WriteContext ctx);
             for (int i = 0; i < values.Length; i++)
@@ -163,8 +160,8 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(10)]
         public void WriteRawVarint64_CodedOutputStream(int encodedSize)
         {
-            var values = varint64Values[encodedSize];
-            var cos = new CodedOutputStream(outputBuffer);
+            var values = varint64Values![encodedSize];
+            var cos = new CodedOutputStream(outputBuffer!);
             for (int i = 0; i < values.Length; i++)
             {
                 cos.WriteRawVarint64(values[i]);
@@ -186,7 +183,7 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(10)]
         public void WriteRawVarint64_WriteContext(int encodedSize)
         {
-            var values = varint64Values[encodedSize];
+            var values = varint64Values![encodedSize];
             var span = new Span<byte>(outputBuffer);
             WriteContext.Initialize(ref span, out WriteContext ctx);
             for (int i = 0; i < values.Length; i++)
@@ -201,7 +198,7 @@ namespace Google.Protobuf.Benchmarks
         public void WriteFixed32_CodedOutputStream()
         {
             const int encodedSize = sizeof(uint);
-            var cos = new CodedOutputStream(outputBuffer);
+            var cos = new CodedOutputStream(outputBuffer!);
             for (int i = 0; i < BytesToWrite / encodedSize; i++)
             {
                 cos.WriteFixed32(12345);
@@ -228,7 +225,7 @@ namespace Google.Protobuf.Benchmarks
         public void WriteFixed64_CodedOutputStream()
         {
             const int encodedSize = sizeof(ulong);
-            var cos = new CodedOutputStream(outputBuffer);
+            var cos = new CodedOutputStream(outputBuffer!);
             for(int i = 0; i < BytesToWrite / encodedSize; i++)
             {
                 cos.WriteFixed64(123456789);
@@ -298,7 +295,7 @@ namespace Google.Protobuf.Benchmarks
         {
             var span = new Span<byte>(outputBuffer);
             WriteContext.Initialize(ref span, out WriteContext ctx);
-            ctx.state.position = outputBuffer.Length;
+            ctx.state.position = outputBuffer!.Length;
             ctx.Flush();
             ctx.CheckNoSpaceLeft();
         }
@@ -306,8 +303,8 @@ namespace Google.Protobuf.Benchmarks
         [Benchmark]
         public void WriteRawFloat_CodedOutputStream()
         {
-            var cos = new CodedOutputStream(outputBuffer);
-            foreach (var value in floatValues)
+            var cos = new CodedOutputStream(outputBuffer!);
+            foreach (var value in floatValues!)
             {
                 cos.WriteFloat(value);
             }
@@ -320,7 +317,7 @@ namespace Google.Protobuf.Benchmarks
         {
             var span = new Span<byte>(outputBuffer);
             WriteContext.Initialize(ref span, out WriteContext ctx);
-            foreach (var value in floatValues)
+            foreach (var value in floatValues!)
             {
                 ctx.WriteFloat(value);
             }
@@ -331,8 +328,8 @@ namespace Google.Protobuf.Benchmarks
         [Benchmark]
         public void WriteRawDouble_CodedOutputStream()
         {
-            var cos = new CodedOutputStream(outputBuffer);
-            foreach (var value in doubleValues)
+            var cos = new CodedOutputStream(outputBuffer!);
+            foreach (var value in doubleValues!)
             {
                 cos.WriteDouble(value);
             }
@@ -345,7 +342,7 @@ namespace Google.Protobuf.Benchmarks
         {
             var span = new Span<byte>(outputBuffer);
             WriteContext.Initialize(ref span, out WriteContext ctx);
-            foreach (var value in doubleValues)
+            foreach (var value in doubleValues!)
             {
                 ctx.WriteDouble(value);
             }
@@ -357,8 +354,8 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(StringEncodedSizes))]
         public void WriteString_CodedOutputStream(int encodedSize)
         {
-            var values = stringValues[encodedSize];
-            var cos = new CodedOutputStream(outputBuffer);
+            var values = stringValues![encodedSize];
+            var cos = new CodedOutputStream(outputBuffer!);
             foreach (var value in values)
             {
                 cos.WriteString(value);
@@ -371,7 +368,7 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(StringEncodedSizes))]
         public void WriteString_WriteContext(int encodedSize)
         {
-            var values = stringValues[encodedSize];
+            var values = stringValues![encodedSize];
             var span = new Span<byte>(outputBuffer);
             WriteContext.Initialize(ref span, out WriteContext ctx);
             foreach (var value in values)
@@ -386,8 +383,8 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(NonAsciiStringEncodedSizes))]
         public void WriteNonAsciiString_CodedOutputStream(int encodedSize)
         {
-            var values = nonAsciiStringValues[encodedSize];
-            var cos = new CodedOutputStream(outputBuffer);
+            var values = nonAsciiStringValues![encodedSize];
+            var cos = new CodedOutputStream(outputBuffer!);
             foreach (var value in values)
             {
                 cos.WriteString(value);
@@ -400,7 +397,7 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(NonAsciiStringEncodedSizes))]
         public void WriteNonAsciiString_WriteContext(int encodedSize)
         {
-            var values = nonAsciiStringValues[encodedSize];
+            var values = nonAsciiStringValues![encodedSize];
             var span = new Span<byte>(outputBuffer);
             WriteContext.Initialize(ref span, out WriteContext ctx);
             foreach (var value in values)
@@ -415,8 +412,8 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(StringEncodedSizes))]
         public void WriteBytes_CodedOutputStream(int encodedSize)
         {
-            var values = byteStringValues[encodedSize];
-            var cos = new CodedOutputStream(outputBuffer);
+            var values = byteStringValues![encodedSize];
+            var cos = new CodedOutputStream(outputBuffer!);
             foreach (var value in values)
             {
                 cos.WriteBytes(value);
@@ -429,7 +426,7 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(StringEncodedSizes))]
         public void WriteBytes_WriteContext(int encodedSize)
         {
-            var values = byteStringValues[encodedSize];
+            var values = byteStringValues![encodedSize];
             var span = new Span<byte>(outputBuffer);
             WriteContext.Initialize(ref span, out WriteContext ctx);
             foreach (var value in values)

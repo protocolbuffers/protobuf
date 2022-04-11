@@ -58,11 +58,10 @@ namespace Google.Protobuf.Reflection
         /// combination of package, containing messages and message name</param>
         /// <returns>The message descriptor corresponding to <paramref name="fullName"/> or null
         /// if there is no such message descriptor.</returns>
-        public MessageDescriptor Find(string fullName)
+        public MessageDescriptor? Find(string fullName)
         {
-            MessageDescriptor ret;
             // Ignore the return value as ret will end up with the right value either way.
-            fullNameToMessageMap.TryGetValue(fullName, out ret);
+            fullNameToMessageMap.TryGetValue(fullName, out MessageDescriptor? ret);
             return ret;
         }
 

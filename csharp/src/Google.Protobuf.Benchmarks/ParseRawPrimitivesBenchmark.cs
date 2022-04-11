@@ -46,15 +46,15 @@ namespace Google.Protobuf.Benchmarks
     public class ParseRawPrimitivesBenchmark
     {
         // key is the encodedSize of varint values
-        Dictionary<int, byte[]> varintInputBuffers;
+        Dictionary<int, byte[]>? varintInputBuffers;
 
-        byte[] doubleInputBuffer;
-        byte[] floatInputBuffer;
-        byte[] fixedIntInputBuffer;
+        byte[]? doubleInputBuffer;
+        byte[]? floatInputBuffer;
+        byte[]? fixedIntInputBuffer;
 
         // key is the encodedSize of string values
-        Dictionary<int, byte[]> stringInputBuffers;
-        Dictionary<int, ReadOnlySequence<byte>> stringInputBuffersSegmented;
+        Dictionary<int, byte[]>? stringInputBuffers;
+        Dictionary<int, ReadOnlySequence<byte>>? stringInputBuffersSegmented;
 
         Random random = new Random(417384220);  // random but deterministic seed
 
@@ -109,7 +109,7 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(5)]
         public int ParseRawVarint32_CodedInputStream(int encodedSize)
         {
-            CodedInputStream cis = new CodedInputStream(varintInputBuffers[encodedSize]);
+            CodedInputStream cis = new CodedInputStream(varintInputBuffers![encodedSize]);
             int sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -126,7 +126,7 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(5)]
         public int ParseRawVarint32_ParseContext(int encodedSize)
         {
-            InitializeParseContext(varintInputBuffers[encodedSize], out ParseContext ctx);
+            InitializeParseContext(varintInputBuffers![encodedSize], out ParseContext ctx);
             int sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -148,7 +148,7 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(10)]
         public long ParseRawVarint64_CodedInputStream(int encodedSize)
         {
-            CodedInputStream cis = new CodedInputStream(varintInputBuffers[encodedSize]);
+            CodedInputStream cis = new CodedInputStream(varintInputBuffers![encodedSize]);
             long sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -170,7 +170,7 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(10)]
         public long ParseRawVarint64_ParseContext(int encodedSize)
         {
-            InitializeParseContext(varintInputBuffers[encodedSize], out ParseContext ctx);
+            InitializeParseContext(varintInputBuffers![encodedSize], out ParseContext ctx);
             long sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -183,7 +183,7 @@ namespace Google.Protobuf.Benchmarks
         public uint ParseFixed32_CodedInputStream()
         {
             const int encodedSize = sizeof(uint);
-            CodedInputStream cis = new CodedInputStream(fixedIntInputBuffer);
+            CodedInputStream cis = new CodedInputStream(fixedIntInputBuffer!);
             uint sum = 0;
             for (uint i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -196,7 +196,7 @@ namespace Google.Protobuf.Benchmarks
         public uint ParseFixed32_ParseContext()
         {
             const int encodedSize = sizeof(uint);
-            InitializeParseContext(fixedIntInputBuffer, out ParseContext ctx);
+            InitializeParseContext(fixedIntInputBuffer!, out ParseContext ctx);
             uint sum = 0;
             for (uint i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -209,7 +209,7 @@ namespace Google.Protobuf.Benchmarks
         public ulong ParseFixed64_CodedInputStream()
         {
             const int encodedSize = sizeof(ulong);
-            CodedInputStream cis = new CodedInputStream(fixedIntInputBuffer);
+            CodedInputStream cis = new CodedInputStream(fixedIntInputBuffer!);
             ulong sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -222,7 +222,7 @@ namespace Google.Protobuf.Benchmarks
         public ulong ParseFixed64_ParseContext()
         {
             const int encodedSize = sizeof(ulong);
-            InitializeParseContext(fixedIntInputBuffer, out ParseContext ctx);
+            InitializeParseContext(fixedIntInputBuffer!, out ParseContext ctx);
             ulong sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -235,7 +235,7 @@ namespace Google.Protobuf.Benchmarks
         public float ParseRawFloat_CodedInputStream()
         {
             const int encodedSize = sizeof(float);
-            CodedInputStream cis = new CodedInputStream(floatInputBuffer);
+            CodedInputStream cis = new CodedInputStream(floatInputBuffer!);
             float sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -248,7 +248,7 @@ namespace Google.Protobuf.Benchmarks
         public float ParseRawFloat_ParseContext()
         {
             const int encodedSize = sizeof(float);
-            InitializeParseContext(floatInputBuffer, out ParseContext ctx);
+            InitializeParseContext(floatInputBuffer!, out ParseContext ctx);
             float sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -261,7 +261,7 @@ namespace Google.Protobuf.Benchmarks
         public double ParseRawDouble_CodedInputStream()
         {
             const int encodedSize = sizeof(double);
-            CodedInputStream cis = new CodedInputStream(doubleInputBuffer);
+            CodedInputStream cis = new CodedInputStream(doubleInputBuffer!);
             double sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -274,7 +274,7 @@ namespace Google.Protobuf.Benchmarks
         public double ParseRawDouble_ParseContext()
         {
             const int encodedSize = sizeof(double);
-            InitializeParseContext(doubleInputBuffer, out ParseContext ctx);
+            InitializeParseContext(doubleInputBuffer!, out ParseContext ctx);
             double sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -287,7 +287,7 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(StringEncodedSizes))]
         public int ParseString_CodedInputStream(int encodedSize)
         {
-            CodedInputStream cis = new CodedInputStream(stringInputBuffers[encodedSize]);
+            CodedInputStream cis = new CodedInputStream(stringInputBuffers![encodedSize]);
             int sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -300,7 +300,7 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(StringEncodedSizes))]
         public int ParseString_ParseContext(int encodedSize)
         {
-            InitializeParseContext(stringInputBuffers[encodedSize], out ParseContext ctx);
+            InitializeParseContext(stringInputBuffers![encodedSize], out ParseContext ctx);
             int sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -313,7 +313,7 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(StringSegmentedEncodedSizes))]
         public int ParseString_ParseContext_MultipleSegments(int encodedSize)
         {
-            InitializeParseContext(stringInputBuffersSegmented[encodedSize], out ParseContext ctx);
+            InitializeParseContext(stringInputBuffersSegmented![encodedSize], out ParseContext ctx);
             int sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -326,7 +326,7 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(StringEncodedSizes))]
         public int ParseBytes_CodedInputStream(int encodedSize)
         {
-            CodedInputStream cis = new CodedInputStream(stringInputBuffers[encodedSize]);
+            CodedInputStream cis = new CodedInputStream(stringInputBuffers![encodedSize]);
             int sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -339,7 +339,7 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(StringEncodedSizes))]
         public int ParseBytes_ParseContext(int encodedSize)
         {
-            InitializeParseContext(stringInputBuffers[encodedSize], out ParseContext ctx);
+            InitializeParseContext(stringInputBuffers![encodedSize], out ParseContext ctx);
             int sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -352,7 +352,7 @@ namespace Google.Protobuf.Benchmarks
         [ArgumentsSource(nameof(StringSegmentedEncodedSizes))]
         public int ParseBytes_ParseContext_MultipleSegments(int encodedSize)
         {
-            InitializeParseContext(stringInputBuffersSegmented[encodedSize], out ParseContext ctx);
+            InitializeParseContext(stringInputBuffersSegmented![encodedSize], out ParseContext ctx);
             int sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {

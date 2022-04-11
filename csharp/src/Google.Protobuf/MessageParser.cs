@@ -47,9 +47,9 @@ namespace Google.Protobuf
         // TODO: When we use a C# 7.1 compiler, make this private protected.
         internal bool DiscardUnknownFields { get; }
 
-        internal ExtensionRegistry Extensions { get; }
+        internal ExtensionRegistry? Extensions { get; }
 
-        internal MessageParser(Func<IMessage> factory, bool discardUnknownFields, ExtensionRegistry extensions)
+        internal MessageParser(Func<IMessage> factory, bool discardUnknownFields, ExtensionRegistry? extensions)
         {
             this.factory = factory;
             DiscardUnknownFields = discardUnknownFields;
@@ -187,7 +187,7 @@ namespace Google.Protobuf
         internal void MergeFrom(IMessage message, CodedInputStream codedInput)
         {
             bool originalDiscard = codedInput.DiscardUnknownFields;
-            ExtensionRegistry originalRegistry = codedInput.ExtensionRegistry;
+            ExtensionRegistry? originalRegistry = codedInput.ExtensionRegistry;
             try
             {
                 codedInput.DiscardUnknownFields = DiscardUnknownFields;
@@ -254,7 +254,7 @@ namespace Google.Protobuf
         {
         }
 
-        internal MessageParser(Func<T> factory, bool discardUnknownFields, ExtensionRegistry extensions) : base(() => factory(), discardUnknownFields, extensions)
+        internal MessageParser(Func<T> factory, bool discardUnknownFields, ExtensionRegistry? extensions) : base(() => factory(), discardUnknownFields, extensions)
         {
             this.factory = factory;
         }
@@ -399,7 +399,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="registry">The extensions to register</param>
         /// <returns>A newly configured message parser.</returns>
-        public new MessageParser<T> WithExtensionRegistry(ExtensionRegistry registry) =>
+        public new MessageParser<T> WithExtensionRegistry(ExtensionRegistry? registry) =>
             new MessageParser<T>(factory, DiscardUnknownFields, registry);
     }
 }

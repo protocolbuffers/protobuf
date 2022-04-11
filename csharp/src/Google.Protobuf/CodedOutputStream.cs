@@ -68,7 +68,7 @@ namespace Google.Protobuf
         private readonly byte[] buffer;
         private WriterInternalState state;
 
-        private readonly Stream output;
+        private readonly Stream? output;
 
         #region Construction
         /// <summary>
@@ -568,7 +568,7 @@ namespace Google.Protobuf
             Flush();
             if (!leaveOpen)
             {
-                output.Dispose();
+                output!.Dispose();
             }
         }
 
@@ -600,7 +600,7 @@ namespace Google.Protobuf
 
         internal byte[] InternalBuffer => buffer;
 
-        internal Stream InternalOutputStream => output;
+        internal Stream? InternalOutputStream => output;
 
         internal ref WriterInternalState InternalState => ref state;
     }

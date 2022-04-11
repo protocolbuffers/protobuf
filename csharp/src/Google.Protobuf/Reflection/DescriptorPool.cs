@@ -86,11 +86,10 @@ namespace Google.Protobuf.Reflection
         /// <param name="fullName">Fully-qualified name to look up</param>
         /// <returns>The symbol with the given name and type,
         /// or null if the symbol doesn't exist or has the wrong type</returns>
-        internal T FindSymbol<T>(string fullName) where T : class
+        internal T? FindSymbol<T>(string fullName) where T : class
         {
-            IDescriptor result;
-            descriptorsByName.TryGetValue(fullName, out result);
-            T descriptor = result as T;
+            descriptorsByName.TryGetValue(fullName, out IDescriptor? result);
+            T? descriptor = result as T;
             if (descriptor != null)
             {
                 return descriptor;
@@ -131,10 +130,9 @@ namespace Google.Protobuf.Reflection
                 name = fullName;
             }
 
-            IDescriptor old;
-            if (descriptorsByName.TryGetValue(fullName, out old))
+            if (descriptorsByName.TryGetValue(fullName, out IDescriptor? old))
             {
-                if (!(old is PackageDescriptor))
+                if (old is not PackageDescriptor)
                 {
                     throw new DescriptorValidationException(file,
                                                             "\"" + name +
@@ -155,8 +153,7 @@ namespace Google.Protobuf.Reflection
             ValidateSymbolName(descriptor);
             String fullName = descriptor.FullName;
 
-            IDescriptor old;
-            if (descriptorsByName.TryGetValue(fullName, out old))
+            if (descriptorsByName.TryGetValue(fullName, out IDescriptor? old))
             {
                 int dotPos = fullName.LastIndexOf('.');
                 string message;
@@ -206,17 +203,15 @@ namespace Google.Protobuf.Reflection
         /// Returns the field with the given number in the given descriptor,
         /// or null if it can't be found.
         /// </summary>
-        internal FieldDescriptor FindFieldByNumber(MessageDescriptor messageDescriptor, int number)
+        internal FieldDescriptor? FindFieldByNumber(MessageDescriptor messageDescriptor, int number)
         {
-            FieldDescriptor ret;
-            fieldsByNumber.TryGetValue(new ObjectIntPair<IDescriptor>(messageDescriptor, number), out ret);
+            fieldsByNumber.TryGetValue(new ObjectIntPair<IDescriptor>(messageDescriptor, number), out FieldDescriptor? ret);
             return ret;
         }
 
-        internal EnumValueDescriptor FindEnumValueByNumber(EnumDescriptor enumDescriptor, int number)
+        internal EnumValueDescriptor? FindEnumValueByNumber(EnumDescriptor enumDescriptor, int number)
         {
-            EnumValueDescriptor ret;
-            enumValuesByNumber.TryGetValue(new ObjectIntPair<IDescriptor>(enumDescriptor, number), out ret);
+            enumValuesByNumber.TryGetValue(new ObjectIntPair<IDescriptor>(enumDescriptor, number), out EnumValueDescriptor? ret);
             return ret;
         }
 
@@ -228,13 +223,12 @@ namespace Google.Protobuf.Reflection
         internal void AddFieldByNumber(FieldDescriptor field)
         {
             // for extensions, we use the extended type, otherwise we use the containing type
-            ObjectIntPair<IDescriptor> key = new ObjectIntPair<IDescriptor>(field.Proto.HasExtendee ? field.ExtendeeType : field.ContainingType, field.FieldNumber);
-            FieldDescriptor old;
-            if (fieldsByNumber.TryGetValue(key, out old))
+            ObjectIntPair<IDescriptor> key = new ObjectIntPair<IDescriptor>(field.Proto.HasExtendee ? field.ExtendeeType : field.ContainingType!, field.FieldNumber);
+            if (fieldsByNumber.TryGetValue(key, out FieldDescriptor? old))
             {
                 throw new DescriptorValidationException(field, "Field number " + field.FieldNumber +
                                                                "has already been used in \"" +
-                                                               field.ContainingType.FullName +
+                                                               field.ContainingType!.FullName +
                                                                "\" by field \"" + old.Name + "\".");
             }
             fieldsByNumber[key] = field;
@@ -266,7 +260,7 @@ namespace Google.Protobuf.Reflection
         /// </remarks>
         internal IDescriptor LookupSymbol(string name, IDescriptor relativeTo)
         {
-            IDescriptor result;
+            IDescriptor? result;
             if (name.StartsWith("."))
             {
                 // Fully-qualified name.

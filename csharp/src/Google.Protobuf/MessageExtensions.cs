@@ -210,10 +210,10 @@ namespace Google.Protobuf
                 {
                     if (f.IsMap)
                     {
-                        var valueField = f.MessageType.Fields[2];
+                        var valueField = f.MessageType!.Fields[2];
                         if (valueField.FieldType == FieldType.Message)
                         {
-                            var map = (IDictionary)f.Accessor.GetValue(message);
+                            var map = (IDictionary)f.Accessor!.GetValue(message)!;
                             return map.Values.Cast<IMessage>().All(IsInitialized);
                         }
                         else
@@ -223,14 +223,14 @@ namespace Google.Protobuf
                     }
                     else if (f.IsRepeated && f.FieldType == FieldType.Message || f.FieldType == FieldType.Group)
                     {
-                        var enumerable = (IEnumerable)f.Accessor.GetValue(message);
+                        var enumerable = (IEnumerable)f.Accessor!.GetValue(message)!;
                         return enumerable.Cast<IMessage>().All(IsInitialized);
                     }
                     else if (f.FieldType == FieldType.Message || f.FieldType == FieldType.Group)
                     {
-                        if (f.Accessor.HasValue(message))
+                        if (f.Accessor!.HasValue(message))
                         {
-                            return ((IMessage)f.Accessor.GetValue(message)).IsInitialized();
+                            return ((IMessage)f.Accessor.GetValue(message)!).IsInitialized();
                         }
                         else
                         {
@@ -239,7 +239,7 @@ namespace Google.Protobuf
                     }
                     else if (f.IsRequired)
                     {
-                        return f.Accessor.HasValue(message);
+                        return f.Accessor!.HasValue(message);
                     }
                     else
                     {
@@ -249,7 +249,7 @@ namespace Google.Protobuf
         }
 
         // Implementations allowing unknown fields to be discarded.
-        internal static void MergeFrom(this IMessage message, byte[] data, bool discardUnknownFields, ExtensionRegistry registry)
+        internal static void MergeFrom(this IMessage message, byte[] data, bool discardUnknownFields, ExtensionRegistry? registry)
         {
             ProtoPreconditions.CheckNotNull(message, "message");
             ProtoPreconditions.CheckNotNull(data, "data");
@@ -260,7 +260,7 @@ namespace Google.Protobuf
             input.CheckReadEndOfStreamTag();
         }
 
-        internal static void MergeFrom(this IMessage message, byte[] data, int offset, int length, bool discardUnknownFields, ExtensionRegistry registry)
+        internal static void MergeFrom(this IMessage message, byte[] data, int offset, int length, bool discardUnknownFields, ExtensionRegistry? registry)
         {
             ProtoPreconditions.CheckNotNull(message, "message");
             ProtoPreconditions.CheckNotNull(data, "data");
@@ -271,7 +271,7 @@ namespace Google.Protobuf
             input.CheckReadEndOfStreamTag();
         }
 
-        internal static void MergeFrom(this IMessage message, ByteString data, bool discardUnknownFields, ExtensionRegistry registry)
+        internal static void MergeFrom(this IMessage message, ByteString data, bool discardUnknownFields, ExtensionRegistry? registry)
         {
             ProtoPreconditions.CheckNotNull(message, "message");
             ProtoPreconditions.CheckNotNull(data, "data");
@@ -282,7 +282,7 @@ namespace Google.Protobuf
             input.CheckReadEndOfStreamTag();
         }
 
-        internal static void MergeFrom(this IMessage message, Stream input, bool discardUnknownFields, ExtensionRegistry registry)
+        internal static void MergeFrom(this IMessage message, Stream input, bool discardUnknownFields, ExtensionRegistry? registry)
         {
             ProtoPreconditions.CheckNotNull(message, "message");
             ProtoPreconditions.CheckNotNull(input, "input");
@@ -294,7 +294,7 @@ namespace Google.Protobuf
         }
 
         [SecuritySafeCritical]
-        internal static void MergeFrom(this IMessage message, ReadOnlySequence<byte> data, bool discardUnknownFields, ExtensionRegistry registry)
+        internal static void MergeFrom(this IMessage message, ReadOnlySequence<byte> data, bool discardUnknownFields, ExtensionRegistry? registry)
         {
             ParseContext.Initialize(data, out ParseContext ctx);
             ctx.DiscardUnknownFields = discardUnknownFields;
@@ -304,7 +304,7 @@ namespace Google.Protobuf
         }
 
         [SecuritySafeCritical]
-        internal static void MergeFrom(this IMessage message, ReadOnlySpan<byte> data, bool discardUnknownFields, ExtensionRegistry registry)
+        internal static void MergeFrom(this IMessage message, ReadOnlySpan<byte> data, bool discardUnknownFields, ExtensionRegistry? registry)
         {
             ParseContext.Initialize(data, out ParseContext ctx);
             ctx.DiscardUnknownFields = discardUnknownFields;
@@ -313,7 +313,7 @@ namespace Google.Protobuf
             ParsingPrimitivesMessages.CheckReadEndOfStreamTag(ref ctx.state);
         }
 
-        internal static void MergeDelimitedFrom(this IMessage message, Stream input, bool discardUnknownFields, ExtensionRegistry registry)
+        internal static void MergeDelimitedFrom(this IMessage message, Stream input, bool discardUnknownFields, ExtensionRegistry? registry)
         {
             ProtoPreconditions.CheckNotNull(message, "message");
             ProtoPreconditions.CheckNotNull(input, "input");

@@ -57,12 +57,12 @@ namespace Google.Protobuf.Reflection
         /// Irrelevant for file descriptors; the CLR type for the message for message descriptors.
         /// </summary>
         [DynamicallyAccessedMembers(MessageAccessibility)]
-        public Type ClrType { get; private set; }
+        public Type? ClrType { get; private set; }
 
         /// <summary>
         /// Irrelevant for file descriptors; the parser for message descriptors.
         /// </summary>
-        public MessageParser Parser { get; }
+        public MessageParser? Parser { get; }
 
         /// <summary>
         /// Irrelevant for file descriptors; the CLR property names (in message descriptor field order)
@@ -102,7 +102,7 @@ namespace Google.Protobuf.Reflection
             // Preserve all public members on message types when trimming is enabled.
             // This ensures that members used by reflection, e.g. JSON serialization, are preserved.
             [DynamicallyAccessedMembers(MessageAccessibility)]
-            Type clrType, MessageParser parser, string[] propertyNames, string[] oneofNames, Type[] nestedEnums, Extension[] extensions, GeneratedClrTypeInfo[] nestedTypes)
+            Type? clrType, MessageParser? parser, string[]? propertyNames, string[]? oneofNames, Type[]? nestedEnums, Extension[]? extensions, GeneratedClrTypeInfo[]? nestedTypes)
         {
             NestedTypes = nestedTypes ?? EmptyCodeInfo;
             NestedEnums = nestedEnums ?? ReflectionUtil.EmptyTypes;
@@ -122,7 +122,7 @@ namespace Google.Protobuf.Reflection
             // Preserve all public members on message types when trimming is enabled.
             // This ensures that members used by reflection, e.g. JSON serialization, are preserved.
             [DynamicallyAccessedMembers(MessageAccessibility)]
-            Type clrType, MessageParser parser, string[] propertyNames, string[] oneofNames, Type[] nestedEnums, GeneratedClrTypeInfo[] nestedTypes)
+            Type? clrType, MessageParser? parser, string[]? propertyNames, string[]? oneofNames, Type[]? nestedEnums, GeneratedClrTypeInfo[]? nestedTypes)
             : this(clrType, parser, propertyNames, oneofNames, nestedEnums, null, nestedTypes)
         {
         }

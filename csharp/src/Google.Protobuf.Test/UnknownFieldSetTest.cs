@@ -33,7 +33,6 @@
 using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
-using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
 
 namespace Google.Protobuf
@@ -81,7 +80,8 @@ namespace Google.Protobuf
             Assert.AreEqual(message.CalculateSize(), emptyMessage.CalculateSize());
             Assert.AreEqual(message.ToByteArray(), emptyMessage.ToByteArray());
 
-            var newMessage = message.Descriptor.Parser.ParseFrom(emptyMessage.ToByteArray());
+            Assert.NotNull(message.Descriptor.Parser);
+            var newMessage = message.Descriptor.Parser!.ParseFrom(emptyMessage.ToByteArray());
             Assert.AreEqual(message, newMessage);
             Assert.AreEqual(message.CalculateSize(), newMessage.CalculateSize());
         }
@@ -156,9 +156,9 @@ namespace Google.Protobuf
             destUnknownFieldSet.AddOrReplaceField(999, unknownLengthDelimitedField2);
 
             var clone = UnknownFieldSet.Clone(destUnknownFieldSet);
-
-            Assert.IsTrue(clone.HasField(997));
-            Assert.IsTrue(clone.HasField(999));
+            Assert.IsNotNull(clone);
+            Assert.IsTrue(clone!.HasField(997));
+            Assert.IsTrue(clone!.HasField(999));
         }
 
         [Test]
@@ -223,7 +223,7 @@ namespace Google.Protobuf
             CodedInputStream input = new CodedInputStream(ms);
             Assert.AreEqual(tag, input.ReadTag());
 
-            Assert.Throws<InvalidProtocolBufferException>(() => UnknownFieldSet.MergeFieldFrom(null, input));
+            Assert.Throws<InvalidProtocolBufferException>(() => UnknownFieldSet.MergeFieldFrom(null!, input));
         }
     }
 }

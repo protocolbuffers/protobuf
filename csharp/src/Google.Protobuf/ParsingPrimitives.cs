@@ -627,7 +627,7 @@ namespace Google.Protobuf
                 // Read string data into a temporary buffer, either stackalloc'ed or from ArrayPool
                 // Once all data is read then call Encoding.GetString on buffer and return to pool if needed.
 
-                byte[] byteArray = null;
+                byte[]? byteArray = null;
                 Span<byte> byteSpan = length <= StackallocThreshold ?
                     stackalloc byte[length] :
                     (byteArray = ArrayPool<byte>.Shared.Rent(length));

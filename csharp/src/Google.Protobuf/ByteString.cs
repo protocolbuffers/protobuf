@@ -145,7 +145,7 @@ namespace Google.Protobuf
             if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment))
             {
                 // Fast path. ByteString was created with an array, so pass the underlying array.
-                return Convert.ToBase64String(segment.Array, segment.Offset, segment.Count);
+                return Convert.ToBase64String(segment.Array!, segment.Offset, segment.Count);
             }
             else
             {
@@ -195,7 +195,7 @@ namespace Google.Protobuf
         /// <param name="stream">The stream to copy into a ByteString.</param>
         /// <param name="cancellationToken">The cancellation token to use when reading from the stream, if any.</param>
         /// <returns>A ByteString with content read from the given stream.</returns>
-        public static Task<ByteString> FromStreamAsync(Stream stream, CancellationToken cancellationToken = default(CancellationToken))
+        public static Task<ByteString> FromStreamAsync(Stream stream, CancellationToken cancellationToken = default)
         {
             ProtoPreconditions.CheckNotNull(stream, nameof(stream));
             return ByteStringAsync.FromStreamAsyncCore(stream, cancellationToken);
@@ -273,7 +273,7 @@ namespace Google.Protobuf
             if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment))
             {
                 // Fast path. ByteString was created with an array.
-                return encoding.GetString(segment.Array, segment.Offset, segment.Count);
+                return encoding.GetString(segment.Array!, segment.Offset, segment.Count);
             }
             else
             {
@@ -325,7 +325,7 @@ namespace Google.Protobuf
             if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment) && segment.Count == bytes.Length)
             {
                 // Fast path. ByteString was created with a complete array.
-                return new CodedInputStream(segment.Array, segment.Offset, segment.Count);
+                return new CodedInputStream(segment.Array!, segment.Offset, segment.Count);
             }
             else
             {
@@ -341,13 +341,13 @@ namespace Google.Protobuf
         /// <param name="lhs">The first byte string to compare.</param>
         /// <param name="rhs">The second byte string to compare.</param>
         /// <returns><c>true</c> if the byte strings are equal; false otherwise.</returns>
-        public static bool operator ==(ByteString lhs, ByteString rhs)
+        public static bool operator ==(ByteString? lhs, ByteString? rhs)
         {
             if (ReferenceEquals(lhs, rhs))
             {
                 return true;
             }
-            if (ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null))
+            if (lhs is null || rhs is null)
             {
                 return false;
             }
@@ -361,7 +361,7 @@ namespace Google.Protobuf
         /// <param name="lhs">The first byte string to compare.</param>
         /// <param name="rhs">The second byte string to compare.</param>
         /// <returns><c>false</c> if the byte strings are equal; true otherwise.</returns>
-        public static bool operator !=(ByteString lhs, ByteString rhs)
+        public static bool operator !=(ByteString? lhs, ByteString? rhs)
         {
             return !(lhs == rhs);
         }
@@ -372,7 +372,7 @@ namespace Google.Protobuf
         /// <param name="obj">The object to compare this with.</param>
         /// <returns><c>true</c> if <paramref name="obj"/> refers to an equal <see cref="ByteString"/>; <c>false</c> otherwise.</returns>
         [SecuritySafeCritical]
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return this == (obj as ByteString);
         }
@@ -400,7 +400,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="other">The <see cref="ByteString"/> to compare this with.</param>
         /// <returns><c>true</c> if <paramref name="other"/> refers to an equal byte string; <c>false</c> otherwise.</returns>
-        public bool Equals(ByteString other)
+        public bool Equals(ByteString? other)
         {
             return this == other;
         }
@@ -421,7 +421,7 @@ namespace Google.Protobuf
             if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment))
             {
                 // Fast path. ByteString was created with an array, so pass the underlying array.
-                outputStream.Write(segment.Array, segment.Offset, segment.Count);
+                outputStream.Write(segment.Array!, segment.Offset, segment.Count);
             }
             else
             {

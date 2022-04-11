@@ -39,8 +39,6 @@ using System.Collections;
 using System.Linq;
 using System.Buffers;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Runtime.CompilerServices;
 #if !NET35
 using System.Threading.Tasks;
 #endif
@@ -68,7 +66,7 @@ namespace Google.Protobuf
             Assert.IsFalse(b1 == b3);
             Assert.IsFalse(b1 == b4);
             Assert.IsFalse(b1 == null);
-            Assert.IsTrue((ByteString) null == null);
+            Assert.IsTrue((ByteString?) null == null);
             Assert.IsFalse(b1 != b1);
             Assert.IsFalse(b1 != b2);
             Assert.IsTrue(ByteString.Empty == ByteString.Empty);
@@ -76,7 +74,7 @@ namespace Google.Protobuf
             Assert.IsTrue(b1 != b3);
             Assert.IsTrue(b1 != b4);
             Assert.IsTrue(b1 != null);
-            Assert.IsFalse((ByteString) null != null);
+            Assert.IsFalse((ByteString?) null != null);
         }
 
         [Test]

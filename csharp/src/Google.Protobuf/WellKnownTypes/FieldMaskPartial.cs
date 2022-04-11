@@ -246,7 +246,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// <summary>
         /// Checks whether paths in a given fields mask are valid.
         /// </summary>
-        public static bool IsValid(MessageDescriptor descriptor, string path)
+        public static bool IsValid(MessageDescriptor? descriptor, string path)
         {
             var parts = path.Split(FIELD_SEPARATOR_REGEX);
             if (parts.Length == 0)
@@ -265,7 +265,7 @@ namespace Google.Protobuf.WellKnownTypes
                 if (!field.IsRepeated
                     && field.FieldType == FieldType.Message)
                 {
-                    descriptor = field.MessageType;
+                    descriptor = field.MessageType!;
                 }
                 else
                 {
