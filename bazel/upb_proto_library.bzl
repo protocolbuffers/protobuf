@@ -210,6 +210,7 @@ def _compile_upb_protos(ctx, generator, proto_info, proto_sources):
                     ] +
                     [_get_real_short_path(file) for file in proto_sources],
         progress_message = "Generating upb protos for :" + ctx.label.name,
+        mnemonic = "GenUpbProtos",
     )
     return GeneratedSrcsInfo(srcs = srcs, hdrs = hdrs)
 
