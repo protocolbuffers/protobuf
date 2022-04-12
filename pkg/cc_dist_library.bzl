@@ -2,31 +2,73 @@
 
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 
-def _create_archive(ctx, cc_toolchain_info, name, objs):
-    ar_out = ctx.actions.declare_file(name)
+CPP_LINK_STATIC_LIBRARY_ACTION_NAME = "c++-link-static-library"
 
-    ar_args = ctx.actions.args()
-    ar_args.use_param_file("@%s")
-    ar_args.add("cr")
-    ar_args.add(ar_out)
-    ar_args.add_all(objs)
+# Creates an action to build the `output_file` static library (archive)
+# using `object_files`.
+def _create_archive_action(
+        ctx,
+        feature_configuration,
+        cc_toolchain,
+        output_file,
+        object_files):
+    # Based on Bazel's src/main/starlark/builtins_bzl/common/cc/cc_import.bzl:
+    archiver_path = cc_common.get_tool_for_action(
+        feature_configuration = feature_configuration,
+        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
+    )
+    archiver_variables = cc_common.create_link_variables(
+        feature_configuration = feature_configuration,
+        cc_toolchain = cc_toolchain,
+        output_file = output_file.path,
+        is_using_linker = False,
+    )
+    command_line = cc_common.get_memory_inefficient_command_line(
+        feature_configuration = feature_configuration,
+        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
+        variables = archiver_variables,
+    )
+    args = ctx.actions.args()
+    args.add_all(command_line)
+    args.add_all(object_files)
+    args.use_param_file("@%s", use_always = True)
 
-    ctx.actions.run(
-        mnemonic = "CcCreateArchive",
-        executable = cc_toolchain_info.ar_executable,
-        arguments = [ar_args],
-        inputs = objs,
-        outputs = [ar_out],
+    env = cc_common.get_environment_variables(
+        feature_configuration = feature_configuration,
+        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
+        variables = archiver_variables,
     )
 
-    return ar_out
+    # TODO(bazel-team): PWD=/proc/self/cwd env var is missing, but it is present when an analogous archiving
+    # action is created by cc_library
+    ctx.actions.run(
+        executable = archiver_path,
+        arguments = [args],
+        env = env,
+        inputs = depset(
+            direct = object_files,
+            transitive = [
+                cc_toolchain.all_files,
+            ],
+        ),
+        use_default_shell_env = True,
+        outputs = [output_file],
+        mnemonic = "CppArchive",
+    )
 
+# Implementation for cc_dist_library rule.
 def _cc_dist_library_impl(ctx):
     cc_toolchain_info = find_cc_toolchain(ctx)
     if cc_toolchain_info.ar_executable == None:
         return []
 
+    feature_configuration = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain_info,
+    )
+
     # Collect the set of object files from the immediate deps.
+
     objs = []
     pic_objs = []
     for dep in ctx.attr.deps:
@@ -39,34 +81,40 @@ def _cc_dist_library_impl(ctx):
 
         linker_inputs = link_ctx.linker_inputs.to_list()
         for link_input in linker_inputs:
-            for lib in link_input.libraries:
-                if lib.objects != None:
-                    objs.extend(lib.objects)
-                if lib.pic_objects != None:
-                    pic_objs.extend(lib.pic_objects)
+            if link_input.owner != dep.label:
+                # This is a transitive dep: skip it.
+                continue
 
-    # For static libraries, use `ar` to construct an archive with all of
-    # the immediate deps' objects.
+            for lib in link_input.libraries:
+                objs.extend(lib.objects or [])
+                pic_objs.extend(lib.pic_objects or [])
+
+    # For static libraries, build separately with and without pic.
+
     stemname = "lib" + ctx.label.name
     outputs = []
 
     if len(objs) > 0:
-        if cc_toolchain_info.ar_executable != None:
-            outputs.append(_create_archive(
-                ctx,
-                cc_toolchain_info,
-                stemname + ".a",
-                objs,
-            ))
+        archive_out = ctx.actions.declare_file(stemname + ".a")
+        _create_archive_action(
+            ctx,
+            feature_configuration,
+            cc_toolchain_info,
+            archive_out,
+            objs,
+        )
+        outputs.append(archive_out)
 
     if len(pic_objs) > 0:
-        if cc_toolchain_info.ar_executable != None:
-            outputs.append(_create_archive(
-                ctx,
-                cc_toolchain_info,
-                stemname + ".pic.a",
-                pic_objs,
-            ))
+        pic_archive_out = ctx.actions.declare_file(stemname + ".pic.a")
+        _create_archive_action(
+            ctx,
+            feature_configuration,
+            cc_toolchain_info,
+            pic_archive_out,
+            pic_objs,
+        )
+        outputs.append(pic_archive_out)
 
     # For dynamic libraries, use the `cc_common.link` command to ensure
     # everything gets built correctly according to toolchain definitions.
@@ -76,11 +124,6 @@ def _cc_dist_library_impl(ctx):
         pic_objects = depset(pic_objs),
     )
 
-    feature_configuration = cc_common.configure_features(
-        ctx = ctx,
-        cc_toolchain = cc_toolchain_info,
-    )
-
     link_output = cc_common.link(
         actions = ctx.actions,
         feature_configuration = feature_configuration,
@@ -88,6 +131,8 @@ def _cc_dist_library_impl(ctx):
         compilation_outputs = compilation_outputs,
         name = ctx.label.name,
         output_type = "dynamic_library",
+        # TODO(dlj): need to handle -lz -lpthread
+        # user_link_flags = [],
     )
 
     library_to_link = link_output.library_to_link
