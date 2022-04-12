@@ -35,7 +35,7 @@ a pre-built binary from [https://github.com/protocolbuffers/protobuf/releases](h
 
 If you want, you can compile `protoc` from source instead.  To do this
 follow the instructions in [the top-level
-README](https://github.com/protocolbuffers/protobuf/blob/master/src/README.md).
+README](https://github.com/protocolbuffers/protobuf/blob/main/src/README.md).
 
 Once you have `protoc` compiled, you can run the tests provided along with our project to examine whether it can run successfully. In order to do this, you should download the Protocol Buffer source code from the release page with the link above. Then extract the source code and navigate to the folder named `js` containing a `package.json` file and a series of test files. In this folder, you can run the commands below to run the tests automatically.
 
@@ -129,7 +129,7 @@ The syntax of the `--js_out` flag is:
 Where `OPTIONS` are separated by commas.  Options are either `opt=val` or
 just `opt` (for options that don't take a value).  The available options
 are specified and documented in the `GeneratorOptions` struct in
-[src/google/protobuf/compiler/js/js_generator.h](https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/compiler/js/js_generator.h#L53).
+[src/google/protobuf/compiler/js/js_generator.h](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/compiler/js/js_generator.h#L53).
 
 Some examples:
 

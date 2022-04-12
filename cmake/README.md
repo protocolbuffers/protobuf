@@ -59,7 +59,7 @@ Or you can use git to clone from protobuf git repository.
      C:\Path\to> mkdir src & cd src
      C:\Path\to\src> git clone -b [release_tag] https://github.com/protocolbuffers/protobuf.git
 
-Where *[release_tag]* is a git tag like *v3.0.0-beta-1* or a branch name like *master*
+Where *[release_tag]* is a git tag like *v3.0.0-beta-1* or a branch name like *main*
 if you want to get the latest code.
 
 Go to the project folder:
