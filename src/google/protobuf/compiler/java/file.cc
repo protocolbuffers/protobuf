@@ -250,7 +250,7 @@ bool FileGenerator::Validate(std::string* error) {
         << "generate full runtime code for Java. To use Java Lite runtime, "
         << "users should use the Java Lite plugin instead. See:\n"
         << "  "
-           "https://github.com/protocolbuffers/protobuf/blob/master/java/"
+           "https://github.com/protocolbuffers/protobuf/blob/main/java/"
            "lite.md";
   }
   return true;

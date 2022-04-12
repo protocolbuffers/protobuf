@@ -1,5 +1,5 @@
 #!/bin/bash
-# Adapted from https://github.com/googleapis/google-cloud-python/blob/master/.kokoro/publish-docs.sh
+# Adapted from https://github.com/googleapis/google-cloud-python/blob/main/.kokoro/publish-docs.sh
 
 set -eo pipefail
 
