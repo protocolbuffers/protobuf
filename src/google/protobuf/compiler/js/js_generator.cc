@@ -294,6 +294,58 @@ std::vector<std::string> ParseUpperCamel(const std::string& input) {
   return words;
 }
 
+std::vector<std::string> ParseLowerCamel(const std::string& input) {
+    std::vector<std::string> words;
+    std::string running = "";
+    for (int i = 0; i < input.size(); i++) {
+        if (i != 0 && input[i] >= 'A' && input[i] <= 'Z' && !running.empty()) {
+            words.push_back(running);
+            running.clear();
+        }
+        running += ToLowerASCII(input[i]);
+    }
+    if (!running.empty()) {
+        words.push_back(running);
+    }
+    return words;
+}
+
+bool IsUpperCamel(const std::string& input) {
+    int wordLength = 0;
+    std::string running = "";
+    for (int i = 0; i < input.size(); i++) {
+        if (input[i] >= 'A' && input[i] <= 'Z' && !running.empty()) {
+            if (wordLength > 0) {
+                return true;
+            }
+            ++wordLength;
+            running.clear();
+        }
+        running += input[i];
+    }
+
+    return false;
+}
+
+bool IsLowerCamel(const std::string& input) {
+    int wordLength = 0;
+    std::string running = "";
+    for (int i = 0; i < input.size(); i++) {
+        if (i != 0 && input[i] >= 'A' && input[i] <= 'Z') {
+            if (wordLength > 0) {
+                return true;
+            }
+            ++wordLength;
+            running.clear();
+        } else if (i == 0 && input[i] >= 'A' && input[i] <= 'Z') {
+            return false;
+        }
+        running += input[i];
+    }
+
+    return false;
+}
+
 std::string ToLowerCamel(const std::vector<std::string>& words) {
   std::string result;
   for (int i = 0; i < words.size(); i++) {
@@ -462,13 +514,18 @@ std::string JSIdent(const GeneratorOptions& options,
                     const FieldDescriptor* field, bool is_upper_camel,
                     bool is_map, bool drop_list) {
   std::string result;
-  if (field->type() == FieldDescriptor::TYPE_GROUP) {
-    result = is_upper_camel
-                 ? ToUpperCamel(ParseUpperCamel(field->message_type()->name()))
-                 : ToLowerCamel(ParseUpperCamel(field->message_type()->name()));
+  std::string name = field->type() == FieldDescriptor::TYPE_GROUP
+          ? field->message_type()->name()
+          : field->name();
+
+  if (is_upper_camel && IsUpperCamel(name)) {
+      result = name;
+  } else if (!is_upper_camel && IsLowerCamel(name)) {
+      result = name;
+  } else if (is_upper_camel) {
+      result = ToUpperCamel(ParseLowerUnderscore(name));
   } else {
-    result = is_upper_camel ? ToUpperCamel(ParseLowerUnderscore(field->name()))
-                            : ToLowerCamel(ParseLowerUnderscore(field->name()));
+      result = ToLowerCamel(ParseLowerUnderscore(name));
   }
   if (is_map || field->is_map()) {
     // JSPB-style or proto3-style map.
