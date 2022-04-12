@@ -514,19 +514,23 @@ std::string JSIdent(const GeneratorOptions& options,
                     const FieldDescriptor* field, bool is_upper_camel,
                     bool is_map, bool drop_list) {
   std::string result;
-  std::string name = field->type() == FieldDescriptor::TYPE_GROUP
-          ? field->message_type()->name()
-          : field->name();
 
-  if (is_upper_camel && IsUpperCamel(name)) {
-      result = name;
-  } else if (!is_upper_camel && IsLowerCamel(name)) {
-      result = name;
-  } else if (is_upper_camel) {
-      result = ToUpperCamel(ParseLowerUnderscore(name));
+  if (field->type() == FieldDescriptor::TYPE_GROUP) {
+      result = is_upper_camel
+               ? ToUpperCamel(ParseUpperCamel(field->message_type()->name()))
+               : ToLowerCamel(ParseUpperCamel(field->message_type()->name()));
   } else {
-      result = ToLowerCamel(ParseLowerUnderscore(name));
+      if (is_upper_camel && IsUpperCamel(field->name())) {
+          result = field->name();
+      } else if (!is_upper_camel && IsLowerCamel(field->name())) {
+          result = field->name();
+      } else if (is_upper_camel) {
+          result = ToUpperCamel(ParseLowerUnderscore(field->name()));
+      } else {
+          result = ToLowerCamel(ParseLowerUnderscore(field->name()));
+      }
   }
+
   if (is_map || field->is_map()) {
     // JSPB-style or proto3-style map.
     result += "Map";
