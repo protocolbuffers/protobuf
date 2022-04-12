@@ -291,6 +291,10 @@ class GeneratedClassTest extends TestBase
         // Test Enum methods
         $this->assertEquals('ONE', TestEnum::name(1));
         $this->assertEquals(1, TestEnum::value('ONE'));
+        $this->assertEquals('ECHO', TestEnum::name(3));
+        $this->assertEquals(3, TestEnum::value('ECHO'));
+        // Backwards compat value lookup by prefixed-name.
+        $this->assertEquals(3, TestEnum::value('PBECHO'));
     }
 
     public function testInvalidEnumValueThrowsException()

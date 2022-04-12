@@ -1385,8 +1385,9 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   Indent(&printer);
   for (int i = 0; i < en->value_count(); i++) {
     const EnumValueDescriptor* value = en->value(i);
-    printer.Print("self::^name^ => '^name^',\n",
-                  "name", ConstantNamePrefix(value->name()) + value->name());
+    printer.Print("self::^constant^ => '^name^',\n",
+                  "constant", ConstantNamePrefix(value->name()) + value->name(),
+                  "name", value->name());
   }
   Outdent(&printer);
   printer.Print("];\n");
@@ -1416,11 +1417,17 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   printer.Print("$const = __CLASS__ . '::' . strtoupper($name);\n"
                 "if (!defined($const)) {\n");
   Indent(&printer);
+  printer.Print("$pbconst =  __CLASS__. '::PB' . strtoupper($name);\n"
+                "if (!defined($pbconst)) {\n");
+  Indent(&printer);
   printer.Print("throw new UnexpectedValueException(sprintf(\n");
   Indent(&printer);
   Indent(&printer);
   printer.Print("'Enum %s has no value defined for name %s', __CLASS__, $name));\n");
   Outdent(&printer);
+  Outdent(&printer);
+  printer.Print("}\n"
+                "return constant($pbconst);\n");
   Outdent(&printer);
   Outdent(&printer);
   printer.Print("}\n"
