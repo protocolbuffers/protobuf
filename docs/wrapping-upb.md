@@ -180,18 +180,40 @@ upb defines data structures in C to represent messages, arrays (repeated
 fields), and maps.  A protobuf message is a hierarchical tree of these objects.
 For example, a relatively simple protobuf tree might look something like this:
 
-<div align=center>
-<img src='wrapping-upb/1.svg'/>
-</div>
+```dot {align="center"}
+digraph G {
+  rankdir=LR;
+  newrank=true;
+  node [style="rounded,filled" shape=box colorscheme=accent8 fillcolor=1, ordering=out]
+  upb_msg -> upb_msg2;
+  upb_msg -> upb_array;
+  upb_msg [label="upb Message" fillcolor=1]
+  upb_msg2 [label="upb Message"];
+  upb_array [label="upb Array"]
+}
+```
 
 All upb objects are allocated from an arena.  An arena lets you allocate objects
 individually, but you cannot free individual objects; you can only free the arena
 as a whole.  When the arena is freed, all of the individual objects allocated
 from that arena are freed together.
 
-<div align=center>
-<img src='wrapping-upb/2.svg'/>
-</div>
+```dot {align="center"}
+digraph G {
+  rankdir=LR;
+  newrank=true;
+  subgraph cluster_0 {
+    label = "upb Arena"
+    graph[style="rounded,filled" fillcolor=gray]
+    node [style="rounded,filled" shape=box colorscheme=accent8 fillcolor=1, ordering=out]
+    upb_msg -> upb_array;
+    upb_msg -> upb_msg2;
+    upb_msg [label="upb Message" fillcolor=1]
+    upb_msg2 [label="upb Message"];
+    upb_array [label="upb Array"];
+  }
+}
+```
 
 In simple cases, the entire tree of objects will all live in a single arena.
 This has the nice property that there cannot be any dangling pointers between
@@ -201,9 +223,30 @@ However upb allows you to create links between any two objects, whether or
 not they are in the same arena.  The library does not know or care what arenas
 the objects are in when you create links between them.
 
-<div align=center>
-<img src='wrapping-upb/3.svg'/>
-</div>
+```dot {align="center"}
+digraph G {
+  rankdir=LR;
+  newrank=true;
+  subgraph cluster_0 {
+    label = "upb Arena 1"
+    graph[style="rounded,filled" fillcolor=gray]
+    node [style="rounded,filled" shape=box colorscheme=accent8 fillcolor=1, ordering=out]
+    upb_msg -> upb_array;
+    upb_msg -> upb_msg2;
+    upb_msg [label="upb Message 1" fillcolor=1]
+    upb_msg2 [label="upb Message 2"];
+    upb_array [label="upb Array"];
+  }
+  subgraph cluster_1 {
+    label = "upb Arena 2"
+    graph[style="rounded,filled" fillcolor=gray]
+    node [style="rounded,filled" shape=box colorscheme=accent8 fillcolor=1]
+    upb_msg3;
+  }
+  upb_msg2 -> upb_msg3;
+  upb_msg3 [label="upb Message 3"];
+}
+```
 
 When objects are on separate arenas, it is the user's responsibility to ensure
 that there are no dangling pointers.  In the example above, this means Arena 2
@@ -222,9 +265,78 @@ GC'd until all of the C objects in that arena have become unreachable.
 
 For this example, we will assume we are wrapping upb in Python:
 
-<div align=center>
-<img src='wrapping-upb/4.svg'/>
-</div>
+```dot {align="center"}
+digraph G {
+  rankdir=LR;
+  newrank=true;
+  compound=true;
+
+  subgraph cluster_1 {
+    label = "upb Arena"
+    graph[style="rounded,filled" fillcolor=gray]
+    node [style="rounded,filled" shape=box colorscheme=accent8 fillcolor=1, ordering=out]
+    upb_msg -> upb_array [style=dashed];
+    upb_msg -> upb_msg2 [style=dashed];
+    upb_msg [label="upb Message" fillcolor=1]
+    upb_msg2 [label="upb Message"];
+    upb_array [label="upb Array"]
+    dummy [style=invis]
+  }
+  subgraph cluster_python {
+    node [style="rounded,filled" shape=box colorscheme=accent8 fillcolor=2]
+    peripheries=0
+    py_upb_msg [label="Python Message"];
+    py_upb_msg2 [label="Python Message"];
+    py_upb_arena [label="Python Arena"];
+  }
+  py_upb_msg -> upb_msg [style=dashed];
+  py_upb_msg2->upb_msg2 [style=dashed];
+  py_upb_msg2 -> py_upb_arena [color=springgreen4];
+  py_upb_msg -> py_upb_arena [color=springgreen4];
+  py_upb_arena -> dummy [lhead=cluster_1, color=red];
+  {
+     rank=same;
+     upb_msg;
+     py_upb_msg;
+  }
+  {
+     rank=same;
+     upb_array;
+     upb_msg2;
+     py_upb_msg2;
+  }
+  {  rank=same;
+     dummy;
+     py_upb_arena;
+  }
+  dummy->upb_array [style=invis];
+  dummy->upb_msg2 [style=invis];
+
+  subgraph cluster_01 {
+    node [shape=plaintext]
+    peripheries=0
+    key [label=<<table border="0" cellpadding="2" cellspacing="0" cellborder="0">
+      <tr><td align="right" port="i1">raw ptr</td></tr>
+      <tr><td align="right" port="i2">unique ptr</td></tr>
+      <tr><td align="right" port="i3">shared (GC) ptr</td></tr>
+      </table>>]
+    key2 [label=<<table border="0" cellpadding="2" cellspacing="0" cellborder="0">
+      <tr><td port="i1">&nbsp;</td></tr>
+      <tr><td port="i2">&nbsp;</td></tr>
+      <tr><td port="i3">&nbsp;</td></tr>
+      </table>>]
+    key:i1:e -> key2:i1:w [style=dashed]
+    key:i2:e -> key2:i2:w [color=red]
+    key:i3:e -> key2:i3:w [color=springgreen4]
+  }
+    key2:i1:w -> upb_msg [style=invis];
+  {
+    rank=same;
+    key;
+    upb_msg;
+  }
+}
+```
 
 In this example we have three different kinds of pointers:
 
