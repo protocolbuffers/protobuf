@@ -92,9 +92,9 @@ class Api extends \Google\Protobuf\Internal\Message
      *     @type string $name
      *           The fully qualified name of this interface, including package name
      *           followed by the interface's simple name.
-     *     @type \Google\Protobuf\Method[]|\Google\Protobuf\Internal\RepeatedField $methods
+     *     @type array<\Google\Protobuf\Method>|\Google\Protobuf\Internal\RepeatedField $methods
      *           The methods of this interface, in unspecified order.
-     *     @type \Google\Protobuf\Option[]|\Google\Protobuf\Internal\RepeatedField $options
+     *     @type array<\Google\Protobuf\Option>|\Google\Protobuf\Internal\RepeatedField $options
      *           Any metadata attached to the interface.
      *     @type string $version
      *           A version string for this interface. If specified, must have the form
@@ -117,7 +117,7 @@ class Api extends \Google\Protobuf\Internal\Message
      *     @type \Google\Protobuf\SourceContext $source_context
      *           Source context for the protocol buffer service represented by this
      *           message.
-     *     @type \Google\Protobuf\Mixin[]|\Google\Protobuf\Internal\RepeatedField $mixins
+     *     @type array<\Google\Protobuf\Mixin>|\Google\Protobuf\Internal\RepeatedField $mixins
      *           Included interfaces. See [Mixin][].
      *     @type int $syntax
      *           The source syntax of the service.
@@ -171,7 +171,7 @@ class Api extends \Google\Protobuf\Internal\Message
      * The methods of this interface, in unspecified order.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.Method methods = 2;</code>
-     * @param \Google\Protobuf\Method[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Method>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setMethods($var)
@@ -197,7 +197,7 @@ class Api extends \Google\Protobuf\Internal\Message
      * Any metadata attached to the interface.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.Option options = 3;</code>
-     * @param \Google\Protobuf\Option[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Option>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setOptions($var)
@@ -319,7 +319,7 @@ class Api extends \Google\Protobuf\Internal\Message
      * Included interfaces. See [Mixin][].
      *
      * Generated from protobuf field <code>repeated .google.protobuf.Mixin mixins = 6;</code>
-     * @param \Google\Protobuf\Mixin[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Mixin>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setMixins($var)
