@@ -1373,11 +1373,18 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
       "name", fullname);
   Indent(&printer);
 
+  bool hasReserved = false;
   for (int i = 0; i < en->value_count(); i++) {
     const EnumValueDescriptor* value = en->value(i);
     GenerateEnumValueDocComment(&printer, value);
+
+    std::string prefix = ConstantNamePrefix(value->name());
+    if (!prefix.empty()) {
+      hasReserved = true;
+    }
+
     printer.Print("const ^name^ = ^number^;\n",
-                  "name", ConstantNamePrefix(value->name()) + value->name(),
+                  "name", prefix + value->name(),
                   "number", IntToString(value->number()));
   }
 
@@ -1417,18 +1424,22 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   printer.Print("$const = __CLASS__ . '::' . strtoupper($name);\n"
                 "if (!defined($const)) {\n");
   Indent(&printer);
-  printer.Print("$pbconst =  __CLASS__. '::PB' . strtoupper($name);\n"
+  if (hasReserved) {
+    printer.Print("$pbconst =  __CLASS__. '::PB' . strtoupper($name);\n"
                 "if (!defined($pbconst)) {\n");
-  Indent(&printer);
+    Indent(&printer);
+  }
   printer.Print("throw new UnexpectedValueException(sprintf(\n");
   Indent(&printer);
   Indent(&printer);
   printer.Print("'Enum %s has no value defined for name %s', __CLASS__, $name));\n");
   Outdent(&printer);
   Outdent(&printer);
-  printer.Print("}\n"
-                "return constant($pbconst);\n");
-  Outdent(&printer);
+  if (hasReserved) {
+    Outdent(&printer);
+    printer.Print("}\n"
+                  "return constant($pbconst);\n");
+  }
   Outdent(&printer);
   printer.Print("}\n"
                 "return constant($const);\n");
