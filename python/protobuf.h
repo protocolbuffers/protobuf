@@ -31,7 +31,7 @@
 #include <stdbool.h>
 
 #include "python/descriptor.h"
-#include "python/python.h"
+#include "python/python_api.h"
 #include "upb/table_internal.h"
 
 

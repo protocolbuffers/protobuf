@@ -30,7 +30,7 @@
 
 #include <stdbool.h>
 
-#include "python/python.h"
+#include "python/python_api.h"
 #include "upb/def.h"
 
 typedef enum {

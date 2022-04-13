@@ -14,7 +14,7 @@ def upb_deps():
     maybe(
         git_repository,
         name = "com_google_protobuf",
-        commit = "2f91da585e96a7efe43505f714f03c7716a94ecb",
+        commit = "a69354f31b253856689ae765a9ea3217ec001873",
         remote = "https://github.com/protocolbuffers/protobuf.git",
         patches = [
             "//bazel:protobuf.patch",

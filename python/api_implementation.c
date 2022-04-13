@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <Python.h>
+#include "python/python_api.h"
 
 static struct PyModuleDef module_def = {
     PyModuleDef_HEAD_INIT,

@@ -27,6 +27,7 @@
 
 _build_file = """
 load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
+
 cc_library(
    name = "python_headers",
    hdrs = glob(["python/**/*.h"]),
@@ -36,7 +37,7 @@ cc_library(
 
 py_runtime(
     name = "py3_runtime",
-    interpreter_path = "%s",
+    interpreter_path = "{}",
     python_version = "PY3",
 )
 
@@ -52,6 +53,11 @@ toolchain(
 )
 """
 
+def _get_python_version(repository_ctx):
+    py_program = "import sys; print(str(sys.version_info.major) + str(sys.version_info.minor))"
+    result = repository_ctx.execute(["python3", "-c", py_program])
+    return (result.stdout).strip()
+
 def _get_config_var(repository_ctx, name):
     py_program = "import sysconfig; print(sysconfig.get_config_var('%s'), end='')"
     result = repository_ctx.execute(["python3", "-c", py_program % (name)])
@@ -63,7 +69,9 @@ def _python_headers_impl(repository_ctx):
     path = _get_config_var(repository_ctx, "INCLUDEPY")
     repository_ctx.symlink(path, "python")
     python3 = repository_ctx.which("python3")
-    repository_ctx.file("BUILD.bazel", _build_file % python3)
+    python_version = _get_python_version(repository_ctx)
+    repository_ctx.file("BUILD.bazel", _build_file.format(python3))
+    repository_ctx.file("version.bzl", "SYSTEM_PYTHON_VERSION = {}".format(python_version))
 
 # The system_python() repository rule exposes Python headers from the system.
 #

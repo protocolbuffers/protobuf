@@ -9,7 +9,8 @@ def pyproto_test_wrapper(name):
         main = src,
         data = ["@com_google_protobuf//:testdata"],
         deps = [
-            "//python:message_ext",
+            "//python:_api_implementation",
+            "//python:_message",
             "@com_google_protobuf//:python_common_test_protos",
             "@com_google_protobuf//:python_specific_test_protos",
             "@com_google_protobuf//:python_srcs",

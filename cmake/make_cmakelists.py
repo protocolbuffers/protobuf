@@ -234,6 +234,12 @@ class WorkspaceFileFunctions(object):
   def register_toolchains(self, toolchain):
     pass
 
+  def python_source_archive(self, **kwargs):
+    pass
+
+  def python_nuget_package(self, **kwargs):
+    pass
+
 
 class Converter(object):
   def __init__(self):
