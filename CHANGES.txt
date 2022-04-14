@@ -73,6 +73,8 @@
     JSON serializations with UTF-8 or other non-ASCII encodings.
   * Added experimental support for directly assigning numpy scalars and array.
   * Improve the calculation of public_dependencies in DescriptorPool.
+  * [Breaking Change] Disallow setting fields to numpy singleton arrays or repeated fields to numpy
+    multi-dimensional arrays. Numpy arrays should be indexed or flattened explicitly before assignment.
 
   Compiler
   * Migrate IsDefault(const std::string*) and UnsafeSetDefault(const std::string*)
