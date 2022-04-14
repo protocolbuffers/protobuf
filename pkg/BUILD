@@ -58,22 +58,13 @@ pkg_zip(
 cc_dist_library(
     name = "protobuf_lite",
     deps = [
-        "//:arena",
         "//:protobuf_lite",
-        "//src/google/protobuf/io:lite",
-        "//src/google/protobuf/stubs:lite",
     ],
 )
 
 cc_dist_library(
     name = "protobuf",
     deps = [
-        "//:arena",
         "//:protobuf",
-        "//:protobuf_lite",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/io:lite",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/stubs:lite",
     ],
 )
