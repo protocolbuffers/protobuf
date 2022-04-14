@@ -116,6 +116,14 @@ if(protobuf_HAVE_LD_VERSION_SCRIPT)
     LINK_DEPENDS ${protobuf_SOURCE_DIR}/src/libprotobuf.map)
 endif()
 target_link_libraries(libprotobuf PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(libprotobuf
+ PRIVATE ${ABSL_ROOT_DIR}
+)
+#target_link_libraries(
+#  libprotobuf
+#  PUBLIC
+#  absl::strings
+#)
 if(protobuf_WITH_ZLIB)
   target_link_libraries(libprotobuf PRIVATE ${ZLIB_LIBRARIES})
 endif()

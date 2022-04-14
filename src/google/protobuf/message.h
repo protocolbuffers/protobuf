@@ -126,6 +126,7 @@
 #include <google/protobuf/map.h>  // TODO(b/211442718): cleanup
 #include <google/protobuf/message_lite.h>
 
+#include "absl/strings/string_view.h"
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>

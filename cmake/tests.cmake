@@ -21,6 +21,7 @@ else()
   set(googlemock_source_dir "${protobuf_SOURCE_DIR}/third_party/googletest/googlemock")
   set(googletest_source_dir "${protobuf_SOURCE_DIR}/third_party/googletest/googletest")
   include_directories(
+    ${ABSL_ROOT_DIR}
     ${googlemock_source_dir}
     ${googletest_source_dir}
     ${googletest_source_dir}/include
