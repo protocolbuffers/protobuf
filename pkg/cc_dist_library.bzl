@@ -1,8 +1,7 @@
 # Rules for distributable C++ libraries
 
+load("@rules_cc//cc:action_names.bzl", cc_action_names = "ACTION_NAMES")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
-
-CPP_LINK_STATIC_LIBRARY_ACTION_NAME = "c++-link-static-library"
 
 # Creates an action to build the `output_file` static library (archive)
 # using `object_files`.
@@ -13,10 +12,8 @@ def _create_archive_action(
         output_file,
         object_files):
     # Based on Bazel's src/main/starlark/builtins_bzl/common/cc/cc_import.bzl:
-    archiver_path = cc_common.get_tool_for_action(
-        feature_configuration = feature_configuration,
-        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
-    )
+
+    # Build the command line and add args for all of the input files:
     archiver_variables = cc_common.create_link_variables(
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
@@ -25,7 +22,7 @@ def _create_archive_action(
     )
     command_line = cc_common.get_memory_inefficient_command_line(
         feature_configuration = feature_configuration,
-        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
+        action_name = cc_action_names.cpp_link_static_library,
         variables = archiver_variables,
     )
     args = ctx.actions.args()
@@ -33,14 +30,17 @@ def _create_archive_action(
     args.add_all(object_files)
     args.use_param_file("@%s", use_always = True)
 
+    archiver_path = cc_common.get_tool_for_action(
+        feature_configuration = feature_configuration,
+        action_name = cc_action_names.cpp_link_static_library,
+    )
+
     env = cc_common.get_environment_variables(
         feature_configuration = feature_configuration,
-        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
+        action_name = cc_action_names.cpp_link_static_library,
         variables = archiver_variables,
     )
 
-    # TODO(bazel-team): PWD=/proc/self/cwd env var is missing, but it is present when an analogous archiving
-    # action is created by cc_library
     ctx.actions.run(
         executable = archiver_path,
         arguments = [args],
@@ -53,7 +53,7 @@ def _create_archive_action(
         ),
         use_default_shell_env = True,
         outputs = [output_file],
-        mnemonic = "CppArchive",
+        mnemonic = "CppArchiveDist",
     )
 
 # Implementation for cc_dist_library rule.
@@ -123,7 +123,6 @@ def _cc_dist_library_impl(ctx):
         objects = depset(objs),
         pic_objects = depset(pic_objs),
     )
-
     link_output = cc_common.link(
         actions = ctx.actions,
         feature_configuration = feature_configuration,
@@ -134,27 +133,38 @@ def _cc_dist_library_impl(ctx):
         # TODO(dlj): need to handle -lz -lpthread
         # user_link_flags = [],
     )
-
     library_to_link = link_output.library_to_link
 
-    linking_context = cc_common.create_linking_context(
-        linker_inputs = depset([
-            cc_common.create_linker_input(
-                owner = ctx.label,
-                libraries = depset([library_to_link]),
-            ),
-        ]),
-    )
-
-    if library_to_link.dynamic_library != None:
+    # Note: library_to_link.dynamic_library and interface_library are often
+    # symlinks in the solib directory. For DefaultInfo, prefer reporting
+    # the resolved artifact paths.
+    if library_to_link.resolved_symlink_dynamic_library != None:
+        outputs.append(library_to_link.resolved_symlink_dynamic_library)
+    elif library_to_link.dynamic_library != None:
         outputs.append(library_to_link.dynamic_library)
 
-    if library_to_link.interface_library != None:
+    if library_to_link.resolved_symlink_interface_library != None:
+        outputs.append(library_to_link.resolved_symlink_interface_library)
+    elif library_to_link.interface_library != None:
         outputs.append(library_to_link.interface_library)
+
+    # We could expose the libraries for use from cc rules:
+    #
+    # linking_context = cc_common.create_linking_context(
+    #     linker_inputs = depset([
+    #         cc_common.create_linker_input(
+    #             owner = ctx.label,
+    #             libraries = depset([library_to_link]),
+    #         ),
+    #     ]),
+    # )
+    # cc_info = CcInfo(linking_context = linking_context)
+    #
+    # However, it would probably be better to add a separate `cc_import`
+    # library if the goal is to force a protobuf dependency to be a DSO.
 
     return [
         DefaultInfo(files = depset(outputs)),
-        CcInfo(linking_context = linking_context),
     ]
 
 cc_dist_library = rule(
