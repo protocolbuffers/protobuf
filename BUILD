@@ -526,69 +526,6 @@ cc_binary(
 )
 
 ################################################################################
-# Generates protoc release artifacts.
-################################################################################
-
-genrule(
-    name = "protoc_readme",
-    outs = ["readme.txt"],
-    cmd = """
-echo "Protocol Buffers - Google's data interchange format
-Copyright 2008 Google Inc.
-https://developers.google.com/protocol-buffers/
-This package contains a precompiled binary version of the protocol buffer
-compiler (protoc). This binary is intended for users who want to use Protocol
-Buffers in languages other than C++ but do not want to compile protoc
-themselves. To install, simply place this binary somewhere in your PATH.
-If you intend to use the included well known types then don't forget to
-copy the contents of the 'include' directory somewhere as well, for example
-into '/usr/local/include/'.
-Please refer to our official github site for more installation instructions:
-  https://github.com/protocolbuffers/protobuf" > $@
-    """,
-    visibility = ["//visibility:private"],
-)
-
-# plugin.proto is excluded from this list because it belongs in a nested folder (protobuf/compiler/plugin.proto)
-pkg_files(
-    name = "wkt_protos_files",
-    srcs = [value[0] for value in WELL_KNOWN_PROTO_MAP.values() if not value[0].endswith("plugin.proto")],
-    prefix = "include/google/protobuf",
-    visibility = ["//visibility:private"],
-)
-
-pkg_files(
-    name = "compiler_plugin_protos_files",
-    srcs = ["src/google/protobuf/compiler/plugin.proto"],
-    prefix = "include/google/protobuf/compiler",
-    visibility = ["//visibility:private"],
-)
-
-pkg_files(
-    name = "protoc_files",
-    srcs = [":protoc"],
-    attributes = pkg_attributes(mode = "0555"),
-    prefix = "bin/",
-    visibility = ["//visibility:private"],
-)
-
-package_naming(
-    name = "protoc_pkg_naming",
-)
-
-pkg_zip(
-    name = "protoc_release",
-    srcs = [
-        "readme.txt",
-        ":compiler_plugin_protos_files",
-        ":protoc_files",
-        ":wkt_protos_files",
-    ],
-    package_file_name = "protoc-{version}-{platform}.zip",
-    package_variables = ":protoc_pkg_naming",
-)
-
-################################################################################
 # Tests
 ################################################################################
 

@@ -3,39 +3,69 @@ load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_files")
 load("//:protobuf_release.bzl", "package_naming")
 load(":cc_dist_library.bzl", "cc_dist_library")
 
-# Map of all well known protos.
-# name => (include path, imports)
-WELL_KNOWN_PROTO_MAP = {
-    "any": ("src/google/protobuf/any.proto", []),
-    "api": (
-        "src/google/protobuf/api.proto",
-        [
-            "source_context",
-            "type",
-        ],
-    ),
-    "descriptor": ("src/google/protobuf/descriptor.proto", []),
-    "duration": ("src/google/protobuf/duration.proto", []),
-    "empty": ("src/google/protobuf/empty.proto", []),
-    "field_mask": ("src/google/protobuf/field_mask.proto", []),
-    "source_context": ("src/google/protobuf/source_context.proto", []),
-    "struct": ("src/google/protobuf/struct.proto", []),
-    "timestamp": ("src/google/protobuf/timestamp.proto", []),
-    "type": (
-        "src/google/protobuf/type.proto",
-        [
-            "any",
-            "source_context",
-        ],
-    ),
-    "wrappers": ("src/google/protobuf/wrappers.proto", []),
-}
-
-# plugin.proto is excluded from this list because it belongs in a nested folder (protobuf/compiler/plugin.proto)
 pkg_files(
     name = "wkt_protos_files",
-    srcs = ["//:" + value[0] for value in WELL_KNOWN_PROTO_MAP.values() if not value[0].endswith("plugin.proto")],
+    srcs = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
     prefix = "include/google/protobuf",
+    visibility = ["//visibility:private"],
+)
+
+pkg_files(
+    name = "descriptor_protos_files",
+    srcs = [
+        "//:descriptor_proto",
+    ],
+    prefix = "include/google/protobuf",
+    visibility = ["//visibility:private"],
+)
+
+pkg_files(
+    name = "compiler_plugin_protos_files",
+    srcs = ["//:compiler_plugin_proto"],
+    prefix = "include/google/protobuf/compiler",
+    visibility = ["//visibility:private"],
+)
+
+################################################################################
+# Generates protoc release artifacts.
+################################################################################
+
+genrule(
+    name = "protoc_readme",
+    outs = ["readme.txt"],
+    cmd = """
+echo "Protocol Buffers - Google's data interchange format
+Copyright 2008 Google Inc.
+https://developers.google.com/protocol-buffers/
+This package contains a precompiled binary version of the protocol buffer
+compiler (protoc). This binary is intended for users who want to use Protocol
+Buffers in languages other than C++ but do not want to compile protoc
+themselves. To install, simply place this binary somewhere in your PATH.
+If you intend to use the included well known types then don't forget to
+copy the contents of the 'include' directory somewhere as well, for example
+into '/usr/local/include/'.
+Please refer to our official github site for more installation instructions:
+  https://github.com/protocolbuffers/protobuf" > $@
+    """,
+    visibility = ["//visibility:private"],
+)
+
+pkg_files(
+    name = "protoc_files",
+    srcs = ["//:protoc"],
+    attributes = pkg_attributes(mode = "0555"),
+    prefix = "bin/",
     visibility = ["//visibility:private"],
 )
 
@@ -46,14 +76,19 @@ package_naming(
 pkg_zip(
     name = "protoc_release",
     srcs = [
+        ":compiler_plugin_protos_files",
+        ":descriptor_protos_files",
+        ":protoc_files",
+        ":protoc_readme",
         ":wkt_protos_files",
-        "//src/google/protobuf/compiler:compiler_plugin_protos_files",
-        "//src/google/protobuf/compiler:protoc_files",
-        "//src/google/protobuf/compiler:readme.txt",
     ],
     package_file_name = "protoc-{version}-{platform}.zip",
     package_variables = ":protoc_pkg_naming",
 )
+
+################################################################################
+# Protobuf runtime libraries.
+################################################################################
 
 cc_dist_library(
     name = "protobuf_lite",
