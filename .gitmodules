@@ -5,3 +5,6 @@
 	path = third_party/googletest
 	url = https://github.com/google/googletest.git
 	ignore = dirty
+[submodule "upb"]
+	path = upb
+	url = https://github.com/protocolbuffers/upb.git

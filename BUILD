@@ -590,7 +590,10 @@ pkg_zip(
 filegroup(
     name = "testdata",
     srcs = glob(["src/google/protobuf/testdata/**/*"]),
-    visibility = ["//:__subpackages__"],
+    visibility = [
+        "//:__subpackages__",
+        "@upb//:__subpackages__",
+    ],
 )
 
 RELATIVE_LITE_TEST_PROTOS = [
@@ -952,13 +955,23 @@ py_library(
         [
             "python/google/protobuf/**/*.py",
         ],
-        exclude = [
+    ),
+    imports = ["python"],
+    srcs_version = "PY2AND3",
+    visibility = ["@upb//:__subpackages__"],
+)
+
+py_library(
+    name = "python_test_srcs",
+    srcs = glob(
+        [
             "python/google/protobuf/internal/*_test.py",
             "python/google/protobuf/internal/test_util.py",
         ],
     ),
     imports = ["python"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
+    visibility = ["@upb//:__subpackages__"],
 )
 
 cc_binary(
@@ -1055,9 +1068,21 @@ internal_copied_filegroup(
 COPIED_WELL_KNOWN_PROTOS = ["python/" + s[4:] for s in WELL_KNOWN_PROTOS]
 
 py_proto_library(
-    name = "protobuf_python",
+    name = "well_known_types_py_pb2",
     srcs = COPIED_WELL_KNOWN_PROTOS,
     include = "python",
+    default_runtime = "",
+    protoc = ":protoc",
+    srcs_version = "PY2AND3",
+    visibility = ["@upb//:__subpackages__"],
+)
+
+py_library(
+    name = "protobuf_python",
+    deps = [
+        ":well_known_types_py_pb2",
+        ":python_srcs",
+    ],
     data = select({
         "//conditions:default": [],
         ":use_fast_cpp_protos": [
@@ -1065,13 +1090,6 @@ py_proto_library(
             ":python/google/protobuf/pyext/_message.so",
         ],
     }),
-    default_runtime = "",
-    protoc = ":protoc",
-    py_libs = [
-        ":python_srcs",
-    ],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
 )
 
 # Copy the test proto files from src/google/protobuf to
@@ -1099,7 +1117,8 @@ py_proto_library(
     default_runtime = "",
     protoc = ":protoc",
     srcs_version = "PY2AND3",
-    deps = [":protobuf_python"],
+    deps = [":well_known_types_py_pb2"],
+    visibility = ["//visibility:public"],
 )
 
 py_proto_library(
@@ -1113,6 +1132,7 @@ py_proto_library(
     protoc = ":protoc",
     srcs_version = "PY2AND3",
     deps = [":python_common_test_protos"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
