@@ -136,9 +136,7 @@ void Message::FailIfCopyFromDescendant(Message* to, const Message& from) {
 }
 
 std::string Message::GetTypeName() const {
-  absl::string_view str = GetDescriptor()->full_name();
-  std::cout << str << std::endl;
-  return std::string(str);
+  return GetDescriptor()->full_name();
 }
 
 void Message::Clear() { ReflectionOps::Clear(this); }
