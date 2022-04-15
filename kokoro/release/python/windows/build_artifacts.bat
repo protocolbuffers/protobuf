@@ -37,10 +37,10 @@ del /Q zlib-src.zip
 REM Install Abseil
 mkdir absl
 git clone https://github.com/abseil/abseil-cpp.git
-git cd abseil-cpp
 # Checkout lts_2021_11_02
+cd abseil-cpp
 git checkout 215105818dfde3174fe799600bb0f3cae233d0bf
-git cd ..
+cd ..
 SET ABSL_ROOT_DIR=%cd%\abseil-cpp
 
 REM Create directory for artifacts
