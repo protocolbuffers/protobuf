@@ -117,7 +117,7 @@ if(protobuf_HAVE_LD_VERSION_SCRIPT)
 endif()
 target_link_libraries(libprotobuf PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(libprotobuf
- PRIVATE ${ABSL_ROOT_DIR}
+  PRIVATE ${ABSL_ROOT_DIR}
 )
 if(protobuf_WITH_ZLIB)
   target_link_libraries(libprotobuf PRIVATE ${ZLIB_LIBRARIES})
