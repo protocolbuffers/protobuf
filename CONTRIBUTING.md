@@ -53,11 +53,11 @@ conforming.
 
 ## Contributing Process
 
-Most pull requests should go to the master branch and the change will be
+Most pull requests should go to the main branch and the change will be
 included in the next major/minor version release (e.g., 3.6.0 release). If you
 need to include a bug fix in a patch release (e.g., 3.5.2), make sure it’s
-already merged to master, and then create a pull request cherry-picking the
-commits from master branch to the release branch (e.g., branch 3.5.x).
+already merged to main, and then create a pull request cherry-picking the
+commits from main branch to the release branch (e.g., branch 3.5.x).
 
 For each pull request, a protobuf team member will be assigned to review the
 pull request. For minor cleanups, the pull request may be merged right away
@@ -96,9 +96,9 @@ the final release.
   of inactivity.
 * Maintain clean commit history and use meaningful commit messages. PRs with
   messy commit history are difficult to review and won't be merged. Use rebase
-  -i upstream/master to curate your commit history and/or to bring in latest
-  changes from master (but avoid rebasing in the middle of a code review).
-* Keep your PR up to date with upstream/master (if there are merge conflicts,
+  -i upstream/main to curate your commit history and/or to bring in latest
+  changes from main (but avoid rebasing in the middle of a code review).
+* Keep your PR up to date with upstream/main (if there are merge conflicts,
   we can't really merge your change).
 * All tests need to be passing before your change can be merged. We recommend
   you run tests locally before creating your PR to catch breakages early on.

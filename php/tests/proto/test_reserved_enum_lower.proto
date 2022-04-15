@@ -57,6 +57,7 @@ enum print { ZERO51 = 0; }
 enum private { ZERO52 = 0; }
 enum protected { ZERO53 = 0; }
 enum public { ZERO54 = 0; }
+enum readonly { ZERO80 = 0; }
 enum require { ZERO55 = 0; }
 enum require_once { ZERO56 = 0; }
 enum return { ZERO57 = 0; }

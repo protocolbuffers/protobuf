@@ -330,6 +330,18 @@ class GeneratedClassTest extends TestBase
         $this->legacyEnum(new TestLegacyMessage\NestedEnum);
     }
 
+    public function testLegacyReadOnlyMessage()
+    {
+        $this->assertTrue(class_exists('\Upper\READONLY'));
+        $this->assertTrue(class_exists('\Lower\readonly'));
+    }
+
+    public function testLegacyReadOnlyEnum()
+    {
+        $this->assertTrue(class_exists('\Upper_enum\READONLY'));
+        $this->assertTrue(class_exists('\Lower_enum\readonly'));
+    }
+
     private function legacyEnum(TestLegacyMessage_NestedEnum $enum)
     {
         // If we made it here without a PHP Fatal error, the typehint worked
@@ -939,6 +951,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Lower\PBprivate();
         $m = new \Lower\PBprotected();
         $m = new \Lower\PBpublic();
+        $m = new \Lower\PBreadonly();
         $m = new \Lower\PBrequire();
         $m = new \Lower\PBrequire_once();
         $m = new \Lower\PBreturn();
@@ -1019,6 +1032,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Upper\PBPRIVATE();
         $m = new \Upper\PBPROTECTED();
         $m = new \Upper\PBPUBLIC();
+        $m = new \Upper\PBREADONLY();
         $m = new \Upper\PBREQUIRE();
         $m = new \Upper\PBREQUIRE_ONCE();
         $m = new \Upper\PBRETURN();
@@ -1100,6 +1114,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Lower_enum\PBprotected();
         $m = new \Lower_enum\PBpublic();
         $m = new \Lower_enum\PBrequire();
+        $m = new \Lower_enum\PBreadonly();
         $m = new \Lower_enum\PBrequire_once();
         $m = new \Lower_enum\PBreturn();
         $m = new \Lower_enum\PBself();
@@ -1179,6 +1194,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Upper_enum\PBPRIVATE();
         $m = new \Upper_enum\PBPROTECTED();
         $m = new \Upper_enum\PBPUBLIC();
+        $m = new \Upper_enum\PBREADONLY();
         $m = new \Upper_enum\PBREQUIRE();
         $m = new \Upper_enum\PBREQUIRE_ONCE();
         $m = new \Upper_enum\PBRETURN();
@@ -1283,6 +1299,7 @@ class GeneratedClassTest extends TestBase
         $m = \Lower_enum_value\NotAllowed::iterable;
         $m = \Lower_enum_value\NotAllowed::parent;
         $m = \Lower_enum_value\NotAllowed::self;
+        $m = \Lower_enum_value\NotAllowed::readonly;
 
         $m = \Upper_enum_value\NotAllowed::PBABSTRACT;
         $m = \Upper_enum_value\NotAllowed::PBAND;
@@ -1363,6 +1380,7 @@ class GeneratedClassTest extends TestBase
         $m = \Upper_enum_value\NotAllowed::ITERABLE;
         $m = \Upper_enum_value\NotAllowed::PARENT;
         $m = \Upper_enum_value\NotAllowed::SELF;
+        $m = \Upper_enum_value\NotAllowed::READONLY;
 
         $this->assertTrue(true);
     }
