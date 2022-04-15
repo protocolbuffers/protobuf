@@ -584,7 +584,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     self.assertEqual(message_proto, parsed_proto)
 
   @unittest.skipIf(
-      api_implementation._Version() == 3,
+      api_implementation.Type() == 'upb',
       "upb API doesn't support old UnknownField API. The TextFormat library "
       "needs to convert to the new API.")
   def testPrintUnknownFieldsEmbeddedMessageInBytes(self, message_module):

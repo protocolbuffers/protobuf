@@ -129,21 +129,23 @@ set(common_lite_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.cc
 )
 
-add_library(protobuf-lite-test-common ${protobuf_SHARED_OR_STATIC}
+add_library(protobuf-lite-test-common STATIC
   ${common_lite_test_files} ${lite_test_proto_files})
+target_link_libraries(protobuf-lite-test-common libprotobuf-lite GTest::gmock)
 
 set(common_test_files
   ${common_lite_test_files}
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.cc
 )
 
-add_library(protobuf-test-common ${protobuf_SHARED_OR_STATIC}
+add_library(protobuf-test-common STATIC
   ${common_test_files} ${tests_proto_files})
+target_link_libraries(protobuf-test-common libprotobuf GTest::gmock)
 
 set(tests_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_test.cc
@@ -151,6 +153,7 @@ set(tests_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/bootstrap_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message_size_unittest.cc
@@ -164,7 +167,6 @@ set(tests_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/plugin_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/parser_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/plugin_unittest.cc

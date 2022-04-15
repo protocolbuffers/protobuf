@@ -176,6 +176,16 @@ TEST(AnyTest, MoveAssignment) {
   EXPECT_EQ(12345, payload.int32_value());
 }
 
+#ifdef PROTOBUF_HAS_DEATH_TEST
+#ifndef NDEBUG
+TEST(AnyTest, PackSelfDeath) {
+  google::protobuf::Any any;
+  EXPECT_DEATH(any.PackFrom(any), "&message");
+  EXPECT_DEATH(any.PackFrom(any, ""), "&message");
+}
+#endif  // !NDEBUG
+#endif  // PROTOBUF_HAS_DEATH_TEST
+
 
 }  // namespace
 }  // namespace protobuf

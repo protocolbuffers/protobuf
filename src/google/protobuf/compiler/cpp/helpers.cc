@@ -178,11 +178,6 @@ void SetIntVar(const Options& options, const std::string& type,
                std::map<std::string, std::string>* variables) {
   (*variables)[type] = IntTypeName(options, type);
 }
-bool IsEagerlyVerifiedLazyImpl(const FieldDescriptor* field,
-                               const Options& options,
-                               MessageSCCAnalyzer* scc_analyzer) {
-  return false;
-}
 
 // Returns true if the message can potentially allocate memory for its field.
 // This is used to determine if message-owned arena will be useful.
@@ -195,7 +190,23 @@ bool AllocExpected(const Descriptor* descriptor) {
 bool IsLazy(const FieldDescriptor* field, const Options& options,
             MessageSCCAnalyzer* scc_analyzer) {
   return IsLazilyVerifiedLazy(field, options) ||
-         IsEagerlyVerifiedLazyImpl(field, options, scc_analyzer);
+         IsEagerlyVerifiedLazy(field, options, scc_analyzer);
+}
+
+bool IsEagerlyVerifiedLazyByProfile(const FieldDescriptor* field,
+                                    const Options& options,
+                                    MessageSCCAnalyzer* scc_analyzer) {
+  return false;
+}
+
+bool IsEagerlyVerifiedLazy(const FieldDescriptor* field, const Options& options,
+                           MessageSCCAnalyzer* scc_analyzer) {
+  return false;
+}
+
+bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
+                          const Options& options) {
+  return false;
 }
 
 void SetCommonVars(const Options& options,

@@ -36,6 +36,9 @@
 [protobuf_unittest.optional_lazy_message_extension] <
   bb: 127
 >
+[protobuf_unittest.optional_unverified_lazy_message_extension] <
+  bb: 128
+>
 [protobuf_unittest.repeated_int32_extension]: 201
 [protobuf_unittest.repeated_int32_extension]: 301
 [protobuf_unittest.repeated_int64_extension]: 202
