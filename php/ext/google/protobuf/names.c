@@ -82,12 +82,12 @@ const char *const kReservedNames[] = {
     "global",     "goto",        "insteadof",    "interface",    "isset",
     "list",       "match",       "namespace",    "new",          "object",
     "or",         "parent",      "print",        "private",      "protected",
-    "public",     "require",     "require_once", "return",       "self",
-    "static",     "switch",      "throw",        "trait",        "try",
-    "unset",      "use",         "var",          "while",        "xor",
-    "yield",      "int",         "float",        "bool",         "string",
-    "true",       "false",       "null",         "void",         "iterable",
-    NULL};
+    "public",     "readonly",    "require",      "require_once", "return",
+    "self",       "static",      "switch",       "throw",        "trait",
+    "try",        "unset",       "use",          "var",          "while",
+    "xor",        "yield",       "int",          "float",        "bool",
+    "string",     "true",        "false",        "null",         "void",
+    "iterable",   NULL};
 
 bool is_reserved_name(const char* name) {
   int i;

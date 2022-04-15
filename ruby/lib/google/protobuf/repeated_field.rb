@@ -79,12 +79,25 @@ module Google
 
 
       def first(n=nil)
-        n ? self[0...n] : self[0]
+        if n.nil?
+          return self[0]
+        elsif n < 0
+          raise ArgumentError, "negative array size"
+        else
+          return self[0...n]
+        end
       end
 
 
       def last(n=nil)
-        n ? self[(self.size-n-1)..-1] : self[-1]
+        if n.nil?
+          return self[-1]
+        elsif n < 0
+          raise ArgumentError, "negative array size"
+        else
+          start = [self.size-n, 0].max
+          return self[start...self.size]
+        end
       end
 
 
