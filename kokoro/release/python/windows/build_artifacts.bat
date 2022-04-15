@@ -34,7 +34,8 @@ SET ZLIB_ROOT=%cd%\zlib
 del /Q zlib.zip
 del /Q zlib-src.zip
 
-REM Install Abseil
+REM Fetch Abseil
+REM This is needed because this build uses CMake <3.13.
 mkdir absl
 git clone https://github.com/abseil/abseil-cpp.git
 # Checkout lts_2021_11_02
