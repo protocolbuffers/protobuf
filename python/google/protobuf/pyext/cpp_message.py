@@ -38,9 +38,11 @@ __author__ = 'tibell@google.com (Johan Tibell)'
 
 from google.protobuf.internal import api_implementation
 
-if api_implementation._Version() == 3:
-  from google3.third_party.upb.python import _message
-else:
+
+# pylint: disable=protected-access
+_message = api_implementation._c_module
+# TODO(jieluo): Remove this import after fix api_implementation
+if _message is None:
   from google.protobuf.pyext import _message
 
 

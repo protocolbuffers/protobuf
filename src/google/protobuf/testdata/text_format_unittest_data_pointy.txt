@@ -36,6 +36,9 @@ optional_public_import_message <
 optional_lazy_message <
   bb: 127
 >
+optional_unverified_lazy_message <
+  bb: 128
+>
 repeated_int32: 201
 repeated_int32: 301
 repeated_int64: 202

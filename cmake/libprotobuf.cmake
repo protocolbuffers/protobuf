@@ -78,6 +78,7 @@ set(libprotobuf_includes
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_internal.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.pb.h

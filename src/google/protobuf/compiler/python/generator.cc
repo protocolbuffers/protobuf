@@ -90,6 +90,7 @@ std::string ModuleAlias(const std::string& filename) {
 // in proto2/public/reflection.py.
 const char kDescriptorKey[] = "DESCRIPTOR";
 
+
 // file output by this generator.
 void PrintTopBoilerplate(io::Printer* printer, const FileDescriptor* file,
                          bool descriptor_proto) {

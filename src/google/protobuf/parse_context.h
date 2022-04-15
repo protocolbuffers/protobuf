@@ -42,6 +42,7 @@
 #include <google/protobuf/port.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/arenastring.h>
+#include <google/protobuf/endian.h>
 #include <google/protobuf/implicit_weak_message.h>
 #include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/metadata_lite.h>
@@ -486,10 +487,7 @@ struct EndianHelper<2> {
   static uint16_t Load(const void* p) {
     uint16_t tmp;
     std::memcpy(&tmp, p, 2);
-#ifndef PROTOBUF_LITTLE_ENDIAN
-    tmp = bswap_16(tmp);
-#endif
-    return tmp;
+    return little_endian::ToHost(tmp);
   }
 };
 
@@ -498,10 +496,7 @@ struct EndianHelper<4> {
   static uint32_t Load(const void* p) {
     uint32_t tmp;
     std::memcpy(&tmp, p, 4);
-#ifndef PROTOBUF_LITTLE_ENDIAN
-    tmp = bswap_32(tmp);
-#endif
-    return tmp;
+    return little_endian::ToHost(tmp);
   }
 };
 
@@ -510,10 +505,7 @@ struct EndianHelper<8> {
   static uint64_t Load(const void* p) {
     uint64_t tmp;
     std::memcpy(&tmp, p, 8);
-#ifndef PROTOBUF_LITTLE_ENDIAN
-    tmp = bswap_64(tmp);
-#endif
-    return tmp;
+    return little_endian::ToHost(tmp);
   }
 };
 
@@ -582,6 +574,82 @@ inline const char* ReadTag(const char* p, uint32_t* out,
   auto tmp = ReadTagFallback(p, res);
   *out = tmp.second;
   return tmp.first;
+}
+
+// As above, but optimized to consume very few registers while still being fast,
+// ReadTagInlined is useful for callers that don't mind the extra code but would
+// like to avoid an extern function call causing spills into the stack.
+//
+// Two support routines for ReadTagInlined come first...
+template <class T>
+PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE constexpr T RotateLeft(
+    T x, int s) noexcept {
+  return static_cast<T>(x << (s & (std::numeric_limits<T>::digits - 1))) |
+         static_cast<T>(x >> ((-s) & (std::numeric_limits<T>::digits - 1)));
+}
+
+PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE uint64_t
+RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
+#if defined(__x86_64__) && defined(__GNUC__)
+  // This will only use one register for `res`.
+  // `byte` comes as a reference to allow the compiler to generate code like:
+  //
+  //   rorq    $7, %rcx
+  //   movb    1(%rax), %cl
+  //
+  // which avoids loading the incoming bytes into a separate register first.
+  asm("ror $7,%0\n\t"
+      "movb %1,%b0"
+      : "+r"(res)
+      : "m"(byte));
+#else
+  res = RotateLeft(res, -7);
+  res = res & ~0xFF;
+  res |= 0xFF & byte;
+#endif
+  return res;
+};
+
+inline PROTOBUF_ALWAYS_INLINE
+const char* ReadTagInlined(const char* ptr, uint32_t* out) {
+  uint64_t res = 0xFF & ptr[0];
+  if (PROTOBUF_PREDICT_FALSE(res >= 128)) {
+    res = RotRight7AndReplaceLowByte(res, ptr[1]);
+    if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+      res = RotRight7AndReplaceLowByte(res, ptr[2]);
+      if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+        res = RotRight7AndReplaceLowByte(res, ptr[3]);
+        if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+          // Note: this wouldn't work if res were 32-bit,
+          // because then replacing the low byte would overwrite
+          // the bottom 4 bits of the result.
+          res = RotRight7AndReplaceLowByte(res, ptr[4]);
+          if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+            // The proto format does not permit longer than 5-byte encodings for
+            // tags.
+            *out = 0;
+            return nullptr;
+          }
+          *out = RotateLeft(res, 28);
+#if defined(__GNUC__)
+          // Note: this asm statement prevents the compiler from
+          // trying to share the "return ptr + constant" among all
+          // branches.
+          asm("" : "+r"(ptr));
+#endif
+          return ptr + 5;
+        }
+        *out = RotateLeft(res, 21);
+        return ptr + 4;
+      }
+      *out = RotateLeft(res, 14);
+      return ptr + 3;
+    }
+    *out = RotateLeft(res, 7);
+    return ptr + 2;
+  }
+  *out = res;
+  return ptr + 1;
 }
 
 // Decode 2 consecutive bytes of a varint and returns the value, shifted left
