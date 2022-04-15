@@ -144,7 +144,7 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(self.my_service, self.my_method.containing_service)
 
   @unittest.skipIf(
-      api_implementation.Type() != 'cpp',
+      api_implementation.Type() == 'python',
       'GetDebugString is only available with the cpp implementation',
   )
   def testGetDebugString(self):
@@ -457,7 +457,7 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(unittest_pb2.DESCRIPTOR.pool, descriptor_pool.Default())
 
   @unittest.skipIf(
-      api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
+      api_implementation.Type() == 'python',
       'Immutability of descriptors is only enforced in v2 implementation')
   def testImmutableCppDescriptor(self):
     file_descriptor = unittest_pb2.DESCRIPTOR

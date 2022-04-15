@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python3
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2015 Google Inc.  All rights reserved.
@@ -41,24 +41,24 @@ import pddm
 class TestParsingMacros(unittest.TestCase):
 
   def testParseEmpty(self):
-    f = io.StringIO(u'')
+    f = io.StringIO('')
     result = pddm.MacroCollection(f)
     self.assertEqual(len(result._macros), 0)
 
   def testParseOne(self):
-    f = io.StringIO(u"""PDDM-DEFINE foo( )
+    f = io.StringIO("""PDDM-DEFINE foo( )
 body""")
     result = pddm.MacroCollection(f)
     self.assertEqual(len(result._macros), 1)
     macro = result._macros.get('foo')
     self.assertIsNotNone(macro)
-    self.assertEquals(macro.name, 'foo')
-    self.assertEquals(macro.args, tuple())
-    self.assertEquals(macro.body, 'body')
+    self.assertEqual(macro.name, 'foo')
+    self.assertEqual(macro.args, tuple())
+    self.assertEqual(macro.body, 'body')
 
   def testParseGeneral(self):
     # Tests multiple defines, spaces in all places, etc.
-    f = io.StringIO(u"""
+    f = io.StringIO("""
 PDDM-DEFINE noArgs( )
 body1
 body2
@@ -74,21 +74,21 @@ body5""")
     self.assertEqual(len(result._macros), 3)
     macro = result._macros.get('noArgs')
     self.assertIsNotNone(macro)
-    self.assertEquals(macro.name, 'noArgs')
-    self.assertEquals(macro.args, tuple())
-    self.assertEquals(macro.body, 'body1\nbody2\n')
+    self.assertEqual(macro.name, 'noArgs')
+    self.assertEqual(macro.args, tuple())
+    self.assertEqual(macro.body, 'body1\nbody2\n')
     macro = result._macros.get('oneArg')
     self.assertIsNotNone(macro)
-    self.assertEquals(macro.name, 'oneArg')
-    self.assertEquals(macro.args, ('foo',))
-    self.assertEquals(macro.body, 'body3')
+    self.assertEqual(macro.name, 'oneArg')
+    self.assertEqual(macro.args, ('foo',))
+    self.assertEqual(macro.body, 'body3')
     macro = result._macros.get('twoArgs')
     self.assertIsNotNone(macro)
-    self.assertEquals(macro.name, 'twoArgs')
-    self.assertEquals(macro.args, ('bar_', 'baz'))
-    self.assertEquals(macro.body, 'body4\nbody5')
+    self.assertEqual(macro.name, 'twoArgs')
+    self.assertEqual(macro.args, ('bar_', 'baz'))
+    self.assertEqual(macro.body, 'body4\nbody5')
     # Add into existing collection
-    f = io.StringIO(u"""
+    f = io.StringIO("""
 PDDM-DEFINE another(a,b,c)
 body1
 body2""")
@@ -96,23 +96,23 @@ body2""")
     self.assertEqual(len(result._macros), 4)
     macro = result._macros.get('another')
     self.assertIsNotNone(macro)
-    self.assertEquals(macro.name, 'another')
-    self.assertEquals(macro.args, ('a', 'b', 'c'))
-    self.assertEquals(macro.body, 'body1\nbody2')
+    self.assertEqual(macro.name, 'another')
+    self.assertEqual(macro.args, ('a', 'b', 'c'))
+    self.assertEqual(macro.body, 'body1\nbody2')
 
   def testParseDirectiveIssues(self):
     test_list = [
       # Unknown directive
-      (u'PDDM-DEFINE foo()\nbody\nPDDM-DEFINED foo\nbaz',
+      ('PDDM-DEFINE foo()\nbody\nPDDM-DEFINED foo\nbaz',
        'Hit a line with an unknown directive: '),
       # End without begin
-      (u'PDDM-DEFINE foo()\nbody\nPDDM-DEFINE-END\nPDDM-DEFINE-END\n',
+      ('PDDM-DEFINE foo()\nbody\nPDDM-DEFINE-END\nPDDM-DEFINE-END\n',
        'Got DEFINE-END directive without an active macro: '),
       # Line not in macro block
-      (u'PDDM-DEFINE foo()\nbody\nPDDM-DEFINE-END\nmumble\n',
+      ('PDDM-DEFINE foo()\nbody\nPDDM-DEFINE-END\nmumble\n',
        'Hit a line that wasn\'t a directive and no open macro definition: '),
       # Redefine macro
-      (u'PDDM-DEFINE foo()\nbody\nPDDM-DEFINE foo(a)\nmumble\n',
+      ('PDDM-DEFINE foo()\nbody\nPDDM-DEFINE foo(a)\nmumble\n',
        'Attempt to redefine macro: '),
     ]
     for idx, (input_str, expected_prefix) in enumerate(test_list, 1):
@@ -127,47 +127,47 @@ body2""")
   def testParseBeginIssues(self):
     test_list = [
       # 1. No name
-      (u'PDDM-DEFINE\nmumble',
+      ('PDDM-DEFINE\nmumble',
        'Failed to parse macro definition: '),
       # 2. No name (with spaces)
-      (u'PDDM-DEFINE  \nmumble',
+      ('PDDM-DEFINE  \nmumble',
        'Failed to parse macro definition: '),
       # 3. No open paren
-      (u'PDDM-DEFINE  foo\nmumble',
+      ('PDDM-DEFINE  foo\nmumble',
        'Failed to parse macro definition: '),
       # 4. No close paren
-      (u'PDDM-DEFINE foo(\nmumble',
+      ('PDDM-DEFINE foo(\nmumble',
        'Failed to parse macro definition: '),
       # 5. No close paren (with args)
-      (u'PDDM-DEFINE foo(a, b\nmumble',
+      ('PDDM-DEFINE foo(a, b\nmumble',
        'Failed to parse macro definition: '),
       # 6. No name before args
-      (u'PDDM-DEFINE  (a, b)\nmumble',
+      ('PDDM-DEFINE  (a, b)\nmumble',
        'Failed to parse macro definition: '),
       # 7. No name before args
-      (u'PDDM-DEFINE foo bar(a, b)\nmumble',
+      ('PDDM-DEFINE foo bar(a, b)\nmumble',
        'Failed to parse macro definition: '),
       # 8. Empty arg name
-      (u'PDDM-DEFINE foo(a, ,b)\nmumble',
+      ('PDDM-DEFINE foo(a, ,b)\nmumble',
        'Empty arg name in macro definition: '),
-      (u'PDDM-DEFINE foo(a,,b)\nmumble',
+      ('PDDM-DEFINE foo(a,,b)\nmumble',
        'Empty arg name in macro definition: '),
       # 10. Duplicate name
-      (u'PDDM-DEFINE foo(a,b,a,c)\nmumble',
+      ('PDDM-DEFINE foo(a,b,a,c)\nmumble',
        'Arg name "a" used more than once in macro definition: '),
       # 11. Invalid arg name
-      (u'PDDM-DEFINE foo(a b,c)\nmumble',
+      ('PDDM-DEFINE foo(a b,c)\nmumble',
        'Invalid arg name "a b" in macro definition: '),
-      (u'PDDM-DEFINE foo(a.b,c)\nmumble',
+      ('PDDM-DEFINE foo(a.b,c)\nmumble',
        'Invalid arg name "a.b" in macro definition: '),
-      (u'PDDM-DEFINE foo(a-b,c)\nmumble',
+      ('PDDM-DEFINE foo(a-b,c)\nmumble',
        'Invalid arg name "a-b" in macro definition: '),
-      (u'PDDM-DEFINE foo(a,b,c.)\nmumble',
+      ('PDDM-DEFINE foo(a,b,c.)\nmumble',
        'Invalid arg name "c." in macro definition: '),
       # 15. Extra stuff after the name
-      (u'PDDM-DEFINE foo(a,c) foo\nmumble',
+      ('PDDM-DEFINE foo(a,c) foo\nmumble',
        'Failed to parse macro definition: '),
-      (u'PDDM-DEFINE foo(a,c) foo)\nmumble',
+      ('PDDM-DEFINE foo(a,c) foo)\nmumble',
        'Failed to parse macro definition: '),
     ]
     for idx, (input_str, expected_prefix) in enumerate(test_list, 1):
@@ -183,7 +183,7 @@ body2""")
 class TestExpandingMacros(unittest.TestCase):
 
   def testExpandBasics(self):
-    f = io.StringIO(u"""
+    f = io.StringIO("""
 PDDM-DEFINE noArgs( )
 body1
 body2
@@ -203,21 +203,21 @@ PDDM-DEFINE-END
 """)
     mc = pddm.MacroCollection(f)
     test_list = [
-      (u'noArgs()',
+      ('noArgs()',
        'body1\nbody2\n'),
-      (u'oneArg(wee)',
+      ('oneArg(wee)',
        'body3 wee\n'),
-      (u'twoArgs(having some, fun)',
+      ('twoArgs(having some, fun)',
        'body4 having some fun\nbody5'),
       # One arg, pass empty.
-      (u'oneArg()',
+      ('oneArg()',
        'body3 \n'),
       # Two args, gets empty in each slot.
-      (u'twoArgs(, empty)',
+      ('twoArgs(, empty)',
        'body4  empty\nbody5'),
-      (u'twoArgs(empty, )',
+      ('twoArgs(empty, )',
        'body4 empty \nbody5'),
-      (u'twoArgs(, )',
+      ('twoArgs(, )',
        'body4  \nbody5'),
     ]
     for idx, (input_str, expected) in enumerate(test_list, 1):
@@ -227,7 +227,7 @@ PDDM-DEFINE-END
                        (idx, result, expected))
 
   def testExpandArgOptions(self):
-    f = io.StringIO(u"""
+    f = io.StringIO("""
 PDDM-DEFINE bar(a)
 a-a$S-a$l-a$L-a$u-a$U
 PDDM-DEFINE-END
@@ -240,7 +240,7 @@ PDDM-DEFINE-END
     self.assertEqual(mc.Expand('bar()'), '-----')
 
   def testExpandSimpleMacroErrors(self):
-    f = io.StringIO(u"""
+    f = io.StringIO("""
 PDDM-DEFINE foo(a, b)
 <a-z>
 PDDM-DEFINE baz(a)
@@ -249,19 +249,19 @@ a - a$z
     mc = pddm.MacroCollection(f)
     test_list = [
       # 1. Unknown macro
-      (u'bar()',
+      ('bar()',
        'No macro named "bar".'),
-      (u'bar(a)',
+      ('bar(a)',
        'No macro named "bar".'),
       # 3. Arg mismatch
-      (u'foo()',
+      ('foo()',
        'Expected 2 args, got: "foo()".'),
-      (u'foo(a b)',
+      ('foo(a b)',
        'Expected 2 args, got: "foo(a b)".'),
-      (u'foo(a,b,c)',
+      ('foo(a,b,c)',
        'Expected 2 args, got: "foo(a,b,c)".'),
       # 6. Unknown option in expansion
-      (u'baz(mumble)',
+      ('baz(mumble)',
        'Unknown arg option "a$z" while expanding "baz(mumble)".'),
     ]
     for idx, (input_str, expected_err) in enumerate(test_list, 1):
@@ -273,7 +273,7 @@ a - a$z
                         'Entry %d failed: %r' % (idx, e))
 
   def testExpandReferences(self):
-    f = io.StringIO(u"""
+    f = io.StringIO("""
 PDDM-DEFINE StartIt()
 foo(abc, def)
 foo(ghi, jkl)
@@ -301,7 +301,7 @@ PDDM-DEFINE bar(n, t)
     self.assertEqual(mc.Expand('StartIt()'), expected)
 
   def testCatchRecursion(self):
-    f = io.StringIO(u"""
+    f = io.StringIO("""
 PDDM-DEFINE foo(a, b)
 bar(1, a)
 bar(2, b)
@@ -322,29 +322,29 @@ class TestParsingSource(unittest.TestCase):
   def testBasicParse(self):
     test_list = [
       # 1. no directives
-      (u'a\nb\nc',
+      ('a\nb\nc',
        (3,) ),
       # 2. One define
-      (u'a\n//%PDDM-DEFINE foo()\n//%body\nc',
+      ('a\n//%PDDM-DEFINE foo()\n//%body\nc',
        (1, 2, 1) ),
       # 3. Two defines
-      (u'a\n//%PDDM-DEFINE foo()\n//%body\n//%PDDM-DEFINE bar()\n//%body2\nc',
+      ('a\n//%PDDM-DEFINE foo()\n//%body\n//%PDDM-DEFINE bar()\n//%body2\nc',
        (1, 4, 1) ),
       # 4. Two defines with ends
-      (u'a\n//%PDDM-DEFINE foo()\n//%body\n//%PDDM-DEFINE-END\n'
-       u'//%PDDM-DEFINE bar()\n//%body2\n//%PDDM-DEFINE-END\nc',
+      ('a\n//%PDDM-DEFINE foo()\n//%body\n//%PDDM-DEFINE-END\n'
+       '//%PDDM-DEFINE bar()\n//%body2\n//%PDDM-DEFINE-END\nc',
        (1, 6, 1) ),
       # 5. One expand, one define (that runs to end of file)
-      (u'a\n//%PDDM-EXPAND foo()\nbody\n//%PDDM-EXPAND-END\n'
-       u'//%PDDM-DEFINE bar()\n//%body2\n',
+      ('a\n//%PDDM-EXPAND foo()\nbody\n//%PDDM-EXPAND-END\n'
+       '//%PDDM-DEFINE bar()\n//%body2\n',
        (1, 1, 2) ),
       # 6. One define ended with an expand.
-      (u'a\nb\n//%PDDM-DEFINE bar()\n//%body2\n'
-       u'//%PDDM-EXPAND bar()\nbody2\n//%PDDM-EXPAND-END\n',
+      ('a\nb\n//%PDDM-DEFINE bar()\n//%body2\n'
+       '//%PDDM-EXPAND bar()\nbody2\n//%PDDM-EXPAND-END\n',
        (2, 2, 1) ),
       # 7. Two expands (one end), one define.
-      (u'a\n//%PDDM-EXPAND foo(1)\nbody\n//%PDDM-EXPAND foo(2)\nbody2\n//%PDDM-EXPAND-END\n'
-       u'//%PDDM-DEFINE foo()\n//%body2\n',
+      ('a\n//%PDDM-EXPAND foo(1)\nbody\n//%PDDM-EXPAND foo(2)\nbody2\n//%PDDM-EXPAND-END\n'
+       '//%PDDM-DEFINE foo()\n//%body2\n',
        (1, 2, 2) ),
     ]
     for idx, (input_str, line_counts) in enumerate(test_list, 1):
@@ -362,24 +362,24 @@ class TestParsingSource(unittest.TestCase):
   def testErrors(self):
     test_list = [
       # 1. Directive within expansion
-      (u'//%PDDM-EXPAND a()\n//%PDDM-BOGUS',
+      ('//%PDDM-EXPAND a()\n//%PDDM-BOGUS',
        'Ran into directive ("//%PDDM-BOGUS", line 2) while in "//%PDDM-EXPAND a()".'),
-      (u'//%PDDM-EXPAND a()\n//%PDDM-DEFINE a()\n//%body\n',
+      ('//%PDDM-EXPAND a()\n//%PDDM-DEFINE a()\n//%body\n',
        'Ran into directive ("//%PDDM-DEFINE", line 2) while in "//%PDDM-EXPAND a()".'),
       # 3. Expansion ran off end of file
-      (u'//%PDDM-EXPAND a()\na\nb\n',
+      ('//%PDDM-EXPAND a()\na\nb\n',
        'Hit the end of the file while in "//%PDDM-EXPAND a()".'),
       # 4. Directive within define
-      (u'//%PDDM-DEFINE a()\n//%body\n//%PDDM-BOGUS',
+      ('//%PDDM-DEFINE a()\n//%body\n//%PDDM-BOGUS',
        'Ran into directive ("//%PDDM-BOGUS", line 3) while in "//%PDDM-DEFINE a()".'),
-      (u'//%PDDM-DEFINE a()\n//%body\n//%PDDM-EXPAND-END a()',
+      ('//%PDDM-DEFINE a()\n//%body\n//%PDDM-EXPAND-END a()',
        'Ran into directive ("//%PDDM-EXPAND-END", line 3) while in "//%PDDM-DEFINE a()".'),
       # 6. Directives that shouldn't start sections
-      (u'a\n//%PDDM-DEFINE-END a()\n//a\n',
+      ('a\n//%PDDM-DEFINE-END a()\n//a\n',
        'Unexpected line 2: "//%PDDM-DEFINE-END a()".'),
-      (u'a\n//%PDDM-EXPAND-END a()\n//a\n',
+      ('a\n//%PDDM-EXPAND-END a()\n//a\n',
        'Unexpected line 2: "//%PDDM-EXPAND-END a()".'),
-      (u'//%PDDM-BOGUS\n//a\n',
+      ('//%PDDM-BOGUS\n//a\n',
        'Unexpected line 1: "//%PDDM-BOGUS".'),
     ]
     for idx, (input_str, expected_err) in enumerate(test_list, 1):
@@ -395,7 +395,7 @@ class TestProcessingSource(unittest.TestCase):
 
   def testBasics(self):
     self.maxDiff = None
-    input_str = u"""
+    input_str = """
 //%PDDM-IMPORT-DEFINES ImportFile
 foo
 //%PDDM-EXPAND mumble(abc)
@@ -408,12 +408,12 @@ baz
 //%PDDM-DEFINE mumble(a_)
 //%a_: getName(a_)
 """
-    input_str2 = u"""
+    input_str2 = """
 //%PDDM-DEFINE getName(x_)
 //%do##x_$u##(int x_);
 
 """
-    expected = u"""
+    expected = """
 //%PDDM-IMPORT-DEFINES ImportFile
 foo
 //%PDDM-EXPAND mumble(abc)
@@ -441,7 +441,7 @@ baz
 //%PDDM-DEFINE mumble(a_)
 //%a_: getName(a_)
 """
-    expected_stripped = u"""
+    expected_stripped = """
 //%PDDM-IMPORT-DEFINES ImportFile
 foo
 //%PDDM-EXPAND mumble(abc)
@@ -478,7 +478,7 @@ baz
     self.assertEqual(sf2.processed_content, expected_stripped)
 
   def testProcessFileWithMacroParseError(self):
-    input_str = u"""
+    input_str = """
 foo
 //%PDDM-DEFINE mumble(a_)
 //%body
@@ -498,7 +498,7 @@ foo
                        '  Line 3: //%PDDM-DEFINE mumble(a_)')
 
   def testProcessFileWithExpandError(self):
-    input_str = u"""
+    input_str = """
 foo
 //%PDDM-DEFINE mumble(a_)
 //%body

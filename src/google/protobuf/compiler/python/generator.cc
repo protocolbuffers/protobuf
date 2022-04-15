@@ -91,11 +91,6 @@ std::string ModuleAlias(const std::string& filename) {
 const char kDescriptorKey[] = "DESCRIPTOR";
 
 
-// Does the file have top-level enums?
-inline bool HasTopLevelEnums(const FileDescriptor* file) {
-  return file->enum_type_count() > 0;
-}
-
 // file output by this generator.
 void PrintTopBoilerplate(io::Printer* printer, const FileDescriptor* file,
                          bool descriptor_proto) {

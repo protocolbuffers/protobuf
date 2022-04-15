@@ -59,6 +59,7 @@ import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
+import protobuf_unittest.UnittestProto.TestChildExtension;
 import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
 import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
@@ -2023,4 +2024,5 @@ public class GeneratedMessageTest {
     assertThat(builder.getRepeatedField(REPEATED_NESTED_MESSAGE_EXTENSION, 0))
         .isEqualTo(NestedMessage.newBuilder().setBb(100).build());
   }
+
 }

@@ -34,6 +34,10 @@
 #ifndef PROTOBUF_NAMESPACE
 #error "port_undef.inc must be included after port_def.inc"
 #endif
+
+#undef PROTOBUF_BUILTIN_BSWAP16
+#undef PROTOBUF_BUILTIN_BSWAP32
+#undef PROTOBUF_BUILTIN_BSWAP64
 #undef PROTOBUF_GNUC_MIN
 #undef PROTOBUF_MSC_VER_MIN
 #undef PROTOBUF_CPLUSPLUS_MIN
@@ -79,6 +83,8 @@
 #undef PROTOBUF_FINAL
 #undef PROTOBUF_FUTURE_FINAL
 #undef PROTOBUF_THREAD_LOCAL
+#undef PROTOBUF_LITTLE_ENDIAN
+#undef PROTOBUF_BIG_ENDIAN
 #undef PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
 #undef PROTOBUF_CONSTINIT
 #undef PROTOBUF_CONSTEXPR
@@ -114,6 +120,7 @@
 #pragma pop_macro("ERROR_NOT_FOUND")
 #pragma pop_macro("GetClassName")
 #pragma pop_macro("GetMessage")
+#pragma pop_macro("GetObject")
 #pragma pop_macro("IGNORE")
 #pragma pop_macro("IN")
 #pragma pop_macro("INPUT_KEYBOARD")

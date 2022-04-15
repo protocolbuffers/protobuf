@@ -4122,7 +4122,8 @@ TEST_F(ValidationErrorTest, FieldInExtensionRange) {
       "foo.proto: Foo.bar: NUMBER: Extension range 10 to 19 includes field "
       "\"bar\" (10).\n"
       "foo.proto: Foo.baz: NUMBER: Extension range 10 to 19 includes field "
-      "\"baz\" (19).\n");
+      "\"baz\" (19).\n"
+      "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1, 2\n");
 }
 
 TEST_F(ValidationErrorTest, OverlappingExtensionRanges) {
@@ -4151,7 +4152,8 @@ TEST_F(ValidationErrorTest, ReservedFieldError) {
       "  reserved_range { start: 10 end: 20 }"
       "}",
 
-      "foo.proto: Foo.foo: NUMBER: Field \"foo\" uses reserved number 15.\n");
+      "foo.proto: Foo.foo: NUMBER: Field \"foo\" uses reserved number 15.\n"
+      "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1\n");
 }
 
 TEST_F(ValidationErrorTest, ReservedExtensionRangeError) {
@@ -4484,7 +4486,8 @@ TEST_F(ValidationErrorTest, NegativeFieldNumber) {
       "}"
       "}",
 
-      "foo.proto: Foo.foo: NUMBER: Field numbers must be positive integers.\n");
+      "foo.proto: Foo.foo: NUMBER: Field numbers must be positive integers.\n"
+      "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1\n");
 }
 
 TEST_F(ValidationErrorTest, HugeFieldNumber) {
@@ -4497,7 +4500,8 @@ TEST_F(ValidationErrorTest, HugeFieldNumber) {
       "}",
 
       "foo.proto: Foo.foo: NUMBER: Field numbers cannot be greater than "
-      "536870911.\n");
+      "536870911.\n"
+      "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1\n");
 }
 
 TEST_F(ValidationErrorTest, ReservedFieldNumber) {
@@ -4518,7 +4522,8 @@ TEST_F(ValidationErrorTest, ReservedFieldNumber) {
       "foo.proto: Foo.bar: NUMBER: Field numbers 19000 through 19999 are "
       "reserved for the protocol buffer library implementation.\n"
       "foo.proto: Foo.baz: NUMBER: Field numbers 19000 through 19999 are "
-      "reserved for the protocol buffer library implementation.\n");
+      "reserved for the protocol buffer library implementation.\n"
+      "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1, 2\n");
 }
 
 TEST_F(ValidationErrorTest, ExtensionMissingExtendee) {
@@ -4716,7 +4721,8 @@ TEST_F(ValidationErrorTest, NegativeExtensionRangeNumber) {
       "  extension_range { start: -10 end: -1 }"
       "}",
 
-      "foo.proto: Foo: NUMBER: Extension numbers must be positive integers.\n");
+      "foo.proto: Foo: NUMBER: Extension numbers must be positive integers.\n"
+      "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1, 2, 3\n");
 }
 
 TEST_F(ValidationErrorTest, HugeExtensionRangeNumber) {

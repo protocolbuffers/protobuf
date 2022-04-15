@@ -1,5 +1,7 @@
 option(protobuf_USE_EXTERNAL_GTEST "Use external Google Test (i.e. not the one in third_party/googletest)" OFF)
 
+option(protobuf_TEST_XML_OUTDIR "Output directory for XML logs from tests." "")
+
 option(protobuf_ABSOLUTE_TEST_PLUGIN_PATH
   "Using absolute test_plugin path in tests" ON)
 mark_as_advanced(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
@@ -56,6 +58,7 @@ set(tests_protos
   google/protobuf/unittest_drop_unknown_fields.proto
   google/protobuf/unittest_embed_optimize_for.proto
   google/protobuf/unittest_empty.proto
+  google/protobuf/unittest_enormous_descriptor.proto
   google/protobuf/unittest_import.proto
   google/protobuf/unittest_import_public.proto
   google/protobuf/unittest_lazy_dependencies.proto
@@ -126,6 +129,10 @@ set(common_lite_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.cc
 )
 
+add_library(protobuf-lite-test-common STATIC
+  ${common_lite_test_files} ${lite_test_proto_files})
+target_link_libraries(protobuf-lite-test-common libprotobuf-lite GTest::gmock)
+
 set(common_test_files
   ${common_lite_test_files}
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
@@ -135,6 +142,10 @@ set(common_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.cc
 )
+
+add_library(protobuf-test-common STATIC
+  ${common_test_files} ${tests_proto_files})
+target_link_libraries(protobuf-test-common libprotobuf GTest::gmock)
 
 set(tests_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_test.cc
@@ -233,13 +244,20 @@ if(MINGW)
 
 endif()
 
-add_executable(tests ${tests_files} ${common_test_files} ${tests_proto_files} ${lite_test_proto_files})
+if(protobuf_TEST_XML_OUTDIR)
+  if(NOT "${protobuf_TEST_XML_OUTDIR}" MATCHES "[/\\]$")
+    string(APPEND protobuf_TEST_XML_OUTDIR "/")
+  endif()
+  set(protobuf_GTEST_ARGS "--gtest_output=xml:${protobuf_TEST_XML_OUTDIR}")
+endif()
+
+add_executable(tests ${tests_files})
 if (MSVC)
   target_compile_options(tests PRIVATE
     /wd4146 # unary minus operator applied to unsigned type, result still unsigned
   )
 endif()
-target_link_libraries(tests libprotoc libprotobuf GTest::gmock_main)
+target_link_libraries(tests protobuf-lite-test-common protobuf-test-common libprotoc libprotobuf GTest::gmock_main)
 
 set(test_plugin_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
@@ -254,14 +272,20 @@ target_link_libraries(test_plugin libprotoc libprotobuf GTest::gmock)
 set(lite_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/lite_unittest.cc
 )
-add_executable(lite-test ${lite_test_files} ${common_lite_test_files} ${lite_test_proto_files})
-target_link_libraries(lite-test libprotobuf-lite GTest::gmock_main)
+add_executable(lite-test ${lite_test_files})
+target_link_libraries(lite-test protobuf-lite-test-common libprotobuf-lite GTest::gmock_main)
+
+add_test(NAME lite-test
+  COMMAND lite-test ${protobuf_GTEST_ARGS})
 
 set(lite_arena_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/lite_arena_unittest.cc
 )
-add_executable(lite-arena-test ${lite_arena_test_files} ${common_lite_test_files} ${lite_test_proto_files})
-target_link_libraries(lite-arena-test libprotobuf-lite GTest::gmock_main)
+add_executable(lite-arena-test ${lite_arena_test_files})
+target_link_libraries(lite-arena-test protobuf-lite-test-common libprotobuf-lite GTest::gmock_main)
+
+add_test(NAME lite-arena-test
+  COMMAND lite-arena-test ${protobuf_GTEST_ARGS})
 
 add_custom_target(check
   COMMAND tests
@@ -269,5 +293,5 @@ add_custom_target(check
   WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
 
 add_test(NAME check
-  COMMAND tests
+  COMMAND tests ${protobuf_GTEST_ARGS}
   WORKING_DIRECTORY "${protobuf_SOURCE_DIR}")

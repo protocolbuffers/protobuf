@@ -4,7 +4,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.20.0</version>
+  <version>3.20.1-rc-1</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -87,12 +87,12 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>30.1.1-android</version>
+        <version>31.1-android</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava-testlib</artifactId>
-        <version>30.1.1-android</version>
+        <version>31.1-android</version>
         <scope>test</scope>
       </dependency>
       <dependency>

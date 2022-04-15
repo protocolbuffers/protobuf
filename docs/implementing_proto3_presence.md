@@ -30,7 +30,7 @@ Presence tracking was added to proto3 in response to user feedback, both from
 inside Google and [from open-source
 users](https://github.com/protocolbuffers/protobuf/issues/1606). The [proto3
 wrapper
-types](https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/wrappers.proto)
+types](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/wrappers.proto)
 were previously the only supported presence mechanism for proto3. Users have
 pointed to both efficiency and usability issues with the wrapper types.
 

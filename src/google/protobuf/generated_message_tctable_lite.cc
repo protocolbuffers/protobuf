@@ -84,10 +84,10 @@ PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
     MessageLite* msg, const char* ptr, ParseContext* ctx,
     const TcParseTableBase* table) {
   ScopedArenaSwap saved(msg, ctx);
-  const uint32_t has_bits_offset = table->has_bits_offset;
   while (!ctx->Done(&ptr)) {
-    uint64_t hasbits = 0;
-    if (has_bits_offset) hasbits = RefAt<uint32_t>(msg, has_bits_offset);
+    // Unconditionally read has bits, even if we don't have has bits.
+    // has_bits_offset will be 0 and we will just read something valid.
+    uint64_t hasbits = ReadAt<uint32_t>(msg, table->has_bits_offset);
     ptr = TagDispatch(msg, ptr, ctx, table, hasbits, {});
     if (ptr == nullptr) break;
     if (ctx->LastTag() != 1) break;  // Ended on terminating tag
@@ -301,7 +301,7 @@ StringPiece TcParser::FieldName(const TcParseTableBase* table,
 
 const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
   uint32_t tag;
-  ptr = ReadTag(ptr, &tag);
+  ptr = ReadTagInlined(ptr, &tag);
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
 
   auto* entry = FindFieldEntry(table, tag >> 3);
@@ -371,13 +371,13 @@ const char* TcParser::SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL) {
   auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
   hasbits |= (uint64_t{1} << data.hasbit_idx());
+  SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<MessageLite*>(msg, data.offset());
   if (field == nullptr) {
     const MessageLite* default_instance =
         table->field_aux(data.aux_idx())->message_default;
     field = default_instance->New(ctx->data().arena);
   }
-  SyncHasbits(msg, hasbits, table);
   if (group_coding) {
     return ctx->ParseGroup(field, ptr, FastDecodeTag(saved_tag));
   }
@@ -456,7 +456,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularFixed(
   }
   ptr += sizeof(TagType);  // Consume tag
   hasbits |= (uint64_t{1} << data.hasbit_idx());
-  std::memcpy(Offset(msg, data.offset()), ptr, sizeof(LayoutType));
+  RefAt<LayoutType>(msg, data.offset()) = UnalignedLoad<LayoutType>(ptr);
   ptr += sizeof(LayoutType);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
 }
@@ -501,7 +501,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedFixed(
   auto expected_tag = UnalignedLoad<TagType>(ptr);
   do {
     ptr += sizeof(TagType);
-    std::memcpy(elem + (idx++), ptr, sizeof(LayoutType));
+    elem[idx++] = UnalignedLoad<LayoutType>(ptr);
     ptr += sizeof(LayoutType);
     if (idx >= space) break;
     if (!ctx->DataAvailable(ptr)) break;
@@ -1370,10 +1370,10 @@ const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
   }
   // Copy the value:
   if (rep == field_layout::kRep64Bits) {
-    std::memcpy(Offset(msg, entry.offset), ptr, sizeof(uint64_t));
+    RefAt<uint64_t>(msg, entry.offset) = UnalignedLoad<uint64_t>(ptr);
     ptr += sizeof(uint64_t);
   } else {
-    std::memcpy(Offset(msg, entry.offset), ptr, sizeof(uint32_t));
+    RefAt<uint32_t>(msg, entry.offset) = UnalignedLoad<uint32_t>(ptr);
     ptr += sizeof(uint32_t);
   }
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
@@ -1401,7 +1401,7 @@ const char* TcParser::MpRepeatedFixed(PROTOBUF_TC_PARAM_DECL) {
     uint32_t next_tag;
     do {
       ptr = ptr2;
-      std::memcpy(field.Add(), ptr, size);
+      *field.Add() = UnalignedLoad<uint64_t>(ptr);
       ptr += size;
       if (!ctx->DataAvailable(ptr)) break;
       ptr2 = ReadTag(ptr, &next_tag);
@@ -1417,7 +1417,7 @@ const char* TcParser::MpRepeatedFixed(PROTOBUF_TC_PARAM_DECL) {
     uint32_t next_tag;
     do {
       ptr = ptr2;
-      std::memcpy(field.Add(), ptr, size);
+      *field.Add() = UnalignedLoad<uint32_t>(ptr);
       ptr += size;
       if (!ctx->DataAvailable(ptr)) break;
       ptr2 = ReadTag(ptr, &next_tag);
