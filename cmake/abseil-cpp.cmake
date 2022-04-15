@@ -21,3 +21,8 @@ elseif(protobuf_ABSL_PROVIDER STREQUAL "package")
   find_package(absl REQUIRED CONFIG)
 endif()
 set(_protobuf_FIND_ABSL "if(NOT TARGET absl::strings)\n  find_package(absl CONFIG)\nendif()")
+
+set(protobuf_ABSL_USED_TARGETS
+  absl::strings
+  absl::strings_internal
+)
