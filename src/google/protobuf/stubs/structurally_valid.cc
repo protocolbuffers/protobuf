@@ -381,6 +381,8 @@ static inline bool InStateZero(const UTF8ScanObj* st, const uint8* Tbl) {
   return (static_cast<uint32>(Tbl - Tbl0) < st->state0_size);
 }
 
+namespace {
+
 // Scan a UTF-8 string based on state table.
 // Always scan complete UTF-8 characters
 // Set number of bytes scanned. Return reason for exiting
@@ -539,7 +541,6 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
 //   UTF-8 strings.  Since UTF-8 validation is only used for debugging
 //   anyway, we simply always return success if initialization hasn't
 //   occurred yet.
-namespace {
 
 bool module_initialized_ = false;
 
