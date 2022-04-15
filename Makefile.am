@@ -1403,7 +1403,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   BUILD                                             \
   WORKSPACE                                         \
   CMakeLists.txt                                    \
-  cmake/abseil-cpp.cmake                           \
+  cmake/abseil-cpp.cmake                            \
   cmake/CMakeLists.txt                              \
   cmake/README.md                                   \
   cmake/conformance.cmake                           \
