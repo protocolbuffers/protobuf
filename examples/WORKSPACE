@@ -10,8 +10,8 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 #
 # http_archive(
 #     name = "com_google_protobuf",
-#     strip_prefix = "protobuf-master",
-#     urls = ["https://github.com/protocolbuffers/protobuf/archive/master.zip"],
+#     strip_prefix = "protobuf-main",
+#     urls = ["https://github.com/protocolbuffers/protobuf/archive/main.zip"],
 # )
 local_repository(
     name = "com_google_protobuf",

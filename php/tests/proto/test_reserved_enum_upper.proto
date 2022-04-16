@@ -57,6 +57,7 @@ enum PRINT { ZERO51 = 0; }
 enum PRIVATE { ZERO52 = 0; }
 enum PROTECTED { ZERO53 = 0; }
 enum PUBLIC { ZERO54 = 0; }
+enum READONLY { ZERO80 = 0; }
 enum REQUIRE { ZERO55 = 0; }
 enum REQUIRE_ONCE { ZERO56 = 0; }
 enum RETURN { ZERO57 = 0; }

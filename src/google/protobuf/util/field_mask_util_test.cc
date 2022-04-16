@@ -227,7 +227,7 @@ TEST(FieldMaskUtilTest, TestGetFieldMaskForAllFields) {
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("bb", mask));
 
   mask = FieldMaskUtil::GetFieldMaskForAllFields<TestAllTypes>();
-  EXPECT_EQ(75, mask.paths_size());
+  EXPECT_EQ(76, mask.paths_size());
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("optional_int32", mask));
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("optional_int64", mask));
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("optional_uint32", mask));

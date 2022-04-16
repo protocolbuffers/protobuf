@@ -218,6 +218,7 @@ def SetAllNonLazyFields(message):
 def SetAllFields(message):
   SetAllNonLazyFields(message)
   message.optional_lazy_message.bb = 127
+  message.optional_unverified_lazy_message.bb = 128
 
 
 def SetAllExtensions(message):
@@ -257,6 +258,7 @@ def SetAllExtensions(message):
   extensions[pb2.optional_import_message_extension].d = 120
   extensions[pb2.optional_public_import_message_extension].e = 126
   extensions[pb2.optional_lazy_message_extension].bb = 127
+  extensions[pb2.optional_unverified_lazy_message_extension].bb = 128
 
   extensions[pb2.optional_nested_enum_extension] = pb2.TestAllTypes.BAZ
   extensions[pb2.optional_nested_enum_extension] = pb2.TestAllTypes.BAZ
@@ -465,6 +467,7 @@ def ExpectAllFieldsSet(test_case, message):
   test_case.assertEqual(120, message.optional_import_message.d)
   test_case.assertEqual(126, message.optional_public_import_message.e)
   test_case.assertEqual(127, message.optional_lazy_message.bb)
+  test_case.assertEqual(128, message.optional_unverified_lazy_message.bb)
 
   test_case.assertEqual(unittest_pb2.TestAllTypes.BAZ,
                         message.optional_nested_enum)

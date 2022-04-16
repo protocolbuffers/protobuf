@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copied from https://github.com/googleapis/google-cloud-python/blob/master/.kokoro/trampoline.sh
+# Copied from https://github.com/googleapis/google-cloud-python/blob/main/.kokoro/trampoline.sh
 
 set -eo pipefail
 

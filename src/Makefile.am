@@ -102,6 +102,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/duration.pb.h                                  \
   google/protobuf/dynamic_message.h                              \
   google/protobuf/empty.pb.h                                     \
+  google/protobuf/endian.h                                       \
   google/protobuf/explicitly_constructed.h                       \
   google/protobuf/extension_set.h                                \
   google/protobuf/extension_set_inl.h                            \
@@ -142,6 +143,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/port_def.inc                                   \
   google/protobuf/port_undef.inc                                 \
   google/protobuf/reflection.h                                   \
+  google/protobuf/reflection_internal.h                          \
   google/protobuf/reflection_ops.h                               \
   google/protobuf/repeated_field.h                               \
   google/protobuf/repeated_ptr_field.h                           \
@@ -259,7 +261,6 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/io/tokenizer.cc                              \
   google/protobuf/map_field.cc                                 \
   google/protobuf/message.cc                                   \
-  google/protobuf/reflection_internal.h                        \
   google/protobuf/reflection_ops.cc                            \
   google/protobuf/service.cc                                   \
   google/protobuf/source_context.pb.cc                         \
