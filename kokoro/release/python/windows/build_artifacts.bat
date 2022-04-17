@@ -37,6 +37,7 @@ del /Q zlib-src.zip
 REM Update Submodules
 REM This is needed because this build uses CMake <3.13.
 git submodule update --init --recursive
+SET ABSL_ROOT_DIR=%cd%\third_party\abseil-cpp
 
 REM Create directory for artifacts
 SET ARTIFACT_DIR=%cd%\artifacts
