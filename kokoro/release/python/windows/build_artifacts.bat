@@ -34,15 +34,9 @@ SET ZLIB_ROOT=%cd%\zlib
 del /Q zlib.zip
 del /Q zlib-src.zip
 
-REM Fetch Abseil
+REM Update Submodules
 REM This is needed because this build uses CMake <3.13.
-mkdir absl
-git clone https://github.com/abseil/abseil-cpp.git
-# Checkout lts_2021_11_02
-cd abseil-cpp
-git checkout 215105818dfde3174fe799600bb0f3cae233d0bf
-cd ..
-SET ABSL_ROOT_DIR=%cd%\abseil-cpp
+git submodule update --init --recursive
 
 REM Create directory for artifacts
 SET ARTIFACT_DIR=%cd%\artifacts
