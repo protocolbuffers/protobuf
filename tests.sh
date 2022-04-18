@@ -4,10 +4,6 @@
 # tests on kokoro (Ubuntu and MacOS). It can run locally as well but you
 # will need to make sure the required compilers/tools are available.
 
-# For when some other test needs the C++ main build, including protoc and
-# libprotobuf.
-LAST_RELEASED=3.20.0
-
 internal_build_cpp() {
   if [ -f src/protoc ]; then
     # Already built.
@@ -162,9 +158,6 @@ build_csharp() {
 
   # Run csharp compatibility test between 3.0.0 and the current version.
   csharp/compatibility_tests/v3.0.0/test.sh 3.0.0
-
-  # Run csharp compatibility test between last released and the current version.
-  csharp/compatibility_tests/v3.0.0/test.sh $LAST_RELEASED
   
   # Regression test for https://github.com/protocolbuffers/protobuf/issues/9526
   # - all line endings in .proto and .cs (and .csproj) files should be LF.
@@ -546,7 +539,6 @@ build_php7.3_mac() {
 
 build_php_compatibility() {
   internal_build_cpp
-  php/tests/compatibility_test.sh $LAST_RELEASED
 }
 
 build_php_multirequest() {
