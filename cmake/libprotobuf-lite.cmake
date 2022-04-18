@@ -104,6 +104,9 @@ if(protobuf_HAVE_LD_VERSION_SCRIPT)
     LINK_DEPENDS ${protobuf_SOURCE_DIR}/src/libprotobuf-lite.map)
 endif()
 target_link_libraries(libprotobuf-lite PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(libprotobuf-lite
+  PRIVATE ${ABSL_ROOT_DIR}
+)
 if(protobuf_LINK_LIBATOMIC)
   target_link_libraries(libprotobuf-lite PRIVATE atomic)
 endif()

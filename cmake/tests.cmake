@@ -21,6 +21,7 @@ else()
   set(googlemock_source_dir "${protobuf_SOURCE_DIR}/third_party/googletest/googlemock")
   set(googletest_source_dir "${protobuf_SOURCE_DIR}/third_party/googletest/googletest")
   include_directories(
+    ${ABSL_ROOT_DIR}
     ${googlemock_source_dir}
     ${googletest_source_dir}
     ${googletest_source_dir}/include
@@ -257,7 +258,14 @@ if (MSVC)
     /wd4146 # unary minus operator applied to unsigned type, result still unsigned
   )
 endif()
-target_link_libraries(tests protobuf-lite-test-common protobuf-test-common libprotoc libprotobuf GTest::gmock_main)
+target_link_libraries(tests
+  protobuf-lite-test-common
+  protobuf-test-common
+  libprotoc
+  libprotobuf
+  GTest::gmock_main
+  ${protobuf_ABSL_USED_TARGETS}
+)
 
 set(test_plugin_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
@@ -267,7 +275,12 @@ set(test_plugin_files
 )
 
 add_executable(test_plugin ${test_plugin_files})
-target_link_libraries(test_plugin libprotoc libprotobuf GTest::gmock)
+target_link_libraries(test_plugin
+  libprotoc
+  libprotobuf
+  GTest::gmock
+  ${protobuf_ABSL_USED_TARGETS}
+)
 
 set(lite_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/lite_unittest.cc
