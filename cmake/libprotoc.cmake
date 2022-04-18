@@ -97,17 +97,14 @@ set(libprotoc_headers
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_options.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/js/js_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_helpers.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/parser.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.h
@@ -131,6 +128,9 @@ if(protobuf_HAVE_LD_VERSION_SCRIPT)
     LINK_DEPENDS ${protobuf_SOURCE_DIR}/src/libprotoc.map)
 endif()
 target_link_libraries(libprotoc PRIVATE libprotobuf)
+target_include_directories(libprotoc
+ PRIVATE ${ABSL_ROOT_DIR}
+)
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotoc
     PUBLIC  PROTOBUF_USE_DLLS

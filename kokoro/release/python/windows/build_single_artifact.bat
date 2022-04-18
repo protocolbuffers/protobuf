@@ -49,7 +49,7 @@ mkdir src\.libs
 
 mkdir vcprojects
 pushd vcprojects
-cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% -Dprotobuf_UNICODE=%UNICODE% -Dprotobuf_BUILD_TESTS=OFF ../cmake || goto :error
+cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% -Dprotobuf_UNICODE=%UNICODE% -Dprotobuf_BUILD_TESTS=OFF -DABSL_ROOT_DIR=%ABSL_ROOT_DIR% ../cmake || goto :error
 msbuild protobuf.sln /p:Platform=%vcplatform% /p:Configuration=Release || goto :error
 dir /s /b
 popd

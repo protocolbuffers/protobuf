@@ -96,6 +96,7 @@ message TestAllTypes {
       26;
 
   NestedMessage optional_lazy_message = 27 [lazy = true];
+  NestedMessage optional_unverified_lazy_message = 28 [unverified_lazy = true];
   protobuf_unittest_import.ImportMessage optional_lazy_import_message = 115
       [lazy = true];
 

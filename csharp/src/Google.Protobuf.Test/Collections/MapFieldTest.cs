@@ -625,8 +625,6 @@ namespace Google.Protobuf.Collections
             output.WriteString("the_value");
             output.Flush();
 
-            Console.WriteLine(BitConverter.ToString(memoryStream.ToArray()));
-
             var field = new MapField<string, string>();
             var mapCodec = new MapField<string, string>.Codec(FieldCodec.ForString(keyTag, ""), FieldCodec.ForString(valueTag, ""), 10);
             var input = new CodedInputStream(memoryStream.ToArray());

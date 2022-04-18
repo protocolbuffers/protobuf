@@ -62,7 +62,7 @@ public final class UnknownFieldSet implements MessageLite {
   /**
    * Construct an {@code UnknownFieldSet} around the given map.
    */
-  UnknownFieldSet(TreeMap<Integer, Field> fields) {
+  private UnknownFieldSet(TreeMap<Integer, Field> fields) {
     this.fields = fields;
   }
 

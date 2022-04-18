@@ -82,10 +82,10 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 3020000
+#define GOOGLE_PROTOBUF_VERSION 3020001
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
-#define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
+#define GOOGLE_PROTOBUF_VERSION_SUFFIX "-rc1"
 
 // The minimum header version which works with the current version of
 // the library.  This constant should only be used by protoc's C++ code

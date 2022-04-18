@@ -41,6 +41,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -3699,6 +3700,28 @@ class DescriptorBuilder {
   FileDescriptorTables* file_tables_;
   std::set<const FileDescriptor*> dependencies_;
 
+  struct MessageHints {
+    int fields_to_suggest = 0;
+    const Message* first_reason = nullptr;
+    DescriptorPool::ErrorCollector::ErrorLocation first_reason_location =
+        DescriptorPool::ErrorCollector::ErrorLocation::OTHER;
+
+    void RequestHintOnFieldNumbers(
+        const Message& reason,
+        DescriptorPool::ErrorCollector::ErrorLocation reason_location,
+        int fields_count = 1) {
+      constexpr int kMaxSuggestions = 3;
+      fields_to_suggest =
+          std::min(kMaxSuggestions,
+                   fields_to_suggest + std::min(kMaxSuggestions, fields_count));
+      if (first_reason) return;
+      first_reason = &reason;
+      first_reason_location = reason_location;
+    }
+  };
+
+  std::unordered_map<const Descriptor*, MessageHints> message_hints_;
+
   // unused_dependency_ is used to record the unused imported files.
   // Note: public import is not considered.
   std::set<const FileDescriptor*> unused_dependency_;
@@ -3912,6 +3935,8 @@ class DescriptorBuilder {
                         const ServiceDescriptorProto& proto);
   void CrossLinkMethod(MethodDescriptor* method,
                        const MethodDescriptorProto& proto);
+  void SuggestFieldNumbers(FileDescriptor* file,
+                           const FileDescriptorProto& proto);
 
   // Must be run only after cross-linking.
   void InterpretOptions();
@@ -5267,6 +5292,10 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   // Cross-link.
   CrossLinkFile(result, proto);
 
+  if (!message_hints_.empty()) {
+    SuggestFieldNumbers(result, proto);
+  }
+
   // Interpret any remaining uninterpreted options gathered into
   // options_to_interpret_ during descriptor building.  Cross-linking has made
   // extension options known, so all interpretations should now succeed.
@@ -5441,6 +5470,8 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     for (int j = 0; j < result->extension_range_count(); j++) {
       const Descriptor::ExtensionRange* range = result->extension_range(j);
       if (range->start <= field->number() && field->number() < range->end) {
+        message_hints_[result].RequestHintOnFieldNumbers(
+            proto.extension_range(j), DescriptorPool::ErrorCollector::NUMBER);
         AddError(
             field->full_name(), proto.extension_range(j),
             DescriptorPool::ErrorCollector::NUMBER,
@@ -5452,6 +5483,8 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     for (int j = 0; j < result->reserved_range_count(); j++) {
       const Descriptor::ReservedRange* range = result->reserved_range(j);
       if (range->start <= field->number() && field->number() < range->end) {
+        message_hints_[result].RequestHintOnFieldNumbers(
+            proto.reserved_range(j), DescriptorPool::ErrorCollector::NUMBER);
         AddError(field->full_name(), proto.reserved_range(j),
                  DescriptorPool::ErrorCollector::NUMBER,
                  strings::Substitute("Field \"$0\" uses reserved number $1.",
@@ -5698,6 +5731,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   }
 
   if (result->number() <= 0) {
+    message_hints_[parent].RequestHintOnFieldNumbers(
+        proto, DescriptorPool::ErrorCollector::NUMBER);
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Field numbers must be positive integers.");
   } else if (!is_extension && result->number() > FieldDescriptor::kMaxNumber) {
@@ -5709,11 +5744,15 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
     // This avoids cross-linking issues that arise when attempting to check if
     // the extendee is a message_set_wire_format message, which has a higher max
     // on extension numbers.
+    message_hints_[parent].RequestHintOnFieldNumbers(
+        proto, DescriptorPool::ErrorCollector::NUMBER);
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              strings::Substitute("Field numbers cannot be greater than $0.",
                               FieldDescriptor::kMaxNumber));
   } else if (result->number() >= FieldDescriptor::kFirstReservedNumber &&
              result->number() <= FieldDescriptor::kLastReservedNumber) {
+    message_hints_[parent].RequestHintOnFieldNumbers(
+        proto, DescriptorPool::ErrorCollector::NUMBER);
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              strings::Substitute(
                  "Field numbers $0 through $1 are reserved for the protocol "
@@ -5778,6 +5817,9 @@ void DescriptorBuilder::BuildExtensionRange(
   result->start = proto.start();
   result->end = proto.end();
   if (result->start <= 0) {
+    message_hints_[parent].RequestHintOnFieldNumbers(
+        proto, DescriptorPool::ErrorCollector::NUMBER,
+        std::max(0, result->end - result->start));
     AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Extension numbers must be positive integers.");
   }
@@ -5815,6 +5857,9 @@ void DescriptorBuilder::BuildReservedRange(
   result->start = proto.start();
   result->end = proto.end();
   if (result->start <= 0) {
+    message_hints_[parent].RequestHintOnFieldNumbers(
+        proto, DescriptorPool::ErrorCollector::NUMBER,
+        std::max(0, result->end - result->start));
     AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Reserved numbers must be positive integers.");
   }
@@ -6649,6 +6694,78 @@ void DescriptorBuilder::CrossLinkMethod(MethodDescriptor* method,
     method->output_type_.Set(output_type.descriptor());
   }
 }
+
+void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
+                                            const FileDescriptorProto& proto) {
+  for (int message_index = 0; message_index < file->message_type_count();
+       message_index++) {
+    const Descriptor* message = &file->message_types_[message_index];
+    auto* hints = FindOrNull(message_hints_, message);
+    if (!hints) continue;
+    int fields_to_suggest = hints->fields_to_suggest;
+    if (fields_to_suggest <= 0) continue;
+    struct Range {
+      int from;
+      int to;
+    };
+    std::vector<Range> used_ordinals;
+    auto add_ordinal = [&](int ordinal) {
+      if (!used_ordinals.empty() &&
+          used_ordinals.back().to < FieldDescriptor::kMaxNumber &&
+          ordinal == used_ordinals.back().to + 1) {
+        used_ordinals.back().to = ordinal;
+      } else {
+        used_ordinals.push_back({ordinal, ordinal});
+      }
+    };
+    auto add_range = [&](int from, int to) {
+      from = std::max(0, std::min(FieldDescriptor::kMaxNumber, from));
+      to = std::max(0, std::min(FieldDescriptor::kMaxNumber, to));
+      if (from > to) return;
+      used_ordinals.push_back({from, to});
+    };
+    for (int i = 0; i < message->field_count(); i++) {
+      add_ordinal(message->field(i)->number());
+    }
+    for (int i = 0; i < message->extension_count(); i++) {
+      add_ordinal(message->extension(i)->number());
+    }
+    for (int i = 0; i < message->reserved_range_count(); i++) {
+      auto range = message->reserved_range(i);
+      add_range(range->start, range->end - 1);
+    }
+    for (int i = 0; i < message->extension_range_count(); i++) {
+      auto range = message->extension_range(i);
+      add_range(range->start, range->end - 1);
+    }
+    used_ordinals.push_back(
+        {FieldDescriptor::kMaxNumber, std::numeric_limits<int>::max()});
+    used_ordinals.push_back({FieldDescriptor::kFirstReservedNumber,
+                             FieldDescriptor::kLastReservedNumber});
+    std::sort(used_ordinals.begin(), used_ordinals.end(),
+              [](Range lhs, Range rhs) {
+                return std::tie(lhs.from, lhs.to) < std::tie(rhs.from, rhs.to);
+              });
+    int current_ordinal = 1;
+    std::stringstream id_list;
+    id_list << "Suggested field numbers for " << message->full_name() << ": ";
+    const char* separator = "";
+    for (auto& current_range : used_ordinals) {
+      while (current_ordinal < current_range.from && fields_to_suggest > 0) {
+        id_list << separator << current_ordinal++;
+        separator = ", ";
+        fields_to_suggest--;
+      }
+      if (fields_to_suggest == 0) break;
+      current_ordinal = std::max(current_ordinal, current_range.to + 1);
+    }
+    if (hints->first_reason) {
+      AddError(message->full_name(), *hints->first_reason,
+               hints->first_reason_location, id_list.str());
+    }
+  }
+}
+
 // -------------------------------------------------------------------
 
 #define VALIDATE_OPTIONS_FROM_ARRAY(descriptor, array_name, type) \

@@ -27,6 +27,15 @@ def protobuf_deps():
             ],
         )
 
+    if not native.existing_rule("com_google_absl"):
+        # Abseil LTS from November 2021
+        http_archive(
+          name = "com_google_absl",
+          sha256 = "b4e20d9e752a75c10636675691b1e9c2698e0764cb404987d0ffa77223041c19",
+          urls = ["https://github.com/abseil/abseil-cpp/archive/215105818dfde3174fe799600bb0f3cae233d0bf.zip"],
+          strip_prefix = "abseil-cpp-215105818dfde3174fe799600bb0f3cae233d0bf",
+        )
+
     if not native.existing_rule("zlib"):
         http_archive(
             name = "zlib",
