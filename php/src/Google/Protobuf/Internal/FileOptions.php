@@ -266,7 +266,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *           Use this option to change the package of ruby generated classes. Default
      *           is empty. When this option is not set, the package name will be used for
      *           determining the ruby package.
-     *     @type \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
+     *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here.
      *           See the documentation for the "Options" section above.
      * }
@@ -1091,7 +1091,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * See the documentation for the "Options" section above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
-     * @param \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setUninterpretedOption($var)
