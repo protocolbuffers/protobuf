@@ -132,7 +132,9 @@ cc_library(
 
 cc_library(
     name = "mini_table",
-    srcs = ["upb/mini_table.c"],
+    srcs = [
+        "upb/mini_table.c",
+    ],
     hdrs = [
         "upb/mini_table.h",
         "upb/mini_table.hpp",
@@ -146,12 +148,47 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "mini_table_accessors",
+    srcs = [
+        "upb/mini_table_accessors.c",
+        "upb/mini_table_accessors_internal.h",
+    ],
+    hdrs = [
+        "upb/mini_table_accessors.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//video/youtube/utils/elements/javascript/client/proto/upb/native:__pkg__"],
+    deps = [
+        ":mini_table",
+        ":mini_table_internal",
+        ":port",
+        ":upb",
+    ],
+)
+
 cc_test(
     name = "mini_table_test",
     srcs = ["upb/mini_table_test.cc"],
     deps = [
         ":mini_table",
         ":mini_table_internal",
+        ":upb",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
+cc_test(
+    name = "mini_table_accessors_test",
+    srcs = ["upb/mini_table_accessors_test.cc"],
+    deps = [
+        ":mini_table",
+        ":mini_table_accessors",
+        ":mini_table_internal",
+        ":test_messages_proto2_proto_upb",
+        ":test_messages_proto3_proto_upb",
         ":upb",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
