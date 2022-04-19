@@ -973,7 +973,7 @@ class FileGenerator::ForwardDeclarations {
                          const Options& options) const {
     for (const auto& pair : classes_) {
       format(
-          "template<> $dllexport_decl $"
+          "template<> PROTOBUF_EXPORT_TEMPLATE_DECLARE "
           "$1$* Arena::CreateMaybeMessage<$1$>(Arena*);\n",
           QualifiedClassName(pair.second, options));
     }

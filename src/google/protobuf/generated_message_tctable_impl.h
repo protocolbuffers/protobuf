@@ -253,6 +253,7 @@ template <size_t align>
 #endif
 void AlignFail(uintptr_t address) {
   GOOGLE_LOG(FATAL) << "Unaligned (" << align << ") access at " << address;
+  while(1);
 }
 
 extern template void AlignFail<4>(uintptr_t);

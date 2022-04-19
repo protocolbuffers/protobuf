@@ -36,6 +36,7 @@
 #define GOOGLE_PROTOBUF_TEST_UTIL_LITE_H__
 
 #include <google/protobuf/unittest_lite.pb.h>
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -43,7 +44,7 @@ namespace protobuf {
 namespace unittest = protobuf_unittest;
 namespace unittest_import = protobuf_unittest_import;
 
-class TestUtilLite {
+class PROTOBUF_EXPORT TestUtilLite {
  public:
   // Set every field in the message to a unique value.
   static void SetAllFields(unittest::TestAllTypesLite* message);

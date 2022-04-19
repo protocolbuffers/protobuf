@@ -847,7 +847,7 @@ class StringTypeHandler {
 // RepeatedPtrField is like RepeatedField, but used for repeated strings or
 // Messages.
 template <typename Element>
-class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
+class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
  public:
   constexpr RepeatedPtrField();
@@ -1948,7 +1948,7 @@ UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
       mutable_field);
 }
 
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+extern template class
     RepeatedPtrField<std::string>;
 
 }  // namespace protobuf

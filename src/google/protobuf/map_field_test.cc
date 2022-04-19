@@ -232,9 +232,7 @@ TEST_P(MapFieldBasePrimitiveTest, EnforceNoArena) {
   EXPECT_EQ(map_field->GetArenaForInternalRepeatedField(), nullptr);
 }
 
-namespace {
 enum State { CLEAN, MAP_DIRTY, REPEATED_DIRTY };
-}  // anonymous namespace
 
 class MapFieldStateTest
     : public testing::TestWithParam<std::tuple<State, bool>> {

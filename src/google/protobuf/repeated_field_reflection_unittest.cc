@@ -76,10 +76,10 @@ TEST(RepeatedFieldReflectionTest, RegularFields) {
       desc->FindFieldByName("repeated_foreign_message");
 
   // Get RepeatedField objects for all fields of interest.
-  const RepeatedField<int32_t>& rf_int32 =
-      refl->GetRepeatedField<int32_t>(message, fd_repeated_int32);
-  const RepeatedField<double>& rf_double =
-      refl->GetRepeatedField<double>(message, fd_repeated_double);
+  const RepeatedFieldRef<int32_t> rf_int32 =
+      refl->GetRepeatedFieldRef<int32_t>(message, fd_repeated_int32);
+  const RepeatedFieldRef<double> rf_double =
+      refl->GetRepeatedFieldRef<double>(message, fd_repeated_double);
 
   // Get mutable RepeatedField objects for all fields of interest.
   RepeatedField<int32_t>* mrf_int32 =

@@ -2803,7 +2803,7 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* printer) {
   Formatter format(printer, variables_);
   format(
       "template<> "
-      "PROTOBUF_NOINLINE $classtype$*\n"
+      "PROTOBUF_NOINLINE PROTOBUF_EXPORT_TEMPLATE_DECLARE $classtype$*\n"
       "Arena::CreateMaybeMessage< $classtype$ >(Arena* arena) {\n"
       "  return Arena::CreateMessageInternal< $classtype$ >(arena);\n"
       "}\n");

@@ -629,7 +629,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   }
 
   template <typename T, typename... Args>
-  PROTOBUF_ALWAYS_INLINE static T* CreateMaybeMessage(Arena* arena,
+  PROTOBUF_NOINLINE PROTOBUF_EXPORT_TEMPLATE_DECLARE static T* CreateMaybeMessage(Arena* arena,
                                                       Args&&... args) {
     return DoCreateMaybeMessage<T>(arena, is_arena_constructable<T>(),
                                    std::forward<Args>(args)...);
