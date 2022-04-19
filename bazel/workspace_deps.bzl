@@ -1,6 +1,7 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("//bazel:system_python.bzl", "system_python")
 
 def upb_deps():
     maybe(
@@ -42,3 +43,9 @@ def upb_deps():
         strip_prefix = "bazel-skylib-main",
         urls = ["https://github.com/bazelbuild/bazel-skylib/archive/main.tar.gz"],
     )
+
+    system_python(
+        name = "system_python",
+    )
+
+    native.register_toolchains("@system_python//:python_toolchain")
