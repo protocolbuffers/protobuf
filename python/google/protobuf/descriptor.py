@@ -40,11 +40,15 @@ import warnings
 from google.protobuf.internal import api_implementation
 
 _USE_C_DESCRIPTORS = False
-if api_implementation.Type() == 'cpp':
+if api_implementation.Type() != 'python':
   # Used by MakeDescriptor in cpp mode
   import binascii
   import os
-  from google.protobuf.pyext import _message
+  # pylint: disable=protected-access
+  _message = api_implementation._c_module
+  # TODO(jieluo): Remove this import after fix api_implementation
+  if _message is None:
+    from google.protobuf.pyext import _message
   _USE_C_DESCRIPTORS = True
 
 
@@ -598,13 +602,13 @@ class FieldDescriptor(DescriptorBase):
     self.is_extension = is_extension
     self.extension_scope = extension_scope
     self.containing_oneof = containing_oneof
-    if api_implementation.Type() == 'cpp':
+    if api_implementation.Type() == 'python':
+      self._cdescriptor = None
+    else:
       if is_extension:
         self._cdescriptor = _message.default_pool.FindExtensionByName(full_name)
       else:
         self._cdescriptor = _message.default_pool.FindFieldByName(full_name)
-    else:
-      self._cdescriptor = None
 
   @property
   def camelcase_name(self):
@@ -1135,7 +1139,7 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
   Returns:
     A Descriptor for protobuf messages.
   """
-  if api_implementation.Type() == 'cpp' and build_file_if_cpp:
+  if api_implementation.Type() != 'python' and build_file_if_cpp:
     # The C++ implementation requires all descriptors to be backed by the same
     # definition in the C++ descriptor pool. To do this, we build a
     # FileDescriptorProto with the same definition as this descriptor and build

@@ -33,6 +33,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/arenastring.h>
+#include <google/protobuf/endian.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -233,19 +234,6 @@ const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
                     [str](const char* p, int s) { str->append(p, s); });
 }
 
-
-template <int>
-void byteswap(void* p);
-template <>
-void byteswap<1>(void* /*p*/) {}
-template <>
-void byteswap<4>(void* p) {
-  *static_cast<uint32_t*>(p) = bswap_32(*static_cast<uint32_t*>(p));
-}
-template <>
-void byteswap<8>(void* p) {
-  *static_cast<uint64_t*>(p) = bswap_64(*static_cast<uint64_t*>(p));
-}
 
 const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
   zcis_ = zcis;

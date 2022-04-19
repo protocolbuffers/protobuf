@@ -4,10 +4,6 @@
 # tests on kokoro (Ubuntu and MacOS). It can run locally as well but you
 # will need to make sure the required compilers/tools are available.
 
-# For when some other test needs the C++ main build, including protoc and
-# libprotobuf.
-LAST_RELEASED=3.9.0
-
 internal_build_cpp() {
   if [ -f src/protoc ]; then
     # Already built.
@@ -162,9 +158,14 @@ build_csharp() {
 
   # Run csharp compatibility test between 3.0.0 and the current version.
   csharp/compatibility_tests/v3.0.0/test.sh 3.0.0
-
-  # Run csharp compatibility test between last released and the current version.
-  csharp/compatibility_tests/v3.0.0/test.sh $LAST_RELEASED
+  
+  # Regression test for https://github.com/protocolbuffers/protobuf/issues/9526
+  # - all line endings in .proto and .cs (and .csproj) files should be LF.
+  if git ls-files --eol csharp | grep -E '\.cs|\.proto' | grep -v w/lf
+  then
+    echo "The files listed above have mixed or CRLF line endings; please change to LF."
+    exit 1
+  fi
 }
 
 build_golang() {
@@ -189,6 +190,10 @@ build_golang() {
 use_java() {
   version=$1
   case "$version" in
+    jdk17)
+      export PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH
+      export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+      ;;
     jdk11)
       export PATH=/usr/lib/jvm/java-11-openjdk-amd64/bin:$PATH
       export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
@@ -264,10 +269,22 @@ build_java_jdk7() {
   use_java jdk7
   build_java_with_conformance_tests
 }
+
 build_java_oracle7() {
   use_java oracle7
   build_java oracle7
 }
+
+build_java_jdk8() {
+  use_java jdk8
+  build_java_with_conformance_tests
+}
+
+build_java_jdk17() {
+  use_java jdk17
+  build_java_with_conformance_tests
+}
+
 build_java_linkage_monitor() {
   # Linkage Monitor checks compatibility with other Google libraries
   # https://github.com/GoogleCloudPlatform/cloud-opensource-java/tree/master/linkage-monitor
@@ -397,7 +414,6 @@ build_python310_cpp() {
   build_python_cpp_version py310-cpp
 }
 
-
 build_ruby23() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.3.8 && cd ..
@@ -422,6 +438,10 @@ build_ruby30() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-3.0.2 && cd ..
 }
+build_ruby31() {
+  internal_build_cpp  # For conformance tests.
+  cd ruby && bash travis-test.sh ruby-3.1.0 && cd ..
+}
 
 build_jruby92() {
   internal_build_cpp                # For conformance tests.
@@ -432,7 +452,7 @@ build_jruby92() {
 build_jruby93() {
   internal_build_cpp                # For conformance tests.
   internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
-  cd ruby && bash travis-test.sh jruby-9.3.3.0 && cd ..
+  cd ruby && bash travis-test.sh jruby-9.3.4.0 && cd ..
 }
 
 build_javascript() {
@@ -528,7 +548,6 @@ build_php7.3_mac() {
 
 build_php_compatibility() {
   internal_build_cpp
-  php/tests/compatibility_test.sh $LAST_RELEASED
 }
 
 build_php_multirequest() {
@@ -575,6 +594,8 @@ Usage: $0 { cpp |
             csharp |
             java_jdk7 |
             java_oracle7 |
+            java_jdk8 |
+            java_jdk17 |
             java_linkage_monitor |
             objectivec_ios |
             objectivec_ios_debug |
@@ -593,6 +614,7 @@ Usage: $0 { cpp |
             ruby26 |
             ruby27 |
             ruby30 |
+            ruby31 |
             jruby92 |
             jruby93 |
             ruby_all |

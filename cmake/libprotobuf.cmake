@@ -20,7 +20,6 @@ set(libprotobuf_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/tokenizer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_internal.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.pb.cc
@@ -79,6 +78,7 @@ set(libprotobuf_includes
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_internal.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.pb.h
@@ -117,6 +117,9 @@ if(protobuf_HAVE_LD_VERSION_SCRIPT)
     LINK_DEPENDS ${protobuf_SOURCE_DIR}/src/libprotobuf.map)
 endif()
 target_link_libraries(libprotobuf PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(libprotobuf
+  PRIVATE ${ABSL_ROOT_DIR}
+)
 if(protobuf_WITH_ZLIB)
   target_link_libraries(libprotobuf PRIVATE ${ZLIB_LIBRARIES})
 endif()

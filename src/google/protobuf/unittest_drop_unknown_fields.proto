@@ -31,8 +31,8 @@
 syntax = "proto3";
 
 package unittest_drop_unknown_fields;
-option objc_class_prefix = "DropUnknowns";
 
+option objc_class_prefix = "DropUnknowns";
 option csharp_namespace = "Google.Protobuf.TestProtos";
 
 message Foo {
@@ -50,7 +50,7 @@ message FooWithExtraFields {
     FOO = 0;
     BAR = 1;
     BAZ = 2;
-    QUX = 3;
+    MOO = 3;
   }
   int32 int32_value = 1;
   NestedEnum enum_value = 2;

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "google-protobuf"
-  s.version     = "3.20.0.rc.1"
+  s.version     = "3.20.1.rc.1"
   git_tag       = "v#{s.version.to_s.sub('.rc.', '-rc')}" # Converts X.Y.Z.rc.N to vX.Y.Z-rcN, used for the git tag
   s.licenses    = ["BSD-3-Clause"]
   s.summary     = "Protocol Buffers"
@@ -17,8 +17,7 @@ Gem::Specification.new do |s|
   else
     s.files     += Dir.glob('ext/**/*')
     s.extensions= ["ext/google/protobuf_c/extconf.rb"]
-    s.add_development_dependency "rake-compiler-dock", "= 1.1.0"
-  end
+    s.add_development_dependency "rake-compiler-dock", "= 1.2.1"  end
   s.test_files  = ["tests/basic.rb",
                   "tests/stress.rb",
                   "tests/generated_code_test.rb"]

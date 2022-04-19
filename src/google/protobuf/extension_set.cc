@@ -69,24 +69,6 @@ inline WireFormatLite::CppType cpp_type(FieldType type) {
   return WireFormatLite::FieldTypeToCppType(real_type(type));
 }
 
-inline bool is_packable(WireFormatLite::WireType type) {
-  switch (type) {
-    case WireFormatLite::WIRETYPE_VARINT:
-    case WireFormatLite::WIRETYPE_FIXED64:
-    case WireFormatLite::WIRETYPE_FIXED32:
-      return true;
-    case WireFormatLite::WIRETYPE_LENGTH_DELIMITED:
-    case WireFormatLite::WIRETYPE_START_GROUP:
-    case WireFormatLite::WIRETYPE_END_GROUP:
-      return false;
-
-      // Do not add a default statement. Let the compiler complain when someone
-      // adds a new wire type.
-  }
-  GOOGLE_LOG(FATAL) << "can't reach here.";
-  return false;
-}
-
 // Registry stuff.
 
 // Note that we cannot use hetererogeneous lookup for std containers since we
@@ -138,8 +120,6 @@ const ExtensionInfo* FindRegisteredExtension(const MessageLite* extendee,
 }
 
 }  // namespace
-
-ExtensionFinder::~ExtensionFinder() {}
 
 bool GeneratedExtensionFinder::Find(int number, ExtensionInfo* output) {
   const ExtensionInfo* extension = FindRegisteredExtension(extendee_, number);
@@ -949,49 +929,41 @@ void ExtensionSet::Clear() {
 }
 
 namespace {
-// Computes the size of a std::set_union without constructing the union.
+// Computes the size of an ExtensionSet union without actually constructing the
+// union. Note that we do not count cleared extensions from the source to be
+// part of the total, because there is no need to allocate space for those. We
+// do include cleared extensions in the destination, though, because those are
+// already allocated and will not be going away.
 template <typename ItX, typename ItY>
-size_t SizeOfUnion(ItX it_xs, ItX end_xs, ItY it_ys, ItY end_ys) {
+size_t SizeOfUnion(ItX it_dest, ItX end_dest, ItY it_source, ItY end_source) {
   size_t result = 0;
-  while (it_xs != end_xs && it_ys != end_ys) {
-    ++result;
-    if (it_xs->first < it_ys->first) {
-      ++it_xs;
-    } else if (it_xs->first == it_ys->first) {
-      ++it_xs;
-      ++it_ys;
+  while (it_dest != end_dest && it_source != end_source) {
+    if (it_dest->first < it_source->first) {
+      ++result;
+      ++it_dest;
+    } else if (it_dest->first == it_source->first) {
+      ++result;
+      ++it_dest;
+      ++it_source;
     } else {
-      ++it_ys;
+      if (!it_source->second.is_cleared) {
+        ++result;
+      }
+      ++it_source;
     }
   }
-  result += std::distance(it_xs, end_xs);
-  result += std::distance(it_ys, end_ys);
+  result += std::distance(it_dest, end_dest);
+  for (; it_source != end_source; ++it_source) {
+    if (!it_source->second.is_cleared) {
+      ++result;
+    }
+  }
   return result;
 }
 }  // namespace
 
 void ExtensionSet::MergeFrom(const MessageLite* extendee,
                              const ExtensionSet& other) {
-  // check if the other is cleared
-  bool is_other_all_cleared = true;
-  if (PROTOBUF_PREDICT_TRUE(!other.is_large())){
-    for (const KeyValue* it = other.flat_begin(); it != other.flat_end(); it++){
-      is_other_all_cleared = is_other_all_cleared && it->second.is_cleared;
-      if (!is_other_all_cleared){
-        break;
-      }
-    }
-  } else {
-    for (LargeMap::iterator it = other.map_.large->begin(); it != other.map_.large->end(); it++){
-      is_other_all_cleared = is_other_all_cleared && it->second.is_cleared;
-      if (!is_other_all_cleared){
-        break;
-      }
-    }
-  }
-  if (is_other_all_cleared){
-    return;
-  }
   if (PROTOBUF_PREDICT_TRUE(!is_large())) {
     if (PROTOBUF_PREDICT_TRUE(!other.is_large())) {
       GrowCapacity(SizeOfUnion(flat_begin(), flat_end(), other.flat_begin(),
@@ -1253,40 +1225,6 @@ bool ExtensionSet::IsInitialized() const {
     if (!it->second.IsInitialized()) return false;
   }
   return true;
-}
-
-bool ExtensionSet::FindExtensionInfoFromTag(uint32_t tag,
-                                            ExtensionFinder* extension_finder,
-                                            int* field_number,
-                                            ExtensionInfo* extension,
-                                            bool* was_packed_on_wire) {
-  *field_number = WireFormatLite::GetTagFieldNumber(tag);
-  WireFormatLite::WireType wire_type = WireFormatLite::GetTagWireType(tag);
-  return FindExtensionInfoFromFieldNumber(wire_type, *field_number,
-                                          extension_finder, extension,
-                                          was_packed_on_wire);
-}
-
-bool ExtensionSet::FindExtensionInfoFromFieldNumber(
-    int wire_type, int field_number, ExtensionFinder* extension_finder,
-    ExtensionInfo* extension, bool* was_packed_on_wire) const {
-  if (!extension_finder->Find(field_number, extension)) {
-    return false;
-  }
-
-  WireFormatLite::WireType expected_wire_type =
-      WireFormatLite::WireTypeForFieldType(real_type(extension->type));
-
-  // Check if this is a packed field.
-  *was_packed_on_wire = false;
-  if (extension->is_repeated &&
-      wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED &&
-      is_packable(expected_wire_type)) {
-    *was_packed_on_wire = true;
-    return true;
-  }
-  // Otherwise the wire type must match.
-  return expected_wire_type == wire_type;
 }
 
 const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,

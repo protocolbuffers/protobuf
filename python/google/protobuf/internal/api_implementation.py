@@ -31,6 +31,7 @@
 """Determine which implementation of the protobuf API is used in this process.
 """
 
+import importlib
 import os
 import sys
 import warnings
@@ -48,24 +49,62 @@ if _api_version == 1:
   raise ValueError('api_version=1 is no longer supported.')
 
 
-_default_implementation_type = ('cpp' if _api_version > 0 else 'python')
+
+
+def _ApiVersionToImplementationType(api_version):
+  if api_version == 3:
+    return 'upb'
+  if api_version == 2:
+    return 'cpp'
+  return 'python'
+
+# TODO(jieluo): Remove _api_version and only keep implementation_type
+# http://b/228103078
+_default_implementation_type = _ApiVersionToImplementationType(_api_version)
 
 
 # This environment variable can be used to switch to a certain implementation
 # of the Python API, overriding the compile-time constants in the
-# _api_implementation module. Right now only 'python' and 'cpp' are valid
-# values. Any other value will be ignored.
+# _api_implementation module. Right now only 'python', 'cpp' and 'upb' are
+# valid values. Any other value will raise error.
 _implementation_type = os.getenv('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION',
                                  _default_implementation_type)
 
-if _implementation_type != 'python':
-  _implementation_type = 'cpp'
+if _implementation_type not in ('python', 'cpp', 'upb'):
+  raise ValueError('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION {0} is not '
+                   'supported. Please set to \'python\', \'cpp\' or '
+                   '\'upb\'.'.format(_implementation_type))
 
 if 'PyPy' in sys.version and _implementation_type == 'cpp':
   warnings.warn('PyPy does not work yet with cpp protocol buffers. '
                 'Falling back to the python implementation.')
   _implementation_type = 'python'
 
+_c_module = None
+
+if _implementation_type == 'cpp':
+  try:
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf.pyext import _message
+    _c_module = _message
+    del _message
+  except ImportError:
+    # TODO(jieluo): fail back to python
+    warnings.warn(
+        'Selected implementation cpp is not available.')
+    pass
+
+if _implementation_type == 'upb':
+  try:
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf.pyext import _upb_message as _message
+    _c_module = _message
+    del _message
+  except ImportError:
+    warnings.warn('Selected implementation upb is not available. '
+                  'Falling back to the python implementation.')
+    _implementation_type = 'python'
+    pass
 
 # Detect if serialization should be deterministic by default
 try:
@@ -103,6 +142,7 @@ def _SetType(implementation_type):
 
 
 # See comment on 'Type' above.
+# TODO(jieluo): Remove the API, it returns a constant. b/228102101
 def Version():
   return 2
 

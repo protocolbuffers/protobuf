@@ -18,7 +18,7 @@ REM Pin multibuild scripts at a known commit to avoid potentially unwanted futur
 REM silently creeping in (see https://github.com/protocolbuffers/protobuf/issues/9180).
 REM IMPORTANT: always pin multibuild at the same commit for:
 REM - linux/build_artifacts.sh
-REM - linux/build_artifacts.sh
+REM - macos/build_artifacts.sh
 REM - windows/build_artifacts.bat
 cd multibuild
 git checkout b89bb903e94308be79abefa4f436bf123ebb1313
@@ -33,6 +33,11 @@ curl -L -o zlib-src.zip http://www.winimage.com/zLibDll/zlib123.zip
 SET ZLIB_ROOT=%cd%\zlib
 del /Q zlib.zip
 del /Q zlib-src.zip
+
+REM Update Submodules
+REM This is needed because this build uses CMake <3.13.
+git submodule update --init --recursive
+SET ABSL_ROOT_DIR=%cd%\third_party\abseil-cpp
 
 REM Create directory for artifacts
 SET ARTIFACT_DIR=%cd%\artifacts

@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/map_test_util_impl.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/map_test_util_impl.h>
 #include <google/protobuf/message.h>
 
 namespace google {

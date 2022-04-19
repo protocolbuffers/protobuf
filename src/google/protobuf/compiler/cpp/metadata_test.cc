@@ -32,13 +32,13 @@
 
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/compiler/cpp/cpp_generator.h>
-#include <google/protobuf/compiler/annotation_test_util.h>
+#include <google/protobuf/compiler/cpp/generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/compiler/annotation_test_util.h>
+#include <google/protobuf/compiler/cpp/helpers.h>
 
 namespace google {
 namespace protobuf {

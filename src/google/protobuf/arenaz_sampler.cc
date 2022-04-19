@@ -55,13 +55,13 @@ void UnsampleSlow(ThreadSafeArenaStats* info) {
 namespace {
 
 PROTOBUF_CONSTINIT std::atomic<bool> g_arenaz_enabled{true};
-PROTOBUF_CONSTINIT std::atomic<int32_t> g_arenaz_sample_parameter{1 << 20};
+PROTOBUF_CONSTINIT std::atomic<int32_t> g_arenaz_sample_parameter{1 << 10};
 PROTOBUF_THREAD_LOCAL absl::profiling_internal::ExponentialBiased
     g_exponential_biased_generator;
 
 }  // namespace
 
-PROTOBUF_THREAD_LOCAL int64_t global_next_sample = 1LL << 20;
+PROTOBUF_THREAD_LOCAL int64_t global_next_sample = 1LL << 10;
 
 ThreadSafeArenaStats::ThreadSafeArenaStats() { PrepareForSampling(); }
 ThreadSafeArenaStats::~ThreadSafeArenaStats() = default;

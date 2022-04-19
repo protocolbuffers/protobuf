@@ -174,48 +174,42 @@ class MessageFactoryTest(unittest.TestCase):
     factory = message_factory.MessageFactory(pool=pool)
 
     # Add Container message.
-    f = descriptor_pb2.FileDescriptorProto()
-    f.name = 'google/protobuf/internal/container.proto'
-    f.package = 'google.protobuf.python.internal'
-    msg = f.message_type.add()
-    msg.name = 'Container'
-    rng = msg.extension_range.add()
-    rng.start = 1
-    rng.end = 10
+    f = descriptor_pb2.FileDescriptorProto(
+        name='google/protobuf/internal/container.proto',
+        package='google.protobuf.python.internal')
+    f.message_type.add(name='Container').extension_range.add(start=1, end=10)
     pool.Add(f)
     msgs = factory.GetMessages([f.name])
     self.assertIn('google.protobuf.python.internal.Container', msgs)
 
     # Extend container.
-    f = descriptor_pb2.FileDescriptorProto()
-    f.name = 'google/protobuf/internal/extension.proto'
-    f.package = 'google.protobuf.python.internal'
-    f.dependency.append('google/protobuf/internal/container.proto')
-    msg = f.message_type.add()
-    msg.name = 'Extension'
-    ext = msg.extension.add()
-    ext.name = 'extension_field'
-    ext.number = 2
-    ext.label = descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL
-    ext.type_name = 'Extension'
-    ext.extendee = 'Container'
+    f = descriptor_pb2.FileDescriptorProto(
+        name='google/protobuf/internal/extension.proto',
+        package='google.protobuf.python.internal',
+        dependency=['google/protobuf/internal/container.proto'])
+    msg = f.message_type.add(name='Extension')
+    msg.extension.add(
+        name='extension_field',
+        number=2,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        type_name='Extension',
+        extendee='Container')
     pool.Add(f)
     msgs = factory.GetMessages([f.name])
     self.assertIn('google.protobuf.python.internal.Extension', msgs)
 
     # Add Duplicate extending the same field number.
-    f = descriptor_pb2.FileDescriptorProto()
-    f.name = 'google/protobuf/internal/duplicate.proto'
-    f.package = 'google.protobuf.python.internal'
-    f.dependency.append('google/protobuf/internal/container.proto')
-    msg = f.message_type.add()
-    msg.name = 'Duplicate'
-    ext = msg.extension.add()
-    ext.name = 'extension_field'
-    ext.number = 2
-    ext.label = descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL
-    ext.type_name = 'Duplicate'
-    ext.extendee = 'Container'
+    f = descriptor_pb2.FileDescriptorProto(
+        name='google/protobuf/internal/duplicate.proto',
+        package='google.protobuf.python.internal',
+        dependency=['google/protobuf/internal/container.proto'])
+    msg = f.message_type.add(name='Duplicate')
+    msg.extension.add(
+        name='extension_field',
+        number=2,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        type_name='Duplicate',
+        extendee='Container')
     pool.Add(f)
 
     with self.assertRaises(Exception) as cm:
@@ -229,6 +223,76 @@ class MessageFactoryTest(unittest.TestCase):
                    ' "google.protobuf.python.internal.Container"'
                    ' with field number 2.',
                    'Double registration of Extensions'])
+
+  def testExtensionValueInDifferentFile(self):
+    # Add Container message.
+    f1 = descriptor_pb2.FileDescriptorProto(
+        name='google/protobuf/internal/container.proto',
+        package='google.protobuf.python.internal')
+    f1.message_type.add(name='Container').extension_range.add(start=1, end=10)
+
+    # Add ValueType message.
+    f2 = descriptor_pb2.FileDescriptorProto(
+        name='google/protobuf/internal/value_type.proto',
+        package='google.protobuf.python.internal')
+    f2.message_type.add(name='ValueType').field.add(
+        name='setting',
+        number=1,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+        default_value='123')
+
+    # Extend container with field of ValueType.
+    f3 = descriptor_pb2.FileDescriptorProto(
+        name='google/protobuf/internal/extension.proto',
+        package='google.protobuf.python.internal',
+        dependency=[f1.name, f2.name])
+    f3.extension.add(
+        name='top_level_extension_field',
+        number=2,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        type_name='ValueType',
+        extendee='Container')
+    f3.message_type.add(name='Extension').extension.add(
+        name='nested_extension_field',
+        number=3,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+        type_name='ValueType',
+        extendee='Container')
+
+    class SimpleDescriptorDB:
+
+      def __init__(self, files):
+        self._files = files
+
+      def FindFileByName(self, name):
+        return self._files[name]
+
+    db = SimpleDescriptorDB({f1.name: f1, f2.name: f2, f3.name: f3})
+
+    pool = descriptor_pool.DescriptorPool(db)
+    factory = message_factory.MessageFactory(pool=pool)
+    msgs = factory.GetMessages([f1.name, f3.name])  # Deliberately not f2.
+    msg = msgs['google.protobuf.python.internal.Container']
+    desc = msgs['google.protobuf.python.internal.Extension'].DESCRIPTOR
+    ext1 = desc.file.extensions_by_name['top_level_extension_field']
+    ext2 = desc.extensions_by_name['nested_extension_field']
+    m = msg()
+    m.Extensions[ext1].setting = 234
+    m.Extensions[ext2].setting = 345
+    serialized = m.SerializeToString()
+
+    pool = descriptor_pool.DescriptorPool(db)
+    factory = message_factory.MessageFactory(pool=pool)
+    msgs = factory.GetMessages([f1.name, f3.name])  # Deliberately not f2.
+    msg = msgs['google.protobuf.python.internal.Container']
+    desc = msgs['google.protobuf.python.internal.Extension'].DESCRIPTOR
+    ext1 = desc.file.extensions_by_name['top_level_extension_field']
+    ext2 = desc.extensions_by_name['nested_extension_field']
+    m = msg.FromString(serialized)
+    self.assertEqual(2, len(m.ListFields()))
+    self.assertEqual(234, m.Extensions[ext1].setting)
+    self.assertEqual(345, m.Extensions[ext2].setting)
 
 
 if __name__ == '__main__':
