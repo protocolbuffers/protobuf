@@ -139,18 +139,6 @@ typedef struct {
   int value_count;
 } upb_MiniTable_Enum;
 
-UPB_INLINE bool upb_MiniTable_Enum_CheckValue(const upb_MiniTable_Enum* e,
-                                              int32_t val) {
-  uint32_t uval = (uint32_t)val;
-  if (uval < 64) return e->mask & (1 << uval);
-  // OPT: binary search long lists?
-  int n = e->value_count;
-  for (int i = 0; i < n; i++) {
-    if (e->values[i] == val) return true;
-  }
-  return false;
-}
-
 typedef union {
   const struct upb_MiniTable* submsg;
   const upb_MiniTable_Enum* subenum;

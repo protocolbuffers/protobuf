@@ -248,6 +248,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":descriptor_upb_proto",
+        ":mini_table",
         ":port",
         ":table",
         ":upb",
@@ -562,11 +563,12 @@ upb_amalgamation(
         "upb.h",
     ],
     libs = [
-        ":upb",
-        ":fastdecode",
         ":descriptor_upb_proto",
-        ":reflection",
+        ":fastdecode",
+        ":mini_table",
         ":port",
+        ":reflection",
+        ":upb",
     ],
 )
 
@@ -585,13 +587,14 @@ upb_amalgamation(
         "php-upb.h",
     ],
     libs = [
-        ":upb",
-        ":fastdecode",
         ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
-        ":reflection",
-        ":port",
+        ":fastdecode",
         ":json",
+        ":mini_table",
+        ":port",
+        ":reflection",
+        ":upb",
     ],
     prefix = "php-",
 )
@@ -611,12 +614,13 @@ upb_amalgamation(
         "ruby-upb.h",
     ],
     libs = [
-        ":upb",
-        ":fastdecode",
         ":descriptor_upb_proto",
-        ":reflection",
-        ":port",
+        ":fastdecode",
         ":json",
+        ":mini_table",
+        ":port",
+        ":reflection",
+        ":upb",
     ],
     prefix = "ruby-",
 )

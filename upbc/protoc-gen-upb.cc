@@ -119,12 +119,12 @@ std::vector<const protobuf::EnumDescriptor*> SortedEnums(
   return enums;
 }
 
-std::vector<int32_t> SortedUniqueEnumNumbers(
+std::vector<uint32_t> SortedUniqueEnumNumbers(
     const protobuf::EnumDescriptor* e) {
-  std::vector<int32_t> values;
+  std::vector<uint32_t> values;
   values.reserve(e->value_count());
   for (int i = 0; i < e->value_count(); i++) {
-    values.push_back(e->value(i)->number());
+    values.push_back(static_cast<uint32_t>(e->value(i)->number()));
   }
   std::sort(values.begin(), values.end());
   auto last = std::unique(values.begin(), values.end());
@@ -350,6 +350,7 @@ class FilePlatformLayout {
   // Retrieves a upb MiniTable or Extension given a protobuf descriptor.  The
   // descriptor must be from this layout's file.
   upb_MiniTable* GetMiniTable(const protobuf::Descriptor* m) const;
+  upb_MiniTable_Enum* GetEnumTable(const protobuf::EnumDescriptor* d) const;
   const upb_MiniTable_Extension* GetExtension(
       const protobuf::FieldDescriptor* fd) const;
 
@@ -362,6 +363,7 @@ class FilePlatformLayout {
   void BuildExtensions(const protobuf::FileDescriptor* fd);
   upb_MiniTable* MakeMiniTable(const protobuf::Descriptor* m);
   upb_MiniTable* MakeRegularMiniTable(const protobuf::Descriptor* m);
+  upb_MiniTable_Enum* MakeMiniTableEnum(const protobuf::EnumDescriptor* d);
   uint64_t GetMessageModifiers(const protobuf::Descriptor* m);
   uint64_t GetFieldModifiers(const protobuf::FieldDescriptor* f);
   void ResolveIntraFileReferences();
@@ -394,10 +396,13 @@ class FilePlatformLayout {
  private:
   using TableMap =
       absl::flat_hash_map<const protobuf::Descriptor*, upb_MiniTable*>;
+  using EnumMap =
+      absl::flat_hash_map<const protobuf::EnumDescriptor*, upb_MiniTable_Enum*>;
   using ExtensionMap = absl::flat_hash_map<const protobuf::FieldDescriptor*,
                                            upb_MiniTable_Extension>;
   upb::Arena arena_;
   TableMap table_map_;
+  EnumMap enum_map_;
   ExtensionMap extension_map_;
   upb_MiniTablePlatform platform_;
 };
@@ -406,6 +411,13 @@ upb_MiniTable* FilePlatformLayout::GetMiniTable(
     const protobuf::Descriptor* m) const {
   auto it = table_map_.find(m);
   assert(it != table_map_.end());
+  return it->second;
+}
+
+upb_MiniTable_Enum* FilePlatformLayout::GetEnumTable(
+    const protobuf::EnumDescriptor* d) const {
+  auto it = enum_map_.find(d);
+  assert(it != enum_map_.end());
   return it->second;
 }
 
@@ -503,6 +515,9 @@ void FilePlatformLayout::BuildMiniTables(const protobuf::FileDescriptor* fd) {
   for (const auto& m : SortedMessages(fd)) {
     table_map_[m] = MakeMiniTable(m);
   }
+  for (const auto& e : SortedEnums(fd)) {
+    enum_map_[e] = MakeMiniTableEnum(e);
+  }
   ResolveIntraFileReferences();
   SetSubTableStrings();
 }
@@ -564,10 +579,32 @@ upb_MiniTable* FilePlatformLayout::MakeRegularMiniTable(
       e.PutOneofField(f->number());
     }
   }
-  const std::string& str = e.data();
+  absl::string_view str = e.data();
   upb::Status status;
   upb_MiniTable* ret = upb_MiniTable_Build(str.data(), str.size(), platform_,
                                            arena_.ptr(), status.ptr());
+  if (!ret) {
+    fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
+  }
+  assert(ret);
+  return ret;
+}
+
+upb_MiniTable_Enum* FilePlatformLayout::MakeMiniTableEnum(
+    const protobuf::EnumDescriptor* d) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+
+  e.StartEnum();
+  for (uint32_t i : SortedUniqueEnumNumbers(d)) {
+    e.PutEnumValue(i);
+  }
+  e.EndEnum();
+
+  absl::string_view str = e.data();
+  upb::Status status;
+  upb_MiniTable_Enum* ret = upb_MiniTable_BuildEnum(str.data(), str.size(),
+                                                    arena_.ptr(), status.ptr());
   if (!ret) {
     fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
   }
@@ -630,6 +667,11 @@ class FileLayout {
 
   const upb_MiniTable* GetMiniTable64(const protobuf::Descriptor* m) const {
     return layout64_.GetMiniTable(m);
+  }
+
+  const upb_MiniTable_Enum* GetEnumTable(
+      const protobuf::EnumDescriptor* d) const {
+    return layout64_.GetEnumTable(d);
   }
 
   std::string GetFieldOffset(const protobuf::FieldDescriptor* f) const {
@@ -1742,7 +1784,35 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
   output("};\n\n");
 }
 
-int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
+void WriteEnum(const upb_MiniTable_Enum* mt, const protobuf::EnumDescriptor* e,
+               Output& output) {
+  std::string values_init = "NULL";
+
+  if (mt->value_count) {
+    values_init = EnumInit(e) + "_values";
+    output("static const int32_t $0[$1] = {\n", values_init, mt->value_count);
+    for (int i = 0; i < mt->value_count; i++) {
+      output("  $0,\n", mt->values[i]);
+    }
+    output("};\n\n");
+  }
+
+  output(
+      R"cc(
+        const upb_MiniTable_Enum $0 = {
+            $1,
+            $2,
+            $3,
+        };
+      )cc",
+      EnumInit(e), values_init, absl::StrCat("0x", absl::Hex(mt->mask), "ULL"),
+      mt->value_count);
+  output("\n");
+}
+
+int WriteEnums(const FileLayout& layout, Output& output) {
+  const protobuf::FileDescriptor* file = layout.descriptor();
+
   if (file->syntax() != protobuf::FileDescriptor::SYNTAX_PROTO2) {
     return 0;
   }
@@ -1750,34 +1820,8 @@ int WriteEnums(const protobuf::FileDescriptor* file, Output& output) {
   std::vector<const protobuf::EnumDescriptor*> this_file_enums =
       SortedEnums(file);
 
-  std::string values_init = "NULL";
-
   for (const auto* e : this_file_enums) {
-    uint64_t mask = 0;
-    std::vector<int32_t> values;
-    for (auto number : SortedUniqueEnumNumbers(e)) {
-      if (static_cast<uint32_t>(number) < 64) {
-        mask |= 1ULL << number;
-      } else {
-        values.push_back(number);
-      }
-    }
-
-    if (!values.empty()) {
-      values_init = EnumInit(e) + "_values";
-      output("static const int32_t $0[$1] = {\n", values_init, values.size());
-      for (int32_t value : values) {
-        output("  $0,\n", value);
-      }
-      output("};\n\n");
-    }
-
-    output("const upb_MiniTable_Enum $0 = {\n", EnumInit(e));
-    output("  $0,\n", values_init);
-    output("  0x$0ULL,\n", absl::Hex(mask));
-    output("  $0,\n", values.size());
-
-    output("};\n\n");
+    WriteEnum(layout.GetEnumTable(e), e, output);
   }
 
   if (!this_file_enums.empty()) {
@@ -1884,9 +1928,9 @@ void WriteSource(const FileLayout& layout, Output& output,
       "#include \"upb/port_def.inc\"\n"
       "\n");
 
-  int msg_count = WriteMessages(file, output, fasttable_enabled);
+  int msg_count = WriteMessages(layout, output, fasttable_enabled);
   int ext_count = WriteExtensions(layout, output);
-  int enum_count = WriteEnums(file, output);
+  int enum_count = WriteEnums(layout, output);
 
   output("const upb_MiniTable_File $0 = {\n", FileLayoutName(file));
   output("  $0,\n", msg_count ? kMessagesInit : "NULL");

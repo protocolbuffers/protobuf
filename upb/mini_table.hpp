@@ -65,6 +65,19 @@ class MtDataEncoder {
     });
   }
 
+  void StartEnum() { upb_MtDataEncoder_StartEnum(&encoder_); }
+
+  bool PutEnumValue(uint32_t enum_value) {
+    return appender_([=](char* buf) {
+      return upb_MtDataEncoder_PutEnumValue(&encoder_, buf, enum_value);
+    });
+  }
+
+  bool EndEnum() {
+    return appender_(
+        [=](char* buf) { return upb_MtDataEncoder_EndEnum(&encoder_, buf); });
+  }
+
   const std::string& data() const { return appender_.data(); }
 
  private:

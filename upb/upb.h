@@ -248,10 +248,15 @@ UPB_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
-  if (size <= oldsize) {
-    if ((char*)ptr + oldsize == h->ptr) {
-      upb_Arena_ShrinkLast(a, ptr, oldsize, size);
+  bool is_most_recent_alloc = (uintptr_t)ptr + oldsize == (uintptr_t)h->ptr;
+
+  if (is_most_recent_alloc) {
+    ptrdiff_t diff = size - oldsize;
+    if ((ptrdiff_t)_upb_ArenaHas(a) >= diff) {
+      h->ptr += diff;
+      return ptr;
     }
+  } else if (size <= oldsize) {
     return ptr;
   }
 

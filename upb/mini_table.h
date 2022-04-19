@@ -40,6 +40,23 @@ extern "C" {
 const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number);
 
+UPB_INLINE bool upb_MiniTable_Enum_CheckValue(const upb_MiniTable_Enum* e,
+                                              int32_t val) {
+  uint32_t uval = (uint32_t)val;
+  if (uval < 64) return e->mask & (1ULL << uval);
+  // OPT: binary search long lists?
+  int n = e->value_count;
+  for (int i = 0; i < n; i++) {
+    if (e->values[i] == val) return true;
+  }
+  return false;
+}
+
+/** upb_MtDataEncoder *********************************************************/
+
+// Functions to encode a string in a format that can be loaded by
+// upb_MiniTable_Build().
+
 typedef enum {
   kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
   kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
@@ -53,11 +70,6 @@ typedef enum {
   kUpb_FieldModifier_IsProto3Singular = 1 << 3,
   kUpb_FieldModifier_IsRequired = 1 << 4,
 } kUpb_FieldModifier;
-
-/** upb_MtDataEncoder *********************************************************/
-
-// Functions to encode a string in a format that can be loaded by
-// upb_MiniTable_Build().
 
 typedef struct {
   char* end;  // Limit of the buffer passed as a parameter.
@@ -103,10 +115,10 @@ char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
 
 // Encodes the set of values for a given enum.  The values must be given in
 // order (after casting to uint32_t), and repeats are not allowed.
-char* upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e, char* ptr);
+void upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e);
 char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
                                      uint32_t val);
-char* upb_MtDataEncoder_FinishEnum(upb_MtDataEncoder* e, char* ptr);
+char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr);
 
 /** upb_MiniTable *************************************************************/
 
