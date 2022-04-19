@@ -905,7 +905,7 @@ static const char* decode_known(upb_Decoder* d, const char* ptr,
     const upb_MiniTable_Extension* ext_layout =
         (const upb_MiniTable_Extension*)field;
     upb_Message_Extension* ext =
-        _upb_Message_Getorcreateext(msg, ext_layout, &d->arena);
+        _upb_Message_GetOrCreateExtension(msg, ext_layout, &d->arena);
     if (UPB_UNLIKELY(!ext)) return decode_err(d, kUpb_DecodeStatus_OutOfMemory);
     msg = &ext->data;
     subs = &ext->ext->sub;

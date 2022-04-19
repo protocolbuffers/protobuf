@@ -324,7 +324,7 @@ typedef struct {
 /* Adds the given extension data to the given message. |ext| is copied into the
  * message instance. This logically replaces any previously-added extension with
  * this number */
-upb_Message_Extension* _upb_Message_Getorcreateext(
+upb_Message_Extension* _upb_Message_GetOrCreateExtension(
     upb_Message* msg, const upb_MiniTable_Extension* ext, upb_Arena* arena);
 
 /* Returns an array of extensions for this message. Note: the array is
