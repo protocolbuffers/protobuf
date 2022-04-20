@@ -30,7 +30,7 @@ git clone https://github.com/matthew-brett/multibuild.git
 # silently creeping in (see https://github.com/protocolbuffers/protobuf/issues/9180).
 # IMPORTANT: always pin multibuild at the same commit for:
 # - linux/build_artifacts.sh
-# - linux/build_artifacts.sh
+# - macos/build_artifacts.sh
 # - windows/build_artifacts.bat
 (cd multibuild; git checkout b89bb903e94308be79abefa4f436bf123ebb1313)
 cp kokoro/release/python/linux/config.sh config.sh
