@@ -157,10 +157,15 @@ def _cc_dist_library_impl(ctx):
     #         ),
     #     ]),
     # )
-    # cc_info = CcInfo(linking_context = linking_context)
+    # cc_info = CcInfo(linking_context = linking_context)  # and return this
     #
-    # However, it would probably be better to add a separate `cc_import`
-    # library if the goal is to force a protobuf dependency to be a DSO.
+    # However, if the goal is to force a protobuf dependency to use the
+    # DSO, then `cc_import` is a better-supported way to do so.
+    #
+    # If we wanted to expose CcInfo from this rule (and make it usable as a
+    # C++ dependency), then we would probably want to include the static
+    # archive and headers as well. exposing headers would probably require
+    # an additional aspect to extract CcInfos with just the deps' headers.
 
     return [
         DefaultInfo(files = depset(outputs)),
@@ -168,6 +173,32 @@ def _cc_dist_library_impl(ctx):
 
 cc_dist_library = rule(
     implementation = _cc_dist_library_impl,
+    doc = """
+Create a library suitable for distribution.
+
+This rule creates static and dynamic libraries from the libraries listed in
+'deps'. Only the targets listed in 'deps' are included in the result (i.e.,
+the output does not include transitive dependencies).
+
+This rule is different from Bazel's experimental `shared_cc_library` in
+several ways. First, this rule ignores transitive dependencies, so library
+dependencies generally need to be specified via 'linkopts'. Second, this
+rule produces a static archive library in addition to the dynamic shared
+library. Third, this rule is not directly usable as a C++ dependency.
+
+Example:
+
+    cc_library(name = "a", srcs = ["a.cc"], hdrs = ["a.h"])
+    cc_library(name = "b", srcs = ["b.cc"], hdrs = ["b.h"], deps = [":a"])
+    cc_library(name = "c", srcs = ["c.cc"], hdrs = ["c.h"], deps = [":b"])
+
+    # Creates libdist.so and (typically) libdist.pic.a:
+    cc_dist_library(
+        name = "dist",
+        linkopts = ["-la"],   # libdist.so dynamically links against liba.so.
+        deps = [":b", ":c"],  # Output contains b.o and c.o, but not a.o.
+    )
+""",
     attrs = {
         "deps": attr.label_list(),
         "linkopts": attr.string_list(),
