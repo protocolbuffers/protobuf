@@ -174,17 +174,25 @@ def _cc_dist_library_impl(ctx):
 cc_dist_library = rule(
     implementation = _cc_dist_library_impl,
     doc = """
-Create a library suitable for distribution.
+Create libraries suitable for distribution.
 
 This rule creates static and dynamic libraries from the libraries listed in
-'deps'. Only the targets listed in 'deps' are included in the result (i.e.,
-the output does not include transitive dependencies).
+'deps'. The resulting libraries are suitable for distributing all of 'deps'
+in a single logical library, for example, in an installable binary package.
+Only the targets listed in 'deps' are included in the result (i.e., the
+output does not include transitive dependencies), allowing precise control
+over the library boundary.
+
+The outputs of this rule are a dynamic library and a static library. (If
+the build produces both PIC and non-PIC object files, then there is also a
+second static library.) The example below illustrates additional details.
 
 This rule is different from Bazel's experimental `shared_cc_library` in
-several ways. First, this rule ignores transitive dependencies, so library
-dependencies generally need to be specified via 'linkopts'. Second, this
-rule produces a static archive library in addition to the dynamic shared
-library. Third, this rule is not directly usable as a C++ dependency.
+several ways. First, this rule ignores transitive dependencies, which means
+that dynamic library dependencies generally need to be specified via
+'linkopts'. Second, this rule produces a static archive library in addition
+to the dynamic shared library. Third, this rule is not directly usable as a
+C++ dependency (although the outputs could be used, e.g., by `cc_import`).
 
 Example:
 
@@ -193,6 +201,7 @@ Example:
     cc_library(name = "c", srcs = ["c.cc"], hdrs = ["c.h"], deps = [":b"])
 
     # Creates libdist.so and (typically) libdist.pic.a:
+    # (This may also produce libdist.a if the build produces non-PIC objects.)
     cc_dist_library(
         name = "dist",
         linkopts = ["-la"],   # libdist.so dynamically links against liba.so.
@@ -200,8 +209,16 @@ Example:
     )
 """,
     attrs = {
-        "deps": attr.label_list(),
-        "linkopts": attr.string_list(),
+        "deps": attr.label_list(
+            doc = ("The list of libraries to be included in the outputs. " +
+                   "Only these targets' compilation outputs will be " +
+                   "included (i.e., the transitive dependencies are not " +
+                   "included in the output)."),
+        ),
+        "linkopts": attr.string_list(
+            doc = ("Add these flags to the C++ linker command when creating " +
+                   "the dynamic library."),
+        ),
         # C++ toolchain before https://github.com/bazelbuild/bazel/issues/7260:
         "_cc_toolchain": attr.label(
             default = Label("@rules_cc//cc:current_cc_toolchain"),
