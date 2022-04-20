@@ -2,7 +2,7 @@
 
   PHP
   * Fix building packaged PHP extension (#9727)
-  * Fixed composer.json to only advertize compatibility with PHP 7.0+.  (#9819)
+  * Fixed composer.json to only advertise compatibility with PHP 7.0+.  (#9819)
 
   Ruby
   * Disable the aarch64 build on macOS until it can be fixed. (#9816)
