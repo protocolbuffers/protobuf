@@ -815,10 +815,10 @@ objectivec_EXTRA_DIST=                                                       \
   Protobuf.podspec
 
 php_EXTRA_DIST=                                                       \
-  composer.json                                                       \
   php/README.md                                                       \
   php/REFCOUNTING.md                                                  \
   php/composer.json                                                   \
+  php/composer.json.dist                                              \
   php/ext/google/protobuf/arena.c                                     \
   php/ext/google/protobuf/arena.h                                     \
   php/ext/google/protobuf/array.c                                     \
