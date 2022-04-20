@@ -3,11 +3,7 @@
 set -ex
 
 # Build protoc
-if test ! -e src/protoc; then
-  ./autogen.sh
-  ./configure
-  make -j4
-fi
+bazel build //:protoc
 
 umask 0022
 pushd ruby

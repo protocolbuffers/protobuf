@@ -26,11 +26,7 @@ function pre_build {
     pushd protobuf
 
     # Build protoc
-    ./autogen.sh
-    ./configure
-
-    CXXFLAGS="-std=c++14 -fPIC -g -O2" ./configure
-    make -j8
+    bazel build //:protoc
 
     # Generate python dependencies.
     pushd python
