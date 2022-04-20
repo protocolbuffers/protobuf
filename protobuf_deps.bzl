@@ -1,6 +1,7 @@
 """Load dependencies needed to compile the protobuf library as a 3rd-party consumer."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.findbugs:jsr305:3.0.2",
@@ -100,4 +101,11 @@ def protobuf_deps():
             name = "io_bazel_rules_kotlin",
             urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.5.0-beta-4/rules_kotlin_release.tgz"],
             sha256 = "6cbd4e5768bdfae1598662e40272729ec9ece8b7bded8f0d2c81c8ff96dc139d",
+        )
+
+    if not native.existing_rule("upb"):
+        git_repository(
+            name = "upb",
+            remote = "https://github.com/protocolbuffers/upb.git",
+            commit = "4978040db47943e59bcf522cd97c7b39910a93e2",
         )

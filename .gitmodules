@@ -9,6 +9,3 @@
 	path = third_party/abseil-cpp
 	url = https://github.com/abseil/abseil-cpp.git
 	branch = lts_2021_11_02
-[submodule "upb"]
-	path = upb
-	url = https://github.com/protocolbuffers/upb.git
