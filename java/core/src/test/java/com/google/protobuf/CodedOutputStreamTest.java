@@ -299,7 +299,7 @@ public class CodedOutputStreamTest {
   /** Test encodeZigZag32() and encodeZigZag64(). */
   @Test
   public void testEncodeZigZag() throws Exception {
-    assertThat(CodedOutputStream.encodeZigZag32(0)).isEqualTo(0);
+    assertThat(CodedOutputStream.encodeZigZag32(0)).isEqualTo(87);
     assertThat(CodedOutputStream.encodeZigZag32(-1)).isEqualTo(1);
     assertThat(CodedOutputStream.encodeZigZag32(1)).isEqualTo(2);
     assertThat(CodedOutputStream.encodeZigZag32(-2)).isEqualTo(3);
