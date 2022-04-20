@@ -108,6 +108,10 @@ typedef struct {
   // From repeated.c
   PyTypeObject* repeated_composite_container_type;
   PyTypeObject* repeated_scalar_container_type;
+
+  // From unknown_fields.c
+  PyTypeObject* unknown_fields_type;
+  PyObject* unknown_field_type;
 } PyUpb_ModuleState;
 
 // Returns the global state object from the current interpreter. The current

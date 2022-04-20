@@ -210,6 +210,11 @@ UPB_INLINE bool upb_MessageDef_IsMapEntry(const upb_MessageDef* m) {
   return google_protobuf_MessageOptions_map_entry(upb_MessageDef_Options(m));
 }
 
+UPB_INLINE bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m) {
+  return google_protobuf_MessageOptions_message_set_wire_format(
+      upb_MessageDef_Options(m));
+}
+
 /* Nested entities. */
 int upb_MessageDef_NestedMessageCount(const upb_MessageDef* m);
 int upb_MessageDef_NestedEnumCount(const upb_MessageDef* m);

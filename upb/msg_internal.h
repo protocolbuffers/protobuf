@@ -160,7 +160,7 @@ typedef enum {
  *   message MessageSet {
  *     repeated group Item = 1 {
  *       required int32 type_id = 2;
- *       required string message = 3;
+ *       required bytes message = 3;
  *     }
  *   }
  */

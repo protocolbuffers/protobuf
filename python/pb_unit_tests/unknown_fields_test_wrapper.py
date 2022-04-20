@@ -26,15 +26,15 @@
 from google.protobuf.internal import unknown_fields_test
 import unittest
 
-unknown_fields_test.UnknownEnumValuesTest.testCheckUnknownFieldValueForEnum.__unittest_expecting_failure__ = True
-unknown_fields_test.UnknownFieldsAccessorsTest.testCheckUnknownFieldValue.__unittest_expecting_failure__ = True
-unknown_fields_test.UnknownFieldsAccessorsTest.testClear.__unittest_expecting_failure__ = True
-unknown_fields_test.UnknownFieldsAccessorsTest.testMergeFrom.__unittest_expecting_failure__ = True
-unknown_fields_test.UnknownFieldsAccessorsTest.testSubUnknownFields.__unittest_expecting_failure__ = True
+# begin:google_only
+# # Accesses deprecated internal accessor.
+# unknown_fields_test.UnknownFieldsAccessorsTest.testCheckUnknownFieldValue.__unittest_expecting_failure__ = True
+# end:google_only
+
+# begin:github_only
+# Until internal test changes propagate to unknown_fields_test.py
 unknown_fields_test.UnknownFieldsAccessorsTest.testUnknownExtensions.__unittest_expecting_failure__ = True
-unknown_fields_test.UnknownFieldsAccessorsTest.testUnknownField.__unittest_expecting_failure__ = True
-unknown_fields_test.UnknownFieldsAccessorsTest.testUnknownFieldsNoMemoryLeak.__unittest_expecting_failure__ = True
-unknown_fields_test.UnknownFieldsTest.testSerializeMessageSetWireFormatUnknownExtension.__unittest_expecting_failure__ = True
+# end:github_only
 
 if __name__ == '__main__':
   unittest.main(module=unknown_fields_test, verbosity=2)

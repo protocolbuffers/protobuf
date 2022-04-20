@@ -194,6 +194,8 @@ py_extension(
         "python_api.h",
         "repeated.c",
         "repeated.h",
+        "unknown_fields.c",
+        "unknown_fields.h",
     ],
     copts = UPB_DEFAULT_COPTS + select(LIMITED_API_FLAG_SELECT) + [
         # The Python API requires patterns that are ISO C incompatible, like

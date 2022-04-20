@@ -34,6 +34,7 @@
 #include "python/map.h"
 #include "python/message.h"
 #include "python/repeated.h"
+#include "python/unknown_fields.h"
 
 static void PyUpb_ModuleDealloc(void* module) {
   PyUpb_ModuleState* s = PyModule_GetState(module);
@@ -335,7 +336,8 @@ PyMODINIT_FUNC PyInit__message(void) {
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||
       !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m) ||
       !PyUpb_InitExtensionDict(m) || !PyUpb_Map_Init(m) ||
-      !PyUpb_InitMessage(m) || !PyUpb_Repeated_Init(m)) {
+      !PyUpb_InitMessage(m) || !PyUpb_Repeated_Init(m) ||
+      !PyUpb_UnknownFields_Init(m)) {
     Py_DECREF(m);
     return NULL;
   }
