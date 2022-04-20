@@ -26,7 +26,7 @@ popd
 # Copy files
 pushd protobuf-php
 mv ../protobuf/php/src src
-mv ../protobuf/composer.json composer.json
+mv ../protobuf/php/composer.json.dist composer.json
 sed -i 's|php/src|src|g' composer.json
 git add .
 git commit -m "$VERSION"
