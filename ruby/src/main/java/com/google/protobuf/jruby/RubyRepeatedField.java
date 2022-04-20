@@ -141,12 +141,14 @@ public class RubyRepeatedField extends RubyObject {
       } else if (arg instanceof RubyRange) {
         RubyRange range = ((RubyRange) arg);
 
-        int beg = RubyNumeric.num2int(range.first(context));
-        int len = RubyNumeric.num2int(range.size(context));
+        int first = normalizeArrayIndex(range.first(context));
+        int last = normalizeArrayIndex(range.last(context));
 
-        if (len == 0) return context.runtime.newEmptyArray();
+        if (last - first < 0) {
+          return context.runtime.newEmptyArray();
+        }
 
-        return this.storage.subseq(beg, len);
+        return this.storage.subseq(first, last - first + (range.isExcludeEnd() ? 0 : 1));
       }
     }
     /* assume 2 arguments */

@@ -42,7 +42,7 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
      *           Depending on the target platform, this can emit Deprecated annotations
      *           for the service, or it will be completely ignored; in the very least,
      *           this is a formalization for deprecating services.
-     *     @type \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
+     *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here. See above.
      * }
      */
@@ -108,7 +108,7 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
-     * @param \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setUninterpretedOption($var)

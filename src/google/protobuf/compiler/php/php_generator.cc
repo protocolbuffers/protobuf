@@ -500,9 +500,9 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
     // accommodate for edge case with multiple types.
     size_t start_pos = type.find("|");
     if (start_pos != std::string::npos) {
-      type.replace(start_pos, 1, "[]|");
+      type.replace(start_pos, 1, ">|array<");
     }
-    type += "[]|\\Google\\Protobuf\\Internal\\RepeatedField";
+    type = "array<" + type + ">|\\Google\\Protobuf\\Internal\\RepeatedField";
   }
   return type;
 }

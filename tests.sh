@@ -190,6 +190,10 @@ build_golang() {
 use_java() {
   version=$1
   case "$version" in
+    jdk17)
+      export PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH
+      export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+      ;;
     jdk11)
       export PATH=/usr/lib/jvm/java-11-openjdk-amd64/bin:$PATH
       export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
@@ -273,6 +277,11 @@ build_java_oracle7() {
 
 build_java_jdk8() {
   use_java jdk8
+  build_java_with_conformance_tests
+}
+
+build_java_jdk17() {
+  use_java jdk17
   build_java_with_conformance_tests
 }
 
@@ -586,6 +595,7 @@ Usage: $0 { cpp |
             java_jdk7 |
             java_oracle7 |
             java_jdk8 |
+            java_jdk17 |
             java_linkage_monitor |
             objectivec_ios |
             objectivec_ios_debug |
