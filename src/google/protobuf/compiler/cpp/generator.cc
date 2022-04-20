@@ -135,12 +135,10 @@ bool CppGenerator::Generate(const FileDescriptor* file,
               .insert(options[i].second.substr(pos, next_pos - pos));
         pos = next_pos + 1;
       } while (pos < options[i].second.size());
-    } else if (options[i].first == "verified_lazy_message_sets") {
-      file_options.unverified_lazy_message_sets = false;
+    } else if (options[i].first == "verified_lazy") {
+      file_options.unverified_lazy = false;
     } else if (options[i].first == "unverified_lazy_message_sets") {
       file_options.unverified_lazy_message_sets = true;
-    } else if (options[i].first == "eagerly_verified_lazy") {
-      file_options.eagerly_verified_lazy = true;
     } else if (options[i].first == "message_owned_arena_trial") {
       file_options.message_owned_arena_trial = true;
     } else if (options[i].first == "force_eagerly_verified_lazy") {

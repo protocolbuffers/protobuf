@@ -40,7 +40,7 @@ Simple usage example:
 
 
 from google.protobuf.internal import api_implementation
-if api_implementation.Type() == 'cpp':
+if api_implementation.Type() != 'python':
   from google.protobuf.pyext import _message  # pylint: disable=g-import-not-at-top
 else:
   from google.protobuf.internal import decoder  # pylint: disable=g-import-not-at-top

@@ -97,6 +97,8 @@ message TestAllTypesLite {
       optional_public_import_message = 26;
 
   optional NestedMessage optional_lazy_message = 27 [lazy = true];
+  optional NestedMessage optional_unverified_lazy_message = 28
+      [unverified_lazy = true];
 
   // Repeated
   repeated int32 repeated_int32 = 31;
@@ -247,6 +249,9 @@ extend TestAllExtensionsLite {
 
   optional TestAllTypesLite.NestedMessage optional_lazy_message_extension_lite =
       27 [lazy = true];
+  optional TestAllTypesLite.NestedMessage
+      optional_unverified_lazy_message_extension_lite = 28
+      [unverified_lazy = true];
 
   // Repeated
   repeated int32 repeated_int32_extension_lite = 31;
@@ -406,7 +411,9 @@ message TestEmptyMessageWithExtensionsLite {
   extensions 1 to max;
 }
 
-enum V1EnumLite { V1_FIRST = 1; }
+enum V1EnumLite {
+  V1_FIRST = 1;
+}
 
 enum V2EnumLite {
   V2_FIRST = 1;

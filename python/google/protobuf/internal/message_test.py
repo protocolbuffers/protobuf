@@ -130,7 +130,7 @@ class MessageTest(unittest.TestCase):
     # b/27494216
     end_tag = encoder.TagBytes(1, 4)
     if (api_implementation.Type() == 'python' or
-        api_implementation._Version() == 3):
+        api_implementation.Type() == 'upb'):
       with self.assertRaises(message.DecodeError) as context:
         msg.FromString(end_tag)
       if api_implementation.Type() == 'python':

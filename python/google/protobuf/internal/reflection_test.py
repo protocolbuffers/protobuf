@@ -2020,7 +2020,7 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertRaises(TypeError, proto.IsInitialized, 1, 2, 3)
 
   @unittest.skipIf(
-      api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
+      api_implementation.Type() == 'python',
       'Errors are only available from the most recent C++ implementation.')
   def testFileDescriptorErrors(self):
     file_name = 'test_file_descriptor_errors.proto'
@@ -3225,7 +3225,7 @@ class OptionsTest(unittest.TestCase):
 class ClassAPITest(unittest.TestCase):
 
   @unittest.skipIf(
-      api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
+      api_implementation.Type() != 'python',
       'C++ implementation requires a call to MakeDescriptor()')
   @testing_refleaks.SkipReferenceLeakChecker('MakeClass is not repeatable')
   def testMakeClassWithNestedDescriptor(self):

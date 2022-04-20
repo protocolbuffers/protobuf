@@ -278,10 +278,8 @@ TEST(MESSAGE_TEST_NAME, MergeFromUninitialized) {
   payload->mutable_optional_message()->set_dummy4(200);
   ASSERT_TRUE(p.ParsePartialFromString(o.SerializePartialAsString()));
 
-  GOOGLE_LOG(ERROR) << "seongkim: copy 1";
   q.mutable_child()->set_dummy(500);
   q = p;
-  GOOGLE_LOG(ERROR) << "seongkim: copy 1 done";
   q.ParsePartialFromString(q.SerializePartialAsString());
   EXPECT_TRUE(TestUtil::EqualsToSerialized(q, o.SerializePartialAsString()));
   EXPECT_TRUE(TestUtil::EqualsToSerialized(q, p.SerializePartialAsString()));

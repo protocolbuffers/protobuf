@@ -1511,11 +1511,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
           "bool PackFrom(const ::$proto_ns$::Message& message) {\n"
+          "  $DCHK$_NE(&message, this);\n"
           "  return $any_metadata$.PackFrom(GetArena(), message);\n"
           "}\n"
           "bool PackFrom(const ::$proto_ns$::Message& message,\n"
           "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
           "type_url_prefix) {\n"
+          "  $DCHK$_NE(&message, this);\n"
           "  return $any_metadata$.PackFrom(GetArena(), message, "
           "type_url_prefix);\n"
           "}\n"
@@ -2248,7 +2250,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
     //
     // Embed whether the field is eagerly verified lazy or inlined string to the
     // LSB of the offset.
-    if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
+    if (IsEagerlyVerifiedLazyByProfile(field, options_, scc_analyzer_)) {
       format(" | 0x1u  // eagerly verified lazy\n");
     } else if (IsStringInlined(field, options_)) {
       format(" | 0x1u  // inlined\n");

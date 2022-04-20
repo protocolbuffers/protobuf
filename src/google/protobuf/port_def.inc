@@ -118,6 +118,27 @@
 #define PROTOBUF_has_builtin_DEFINED_
 #endif
 
+// Portable PROTOBUF_BUILTIN_BSWAPxx definitions
+// Code must check for availability, e.g.: `defined(PROTOBUF_BUILTIN_BSWAP32)`
+#ifdef PROTOBUF_BUILTIN_BSWAP16
+#error PROTOBUF_BUILTIN_BSWAP16 was previously defined
+#endif
+#ifdef PROTOBUF_BUILTIN_BSWAP32
+#error PROTOBUF_BUILTIN_BSWAP32 was previously defined
+#endif
+#ifdef PROTOBUF_BUILTIN_BSWAP64
+#error PROTOBUF_BUILTIN_BSWAP64 was previously defined
+#endif
+#if defined(__GNUC__) || __has_builtin(__builtin_bswap16)
+#define PROTOBUF_BUILTIN_BSWAP16(x) __builtin_bswap16(x)
+#endif
+#if defined(__GNUC__) || __has_builtin(__builtin_bswap32)
+#define PROTOBUF_BUILTIN_BSWAP32(x) __builtin_bswap32(x)
+#endif
+#if defined(__GNUC__) || __has_builtin(__builtin_bswap64)
+#define PROTOBUF_BUILTIN_BSWAP64(x) __builtin_bswap64(x)
+#endif
+
 // Portable check for GCC minimum version:
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) \
@@ -584,6 +605,22 @@
 #define PROTOBUF_THREAD_LOCAL __declspec(thread)
 #else
 #define PROTOBUF_THREAD_LOCAL __thread
+#endif
+
+// TODO(b/228173843): cleanup PROTOBUF_LITTLE_ENDIAN in various 3p forks.
+#if (defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && \
+     __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#define PROTOBUF_LITTLE_ENDIAN 1
+#ifdef PROTOBUF_BIG_ENDIAN
+#error Conflicting PROTOBUF_BIG_ENDIAN was previously defined
+#endif
+#elif defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
+    __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define PROTOBUF_BIG_ENDIAN 1
+#elif defined(_WIN32) || defined(__x86_64__) || defined(__aarch64__)
+#define PROTOBUF_LITTLE_ENDIAN 1
+#else
+#error "endian detection failed for current compiler"
 #endif
 
 // For enabling message owned arena, one major blocker is semantic change from

@@ -74,7 +74,7 @@ class Method extends \Google\Protobuf\Internal\Message
      *           The URL of the output message type.
      *     @type bool $response_streaming
      *           If true, the response is streamed.
-     *     @type \Google\Protobuf\Option[]|\Google\Protobuf\Internal\RepeatedField $options
+     *     @type array<\Google\Protobuf\Option>|\Google\Protobuf\Internal\RepeatedField $options
      *           Any metadata attached to the method.
      *     @type int $syntax
      *           The source syntax of this method.
@@ -230,7 +230,7 @@ class Method extends \Google\Protobuf\Internal\Message
      * Any metadata attached to the method.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.Option options = 6;</code>
-     * @param \Google\Protobuf\Option[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Option>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setOptions($var)
