@@ -138,14 +138,10 @@ else (protobuf_BUILD_PROTOC_BINARIES)
 endif (protobuf_BUILD_PROTOC_BINARIES)
 
 install(EXPORT protobuf-targets
+  FILE protobuf-targets.cmake
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   NAMESPACE protobuf::
-  COMPONENT protobuf-export)
-
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
-  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   COMPONENT protobuf-export
-  PATTERN protobuf-targets.cmake EXCLUDE
 )
 
 option(protobuf_INSTALL_EXAMPLES "Install the examples folder" OFF)
