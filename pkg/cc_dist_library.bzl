@@ -130,8 +130,7 @@ def _cc_dist_library_impl(ctx):
         compilation_outputs = compilation_outputs,
         name = ctx.label.name,
         output_type = "dynamic_library",
-        # TODO(dlj): need to handle -lz -lpthread
-        # user_link_flags = [],
+        user_link_flags = ctx.attr.linkopts,
     )
     library_to_link = link_output.library_to_link
 
@@ -171,6 +170,7 @@ cc_dist_library = rule(
     implementation = _cc_dist_library_impl,
     attrs = {
         "deps": attr.label_list(),
+        "linkopts": attr.string_list(),
         # C++ toolchain before https://github.com/bazelbuild/bazel/issues/7260:
         "_cc_toolchain": attr.label(
             default = Label("@rules_cc//cc:current_cc_toolchain"),

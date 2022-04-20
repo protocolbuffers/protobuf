@@ -92,6 +92,10 @@ pkg_zip(
 
 cc_dist_library(
     name = "protobuf_lite",
+    linkopts = select({
+        "//:msvc": [],
+        "//conditions:default": ["-lpthread"],
+    }),
     deps = [
         "//:protobuf_lite",
     ],
@@ -99,7 +103,15 @@ cc_dist_library(
 
 cc_dist_library(
     name = "protobuf",
+    linkopts = select({
+        "//:msvc": [],
+        "//conditions:default": [
+            "-lz",
+            "-lpthread",
+        ],
+    }),
     deps = [
         "//:protobuf",
+        "//:protobuf_lite",
     ],
 )
