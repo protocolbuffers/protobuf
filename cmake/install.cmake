@@ -128,12 +128,12 @@ configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake
 if (protobuf_BUILD_PROTOC_BINARIES)
   export(TARGETS libprotobuf-lite libprotobuf libprotoc protoc
     NAMESPACE protobuf::
-    FILE ${CMAKE_INSTALL_CMAKEDIR}/protobuf-targets.cmake
+    FILE ${CMAKE_CURRENT_BINARY_DIR}/cmake/protobuf/protobuf-targets.cmake
   )
 else (protobuf_BUILD_PROTOC_BINARIES)
   export(TARGETS libprotobuf-lite libprotobuf
     NAMESPACE protobuf::
-    FILE ${CMAKE_INSTALL_CMAKEDIR}/protobuf-targets.cmake
+    FILE ${CMAKE_CURRENT_BINARY_DIR}/cmake/protobuf/protobuf-targets.cmake
   )
 endif (protobuf_BUILD_PROTOC_BINARIES)
 
