@@ -1084,7 +1084,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
       "@java.lang.Override\n"
       "public int hashCode() {\n");
   printer->Indent();
-  printer->Print("if (memoizedHashCode != 0) {\n");
+  printer->Print("if (memoizedHashCodeSet) {\n");
   printer->Indent();
   printer->Print("return memoizedHashCode;\n");
   printer->Outdent();
@@ -1145,6 +1145,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   printer->Print("hash = (29 * hash) + unknownFields.hashCode();\n");
   printer->Print(
       "memoizedHashCode = hash;\n"
+      "memoizedHashCodeSet = true;\n"
       "return hash;\n");
   printer->Outdent();
   printer->Print(

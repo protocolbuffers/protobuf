@@ -106,10 +106,11 @@ public abstract class GeneratedMessageLite<
   @SuppressWarnings("unchecked") // Guaranteed by runtime
   @Override
   public int hashCode() {
-    if (memoizedHashCode != 0) {
+    if (memoizedHashCodeSet) {
       return memoizedHashCode;
     }
     memoizedHashCode = Protobuf.getInstance().schemaFor(this).hashCode(this);
+    memoizedHashCodeSet = true;
     return memoizedHashCode;
   }
 

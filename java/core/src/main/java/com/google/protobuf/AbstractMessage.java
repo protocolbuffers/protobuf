@@ -158,12 +158,13 @@ public abstract class AbstractMessage
   @Override
   public int hashCode() {
     int hash = memoizedHashCode;
-    if (hash == 0) {
+    if (!memoizedHashCodeSet) {
       hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
       hash = hashFields(hash, getAllFields());
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
+      memoizedHashCodeSet = true;
     }
     return hash;
   }
