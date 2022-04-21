@@ -5,7 +5,7 @@ set -ex
 # Build protoc
 use_bazel.sh 5.1.1
 bazel build //:protoc
-ln -s $PWD/bazel-bin/protoc src/protoc
+cp bazel-bin/protoc src/protoc
 
 umask 0022
 pushd ruby
