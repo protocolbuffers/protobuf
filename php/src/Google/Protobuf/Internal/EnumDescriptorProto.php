@@ -52,13 +52,13 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $name
-     *     @type \Google\Protobuf\Internal\EnumValueDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $value
+     *     @type array<\Google\Protobuf\Internal\EnumValueDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $value
      *     @type \Google\Protobuf\Internal\EnumOptions $options
-     *     @type \Google\Protobuf\Internal\EnumDescriptorProto\EnumReservedRange[]|\Google\Protobuf\Internal\RepeatedField $reserved_range
+     *     @type array<\Google\Protobuf\Internal\EnumDescriptorProto\EnumReservedRange>|\Google\Protobuf\Internal\RepeatedField $reserved_range
      *           Range of reserved numeric values. Reserved numeric values may not be used
      *           by enum values in the same enum declaration. Reserved ranges may not
      *           overlap.
-     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $reserved_name
+     *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $reserved_name
      *           Reserved enum value names, which may not be reused. A given name may only
      *           be reserved once.
      * }
@@ -111,7 +111,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumValueDescriptorProto value = 2;</code>
-     * @param \Google\Protobuf\Internal\EnumValueDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\EnumValueDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setValue($var)
@@ -173,7 +173,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      * overlap.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;</code>
-     * @param \Google\Protobuf\Internal\EnumDescriptorProto\EnumReservedRange[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\EnumDescriptorProto\EnumReservedRange>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setReservedRange($var)
@@ -201,7 +201,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      * be reserved once.
      *
      * Generated from protobuf field <code>repeated string reserved_name = 5;</code>
-     * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<string>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setReservedName($var)

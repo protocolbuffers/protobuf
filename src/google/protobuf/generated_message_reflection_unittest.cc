@@ -78,6 +78,14 @@ class GeneratedMessageReflectionTestHelper {
   static bool IsLazyField(const Message& msg, const FieldDescriptor* field) {
     return msg.GetReflection()->IsLazyField(field);
   }
+  static bool IsEagerlyVerifiedLazyField(const Message& msg,
+                                         const FieldDescriptor* field) {
+    return msg.GetReflection()->IsEagerlyVerifiedLazyField(field);
+  }
+  static bool IsLazilyVerifiedLazyField(const Message& msg,
+                                        const FieldDescriptor* field) {
+    return msg.GetReflection()->IsLazilyVerifiedLazyField(field);
+  }
 };
 
 namespace {

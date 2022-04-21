@@ -8,6 +8,11 @@ set configuration=Release
 echo Building protoc
 cd github\protobuf
 
+echo Update Submodules
+echo This is needed because this build uses CMake <3.13.
+git submodule update --init --recursive
+set ABSL_ROOT_DIR=%cd%\third_party\abseil-cpp
+
 mkdir build32
 cd build32
 cmake -G "%generator32%" -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -Dprotobuf_UNICODE=ON ../cmake

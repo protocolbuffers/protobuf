@@ -29,7 +29,7 @@ class ListValue extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Google\Protobuf\Value[]|\Google\Protobuf\Internal\RepeatedField $values
+     *     @type array<\Google\Protobuf\Value>|\Google\Protobuf\Internal\RepeatedField $values
      *           Repeated field of dynamically typed values.
      * }
      */
@@ -53,7 +53,7 @@ class ListValue extends \Google\Protobuf\Internal\Message
      * Repeated field of dynamically typed values.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.Value values = 1;</code>
-     * @param \Google\Protobuf\Value[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Value>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setValues($var)

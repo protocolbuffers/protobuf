@@ -40,17 +40,13 @@ Simple usage example:
 
 
 from google.protobuf.internal import api_implementation
-if api_implementation.Type() != 'python':
-  from google.protobuf.pyext import _message  # pylint: disable=g-import-not-at-top
+
+if api_implementation._c_module is not None:  # pylint: disable=protected-access
+  UnknownFieldSet = api_implementation._c_module.UnknownFieldSet  # pylint: disable=protected-access
 else:
   from google.protobuf.internal import decoder  # pylint: disable=g-import-not-at-top
   from google.protobuf.internal import wire_format  # pylint: disable=g-import-not-at-top
 
-if api_implementation.Type() == 'cpp':
-
-  UnknownFieldSet = _message.UnknownFieldSet
-
-else:
   class UnknownField:
     """A parsed unknown field."""
 

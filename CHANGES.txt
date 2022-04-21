@@ -13,6 +13,10 @@ C++
   * Optimize tokenizer ParseInteger by removing division
   * Reserve exactly the right amount of capacity in ExtensionSet::MergeFrom
 
+Compiler
+  * Protoc outputs the list of suggested field numbers when invalid field
+    numbers are specified in the .proto file.
+
 Java
   * 6x speedup in ArrayEncoder.writeUInt32NotTag
 

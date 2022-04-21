@@ -316,3 +316,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Protoc-gen-go-micro
    * Website: https://github.com/unistack-org/protoc-gen-go-micro
    * Extension: 1144
+
+1. Protoc-gen-authz
+   * Website: https://github.com/Neakxs/protoc-gen-authz
+   * Extension: 1145
