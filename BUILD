@@ -1465,39 +1465,6 @@ pkg_files(
         "autogen.sh",
         "build_files_updated_unittest.sh",
         "cc_proto_blacklist_test.bzl",
-        "compiler_config_setting.bzl",
-        "editors/README.txt",
-        "editors/proto.vim",
-        "editors/protobuf-mode.el",
-        "generate_descriptor_proto.sh",
-        "internal.bzl",
-        "maven_install.json",
-        "protobuf.bzl",
-        "protobuf_deps.bzl",
-        "protobuf_release.bzl",
-        "protobuf_version.bzl",
-        "update_file_lists.sh",
-        "//util/python:BUILD",
-        "//third_party:zlib.BUILD",
-    ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
-)
-
-# C++ runtime
-pkg_files(
-    name = "cpp_dist_files",
-    srcs = glob(["src/**/*"]),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
-)
-
-# It is somewhat common for CMake builds to use /cmake/build as the output
-# directory. However, that would conflict with a file named BUILD on
-# case-insentitive filesystems, so CMake files are packaged here.
-pkg_files(
-    name = "cmake_dist_files",
-    srcs = [
         "cmake/CMakeLists.txt",
         "cmake/README.md",
         "cmake/abseil-cpp.cmake",
@@ -1517,7 +1484,37 @@ pkg_files(
         "cmake/protoc.cmake",
         "cmake/tests.cmake",
         "cmake/version.rc.in",
+        "compiler_config_setting.bzl",
+        "editors/README.txt",
+        "editors/proto.vim",
+        "editors/protobuf-mode.el",
+        "generate_descriptor_proto.sh",
+        "internal.bzl",
+        "maven_install.json",
+        "protobuf.bzl",
+        "protobuf_deps.bzl",
+        "protobuf_release.bzl",
+        "protobuf_version.bzl",
+        "update_file_lists.sh",
+        "//third_party:zlib.BUILD",
+        "//util/python:BUILD",
     ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Conformance tests
+pkg_files(
+    name = "conformance_dist_files",
+    srcs = glob(["conformance/**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+# C++ runtime
+pkg_files(
+    name = "cpp_dist_files",
+    srcs = glob(["src/**/*"]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],
 )

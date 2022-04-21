@@ -93,6 +93,8 @@ objc_library(
 pkg_files(
     name = "dist_files",
     srcs = glob([
+        "*.h",
+        "*.m",
         "**/*.h",
         "**/*.m",
         "DevTools/*.sh",
