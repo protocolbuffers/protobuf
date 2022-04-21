@@ -96,21 +96,27 @@ pkg_zip(
 ################################################################################
 
 pkg_filegroup(
-    name = "cpp_srcs",
+    name = "dist_common",
     srcs = [
         "//:common_dist_files",
         "//:conformance_dist_files",
-        "//:cpp_dist_files",
+        "//:cpp_dist_files",  # to build protoc
+        "//benchmarks:all_dist_files",
         "@com_google_protobuf_examples//:dist_files",
+    ],
+)
+
+pkg_filegroup(
+    name = "cpp_srcs",
+    srcs = [
+        ":dist_common",
+        "//:cpp_dist_files",
     ],
 )
 
 pkg_tar(
     name = "dist_cpp_tar",
-    srcs = [
-        ":cpp_srcs",
-        "//benchmarks:all_dist_files",
-    ],
+    srcs = [":cpp_srcs"],
     extension = "tar.gz",
     package_dir = "protobuf-{version}",
     package_file_name = "protobuf-cpp-{version}.tar.gz",
@@ -119,10 +125,7 @@ pkg_tar(
 
 pkg_zip(
     name = "dist_cpp_zip",
-    srcs = [
-        ":cpp_srcs",
-        "//benchmarks:all_dist_files",
-    ],
+    srcs = [":cpp_srcs"],
     package_file_name = "protobuf-cpp-{version}.zip",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -130,6 +133,7 @@ pkg_zip(
 pkg_filegroup(
     name = "csharp_srcs",
     srcs = [
+        ":dist_common",
         "//:csharp_dist_files",
         "//csharp:dist_files",
     ],
@@ -137,11 +141,7 @@ pkg_filegroup(
 
 pkg_tar(
     name = "dist_csharp_tar",
-    srcs = [
-        ":cpp_srcs",
-        ":csharp_srcs",
-        "//:common_dist_files",
-    ],
+    srcs = [":csharp_srcs"],
     extension = "tar.gz",
     package_file_name = "protobuf-csharp-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
@@ -149,11 +149,7 @@ pkg_tar(
 
 pkg_zip(
     name = "dist_csharp_zip",
-    srcs = [
-        ":cpp_srcs",
-        ":csharp_srcs",
-        "//:common_dist_files",
-    ],
+    srcs = [":csharp_srcs"],
     package_file_name = "protobuf-csharp-{version}.zip",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -161,6 +157,7 @@ pkg_zip(
 pkg_filegroup(
     name = "java_srcs",
     srcs = [
+        ":dist_common",
         "//java:dist_files",
         "//java/core:dist_files",
         "//java/kotlin:dist_files",
@@ -170,11 +167,7 @@ pkg_filegroup(
 
 pkg_tar(
     name = "dist_java_tar",
-    srcs = [
-        ":cpp_srcs",
-        ":java_srcs",
-        "//:common_dist_files",
-    ],
+    srcs = [":java_srcs"],
     extension = "tar.gz",
     package_file_name = "protobuf-java-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
@@ -182,11 +175,7 @@ pkg_tar(
 
 pkg_zip(
     name = "dist_java_zip",
-    srcs = [
-        ":cpp_srcs",
-        ":java_srcs",
-        "//:common_dist_files",
-    ],
+    srcs = [":java_srcs"],
     package_file_name = "protobuf-java-{version}.zip",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -194,17 +183,14 @@ pkg_zip(
 pkg_filegroup(
     name = "js_srcs",
     srcs = [
-        "//:common_dist_files",
+        ":dist_common",
         "//js:dist_files",
     ],
 )
 
 pkg_tar(
     name = "dist_js_tar",
-    srcs = [
-        ":cpp_srcs",
-        ":js_srcs",
-    ],
+    srcs = [":js_srcs"],
     extension = "tar.gz",
     package_file_name = "protobuf-js-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
@@ -212,10 +198,7 @@ pkg_tar(
 
 pkg_zip(
     name = "dist_js_zip",
-    srcs = [
-        ":cpp_srcs",
-        ":js_srcs",
-    ],
+    srcs = [":js_srcs"],
     package_file_name = "protobuf-js-{version}.zip",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -223,6 +206,7 @@ pkg_zip(
 pkg_filegroup(
     name = "objectivec_srcs",
     srcs = [
+        ":dist_common",
         "//:objectivec_dist_files",
         "//objectivec:dist_files",
     ],
@@ -230,11 +214,7 @@ pkg_filegroup(
 
 pkg_tar(
     name = "dist_objectivec_tar",
-    srcs = [
-        ":cpp_srcs",
-        ":objectivec_srcs",
-        "//:common_dist_files",
-    ],
+    srcs = [":objectivec_srcs"],
     extension = "tar.gz",
     package_file_name = "protobuf-objectivec-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
@@ -242,11 +222,7 @@ pkg_tar(
 
 pkg_zip(
     name = "dist_objectivec_zip",
-    srcs = [
-        ":cpp_srcs",
-        ":objectivec_srcs",
-        "//:common_dist_files",
-    ],
+    srcs = [":objectivec_srcs"],
     package_file_name = "protobuf-objectivec-{version}.zip",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -254,6 +230,7 @@ pkg_zip(
 pkg_filegroup(
     name = "php_srcs",
     srcs = [
+        ":dist_common",
         "//:php_dist_files",
         "//php:dist_files",
     ],
@@ -261,11 +238,7 @@ pkg_filegroup(
 
 pkg_tar(
     name = "dist_php_tar",
-    srcs = [
-        ":cpp_srcs",
-        ":php_srcs",
-        "//:common_dist_files",
-    ],
+    srcs = [":php_srcs"],
     extension = "tar.gz",
     package_file_name = "protobuf-php-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
@@ -273,11 +246,7 @@ pkg_tar(
 
 pkg_zip(
     name = "dist_php_zip",
-    srcs = [
-        ":cpp_srcs",
-        ":php_srcs",
-        "//:common_dist_files",
-    ],
+    srcs = [":php_srcs"],
     package_file_name = "protobuf-php-{version}.zip",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -285,17 +254,14 @@ pkg_zip(
 pkg_filegroup(
     name = "ruby_srcs",
     srcs = [
+        ":dist_common",
         "//ruby:dist_files",
     ],
 )
 
 pkg_tar(
     name = "dist_ruby_tar",
-    srcs = [
-        ":cpp_srcs",
-        ":ruby_srcs",
-        "//:common_dist_files",
-    ],
+    srcs = [":ruby_srcs"],
     extension = "tar.gz",
     package_file_name = "protobuf-ruby-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
@@ -303,11 +269,7 @@ pkg_tar(
 
 pkg_zip(
     name = "dist_ruby_zip",
-    srcs = [
-        ":cpp_srcs",
-        ":ruby_srcs",
-        "//:common_dist_files",
-    ],
+    srcs = [":ruby_srcs"],
     package_file_name = "protobuf-ruby-{version}.zip",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -322,7 +284,6 @@ pkg_tar(
         ":objectivec_srcs",
         ":php_srcs",
         ":ruby_srcs",
-        "//:common_dist_files",
     ],
     extension = "tar.gz",
     package_file_name = "protobuf-all-{version}.tar.gz",
@@ -339,7 +300,6 @@ pkg_zip(
         ":objectivec_srcs",
         ":php_srcs",
         ":ruby_srcs",
-        "//:common_dist_files",
     ],
     package_file_name = "protobuf-all-{version}.zip",
     package_variables = ":protobuf_pkg_naming",
