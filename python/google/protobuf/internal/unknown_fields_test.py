@@ -365,7 +365,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
   def testUnknownExtensions(self):
     message = unittest_pb2.TestEmptyMessageWithExtensions()
     message.ParseFromString(self.all_fields_data)
-    self.assertEqual(len(message.UnknownFields()), 98)
+    self.assertEqual(len(unknown_fields.UnknownFieldSet(message)), 98)
     self.assertEqual(message.SerializeToString(), self.all_fields_data)
 
 

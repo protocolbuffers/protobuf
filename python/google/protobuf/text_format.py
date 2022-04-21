@@ -886,7 +886,10 @@ class _Parser(object):
         expanded_any_end_token = '}'
       expanded_any_sub_message = _BuildMessageFromTypeName(packed_type_name,
                                                            self.descriptor_pool)
-      if not expanded_any_sub_message:
+      # Direct comparison with None is used instead of implicit bool conversion
+      # to avoid false positives with falsy initial values, e.g. for
+      # google.protobuf.ListValue.
+      if expanded_any_sub_message is None:
         raise ParseError('Type %s not found in descriptor pool' %
                          packed_type_name)
       while not tokenizer.TryConsume(expanded_any_end_token):
