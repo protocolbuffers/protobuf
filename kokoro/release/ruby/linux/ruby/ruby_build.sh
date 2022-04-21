@@ -3,6 +3,7 @@
 set -ex
 
 # Build protoc
+use_bazel.sh 4.0.0
 bazel build //:protoc
 
 umask 0022

@@ -26,6 +26,7 @@ function pre_build {
     pushd protobuf
 
     # Build protoc
+    use_bazel.sh 4.0.0
     bazel build //:protoc
 
     # Generate python dependencies.
