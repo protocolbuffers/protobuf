@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "objc_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 
 objc_library(
     name = "objectivec",
@@ -63,28 +64,54 @@ objc_library(
     non_arc_srcs = [
         "GPBAny.pbobjc.m",
         "GPBApi.pbobjc.m",
-        "GPBDuration.pbobjc.m",
-        "GPBEmpty.pbobjc.m",
-        "GPBFieldMask.pbobjc.m",
-        "GPBSourceContext.pbobjc.m",
-        "GPBStruct.pbobjc.m",
-        "GPBTimestamp.pbobjc.m",
-        "GPBType.pbobjc.m",
-        "GPBWrappers.pbobjc.m",
         "GPBArray.m",
         "GPBCodedInputStream.m",
         "GPBCodedOutputStream.m",
         "GPBDescriptor.m",
         "GPBDictionary.m",
+        "GPBDuration.pbobjc.m",
+        "GPBEmpty.pbobjc.m",
         "GPBExtensionInternals.m",
         "GPBExtensionRegistry.m",
+        "GPBFieldMask.pbobjc.m",
         "GPBMessage.m",
         "GPBRootObject.m",
+        "GPBSourceContext.pbobjc.m",
+        "GPBStruct.pbobjc.m",
+        "GPBTimestamp.pbobjc.m",
+        "GPBType.pbobjc.m",
         "GPBUnknownField.m",
         "GPBUnknownFieldSet.m",
         "GPBUtilities.m",
         "GPBWellKnownTypes.m",
         "GPBWireFormat.m",
+        "GPBWrappers.pbobjc.m",
     ],
     visibility = ["//visibility:public"],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "**/*.h",
+        "**/*.m",
+        "DevTools/*.sh",
+        "DevTools/*.py",
+        "ProtocolBuffers_iOS.xcodeproj/**/*",
+        "ProtocolBuffers_OSX.xcodeproj/**/*",
+        "ProtocolBuffers_tvOS.xcodeproj/**/*",
+        "Tests/CocoaPods/**/*",
+        "Tests/golden_message",
+        "Tests/golden_packed_fields_message",
+        "Tests/*.pddm",
+        "Tests/*.txt",
+        "Tests/*.plist",
+        "Tests/*.proto",
+    ]) + [
+        ".clang-format",
+        "BUILD",
+        "README.md",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
 )

@@ -103,3 +103,31 @@ java_binary(
     main_class = "ListPeople",
     deps = [":addressbook_java_lite_proto"],
 )
+
+# Files included in all source distributions
+pkg_files(
+    name = "dist_files",
+    srcs = [
+        "AddPerson.java",
+        "BUILD",
+        "CMakeLists.txt",
+        "ListPeople.java",
+        "Makefile",
+        "README.md",
+        "WORKSPACE",
+        "add_person.cc",
+        "add_person.dart",
+        "add_person.py",
+        "addressbook.proto",
+        "go/cmd/add_person/add_person.go",
+        "go/cmd/add_person/add_person_test.go",
+        "go/cmd/list_people/list_people.go",
+        "go/cmd/list_people/list_people_test.go",
+        "go/go.mod",
+        "go/go.sum",
+        "list_people.cc",
+        "list_people.dart",
+        "list_people.py",
+        "pubspec.yaml",
+    ],
+)

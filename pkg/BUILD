@@ -1,7 +1,16 @@
 load("@rules_pkg//:pkg.bzl", "pkg_zip")
-load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_files")
+load(
+    "@rules_pkg//:mappings.bzl",
+    "pkg_attributes",
+    "pkg_filegroup",
+    "pkg_files",
+)
 load("//:protobuf_release.bzl", "package_naming")
 load(":cc_dist_library.bzl", "cc_dist_library")
+
+package_naming(
+    name = "protobuf_pkg_naming",
+)
 
 pkg_files(
     name = "wkt_protos_files",
@@ -69,10 +78,6 @@ pkg_files(
     visibility = ["//visibility:private"],
 )
 
-package_naming(
-    name = "protoc_pkg_naming",
-)
-
 pkg_zip(
     name = "protoc_release",
     srcs = [
@@ -83,7 +88,137 @@ pkg_zip(
         ":wkt_protos_files",
     ],
     package_file_name = "protoc-{version}-{platform}.zip",
-    package_variables = ":protoc_pkg_naming",
+    package_variables = ":protobuf_pkg_naming",
+)
+
+################################################################################
+# Source distribution packaging
+################################################################################
+
+pkg_filegroup(
+    name = "cpp_srcs",
+    srcs = [
+        "//:cpp_dist_files",
+    ],
+)
+
+pkg_zip(
+    name = "dist_cpp_zip",
+    srcs = [
+        ":cpp_srcs",
+        "//:common_dist_files",
+    ],
+    package_dir = "/protobuf-{version}/",
+    package_file_name = "protobuf-cpp-{version}.zip",
+    package_variables = ":protobuf_pkg_naming",
+)
+
+pkg_filegroup(
+    name = "csharp_srcs",
+    srcs = [
+        "//:csharp_dist_files",
+        "//csharp:dist_files",
+    ],
+)
+
+pkg_zip(
+    name = "dist_csharp_zip",
+    srcs = [
+        ":csharp_srcs",
+        "//:common_dist_files",
+    ],
+    package_file_name = "protobuf-csharp-{version}.zip",
+    package_variables = ":protobuf_pkg_naming",
+)
+
+pkg_filegroup(
+    name = "java_srcs",
+    srcs = [
+        "//java:dist_files",
+        "//java/core:dist_files",
+        "//java/kotlin:dist_files",
+        "//java/kotlin-lite:dist_files",
+    ],
+)
+
+pkg_zip(
+    name = "dist_java_zip",
+    srcs = [
+        ":java_srcs",
+        "//:common_dist_files",
+    ],
+    package_file_name = "protobuf-java-{version}.zip",
+    package_variables = ":protobuf_pkg_naming",
+)
+
+pkg_filegroup(
+    name = "js_srcs",
+    srcs = [
+        "//js:dist_files",
+        "//:common_dist_files",
+    ],
+)
+
+pkg_zip(
+    name = "dist_js_zip",
+    srcs = [
+        ":js_srcs",
+    ],
+    package_file_name = "protobuf-js-{version}.zip",
+    package_variables = ":protobuf_pkg_naming",
+)
+
+pkg_filegroup(
+    name = "objectivec_srcs",
+    srcs = [
+        "//:objectivec_dist_files",
+        "//objectivec:dist_files",
+    ],
+)
+
+pkg_zip(
+    name = "dist_objectivec_zip",
+    srcs = [
+        ":objectivec_srcs",
+        "//:common_dist_files",
+    ],
+    package_file_name = "protobuf-objectivec-{version}.zip",
+    package_variables = ":protobuf_pkg_naming",
+)
+
+pkg_filegroup(
+    name = "php_srcs",
+    srcs = [
+        "//:php_dist_files",
+        "//php:dist_files",
+    ],
+)
+
+pkg_zip(
+    name = "dist_php_zip",
+    srcs = [
+        ":php_srcs",
+        "//:common_dist_files",
+    ],
+    package_file_name = "protobuf-php-{version}.zip",
+    package_variables = ":protobuf_pkg_naming",
+)
+
+pkg_filegroup(
+    name = "ruby_srcs",
+    srcs = [
+        "//ruby:dist_files",
+    ],
+)
+
+pkg_zip(
+    name = "dist_ruby_zip",
+    srcs = [
+        ":ruby_srcs",
+        "//:common_dist_files",
+    ],
+    package_file_name = "protobuf-ruby-{version}.zip",
+    package_variables = ":protobuf_pkg_naming",
 )
 
 ################################################################################

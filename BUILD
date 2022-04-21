@@ -2,6 +2,7 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
@@ -1444,4 +1445,106 @@ internal_gen_kt_protos(
     name = "gen_kotlin_proto3_unittest",
     visibility = ["//java:__subpackages__"],
     deps = [":kt_proto3_unittest"],
+)
+
+################################################################################
+# Packaging rules
+################################################################################
+
+# Files included in all source distributions
+pkg_files(
+    name = "common_dist_files",
+    srcs = [
+        "BUILD",
+        "CHANGES.txt",
+        "CMakeLists.txt",
+        "CONTRIBUTORS.txt",
+        "LICENSE",
+        "README.md",
+        "WORKSPACE",
+        "autogen.sh",
+        "build_files_updated_unittest.sh",
+        "cc_proto_blacklist_test.bzl",
+        "compiler_config_setting.bzl",
+        "editors/README.txt",
+        "editors/proto.vim",
+        "editors/protobuf-mode.el",
+        "generate_descriptor_proto.sh",
+        "internal.bzl",
+        "maven_install.json",
+        "protobuf.bzl",
+        "protobuf_deps.bzl",
+        "protobuf_release.bzl",
+        "protobuf_version.bzl",
+        "update_file_lists.sh",
+        "//util/python:BUILD",
+        "//third_party:zlib.BUILD",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+# C++ runtime
+pkg_files(
+    name = "cpp_dist_files",
+    srcs = glob(["src/**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+# It is somewhat common for CMake builds to use /cmake/build as the output
+# directory. However, that would conflict with a file named BUILD on
+# case-insentitive filesystems, so CMake files are packaged here.
+pkg_files(
+    name = "cmake_dist_files",
+    srcs = [
+        "cmake/CMakeLists.txt",
+        "cmake/README.md",
+        "cmake/abseil-cpp.cmake",
+        "cmake/conformance.cmake",
+        "cmake/examples.cmake",
+        "cmake/extract_includes.bat.in",
+        "cmake/install.cmake",
+        "cmake/libprotobuf.cmake",
+        "cmake/libprotobuf-lite.cmake",
+        "cmake/libprotoc.cmake",
+        "cmake/protobuf.pc.cmake",
+        "cmake/protobuf-config.cmake.in",
+        "cmake/protobuf-config-version.cmake.in",
+        "cmake/protobuf-lite.pc.cmake",
+        "cmake/protobuf-module.cmake.in",
+        "cmake/protobuf-options.cmake",
+        "cmake/protoc.cmake",
+        "cmake/tests.cmake",
+        "cmake/version.rc.in",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Additional files for C#
+pkg_files(
+    name = "csharp_dist_files",
+    srcs = [
+        "global.json",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Additional files for ObjC
+pkg_files(
+    name = "objectivec_dist_files",
+    srcs = [
+        "Protobuf.podspec",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Additional files for PHP
+pkg_files(
+    name = "php_dist_files",
+    srcs = [
+        "composer.json",
+    ],
+    visibility = ["//pkg:__pkg__"],
 )

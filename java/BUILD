@@ -1,3 +1,5 @@
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+
 test_suite(
     name = "tests",
     tests = [
@@ -12,9 +14,26 @@ test_suite(
 filegroup(
     name = "release",
     srcs = [
-        "//java/core:release", # contains lite.
+        "//java/core:release",  # contains lite.
         "//java/kotlin:release",
         "//java/kotlin-lite:release",
         "//java/util:release",
-    ]
+    ],
+)
+
+################################################################################
+# Packaging rules
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = [
+        "BUILD",
+        "README.md",
+        "bom/pom.xml",
+        "lite.md",
+        "pom.xml",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
 )
