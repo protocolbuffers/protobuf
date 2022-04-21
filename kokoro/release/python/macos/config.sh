@@ -25,9 +25,12 @@ function pre_build {
     # Runs in the root directory of this repository.
     pushd protobuf
 
-    # Build protoc
+    # Build protoc and protobuf libraries
     use_bazel.sh 5.1.1
     bazel build //:protoc
+    mkdir src/.libs
+    ln -s $PWD/bazel-bin/libprotobuf.a src/.libs/libprotobuf.a
+    ln -s $PWD/bazel-bin/libprotobuf_lite.a src/.libs/libprotobuf-lite.a
 
     # Generate python dependencies.
     pushd python
