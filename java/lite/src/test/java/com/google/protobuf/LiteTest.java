@@ -187,9 +187,11 @@ public class LiteTest extends TestCase {
 
     // Test hashCode is memoized
     assertEquals(0, message.memoizedHashCode);
+    assertFalse(message.memoizedHashCodeSet);
     int hashCode = message.hashCode();
     assertTrue(hashCode != 0);
     assertEquals(hashCode, message.memoizedHashCode);
+    assertTrue(message.memoizedHashCodeSet);
 
     // Test isInitialized is memoized
     Field memo = message.getClass().getDeclaredField("memoizedIsInitialized");
