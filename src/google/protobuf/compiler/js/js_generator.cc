@@ -330,6 +330,10 @@ bool IsUpperCamel(const std::string& input) {
         return false;
     }
 
+    if (input[0] < 'A' || input[0] > 'Z') {
+        return false;
+    }
+
     return HasUpper(input);
 }
 
