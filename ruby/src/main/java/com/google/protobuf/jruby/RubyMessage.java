@@ -860,7 +860,6 @@ public class RubyMessage extends RubyObject {
               this.builder.getDescriptorForType().findFieldByName(TYPE);
           if (typeBytesSymbol.equals(fields.get(enumFieldDescriptorForType))) {
             isDefaultStringForBytes = true;
-                    }
           }
         }
         builder.setField(
