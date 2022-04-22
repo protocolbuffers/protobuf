@@ -143,6 +143,7 @@ pkg_tar(
     name = "dist_csharp_tar",
     srcs = [":csharp_srcs"],
     extension = "tar.gz",
+    package_dir = "protobuf-{version}",
     package_file_name = "protobuf-csharp-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -169,6 +170,7 @@ pkg_tar(
     name = "dist_java_tar",
     srcs = [":java_srcs"],
     extension = "tar.gz",
+    package_dir = "protobuf-{version}",
     package_file_name = "protobuf-java-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -192,6 +194,7 @@ pkg_tar(
     name = "dist_js_tar",
     srcs = [":js_srcs"],
     extension = "tar.gz",
+    package_dir = "protobuf-{version}",
     package_file_name = "protobuf-js-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -216,6 +219,7 @@ pkg_tar(
     name = "dist_objectivec_tar",
     srcs = [":objectivec_srcs"],
     extension = "tar.gz",
+    package_dir = "protobuf-{version}",
     package_file_name = "protobuf-objectivec-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -240,6 +244,7 @@ pkg_tar(
     name = "dist_php_tar",
     srcs = [":php_srcs"],
     extension = "tar.gz",
+    package_dir = "protobuf-{version}",
     package_file_name = "protobuf-php-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -263,6 +268,7 @@ pkg_tar(
     name = "dist_ruby_tar",
     srcs = [":ruby_srcs"],
     extension = "tar.gz",
+    package_dir = "protobuf-{version}",
     package_file_name = "protobuf-ruby-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
 )
@@ -286,6 +292,7 @@ pkg_tar(
         ":ruby_srcs",
     ],
     extension = "tar.gz",
+    package_dir = "protobuf-{version}",
     package_file_name = "protobuf-all-{version}.tar.gz",
     package_variables = ":protobuf_pkg_naming",
 )
