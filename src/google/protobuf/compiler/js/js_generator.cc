@@ -314,7 +314,9 @@ bool IsUpperCamel(const std::string& input) {
     int wordLength = 0;
     std::string running = "";
     for (int i = 0; i < input.size(); i++) {
-        if (input[i] >= 'A' && input[i] <= 'Z' && !running.empty()) {
+        if (input[i] == '_') {
+            return false;
+        } else if (input[i] >= 'A' && input[i] <= 'Z' && !running.empty()) {
             if (wordLength > 0) {
                 return true;
             }
@@ -331,7 +333,9 @@ bool IsLowerCamel(const std::string& input) {
     int wordLength = 0;
     std::string running = "";
     for (int i = 0; i < input.size(); i++) {
-        if (i != 0 && input[i] >= 'A' && input[i] <= 'Z') {
+        if (input[i] == '_') {
+            return false;
+        } else if (i != 0 && input[i] >= 'A' && input[i] <= 'Z') {
             if (wordLength > 0) {
                 return true;
             }
