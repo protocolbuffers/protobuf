@@ -59,10 +59,25 @@ except ImportError:
   pass  # Unspecified by compiler flags.
 
 
+def _CanImport(mod_name):
+  try:
+    mod = importlib.import_module(mod_name)
+    # Work around a known issue in the classic bootstrap .par import hook.
+    if not mod:
+      raise ImportError(mod_name + ' import succeeded but was None')
+    return True
+  except ImportError:
+    return False
 
 
 if _implementation_type is None:
-  _implementation_type = 'python'
+  if _CanImport('google._upb._message'):
+    _implementation_type = 'upb'
+  elif _CanImport('google.protobuf.pyext._message'):
+    _implementation_type = 'cpp'
+  else:
+    _implementation_type = 'python'
+
 
 # This environment variable can be used to switch to a certain implementation
 # of the Python API, overriding the compile-time constants in the
@@ -98,7 +113,7 @@ if _implementation_type == 'cpp':
 if _implementation_type == 'upb':
   try:
     # pylint: disable=g-import-not-at-top
-    from google.protobuf.pyext import _upb_message as _message
+    from google._upb import _message
     _c_module = _message
     del _message
   except ImportError:
