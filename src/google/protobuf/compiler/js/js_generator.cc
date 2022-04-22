@@ -294,6 +294,22 @@ std::vector<std::string> ParseUpperCamel(const std::string& input) {
   return words;
 }
 
+std::vector<std::string> ParseLowerCamel(const std::string& input) {
+  std::vector<std::string> words;
+  std::string running = "";
+  for (int i = 0; i < input.size(); i++) {
+    if (i != 0 && input[i] >= 'A' && input[i] <= 'Z' && !running.empty()) {
+      words.push_back(running);
+      running.clear();
+    }
+    running += ToLowerASCII(input[i]);
+  }
+  if (!running.empty()) {
+    words.push_back(running);
+  }
+  return words;
+}
+
 bool IsUpperCamel(const std::string& input) {
     int wordLength = 0;
     std::string running = "";
@@ -506,8 +522,12 @@ std::string JSIdent(const GeneratorOptions& options,
   } else {
       if (is_upper_camel && IsUpperCamel(field->name())) {
           result = field->name();
+      } else if (is_upper_camel && IsLowerCamel(field->name())) {
+          result = ToUpperCamel(ParseLowerCamel(field->name()));
       } else if (!is_upper_camel && IsLowerCamel(field->name())) {
           result = field->name();
+      } else if (!is_upper_camel && IsUpperCamel(field->name())) {
+          result = ToLowerCamel(ParseUpperCamel(field->name()));
       } else if (is_upper_camel) {
           result = ToUpperCamel(ParseLowerUnderscore(field->name()));
       } else {
