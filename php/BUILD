@@ -14,6 +14,7 @@ pkg_files(
         "tests/*.sh",
         "tests/proto/**/*.proto",
     ]) + [
+        "BUILD",
         "README.md",
         "REFCOUNTING.md",
         "composer.json",

@@ -21,6 +21,7 @@ pkg_files(
         "experimental/benchmarks/**/*.js",
         "experimental/runtime/**/*.js",
     ]) + [
+        "BUILD",
         "README.md",
     ],
     strip_prefix = strip_prefix.from_root(""),
