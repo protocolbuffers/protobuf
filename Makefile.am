@@ -9,6 +9,9 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = . src
 
 # Always include third_party directories in distributions.
+#
+# Note that distribution artifacts will be produced by Bazel in the future.
+# See pkg/BUILD for overall definitions.
 DIST_SUBDIRS = src conformance benchmarks third_party/googletest
 
 # Build gmock before we build protobuf tests.  We don't add gmock to SUBDIRS
@@ -48,6 +51,7 @@ clean-local:
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = protobuf.pc protobuf-lite.pc
 
+# Note: please keep this in sync with the dist_files rule in csharp/BUILD.
 csharp_EXTRA_DIST=                                                           \
   global.json                                                                \
   csharp/.editorconfig                                                       \
@@ -279,6 +283,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/UnknownFieldSet.cs                              \
   csharp/src/Google.Protobuf/UnsafeByteOperations.cs
 
+# Note: please keep this in sync with the dist_files rules under java/.../BUILD.
 java_EXTRA_DIST=                                                                   \
   java/README.md                                                                   \
   java/bom/pom.xml                                                                 \
@@ -607,6 +612,7 @@ java_EXTRA_DIST=                                                                
   java/util/src/test/java/com/google/protobuf/util/ValuesTest.java                 \
   java/util/src/test/proto/com/google/protobuf/util/json_test.proto
 
+# Note: please keep this in sync with the dist_files rule in objectivec/BUILD.
 objectivec_EXTRA_DIST=                                                       \
   objectivec/.clang-format                                                   \
   objectivec/BUILD                                                           \
@@ -815,6 +821,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/UnitTests-Info.plist                                       \
   Protobuf.podspec
 
+# Note: please keep this in sync with the dist_files rule in php/BUILD.
 php_EXTRA_DIST=                                                       \
   php/README.md                                                       \
   php/REFCOUNTING.md                                                  \
@@ -838,7 +845,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/package.xml                                 \
   php/ext/google/protobuf/php-upb.c                                   \
   php/ext/google/protobuf/php-upb.h                                   \
-  php/ext/google/protobuf/php_protobuf.h                              \  
+  php/ext/google/protobuf/php_protobuf.h                              \
   php/ext/google/protobuf/protobuf.c                                  \
   php/ext/google/protobuf/protobuf.h                                  \
   php/ext/google/protobuf/wkt.inc                                     \
@@ -1011,6 +1018,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/WellKnownTest.php                                         \
   php/tests/WrapperTypeSettersTest.php
 
+# Note: please keep this in sync with the python_dist_files rule in BUILD.
 python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
   python/google/__init__.py                                                  \
@@ -1134,6 +1142,7 @@ python_EXTRA_DIST=                                                           \
   python/tox.ini                                                             \
   python/README.md
 
+# Note: please keep this in sync with the dist_files rule in ruby/BUILD.
 ruby_EXTRA_DIST=                                                             \
   ruby/Gemfile                                                               \
   ruby/.gitignore                                                            \
@@ -1209,6 +1218,7 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/type_errors.rb                                                  \
   ruby/travis-test.sh
 
+# Note: please keep this in sync with the dist_files rule in js/BUILD.
 js_EXTRA_DIST=                                                         \
   js/README.md                                                         \
   js/binary/arith.js                                                   \
@@ -1392,6 +1402,7 @@ js_EXTRA_DIST=                                                         \
 
 all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
 
+# Note: please keep this in sync with the common_dist_files rule in BUILD.
 EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   autogen.sh                                        \
   generate_descriptor_proto.sh                      \
@@ -1425,6 +1436,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   compiler_config_setting.bzl                       \
   build_files_updated_unittest.sh                   \
   cc_proto_blacklist_test.bzl                       \
+  csharp/BUILD                                      \
   editors/README.txt                                \
   editors/proto.vim                                 \
   editors/protobuf-mode.el                          \
@@ -1449,15 +1461,17 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   examples/list_people.dart                         \
   examples/list_people.py                           \
   examples/pubspec.yaml                             \
+  internal.bzl                                      \
+  js/BUILD                                          \
   maven_install.json                                \
+  php/BUILD                                         \
   protobuf.bzl                                      \
   protobuf_deps.bzl                                 \
   protobuf_release.bzl                              \
   protobuf_version.bzl                              \
+  ruby/BUILD                                        \
   third_party/zlib.BUILD                            \
-  util/python/BUILD                                 \
-  internal.bzl
-
+  util/python/BUILD
 
 # Deletes all the files generated by autogen.sh.
 MAINTAINERCLEANFILES =   \

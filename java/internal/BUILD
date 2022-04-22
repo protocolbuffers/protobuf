@@ -1,1 +1,13 @@
 package(default_visibility = ["//java:__subpackages__"])
+
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+
+pkg_files(
+    name = "dist_files",
+    srcs = [
+        "BUILD",
+        "testing.bzl",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//java:__pkg__"],
+)
