@@ -62,11 +62,17 @@ def _get_config_var(repository_ctx, name):
     py_program = "import sysconfig; print(sysconfig.get_config_var('%s'), end='')"
     result = repository_ctx.execute(["python3", "-c", py_program % (name)])
     if result.return_code != 0:
-        fail("No python3 executable available on the system")
+        return None
     return result.stdout
 
 def _python_headers_impl(repository_ctx):
     path = _get_config_var(repository_ctx, "INCLUDEPY")
+    if not path:
+        # buildifier: disable=print
+        print("WARNING: no system python available, builds against system python will fail")
+        repository_ctx.file("BUILD.bazel", "")
+        repository_ctx.file("version.bzl", "SYSTEM_PYTHON_VERSION = None")
+        return
     repository_ctx.symlink(path, "python")
     python3 = repository_ctx.which("python3")
     python_version = _get_python_version(repository_ctx)
