@@ -1611,14 +1611,14 @@ final class Utf8 {
       // ANDing the index with 7 to determine the number of bytes that need to be read before
       // we're 8-byte aligned.
       final int unaligned = 8 - ((int) offset & 7);
-      for (int j = unaligned; j > 0; j--) {
+      int i;
+      for (i = 0; i < unaligned; i++) {
         if (UnsafeUtil.getByte(bytes, offset++) < 0) {
-          return unaligned - j;
+          return i;
         }
       }
 
-      int i;
-      for (i = 0; i + 8 <= maxChars; i += 8) {
+      for (; i + 8 <= maxChars; i += 8) {
         if ((UnsafeUtil.getLong(bytes, UnsafeUtil.BYTE_ARRAY_BASE_OFFSET + offset)
                 & ASCII_MASK_LONG)
             != 0L) {

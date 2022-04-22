@@ -257,7 +257,11 @@ bool Reflection::IsLazyExtension(const Message& message,
 }
 
 bool Reflection::IsLazilyVerifiedLazyField(const FieldDescriptor* field) const {
-  return field->options().lazy() || field->options().unverified_lazy();
+  if (field->options().unverified_lazy()) return true;
+
+  // Message fields with [lazy=true] will be eagerly verified
+  // (go/verified-lazy).
+  return field->options().lazy() && !IsEagerlyVerifiedLazyField(field);
 }
 
 bool Reflection::IsEagerlyVerifiedLazyField(

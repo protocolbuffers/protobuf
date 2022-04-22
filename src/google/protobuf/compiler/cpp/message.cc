@@ -2250,7 +2250,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
     //
     // Embed whether the field is eagerly verified lazy or inlined string to the
     // LSB of the offset.
-    if (IsEagerlyVerifiedLazyByProfile(field, options_, scc_analyzer_)) {
+    if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
       format(" | 0x1u  // eagerly verified lazy\n");
     } else if (IsStringInlined(field, options_)) {
       format(" | 0x1u  // inlined\n");
