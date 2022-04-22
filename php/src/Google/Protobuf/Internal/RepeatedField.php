@@ -118,7 +118,7 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * This will also be called for: $ele = $arr[0]
      *
      * @param integer $offset The index of the element to be fetched.
-     * @return object The stored element at given index.
+     * @return mixed The stored element at given index.
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
      * @todo need to add return type mixed (require update php version to 8.0)
@@ -134,8 +134,8 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * This will also be called for: $arr []= $ele and $arr[0] = ele
      *
-     * @param integer $offset The index of the element to be assigned.
-     * @param object $value The element to be assigned.
+     * @param int|null $offset The index of the element to be assigned.
+     * @param mixed $value The element to be assigned.
      * @return void
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.

@@ -56,12 +56,6 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
   // Set by the user to make the descriptor pool persist between requests.
   zend_bool keep_descriptor_pool_after_request;
 
-  // Currently we make the generated pool a "global", which means that if a user
-  // does explicitly create threads within their request, the other threads will
-  // get different results from DescriptorPool::getGeneratedPool(). We require
-  // that all descriptors are loaded from the main thread.
-  zval generated_pool;
-
   // A upb_DefPool that we are saving for the next request so that we don't have
   // to rebuild it from scratch. When keep_descriptor_pool_after_request==true,
   // we steal the upb_DefPool from the global DescriptorPool object just before
@@ -91,8 +85,8 @@ void free_protobuf_globals(zend_protobuf_globals *globals) {
 
 ZEND_DECLARE_MODULE_GLOBALS(protobuf)
 
-const zval *get_generated_pool() {
-  return &PROTOBUF_G(generated_pool);
+upb_DefPool *get_global_symtab() {
+  return PROTOBUF_G(global_symtab);
 }
 
 // This is a PHP extension (not a Zend extension). What follows is a summary of
@@ -159,7 +153,6 @@ static PHP_GSHUTDOWN_FUNCTION(protobuf) {
 }
 
 static PHP_GINIT_FUNCTION(protobuf) {
-  ZVAL_NULL(&protobuf_globals->generated_pool);
   protobuf_globals->global_symtab = NULL;
 }
 
@@ -177,7 +170,6 @@ static PHP_RINIT_FUNCTION(protobuf) {
     zend_hash_init(&PROTOBUF_G(name_msg_cache), 64, NULL, NULL, 0);
     zend_hash_init(&PROTOBUF_G(name_enum_cache), 64, NULL, NULL, 0);
   }
-  DescriptorPool_CreateWithSymbolTable(&PROTOBUF_G(generated_pool), symtab);
 
   zend_hash_init(&PROTOBUF_G(object_cache), 64, NULL, NULL, 0);
   zend_hash_init(&PROTOBUF_G(descriptors), 64, NULL, ZVAL_PTR_DTOR, 0);
@@ -196,7 +188,6 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
     free_protobuf_globals(ZEND_MODULE_GLOBALS_BULK(protobuf));
   }
 
-  zval_dtor(&PROTOBUF_G(generated_pool));
   zend_hash_destroy(&PROTOBUF_G(object_cache));
   zend_hash_destroy(&PROTOBUF_G(descriptors));
 

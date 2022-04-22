@@ -51,20 +51,20 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/test_util2.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_message_reflection.h>
 #include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/arena.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/io_win32.h>
+#include <google/protobuf/generated_message_reflection.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/test_util2.h>
 
 
 namespace google {
@@ -278,10 +278,8 @@ TEST(MESSAGE_TEST_NAME, MergeFromUninitialized) {
   payload->mutable_optional_message()->set_dummy4(200);
   ASSERT_TRUE(p.ParsePartialFromString(o.SerializePartialAsString()));
 
-  GOOGLE_LOG(ERROR) << "seongkim: copy 1";
   q.mutable_child()->set_dummy(500);
   q = p;
-  GOOGLE_LOG(ERROR) << "seongkim: copy 1 done";
   q.ParsePartialFromString(q.SerializePartialAsString());
   EXPECT_TRUE(TestUtil::EqualsToSerialized(q, o.SerializePartialAsString()));
   EXPECT_TRUE(TestUtil::EqualsToSerialized(q, p.SerializePartialAsString()));

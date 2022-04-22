@@ -150,7 +150,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
    * <p>This class is thread-safe.
    */
   // <p>The code is adapted from the C++ implementation:
-  // https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/compiler/java/java_helpers.h
+  // https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/compiler/java/java_helpers.h
   static class IsInitializedCheckAnalyzer {
 
     private final Map<Descriptor, Boolean> resultCache =

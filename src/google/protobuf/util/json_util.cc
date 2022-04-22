@@ -31,9 +31,12 @@
 #include <google/protobuf/util/json_util.h>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/once.h>
+#include <google/protobuf/stubs/status.h>
+#include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
 #include <google/protobuf/util/internal/error_listener.h>
 #include <google/protobuf/util/internal/json_objectwriter.h>
@@ -42,9 +45,6 @@
 #include <google/protobuf/util/internal/protostream_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
-#include <google/protobuf/stubs/bytestream.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status_macros.h>
 
 // clang-format off
@@ -64,7 +64,7 @@ ZeroCopyStreamByteSink::~ZeroCopyStreamByteSink() {
 
 void ZeroCopyStreamByteSink::Append(const char* bytes, size_t len) {
   while (true) {
-    if (len <= buffer_size_) {
+    if (len <= buffer_size_) {  // NOLINT
       memcpy(buffer_, bytes, len);
       buffer_ = static_cast<char*>(buffer_) + len;
       buffer_size_ -= len;
@@ -226,7 +226,9 @@ std::string GetTypeUrl(const Message& message) {
          message.GetDescriptor()->full_name();
 }
 
-void DeleteGeneratedTypeResolver() { delete generated_type_resolver_; }
+void DeleteGeneratedTypeResolver() {  // NOLINT
+  delete generated_type_resolver_;
+}
 
 void InitGeneratedTypeResolver() {
   generated_type_resolver_ = NewTypeResolverForDescriptorPool(

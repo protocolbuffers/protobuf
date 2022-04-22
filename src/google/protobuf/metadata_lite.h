@@ -60,13 +60,17 @@ namespace internal {
 // It uses bit 0 == 0 to indicate an arena pointer and bit 0 == 1 to indicate a
 // UFS+Arena-container pointer. Besides it uses bit 1 == 0 to indicate arena
 // allocation and bit 1 == 1 to indicate heap allocation.
-class InternalMetadata {
+class PROTOBUF_EXPORT InternalMetadata {
  public:
   constexpr InternalMetadata() : ptr_(0) {}
-  explicit InternalMetadata(Arena* arena, bool is_message_owned = false)
-      : ptr_(is_message_owned
-                 ? reinterpret_cast<intptr_t>(arena) | kMessageOwnedArenaTagMask
-                 : reinterpret_cast<intptr_t>(arena)) {
+  explicit InternalMetadata(Arena* arena, bool is_message_owned = false) {
+    SetArena(arena, is_message_owned);
+  }
+
+  void SetArena(Arena* arena, bool is_message_owned) {
+    ptr_ = is_message_owned
+               ? reinterpret_cast<intptr_t>(arena) | kMessageOwnedArenaTagMask
+               : reinterpret_cast<intptr_t>(arena);
     GOOGLE_DCHECK(!is_message_owned || arena != nullptr);
   }
 

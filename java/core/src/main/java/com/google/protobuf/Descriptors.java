@@ -814,7 +814,7 @@ public final class Descriptors {
     /**
      * Finds a nested message type by name.
      *
-     * @param name The unqualified name of the nested type (e.g. "Foo").
+     * @param name The unqualified name of the nested type such as "Foo"
      * @return The types's descriptor, or {@code null} if not found.
      */
     public Descriptor findNestedTypeByName(final String name) {
@@ -829,7 +829,7 @@ public final class Descriptors {
     /**
      * Finds a nested enum type by name.
      *
-     * @param name The unqualified name of the nested type (e.g. "Foo").
+     * @param name The unqualified name of the nested type such as "Foo"
      * @return The types's descriptor, or {@code null} if not found.
      */
     public EnumDescriptor findEnumTypeByName(final String name) {
@@ -1202,7 +1202,7 @@ public final class Descriptors {
       }
     }
 
-    /** Can this field be packed? i.e. is it a repeated primitive field? */
+    /** Can this field be packed? That is, is it a repeated primitive field? */
     public boolean isPackable() {
       return isRepeated() && getLiteType().isPackable();
     }
@@ -1295,13 +1295,13 @@ public final class Descriptors {
      *   }
      *   message Bar {
      *     extend Foo {
-     *       optional int32 qux = 4321;
+     *       optional int32 moo = 4321;
      *     }
      *   }
      * </pre>
      *
-     * Both {@code baz}'s and {@code qux}'s containing type is {@code Foo}. However, {@code baz}'s
-     * extension scope is {@code null} while {@code qux}'s extension scope is {@code Bar}.
+     * Both {@code baz}'s and {@code moo}'s containing type is {@code Foo}. However, {@code baz}'s
+     * extension scope is {@code null} while {@code moo}'s extension scope is {@code Bar}.
      */
     public Descriptor getExtensionScope() {
       if (!isExtension()) {
@@ -1332,11 +1332,11 @@ public final class Descriptors {
 
     /**
      * Compare with another {@code FieldDescriptor}. This orders fields in "canonical" order, which
-     * simply means ascending order by field number. {@code other} must be a field of the same type
-     * -- i.e. {@code getContainingType()} must return the same {@code Descriptor} for both fields.
+     * simply means ascending order by field number. {@code other} must be a field of the same type.
+     * That is, {@code getContainingType()} must return the same {@code Descriptor} for both fields.
      *
      * @return negative, zero, or positive if {@code this} is less than, equal to, or greater than
-     *     {@code other}, respectively.
+     *     {@code other}, respectively
      */
     @Override
     public int compareTo(final FieldDescriptor other) {
@@ -1791,8 +1791,8 @@ public final class Descriptors {
     /**
      * Find an enum value by name.
      *
-     * @param name The unqualified name of the value (e.g. "FOO").
-     * @return the value's descriptor, or {@code null} if not found.
+     * @param name the unqualified name of the value such as "FOO"
+     * @return the value's descriptor, or {@code null} if not found
      */
     public EnumValueDescriptor findValueByName(final String name) {
       final GenericDescriptor result = file.pool.findSymbol(fullName + '.' + name);
@@ -2102,8 +2102,8 @@ public final class Descriptors {
     /**
      * Find a method by name.
      *
-     * @param name The unqualified name of the method (e.g. "Foo").
-     * @return the method's descriptor, or {@code null} if not found.
+     * @param name the unqualified name of the method such as "Foo"
+     * @return the method's descriptor, or {@code null} if not found
      */
     public MethodDescriptor findMethodByName(final String name) {
       final GenericDescriptor result = file.pool.findSymbol(fullName + '.' + name);
@@ -2676,8 +2676,8 @@ public final class Descriptors {
     }
 
     /**
-     * Verifies that the descriptor's name is valid (i.e. it contains only letters, digits, and
-     * underscores, and does not start with a digit).
+     * Verifies that the descriptor's name is valid. That is, it contains only letters, digits, and
+     * underscores, and does not start with a digit.
      */
     static void validateSymbolName(final GenericDescriptor descriptor)
         throws DescriptorValidationException {
@@ -2705,7 +2705,7 @@ public final class Descriptors {
     }
   }
 
-  /** Describes an oneof of a message type. */
+  /** Describes a oneof of a message type. */
   public static final class OneofDescriptor extends GenericDescriptor {
     /** Get the index of this descriptor within its parent. */
     public int getIndex() {

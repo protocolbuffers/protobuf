@@ -62,7 +62,7 @@ describe('binaryWriterTest', function() {
     var dummyMessage = /** @type {!jspb.BinaryMessage} */ ({});
 
     assertFails(function() {
-      writer.writeMessage(-1, dummyMessage, goog.nullFunction);
+      writer.writeMessage(-1, dummyMessage, () => {});
     });
 
     // Writing invalid field indices should assert.

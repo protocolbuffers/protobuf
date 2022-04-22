@@ -36,8 +36,6 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/test_util.h>
-#include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -50,6 +48,8 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/test_util.h>
+#include <google/protobuf/test_util2.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 // Must be included last.
@@ -63,7 +63,7 @@ namespace {
 
 using TestUtil::EqualsToSerialized;
 
-// This test closely mirrors net/proto2/compiler/cpp/internal/unittest.cc
+// This test closely mirrors third_party/protobuf/compiler/cpp/unittest.cc
 // except that it uses extensions rather than regular fields.
 
 TEST(ExtensionSetTest, Defaults) {
@@ -106,20 +106,6 @@ TEST(ExtensionSetTest, Clear) {
   TestUtil::SetAllExtensions(&message);
   message.Clear();
   TestUtil::ExpectExtensionsClear(message);
-
-  // Unlike with the defaults test, we do NOT expect that requesting embedded
-  // messages will return a pointer to the default instance.  Instead, they
-  // should return the objects that were created when mutable_blah() was
-  // called.
-  EXPECT_NE(&unittest::OptionalGroup_extension::default_instance(),
-            &message.GetExtension(unittest::optionalgroup_extension));
-  EXPECT_NE(&unittest::TestAllTypes::NestedMessage::default_instance(),
-            &message.GetExtension(unittest::optional_nested_message_extension));
-  EXPECT_NE(
-      &unittest::ForeignMessage::default_instance(),
-      &message.GetExtension(unittest::optional_foreign_message_extension));
-  EXPECT_NE(&unittest_import::ImportMessage::default_instance(),
-            &message.GetExtension(unittest::optional_import_message_extension));
 
   // Make sure setting stuff again after clearing works.  (This takes slightly
   // different code paths since the objects are reused.)
@@ -412,6 +398,46 @@ TEST(ExtensionSetTest, ArenaMergeFrom) {
   message2.MergeFrom(*message1);
   arena1.Reset();
   TestUtil::ExpectAllExtensionsSet(message2);
+}
+
+TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensions) {
+  Arena arena;
+  {
+    auto* message1 = Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+    auto* message2 = Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+
+    // Set an extension and then clear it
+    message1->SetExtension(unittest::optional_int32_extension, 1);
+    message1->ClearExtension(unittest::optional_int32_extension);
+
+    // Since all extensions in message1 have been cleared, we should be able to
+    // merge it into message2 without allocating any additional memory.
+    uint64_t space_used_before_merge = arena.SpaceUsed();
+    message2->MergeFrom(*message1);
+    EXPECT_EQ(space_used_before_merge, arena.SpaceUsed());
+  }
+  {
+    // As more complicated case, let's have message1 and message2 share some
+    // uncleared extensions in common.
+    auto* message1 = Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+    auto* message2 = Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+
+    // Set int32 and uint32 on both messages.
+    message1->SetExtension(unittest::optional_int32_extension, 1);
+    message2->SetExtension(unittest::optional_int32_extension, 2);
+    message1->SetExtension(unittest::optional_uint32_extension, 1);
+    message2->SetExtension(unittest::optional_uint32_extension, 2);
+
+    // Set and clear int64 and uint64 on message1.
+    message1->SetExtension(unittest::optional_int64_extension, 0);
+    message1->ClearExtension(unittest::optional_int64_extension);
+    message1->SetExtension(unittest::optional_uint64_extension, 0);
+    message1->ClearExtension(unittest::optional_uint64_extension);
+
+    uint64_t space_used_before_merge = arena.SpaceUsed();
+    message2->MergeFrom(*message1);
+    EXPECT_EQ(space_used_before_merge, arena.SpaceUsed());
+  }
 }
 
 TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
@@ -1336,6 +1362,18 @@ TEST(ExtensionSetTest, BoolExtension) {
 TEST(ExtensionSetTest, ConstInit) {
   PROTOBUF_CONSTINIT static ExtensionSet set{};
   EXPECT_EQ(set.NumExtensions(), 0);
+}
+
+TEST(ExtensionSetTest, ExtensionSetSpaceUsed) {
+  unittest::TestAllExtensions msg;
+  size_t l = msg.SpaceUsedLong();
+  msg.SetExtension(unittest::optional_int32_extension, 100);
+  unittest::TestAllExtensions msg2(msg);
+  size_t l2 = msg2.SpaceUsedLong();
+  msg.ClearExtension(unittest::optional_int32_extension);
+  unittest::TestAllExtensions msg3(msg);
+  size_t l3 = msg3.SpaceUsedLong();
+  EXPECT_TRUE((l2 - l) > (l3 - l));
 }
 
 }  // namespace

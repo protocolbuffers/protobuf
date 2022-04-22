@@ -37,12 +37,13 @@
 
 #include <google/protobuf/unknown_field_set.h>
 
+#include <string>
 #include <unordered_set>
+#include <vector>
 
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_lite.pb.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -54,6 +55,7 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/time.h>
+#include <google/protobuf/test_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
@@ -533,38 +535,61 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
 TEST_F(UnknownFieldSetTest, SpaceUsedExcludingSelf) {
   UnknownFieldSet empty;
   empty.AddVarint(1, 0);
-  EXPECT_EQ(sizeof(std::vector<UnknownField>) + sizeof(UnknownField),
-            empty.SpaceUsedExcludingSelf());
+  EXPECT_EQ(sizeof(UnknownField), empty.SpaceUsedExcludingSelf());
 }
 
 TEST_F(UnknownFieldSetTest, SpaceUsed) {
+  // Keep shadow vectors to avoid making assumptions about its capacity growth.
+  // We imitate the push back calls here to determine the expected capacity.
+  std::vector<UnknownField> shadow_vector, shadow_vector_group;
   unittest::TestEmptyMessage empty_message;
 
   // Make sure an unknown field set has zero space used until a field is
   // actually added.
-  size_t base_size = empty_message.SpaceUsedLong();
+  const size_t base = empty_message.SpaceUsedLong();
+  std::string* str = nullptr;
+  UnknownFieldSet* group = nullptr;
+  const auto total = [&] {
+    size_t result = base;
+    result += shadow_vector.capacity() * sizeof(UnknownField);
+    result += shadow_vector_group.capacity() * sizeof(UnknownField);
+    if (str != nullptr) {
+      result += sizeof(std::string);
+      static const size_t sso_capacity = std::string().capacity();
+      if (str->capacity() > sso_capacity) result += str->capacity();
+    }
+    if (group != nullptr) {
+      result += sizeof(UnknownFieldSet);
+    }
+    return result;
+  };
+
   UnknownFieldSet* unknown_fields = empty_message.mutable_unknown_fields();
-  EXPECT_EQ(base_size, empty_message.SpaceUsedLong());
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong());
 
   // Make sure each thing we add to the set increases the SpaceUsedLong().
   unknown_fields->AddVarint(1, 0);
-  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
-  base_size = empty_message.SpaceUsedLong();
+  shadow_vector.emplace_back();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var";
 
-  std::string* str = unknown_fields->AddLengthDelimited(1);
-  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
-  base_size = empty_message.SpaceUsedLong();
+  str = unknown_fields->AddLengthDelimited(1);
+  shadow_vector.emplace_back();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Str";
 
   str->assign(sizeof(std::string) + 1, 'x');
-  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
-  base_size = empty_message.SpaceUsedLong();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Str2";
 
-  UnknownFieldSet* group = unknown_fields->AddGroup(1);
-  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
-  base_size = empty_message.SpaceUsedLong();
+  group = unknown_fields->AddGroup(1);
+  shadow_vector.emplace_back();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Group";
 
   group->AddVarint(1, 0);
-  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
+  shadow_vector_group.emplace_back();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Group2";
+
+  unknown_fields->AddVarint(1, 0);
+  shadow_vector.emplace_back();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var2";
 }
 
 

@@ -47,8 +47,6 @@ namespace Google.Protobuf.WellKnownTypes {
   ///     service Foo {
   ///       rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);
   ///     }
-  ///
-  /// The JSON representation for `Empty` is empty JSON object `{}`.
   /// </summary>
   public sealed partial class Empty : pb::IMessage<Empty>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE

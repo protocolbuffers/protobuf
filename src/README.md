@@ -129,6 +129,10 @@ Mac installations.
 
     sudo /opt/local/bin/port install autoconf automake libtool
 
+Alternative for Homebrew users:
+
+    brew install autoconf automake libtool
+
 Then follow the Unix instructions above.
 
 **Note for cross-compiling**

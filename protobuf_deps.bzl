@@ -7,10 +7,10 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.gson:gson:2.8.9",
     "com.google.errorprone:error_prone_annotations:2.3.2",
     "com.google.j2objc:j2objc-annotations:1.3",
-    "com.google.guava:guava:30.1.1-jre",
-    "com.google.guava:guava-testlib:30.1.1-jre",
+    "com.google.guava:guava:31.1-jre",
+    "com.google.guava:guava-testlib:31.1-jre",
     "com.google.truth:truth:1.1.2",
-    "junit:junit:4.12",
+    "junit:junit:4.13.2",
     "org.mockito:mockito-core:4.3.1",
 ]
 
@@ -25,6 +25,15 @@ def protobuf_deps():
                 "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.0.2/bazel-skylib-1.0.2.tar.gz",
                 "https://github.com/bazelbuild/bazel-skylib/releases/download/1.0.2/bazel-skylib-1.0.2.tar.gz",
             ],
+        )
+
+    if not native.existing_rule("com_google_absl"):
+        # Abseil LTS from November 2021
+        http_archive(
+            name = "com_google_absl",
+            sha256 = "b4e20d9e752a75c10636675691b1e9c2698e0764cb404987d0ffa77223041c19",
+            urls = ["https://github.com/abseil/abseil-cpp/archive/215105818dfde3174fe799600bb0f3cae233d0bf.zip"],
+            strip_prefix = "abseil-cpp-215105818dfde3174fe799600bb0f3cae233d0bf",
         )
 
     if not native.existing_rule("zlib"):
@@ -79,10 +88,10 @@ def protobuf_deps():
         http_archive(
             name = "rules_pkg",
             urls = [
-                "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.5.1/rules_pkg-0.5.1.tar.gz",
-                "https://github.com/bazelbuild/rules_pkg/releases/download/0.5.1/rules_pkg-0.5.1.tar.gz",
+                "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.7.0/rules_pkg-0.7.0.tar.gz",
+                "https://github.com/bazelbuild/rules_pkg/releases/download/0.7.0/rules_pkg-0.7.0.tar.gz",
             ],
-            sha256 = "a89e203d3cf264e564fcb96b6e06dd70bc0557356eb48400ce4b5d97c2c3720d",
+            sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
         )
 
     if not native.existing_rule("io_bazel_rules_kotlin"):

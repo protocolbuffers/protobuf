@@ -98,6 +98,7 @@ class Proto2Test {
           optionalImportMessage = ImportMessage.newBuilder().setD(120).build()
           optionalPublicImportMessage = PublicImportMessage.newBuilder().setE(126).build()
           optionalLazyMessage = nestedMessage { bb = 127 }
+          optionalUnverifiedLazyMessage = nestedMessage { bb = 128 }
           optionalNestedEnum = NestedEnum.BAZ
           optionalForeignEnum = ForeignEnum.FOREIGN_BAZ
           optionalImportEnum = ImportEnum.IMPORT_BAZ
@@ -415,6 +416,8 @@ class Proto2Test {
             PublicImportMessage.newBuilder().setE(126).build()
           this[UnittestProto.optionalLazyMessageExtension] =
             TestAllTypesKt.nestedMessage { bb = 127 }
+          this[UnittestProto.optionalUnverifiedLazyMessageExtension] =
+            TestAllTypesKt.nestedMessage { bb = 128 }
           this[UnittestProto.optionalNestedEnumExtension] = NestedEnum.BAZ
           this[UnittestProto.optionalForeignEnumExtension] = ForeignEnum.FOREIGN_BAZ
           this[UnittestProto.optionalImportEnumExtension] = ImportEnum.IMPORT_BAZ

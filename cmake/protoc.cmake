@@ -1,5 +1,5 @@
 set(protoc_files
-  ${protobuf_source_dir}/src/google/protobuf/compiler/main.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/main.cc
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -9,7 +9,11 @@ set(protoc_rc_files
 endif()
 
 add_executable(protoc ${protoc_files} ${protoc_rc_files})
-target_link_libraries(protoc libprotoc libprotobuf)
+target_link_libraries(protoc
+  libprotoc
+  libprotobuf
+  ${protobuf_ABSL_USED_TARGETS}
+)
 add_executable(protobuf::protoc ALIAS protoc)
 
 set_target_properties(protoc PROPERTIES

@@ -118,6 +118,27 @@
 #define PROTOBUF_has_builtin_DEFINED_
 #endif
 
+// Portable PROTOBUF_BUILTIN_BSWAPxx definitions
+// Code must check for availability, e.g.: `defined(PROTOBUF_BUILTIN_BSWAP32)`
+#ifdef PROTOBUF_BUILTIN_BSWAP16
+#error PROTOBUF_BUILTIN_BSWAP16 was previously defined
+#endif
+#ifdef PROTOBUF_BUILTIN_BSWAP32
+#error PROTOBUF_BUILTIN_BSWAP32 was previously defined
+#endif
+#ifdef PROTOBUF_BUILTIN_BSWAP64
+#error PROTOBUF_BUILTIN_BSWAP64 was previously defined
+#endif
+#if defined(__GNUC__) || __has_builtin(__builtin_bswap16)
+#define PROTOBUF_BUILTIN_BSWAP16(x) __builtin_bswap16(x)
+#endif
+#if defined(__GNUC__) || __has_builtin(__builtin_bswap32)
+#define PROTOBUF_BUILTIN_BSWAP32(x) __builtin_bswap32(x)
+#endif
+#if defined(__GNUC__) || __has_builtin(__builtin_bswap64)
+#define PROTOBUF_BUILTIN_BSWAP64(x) __builtin_bswap64(x)
+#endif
+
 // Portable check for GCC minimum version:
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) \
@@ -172,7 +193,7 @@
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
 #endif
-#define PROTOBUF_VERSION_SUFFIX ""
+#define PROTOBUF_VERSION_SUFFIX "-rc1"
 
 #if defined(PROTOBUF_NAMESPACE) || defined(PROTOBUF_NAMESPACE_ID)
 #error PROTOBUF_NAMESPACE or PROTOBUF_NAMESPACE_ID was previously defined
@@ -501,6 +522,10 @@
 #error PROTOBUF_FORCE_COPY_IN_MOVE was previously defined
 #endif
 
+#ifdef PROTOBUF_FORCE_RESET_IN_CLEAR
+#error PROTOBUF_FORCE_RESET_IN_CLEAR was previously defined
+#endif
+
 // Force copy the default string to a string field so that non-optimized builds
 // have harder-to-rely-on address stability.
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -580,6 +605,22 @@
 #define PROTOBUF_THREAD_LOCAL __declspec(thread)
 #else
 #define PROTOBUF_THREAD_LOCAL __thread
+#endif
+
+// TODO(b/228173843): cleanup PROTOBUF_LITTLE_ENDIAN in various 3p forks.
+#if (defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && \
+     __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#define PROTOBUF_LITTLE_ENDIAN 1
+#ifdef PROTOBUF_BIG_ENDIAN
+#error Conflicting PROTOBUF_BIG_ENDIAN was previously defined
+#endif
+#elif defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
+    __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define PROTOBUF_BIG_ENDIAN 1
+#elif defined(_WIN32) || defined(__x86_64__) || defined(__aarch64__)
+#define PROTOBUF_LITTLE_ENDIAN 1
+#else
+#error "endian detection failed for current compiler"
 #endif
 
 // For enabling message owned arena, one major blocker is semantic change from
@@ -771,8 +812,12 @@
 #undef ERROR_INSTALL_FAILED
 #pragma push_macro("ERROR_NOT_FOUND")
 #undef ERROR_NOT_FOUND
+#pragma push_macro("GetClassName")
+#undef GetClassName
 #pragma push_macro("GetMessage")
 #undef GetMessage
+#pragma push_macro("GetObject")
+#undef GetObject
 #pragma push_macro("IGNORE")
 #undef IGNORE
 #pragma push_macro("IN")

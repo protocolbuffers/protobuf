@@ -48,9 +48,7 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/map_test_util.h>
 #include <google/protobuf/map_unittest.pb.h>
-#include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
 #include <google/protobuf/unittest_mset_wire_format.pb.h>
@@ -58,6 +56,8 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/map_test_util.h>
+#include <google/protobuf/test_util.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -77,6 +77,14 @@ class GeneratedMessageReflectionTestHelper {
   }
   static bool IsLazyField(const Message& msg, const FieldDescriptor* field) {
     return msg.GetReflection()->IsLazyField(field);
+  }
+  static bool IsEagerlyVerifiedLazyField(const Message& msg,
+                                         const FieldDescriptor* field) {
+    return msg.GetReflection()->IsEagerlyVerifiedLazyField(field);
+  }
+  static bool IsLazilyVerifiedLazyField(const Message& msg,
+                                        const FieldDescriptor* field) {
+    return msg.GetReflection()->IsLazilyVerifiedLazyField(field);
   }
 };
 
@@ -151,28 +159,6 @@ TEST(GeneratedMessageReflectionTest, GetStringReference) {
          "a reference to the underlying string.";
 }
 
-
-TEST(GeneratedMessageReflectionTest, DefaultsAfterClear) {
-  // Check that after setting all fields and then clearing, getting an
-  // embedded message does NOT return the default instance.
-  unittest::TestAllTypes message;
-  TestUtil::ReflectionTester reflection_tester(
-      unittest::TestAllTypes::descriptor());
-
-  TestUtil::SetAllFields(&message);
-  message.Clear();
-
-  const Reflection* reflection = message.GetReflection();
-
-  EXPECT_NE(&unittest::TestAllTypes::OptionalGroup::default_instance(),
-            &reflection->GetMessage(message, F("optionalgroup")));
-  EXPECT_NE(&unittest::TestAllTypes::NestedMessage::default_instance(),
-            &reflection->GetMessage(message, F("optional_nested_message")));
-  EXPECT_NE(&unittest::ForeignMessage::default_instance(),
-            &reflection->GetMessage(message, F("optional_foreign_message")));
-  EXPECT_NE(&unittest_import::ImportMessage::default_instance(),
-            &reflection->GetMessage(message, F("optional_import_message")));
-}
 
 class GeneratedMessageReflectionSwapTest : public testing::TestWithParam<bool> {
  protected:
@@ -567,7 +553,7 @@ TEST(GeneratedMessageReflectionTest,
   auto* message1 = Arena::CreateMessage<unittest::TestOneof2>(&arena);
   auto* message2 = Arena::CreateMessage<unittest::TestOneof2>(&arena);
   TestUtil::SetOneof1(message1);
-  message1->mutable_foo_message()->set_qux_int(1000);
+  message1->mutable_foo_message()->set_moo_int(1000);
   auto* kept_foo_ptr = message1->mutable_foo_message();
 
   std::vector<const FieldDescriptor*> fields;
@@ -579,7 +565,7 @@ TEST(GeneratedMessageReflectionTest,
       message1, message2, fields);
 
   EXPECT_TRUE(message2->has_foo_message());
-  EXPECT_EQ(message2->foo_message().qux_int(), 1000);
+  EXPECT_EQ(message2->foo_message().moo_int(), 1000);
   EXPECT_EQ(kept_foo_ptr, message2->mutable_foo_message());
 }
 
@@ -1321,6 +1307,67 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
+
+using internal::IsDescendant;
+
+TEST(GeneratedMessageReflection, IsDescendantMessage) {
+  unittest::TestAllTypes msg1, msg2;
+  TestUtil::SetAllFields(&msg1);
+  msg2 = msg1;
+
+  EXPECT_TRUE(IsDescendant(&msg1, msg1.optional_nested_message()));
+  EXPECT_TRUE(IsDescendant(&msg1, msg1.repeated_foreign_message(0)));
+
+  EXPECT_FALSE(IsDescendant(&msg1, msg2.optional_nested_message()));
+  EXPECT_FALSE(IsDescendant(&msg1, msg2.repeated_foreign_message(0)));
+}
+
+TEST(GeneratedMessageReflection, IsDescendantMap) {
+  unittest::TestMap msg1, msg2;
+  (*msg1.mutable_map_int32_foreign_message())[0].set_c(100);
+  TestUtil::SetAllFields(&(*msg1.mutable_map_int32_all_types())[0]);
+  msg2 = msg1;
+
+  EXPECT_TRUE(IsDescendant(&msg1, msg1.map_int32_foreign_message().at(0)));
+  EXPECT_TRUE(IsDescendant(&msg1, msg1.map_int32_all_types().at(0)));
+
+  EXPECT_FALSE(IsDescendant(&msg1, msg2.map_int32_foreign_message().at(0)));
+  EXPECT_FALSE(IsDescendant(&msg1, msg2.map_int32_all_types().at(0)));
+}
+
+TEST(GeneratedMessageReflection, IsDescendantExtension) {
+  unittest::TestAllExtensions msg1, msg2;
+  TestUtil::SetAllExtensions(&msg1);
+  msg2 = msg1;
+
+  EXPECT_TRUE(IsDescendant(
+      &msg1, msg1.GetExtension(unittest::optional_nested_message_extension)));
+  EXPECT_TRUE(IsDescendant(
+      &msg1,
+      msg1.GetExtension(unittest::repeated_foreign_message_extension, 0)));
+
+  EXPECT_FALSE(IsDescendant(
+      &msg1, msg2.GetExtension(unittest::optional_nested_message_extension)));
+  EXPECT_FALSE(IsDescendant(
+      &msg1,
+      msg2.GetExtension(unittest::repeated_foreign_message_extension, 0)));
+}
+
+TEST(GeneratedMessageReflection, IsDescendantOneof) {
+  unittest::TestOneof msg1, msg2;
+  TestUtil::SetAllFields(msg1.mutable_foo_message());
+  msg2 = msg1;
+
+  EXPECT_TRUE(
+      IsDescendant(&msg1, msg1.foo_message().optional_nested_message()));
+  EXPECT_TRUE(
+      IsDescendant(&msg1, msg1.foo_message().repeated_foreign_message(0)));
+
+  EXPECT_FALSE(
+      IsDescendant(&msg1, msg2.foo_message().optional_nested_message()));
+  EXPECT_FALSE(
+      IsDescendant(&msg1, msg2.foo_message().repeated_foreign_message(0)));
+}
 
 }  // namespace
 }  // namespace protobuf

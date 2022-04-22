@@ -41,8 +41,8 @@ namespace Google.Protobuf.Benchmarks
     /// Benchmark for serializing and deserializing of standard datasets that are also
     /// measured by benchmarks in other languages.
     /// Over time we may wish to test the various different approaches to serialization and deserialization separately.
-    /// See https://github.com/protocolbuffers/protobuf/blob/master/benchmarks/README.md
-    /// See https://github.com/protocolbuffers/protobuf/blob/master/docs/performance.md
+    /// See https://github.com/protocolbuffers/protobuf/blob/main/benchmarks/README.md
+    /// See https://github.com/protocolbuffers/protobuf/blob/main/docs/performance.md
     /// </summary>
     [MemoryDiagnoser]
     public class GoogleMessageBenchmark

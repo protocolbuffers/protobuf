@@ -53,6 +53,7 @@ from google.protobuf.internal import decoder
 from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 from google.protobuf import text_encoding
+from google.protobuf import unknown_fields
 
 # pylint: disable=g-import-not-at-top
 __all__ = ['MessageToString', 'Parse', 'PrintMessage', 'PrintField',
@@ -136,8 +137,6 @@ def MessageToString(
   Args:
     message: The protocol buffers message.
     as_utf8: Return unescaped Unicode for non-ASCII characters.
-        In Python 3 actual Unicode characters may appear as is in strings.
-        In Python 2 the return value will be valid UTF-8 rather than only ASCII.
     as_one_line: Don't introduce newlines between fields.
     use_short_repeated_primitives: Use short repeated format for primitives.
     pointy_brackets: If True, use angle brackets instead of curly braces for
@@ -223,6 +222,36 @@ def PrintMessage(message,
                  message_formatter=None,
                  print_unknown_fields=False,
                  force_colon=False):
+  """Convert the message to text format and write it to the out stream.
+
+  Args:
+    message: The Message object to convert to text format.
+    out: A file handle to write the message to.
+    indent: The initial indent level for pretty print.
+    as_utf8: Return unescaped Unicode for non-ASCII characters.
+    as_one_line: Don't introduce newlines between fields.
+    use_short_repeated_primitives: Use short repeated format for primitives.
+    pointy_brackets: If True, use angle brackets instead of curly braces for
+      nesting.
+    use_index_order: If True, print fields of a proto message using the order
+      defined in source code instead of the field number. By default, use the
+      field number order.
+    float_format: If set, use this to specify float field formatting
+      (per the "Format Specification Mini-Language"); otherwise, shortest
+      float that has same value in wire will be printed. Also affect double
+      field if double_format is not set but float_format is set.
+    double_format: If set, use this to specify double field formatting
+      (per the "Format Specification Mini-Language"); if it is not set but
+      float_format is set, use float_format. Otherwise, str() is used.
+    use_field_number: If True, print field numbers instead of names.
+    descriptor_pool: A DescriptorPool used to resolve Any types.
+    message_formatter: A function(message, indent, as_one_line): unicode|None
+      to custom format selected sub-messages (usually based on message type).
+      Use to pretty print parts of the protobuf for easier diffing.
+    print_unknown_fields: If True, unknown fields will be printed.
+    force_colon: If set, a colon will be added after the field name even if
+      the field is a proto message.
+  """
   printer = _Printer(
       out=out, indent=indent, as_utf8=as_utf8,
       as_one_line=as_one_line,
@@ -347,8 +376,6 @@ class _Printer(object):
       out: To record the text format result.
       indent: The initial indent level for pretty print.
       as_utf8: Return unescaped Unicode for non-ASCII characters.
-          In Python 3 actual Unicode characters may appear as is in strings.
-          In Python 2 the return value will be valid UTF-8 rather than ASCII.
       as_one_line: Don't introduce newlines between fields.
       use_short_repeated_primitives: Use short repeated format for primitives.
       pointy_brackets: If True, use angle brackets instead of curly braces for
@@ -454,12 +481,12 @@ class _Printer(object):
         self.PrintField(field, value)
 
     if self.print_unknown_fields:
-      self._PrintUnknownFields(message.UnknownFields())
+      self._PrintUnknownFields(unknown_fields.UnknownFieldSet(message))
 
-  def _PrintUnknownFields(self, unknown_fields):
+  def _PrintUnknownFields(self, unknown_field_set):
     """Print unknown fields."""
     out = self.out
-    for field in unknown_fields:
+    for field in unknown_field_set:
       out.write(' ' * self.indent)
       out.write(str(field.field_number))
       if field.wire_type == WIRETYPE_START_GROUP:
@@ -859,7 +886,10 @@ class _Parser(object):
         expanded_any_end_token = '}'
       expanded_any_sub_message = _BuildMessageFromTypeName(packed_type_name,
                                                            self.descriptor_pool)
-      if not expanded_any_sub_message:
+      # Direct comparison with None is used instead of implicit bool conversion
+      # to avoid false positives with falsy initial values, e.g. for
+      # google.protobuf.ListValue.
+      if expanded_any_sub_message is None:
         raise ParseError('Type %s not found in descriptor pool' %
                          packed_type_name)
       while not tokenizer.TryConsume(expanded_any_end_token):
@@ -1143,9 +1173,12 @@ def _SkipFieldContents(tokenizer):
   # start with "{" or "<" which indicates the beginning of a message body.
   # If there is no ":" or there is a "{" or "<" after ":", this field has
   # to be a message or the input is ill-formed.
-  if tokenizer.TryConsume(':') and not tokenizer.LookingAt(
-      '{') and not tokenizer.LookingAt('<'):
-    _SkipFieldValue(tokenizer)
+  if tokenizer.TryConsume(
+      ':') and not tokenizer.LookingAt('{') and not tokenizer.LookingAt('<'):
+    if tokenizer.LookingAt('['):
+      _SkipRepeatedFieldValue(tokenizer)
+    else:
+      _SkipFieldValue(tokenizer)
   else:
     _SkipFieldMessage(tokenizer)
 
@@ -1212,6 +1245,20 @@ def _SkipFieldValue(tokenizer):
       not _TryConsumeInt64(tokenizer) and not _TryConsumeUint64(tokenizer) and
       not tokenizer.TryConsumeFloat()):
     raise ParseError('Invalid field value: ' + tokenizer.token)
+
+
+def _SkipRepeatedFieldValue(tokenizer):
+  """Skips over a repeated field value.
+
+  Args:
+    tokenizer: A tokenizer to parse the field value.
+  """
+  tokenizer.Consume('[')
+  if not tokenizer.LookingAt(']'):
+    _SkipFieldValue(tokenizer)
+    while tokenizer.TryConsume(','):
+      _SkipFieldValue(tokenizer)
+  tokenizer.Consume(']')
 
 
 class Tokenizer(object):

@@ -118,3 +118,8 @@ message ReservedAsMapFieldWithEnumValue {
   // null is not a 'reserved word' per se but as a literal needs similar care
   map<string, SampleEnum> null = 10;
 }
+
+// https://github.com/protocolbuffers/protobuf/issues/9785
+message MapContainer {
+  map<string,string> my_map = 1;
+}

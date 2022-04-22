@@ -295,9 +295,9 @@ public class JsonFormat {
 
 
     /**
-     * Create a new {@link Printer} that will omit all insignificant whitespace in the JSON output.
+     * Create a new {@link Printer} that omits insignificant whitespace in the JSON output.
      * This new Printer clones all other configurations from the current Printer. Insignificant
-     * whitespace is defined by the JSON spec as whitespace that appear between JSON structural
+     * whitespace is defined by the JSON spec as whitespace that appears between JSON structural
      * elements:
      *
      * <pre>
@@ -308,8 +308,7 @@ public class JsonFormat {
      * %x0D )              ; Carriage return
      * </pre>
      *
-     * See <a href="https://tools.ietf.org/html/rfc7159">https://tools.ietf.org/html/rfc7159</a>
-     * current {@link Printer}.
+     * See <a href="https://tools.ietf.org/html/rfc7159">https://tools.ietf.org/html/rfc7159</a>.
      */
     public Printer omittingInsignificantWhitespace() {
       return new Printer(
@@ -1719,7 +1718,8 @@ public class JsonFormat {
         FieldDescriptor field, JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
       if (!(json instanceof JsonArray)) {
-        throw new InvalidProtocolBufferException("Expect an array but found: " + json);
+        throw new InvalidProtocolBufferException(
+            "Expected an array for " + field.getName() + " but found " + json);
       }
       JsonArray array = (JsonArray) json;
       for (int i = 0; i < array.size(); ++i) {

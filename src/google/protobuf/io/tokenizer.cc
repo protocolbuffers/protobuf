@@ -98,6 +98,9 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+// Must be included last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace io {
@@ -147,12 +150,32 @@ CHARACTER_CLASS(Escape, c == 'a' || c == 'b' || c == 'f' || c == 'n' ||
 
 // Given a char, interpret it as a numeric digit and return its value.
 // This supports any number base up to 36.
-inline int DigitValue(char digit) {
-  if ('0' <= digit && digit <= '9') return digit - '0';
-  if ('a' <= digit && digit <= 'z') return digit - 'a' + 10;
-  if ('A' <= digit && digit <= 'Z') return digit - 'A' + 10;
-  return -1;
-}
+// Represents integer values of digits.
+// Uses 36 to indicate an invalid character since we support
+// bases up to 36.
+static const int8_t kAsciiToInt[256] = {
+    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  // 00-0F
+    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  // 10-1F
+    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  // ' '-'/'
+    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,                           // '0'-'9'
+    36, 36, 36, 36, 36, 36, 36,                                      // ':'-'@'
+    10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,  // 'A'-'P'
+    26, 27, 28, 29, 30, 31, 32, 33, 34, 35,                          // 'Q'-'Z'
+    36, 36, 36, 36, 36, 36,                                          // '['-'`'
+    10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,  // 'a'-'p'
+    26, 27, 28, 29, 30, 31, 32, 33, 34, 35,                          // 'q'-'z'
+    36, 36, 36, 36, 36,                                              // '{'-DEL
+    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  // 80-8F
+    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  // 90-9F
+    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  // A0-AF
+    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  // B0-BF
+    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  // C0-CF
+    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  // D0-DF
+    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  // E0-EF
+    36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36,  // F0-FF
+};
+
+inline int DigitValue(char digit) { return kAsciiToInt[digit & 0xFF]; }
 
 // Inline because it's only used in one place.
 inline char TranslateEscape(char c) {
@@ -911,25 +934,49 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
 
 bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
                              uint64_t* output) {
-  // Sadly, we can't just use strtoul() since it is only 32-bit and strtoull()
-  // is non-standard.  I hate the C standard library.  :(
+  // We can't just use strtoull() because (a) it accepts negative numbers,
+  // (b) We want additional range checks, (c) it reports overflows via errno.
 
-  //  return strtoull(text.c_str(), NULL, 0);
+#if 0
+  const char *str_begin = text.c_str();
+  if (*str_begin == '-') return false;
+  char *str_end = nullptr;
+  errno = 0;
+  *output = std::strtoull(str_begin, &str_end, 0);
+  return (errno == 0 && str_end && *str_end == '\0' && *output <= max_value);
+#endif
 
   const char* ptr = text.c_str();
   int base = 10;
+  uint64_t overflow_if_mul_base = (kuint64max / 10) + 1;
   if (ptr[0] == '0') {
     if (ptr[1] == 'x' || ptr[1] == 'X') {
       // This is hex.
       base = 16;
+      overflow_if_mul_base = (kuint64max / 16) + 1;
       ptr += 2;
     } else {
       // This is octal.
       base = 8;
+      overflow_if_mul_base = (kuint64max / 8) + 1;
     }
   }
 
   uint64_t result = 0;
+  // For all the leading '0's, and also the first non-zero character, we
+  // don't need to multiply.
+  while (*ptr != '\0') {
+    int digit = DigitValue(*ptr++);
+    if (digit >= base) {
+      // The token provided by Tokenizer is invalid. i.e., 099 is an invalid
+      // token, but Tokenizer still think it's integer.
+      return false;
+    }
+    if (digit != 0) {
+      result = digit;
+      break;
+    }
+  }
   for (; *ptr != '\0'; ptr++) {
     int digit = DigitValue(*ptr);
     if (digit < 0 || digit >= base) {
@@ -937,13 +984,18 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
       // token, but Tokenizer still think it's integer.
       return false;
     }
-    if (static_cast<uint64_t>(digit) > max_value ||
-        result > (max_value - digit) / base) {
-      // Overflow.
+    if (result >= overflow_if_mul_base) {
+      // We know the multiply we're about to do will overflow, so exit now.
       return false;
     }
+    // We know that result * base won't overflow, but adding digit might...
     result = result * base + digit;
+    // C++ guarantees defined "wrap" semantics when unsigned integer
+    // operations overflow, making this a fast way to check if adding
+    // digit made result overflow, and thus, wrap around.
+    if (result < static_cast<uint64_t>(base)) return false;
   }
+  if (result > max_value) return false;
 
   *output = result;
   return true;
@@ -1183,3 +1235,5 @@ bool Tokenizer::IsIdentifier(const std::string& text) {
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

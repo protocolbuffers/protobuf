@@ -68,15 +68,15 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $name
-     *     @type \Google\Protobuf\Internal\FieldDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $field
-     *     @type \Google\Protobuf\Internal\FieldDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $extension
-     *     @type \Google\Protobuf\Internal\DescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $nested_type
-     *     @type \Google\Protobuf\Internal\EnumDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $enum_type
-     *     @type \Google\Protobuf\Internal\DescriptorProto\ExtensionRange[]|\Google\Protobuf\Internal\RepeatedField $extension_range
-     *     @type \Google\Protobuf\Internal\OneofDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $oneof_decl
+     *     @type array<\Google\Protobuf\Internal\FieldDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $field
+     *     @type array<\Google\Protobuf\Internal\FieldDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $extension
+     *     @type array<\Google\Protobuf\Internal\DescriptorProto>|\Google\Protobuf\Internal\RepeatedField $nested_type
+     *     @type array<\Google\Protobuf\Internal\EnumDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $enum_type
+     *     @type array<\Google\Protobuf\Internal\DescriptorProto\ExtensionRange>|\Google\Protobuf\Internal\RepeatedField $extension_range
+     *     @type array<\Google\Protobuf\Internal\OneofDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $oneof_decl
      *     @type \Google\Protobuf\Internal\MessageOptions $options
-     *     @type \Google\Protobuf\Internal\DescriptorProto\ReservedRange[]|\Google\Protobuf\Internal\RepeatedField $reserved_range
-     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $reserved_name
+     *     @type array<\Google\Protobuf\Internal\DescriptorProto\ReservedRange>|\Google\Protobuf\Internal\RepeatedField $reserved_range
+     *     @type array<string>|\Google\Protobuf\Internal\RepeatedField $reserved_name
      *           Reserved field names, which may not be used by fields in the same message.
      *           A given name may only be reserved once.
      * }
@@ -129,7 +129,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto field = 2;</code>
-     * @param \Google\Protobuf\Internal\FieldDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\FieldDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setField($var)
@@ -151,7 +151,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto extension = 6;</code>
-     * @param \Google\Protobuf\Internal\FieldDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\FieldDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setExtension($var)
@@ -173,7 +173,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto nested_type = 3;</code>
-     * @param \Google\Protobuf\Internal\DescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\DescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setNestedType($var)
@@ -195,7 +195,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 4;</code>
-     * @param \Google\Protobuf\Internal\EnumDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\EnumDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setEnumType($var)
@@ -217,7 +217,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;</code>
-     * @param \Google\Protobuf\Internal\DescriptorProto\ExtensionRange[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\DescriptorProto\ExtensionRange>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setExtensionRange($var)
@@ -239,7 +239,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;</code>
-     * @param \Google\Protobuf\Internal\OneofDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\OneofDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setOneofDecl($var)
@@ -293,7 +293,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;</code>
-     * @param \Google\Protobuf\Internal\DescriptorProto\ReservedRange[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\DescriptorProto\ReservedRange>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setReservedRange($var)
@@ -321,7 +321,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      * A given name may only be reserved once.
      *
      * Generated from protobuf field <code>repeated string reserved_name = 10;</code>
-     * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<string>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setReservedName($var)

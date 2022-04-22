@@ -400,6 +400,13 @@ class PROTOBUF_EXPORT TcParser final {
     return *target;
   }
 
+  template <typename T>
+  static inline T ReadAt(const void* x, size_t offset) {
+    T out;
+    memcpy(&out, static_cast<const char*>(x) + offset, sizeof(T));
+    return out;
+  }
+
   // Mini parsing:
   //
   // This function parses a field from incoming data based on metadata stored in

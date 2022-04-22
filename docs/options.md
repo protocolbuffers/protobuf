@@ -304,3 +304,19 @@ with info about your project (name and website) so we can add an entry for you.
 1. Embedded Proto
    * Website: https://EmbeddedProto.com
    * Extension: 1141
+
+1. Protoc-gen-fieldmask
+   * Website: https://github.com/yeqown/protoc-gen-fieldmask
+   * Extension: 1142
+ 
+1. Google Gnostic
+   * Website: https://github.com/google/gnostic
+   * Extension: 1143
+
+1. Protoc-gen-go-micro
+   * Website: https://github.com/unistack-org/protoc-gen-go-micro
+   * Extension: 1144
+
+1. Protoc-gen-authz
+   * Website: https://github.com/Neakxs/protoc-gen-authz
+   * Extension: 1145

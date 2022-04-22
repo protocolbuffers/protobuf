@@ -64,31 +64,32 @@ namespace {
 
 typedef std::unordered_map<std::string, FieldDescriptorProto::Type> TypeNameMap;
 
-TypeNameMap MakeTypeNameTable() {
-  TypeNameMap result;
+const TypeNameMap& GetTypeNameTable() {
+  static auto* table = new auto([]() {
+    TypeNameMap result;
 
-  result["double"] = FieldDescriptorProto::TYPE_DOUBLE;
-  result["float"] = FieldDescriptorProto::TYPE_FLOAT;
-  result["uint64"] = FieldDescriptorProto::TYPE_UINT64;
-  result["fixed64"] = FieldDescriptorProto::TYPE_FIXED64;
-  result["fixed32"] = FieldDescriptorProto::TYPE_FIXED32;
-  result["bool"] = FieldDescriptorProto::TYPE_BOOL;
-  result["string"] = FieldDescriptorProto::TYPE_STRING;
-  result["group"] = FieldDescriptorProto::TYPE_GROUP;
+    result["double"] = FieldDescriptorProto::TYPE_DOUBLE;
+    result["float"] = FieldDescriptorProto::TYPE_FLOAT;
+    result["uint64"] = FieldDescriptorProto::TYPE_UINT64;
+    result["fixed64"] = FieldDescriptorProto::TYPE_FIXED64;
+    result["fixed32"] = FieldDescriptorProto::TYPE_FIXED32;
+    result["bool"] = FieldDescriptorProto::TYPE_BOOL;
+    result["string"] = FieldDescriptorProto::TYPE_STRING;
+    result["group"] = FieldDescriptorProto::TYPE_GROUP;
 
-  result["bytes"] = FieldDescriptorProto::TYPE_BYTES;
-  result["uint32"] = FieldDescriptorProto::TYPE_UINT32;
-  result["sfixed32"] = FieldDescriptorProto::TYPE_SFIXED32;
-  result["sfixed64"] = FieldDescriptorProto::TYPE_SFIXED64;
-  result["int32"] = FieldDescriptorProto::TYPE_INT32;
-  result["int64"] = FieldDescriptorProto::TYPE_INT64;
-  result["sint32"] = FieldDescriptorProto::TYPE_SINT32;
-  result["sint64"] = FieldDescriptorProto::TYPE_SINT64;
+    result["bytes"] = FieldDescriptorProto::TYPE_BYTES;
+    result["uint32"] = FieldDescriptorProto::TYPE_UINT32;
+    result["sfixed32"] = FieldDescriptorProto::TYPE_SFIXED32;
+    result["sfixed64"] = FieldDescriptorProto::TYPE_SFIXED64;
+    result["int32"] = FieldDescriptorProto::TYPE_INT32;
+    result["int64"] = FieldDescriptorProto::TYPE_INT64;
+    result["sint32"] = FieldDescriptorProto::TYPE_SINT32;
+    result["sint64"] = FieldDescriptorProto::TYPE_SINT64;
 
-  return result;
+    return result;
+  }());
+  return *table;
 }
-
-const TypeNameMap kTypeNames = MakeTypeNameTable();
 
 // Camel-case the field name and append "Entry" for generated map entry name.
 // e.g. map<KeyType, ValueType> foo_map => FooMapEntry
@@ -976,37 +977,14 @@ bool Parser::ParseMessageFieldNoLabel(
     if (TryConsume("map")) {
       if (LookingAt("<")) {
         map_field.is_map_field = true;
+        DO(ParseMapType(&map_field, field, location));
       } else {
         // False positive
         type_parsed = true;
         type_name = "map";
       }
     }
-    if (map_field.is_map_field) {
-      if (field->has_oneof_index()) {
-        AddError("Map fields are not allowed in oneofs.");
-        return false;
-      }
-      if (field->has_label()) {
-        AddError(
-            "Field labels (required/optional/repeated) are not allowed on "
-            "map fields.");
-        return false;
-      }
-      if (field->has_extendee()) {
-        AddError("Map fields are not allowed to be extensions.");
-        return false;
-      }
-      field->set_label(FieldDescriptorProto::LABEL_REPEATED);
-      DO(Consume("<"));
-      DO(ParseType(&map_field.key_type, &map_field.key_type_name));
-      DO(Consume(","));
-      DO(ParseType(&map_field.value_type, &map_field.value_type_name));
-      DO(Consume(">"));
-      // Defer setting of the type name of the map field until the
-      // field name is parsed. Add the source location though.
-      location.AddPath(FieldDescriptorProto::kTypeNameFieldNumber);
-    } else {
+    if (!map_field.is_map_field) {
       // Handle the case where no explicit label is given for a non-map field.
       if (!field->has_label() && DefaultToOptionalFields()) {
         field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
@@ -1018,8 +996,8 @@ bool Parser::ParseMessageFieldNoLabel(
         field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
       }
 
-      // Handle the case where the actual type is a message or enum named "map",
-      // which we already consumed in the code above.
+      // Handle the case where the actual type is a message or enum named
+      // "map", which we already consumed in the code above.
       if (!type_parsed) {
         DO(ParseType(&type, &type_name));
       }
@@ -1124,6 +1102,34 @@ bool Parser::ParseMessageFieldNoLabel(
     GenerateMapEntry(map_field, field, messages);
   }
 
+  return true;
+}
+
+bool Parser::ParseMapType(MapField* map_field, FieldDescriptorProto* field,
+                          LocationRecorder& type_name_location) {
+  if (field->has_oneof_index()) {
+    AddError("Map fields are not allowed in oneofs.");
+    return false;
+  }
+  if (field->has_label()) {
+    AddError(
+        "Field labels (required/optional/repeated) are not allowed on "
+        "map fields.");
+    return false;
+  }
+  if (field->has_extendee()) {
+    AddError("Map fields are not allowed to be extensions.");
+    return false;
+  }
+  field->set_label(FieldDescriptorProto::LABEL_REPEATED);
+  DO(Consume("<"));
+  DO(ParseType(&map_field->key_type, &map_field->key_type_name));
+  DO(Consume(","));
+  DO(ParseType(&map_field->value_type, &map_field->value_type_name));
+  DO(Consume(">"));
+  // Defer setting of the type name of the map field until the
+  // field name is parsed. Add the source location though.
+  type_name_location.AddPath(FieldDescriptorProto::kTypeNameFieldNumber);
   return true;
 }
 
@@ -2265,8 +2271,9 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
 
 bool Parser::ParseType(FieldDescriptorProto::Type* type,
                        std::string* type_name) {
-  TypeNameMap::const_iterator iter = kTypeNames.find(input_->current().text);
-  if (iter != kTypeNames.end()) {
+  const auto& type_names_table = GetTypeNameTable();
+  auto iter = type_names_table.find(input_->current().text);
+  if (iter != type_names_table.end()) {
     *type = iter->second;
     input_->Next();
   } else {
@@ -2278,8 +2285,9 @@ bool Parser::ParseType(FieldDescriptorProto::Type* type,
 bool Parser::ParseUserDefinedType(std::string* type_name) {
   type_name->clear();
 
-  TypeNameMap::const_iterator iter = kTypeNames.find(input_->current().text);
-  if (iter != kTypeNames.end()) {
+  const auto& type_names_table = GetTypeNameTable();
+  auto iter = type_names_table.find(input_->current().text);
+  if (iter != type_names_table.end()) {
     // Note:  The only place enum types are allowed is for field types, but
     //   if we are parsing a field type then we would not get here because
     //   primitives are allowed there as well.  So this error message doesn't

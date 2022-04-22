@@ -130,8 +130,8 @@ class PROTOBUF_EXPORT AnyMetadata {
 // *full_type_name. Returns false if the type_url does not have a "/"
 // in the type url separating the full type name.
 //
-// NOTE: this function is available publicly as:
-//   google::protobuf::Any()  // static method on the generated message type.
+// NOTE: this function is available publicly as a static method on the
+// generated message type: google::protobuf::Any::ParseAnyTypeUrl()
 bool ParseAnyTypeUrl(StringPiece type_url, std::string* full_type_name);
 
 // Get the proto type name and prefix from Any::type_url value. For example,

@@ -46,9 +46,9 @@ NSString *const GPBCodedInputStreamErrorDomain =
     GPBNSStringifySymbol(GPBCodedInputStreamErrorDomain);
 
 // Matching:
-// https://github.com/protocolbuffers/protobuf/blob/master/java/core/src/main/java/com/google/protobuf/CodedInputStream.java#L62
+// https://github.com/protocolbuffers/protobuf/blob/main/java/core/src/main/java/com/google/protobuf/CodedInputStream.java#L62
 //  private static final int DEFAULT_RECURSION_LIMIT = 100;
-// https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/io/coded_stream.cc#L86
+// https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/io/coded_stream.cc#L86
 //  int CodedInputStream::default_recursion_limit_ = 100;
 static const NSUInteger kDefaultRecursionLimit = 100;
 

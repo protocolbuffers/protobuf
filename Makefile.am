@@ -50,6 +50,7 @@ pkgconfig_DATA = protobuf.pc protobuf-lite.pc
 
 csharp_EXTRA_DIST=                                                           \
   global.json                                                                \
+  csharp/.editorconfig                                                       \
   csharp/.gitignore                                                          \
   csharp/CHANGES.txt                                                         \
   csharp/Google.Protobuf.Tools.targets                                       \
@@ -837,9 +838,11 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/package.xml                                 \
   php/ext/google/protobuf/php-upb.c                                   \
   php/ext/google/protobuf/php-upb.h                                   \
+  php/ext/google/protobuf/php_protobuf.h                              \  
   php/ext/google/protobuf/protobuf.c                                  \
   php/ext/google/protobuf/protobuf.h                                  \
   php/ext/google/protobuf/wkt.inc                                     \
+  php/ext/google/protobuf/tests/unnecessary_zval.phpt                 \
   php/generate_descriptor_protos.sh                                   \
   php/generate_test_protos.sh                                         \
   php/release.sh                                                      \
@@ -1112,6 +1115,8 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/repeated_scalar_container.h                   \
   python/google/protobuf/pyext/safe_numerics.h                               \
   python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
+  python/google/protobuf/pyext/unknown_field_set.cc                          \
+  python/google/protobuf/pyext/unknown_field_set.h                           \
   python/google/protobuf/python_protobuf.h                                   \
   python/google/protobuf/reflection.py                                       \
   python/google/protobuf/service.py                                          \
@@ -1119,6 +1124,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/symbol_database.py                                  \
   python/google/protobuf/text_encoding.py                                    \
   python/google/protobuf/text_format.py                                      \
+  python/google/protobuf/unknown_fields.py                                   \
   python/google/protobuf/util/__init__.py                                    \
   python/release.sh                                                          \
   python/mox.py                                                              \
@@ -1396,6 +1402,8 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   update_file_lists.sh                              \
   BUILD                                             \
   WORKSPACE                                         \
+  CMakeLists.txt                                    \
+  cmake/abseil-cpp.cmake                            \
   cmake/CMakeLists.txt                              \
   cmake/README.md                                   \
   cmake/conformance.cmake                           \

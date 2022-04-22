@@ -22,7 +22,7 @@ namespace _pbi = _pb::internal;
 
 PROTOBUF_NAMESPACE_OPEN
 PROTOBUF_CONSTEXPR Empty::Empty(
-    ::_pbi::ConstantInitialized){}
+    ::_pbi::ConstantInitialized) {}
 struct EmptyDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EmptyDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}

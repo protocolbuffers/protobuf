@@ -50,23 +50,26 @@
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/any.pb.h>
-#include <google/protobuf/compiler/mock_code_generator.h>
-#include <google/protobuf/compiler/subprocess.h>
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_custom_options.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/compiler/command_line_interface.h>
+#include <google/protobuf/compiler/mock_code_generator.h>
+#include <google/protobuf/compiler/subprocess.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/io_win32.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
+
+// Must be included last.
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -1753,6 +1756,28 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
                     "$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 }
+
+TEST_F(CommandLineInterfaceTest,
+       WriteDependencyManifestFileWithDescriptorSetOut) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest "
+      "--descriptor_set_out=$tmpdir/bar.pb --proto_path=$tmpdir bar.proto");
+
+  ExpectNoErrors();
+
+  ExpectFileContent("manifest",
+                    "$tmpdir/bar.pb: "
+                    "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
+}
 #endif  // !_WIN32
 
 TEST_F(CommandLineInterfaceTest, TestArgumentFile) {
@@ -2754,6 +2779,8 @@ INSTANTIATE_TEST_SUITE_P(FileDescriptorSetSource, EncodeDecodeTest,
 }  // anonymous namespace
 
 #endif  // !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
+
+#include <google/protobuf/port_undef.inc>
 
 }  // namespace compiler
 }  // namespace protobuf

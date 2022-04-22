@@ -1,4 +1,4 @@
-2022-04-05 version 3.20.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   PHP
   * Fix building packaged PHP extension (#9727)
@@ -6,6 +6,32 @@
 
   Ruby
   * Disable the aarch64 build on macOS until it can be fixed. (#9816)
+
+  Other
+  * Fix versioning issues in 3.20.0
+
+  C++
+  * Refactor generated message class layout
+  * Optimize tokenizer ParseInteger by removing division
+  * Reserve exactly the right amount of capacity in ExtensionSet::MergeFrom
+
+  Compiler
+  * Protoc outputs the list of suggested field numbers when invalid field
+    numbers are specified in the .proto file.
+  * Require package names to be less than 512 bytes in length
+
+  Java
+  * 6x speedup in ArrayEncoder.writeUInt32NotTag
+
+  Python
+  * Added UnknownFieldSet(message) for pure Python. The old
+    message.UnknownFields() will be deprecated after UnknownFieldSet(message) is
+    added for cpp extension.
+
+2022-04-21 version 3.20.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  PHP
+  * Fix building packaged PHP extension (#9727)
 
   Other
   * Fix versioning issues in 3.20.0

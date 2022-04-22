@@ -213,10 +213,10 @@ class PROTOBUF_EXPORT Struct final :
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
   uint8_t* _InternalSerialize(
       uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor();
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Struct* other);
@@ -270,12 +270,15 @@ class PROTOBUF_EXPORT Struct final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::internal::MapField<
-      Struct_FieldsEntry_DoNotUse,
-      std::string, ::PROTOBUF_NAMESPACE_ID::Value,
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE> fields_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::MapField<
+        Struct_FieldsEntry_DoNotUse,
+        std::string, ::PROTOBUF_NAMESPACE_ID::Value,
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE> fields_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
 // -------------------------------------------------------------------
@@ -381,10 +384,10 @@ class PROTOBUF_EXPORT Value final :
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
   uint8_t* _InternalSerialize(
       uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor();
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Value* other);
@@ -527,19 +530,22 @@ class PROTOBUF_EXPORT Value final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  union KindUnion {
-    constexpr KindUnion() : _constinit_{} {}
-      ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized _constinit_;
-    int null_value_;
-    double number_value_;
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr string_value_;
-    bool bool_value_;
-    ::PROTOBUF_NAMESPACE_ID::Struct* struct_value_;
-    ::PROTOBUF_NAMESPACE_ID::ListValue* list_value_;
-  } kind_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  uint32_t _oneof_case_[1];
+  struct Impl_ {
+    union KindUnion {
+      constexpr KindUnion() : _constinit_{} {}
+        ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized _constinit_;
+      int null_value_;
+      double number_value_;
+      ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr string_value_;
+      bool bool_value_;
+      ::PROTOBUF_NAMESPACE_ID::Struct* struct_value_;
+      ::PROTOBUF_NAMESPACE_ID::ListValue* list_value_;
+    } kind_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    uint32_t _oneof_case_[1];
 
+  };
+  union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
 // -------------------------------------------------------------------
@@ -635,10 +641,10 @@ class PROTOBUF_EXPORT ListValue final :
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
   uint8_t* _InternalSerialize(
       uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor();
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ListValue* other);
@@ -690,8 +696,11 @@ class PROTOBUF_EXPORT ListValue final :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Value > values_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Value > values_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
 // ===================================================================
@@ -709,17 +718,17 @@ class PROTOBUF_EXPORT ListValue final :
 
 // map<string, .google.protobuf.Value> fields = 1;
 inline int Struct::_internal_fields_size() const {
-  return fields_.size();
+  return _impl_.fields_.size();
 }
 inline int Struct::fields_size() const {
   return _internal_fields_size();
 }
 inline void Struct::clear_fields() {
-  fields_.Clear();
+  _impl_.fields_.Clear();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >&
 Struct::_internal_fields() const {
-  return fields_.GetMap();
+  return _impl_.fields_.GetMap();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >&
 Struct::fields() const {
@@ -728,7 +737,7 @@ Struct::fields() const {
 }
 inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >*
 Struct::_internal_mutable_fields() {
-  return fields_.MutableMap();
+  return _impl_.fields_.MutableMap();
 }
 inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >*
 Struct::mutable_fields() {
@@ -748,17 +757,17 @@ inline bool Value::has_null_value() const {
   return _internal_has_null_value();
 }
 inline void Value::set_has_null_value() {
-  _oneof_case_[0] = kNullValue;
+  _impl_._oneof_case_[0] = kNullValue;
 }
 inline void Value::clear_null_value() {
   if (_internal_has_null_value()) {
-    kind_.null_value_ = 0;
+    _impl_.kind_.null_value_ = 0;
     clear_has_kind();
   }
 }
 inline ::PROTOBUF_NAMESPACE_ID::NullValue Value::_internal_null_value() const {
   if (_internal_has_null_value()) {
-    return static_cast< ::PROTOBUF_NAMESPACE_ID::NullValue >(kind_.null_value_);
+    return static_cast< ::PROTOBUF_NAMESPACE_ID::NullValue >(_impl_.kind_.null_value_);
   }
   return static_cast< ::PROTOBUF_NAMESPACE_ID::NullValue >(0);
 }
@@ -771,7 +780,7 @@ inline void Value::_internal_set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue v
     clear_kind();
     set_has_null_value();
   }
-  kind_.null_value_ = value;
+  _impl_.kind_.null_value_ = value;
 }
 inline void Value::set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue value) {
   _internal_set_null_value(value);
@@ -786,17 +795,17 @@ inline bool Value::has_number_value() const {
   return _internal_has_number_value();
 }
 inline void Value::set_has_number_value() {
-  _oneof_case_[0] = kNumberValue;
+  _impl_._oneof_case_[0] = kNumberValue;
 }
 inline void Value::clear_number_value() {
   if (_internal_has_number_value()) {
-    kind_.number_value_ = 0;
+    _impl_.kind_.number_value_ = 0;
     clear_has_kind();
   }
 }
 inline double Value::_internal_number_value() const {
   if (_internal_has_number_value()) {
-    return kind_.number_value_;
+    return _impl_.kind_.number_value_;
   }
   return 0;
 }
@@ -805,7 +814,7 @@ inline void Value::_internal_set_number_value(double value) {
     clear_kind();
     set_has_number_value();
   }
-  kind_.number_value_ = value;
+  _impl_.kind_.number_value_ = value;
 }
 inline double Value::number_value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.number_value)
@@ -824,11 +833,11 @@ inline bool Value::has_string_value() const {
   return _internal_has_string_value();
 }
 inline void Value::set_has_string_value() {
-  _oneof_case_[0] = kStringValue;
+  _impl_._oneof_case_[0] = kStringValue;
 }
 inline void Value::clear_string_value() {
   if (_internal_has_string_value()) {
-    kind_.string_value_.Destroy();
+    _impl_.kind_.string_value_.Destroy();
     clear_has_kind();
   }
 }
@@ -841,9 +850,9 @@ inline void Value::set_string_value(ArgT0&& arg0, ArgT... args) {
   if (!_internal_has_string_value()) {
     clear_kind();
     set_has_string_value();
-    kind_.string_value_.InitDefault();
+    _impl_.kind_.string_value_.InitDefault();
   }
-  kind_.string_value_.Set( static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  _impl_.kind_.string_value_.Set( static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
 inline std::string* Value::mutable_string_value() {
@@ -853,7 +862,7 @@ inline std::string* Value::mutable_string_value() {
 }
 inline const std::string& Value::_internal_string_value() const {
   if (_internal_has_string_value()) {
-    return kind_.string_value_.Get();
+    return _impl_.kind_.string_value_.Get();
   }
   return ::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited();
 }
@@ -861,23 +870,23 @@ inline void Value::_internal_set_string_value(const std::string& value) {
   if (!_internal_has_string_value()) {
     clear_kind();
     set_has_string_value();
-    kind_.string_value_.InitDefault();
+    _impl_.kind_.string_value_.InitDefault();
   }
-  kind_.string_value_.Set(value, GetArenaForAllocation());
+  _impl_.kind_.string_value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Value::_internal_mutable_string_value() {
   if (!_internal_has_string_value()) {
     clear_kind();
     set_has_string_value();
-    kind_.string_value_.InitDefault();
+    _impl_.kind_.string_value_.InitDefault();
   }
-  return kind_.string_value_.Mutable(      GetArenaForAllocation());
+  return _impl_.kind_.string_value_.Mutable(      GetArenaForAllocation());
 }
 inline std::string* Value::release_string_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)
   if (_internal_has_string_value()) {
     clear_has_kind();
-    return kind_.string_value_.Release();
+    return _impl_.kind_.string_value_.Release();
   } else {
     return nullptr;
   }
@@ -888,7 +897,7 @@ inline void Value::set_allocated_string_value(std::string* string_value) {
   }
   if (string_value != nullptr) {
     set_has_string_value();
-    kind_.string_value_.InitAllocated(string_value, GetArenaForAllocation());
+    _impl_.kind_.string_value_.InitAllocated(string_value, GetArenaForAllocation());
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.string_value)
 }
@@ -901,17 +910,17 @@ inline bool Value::has_bool_value() const {
   return _internal_has_bool_value();
 }
 inline void Value::set_has_bool_value() {
-  _oneof_case_[0] = kBoolValue;
+  _impl_._oneof_case_[0] = kBoolValue;
 }
 inline void Value::clear_bool_value() {
   if (_internal_has_bool_value()) {
-    kind_.bool_value_ = false;
+    _impl_.kind_.bool_value_ = false;
     clear_has_kind();
   }
 }
 inline bool Value::_internal_bool_value() const {
   if (_internal_has_bool_value()) {
-    return kind_.bool_value_;
+    return _impl_.kind_.bool_value_;
   }
   return false;
 }
@@ -920,7 +929,7 @@ inline void Value::_internal_set_bool_value(bool value) {
     clear_kind();
     set_has_bool_value();
   }
-  kind_.bool_value_ = value;
+  _impl_.kind_.bool_value_ = value;
 }
 inline bool Value::bool_value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.bool_value)
@@ -939,12 +948,12 @@ inline bool Value::has_struct_value() const {
   return _internal_has_struct_value();
 }
 inline void Value::set_has_struct_value() {
-  _oneof_case_[0] = kStructValue;
+  _impl_._oneof_case_[0] = kStructValue;
 }
 inline void Value::clear_struct_value() {
   if (_internal_has_struct_value()) {
     if (GetArenaForAllocation() == nullptr) {
-      delete kind_.struct_value_;
+      delete _impl_.kind_.struct_value_;
     }
     clear_has_kind();
   }
@@ -953,11 +962,11 @@ inline ::PROTOBUF_NAMESPACE_ID::Struct* Value::release_struct_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.struct_value)
   if (_internal_has_struct_value()) {
     clear_has_kind();
-    ::PROTOBUF_NAMESPACE_ID::Struct* temp = kind_.struct_value_;
+    ::PROTOBUF_NAMESPACE_ID::Struct* temp = _impl_.kind_.struct_value_;
     if (GetArenaForAllocation() != nullptr) {
       temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
     }
-    kind_.struct_value_ = nullptr;
+    _impl_.kind_.struct_value_ = nullptr;
     return temp;
   } else {
     return nullptr;
@@ -965,7 +974,7 @@ inline ::PROTOBUF_NAMESPACE_ID::Struct* Value::release_struct_value() {
 }
 inline const ::PROTOBUF_NAMESPACE_ID::Struct& Value::_internal_struct_value() const {
   return _internal_has_struct_value()
-      ? *kind_.struct_value_
+      ? *_impl_.kind_.struct_value_
       : reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::Struct&>(::PROTOBUF_NAMESPACE_ID::_Struct_default_instance_);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::Struct& Value::struct_value() const {
@@ -976,8 +985,8 @@ inline ::PROTOBUF_NAMESPACE_ID::Struct* Value::unsafe_arena_release_struct_value
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.struct_value)
   if (_internal_has_struct_value()) {
     clear_has_kind();
-    ::PROTOBUF_NAMESPACE_ID::Struct* temp = kind_.struct_value_;
-    kind_.struct_value_ = nullptr;
+    ::PROTOBUF_NAMESPACE_ID::Struct* temp = _impl_.kind_.struct_value_;
+    _impl_.kind_.struct_value_ = nullptr;
     return temp;
   } else {
     return nullptr;
@@ -987,7 +996,7 @@ inline void Value::unsafe_arena_set_allocated_struct_value(::PROTOBUF_NAMESPACE_
   clear_kind();
   if (struct_value) {
     set_has_struct_value();
-    kind_.struct_value_ = struct_value;
+    _impl_.kind_.struct_value_ = struct_value;
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.struct_value)
 }
@@ -995,9 +1004,9 @@ inline ::PROTOBUF_NAMESPACE_ID::Struct* Value::_internal_mutable_struct_value() 
   if (!_internal_has_struct_value()) {
     clear_kind();
     set_has_struct_value();
-    kind_.struct_value_ = CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::Struct >(GetArenaForAllocation());
+    _impl_.kind_.struct_value_ = CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::Struct >(GetArenaForAllocation());
   }
-  return kind_.struct_value_;
+  return _impl_.kind_.struct_value_;
 }
 inline ::PROTOBUF_NAMESPACE_ID::Struct* Value::mutable_struct_value() {
   ::PROTOBUF_NAMESPACE_ID::Struct* _msg = _internal_mutable_struct_value();
@@ -1013,12 +1022,12 @@ inline bool Value::has_list_value() const {
   return _internal_has_list_value();
 }
 inline void Value::set_has_list_value() {
-  _oneof_case_[0] = kListValue;
+  _impl_._oneof_case_[0] = kListValue;
 }
 inline void Value::clear_list_value() {
   if (_internal_has_list_value()) {
     if (GetArenaForAllocation() == nullptr) {
-      delete kind_.list_value_;
+      delete _impl_.kind_.list_value_;
     }
     clear_has_kind();
   }
@@ -1027,11 +1036,11 @@ inline ::PROTOBUF_NAMESPACE_ID::ListValue* Value::release_list_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.list_value)
   if (_internal_has_list_value()) {
     clear_has_kind();
-    ::PROTOBUF_NAMESPACE_ID::ListValue* temp = kind_.list_value_;
+    ::PROTOBUF_NAMESPACE_ID::ListValue* temp = _impl_.kind_.list_value_;
     if (GetArenaForAllocation() != nullptr) {
       temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
     }
-    kind_.list_value_ = nullptr;
+    _impl_.kind_.list_value_ = nullptr;
     return temp;
   } else {
     return nullptr;
@@ -1039,7 +1048,7 @@ inline ::PROTOBUF_NAMESPACE_ID::ListValue* Value::release_list_value() {
 }
 inline const ::PROTOBUF_NAMESPACE_ID::ListValue& Value::_internal_list_value() const {
   return _internal_has_list_value()
-      ? *kind_.list_value_
+      ? *_impl_.kind_.list_value_
       : reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::ListValue&>(::PROTOBUF_NAMESPACE_ID::_ListValue_default_instance_);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::ListValue& Value::list_value() const {
@@ -1050,8 +1059,8 @@ inline ::PROTOBUF_NAMESPACE_ID::ListValue* Value::unsafe_arena_release_list_valu
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.list_value)
   if (_internal_has_list_value()) {
     clear_has_kind();
-    ::PROTOBUF_NAMESPACE_ID::ListValue* temp = kind_.list_value_;
-    kind_.list_value_ = nullptr;
+    ::PROTOBUF_NAMESPACE_ID::ListValue* temp = _impl_.kind_.list_value_;
+    _impl_.kind_.list_value_ = nullptr;
     return temp;
   } else {
     return nullptr;
@@ -1061,7 +1070,7 @@ inline void Value::unsafe_arena_set_allocated_list_value(::PROTOBUF_NAMESPACE_ID
   clear_kind();
   if (list_value) {
     set_has_list_value();
-    kind_.list_value_ = list_value;
+    _impl_.kind_.list_value_ = list_value;
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.list_value)
 }
@@ -1069,9 +1078,9 @@ inline ::PROTOBUF_NAMESPACE_ID::ListValue* Value::_internal_mutable_list_value()
   if (!_internal_has_list_value()) {
     clear_kind();
     set_has_list_value();
-    kind_.list_value_ = CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::ListValue >(GetArenaForAllocation());
+    _impl_.kind_.list_value_ = CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::ListValue >(GetArenaForAllocation());
   }
-  return kind_.list_value_;
+  return _impl_.kind_.list_value_;
 }
 inline ::PROTOBUF_NAMESPACE_ID::ListValue* Value::mutable_list_value() {
   ::PROTOBUF_NAMESPACE_ID::ListValue* _msg = _internal_mutable_list_value();
@@ -1083,10 +1092,10 @@ inline bool Value::has_kind() const {
   return kind_case() != KIND_NOT_SET;
 }
 inline void Value::clear_has_kind() {
-  _oneof_case_[0] = KIND_NOT_SET;
+  _impl_._oneof_case_[0] = KIND_NOT_SET;
 }
 inline Value::KindCase Value::kind_case() const {
-  return Value::KindCase(_oneof_case_[0]);
+  return Value::KindCase(_impl_._oneof_case_[0]);
 }
 // -------------------------------------------------------------------
 
@@ -1094,32 +1103,32 @@ inline Value::KindCase Value::kind_case() const {
 
 // repeated .google.protobuf.Value values = 1;
 inline int ListValue::_internal_values_size() const {
-  return values_.size();
+  return _impl_.values_.size();
 }
 inline int ListValue::values_size() const {
   return _internal_values_size();
 }
 inline void ListValue::clear_values() {
-  values_.Clear();
+  _impl_.values_.Clear();
 }
 inline ::PROTOBUF_NAMESPACE_ID::Value* ListValue::mutable_values(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.ListValue.values)
-  return values_.Mutable(index);
+  return _impl_.values_.Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Value >*
 ListValue::mutable_values() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
-  return &values_;
+  return &_impl_.values_;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::Value& ListValue::_internal_values(int index) const {
-  return values_.Get(index);
+  return _impl_.values_.Get(index);
 }
 inline const ::PROTOBUF_NAMESPACE_ID::Value& ListValue::values(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.ListValue.values)
   return _internal_values(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::Value* ListValue::_internal_add_values() {
-  return values_.Add();
+  return _impl_.values_.Add();
 }
 inline ::PROTOBUF_NAMESPACE_ID::Value* ListValue::add_values() {
   ::PROTOBUF_NAMESPACE_ID::Value* _add = _internal_add_values();
@@ -1129,7 +1138,7 @@ inline ::PROTOBUF_NAMESPACE_ID::Value* ListValue::add_values() {
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Value >&
 ListValue::values() const {
   // @@protoc_insertion_point(field_list:google.protobuf.ListValue.values)
-  return values_;
+  return _impl_.values_;
 }
 
 #ifdef __GNUC__

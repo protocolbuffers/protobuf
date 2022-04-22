@@ -40,6 +40,7 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import map_test.MapTestProto.BizarroTestMap;
+import map_test.MapTestProto.MapContainer;
 import map_test.MapTestProto.ReservedAsMapField;
 import map_test.MapTestProto.ReservedAsMapFieldWithEnumValue;
 import map_test.MapTestProto.TestMap;
@@ -580,21 +581,21 @@ public class MapTest {
     setMapValuesUsingAccessors(builder);
     TestMap message = builder.build();
     assertThat(message.toByteString().size()).isEqualTo(message.getSerializedSize());
-    message = TestMap.parser().parseFrom(message.toByteString());
+    message = TestMap.parseFrom(message.toByteString());
     assertMapValuesSet(message);
 
     builder = message.toBuilder();
     updateMapValuesUsingAccessors(builder);
     message = builder.build();
     assertThat(message.toByteString().size()).isEqualTo(message.getSerializedSize());
-    message = TestMap.parser().parseFrom(message.toByteString());
+    message = TestMap.parseFrom(message.toByteString());
     assertMapValuesUpdated(message);
 
     builder = message.toBuilder();
     builder.clear();
     message = builder.build();
     assertThat(message.toByteString().size()).isEqualTo(message.getSerializedSize());
-    message = TestMap.parser().parseFrom(message.toByteString());
+    message = TestMap.parseFrom(message.toByteString());
     assertMapValuesCleared(message);
   }
 
@@ -603,7 +604,7 @@ public class MapTest {
     CodedOutputStream output = CodedOutputStream.newInstance(byteArrayOutputStream);
     bizarroMap.writeTo(output);
     output.flush();
-    return TestMap.parser().parseFrom(ByteString.copyFrom(byteArrayOutputStream.toByteArray()));
+    return TestMap.parseFrom(ByteString.copyFrom(byteArrayOutputStream.toByteArray()));
   }
 
   @Test
@@ -1585,5 +1586,20 @@ public class MapTest {
     }
 
     assertThat(builder.build().toByteArray()).isEqualTo(new byte[0]);
+  }
+
+  @Test
+  // https://github.com/protocolbuffers/protobuf/issues/9785
+  public void testContainer() {
+    FieldDescriptor field = MapContainer.getDescriptor().findFieldByName("my_map");
+    Descriptor entryDescriptor = field.getMessageType();
+    FieldDescriptor valueDescriptor = entryDescriptor.findFieldByName("value");
+    Message.Builder builder = MapContainer.newBuilder().newBuilderForField(field);
+    try {
+      builder.setField(valueDescriptor, null);
+      fail("Allowed null field value");
+    } catch (NullPointerException expected) {
+      assertThat(expected).hasMessageThat().isNotNull();
+    }
   }
 }
