@@ -16,6 +16,11 @@ Protobuf releases include source distributions, sliced by target language (C++,
 Java, etc.). There are rules in this package to define those source archives.
 These depend upon `pkg_files` rules elsewhere in the repo to get the contents.
 
+The source distribution files should include the outputs from `autogen.sh`, but
+this isn't something we can reliably do from Bazel. To produce fully functioning
+source distributions, run `autogen.sh` before building the archives (this
+populates the necessary files directly into the source tree).
+
 ## C++ runtime binary distribution
 
 The `cc_dist_library` rule creates composite libraries from several other
