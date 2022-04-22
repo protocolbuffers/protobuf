@@ -28,6 +28,7 @@ function pre_build {
     # Build protoc and protobuf libraries
     use_bazel.sh 5.1.1
     bazel build //:protoc
+    export PROTOC=$PWD/bazel-bin/protoc
     mkdir src/.libs
     ln -s $PWD/bazel-bin/libprotobuf.a src/.libs/libprotobuf.a
     ln -s $PWD/bazel-bin/libprotobuf_lite.a src/.libs/libprotobuf-lite.a
