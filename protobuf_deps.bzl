@@ -107,5 +107,5 @@ def protobuf_deps():
         git_repository(
             name = "upb",
             remote = "https://github.com/protocolbuffers/upb.git",
-            commit = "4978040db47943e59bcf522cd97c7b39910a93e2",
+            commit = "7f9135b766e16823e99f8b312b794ae27b1d4ee7",
         )
