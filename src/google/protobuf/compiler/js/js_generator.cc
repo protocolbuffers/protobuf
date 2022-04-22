@@ -311,40 +311,26 @@ std::vector<std::string> ParseLowerCamel(const std::string& input) {
 }
 
 bool IsUpperCamel(const std::string& input) {
-    int wordLength = 0;
-    std::string running = "";
     for (int i = 0; i < input.size(); i++) {
         if (input[i] == '_') {
             return false;
-        } else if (input[i] >= 'A' && input[i] <= 'Z' && !running.empty()) {
-            if (wordLength > 0) {
-                return true;
-            }
-            ++wordLength;
-            running.clear();
+        } else if (input[i] >= 'A' && input[i] <= 'Z') {
+            return true;
         }
-        running += input[i];
     }
 
     return false;
 }
 
 bool IsLowerCamel(const std::string& input) {
-    int wordLength = 0;
-    std::string running = "";
     for (int i = 0; i < input.size(); i++) {
         if (input[i] == '_') {
             return false;
         } else if (i != 0 && input[i] >= 'A' && input[i] <= 'Z') {
-            if (wordLength > 0) {
-                return true;
-            }
-            ++wordLength;
-            running.clear();
+            return true;
         } else if (i == 0 && input[i] >= 'A' && input[i] <= 'Z') {
             return false;
         }
-        running += input[i];
     }
 
     return false;
