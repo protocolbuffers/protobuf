@@ -46,7 +46,7 @@ java_proto_library(
 
 pkg_files(
     name = "dist_files",
-    srcs = glob(["*"]),
+    srcs = glob(["*.proto"]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//benchmarks:__pkg__"],
 )

@@ -67,7 +67,18 @@ java_proto_library(
 
 pkg_files(
     name = "dist_files",
-    srcs = glob(["**/*"]),
+    srcs = glob(
+        [
+            "*",
+            "python/*.cc",
+            "util/*.cc",
+        ],
+        exclude = [
+            "__init__.py",  # not in autotools dist
+            "BUILD",
+            "go/*",
+        ],
+    ),
     strip_prefix = strip_prefix.from_root(""),
 )
 
@@ -77,7 +88,7 @@ pkg_filegroup(
     srcs = [
         ":dist_files",
         "//benchmarks/cpp:dist_files",
-        "//benchmarks/datasets:dist_files",
+        # "//benchmarks/datasets:dist_files",  # not in autotools dist
         "//benchmarks/datasets/google_message1/proto2:dist_files",
         "//benchmarks/datasets/google_message1/proto3:dist_files",
         "//benchmarks/datasets/google_message2:dist_files",

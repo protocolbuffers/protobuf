@@ -254,6 +254,30 @@ pkg_zip(
 )
 
 pkg_filegroup(
+    name = "python_srcs",
+    srcs = [
+        ":dist_common",
+        "//:python_dist_files",
+    ],
+)
+
+pkg_tar(
+    name = "dist_python_tar",
+    srcs = [":python_srcs"],
+    extension = "tar.gz",
+    package_dir = "protobuf-{version}",
+    package_file_name = "protobuf-python-{version}.tar.gz",
+    package_variables = ":protobuf_pkg_naming",
+)
+
+pkg_zip(
+    name = "dist_python_zip",
+    srcs = [":python_srcs"],
+    package_file_name = "protobuf-python-{version}.zip",
+    package_variables = ":protobuf_pkg_naming",
+)
+
+pkg_filegroup(
     name = "ruby_srcs",
     srcs = [
         ":dist_common",
@@ -277,8 +301,8 @@ pkg_zip(
     package_variables = ":protobuf_pkg_naming",
 )
 
-pkg_tar(
-    name = "dist_all_tar",
+pkg_filegroup(
+    name = "dist_all",
     srcs = [
         ":cpp_srcs",
         ":csharp_srcs",
@@ -286,8 +310,14 @@ pkg_tar(
         ":js_srcs",
         ":objectivec_srcs",
         ":php_srcs",
+        ":python_srcs",
         ":ruby_srcs",
     ],
+)
+
+pkg_tar(
+    name = "dist_all_tar",
+    srcs = [":dist_all"],
     extension = "tar.gz",
     package_dir = "protobuf-{version}",
     package_file_name = "protobuf-all-{version}.tar.gz",
@@ -296,15 +326,7 @@ pkg_tar(
 
 pkg_zip(
     name = "dist_all_zip",
-    srcs = [
-        ":cpp_srcs",
-        ":csharp_srcs",
-        ":java_srcs",
-        ":js_srcs",
-        ":objectivec_srcs",
-        ":php_srcs",
-        ":ruby_srcs",
-    ],
+    srcs = [":dist_all"],
     package_file_name = "protobuf-all-{version}.zip",
     package_variables = ":protobuf_pkg_naming",
 )

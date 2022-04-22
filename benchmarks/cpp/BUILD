@@ -17,7 +17,7 @@ cc_binary(
 
 pkg_files(
     name = "dist_files",
-    srcs = glob(["**/*"]),
+    srcs = ["cpp_benchmark.cc"],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//benchmarks:__pkg__"],
 )

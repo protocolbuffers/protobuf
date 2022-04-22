@@ -1506,7 +1506,19 @@ pkg_files(
 # Conformance tests
 pkg_files(
     name = "conformance_dist_files",
-    srcs = glob(["conformance/**/*"]),
+    srcs = glob(
+        ["conformance/**/*"],
+        exclude = [
+            # The following are not in autotools dist:
+            "conformance/autoload.php",
+            "conformance/conformance_nodejs.js",
+            "conformance/conformance_test_runner.sh",
+            "conformance/failure_list_java_lite.txt",
+            "conformance/failure_list_jruby.txt",
+            "conformance/text_format_failure_list_*.txt",
+            "conformance/update_failure_list.py",
+        ],
+    ),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],
 )
@@ -1514,7 +1526,12 @@ pkg_files(
 # C++ runtime
 pkg_files(
     name = "cpp_dist_files",
-    srcs = glob(["src/**/*"]),
+    srcs = glob(
+        ["src/**/*"],
+        exclude = [
+            "src/google/protobuf/compiler/objectivec/method_dump.sh",  # not in autotools dist
+        ],
+    ),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],
 )
@@ -1543,5 +1560,31 @@ pkg_files(
     srcs = [
         "composer.json",
     ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Python runtime
+pkg_files(
+    name = "python_dist_files",
+    srcs = glob([
+        "python/google/**/*.proto",
+        "python/google/**/*.py",
+        "python/google/protobuf/internal/*.cc",
+        "python/google/protobuf/pyext/*.cc",
+        "python/google/protobuf/pyext/*.h",
+    ]) + [
+        "python/MANIFEST.in",
+        "python/README.md",
+        "python/google/protobuf/proto_api.h",
+        "python/google/protobuf/pyext/README",
+        "python/google/protobuf/python_protobuf.h",
+        "python/mox.py",
+        "python/release.sh",
+        "python/setup.cfg",
+        "python/setup.py",
+        "python/stubout.py",
+        "python/tox.ini",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],
 )
