@@ -68,7 +68,7 @@ typedef struct {
 
 Note in particular that messages do *not* have:
 - A pointer to reflection or a parse table (upb messages are not self-describing).
-- A pointer to an arena (the arena must be expicitly passed into any function that
+- A pointer to an arena (the arena must be explicitly passed into any function that
   allocates).
 
 The upb compiler computes a layout for each message, and determines the offset for
@@ -160,7 +160,7 @@ together.
 together, their lifetimes are irreversibly joined, such that none of the arena
 blocks in either arena will be freed until *both* arenas are freed with
 `upb_arena_free()`.  This is useful when joining two messages from separate
-arenas (making one a sub-message of the other).  Fuse is an a very cheap
+arenas (making one a sub-message of the other).  Fuse is a very cheap
 operation, and an unlimited number of arenas can be fused together efficiently.
 
 ## Reflection and Descriptors
