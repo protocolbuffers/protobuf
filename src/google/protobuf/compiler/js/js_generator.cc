@@ -48,6 +48,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 namespace google {
 namespace protobuf {
@@ -311,10 +312,16 @@ std::vector<std::string> ParseLowerCamel(const std::string& input) {
 }
 
 bool IsUpperCamel(const std::string& input) {
+    if (input.empty()) {
+        return false;
+    }
+
+    if (input.find('_') != string::npos) {
+        return false;
+    }
+
     for (int i = 0; i < input.size(); i++) {
-        if (input[i] == '_') {
-            return false;
-        } else if (input[i] >= 'A' && input[i] <= 'Z') {
+        if (input[i] >= 'A' && input[i] <= 'Z') {
             return true;
         }
     }
@@ -323,13 +330,21 @@ bool IsUpperCamel(const std::string& input) {
 }
 
 bool IsLowerCamel(const std::string& input) {
+    if (input.empty()) {
+        return false;
+    }
+
+    if (input.find('_') != string::npos) {
+        return false;
+    }
+
+    if (input[0] >= 'A' && input[0] <= 'Z') {
+        return false;
+    }
+
     for (int i = 0; i < input.size(); i++) {
-        if (input[i] == '_') {
-            return false;
-        } else if (i != 0 && input[i] >= 'A' && input[i] <= 'Z') {
+        if (i != 0 && input[i] >= 'A' && input[i] <= 'Z') {
             return true;
-        } else if (i == 0 && input[i] >= 'A' && input[i] <= 'Z') {
-            return false;
         }
     }
 
