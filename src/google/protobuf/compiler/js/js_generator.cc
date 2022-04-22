@@ -316,7 +316,7 @@ bool IsUpperCamel(const std::string& input) {
         return false;
     }
 
-    if (input.find('_') != string::npos) {
+    if (input.find('_') != std::string::npos) {
         return false;
     }
 
@@ -334,7 +334,7 @@ bool IsLowerCamel(const std::string& input) {
         return false;
     }
 
-    if (input.find('_') != string::npos) {
+    if (input.find('_') != std::string::npos) {
         return false;
     }
 
