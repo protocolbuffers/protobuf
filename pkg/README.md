@@ -3,7 +3,8 @@
 This directory contains Bazel rules for building packaging and distribution
 artifacts.
 
-*Everything in this directory should be considered experimental.*
+*Everything in this directory should be considered internal and subject to
+change.*
 
 ## Protocol compiler binary packaging
 

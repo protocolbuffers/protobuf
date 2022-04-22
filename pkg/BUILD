@@ -93,6 +93,8 @@ pkg_zip(
 
 ################################################################################
 # Source distribution packaging
+#
+# TODO: these will eventually replace autotools for release artifact packaging.
 ################################################################################
 
 pkg_filegroup(
