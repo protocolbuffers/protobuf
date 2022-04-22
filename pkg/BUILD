@@ -159,10 +159,7 @@ pkg_filegroup(
     name = "java_srcs",
     srcs = [
         ":dist_common",
-        "//java:dist_files",
-        "//java/core:dist_files",
-        "//java/kotlin:dist_files",
-        "//java/kotlin-lite:dist_files",
+        "//java:all_dist_files",
     ],
 )
 

@@ -299,8 +299,8 @@ kt_jvm_library(
 pkg_files(
     name = "dist_files",
     srcs = glob([
-        "src/main/kotlin/com/google/protobuf/*.java",
-        "src/test/kotlin/**/*.java",
+        "src/main/kotlin/com/google/protobuf/*.kt",
+        "src/test/kotlin/**/*.kt",
         "src/test/proto/**/*.proto",
     ]) + [
         "BUILD",
@@ -310,5 +310,5 @@ pkg_files(
         "pom_template.xml",
     ],
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//java:__pkg__"],
 )

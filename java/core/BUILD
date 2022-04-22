@@ -427,5 +427,5 @@ pkg_files(
         "pom_template.xml",
     ],
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//java:__pkg__"],
 )

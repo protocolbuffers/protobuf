@@ -188,16 +188,17 @@ java_test(
 pkg_files(
     name = "dist_files",
     srcs = glob([
-        "src/main/kotlin/com/google/protobuf/*.java",
-        "src/test/kotlin/**/*.java",
+        "src/main/kotlin/com/google/protobuf/*.kt",
+        "src/test/kotlin/**/*.kt",
     ]) + [
         "BUILD",
         "generate-sources-build.xml",
         "generate-test-sources-build.xml",
+        "lite.awk",
         "pom.xml",
         "pom_template.xml",
         "process-lite-sources-build.xml",
     ],
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//java:__pkg__"],
 )

@@ -1,4 +1,5 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 load("//:internal.bzl", "conformance_test")
 load("//java/internal:testing.bzl", "junit_tests")
@@ -21,9 +22,6 @@ alias(
 
 proto_lang_toolchain(
     name = "toolchain",
-    command_line = "--java_out=lite:$(OUT)",
-    runtime = ":lite",
-    visibility = ["//visibility:public"],
     # keep this in sync w/ LITE_WELL_KNOWN_PROTO_MAP in //:BUILD
     blacklisted_protos = [
         "//:any_proto",
@@ -37,6 +35,9 @@ proto_lang_toolchain(
         "//:type_proto",
         "//:wrappers_proto",
     ],
+    command_line = "--java_out=lite:$(OUT)",
+    runtime = ":lite",
+    visibility = ["//visibility:public"],
 )
 
 test_suite(
@@ -75,4 +76,21 @@ junit_tests(
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "**/*.java",
+    ]) + [
+        "BUILD",
+        "generate-sources-build.xml",
+        "generate-test-sources-build.xml",
+        "lite.awk",
+        "pom.xml",
+        "pom_template.xml",
+        "process-lite-sources-build.xml",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//java:__pkg__"],
 )

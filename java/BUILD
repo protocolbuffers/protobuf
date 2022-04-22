@@ -1,4 +1,4 @@
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 
 test_suite(
     name = "tests",
@@ -35,5 +35,19 @@ pkg_files(
         "pom.xml",
     ],
     strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+pkg_filegroup(
+    name = "all_dist_files",
+    srcs = [
+        ":dist_files",
+        "//java/core:dist_files",
+        "//java/internal:dist_files",
+        "//java/kotlin:dist_files",
+        "//java/kotlin-lite:dist_files",
+        "//java/lite:dist_files",
+        "//java/util:dist_files",
+    ],
     visibility = ["//pkg:__pkg__"],
 )
