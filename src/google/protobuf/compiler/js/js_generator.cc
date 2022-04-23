@@ -48,7 +48,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <iostream>
 
 namespace google {
 namespace protobuf {
