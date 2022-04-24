@@ -681,10 +681,8 @@ exports_files(
 filegroup(
     name = "cmake_files",
     srcs = glob([
-        "google/**/*",
         "upbc/**/*",
         "upb/**/*",
-        "tests/**/*",
         "third_party/**/*",
     ]),
     visibility = ["//cmake:__pkg__"],
