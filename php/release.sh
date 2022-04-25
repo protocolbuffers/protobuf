@@ -10,24 +10,17 @@ set -ex
 
 VERSION=$1
 
+rm -rf protobuf-php
 git clone https://github.com/protocolbuffers/protobuf-php.git
-git clone https://github.com/protocolbuffers/protobuf.git
 
 # Clean old files
-pushd protobuf-php
-rm -rf src
-popd
-
-# Checkout the target version
-pushd protobuf/php
-git checkout -b $VERSION
-popd
+rm -rf protobuf-php/src
 
 # Copy files
-pushd protobuf-php
-mv ../protobuf/php/src src
-mv ../protobuf/composer.json composer.json
-sed -i 's|php/src|src|g' composer.json
+cp -r php/src protobuf-php
+cp php/composer.json.dist protobuf-php/composer.json
+
+cd protobuf-php
 git add .
 git commit -m "$VERSION"
 if [ $(git tag -l "$VERSION") ]; then
@@ -35,7 +28,3 @@ if [ $(git tag -l "$VERSION") ]; then
 else
   git tag "$VERSION"
 fi
-popd
-
-# Clean up
-rm -rf protobuf

@@ -1,5 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 filegroup(
@@ -56,4 +57,11 @@ java_library(
         "//benchmarks/datasets/google_message3:benchmark_message3_java_proto",
         "//benchmarks/datasets/google_message4:benchmark_message4_java_proto",
     ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = ["BUILD"],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//benchmarks:__pkg__"],
 )
