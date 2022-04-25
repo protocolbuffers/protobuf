@@ -47,5 +47,3 @@ def upb_deps():
     system_python(
         name = "system_python",
     )
-
-    native.register_toolchains("@system_python//:python_toolchain")

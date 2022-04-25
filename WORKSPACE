@@ -5,6 +5,7 @@ load("//bazel:python_downloads.bzl", "python_source_archive", "python_nuget_pack
 load("//bazel:workspace_deps.bzl", "upb_deps")
 
 upb_deps()
+register_toolchains("@system_python//:python_toolchain")
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
