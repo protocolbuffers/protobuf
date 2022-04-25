@@ -30,10 +30,10 @@ def protobuf_deps():
     if not native.existing_rule("com_google_absl"):
         # Abseil LTS from November 2021
         http_archive(
-          name = "com_google_absl",
-          sha256 = "b4e20d9e752a75c10636675691b1e9c2698e0764cb404987d0ffa77223041c19",
-          urls = ["https://github.com/abseil/abseil-cpp/archive/215105818dfde3174fe799600bb0f3cae233d0bf.zip"],
-          strip_prefix = "abseil-cpp-215105818dfde3174fe799600bb0f3cae233d0bf",
+            name = "com_google_absl",
+            sha256 = "b4e20d9e752a75c10636675691b1e9c2698e0764cb404987d0ffa77223041c19",
+            urls = ["https://github.com/abseil/abseil-cpp/archive/215105818dfde3174fe799600bb0f3cae233d0bf.zip"],
+            strip_prefix = "abseil-cpp-215105818dfde3174fe799600bb0f3cae233d0bf",
         )
 
     if not native.existing_rule("zlib"):
@@ -88,10 +88,10 @@ def protobuf_deps():
         http_archive(
             name = "rules_pkg",
             urls = [
-                "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.5.1/rules_pkg-0.5.1.tar.gz",
-                "https://github.com/bazelbuild/rules_pkg/releases/download/0.5.1/rules_pkg-0.5.1.tar.gz",
+                "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.7.0/rules_pkg-0.7.0.tar.gz",
+                "https://github.com/bazelbuild/rules_pkg/releases/download/0.7.0/rules_pkg-0.7.0.tar.gz",
             ],
-            sha256 = "a89e203d3cf264e564fcb96b6e06dd70bc0557356eb48400ce4b5d97c2c3720d",
+            sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
         )
 
     if not native.existing_rule("io_bazel_rules_kotlin"):

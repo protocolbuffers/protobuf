@@ -5031,6 +5031,13 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
     }
   }
 
+  static const int kMaximumPackageLength = 511;
+  if (proto.package().size() > kMaximumPackageLength) {
+    AddError(proto.package(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Package name is too long");
+    return nullptr;
+  }
+
   // If we have a fallback_database_, and we aren't doing lazy import building,
   // attempt to load all dependencies now, before checkpointing tables_.  This
   // avoids confusion with recursive checkpoints.

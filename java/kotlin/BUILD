@@ -1,12 +1,13 @@
 load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_jvm_external//:kt_defs.bzl", "kt_jvm_export")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
 load("//:protobuf.bzl", "internal_gen_kt_protos")
 
 exports_files([
-  "src/test/kotlin/com/google/protobuf/Proto3Test.kt",
+    "src/test/kotlin/com/google/protobuf/Proto3Test.kt",
 ])
 
 # Kotlin generated protos depend on this and only this.
@@ -36,34 +37,34 @@ kt_jvm_library(
 kt_jvm_library(
     name = "bytestring_lib",
     srcs = ["src/main/kotlin/com/google/protobuf/ByteStrings.kt"],
-    deps = ["//java/lite"],
     visibility = ["//java:__subpackages__"],
+    deps = ["//java/lite"],
 )
 
 kt_jvm_library(
     name = "full_extensions",
     srcs = [
-      "src/main/kotlin/com/google/protobuf/Anies.kt",
-      "src/main/kotlin/com/google/protobuf/ExtendableMessageExtensions.kt",
+        "src/main/kotlin/com/google/protobuf/Anies.kt",
+        "src/main/kotlin/com/google/protobuf/ExtendableMessageExtensions.kt",
     ],
     deps = ["//java/core"],
 )
 
 kt_jvm_export(
     name = "kotlin_mvn",
+    deploy_env = [
+        "@com_github_jetbrains_kotlin//:kotlin-stdlib",
+        "//java/core",
+    ],
     maven_coordinates = "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_VERSION,
     pom_template = "//java/kotlin:pom_template.xml",
     resources = ["//:well_known_protos"],
     runtime_deps = [
-      ":bytestring_lib",
-      ":full_extensions",
-      ":only_for_use_in_proto_generated_code_its_generator_and_tests",
-      ":shared_runtime",
-      ":well_known_protos_kotlin",
-    ],
-    deploy_env = [
-        "@com_github_jetbrains_kotlin//:kotlin-stdlib",
-        "//java/core",
+        ":bytestring_lib",
+        ":full_extensions",
+        ":only_for_use_in_proto_generated_code_its_generator_and_tests",
+        ":shared_runtime",
+        ":well_known_protos_kotlin",
     ],
 )
 
@@ -82,10 +83,10 @@ test_suite(
     name = "tests",
     tests = [
         "bytestring_test",
-        "shared_tests",
-        "test_extensions",
         "proto2_test",
         "proto3_test",
+        "shared_tests",
+        "test_extensions",
     ],
 )
 
@@ -103,8 +104,8 @@ kt_jvm_library(
 
 java_test(
     name = "bytestring_test",
-    runtime_deps = [":bytestring_test_library"],
     test_class = "com.google.protobuf.kotlin.ByteStringsTest",
+    runtime_deps = [":bytestring_test_library"],
 )
 
 proto_library(
@@ -131,31 +132,31 @@ kt_jvm_library(
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
         "@com_github_jetbrains_kotlin//:kotlin-test",
-        "@maven//:com_google_truth_truth",
         "@maven//:com_google_guava_guava_testlib",
+        "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
 )
 
 java_test(
     name = "shared_tests",
-    runtime_deps = [":shared_tests_library"],
     test_class = "com.google.protobuf.kotlin.DslListTest",
+    runtime_deps = [":shared_tests_library"],
 )
 
 kt_jvm_library(
     name = "test_extensions_library",
     srcs = [
-      "src/test/kotlin/com/google/protobuf/AniesTest.kt",
-      "src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt",
+        "src/test/kotlin/com/google/protobuf/AniesTest.kt",
+        "src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt",
     ],
     deps = [
         ":example_extensible_message_java_proto",
         ":full_extensions",
-        "//java/core:core",
         ":kotlin_unittest",
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
+        "//java/core",
         "@com_github_jetbrains_kotlin//:kotlin-test",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
@@ -164,8 +165,8 @@ kt_jvm_library(
 
 java_test(
     name = "test_extensions",
-    runtime_deps = [":test_extensions_library"],
     test_class = "com.google.protobuf.kotlin.ExtendableMessageExtensionsTest",
+    runtime_deps = [":test_extensions_library"],
 )
 
 proto_library(
@@ -224,11 +225,11 @@ kt_jvm_library(
     ],
     deps = [
         ":evil_names_proto2_java_proto",
-        "//java/core:core",
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
         ":well_known_protos_kotlin",
         "//:java_test_protos",
+        "//java/core",
     ],
 )
 
@@ -242,10 +243,10 @@ kt_jvm_library(
     deps = [
         ":evil_names_proto3_java_proto",
         ":multiple_files_proto3_java_proto",
-        "//java/core:core",
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
         "//:java_test_protos",
+        "//java/core",
     ],
 )
 
@@ -262,8 +263,8 @@ kt_jvm_library(
 
 java_test(
     name = "proto2_test",
-    runtime_deps = [":proto2_test_library"],
     test_class = "com.google.protobuf.kotlin.Proto2Test",
+    runtime_deps = [":proto2_test_library"],
 )
 
 kt_jvm_library(
@@ -279,8 +280,8 @@ kt_jvm_library(
 
 java_test(
     name = "proto3_test",
-    runtime_deps = [":proto3_test_library"],
     test_class = "com.google.protobuf.kotlin.Proto3Test",
+    runtime_deps = [":proto3_test_library"],
 )
 
 kt_jvm_library(
@@ -289,8 +290,25 @@ kt_jvm_library(
         "//:gen_well_known_protos_kotlin",
     ],
     deps = [
-         "//java/core",
-         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
-         ":shared_runtime",
+        ":only_for_use_in_proto_generated_code_its_generator_and_tests",
+        ":shared_runtime",
+        "//java/core",
     ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "src/main/kotlin/com/google/protobuf/*.kt",
+        "src/test/kotlin/**/*.kt",
+        "src/test/proto/**/*.proto",
+    ]) + [
+        "BUILD",
+        "generate-sources-build.xml",
+        "generate-test-sources-build.xml",
+        "pom.xml",
+        "pom_template.xml",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//java:__pkg__"],
 )

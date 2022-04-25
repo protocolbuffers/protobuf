@@ -29,7 +29,7 @@ protobuf Java Lite runtime. If you are using Maven, include the following:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-javalite</artifactId>
-  <version>3.20.1-rc-1</version>
+  <version>3.20.1</version>
 </dependency>
 ```
 

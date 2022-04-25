@@ -1,0 +1,17 @@
+{
+    "main": {
+        "protoc_version": "21-dev",
+        "lts": false,
+        "date": "2022-04-22",
+        "languages": {
+            "cpp": "3.21-dev",
+            "csharp": "3.21-dev",
+            "java": "3.21-dev",
+            "javascript": "3.21-dev",
+            "objectivec": "3.21-dev",
+            "php": "3.21-dev",
+            "python": "3.21-dev",
+            "ruby": "3.21-dev"
+        }
+    }
+}

@@ -1,5 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 filegroup(
@@ -41,4 +42,11 @@ java_proto_library(
     deps = [
         "benchmark_message2_proto",
     ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["*.proto"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//benchmarks:__pkg__"],
 )
