@@ -2817,7 +2817,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
         " */\n"
         "$class$.prototype.$clearername$ = function() {\n"
         "  this.$gettername$().clear();\n"
-        "  return this;"
+        "  return this;\n"
         "};\n"
         "\n"
         "\n",
