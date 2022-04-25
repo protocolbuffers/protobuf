@@ -572,11 +572,18 @@ static PyObject* PyUpb_DescriptorPool_FindAllExtensions(PyObject* _self,
   size_t n;
   const upb_FieldDef** ext = upb_DefPool_GetAllExtensions(self->symtab, m, &n);
   PyObject* ret = PyList_New(n);
+  if (!ret) goto done;
   for (size_t i = 0; i < n; i++) {
     PyObject* field = PyUpb_FieldDescriptor_Get(ext[i]);
-    if (!field) return NULL;
+    if (!field) {
+      Py_DECREF(ret);
+      ret = NULL;
+      goto done;
+    }
     PyList_SetItem(ret, i, field);
   }
+done:
+  free(ext);
   return ret;
 }
 

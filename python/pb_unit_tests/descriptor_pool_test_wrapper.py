@@ -23,13 +23,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from google.protobuf.internal import descriptor_pool_test
 import unittest
-import copy
-
-# begin:google_only
-# from google3.testing.pybase import googletest
-# end:google_only
+from google.protobuf.internal import descriptor_pool_test
 
 # This is testing that certain methods unconditionally throw TypeError.
 # In the new extension we simply don't define them at all.
@@ -43,6 +38,8 @@ if __name__ == '__main__':
 # end:github_only
 
 # begin:google_only
+# descriptor_pool_test.CreateDescriptorPoolTest.testComplexNestingWithProtoFileParser.__unittest_expecting_failure__ = True
+# from absl import app
 # if __name__ == '__main__':
-#   googletest.main()
+#   app.run(lambda argv: unittest.main(module=descriptor_pool_test, verbosity=2))
 # end:google_only
