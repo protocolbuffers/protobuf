@@ -637,6 +637,13 @@ def GoldenFile(filename):
     # Found it.  Load the golden file from the testdata directory.
     return open(full_path, 'rb')
 
+  # Search for cross-repo path.
+  full_path = os.path.join('external/com_google_protobuf/src/google/protobuf/testdata',
+                           filename)
+  if os.path.exists(full_path):
+    # Found it.  Load the golden file from the testdata directory.
+    return open(full_path, 'rb')
+
   raise RuntimeError(
       'Could not find golden files.  This test must be run from within the '
       'protobuf source package so that it can read test data files from the '
