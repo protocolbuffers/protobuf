@@ -86,8 +86,7 @@ const char* kForbiddenWordList[] = {
     "AllFields",
     "DescriptorForType",
     "InitializationErrorString",
-    // TODO(b/219045204): re-enable
-    // "UnknownFields",
+    "UnknownFields",
     // obsolete. kept for backwards compatibility of generated code
     "CachedSize",
 };

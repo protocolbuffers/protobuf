@@ -57,8 +57,7 @@ message ForbiddenWordsUnderscoreMessage {
   optional bool all_fields = 5;
   optional bool descriptor_for_type = 6;
   optional bool initialization_error_string = 7;
-  // TODO(b/219045204): re-enable
-  // optional bool unknown_fields = 8;
+  optional bool unknown_fields = 8;
   // obsolete. kept for backwards compatibility of generated code
   optional bool cached_size = 9;
 }
