@@ -40,8 +40,8 @@
 #ifdef _MSC_VER
 #ifdef _XBOX_ONE
 struct timeval {
-  int64 tv_sec;  /* seconds */
-  int64 tv_usec; /* and microseconds */
+  int64_t tv_sec;  /* seconds */
+  int64_t tv_usec; /* and microseconds */
 };
 #else
 #include <winsock2.h>

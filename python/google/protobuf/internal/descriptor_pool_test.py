@@ -243,10 +243,10 @@ class DescriptorPoolTestBase(object):
     self.assertRaises(KeyError, self.pool.FindMethodByName, '')
 
     # TODO(jieluo): Fix python to raise correct errors.
-    if api_implementation.Type() == 'cpp':
-      error_type = TypeError
-    else:
+    if api_implementation.Type() == 'python':
       error_type = AttributeError
+    else:
+      error_type = TypeError
     self.assertRaises(error_type, self.pool.FindMessageTypeByName, 0)
     self.assertRaises(error_type, self.pool.FindFieldByName, 0)
     self.assertRaises(error_type, self.pool.FindExtensionByName, 0)
@@ -395,7 +395,7 @@ class DescriptorPoolTestBase(object):
 
   def testAddSerializedFile(self):
     if isinstance(self, SecondaryDescriptorFromDescriptorDB):
-      if api_implementation.Type() == 'cpp':
+      if api_implementation.Type() != 'python':
         # Cpp extension cannot call Add on a DescriptorPool
         # that uses a DescriptorDatabase.
         # TODO(jieluo): Fix python and cpp extension diff.
@@ -434,7 +434,7 @@ class DescriptorPoolTestBase(object):
     _CheckDefaultValue(file_descriptor)
 
     if isinstance(self, SecondaryDescriptorFromDescriptorDB):
-      if api_implementation.Type() == 'cpp':
+      if api_implementation.Type() != 'python':
         # Cpp extension cannot call Add on a DescriptorPool
         # that uses a DescriptorDatabase.
         # TODO(jieluo): Fix python and cpp extension diff.
@@ -488,7 +488,7 @@ class DescriptorPoolTestBase(object):
 
   def testAddFileDescriptor(self):
     if isinstance(self, SecondaryDescriptorFromDescriptorDB):
-      if api_implementation.Type() == 'cpp':
+      if api_implementation.Type() != 'python':
         # Cpp extension cannot call Add on a DescriptorPool
         # that uses a DescriptorDatabase.
         # TODO(jieluo): Fix python and cpp extension diff.
@@ -499,7 +499,7 @@ class DescriptorPoolTestBase(object):
 
   def testComplexNesting(self):
     if isinstance(self, SecondaryDescriptorFromDescriptorDB):
-      if api_implementation.Type() == 'cpp':
+      if api_implementation.Type() != 'python':
         # Cpp extension cannot call Add on a DescriptorPool
         # that uses a DescriptorDatabase.
         # TODO(jieluo): Fix python and cpp extension diff.
@@ -518,7 +518,7 @@ class DescriptorPoolTestBase(object):
 
   def testConflictRegister(self):
     if isinstance(self, SecondaryDescriptorFromDescriptorDB):
-      if api_implementation.Type() == 'cpp':
+      if api_implementation.Type() != 'python':
         # Cpp extension cannot call Add on a DescriptorPool
         # that uses a DescriptorDatabase.
         # TODO(jieluo): Fix python and cpp extension diff.
@@ -527,7 +527,7 @@ class DescriptorPoolTestBase(object):
         unittest_pb2.DESCRIPTOR.serialized_pb)
     conflict_fd = copy.deepcopy(unittest_fd)
     conflict_fd.name = 'other_file'
-    if api_implementation.Type() == 'cpp':
+    if api_implementation.Type() != 'python':
         pass
     else:
       pool = copy.deepcopy(self.pool)
@@ -670,7 +670,7 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
     # called the first time, a KeyError will be raised but call the find
     # method later will return a descriptor which is not build.
     # TODO(jieluo): fix pure python to revert the load if file can not be build
-    if api_implementation.Type() == 'cpp':
+    if api_implementation.Type() != 'python':
       error_msg = ('Invalid proto descriptor for file "error_file":\\n  '
                    'collector.ErrorMessage.nested_message_field: "SubMessage" '
                    'is not defined.\\n  collector.ErrorMessage.MyOneof: Oneof '
@@ -906,8 +906,8 @@ class AddDescriptorTest(unittest.TestCase):
         pool.FindFileContainingSymbol(
             prefix + 'protobuf_unittest.TestAllTypes.NestedMessage').name)
 
-  @unittest.skipIf(api_implementation.Type() == 'cpp',
-                   'With the cpp implementation, Add() must be called first')
+  @unittest.skipIf(api_implementation.Type() != 'python',
+                   'Only pure python allows _Add*()')
   def testMessage(self):
     self._TestMessage('')
     self._TestMessage('.')
@@ -948,14 +948,14 @@ class AddDescriptorTest(unittest.TestCase):
         pool.FindFileContainingSymbol(
             prefix + 'protobuf_unittest.TestAllTypes.NestedEnum').name)
 
-  @unittest.skipIf(api_implementation.Type() == 'cpp',
-                   'With the cpp implementation, Add() must be called first')
+  @unittest.skipIf(api_implementation.Type() != 'python',
+                   'Only pure python allows _Add*()')
   def testEnum(self):
     self._TestEnum('')
     self._TestEnum('.')
 
-  @unittest.skipIf(api_implementation.Type() == 'cpp',
-                   'With the cpp implementation, Add() must be called first')
+  @unittest.skipIf(api_implementation.Type() != 'python',
+                   'Only pure python allows _Add*()')
   def testService(self):
     pool = descriptor_pool.DescriptorPool()
     with self.assertRaises(KeyError):
@@ -965,8 +965,8 @@ class AddDescriptorTest(unittest.TestCase):
         'protobuf_unittest.TestService',
         pool.FindServiceByName('protobuf_unittest.TestService').full_name)
 
-  @unittest.skipIf(api_implementation.Type() == 'cpp',
-                   'With the cpp implementation, Add() must be called first')
+  @unittest.skipIf(api_implementation.Type() != 'python',
+                   'Only pure python allows _Add*()')
   def testFile(self):
     pool = descriptor_pool.DescriptorPool()
     pool._AddFileDescriptor(unittest_pb2.DESCRIPTOR)
@@ -1043,7 +1043,7 @@ class AddDescriptorTest(unittest.TestCase):
 
   def testAddTypeError(self):
     pool = descriptor_pool.DescriptorPool()
-    if api_implementation.Type() == 'cpp':
+    if api_implementation.Type() != 'python':
       with self.assertRaises(TypeError):
         pool.AddDescriptor(0)
       with self.assertRaises(TypeError):

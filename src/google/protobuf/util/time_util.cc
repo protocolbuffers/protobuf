@@ -116,15 +116,15 @@ std::string FormatNanos(int32_t nanos) {
   }
 }
 
-std::string FormatTime(int64 seconds, int32 nanos) {
+std::string FormatTime(int64_t seconds, int32_t nanos) {
   return ::google::protobuf::internal::FormatTime(seconds, nanos);
 }
 
-bool ParseTime(const std::string& value, int64* seconds, int32* nanos) {
+bool ParseTime(const std::string& value, int64_t* seconds, int32_t* nanos) {
   return ::google::protobuf::internal::ParseTime(value, seconds, nanos);
 }
 
-void CurrentTime(int64* seconds, int32* nanos) {
+void CurrentTime(int64_t* seconds, int32_t* nanos) {
   return ::google::protobuf::internal::GetCurrentTime(seconds, nanos);
 }
 
@@ -207,7 +207,7 @@ bool TimeUtil::FromString(const std::string& value, Duration* duration) {
     return false;
   }
   bool negative = (value[0] == '-');
-  int sign_length = (negative ? 1 : 0);
+  size_t sign_length = (negative ? 1 : 0);
   // Parse the duration value as two integers rather than a float value
   // to avoid precision loss.
   std::string seconds_part, nanos_part;
@@ -228,7 +228,7 @@ bool TimeUtil::FromString(const std::string& value, Duration* duration) {
   if (end != nanos_part.c_str() + nanos_part.length()) {
     return false;
   }
-  nanos = nanos * Pow(10, 9 - nanos_part.length());
+  nanos = nanos * Pow(10, static_cast<int>(9 - nanos_part.length()));
   if (negative) {
     // If a Duration is negative, both seconds and nanos should be negative.
     seconds = -seconds;
@@ -434,9 +434,12 @@ Duration& operator*=(Duration& d, int64_t r) {  // NOLINT
 }
 
 Duration& operator*=(Duration& d, double r) {  // NOLINT
-  double result = (d.seconds() * 1.0 + 1.0 * d.nanos() / kNanosPerSecond) * r;
+  double result =
+      (static_cast<double>(d.seconds()) + d.nanos() * (1.0 / kNanosPerSecond)) *
+      r;
   int64_t seconds = static_cast<int64_t>(result);
-  int32_t nanos = static_cast<int32_t>((result - seconds) * kNanosPerSecond);
+  int32_t nanos = static_cast<int32_t>((result - static_cast<double>(seconds)) *
+                                       kNanosPerSecond);
   // Note that we normalize here not just because nanos can have a different
   // sign from seconds but also that nanos can be any arbitrary value when
   // overflow happens (i.e., the result is a much larger value than what
