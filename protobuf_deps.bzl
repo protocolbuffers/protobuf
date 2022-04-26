@@ -1,6 +1,7 @@
 """Load dependencies needed to compile the protobuf library as a 3rd-party consumer."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.findbugs:jsr305:3.0.2",
@@ -72,8 +73,9 @@ def protobuf_deps():
     if not native.existing_rule("rules_python"):
         http_archive(
             name = "rules_python",
-            sha256 = "b6d46438523a3ec0f3cead544190ee13223a52f6a6765a29eae7b7cc24cc83a0",
-            urls = ["https://github.com/bazelbuild/rules_python/releases/download/0.1.0/rules_python-0.1.0.tar.gz"],
+            sha256 = "9fcf91dbcc31fde6d1edb15f117246d912c33c36f44cf681976bd886538deba6",
+            strip_prefix = "rules_python-0.8.0",
+            url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.8.0.tar.gz",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -99,4 +101,11 @@ def protobuf_deps():
             name = "io_bazel_rules_kotlin",
             urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.5.0-beta-4/rules_kotlin_release.tgz"],
             sha256 = "6cbd4e5768bdfae1598662e40272729ec9ece8b7bded8f0d2c81c8ff96dc139d",
+        )
+
+    if not native.existing_rule("upb"):
+        git_repository(
+            name = "upb",
+            remote = "https://github.com/protocolbuffers/upb.git",
+            commit = "a0bc6693b069e6d1f083c7727ea08621cea4155e",
         )

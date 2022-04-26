@@ -39,4 +39,12 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = '9.0'
   s.watchos.deployment_target = '2.0'
   s.requires_arc = false
+
+  # The unittest need the generate sources from the testing related .proto
+  # files. So to add a `test_spec`, there would also need to be something like a
+  # `script_phases` to generate them, but there would also need to be a way to
+  # ensure `protoc` had be built. Another option would be to move to a model
+  # where the needed files are always generated and checked in. Neither of these
+  # seem that great at the moment, so the tests have *not* been wired into here
+  # at this time.
 end

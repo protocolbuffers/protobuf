@@ -66,3 +66,6 @@ kotlin_repositories()
 
 load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 kt_register_toolchains()
+
+load("@upb//bazel:workspace_deps.bzl", "upb_deps")
+upb_deps()

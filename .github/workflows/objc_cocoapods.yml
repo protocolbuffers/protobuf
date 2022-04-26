@@ -1,0 +1,36 @@
+name: 'ObjC CocoaPods'
+
+on:
+  push:
+    paths:
+    - '.github/workflows/objc_cocoapods.yml'
+    - 'Protobuf.podspec'
+    - 'objectivec/**'
+    - '!objectivec/DevTools/**'
+    - '!objectivec/ProtocolBuffers_*.xcodeproj/**'
+    - '!objectivec/Tests/**'
+  pull_request:
+    paths:
+    - '.github/workflows/objc_cocoapods.yml'
+    - 'Protobuf.podspec'
+    - 'objectivec/**'
+    - '!objectivec/DevTools/**'
+    - '!objectivec/ProtocolBuffers_*.xcodeproj/**'
+    - '!objectivec/Tests/**'
+
+jobs:
+  pod-lib-lint:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        PLATFORM: ["ios", "macos", "tvos", "watchos"]
+        CONFIGURATION: ["Debug", "Release"]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Pod lib lint
+      run:  |
+        pod lib lint --verbose \
+          --configuration=${{ matrix.CONFIGURATION }} \
+          --platforms=${{ matrix.PLATFORM }} \
+          Protobuf.podspec
