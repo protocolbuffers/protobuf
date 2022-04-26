@@ -1,6 +1,7 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_java//java:defs.bzl", "java_library", "java_lite_proto_library", "java_proto_library")
 load("@rules_jvm_external//:defs.bzl", "java_export")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("//:internal.bzl", "conformance_test")
 load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
@@ -175,9 +176,6 @@ filegroup(
 
 proto_lang_toolchain(
     name = "toolchain",
-    command_line = "--java_out=$(OUT)",
-    runtime = ":core",
-    visibility = ["//visibility:public"],
     # keep this in sync w/ WELL_KNOWN_PROTO_MAP in //:BUILD
     blacklisted_protos = [
         "//:any_proto",
@@ -193,6 +191,9 @@ proto_lang_toolchain(
         "//:type_proto",
         "//:wrappers_proto",
     ],
+    command_line = "--java_out=$(OUT)",
+    runtime = ":core",
+    visibility = ["//visibility:public"],
 )
 
 proto_library(
@@ -226,6 +227,7 @@ java_library(
         "src/test/java/com/google/protobuf/TestUtil.java",
         "src/test/java/com/google/protobuf/TestUtilLite.java",
     ],
+    visibility = ["//java:__subpackages__"],
     deps = [
         ":core",
         ":generic_test_protos_java_proto",
@@ -233,7 +235,6 @@ java_library(
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
     ],
-    visibility = ["//java:__subpackages__"],
 )
 
 test_suite(
@@ -336,8 +337,8 @@ java_library(
         ":rewrite_javalite_test_util",
     ],
     visibility = [
-        "//java/lite:__pkg__",
         "//java/kotlin-lite:__pkg__",
+        "//java/lite:__pkg__",
     ],
     deps = [
         ":generic_test_protos_java_proto_lite",
@@ -410,4 +411,21 @@ junit_tests(
         "@maven//:junit_junit",
         "@maven//:org_mockito_mockito_core",
     ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "src/main/java/com/google/protobuf/*.java",
+        "src/test/java/**/*.java",
+        "src/test/proto/**/*.proto",
+    ]) + [
+        "BUILD",
+        "generate-sources-build.xml",
+        "generate-test-sources-build.xml",
+        "pom.xml",
+        "pom_template.xml",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//java:__pkg__"],
 )

@@ -6,6 +6,7 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 # For each .proto file, a proto_library target should be defined. This target
@@ -102,4 +103,35 @@ java_binary(
     srcs = ["ListPeople.java"],
     main_class = "ListPeople",
     deps = [":addressbook_java_lite_proto"],
+)
+
+# Files included in all source distributions
+pkg_files(
+    name = "dist_files",
+    srcs = [
+        "AddPerson.java",
+        "BUILD",
+        "CMakeLists.txt",
+        "ListPeople.java",
+        "Makefile",
+        "README.md",
+        "WORKSPACE",
+        "add_person.cc",
+        "add_person.dart",
+        "add_person.py",
+        "addressbook.proto",
+        "go/cmd/add_person/add_person.go",
+        "go/cmd/add_person/add_person_test.go",
+        "go/cmd/list_people/list_people.go",
+        "go/cmd/list_people/list_people_test.go",
+        "go/go.mod",
+        "go/go.sum",
+        "list_people.cc",
+        "list_people.dart",
+        "list_people.py",
+        "pubspec.yaml",
+    ],
+    prefix = "examples/",
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//visibility:public"],
 )

@@ -2,13 +2,13 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
-load("@rules_pkg//:pkg.bzl", "pkg_zip")
-load("@rules_pkg//:mappings.bzl", "pkg_attributes", "pkg_files")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 load(":protobuf_release.bzl", "package_naming")
+
 licenses(["notice"])
 
 exports_files(["LICENSE"])
@@ -353,6 +353,11 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+exports_files(
+    srcs = WELL_KNOWN_PROTOS,
+    visibility = ["//pkg:__pkg__"],
+)
+
 filegroup(
     name = "lite_well_known_protos",
     srcs = LITE_WELL_KNOWN_PROTOS,
@@ -519,70 +524,6 @@ cc_binary(
     deps = [":protoc_lib"],
 )
 
-
-################################################################################
-# Generates protoc release artifacts.
-################################################################################
-
-genrule(
-    name = "protoc_readme",
-    visibility = ["//visibility:private"],
-    cmd = """
-echo "Protocol Buffers - Google's data interchange format
-Copyright 2008 Google Inc.
-https://developers.google.com/protocol-buffers/
-This package contains a precompiled binary version of the protocol buffer
-compiler (protoc). This binary is intended for users who want to use Protocol
-Buffers in languages other than C++ but do not want to compile protoc
-themselves. To install, simply place this binary somewhere in your PATH.
-If you intend to use the included well known types then don't forget to
-copy the contents of the 'include' directory somewhere as well, for example
-into '/usr/local/include/'.
-Please refer to our official github site for more installation instructions:
-  https://github.com/protocolbuffers/protobuf" > $@
-    """,
-    outs = ["readme.txt"],
-)
-
-# plugin.proto is excluded from this list because it belongs in a nested folder (protobuf/compiler/plugin.proto)
-pkg_files(
-    name = "wkt_protos_files",
-    srcs =  [value[0] for value in WELL_KNOWN_PROTO_MAP.values() if not value[0].endswith("plugin.proto")],
-    visibility = ["//visibility:private"],
-    prefix = "include/google/protobuf",
-)
-
-pkg_files(
-    name = "compiler_plugin_protos_files",
-    srcs =  ["src/google/protobuf/compiler/plugin.proto"],
-    visibility = ["//visibility:private"],
-    prefix = "include/google/protobuf/compiler",
-)
-
-pkg_files(
-    name = "protoc_files",
-    srcs =  [":protoc"],
-    attributes = pkg_attributes(mode = "0555"),
-    visibility = ["//visibility:private"],
-    prefix = "bin/",
-)
-
-package_naming(
-    name = "protoc_pkg_naming",
-)
-
-pkg_zip(
-    name = "protoc_release",
-    package_file_name = "protoc-{version}-{platform}.zip",
-    package_variables = ":protoc_pkg_naming",
-    srcs = [
-        ":protoc_files",
-        ":wkt_protos_files",
-        ":compiler_plugin_protos_files",
-        "readme.txt",
-    ],
-)
-
 ################################################################################
 # Tests
 ################################################################################
@@ -590,7 +531,10 @@ pkg_zip(
 filegroup(
     name = "testdata",
     srcs = glob(["src/google/protobuf/testdata/**/*"]),
-    visibility = ["//:__subpackages__"],
+    visibility = [
+        "//:__subpackages__",
+        "@upb//:__subpackages__",
+    ],
 )
 
 RELATIVE_LITE_TEST_PROTOS = [
@@ -905,10 +849,10 @@ internal_gen_kt_protos(
 
 internal_gen_kt_protos(
     name = "gen_well_known_protos_kotlinlite",
+    lite = True,
     visibility = [
         "//java:__subpackages__",
     ],
-    lite = True,
     deps = [proto + "_proto" for proto in LITE_WELL_KNOWN_PROTO_MAP.keys()],
 )
 
@@ -952,13 +896,23 @@ py_library(
         [
             "python/google/protobuf/**/*.py",
         ],
-        exclude = [
+    ),
+    imports = ["python"],
+    srcs_version = "PY2AND3",
+    visibility = ["@upb//:__subpackages__"],
+)
+
+py_library(
+    name = "python_test_srcs",
+    srcs = glob(
+        [
             "python/google/protobuf/internal/*_test.py",
             "python/google/protobuf/internal/test_util.py",
         ],
     ),
     imports = ["python"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
+    visibility = ["@upb//:__subpackages__"],
 )
 
 cc_binary(
@@ -1055,9 +1009,21 @@ internal_copied_filegroup(
 COPIED_WELL_KNOWN_PROTOS = ["python/" + s[4:] for s in WELL_KNOWN_PROTOS]
 
 py_proto_library(
-    name = "protobuf_python",
+    name = "well_known_types_py_pb2",
     srcs = COPIED_WELL_KNOWN_PROTOS,
     include = "python",
+    default_runtime = "",
+    protoc = ":protoc",
+    srcs_version = "PY2AND3",
+    visibility = ["@upb//:__subpackages__"],
+)
+
+py_library(
+    name = "protobuf_python",
+    deps = [
+        ":well_known_types_py_pb2",
+        ":python_srcs",
+    ],
     data = select({
         "//conditions:default": [],
         ":use_fast_cpp_protos": [
@@ -1065,13 +1031,6 @@ py_proto_library(
             ":python/google/protobuf/pyext/_message.so",
         ],
     }),
-    default_runtime = "",
-    protoc = ":protoc",
-    py_libs = [
-        ":python_srcs",
-    ],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
 )
 
 # Copy the test proto files from src/google/protobuf to
@@ -1099,7 +1058,8 @@ py_proto_library(
     default_runtime = "",
     protoc = ":protoc",
     srcs_version = "PY2AND3",
-    deps = [":protobuf_python"],
+    deps = [":well_known_types_py_pb2"],
+    visibility = ["//visibility:public"],
 )
 
 py_proto_library(
@@ -1113,6 +1073,7 @@ py_proto_library(
     protoc = ":protoc",
     srcs_version = "PY2AND3",
     deps = [":python_common_test_protos"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
@@ -1340,17 +1301,16 @@ cc_binary(
 #     ],
 # )
 
-
 java_proto_library(
     name = "java_test_protos",
-    deps = [":generic_test_protos"],
     visibility = ["//java:__subpackages__"],
+    deps = [":generic_test_protos"],
 )
 
 java_lite_proto_library(
     name = "java_lite_test_protos",
-    deps = [":generic_test_protos"],
     visibility = ["//java:__subpackages__"],
+    deps = [":generic_test_protos"],
 )
 
 java_proto_library(
@@ -1452,57 +1412,194 @@ filegroup(
 proto_library(
     name = "kt_unittest_lite",
     srcs = [
-        "src/google/protobuf/unittest_lite.proto",
+        "src/google/protobuf/map_lite_unittest.proto",
         "src/google/protobuf/unittest_import_lite.proto",
         "src/google/protobuf/unittest_import_public_lite.proto",
-        "src/google/protobuf/map_lite_unittest.proto",
+        "src/google/protobuf/unittest_lite.proto",
     ],
     strip_import_prefix = "src",
 )
 
 internal_gen_kt_protos(
     name = "gen_kotlin_unittest_lite",
-    deps = [":kt_unittest_lite"],
     lite = True,
     visibility = ["//java:__subpackages__"],
+    deps = [":kt_unittest_lite"],
 )
 
 proto_library(
     name = "kt_unittest",
     srcs = [
+        "src/google/protobuf/map_proto2_unittest.proto",
         "src/google/protobuf/unittest.proto",
         "src/google/protobuf/unittest_import.proto",
         "src/google/protobuf/unittest_import_public.proto",
-        "src/google/protobuf/map_proto2_unittest.proto",
     ],
     strip_import_prefix = "src",
 )
 
 internal_gen_kt_protos(
     name = "gen_kotlin_unittest",
-    deps = [":kt_unittest"],
     visibility = ["//java:__subpackages__"],
+    deps = [":kt_unittest"],
 )
 
 proto_library(
     name = "kt_proto3_unittest",
     srcs = [
-        "src/google/protobuf/unittest_proto3.proto",
         "src/google/protobuf/unittest_import.proto",
         "src/google/protobuf/unittest_import_public.proto",
+        "src/google/protobuf/unittest_proto3.proto",
     ],
     strip_import_prefix = "src",
 )
 
 internal_gen_kt_protos(
     name = "gen_kotlin_proto3_unittest_lite",
-    deps = [":kt_proto3_unittest"],
     lite = True,
     visibility = ["//java:__subpackages__"],
+    deps = [":kt_proto3_unittest"],
 )
 
 internal_gen_kt_protos(
     name = "gen_kotlin_proto3_unittest",
-    deps = [":kt_proto3_unittest"],
     visibility = ["//java:__subpackages__"],
+    deps = [":kt_proto3_unittest"],
+)
+
+################################################################################
+# Packaging rules
+################################################################################
+
+# Files included in all source distributions
+pkg_files(
+    name = "common_dist_files",
+    srcs = glob([
+        "*.bzl",
+        "cmake/*.cmake",
+        "cmake/*.in",
+        "editors/*",
+
+        # Several of these files are generated by autogen.sh, so using
+        # glob() lets us ignore them if they are missing. (This is not good
+        # practice, though.)
+        "Makefile.in",
+        "aclocal.m4",
+        "ar-lib",
+        "compile",
+        "config*",
+        "depcomp",
+        "install-sh",
+        "ltmain.sh",
+        "m4/*.m4",
+        "missing",
+        "protobuf*.pc.in",
+        "test-driver",
+    ]) + [
+        "BUILD",
+        "CHANGES.txt",
+        "CMakeLists.txt",
+        "CONTRIBUTORS.txt",
+        "LICENSE",
+        "Makefile.am",
+        "README.md",
+        "WORKSPACE",
+        "autogen.sh",
+        "build_files_updated_unittest.sh",
+        "cmake/CMakeLists.txt",
+        "cmake/README.md",
+        "generate_descriptor_proto.sh",
+        "maven_install.json",
+        "update_file_lists.sh",
+        "//third_party:zlib.BUILD",
+        "//util/python:BUILD",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Conformance tests
+pkg_files(
+    name = "conformance_dist_files",
+    srcs = glob(
+        ["conformance/**/*"],
+        exclude = [
+            # The following are not in autotools dist:
+            "conformance/autoload.php",
+            "conformance/conformance_nodejs.js",
+            "conformance/conformance_test_runner.sh",
+            "conformance/failure_list_java_lite.txt",
+            "conformance/failure_list_jruby.txt",
+            "conformance/text_format_failure_list_*.txt",
+            "conformance/update_failure_list.py",
+        ],
+    ),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+# C++ runtime
+pkg_files(
+    name = "cpp_dist_files",
+    srcs = glob(
+        ["src/**/*"],
+        exclude = [
+            "src/google/protobuf/compiler/objectivec/method_dump.sh",  # not in autotools dist
+        ],
+    ),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Additional files for C#
+pkg_files(
+    name = "csharp_dist_files",
+    srcs = [
+        "global.json",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Additional files for ObjC
+pkg_files(
+    name = "objectivec_dist_files",
+    srcs = [
+        "Protobuf.podspec",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Additional files for PHP
+pkg_files(
+    name = "php_dist_files",
+    srcs = [
+        "composer.json",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Python runtime
+pkg_files(
+    name = "python_dist_files",
+    srcs = glob([
+        "python/google/**/*.proto",
+        "python/google/**/*.py",
+        "python/google/protobuf/internal/*.cc",
+        "python/google/protobuf/pyext/*.cc",
+        "python/google/protobuf/pyext/*.h",
+    ]) + [
+        "python/MANIFEST.in",
+        "python/README.md",
+        "python/google/protobuf/proto_api.h",
+        "python/google/protobuf/pyext/README",
+        "python/google/protobuf/python_protobuf.h",
+        "python/mox.py",
+        "python/release.sh",
+        "python/setup.cfg",
+        "python/setup.py",
+        "python/stubout.py",
+        "python/tox.ini",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
 )

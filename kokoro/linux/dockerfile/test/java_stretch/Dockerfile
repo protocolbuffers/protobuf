@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y \
   # Java dependencies
   maven \
   openjdk-11-jdk \
+  openjdk-17-jdk \
   # Required for the gtest build.
   python2 \
   # Python dependencies
