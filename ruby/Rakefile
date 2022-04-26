@@ -37,8 +37,8 @@ proto2_protos = %w[
   google/protobuf/compiler/plugin.proto
 ]
 
-if system('../bazel-bin/protoc --version')
-  protoc_command = '../bazel-bin/protoc'
+if ENV['PROTOC'] != "":
+  protoc_command = ENV['PROTOC']
 elsif system('../src/protoc --version')
   protoc_command = '../src/protoc'
 else
