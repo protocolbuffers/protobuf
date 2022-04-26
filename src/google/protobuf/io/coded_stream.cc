@@ -392,7 +392,7 @@ inline ::std::pair<bool, const uint8_t*> ReadVarint32FromArray(
   b = *(ptr++);
   result += b << 28;
   if (!(b & 0x80)) goto done;
-  // "result -= 0x80 << 28" is irrevelant.
+  // "result -= 0x80 << 28" is irrelevant.
 
   // If the input is larger than 32 bits, we still need to read it all
   // and discard the high-order bits.

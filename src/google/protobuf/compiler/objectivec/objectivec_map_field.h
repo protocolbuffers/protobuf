@@ -50,7 +50,7 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
   MapFieldGenerator& operator=(const MapFieldGenerator&) = delete;
 
  protected:
-  MapFieldGenerator(const FieldDescriptor* descriptor);
+  explicit MapFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~MapFieldGenerator();
 
   virtual void DetermineObjectiveCClassDefinitions(

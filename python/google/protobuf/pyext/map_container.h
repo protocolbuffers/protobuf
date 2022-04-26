@@ -35,6 +35,7 @@
 #include <Python.h>
 
 #include <cstdint>
+#include <memory>
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
