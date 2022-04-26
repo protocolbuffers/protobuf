@@ -18,7 +18,7 @@ fi
 kokoro/linux/aarch64/dockcross_helpers/run_dockcross_manylinux2014_aarch64.sh kokoro/linux/aarch64/protoc_crosscompile_aarch64.sh
 
 # the command that will be used to build and test java under an emulator
-# * IsValidUtf8Test and DecodeUtf8Test tests are being skipped because that take very long under an emulator.
+# * IsValidUtf8Test and DecodeUtf8Test tests are skipped because they take very long under an emulator.
 TEST_JAVA_COMMAND="mvn --batch-mode -DskipTests install && mvn --batch-mode -Dtest='**/*Test, !**/*IsValidUtf8Test, !**/*DecodeUtf8Test' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false surefire:test"
 
 # use an actual aarch64 docker image (with a real aarch64 java and maven) to run build & test protobuf java under an emulator
