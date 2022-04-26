@@ -256,7 +256,8 @@
 #endif
 #if __has_cpp_attribute(clang::musttail) && !defined(__arm__) && \
     !defined(_ARCH_PPC) && !defined(__wasm__) &&                 \
-    !(defined(_MSC_VER) && defined(_M_IX86))
+    !(defined(_MSC_VER) && defined(_M_IX86)) &&                  \
+    !(defined(__NDK_MAJOR__) && __NDK_MAJOR <= 24)
 #  ifndef PROTO2_OPENSOURCE
 // Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
@@ -861,6 +862,9 @@
 #undef TRUE
 #pragma push_macro("FALSE")
 #undef FALSE
+// Inconvenient macro names from usr/include/sys/syslimits.h in some macOS SDKs.
+#pragma push_macro("UID_MAX")
+#undef UID_MAX
 #endif  // __APPLE__
 
 #if defined(__clang__) || PROTOBUF_GNUC_MIN(3, 0) || defined(_MSC_VER)
@@ -872,9 +876,6 @@
 
 #if defined(__clang__)
 #pragma clang diagnostic push
-// TODO(gerbens) ideally we cleanup the code. But a cursory try shows many
-// violations. So let's ignore for now.
-#pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #elif PROTOBUF_GNUC_MIN(3, 0)
 // GCC does not allow disabling diagnostics within an expression:
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60875, so we disable this one

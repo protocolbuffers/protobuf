@@ -34,7 +34,6 @@
 #include <google/protobuf/compiler/objectivec/objectivec_message_field.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format.h>
 
 namespace google {
 namespace protobuf {

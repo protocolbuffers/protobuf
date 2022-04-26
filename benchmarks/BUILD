@@ -1,5 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 proto_library(
@@ -62,4 +63,37 @@ java_proto_library(
     deps = [
         "google_size_proto",
     ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(
+        [
+            "*",
+            "python/*.cc",
+            "util/*.cc",
+        ],
+        exclude = [
+            "__init__.py",  # not in autotools dist
+            "BUILD",
+            "go/*",
+        ],
+    ),
+    strip_prefix = strip_prefix.from_root(""),
+)
+
+# Convenience filegroup for all files that should be packaged.
+pkg_filegroup(
+    name = "all_dist_files",
+    srcs = [
+        ":dist_files",
+        "//benchmarks/cpp:dist_files",
+        # "//benchmarks/datasets:dist_files",  # not in autotools dist
+        "//benchmarks/datasets/google_message1/proto2:dist_files",
+        "//benchmarks/datasets/google_message1/proto3:dist_files",
+        "//benchmarks/datasets/google_message2:dist_files",
+        "//benchmarks/datasets/google_message3:dist_files",
+        "//benchmarks/datasets/google_message4:dist_files",
+    ],
+    visibility = ["//pkg:__pkg__"],
 )

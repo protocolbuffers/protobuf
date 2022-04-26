@@ -2070,9 +2070,9 @@ NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet,
     for (GPBUnknownFieldSet *subUnknownSet in field.groupList) {
       [result appendFormat:@"%@%d: {\n", lineIndent, fieldNumber];
       NSString *subIndent = [lineIndent stringByAppendingString:@"  "];
-      NSString *subUnknwonSetStr =
+      NSString *subUnknownSetStr =
           GPBTextFormatForUnknownFieldSet(subUnknownSet, subIndent);
-      [result appendString:subUnknwonSetStr];
+      [result appendString:subUnknownSetStr];
       [result appendFormat:@"%@}\n", lineIndent];
     }
   }

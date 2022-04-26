@@ -64,13 +64,13 @@ bool ParseDelimitedFromZeroCopyStream(MessageLite* message,
 bool ParseDelimitedFromCodedStream(MessageLite* message,
                                    io::CodedInputStream* input,
                                    bool* clean_eof) {
-  if (clean_eof != NULL) *clean_eof = false;
+  if (clean_eof != nullptr) *clean_eof = false;
   int start = input->CurrentPosition();
 
   // Read the size.
-  uint32 size;
+  uint32_t size;
   if (!input->ReadVarint32(&size)) {
-    if (clean_eof != NULL) *clean_eof = input->CurrentPosition() == start;
+    if (clean_eof != nullptr) *clean_eof = input->CurrentPosition() == start;
     return false;
   }
 
@@ -79,7 +79,7 @@ bool ParseDelimitedFromCodedStream(MessageLite* message,
   int position_after_size = input->CurrentPosition();
 
   // Tell the stream not to read beyond that size.
-  io::CodedInputStream::Limit limit = input->PushLimit(size);
+  io::CodedInputStream::Limit limit = input->PushLimit(static_cast<int>(size));
 
   // Parse the message.
   if (!message->MergeFromCodedStream(input)) return false;
@@ -105,11 +105,12 @@ bool SerializeDelimitedToCodedStream(const MessageLite& message,
   size_t size = message.ByteSizeLong();
   if (size > INT_MAX) return false;
 
-  output->WriteVarint32(size);
+  output->WriteVarint32(static_cast<uint32_t>(size));
 
   // Write the content.
-  uint8* buffer = output->GetDirectBufferForNBytesAndAdvance(size);
-  if (buffer != NULL) {
+  uint8_t* buffer =
+      output->GetDirectBufferForNBytesAndAdvance(static_cast<int>(size));
+  if (buffer != nullptr) {
     // Optimization: The message fits in one buffer, so use the faster
     // direct-to-array serialization path.
     message.SerializeWithCachedSizesToArray(buffer);

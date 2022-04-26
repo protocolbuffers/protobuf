@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 
 cc_binary(
     name = "cpp",
@@ -12,4 +13,11 @@ cc_binary(
         "//benchmarks/datasets:cc_protos",
         "@com_github_google_benchmark//:benchmark_main",
     ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = ["cpp_benchmark.cc"],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//benchmarks:__pkg__"],
 )
