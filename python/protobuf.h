@@ -34,13 +34,12 @@
 #include "python/python_api.h"
 #include "upb/table_internal.h"
 
-
 // begin:github_only
 #define PYUPB_PROTOBUF_PUBLIC_PACKAGE "google.protobuf"
 #define PYUPB_PROTOBUF_INTERNAL_PACKAGE "google.protobuf.internal"
 #define PYUPB_DESCRIPTOR_PROTO_PACKAGE "google.protobuf"
 #define PYUPB_DESCRIPTOR_MODULE "google.protobuf.descriptor_pb2"
-#define PYUPB_MODULE_NAME "google.protobuf.pyext._message"
+#define PYUPB_MODULE_NAME "google._upb._message"
 // end:github_only
 
 // begin:google_only

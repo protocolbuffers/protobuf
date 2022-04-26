@@ -26,10 +26,5 @@
 from google.protobuf.internal import unknown_fields_test
 import unittest
 
-# begin:github_only
-# Until internal test changes propagate to unknown_fields_test.py
-unknown_fields_test.UnknownFieldsAccessorsTest.testUnknownExtensions.__unittest_expecting_failure__ = True
-# end:github_only
-
 if __name__ == '__main__':
   unittest.main(module=unknown_fields_test, verbosity=2)

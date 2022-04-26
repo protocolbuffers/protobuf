@@ -34,13 +34,7 @@ licenses(["notice"])
 py_dist_module(
     name = "message_mod",
     extension = "//python:_message_binary",
-    module_name = "google.protobuf.pyext._message",
-)
-
-py_dist_module(
-    name = "api_implementation_mod",
-    extension = "//python:_api_implementation_binary",
-    module_name = "google.protobuf.internal.api_implementation",
+    module_name = "google._upb._message",
 )
 
 py_proto_library(
@@ -114,7 +108,6 @@ py_wheel(
     version = PROTOBUF_VERSION,
     deps = [
         ":message_mod",
-        ":api_implementation_mod",
         ":well_known_proto_py_pb2",
         #TODO(https://github.com/protocolbuffers/upb/issues/503): currently
         # this includes the unit tests.  We should filter these out so we are

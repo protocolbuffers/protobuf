@@ -213,16 +213,3 @@ py_extension(
         "//upb/util:required_fields",
     ],
 )
-
-py_extension(
-    name = "_api_implementation",
-    srcs = [
-        "api_implementation.c",
-        "python_api.h",
-    ],
-    copts = UPB_DEFAULT_COPTS + select(LIMITED_API_FLAG_SELECT) + [
-        # The Python API requires patterns that are ISO C incompatible, like
-        # casts between function pointers and object pointers.
-        "-Wno-pedantic",
-    ],
-)

@@ -15,16 +15,8 @@ def upb_deps():
     maybe(
         git_repository,
         name = "com_google_protobuf",
-        commit = "654c25352e831b991f668a2edd97ce6ea4e1f4c3",
+        commit = "ec79d0d328c7e6cea15cc27fbeb9b018ca289590",
         remote = "https://github.com/protocolbuffers/protobuf.git",
-        patches = [
-            "//bazel:protobuf.patch",
-        ],
-        patch_cmds = [
-            "rm python/google/protobuf/__init__.py",
-            "rm python/google/protobuf/pyext/__init__.py",
-            "rm python/google/protobuf/internal/__init__.py",
-        ],
     )
 
     rules_python_version = "740825b7f74930c62f44af95c9a4c1bd428d2c53"  # Latest @ 2021-06-23

@@ -23,7 +23,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-load("//bazel:pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
+load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
 
 licenses(["notice"])
 

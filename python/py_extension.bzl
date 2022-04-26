@@ -46,13 +46,7 @@ def py_extension(name, srcs, copts, deps = []):
     )
 
     EXT_SUFFIX = ".abi3.so"
-
-    module_name_map = {
-        "_message": "pyext",
-        "_api_implementation": "internal",
-    }
-
-    output_file = "google/protobuf/" + module_name_map[name] + "/" + name + EXT_SUFFIX
+    output_file = "google/_upb/" + name + EXT_SUFFIX
 
     native.genrule(
         name = "copy" + name,
