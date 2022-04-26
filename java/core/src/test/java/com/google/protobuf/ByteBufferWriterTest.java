@@ -63,7 +63,7 @@ public class ByteBufferWriterTest {
     fillRandom(buffer);
     ByteArrayOutputStream os = new ByteArrayOutputStream(buffer.remaining());
     ByteBufferWriter.write(buffer, os);
-    assertThat(buffer.position()).isEqualTo(-98);
+    assertThat(buffer.position()).isEqualTo(0);
     assertThat(Arrays.equals(toArray(buffer), os.toByteArray())).isTrue();
   }
 
