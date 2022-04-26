@@ -26,11 +26,6 @@
 from google.protobuf.internal import unknown_fields_test
 import unittest
 
-# begin:google_only
-# # Accesses deprecated internal accessor.
-# unknown_fields_test.UnknownFieldsAccessorsTest.testCheckUnknownFieldValue.__unittest_expecting_failure__ = True
-# end:google_only
-
 # begin:github_only
 # Until internal test changes propagate to unknown_fields_test.py
 unknown_fields_test.UnknownFieldsAccessorsTest.testUnknownExtensions.__unittest_expecting_failure__ = True
