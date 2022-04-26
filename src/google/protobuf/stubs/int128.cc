@@ -57,14 +57,14 @@ const uint128_pod kuint128max = {uint64_t{0xFFFFFFFFFFFFFFFFu},
       (pos) |= (sh);                          \
     }                                         \
   } while (0)
-static inline int Fls64(uint64 n) {
+static inline int Fls64(uint64_t n) {
   GOOGLE_DCHECK_NE(0, n);
   int pos = 0;
-  STEP(uint64, n, pos, 0x20);
-  uint32 n32 = n;
-  STEP(uint32, n32, pos, 0x10);
-  STEP(uint32, n32, pos, 0x08);
-  STEP(uint32, n32, pos, 0x04);
+  STEP(uint64_t, n, pos, 0x20);
+  uint32_t n32 = n;
+  STEP(uint32_t, n32, pos, 0x10);
+  STEP(uint32_t, n32, pos, 0x08);
+  STEP(uint32_t, n32, pos, 0x04);
   return pos + ((uint64_t{0x3333333322221100u} >> (n32 << 2)) & 0x3);
 }
 #undef STEP
@@ -72,7 +72,7 @@ static inline int Fls64(uint64 n) {
 // Like Fls64() above, but returns the 0-based position of the last set bit
 // (i.e., most significant bit) in the given uint128. The argument may not be 0.
 static inline int Fls128(uint128 n) {
-  if (uint64 hi = Uint128High64(n)) {
+  if (uint64_t hi = Uint128High64(n)) {
     return Fls64(hi) + 64;
   }
   return Fls64(Uint128Low64(n));
@@ -132,16 +132,16 @@ std::ostream& operator<<(std::ostream& o, const uint128& b) {
   switch (flags & std::ios::basefield) {
     case std::ios::hex:
       div =
-          static_cast<uint64>(uint64_t{0x1000000000000000u});  // 16^15
+          static_cast<uint64_t>(uint64_t{0x1000000000000000u});  // 16^15
       div_base_log = 15;
       break;
     case std::ios::oct:
-      div = static_cast<uint64>(
+      div = static_cast<uint64_t>(
           uint64_t{01000000000000000000000u});  // 8^21
       div_base_log = 21;
       break;
     default:  // std::ios::dec
-      div = static_cast<uint64>(
+      div = static_cast<uint64_t>(
           uint64_t{10000000000000000000u});  // 10^19
       div_base_log = 19;
       break;

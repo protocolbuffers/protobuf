@@ -355,20 +355,20 @@ PROTOBUF_EXPORT std::string CHexEscape(const std::string& src);
 //    platforms, so using these is safer, from the point of view of
 //    overflow behavior, than using the standard libc functions.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT int32 strto32_adaptor(const char* nptr, char** endptr,
-                                      int base);
-PROTOBUF_EXPORT uint32 strtou32_adaptor(const char* nptr, char** endptr,
+PROTOBUF_EXPORT int32_t strto32_adaptor(const char* nptr, char** endptr,
                                         int base);
+PROTOBUF_EXPORT uint32_t strtou32_adaptor(const char* nptr, char** endptr,
+                                          int base);
 
-inline int32 strto32(const char *nptr, char **endptr, int base) {
-  if (sizeof(int32) == sizeof(long))
+inline int32_t strto32(const char *nptr, char **endptr, int base) {
+  if (sizeof(int32_t) == sizeof(long))
     return strtol(nptr, endptr, base);
   else
     return strto32_adaptor(nptr, endptr, base);
 }
 
-inline uint32 strtou32(const char *nptr, char **endptr, int base) {
-  if (sizeof(uint32) == sizeof(unsigned long))
+inline uint32_t strtou32(const char *nptr, char **endptr, int base) {
+  if (sizeof(uint32_t) == sizeof(unsigned long))
     return strtoul(nptr, endptr, base);
   else
     return strtou32_adaptor(nptr, endptr, base);
@@ -376,15 +376,15 @@ inline uint32 strtou32(const char *nptr, char **endptr, int base) {
 
 // For now, long long is 64-bit on all the platforms we care about, so these
 // functions can simply pass the call to strto[u]ll.
-inline int64 strto64(const char *nptr, char **endptr, int base) {
-  static_assert(sizeof(int64) == sizeof(long long),
-                "sizeof_int64_is_not_sizeof_long_long");
+inline int64_t strto64(const char *nptr, char **endptr, int base) {
+  static_assert(sizeof(int64_t) == sizeof(long long),
+                "sizeof int64_t is not sizeof long long");
   return strtoll(nptr, endptr, base);
 }
 
-inline uint64 strtou64(const char *nptr, char **endptr, int base) {
-  static_assert(sizeof(uint64) == sizeof(unsigned long long),
-                "sizeof_uint64_is_not_sizeof_long_long");
+inline uint64_t strtou64(const char *nptr, char **endptr, int base) {
+  static_assert(sizeof(uint64_t) == sizeof(unsigned long long),
+                "sizeof uint64_t is not sizeof unsigned long long");
   return strtoull(nptr, endptr, base);
 }
 
@@ -399,33 +399,33 @@ inline uint64 strtou64(const char *nptr, char **endptr, int base) {
 // ----------------------------------------------------------------------
 PROTOBUF_EXPORT bool safe_strtob(StringPiece str, bool* value);
 
-PROTOBUF_EXPORT bool safe_strto32(const std::string& str, int32* value);
-PROTOBUF_EXPORT bool safe_strtou32(const std::string& str, uint32* value);
-inline bool safe_strto32(const char* str, int32* value) {
+PROTOBUF_EXPORT bool safe_strto32(const std::string& str, int32_t* value);
+PROTOBUF_EXPORT bool safe_strtou32(const std::string& str, uint32_t* value);
+inline bool safe_strto32(const char* str, int32_t* value) {
   return safe_strto32(std::string(str), value);
 }
-inline bool safe_strto32(StringPiece str, int32* value) {
+inline bool safe_strto32(StringPiece str, int32_t* value) {
   return safe_strto32(str.ToString(), value);
 }
-inline bool safe_strtou32(const char* str, uint32* value) {
+inline bool safe_strtou32(const char* str, uint32_t* value) {
   return safe_strtou32(std::string(str), value);
 }
-inline bool safe_strtou32(StringPiece str, uint32* value) {
+inline bool safe_strtou32(StringPiece str, uint32_t* value) {
   return safe_strtou32(str.ToString(), value);
 }
 
-PROTOBUF_EXPORT bool safe_strto64(const std::string& str, int64* value);
-PROTOBUF_EXPORT bool safe_strtou64(const std::string& str, uint64* value);
-inline bool safe_strto64(const char* str, int64* value) {
+PROTOBUF_EXPORT bool safe_strto64(const std::string& str, int64_t* value);
+PROTOBUF_EXPORT bool safe_strtou64(const std::string& str, uint64_t* value);
+inline bool safe_strto64(const char* str, int64_t* value) {
   return safe_strto64(std::string(str), value);
 }
-inline bool safe_strto64(StringPiece str, int64* value) {
+inline bool safe_strto64(StringPiece str, int64_t* value) {
   return safe_strto64(str.ToString(), value);
 }
-inline bool safe_strtou64(const char* str, uint64* value) {
+inline bool safe_strtou64(const char* str, uint64_t* value) {
   return safe_strtou64(std::string(str), value);
 }
-inline bool safe_strtou64(StringPiece str, uint64* value) {
+inline bool safe_strtou64(StringPiece str, uint64_t* value) {
   return safe_strtou64(str.ToString(), value);
 }
 
@@ -470,13 +470,13 @@ inline bool safe_strtod(StringPiece str, double* value) {
 // DoubleToBuffer() and FloatToBuffer().
 static const int kFastToBufferSize = 32;
 
-PROTOBUF_EXPORT char* FastInt32ToBuffer(int32 i, char* buffer);
-PROTOBUF_EXPORT char* FastInt64ToBuffer(int64 i, char* buffer);
-char* FastUInt32ToBuffer(uint32 i, char* buffer);  // inline below
-char* FastUInt64ToBuffer(uint64 i, char* buffer);  // inline below
+PROTOBUF_EXPORT char* FastInt32ToBuffer(int32_t i, char* buffer);
+PROTOBUF_EXPORT char* FastInt64ToBuffer(int64_t i, char* buffer);
+char* FastUInt32ToBuffer(uint32_t i, char* buffer);  // inline below
+char* FastUInt64ToBuffer(uint64_t i, char* buffer);  // inline below
 PROTOBUF_EXPORT char* FastHexToBuffer(int i, char* buffer);
-PROTOBUF_EXPORT char* FastHex64ToBuffer(uint64 i, char* buffer);
-PROTOBUF_EXPORT char* FastHex32ToBuffer(uint32 i, char* buffer);
+PROTOBUF_EXPORT char* FastHex64ToBuffer(uint64_t i, char* buffer);
+PROTOBUF_EXPORT char* FastHex32ToBuffer(uint32_t i, char* buffer);
 
 // at least 22 bytes long
 inline char* FastIntToBuffer(int i, char* buffer) {
@@ -512,17 +512,17 @@ inline char* FastULongToBuffer(unsigned long i, char* buffer) {
 // terminating the string).
 // ----------------------------------------------------------------------
 
-PROTOBUF_EXPORT char* FastInt32ToBufferLeft(int32 i, char* buffer);
-PROTOBUF_EXPORT char* FastUInt32ToBufferLeft(uint32 i, char* buffer);
-PROTOBUF_EXPORT char* FastInt64ToBufferLeft(int64 i, char* buffer);
-PROTOBUF_EXPORT char* FastUInt64ToBufferLeft(uint64 i, char* buffer);
+PROTOBUF_EXPORT char* FastInt32ToBufferLeft(int32_t i, char* buffer);
+PROTOBUF_EXPORT char* FastUInt32ToBufferLeft(uint32_t i, char* buffer);
+PROTOBUF_EXPORT char* FastInt64ToBufferLeft(int64_t i, char* buffer);
+PROTOBUF_EXPORT char* FastUInt64ToBufferLeft(uint64_t i, char* buffer);
 
 // Just define these in terms of the above.
-inline char* FastUInt32ToBuffer(uint32 i, char* buffer) {
+inline char* FastUInt32ToBuffer(uint32_t i, char* buffer) {
   FastUInt32ToBufferLeft(i, buffer);
   return buffer;
 }
-inline char* FastUInt64ToBuffer(uint64 i, char* buffer) {
+inline char* FastUInt64ToBuffer(uint64_t i, char* buffer) {
   FastUInt64ToBufferLeft(i, buffer);
   return buffer;
 }
@@ -595,7 +595,7 @@ enum PadSpec {
 };
 
 struct Hex {
-  uint64 value;
+  uint64_t value;
   enum PadSpec spec;
   template <class Int>
   explicit Hex(Int v, PadSpec s = NO_PAD)
@@ -607,10 +607,10 @@ struct Hex {
         sizeof(v) == 1 || sizeof(v) == 2 || sizeof(v) == 4 || sizeof(v) == 8,
         "Unknown integer type");
 #endif
-    value = sizeof(v) == 1 ? static_cast<uint8>(v)
-          : sizeof(v) == 2 ? static_cast<uint16>(v)
-          : sizeof(v) == 4 ? static_cast<uint32>(v)
-          : static_cast<uint64>(v);
+    value = sizeof(v) == 1 ? static_cast<uint8_t>(v)
+          : sizeof(v) == 2 ? static_cast<uint16_t>(v)
+          : sizeof(v) == 4 ? static_cast<uint32_t>(v)
+          : static_cast<uint64_t>(v);
   }
 };
 
@@ -789,7 +789,7 @@ std::string Join(const Range& components, const char* delim) {
 // ToHex()
 //    Return a lower-case hex string representation of the given integer.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT std::string ToHex(uint64 num);
+PROTOBUF_EXPORT std::string ToHex(uint64_t num);
 
 // ----------------------------------------------------------------------
 // GlobalReplaceSubstring()
@@ -863,7 +863,7 @@ PROTOBUF_EXPORT void Base64Escape(const unsigned char* src, int szsrc,
 PROTOBUF_EXPORT void WebSafeBase64Escape(const unsigned char* src, int szsrc,
                                          std::string* dest, bool do_padding);
 
-inline bool IsValidCodePoint(uint32 code_point) {
+inline bool IsValidCodePoint(uint32_t code_point) {
   return code_point < 0xD800 ||
          (code_point >= 0xE000 && code_point <= 0x10FFFF);
 }
@@ -875,7 +875,7 @@ static const int UTFmax = 4;
 //  in any external dependencies. The output buffer must be as least 4 bytes
 //  large.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT int EncodeAsUTF8Char(uint32 code_point, char* output);
+PROTOBUF_EXPORT int EncodeAsUTF8Char(uint32_t code_point, char* output);
 
 // ----------------------------------------------------------------------
 // UTF8FirstLetterNumBytes()
