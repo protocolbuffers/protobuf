@@ -95,7 +95,7 @@ class FieldGenerator {
   std::string raw_field_name() const { return variable("raw_field_name"); }
 
  protected:
-  FieldGenerator(const FieldDescriptor* descriptor);
+  explicit FieldGenerator(const FieldDescriptor* descriptor);
 
   virtual void FinishInitialization(void);
   bool WantsHasProperty(void) const;
@@ -119,7 +119,7 @@ class SingleFieldGenerator : public FieldGenerator {
   virtual bool RuntimeUsesHasBit(void) const override;
 
  protected:
-  SingleFieldGenerator(const FieldDescriptor* descriptor);
+  explicit SingleFieldGenerator(const FieldDescriptor* descriptor);
 };
 
 // Subclass with common support for when the field ends up as an ObjC Object.
@@ -134,7 +134,7 @@ class ObjCObjFieldGenerator : public SingleFieldGenerator {
   virtual void GeneratePropertyDeclaration(io::Printer* printer) const override;
 
  protected:
-  ObjCObjFieldGenerator(const FieldDescriptor* descriptor);
+  explicit ObjCObjFieldGenerator(const FieldDescriptor* descriptor);
 };
 
 class RepeatedFieldGenerator : public ObjCObjFieldGenerator {
@@ -152,14 +152,14 @@ class RepeatedFieldGenerator : public ObjCObjFieldGenerator {
   virtual bool RuntimeUsesHasBit(void) const override;
 
  protected:
-  RepeatedFieldGenerator(const FieldDescriptor* descriptor);
+  explicit RepeatedFieldGenerator(const FieldDescriptor* descriptor);
   virtual void FinishInitialization(void) override;
 };
 
 // Convenience class which constructs FieldGenerators for a Descriptor.
 class FieldGeneratorMap {
  public:
-  FieldGeneratorMap(const Descriptor* descriptor);
+  explicit FieldGeneratorMap(const Descriptor* descriptor);
   ~FieldGeneratorMap();
 
   FieldGeneratorMap(const FieldGeneratorMap&) = delete;
