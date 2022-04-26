@@ -20,7 +20,7 @@ def _github_archive(repo, commit, **kwargs):
     http_archive(
         urls = [repo + "/archive/" + commit + ".zip"],
         strip_prefix = repo_name + "-" + commit,
-        **kwargs,
+        **kwargs
     )
 
 def protobuf_deps():
@@ -40,9 +40,9 @@ def protobuf_deps():
         # Abseil LTS from November 2021
         _github_archive(
             name = "com_google_absl",
-            sha256 = "b4e20d9e752a75c10636675691b1e9c2698e0764cb404987d0ffa77223041c19",
             repo = "https://github.com/abseil/abseil-cpp",
             commit = "215105818dfde3174fe799600bb0f3cae233d0bf",
+            sha256 = "b4e20d9e752a75c10636675691b1e9c2698e0764cb404987d0ffa77223041c19",
         )
 
     if not native.existing_rule("zlib"):
@@ -59,7 +59,7 @@ def protobuf_deps():
             name = "rules_cc",
             repo = "https://github.com/bazelbuild/rules_cc",
             commit = "818289e5613731ae410efb54218a4077fb9dbb03",
-            sha256 = "0adbd6f567291ad526e82c765e15aed33cea5e256eeba129f1501142c2c56610"
+            sha256 = "0adbd6f567291ad526e82c765e15aed33cea5e256eeba129f1501142c2c56610",
         )
 
     if not native.existing_rule("rules_java"):
@@ -73,9 +73,9 @@ def protobuf_deps():
     if not native.existing_rule("rules_proto"):
         _github_archive(
             name = "rules_proto",
-            sha256 = "a4382f78723af788f0bc19fd4c8411f44ffe0a72723670a34692ffad56ada3ac",
             repo = "https://github.com/bazelbuild/rules_proto",
-            commit = "f7a30f6f80006b591fa7c437fe5a951eb10bcbcf"
+            commit = "f7a30f6f80006b591fa7c437fe5a951eb10bcbcf",
+            sha256 = "a4382f78723af788f0bc19fd4c8411f44ffe0a72723670a34692ffad56ada3ac",
         )
 
     if not native.existing_rule("rules_python"):
@@ -89,9 +89,9 @@ def protobuf_deps():
     if not native.existing_rule("rules_jvm_external"):
         _github_archive(
             name = "rules_jvm_external",
-            sha256 = "744bd7436f63af7e9872948773b8b106016dc164acb3960b4963f86754532ee7",
             repo = "https://github.com/bazelbuild/rules_jvm_external",
             commit = "906875b0d5eaaf61a8ca2c9c3835bde6f435d011",
+            sha256 = "744bd7436f63af7e9872948773b8b106016dc164acb3960b4963f86754532ee7",
         )
 
     if not native.existing_rule("rules_pkg"):
