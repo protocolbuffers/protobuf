@@ -410,7 +410,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   // Spawns a child parsing context that inherits key properties. New context
   // inherits the following:
   // --depth_, data_, check_required_fields_, lazy_parse_mode_
-  // The spanwed context always disables aliasing (different input).
+  // The spawned context always disables aliasing (different input).
   template <typename... T>
   ParseContext Spawn(const char** start, T&&... args) {
     ParseContext spawned(depth_, false, start, std::forward<T>(args)...);
