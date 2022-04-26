@@ -42,7 +42,7 @@ class PrimitiveFieldGenerator : public SingleFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  PrimitiveFieldGenerator(const FieldDescriptor* descriptor);
+  explicit PrimitiveFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~PrimitiveFieldGenerator();
 
   PrimitiveFieldGenerator(const PrimitiveFieldGenerator&) = delete;
@@ -58,7 +58,7 @@ class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  PrimitiveObjFieldGenerator(const FieldDescriptor* descriptor);
+  explicit PrimitiveObjFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~PrimitiveObjFieldGenerator();
 
   PrimitiveObjFieldGenerator(const PrimitiveObjFieldGenerator&) = delete;
@@ -70,7 +70,7 @@ class RepeatedPrimitiveFieldGenerator : public RepeatedFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor);
+  explicit RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~RepeatedPrimitiveFieldGenerator();
 
   RepeatedPrimitiveFieldGenerator(const RepeatedPrimitiveFieldGenerator&) =

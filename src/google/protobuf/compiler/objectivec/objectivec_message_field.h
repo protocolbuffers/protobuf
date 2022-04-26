@@ -44,7 +44,7 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  MessageFieldGenerator(const FieldDescriptor* descriptor);
+  explicit MessageFieldGenerator(const FieldDescriptor* descriptor);
 
   MessageFieldGenerator(const MessageFieldGenerator&) = delete;
   MessageFieldGenerator& operator=(const MessageFieldGenerator&) = delete;
@@ -63,7 +63,7 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor);
+  explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~RepeatedMessageFieldGenerator();
 
   RepeatedMessageFieldGenerator(const RepeatedMessageFieldGenerator&) = delete;
