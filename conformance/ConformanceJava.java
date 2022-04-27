@@ -229,6 +229,7 @@ class ConformanceJava {
   }
 
   private Conformance.ConformanceResponse doTest(Conformance.ConformanceRequest request) {
+    AbstractMessage testMessage;
     String messageType = request.getMessageType();
     boolean isProto3 =
         messageType.equals("protobuf_test_messages.proto3.TestAllTypesProto3");
@@ -242,7 +243,7 @@ class ConformanceJava {
             try {
               ExtensionRegistry extensions = ExtensionRegistry.newInstance();
               TestMessagesProto3.registerAllExtensions(extensions);
-              AbstractMessage testMessage =
+              testMessage =
                   parseBinary(
                       request.getProtobufPayload(), TestAllTypesProto3.parser(), extensions);
             } catch (InvalidProtocolBufferException e) {
@@ -254,7 +255,7 @@ class ConformanceJava {
             try {
               ExtensionRegistry extensions = ExtensionRegistry.newInstance();
               TestMessagesProto2.registerAllExtensions(extensions);
-              AbstractMessage testMessage =
+              testMessage =
                   parseBinary(
                       request.getProtobufPayload(), TestAllTypesProto2.parser(), extensions);
             } catch (InvalidProtocolBufferException e) {
@@ -285,7 +286,7 @@ class ConformanceJava {
               TestMessagesProto2.TestAllTypesProto2.Builder builder =
                   TestMessagesProto2.TestAllTypesProto2.newBuilder();
               parser.merge(request.getJsonPayload(), builder);
-              AbstractMessage testMessage = builder.build();
+              testMessage = builder.build();
             } else {
               throw new IllegalArgumentException(
                   "Protobuf request has unexpected payload type: " + messageType);
@@ -304,7 +305,7 @@ class ConformanceJava {
               TestMessagesProto3.TestAllTypesProto3.Builder builder =
                   TestMessagesProto3.TestAllTypesProto3.newBuilder();
               TextFormat.merge(request.getTextPayload(), builder);
-              AbstractMessage testMessage = builder.build();
+              testMessage = builder.build();
             } catch (TextFormat.ParseException e) {
               return Conformance.ConformanceResponse.newBuilder()
                   .setParseError(e.getMessage())
@@ -315,7 +316,7 @@ class ConformanceJava {
               TestMessagesProto2.TestAllTypesProto2.Builder builder =
                   TestMessagesProto2.TestAllTypesProto2.newBuilder();
               TextFormat.merge(request.getTextPayload(), builder);
-              AbstractMessage testMessage = builder.build();
+              testMessage = builder.build();
             } catch (TextFormat.ParseException e) {
               return Conformance.ConformanceResponse.newBuilder()
                   .setParseError(e.getMessage())
