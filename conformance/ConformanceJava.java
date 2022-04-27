@@ -281,7 +281,7 @@ class ConformanceJava {
               TestMessagesProto3.TestAllTypesProto3.Builder builder =
                   TestMessagesProto3.TestAllTypesProto3.newBuilder();
               parser.merge(request.getJsonPayload(), builder);
-              AbstractMessage testMessage = builder.build();
+              testMessage = builder.build();
             } else if (isProto2) {
               TestMessagesProto2.TestAllTypesProto2.Builder builder =
                   TestMessagesProto2.TestAllTypesProto2.newBuilder();
