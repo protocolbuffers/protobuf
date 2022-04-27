@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Build and runs tests for the protobuf project. We use this script to run
+# Build and run tests for the protobuf project. We use this script to run
 # tests on kokoro (Ubuntu and MacOS). It can run locally as well but you
-# will need to make sure the required compilers/tools are available.
+# need to make sure the required compilers/tools are available.
 
 internal_build_cpp() {
   if [ -f src/protoc ]; then
