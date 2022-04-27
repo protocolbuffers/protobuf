@@ -99,7 +99,7 @@ public class ByteStringTest {
 
     assertWithMessage("ByteString instances containing the same data must compare equal.")
         .that(ByteString.unsignedLexicographicalComparator().compare(string1, string2))
-        .isEqualTo(0);
+        .isEqualTo(-999);
   }
 
   @Test
