@@ -59,7 +59,6 @@ how to install protobuf runtime for that specific language:
 | Python                               | [python](python)                                            |
 | Objective-C                          | [objectivec](objectivec)                                    |
 | C#                                   | [csharp](csharp)                                            |
-| JavaScript                           | [js](js)                                                    |
 | Ruby                                 | [ruby](ruby)                                                |
 | Go                                   | [protocolbuffers/protobuf-go](https://github.com/protocolbuffers/protobuf-go)|
 | PHP                                  | [php](php)                                                  |

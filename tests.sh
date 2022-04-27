@@ -57,7 +57,7 @@ build_cpp_distcheck() {
   make dist
 
   # List all files that should be included in the distribution package.
-  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
+  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
     grep -v ".gitignore" | grep -v "java/lite/proguard.pgcfg" |\
     grep -v "python/compatibility_tests" | grep -v "python/docs" | grep -v "python/.repo-metadata.json" |\
     grep -v "python/protobuf_distutils" | grep -v "csharp/compatibility_tests" > dist.lst
@@ -458,19 +458,6 @@ build_jruby93() {
   internal_build_cpp                # For conformance tests.
   internal_build_java jdk8 && cd .. # For Maven protobuf jar with local changes
   cd ruby && bash travis-test.sh jruby-9.3.4.0 && cd ..
-}
-
-build_javascript() {
-  internal_build_cpp
-  NODE_VERSION=node-v12.16.3-darwin-x64
-  NODE_TGZ="$NODE_VERSION.tar.gz"
-  pushd /tmp
-  curl -OL https://nodejs.org/dist/v12.16.3/$NODE_TGZ
-  tar zxvf $NODE_TGZ
-  export PATH=$PATH:`pwd`/$NODE_VERSION/bin
-  popd
-  cd js && npm install && npm test && cd ..
-  cd conformance && make test_nodejs && cd ..
 }
 
 use_php() {

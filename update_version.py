@@ -288,14 +288,6 @@ def UpdateJava():
       line))
 
 
-def UpdateJavaScript():
-  RewriteTextFile('js/package.json',
-    lambda line : re.sub(
-      r'^  "version": ".*",$',
-      '  "version": "%s",' % GetFullVersion(rc_suffix = '-rc.'),
-      line))
-
-
 def UpdateMakefile():
   RewriteTextFile('src/Makefile.am',
     lambda line : re.sub(
@@ -405,7 +397,6 @@ UpdateConfigure()
 UpdateCsharp()
 UpdateCpp()
 UpdateJava()
-UpdateJavaScript()
 UpdateMakefile()
 UpdateObjectiveC()
 UpdatePhp()
