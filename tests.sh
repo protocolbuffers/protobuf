@@ -600,6 +600,7 @@ Usage: $0 { cpp |
             java_jdk7 |
             java_oracle7 |
             java_jdk8 |
+            java_jdk11 |
             java_jdk17 |
             java_linkage_monitor |
             objectivec_ios |
