@@ -31,7 +31,7 @@ build_cpp() {
     cd benchmarks && make cpp-benchmark && cd ..
   else
     echo ""
-    echo "WARNING: Skipping validation of the bench marking code, cmake isn't installed."
+    echo "WARNING: Skipping validation of the benchmarking code, cmake isn't installed."
     echo ""
   fi
 }
