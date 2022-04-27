@@ -176,6 +176,7 @@ if (protobuf_WITH_ZLIB)
   find_package(ZLIB)
   if (ZLIB_FOUND)
     set(HAVE_ZLIB 1)
+    add_definitions(-DHAVE_ZLIB)
     # FindZLIB module define ZLIB_INCLUDE_DIRS variable
     # Set ZLIB_INCLUDE_DIRECTORIES for compatible
     set(ZLIB_INCLUDE_DIRECTORIES ${ZLIB_INCLUDE_DIRECTORIES} ${ZLIB_INCLUDE_DIRS})
@@ -192,10 +193,6 @@ if (protobuf_WITH_ZLIB)
     set(ZLIB_LIBRARIES)
   endif (ZLIB_FOUND)
 endif (protobuf_WITH_ZLIB)
-
-if (HAVE_ZLIB)
-  add_definitions(-DHAVE_ZLIB)
-endif (HAVE_ZLIB)
 
 # We need to link with libatomic on systems that do not have builtin atomics, or
 # don't have builtin support for 8 byte atomics
@@ -289,22 +286,25 @@ if (MSVC)
     set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> ${rc_flags} <DEFINES> /fo<OBJECT> <SOURCE>")
   endif()
 
+  # Generate the version.rc file used elsewhere.
   configure_file(${protobuf_SOURCE_DIR}/cmake/version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc @ONLY)
+  set(protobuf_version_rc_file ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+
+  # Add the "lib" prefix for generated .lib outputs.
+  set(LIB_PREFIX lib)
+else (MSVC)
+  # No version.rc file.
+  set(protobuf_version_rc_file)
+
+  # When building with "make", "lib" prefix will be added automatically by
+  # the build tool.
+  set(LIB_PREFIX)
 endif (MSVC)
 
 include_directories(
   ${ZLIB_INCLUDE_DIRECTORIES}
   ${protobuf_BINARY_DIR}
   ${protobuf_SOURCE_DIR}/src)
-
-if (MSVC)
-  # Add the "lib" prefix for generated .lib outputs.
-  set(LIB_PREFIX lib)
-else (MSVC)
-  # When building with "make", "lib" prefix will be added automatically by
-  # the build tool.
-  set(LIB_PREFIX)
-endif (MSVC)
 
 if (protobuf_UNICODE)
   add_definitions(-DUNICODE -D_UNICODE)
