@@ -172,10 +172,13 @@ endif()
 
 
 set(_protobuf_FIND_ZLIB)
+# Explicitly set these to empty (override NOT_FOUND) so cmake doesn't
+# complain when we use them later.
+set(ZLIB_INCLUDE_DIRECTORIES)
+set(ZLIB_LIBRARIES)
 if (protobuf_WITH_ZLIB)
   find_package(ZLIB)
   if (ZLIB_FOUND)
-    set(HAVE_ZLIB 1)
     add_definitions(-DHAVE_ZLIB)
     # FindZLIB module define ZLIB_INCLUDE_DIRS variable
     # Set ZLIB_INCLUDE_DIRECTORIES for compatible
@@ -185,12 +188,6 @@ if (protobuf_WITH_ZLIB)
       set(ZLIB_LIBRARIES ZLIB::ZLIB)
       set(_protobuf_FIND_ZLIB "if(NOT ZLIB_FOUND)\n  find_package(ZLIB)\nendif()")
     endif (TARGET ZLIB::ZLIB)
-  else (ZLIB_FOUND)
-    set(HAVE_ZLIB 0)
-    # Explicitly set these to empty (override NOT_FOUND) so cmake doesn't
-    # complain when we use them later.
-    set(ZLIB_INCLUDE_DIRECTORIES)
-    set(ZLIB_LIBRARIES)
   endif (ZLIB_FOUND)
 endif (protobuf_WITH_ZLIB)
 
