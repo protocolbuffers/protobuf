@@ -229,11 +229,11 @@ class ConformanceJava {
   }
 
   private Conformance.ConformanceResponse doTest(Conformance.ConformanceRequest request) {
-    com.google.protobuf.AbstractMessage testMessage;
+    String messageType = request.getMessageType();
     boolean isProto3 =
-        request.getMessageType().equals("protobuf_test_messages.proto3.TestAllTypesProto3");
+        messageType.equals("protobuf_test_messages.proto3.TestAllTypesProto3");
     boolean isProto2 =
-        request.getMessageType().equals("protobuf_test_messages.proto2.TestAllTypesProto2");
+        messageType.equals("protobuf_test_messages.proto2.TestAllTypesProto2");
 
     switch (request.getPayloadCase()) {
       case PROTOBUF_PAYLOAD:
@@ -242,7 +242,7 @@ class ConformanceJava {
             try {
               ExtensionRegistry extensions = ExtensionRegistry.newInstance();
               TestMessagesProto3.registerAllExtensions(extensions);
-              testMessage =
+              AbstractMessage testMessage =
                   parseBinary(
                       request.getProtobufPayload(), TestAllTypesProto3.parser(), extensions);
             } catch (InvalidProtocolBufferException e) {
@@ -254,7 +254,7 @@ class ConformanceJava {
             try {
               ExtensionRegistry extensions = ExtensionRegistry.newInstance();
               TestMessagesProto2.registerAllExtensions(extensions);
-              testMessage =
+              AbstractMessage testMessage =
                   parseBinary(
                       request.getProtobufPayload(), TestAllTypesProto2.parser(), extensions);
             } catch (InvalidProtocolBufferException e) {
@@ -263,7 +263,8 @@ class ConformanceJava {
                   .build();
             }
           } else {
-            throw new RuntimeException("Protobuf request doesn't have specific payload type.");
+            throw new IllegalArgumentException(
+                "Protobuf request has unexpected payload type: " + messageType);
           }
           break;
         }
@@ -279,14 +280,15 @@ class ConformanceJava {
               TestMessagesProto3.TestAllTypesProto3.Builder builder =
                   TestMessagesProto3.TestAllTypesProto3.newBuilder();
               parser.merge(request.getJsonPayload(), builder);
-              testMessage = builder.build();
+              AbstractMessage testMessage = builder.build();
             } else if (isProto2) {
               TestMessagesProto2.TestAllTypesProto2.Builder builder =
                   TestMessagesProto2.TestAllTypesProto2.newBuilder();
               parser.merge(request.getJsonPayload(), builder);
-              testMessage = builder.build();
+              AbstractMessage testMessage = builder.build();
             } else {
-              throw new RuntimeException("Protobuf request doesn't have specific payload type.");
+              throw new IllegalArgumentException(
+                  "Protobuf request has unexpected payload type: " + messageType);
             }
           } catch (InvalidProtocolBufferException e) {
             return Conformance.ConformanceResponse.newBuilder()
@@ -302,7 +304,7 @@ class ConformanceJava {
               TestMessagesProto3.TestAllTypesProto3.Builder builder =
                   TestMessagesProto3.TestAllTypesProto3.newBuilder();
               TextFormat.merge(request.getTextPayload(), builder);
-              testMessage = builder.build();
+              AbstractMessage testMessage = builder.build();
             } catch (TextFormat.ParseException e) {
               return Conformance.ConformanceResponse.newBuilder()
                   .setParseError(e.getMessage())
@@ -313,31 +315,32 @@ class ConformanceJava {
               TestMessagesProto2.TestAllTypesProto2.Builder builder =
                   TestMessagesProto2.TestAllTypesProto2.newBuilder();
               TextFormat.merge(request.getTextPayload(), builder);
-              testMessage = builder.build();
+              AbstractMessage testMessage = builder.build();
             } catch (TextFormat.ParseException e) {
               return Conformance.ConformanceResponse.newBuilder()
                   .setParseError(e.getMessage())
                   .build();
             }
           } else {
-            throw new RuntimeException("Protobuf request doesn't have specific payload type.");
+            throw new IllegalArgumentException(
+               "Protobuf request has unexpected payload type: " + messageType);
           }
           break;
         }
       case PAYLOAD_NOT_SET:
         {
-          throw new RuntimeException("Request didn't have payload.");
+          throw new IllegalArgumentException("Request didn't have payload.");
         }
 
       default:
         {
-          throw new RuntimeException("Unexpected payload case.");
+          throw new IllegalArgumentException("Unexpected payload case.");
         }
     }
 
     switch (request.getRequestedOutputFormat()) {
       case UNSPECIFIED:
-        throw new RuntimeException("Unspecified output format.");
+        throw new IllegalArgumentException("Unspecified output format.");
 
       case PROTOBUF:
         {
@@ -366,7 +369,7 @@ class ConformanceJava {
 
       default:
         {
-          throw new RuntimeException("Unexpected request output.");
+          throw new IllegalArgumentException("Unexpected request output.");
         }
     }
   }
