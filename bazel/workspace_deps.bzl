@@ -1,8 +1,15 @@
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("//bazel:python_downloads.bzl", "python_nuget_package", "python_source_archive")
 load("//bazel:system_python.bzl", "system_python")
+
+def _github_archive(repo, commit, **kwargs):
+    repo_name = repo.split("/")[-1]
+    http_archive(
+        urls = [repo + "/archive/" + commit + ".zip"],
+        strip_prefix = repo_name + "-" + commit,
+        **kwargs
+    )
 
 def upb_deps():
     maybe(
@@ -14,10 +21,10 @@ def upb_deps():
     )
 
     maybe(
-        git_repository,
+        _github_archive,
         name = "com_google_protobuf",
+        repo = "https://github.com/protocolbuffers/protobuf",
         commit = "ec79d0d328c7e6cea15cc27fbeb9b018ca289590",
-        remote = "https://github.com/protocolbuffers/protobuf.git",
     )
 
     rules_python_version = "740825b7f74930c62f44af95c9a4c1bd428d2c53"  # Latest @ 2021-06-23
