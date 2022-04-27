@@ -629,7 +629,7 @@ Usage: $0 { cpp |
             php7.0_mac |
             php7.3_mac |
             dist_install |
-            benchmark)
+            benchmark }
 "
   exit 1
 fi
