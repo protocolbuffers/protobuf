@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Build and runs tests for the protobuf project. We use this script to run
+# Build and run tests for the protobuf project. We use this script to run
 # tests on kokoro (Ubuntu and MacOS). It can run locally as well but you
-# will need to make sure the required compilers/tools are available.
+# need to make sure the required compilers/tools are available.
 
 internal_build_cpp() {
   if [ -f src/protoc ]; then
@@ -31,7 +31,7 @@ build_cpp() {
     cd benchmarks && make cpp-benchmark && cd ..
   else
     echo ""
-    echo "WARNING: Skipping validation of the bench marking code, cmake isn't installed."
+    echo "WARNING: Skipping validation of the benchmarking code, cmake isn't installed."
     echo ""
   fi
 }
@@ -600,6 +600,7 @@ Usage: $0 { cpp |
             java_jdk7 |
             java_oracle7 |
             java_jdk8 |
+            java_jdk11 |
             java_jdk17 |
             java_linkage_monitor |
             objectivec_ios |
@@ -628,7 +629,7 @@ Usage: $0 { cpp |
             php7.0_mac |
             php7.3_mac |
             dist_install |
-            benchmark)
+            benchmark }
 "
   exit 1
 fi
