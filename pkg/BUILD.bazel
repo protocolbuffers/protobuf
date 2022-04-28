@@ -6,7 +6,7 @@ load(
     "pkg_files",
 )
 load("//:protobuf_release.bzl", "package_naming")
-load(":build_systems.bzl", "gen_file_lists")
+load(":build_systems.bzl", "gen_automake_file_lists", "gen_file_lists")
 load(":cc_dist_library.bzl", "cc_dist_library")
 
 gen_file_lists(
@@ -16,6 +16,15 @@ gen_file_lists(
     src_libs = {
         "//:protobuf": "libprotobuf",
         "//:protobuf_lite": "libprotobuf_lite",
+    },
+)
+
+gen_automake_file_lists(
+    name = "gen_automake_dist_lists",
+    testonly = 1,
+    out = "dist_files.am",
+    src_libs = {
+        "//:common_dist_files": "common_dist",
     },
 )
 
@@ -317,6 +326,29 @@ pkg_zip(
     srcs = [":dist_all"],
     package_file_name = "protobuf-all-{version}.zip",
     package_variables = ":protobuf_pkg_naming",
+)
+
+################################################################################
+# Generated file lists for build systems
+################################################################################
+
+gen_file_lists(
+    name = "gen_src_file_lists",
+    testonly = 1,
+    out_stem = "src_file_lists",
+    src_libs = {
+        "//:protobuf": "libprotobuf",
+        "//:protobuf_lite": "libprotobuf_lite",
+    },
+)
+
+gen_automake_file_lists(
+    name = "gen_automake_extra_dist_lists",
+    testonly = 1,
+    out = "extra_dist_file_lists.am",
+    src_libs = {
+        ":dist_common": "dist_common",
+    },
 )
 
 ################################################################################
