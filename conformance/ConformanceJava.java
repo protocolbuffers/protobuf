@@ -229,11 +229,12 @@ class ConformanceJava {
   }
 
   private Conformance.ConformanceResponse doTest(Conformance.ConformanceRequest request) {
-    com.google.protobuf.AbstractMessage testMessage;
+    AbstractMessage testMessage;
+    String messageType = request.getMessageType();
     boolean isProto3 =
-        request.getMessageType().equals("protobuf_test_messages.proto3.TestAllTypesProto3");
+        messageType.equals("protobuf_test_messages.proto3.TestAllTypesProto3");
     boolean isProto2 =
-        request.getMessageType().equals("protobuf_test_messages.proto2.TestAllTypesProto2");
+        messageType.equals("protobuf_test_messages.proto2.TestAllTypesProto2");
 
     switch (request.getPayloadCase()) {
       case PROTOBUF_PAYLOAD:
@@ -263,7 +264,8 @@ class ConformanceJava {
                   .build();
             }
           } else {
-            throw new RuntimeException("Protobuf request doesn't have specific payload type.");
+            throw new IllegalArgumentException(
+                "Protobuf request has unexpected payload type: " + messageType);
           }
           break;
         }
@@ -286,7 +288,8 @@ class ConformanceJava {
               parser.merge(request.getJsonPayload(), builder);
               testMessage = builder.build();
             } else {
-              throw new RuntimeException("Protobuf request doesn't have specific payload type.");
+              throw new IllegalArgumentException(
+                  "Protobuf request has unexpected payload type: " + messageType);
             }
           } catch (InvalidProtocolBufferException e) {
             return Conformance.ConformanceResponse.newBuilder()
@@ -320,24 +323,25 @@ class ConformanceJava {
                   .build();
             }
           } else {
-            throw new RuntimeException("Protobuf request doesn't have specific payload type.");
+            throw new IllegalArgumentException(
+               "Protobuf request has unexpected payload type: " + messageType);
           }
           break;
         }
       case PAYLOAD_NOT_SET:
         {
-          throw new RuntimeException("Request didn't have payload.");
+          throw new IllegalArgumentException("Request didn't have payload.");
         }
 
       default:
         {
-          throw new RuntimeException("Unexpected payload case.");
+          throw new IllegalArgumentException("Unexpected payload case.");
         }
     }
 
     switch (request.getRequestedOutputFormat()) {
       case UNSPECIFIED:
-        throw new RuntimeException("Unspecified output format.");
+        throw new IllegalArgumentException("Unspecified output format.");
 
       case PROTOBUF:
         {
@@ -366,7 +370,7 @@ class ConformanceJava {
 
       default:
         {
-          throw new RuntimeException("Unexpected request output.");
+          throw new IllegalArgumentException("Unexpected request output.");
         }
     }
   }
