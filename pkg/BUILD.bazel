@@ -6,7 +6,18 @@ load(
     "pkg_files",
 )
 load("//:protobuf_release.bzl", "package_naming")
+load(":build_systems.bzl", "gen_file_lists")
 load(":cc_dist_library.bzl", "cc_dist_library")
+
+gen_file_lists(
+    name = "gen_file_lists",
+    testonly = 1,
+    out_stem = "file_lists",
+    src_libs = {
+        "//:protobuf": "libprotobuf",
+        "//:protobuf_lite": "libprotobuf_lite",
+    },
+)
 
 package_naming(
     name = "protobuf_pkg_naming",
