@@ -485,8 +485,6 @@ cc_library(
         "src/google/protobuf/compiler/java/shared_code_generator.cc",
         "src/google/protobuf/compiler/java/string_field.cc",
         "src/google/protobuf/compiler/java/string_field_lite.cc",
-        "src/google/protobuf/compiler/js/js_generator.cc",
-        "src/google/protobuf/compiler/js/well_known_types_embed.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_extension.cc",

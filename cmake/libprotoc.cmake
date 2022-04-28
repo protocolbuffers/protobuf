@@ -61,8 +61,6 @@ set(libprotoc_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/shared_code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/string_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/string_field_lite.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/js/js_generator.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/js/well_known_types_embed.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_extension.cc
@@ -100,7 +98,6 @@ set(libprotoc_headers
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/js/js_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.h
