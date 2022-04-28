@@ -22,6 +22,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\arenaz_sampler.h" inc
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\code_generator.h" include\google\protobuf\compiler\code_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\command_line_interface.h" include\google\protobuf\compiler\command_line_interface.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\file.h" include\google\protobuf\compiler\cpp\file.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\cpp_generator.h" include\google\protobuf\compiler\cpp\cpp_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\generator.h" include\google\protobuf\compiler\cpp\generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\helpers.h" include\google\protobuf\compiler\cpp\helpers.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\names.h" include\google\protobuf\compiler\cpp\names.h
@@ -31,6 +32,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\cshar
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_options.h" include\google\protobuf\compiler\csharp\csharp_options.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\importer.h" include\google\protobuf\compiler\importer.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\generator.h" include\google\protobuf\compiler\java\generator.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_generator.h" include\google\protobuf\compiler\java\java_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\kotlin_generator.h" include\google\protobuf\compiler\java\kotlin_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\names.h" include\google\protobuf\compiler\java\names.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\objectivec\objectivec_generator.h" include\google\protobuf\compiler\objectivec\objectivec_generator.h
@@ -41,6 +43,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.h" in
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.pb.h" include\google\protobuf\compiler\plugin.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\python\generator.h" include\google\protobuf\compiler\python\generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\python\pyi_generator.h" include\google\protobuf\compiler\python\pyi_generator.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\python\python_generator.h" include\google\protobuf\compiler\python\python_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\ruby\ruby_generator.h" include\google\protobuf\compiler\ruby\ruby_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\descriptor.h" include\google\protobuf\descriptor.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\descriptor.pb.h" include\google\protobuf\descriptor.pb.h
