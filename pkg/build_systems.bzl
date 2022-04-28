@@ -368,7 +368,7 @@ For proto_library, the following are generated:
 # This file contains lists of sources based on Bazel rules. It should
 # be included from a hand-written CMake file that defines targets.
 #
-# Chagnes to this file will be overwritten based on Bazel definitions.
+# Changes to this file will be overwritten based on Bazel definitions.
 
 if(${CMAKE_VERSION} VERSION_GREATER 3.10 OR ${CMAKE_VERSION} VERSION_EQUAL 3.10)
   include_guard()
@@ -434,7 +434,7 @@ For proto_library, the following are generated:
 # This file contains lists of sources based on Bazel rules. It should
 # be included from a hand-written Makefile.am that defines targets.
 #
-# Chagnes to this file will be overwritten based on Bazel definitions.
+# Changes to this file will be overwritten based on Bazel definitions.
 
 """,
         ),
