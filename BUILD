@@ -269,6 +269,25 @@ upb_proto_reflection_library(
 )
 
 cc_library(
+    name = "collections",
+    srcs = [
+        "upb/collections.c",
+    ],
+    hdrs = [
+        "upb/collections.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":descriptor_upb_proto",
+        ":mini_table",
+        ":port",
+        ":table",
+        ":upb",
+    ],
+)
+
+cc_library(
     name = "reflection",
     srcs = [
         "upb/def.c",
@@ -284,6 +303,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":collections",
         ":descriptor_upb_proto",
         ":mini_table",
         ":port",
@@ -600,6 +620,7 @@ upb_amalgamation(
         "upb.h",
     ],
     libs = [
+        ":collections",
         ":descriptor_upb_proto",
         ":fastdecode",
         ":mini_table",
@@ -624,6 +645,7 @@ upb_amalgamation(
         "php-upb.h",
     ],
     libs = [
+        ":collections",
         ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
         ":fastdecode",
@@ -651,6 +673,7 @@ upb_amalgamation(
         "ruby-upb.h",
     ],
     libs = [
+        ":collections",
         ":descriptor_upb_proto",
         ":fastdecode",
         ":json",
