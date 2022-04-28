@@ -172,14 +172,10 @@ endif()
 
 
 set(_protobuf_FIND_ZLIB)
-# Explicitly set these to empty (override NOT_FOUND) so cmake doesn't
-# complain when we use them later.
-set(ZLIB_INCLUDE_DIRECTORIES)
-set(ZLIB_LIBRARIES)
 if (protobuf_WITH_ZLIB)
   find_package(ZLIB)
   if (ZLIB_FOUND)
-    add_definitions(-DHAVE_ZLIB)
+    set(HAVE_ZLIB 1)
     # FindZLIB module define ZLIB_INCLUDE_DIRS variable
     # Set ZLIB_INCLUDE_DIRECTORIES for compatible
     set(ZLIB_INCLUDE_DIRECTORIES ${ZLIB_INCLUDE_DIRECTORIES} ${ZLIB_INCLUDE_DIRS})
@@ -188,8 +184,18 @@ if (protobuf_WITH_ZLIB)
       set(ZLIB_LIBRARIES ZLIB::ZLIB)
       set(_protobuf_FIND_ZLIB "if(NOT ZLIB_FOUND)\n  find_package(ZLIB)\nendif()")
     endif (TARGET ZLIB::ZLIB)
+  else (ZLIB_FOUND)
+    set(HAVE_ZLIB 0)
+    # Explicitly set these to empty (override NOT_FOUND) so cmake doesn't
+    # complain when we use them later.
+    set(ZLIB_INCLUDE_DIRECTORIES)
+    set(ZLIB_LIBRARIES)
   endif (ZLIB_FOUND)
 endif (protobuf_WITH_ZLIB)
+
+if (HAVE_ZLIB)
+  add_definitions(-DHAVE_ZLIB)
+endif (HAVE_ZLIB)
 
 # We need to link with libatomic on systems that do not have builtin atomics, or
 # don't have builtin support for 8 byte atomics
