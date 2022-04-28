@@ -329,12 +329,12 @@ gen_automake_file_lists(
     out = "extra_dist_file_lists.am",
     src_libs = {
         ":dist_common": "dist_common",
-        ":dist_csharp": "dist_csharp",
-        ":dist_objectivec": "dist_objectivec",
-        ":dist_php": "dist_php",
-        ":dist_python": "dist_python",
-        ":dist_ruby": "dist_ruby",
-        ":dist_js": "dist_js",
+        ":csharp_srcs": "dist_csharp",
+        ":objectivec_srcs": "dist_objectivec",
+        ":php_srcs": "dist_php",
+        ":python_srcs": "dist_python",
+        ":ruby_srcs": "dist_ruby",
+        ":js_srcs": "dist_js",
     },
 )
 
