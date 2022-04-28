@@ -107,14 +107,8 @@ set(libprotoc_headers
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.h
 )
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-set(libprotoc_rc_files
-  ${CMAKE_CURRENT_BINARY_DIR}/version.rc
-)
-endif()
-
 add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
-  ${libprotoc_files} ${libprotoc_headers} ${libprotoc_rc_files})
+  ${libprotoc_files} ${libprotoc_headers} ${protobuf_version_rc_file})
 if(protobuf_HAVE_LD_VERSION_SCRIPT)
   if(${CMAKE_VERSION} VERSION_GREATER 3.13 OR ${CMAKE_VERSION} VERSION_EQUAL 3.13)
     target_link_options(libprotoc PRIVATE -Wl,--version-script=${protobuf_SOURCE_DIR}/src/libprotoc.map)

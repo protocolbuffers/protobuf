@@ -289,22 +289,25 @@ if (MSVC)
     set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> ${rc_flags} <DEFINES> /fo<OBJECT> <SOURCE>")
   endif()
 
+  # Generate the version.rc file used elsewhere.
   configure_file(${protobuf_SOURCE_DIR}/cmake/version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc @ONLY)
+  set(protobuf_version_rc_file ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+
+  # Add the "lib" prefix for generated .lib outputs.
+  set(LIB_PREFIX lib)
+else (MSVC)
+  # No version.rc file.
+  set(protobuf_version_rc_file)
+
+  # When building with "make", "lib" prefix will be added automatically by
+  # the build tool.
+  set(LIB_PREFIX)
 endif (MSVC)
 
 include_directories(
   ${ZLIB_INCLUDE_DIRECTORIES}
   ${protobuf_BINARY_DIR}
   ${protobuf_SOURCE_DIR}/src)
-
-if (MSVC)
-  # Add the "lib" prefix for generated .lib outputs.
-  set(LIB_PREFIX lib)
-else (MSVC)
-  # When building with "make", "lib" prefix will be added automatically by
-  # the build tool.
-  set(LIB_PREFIX)
-endif (MSVC)
 
 if (protobuf_UNICODE)
   add_definitions(-DUNICODE -D_UNICODE)

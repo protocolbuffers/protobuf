@@ -245,6 +245,8 @@ if(protobuf_TEST_XML_OUTDIR)
     string(APPEND protobuf_TEST_XML_OUTDIR "/")
   endif()
   set(protobuf_GTEST_ARGS "--gtest_output=xml:${protobuf_TEST_XML_OUTDIR}")
+else()
+  set(protobuf_GTEST_ARGS)
 endif()
 
 add_executable(tests ${tests_files})

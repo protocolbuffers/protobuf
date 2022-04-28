@@ -99,14 +99,8 @@ set(libprotobuf_includes
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.h
 )
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-set(libprotobuf_rc_files
-  ${CMAKE_CURRENT_BINARY_DIR}/version.rc
-)
-endif()
-
 add_library(libprotobuf ${protobuf_SHARED_OR_STATIC}
-  ${libprotobuf_lite_files} ${libprotobuf_files} ${libprotobuf_includes} ${libprotobuf_rc_files})
+  ${libprotobuf_lite_files} ${libprotobuf_files} ${libprotobuf_includes} ${protobuf_version_rc_file})
 if(protobuf_HAVE_LD_VERSION_SCRIPT)
   if(${CMAKE_VERSION} VERSION_GREATER 3.13 OR ${CMAKE_VERSION} VERSION_EQUAL 3.13)
     target_link_options(libprotobuf PRIVATE -Wl,--version-script=${protobuf_SOURCE_DIR}/src/libprotobuf.map)
