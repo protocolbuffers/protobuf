@@ -287,7 +287,7 @@ build_java_jdk11() {
 
 build_java_jdk17() {
   use_java jdk17
-  build_java_with_conformance_tests
+  build_java
 }
 
 build_java_linkage_monitor() {
