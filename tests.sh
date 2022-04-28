@@ -282,7 +282,7 @@ build_java_jdk8() {
 
 build_java_jdk11() {
   use_java jdk11
-  build_java_with_conformance_tests
+  build_java
 }
 
 build_java_jdk17() {
