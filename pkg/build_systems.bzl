@@ -180,10 +180,16 @@ Output is CcFileList and/or ProtoFileList. Example:
 
 def _create_file_list_impl(fragment_generator):
     # `fragment_generator` is a function like:
-    #     def fn(varname: str, source_prefix: str, path_strings: [str]) -> str
+    #     def fn(originating_rule: Label,
+    #            varname: str,
+    #            source_prefix: str,
+    #            path_strings: [str]) -> str
     #
     # It returns a string that defines `varname` to `path_strings`, each
     # prepended with `source_prefix`.
+    #
+    # When dealing with `File` objects, the `short_path` is used to strip
+    # the output prefix for generated files.
 
     def _impl(ctx):
         out = ctx.outputs.out
@@ -194,14 +200,17 @@ def _create_file_list_impl(fragment_generator):
                 cc_file_list = srcrule[CcFileList]
                 fragments.extend([
                     fragment_generator(
+                        srcrule.label,
                         libname + "_srcs",
                         ctx.attr.source_prefix,
-                        [f.path for f in cc_file_list.srcs],
+                        [f.short_path for f in cc_file_list.srcs],
                     ),
                     fragment_generator(
+                        srcrule.label,
                         libname + "_hdrs",
                         ctx.attr.source_prefix,
-                        [f.path for f in (cc_file_list.hdrs + cc_file_list.textual_hdrs)],
+                        [f.short_path for f in (cc_file_list.hdrs +
+                                                cc_file_list.textual_hdrs)],
                     ),
                 ])
 
@@ -209,16 +218,19 @@ def _create_file_list_impl(fragment_generator):
                 proto_file_list = srcrule[ProtoFileList]
                 fragments.extend([
                     fragment_generator(
+                        srcrule.label,
                         libname + "_proto_srcs",
                         ctx.attr.source_prefix,
-                        [f.path for f in proto_file_list.proto_srcs],
+                        [f.short_path for f in proto_file_list.proto_srcs],
                     ),
                     fragment_generator(
+                        srcrule.label,
                         libname + "_srcs",
                         ctx.attr.source_prefix,
                         proto_file_list.srcs,
                     ),
                     fragment_generator(
+                        srcrule.label,
                         libname + "_hdrs",
                         ctx.attr.source_prefix,
                         proto_file_list.hdrs,
@@ -230,7 +242,6 @@ def _create_file_list_impl(fragment_generator):
             if DefaultInfo in srcrule:
                 files.update(
                     {
-                        # short_path strips the prefix for generated files.
                         f.short_path: 1
                         for f in srcrule[DefaultInfo].files.to_list()
                     },
@@ -248,6 +259,7 @@ def _create_file_list_impl(fragment_generator):
             if files:
                 fragments.append(
                     fragment_generator(
+                        srcrule.label,
                         libname + "_files",
                         ctx.attr.source_prefix,
                         sorted(files.keys()),
@@ -267,25 +279,32 @@ def _create_file_list_impl(fragment_generator):
 # (note that `_header` is also required)
 _source_list_common_attrs = {
     "out": attr.output(
-        doc = "The generated filename.",
+        doc = (
+            "The generated filename. This should usually have a build " +
+            "system-specific extension, like `out.am` or `out.cmake`."
+        ),
         mandatory = True,
     ),
     "src_libs": attr.label_keyed_string_dict(
         doc = (
-            "A dict, {target: libname} of libraries to include. Targets can " +
-            "be C++ rules (like `cc_library` or `cc_test`), `proto_library` " +
-            "rules, files, `filegroup` rules, `pkg_files` rules, or " +
-            "`pkg_filegroup` rules. The libname is used to construct the " +
-            "variable name in the generated file. (For `pkg_files` and " +
-            "`pkg_filegroup` rules, the destination path is used.)"
+            "A dict, {target: libname} of libraries to include. " +
+            "Targets can be C++ rules (like `cc_library` or `cc_test`), " +
+            "`proto_library` rules, files, `filegroup` rules, `pkg_files` " +
+            "rules, or `pkg_filegroup` rules. " +
+            "The libname is a string, and used to construct the variable " +
+            "name in the `out` file holding the target's sources. " +
+            "For generated files, the output root (like `bazel-bin/`) is not " +
+            "included. " +
+            "For `pkg_files` and `pkg_filegroup` rules, the destination path " +
+            "is used."
         ),
         mandatory = True,
         providers = [
             [CcFileList],
-            [ProtoFileList],
             [DefaultInfo],
             [PackageFilegroupInfo],
             [PackageFilesInfo],
+            [ProtoFileList],
         ],
         aspects = [file_list_aspect],
     ),
@@ -298,22 +317,25 @@ _source_list_common_attrs = {
 # CMake source lists generation
 ################################################################################
 
-def _cmake_var_fragment(varname, prefix, entries):
+def _cmake_var_fragment(owner, varname, prefix, entries):
     """Returns a single `set(varname ...)` fragment (CMake syntax).
 
     Args:
-      varname: the var name to set.
-      prefix: prefix to prepend to each of `entries`.
-      entries: the entries in the list.
+      owner: Label, the rule that owns these srcs.
+      varname: str, the var name to set.
+      prefix: str, prefix to prepend to each of `entries`.
+      entries: [str], the entries in the list.
 
     Returns:
       A string.
     """
     return (
+        "# {owner}\n" +
         "set({varname}\n" +
         "{entries}\n" +
         ")\n"
     ).format(
+        owner = owner,
         varname = varname,
         entries = "\n".join(["  %s%s" % (prefix, f) for f in entries]),
     )
@@ -345,6 +367,8 @@ For proto_library, the following are generated:
 #
 # This file contains lists of sources based on Bazel rules. It should
 # be included from a hand-written CMake file that defines targets.
+#
+# Chagnes to this file will be overwritten based on Bazel definitions.
 
 if(${CMAKE_VERSION} VERSION_GREATER 3.10 OR ${CMAKE_VERSION} VERSION_EQUAL 3.10)
   include_guard()
@@ -359,21 +383,27 @@ endif()
 # Automake source lists generation
 ################################################################################
 
-def _automake_var_fragment(varname, prefix, entries):
-    """Returns a single variable assignment fragment.
+def _automake_var_fragment(owner, varname, prefix, entries):
+    """Returns a single variable assignment fragment (Automake syntax).
 
     Args:
-      varname: the var name to set.
-      prefix: prefix to prepend to each of `entries`.
-      entries: the entries in the list.
+      owner: Label, the rule that owns these srcs.
+      varname: str, the var name to set.
+      prefix: str, prefix to prepend to each of `entries`.
+      entries: [str], the entries in the list.
 
     Returns:
       A string.
     """
     fragment = (
-        "%s = \\\n" +
-        "%s"
-    ) % (varname, " \\\n".join(["  %s" % (prefix + f) for f in entries]))
+        "# {owner}\n" +
+        "{varname} = \\\n" +
+        "{entries}"
+    ).format(
+        owner = owner,
+        varname = varname,
+        entries = " \\\n".join(["  %s%s" % (prefix, f) for f in entries]),
+    )
     return fragment.rstrip("\\ ") + "\n"
 
 gen_automake_file_lists = rule(
@@ -403,6 +433,8 @@ For proto_library, the following are generated:
 #
 # This file contains lists of sources based on Bazel rules. It should
 # be included from a hand-written Makefile.am that defines targets.
+#
+# Chagnes to this file will be overwritten based on Bazel definitions.
 
 """,
         ),

@@ -9,25 +9,6 @@ load("//:protobuf_release.bzl", "package_naming")
 load(":build_systems.bzl", "gen_automake_file_lists", "gen_file_lists")
 load(":cc_dist_library.bzl", "cc_dist_library")
 
-gen_file_lists(
-    name = "gen_file_lists",
-    testonly = 1,
-    out_stem = "file_lists",
-    src_libs = {
-        "//:protobuf": "libprotobuf",
-        "//:protobuf_lite": "libprotobuf_lite",
-    },
-)
-
-gen_automake_file_lists(
-    name = "gen_automake_dist_lists",
-    testonly = 1,
-    out = "dist_files.am",
-    src_libs = {
-        "//:common_dist_files": "common_dist",
-    },
-)
-
 package_naming(
     name = "protobuf_pkg_naming",
 )
