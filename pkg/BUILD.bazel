@@ -318,6 +318,7 @@ gen_file_lists(
     testonly = 1,
     out_stem = "src_file_lists",
     src_libs = {
+        # source rule: name in generated file
         "//:protobuf": "libprotobuf",
         "//:protoc_lib": "libprotoc",
         "//:protobuf_lite": "libprotobuf_lite",
@@ -329,6 +330,7 @@ gen_automake_file_lists(
     testonly = 1,
     out = "extra_dist_file_lists.am",
     src_libs = {
+        # source rule: name in generated file
         "//:common_dist_files": "dist_common",
         "//:conformance_dist_files": "dist_conformance",
         "//benchmarks:all_dist_files": "dist_benchmark",
