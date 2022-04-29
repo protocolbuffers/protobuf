@@ -239,7 +239,10 @@ def _create_file_list_impl(fragment_generator):
 
             files = {}
 
-            if DefaultInfo in srcrule:
+            if DefaultInfo in srcrule and CcInfo not in srcrule:
+                # This could be an individual file or filegroup.
+                # We explicitly ignore rules with CcInfo, since their
+                # output artifacts are libraries or binaries.
                 files.update(
                     {
                         f.short_path: 1
