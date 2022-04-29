@@ -801,8 +801,10 @@ cc_test(
         "src/google/protobuf/**/*",
         # Files for csharp_bootstrap_unittest.cc.
         "conformance/**/*",
+    ]) + glob([
+        # Files for csharp_bootstrap_unittest.cc.
         "csharp/src/**/*",
-    ]),
+    ], allow_empty=True),
     includes = [
         "src/",
     ],
@@ -1493,7 +1495,7 @@ pkg_files(
         "missing",
         "protobuf*.pc.in",
         "test-driver",
-    ]) + [
+    ], allow_empty = True) + [
         "BUILD",
         "CHANGES.txt",
         "CMakeLists.txt",
