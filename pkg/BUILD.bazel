@@ -319,6 +319,7 @@ gen_file_lists(
     out_stem = "src_file_lists",
     src_libs = {
         "//:protobuf": "libprotobuf",
+        "//:protoc_lib": "libprotoc",
         "//:protobuf_lite": "libprotobuf_lite",
     },
 )
