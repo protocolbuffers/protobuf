@@ -28,7 +28,6 @@
 #include "upb/mini_table_accessors.h"
 
 #include "upb/mini_table.h"
-#include "upb/mini_table_accessors_internal.h"
 #include "upb/msg_internal.h"
 
 // Must be last.
@@ -57,11 +56,6 @@ size_t upb_MiniTable_Field_GetSize(const upb_MiniTable_Field* f) {
       8,                      /* kUpb_FieldType_SInt64 */
   };
   return upb_IsRepeatedOrMap(f) ? sizeof(void*) : sizes[f->descriptortype];
-}
-
-UPB_INLINE upb_Message* upb_MiniTable_GetMessage(
-    const upb_Message* msg, const upb_MiniTable_Field* field) {
-  return UPB_PTR_AT(msg, field->offset, upb_Message);
 }
 
 bool upb_MiniTable_HasField(const upb_Message* msg,

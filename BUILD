@@ -160,6 +160,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//video/youtube/utils/elements/javascript/client/proto/upb/native:__pkg__"],
     deps = [
+        ":collections",
         ":mini_table",
         ":mini_table_internal",
         ":port",
@@ -184,6 +185,7 @@ cc_test(
     name = "mini_table_accessors_test",
     srcs = ["upb/mini_table_accessors_test.cc"],
     deps = [
+        ":collections",
         ":mini_table",
         ":mini_table_accessors",
         ":mini_table_internal",
