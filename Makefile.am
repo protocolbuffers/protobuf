@@ -11,7 +11,7 @@ SUBDIRS = . src
 # Always include third_party directories in distributions.
 #
 # Note that distribution artifacts will be produced by Bazel in the future.
-# See pkg/BUILD for overall definitions.
+# See pkg/BUILD.bazel for overall definitions.
 DIST_SUBDIRS = src conformance benchmarks third_party/googletest
 
 # Build gmock before we build protobuf tests.  We don't add gmock to SUBDIRS
@@ -51,7 +51,7 @@ clean-local:
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = protobuf.pc protobuf-lite.pc
 
-# Note: please keep this in sync with the dist_files rule in csharp/BUILD.
+# Note: please keep this in sync with the dist_files rule in csharp/BUILD.bazel.
 csharp_EXTRA_DIST=                                                           \
   global.json                                                                \
   csharp/.editorconfig                                                       \
@@ -283,11 +283,11 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/UnknownFieldSet.cs                              \
   csharp/src/Google.Protobuf/UnsafeByteOperations.cs
 
-# Note: please keep this in sync with the dist_files rules under java/.../BUILD.
+# Note: please keep this in sync with the dist_files rules under java/.../BUILD.bazel.
 java_EXTRA_DIST=                                                                   \
   java/README.md                                                                   \
   java/bom/pom.xml                                                                 \
-  java/core/BUILD                                                                  \
+  java/core/BUILD.bazel                                                            \
   java/core/generate-sources-build.xml                                             \
   java/core/generate-test-sources-build.xml                                        \
   java/core/pom.xml                                                                \
@@ -543,9 +543,9 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/test_check_utf8_size.proto          \
   java/core/src/test/proto/com/google/protobuf/test_custom_options.proto           \
   java/core/src/test/proto/com/google/protobuf/wrappers_test.proto                 \
-  java/internal/BUILD                                                              \
+  java/internal/BUILD.bazel                                                        \
   java/internal/testing.bzl                                                        \
-  java/kotlin/BUILD                                                                \
+  java/kotlin/BUILD.bazel                                                          \
   java/kotlin/generate-sources-build.xml                                           \
   java/kotlin/generate-test-sources-build.xml                                      \
   java/kotlin/pom.xml                                                              \
@@ -572,7 +572,7 @@ java_EXTRA_DIST=                                                                
   java/kotlin/src/test/proto/com/google/protobuf/evil_names_proto3.proto           \
   java/kotlin/src/test/proto/com/google/protobuf/example_extensible_message.proto  \
   java/kotlin/src/test/proto/com/google/protobuf/multiple_files_proto3.proto       \
-  java/kotlin-lite/BUILD                                                           \
+  java/kotlin-lite/BUILD.bazel                                                     \
   java/kotlin-lite/generate-sources-build.xml                                      \
   java/kotlin-lite/generate-test-sources-build.xml                                 \
   java/kotlin-lite/lite.awk                                                        \
@@ -583,7 +583,7 @@ java_EXTRA_DIST=                                                                
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/ExtendableMessageLiteExtensionsTest.kt\
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/Proto2LiteTest.kt           \
   java/lite.md                                                                     \
-  java/lite/BUILD                                                                  \
+  java/lite/BUILD.bazel                                                            \
   java/lite/generate-sources-build.xml                                             \
   java/lite/generate-test-sources-build.xml                                        \
   java/lite/lite.awk                                                               \
@@ -591,9 +591,9 @@ java_EXTRA_DIST=                                                                
   java/lite/pom_template.xml                                                       \
   java/lite/process-lite-sources-build.xml                                         \
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
-  java/BUILD                                                                       \
+  java/BUILD.bazel                                                                 \
   java/pom.xml                                                                     \
-  java/util/BUILD                                                                  \
+  java/util/BUILD.bazel                                                            \
   java/util/pom.xml                                                                \
   java/util/pom_template.xml                                                       \
   java/util/src/main/java/com/google/protobuf/util/Durations.java                  \
@@ -612,10 +612,10 @@ java_EXTRA_DIST=                                                                
   java/util/src/test/java/com/google/protobuf/util/ValuesTest.java                 \
   java/util/src/test/proto/com/google/protobuf/util/json_test.proto
 
-# Note: please keep this in sync with the dist_files rule in objectivec/BUILD.
+# Note: please keep this in sync with the dist_files rule in objectivec/BUILD.bazel.
 objectivec_EXTRA_DIST=                                                       \
   objectivec/.clang-format                                                   \
-  objectivec/BUILD                                                           \
+  objectivec/BUILD.bazel                                                     \
   objectivec/DevTools/check_version_stamps.sh                                \
   objectivec/DevTools/compile_testing_protos.sh                              \
   objectivec/DevTools/full_mac_build.sh                                      \
@@ -821,7 +821,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/UnitTests-Info.plist                                       \
   Protobuf.podspec
 
-# Note: please keep this in sync with the dist_files rule in php/BUILD.
+# Note: please keep this in sync with the dist_files rule in php/BUILD.bazel.
 php_EXTRA_DIST=                                                       \
   php/README.md                                                       \
   php/REFCOUNTING.md                                                  \
@@ -1018,7 +1018,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/WellKnownTest.php                                         \
   php/tests/WrapperTypeSettersTest.php
 
-# Note: please keep this in sync with the python_dist_files rule in BUILD.
+# Note: please keep this in sync with the python_dist_files rule in BUILD.bazel.
 python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
   python/google/__init__.py                                                  \
@@ -1142,7 +1142,7 @@ python_EXTRA_DIST=                                                           \
   python/tox.ini                                                             \
   python/README.md
 
-# Note: please keep this in sync with the dist_files rule in ruby/BUILD.
+# Note: please keep this in sync with the dist_files rule in ruby/BUILD.bazel.
 ruby_EXTRA_DIST=                                                             \
   ruby/Gemfile                                                               \
   ruby/.gitignore                                                            \
@@ -1220,7 +1220,7 @@ ruby_EXTRA_DIST=                                                             \
 
 all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
 
-# Note: please keep this in sync with the common_dist_files rule in BUILD.
+# Note: please keep this in sync with the common_dist_files rule in BUILD.bazel.
 EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   autogen.sh                                        \
   generate_descriptor_proto.sh                      \
@@ -1229,7 +1229,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   CONTRIBUTORS.txt                                  \
   CHANGES.txt                                       \
   update_file_lists.sh                              \
-  BUILD                                             \
+  BUILD.bazel                                       \
   WORKSPACE                                         \
   CMakeLists.txt                                    \
   cmake/abseil-cpp.cmake                            \
@@ -1254,12 +1254,12 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   compiler_config_setting.bzl                       \
   build_files_updated_unittest.sh                   \
   cc_proto_blacklist_test.bzl                       \
-  csharp/BUILD                                      \
+  csharp/BUILD.bazel                                \
   editors/README.txt                                \
   editors/proto.vim                                 \
   editors/protobuf-mode.el                          \
   examples/AddPerson.java                           \
-  examples/BUILD                                    \
+  examples/BUILD.bazel                              \
   examples/CMakeLists.txt                           \
   examples/ListPeople.java                          \
   examples/Makefile                                 \
@@ -1281,14 +1281,14 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   examples/pubspec.yaml                             \
   internal.bzl                                      \
   maven_install.json                                \
-  php/BUILD                                         \
+  php/BUILD.bazel                                   \
   protobuf.bzl                                      \
   protobuf_deps.bzl                                 \
   protobuf_release.bzl                              \
   protobuf_version.bzl                              \
-  ruby/BUILD                                        \
+  ruby/BUILD.bazel                                  \
   third_party/zlib.BUILD                            \
-  util/python/BUILD
+  util/python/BUILD.bazel
 
 # Deletes all the files generated by autogen.sh.
 MAINTAINERCLEANFILES =   \
