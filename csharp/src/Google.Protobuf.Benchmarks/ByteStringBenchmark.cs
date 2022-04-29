@@ -32,6 +32,8 @@
 
 using BenchmarkDotNet.Attributes;
 
+#nullable disable
+
 namespace Google.Protobuf.Benchmarks
 {
     /// <summary>
@@ -46,7 +48,7 @@ namespace Google.Protobuf.Benchmarks
         private const int Megabyte = 1024 * 1024;
         private const int _10Megabytes = 1024 * 1024 * 10;
 
-        byte[]? byteBuffer;
+        byte[] byteBuffer;
 
         [GlobalSetup]
         public void GlobalSetup()

@@ -38,7 +38,6 @@ using NUnit.Framework;
 using System.IO;
 using System;
 using Google.Protobuf.Buffers;
-using System.CodeDom.Compiler;
 
 namespace Google.Protobuf
 {
@@ -152,9 +151,9 @@ namespace Google.Protobuf
         // MergeFrom(CodedInputStream) method and doesn't implement IBufferMessage.
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private sealed partial class LegacyGeneratedCodeMessageA : pb::IMessage {
-            private pb::UnknownFieldSet _unknownFields;
+          private pb::UnknownFieldSet _unknownFields;
 
-            pbr::MessageDescriptor pb::IMessage.Descriptor => throw new System.NotImplementedException();
+          pbr::MessageDescriptor pb::IMessage.Descriptor => throw new System.NotImplementedException();
 
           /// <summary>Field number for the "bb" field.</summary>
           public const int BbFieldNumber = 1;
