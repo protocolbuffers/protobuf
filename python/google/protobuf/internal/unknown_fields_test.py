@@ -184,7 +184,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
   # serialized string is checked.
   # TODO(jieluo): Remove message._unknown_fields.
   def InternalCheckUnknownField(self, name, expected_value):
-    if api_implementation.Type() == 'cpp':
+    if api_implementation.Type() != 'python':
       return
     field_descriptor = self.descriptor.fields_by_name[name]
     wire_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type]

@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Build and runs tests for the protobuf project. We use this script to run
+# Build and run tests for the protobuf project. We use this script to run
 # tests on kokoro (Ubuntu and MacOS). It can run locally as well but you
-# will need to make sure the required compilers/tools are available.
+# need to make sure the required compilers/tools are available.
 
 internal_build_cpp() {
   if [ -f src/protoc ]; then
@@ -31,7 +31,7 @@ build_cpp() {
     cd benchmarks && make cpp-benchmark && cd ..
   else
     echo ""
-    echo "WARNING: Skipping validation of the bench marking code, cmake isn't installed."
+    echo "WARNING: Skipping validation of the benchmarking code, cmake isn't installed."
     echo ""
   fi
 }
@@ -57,7 +57,7 @@ build_cpp_distcheck() {
   make dist
 
   # List all files that should be included in the distribution package.
-  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
+  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
     grep -v ".gitignore" | grep -v "java/lite/proguard.pgcfg" |\
     grep -v "python/compatibility_tests" | grep -v "python/docs" | grep -v "python/.repo-metadata.json" |\
     grep -v "python/protobuf_distutils" | grep -v "csharp/compatibility_tests" > dist.lst
@@ -282,12 +282,12 @@ build_java_jdk8() {
 
 build_java_jdk11() {
   use_java jdk11
-  build_java_with_conformance_tests
+  build_java
 }
 
 build_java_jdk17() {
   use_java jdk17
-  build_java_with_conformance_tests
+  build_java
 }
 
 build_java_linkage_monitor() {
@@ -460,19 +460,6 @@ build_jruby93() {
   cd ruby && bash travis-test.sh jruby-9.3.4.0 && cd ..
 }
 
-build_javascript() {
-  internal_build_cpp
-  NODE_VERSION=node-v12.16.3-darwin-x64
-  NODE_TGZ="$NODE_VERSION.tar.gz"
-  pushd /tmp
-  curl -OL https://nodejs.org/dist/v12.16.3/$NODE_TGZ
-  tar zxvf $NODE_TGZ
-  export PATH=$PATH:`pwd`/$NODE_VERSION/bin
-  popd
-  cd js && npm install && npm test && cd ..
-  cd conformance && make test_nodejs && cd ..
-}
-
 use_php() {
   VERSION=$1
   export PATH=/usr/local/php-${VERSION}/bin:$PATH
@@ -600,6 +587,7 @@ Usage: $0 { cpp |
             java_jdk7 |
             java_oracle7 |
             java_jdk8 |
+            java_jdk11 |
             java_jdk17 |
             java_linkage_monitor |
             objectivec_ios |
@@ -628,7 +616,7 @@ Usage: $0 { cpp |
             php7.0_mac |
             php7.3_mac |
             dist_install |
-            benchmark)
+            benchmark }
 "
   exit 1
 fi

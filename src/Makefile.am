@@ -86,7 +86,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/java/generator.h                      \
   google/protobuf/compiler/java/kotlin_generator.h               \
   google/protobuf/compiler/java/names.h                          \
-  google/protobuf/compiler/js/js_generator.h                     \
   google/protobuf/compiler/objectivec/objectivec_generator.h     \
   google/protobuf/compiler/objectivec/objectivec_helpers.h       \
   google/protobuf/compiler/parser.h                              \
@@ -442,9 +441,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/string_field.h                 \
   google/protobuf/compiler/java/string_field_lite.cc           \
   google/protobuf/compiler/java/string_field_lite.h            \
-  google/protobuf/compiler/js/js_generator.cc                  \
-  google/protobuf/compiler/js/well_known_types_embed.cc        \
-  google/protobuf/compiler/js/well_known_types_embed.h         \
   google/protobuf/compiler/objectivec/objectivec_enum.cc       \
   google/protobuf/compiler/objectivec/objectivec_enum.h        \
   google/protobuf/compiler/objectivec/objectivec_enum_field.cc \

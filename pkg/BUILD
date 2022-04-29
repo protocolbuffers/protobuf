@@ -182,30 +182,6 @@ pkg_zip(
 )
 
 pkg_filegroup(
-    name = "js_srcs",
-    srcs = [
-        ":dist_common",
-        "//js:dist_files",
-    ],
-)
-
-pkg_tar(
-    name = "dist_js_tar",
-    srcs = [":js_srcs"],
-    extension = "tar.gz",
-    package_dir = "protobuf-{version}",
-    package_file_name = "protobuf-js-{version}.tar.gz",
-    package_variables = ":protobuf_pkg_naming",
-)
-
-pkg_zip(
-    name = "dist_js_zip",
-    srcs = [":js_srcs"],
-    package_file_name = "protobuf-js-{version}.zip",
-    package_variables = ":protobuf_pkg_naming",
-)
-
-pkg_filegroup(
     name = "objectivec_srcs",
     srcs = [
         ":dist_common",
@@ -309,7 +285,6 @@ pkg_filegroup(
         ":cpp_srcs",
         ":csharp_srcs",
         ":java_srcs",
-        ":js_srcs",
         ":objectivec_srcs",
         ":php_srcs",
         ":python_srcs",

@@ -58,11 +58,7 @@ from google.protobuf import map_proto2_unittest_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
-from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor
-from google.protobuf import descriptor_pool
-from google.protobuf import message_factory
-from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import encoder
 from google.protobuf.internal import more_extensions_pb2
@@ -2542,66 +2538,34 @@ class PackedFieldTest(unittest.TestCase):
     self.assertEqual(golden_data, message.SerializeToString())
 
 
-@unittest.skipIf(api_implementation.Type() != 'cpp',
+@unittest.skipIf(api_implementation.Type() == 'python',
                  'explicit tests of the C++ implementation')
 @testing_refleaks.TestCase
 class OversizeProtosTest(unittest.TestCase):
 
-  @classmethod
-  def setUpClass(cls):
-    # At the moment, reference cycles between DescriptorPool and Message classes
-    # are not detected and these objects are never freed.
-    # To avoid errors with ReferenceLeakChecker, we create the class only once.
-    file_desc = """
-      name: "f/f.msg2"
-      package: "f"
-      message_type {
-        name: "msg1"
-        field {
-          name: "payload"
-          number: 1
-          label: LABEL_OPTIONAL
-          type: TYPE_STRING
-        }
-      }
-      message_type {
-        name: "msg2"
-        field {
-          name: "field"
-          number: 1
-          label: LABEL_OPTIONAL
-          type: TYPE_MESSAGE
-          type_name: "msg1"
-        }
-      }
-    """
-    pool = descriptor_pool.DescriptorPool()
-    desc = descriptor_pb2.FileDescriptorProto()
-    text_format.Parse(file_desc, desc)
-    pool.Add(desc)
-    cls.proto_cls = message_factory.MessageFactory(pool).GetPrototype(
-        pool.FindMessageTypeByName('f.msg2'))
+  def GenerateNestedProto(self, n):
+    msg = unittest_pb2.TestRecursiveMessage()
+    sub = msg
+    for _ in range(n):
+      sub = sub.a
+    sub.i = 0
+    return msg.SerializeToString()
 
-  def setUp(self):
-    self.p = self.proto_cls()
-    self.p.field.payload = 'c' * (1024 * 1024 * 64 + 1)
-    self.p_serialized = self.p.SerializeToString()
+  def testSucceedOkSizedProto(self):
+    msg = unittest_pb2.TestRecursiveMessage()
+    msg.ParseFromString(self.GenerateNestedProto(100))
 
   def testAssertOversizeProto(self):
-    from google.protobuf.pyext._message import SetAllowOversizeProtos
-    SetAllowOversizeProtos(False)
-    q = self.proto_cls()
-    try:
-      q.ParseFromString(self.p_serialized)
-    except message.DecodeError as e:
-      self.assertEqual(str(e), 'Error parsing message')
+    api_implementation._c_module.SetAllowOversizeProtos(False)
+    msg = unittest_pb2.TestRecursiveMessage()
+    with self.assertRaises(message.DecodeError) as context:
+      msg.ParseFromString(self.GenerateNestedProto(101))
+    self.assertIn('Error parsing message', str(context.exception))
 
   def testSucceedOversizeProto(self):
-    from google.protobuf.pyext._message import SetAllowOversizeProtos
-    SetAllowOversizeProtos(True)
-    q = self.proto_cls()
-    q.ParseFromString(self.p_serialized)
-    self.assertEqual(self.p.field.payload, q.field.payload)
+    api_implementation._c_module.SetAllowOversizeProtos(True)
+    msg = unittest_pb2.TestRecursiveMessage()
+    msg.ParseFromString(self.GenerateNestedProto(101))
 
 
 if __name__ == '__main__':

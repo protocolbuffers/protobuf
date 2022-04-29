@@ -56,7 +56,7 @@ class EnumFieldGenerator : public SingleFieldGenerator {
       bool include_external_types) const override;
 
  protected:
-  EnumFieldGenerator(const FieldDescriptor* descriptor);
+  explicit EnumFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~EnumFieldGenerator();
 };
 
@@ -67,7 +67,7 @@ class RepeatedEnumFieldGenerator : public RepeatedFieldGenerator {
   virtual void FinishInitialization() override;
 
  protected:
-  RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor);
+  explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~RepeatedEnumFieldGenerator();
 };
 

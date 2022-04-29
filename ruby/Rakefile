@@ -37,10 +37,12 @@ proto2_protos = %w[
   google/protobuf/compiler/plugin.proto
 ]
 
-if system('../src/protoc --version')
-  protoc_command = '../src/protoc' 
+if !ENV['PROTOC'].nil?
+  protoc_command = ENV['PROTOC']
+elsif system('../src/protoc --version')
+  protoc_command = '../src/protoc'
 else
-  protoc_command = 'protoc' 
+  protoc_command = 'protoc'
 end
 
 genproto_output = []

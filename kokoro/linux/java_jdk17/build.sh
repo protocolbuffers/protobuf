@@ -7,6 +7,9 @@
 # a script to run inside that image.  Then we delegate to the general
 # build_and_run_docker.sh script.
 
+# Fail on error
+set -e
+
 # Change to repo root
 cd $(dirname $0)/../../..
 
