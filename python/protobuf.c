@@ -322,7 +322,7 @@ PyObject* PyUpb_Forbidden_New(PyObject* cls, PyObject* args, PyObject* kwds) {
 // Module Entry Point
 // -----------------------------------------------------------------------------
 
-PyMODINIT_FUNC PyInit__message(void) {
+__attribute__((visibility("default"))) PyMODINIT_FUNC PyInit__message(void) {
   PyObject* m = PyModule_Create(&module_def);
   if (!m) return NULL;
 

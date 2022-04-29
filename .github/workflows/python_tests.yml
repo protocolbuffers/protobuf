@@ -70,3 +70,5 @@ jobs:
           echo "VIRTUAL ENV:" $VIRTUAL_ENV
       - name: Install Wheels
         run: pip install -vvv --no-index --find-links wheels protobuf
+      - name: Test that module is importable
+        run: python -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'

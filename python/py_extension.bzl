@@ -11,27 +11,17 @@ def py_extension(name, srcs, copts, deps = []):
       deps: Libraries that the target depends on
     """
 
-    version_script = name + "_version_script.lds"
-    symbol = "PyInit_" + name
-    native.genrule(
-        name = "gen_" + version_script,
-        outs = [version_script],
-        cmd = "echo 'message { global: " + symbol + "; local: *; };' > $@",
-    )
-
     native.cc_binary(
         name = name + "_binary",
         srcs = srcs,
-        copts = copts,
+        copts = copts + ["-fvisibility=hidden"],
         linkopts = select({
             "//python/dist:osx-x86_64_cpu": ["-undefined", "dynamic_lookup"],
             "//conditions:default": [],
         }),
         linkshared = True,
         linkstatic = True,
-        deps = deps + [
-            ":" + version_script,
-        ] + select({
+        deps = deps + select({
             "//python:limited_api_3.7": ["@python-3.7.0//:python_headers"],
             "//python:full_api_3.7_win32": ["@nuget_python_i686_3.7.0//:python_full_api"],
             "//python:full_api_3.7_win64": ["@nuget_python_x86-64_3.7.0//:python_full_api"],

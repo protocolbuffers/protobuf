@@ -76,18 +76,10 @@ _py_dist_module_rule = rule(
 )
 
 def py_dist_module(name, module_name, extension):
-    file_rule = name + "_file"
     _py_dist_module_rule(
-        name = file_rule,
+        name = name,
         module_name = module_name,
         extension = extension,
-    )
-
-    # TODO(haberman): needed?
-    native.py_library(
-        name = name,
-        data = [":" + file_rule],
-        imports = ["."],
     )
 
 def _py_dist_transition_impl(settings, attr):
