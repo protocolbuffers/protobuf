@@ -398,6 +398,13 @@ def _automake_var_fragment(owner, varname, prefix, entries):
     Returns:
       A string.
     """
+    if len(entries) == 0:
+        # A backslash followed by a blank line is illegal. We still want
+        # to emit the variable, though.
+        return "# {owner}\n{varname} =\n".format(
+            owner = owner,
+            varname = varname,
+        )
     fragment = (
         "# {owner}\n" +
         "{varname} = \\\n" +
