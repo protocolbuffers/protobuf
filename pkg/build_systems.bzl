@@ -239,7 +239,16 @@ def _create_file_list_impl(fragment_generator):
 
             files = {}
 
-            if DefaultInfo in srcrule and CcInfo not in srcrule:
+            if PackageFilegroupInfo in srcrule:
+                for pkg_files_info, origin in srcrule[PackageFilegroupInfo].pkg_files:
+                    # keys are the destination path:
+                    files.update(pkg_files_info.dest_src_map)
+
+            if PackageFilesInfo in srcrule:
+                # keys are the destination:
+                files.update(srcrule[PackageFilesInfo].dest_src_map)
+
+            if files == {} and DefaultInfo in srcrule and CcInfo not in srcrule:
                 # This could be an individual file or filegroup.
                 # We explicitly ignore rules with CcInfo, since their
                 # output artifacts are libraries or binaries.
@@ -249,15 +258,6 @@ def _create_file_list_impl(fragment_generator):
                         for f in srcrule[DefaultInfo].files.to_list()
                     },
                 )
-
-            if PackageFilegroupInfo in srcrule:
-                for pkg_files_info, origin in srcrule[PackageFilegroupInfo].pkg_files:
-                    # keys are the destination path:
-                    files.update(pkg_files_info.dest_src_map)
-
-            if PackageFilesInfo in srcrule:
-                # keys are the destination:
-                files.update(srcrule[PackageFilesInfo].dest_src_map)
 
             if files:
                 fragments.append(
