@@ -95,7 +95,7 @@ namespace Google.Protobuf.Collections
             {
                 foreach (var pair in list)
                 {
-                    clone.Add(pair.Key, ((IDeepCloneable<TValue>)pair.Value!).Clone());
+                    clone.Add(pair.Key, ((IDeepCloneable<TValue>)pair.Value).Clone());
                 }
             }
             else
@@ -363,7 +363,7 @@ namespace Google.Protobuf.Collections
             int hash = 0;
             foreach (KeyValuePair<TKey, TValue> pair in list)
             {
-                hash ^= keyComparer.GetHashCode(pair.Key!) * 31 + valueComparer.GetHashCode(pair.Value!);
+                hash ^= keyComparer.GetHashCode(pair.Key) * 31 + valueComparer.GetHashCode(pair.Value);
             }
             return hash;
         }
