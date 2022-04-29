@@ -1,6 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-exports_files(["BUILD"])
+exports_files(["BUILD.bazel"])
 
 # This is a placeholder for python headers. Projects needing to use
 # fast cpp protos in protobuf's python interface should build with

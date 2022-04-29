@@ -110,7 +110,7 @@ pkg_files(
     name = "dist_files",
     srcs = [
         "AddPerson.java",
-        "BUILD",
+        "BUILD.bazel",
         "CMakeLists.txt",
         "ListPeople.java",
         "Makefile",

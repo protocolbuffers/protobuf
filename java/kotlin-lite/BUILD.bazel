@@ -191,7 +191,7 @@ pkg_files(
         "src/main/kotlin/com/google/protobuf/*.kt",
         "src/test/kotlin/**/*.kt",
     ]) + [
-        "BUILD",
+        "BUILD.bazel",
         "generate-sources-build.xml",
         "generate-test-sources-build.xml",
         "lite.awk",

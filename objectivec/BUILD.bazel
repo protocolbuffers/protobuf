@@ -111,7 +111,7 @@ pkg_files(
         "Tests/*.proto",
     ]) + [
         ".clang-format",
-        "BUILD",
+        "BUILD.bazel",
         "README.md",
         "Tests/golden_message",
         "Tests/golden_packed_fields_message",
