@@ -477,10 +477,12 @@ def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
         name = name + "_genrule",
         srcs = srcs,
         outs = outs,
-        cmd = " && ".join(
+        cmd_bash = " && ".join(
             ["cp $(location %s) $(location %s)" %
-             (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs],
-        ),
+             (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs]),
+        cmd_bat = " && ".join(
+            ["@copy /Y $(location %s) $(location %s) >NUL" %
+             (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs]),
     )
 
     native.filegroup(
