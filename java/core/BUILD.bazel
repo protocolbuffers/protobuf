@@ -420,7 +420,7 @@ pkg_files(
         "src/test/java/**/*.java",
         "src/test/proto/**/*.proto",
     ]) + [
-        "BUILD",
+        "BUILD.bazel",
         "generate-sources-build.xml",
         "generate-test-sources-build.xml",
         "pom.xml",

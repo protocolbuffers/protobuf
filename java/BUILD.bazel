@@ -28,7 +28,7 @@ filegroup(
 pkg_files(
     name = "dist_files",
     srcs = [
-        "BUILD",
+        "BUILD.bazel",
         "README.md",
         "bom/pom.xml",
         "lite.md",

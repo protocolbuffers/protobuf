@@ -14,7 +14,7 @@ pkg_files(
         "tests/*.rb",
     ]) + [
         ".gitignore",
-        "BUILD",
+        "BUILD.bazel",
         "Gemfile",
         "README.md",
         "Rakefile",

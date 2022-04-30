@@ -13,7 +13,7 @@ pkg_files(
     ]) + [
         ".editorconfig",
         ".gitignore",
-        "BUILD",
+        "BUILD.bazel",
         "CHANGES.txt",
         "Google.Protobuf.Tools.nuspec",
         "Google.Protobuf.Tools.targets",

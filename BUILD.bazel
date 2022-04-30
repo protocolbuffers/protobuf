@@ -1496,7 +1496,7 @@ pkg_files(
         "protobuf*.pc.in",
         "test-driver",
     ], allow_empty = True) + [
-        "BUILD",
+        "BUILD.bazel",
         "CHANGES.txt",
         "CMakeLists.txt",
         "CONTRIBUTORS.txt",
@@ -1512,7 +1512,7 @@ pkg_files(
         "maven_install.json",
         "update_file_lists.sh",
         "//third_party:zlib.BUILD",
-        "//util/python:BUILD",
+        "//util/python:BUILD.bazel",
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],
