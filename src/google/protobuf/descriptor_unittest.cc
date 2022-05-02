@@ -4721,8 +4721,7 @@ TEST_F(ValidationErrorTest, NegativeExtensionRangeNumber) {
       "  extension_range { start: -10 end: -1 }"
       "}",
 
-      "foo.proto: Foo: NUMBER: Extension numbers must be positive integers.\n"
-      "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1, 2, 3\n");
+      "foo.proto: Foo: NUMBER: Extension numbers must be positive integers.\n");
 }
 
 TEST_F(ValidationErrorTest, HugeExtensionRangeNumber) {

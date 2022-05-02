@@ -168,9 +168,11 @@ class PROTOBUF_EXPORT DoubleValue final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const DoubleValue& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const DoubleValue& from);
+  void MergeFrom( const DoubleValue& from) {
+    DoubleValue::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -314,9 +316,11 @@ class PROTOBUF_EXPORT FloatValue final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const FloatValue& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const FloatValue& from);
+  void MergeFrom( const FloatValue& from) {
+    FloatValue::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -460,9 +464,11 @@ class PROTOBUF_EXPORT Int64Value final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Int64Value& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const Int64Value& from);
+  void MergeFrom( const Int64Value& from) {
+    Int64Value::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -606,9 +612,11 @@ class PROTOBUF_EXPORT UInt64Value final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const UInt64Value& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const UInt64Value& from);
+  void MergeFrom( const UInt64Value& from) {
+    UInt64Value::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -752,9 +760,11 @@ class PROTOBUF_EXPORT Int32Value final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Int32Value& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const Int32Value& from);
+  void MergeFrom( const Int32Value& from) {
+    Int32Value::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -898,9 +908,11 @@ class PROTOBUF_EXPORT UInt32Value final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const UInt32Value& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const UInt32Value& from);
+  void MergeFrom( const UInt32Value& from) {
+    UInt32Value::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -1044,9 +1056,11 @@ class PROTOBUF_EXPORT BoolValue final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const BoolValue& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const BoolValue& from);
+  void MergeFrom( const BoolValue& from) {
+    BoolValue::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -1190,9 +1204,11 @@ class PROTOBUF_EXPORT StringValue final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const StringValue& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const StringValue& from);
+  void MergeFrom( const StringValue& from) {
+    StringValue::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -1341,9 +1357,11 @@ class PROTOBUF_EXPORT BytesValue final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const BytesValue& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const BytesValue& from);
+  void MergeFrom( const BytesValue& from) {
+    BytesValue::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;

@@ -403,7 +403,7 @@ void StringFieldGenerator::GenerateMessageClearingCode(
 void StringFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   // TODO(gpike): improve this
-  format("_internal_set_$name$(from._internal_$name$());\n");
+  format("_this->_internal_set_$name$(from._internal_$name$());\n");
 }
 
 void StringFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
@@ -445,7 +445,7 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
   Formatter format(printer, variables_);
   GenerateConstructorCode(printer);
   if (inlined_) {
-    format("new (&$field$) ::_pbi::InlinedStringField();\n");
+    format("new (&_this->$field$) ::_pbi::InlinedStringField();\n");
   }
 
   if (HasHasbit(descriptor_)) {
@@ -458,13 +458,13 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
 
   if (!inlined_) {
     format(
-        "$field$.Set(from._internal_$name$(), \n"
-        "  GetArenaForAllocation());\n");
+        "_this->$field$.Set(from._internal_$name$(), \n"
+        "  _this->GetArenaForAllocation());\n");
   } else {
     format(
-        "$field$.Set(from._internal_$name$(),\n"
-        "  GetArenaForAllocation(), _internal_$name$_donated(), "
-        "&$donating_states_word$, $mask_for_undonate$, this);\n");
+        "_this->$field$.Set(from._internal_$name$(),\n"
+        "  _this->GetArenaForAllocation(), _this->_internal_$name$_donated(), "
+        "&_this->$donating_states_word$, $mask_for_undonate$, _this);\n");
   }
 
   format.Outdent();
@@ -874,7 +874,7 @@ void RepeatedStringFieldGenerator::GenerateClearingCode(
 void RepeatedStringFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$field$.MergeFrom(from.$field$);\n");
+  format("_this->$field$.MergeFrom(from.$field$);\n");
 }
 
 void RepeatedStringFieldGenerator::GenerateSwappingCode(

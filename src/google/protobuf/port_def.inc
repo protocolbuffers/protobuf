@@ -874,9 +874,7 @@
 #undef DEBUG
 #endif // defined(__clang__) || PROTOBUF_GNUC_MIN(3, 0) || defined(_MSC_VER)
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#elif PROTOBUF_GNUC_MIN(3, 0)
+#if PROTOBUF_GNUC_MIN(3, 0)
 // GCC does not allow disabling diagnostics within an expression:
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60875, so we disable this one
 // globally even though it's only used for PROTOBUF_FIELD_OFFSET.

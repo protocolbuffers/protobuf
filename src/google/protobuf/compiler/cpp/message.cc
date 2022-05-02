@@ -51,6 +51,7 @@
 #include <google/protobuf/map_entry_lite.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/compiler/cpp/enum.h>
 #include <google/protobuf/compiler/cpp/extension.h>
@@ -645,7 +646,7 @@ MessageGenerator::MessageGenerator(
     MaySetAnnotationVariable(options, "bytesize", injector_template,
                              "OnByteSize(this);\n", &variables_);
     MaySetAnnotationVariable(options, "mergefrom", injector_template,
-                             "OnMergeFrom(this, &from);\n", &variables_);
+                             "OnMergeFrom(_this, &from);\n", &variables_);
   }
 
   GenerateExtensionAnnotations(descriptor_, options_, &variables_);
@@ -1621,27 +1622,28 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             // argument is a generic Message instance, and only define the
             // custom MergeFrom and CopyFrom instances when the source of the
             // merge/copy is known to be the same class as the destination.
-            // TODO(jorg): Define MergeFrom in terms of MergeImpl, rather than
-            // the other way around, to save even more code size.
             "using $superclass$::CopyFrom;\n"
             "void CopyFrom(const $classname$& from);\n"
             ""
             "using $superclass$::MergeFrom;\n"
-            "void MergeFrom(const $classname$& from);\n"
+            "void MergeFrom("
+            " const $classname$& from) {\n"
+            "  $classname$::MergeImpl(*this, from);\n"
+            "}\n"
             "private:\n"
-            "static void MergeImpl(::$proto_ns$::Message* to, const "
-            "::$proto_ns$::Message& from);\n"
+            "static void MergeImpl(::$proto_ns$::Message& to_msg, const "
+            "::$proto_ns$::Message& from_msg);\n"
             "public:\n");
       } else {
         format(
             "using $superclass$::CopyFrom;\n"
             "inline void CopyFrom(const $classname$& from) {\n"
-            "  $superclass$::CopyImpl(this, from);\n"
+            "  $superclass$::CopyImpl(*this, from);\n"
             "}\n"
             ""
             "using $superclass$::MergeFrom;\n"
             "void MergeFrom(const $classname$& from) {\n"
-            "  $superclass$::MergeImpl(this, from);\n"
+            "  $superclass$::MergeImpl(*this, from);\n"
             "}\n"
             "public:\n");
       }
@@ -2142,7 +2144,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     GenerateMergeFrom(printer);
     format("\n");
 
-    GenerateClassSpecificMergeFrom(printer);
+    GenerateClassSpecificMergeImpl(printer);
     format("\n");
 
     GenerateCopyFrom(printer);
@@ -2644,6 +2646,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
         "$classname$::$classname$(const $classname$& from)\n"
         "  : $superclass$() {\n");
     format.Indent();
+    format("$classname$* const _this = this; (void)_this;\n");
 
     if (HasImplData(descriptor_, options_)) {
       const char* field_sep = " ";
@@ -3151,12 +3154,6 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* printer) {
           "};\n"
           "const ::$proto_ns$::Message::ClassData*"
           "$classname$::GetClassData() const { return &_class_data_; }\n"
-          "\n"
-          "void $classname$::MergeImpl(::$proto_ns$::Message* to,\n"
-          "                      const ::$proto_ns$::Message& from) {\n"
-          "  static_cast<$classname$ *>(to)->MergeFrom(\n"
-          "      static_cast<const $classname$ &>(from));\n"
-          "}\n"
           "\n");
     } else {
       // Generate CheckTypeAndMergeFrom().
@@ -3183,17 +3180,29 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* printer) {
   }
 }
 
-void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
+void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* printer) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   // Generate the class-specific MergeFrom, which avoids the GOOGLE_CHECK and cast.
   Formatter format(printer, variables_);
+  if (!HasDescriptorMethods(descriptor_->file(), options_)) {
+    // For messages that don't inherit from Message, just implement MergeFrom
+    // directly.
+    format(
+        "void $classname$::MergeFrom(const $classname$& from) {\n"
+        "  $classname$* const _this = this;\n");
+  } else {
+    format(
+        "void $classname$::MergeImpl(::$proto_ns$::Message& to_msg, const "
+        "::$proto_ns$::Message& from_msg) {\n"
+        "  auto* const _this = static_cast<$classname$*>(&to_msg);\n"
+        "  auto& from = static_cast<const $classname$&>(from_msg);\n");
+  }
+  format.Indent();
   format(
-      "void $classname$::MergeFrom(const $classname$& from) {\n"
       "$annotate_mergefrom$"
       "// @@protoc_insertion_point(class_specific_merge_from_start:"
-      "$full_name$)\n"
-      "  $DCHK$_NE(&from, this);\n");
-  format.Indent();
+      "$full_name$)\n");
+  format("$DCHK$_NE(&from, _this);\n");
 
   format(
       "$uint32$ cached_has_bits = 0;\n"
@@ -3295,7 +3304,8 @@ void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
       if (deferred_has_bit_changes) {
         // Flush the has bits for the primitives we deferred.
         GOOGLE_CHECK_LE(0, cached_has_word_index);
-        format("$has_bits$[$1$] |= cached_has_bits;\n", cached_has_word_index);
+        format("_this->$has_bits$[$1$] |= cached_has_bits;\n",
+               cached_has_word_index);
       }
 
       format.Outdent();
@@ -3332,7 +3342,7 @@ void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
   }
   if (num_weak_fields_) {
     format(
-        "$weak_field_map$.MergeFrom(from.$weak_field_map$);"
+        "_this->$weak_field_map$.MergeFrom(from.$weak_field_map$);"
         "\n");
   }
 
@@ -3340,12 +3350,13 @@ void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
   // the opportunity for tail calls.
   if (descriptor_->extension_range_count() > 0) {
     format(
-        "$extensions$.MergeFrom(internal_default_instance(), "
+        "_this->$extensions$.MergeFrom(internal_default_instance(), "
         "from.$extensions$);\n");
   }
 
   format(
-      "_internal_metadata_.MergeFrom<$unknown_fields_type$>(from._internal_"
+      "_this->_internal_metadata_.MergeFrom<$unknown_fields_type$>(from._"
+      "internal_"
       "metadata_);\n");
 
   format.Outdent();
@@ -3388,7 +3399,7 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* printer) {
     // has changed after Clear.
     format("#ifndef NDEBUG\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format("FailIfCopyFromDescendant(this, from);\n");
+      format("FailIfCopyFromDescendant(*this, from);\n");
     } else {
       format("size_t from_size = from.ByteSizeLong();\n");
     }

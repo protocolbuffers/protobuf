@@ -209,12 +209,13 @@ Struct::Struct(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Struct::Struct(const Struct& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Struct* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       /*decltype(_impl_.fields_)*/{}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _impl_.fields_.MergeFrom(from._impl_.fields_);
+  _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Struct)
 }
 
@@ -370,21 +371,17 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Struct::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Struct::GetClassData() const { return &_class_data_; }
 
-void Struct::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Struct *>(to)->MergeFrom(
-      static_cast<const Struct &>(from));
-}
 
-
-void Struct::MergeFrom(const Struct& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Struct)
-  GOOGLE_DCHECK_NE(&from, this);
+void Struct::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Struct*>(&to_msg);
+  auto& from = static_cast<const Struct&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Struct)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _impl_.fields_.MergeFrom(from._impl_.fields_);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Struct::CopyFrom(const Struct& from) {
@@ -464,6 +461,7 @@ Value::Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Value::Value(const Value& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Value* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.kind_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -473,27 +471,29 @@ Value::Value(const Value& from)
   clear_has_kind();
   switch (from.kind_case()) {
     case kNullValue: {
-      _internal_set_null_value(from._internal_null_value());
+      _this->_internal_set_null_value(from._internal_null_value());
       break;
     }
     case kNumberValue: {
-      _internal_set_number_value(from._internal_number_value());
+      _this->_internal_set_number_value(from._internal_number_value());
       break;
     }
     case kStringValue: {
-      _internal_set_string_value(from._internal_string_value());
+      _this->_internal_set_string_value(from._internal_string_value());
       break;
     }
     case kBoolValue: {
-      _internal_set_bool_value(from._internal_bool_value());
+      _this->_internal_set_bool_value(from._internal_bool_value());
       break;
     }
     case kStructValue: {
-      _internal_mutable_struct_value()->::PROTOBUF_NAMESPACE_ID::Struct::MergeFrom(from._internal_struct_value());
+      _this->_internal_mutable_struct_value()->::PROTOBUF_NAMESPACE_ID::Struct::MergeFrom(
+          from._internal_struct_value());
       break;
     }
     case kListValue: {
-      _internal_mutable_list_value()->::PROTOBUF_NAMESPACE_ID::ListValue::MergeFrom(from._internal_list_value());
+      _this->_internal_mutable_list_value()->::PROTOBUF_NAMESPACE_ID::ListValue::MergeFrom(
+          from._internal_list_value());
       break;
     }
     case KIND_NOT_SET: {
@@ -780,49 +780,47 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Value::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Value::GetClassData() const { return &_class_data_; }
 
-void Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Value *>(to)->MergeFrom(
-      static_cast<const Value &>(from));
-}
 
-
-void Value::MergeFrom(const Value& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Value)
-  GOOGLE_DCHECK_NE(&from, this);
+void Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Value*>(&to_msg);
+  auto& from = static_cast<const Value&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Value)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   switch (from.kind_case()) {
     case kNullValue: {
-      _internal_set_null_value(from._internal_null_value());
+      _this->_internal_set_null_value(from._internal_null_value());
       break;
     }
     case kNumberValue: {
-      _internal_set_number_value(from._internal_number_value());
+      _this->_internal_set_number_value(from._internal_number_value());
       break;
     }
     case kStringValue: {
-      _internal_set_string_value(from._internal_string_value());
+      _this->_internal_set_string_value(from._internal_string_value());
       break;
     }
     case kBoolValue: {
-      _internal_set_bool_value(from._internal_bool_value());
+      _this->_internal_set_bool_value(from._internal_bool_value());
       break;
     }
     case kStructValue: {
-      _internal_mutable_struct_value()->::PROTOBUF_NAMESPACE_ID::Struct::MergeFrom(from._internal_struct_value());
+      _this->_internal_mutable_struct_value()->::PROTOBUF_NAMESPACE_ID::Struct::MergeFrom(
+          from._internal_struct_value());
       break;
     }
     case kListValue: {
-      _internal_mutable_list_value()->::PROTOBUF_NAMESPACE_ID::ListValue::MergeFrom(from._internal_list_value());
+      _this->_internal_mutable_list_value()->::PROTOBUF_NAMESPACE_ID::ListValue::MergeFrom(
+          from._internal_list_value());
       break;
     }
     case KIND_NOT_SET: {
       break;
     }
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Value::CopyFrom(const Value& from) {
@@ -863,6 +861,7 @@ ListValue::ListValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 ListValue::ListValue(const ListValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  ListValue* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.values_){from._impl_.values_}
     , /*decltype(_impl_._cached_size_)*/{}};
@@ -997,21 +996,17 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData ListValue::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ListValue::GetClassData() const { return &_class_data_; }
 
-void ListValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<ListValue *>(to)->MergeFrom(
-      static_cast<const ListValue &>(from));
-}
 
-
-void ListValue::MergeFrom(const ListValue& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ListValue)
-  GOOGLE_DCHECK_NE(&from, this);
+void ListValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<ListValue*>(&to_msg);
+  auto& from = static_cast<const ListValue&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ListValue)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _impl_.values_.MergeFrom(from._impl_.values_);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_impl_.values_.MergeFrom(from._impl_.values_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void ListValue::CopyFrom(const ListValue& from) {

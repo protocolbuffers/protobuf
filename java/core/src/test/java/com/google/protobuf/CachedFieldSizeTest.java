@@ -52,7 +52,7 @@ public final class CachedFieldSizeTest {
 
     // Serialize once to cache all field sizes. This will use the experimental runtime because
     // the proto has optimize_for = CODE_SIZE.
-    message.toByteArray();
+    byte[] unused = message.toByteArray();
     // Serialize individual submessages. This will use the generated implementation. If the
     // experimental runtime hasn't set the correct cached size, this will throw an exception.
     byte[] data2 = message.getProto2Child().toByteArray();

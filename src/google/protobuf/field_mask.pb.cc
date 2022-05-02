@@ -95,6 +95,7 @@ FieldMask::FieldMask(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 FieldMask::FieldMask(const FieldMask& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  FieldMask* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.paths_){from._impl_.paths_}
     , /*decltype(_impl_._cached_size_)*/{}};
@@ -234,21 +235,17 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData FieldMask::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FieldMask::GetClassData() const { return &_class_data_; }
 
-void FieldMask::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<FieldMask *>(to)->MergeFrom(
-      static_cast<const FieldMask &>(from));
-}
 
-
-void FieldMask::MergeFrom(const FieldMask& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldMask)
-  GOOGLE_DCHECK_NE(&from, this);
+void FieldMask::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<FieldMask*>(&to_msg);
+  auto& from = static_cast<const FieldMask&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldMask)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _impl_.paths_.MergeFrom(from._impl_.paths_);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_impl_.paths_.MergeFrom(from._impl_.paths_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void FieldMask::CopyFrom(const FieldMask& from) {

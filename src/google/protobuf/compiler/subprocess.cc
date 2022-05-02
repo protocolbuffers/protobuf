@@ -167,7 +167,11 @@ bool Subprocess::Communicate(const Message& input, Message* output,
 
   GOOGLE_CHECK(child_handle_ != nullptr) << "Must call Start() first.";
 
-  std::string input_data = input.SerializeAsString();
+  std::string input_data;
+  if (!input.SerializeToString(&input_data)) {
+    *error = "Failed to serialize request.";
+    return false;
+  }
   std::string output_data;
 
   int input_pos = 0;
@@ -369,7 +373,11 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   // Make sure SIGPIPE is disabled so that if the child dies it doesn't kill us.
   SignalHandler* old_pipe_handler = signal(SIGPIPE, SIG_IGN);
 
-  std::string input_data = input.SerializeAsString();
+  std::string input_data;
+  if (!input.SerializeToString(&input_data)) {
+    *error = "Failed to serialize request.";
+    return false;
+  }
   std::string output_data;
 
   int input_pos = 0;

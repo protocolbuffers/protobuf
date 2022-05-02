@@ -247,6 +247,7 @@ public abstract class GeneratedMessageLite<
   protected abstract Object dynamicMethod(MethodToInvoke method, Object arg0, Object arg1);
 
   /** Same as {@link #dynamicMethod(MethodToInvoke, Object, Object)} with {@code null} padding. */
+  @CanIgnoreReturnValue
   protected Object dynamicMethod(MethodToInvoke method, Object arg0) {
     return dynamicMethod(method, arg0, null);
   }
@@ -571,7 +572,8 @@ public abstract class GeneratedMessageLite<
         return parseUnknownField(tag, input);
       }
 
-      ensureExtensionsAreMutable();
+      // TODO(b/230609037): remove the unused variable
+      FieldSet<ExtensionDescriptor> unused = ensureExtensionsAreMutable();
 
       if (packed) {
         int length = input.readRawVarint32();
@@ -764,7 +766,8 @@ public abstract class GeneratedMessageLite<
         throws IOException {
       int fieldNumber = typeId;
       int tag = WireFormat.makeTag(typeId, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-      parseExtension(input, extensionRegistry, extension, tag, fieldNumber);
+      // TODO(b/230609037): remove the unused variable
+      boolean unused = parseExtension(input, extensionRegistry, extension, tag, fieldNumber);
     }
 
     private void mergeMessageSetExtensionFromBytes(
@@ -787,6 +790,7 @@ public abstract class GeneratedMessageLite<
           .setField(extension.descriptor, extension.singularToFieldSetType(value));
     }
 
+    @CanIgnoreReturnValue
     FieldSet<ExtensionDescriptor> ensureExtensionsAreMutable() {
       if (extensions.isImmutable()) {
         extensions = extensions.clone();
@@ -1424,8 +1428,10 @@ public abstract class GeneratedMessageLite<
     }
     boolean isInitialized = Protobuf.getInstance().schemaFor(message).isInitialized(message);
     if (shouldMemoize) {
-      message.dynamicMethod(
-          MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, isInitialized ? message : null);
+      // TODO(b/230609037): remove the unused variable
+      Object unused =
+          message.dynamicMethod(
+              MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, isInitialized ? message : null);
     }
     return isInitialized;
   }

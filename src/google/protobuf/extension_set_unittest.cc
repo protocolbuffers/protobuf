@@ -45,6 +45,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/extension_set.h>
+#include <google/protobuf/text_format.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -1285,6 +1286,8 @@ TEST(ExtensionSetTest, DynamicExtensions) {
   }
 
   // Can we print it?
+  std::string message_text;
+  TextFormat::PrintToString(message, &message_text);
   EXPECT_EQ(
       "[dynamic_extensions.scalar_extension]: 123\n"
       "[dynamic_extensions.enum_extension]: FOREIGN_BAR\n"
@@ -1303,7 +1306,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
       "[dynamic_extensions.packed_extension]: -78\n"
       "2002: 12345\n"
       "54321: \"unknown\"\n",
-      message.DebugString());
+      message_text);
 
   // Can we serialize it?
   EXPECT_TRUE(

@@ -56,7 +56,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
     return &rep_->elements[current_size_];
   }
   Rep* old_rep = rep_;
-  Arena* arena = GetArena();
+  Arena* arena = GetOwningArena();
   new_size = internal::CalculateReserveSize<void*, kRepHeaderSize>(total_size_,
                                                                    new_size);
   GOOGLE_CHECK_LE(static_cast<int64_t>(new_size),

@@ -84,11 +84,11 @@ void Message::MergeFrom(const Message& from) {
   auto* class_from = from.GetClassData();
   auto* merge_to_from = class_to ? class_to->merge_to_from : nullptr;
   if (class_to == nullptr || class_to != class_from) {
-    merge_to_from = [](Message* to, const Message& from) {
-      ReflectionOps::Merge(from, to);
+    merge_to_from = [](Message& to, const Message& from) {
+      ReflectionOps::Merge(from, &to);
     };
   }
-  merge_to_from(this, from);
+  merge_to_from(*this, from);
 }
 
 void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
@@ -111,24 +111,24 @@ void Message::CopyFrom(const Message& from) {
         << ", "
            "from: "
         << from.GetDescriptor()->full_name();
-    copy_to_from = [](Message* to, const Message& from) {
-      ReflectionOps::Copy(from, to);
+    copy_to_from = [](Message& to, const Message& from) {
+      ReflectionOps::Copy(from, &to);
     };
   }
-  copy_to_from(this, from);
+  copy_to_from(*this, from);
 }
 
-void Message::CopyWithSourceCheck(Message* to, const Message& from) {
+void Message::CopyWithSourceCheck(Message& to, const Message& from) {
 #ifndef NDEBUG
   FailIfCopyFromDescendant(to, from);
 #endif
-  to->Clear();
-  to->GetClassData()->merge_to_from(to, from);
+  to.Clear();
+  to.GetClassData()->merge_to_from(to, from);
 }
 
-void Message::FailIfCopyFromDescendant(Message* to, const Message& from) {
-  auto* arena = to->GetArenaForAllocation();
-  bool same_message_owned_arena = to->GetOwningArena() == nullptr &&
+void Message::FailIfCopyFromDescendant(Message& to, const Message& from) {
+  auto* arena = to.GetArenaForAllocation();
+  bool same_message_owned_arena = to.GetOwningArena() == nullptr &&
                                   arena != nullptr &&
                                   arena == from.GetOwningArena();
   GOOGLE_CHECK(!same_message_owned_arena && !internal::IsDescendant(to, from))

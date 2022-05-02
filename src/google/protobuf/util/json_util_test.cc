@@ -265,7 +265,9 @@ TEST_F(JsonUtilTest, ParseMessage) {
   // functions are working properly.
   std::string input =
       "{\n"
-      "  \"int32Value\": 1024,\n"
+      "  \"int32Value\": 1234567891,\n"
+      "  \"int64Value\": 5302428716536692736,\n"
+      "  \"floatValue\": 3.4028235e+38,\n"
       "  \"repeatedInt32Value\": [1, 2],\n"
       "  \"messageValue\": {\n"
       "    \"value\": 2048\n"
@@ -277,7 +279,9 @@ TEST_F(JsonUtilTest, ParseMessage) {
   JsonParseOptions options;
   TestMessage m;
   ASSERT_TRUE(FromJson(input, &m, options));
-  EXPECT_EQ(1024, m.int32_value());
+  EXPECT_EQ(1234567891, m.int32_value());
+  EXPECT_EQ(5302428716536692736, m.int64_value());
+  EXPECT_EQ(3.402823466e+38f, m.float_value());
   ASSERT_EQ(2, m.repeated_int32_value_size());
   EXPECT_EQ(1, m.repeated_int32_value(0));
   EXPECT_EQ(2, m.repeated_int32_value(1));

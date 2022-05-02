@@ -66,8 +66,6 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
-#define DEBUG_STRING_SILENT_MARKER "\t "
-
 namespace google {
 namespace protobuf {
 
@@ -86,7 +84,10 @@ inline bool IsOctNumber(const std::string& str) {
 }  // namespace
 
 namespace internal {
-// Controls insertion of DEBUG_STRING_SILENT_MARKER.
+const char kDebugStringSilentMarker[] = "";
+const char kDebugStringSilentMarkerForDetection[] = "\t ";
+
+// Controls insertion of kDebugStringSilentMarker.
 PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
 }  // namespace internal
 
@@ -1282,7 +1283,8 @@ class TextFormat::Parser::ParserImpl {
   bool TryConsumeWhitespace() {
     had_silent_marker_ = false;
     if (LookingAtType(io::Tokenizer::TYPE_WHITESPACE)) {
-      if (tokenizer_.current().text == " " DEBUG_STRING_SILENT_MARKER) {
+      if (tokenizer_.current().text ==
+          StrCat(" ", internal::kDebugStringSilentMarkerForDetection)) {
         had_silent_marker_ = true;
       }
       tokenizer_.Next();
@@ -1422,7 +1424,7 @@ class TextFormat::Printer::TextGenerator
   void PrintMaybeWithMarker(StringPiece text) {
     Print(text.data(), text.size());
     if (ConsumeInsertSilentMarker()) {
-      PrintLiteral(DEBUG_STRING_SILENT_MARKER);
+      PrintLiteral(internal::kDebugStringSilentMarker);
     }
   }
 
@@ -1430,7 +1432,7 @@ class TextFormat::Printer::TextGenerator
                             StringPiece text_tail) {
     Print(text_head.data(), text_head.size());
     if (ConsumeInsertSilentMarker()) {
-      PrintLiteral(DEBUG_STRING_SILENT_MARKER);
+      PrintLiteral(internal::kDebugStringSilentMarker);
     }
     Print(text_tail.data(), text_tail.size());
   }

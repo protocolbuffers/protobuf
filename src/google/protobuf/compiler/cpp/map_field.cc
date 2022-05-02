@@ -153,7 +153,7 @@ void MapFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
 
 void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$field$.MergeFrom(from.$field$);\n");
+  format("_this->$field$.MergeFrom(from.$field$);\n");
 }
 
 void MapFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {

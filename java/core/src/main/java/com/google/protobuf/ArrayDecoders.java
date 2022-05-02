@@ -32,6 +32,7 @@ package com.google.protobuf;
 
 import static com.google.protobuf.MessageSchema.getMutableUnknownFields;
 
+import com.google.protobuf.GeneratedMessageLite.ExtensionDescriptor;
 import com.google.protobuf.Internal.ProtobufList;
 import java.io.IOException;
 
@@ -759,7 +760,9 @@ final class ArrayDecoders {
       return decodeUnknownField(
           tag, data, position, limit, getMutableUnknownFields(message), registers);
     } else  {
-      ((GeneratedMessageLite.ExtendableMessage<?, ?>) message).ensureExtensionsAreMutable();
+      // TODO(b/230609037): remove the unused variable
+      FieldSet<ExtensionDescriptor> unused =
+          ((GeneratedMessageLite.ExtendableMessage<?, ?>) message).ensureExtensionsAreMutable();
       return decodeExtension(
           tag, data, position, limit, (GeneratedMessageLite.ExtendableMessage) message,
           extension, unknownFieldSchema, registers);

@@ -687,12 +687,37 @@ TEST_F(MapImplTest, IteratorCategory) {
           Map<int, int>::const_iterator>::iterator_category()));
 }
 
-TEST_F(MapImplTest, InsertSingle) {
+TEST_F(MapImplTest, InsertSingleLValue) {
   int32_t key = 0;
   int32_t value1 = 100;
   int32_t value2 = 101;
 
-  // Insert a non-existed key.
+  // Insert a non-existing key.
+  Map<int32_t, int32_t>::value_type v1(key, value1);
+  std::pair<Map<int32_t, int32_t>::iterator, bool> result1 = map_.insert(v1);
+  ExpectSingleElement(key, value1);
+
+  Map<int32_t, int32_t>::iterator it1 = result1.first;
+  EXPECT_EQ(key, it1->first);
+  EXPECT_EQ(value1, it1->second);
+  EXPECT_TRUE(result1.second);
+
+  // Insert an existing key.
+  Map<int32_t, int32_t>::value_type v2(key, value2);
+  std::pair<Map<int32_t, int32_t>::iterator, bool> result2 = map_.insert(v2);
+  ExpectSingleElement(key, value1);
+
+  Map<int32_t, int32_t>::iterator it2 = result2.first;
+  EXPECT_TRUE(it1 == it2);
+  EXPECT_FALSE(result2.second);
+}
+
+TEST_F(MapImplTest, InsertSingleRValue) {
+  int32_t key = 0;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
+
+  // Insert a non-existing key.
   std::pair<Map<int32_t, int32_t>::iterator, bool> result1 =
       map_.insert(Map<int32_t, int32_t>::value_type(key, value1));
   ExpectSingleElement(key, value1);
@@ -702,9 +727,170 @@ TEST_F(MapImplTest, InsertSingle) {
   EXPECT_EQ(value1, it1->second);
   EXPECT_TRUE(result1.second);
 
-  // Insert an existed key.
+  // Insert an existing key.
   std::pair<Map<int32_t, int32_t>::iterator, bool> result2 =
       map_.insert(Map<int32_t, int32_t>::value_type(key, value2));
+  ExpectSingleElement(key, value1);
+
+  Map<int32_t, int32_t>::iterator it2 = result2.first;
+  EXPECT_TRUE(it1 == it2);
+  EXPECT_FALSE(result2.second);
+}
+
+TEST_F(MapImplTest, TryEmplace) {
+  using ::testing::Pair;
+  using ::testing::UnorderedElementsAre;
+
+  Map<int32_t, std::string> m;
+
+  m.try_emplace(1, "one");
+  EXPECT_EQ(m.size(), 1);
+
+  const int32_t key = 42;
+  m.try_emplace(key, 3, 'a');
+  m.try_emplace(2, std::string("two"));
+  EXPECT_THAT(
+      m, UnorderedElementsAre(Pair(1, "one"), Pair(2, "two"), Pair(42, "aaa")));
+}
+
+TEST_F(MapImplTest, Emplace) {
+  using ::testing::Pair;
+  using ::testing::UnorderedElementsAre;
+
+  Map<int32_t, std::string> m;
+
+  m.emplace(1, "one");
+  EXPECT_EQ(m.size(), 1);
+
+  const int32_t key = 42;
+  m.emplace(key, "aaa");
+  m.emplace(2, std::string("two"));
+  EXPECT_THAT(
+      m, UnorderedElementsAre(Pair(1, "one"), Pair(2, "two"), Pair(42, "aaa")));
+}
+
+struct CountedInstance {
+  CountedInstance() { ++num_created; }
+  CountedInstance(const CountedInstance&) : CountedInstance() {}
+  CountedInstance(CountedInstance&&) : CountedInstance() {}
+
+  CountedInstance& operator=(const CountedInstance&) {
+    ++num_assigned;
+    return *this;
+  }
+
+  explicit CountedInstance(int x) : CountedInstance() {}
+
+  static int num_created;
+  static int num_assigned;
+};
+
+int CountedInstance::num_created = 0;
+int CountedInstance::num_assigned = 0;
+
+TEST_F(MapImplTest, TryEmplaceExisting) {
+  Map<int32_t, CountedInstance> m;
+
+  m.try_emplace(1, 1);
+  ASSERT_EQ(m.size(), 1);
+
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(1, 123);
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_EQ(CountedInstance::num_created, 0);
+  EXPECT_EQ(CountedInstance::num_assigned, 0);
+}
+
+struct ArenaConstructible {
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+
+  ArenaConstructible() = default;
+  ArenaConstructible(const ArenaConstructible&) = default;
+  ArenaConstructible(Arena*) : ArenaConstructible() {}
+
+  ArenaConstructible& operator=(const ArenaConstructible&) = default;
+
+  explicit ArenaConstructible(int) : ArenaConstructible() {}
+
+  Arena* arena() const { return nullptr; }
+
+  CountedInstance unused;
+};
+
+TEST_F(MapImplTest, TryEmplaceArenaConstructible) {
+  ASSERT_TRUE(Arena::is_arena_constructable<ArenaConstructible>::value);
+
+  ArenaConstructible v1, v2;
+
+  Map<int32_t, ArenaConstructible> m;
+
+  // "default" construction
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(1);
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_EQ(CountedInstance::num_created, 1);
+  EXPECT_EQ(CountedInstance::num_assigned, 0);
+
+  // "default" construction + copy assignment
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(2, v1);
+  EXPECT_EQ(m.size(), 2);
+  EXPECT_EQ(CountedInstance::num_created, 1);
+  EXPECT_EQ(CountedInstance::num_assigned, 1);
+
+  // "default" construction + move assignment
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(3, std::move(v2));
+  EXPECT_EQ(m.size(), 3);
+  EXPECT_EQ(CountedInstance::num_created, 1);
+  EXPECT_EQ(CountedInstance::num_assigned, 1);
+
+  // "default" construction + in-place temporary + move assignment
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(4, 239);
+  EXPECT_EQ(m.size(), 4);
+  EXPECT_EQ(CountedInstance::num_created, 2);
+  EXPECT_EQ(CountedInstance::num_assigned, 1);
+}
+
+TEST_F(MapImplTest, TryEmplaceExistingArenaConstructible) {
+  ASSERT_TRUE(Arena::is_arena_constructable<ArenaConstructible>::value);
+
+  Map<int32_t, ArenaConstructible> m;
+
+  m.try_emplace(1, 1);
+  ASSERT_EQ(m.size(), 1);
+
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(1, 123);
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_EQ(CountedInstance::num_created, 0);
+  EXPECT_EQ(CountedInstance::num_assigned, 0);
+}
+
+TEST_F(MapImplTest, EmplaceSingle) {
+  int32_t key = 0;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
+
+  // Emplace a non-existing key.
+  auto result1 = map_.emplace(key, value1);
+  ExpectSingleElement(key, value1);
+
+  Map<int32_t, int32_t>::iterator it1 = result1.first;
+  EXPECT_EQ(key, it1->first);
+  EXPECT_EQ(value1, it1->second);
+  EXPECT_TRUE(result1.second);
+
+  // Emplace an existing key.
+  auto result2 = map_.emplace(key, value2);
   ExpectSingleElement(key, value1);
 
   Map<int32_t, int32_t>::iterator it2 = result2.first;
@@ -3610,7 +3796,9 @@ TEST(TextFormatMapTest, DynamicMessage) {
                         &expected_text, true));
 
   CleanStringLineEndings(&expected_text, false);
-  EXPECT_EQ(message->DebugString(), expected_text);
+  std::string actual_text;
+  TextFormat::PrintToString(*message, &actual_text);
+  EXPECT_EQ(actual_text, expected_text);
 }
 
 TEST(TextFormatMapTest, Sorted) {

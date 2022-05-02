@@ -221,7 +221,7 @@ const To& GetConstRefAtOffset(const Message& message, uint32_t offset) {
 bool CreateUnknownEnumValues(const FieldDescriptor* field);
 
 // Returns true if "message" is a descendant of "root".
-PROTOBUF_EXPORT bool IsDescendant(Message* root, const Message& message);
+PROTOBUF_EXPORT bool IsDescendant(Message& root, const Message& message);
 }  // namespace internal
 
 // Abstract interface for protocol messages.
@@ -371,8 +371,8 @@ class PROTOBUF_EXPORT Message : public MessageLite {
     // Note: The order of arguments (to, then from) is chosen so that the ABI
     // of this function is the same as the CopyFrom method.  That is, the
     // hidden "this" parameter comes first.
-    void (*copy_to_from)(Message* to, const Message& from_msg);
-    void (*merge_to_from)(Message* to, const Message& from_msg);
+    void (*copy_to_from)(Message& to, const Message& from_msg);
+    void (*merge_to_from)(Message& to, const Message& from_msg);
   };
   // GetClassData() returns a pointer to a ClassData struct which
   // exists in global memory and is unique to each subclass.  This uniqueness
@@ -385,10 +385,10 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // builds, checks that calling Clear() on the destination message doesn't
   // alter the source.  It assumes the messages are known to be of the same
   // type, and thus uses GetClassData().
-  static void CopyWithSourceCheck(Message* to, const Message& from);
+  static void CopyWithSourceCheck(Message& to, const Message& from);
 
   // Fail if "from" is a descendant of "to" as such copy is not allowed.
-  static void FailIfCopyFromDescendant(Message* to, const Message& from);
+  static void FailIfCopyFromDescendant(Message& to, const Message& from);
 
   inline explicit Message(Arena* arena, bool is_message_owned = false)
       : MessageLite(arena, is_message_owned) {}
@@ -1030,7 +1030,7 @@ class PROTOBUF_EXPORT Reflection final {
   bool IsEagerlyVerifiedLazyField(const FieldDescriptor* field) const;
 
   friend class FastReflectionMessageMutator;
-  friend bool internal::IsDescendant(Message* root, const Message& message);
+  friend bool internal::IsDescendant(Message& root, const Message& message);
 
   const Descriptor* const descriptor_;
   const internal::ReflectionSchema schema_;
