@@ -269,9 +269,10 @@ bool ObjectiveCGenerator::GenerateAll(
     return false;
   }
 
+  FileGenerator::CommonState state;
   for (int i = 0; i < files.size(); i++) {
     const FileDescriptor* file = files[i];
-    FileGenerator file_generator(file, generation_options);
+    FileGenerator file_generator(file, generation_options, state);
     std::string filepath = FilePath(file);
 
     // Generate header.
