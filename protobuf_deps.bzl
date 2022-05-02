@@ -1,7 +1,6 @@
 """Load dependencies needed to compile the protobuf library as a 3rd-party consumer."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.findbugs:jsr305:3.0.2",
@@ -14,6 +13,14 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "junit:junit:4.13.2",
     "org.mockito:mockito-core:4.3.1",
 ]
+
+def _github_archive(repo, commit, **kwargs):
+    repo_name = repo.split("/")[-1]
+    http_archive(
+        urls = [repo + "/archive/" + commit + ".zip"],
+        strip_prefix = repo_name + "-" + commit,
+        **kwargs
+    )
 
 def protobuf_deps():
     """Loads common dependencies needed to compile the protobuf library."""
@@ -30,11 +37,11 @@ def protobuf_deps():
 
     if not native.existing_rule("com_google_absl"):
         # Abseil LTS from November 2021
-        http_archive(
+        _github_archive(
             name = "com_google_absl",
+            repo = "https://github.com/abseil/abseil-cpp",
+            commit = "215105818dfde3174fe799600bb0f3cae233d0bf",
             sha256 = "b4e20d9e752a75c10636675691b1e9c2698e0764cb404987d0ffa77223041c19",
-            urls = ["https://github.com/abseil/abseil-cpp/archive/215105818dfde3174fe799600bb0f3cae233d0bf.zip"],
-            strip_prefix = "abseil-cpp-215105818dfde3174fe799600bb0f3cae233d0bf",
         )
 
     if not native.existing_rule("zlib"):
@@ -47,27 +54,27 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_cc"):
-        http_archive(
+        _github_archive(
             name = "rules_cc",
-            sha256 = "9d48151ea71b3e225adfb6867e6d2c7d0dce46cbdc8710d9a9a628574dfd40a0",
-            strip_prefix = "rules_cc-818289e5613731ae410efb54218a4077fb9dbb03",
-            urls = ["https://github.com/bazelbuild/rules_cc/archive/818289e5613731ae410efb54218a4077fb9dbb03.tar.gz"],
+            repo = "https://github.com/bazelbuild/rules_cc",
+            commit = "818289e5613731ae410efb54218a4077fb9dbb03",
+            sha256 = "0adbd6f567291ad526e82c765e15aed33cea5e256eeba129f1501142c2c56610",
         )
 
     if not native.existing_rule("rules_java"):
-        http_archive(
+        _github_archive(
             name = "rules_java",
-            sha256 = "f5a3e477e579231fca27bf202bb0e8fbe4fc6339d63b38ccb87c2760b533d1c3",
-            strip_prefix = "rules_java-981f06c3d2bd10225e85209904090eb7b5fb26bd",
-            urls = ["https://github.com/bazelbuild/rules_java/archive/981f06c3d2bd10225e85209904090eb7b5fb26bd.tar.gz"],
+            repo = "https://github.com/bazelbuild/rules_java",
+            commit = "981f06c3d2bd10225e85209904090eb7b5fb26bd",
+            sha256 = "7979ece89e82546b0dcd1dff7538c34b5a6ebc9148971106f0e3705444f00665",
         )
 
     if not native.existing_rule("rules_proto"):
-        http_archive(
+        _github_archive(
             name = "rules_proto",
+            repo = "https://github.com/bazelbuild/rules_proto",
+            commit = "f7a30f6f80006b591fa7c437fe5a951eb10bcbcf",
             sha256 = "a4382f78723af788f0bc19fd4c8411f44ffe0a72723670a34692ffad56ada3ac",
-            strip_prefix = "rules_proto-f7a30f6f80006b591fa7c437fe5a951eb10bcbcf",
-            urls = ["https://github.com/bazelbuild/rules_proto/archive/f7a30f6f80006b591fa7c437fe5a951eb10bcbcf.zip"],
         )
 
     if not native.existing_rule("rules_python"):
@@ -79,11 +86,11 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_jvm_external"):
-        http_archive(
+        _github_archive(
             name = "rules_jvm_external",
+            repo = "https://github.com/bazelbuild/rules_jvm_external",
+            commit = "906875b0d5eaaf61a8ca2c9c3835bde6f435d011",
             sha256 = "744bd7436f63af7e9872948773b8b106016dc164acb3960b4963f86754532ee7",
-            strip_prefix = "rules_jvm_external-906875b0d5eaaf61a8ca2c9c3835bde6f435d011",
-            urls = ["https://github.com/bazelbuild/rules_jvm_external/archive/906875b0d5eaaf61a8ca2c9c3835bde6f435d011.zip"],
         )
 
     if not native.existing_rule("rules_pkg"):
@@ -104,8 +111,9 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("upb"):
-        git_repository(
+        _github_archive(
             name = "upb",
-            remote = "https://github.com/protocolbuffers/upb.git",
-            commit = "a0bc6693b069e6d1f083c7727ea08621cea4155e",
+            repo = "https://github.com/protocolbuffers/upb",
+            commit = "2abcb7dd8a524d73322082951d334392c76721b9",
+            sha256 = "f583f1389a7531940a51221b21b69a421b4c12811a91fb5df493cd0bb13ee5d6",
         )

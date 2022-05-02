@@ -178,7 +178,7 @@ void PrimitiveFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("_internal_set_$name$(from._internal_$name$());\n");
+  format("_this->_internal_set_$name$(from._internal_$name$());\n");
 }
 
 void PrimitiveFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
@@ -189,7 +189,7 @@ void PrimitiveFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
 void PrimitiveFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$field$ = from.$field$;\n");
+  format("_this->$field$ = from.$field$;\n");
 }
 
 void PrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
@@ -404,7 +404,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateClearingCode(
 void RepeatedPrimitiveFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$field$.MergeFrom(from.$field$);\n");
+  format("_this->$field$.MergeFrom(from.$field$);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSwappingCode(

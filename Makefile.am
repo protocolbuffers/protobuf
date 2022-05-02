@@ -9,6 +9,9 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = . src
 
 # Always include third_party directories in distributions.
+#
+# Note that distribution artifacts will be produced by Bazel in the future.
+# See pkg/BUILD for overall definitions.
 DIST_SUBDIRS = src conformance benchmarks third_party/googletest
 
 # Build gmock before we build protobuf tests.  We don't add gmock to SUBDIRS
@@ -48,6 +51,7 @@ clean-local:
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = protobuf.pc protobuf-lite.pc
 
+# Note: please keep this in sync with the dist_files rule in csharp/BUILD.
 csharp_EXTRA_DIST=                                                           \
   global.json                                                                \
   csharp/.editorconfig                                                       \
@@ -279,6 +283,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/UnknownFieldSet.cs                              \
   csharp/src/Google.Protobuf/UnsafeByteOperations.cs
 
+# Note: please keep this in sync with the dist_files rules under java/.../BUILD.
 java_EXTRA_DIST=                                                                   \
   java/README.md                                                                   \
   java/bom/pom.xml                                                                 \
@@ -607,6 +612,7 @@ java_EXTRA_DIST=                                                                
   java/util/src/test/java/com/google/protobuf/util/ValuesTest.java                 \
   java/util/src/test/proto/com/google/protobuf/util/json_test.proto
 
+# Note: please keep this in sync with the dist_files rule in objectivec/BUILD.
 objectivec_EXTRA_DIST=                                                       \
   objectivec/.clang-format                                                   \
   objectivec/BUILD                                                           \
@@ -815,11 +821,12 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/UnitTests-Info.plist                                       \
   Protobuf.podspec
 
+# Note: please keep this in sync with the dist_files rule in php/BUILD.
 php_EXTRA_DIST=                                                       \
-  composer.json                                                       \
   php/README.md                                                       \
   php/REFCOUNTING.md                                                  \
   php/composer.json                                                   \
+  php/composer.json.dist                                              \
   php/ext/google/protobuf/arena.c                                     \
   php/ext/google/protobuf/arena.h                                     \
   php/ext/google/protobuf/array.c                                     \
@@ -838,7 +845,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/package.xml                                 \
   php/ext/google/protobuf/php-upb.c                                   \
   php/ext/google/protobuf/php-upb.h                                   \
-  php/ext/google/protobuf/php_protobuf.h                              \  
+  php/ext/google/protobuf/php_protobuf.h                              \
   php/ext/google/protobuf/protobuf.c                                  \
   php/ext/google/protobuf/protobuf.h                                  \
   php/ext/google/protobuf/wkt.inc                                     \
@@ -1011,6 +1018,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/WellKnownTest.php                                         \
   php/tests/WrapperTypeSettersTest.php
 
+# Note: please keep this in sync with the python_dist_files rule in BUILD.
 python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
   python/google/__init__.py                                                  \
@@ -1134,6 +1142,7 @@ python_EXTRA_DIST=                                                           \
   python/tox.ini                                                             \
   python/README.md
 
+# Note: please keep this in sync with the dist_files rule in ruby/BUILD.
 ruby_EXTRA_DIST=                                                             \
   ruby/Gemfile                                                               \
   ruby/.gitignore                                                            \
@@ -1209,189 +1218,9 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/type_errors.rb                                                  \
   ruby/travis-test.sh
 
-js_EXTRA_DIST=                                                         \
-  js/README.md                                                         \
-  js/binary/arith.js                                                   \
-  js/binary/arith_test.js                                              \
-  js/binary/constants.js                                               \
-  js/binary/decoder.js                                                 \
-  js/binary/decoder_test.js                                            \
-  js/binary/encoder.js                                                 \
-  js/binary/message_test.js                                            \
-  js/binary/proto_test.js                                              \
-  js/binary/reader.js                                                  \
-  js/binary/reader_test.js                                             \
-  js/binary/utils.js                                                   \
-  js/binary/utils_test.js                                              \
-  js/binary/writer.js                                                  \
-  js/binary/writer_test.js                                             \
-  js/commonjs/export.js                                                \
-  js/commonjs/export_asserts.js                                        \
-  js/commonjs/export_testdeps.js                                       \
-  js/commonjs/import_test.js                                           \
-  js/commonjs/jasmine.json                                             \
-  js/commonjs/rewrite_tests_for_commonjs.js                            \
-  js/commonjs/strict_test.js                                           \
-  js/commonjs/test6/test6.proto                                        \
-  js/commonjs/test7/test7.proto                                        \
-  js/compatibility_tests/v3.0.0/binary/arith_test.js                   \
-  js/compatibility_tests/v3.0.0/binary/decoder_test.js                 \
-  js/compatibility_tests/v3.0.0/binary/proto_test.js                   \
-  js/compatibility_tests/v3.0.0/binary/reader_test.js                  \
-  js/compatibility_tests/v3.0.0/binary/utils_test.js                   \
-  js/compatibility_tests/v3.0.0/binary/writer_test.js                  \
-  js/compatibility_tests/v3.0.0/commonjs/export_asserts.js             \
-  js/compatibility_tests/v3.0.0/commonjs/export_testdeps.js            \
-  js/compatibility_tests/v3.0.0/commonjs/import_test.js                \
-  js/compatibility_tests/v3.0.0/commonjs/jasmine.json                  \
-  js/compatibility_tests/v3.0.0/commonjs/rewrite_tests_for_commonjs.js \
-  js/compatibility_tests/v3.0.0/commonjs/test6/test6.proto             \
-  js/compatibility_tests/v3.0.0/commonjs/test7/test7.proto             \
-  js/compatibility_tests/v3.0.0/data.proto                             \
-  js/compatibility_tests/v3.0.0/debug_test.js                          \
-  js/compatibility_tests/v3.0.0/jasmine1.json                          \
-  js/compatibility_tests/v3.0.0/jasmine2.json                          \
-  js/compatibility_tests/v3.0.0/jasmine3.json                          \
-  js/compatibility_tests/v3.0.0/message_test.js                        \
-  js/compatibility_tests/v3.0.0/proto3_test.js                         \
-  js/compatibility_tests/v3.0.0/proto3_test.proto                      \
-  js/compatibility_tests/v3.0.0/test2.proto                            \
-  js/compatibility_tests/v3.0.0/test3.proto                            \
-  js/compatibility_tests/v3.0.0/test4.proto                            \
-  js/compatibility_tests/v3.0.0/test5.proto                            \
-  js/compatibility_tests/v3.0.0/testbinary.proto                       \
-  js/compatibility_tests/v3.0.0/testempty.proto                        \
-  js/compatibility_tests/v3.0.0/test.proto                             \
-  js/compatibility_tests/v3.0.0/test.sh                                \
-  js/compatibility_tests/v3.1.0/testempty.proto                        \
-  js/compatibility_tests/v3.1.0/testbinary.proto                       \
-  js/compatibility_tests/v3.1.0/test5.proto                            \
-  js/compatibility_tests/v3.1.0/test4.proto                            \
-  js/compatibility_tests/v3.1.0/test3.proto                            \
-  js/compatibility_tests/v3.1.0/test2.proto                            \
-  js/compatibility_tests/v3.1.0/test.proto                             \
-  js/compatibility_tests/v3.1.0/proto3_test.proto                      \
-  js/compatibility_tests/v3.1.0/proto3_test.js                         \
-  js/compatibility_tests/v3.1.0/message_test.js                        \
-  js/compatibility_tests/v3.1.0/maps_test.js                           \
-  js/compatibility_tests/v3.1.0/debug_test.js                          \
-  js/compatibility_tests/v3.1.0/data.proto                             \
-  js/compatibility_tests/v3.1.0/commonjs/test7/test7.proto             \
-  js/compatibility_tests/v3.1.0/commonjs/test6/test6.proto             \
-  js/compatibility_tests/v3.1.0/binary/writer_test.js                  \
-  js/compatibility_tests/v3.1.0/binary/utils_test.js                   \
-  js/compatibility_tests/v3.1.0/binary/reader_test.js                  \
-  js/compatibility_tests/v3.1.0/binary/proto_test.js                   \
-  js/compatibility_tests/v3.1.0/binary/decoder_test.js                 \
-  js/compatibility_tests/v3.1.0/binary/arith_test.js                   \
-  js/data.proto                                                        \
-  js/debug.js                                                          \
-  js/debug_test.js                                                     \
-  js/experimental/runtime/kernel/message_set.js                        \
-  js/experimental/runtime/kernel/message_set_test.js                   \
-  js/experimental/runtime/kernel/tag.js                                \
-  js/experimental/runtime/kernel/tag_test.js                           \
-  js/gulpfile.js                                                       \
-  js/jasmine.json                                                      \
-  js/map.js                                                            \
-  js/maps_test.js                                                      \
-  js/message.js                                                        \
-  js/message_test.js                                                   \
-  js/node_loader.js                                                    \
-  js/package.json                                                      \
-  js/proto3_test.js                                                    \
-  js/proto3_test.proto                                                 \
-  js/test.proto                                                        \
-  js/test2.proto                                                       \
-  js/test3.proto                                                       \
-  js/test4.proto                                                       \
-  js/test5.proto                                                       \
-  js/test8.proto                                                       \
-  js/test9.proto                                                       \
-  js/test10.proto                                                      \
-  js/test11.proto                                                      \
-  js/test12.proto                                                      \
-  js/test13.proto                                                      \
-  js/test14.proto                                                      \
-  js/test15.proto                                                      \
-  js/test_bootstrap.js                                                 \
-  js/testbinary.proto                                                  \
-  js/testempty.proto                                                   \
-  js/testlargenumbers.proto                                            \
-  js/experimental/runtime/testing/jasmine_protobuf.js                  \
-  js/experimental/runtime/testing/ensure_custom_equality_test.js       \
-  js/experimental/runtime/testing/binary/test_message.js               \
-  js/experimental/runtime/kernel/writer_test.js                        \
-  js/experimental/runtime/kernel/writer.js                             \
-  js/experimental/runtime/kernel/wire_type.js                          \
-  js/experimental/runtime/kernel/uint8arrays_test.js                   \
-  js/experimental/runtime/kernel/uint8arrays.js                        \
-  js/experimental/runtime/kernel/uint32_test_pairs.js                  \
-  js/experimental/runtime/kernel/typed_arrays_test.js                  \
-  js/experimental/runtime/kernel/typed_arrays.js                       \
-  js/experimental/runtime/kernel/textencoding_test.js                  \
-  js/experimental/runtime/kernel/textencoding.js                       \
-  js/experimental/runtime/kernel/storage.js                            \
-  js/experimental/runtime/kernel/sint64_test_pairs.js                  \
-  js/experimental/runtime/kernel/sint32_test_pairs.js                  \
-  js/experimental/runtime/kernel/sfixed64_test_pairs.js                \
-  js/experimental/runtime/kernel/sfixed32_test_pairs.js                \
-  js/experimental/runtime/kernel/reader_test.js                        \
-  js/experimental/runtime/kernel/reader.js                             \
-  js/experimental/runtime/kernel/packed_uint32_test_pairs.js           \
-  js/experimental/runtime/kernel/packed_sint64_test_pairs.js           \
-  js/experimental/runtime/kernel/packed_sint32_test_pairs.js           \
-  js/experimental/runtime/kernel/packed_sfixed64_test_pairs.js         \
-  js/experimental/runtime/kernel/packed_sfixed32_test_pairs.js         \
-  js/experimental/runtime/kernel/packed_int64_test_pairs.js            \
-  js/experimental/runtime/kernel/packed_int32_test_pairs.js            \
-  js/experimental/runtime/kernel/packed_float_test_pairs.js            \
-  js/experimental/runtime/kernel/packed_fixed32_test_pairs.js          \
-  js/experimental/runtime/kernel/packed_double_test_pairs.js           \
-  js/experimental/runtime/kernel/packed_bool_test_pairs.js             \
-  js/experimental/runtime/kernel/kernel_test.js                        \
-  js/experimental/runtime/kernel/kernel_repeated_test.js               \
-  js/experimental/runtime/kernel/kernel_compatibility_test.js          \
-  js/experimental/runtime/kernel/kernel.js                             \
-  js/experimental/runtime/kernel/internal_message.js                   \
-  js/experimental/runtime/kernel/int64_test_pairs.js                   \
-  js/experimental/runtime/kernel/int32_test_pairs.js                   \
-  js/experimental/runtime/kernel/indexer_test.js                       \
-  js/experimental/runtime/kernel/indexer.js                            \
-  js/experimental/runtime/kernel/float_test_pairs.js                   \
-  js/experimental/runtime/kernel/fixed32_test_pairs.js                 \
-  js/experimental/runtime/kernel/field.js                              \
-  js/experimental/runtime/kernel/double_test_pairs.js                  \
-  js/experimental/runtime/kernel/conformance/wire_format.js            \
-  js/experimental/runtime/kernel/conformance/test_all_types_proto3.js  \
-  js/experimental/runtime/kernel/conformance/test_all_types_proto2.js  \
-  js/experimental/runtime/kernel/conformance/conformance_testee_runner_node.js \
-  js/experimental/runtime/kernel/conformance/conformance_testee.js     \
-  js/experimental/runtime/kernel/conformance/conformance_response.js   \
-  js/experimental/runtime/kernel/conformance/conformance_request.js    \
-  js/experimental/runtime/kernel/buffer_decoder_test.js                \
-  js/experimental/runtime/kernel/buffer_decoder_helper.js              \
-  js/experimental/runtime/kernel/buffer_decoder.js                     \
-  js/experimental/runtime/kernel/bool_test_pairs.js                    \
-  js/experimental/runtime/kernel/binary_storage_test.js                \
-  js/experimental/runtime/kernel/binary_storage.js                     \
-  js/experimental/runtime/internal/checks_test.js                      \
-  js/experimental/runtime/internal/checks.js                           \
-  js/experimental/runtime/int64_test.js                                \
-  js/experimental/runtime/int64.js                                     \
-  js/experimental/runtime/bytestring_test.js                           \
-  js/experimental/runtime/bytestring_internal.js                       \
-  js/experimental/runtime/bytestring.js                                \
-  js/experimental/benchmarks/code_size/kernel/popular_types.js         \
-  js/experimental/benchmarks/code_size/kernel/all_types.js             \
-  js/experimental/benchmarks/code_size/code_size_base.js               \
-  js/experimental/benchmarks/code_size/apps_jspb/popular_types_proto3.js \
-  js/experimental/benchmarks/code_size/apps_jspb/popular_types_proto2.js \
-  js/experimental/benchmarks/code_size/apps_jspb/all_types_proto3.js \
-  js/experimental/benchmarks/code_size/apps_jspb/all_types_proto2.js
+all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
 
-all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
-
+# Note: please keep this in sync with the common_dist_files rule in BUILD.
 EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   autogen.sh                                        \
   generate_descriptor_proto.sh                      \
@@ -1403,6 +1232,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   BUILD                                             \
   WORKSPACE                                         \
   CMakeLists.txt                                    \
+  cmake/abseil-cpp.cmake                            \
   cmake/CMakeLists.txt                              \
   cmake/README.md                                   \
   cmake/conformance.cmake                           \
@@ -1424,6 +1254,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   compiler_config_setting.bzl                       \
   build_files_updated_unittest.sh                   \
   cc_proto_blacklist_test.bzl                       \
+  csharp/BUILD                                      \
   editors/README.txt                                \
   editors/proto.vim                                 \
   editors/protobuf-mode.el                          \
@@ -1448,15 +1279,16 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   examples/list_people.dart                         \
   examples/list_people.py                           \
   examples/pubspec.yaml                             \
+  internal.bzl                                      \
   maven_install.json                                \
+  php/BUILD                                         \
   protobuf.bzl                                      \
   protobuf_deps.bzl                                 \
   protobuf_release.bzl                              \
   protobuf_version.bzl                              \
+  ruby/BUILD                                        \
   third_party/zlib.BUILD                            \
-  util/python/BUILD                                 \
-  internal.bzl
-
+  util/python/BUILD
 
 # Deletes all the files generated by autogen.sh.
 MAINTAINERCLEANFILES =   \

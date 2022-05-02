@@ -49,7 +49,7 @@ Running the tests for other languages
 Most of the languages in the Protobuf source tree are set up to run
 conformance tests.  However some of them are more tricky to set up
 properly.  See `tests.sh` in the base of the repository to see how
-Travis runs the tests.
+Kokoro runs the tests.
 
 Testing other Protocol Buffer implementations
 ---------------------------------------------

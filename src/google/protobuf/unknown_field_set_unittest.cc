@@ -50,6 +50,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/mutex.h>
+#include <google/protobuf/text_format.h>
 #include <google/protobuf/wire_format.h>
 #include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
@@ -306,6 +307,8 @@ TEST_F(UnknownFieldSetTest, MergeFrom) {
 
   destination.MergeFrom(source);
 
+  std::string destination_text;
+  TextFormat::PrintToString(destination, &destination_text);
   EXPECT_EQ(
       // Note:  The ordering of fields here depends on the ordering of adds
       //   and merging, above.
@@ -313,7 +316,7 @@ TEST_F(UnknownFieldSetTest, MergeFrom) {
       "3: 2\n"
       "2: 3\n"
       "3: 4\n",
-      destination.DebugString());
+      destination_text);
 }
 
 TEST_F(UnknownFieldSetTest, MergeFromMessage) {
@@ -326,6 +329,8 @@ TEST_F(UnknownFieldSetTest, MergeFromMessage) {
 
   destination.mutable_unknown_fields()->MergeFromMessage(source);
 
+  std::string destination_text;
+  TextFormat::PrintToString(destination, &destination_text);
   EXPECT_EQ(
       // Note:  The ordering of fields here depends on the ordering of adds
       //   and merging, above.
@@ -333,7 +338,7 @@ TEST_F(UnknownFieldSetTest, MergeFromMessage) {
       "3: 2\n"
       "2: 3\n"
       "3: 4\n",
-      destination.DebugString());
+      destination_text);
 }
 
 TEST_F(UnknownFieldSetTest, MergeFromMessageLite) {

@@ -95,6 +95,7 @@ SourceContext::SourceContext(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 SourceContext::SourceContext(const SourceContext& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  SourceContext* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.file_name_){}
     , /*decltype(_impl_._cached_size_)*/{}};
@@ -105,8 +106,8 @@ SourceContext::SourceContext(const SourceContext& from)
     _impl_.file_name_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_file_name().empty()) {
-    _impl_.file_name_.Set(from._internal_file_name(), 
-      GetArenaForAllocation());
+    _this->_impl_.file_name_.Set(from._internal_file_name(), 
+      _this->GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
 }
@@ -240,23 +241,19 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData SourceContext::_class_data_ = 
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SourceContext::GetClassData() const { return &_class_data_; }
 
-void SourceContext::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<SourceContext *>(to)->MergeFrom(
-      static_cast<const SourceContext &>(from));
-}
 
-
-void SourceContext::MergeFrom(const SourceContext& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceContext)
-  GOOGLE_DCHECK_NE(&from, this);
+void SourceContext::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<SourceContext*>(&to_msg);
+  auto& from = static_cast<const SourceContext&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceContext)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (!from._internal_file_name().empty()) {
-    _internal_set_file_name(from._internal_file_name());
+    _this->_internal_set_file_name(from._internal_file_name());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void SourceContext::CopyFrom(const SourceContext& from) {

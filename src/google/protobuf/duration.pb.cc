@@ -97,6 +97,7 @@ Duration::Duration(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Duration::Duration(const Duration& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Duration* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.seconds_){}
     , decltype(_impl_.nanos_){}
@@ -247,26 +248,22 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Duration::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Duration::GetClassData() const { return &_class_data_; }
 
-void Duration::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Duration *>(to)->MergeFrom(
-      static_cast<const Duration &>(from));
-}
 
-
-void Duration::MergeFrom(const Duration& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Duration)
-  GOOGLE_DCHECK_NE(&from, this);
+void Duration::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Duration*>(&to_msg);
+  auto& from = static_cast<const Duration&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Duration)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_seconds() != 0) {
-    _internal_set_seconds(from._internal_seconds());
+    _this->_internal_set_seconds(from._internal_seconds());
   }
   if (from._internal_nanos() != 0) {
-    _internal_set_nanos(from._internal_nanos());
+    _this->_internal_set_nanos(from._internal_nanos());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Duration::CopyFrom(const Duration& from) {

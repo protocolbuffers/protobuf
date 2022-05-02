@@ -129,7 +129,7 @@ class MessageGenerator {
   void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* printer);
   void GenerateByteSize(io::Printer* printer);
   void GenerateMergeFrom(io::Printer* printer);
-  void GenerateClassSpecificMergeFrom(io::Printer* printer);
+  void GenerateClassSpecificMergeImpl(io::Printer* printer);
   void GenerateCopyFrom(io::Printer* printer);
   void GenerateSwap(io::Printer* printer);
   void GenerateIsInitialized(io::Printer* printer);

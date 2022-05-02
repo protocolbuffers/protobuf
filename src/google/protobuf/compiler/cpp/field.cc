@@ -252,13 +252,6 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
 
   (*variables)["set_hasbit"] = "";
   (*variables)["clear_hasbit"] = "";
-  if (HasHasbit(descriptor)) {
-    (*variables)["set_hasbit_io"] =
-        StrCat("_Internal::set_has_", FieldName(descriptor), "(&",
-                     (*variables)["has_bits"], ");");
-  } else {
-    (*variables)["set_hasbit_io"] = "";
-  }
 
   AddAccessorAnnotations(descriptor, options, variables);
 

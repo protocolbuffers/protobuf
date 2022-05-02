@@ -115,6 +115,7 @@ Any::Any(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Any::Any(const Any& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Any* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.type_url_){}
     , decltype(_impl_.value_){}
@@ -127,16 +128,16 @@ Any::Any(const Any& from)
     _impl_.type_url_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_type_url().empty()) {
-    _impl_.type_url_.Set(from._internal_type_url(), 
-      GetArenaForAllocation());
+    _this->_impl_.type_url_.Set(from._internal_type_url(), 
+      _this->GetArenaForAllocation());
   }
   _impl_.value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.value_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_value().empty()) {
-    _impl_.value_.Set(from._internal_value(), 
-      GetArenaForAllocation());
+    _this->_impl_.value_.Set(from._internal_value(), 
+      _this->GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
 }
@@ -301,26 +302,22 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Any::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Any::GetClassData() const { return &_class_data_; }
 
-void Any::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Any *>(to)->MergeFrom(
-      static_cast<const Any &>(from));
-}
 
-
-void Any::MergeFrom(const Any& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Any)
-  GOOGLE_DCHECK_NE(&from, this);
+void Any::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Any*>(&to_msg);
+  auto& from = static_cast<const Any&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Any)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (!from._internal_type_url().empty()) {
-    _internal_set_type_url(from._internal_type_url());
+    _this->_internal_set_type_url(from._internal_type_url());
   }
   if (!from._internal_value().empty()) {
-    _internal_set_value(from._internal_value());
+    _this->_internal_set_value(from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Any::CopyFrom(const Any& from) {

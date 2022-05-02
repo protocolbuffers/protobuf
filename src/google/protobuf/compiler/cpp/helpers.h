@@ -767,7 +767,7 @@ inline bool HasImplData(const Descriptor* desc, const Options& options) {
 // but consider using named variables. Named variables like $foo$, with some
 // identifier foo, are looked up in the map. One additional feature is that
 // spaces are accepted between the '$' delimiters, $ foo$ will
-// substiture to " bar" if foo stands for "bar", but in case it's empty
+// substitute to " bar" if foo stands for "bar", but in case it's empty
 // will substitute to "". Hence, for example,
 //
 // Format(vars, "$dllexport $void fun();") -> "void fun();"

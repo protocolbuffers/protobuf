@@ -97,6 +97,7 @@ Timestamp::Timestamp(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Timestamp::Timestamp(const Timestamp& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Timestamp* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.seconds_){}
     , decltype(_impl_.nanos_){}
@@ -247,26 +248,22 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Timestamp::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Timestamp::GetClassData() const { return &_class_data_; }
 
-void Timestamp::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Timestamp *>(to)->MergeFrom(
-      static_cast<const Timestamp &>(from));
-}
 
-
-void Timestamp::MergeFrom(const Timestamp& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Timestamp)
-  GOOGLE_DCHECK_NE(&from, this);
+void Timestamp::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Timestamp*>(&to_msg);
+  auto& from = static_cast<const Timestamp&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Timestamp)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_seconds() != 0) {
-    _internal_set_seconds(from._internal_seconds());
+    _this->_internal_set_seconds(from._internal_seconds());
   }
   if (from._internal_nanos() != 0) {
-    _internal_set_nanos(from._internal_nanos());
+    _this->_internal_set_nanos(from._internal_nanos());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Timestamp::CopyFrom(const Timestamp& from) {

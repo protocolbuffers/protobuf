@@ -150,9 +150,7 @@
 #pragma pop_macro("DEBUG")
 #endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
 

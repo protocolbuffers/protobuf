@@ -277,12 +277,13 @@ DoubleValue::DoubleValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 DoubleValue::DoubleValue(const DoubleValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  DoubleValue* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _impl_.value_ = from._impl_.value_;
+  _this->_impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DoubleValue)
 }
 
@@ -410,16 +411,12 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData DoubleValue::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*DoubleValue::GetClassData() const { return &_class_data_; }
 
-void DoubleValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<DoubleValue *>(to)->MergeFrom(
-      static_cast<const DoubleValue &>(from));
-}
 
-
-void DoubleValue::MergeFrom(const DoubleValue& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DoubleValue)
-  GOOGLE_DCHECK_NE(&from, this);
+void DoubleValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<DoubleValue*>(&to_msg);
+  auto& from = static_cast<const DoubleValue&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DoubleValue)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -428,9 +425,9 @@ void DoubleValue::MergeFrom(const DoubleValue& from) {
   uint64_t raw_value;
   memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
   if (raw_value != 0) {
-    _internal_set_value(from._internal_value());
+    _this->_internal_set_value(from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void DoubleValue::CopyFrom(const DoubleValue& from) {
@@ -470,12 +467,13 @@ FloatValue::FloatValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 FloatValue::FloatValue(const FloatValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  FloatValue* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _impl_.value_ = from._impl_.value_;
+  _this->_impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FloatValue)
 }
 
@@ -603,16 +601,12 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData FloatValue::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FloatValue::GetClassData() const { return &_class_data_; }
 
-void FloatValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<FloatValue *>(to)->MergeFrom(
-      static_cast<const FloatValue &>(from));
-}
 
-
-void FloatValue::MergeFrom(const FloatValue& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FloatValue)
-  GOOGLE_DCHECK_NE(&from, this);
+void FloatValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<FloatValue*>(&to_msg);
+  auto& from = static_cast<const FloatValue&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FloatValue)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -621,9 +615,9 @@ void FloatValue::MergeFrom(const FloatValue& from) {
   uint32_t raw_value;
   memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
   if (raw_value != 0) {
-    _internal_set_value(from._internal_value());
+    _this->_internal_set_value(from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void FloatValue::CopyFrom(const FloatValue& from) {
@@ -663,12 +657,13 @@ Int64Value::Int64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Int64Value::Int64Value(const Int64Value& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Int64Value* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _impl_.value_ = from._impl_.value_;
+  _this->_impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int64Value)
 }
 
@@ -788,23 +783,19 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Int64Value::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Int64Value::GetClassData() const { return &_class_data_; }
 
-void Int64Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Int64Value *>(to)->MergeFrom(
-      static_cast<const Int64Value &>(from));
-}
 
-
-void Int64Value::MergeFrom(const Int64Value& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int64Value)
-  GOOGLE_DCHECK_NE(&from, this);
+void Int64Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Int64Value*>(&to_msg);
+  auto& from = static_cast<const Int64Value&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int64Value)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _internal_set_value(from._internal_value());
+    _this->_internal_set_value(from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Int64Value::CopyFrom(const Int64Value& from) {
@@ -844,12 +835,13 @@ UInt64Value::UInt64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 UInt64Value::UInt64Value(const UInt64Value& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  UInt64Value* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _impl_.value_ = from._impl_.value_;
+  _this->_impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt64Value)
 }
 
@@ -969,23 +961,19 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData UInt64Value::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UInt64Value::GetClassData() const { return &_class_data_; }
 
-void UInt64Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<UInt64Value *>(to)->MergeFrom(
-      static_cast<const UInt64Value &>(from));
-}
 
-
-void UInt64Value::MergeFrom(const UInt64Value& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt64Value)
-  GOOGLE_DCHECK_NE(&from, this);
+void UInt64Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<UInt64Value*>(&to_msg);
+  auto& from = static_cast<const UInt64Value&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt64Value)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _internal_set_value(from._internal_value());
+    _this->_internal_set_value(from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void UInt64Value::CopyFrom(const UInt64Value& from) {
@@ -1025,12 +1013,13 @@ Int32Value::Int32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Int32Value::Int32Value(const Int32Value& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Int32Value* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _impl_.value_ = from._impl_.value_;
+  _this->_impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int32Value)
 }
 
@@ -1150,23 +1139,19 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Int32Value::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Int32Value::GetClassData() const { return &_class_data_; }
 
-void Int32Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Int32Value *>(to)->MergeFrom(
-      static_cast<const Int32Value &>(from));
-}
 
-
-void Int32Value::MergeFrom(const Int32Value& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int32Value)
-  GOOGLE_DCHECK_NE(&from, this);
+void Int32Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Int32Value*>(&to_msg);
+  auto& from = static_cast<const Int32Value&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int32Value)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _internal_set_value(from._internal_value());
+    _this->_internal_set_value(from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Int32Value::CopyFrom(const Int32Value& from) {
@@ -1206,12 +1191,13 @@ UInt32Value::UInt32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 UInt32Value::UInt32Value(const UInt32Value& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  UInt32Value* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _impl_.value_ = from._impl_.value_;
+  _this->_impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt32Value)
 }
 
@@ -1331,23 +1317,19 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData UInt32Value::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UInt32Value::GetClassData() const { return &_class_data_; }
 
-void UInt32Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<UInt32Value *>(to)->MergeFrom(
-      static_cast<const UInt32Value &>(from));
-}
 
-
-void UInt32Value::MergeFrom(const UInt32Value& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt32Value)
-  GOOGLE_DCHECK_NE(&from, this);
+void UInt32Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<UInt32Value*>(&to_msg);
+  auto& from = static_cast<const UInt32Value&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt32Value)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _internal_set_value(from._internal_value());
+    _this->_internal_set_value(from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void UInt32Value::CopyFrom(const UInt32Value& from) {
@@ -1387,12 +1369,13 @@ BoolValue::BoolValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 BoolValue::BoolValue(const BoolValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  BoolValue* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _impl_.value_ = from._impl_.value_;
+  _this->_impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BoolValue)
 }
 
@@ -1512,23 +1495,19 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData BoolValue::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*BoolValue::GetClassData() const { return &_class_data_; }
 
-void BoolValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<BoolValue *>(to)->MergeFrom(
-      static_cast<const BoolValue &>(from));
-}
 
-
-void BoolValue::MergeFrom(const BoolValue& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BoolValue)
-  GOOGLE_DCHECK_NE(&from, this);
+void BoolValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<BoolValue*>(&to_msg);
+  auto& from = static_cast<const BoolValue&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BoolValue)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from._internal_value() != 0) {
-    _internal_set_value(from._internal_value());
+    _this->_internal_set_value(from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void BoolValue::CopyFrom(const BoolValue& from) {
@@ -1568,6 +1547,7 @@ StringValue::StringValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 StringValue::StringValue(const StringValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  StringValue* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){}
     , /*decltype(_impl_._cached_size_)*/{}};
@@ -1578,8 +1558,8 @@ StringValue::StringValue(const StringValue& from)
     _impl_.value_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_value().empty()) {
-    _impl_.value_.Set(from._internal_value(), 
-      GetArenaForAllocation());
+    _this->_impl_.value_.Set(from._internal_value(), 
+      _this->GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.StringValue)
 }
@@ -1713,23 +1693,19 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData StringValue::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*StringValue::GetClassData() const { return &_class_data_; }
 
-void StringValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<StringValue *>(to)->MergeFrom(
-      static_cast<const StringValue &>(from));
-}
 
-
-void StringValue::MergeFrom(const StringValue& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.StringValue)
-  GOOGLE_DCHECK_NE(&from, this);
+void StringValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<StringValue*>(&to_msg);
+  auto& from = static_cast<const StringValue&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.StringValue)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (!from._internal_value().empty()) {
-    _internal_set_value(from._internal_value());
+    _this->_internal_set_value(from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void StringValue::CopyFrom(const StringValue& from) {
@@ -1774,6 +1750,7 @@ BytesValue::BytesValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 BytesValue::BytesValue(const BytesValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  BytesValue* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.value_){}
     , /*decltype(_impl_._cached_size_)*/{}};
@@ -1784,8 +1761,8 @@ BytesValue::BytesValue(const BytesValue& from)
     _impl_.value_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_value().empty()) {
-    _impl_.value_.Set(from._internal_value(), 
-      GetArenaForAllocation());
+    _this->_impl_.value_.Set(from._internal_value(), 
+      _this->GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BytesValue)
 }
@@ -1914,23 +1891,19 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData BytesValue::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*BytesValue::GetClassData() const { return &_class_data_; }
 
-void BytesValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<BytesValue *>(to)->MergeFrom(
-      static_cast<const BytesValue &>(from));
-}
 
-
-void BytesValue::MergeFrom(const BytesValue& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BytesValue)
-  GOOGLE_DCHECK_NE(&from, this);
+void BytesValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<BytesValue*>(&to_msg);
+  auto& from = static_cast<const BytesValue&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BytesValue)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (!from._internal_value().empty()) {
-    _internal_set_value(from._internal_value());
+    _this->_internal_set_value(from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void BytesValue::CopyFrom(const BytesValue& from) {

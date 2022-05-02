@@ -71,8 +71,8 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
 
   void SetCachedSize(int size) const final { _cached_size_.Set(size); }
 
-  static void MergeImpl(Message* to, const Message& from);
-  static void CopyImpl(Message* to, const Message& from);
+  static void MergeImpl(Message& to, const Message& from);
+  static void CopyImpl(Message& to, const Message& from);
   void InternalSwap(ZeroFieldsBase* other);
 
   mutable internal::CachedSize _cached_size_;

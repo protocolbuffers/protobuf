@@ -162,6 +162,15 @@ file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map)
 
 find_package(Threads REQUIRED)
 
+# We can install dependencies from submodules if we're running
+# CMake v3.13 or newer.
+if(CMAKE_VERSION VERSION_LESS 3.13)
+  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE OFF)
+else()
+  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE ON)
+endif()
+
+
 set(_protobuf_FIND_ZLIB)
 if (protobuf_WITH_ZLIB)
   find_package(ZLIB)
@@ -280,7 +289,19 @@ if (MSVC)
     set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> ${rc_flags} <DEFINES> /fo<OBJECT> <SOURCE>")
   endif()
 
+  # Generate the version.rc file used elsewhere.
   configure_file(${protobuf_SOURCE_DIR}/cmake/version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc @ONLY)
+  set(protobuf_version_rc_file ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+
+  # Add the "lib" prefix for generated .lib outputs.
+  set(LIB_PREFIX lib)
+else (MSVC)
+  # No version.rc file.
+  set(protobuf_version_rc_file)
+
+  # When building with "make", "lib" prefix will be added automatically by
+  # the build tool.
+  set(LIB_PREFIX)
 endif (MSVC)
 
 include_directories(
@@ -288,19 +309,14 @@ include_directories(
   ${protobuf_BINARY_DIR}
   ${protobuf_SOURCE_DIR}/src)
 
-if (MSVC)
-  # Add the "lib" prefix for generated .lib outputs.
-  set(LIB_PREFIX lib)
-else (MSVC)
-  # When building with "make", "lib" prefix will be added automatically by
-  # the build tool.
-  set(LIB_PREFIX)
-endif (MSVC)
-
 if (protobuf_UNICODE)
   add_definitions(-DUNICODE -D_UNICODE)
 endif (protobuf_UNICODE)
 
+set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
+set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
+
+include(${protobuf_SOURCE_DIR}/cmake/abseil-cpp.cmake)
 include(${protobuf_SOURCE_DIR}/cmake/libprotobuf-lite.cmake)
 include(${protobuf_SOURCE_DIR}/cmake/libprotobuf.cmake)
 if (protobuf_BUILD_LIBPROTOC)

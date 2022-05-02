@@ -40,8 +40,6 @@
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 
 
-#include <string>
-
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/stubs/casts.h>

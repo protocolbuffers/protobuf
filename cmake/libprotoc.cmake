@@ -61,8 +61,6 @@ set(libprotoc_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/shared_code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/string_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/string_field_lite.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/js/js_generator.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/js/well_known_types_embed.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_extension.cc
@@ -100,7 +98,6 @@ set(libprotoc_headers
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/js/js_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.h
@@ -110,14 +107,8 @@ set(libprotoc_headers
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.h
 )
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-set(libprotoc_rc_files
-  ${CMAKE_CURRENT_BINARY_DIR}/version.rc
-)
-endif()
-
 add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
-  ${libprotoc_files} ${libprotoc_headers} ${libprotoc_rc_files})
+  ${libprotoc_files} ${libprotoc_headers} ${protobuf_version_rc_file})
 if(protobuf_HAVE_LD_VERSION_SCRIPT)
   if(${CMAKE_VERSION} VERSION_GREATER 3.13 OR ${CMAKE_VERSION} VERSION_EQUAL 3.13)
     target_link_options(libprotoc PRIVATE -Wl,--version-script=${protobuf_SOURCE_DIR}/src/libprotoc.map)
@@ -128,6 +119,9 @@ if(protobuf_HAVE_LD_VERSION_SCRIPT)
     LINK_DEPENDS ${protobuf_SOURCE_DIR}/src/libprotoc.map)
 endif()
 target_link_libraries(libprotoc PRIVATE libprotobuf)
+target_include_directories(libprotoc
+  PRIVATE ${ABSL_ROOT_DIR}
+)
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotoc
     PUBLIC  PROTOBUF_USE_DLLS

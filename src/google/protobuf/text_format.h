@@ -60,6 +60,11 @@
 namespace google {
 namespace protobuf {
 
+namespace internal {
+PROTOBUF_EXPORT extern const char kDebugStringSilentMarker[1];
+PROTOBUF_EXPORT extern const char kDebugStringSilentMarkerForDetection[3];
+}  // namespace internal
+
 namespace io {
 class ErrorCollector;  // tokenizer.h
 }

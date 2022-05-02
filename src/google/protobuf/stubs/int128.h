@@ -53,17 +53,17 @@ struct uint128_pod;
 class PROTOBUF_EXPORT uint128 {
  public:
   UINT128_CONSTEXPR uint128();  // Sets to 0, but don't trust on this behavior.
-  UINT128_CONSTEXPR uint128(uint64 top, uint64 bottom);
+  UINT128_CONSTEXPR uint128(uint64_t top, uint64_t bottom);
 #ifndef SWIG
   UINT128_CONSTEXPR uint128(int bottom);
-  UINT128_CONSTEXPR uint128(uint32 bottom);   // Top 96 bits = 0
+  UINT128_CONSTEXPR uint128(uint32_t bottom);   // Top 96 bits = 0
 #endif
-  UINT128_CONSTEXPR uint128(uint64 bottom);   // hi_ = 0
+  UINT128_CONSTEXPR uint128(uint64_t bottom);   // hi_ = 0
   UINT128_CONSTEXPR uint128(const uint128_pod &val);
 
   // Trivial copy constructor, assignment operator and destructor.
 
-  void Initialize(uint64 top, uint64 bottom);
+  void Initialize(uint64_t top, uint64_t bottom);
 
   // Arithmetic operators.
   uint128& operator+=(const uint128& b);
@@ -82,8 +82,8 @@ class PROTOBUF_EXPORT uint128 {
   uint128& operator++();
   uint128& operator--();
 
-  friend uint64 Uint128Low64(const uint128& v);
-  friend uint64 Uint128High64(const uint128& v);
+  friend uint64_t Uint128Low64(const uint128& v);
+  friend uint64_t Uint128High64(const uint128& v);
 
   // We add "std::" to avoid including all of port.h.
   PROTOBUF_EXPORT friend std::ostream& operator<<(std::ostream& o,
@@ -96,12 +96,12 @@ class PROTOBUF_EXPORT uint128 {
   // Little-endian memory order optimizations can benefit from
   // having lo_ first, hi_ last.
   // See util/endian/endian.h and Load128/Store128 for storing a uint128.
-  uint64        lo_;
-  uint64        hi_;
+  uint64_t lo_;
+  uint64_t hi_;
 
   // Not implemented, just declared for catching automatic type conversions.
-  uint128(uint8);
-  uint128(uint16);
+  uint128(uint8_t);
+  uint128(uint16_t);
   uint128(float v);
   uint128(double v);
 };
@@ -114,8 +114,8 @@ struct uint128_pod {
   // of static instances, which is the primary reason for this struct in the
   // first place.  This does not seem to defeat any optimizations wrt
   // operations involving this struct.
-  uint64 hi;
-  uint64 lo;
+  uint64_t hi;
+  uint64_t lo;
 };
 
 PROTOBUF_EXPORT extern const uint128_pod kuint128max;
@@ -127,8 +127,8 @@ PROTOBUF_EXPORT extern std::ostream& operator<<(std::ostream& o,
 // Methods to access low and high pieces of 128-bit value.
 // Defined externally from uint128 to facilitate conversion
 // to native 128-bit types when compilers support them.
-inline uint64 Uint128Low64(const uint128& v) { return v.lo_; }
-inline uint64 Uint128High64(const uint128& v) { return v.hi_; }
+inline uint64_t Uint128Low64(const uint128& v) { return v.lo_; }
+inline uint64_t Uint128High64(const uint128& v) { return v.hi_; }
 
 // TODO: perhaps it would be nice to have int128, a signed 128-bit type?
 
@@ -144,22 +144,22 @@ inline bool operator!=(const uint128& lhs, const uint128& rhs) {
 }
 
 inline UINT128_CONSTEXPR uint128::uint128() : lo_(0), hi_(0) {}
-inline UINT128_CONSTEXPR uint128::uint128(uint64 top, uint64 bottom)
+inline UINT128_CONSTEXPR uint128::uint128(uint64_t top, uint64_t bottom)
     : lo_(bottom), hi_(top) {}
 inline UINT128_CONSTEXPR uint128::uint128(const uint128_pod& v)
     : lo_(v.lo), hi_(v.hi) {}
-inline UINT128_CONSTEXPR uint128::uint128(uint64 bottom)
+inline UINT128_CONSTEXPR uint128::uint128(uint64_t bottom)
     : lo_(bottom), hi_(0) {}
 #ifndef SWIG
-inline UINT128_CONSTEXPR uint128::uint128(uint32 bottom)
+inline UINT128_CONSTEXPR uint128::uint128(uint32_t bottom)
     : lo_(bottom), hi_(0) {}
 inline UINT128_CONSTEXPR uint128::uint128(int bottom)
-    : lo_(bottom), hi_(static_cast<int64>((bottom < 0) ? -1 : 0)) {}
+    : lo_(bottom), hi_(static_cast<int64_t>((bottom < 0) ? -1 : 0)) {}
 #endif
 
 #undef UINT128_CONSTEXPR
 
-inline void uint128::Initialize(uint64 top, uint64 bottom) {
+inline void uint128::Initialize(uint64_t top, uint64_t bottom) {
   hi_ = top;
   lo_ = bottom;
 }
@@ -183,9 +183,9 @@ CMP128(<=)
 // Unary operators
 
 inline uint128 operator-(const uint128& val) {
-  const uint64 hi_flip = ~Uint128High64(val);
-  const uint64 lo_flip = ~Uint128Low64(val);
-  const uint64 lo_add = lo_flip + 1;
+  const uint64_t hi_flip = ~Uint128High64(val);
+  const uint64_t lo_flip = ~Uint128Low64(val);
+  const uint64_t lo_add = lo_flip + 1;
   if (lo_add < lo_flip) {
     return uint128(hi_flip + 1, lo_add);
   }
@@ -235,9 +235,9 @@ inline uint128 operator<<(const uint128& val, int amount) {
     if (amount == 0) {
       return val;
     }
-    uint64 new_hi = (Uint128High64(val) << amount) |
-                    (Uint128Low64(val) >> (64 - amount));
-    uint64 new_lo = Uint128Low64(val) << amount;
+    uint64_t new_hi = (Uint128High64(val) << amount) |
+                      (Uint128Low64(val) >> (64 - amount));
+    uint64_t new_lo = Uint128Low64(val) << amount;
     return uint128(new_hi, new_lo);
   } else if (amount < 128) {
     return uint128(Uint128Low64(val) << (amount - 64), 0);
@@ -252,9 +252,9 @@ inline uint128 operator>>(const uint128& val, int amount) {
     if (amount == 0) {
       return val;
     }
-    uint64 new_hi = Uint128High64(val) >> amount;
-    uint64 new_lo = (Uint128Low64(val) >> amount) |
-                    (Uint128High64(val) << (64 - amount));
+    uint64_t new_hi = Uint128High64(val) >> amount;
+    uint64_t new_lo = (Uint128Low64(val) >> amount) |
+                      (Uint128High64(val) << (64 - amount));
     return uint128(new_hi, new_lo);
   } else if (amount < 128) {
     return uint128(0, Uint128High64(val) >> (amount - 64));
@@ -319,7 +319,7 @@ inline uint128 operator%(const uint128& lhs, const uint128& rhs) {
 
 inline uint128& uint128::operator+=(const uint128& b) {
   hi_ += b.hi_;
-  uint64 lolo = lo_ + b.lo_;
+  uint64_t lolo = lo_ + b.lo_;
   if (lolo < lo_)
     ++hi_;
   lo_ = lolo;
@@ -335,19 +335,19 @@ inline uint128& uint128::operator-=(const uint128& b) {
 }
 
 inline uint128& uint128::operator*=(const uint128& b) {
-  uint64 a96 = hi_ >> 32;
-  uint64 a64 = hi_ & 0xffffffffu;
-  uint64 a32 = lo_ >> 32;
-  uint64 a00 = lo_ & 0xffffffffu;
-  uint64 b96 = b.hi_ >> 32;
-  uint64 b64 = b.hi_ & 0xffffffffu;
-  uint64 b32 = b.lo_ >> 32;
-  uint64 b00 = b.lo_ & 0xffffffffu;
+  uint64_t a96 = hi_ >> 32;
+  uint64_t a64 = hi_ & 0xffffffffu;
+  uint64_t a32 = lo_ >> 32;
+  uint64_t a00 = lo_ & 0xffffffffu;
+  uint64_t b96 = b.hi_ >> 32;
+  uint64_t b64 = b.hi_ & 0xffffffffu;
+  uint64_t b32 = b.lo_ >> 32;
+  uint64_t b00 = b.lo_ & 0xffffffffu;
   // multiply [a96 .. a00] x [b96 .. b00]
   // terms higher than c96 disappear off the high side
   // terms c96 and c64 are safe to ignore carry bit
-  uint64 c96 = a96 * b00 + a64 * b32 + a32 * b64 + a00 * b96;
-  uint64 c64 = a64 * b00 + a32 * b32 + a00 * b64;
+  uint64_t c96 = a96 * b00 + a64 * b32 + a32 * b64 + a00 * b96;
+  uint64_t c64 = a64 * b00 + a32 * b32 + a00 * b64;
   this->hi_ = (c96 << 32) + c64;
   this->lo_ = 0;
   // add terms after this one at a time to capture carry

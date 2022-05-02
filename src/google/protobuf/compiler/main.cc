@@ -31,7 +31,6 @@
 #include <google/protobuf/compiler/cpp/generator.h>
 #include <google/protobuf/compiler/java/generator.h>
 #include <google/protobuf/compiler/java/kotlin_generator.h>
-#include <google/protobuf/compiler/js/js_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/csharp/csharp_generator.h>
 #include <google/protobuf/compiler/objectivec/objectivec_generator.h>
@@ -101,11 +100,6 @@ int ProtobufMain(int argc, char* argv[]) {
   objectivec::ObjectiveCGenerator objc_generator;
   cli.RegisterGenerator("--objc_out", "--objc_opt", &objc_generator,
                         "Generate Objective-C header and source.");
-
-  // JavaScript
-  js::Generator js_generator;
-  cli.RegisterGenerator("--js_out", "--js_opt", &js_generator,
-                        "Generate JavaScript source.");
 
   return cli.Run(argc, argv);
 }

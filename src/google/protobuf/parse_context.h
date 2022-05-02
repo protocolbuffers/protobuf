@@ -410,7 +410,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   // Spawns a child parsing context that inherits key properties. New context
   // inherits the following:
   // --depth_, data_, check_required_fields_, lazy_parse_mode_
-  // The spanwed context always disables aliasing (different input).
+  // The spawned context always disables aliasing (different input).
   template <typename... T>
   ParseContext Spawn(const char** start, T&&... args) {
     ParseContext spawned(depth_, false, start, std::forward<T>(args)...);
@@ -658,14 +658,14 @@ const char* ReadTagInlined(const char* ptr, uint32_t* out) {
 // If bit 15 of return value is set (equivalent to the continuation bits of both
 // bytes being set) the varint continues, otherwise the parse is done. On x86
 // movsx eax, dil
-// add edi, eax
+// and edi, eax
+// add eax, edi
 // adc [rsi], 1
-// add eax, eax
-// and eax, edi
 inline uint32_t DecodeTwoBytes(const char** ptr) {
   uint32_t value = UnalignedLoad<uint16_t>(*ptr);
   // Sign extend the low byte continuation bit
   uint32_t x = static_cast<int8_t>(value);
+  value &= x;  // Mask out the high byte iff no continuation
   // This add is an amazing operation, it cancels the low byte continuation bit
   // from y transferring it to the carry. Simultaneously it also shifts the 7
   // LSB left by one tightly against high byte varint bits. Hence value now
@@ -673,7 +673,7 @@ inline uint32_t DecodeTwoBytes(const char** ptr) {
   value += x;
   // Use the carry to update the ptr appropriately.
   *ptr += value < x ? 2 : 1;
-  return value & (x + x);  // Mask out the high byte iff no continuation
+  return value;
 }
 
 // More efficient varint parsing for big varints

@@ -1,0 +1,34 @@
+# Protobuf C# runtime
+#
+# See also code generation logic under /src/google/protobuf/compiler/csharp.
+
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "keys/*",
+        "protos/*",
+        "src/**/*.cs*",  # .cs and .csproj
+    ]) + [
+        ".editorconfig",
+        ".gitignore",
+        "BUILD.bazel",
+        "CHANGES.txt",
+        "Google.Protobuf.Tools.nuspec",
+        "Google.Protobuf.Tools.targets",
+        "NuGet.Config",
+        "README.md",
+        "build_packages.bat",
+        "build_tools.sh",
+        "buildall.bat",
+        "buildall.sh",
+        "generate_protos.sh",
+        "install_dotnet_sdk.ps1",
+        "src/Google.Protobuf.Benchmarks/wrapper_benchmark_messages.proto",
+        "src/Google.Protobuf.Test/testprotos.pb",
+        "src/Google.Protobuf.sln",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
