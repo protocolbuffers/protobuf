@@ -6,6 +6,7 @@ load(
     "pkg_files",
 )
 load("//:protobuf_release.bzl", "package_naming")
+load(":build_systems.bzl", "gen_automake_file_lists", "gen_file_lists")
 load(":cc_dist_library.bzl", "cc_dist_library")
 
 package_naming(
@@ -306,6 +307,44 @@ pkg_zip(
     srcs = [":dist_all"],
     package_file_name = "protobuf-all-{version}.zip",
     package_variables = ":protobuf_pkg_naming",
+)
+
+################################################################################
+# Generated file lists for build systems
+################################################################################
+
+gen_file_lists(
+    name = "gen_src_file_lists",
+    testonly = 1,
+    out_stem = "src_file_lists",
+    src_libs = {
+        # source rule: name in generated file
+        "//:protobuf": "libprotobuf",
+        "//:protoc_lib": "libprotoc",
+        "//:protobuf_lite": "libprotobuf_lite",
+    },
+)
+
+gen_automake_file_lists(
+    name = "gen_automake_extra_dist_lists",
+    testonly = 1,
+    out = "extra_dist_file_lists.am",
+    src_libs = {
+        # source rule: name in generated file
+        "//:common_dist_files": "dist_common",
+        "//:conformance_dist_files": "dist_conformance",
+        "//benchmarks:all_dist_files": "dist_benchmark",
+        "@com_google_protobuf_examples//:dist_files": "dist_example",
+        "//:csharp_dist_files": "dist_csharp",
+        "//csharp:dist_files": "dist_csharp2",
+        "//:objectivec_dist_files": "dist_objectivec",
+        "//objectivec:dist_files": "dist_objectivec2",
+        "//:php_dist_files": "dist_php",
+        "//php:dist_files": "dist_php2",
+        "//:python_dist_files": "dist_python",
+        "//ruby:dist_files": "dist_ruby",
+        "//js:dist_files": "dist_js",
+    },
 )
 
 ################################################################################
