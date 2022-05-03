@@ -368,6 +368,7 @@ Type::Type(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Type::Type(const Type& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Type* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.fields_){from._impl_.fields_}
     , decltype(_impl_.oneofs_){from._impl_.oneofs_}
@@ -383,13 +384,13 @@ Type::Type(const Type& from)
     _impl_.name_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_name().empty()) {
-    _impl_.name_.Set(from._internal_name(), 
-      GetArenaForAllocation());
+    _this->_impl_.name_.Set(from._internal_name(), 
+      _this->GetArenaForAllocation());
   }
   if (from._internal_has_source_context()) {
-    _impl_.source_context_ = new ::PROTOBUF_NAMESPACE_ID::SourceContext(*from._impl_.source_context_);
+    _this->_impl_.source_context_ = new ::PROTOBUF_NAMESPACE_ID::SourceContext(*from._impl_.source_context_);
   }
-  _impl_.syntax_ = from._impl_.syntax_;
+  _this->_impl_.syntax_ = from._impl_.syntax_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Type)
 }
 
@@ -672,32 +673,29 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Type::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Type::GetClassData() const { return &_class_data_; }
 
-void Type::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Type *>(to)->MergeFrom(
-      static_cast<const Type &>(from));
-}
 
-
-void Type::MergeFrom(const Type& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Type)
-  GOOGLE_DCHECK_NE(&from, this);
+void Type::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Type*>(&to_msg);
+  auto& from = static_cast<const Type&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Type)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _impl_.fields_.MergeFrom(from._impl_.fields_);
-  _impl_.oneofs_.MergeFrom(from._impl_.oneofs_);
-  _impl_.options_.MergeFrom(from._impl_.options_);
+  _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
+  _this->_impl_.oneofs_.MergeFrom(from._impl_.oneofs_);
+  _this->_impl_.options_.MergeFrom(from._impl_.options_);
   if (!from._internal_name().empty()) {
-    _internal_set_name(from._internal_name());
+    _this->_internal_set_name(from._internal_name());
   }
   if (from._internal_has_source_context()) {
-    _internal_mutable_source_context()->::PROTOBUF_NAMESPACE_ID::SourceContext::MergeFrom(from._internal_source_context());
+    _this->_internal_mutable_source_context()->::PROTOBUF_NAMESPACE_ID::SourceContext::MergeFrom(
+        from._internal_source_context());
   }
   if (from._internal_syntax() != 0) {
-    _internal_set_syntax(from._internal_syntax());
+    _this->_internal_set_syntax(from._internal_syntax());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Type::CopyFrom(const Type& from) {
@@ -751,6 +749,7 @@ Field::Field(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Field::Field(const Field& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Field* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.options_){from._impl_.options_}
     , decltype(_impl_.name_){}
@@ -770,32 +769,32 @@ Field::Field(const Field& from)
     _impl_.name_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_name().empty()) {
-    _impl_.name_.Set(from._internal_name(), 
-      GetArenaForAllocation());
+    _this->_impl_.name_.Set(from._internal_name(), 
+      _this->GetArenaForAllocation());
   }
   _impl_.type_url_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.type_url_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_type_url().empty()) {
-    _impl_.type_url_.Set(from._internal_type_url(), 
-      GetArenaForAllocation());
+    _this->_impl_.type_url_.Set(from._internal_type_url(), 
+      _this->GetArenaForAllocation());
   }
   _impl_.json_name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.json_name_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_json_name().empty()) {
-    _impl_.json_name_.Set(from._internal_json_name(), 
-      GetArenaForAllocation());
+    _this->_impl_.json_name_.Set(from._internal_json_name(), 
+      _this->GetArenaForAllocation());
   }
   _impl_.default_value_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.default_value_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_default_value().empty()) {
-    _impl_.default_value_.Set(from._internal_default_value(), 
-      GetArenaForAllocation());
+    _this->_impl_.default_value_.Set(from._internal_default_value(), 
+      _this->GetArenaForAllocation());
   }
   ::memcpy(&_impl_.kind_, &from._impl_.kind_,
     static_cast<size_t>(reinterpret_cast<char*>(&_impl_.packed_) -
@@ -1174,48 +1173,44 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Field::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Field::GetClassData() const { return &_class_data_; }
 
-void Field::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Field *>(to)->MergeFrom(
-      static_cast<const Field &>(from));
-}
 
-
-void Field::MergeFrom(const Field& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Field)
-  GOOGLE_DCHECK_NE(&from, this);
+void Field::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Field*>(&to_msg);
+  auto& from = static_cast<const Field&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Field)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _impl_.options_.MergeFrom(from._impl_.options_);
+  _this->_impl_.options_.MergeFrom(from._impl_.options_);
   if (!from._internal_name().empty()) {
-    _internal_set_name(from._internal_name());
+    _this->_internal_set_name(from._internal_name());
   }
   if (!from._internal_type_url().empty()) {
-    _internal_set_type_url(from._internal_type_url());
+    _this->_internal_set_type_url(from._internal_type_url());
   }
   if (!from._internal_json_name().empty()) {
-    _internal_set_json_name(from._internal_json_name());
+    _this->_internal_set_json_name(from._internal_json_name());
   }
   if (!from._internal_default_value().empty()) {
-    _internal_set_default_value(from._internal_default_value());
+    _this->_internal_set_default_value(from._internal_default_value());
   }
   if (from._internal_kind() != 0) {
-    _internal_set_kind(from._internal_kind());
+    _this->_internal_set_kind(from._internal_kind());
   }
   if (from._internal_cardinality() != 0) {
-    _internal_set_cardinality(from._internal_cardinality());
+    _this->_internal_set_cardinality(from._internal_cardinality());
   }
   if (from._internal_number() != 0) {
-    _internal_set_number(from._internal_number());
+    _this->_internal_set_number(from._internal_number());
   }
   if (from._internal_oneof_index() != 0) {
-    _internal_set_oneof_index(from._internal_oneof_index());
+    _this->_internal_set_oneof_index(from._internal_oneof_index());
   }
   if (from._internal_packed() != 0) {
-    _internal_set_packed(from._internal_packed());
+    _this->_internal_set_packed(from._internal_packed());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Field::CopyFrom(const Field& from) {
@@ -1290,6 +1285,7 @@ Enum::Enum(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Enum::Enum(const Enum& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Enum* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.enumvalue_){from._impl_.enumvalue_}
     , decltype(_impl_.options_){from._impl_.options_}
@@ -1304,13 +1300,13 @@ Enum::Enum(const Enum& from)
     _impl_.name_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_name().empty()) {
-    _impl_.name_.Set(from._internal_name(), 
-      GetArenaForAllocation());
+    _this->_impl_.name_.Set(from._internal_name(), 
+      _this->GetArenaForAllocation());
   }
   if (from._internal_has_source_context()) {
-    _impl_.source_context_ = new ::PROTOBUF_NAMESPACE_ID::SourceContext(*from._impl_.source_context_);
+    _this->_impl_.source_context_ = new ::PROTOBUF_NAMESPACE_ID::SourceContext(*from._impl_.source_context_);
   }
-  _impl_.syntax_ = from._impl_.syntax_;
+  _this->_impl_.syntax_ = from._impl_.syntax_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Enum)
 }
 
@@ -1557,31 +1553,28 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Enum::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Enum::GetClassData() const { return &_class_data_; }
 
-void Enum::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Enum *>(to)->MergeFrom(
-      static_cast<const Enum &>(from));
-}
 
-
-void Enum::MergeFrom(const Enum& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Enum)
-  GOOGLE_DCHECK_NE(&from, this);
+void Enum::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Enum*>(&to_msg);
+  auto& from = static_cast<const Enum&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Enum)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _impl_.enumvalue_.MergeFrom(from._impl_.enumvalue_);
-  _impl_.options_.MergeFrom(from._impl_.options_);
+  _this->_impl_.enumvalue_.MergeFrom(from._impl_.enumvalue_);
+  _this->_impl_.options_.MergeFrom(from._impl_.options_);
   if (!from._internal_name().empty()) {
-    _internal_set_name(from._internal_name());
+    _this->_internal_set_name(from._internal_name());
   }
   if (from._internal_has_source_context()) {
-    _internal_mutable_source_context()->::PROTOBUF_NAMESPACE_ID::SourceContext::MergeFrom(from._internal_source_context());
+    _this->_internal_mutable_source_context()->::PROTOBUF_NAMESPACE_ID::SourceContext::MergeFrom(
+        from._internal_source_context());
   }
   if (from._internal_syntax() != 0) {
-    _internal_set_syntax(from._internal_syntax());
+    _this->_internal_set_syntax(from._internal_syntax());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Enum::CopyFrom(const Enum& from) {
@@ -1634,6 +1627,7 @@ EnumValue::EnumValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 EnumValue::EnumValue(const EnumValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  EnumValue* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.options_){from._impl_.options_}
     , decltype(_impl_.name_){}
@@ -1646,10 +1640,10 @@ EnumValue::EnumValue(const EnumValue& from)
     _impl_.name_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_name().empty()) {
-    _impl_.name_.Set(from._internal_name(), 
-      GetArenaForAllocation());
+    _this->_impl_.name_.Set(from._internal_name(), 
+      _this->GetArenaForAllocation());
   }
-  _impl_.number_ = from._impl_.number_;
+  _this->_impl_.number_ = from._impl_.number_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValue)
 }
 
@@ -1834,27 +1828,23 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData EnumValue::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumValue::GetClassData() const { return &_class_data_; }
 
-void EnumValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<EnumValue *>(to)->MergeFrom(
-      static_cast<const EnumValue &>(from));
-}
 
-
-void EnumValue::MergeFrom(const EnumValue& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValue)
-  GOOGLE_DCHECK_NE(&from, this);
+void EnumValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<EnumValue*>(&to_msg);
+  auto& from = static_cast<const EnumValue&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValue)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _impl_.options_.MergeFrom(from._impl_.options_);
+  _this->_impl_.options_.MergeFrom(from._impl_.options_);
   if (!from._internal_name().empty()) {
-    _internal_set_name(from._internal_name());
+    _this->_internal_set_name(from._internal_name());
   }
   if (from._internal_number() != 0) {
-    _internal_set_number(from._internal_number());
+    _this->_internal_set_number(from._internal_number());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void EnumValue::CopyFrom(const EnumValue& from) {
@@ -1912,6 +1902,7 @@ Option::Option(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Option::Option(const Option& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Option* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.name_){}
     , decltype(_impl_.value_){nullptr}
@@ -1923,11 +1914,11 @@ Option::Option(const Option& from)
     _impl_.name_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_name().empty()) {
-    _impl_.name_.Set(from._internal_name(), 
-      GetArenaForAllocation());
+    _this->_impl_.name_.Set(from._internal_name(), 
+      _this->GetArenaForAllocation());
   }
   if (from._internal_has_value()) {
-    _impl_.value_ = new ::PROTOBUF_NAMESPACE_ID::Any(*from._impl_.value_);
+    _this->_impl_.value_ = new ::PROTOBUF_NAMESPACE_ID::Any(*from._impl_.value_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Option)
 }
@@ -2089,26 +2080,23 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Option::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Option::GetClassData() const { return &_class_data_; }
 
-void Option::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Option *>(to)->MergeFrom(
-      static_cast<const Option &>(from));
-}
 
-
-void Option::MergeFrom(const Option& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Option)
-  GOOGLE_DCHECK_NE(&from, this);
+void Option::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Option*>(&to_msg);
+  auto& from = static_cast<const Option&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Option)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (!from._internal_name().empty()) {
-    _internal_set_name(from._internal_name());
+    _this->_internal_set_name(from._internal_name());
   }
   if (from._internal_has_value()) {
-    _internal_mutable_value()->::PROTOBUF_NAMESPACE_ID::Any::MergeFrom(from._internal_value());
+    _this->_internal_mutable_value()->::PROTOBUF_NAMESPACE_ID::Any::MergeFrom(
+        from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Option::CopyFrom(const Option& from) {

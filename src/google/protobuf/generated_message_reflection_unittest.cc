@@ -1315,11 +1315,11 @@ TEST(GeneratedMessageReflection, IsDescendantMessage) {
   TestUtil::SetAllFields(&msg1);
   msg2 = msg1;
 
-  EXPECT_TRUE(IsDescendant(&msg1, msg1.optional_nested_message()));
-  EXPECT_TRUE(IsDescendant(&msg1, msg1.repeated_foreign_message(0)));
+  EXPECT_TRUE(IsDescendant(msg1, msg1.optional_nested_message()));
+  EXPECT_TRUE(IsDescendant(msg1, msg1.repeated_foreign_message(0)));
 
-  EXPECT_FALSE(IsDescendant(&msg1, msg2.optional_nested_message()));
-  EXPECT_FALSE(IsDescendant(&msg1, msg2.repeated_foreign_message(0)));
+  EXPECT_FALSE(IsDescendant(msg1, msg2.optional_nested_message()));
+  EXPECT_FALSE(IsDescendant(msg1, msg2.repeated_foreign_message(0)));
 }
 
 TEST(GeneratedMessageReflection, IsDescendantMap) {
@@ -1328,11 +1328,11 @@ TEST(GeneratedMessageReflection, IsDescendantMap) {
   TestUtil::SetAllFields(&(*msg1.mutable_map_int32_all_types())[0]);
   msg2 = msg1;
 
-  EXPECT_TRUE(IsDescendant(&msg1, msg1.map_int32_foreign_message().at(0)));
-  EXPECT_TRUE(IsDescendant(&msg1, msg1.map_int32_all_types().at(0)));
+  EXPECT_TRUE(IsDescendant(msg1, msg1.map_int32_foreign_message().at(0)));
+  EXPECT_TRUE(IsDescendant(msg1, msg1.map_int32_all_types().at(0)));
 
-  EXPECT_FALSE(IsDescendant(&msg1, msg2.map_int32_foreign_message().at(0)));
-  EXPECT_FALSE(IsDescendant(&msg1, msg2.map_int32_all_types().at(0)));
+  EXPECT_FALSE(IsDescendant(msg1, msg2.map_int32_foreign_message().at(0)));
+  EXPECT_FALSE(IsDescendant(msg1, msg2.map_int32_all_types().at(0)));
 }
 
 TEST(GeneratedMessageReflection, IsDescendantExtension) {
@@ -1341,15 +1341,15 @@ TEST(GeneratedMessageReflection, IsDescendantExtension) {
   msg2 = msg1;
 
   EXPECT_TRUE(IsDescendant(
-      &msg1, msg1.GetExtension(unittest::optional_nested_message_extension)));
+      msg1, msg1.GetExtension(unittest::optional_nested_message_extension)));
   EXPECT_TRUE(IsDescendant(
-      &msg1,
+      msg1,
       msg1.GetExtension(unittest::repeated_foreign_message_extension, 0)));
 
   EXPECT_FALSE(IsDescendant(
-      &msg1, msg2.GetExtension(unittest::optional_nested_message_extension)));
+      msg1, msg2.GetExtension(unittest::optional_nested_message_extension)));
   EXPECT_FALSE(IsDescendant(
-      &msg1,
+      msg1,
       msg2.GetExtension(unittest::repeated_foreign_message_extension, 0)));
 }
 
@@ -1358,15 +1358,14 @@ TEST(GeneratedMessageReflection, IsDescendantOneof) {
   TestUtil::SetAllFields(msg1.mutable_foo_message());
   msg2 = msg1;
 
+  EXPECT_TRUE(IsDescendant(msg1, msg1.foo_message().optional_nested_message()));
   EXPECT_TRUE(
-      IsDescendant(&msg1, msg1.foo_message().optional_nested_message()));
-  EXPECT_TRUE(
-      IsDescendant(&msg1, msg1.foo_message().repeated_foreign_message(0)));
+      IsDescendant(msg1, msg1.foo_message().repeated_foreign_message(0)));
 
   EXPECT_FALSE(
-      IsDescendant(&msg1, msg2.foo_message().optional_nested_message()));
+      IsDescendant(msg1, msg2.foo_message().optional_nested_message()));
   EXPECT_FALSE(
-      IsDescendant(&msg1, msg2.foo_message().repeated_foreign_message(0)));
+      IsDescendant(msg1, msg2.foo_message().repeated_foreign_message(0)));
 }
 
 }  // namespace

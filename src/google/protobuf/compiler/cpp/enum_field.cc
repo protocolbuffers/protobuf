@@ -123,7 +123,7 @@ void EnumFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
 
 void EnumFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("_internal_set_$name$(from._internal_$name$());\n");
+  format("_this->_internal_set_$name$(from._internal_$name$());\n");
 }
 
 void EnumFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
@@ -134,7 +134,7 @@ void EnumFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
 void EnumFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$field$ = from.$field$;\n");
+  format("_this->$field$ = from.$field$;\n");
 }
 
 void EnumFieldGenerator::GenerateSerializeWithCachedSizesToArray(
@@ -329,7 +329,7 @@ void RepeatedEnumFieldGenerator::GenerateClearingCode(
 void RepeatedEnumFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$field$.MergeFrom(from.$field$);\n");
+  format("_this->$field$.MergeFrom(from.$field$);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSwappingCode(

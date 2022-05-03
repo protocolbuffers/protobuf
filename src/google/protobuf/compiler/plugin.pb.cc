@@ -256,6 +256,7 @@ Version::Version(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Version::Version(const Version& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Version* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -270,8 +271,8 @@ Version::Version(const Version& from)
     _impl_.suffix_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (from._internal_has_suffix()) {
-    _impl_.suffix_.Set(from._internal_suffix(), 
-      GetArenaForAllocation());
+    _this->_impl_.suffix_.Set(from._internal_suffix(), 
+      _this->GetArenaForAllocation());
   }
   ::memcpy(&_impl_.major_, &from._impl_.major_,
     static_cast<size_t>(reinterpret_cast<char*>(&_impl_.patch_) -
@@ -489,36 +490,32 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Version::_class_data_ = {
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Version::GetClassData() const { return &_class_data_; }
 
-void Version::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Version *>(to)->MergeFrom(
-      static_cast<const Version &>(from));
-}
 
-
-void Version::MergeFrom(const Version& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.Version)
-  GOOGLE_DCHECK_NE(&from, this);
+void Version::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Version*>(&to_msg);
+  auto& from = static_cast<const Version&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.Version)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
-      _internal_set_suffix(from._internal_suffix());
+      _this->_internal_set_suffix(from._internal_suffix());
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.major_ = from._impl_.major_;
+      _this->_impl_.major_ = from._impl_.major_;
     }
     if (cached_has_bits & 0x00000004u) {
-      _impl_.minor_ = from._impl_.minor_;
+      _this->_impl_.minor_ = from._impl_.minor_;
     }
     if (cached_has_bits & 0x00000008u) {
-      _impl_.patch_ = from._impl_.patch_;
+      _this->_impl_.patch_ = from._impl_.patch_;
     }
-    _impl_._has_bits_[0] |= cached_has_bits;
+    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Version::CopyFrom(const Version& from) {
@@ -585,6 +582,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena
 }
 CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  CodeGeneratorRequest* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -599,11 +597,11 @@ CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from)
     _impl_.parameter_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (from._internal_has_parameter()) {
-    _impl_.parameter_.Set(from._internal_parameter(), 
-      GetArenaForAllocation());
+    _this->_impl_.parameter_.Set(from._internal_parameter(), 
+      _this->GetArenaForAllocation());
   }
   if (from._internal_has_compiler_version()) {
-    _impl_.compiler_version_ = new ::PROTOBUF_NAMESPACE_ID::compiler::Version(*from._impl_.compiler_version_);
+    _this->_impl_.compiler_version_ = new ::PROTOBUF_NAMESPACE_ID::compiler::Version(*from._impl_.compiler_version_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
@@ -849,31 +847,28 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData CodeGeneratorRequest::_class_d
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*CodeGeneratorRequest::GetClassData() const { return &_class_data_; }
 
-void CodeGeneratorRequest::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<CodeGeneratorRequest *>(to)->MergeFrom(
-      static_cast<const CodeGeneratorRequest &>(from));
-}
 
-
-void CodeGeneratorRequest::MergeFrom(const CodeGeneratorRequest& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorRequest)
-  GOOGLE_DCHECK_NE(&from, this);
+void CodeGeneratorRequest::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<CodeGeneratorRequest*>(&to_msg);
+  auto& from = static_cast<const CodeGeneratorRequest&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorRequest)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _impl_.file_to_generate_.MergeFrom(from._impl_.file_to_generate_);
-  _impl_.proto_file_.MergeFrom(from._impl_.proto_file_);
+  _this->_impl_.file_to_generate_.MergeFrom(from._impl_.file_to_generate_);
+  _this->_impl_.proto_file_.MergeFrom(from._impl_.proto_file_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _internal_set_parameter(from._internal_parameter());
+      _this->_internal_set_parameter(from._internal_parameter());
     }
     if (cached_has_bits & 0x00000002u) {
-      _internal_mutable_compiler_version()->::PROTOBUF_NAMESPACE_ID::compiler::Version::MergeFrom(from._internal_compiler_version());
+      _this->_internal_mutable_compiler_version()->::PROTOBUF_NAMESPACE_ID::compiler::Version::MergeFrom(
+          from._internal_compiler_version());
     }
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
@@ -946,6 +941,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(::PROTOBUF_NAMESPACE_ID::
 }
 CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  CodeGeneratorResponse_File* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -960,27 +956,27 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorRespon
     _impl_.name_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (from._internal_has_name()) {
-    _impl_.name_.Set(from._internal_name(), 
-      GetArenaForAllocation());
+    _this->_impl_.name_.Set(from._internal_name(), 
+      _this->GetArenaForAllocation());
   }
   _impl_.insertion_point_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.insertion_point_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (from._internal_has_insertion_point()) {
-    _impl_.insertion_point_.Set(from._internal_insertion_point(), 
-      GetArenaForAllocation());
+    _this->_impl_.insertion_point_.Set(from._internal_insertion_point(), 
+      _this->GetArenaForAllocation());
   }
   _impl_.content_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.content_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (from._internal_has_content()) {
-    _impl_.content_.Set(from._internal_content(), 
-      GetArenaForAllocation());
+    _this->_impl_.content_.Set(from._internal_content(), 
+      _this->GetArenaForAllocation());
   }
   if (from._internal_has_generated_code_info()) {
-    _impl_.generated_code_info_ = new ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo(*from._impl_.generated_code_info_);
+    _this->_impl_.generated_code_info_ = new ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo(*from._impl_.generated_code_info_);
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
@@ -1233,35 +1229,32 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData CodeGeneratorResponse_File::_c
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*CodeGeneratorResponse_File::GetClassData() const { return &_class_data_; }
 
-void CodeGeneratorResponse_File::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<CodeGeneratorResponse_File *>(to)->MergeFrom(
-      static_cast<const CodeGeneratorResponse_File &>(from));
-}
 
-
-void CodeGeneratorResponse_File::MergeFrom(const CodeGeneratorResponse_File& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
-  GOOGLE_DCHECK_NE(&from, this);
+void CodeGeneratorResponse_File::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<CodeGeneratorResponse_File*>(&to_msg);
+  auto& from = static_cast<const CodeGeneratorResponse_File&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
-      _internal_set_name(from._internal_name());
+      _this->_internal_set_name(from._internal_name());
     }
     if (cached_has_bits & 0x00000002u) {
-      _internal_set_insertion_point(from._internal_insertion_point());
+      _this->_internal_set_insertion_point(from._internal_insertion_point());
     }
     if (cached_has_bits & 0x00000004u) {
-      _internal_set_content(from._internal_content());
+      _this->_internal_set_content(from._internal_content());
     }
     if (cached_has_bits & 0x00000008u) {
-      _internal_mutable_generated_code_info()->::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo::MergeFrom(from._internal_generated_code_info());
+      _this->_internal_mutable_generated_code_info()->::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo::MergeFrom(
+          from._internal_generated_code_info());
     }
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void CodeGeneratorResponse_File::CopyFrom(const CodeGeneratorResponse_File& from) {
@@ -1323,6 +1316,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(::PROTOBUF_NAMESPACE_ID::Arena* are
 }
 CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  CodeGeneratorResponse* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -1336,10 +1330,10 @@ CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& from)
     _impl_.error_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (from._internal_has_error()) {
-    _impl_.error_.Set(from._internal_error(), 
-      GetArenaForAllocation());
+    _this->_impl_.error_.Set(from._internal_error(), 
+      _this->GetArenaForAllocation());
   }
-  _impl_.supported_features_ = from._impl_.supported_features_;
+  _this->_impl_.supported_features_ = from._impl_.supported_features_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
 
@@ -1538,31 +1532,27 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData CodeGeneratorResponse::_class_
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*CodeGeneratorResponse::GetClassData() const { return &_class_data_; }
 
-void CodeGeneratorResponse::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<CodeGeneratorResponse *>(to)->MergeFrom(
-      static_cast<const CodeGeneratorResponse &>(from));
-}
 
-
-void CodeGeneratorResponse::MergeFrom(const CodeGeneratorResponse& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse)
-  GOOGLE_DCHECK_NE(&from, this);
+void CodeGeneratorResponse::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<CodeGeneratorResponse*>(&to_msg);
+  auto& from = static_cast<const CodeGeneratorResponse&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _impl_.file_.MergeFrom(from._impl_.file_);
+  _this->_impl_.file_.MergeFrom(from._impl_.file_);
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _internal_set_error(from._internal_error());
+      _this->_internal_set_error(from._internal_error());
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.supported_features_ = from._impl_.supported_features_;
+      _this->_impl_.supported_features_ = from._impl_.supported_features_;
     }
-    _impl_._has_bits_[0] |= cached_has_bits;
+    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void CodeGeneratorResponse::CopyFrom(const CodeGeneratorResponse& from) {

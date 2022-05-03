@@ -573,7 +573,7 @@ public class CodedInputStreamTest {
     // returning our big serialized message 'count' times.
     InputStream is = new RepeatingInputStream(serializedMessage, count);
     // Parse should succeed!
-    TestAllTypes.parseFrom(is);
+    TestAllTypes unused = TestAllTypes.parseFrom(is);
   }
 
   /**

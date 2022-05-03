@@ -90,6 +90,7 @@ Empty::Empty(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 }
 Empty::Empty(const Empty& from)
   : ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase() {
+  Empty* const _this = this; (void)_this;
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Empty)
 }

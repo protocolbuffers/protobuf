@@ -692,40 +692,30 @@ class Map {
       return FindHelper(k).first;
     }
 
-    // Insert the key into the map, if not present. In that case, the value will
-    // be value initialized.
+    // Inserts a new element into the container if there is no element with the
+    // key in the container.
+    // The new element is:
+    //  (1) Constructed in-place with the given args, if mapped_type is not
+    //      arena constructible.
+    //  (2) Constructed in-place with the arena and then assigned with a
+    //      mapped_type temporary constructed with the given args, otherwise.
+    template <typename K, typename... Args>
+    std::pair<iterator, bool> try_emplace(K&& k, Args&&... args) {
+      return ArenaAwareTryEmplace(Arena::is_arena_constructable<mapped_type>(),
+                                  std::forward<K>(k),
+                                  std::forward<Args>(args)...);
+    }
+
+    // Inserts the key into the map, if not present. In that case, the value
+    // will be value initialized.
     template <typename K>
     std::pair<iterator, bool> insert(K&& k) {
-      std::pair<const_iterator, size_type> p = FindHelper(k);
-      // Case 1: key was already present.
-      if (p.first.node_ != nullptr)
-        return std::make_pair(iterator(p.first), false);
-      // Case 2: insert.
-      if (ResizeIfLoadIsOutOfRange(num_elements_ + 1)) {
-        p = FindHelper(k);
-      }
-      const size_type b = p.second;  // bucket number
-      // If K is not key_type, make the conversion to key_type explicit.
-      using TypeToInit = typename std::conditional<
-          std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
-          key_type>::type;
-      Node* node = Alloc<Node>(1);
-      // Even when arena is nullptr, CreateInArenaStorage is still used to
-      // ensure the arena of submessage will be consistent. Otherwise,
-      // submessage may have its own arena when message-owned arena is enabled.
-      Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first),
-                                  alloc_.arena(),
-                                  static_cast<TypeToInit>(std::forward<K>(k)));
-      Arena::CreateInArenaStorage(&node->kv.second, alloc_.arena());
-
-      iterator result = InsertUnique(b, node);
-      ++num_elements_;
-      return std::make_pair(result, true);
+      return try_emplace(std::forward<K>(k));
     }
 
     template <typename K>
     value_type& operator[](K&& k) {
-      return *insert(std::forward<K>(k)).first;
+      return *try_emplace(std::forward<K>(k)).first;
     }
 
     void erase(iterator it) {
@@ -767,6 +757,79 @@ class Map {
     }
 
    private:
+    template <typename K, typename... Args>
+    std::pair<iterator, bool> TryEmplaceInternal(K&& k, Args&&... args) {
+      std::pair<const_iterator, size_type> p = FindHelper(k);
+      // Case 1: key was already present.
+      if (p.first.node_ != nullptr)
+        return std::make_pair(iterator(p.first), false);
+      // Case 2: insert.
+      if (ResizeIfLoadIsOutOfRange(num_elements_ + 1)) {
+        p = FindHelper(k);
+      }
+      const size_type b = p.second;  // bucket number
+      // If K is not key_type, make the conversion to key_type explicit.
+      using TypeToInit = typename std::conditional<
+          std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
+          key_type>::type;
+      Node* node = Alloc<Node>(1);
+      // Even when arena is nullptr, CreateInArenaStorage is still used to
+      // ensure the arena of submessage will be consistent. Otherwise,
+      // submessage may have its own arena when message-owned arena is enabled.
+      // Note: This only works if `Key` is not arena constructible.
+      Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first),
+                                  alloc_.arena(),
+                                  static_cast<TypeToInit>(std::forward<K>(k)));
+      // Note: if `T` is arena constructible, `Args` needs to be empty.
+      Arena::CreateInArenaStorage(&node->kv.second, alloc_.arena(),
+                                  std::forward<Args>(args)...);
+
+      iterator result = InsertUnique(b, node);
+      ++num_elements_;
+      return std::make_pair(result, true);
+    }
+
+    // A helper function to perform an assignment of `mapped_type`.
+    // If the first argument is true, then it is a regular assignment.
+    // Otherwise, we first create a temporary and then perform an assignment.
+    template <typename V>
+    static void AssignMapped(std::true_type, mapped_type& mapped, V&& v) {
+      mapped = std::forward<V>(v);
+    }
+    template <typename... Args>
+    static void AssignMapped(std::false_type, mapped_type& mapped,
+                             Args&&... args) {
+      mapped = mapped_type(std::forward<Args>(args)...);
+    }
+
+    // Case 1: `mapped_type` is arena constructible. A temporary object is
+    // created and then (if `Args` are not empty) assigned to a mapped value
+    // that was created with the arena.
+    template <typename K>
+    std::pair<iterator, bool> ArenaAwareTryEmplace(std::true_type, K&& k) {
+      // case 1.1: "default" constructed (e.g. from arena only).
+      return TryEmplaceInternal(std::forward<K>(k));
+    }
+    template <typename K, typename... Args>
+    std::pair<iterator, bool> ArenaAwareTryEmplace(std::true_type, K&& k,
+                                                   Args&&... args) {
+      // case 1.2: "default" constructed + copy/move assignment
+      auto p = TryEmplaceInternal(std::forward<K>(k));
+      if (p.second) {
+        AssignMapped(std::is_same<void(typename std::decay<Args>::type...),
+                                  void(mapped_type)>(),
+                     p.first->second, std::forward<Args>(args)...);
+      }
+      return p;
+    }
+    // Case 2: `mapped_type` is not arena constructible. Using in-place
+    // construction.
+    template <typename... Args>
+    std::pair<iterator, bool> ArenaAwareTryEmplace(std::false_type,
+                                                   Args&&... args) {
+      return TryEmplaceInternal(std::forward<Args>(args)...);
+    }
+
     const_iterator find(const Key& k, TreeIterator* it) const {
       return FindHelper(k, it).first;
     }
@@ -1282,13 +1345,21 @@ class Map {
   }
 
   // insert
-  std::pair<iterator, bool> insert(const value_type& value) {
-    std::pair<typename InnerMap::iterator, bool> p =
-        elements_.insert(value.first);
-    if (p.second) {
-      p.first->second = value.second;
-    }
+  template <typename K, typename... Args>
+  std::pair<iterator, bool> try_emplace(K&& k, Args&&... args) {
+    auto p =
+        elements_.try_emplace(std::forward<K>(k), std::forward<Args>(args)...);
     return std::pair<iterator, bool>(iterator(p.first), p.second);
+  }
+  std::pair<iterator, bool> insert(const value_type& value) {
+    return try_emplace(value.first, value.second);
+  }
+  std::pair<iterator, bool> insert(value_type&& value) {
+    return try_emplace(value.first, std::move(value.second));
+  }
+  template <typename... Args>
+  std::pair<iterator, bool> emplace(Args&&... args) {
+    return insert(value_type(std::forward<Args>(args)...));
   }
   template <class InputIt>
   void insert(InputIt first, InputIt last) {

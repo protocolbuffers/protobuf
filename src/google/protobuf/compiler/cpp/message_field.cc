@@ -406,12 +406,12 @@ void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (implicit_weak_field_) {
     format(
-        "_Internal::mutable_$name$(this)->CheckTypeAndMergeFrom(\n"
+        "_Internal::mutable_$name$(_this)->CheckTypeAndMergeFrom(\n"
         "    _Internal::$name$(&from));\n");
   } else {
     format(
-        "_internal_mutable_$name$()->$type$::MergeFrom(from._internal_$name$())"
-        ";\n");
+        "_this->_internal_mutable_$name$()->$type$::MergeFrom(\n"
+        "    from._internal_$name$());\n");
   }
 }
 
@@ -444,7 +444,7 @@ void MessageFieldGenerator::GenerateCopyConstructorCode(
   Formatter format(printer, variables_);
   format(
       "if (from._internal_has_$name$()) {\n"
-      "  $field$ = new $type$(*from.$field$);\n"
+      "  _this->$field$ = new $type$(*from.$field$);\n"
       "}\n");
 }
 
@@ -831,7 +831,7 @@ void RepeatedMessageFieldGenerator::GenerateMergingCode(
   GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
-  format("$field$.MergeFrom(from.$field$);\n");
+  format("_this->$field$.MergeFrom(from.$field$);\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSwappingCode(

@@ -3709,11 +3709,12 @@ class DescriptorBuilder {
     void RequestHintOnFieldNumbers(
         const Message& reason,
         DescriptorPool::ErrorCollector::ErrorLocation reason_location,
-        int fields_count = 1) {
-      constexpr int kMaxSuggestions = 3;
+        int range_start = 0, int range_end = 1) {
+      auto fit = [](int value) {
+        return std::min(std::max(value, 0), FieldDescriptor::kMaxNumber);
+      };
       fields_to_suggest =
-          std::min(kMaxSuggestions,
-                   fields_to_suggest + std::min(kMaxSuggestions, fields_count));
+          fit(fields_to_suggest + fit(fit(range_end) - fit(range_start)));
       if (first_reason) return;
       first_reason = &reason;
       first_reason_location = reason_location;
@@ -5825,8 +5826,8 @@ void DescriptorBuilder::BuildExtensionRange(
   result->end = proto.end();
   if (result->start <= 0) {
     message_hints_[parent].RequestHintOnFieldNumbers(
-        proto, DescriptorPool::ErrorCollector::NUMBER,
-        std::max(0, result->end - result->start));
+        proto, DescriptorPool::ErrorCollector::NUMBER, result->start,
+        result->end);
     AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Extension numbers must be positive integers.");
   }
@@ -5865,8 +5866,8 @@ void DescriptorBuilder::BuildReservedRange(
   result->end = proto.end();
   if (result->start <= 0) {
     message_hints_[parent].RequestHintOnFieldNumbers(
-        proto, DescriptorPool::ErrorCollector::NUMBER,
-        std::max(0, result->end - result->start));
+        proto, DescriptorPool::ErrorCollector::NUMBER, result->start,
+        result->end);
     AddError(parent->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
              "Reserved numbers must be positive integers.");
   }
@@ -6709,7 +6710,8 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
     const Descriptor* message = &file->message_types_[message_index];
     auto* hints = FindOrNull(message_hints_, message);
     if (!hints) continue;
-    int fields_to_suggest = hints->fields_to_suggest;
+    constexpr int kMaxSuggestions = 3;
+    int fields_to_suggest = std::min(kMaxSuggestions, hints->fields_to_suggest);
     if (fields_to_suggest <= 0) continue;
     struct Range {
       int from;
@@ -6717,18 +6719,18 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
     };
     std::vector<Range> used_ordinals;
     auto add_ordinal = [&](int ordinal) {
+      if (ordinal <= 0 || ordinal > FieldDescriptor::kMaxNumber) return;
       if (!used_ordinals.empty() &&
-          used_ordinals.back().to < FieldDescriptor::kMaxNumber &&
-          ordinal == used_ordinals.back().to + 1) {
-        used_ordinals.back().to = ordinal;
+          ordinal == used_ordinals.back().to) {
+        used_ordinals.back().to = ordinal + 1;
       } else {
-        used_ordinals.push_back({ordinal, ordinal});
+        used_ordinals.push_back({ordinal, ordinal + 1});
       }
     };
     auto add_range = [&](int from, int to) {
-      from = std::max(0, std::min(FieldDescriptor::kMaxNumber, from));
-      to = std::max(0, std::min(FieldDescriptor::kMaxNumber, to));
-      if (from > to) return;
+      from = std::max(0, std::min(FieldDescriptor::kMaxNumber + 1, from));
+      to = std::max(0, std::min(FieldDescriptor::kMaxNumber + 1, to));
+      if (from >= to) return;
       used_ordinals.push_back({from, to});
     };
     for (int i = 0; i < message->field_count(); i++) {
@@ -6739,14 +6741,14 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
     }
     for (int i = 0; i < message->reserved_range_count(); i++) {
       auto range = message->reserved_range(i);
-      add_range(range->start, range->end - 1);
+      add_range(range->start, range->end);
     }
     for (int i = 0; i < message->extension_range_count(); i++) {
       auto range = message->extension_range(i);
-      add_range(range->start, range->end - 1);
+      add_range(range->start, range->end);
     }
     used_ordinals.push_back(
-        {FieldDescriptor::kMaxNumber, std::numeric_limits<int>::max()});
+        {FieldDescriptor::kMaxNumber, FieldDescriptor::kMaxNumber + 1});
     used_ordinals.push_back({FieldDescriptor::kFirstReservedNumber,
                              FieldDescriptor::kLastReservedNumber});
     std::sort(used_ordinals.begin(), used_ordinals.end(),
@@ -6764,7 +6766,7 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
         fields_to_suggest--;
       }
       if (fields_to_suggest == 0) break;
-      current_ordinal = std::max(current_ordinal, current_range.to + 1);
+      current_ordinal = std::max(current_ordinal, current_range.to);
     }
     if (hints->first_reason) {
       AddError(message->full_name(), *hints->first_reason,

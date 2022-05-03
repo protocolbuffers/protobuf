@@ -146,9 +146,11 @@ class PROTOBUF_EXPORT Api final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Api& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const Api& from);
+  void MergeFrom( const Api& from) {
+    Api::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -404,9 +406,11 @@ class PROTOBUF_EXPORT Method final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Method& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const Method& from);
+  void MergeFrom( const Method& from) {
+    Method::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -640,9 +644,11 @@ class PROTOBUF_EXPORT Mixin final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Mixin& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const Mixin& from);
+  void MergeFrom( const Mixin& from) {
+    Mixin::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;

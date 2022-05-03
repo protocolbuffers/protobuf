@@ -131,7 +131,8 @@ public class LiteTest {
     output.flush();
     // This tests a bug we had once with removal right at the boundary of the array. It would throw
     // at runtime so no need to assert.
-    TestAllTypesLite.parseFrom(new ByteArrayInputStream(byteStream.toByteArray()));
+    TestAllTypesLite unused =
+        TestAllTypesLite.parseFrom(new ByteArrayInputStream(byteStream.toByteArray()));
   }
 
   @Test

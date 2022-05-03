@@ -202,9 +202,11 @@ class PROTOBUF_EXPORT Struct final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Struct& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const Struct& from);
+  void MergeFrom( const Struct& from) {
+    Struct::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -373,9 +375,11 @@ class PROTOBUF_EXPORT Value final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Value& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const Value& from);
+  void MergeFrom( const Value& from) {
+    Value::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
@@ -630,9 +634,11 @@ class PROTOBUF_EXPORT ListValue final :
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const ListValue& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom(const ListValue& from);
+  void MergeFrom( const ListValue& from) {
+    ListValue::MergeImpl(*this, from);
+  }
   private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to, const ::PROTOBUF_NAMESPACE_ID::Message& from);
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
   public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;

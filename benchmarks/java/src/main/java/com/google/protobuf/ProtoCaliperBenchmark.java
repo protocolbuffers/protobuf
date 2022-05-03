@@ -151,7 +151,7 @@ public class ProtoCaliperBenchmark {
     }
   }
 
-
+  @SuppressWarnings("IgnoredPureGetter")
   @Benchmark
   void serializeToByteArray(int reps) throws IOException {
     if (sampleMessageList.size() == 0) {
