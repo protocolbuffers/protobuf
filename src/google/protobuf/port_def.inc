@@ -655,7 +655,7 @@
 #define PROTOBUF_CONSTEXPR constexpr
 #else
 #define PROTOBUF_CONSTINIT
-#define PROTOBUF_CONSTEXPR inline
+#define PROTOBUF_CONSTEXPR
 #endif
 
 // Some globals with an empty non-trivial destructor are annotated with
