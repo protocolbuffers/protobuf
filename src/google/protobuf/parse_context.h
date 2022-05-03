@@ -630,7 +630,7 @@ const char* ReadTagInlined(const char* ptr, uint32_t* out) {
             *out = 0;
             return nullptr;
           }
-          *out = RotateLeft(res, 28);
+          *out = static_cast<uint32_t>(RotateLeft(res, 28));
 #if defined(__GNUC__)
           // Note: this asm statement prevents the compiler from
           // trying to share the "return ptr + constant" among all
@@ -639,16 +639,16 @@ const char* ReadTagInlined(const char* ptr, uint32_t* out) {
 #endif
           return ptr + 5;
         }
-        *out = RotateLeft(res, 21);
+        *out = static_cast<uint32_t>(RotateLeft(res, 21));
         return ptr + 4;
       }
-      *out = RotateLeft(res, 14);
+      *out = static_cast<uint32_t>(RotateLeft(res, 14));
       return ptr + 3;
     }
-    *out = RotateLeft(res, 7);
+    *out = static_cast<uint32_t>(RotateLeft(res, 7));
     return ptr + 2;
   }
-  *out = res;
+  *out = static_cast<uint32_t>(res);
   return ptr + 1;
 }
 

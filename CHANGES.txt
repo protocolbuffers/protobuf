@@ -14,6 +14,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Refactor generated message class layout
   * Optimize tokenizer ParseInteger by removing division
   * Reserve exactly the right amount of capacity in ExtensionSet::MergeFrom
+  * Parse FLT_MAX correctly when represented in JSON
 
   Compiler
   * Protoc outputs the list of suggested field numbers when invalid field
