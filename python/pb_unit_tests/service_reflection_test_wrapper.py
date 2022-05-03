@@ -23,8 +23,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from google.protobuf.internal import service_reflection_test
+from google.protobuf.internal.service_reflection_test import *
 import unittest
 
 if __name__ == '__main__':
-  unittest.main(module=service_reflection_test, verbosity=2)
+  unittest.main(verbosity=2)

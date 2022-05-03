@@ -23,15 +23,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from google.protobuf.internal import message_factory_test
+from google.protobuf.internal.message_factory_test import *
 import unittest
 
-message_factory_test.MessageFactoryTest.testCreatePrototypeOverride.__unittest_expecting_failure__ = True
-message_factory_test.MessageFactoryTest.testDuplicateExtensionNumber.__unittest_expecting_failure__ = True
-message_factory_test.MessageFactoryTest.testGetMessages.__unittest_expecting_failure__ = True
-message_factory_test.MessageFactoryTest.testGetPrototype.__unittest_expecting_failure__ = True
-if hasattr(message_factory_test.MessageFactoryTest, 'testExtensionValueInDifferentFile'):
-  message_factory_test.MessageFactoryTest.testExtensionValueInDifferentFile.__unittest_expecting_failure__ = True
+MessageFactoryTest.testCreatePrototypeOverride.__unittest_expecting_failure__ = True
+MessageFactoryTest.testDuplicateExtensionNumber.__unittest_expecting_failure__ = True
+MessageFactoryTest.testGetMessages.__unittest_expecting_failure__ = True
+MessageFactoryTest.testGetPrototype.__unittest_expecting_failure__ = True
+if hasattr(MessageFactoryTest, 'testExtensionValueInDifferentFile'):
+  MessageFactoryTest.testExtensionValueInDifferentFile.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
-  unittest.main(module=message_factory_test, verbosity=2)
+  unittest.main(verbosity=2)

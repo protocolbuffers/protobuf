@@ -23,8 +23,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from google.protobuf.internal import symbol_database_test
+from google.protobuf.internal.symbol_database_test import *
 import unittest
 
 if __name__ == '__main__':
-  unittest.main(module=symbol_database_test, verbosity=2)
+  unittest.main(verbosity=2)

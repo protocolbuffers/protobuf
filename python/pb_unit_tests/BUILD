@@ -62,3 +62,9 @@ pyproto_test_wrapper(name = "unknown_fields_test")
 pyproto_test_wrapper(name = "well_known_types_test")
 
 pyproto_test_wrapper(name = "wire_format_test")
+
+filegroup(
+    name = "test_files",
+    srcs = glob(["*.py"]),
+    visibility = ["//python/dist:__pkg__"],
+)

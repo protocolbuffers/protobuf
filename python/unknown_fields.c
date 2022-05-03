@@ -58,7 +58,7 @@ static void PyUpb_UnknownFieldSet_Dealloc(PyObject* _self) {
   PyUpb_Dealloc(self);
 }
 
-PyUpb_UnknownFieldSet* PyUpb_UnknownFieldSet_NewBare() {
+PyUpb_UnknownFieldSet* PyUpb_UnknownFieldSet_NewBare(void) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   PyUpb_UnknownFieldSet* self =
       (void*)PyType_GenericAlloc(s->unknown_fields_type, 0);

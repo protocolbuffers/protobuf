@@ -77,7 +77,7 @@ def _python_headers_impl(repository_ctx):
     python3 = repository_ctx.which("python3")
     python_version = _get_python_version(repository_ctx)
     repository_ctx.file("BUILD.bazel", _build_file.format(python3))
-    repository_ctx.file("version.bzl", "SYSTEM_PYTHON_VERSION = {}".format(python_version))
+    repository_ctx.file("version.bzl", "SYSTEM_PYTHON_VERSION = '{}'".format(python_version))
 
 # The system_python() repository rule exposes Python headers from the system.
 #

@@ -23,24 +23,24 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from google.protobuf.internal import descriptor_test
+from google.protobuf.internal.descriptor_test import *
 import unittest
 
 # Our behavior here matches pure-Python, which does not allow
 # foo.enum_values_by_name.get([]).  We reject it because we return a true
 # dict (like pure Python), which does not allow hashing by a list.
-descriptor_test.GeneratedDescriptorTest.testDescriptor.__unittest_expecting_failure__ = True
+GeneratedDescriptorTest.testDescriptor.__unittest_expecting_failure__ = True
 
 # These fail because they attempt to add fields with conflicting JSON names.
 # We don't want to support this going forward.
-descriptor_test.MakeDescriptorTest.testCamelcaseName.__unittest_expecting_failure__ = True
-descriptor_test.MakeDescriptorTest.testJsonName.__unittest_expecting_failure__ = True
+MakeDescriptorTest.testCamelcaseName.__unittest_expecting_failure__ = True
+MakeDescriptorTest.testJsonName.__unittest_expecting_failure__ = True
 
 # We pass this test, but the error message is slightly different.
 # Our error message is better.
-descriptor_test.NewDescriptorTest.testImmutableCppDescriptor.__unittest_expecting_failure__ = True
+NewDescriptorTest.testImmutableCppDescriptor.__unittest_expecting_failure__ = True
 
-descriptor_test.DescriptorTest.testGetDebugString.__unittest_expecting_failure__ = True
+DescriptorTest.testGetDebugString.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
-  unittest.main(module=descriptor_test, verbosity=2)
+  unittest.main(verbosity=2)

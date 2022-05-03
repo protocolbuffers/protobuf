@@ -9,13 +9,12 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  DOCKER_IMAGE: gcr.io/protobuf-build/bazel/linux@sha256:05a41edee21f620445ca01c46b9d33be2e4d06c3d8adced4341ac5abea754baa
-
 jobs:
   build_wheels:
     name: Build Wheels
     runs-on: ubuntu-latest
+    env:
+      DOCKER_IMAGE: gcr.io/protobuf-build/bazel/linux@sha256:05a41edee21f620445ca01c46b9d33be2e4d06c3d8adced4341ac5abea754baa
 
     steps:
       - name: Set up Cloud SDK
@@ -32,7 +31,7 @@ jobs:
         run: docker pull $DOCKER_IMAGE
       - uses: actions/checkout@v2
       - name: Build Wheels
-        run: cd ${{ github.workspace }} && docker run -v$PWD:/workspace $DOCKER_IMAGE build --crosstool_top=@com_google_protobuf//toolchain:clang_suite --symlink_prefix=/ -c opt python/dist
+        run: cd ${{ github.workspace }} && docker run -v$PWD:/workspace $DOCKER_IMAGE build --crosstool_top=@com_google_protobuf//toolchain:clang_suite --symlink_prefix=/ -c dbg python/dist python/dist:test_wheel
       - name: Move Wheels
         run: mkdir wheels && find _build/out -name 'protobuf*.whl' -exec mv '{}' wheels ';'
       - uses: actions/upload-artifact@v3
@@ -69,6 +68,12 @@ jobs:
           source env/bin/activate || source env/Scripts/activate
           echo "VIRTUAL ENV:" $VIRTUAL_ENV
       - name: Install Wheels
-        run: pip install -vvv --no-index --find-links wheels protobuf
+        run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
       - name: Test that module is importable
         run: python -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'
+      - name: Run the unit tests
+        run: |
+          TESTS=$(pip show -f protobuftests | grep pb_unit_tests.*py$ | sed 's,/,.,g' | sed 's,\\,.,g' | sed -E 's,.py$,,g')
+          for test in $TESTS; do
+            python -m unittest -v $test
+          done

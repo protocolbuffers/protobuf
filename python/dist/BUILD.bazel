@@ -28,6 +28,7 @@ load(":dist.bzl", "py_dist", "py_dist_module")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@com_google_protobuf//:protobuf_version.bzl", "PROTOBUF_VERSION")
 load("@rules_python//python:packaging.bzl", "py_wheel")
+load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 
 licenses(["notice"])
 
@@ -102,7 +103,7 @@ py_wheel(
         "//python:full_api_3.8": "cp38",
         "//python:full_api_3.9": "cp39",
         "//python:limited_api_3.10": "cp310",
-        "//conditions:default": "system",
+        "//conditions:default": "cp" + SYSTEM_PYTHON_VERSION,
     }),
     strip_path_prefixes = [
         "python/dist/",
@@ -116,6 +117,23 @@ py_wheel(
         # this includes the unit tests.  We should filter these out so we are
         # only distributing true source files.
         "@com_google_protobuf//:python_srcs",
+    ],
+)
+
+py_wheel(
+    name = "test_wheel",
+    abi = "none",
+    distribution = "protobuftests",
+    platform = "any",
+    python_tag = "py3",
+    strip_path_prefixes = ["python/"],
+    version = PROTOBUF_VERSION,
+    deps = [
+        "//python/pb_unit_tests:test_files",
+        "@com_google_protobuf//:python_common_test_protos",
+        "@com_google_protobuf//:python_specific_test_protos",
+        "@com_google_protobuf//:python_test_srcs",
+        "@com_google_protobuf//:testdata",
     ],
 )
 

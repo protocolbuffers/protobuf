@@ -28,6 +28,7 @@
 #include "upb/util/def_to_proto.h"
 
 #include <inttypes.h>
+#include <math.h>
 #include <setjmp.h>
 #include <stdio.h>
 
@@ -124,6 +125,19 @@ static upb_StringView default_bytes(upb_ToProto_Context* ctx,
 static upb_StringView default_string(upb_ToProto_Context* ctx,
                                      const upb_FieldDef* f) {
   upb_MessageValue d = upb_FieldDef_Default(f);
+  upb_CType type = upb_FieldDef_CType(f);
+
+  if (type == kUpb_CType_Float || type == kUpb_CType_Double) {
+    double val = type == kUpb_CType_Float ? d.float_val : d.double_val;
+    if (val == INFINITY) {
+      return strviewdup(ctx, "inf");
+    } else if (val == -INFINITY) {
+      return strviewdup(ctx, "-inf");
+    } else if (val != val) {
+      return strviewdup(ctx, "nan");
+    }
+  }
+
   switch (upb_FieldDef_CType(f)) {
     case kUpb_CType_Bool:
       return strviewdup(ctx, d.bool_val ? "true" : "false");

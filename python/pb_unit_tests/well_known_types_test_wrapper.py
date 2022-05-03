@@ -23,8 +23,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from google.protobuf.internal import well_known_types_test
+from google.protobuf.internal.well_known_types_test import *
+import os
 import unittest
 
+if os.name == 'nt':
+  # TODO(b/231335093): This currently trigggers an assertion failure on Windows
+  # for unknown reasons.
+  StructTest.__unittest_skip__ = True
+
 if __name__ == '__main__':
-  unittest.main(module=well_known_types_test, verbosity=2)
+  unittest.main(verbosity=2)

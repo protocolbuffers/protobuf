@@ -24,22 +24,22 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
-from google.protobuf.internal import descriptor_pool_test
+from google.protobuf.internal.descriptor_pool_test import *
 
 # This is testing that certain methods unconditionally throw TypeError.
 # In the new extension we simply don't define them at all.
-descriptor_pool_test.AddDescriptorTest.testAddTypeError.__unittest_expecting_failure__ = True
+AddDescriptorTest.testAddTypeError.__unittest_expecting_failure__ = True
 
-descriptor_pool_test.SecondaryDescriptorFromDescriptorDB.testErrorCollector.__unittest_expecting_failure__ = True
+SecondaryDescriptorFromDescriptorDB.testErrorCollector.__unittest_expecting_failure__ = True
 
 # begin:github_only
 if __name__ == '__main__':
-  unittest.main(module=descriptor_pool_test, verbosity=2)
+  unittest.main(verbosity=2)
 # end:github_only
 
 # begin:google_only
-# descriptor_pool_test.CreateDescriptorPoolTest.testComplexNestingWithProtoFileParser.__unittest_expecting_failure__ = True
+# CreateDescriptorPoolTest.testComplexNestingWithProtoFileParser.__unittest_expecting_failure__ = True
 # from absl import app
 # if __name__ == '__main__':
-#   app.run(lambda argv: unittest.main(module=descriptor_pool_test, verbosity=2))
+#   app.run(lambda argv: unittest.main(verbosity=2))
 # end:google_only
