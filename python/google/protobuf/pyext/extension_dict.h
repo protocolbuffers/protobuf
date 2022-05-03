@@ -37,8 +37,6 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include <memory>
-
 #include <google/protobuf/pyext/message.h>
 
 namespace google {
