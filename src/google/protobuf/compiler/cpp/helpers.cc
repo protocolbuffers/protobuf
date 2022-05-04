@@ -574,7 +574,7 @@ std::string FieldMemberName(const FieldDescriptor* field, bool split) {
   if (field->real_containing_oneof() == nullptr) {
     return StrCat(prefix, split_prefix, FieldName(field), "_");
   }
-  // Oneof fields are enver split.
+  // Oneof fields are never split.
   GOOGLE_CHECK(!split);
   return StrCat(prefix, field->containing_oneof()->name(), "_.",
                       FieldName(field), "_");
