@@ -1569,15 +1569,6 @@ pkg_files(
     visibility = ["//pkg:__pkg__"],
 )
 
-# Additional files for PHP
-pkg_files(
-    name = "php_dist_files",
-    srcs = [
-        "composer.json",
-    ],
-    visibility = ["//pkg:__pkg__"],
-)
-
 # Python runtime
 pkg_files(
     name = "python_dist_files",
