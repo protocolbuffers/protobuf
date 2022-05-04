@@ -45,8 +45,25 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        # TODO: add macos once we are building Darwin wheels.
-        os: [ubuntu-18.04, ubuntu-latest, windows-latest]
+        include:
+          # Linux and Mac use the limited API, so all Python versions will use a single wheel.
+          # As a result we can just test the oldest and newest supported Python versions and assume
+          # this gives us sufficient test coverage.
+          - { os: ubuntu-18.04, python-version: "3.7", architecture: x64 }
+          - { os: macos-10.15, python-version: "3.7", architecture: x64 }
+          - { os: ubuntu-20.04, python-version: "3.10", architecture: x64 }
+          - { os: macos-12, python-version: "3.10", architecture: x64 }
+          # Windows uses the full API up until Python 3.10, so each of these
+          # jobs tests a distinct binary wheel.
+          # TODO(b/231485326): fix the win32 wheels to load properly.
+          # - { os: windows-2019, python-version: "3.7", architecture: x86 }
+          # - { os: windows-2019, python-version: "3.8", architecture: x86 }
+          # - { os: windows-2019, python-version: "3.9", architecture: x86 }
+          # - { os: windows-2019, python-version: "3.10", architecture: x86 }
+          - { os: windows-2019, python-version: "3.7", architecture: x64 }
+          - { os: windows-2019, python-version: "3.8", architecture: x64 }
+          - { os: windows-2019, python-version: "3.9", architecture: x64 }
+          - { os: windows-2019, python-version: "3.10", architecture: x64 }
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -59,7 +76,8 @@ jobs:
           path: wheels
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.architecture }}
       - name: Setup Python venv
         run: |
           python -m pip install --upgrade pip
@@ -67,7 +85,11 @@ jobs:
           # Windows uses 'Scripts' instead of 'bin'
           source env/bin/activate || source env/Scripts/activate
           echo "VIRTUAL ENV:" $VIRTUAL_ENV
-      - name: Install Wheels
+      - name: Install tzdata
+        run: pip install tzdata
+        # Only needed on Windows, Linux ships with tzdata.
+        if: ${{ contains(matrix.os, 'windows') }}
+      - name: Install Protobuf Wheels
         run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
       - name: Test that module is importable
         run: python -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'

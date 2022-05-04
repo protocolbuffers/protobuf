@@ -1,5 +1,6 @@
-"""Macro to support py_extension
-"""
+"""Macro to support py_extension """
+
+load("@bazel_skylib//lib:selects.bzl", "selects")
 
 def py_extension(name, srcs, copts, deps = []):
     """Creates a C++ library to extend python
@@ -15,8 +16,8 @@ def py_extension(name, srcs, copts, deps = []):
         name = name + "_binary",
         srcs = srcs,
         copts = copts + ["-fvisibility=hidden"],
-        linkopts = select({
-            "//python/dist:osx-x86_64_cpu": ["-undefined", "dynamic_lookup"],
+        linkopts = selects.with_or({
+            ("//python/dist:osx-x86_64_cpu", "//python/dist:osx-aarch64_cpu"): ["-undefined", "dynamic_lookup"],
             "//conditions:default": [],
         }),
         linkshared = True,

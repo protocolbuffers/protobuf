@@ -72,6 +72,11 @@ config_setting(
 )
 
 config_setting(
+    name = "osx-aarch64_cpu",
+    values = {"cpu": "osx-aarch_64"},
+)
+
+config_setting(
     name = "win32_cpu",
     values = {"cpu": "win32"},
 )
@@ -93,7 +98,8 @@ py_wheel(
     platform = select({
         ":x86_64_cpu": "manylinux2014_x86_64",
         ":aarch64_cpu": "manylinux2014_aarch64",
-        ":osx-x86_64_cpu": "macosx_10_9_universal",
+        ":osx-x86_64_cpu": "macosx_10_9_x86_64",
+        ":osx-aarch64_cpu": "macosx_10_9_arm64",
         ":win32_cpu": "win32",
         ":win64_cpu": "win_amd64",
         "//conditions:default": "any",
@@ -161,6 +167,8 @@ py_dist(
         "win64": "310",
         "linux-x86_64": "37",
         "linux-aarch_64": "37",
+        "osx-aarch_64": "37",
+        "osx-x86_64": "37",
     },
     tags = ["manual"],
 )

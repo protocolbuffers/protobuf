@@ -49,10 +49,11 @@
 // Python 3.10, In practice it has been stable since Python 3.1.
 //   https://bugs.python.org/issue41784
 //
-// On Linux, ELF lets us get away with using this function with the limited
-// API prior to 3.10.
+// On Linux/ELF and macOS/Mach-O, we can get away with using this function with
+// the limited API prior to 3.10.
 
-#if defined(__linux__) && defined(Py_LIMITED_API) && Py_LIMITED_API < 0x03100000
+#if (defined(__linux__) || defined(__APPLE__)) && defined(Py_LIMITED_API) && \
+    Py_LIMITED_API < 0x03100000
 PyAPI_FUNC(const char*)
     PyUnicode_AsUTF8AndSize(PyObject* unicode, Py_ssize_t* size);
 #endif
