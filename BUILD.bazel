@@ -1155,7 +1155,7 @@ alias(
 genrule(
     name = "generated_protos",
     srcs = ["src/google/protobuf/unittest_import.proto"],
-    outs = ["unittest_gen.proto"],
+    outs = ["unittest_gen_import.proto"],
     cmd = "cat $(SRCS) | sed 's|google/|src/google/|' >  $(OUTS)",
 )
 
