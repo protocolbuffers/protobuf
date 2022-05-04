@@ -286,67 +286,6 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
-# Map of all well known protos.
-# name => (include path, imports)
-WELL_KNOWN_PROTO_MAP = {
-    "any": ("src/google/protobuf/any.proto", []),
-    "api": (
-        "src/google/protobuf/api.proto",
-        [
-            "source_context",
-            "type",
-        ],
-    ),
-    "compiler_plugin": (
-        "src/google/protobuf/compiler/plugin.proto",
-        ["descriptor"],
-    ),
-    "descriptor": ("src/google/protobuf/descriptor.proto", []),
-    "duration": ("src/google/protobuf/duration.proto", []),
-    "empty": ("src/google/protobuf/empty.proto", []),
-    "field_mask": ("src/google/protobuf/field_mask.proto", []),
-    "source_context": ("src/google/protobuf/source_context.proto", []),
-    "struct": ("src/google/protobuf/struct.proto", []),
-    "timestamp": ("src/google/protobuf/timestamp.proto", []),
-    "type": (
-        "src/google/protobuf/type.proto",
-        [
-            "any",
-            "source_context",
-        ],
-    ),
-    "wrappers": ("src/google/protobuf/wrappers.proto", []),
-}
-
-WELL_KNOWN_PROTOS = [value[0] for value in WELL_KNOWN_PROTO_MAP.values()]
-
-LITE_WELL_KNOWN_PROTO_MAP = {
-    "any": ("src/google/protobuf/any.proto", []),
-    "api": (
-        "src/google/protobuf/api.proto",
-        [
-            "source_context",
-            "type",
-        ],
-    ),
-    "duration": ("src/google/protobuf/duration.proto", []),
-    "empty": ("src/google/protobuf/empty.proto", []),
-    "field_mask": ("src/google/protobuf/field_mask.proto", []),
-    "source_context": ("src/google/protobuf/source_context.proto", []),
-    "struct": ("src/google/protobuf/struct.proto", []),
-    "timestamp": ("src/google/protobuf/timestamp.proto", []),
-    "type": (
-        "src/google/protobuf/type.proto",
-        [
-            "any",
-            "source_context",
-        ],
-    ),
-    "wrappers": ("src/google/protobuf/wrappers.proto", []),
-}
-
-LITE_WELL_KNOWN_PROTOS = [value[0] for value in LITE_WELL_KNOWN_PROTO_MAP.values()]
-
 filegroup(
     name = "well_known_type_protos",
     srcs = [
