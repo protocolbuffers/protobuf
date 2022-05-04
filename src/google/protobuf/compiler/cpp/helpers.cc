@@ -38,6 +38,7 @@
 #include <functional>
 #include <limits>
 #include <map>
+#include <memory>
 #include <queue>
 #include <unordered_set>
 #include <vector>
@@ -185,6 +186,80 @@ bool AllocExpected(const Descriptor* descriptor) {
   return false;
 }
 
+// Describes different approaches to detect non-canonical int32 encoding. Only
+// kNever or kAlways is eligible for *simple* verification methods.
+enum class VerifyInt32Type {
+  kCustom,  // Only check if field number matches.
+  kNever,   // Do not check.
+  kAlways,  // Always check.
+};
+
+inline VerifySimpleType VerifyInt32TypeToVerifyCustom(VerifyInt32Type t) {
+  static VerifySimpleType kCustomTypes[] = {
+      VerifySimpleType::kCustom, VerifySimpleType::kCustomInt32Never,
+      VerifySimpleType::kCustomInt32Always};
+  return kCustomTypes[static_cast<int32_t>(t) -
+                      static_cast<int32_t>(VerifyInt32Type::kCustom)];
+}
+
+// Returns one of int32 verification types: kNever, kCustom, kAlways.
+//
+// We need to verify int32 encoding to detect non-canonical encoding (5B for
+// negative int32) and fallback to eager parsing.
+//
+// kNever skips int32 check  because there is no int32 field. kAlways
+// unconditionally verifies int32 encoding because all or almost varint fields
+// are int32. Otherwise, kCustom verifies int32 encoding only on exact field
+// number match. Note the following tweaks:
+// --uint32 very likely causes false positives. Having one requires kCustom.
+// --kCustom may be cheap enough if all int32 fields fit into a bitmask.
+// --Otherwise, try always check if X% of varint fields are int32.
+VerifyInt32Type ShouldVerifyInt32(const Descriptor* descriptor) {
+  int num_int32 = 0;
+  int num_int32_big_number = 0;
+  int num_uint32 = 0;
+  int num_other_varint = 0;
+
+  for (const auto* field : FieldRange(descriptor)) {
+    switch (field->type()) {
+      case FieldDescriptor::TYPE_INT32:
+        ++num_int32;
+        if (field->number() > 64) ++num_int32_big_number;
+        break;
+      case FieldDescriptor::TYPE_UINT32:
+        ++num_uint32;
+        ++num_other_varint;
+        break;
+      default:
+        if (internal::WireFormat::WireTypeForFieldType(field->type()) ==
+            internal::WireFormatLite::WIRETYPE_VARINT) {
+          ++num_other_varint;
+        }
+        break;
+    }
+  }
+
+  // If there is no int32 fields, no need to check int32 encoding.
+  if (num_int32 == 0) return VerifyInt32Type::kNever;
+
+  // If all varint fields are int32, *always* check int32 encoding.
+  if (num_other_varint == 0) return VerifyInt32Type::kAlways;
+
+  // Negative uint32 encoding will cause fallback eager parsing as it appears
+  // non-canonical encoding. Also, if all int32 fields fit into a 64 bit mask,
+  // checking bitmask is affordable. Try exact match in these cases.
+  if (num_uint32 > 0 || num_int32_big_number == 0) {
+    return VerifyInt32Type::kCustom;
+  }
+
+  // If a given varint is likely int32, we should just always check. Let's use
+  // an arbitrary threshold of 75% (#int32 / #varints).
+  constexpr int kLikelyInt32Pct = 75;
+  return (100 * num_int32) / (num_int32 + num_other_varint) >= kLikelyInt32Pct
+             ? VerifyInt32Type::kAlways
+             : VerifyInt32Type::kCustom;
+}
+
 }  // namespace
 
 bool IsLazy(const FieldDescriptor* field, const Options& options,
@@ -261,6 +336,8 @@ void SetCommonMessageDataVariables(
   (*variables)["oneof_case"] = prefix + "_oneof_case_";
   (*variables)["tracker"] = "Impl_::_tracker_";
   (*variables)["weak_field_map"] = prefix + "_weak_field_map_";
+  (*variables)["split"] = prefix + "_split_";
+  (*variables)["cached_split_ptr"] = "cached_split_ptr";
 }
 
 void SetUnknownFieldsVariable(const Descriptor* descriptor,
@@ -425,29 +502,32 @@ std::string Namespace(const EnumDescriptor* d, const Options& options) {
 }
 
 std::string DefaultInstanceType(const Descriptor* descriptor,
-                                const Options& options) {
-  return ClassName(descriptor) + "DefaultTypeInternal";
+                                const Options& /*options*/, bool split) {
+  return ClassName(descriptor) + (split ? "__Impl_Split" : "") +
+         "DefaultTypeInternal";
 }
 
 std::string DefaultInstanceName(const Descriptor* descriptor,
-                                const Options& options) {
-  return "_" + ClassName(descriptor, false) + "_default_instance_";
+                                const Options& /*options*/, bool split) {
+  return "_" + ClassName(descriptor, false) + (split ? "__Impl_Split" : "") +
+         "_default_instance_";
 }
 
 std::string DefaultInstancePtr(const Descriptor* descriptor,
-                               const Options& options) {
-  return DefaultInstanceName(descriptor, options) + "ptr_";
+                               const Options& options, bool split) {
+  return DefaultInstanceName(descriptor, options, split) + "ptr_";
 }
 
 std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
-                                         const Options& options) {
+                                         const Options& options, bool split) {
   return QualifiedFileLevelSymbol(
-      descriptor->file(), DefaultInstanceName(descriptor, options), options);
+      descriptor->file(), DefaultInstanceName(descriptor, options, split),
+      options);
 }
 
 std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
-                                        const Options& options) {
-  return QualifiedDefaultInstanceName(descriptor, options) + "ptr_";
+                                        const Options& options, bool split) {
+  return QualifiedDefaultInstanceName(descriptor, options, split) + "ptr_";
 }
 
 std::string DescriptorTableName(const FileDescriptor* file,
@@ -487,12 +567,15 @@ std::string FieldName(const FieldDescriptor* field) {
   return result;
 }
 
-std::string FieldMemberName(const FieldDescriptor* field) {
+std::string FieldMemberName(const FieldDescriptor* field, bool split) {
   StringPiece prefix =
       IsMapEntryMessage(field->containing_type()) ? "" : "_impl_.";
+  StringPiece split_prefix = split ? "_split_->" : "";
   if (field->real_containing_oneof() == nullptr) {
-    return StrCat(prefix, FieldName(field), "_");
+    return StrCat(prefix, split_prefix, FieldName(field), "_");
   }
+  // Oneof fields are enver split.
+  GOOGLE_CHECK(!split);
   return StrCat(prefix, field->containing_oneof()->name(), "_.",
                       FieldName(field), "_");
 }
@@ -875,6 +958,9 @@ bool HasLazyFields(const FileDescriptor* file, const Options& options,
   return false;
 }
 
+bool ShouldSplit(const Descriptor*, const Options&) { return false; }
+bool ShouldSplit(const FieldDescriptor*, const Options&) { return false; }
+
 static bool HasRepeatedFields(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
     if (descriptor->field(i)->label() == FieldDescriptor::LABEL_REPEATED) {
@@ -1016,9 +1102,9 @@ bool IsUtf8String(const FieldDescriptor* field) {
       field->type() == FieldDescriptor::TYPE_STRING;
 }
 
-bool ShouldVerifySimple(const Descriptor* descriptor) {
+VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
   (void)descriptor;
-  return false;
+  return VerifySimpleType::kCustom;
 }
 
 bool IsStringOrMessage(const FieldDescriptor* field) {

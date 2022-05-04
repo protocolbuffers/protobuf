@@ -899,11 +899,14 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
     if (info.func_name.empty()) {
       format("{::_pbi::TcParser::MiniParse, {}},\n");
     } else {
+      bool cold = ShouldSplit(info.field, options_);
       format(
           "{$1$,\n"
-          " {$2$, $3$, $4$, PROTOBUF_FIELD_OFFSET($classname$, $5$)}},\n",
+          " {$2$, $3$, $4$, PROTOBUF_FIELD_OFFSET($classname$$5$, $6$)}},\n",
           info.func_name, info.coded_tag, info.hasbit_idx, info.aux_idx,
-          FieldMemberName(info.field));
+          cold ? "::Impl_::Split" : "",
+          cold ? FieldName(info.field) + "_"
+               : FieldMemberName(info.field, /*cold=*/false));
     }
   }
 }
@@ -1048,8 +1051,11 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
       format("/* weak */ 0, 0, 0, 0");
     } else {
       const OneofDescriptor* oneof = field->real_containing_oneof();
-      format("PROTOBUF_FIELD_OFFSET($classname$, $1$), $2$, $3$,\n ",
-             FieldMemberName(field),
+      bool cold = ShouldSplit(field, options_);
+      format("PROTOBUF_FIELD_OFFSET($classname$$1$, $2$), $3$, $4$,\n ",
+             cold ? "::Impl_::Split" : "",
+             cold ? FieldName(field) + "_"
+                  : FieldMemberName(field, /*cold=*/false),
              (oneof ? oneof->index() : entry.hasbit_idx), entry.aux_idx);
       FormatFieldKind(format, entry, options_, scc_analyzer_);
     }
@@ -1550,7 +1556,8 @@ void ParseFunctionGenerator::GenerateFieldSwitch(
   format.Indent();
 
   for (const auto* field : fields) {
-    format.Set("field", FieldMemberName(field));
+    bool cold = ShouldSplit(field, options_);
+    format.Set("field", FieldMemberName(field, cold));
     PrintFieldComment(format, field);
     format("case $1$:\n", field->number());
     format.Indent();
@@ -1559,6 +1566,9 @@ void ParseFunctionGenerator::GenerateFieldSwitch(
     format("if (PROTOBUF_PREDICT_TRUE(static_cast<$uint8$>(tag) == $1$)) {\n",
            expected_tag & 0xFF);
     format.Indent();
+    if (cold) {
+      format("$msg$PrepareSplitMessageForWrite();\n");
+    }
     auto wiretype = WireFormatLite::GetTagWireType(expected_tag);
     uint32_t tag = WireFormatLite::MakeTag(field->number(), wiretype);
     int tag_size = io::CodedOutputStream::VarintSize32(tag);

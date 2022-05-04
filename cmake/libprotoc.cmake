@@ -87,8 +87,8 @@ set(libprotoc_files
 set(libprotoc_headers
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/file.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/cpp_generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/file.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/names.h
