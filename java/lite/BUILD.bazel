@@ -83,7 +83,7 @@ pkg_files(
     srcs = glob([
         "**/*.java",
     ]) + [
-        "BUILD",
+        "BUILD.bazel",
         "generate-sources-build.xml",
         "generate-test-sources-build.xml",
         "lite.awk",

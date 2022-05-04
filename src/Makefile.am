@@ -74,6 +74,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/arenaz_sampler.h                               \
   google/protobuf/compiler/code_generator.h                      \
   google/protobuf/compiler/command_line_interface.h              \
+  google/protobuf/compiler/cpp/cpp_generator.h                   \
   google/protobuf/compiler/cpp/file.h                            \
   google/protobuf/compiler/cpp/generator.h                       \
   google/protobuf/compiler/cpp/helpers.h                         \
@@ -84,6 +85,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/csharp/csharp_options.h               \
   google/protobuf/compiler/importer.h                            \
   google/protobuf/compiler/java/generator.h                      \
+  google/protobuf/compiler/java/java_generator.h                 \
   google/protobuf/compiler/java/kotlin_generator.h               \
   google/protobuf/compiler/java/names.h                          \
   google/protobuf/compiler/objectivec/objectivec_generator.h     \
@@ -94,6 +96,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/plugin.pb.h                           \
   google/protobuf/compiler/python/generator.h                    \
   google/protobuf/compiler/python/pyi_generator.h                \
+  google/protobuf/compiler/python/python_generator.h             \
   google/protobuf/compiler/ruby/ruby_generator.h                 \
   google/protobuf/descriptor.h                                   \
   google/protobuf/descriptor.pb.h                                \

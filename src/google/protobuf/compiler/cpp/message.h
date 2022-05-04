@@ -119,6 +119,9 @@ class MessageGenerator {
   // default instance.
   void GenerateConstexprConstructor(io::Printer* printer);
 
+  void GenerateCreateSplitMessage(io::Printer* printer);
+  void GenerateInitDefaultSplitInstance(io::Printer* printer);
+
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);
   void GenerateOneofClear(io::Printer* printer);

@@ -244,7 +244,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["number"] = StrCat(descriptor->number());
   (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
   (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
-  (*variables)["field"] = FieldMemberName(descriptor);
+  bool split = ShouldSplit(descriptor, options);
+  (*variables)["field"] = FieldMemberName(descriptor, split);
 
   (*variables)["tag_size"] = StrCat(
       WireFormat::TagSize(descriptor->number(), descriptor->type()));
@@ -252,6 +253,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
 
   (*variables)["set_hasbit"] = "";
   (*variables)["clear_hasbit"] = "";
+  (*variables)["maybe_prepare_split_message"] =
+      split ? "  PrepareSplitMessageForWrite();\n" : "";
 
   AddAccessorAnnotations(descriptor, options, variables);
 
@@ -299,6 +302,10 @@ void FieldGenerator::SetInlinedStringIndex(int32_t inlined_string_index) {
 
 void FieldGenerator::GenerateAggregateInitializer(io::Printer* printer) const {
   Formatter format(printer, variables_);
+  if (ShouldSplit(descriptor_, options_)) {
+    format("decltype(Impl_::Split::$name$_){arena}");
+    return;
+  }
   format("decltype($field$){arena}");
 }
 
@@ -312,6 +319,15 @@ void FieldGenerator::GenerateCopyAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("decltype($field$){from.$field$}");
+}
+
+void FieldGenerator::GenerateCopyConstructorCode(io::Printer* printer) const {
+  if (ShouldSplit(descriptor_, options_)) {
+    // There is no copy constructor for the `Split` struct, so we need to copy
+    // the value here.
+    Formatter format(printer, variables_);
+    format("$field$ = from.$field$;\n");
+  }
 }
 
 void SetCommonOneofFieldVariables(

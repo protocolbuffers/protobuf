@@ -117,46 +117,77 @@ bool FileContainsExtensions(const FileDescriptor* file) {
   return false;
 }
 
-// Helper for CollectMinimalFileDepsContainingExtensionsWorker that marks all
-// deps as visited and prunes them from the needed files list.
-void PruneFileAndDepsMarkingAsVisited(
-    const FileDescriptor* file,
-    std::vector<const FileDescriptor*>* files,
-    std::set<const FileDescriptor*>* files_visited) {
-  std::vector<const FileDescriptor*>::iterator iter =
-      std::find(files->begin(), files->end(), file);
-  if (iter != files->end()) {
-    files->erase(iter);
-  }
-  files_visited->insert(file);
+bool IsDirectDependency(const FileDescriptor* dep, const FileDescriptor* file) {
   for (int i = 0; i < file->dependency_count(); i++) {
-    PruneFileAndDepsMarkingAsVisited(file->dependency(i), files, files_visited);
+    if (dep == file->dependency(i)) {
+      return true;
+    }
   }
+  return false;
 }
 
-// Helper for CollectMinimalFileDepsContainingExtensions.
-void CollectMinimalFileDepsContainingExtensionsWorker(
-    const FileDescriptor* file,
-    std::vector<const FileDescriptor*>* files,
-    std::set<const FileDescriptor*>* files_visited) {
-  if (files_visited->find(file) != files_visited->end()) {
-    return;
+struct FileDescriptorsOrderedByName {
+  inline bool operator()(const FileDescriptor* a,
+                         const FileDescriptor* b) const {
+    return a->name() < b->name();
   }
-  files_visited->insert(file);
+};
 
-  if (FileContainsExtensions(file)) {
-    files->push_back(file);
-    for (int i = 0; i < file->dependency_count(); i++) {
-      const FileDescriptor* dep = file->dependency(i);
-      PruneFileAndDepsMarkingAsVisited(dep, files, files_visited);
-    }
-  } else {
-    for (int i = 0; i < file->dependency_count(); i++) {
-      const FileDescriptor* dep = file->dependency(i);
-      CollectMinimalFileDepsContainingExtensionsWorker(dep, files,
-                                                       files_visited);
+}  // namespace
+
+FileGenerator::CommonState::CommonState() { }
+
+const FileGenerator::CommonState::MinDepsEntry&
+FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
+    const FileDescriptor* file) {
+  auto it = deps_info_cache_.find(file);
+  if (it != deps_info_cache_.end()) {
+    return it->second;
+  }
+
+  std::set<const FileDescriptor*> min_deps_collector;
+  std::set<const FileDescriptor*> covered_deps_collector;
+  std::set<const FileDescriptor*> to_prune;
+  for (int i = 0; i < file->dependency_count(); i++) {
+    const FileDescriptor* dep = file->dependency(i);
+    MinDepsEntry dep_info =
+        CollectMinimalFileDepsContainingExtensionsInternal(dep);
+
+    // Everything the dep covered, this file will also cover.
+    covered_deps_collector.insert(dep_info.covered_deps.begin(), dep_info.covered_deps.end());
+    // Prune everything from the dep's covered list in case another dep lists it
+    // as a min dep.
+    to_prune.insert(dep_info.covered_deps.begin(), dep_info.covered_deps.end());
+
+    // Does the dep have any extensions...
+    if (dep_info.has_extensions) {
+      // Yes -> Add this file, prune its min_deps and add them to the covered deps.
+      min_deps_collector.insert(dep);
+      to_prune.insert(dep_info.min_deps.begin(), dep_info.min_deps.end());
+      covered_deps_collector.insert(dep_info.min_deps.begin(), dep_info.min_deps.end());
+    } else {
+      // No -> Just use its min_deps.
+      min_deps_collector.insert(dep_info.min_deps.begin(), dep_info.min_deps.end());
     }
   }
+
+  const bool file_has_exts = FileContainsExtensions(file);
+
+  // Fast path: if nothing to prune or there was only one dep, the prune work is
+  // a waste, skip it.
+  if (to_prune.empty() || file->dependency_count() == 1) {
+    return deps_info_cache_.insert(
+        {file, {file_has_exts, min_deps_collector, covered_deps_collector}}).first->second;
+  }
+
+  std::set<const FileDescriptor*> min_deps;
+  std::copy_if(min_deps_collector.begin(), min_deps_collector.end(),
+               std::inserter(min_deps, min_deps.end()),
+               [&](const FileDescriptor* value){
+    return to_prune.find(value) == to_prune.end();
+  });
+  return deps_info_cache_.insert(
+      {file, {file_has_exts, min_deps, covered_deps_collector}}).first->second;
 }
 
 // Collect the deps of the given file that contain extensions. This can be used to
@@ -168,32 +199,23 @@ void CollectMinimalFileDepsContainingExtensionsWorker(
 // There are comments about what the expected code should be line and limited
 // testing objectivec/Tests/GPBUnittestProtos2.m around compilation (#imports
 // specifically).
-void CollectMinimalFileDepsContainingExtensions(
-    const FileDescriptor* file,
-    std::vector<const FileDescriptor*>* files) {
-  std::set<const FileDescriptor*> files_visited;
-  for (int i = 0; i < file->dependency_count(); i++) {
-    const FileDescriptor* dep = file->dependency(i);
-    CollectMinimalFileDepsContainingExtensionsWorker(dep, files,
-                                                     &files_visited);
-  }
+const std::vector<const FileDescriptor*>
+FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensions(
+    const FileDescriptor* file) {
+  std::set<const FileDescriptor*> min_deps =
+    CollectMinimalFileDepsContainingExtensionsInternal(file).min_deps;
+  // Sort the list since pointer order isn't stable across runs.
+  std::vector<const FileDescriptor*> result(min_deps.begin(), min_deps.end());
+  std::sort(result.begin(), result.end(), FileDescriptorsOrderedByName());
+  return result;
 }
-
-bool IsDirectDependency(const FileDescriptor* dep, const FileDescriptor* file) {
-  for (int i = 0; i < file->dependency_count(); i++) {
-    if (dep == file->dependency(i)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-}  // namespace
 
 FileGenerator::FileGenerator(const FileDescriptor* file,
-                             const GenerationOptions& generation_options)
+                             const GenerationOptions& generation_options,
+                             CommonState& common_state)
     : file_(file),
       generation_options_(generation_options),
+      common_state_(common_state),
       root_class_name_(FileClassName(file)),
       is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
@@ -374,8 +396,8 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
         "\n");
   }
 
-  std::vector<const FileDescriptor*> deps_with_extensions;
-  CollectMinimalFileDepsContainingExtensions(file_, &deps_with_extensions);
+  std::vector<const FileDescriptor*> deps_with_extensions =
+    common_state_.CollectMinimalFileDepsContainingExtensions(file_);
 
   // The bundled protos (WKTs) don't use of forward declarations.
   bool headers_use_forward_declarations =

@@ -115,11 +115,7 @@ void StringFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
     // allocating arena is null. This is required to support message-owned
     // arena (go/path-to-arenas) where a root proto is destroyed but
     // InlinedStringField may have arena-allocated memory.
-    //
-    // `_init_inline_xxx` is used for initializing default instances.
-    format(
-        "::$proto_ns$::internal::InlinedStringField $name$_;\n"
-        "static std::true_type _init_inline_$name$_;\n");
+    format("::$proto_ns$::internal::InlinedStringField $name$_;\n");
   }
 }
 
@@ -129,6 +125,10 @@ void StringFieldGenerator::GenerateStaticMembers(io::Printer* printer) const {
     format(
         "static const ::$proto_ns$::internal::LazyString"
         " $default_variable_name$;\n");
+  }
+  if (inlined_) {
+    // `_init_inline_xxx` is used for initializing default instances.
+    format("static std::true_type _init_inline_$name$_;\n");
   }
 }
 
@@ -215,6 +215,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
         "template <typename ArgT0, typename... ArgT>\n"
         "inline PROTOBUF_ALWAYS_INLINE\n"
         "void $classname$::set_$name$(ArgT0&& arg0, ArgT... args) {\n"
+        "$maybe_prepare_split_message$"
         " $set_hasbit$\n"
         " $field$.$setter$(static_cast<ArgT0 &&>(arg0),"
         " args..., GetArenaForAllocation());\n"
@@ -226,6 +227,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
         "template <typename ArgT0, typename... ArgT>\n"
         "inline PROTOBUF_ALWAYS_INLINE\n"
         "void $classname$::set_$name$(ArgT0&& arg0, ArgT... args) {\n"
+        "$maybe_prepare_split_message$"
         " $set_hasbit$\n"
         " $field$.$setter$(static_cast<ArgT0 &&>(arg0),"
         " args..., GetArenaForAllocation(), _internal_$name$_donated(), "
@@ -240,6 +242,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
   }
   format(
       "inline std::string* $classname$::mutable_$name$() {\n"
+      "$maybe_prepare_split_message$"
       "  std::string* _s = _internal_mutable_$name$();\n"
       "$annotate_mutable$"
       "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
@@ -280,6 +283,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline std::string* $classname$::$release_name$() {\n"
       "$annotate_release$"
+      "$maybe_prepare_split_message$"
       "  // @@protoc_insertion_point(field_release:$full_name$)\n");
 
   if (HasHasbit(descriptor_)) {
@@ -311,6 +315,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "}\n"
       "inline void $classname$::set_allocated_$name$(std::string* $name$) {\n"
+      "$maybe_prepare_split_message$"
       "  if ($name$ != nullptr) {\n"
       "    $set_hasbit$\n"
       "  } else {\n"
@@ -440,6 +445,21 @@ void StringFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   }
 }
 
+void StringFieldGenerator::GenerateCreateSplitMessageCode(
+    io::Printer* printer) const {
+  GOOGLE_CHECK(ShouldSplit(descriptor_, options_));
+  GOOGLE_CHECK(!inlined_);
+  Formatter format(printer, variables_);
+  format("ptr->$name$_.InitDefault();\n");
+  if (IsString(descriptor_, options_) &&
+      descriptor_->default_value_string().empty()) {
+    format(
+        "#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING\n"
+        "  ptr->$name$_.Set(\"\", GetArenaForAllocation());\n"
+        "#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING\n");
+  }
+}
+
 void StringFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -474,6 +494,10 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
 void StringFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (!inlined_) {
+    if (ShouldSplit(descriptor_, options_)) {
+      format("$cached_split_ptr$->$name$_.Destroy();\n");
+      return;
+    }
     format("$field$.Destroy();\n");
     return;
   }
@@ -481,6 +505,7 @@ void StringFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   // Destructor has been implicitly skipped as a union, and even the
   // message-owned arena is enabled, arena could still be missing for
   // Arena::CreateMessage(nullptr).
+  GOOGLE_DCHECK(!ShouldSplit(descriptor_, options_));
   format("$field$.~InlinedStringField();\n");
 }
 
@@ -541,6 +566,11 @@ void StringFieldGenerator::GenerateConstexprAggregateInitializer(
 void StringFieldGenerator::GenerateAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
+  if (ShouldSplit(descriptor_, options_)) {
+    GOOGLE_CHECK(!inlined_);
+    format("decltype(Impl_::Split::$name$_){}");
+    return;
+  }
   if (!inlined_) {
     format("decltype($field$){}");
   } else {
