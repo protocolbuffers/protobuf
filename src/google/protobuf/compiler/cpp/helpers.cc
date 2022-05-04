@@ -202,63 +202,6 @@ inline VerifySimpleType VerifyInt32TypeToVerifyCustom(VerifyInt32Type t) {
                       static_cast<int32_t>(VerifyInt32Type::kCustom)];
 }
 
-// Returns one of int32 verification types: kNever, kCustom, kAlways.
-//
-// We need to verify int32 encoding to detect non-canonical encoding (5B for
-// negative int32) and fallback to eager parsing.
-//
-// kNever skips int32 check  because there is no int32 field. kAlways
-// unconditionally verifies int32 encoding because all or almost varint fields
-// are int32. Otherwise, kCustom verifies int32 encoding only on exact field
-// number match. Note the following tweaks:
-// --uint32 very likely causes false positives. Having one requires kCustom.
-// --kCustom may be cheap enough if all int32 fields fit into a bitmask.
-// --Otherwise, try always check if X% of varint fields are int32.
-VerifyInt32Type ShouldVerifyInt32(const Descriptor* descriptor) {
-  int num_int32 = 0;
-  int num_int32_big_number = 0;
-  int num_uint32 = 0;
-  int num_other_varint = 0;
-
-  for (const auto* field : FieldRange(descriptor)) {
-    switch (field->type()) {
-      case FieldDescriptor::TYPE_INT32:
-        ++num_int32;
-        if (field->number() > 64) ++num_int32_big_number;
-        break;
-      case FieldDescriptor::TYPE_UINT32:
-        ++num_uint32;
-        ++num_other_varint;
-        break;
-      default:
-        if (internal::WireFormat::WireTypeForFieldType(field->type()) ==
-            internal::WireFormatLite::WIRETYPE_VARINT) {
-          ++num_other_varint;
-        }
-        break;
-    }
-  }
-
-  // If there is no int32 fields, no need to check int32 encoding.
-  if (num_int32 == 0) return VerifyInt32Type::kNever;
-
-  // If all varint fields are int32, *always* check int32 encoding.
-  if (num_other_varint == 0) return VerifyInt32Type::kAlways;
-
-  // Negative uint32 encoding will cause fallback eager parsing as it appears
-  // non-canonical encoding. Also, if all int32 fields fit into a 64 bit mask,
-  // checking bitmask is affordable. Try exact match in these cases.
-  if (num_uint32 > 0 || num_int32_big_number == 0) {
-    return VerifyInt32Type::kCustom;
-  }
-
-  // If a given varint is likely int32, we should just always check. Let's use
-  // an arbitrary threshold of 75% (#int32 / #varints).
-  constexpr int kLikelyInt32Pct = 75;
-  return (100 * num_int32) / (num_int32 + num_other_varint) >= kLikelyInt32Pct
-             ? VerifyInt32Type::kAlways
-             : VerifyInt32Type::kCustom;
-}
 
 }  // namespace
 
