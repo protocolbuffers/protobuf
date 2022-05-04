@@ -37,6 +37,7 @@ kt_jvm_export(
     maven_coordinates = "com.google.protobuf:protobuf-kotlin-lite:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/kotlin-lite:pom_template.xml",
     resources = ["//:well_known_protos"],
+    tags = ["manual"],
     runtime_deps = [
         ":lite_extensions",
         ":well_known_protos_kotlin_lite",
@@ -44,7 +45,6 @@ kt_jvm_export(
         "//java/kotlin:only_for_use_in_proto_generated_code_its_generator_and_tests",
         "//java/kotlin:shared_runtime",
     ],
-    tags = ["manual"],
 )
 
 filegroup(
