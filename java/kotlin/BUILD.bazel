@@ -66,6 +66,7 @@ kt_jvm_export(
         ":shared_runtime",
         ":well_known_protos_kotlin",
     ],
+    tags = ["manual"],
 )
 
 filegroup(

@@ -1140,12 +1140,14 @@ alias(
     name = "objectivec",
     actual = "//objectivec",
     visibility = ["//visibility:public"],
+    tags = ["manual"],
 )
 
 alias(
     name = "protobuf_objc",
     actual = "//objectivec",
     visibility = ["//visibility:public"],
+    tags = ["manual"],
 )
 
 ################################################################################
