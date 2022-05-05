@@ -74,8 +74,8 @@ nobase_include_HEADERS =                                         \
   google/protobuf/arenaz_sampler.h                               \
   google/protobuf/compiler/code_generator.h                      \
   google/protobuf/compiler/command_line_interface.h              \
-  google/protobuf/compiler/cpp/file.h                            \
   google/protobuf/compiler/cpp/cpp_generator.h                   \
+  google/protobuf/compiler/cpp/file.h                            \
   google/protobuf/compiler/cpp/generator.h                       \
   google/protobuf/compiler/cpp/helpers.h                         \
   google/protobuf/compiler/cpp/names.h                           \

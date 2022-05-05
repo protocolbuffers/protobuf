@@ -105,8 +105,9 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["type"] = PrimitiveTypeName(options, descriptor->cpp_type());
   (*variables)["default"] = DefaultValue(options, descriptor);
   (*variables)["cached_byte_size_name"] = MakeVarintCachedSizeName(descriptor);
+  bool cold = ShouldSplit(descriptor, options);
   (*variables)["cached_byte_size_field"] =
-      MakeVarintCachedSizeFieldName(descriptor);
+      MakeVarintCachedSizeFieldName(descriptor, cold);
   (*variables)["tag"] = StrCat(internal::WireFormat::MakeTag(descriptor));
   int fixed_size = FixedSize(descriptor->type());
   if (fixed_size != -1) {
@@ -165,6 +166,7 @@ void PrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
       "  $field$ = value;\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n"
+      "$maybe_prepare_split_message$"
       "  _internal_set_$name$(value);\n"
       "$annotate_set$"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
@@ -233,6 +235,10 @@ void PrimitiveFieldGenerator::GenerateConstexprAggregateInitializer(
 void PrimitiveFieldGenerator::GenerateAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
+  if (ShouldSplit(descriptor_, options_)) {
+    format("decltype(Impl_::Split::$name$_){$default$}");
+    return;
+  }
   format("decltype($field$){$default$}");
 }
 

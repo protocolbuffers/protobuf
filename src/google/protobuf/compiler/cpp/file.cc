@@ -480,10 +480,40 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
                                                   io::Printer* printer) {
   Formatter format(printer, variables_);
   MessageGenerator* generator = message_generators_[idx].get();
+  // Generate the split instance first because it's needed in the constexpr
+  // constructor.
+  if (ShouldSplit(generator->descriptor_, options_)) {
+    // Use a union to disable the destructor of the _instance member.
+    // We can constant initialize, but the object will still have a non-trivial
+    // destructor that we need to elide.
+    format(
+        "struct $1$ {\n"
+        "  PROTOBUF_CONSTEXPR $1$()\n"
+        "      : _instance{",
+        DefaultInstanceType(generator->descriptor_, options_,
+                            /*split=*/true));
+    generator->GenerateInitDefaultSplitInstance(printer);
+    format(
+        "} {}\n"
+        "  ~$1$() {}\n"
+        "  union {\n"
+        "    $2$ _instance;\n"
+        "  };\n"
+        "};\n",
+        DefaultInstanceType(generator->descriptor_, options_, /*split=*/true),
+        StrCat(generator->classname_, "::Impl_::Split"));
+    // NO_DESTROY is not necessary for correctness. The empty destructor is
+    // enough. However, the empty destructor fails to be elided in some
+    // configurations (like non-opt or with certain sanitizers). NO_DESTROY is
+    // there just to improve performance and binary size in these builds.
+    format(
+        "PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT "
+        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $1$ $2$;\n",
+        DefaultInstanceType(generator->descriptor_, options_, /*split=*/true),
+        DefaultInstanceName(generator->descriptor_, options_, /*split=*/true));
+  }
+
   generator->GenerateConstexprConstructor(printer);
-  // Use a union to disable the destructor of the _instance member.
-  // We can constant initialize, but the object will still have a non-trivial
-  // destructor that we need to elide.
   format(
       "struct $1$ {\n"
       "  PROTOBUF_CONSTEXPR $1$()\n"
@@ -495,14 +525,11 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
       "};\n",
       DefaultInstanceType(generator->descriptor_, options_),
       generator->classname_);
-  // NO_DESTROY is not necessary for correctness. The empty destructor is
-  // enough. However, the empty destructor fails to be elided in some
-  // configurations (like non-opt or with certain sanitizers). NO_DESTROY is
-  // there just to improve performance and binary size in these builds.
-  format("PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT "
-         "PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $1$ $2$;\n",
-         DefaultInstanceType(generator->descriptor_, options_),
-         DefaultInstanceName(generator->descriptor_, options_));
+  format(
+      "PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT "
+      "PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $1$ $2$;\n",
+      DefaultInstanceType(generator->descriptor_, options_),
+      DefaultInstanceName(generator->descriptor_, options_));
 
   for (int i = 0; i < generator->descriptor_->field_count(); i++) {
     const FieldDescriptor* field = generator->descriptor_->field(i);
@@ -514,7 +541,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
           "($3$._instance.$4$.Init(), std::true_type{});\n",
           ClassName(generator->descriptor_), FieldName(field),
           DefaultInstanceName(generator->descriptor_, options_),
-          FieldMemberName(field));
+          FieldMemberName(field, ShouldSplit(field, options_)));
     }
   }
 
@@ -947,6 +974,7 @@ class FileGenerator::ForwardDeclarations {
  public:
   void AddMessage(const Descriptor* d) { classes_[ClassName(d)] = d; }
   void AddEnum(const EnumDescriptor* d) { enums_[ClassName(d)] = d; }
+  void AddSplit(const Descriptor* d) { splits_[ClassName(d)] = d; }
 
   void Print(const Formatter& format, const Options& options) const {
     for (const auto& p : enums_) {
@@ -967,6 +995,14 @@ class FileGenerator::ForwardDeclarations {
           class_desc, classname, DefaultInstanceType(class_desc, options),
           DefaultInstanceName(class_desc, options));
     }
+    for (const auto& p : splits_) {
+      const Descriptor* class_desc = p.second;
+      format(
+          "struct $1$;\n"
+          "$dllexport_decl $extern $1$ $2$;\n",
+          DefaultInstanceType(class_desc, options, /*split=*/true),
+          DefaultInstanceName(class_desc, options, /*split=*/true));
+    }
   }
 
   void PrintTopLevelDecl(const Formatter& format,
@@ -982,6 +1018,7 @@ class FileGenerator::ForwardDeclarations {
  private:
   std::map<std::string, const Descriptor*> classes_;
   std::map<std::string, const EnumDescriptor*> enums_;
+  std::map<std::string, const Descriptor*> splits_;
 };
 
 static void PublicImportDFS(const FileDescriptor* fd,
@@ -1026,6 +1063,12 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* printer) {
     const EnumDescriptor* d = enums[i];
     if (d && !public_set.count(d->file()))
       decls[Namespace(d, options_)].AddEnum(d);
+  }
+  for (const auto& mg : message_generators_) {
+    const Descriptor* d = mg->descriptor_;
+    if ((d != nullptr) && (public_set.count(d->file()) == 0u) &&
+        ShouldSplit(mg->descriptor_, options_))
+      decls[Namespace(d, options_)].AddSplit(d);
   }
 
   {

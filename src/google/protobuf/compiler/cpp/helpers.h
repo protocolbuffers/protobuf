@@ -153,24 +153,26 @@ std::string QualifiedExtensionName(const FieldDescriptor* d);
 
 // Type name of default instance.
 std::string DefaultInstanceType(const Descriptor* descriptor,
-                                const Options& options);
+                                const Options& options, bool split = false);
 
 // Non-qualified name of the default_instance of this message.
 std::string DefaultInstanceName(const Descriptor* descriptor,
-                                const Options& options);
+                                const Options& options, bool split = false);
 
 // Non-qualified name of the default instance pointer. This is used only for
 // implicit weak fields, where we need an extra indirection.
 std::string DefaultInstancePtr(const Descriptor* descriptor,
-                               const Options& options);
+                               const Options& options, bool split = false);
 
 // Fully qualified name of the default_instance of this message.
 std::string QualifiedDefaultInstanceName(const Descriptor* descriptor,
-                                         const Options& options);
+                                         const Options& options,
+                                         bool split = false);
 
 // Fully qualified name of the default instance pointer.
 std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
-                                        const Options& options);
+                                        const Options& options,
+                                        bool split = false);
 
 // DescriptorTable variable name.
 std::string DescriptorTableName(const FileDescriptor* file,
@@ -194,7 +196,7 @@ std::string ResolveKeyword(const std::string& name);
 std::string FieldName(const FieldDescriptor* field);
 
 // Returns the (unqualified) private member name for this field in C++ code.
-std::string FieldMemberName(const FieldDescriptor* field);
+std::string FieldMemberName(const FieldDescriptor* field, bool split);
 
 // Returns an estimate of the compiler's alignment for the field.  This
 // can't guarantee to be correct because the generated code could be compiled on
@@ -369,6 +371,12 @@ bool IsEagerlyVerifiedLazy(const FieldDescriptor* field, const Options& options,
 
 bool IsLazilyVerifiedLazy(const FieldDescriptor* field, const Options& options);
 
+// Is the given message being split (go/pdsplit)?
+bool ShouldSplit(const Descriptor* desc, const Options& options);
+
+// Is the given field being split out?
+bool ShouldSplit(const FieldDescriptor* field, const Options& options);
+
 inline bool IsFieldUsed(const FieldDescriptor* /* field */,
                         const Options& /* options */) {
   return true;
@@ -508,8 +516,10 @@ inline std::string MakeVarintCachedSizeName(const FieldDescriptor* field) {
 // MakeVarintCachedSizeFieldName, in case the field exists at some nested level
 // like:
 //   internal_container_._field_cached_byte_size_;
-inline std::string MakeVarintCachedSizeFieldName(const FieldDescriptor* field) {
-  return StrCat("_impl_._", FieldName(field), "_cached_byte_size_");
+inline std::string MakeVarintCachedSizeFieldName(const FieldDescriptor* field,
+                                                 bool split) {
+  return StrCat("_impl_.", split ? "_split_->" : "", "_",
+                      FieldName(field), "_cached_byte_size_");
 }
 
 // Note: A lot of libraries detect Any protos based on Descriptor::full_name()
@@ -1021,7 +1031,24 @@ bool ShouldVerify(const Descriptor* descriptor, const Options& options,
 bool ShouldVerify(const FileDescriptor* file, const Options& options,
                   MessageSCCAnalyzer* scc_analyzer);
 
-bool ShouldVerifySimple(const Descriptor* descriptor);
+// Indicates whether to use predefined verify methods for a given message. If a
+// message is "simple" and needs no special verification per field (e.g. message
+// field, repeated packed, UTF8 string, etc.), we can use either VerifySimple or
+// VerifySimpleAlwaysCheckInt32 methods as all verification can be done based on
+// the wire type.
+//
+// Otherwise, we need "custom" verify methods tailored to a message to pass
+// which field needs a special verification; i.e. InternalVerify.
+enum class VerifySimpleType {
+  kSimpleInt32Never,   // Use VerifySimple
+  kSimpleInt32Always,  // Use VerifySimpleAlwaysCheckInt32
+  kCustom,             // Use InternalVerify and check only for int32
+  kCustomInt32Never,   // Use InternalVerify but never check for int32
+  kCustomInt32Always,  // Use InternalVerify and always check for int32
+};
+
+// Returns VerifySimpleType if messages can be verified by predefined methods.
+VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor);
 
 bool IsUtf8String(const FieldDescriptor* field);
 

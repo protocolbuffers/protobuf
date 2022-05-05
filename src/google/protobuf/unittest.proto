@@ -1286,4 +1286,133 @@ message TestExtensionRangeSerialize {
   }
 }
 
+message TestVerifyInt32Simple {
+    optional int32 optional_int32_1 = 1;
+    optional int32 optional_int32_2 = 2;
+    optional int32 optional_int32_63 = 63;
+    optional int32 optional_int32_64 = 64;
+}
+
+message TestVerifyInt32 {
+    optional int32 optional_int32_1 = 1;
+    optional int32 optional_int32_2 = 2;
+    optional int32 optional_int32_63 = 63;
+    optional int32 optional_int32_64 = 64;
+
+    optional TestAllTypes optional_all_types = 9;
+    repeated TestAllTypes repeated_all_types = 10;
+}
+
+message TestVerifyMostlyInt32 {
+    optional int64 optional_int64_30 = 30;
+
+    optional int32 optional_int32_1 = 1;
+    optional int32 optional_int32_2 = 2;
+    optional int32 optional_int32_3 = 3;
+    optional int32 optional_int32_4 = 4;
+    optional int32 optional_int32_63 = 63;
+    optional int32 optional_int32_64 = 64;
+
+    optional TestAllTypes optional_all_types = 9;
+    repeated TestAllTypes repeated_all_types = 10;
+}
+
+message TestVerifyMostlyInt32BigFieldNumber {
+    optional int64 optional_int64_30 = 30;
+    optional int32 optional_int32_300 = 300;
+
+    optional int32 optional_int32_1 = 1;
+    optional int32 optional_int32_2 = 2;
+    optional int32 optional_int32_3 = 3;
+    optional int32 optional_int32_4 = 4;
+    optional int32 optional_int32_63 = 63;
+    optional int32 optional_int32_64 = 64;
+
+    optional TestAllTypes optional_all_types = 9;
+    repeated TestAllTypes repeated_all_types = 10;
+}
+
+message TestVerifyUint32Simple {
+    optional uint32 optional_uint32_1 = 1;
+    optional uint32 optional_uint32_2 = 2;
+    optional uint32 optional_uint32_63 = 63;
+    optional uint32 optional_uint32_64 = 64;
+}
+
+message TestVerifyUint32 {
+    optional uint32 optional_uint32_1 = 1;
+    optional uint32 optional_uint32_2 = 2;
+    optional uint32 optional_uint32_63 = 63;
+    optional uint32 optional_uint32_64 = 64;
+
+    optional TestAllTypes optional_all_types = 9;
+    repeated TestAllTypes repeated_all_types = 10;
+}
+
+message TestVerifyOneUint32 {
+    optional uint32 optional_uint32_1 = 1;
+    optional int32 optional_int32_2 = 2;
+    optional int32 optional_int32_63 = 63;
+    optional int32 optional_int32_64 = 64;
+
+    optional TestAllTypes optional_all_types = 9;
+    repeated TestAllTypes repeated_all_types = 10;
+}
+
+message TestVerifyOneInt32BigFieldNumber {
+    optional int32 optional_int32_65 = 65;
+
+    optional int64 optional_int64_1 = 1;
+    optional int64 optional_int64_2 = 2;
+    optional int64 optional_int64_63 = 63;
+    optional int64 optional_int64_64 = 64;
+
+    optional TestAllTypes optional_all_types = 9;
+    repeated TestAllTypes repeated_all_types = 10;
+}
+
+message TestVerifyInt32BigFieldNumber {
+    optional int32 optional_int32_1000 = 1000;
+    optional int32 optional_int32_65 = 65;
+
+    optional int32 optional_int32_1 = 1;
+    optional int32 optional_int32_2 = 2;
+    optional int32 optional_int32_63 = 63;
+    optional int32 optional_int32_64 = 64;
+
+    optional TestAllTypes optional_all_types = 9;
+    repeated TestAllTypes repeated_all_types = 10;
+}
+
+message TestVerifyUint32BigFieldNumber {
+    optional uint32 optional_uint32_1000 = 1000;
+    optional uint32 optional_uint32_65 = 65;
+
+    optional uint32 optional_uint32_1 = 1;
+    optional uint32 optional_uint32_2 = 2;
+    optional uint32 optional_uint32_63 = 63;
+    optional uint32 optional_uint32_64 = 64;
+
+    optional TestAllTypes optional_all_types = 9;
+    repeated TestAllTypes repeated_all_types = 10;
+}
+
+message TestVerifyBigFieldNumberUint32 {
+  message Nested {
+    optional uint32 optional_uint32_5000 = 5000;
+    optional uint32 optional_uint32_1000 = 1000;
+    optional uint32 optional_uint32_66 = 66;
+    optional uint32 optional_uint32_65 = 65;
+
+    optional uint32 optional_uint32_1 = 1;
+    optional uint32 optional_uint32_2 = 2;
+    optional uint32 optional_uint32_63 = 63;
+    optional uint32 optional_uint32_64 = 64;
+
+    optional Nested optional_nested = 9;
+    repeated Nested repeated_nested = 10;
+  }
+  optional Nested optional_nested = 1;
+}
+
 

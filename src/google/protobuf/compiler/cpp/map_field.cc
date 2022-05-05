@@ -136,6 +136,7 @@ void MapFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >*\n"
       "$classname$::_internal_mutable_$name$() {\n"
+      "$maybe_prepare_split_message$"
       "  return $field$.MutableMap();\n"
       "}\n"
       "inline ::$proto_ns$::Map< $key_cpp$, $val_cpp$ >*\n"
@@ -291,6 +292,12 @@ void MapFieldGenerator::GenerateCopyAggregateInitializer(
 void MapFieldGenerator::GenerateAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
+  if (ShouldSplit(descriptor_, options_)) {
+    format(
+        "/*decltype($classname$::Split::$name$_)*/"
+        "{::_pbi::ArenaInitialized(), arena}");
+    return;
+  }
   // MapField has no move constructor.
   format("/*decltype($field$)*/{::_pbi::ArenaInitialized(), arena}");
 }
@@ -299,6 +306,11 @@ void MapFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
+  if (ShouldSplit(descriptor_, options_)) {
+    format("$cached_split_ptr$->$name$_.Destruct();\n");
+    format("$cached_split_ptr$->$name$_.~MapField$lite$();\n");
+    return;
+  }
   format("$field$.Destruct();\n");
   format("$field$.~MapField$lite$();\n");
 }

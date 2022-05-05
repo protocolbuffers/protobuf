@@ -35,6 +35,7 @@
 #include <google/protobuf/compiler/cpp/message_field.h>
 
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/compiler/cpp/field.h>
 #include <google/protobuf/compiler/cpp/helpers.h>
 
 #include <google/protobuf/stubs/strutil.h>
@@ -178,6 +179,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline void $classname$::unsafe_arena_set_allocated_$name$(\n"
       "    $type$* $name$) {\n"
+      "$maybe_prepare_split_message$"
       // If we're not on an arena, free whatever we were holding before.
       // (If we are on arena, we can just forget the earlier pointer.)
       "  if (GetArenaForAllocation() == nullptr) {\n"
@@ -203,6 +205,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
       "inline $type$* $classname$::$release_name$() {\n"
       "$type_reference_function$"
       "$annotate_release$"
+      "$maybe_prepare_split_message$"
       "  $clear_hasbit$\n"
       "  $type$* temp = $casted_member$;\n"
       "  $field$ = nullptr;\n"
@@ -221,6 +224,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
       "$annotate_release$"
       "  // @@protoc_insertion_point(field_release:$full_name$)\n"
       "$type_reference_function$"
+      "$maybe_prepare_split_message$"
       "  $clear_hasbit$\n"
       "  $type$* temp = $casted_member$;\n"
       "  $field$ = nullptr;\n"
@@ -243,6 +247,9 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return $casted_member$;\n"
       "}\n"
       "inline $type$* $classname$::mutable_$name$() {\n"
+      // TODO(b/122856539): add tests to make sure all write accessors are able
+      // to prepare split message allocation.
+      "$maybe_prepare_split_message$"
       "  $type$* _msg = _internal_mutable_$name$();\n"
       "$annotate_mutable$"
       "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
@@ -254,7 +261,9 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline void $classname$::set_allocated_$name$($type$* $name$) {\n"
       "  ::$proto_ns$::Arena* message_arena = GetArenaForAllocation();\n");
-  format("  if (message_arena == nullptr) {\n");
+  format(
+      "$maybe_prepare_split_message$"
+      "  if (message_arena == nullptr) {\n");
   if (IsCrossFileMessage(descriptor_)) {
     format(
         "    delete reinterpret_cast< ::$proto_ns$::MessageLite*>($field$);\n");
@@ -434,6 +443,10 @@ void MessageFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
     // care when handling them.
     format("if (this != internal_default_instance()) ");
   }
+  if (ShouldSplit(descriptor_, options_)) {
+    format("delete $cached_split_ptr$->$name$_;\n");
+    return;
+  }
   format("delete $field$;\n");
 }
 
@@ -504,6 +517,10 @@ void MessageFieldGenerator::GenerateCopyAggregateInitializer(
 void MessageFieldGenerator::GenerateAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
+  if (ShouldSplit(descriptor_, options_)) {
+    format("decltype(Impl_::Split::$name$_){nullptr}");
+    return;
+  }
   format("decltype($field$){nullptr}");
 }
 

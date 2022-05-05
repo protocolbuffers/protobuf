@@ -136,7 +136,7 @@ class FieldGenerator {
   virtual void GenerateMergingCode(io::Printer* printer) const = 0;
 
   // Generates a copy constructor
-  virtual void GenerateCopyConstructorCode(io::Printer* printer) const = 0;
+  virtual void GenerateCopyConstructorCode(io::Printer* printer) const;
 
   // Generate lines of code (statements, not declarations) which swaps
   // this field and the corresponding field of another message, which
@@ -149,6 +149,9 @@ class FieldGenerator {
   // GeneratePrivateMembers(). These go into the message class's SharedCtor()
   // method, invoked by each of the generated constructors.
   virtual void GenerateConstructorCode(io::Printer* printer) const = 0;
+
+  // Generate initialization code for private members in the cold struct.
+  virtual void GenerateCreateSplitMessageCode(io::Printer* printer) const {}
 
   // Generate any code that needs to go in the class's SharedDtor() method,
   // invoked by the destructor.
