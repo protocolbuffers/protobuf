@@ -1457,18 +1457,6 @@ cc_binary(
 # )
 
 java_proto_library(
-    name = "java_test_protos",
-    visibility = ["//java:__subpackages__"],
-    deps = [":generic_test_protos"],
-)
-
-java_lite_proto_library(
-    name = "java_lite_test_protos",
-    visibility = ["//java:__subpackages__"],
-    deps = [":generic_test_protos"],
-)
-
-java_proto_library(
     name = "test_messages_proto2_java_proto",
     visibility = [
         "//java:__subpackages__",
