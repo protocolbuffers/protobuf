@@ -93,9 +93,45 @@ jobs:
         run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
       - name: Test that module is importable
         run: python -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'
+        if: ${{ !matrix.pure_python }}
       - name: Run the unit tests
         run: |
           TESTS=$(pip show -f protobuftests | grep pb_unit_tests.*py$ | sed 's,/,.,g' | sed 's,\\,.,g' | sed -E 's,.py$,,g')
+          for test in $TESTS; do
+            python -m unittest -v $test
+          done
+
+  test_pure_python_wheels:
+    name: Test Pure Python Wheels
+    needs: build_wheels
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        python-version: ["3.7", "3.10"]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: python-wheels
+          path: wheels
+      - name: Delete Binary Wheels
+        run: find wheels -type f | grep -v none-any | xargs rm
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Setup Python venv
+        run: |
+          python -m pip install --upgrade pip
+          python -m venv env
+          source env/bin/activate
+          echo "VIRTUAL ENV:" $VIRTUAL_ENV
+      - name: Install Protobuf Wheels
+        run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
+      - name: Run the unit tests
+        run: |
+          TESTS=$(pip show -f protobuftests | grep _test.py | sed 's,/,.,g' | sed -E 's,.py$,,g')
           for test in $TESTS; do
             python -m unittest -v $test
           done

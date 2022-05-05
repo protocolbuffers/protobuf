@@ -114,9 +114,11 @@ _py_dist_transition = transition(
 )
 
 def _py_dist_impl(ctx):
+    binary_files = [dep[DefaultInfo].files for dep in ctx.attr.binary_wheel]
+    pure_python_files = [ctx.attr.pure_python_wheel[DefaultInfo].files]
     return [
         DefaultInfo(files = depset(
-            transitive = [dep[DefaultInfo].files for dep in ctx.attr.binary_wheel],
+            transitive = binary_files + pure_python_files,
         )),
     ]
 
@@ -127,6 +129,7 @@ py_dist = rule(
             mandatory = True,
             cfg = _py_dist_transition,
         ),
+        "pure_python_wheel": attr.label(mandatory = True),
         "limited_api_wheels": attr.string_dict(),
         "full_api_versions": attr.string_list(),
         "full_api_cpus": attr.string_list(),

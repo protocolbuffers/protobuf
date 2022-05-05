@@ -119,9 +119,22 @@ py_wheel(
     deps = [
         ":message_mod",
         ":well_known_proto_py_pb2",
-        #TODO(https://github.com/protocolbuffers/upb/issues/503): currently
-        # this includes the unit tests.  We should filter these out so we are
-        # only distributing true source files.
+        "@com_google_protobuf//:python_srcs",
+    ],
+)
+
+py_wheel(
+    name = "pure_python_wheel",
+    abi = "none",
+    distribution = "protobuf",
+    platform = "any",
+    python_tag = "py3",
+    strip_path_prefixes = [
+        "python/",
+    ],
+    version = PROTOBUF_VERSION,
+    deps = [
+        ":well_known_proto_py_pb2",
         "@com_google_protobuf//:python_srcs",
     ],
 )
@@ -170,5 +183,6 @@ py_dist(
         "osx-aarch_64": "37",
         "osx-x86_64": "37",
     },
+    pure_python_wheel = ":pure_python_wheel",
     tags = ["manual"],
 )
