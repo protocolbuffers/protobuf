@@ -134,14 +134,6 @@ starlark_cc_proto_library(
 
 cc_proto_blacklist_test(
     name = "cc_proto_blacklist_test",
-    tags = [
-        # Exclude this target from wildcard expansion (//...). Due to
-        # https://github.com/bazelbuild/bazel/issues/10590, this test has to
-        # be nominated using the `@com_google_protobuf//` prefix. We do that,
-        # e.g., in kokoro/linux/bazel/build.sh.
-        # See also https://github.com/protocolbuffers/protobuf/pull/7096.
-        "manual",
-    ],
     deps = [
         ":any_cc_proto",
         ":api_cc_proto",
