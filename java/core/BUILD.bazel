@@ -121,6 +121,7 @@ java_export(
     resources = [
         "//:lite_well_known_protos",
     ],
+    tags = ["manual"],
     runtime_deps = [":lite"],
 )
 
@@ -156,6 +157,7 @@ java_export(
     resources = [
         "//:well_known_protos",
     ],
+    tags = ["manual"],
     runtime_deps = [":core"],
 )
 
