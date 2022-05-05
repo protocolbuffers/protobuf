@@ -12,16 +12,15 @@ def conformance_test(name, testee, failure_list = None, text_format_failure_list
 
     native.sh_test(
         name = name,
-        srcs = ["//:conformance/conformance_test_runner.sh"],
+        srcs = ["//conformance:conformance_test_runner.sh"],
         data = [testee] + failure_lists + [
-            "//:conformance_test_runner", 
+            "//conformance:conformance_test_runner",
         ],
         args = args,
         deps = [
             "@bazel_tools//tools/bash/runfiles",
         ],
     )
-
 
 def _strip_bazel(testee):
     if testee.startswith("//"):

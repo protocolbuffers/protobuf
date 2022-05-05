@@ -3,7 +3,7 @@ load("@rules_java//java:defs.bzl", "java_library", "java_lite_proto_library", "j
 load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
-load("//:internal.bzl", "conformance_test")
+load("//conformance:defs.bzl", "conformance_test")
 load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//java/internal:testing.bzl", "junit_tests")
@@ -295,9 +295,9 @@ build_test(
 
 conformance_test(
     name = "conformance_test",
-    failure_list = "//:conformance/failure_list_java.txt",
-    testee = "//:conformance_java",
-    text_format_failure_list = "//:conformance/text_format_failure_list_java.txt",
+    failure_list = "//conformance:failure_list_java.txt",
+    testee = "//conformance:conformance_java",
+    text_format_failure_list = "//conformance:text_format_failure_list_java.txt",
 )
 
 junit_tests(
