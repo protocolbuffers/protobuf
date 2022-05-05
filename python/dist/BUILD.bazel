@@ -160,7 +160,8 @@ py_dist(
     name = "dist",
     binary_wheel = ":binary_wheel",
     full_api_cpus = [
-        "win32",
+        # TODO(b/231485326): fix win32 build
+        # "win32",
         "win64",
     ],
     # Windows needs version-specific wheels until 3.10.
@@ -176,7 +177,8 @@ py_dist(
     # 3.10, but on Linux we can get away with using 3.7 (see ../python_api.h for
     # details).
     limited_api_wheels = {
-        "win32": "310",
+        # TODO(b/231485326): fix win32 build
+        # "win32": "310",
         "win64": "310",
         "linux-x86_64": "37",
         "linux-aarch_64": "37",
