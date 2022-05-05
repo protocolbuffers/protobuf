@@ -7,6 +7,15 @@ load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
+load(":compiler_config_setting.bzl", "create_compiler_config_setting")
+load(
+    ":protobuf.bzl",
+    "adapt_proto_library",
+    "cc_proto_library",
+    "internal_copied_filegroup",
+    "internal_protobuf_py_tests",
+    "py_proto_library",
+)
 load(":protobuf_release.bzl", "package_naming")
 
 licenses(["notice"])
@@ -50,8 +59,6 @@ COPTS = select({
         "-Wno-sign-compare",
     ],
 })
-
-load(":compiler_config_setting.bzl", "create_compiler_config_setting")
 
 create_compiler_config_setting(
     name = "msvc",
@@ -140,17 +147,6 @@ LINK_OPTS = select({
         "-lm",
     ],
 })
-
-load(
-    ":protobuf.bzl",
-    "adapt_proto_library",
-    "cc_proto_library",
-    "internal_copied_filegroup",
-    "internal_gen_kt_protos",
-    "internal_gen_well_known_protos_java",
-    "internal_protobuf_py_tests",
-    "py_proto_library",
-)
 
 cc_library(
     name = "protobuf_lite",
@@ -978,88 +974,6 @@ cc_test(
 # Java support
 ################################################################################
 
-internal_gen_well_known_protos_java(
-    name = "gen_well_known_protos_java",
-    visibility = [
-        "//java:__subpackages__",
-    ],
-    deps = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:compiler_plugin_proto",
-        "//:descriptor_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
-    ],
-)
-
-internal_gen_well_known_protos_java(
-    name = "gen_well_known_protos_javalite",
-    javalite = True,
-    visibility = [
-        "//java:__subpackages__",
-    ],
-    deps = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
-    ],
-)
-
-internal_gen_kt_protos(
-    name = "gen_well_known_protos_kotlin",
-    visibility = [
-        "//java:__subpackages__",
-    ],
-    deps = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:compiler_plugin_proto",
-        "//:descriptor_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
-    ],
-)
-
-internal_gen_kt_protos(
-    name = "gen_well_known_protos_kotlinlite",
-    lite = True,
-    visibility = [
-        "//java:__subpackages__",
-    ],
-    deps = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
-    ],
-)
-
 alias(
     name = "protobuf_java",
     actual = "//java/core",
@@ -1658,14 +1572,8 @@ proto_library(
         "src/google/protobuf/unittest_import_public_lite.proto",
         "src/google/protobuf/unittest_lite.proto",
     ],
+    visibility = ["//java/kotlin-lite:__subpackages__"],
     strip_import_prefix = "src",
-)
-
-internal_gen_kt_protos(
-    name = "gen_kotlin_unittest_lite",
-    lite = True,
-    visibility = ["//java:__subpackages__"],
-    deps = [":kt_unittest_lite"],
 )
 
 proto_library(
@@ -1676,13 +1584,8 @@ proto_library(
         "src/google/protobuf/unittest_import.proto",
         "src/google/protobuf/unittest_import_public.proto",
     ],
+    visibility = ["//java/kotlin:__subpackages__"],
     strip_import_prefix = "src",
-)
-
-internal_gen_kt_protos(
-    name = "gen_kotlin_unittest",
-    visibility = ["//java:__subpackages__"],
-    deps = [":kt_unittest"],
 )
 
 proto_library(
@@ -1692,20 +1595,11 @@ proto_library(
         "src/google/protobuf/unittest_import_public.proto",
         "src/google/protobuf/unittest_proto3.proto",
     ],
+    visibility = [
+        "//java/kotlin:__subpackages__",
+        "//java/kotlin-lite:__subpackages__",
+    ],
     strip_import_prefix = "src",
-)
-
-internal_gen_kt_protos(
-    name = "gen_kotlin_proto3_unittest_lite",
-    lite = True,
-    visibility = ["//java:__subpackages__"],
-    deps = [":kt_proto3_unittest"],
-)
-
-internal_gen_kt_protos(
-    name = "gen_kotlin_proto3_unittest",
-    visibility = ["//java:__subpackages__"],
-    deps = [":kt_proto3_unittest"],
 )
 
 ################################################################################
