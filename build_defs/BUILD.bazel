@@ -1,6 +1,7 @@
 # Internal Starlark definitions for Protobuf.
 
 load("@rules_cc//cc:defs.bzl", starlark_cc_proto_library = "cc_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 load(":compiler_config_setting.bzl", "create_compiler_config_setting")
 
@@ -148,4 +149,11 @@ cc_proto_blacklist_test(
         ":type_cc_proto",
         ":wrappers_cc_proto",
     ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
 )
