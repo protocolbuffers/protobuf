@@ -1205,15 +1205,20 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   BUILD.bazel                                       \
   WORKSPACE                                         \
   CMakeLists.txt                                    \
-  cmake/abseil-cpp.cmake                            \
+  build_defs/BUILD.bazel                            \
+  build_defs/cc_proto_blacklist_test.bzl            \
+  build_defs/compiler_config_setting.bzl            \
+  build_defs/cpp_opts.bzl                           \
+  build_files_updated_unittest.sh                   \
   cmake/CMakeLists.txt                              \
   cmake/README.md                                   \
+  cmake/abseil-cpp.cmake                            \
   cmake/conformance.cmake                           \
   cmake/examples.cmake                              \
   cmake/extract_includes.bat.in                     \
   cmake/install.cmake                               \
-  cmake/libprotobuf.cmake                           \
   cmake/libprotobuf-lite.cmake                      \
+  cmake/libprotobuf.cmake                           \
   cmake/libprotoc.cmake                             \
   cmake/protobuf-config-version.cmake.in            \
   cmake/protobuf-config.cmake.in                    \
@@ -1224,9 +1229,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   cmake/protoc.cmake                                \
   cmake/tests.cmake                                 \
   cmake/version.rc.in                               \
-  compiler_config_setting.bzl                       \
-  build_files_updated_unittest.sh                   \
-  cc_proto_blacklist_test.bzl                       \
   csharp/BUILD.bazel                                \
   editors/README.txt                                \
   editors/proto.vim                                 \
