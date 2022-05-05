@@ -1,6 +1,6 @@
 # Internal Starlark definitions for Protobuf.
 
-load("@rules_cc//cc:defs.bzl", native_cc_proto_library = "cc_proto_library")
+load("@rules_cc//cc:defs.bzl", starlark_cc_proto_library = "cc_proto_library")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 load(":compiler_config_setting.bzl", "create_compiler_config_setting")
 
@@ -60,73 +60,73 @@ config_setting(
 
 # Internal testing:
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "any_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:any_proto"],
 )
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "api_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:api_proto"],
 )
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "compiler_plugin_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:compiler_plugin_proto"],
 )
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "descriptor_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:descriptor_proto"],
 )
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "duration_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:duration_proto"],
 )
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "empty_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:empty_proto"],
 )
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "field_mask_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:field_mask_proto"],
 )
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "source_context_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:source_context_proto"],
 )
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "struct_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:struct_proto"],
 )
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "timestamp_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:timestamp_proto"],
 )
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "type_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:type_proto"],
 )
 
-native_cc_proto_library(
+starlark_cc_proto_library(
     name = "wrappers_cc_proto",
     visibility = ["//visibility:private"],
     deps = ["//:wrappers_proto"],

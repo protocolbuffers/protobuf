@@ -14,14 +14,14 @@ def _cc_proto_blacklist_test_impl(ctx):
     env = unittest.begin(ctx)
 
     for dep in ctx.attr.deps:
-        files = len(dep.files.to_list())
+        files = dep.files.to_list()
         asserts.equals(
             env,
-            0,
+            [],
             files,
             "Expected that target '{}' does not provide files, got {}".format(
                 dep.label,
-                files,
+                len(files),
             ),
         )
 
