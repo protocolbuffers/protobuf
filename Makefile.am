@@ -1254,7 +1254,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   examples/list_people.dart                         \
   examples/list_people.py                           \
   examples/pubspec.yaml                             \
-  internal.bzl                                      \
+  conformance/deps.bzl                              \
   maven_install.json                                \
   php/BUILD.bazel                                   \
   protobuf.bzl                                      \
