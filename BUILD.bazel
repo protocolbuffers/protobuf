@@ -7,6 +7,15 @@ load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
+load(":compiler_config_setting.bzl", "create_compiler_config_setting")
+load(
+    ":protobuf.bzl",
+    "adapt_proto_library",
+    "cc_proto_library",
+    "internal_copied_filegroup",
+    "internal_protobuf_py_tests",
+    "py_proto_library",
+)
 load(":protobuf_release.bzl", "package_naming")
 
 licenses(["notice"])
@@ -50,8 +59,6 @@ COPTS = select({
         "-Wno-sign-compare",
     ],
 })
-
-load(":compiler_config_setting.bzl", "create_compiler_config_setting")
 
 create_compiler_config_setting(
     name = "msvc",
@@ -140,17 +147,6 @@ LINK_OPTS = select({
         "-lm",
     ],
 })
-
-load(
-    ":protobuf.bzl",
-    "adapt_proto_library",
-    "cc_proto_library",
-    "internal_copied_filegroup",
-    "internal_gen_kt_protos",
-    "internal_gen_well_known_protos_java",
-    "internal_protobuf_py_tests",
-    "py_proto_library",
-)
 
 cc_library(
     name = "protobuf_lite",
@@ -286,88 +282,71 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
-# Map of all well known protos.
-# name => (include path, imports)
-WELL_KNOWN_PROTO_MAP = {
-    "any": ("src/google/protobuf/any.proto", []),
-    "api": (
-        "src/google/protobuf/api.proto",
-        [
-            "source_context",
-            "type",
-        ],
-    ),
-    "compiler_plugin": (
-        "src/google/protobuf/compiler/plugin.proto",
-        ["descriptor"],
-    ),
-    "descriptor": ("src/google/protobuf/descriptor.proto", []),
-    "duration": ("src/google/protobuf/duration.proto", []),
-    "empty": ("src/google/protobuf/empty.proto", []),
-    "field_mask": ("src/google/protobuf/field_mask.proto", []),
-    "source_context": ("src/google/protobuf/source_context.proto", []),
-    "struct": ("src/google/protobuf/struct.proto", []),
-    "timestamp": ("src/google/protobuf/timestamp.proto", []),
-    "type": (
-        "src/google/protobuf/type.proto",
-        [
-            "any",
-            "source_context",
-        ],
-    ),
-    "wrappers": ("src/google/protobuf/wrappers.proto", []),
-}
-
-WELL_KNOWN_PROTOS = [value[0] for value in WELL_KNOWN_PROTO_MAP.values()]
-
-LITE_WELL_KNOWN_PROTO_MAP = {
-    "any": ("src/google/protobuf/any.proto", []),
-    "api": (
-        "src/google/protobuf/api.proto",
-        [
-            "source_context",
-            "type",
-        ],
-    ),
-    "duration": ("src/google/protobuf/duration.proto", []),
-    "empty": ("src/google/protobuf/empty.proto", []),
-    "field_mask": ("src/google/protobuf/field_mask.proto", []),
-    "source_context": ("src/google/protobuf/source_context.proto", []),
-    "struct": ("src/google/protobuf/struct.proto", []),
-    "timestamp": ("src/google/protobuf/timestamp.proto", []),
-    "type": (
-        "src/google/protobuf/type.proto",
-        [
-            "any",
-            "source_context",
-        ],
-    ),
-    "wrappers": ("src/google/protobuf/wrappers.proto", []),
-}
-
-LITE_WELL_KNOWN_PROTOS = [value[0] for value in LITE_WELL_KNOWN_PROTO_MAP.values()]
-
 filegroup(
-    name = "well_known_protos",
-    srcs = WELL_KNOWN_PROTOS,
+    name = "well_known_type_protos",
+    srcs = [
+        "src/google/protobuf/any.proto",
+        "src/google/protobuf/api.proto",
+        "src/google/protobuf/duration.proto",
+        "src/google/protobuf/empty.proto",
+        "src/google/protobuf/field_mask.proto",
+        "src/google/protobuf/source_context.proto",
+        "src/google/protobuf/struct.proto",
+        "src/google/protobuf/timestamp.proto",
+        "src/google/protobuf/type.proto",
+        "src/google/protobuf/wrappers.proto",
+    ],
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "built_in_runtime_protos",
+    srcs = [
+        "src/google/protobuf/compiler/plugin.proto",
+        "src/google/protobuf/descriptor.proto",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
 exports_files(
-    srcs = WELL_KNOWN_PROTOS,
+    srcs = [
+        "src/google/protobuf/any.proto",
+        "src/google/protobuf/api.proto",
+        "src/google/protobuf/duration.proto",
+        "src/google/protobuf/empty.proto",
+        "src/google/protobuf/field_mask.proto",
+        "src/google/protobuf/source_context.proto",
+        "src/google/protobuf/struct.proto",
+        "src/google/protobuf/timestamp.proto",
+        "src/google/protobuf/type.proto",
+        "src/google/protobuf/wrappers.proto",
+    ],
     visibility = ["//pkg:__pkg__"],
 )
 
-filegroup(
+alias(
     name = "lite_well_known_protos",
-    srcs = LITE_WELL_KNOWN_PROTOS,
+    actual = ":well_known_type_protos",
     visibility = ["//visibility:public"],
 )
 
 adapt_proto_library(
     name = "cc_wkt_protos_genproto",
     visibility = ["//visibility:public"],
-    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    deps = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:compiler_plugin_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
 )
 
 cc_library(
@@ -379,6 +358,8 @@ cc_library(
 ################################################################################
 # Well Known Types Proto Library Rules
 #
+# https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
+################################################################################
 # These proto_library rules can be used with one of the language specific proto
 # library rules i.e. java_proto_library:
 #
@@ -388,19 +369,174 @@ cc_library(
 # )
 ################################################################################
 
-[proto_library(
-    name = proto[0] + "_proto",
-    srcs = [proto[1][0]],
+proto_library(
+    name = "any_proto",
+    srcs = ["src/google/protobuf/any.proto"],
     strip_import_prefix = "src",
     visibility = ["//visibility:public"],
-    deps = [dep + "_proto" for dep in proto[1][1]],
-) for proto in WELL_KNOWN_PROTO_MAP.items()]
+)
 
-[native_cc_proto_library(
-    name = proto + "_cc_proto",
-    visibility = ["//visibility:private"],
-    deps = [proto + "_proto"],
-) for proto in WELL_KNOWN_PROTO_MAP.keys()]
+proto_library(
+    name = "api_proto",
+    srcs = ["src/google/protobuf/api.proto"],
+    strip_import_prefix = "src",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:source_context_proto",
+        "//:type_proto",
+    ],
+)
+
+proto_library(
+    name = "duration_proto",
+    srcs = ["//:src/google/protobuf/duration.proto"],
+    strip_import_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "empty_proto",
+    srcs = ["src/google/protobuf/empty.proto"],
+    strip_import_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "field_mask_proto",
+    srcs = ["src/google/protobuf/field_mask.proto"],
+    strip_import_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "source_context_proto",
+    srcs = ["src/google/protobuf/source_context.proto"],
+    strip_import_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "struct_proto",
+    srcs = ["src/google/protobuf/struct.proto"],
+    strip_import_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "timestamp_proto",
+    srcs = ["src/google/protobuf/timestamp.proto"],
+    strip_import_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "type_proto",
+    srcs = ["src/google/protobuf/type.proto"],
+    strip_import_prefix = "src",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:any_proto",
+        "//:source_context_proto",
+    ],
+)
+
+proto_library(
+    name = "wrappers_proto",
+    srcs = ["src/google/protobuf/wrappers.proto"],
+    strip_import_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+# Built-in runtime types
+
+proto_library(
+    name = "compiler_plugin_proto",
+    srcs = ["src/google/protobuf/compiler/plugin.proto"],
+    strip_import_prefix = "src",
+    visibility = ["//visibility:public"],
+    deps = ["//:descriptor_proto"],
+)
+
+proto_library(
+    name = "descriptor_proto",
+    srcs = ["src/google/protobuf/descriptor.proto"],
+    strip_import_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+# Internal testing:
+
+native_cc_proto_library(
+  name = "any_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:any_proto"],
+)
+
+native_cc_proto_library(
+  name = "api_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:api_proto"],
+)
+
+native_cc_proto_library(
+  name = "compiler_plugin_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:compiler_plugin_proto"],
+)
+
+native_cc_proto_library(
+  name = "descriptor_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:descriptor_proto"],
+)
+
+native_cc_proto_library(
+  name = "duration_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:duration_proto"],
+)
+
+native_cc_proto_library(
+  name = "empty_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:empty_proto"],
+)
+
+native_cc_proto_library(
+  name = "field_mask_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:field_mask_proto"],
+)
+
+native_cc_proto_library(
+  name = "source_context_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:source_context_proto"],
+)
+
+native_cc_proto_library(
+  name = "struct_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:struct_proto"],
+)
+
+native_cc_proto_library(
+  name = "timestamp_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:timestamp_proto"],
+)
+
+native_cc_proto_library(
+  name = "type_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:type_proto"],
+)
+
+native_cc_proto_library(
+  name = "wrappers_cc_proto",
+  visibility = ["//visibility:private"],
+  deps = ["//:wrappers_proto"],
+)
 
 cc_proto_blacklist_test(
     name = "cc_proto_blacklist_test",
@@ -412,7 +548,20 @@ cc_proto_blacklist_test(
         # See also https://github.com/protocolbuffers/protobuf/pull/7096.
         "manual",
     ],
-    deps = [proto + "_cc_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    deps = [
+        "//:any_cc_proto",
+        "//:api_cc_proto",
+        "//:compiler_plugin_cc_proto",
+        "//:descriptor_cc_proto",
+        "//:duration_cc_proto",
+        "//:empty_cc_proto",
+        "//:field_mask_cc_proto",
+        "//:source_context_cc_proto",
+        "//:struct_cc_proto",
+        "//:timestamp_cc_proto",
+        "//:type_cc_proto",
+        "//:wrappers_cc_proto",
+    ],
 )
 
 ################################################################################
@@ -825,40 +974,6 @@ cc_test(
 # Java support
 ################################################################################
 
-internal_gen_well_known_protos_java(
-    name = "gen_well_known_protos_java",
-    visibility = [
-        "//java:__subpackages__",
-    ],
-    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
-)
-
-internal_gen_well_known_protos_java(
-    name = "gen_well_known_protos_javalite",
-    javalite = True,
-    visibility = [
-        "//java:__subpackages__",
-    ],
-    deps = [proto + "_proto" for proto in LITE_WELL_KNOWN_PROTO_MAP.keys()],
-)
-
-internal_gen_kt_protos(
-    name = "gen_well_known_protos_kotlin",
-    visibility = [
-        "//java:__subpackages__",
-    ],
-    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
-)
-
-internal_gen_kt_protos(
-    name = "gen_well_known_protos_kotlinlite",
-    lite = True,
-    visibility = [
-        "//java:__subpackages__",
-    ],
-    deps = [proto + "_proto" for proto in LITE_WELL_KNOWN_PROTO_MAP.keys()],
-)
-
 alias(
     name = "protobuf_java",
     actual = "//java/core",
@@ -1002,18 +1117,40 @@ config_setting(
 # package.
 internal_copied_filegroup(
     name = "protos_python",
-    srcs = WELL_KNOWN_PROTOS,
+    srcs = [
+        "src/google/protobuf/any.proto",
+        "src/google/protobuf/api.proto",
+        "src/google/protobuf/compiler/plugin.proto",
+        "src/google/protobuf/descriptor.proto",
+        "src/google/protobuf/duration.proto",
+        "src/google/protobuf/empty.proto",
+        "src/google/protobuf/field_mask.proto",
+        "src/google/protobuf/source_context.proto",
+        "src/google/protobuf/struct.proto",
+        "src/google/protobuf/timestamp.proto",
+        "src/google/protobuf/type.proto",
+        "src/google/protobuf/wrappers.proto",
+    ],
     dest = "python",
     strip_prefix = "src",
 )
 
-# TODO(dzc): Remove this once py_proto_library can have labels in srcs, in
-# which case we can simply add :protos_python in srcs.
-COPIED_WELL_KNOWN_PROTOS = ["python/" + s[4:] for s in WELL_KNOWN_PROTOS]
-
 py_proto_library(
     name = "well_known_types_py_pb2",
-    srcs = COPIED_WELL_KNOWN_PROTOS,
+    srcs = [
+        "python/google/protobuf/any.proto",
+        "python/google/protobuf/api.proto",
+        "python/google/protobuf/compiler/plugin.proto",
+        "python/google/protobuf/descriptor.proto",
+        "python/google/protobuf/duration.proto",
+        "python/google/protobuf/empty.proto",
+        "python/google/protobuf/field_mask.proto",
+        "python/google/protobuf/source_context.proto",
+        "python/google/protobuf/struct.proto",
+        "python/google/protobuf/timestamp.proto",
+        "python/google/protobuf/type.proto",
+        "python/google/protobuf/wrappers.proto",
+    ],
     include = "python",
     default_runtime = "",
     protoc = ":protoc",
@@ -1133,7 +1270,20 @@ cc_library(
 
 proto_lang_toolchain(
     name = "cc_toolchain",
-    blacklisted_protos = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    blacklisted_protos = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:compiler_plugin_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
     command_line = "--cpp_out=$(OUT)",
     runtime = ":protobuf",
     visibility = ["//visibility:public"],
@@ -1307,18 +1457,6 @@ cc_binary(
 # )
 
 java_proto_library(
-    name = "java_test_protos",
-    visibility = ["//java:__subpackages__"],
-    deps = [":generic_test_protos"],
-)
-
-java_lite_proto_library(
-    name = "java_lite_test_protos",
-    visibility = ["//java:__subpackages__"],
-    deps = [":generic_test_protos"],
-)
-
-java_proto_library(
     name = "test_messages_proto2_java_proto",
     visibility = [
         "//java:__subpackages__",
@@ -1422,14 +1560,8 @@ proto_library(
         "src/google/protobuf/unittest_import_public_lite.proto",
         "src/google/protobuf/unittest_lite.proto",
     ],
+    visibility = ["//java/kotlin-lite:__subpackages__"],
     strip_import_prefix = "src",
-)
-
-internal_gen_kt_protos(
-    name = "gen_kotlin_unittest_lite",
-    lite = True,
-    visibility = ["//java:__subpackages__"],
-    deps = [":kt_unittest_lite"],
 )
 
 proto_library(
@@ -1440,13 +1572,8 @@ proto_library(
         "src/google/protobuf/unittest_import.proto",
         "src/google/protobuf/unittest_import_public.proto",
     ],
+    visibility = ["//java/kotlin:__subpackages__"],
     strip_import_prefix = "src",
-)
-
-internal_gen_kt_protos(
-    name = "gen_kotlin_unittest",
-    visibility = ["//java:__subpackages__"],
-    deps = [":kt_unittest"],
 )
 
 proto_library(
@@ -1456,20 +1583,11 @@ proto_library(
         "src/google/protobuf/unittest_import_public.proto",
         "src/google/protobuf/unittest_proto3.proto",
     ],
+    visibility = [
+        "//java/kotlin:__subpackages__",
+        "//java/kotlin-lite:__subpackages__",
+    ],
     strip_import_prefix = "src",
-)
-
-internal_gen_kt_protos(
-    name = "gen_kotlin_proto3_unittest_lite",
-    lite = True,
-    visibility = ["//java:__subpackages__"],
-    deps = [":kt_proto3_unittest"],
-)
-
-internal_gen_kt_protos(
-    name = "gen_kotlin_proto3_unittest",
-    visibility = ["//java:__subpackages__"],
-    deps = [":kt_proto3_unittest"],
 )
 
 ################################################################################

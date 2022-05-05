@@ -2,8 +2,8 @@ load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_java//java:defs.bzl", "java_lite_proto_library")
 load("@rules_jvm_external//:kt_defs.bzl", "kt_jvm_export")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//:protobuf.bzl", "internal_gen_kt_protos")
+load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 
 java_lite_proto_library(
     name = "example_extensible_message_java_proto_lite",
@@ -16,10 +16,27 @@ kt_jvm_library(
     deps = ["//java/lite"],
 )
 
+internal_gen_kt_protos(
+    name = "gen_well_known_protos_kotlinlite",
+    lite = True,
+    deps = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
+)
+
 kt_jvm_library(
     name = "well_known_protos_kotlin_lite",
     srcs = [
-        "//:gen_well_known_protos_kotlinlite",
+        ":gen_well_known_protos_kotlinlite",
     ],
     deps = [
         "//java/kotlin:only_for_use_in_proto_generated_code_its_generator_and_tests",
@@ -36,7 +53,7 @@ kt_jvm_export(
     ],
     maven_coordinates = "com.google.protobuf:protobuf-kotlin-lite:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/kotlin-lite:pom_template.xml",
-    resources = ["//:well_known_protos"],
+    resources = ["//:well_known_type_protos"],
     tags = ["manual"],
     runtime_deps = [
         ":lite_extensions",
@@ -120,19 +137,31 @@ internal_gen_kt_protos(
     deps = ["//java/kotlin:multiple_files_proto3"],
 )
 
+internal_gen_kt_protos(
+    name = "gen_kotlin_unittest_lite",
+    lite = True,
+    deps = ["//:kt_unittest_lite"],
+)
+
 kt_jvm_library(
     name = "kotlin_unittest_lite",
     srcs = [
         ":gen_evil_names_proto2_lite",
-        "//:gen_kotlin_unittest_lite",
+        ":gen_kotlin_unittest_lite",
     ],
     deps = [
         ":evil_names_proto2_java_proto_lite",
-        "//:java_lite_test_protos",
+        "//java/core:generic_test_protos_java_proto_lite",
         "//java/kotlin:only_for_use_in_proto_generated_code_its_generator_and_tests",
         "//java/kotlin:shared_runtime",
         "//java/lite",
     ],
+)
+
+internal_gen_kt_protos(
+    name = "gen_kotlin_proto3_unittest_lite",
+    lite = True,
+    deps = ["//:kt_proto3_unittest"],
 )
 
 kt_jvm_library(
@@ -140,12 +169,12 @@ kt_jvm_library(
     srcs = [
         ":gen_evil_names_proto3_lite",
         ":gen_kotlin_proto3_java_multiple_files_lite",
-        "//:gen_kotlin_proto3_unittest_lite",
+        ":gen_kotlin_proto3_unittest_lite",
     ],
     deps = [
         ":evil_names_proto3_java_proto_lite",
         ":multiple_files_proto3_java_proto_lite",
-        "//:java_lite_test_protos",
+        "//java/core:generic_test_protos_java_proto_lite",
         "//java/kotlin:only_for_use_in_proto_generated_code_its_generator_and_tests",
         "//java/kotlin:shared_runtime",
         "//java/lite",
@@ -201,5 +230,4 @@ pkg_files(
         "process-lite-sources-build.xml",
     ],
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//java:__pkg__"],
 )
