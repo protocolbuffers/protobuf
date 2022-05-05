@@ -61,75 +61,75 @@ config_setting(
 # Internal testing:
 
 native_cc_proto_library(
-  name = "any_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:any_proto"],
+    name = "any_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:any_proto"],
 )
 
 native_cc_proto_library(
-  name = "api_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:api_proto"],
+    name = "api_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:api_proto"],
 )
 
 native_cc_proto_library(
-  name = "compiler_plugin_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:compiler_plugin_proto"],
+    name = "compiler_plugin_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:compiler_plugin_proto"],
 )
 
 native_cc_proto_library(
-  name = "descriptor_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:descriptor_proto"],
+    name = "descriptor_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:descriptor_proto"],
 )
 
 native_cc_proto_library(
-  name = "duration_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:duration_proto"],
+    name = "duration_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:duration_proto"],
 )
 
 native_cc_proto_library(
-  name = "empty_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:empty_proto"],
+    name = "empty_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:empty_proto"],
 )
 
 native_cc_proto_library(
-  name = "field_mask_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:field_mask_proto"],
+    name = "field_mask_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:field_mask_proto"],
 )
 
 native_cc_proto_library(
-  name = "source_context_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:source_context_proto"],
+    name = "source_context_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:source_context_proto"],
 )
 
 native_cc_proto_library(
-  name = "struct_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:struct_proto"],
+    name = "struct_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:struct_proto"],
 )
 
 native_cc_proto_library(
-  name = "timestamp_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:timestamp_proto"],
+    name = "timestamp_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:timestamp_proto"],
 )
 
 native_cc_proto_library(
-  name = "type_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:type_proto"],
+    name = "type_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:type_proto"],
 )
 
 native_cc_proto_library(
-  name = "wrappers_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:wrappers_proto"],
+    name = "wrappers_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:wrappers_proto"],
 )
 
 cc_proto_blacklist_test(
