@@ -285,6 +285,58 @@ TEST(MESSAGE_TEST_NAME, MergeFromUninitialized) {
   EXPECT_TRUE(TestUtil::EqualsToSerialized(q, p.SerializePartialAsString()));
 }
 
+TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
+  UNITTEST::NestedTestAllTypes original, parsed;
+  // Build proto with recursion depth of 3.
+  original.mutable_lazy_child()
+      ->mutable_child()
+      ->mutable_payload()
+      ->set_optional_int32(-1);
+  std::string serialized;
+  EXPECT_TRUE(original.SerializeToString(&serialized));
+
+  // User annotated LazyField ([lazy = true]) is eagerly verified and should
+  // catch the recursion limit violation.
+  io::ArrayInputStream array_stream(serialized.data(), serialized.size());
+  io::CodedInputStream input_stream(&array_stream);
+  input_stream.SetRecursionLimit(2);
+  EXPECT_FALSE(parsed.ParseFromCodedStream(&input_stream));
+
+  // Lazy read results in parsing error which can be verified by not having
+  // expected value.
+  EXPECT_NE(parsed.lazy_child().child().payload().optional_int32(), -1);
+}
+
+TEST(MESSAGE_TEST_NAME, NestedExplicitLazyExceedRecursionLimit) {
+  UNITTEST::NestedTestAllTypes original, parsed;
+  // Build proto with recursion depth of 5, with nested annotated LazyField.
+  original.mutable_lazy_child()
+      ->mutable_child()
+      ->mutable_lazy_child()
+      ->mutable_child()
+      ->mutable_payload()
+      ->set_optional_int32(-1);
+  std::string serialized;
+  EXPECT_TRUE(original.SerializeToString(&serialized));
+
+  // User annotated LazyField ([lazy = true]) is eagerly verified and should
+  // catch the recursion limit violation.
+  io::ArrayInputStream array_stream(serialized.data(), serialized.size());
+  io::CodedInputStream input_stream(&array_stream);
+  input_stream.SetRecursionLimit(4);
+  EXPECT_FALSE(parsed.ParseFromCodedStream(&input_stream));
+
+  // Lazy read results in parsing error which can be verified by not having
+  // expected value.
+  EXPECT_NE(parsed.lazy_child()
+                .child()
+                .lazy_child()
+                .child()
+                .payload()
+                .optional_int32(),
+            -1);
+}
+
 TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageTruncated) {
   UNITTEST::NestedTestAllTypes o, p;
   constexpr int kDepth = 5;
