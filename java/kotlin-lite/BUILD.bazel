@@ -230,4 +230,5 @@ pkg_files(
         "process-lite-sources-build.xml",
     ],
     strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//java:__pkg__"],
 )

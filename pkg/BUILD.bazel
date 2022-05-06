@@ -105,6 +105,7 @@ pkg_filegroup(
         "//:conformance_dist_files",
         "//:cpp_dist_files",  # to build protoc
         "//benchmarks:all_dist_files",
+        "//build_defs:dist_files",
         "@com_google_protobuf_examples//:dist_files",
     ],
 )
@@ -351,7 +352,7 @@ gen_automake_file_lists(
 cc_dist_library(
     name = "protobuf_lite",
     linkopts = select({
-        "//:msvc": [],
+        "//build_defs:config_msvc": [],
         "//conditions:default": ["-lpthread"],
     }),
     deps = [
@@ -362,7 +363,7 @@ cc_dist_library(
 cc_dist_library(
     name = "protobuf",
     linkopts = select({
-        "//:msvc": [],
+        "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-lz",
             "-lpthread",

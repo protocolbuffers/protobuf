@@ -1,13 +1,12 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
-load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
-load(":compiler_config_setting.bzl", "create_compiler_config_setting")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load(
     ":protobuf.bzl",
     "adapt_proto_library",
@@ -16,137 +15,14 @@ load(
     "internal_protobuf_py_tests",
     "py_proto_library",
 )
-load(":protobuf_release.bzl", "package_naming")
 
 licenses(["notice"])
 
 exports_files(["LICENSE"])
 
 ################################################################################
-# build configuration
-################################################################################
-
-################################################################################
-# ZLIB configuration
-################################################################################
-
-ZLIB_DEPS = ["@zlib//:zlib"]
-
-################################################################################
 # Protobuf Runtime Library
 ################################################################################
-
-MSVC_COPTS = [
-    "/wd4065",  # switch statement contains 'default' but no 'case' labels
-    "/wd4244",  # 'conversion' conversion from 'type1' to 'type2', possible loss of data
-    "/wd4251",  # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
-    "/wd4267",  # 'var' : conversion from 'size_t' to 'type', possible loss of data
-    "/wd4305",  # 'identifier' : truncation from 'type1' to 'type2'
-    "/wd4307",  # 'operator' : integral constant overflow
-    "/wd4309",  # 'conversion' : truncation of constant value
-    "/wd4334",  # 'operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
-    "/wd4355",  # 'this' : used in base member initializer list
-    "/wd4506",  # no definition for inline function 'function'
-    "/wd4800",  # 'type' : forcing value to bool 'true' or 'false' (performance warning)
-    "/wd4996",  # The compiler encountered a deprecated declaration.
-]
-
-COPTS = select({
-    ":msvc": MSVC_COPTS,
-    "//conditions:default": [
-        "-DHAVE_ZLIB",
-        "-Woverloaded-virtual",
-        "-Wno-sign-compare",
-    ],
-})
-
-create_compiler_config_setting(
-    name = "msvc",
-    value = "msvc-cl",
-    visibility = [
-        # Public, but Protobuf only visibility.
-        "//:__subpackages__",
-    ],
-)
-
-# Android NDK builds can specify different crosstool_top flags to choose which
-# STL they use for C++. We need these multiple variants to catch all of those
-# versions of crosstool_top and reliably detect Android.
-#
-# For more info on the various crosstool_tops used by NDK Bazel builds, see:
-# https://docs.bazel.build/versions/master/android-ndk.html#configuring-the-stl
-
-config_setting(
-    name = "android",
-    values = {
-        "crosstool_top": "//external:android/crosstool",
-    },
-    visibility = [
-        # Public, but Protobuf only visibility.
-        "//:__subpackages__",
-    ],
-)
-
-config_setting(
-    name = "android-stlport",
-    values = {
-        "crosstool_top": "@androidndk//:toolchain-stlport",
-    },
-    visibility = [
-        # Public, but Protobuf only visibility.
-        "//:__subpackages__",
-    ],
-)
-
-config_setting(
-    name = "android-libcpp",
-    values = {
-        "crosstool_top": "@androidndk//:toolchain-libcpp",
-    },
-    visibility = [
-        # Public, but Protobuf only visibility.
-        "//:__subpackages__",
-    ],
-)
-
-config_setting(
-    name = "android-gnu-libstdcpp",
-    values = {
-        "crosstool_top": "@androidndk//:toolchain-gnu-libstdcpp",
-    },
-    visibility = [
-        # Public, but Protobuf only visibility.
-        "//:__subpackages__",
-    ],
-)
-
-config_setting(
-    name = "android-default",
-    values = {
-        "crosstool_top": "@androidndk//:default_crosstool",
-    },
-    visibility = [
-        # Public, but Protobuf only visibility.
-        "//:__subpackages__",
-    ],
-)
-
-# Android and MSVC builds do not need to link in a separate pthread library.
-LINK_OPTS = select({
-    ":android": [],
-    ":android-stlport": [],
-    ":android-libcpp": [],
-    ":android-gnu-libstdcpp": [],
-    ":android-default": [],
-    ":msvc": [
-        # Suppress linker warnings about files with no symbols defined.
-        "-ignore:4221",
-    ],
-    "//conditions:default": [
-        "-lpthread",
-        "-lm",
-    ],
-})
 
 cc_library(
     name = "protobuf_lite",
@@ -194,11 +70,6 @@ cc_library(
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
 )
-
-PROTOBUF_DEPS = select({
-    ":msvc": [],
-    "//conditions:default": ZLIB_DEPS,
-})
 
 cc_library(
     name = "protobuf",
@@ -265,7 +136,10 @@ cc_library(
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = [":protobuf_lite"] + PROTOBUF_DEPS,
+    deps = [":protobuf_lite"] + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["@zlib//:zlib"],
+    }),
 )
 
 # This provides just the header files for use in projects that need to build
@@ -462,106 +336,6 @@ proto_library(
     srcs = ["src/google/protobuf/descriptor.proto"],
     strip_import_prefix = "src",
     visibility = ["//visibility:public"],
-)
-
-# Internal testing:
-
-native_cc_proto_library(
-  name = "any_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:any_proto"],
-)
-
-native_cc_proto_library(
-  name = "api_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:api_proto"],
-)
-
-native_cc_proto_library(
-  name = "compiler_plugin_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:compiler_plugin_proto"],
-)
-
-native_cc_proto_library(
-  name = "descriptor_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:descriptor_proto"],
-)
-
-native_cc_proto_library(
-  name = "duration_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:duration_proto"],
-)
-
-native_cc_proto_library(
-  name = "empty_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:empty_proto"],
-)
-
-native_cc_proto_library(
-  name = "field_mask_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:field_mask_proto"],
-)
-
-native_cc_proto_library(
-  name = "source_context_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:source_context_proto"],
-)
-
-native_cc_proto_library(
-  name = "struct_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:struct_proto"],
-)
-
-native_cc_proto_library(
-  name = "timestamp_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:timestamp_proto"],
-)
-
-native_cc_proto_library(
-  name = "type_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:type_proto"],
-)
-
-native_cc_proto_library(
-  name = "wrappers_cc_proto",
-  visibility = ["//visibility:private"],
-  deps = ["//:wrappers_proto"],
-)
-
-cc_proto_blacklist_test(
-    name = "cc_proto_blacklist_test",
-    tags = [
-        # Exclude this target from wildcard expansion (//...). Due to
-        # https://github.com/bazelbuild/bazel/issues/10590, this test has to
-        # be nominated using the `@com_google_protobuf//` prefix. We do that,
-        # e.g., in kokoro/linux/bazel/build.sh.
-        # See also https://github.com/protocolbuffers/protobuf/pull/7096.
-        "manual",
-    ],
-    deps = [
-        "//:any_cc_proto",
-        "//:api_cc_proto",
-        "//:compiler_plugin_cc_proto",
-        "//:descriptor_cc_proto",
-        "//:duration_cc_proto",
-        "//:empty_cc_proto",
-        "//:field_mask_cc_proto",
-        "//:source_context_cc_proto",
-        "//:struct_cc_proto",
-        "//:timestamp_cc_proto",
-        "//:type_cc_proto",
-        "//:wrappers_cc_proto",
-    ],
 )
 
 ################################################################################
@@ -932,14 +706,9 @@ cc_test(
         "src/google/protobuf/well_known_types_unittest.cc",
         "src/google/protobuf/wire_format_unittest.cc",
         "src/google/protobuf/wire_format_unittest.inc",
-    ] + select({
-        "//conditions:default": [
-            # AUTOGEN(non_msvc_test_srcs)
-        ],
-        ":msvc": [],
-    }),
+    ],
     copts = COPTS + select({
-        ":msvc": [],
+        "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated-declarations",
         ],
@@ -967,7 +736,10 @@ cc_test(
         ":protoc_lib",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
-    ] + PROTOBUF_DEPS,
+    ] + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["@zlib//:zlib"],
+    }),
 )
 
 ################################################################################
@@ -1271,18 +1043,18 @@ cc_library(
 proto_lang_toolchain(
     name = "cc_toolchain",
     blacklisted_protos = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:compiler_plugin_proto",
-        "//:descriptor_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
+        "@com_google_protobuf//:any_proto",
+        "@com_google_protobuf//:api_proto",
+        "@com_google_protobuf//:compiler_plugin_proto",
+        "@com_google_protobuf//:descriptor_proto",
+        "@com_google_protobuf//:duration_proto",
+        "@com_google_protobuf//:empty_proto",
+        "@com_google_protobuf//:field_mask_proto",
+        "@com_google_protobuf//:source_context_proto",
+        "@com_google_protobuf//:struct_proto",
+        "@com_google_protobuf//:timestamp_proto",
+        "@com_google_protobuf//:type_proto",
+        "@com_google_protobuf//:wrappers_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
     runtime = ":protobuf",
