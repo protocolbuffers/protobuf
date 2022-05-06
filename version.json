@@ -10,7 +10,7 @@
             "javascript": "3.21-dev",
             "objectivec": "3.21-dev",
             "php": "3.21-dev",
-            "python": "3.21-dev",
+            "python": "4.21-dev",
             "ruby": "3.21-dev"
         }
     }
