@@ -12,9 +12,9 @@ def conformance_test(name, testee, failure_list = None, text_format_failure_list
 
     native.sh_test(
         name = name,
-        srcs = ["//:conformance/conformance_test_runner.sh"],
+        srcs = ["//conformance:conformance_test_runner.sh"],
         data = [testee] + failure_lists + [
-            "//:conformance_test_runner", 
+            "//conformance:conformance_test_runner",
         ],
         args = args,
         deps = [
@@ -22,8 +22,7 @@ def conformance_test(name, testee, failure_list = None, text_format_failure_list
         ],
     )
 
-
 def _strip_bazel(testee):
     if testee.startswith("//"):
-        testee = testee.replace("//", "com_google_protobuf")
+        testee = testee.replace("//", "com_google_protobuf/")
     return testee.replace(":", "/")
