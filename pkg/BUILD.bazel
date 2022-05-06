@@ -102,10 +102,10 @@ pkg_filegroup(
     name = "dist_common",
     srcs = [
         "//:common_dist_files",
-        "//:conformance_dist_files",
         "//:cpp_dist_files",  # to build protoc
         "//benchmarks:all_dist_files",
         "//build_defs:dist_files",
+        "//conformance:dist_files",
         "@com_google_protobuf_examples//:dist_files",
     ],
 )
@@ -332,7 +332,7 @@ gen_automake_file_lists(
     src_libs = {
         # source rule: name in generated file
         "//:common_dist_files": "dist_common",
-        "//:conformance_dist_files": "dist_conformance",
+        "//conformance:dist_files": "dist_conformance",
         "//benchmarks:all_dist_files": "dist_benchmark",
         "@com_google_protobuf_examples//:dist_files": "dist_example",
         "//:csharp_dist_files": "dist_csharp",
