@@ -414,6 +414,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     // Provides access to protected GetOwningArena to generated messages.
     static Arena* GetOwningArena(const T* p) { return p->GetOwningArena(); }
 
+    static void InternalSwap(T* a, T* b) { a->InternalSwap(b); }
+
     static Arena* GetArenaForAllocationInternal(
         const T* p, std::true_type /*is_derived_from<MessageLite>*/) {
       return p->GetArenaForAllocation();

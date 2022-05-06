@@ -202,7 +202,6 @@ inline VerifySimpleType VerifyInt32TypeToVerifyCustom(VerifyInt32Type t) {
                       static_cast<int32_t>(VerifyInt32Type::kCustom)];
 }
 
-
 }  // namespace
 
 bool IsLazy(const FieldDescriptor* field, const Options& options,
