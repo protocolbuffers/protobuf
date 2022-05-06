@@ -24,5 +24,5 @@ def conformance_test(name, testee, failure_list = None, text_format_failure_list
 
 def _strip_bazel(testee):
     if testee.startswith("//"):
-        testee = testee.replace("//", "com_google_protobuf")
+        testee = testee.replace("//", "com_google_protobuf/")
     return testee.replace(":", "/")
