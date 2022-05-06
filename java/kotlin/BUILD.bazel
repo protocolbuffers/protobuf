@@ -59,6 +59,7 @@ kt_jvm_export(
     maven_coordinates = "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/kotlin:pom_template.xml",
     resources = ["//:well_known_protos"],
+    tags = ["manual"],
     runtime_deps = [
         ":bytestring_lib",
         ":full_extensions",

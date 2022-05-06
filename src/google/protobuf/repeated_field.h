@@ -346,7 +346,7 @@ class RepeatedField final {
   int total_size_;
   // Pad the Rep after arena allow for power-of-two byte sizes when
   // sizeof(Element) > sizeof(Arena*). eg for 16-byte objects.
-  static constexpr size_t kRepHeaderSize =
+  static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize =
       sizeof(Arena*) < sizeof(Element) ? sizeof(Element) : sizeof(Arena*);
   struct Rep {
     Arena* arena;

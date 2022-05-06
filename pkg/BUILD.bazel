@@ -211,7 +211,6 @@ pkg_filegroup(
     name = "php_srcs",
     srcs = [
         ":dist_common",
-        "//:php_dist_files",
         "//php:dist_files",
     ],
 )
@@ -339,11 +338,9 @@ gen_automake_file_lists(
         "//csharp:dist_files": "dist_csharp2",
         "//:objectivec_dist_files": "dist_objectivec",
         "//objectivec:dist_files": "dist_objectivec2",
-        "//:php_dist_files": "dist_php",
-        "//php:dist_files": "dist_php2",
+        "//php:dist_files": "dist_php",
         "//:python_dist_files": "dist_python",
         "//ruby:dist_files": "dist_ruby",
-        "//js:dist_files": "dist_js",
     },
 )
 
