@@ -51,28 +51,21 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  zend_object std;
   zval arena;
   const Descriptor* desc;
   upb_Message *msg;
+  zend_object std;
 } Message;
 
 zend_class_entry *message_ce;
 static zend_object_handlers message_object_handlers;
 
-static void Message_SuppressDefaultProperties(zend_class_entry *class_type) {
-  // We suppress all default properties, because all our properties are handled
-  // by our read_property handler.
-  //
-  // This also allows us to put our zend_object member at the beginning of our
-  // struct -- instead of putting it at the end with pointer fixups to access
-  // our own data, as recommended in the docs -- because Zend won't add any of
-  // its own storage directly after the zend_object if default_properties_count
-  // == 0.
-  //
-  // This is not officially supported, but since it simplifies the code, we'll
-  // do it for as long as it works in practice.
-  class_type->default_properties_count = 0;
+static Message* Message_FromZendObject(zend_object* obj) {
+  return (Message*)((char*)obj - offsetof(Message, std));
+}
+
+static Message* Message_FromZvalPtr(zval* zv) {
+  return Message_FromZendObject(Z_OBJ_P(zv));
 }
 
 // PHP Object Handlers /////////////////////////////////////////////////////////
@@ -83,9 +76,9 @@ static void Message_SuppressDefaultProperties(zend_class_entry *class_type) {
  * PHP class entry function to allocate and initialize a new Message object.
  */
 static zend_object* Message_create(zend_class_entry *class_type) {
-  Message *intern = emalloc(sizeof(Message));
-  Message_SuppressDefaultProperties(class_type);
+  Message *intern = zend_object_alloc(sizeof(Message), class_type);
   zend_object_std_init(&intern->std, class_type);
+  object_properties_init(&intern->std, class_type);
   intern->std.handlers = &message_object_handlers;
   Arena_Init(&intern->arena);
   return &intern->std;
@@ -99,7 +92,7 @@ static zend_object* Message_create(zend_class_entry *class_type) {
  * PHP in rare cases.
  */
 static void Message_dtor(zend_object* obj) {
-  Message* intern = (Message*)obj;
+  Message* intern = Message_FromZendObject(obj);
   ObjCache_Delete(intern->msg);
   zval_dtor(&intern->arena);
   zend_object_std_dtor(&intern->std);
@@ -254,8 +247,8 @@ static bool MessageEq(const upb_Message *m1, const upb_Message *m2, const upb_Me
  *   $m1 == $m2
  */
 static int Message_compare_objects(zval *m1, zval *m2) {
-  Message* intern1 = (Message*)Z_OBJ_P(m1);
-  Message* intern2 = (Message*)Z_OBJ_P(m2);
+  Message* intern1 = Message_FromZvalPtr(m1);
+  Message* intern2 = Message_FromZvalPtr(m2);
   const upb_MessageDef *m = intern1->desc->msgdef;
 
   if (intern2->desc->msgdef != m) return 1;
@@ -284,7 +277,7 @@ static int Message_compare_objects(zval *m1, zval *m2) {
 static int Message_has_property(PROTO_VAL *obj, PROTO_STR *member,
                                 int has_set_exists,
                                 void **cache_slot) {
-  Message* intern = PROTO_VAL_P(obj);
+  Message* intern = Message_FromZendObject(PROTO_VAL_P(obj));
   const upb_FieldDef *f = get_field(intern, member);
 
   if (!f) return 0;
@@ -318,7 +311,7 @@ static int Message_has_property(PROTO_VAL *obj, PROTO_STR *member,
  */
 static void Message_unset_property(PROTO_VAL *obj, PROTO_STR *member,
                                    void **cache_slot) {
-  Message* intern = PROTO_VAL_P(obj);
+  Message* intern = Message_FromZendObject(PROTO_VAL_P(obj));
   const upb_FieldDef *f = get_field(intern, member);
 
   if (!f) return;
@@ -355,7 +348,7 @@ static void Message_unset_property(PROTO_VAL *obj, PROTO_STR *member,
  */
 static zval *Message_read_property(PROTO_VAL *obj, PROTO_STR *member,
                                    int type, void **cache_slot, zval *rv) {
-  Message* intern = PROTO_VAL_P(obj);
+  Message* intern = Message_FromZendObject(PROTO_VAL_P(obj));
   const upb_FieldDef *f = get_field(intern, member);
 
   if (!f) return &EG(uninitialized_zval);
@@ -386,7 +379,7 @@ static zval *Message_read_property(PROTO_VAL *obj, PROTO_STR *member,
  */
 static PROTO_RETURN_VAL Message_write_property(
     PROTO_VAL *obj, PROTO_STR *member, zval *val, void **cache_slot) {
-  Message* intern = PROTO_VAL_P(obj);
+  Message* intern = Message_FromZendObject(PROTO_VAL_P(obj));
   const upb_FieldDef *f = get_field(intern, member);
 
   if (f && Message_set(intern, f, val)) {
@@ -425,7 +418,7 @@ static zval *Message_get_property_ptr_ptr(PROTO_VAL *object, PROTO_STR *member,
  *   $msg2 = clone $msg;
  */
 static zend_object *Message_clone_obj(PROTO_VAL *object) {
-  Message* intern = PROTO_VAL_P(object);
+  Message* intern = Message_FromZendObject(PROTO_VAL_P(object));
   upb_Message *clone = upb_Message_New(intern->desc->msgdef, Arena_Get(&intern->arena));
 
   // TODO: copy unknown fields?
@@ -458,9 +451,9 @@ void Message_GetPhpWrapper(zval *val, const Descriptor *desc, upb_Message *msg,
   }
 
   if (!ObjCache_Get(msg, val)) {
-    Message *intern = emalloc(sizeof(Message));
-    Message_SuppressDefaultProperties(desc->class_entry);
+    Message *intern = zend_object_alloc(sizeof(Message), desc->class_entry);
     zend_object_std_init(&intern->std, desc->class_entry);
+    object_properties_init(&intern->std, desc->class_entry);
     intern->std.handlers = &message_object_handlers;
     ZVAL_COPY(&intern->arena, arena);
     intern->desc = desc;
@@ -480,7 +473,7 @@ bool Message_GetUpbMessage(zval *val, const Descriptor *desc, upb_Arena *arena,
 
   if (Z_TYPE_P(val) == IS_OBJECT &&
       instanceof_function(Z_OBJCE_P(val), desc->class_entry)) {
-    Message *intern = (Message*)Z_OBJ_P(val);
+    Message *intern = Message_FromZvalPtr(val);
     upb_Arena_Fuse(arena, Arena_Get(&intern->arena));
     *msg = intern->msg;
     return true;
@@ -590,7 +583,7 @@ static void Message_Initialize(Message *intern, const Descriptor *desc) {
  * @param array Map of initial values ['k' = val]
  */
 PHP_METHOD(Message, __construct) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   const Descriptor* desc;
   zend_class_entry *ce = Z_OBJCE_P(getThis());
   upb_Arena *arena = Arena_Get(&intern->arena);
@@ -633,7 +626,7 @@ PHP_METHOD(Message, __construct) {
  * Discards any unknown fields for this message or any submessages.
  */
 PHP_METHOD(Message, discardUnknownFields) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   upb_Message_DiscardUnknown(intern->msg, intern->desc->msgdef, 64);
 }
 
@@ -643,7 +636,7 @@ PHP_METHOD(Message, discardUnknownFields) {
  * Clears all fields of this message.
  */
 PHP_METHOD(Message, clear) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   upb_Message_Clear(intern->msg, intern->desc->msgdef);
 }
 
@@ -654,7 +647,7 @@ PHP_METHOD(Message, clear) {
  * @param object Message to merge from.
  */
 PHP_METHOD(Message, mergeFrom) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   Message* from;
   upb_Arena *arena = Arena_Get(&intern->arena);
   const upb_MiniTable *l = upb_MessageDef_MiniTable(intern->desc->msgdef);
@@ -668,7 +661,7 @@ PHP_METHOD(Message, mergeFrom) {
     return;
   }
 
-  from = (Message*)Z_OBJ_P(value);
+  from = Message_FromZvalPtr(value);
 
   // Should be guaranteed since we passed the class type to
   // zend_parse_parameters().
@@ -695,7 +688,7 @@ PHP_METHOD(Message, mergeFrom) {
  * @param string Binary protobuf data to merge.
  */
 PHP_METHOD(Message, mergeFromString) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   char *data = NULL;
   char *data_copy = NULL;
   zend_long data_len;
@@ -725,7 +718,7 @@ PHP_METHOD(Message, mergeFromString) {
  * @return string Serialized protobuf data.
  */
 PHP_METHOD(Message, serializeToString) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   const upb_MiniTable *l = upb_MessageDef_MiniTable(intern->desc->msgdef);
   upb_Arena *tmp_arena = upb_Arena_New();
   char *data;
@@ -750,7 +743,7 @@ PHP_METHOD(Message, serializeToString) {
  * @param string Serialized JSON data.
  */
 PHP_METHOD(Message, mergeFromJsonString) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   char *data = NULL;
   char *data_copy = NULL;
   zend_long data_len;
@@ -790,7 +783,7 @@ PHP_METHOD(Message, mergeFromJsonString) {
  * @return string Serialized JSON data.
  */
 PHP_METHOD(Message, serializeToJsonString) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   size_t size;
   int options = 0;
   char buf[1024];
@@ -844,7 +837,7 @@ PHP_METHOD(Message, serializeToJsonString) {
  * @return Unwrapped field value or null.
  */
 PHP_METHOD(Message, readWrapperValue) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   char* member;
   const upb_FieldDef *f;
   zend_long size;
@@ -890,7 +883,7 @@ PHP_METHOD(Message, readWrapperValue) {
  * @param Unwrapped field value or null.
  */
 PHP_METHOD(Message, writeWrapperValue) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   upb_Arena *arena = Arena_Get(&intern->arena);
   char* member;
   const upb_FieldDef *f;
@@ -940,7 +933,7 @@ PHP_METHOD(Message, writeWrapperValue) {
  * @return string The field name in this oneof that is currently set.
  */
 PHP_METHOD(Message, whichOneof) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   const upb_OneofDef* oneof;
   const upb_FieldDef* field;
   char* name;
@@ -976,7 +969,7 @@ PHP_METHOD(Message, whichOneof) {
  * @return boolean
  */
 PHP_METHOD(Message, hasOneof) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   zend_long field_num;
   const upb_FieldDef* f;
 
@@ -1009,7 +1002,7 @@ PHP_METHOD(Message, hasOneof) {
  * @return object The oneof's field value.
  */
 PHP_METHOD(Message, readOneof) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   zend_long field_num;
   const upb_FieldDef* f;
   zval ret;
@@ -1059,7 +1052,7 @@ PHP_METHOD(Message, readOneof) {
  * @param object The field value we want to set.
  */
 PHP_METHOD(Message, writeOneof) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   zend_long field_num;
   const upb_FieldDef* f;
   upb_Arena *arena = Arena_Get(&intern->arena);
@@ -1163,7 +1156,7 @@ static bool StrViewEq(upb_StringView view, const char *str) {
 }
 
 PHP_METHOD(google_protobuf_Any, unpack) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   upb_StringView type_url = Message_getval(intern, "type_url").str_val;
   upb_StringView value = Message_getval(intern, "value").str_val;
   upb_DefPool *symtab = DescriptorPool_GetSymbolTable();
@@ -1191,7 +1184,7 @@ PHP_METHOD(google_protobuf_Any, unpack) {
   desc = Descriptor_GetFromMessageDef(m);
   PBPHP_ASSERT(desc->class_entry->create_object == Message_create);
   zend_object *obj = Message_create(desc->class_entry);
-  Message *msg = (Message*)obj;
+  Message *msg = Message_FromZendObject(obj);
   Message_Initialize(msg, desc);
   ZVAL_OBJ(&ret, obj);
 
@@ -1211,7 +1204,7 @@ PHP_METHOD(google_protobuf_Any, unpack) {
 }
 
 PHP_METHOD(google_protobuf_Any, pack) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   upb_Arena *arena = Arena_Get(&intern->arena);
   zval *val;
   Message *msg;
@@ -1230,7 +1223,7 @@ PHP_METHOD(google_protobuf_Any, pack) {
     return;
   }
 
-  msg = (Message*)Z_OBJ_P(val);
+  msg = Message_FromZvalPtr(val);
 
   // Serialize and set value.
   value.data = upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->desc->msgdef),
@@ -1248,7 +1241,7 @@ PHP_METHOD(google_protobuf_Any, pack) {
 }
 
 PHP_METHOD(google_protobuf_Any, is) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   upb_StringView type_url = Message_getval(intern, "type_url").str_val;
   zend_class_entry *klass = NULL;
   const upb_MessageDef *m;
@@ -1269,7 +1262,7 @@ PHP_METHOD(google_protobuf_Any, is) {
 }
 
 PHP_METHOD(google_protobuf_Timestamp, fromDateTime) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   zval* datetime;
   const char *classname = "\\DatetimeInterface";
   zend_string *classname_str = zend_string_init(classname, strlen(classname), 0);
@@ -1342,7 +1335,7 @@ PHP_METHOD(google_protobuf_Timestamp, fromDateTime) {
 }
 
 PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
-  Message* intern = (Message*)Z_OBJ_P(getThis());
+  Message* intern = Message_FromZvalPtr(getThis());
   upb_MessageValue seconds = Message_getval(intern, "seconds");
   upb_MessageValue nanos = Message_getval(intern, "nanos");
 
@@ -1398,6 +1391,7 @@ void Message_ModuleInit() {
 
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = Message_dtor;
+  h->offset = offsetof(Message, std);
 #if PHP_VERSION_ID < 80000
   h->compare_objects = Message_compare_objects;
 #else

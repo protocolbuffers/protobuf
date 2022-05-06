@@ -2046,7 +2046,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
     auto field = message->field(i);
     printer->Print(
       "static PHP_METHOD($c_name$, get$camel_name$) {\n"
-      "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
+      "  Message* intern = Message_FromZvalPtr(getThis());\n"
       "  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(\n"
       "      intern->desc->msgdef, \"$name$\");\n"
       "  zval ret;\n"
@@ -2055,7 +2055,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "}\n"
       "\n"
       "static PHP_METHOD($c_name$, set$camel_name$) {\n"
-      "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
+      "  Message* intern = Message_FromZvalPtr(getThis());\n"
       "  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(\n"
       "      intern->desc->msgdef, \"$name$\");\n"
       "  zval *val;\n"
@@ -2076,7 +2076,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
     auto oneof = message->oneof_decl(i);
     printer->Print(
       "static PHP_METHOD($c_name$, get$camel_name$) {\n"
-      "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
+      "  Message* intern = Message_FromZvalPtr(getThis());\n"
       "  const upb_OneofDef *oneof = upb_MessageDef_FindOneofByName(\n"
       "      intern->desc->msgdef, \"$name$\");\n"
       "  const upb_FieldDef *field = \n"
