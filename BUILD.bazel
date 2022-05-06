@@ -1284,6 +1284,7 @@ pkg_files(
         "generate_descriptor_proto.sh",
         "maven_install.json",
         "update_file_lists.sh",
+        "//third_party:BUILD.bazel",
         "//third_party:zlib.BUILD",
         "//util/python:BUILD.bazel",
     ],
