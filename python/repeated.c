@@ -649,7 +649,6 @@ static PyObject* PyUpb_RepeatedContainer_Insert(PyObject* _self,
 }
 
 static PyMethodDef PyUpb_RepeatedCompositeContainer_Methods[] = {
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     {"__deepcopy__", PyUpb_RepeatedContainer_DeepCopy, METH_VARARGS,
      "Makes a deep copy of the class."},
     {"add", (PyCFunction)PyUpb_RepeatedCompositeContainer_Add,
@@ -731,12 +730,24 @@ static int PyUpb_RepeatedScalarContainer_AssignItem(PyObject* _self,
   return 0;
 }
 
+static PyObject* PyUpb_RepeatedScalarContainer_Reduce(PyObject* unused_self,
+                                                      PyObject* unused_other) {
+  PyObject* pickle_module = PyImport_ImportModule("pickle");
+  if (!pickle_module) return NULL;
+  PyObject* pickle_error = PyObject_GetAttrString(pickle_module, "PickleError");
+  Py_DECREF(pickle_module);
+  if (!pickle_error) return NULL;
+  PyErr_Format(pickle_error,
+               "can't pickle repeated message fields, convert to list first");
+  Py_DECREF(pickle_error);
+  return NULL;
+}
+
 static PyMethodDef PyUpb_RepeatedScalarContainer_Methods[] = {
-    // TODO(https://github.com/protocolbuffers/upb/issues/459)
     {"__deepcopy__", PyUpb_RepeatedContainer_DeepCopy, METH_VARARGS,
      "Makes a deep copy of the class."},
-    // {"__reduce__", Reduce, METH_NOARGS,
-    //  "Outputs picklable representation of the repeated field."},
+    {"__reduce__", PyUpb_RepeatedScalarContainer_Reduce, METH_NOARGS,
+     "Outputs picklable representation of the repeated field."},
     {"append", PyUpb_RepeatedScalarContainer_Append, METH_O,
      "Appends an object to the repeated container."},
     {"extend", PyUpb_RepeatedContainer_Extend, METH_O,

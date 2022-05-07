@@ -46,8 +46,6 @@ MessageTest.testFloatPrinting_proto3.__unittest_expecting_failure__ = True
 Proto3Test.testCopyFromBadType.__unittest_expecting_failure__ = True
 Proto3Test.testMergeFromBadType.__unittest_expecting_failure__ = True
 
-MessageTest.testPickleRepeatedScalarContainer_proto2.__unittest_expecting_failure__ = True
-MessageTest.testPickleRepeatedScalarContainer_proto3.__unittest_expecting_failure__ = True
 Proto2Test.testPythonicInit.__unittest_expecting_failure__ = True
 Proto2Test.test_documentation.__unittest_expecting_failure__ = True
 Proto3Test.testModifyMapEntryWhileIterating.__unittest_expecting_failure__ = True
