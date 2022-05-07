@@ -382,15 +382,63 @@ static bool PyUpb_CMessage_InitMapAttribute(PyObject* _self, PyObject* name,
   return ok >= 0;
 }
 
+static bool PyUpb_CMessage_InitRepeatedMessageAttribute(PyObject* _self,
+                                                        PyObject* repeated,
+                                                        PyObject* value,
+                                                        const upb_FieldDef* f) {
+  PyObject* it = PyObject_GetIter(value);
+  if (!it) {
+    PyErr_Format(PyExc_TypeError, "Argument for field %s is not iterable",
+                 upb_FieldDef_FullName(f));
+    return false;
+  }
+  PyObject* e = NULL;
+  PyObject* m = NULL;
+  while ((e = PyIter_Next(it)) != NULL) {
+    if (PyDict_Check(e)) {
+      m = PyUpb_RepeatedCompositeContainer_Add(repeated, NULL, e);
+      if (!m) goto err;
+    } else {
+      m = PyUpb_RepeatedCompositeContainer_Add(repeated, NULL, NULL);
+      if (!m) goto err;
+      PyObject* merged = PyUpb_CMessage_MergeFrom(m, e);
+      if (!merged) goto err;
+      Py_DECREF(merged);
+    }
+    Py_DECREF(e);
+    Py_DECREF(m);
+    m = NULL;
+  }
+
+err:
+  Py_XDECREF(it);
+  Py_XDECREF(e);
+  Py_XDECREF(m);
+  return !PyErr_Occurred();  // Check PyIter_Next() exit.
+}
+
 static bool PyUpb_CMessage_InitRepeatedAttribute(PyObject* _self,
                                                  PyObject* name,
                                                  PyObject* value) {
+  PyUpb_CMessage* self = (void*)_self;
+  const upb_FieldDef* field;
+  if (!PyUpb_CMessage_LookupName(self, name, &field, NULL,
+                                 PyExc_AttributeError)) {
+    return false;
+  }
   bool ok = false;
-  PyObject* tmp = NULL;
-  PyObject* repeated = PyUpb_CMessage_GetAttr(_self, name);
+  PyObject* repeated = PyUpb_CMessage_GetFieldValue(_self, field);
   if (!repeated) goto err;
-  tmp = PyUpb_RepeatedContainer_Extend(repeated, value);
-  if (!tmp) goto err;
+  PyObject* tmp = NULL;
+  if (upb_FieldDef_IsSubMessage(field)) {
+    if (!PyUpb_CMessage_InitRepeatedMessageAttribute(_self, repeated, value,
+                                                     field)) {
+      goto err;
+    }
+  } else {
+    tmp = PyUpb_RepeatedContainer_Extend(repeated, value);
+    if (!tmp) goto err;
+  }
   ok = true;
 
 err:
