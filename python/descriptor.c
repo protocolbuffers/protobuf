@@ -1011,6 +1011,12 @@ static PyObject* PyUpb_FieldDescriptor_GetHasOptions(
   return PyBool_FromLong(upb_FieldDef_HasOptions(self->def));
 }
 
+static PyObject* PyUpb_FieldDescriptor_GetHasPresence(
+    PyUpb_DescriptorBase* _self, void* closure) {
+  PyUpb_DescriptorBase* self = (void*)_self;
+  return PyBool_FromLong(upb_FieldDef_HasPresence(self->def));
+}
+
 static PyObject* PyUpb_FieldDescriptor_GetOptions(PyObject* _self,
                                                   PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
@@ -1049,6 +1055,8 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
      "Containing oneof"},
     {"has_options", (getter)PyUpb_FieldDescriptor_GetHasOptions, NULL,
      "Has Options"},
+    {"has_presence", (getter)PyUpb_FieldDescriptor_GetHasPresence, NULL,
+     "Has Presence"},
     // TODO(https://github.com/protocolbuffers/upb/issues/459)
     //{ "_options",
     //(getter)NULL, (setter)SetOptions, "Options"}, { "_serialized_options",
