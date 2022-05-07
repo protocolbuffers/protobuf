@@ -147,9 +147,10 @@ bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
 
 void upb_Map_Clear(upb_Map* map) { _upb_Map_Clear(map); }
 
-bool upb_Map_Set(upb_Map* map, upb_MessageValue key, upb_MessageValue val,
-                 upb_Arena* arena) {
-  return _upb_Map_Set(map, &key, map->key_size, &val, map->val_size, arena);
+upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
+                                   upb_MessageValue val, upb_Arena* arena) {
+  return (upb_MapInsertStatus)_upb_Map_Insert(map, &key, map->key_size, &val,
+                                              map->val_size, arena);
 }
 
 bool upb_Map_Delete(upb_Map* map, upb_MessageValue key) {

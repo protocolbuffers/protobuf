@@ -667,15 +667,31 @@ UPB_INLINE void* _upb_map_next(const upb_Map* map, size_t* iter) {
   return (void*)str_tabent(&it);
 }
 
-UPB_INLINE bool _upb_Map_Set(upb_Map* map, const void* key, size_t key_size,
-                             void* val, size_t val_size, upb_Arena* a) {
+typedef enum {
+  // LINT.IfChange
+  _kUpb_MapInsertStatus_Inserted = 0,
+  _kUpb_MapInsertStatus_Replaced = 1,
+  _kUpb_MapInsertStatus_OutOfMemory = 2,
+  // LINT.ThenChange(//depot/google3/third_party/upb/upb/collections.h)
+} _upb_MapInsertStatus;
+
+UPB_INLINE _upb_MapInsertStatus _upb_Map_Insert(upb_Map* map, const void* key,
+                                                size_t key_size, void* val,
+                                                size_t val_size, upb_Arena* a) {
   upb_StringView strkey = _upb_map_tokey(key, key_size);
   upb_value tabval = {0};
-  if (!_upb_map_tovalue(val, val_size, &tabval, a)) return false;
+  if (!_upb_map_tovalue(val, val_size, &tabval, a)) {
+    return _kUpb_MapInsertStatus_OutOfMemory;
+  }
 
   /* TODO(haberman): add overwrite operation to minimize number of lookups. */
-  upb_strtable_remove2(&map->table, strkey.data, strkey.size, NULL);
-  return upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a);
+  bool removed =
+      upb_strtable_remove2(&map->table, strkey.data, strkey.size, NULL);
+  if (!upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a)) {
+    return _kUpb_MapInsertStatus_OutOfMemory;
+  }
+  return removed ? _kUpb_MapInsertStatus_Replaced
+                 : _kUpb_MapInsertStatus_Inserted;
 }
 
 UPB_INLINE bool _upb_Map_Delete(upb_Map* map, const void* key,
@@ -717,7 +733,8 @@ UPB_INLINE bool _upb_msg_map_set(upb_Message* msg, size_t ofs, const void* key,
   if (!*map) {
     *map = _upb_Map_New(arena, key_size, val_size);
   }
-  return _upb_Map_Set(*map, key, key_size, val, val_size, arena);
+  return _upb_Map_Insert(*map, key, key_size, val, val_size, arena) !=
+         _kUpb_MapInsertStatus_OutOfMemory;
 }
 
 UPB_INLINE bool _upb_msg_map_delete(upb_Message* msg, size_t ofs,

@@ -30,6 +30,7 @@
 #include "python/convert.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/collections.h"
 
 // -----------------------------------------------------------------------------
 // MapContainer
@@ -145,6 +146,21 @@ upb_Map* PyUpb_MapContainer_EnsureReified(PyObject* _self) {
   return map;
 }
 
+bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
+                            upb_MessageValue key, upb_MessageValue val,
+                            upb_Arena* arena) {
+  switch (upb_Map_Insert(map, key, val, arena)) {
+    case kUpb_MapInsertStatus_Inserted:
+      return true;
+    case kUpb_MapInsertStatus_Replaced:
+      // We did not insert a new key, undo the previous invalidate.
+      self->version--;
+      return true;
+    case kUpb_MapInsertStatus_OutOfMemory:
+      return false;
+  }
+}
+
 int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
                                        PyObject* val) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
@@ -159,7 +175,7 @@ int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
 
   if (val) {
     if (!PyUpb_PyToUpb(val, val_f, &u_val, arena)) return -1;
-    upb_Map_Set(map, u_key, u_val, arena);
+    if (!PyUpb_MapContainer_Set(self, map, u_key, u_val, arena)) return -1;
   } else {
     if (!upb_Map_Delete(map, u_key)) {
       PyErr_Format(PyExc_KeyError, "Key not present in map");
@@ -187,7 +203,7 @@ PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
     } else {
       memset(&u_val, 0, sizeof(u_val));
     }
-    upb_Map_Set(map, u_key, u_val, arena);
+    if (!PyUpb_MapContainer_Set(self, map, u_key, u_val, arena)) return false;
   }
   return PyUpb_UpbToPy(u_val, val_f, self->arena);
 }

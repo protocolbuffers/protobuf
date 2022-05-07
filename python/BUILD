@@ -203,6 +203,7 @@ py_extension(
         "-Wno-pedantic",
     ],
     deps = [
+        "//:collections",
         "//:descriptor_upb_proto_reflection",
         "//:reflection",
         "//:table",

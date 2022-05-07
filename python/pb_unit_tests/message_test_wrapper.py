@@ -47,7 +47,6 @@ Proto3Test.testCopyFromBadType.__unittest_expecting_failure__ = True
 Proto3Test.testMergeFromBadType.__unittest_expecting_failure__ = True
 
 Proto2Test.test_documentation.__unittest_expecting_failure__ = True
-Proto3Test.testModifyMapEntryWhileIterating.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)

@@ -653,7 +653,10 @@ static const char* decode_tomap(upb_Decoder* d, const char* ptr,
       decode_err(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else {
-    _upb_Map_Set(map, &ent.k, map->key_size, &ent.v, map->val_size, &d->arena);
+    if (_upb_Map_Insert(map, &ent.k, map->key_size, &ent.v, map->val_size,
+                        &d->arena) == _kUpb_MapInsertStatus_OutOfMemory) {
+      decode_err(d, kUpb_DecodeStatus_OutOfMemory);
+    }
   }
   return ptr;
 }

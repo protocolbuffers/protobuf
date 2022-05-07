@@ -110,10 +110,28 @@ bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
 /* Removes all entries in the map. */
 void upb_Map_Clear(upb_Map* map);
 
-/* Sets the given key to the given value.  Returns true if this was a new key in
- * the map, or false if an existing key was replaced. */
-bool upb_Map_Set(upb_Map* map, upb_MessageValue key, upb_MessageValue val,
-                 upb_Arena* arena);
+typedef enum {
+  // LINT.IfChange
+  kUpb_MapInsertStatus_Inserted = 0,
+  kUpb_MapInsertStatus_Replaced = 1,
+  kUpb_MapInsertStatus_OutOfMemory = 2,
+  // LINT.ThenChange(//depot/google3/third_party/upb/upb/msg_internal.h)
+} upb_MapInsertStatus;
+
+/* Sets the given key to the given value, returning whether the key was inserted
+ * or replaced.  If the key was inserted, then any existing iterators will be
+ * invalidated. */
+upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
+                                   upb_MessageValue val, upb_Arena* arena);
+
+/* Sets the given key to the given value.  Returns false if memory allocation
+ * failed. If the key is newly inserted, then any existing iterators will be
+ * invalidated. */
+UPB_INLINE bool upb_Map_Set(upb_Map* map, upb_MessageValue key,
+                            upb_MessageValue val, upb_Arena* arena) {
+  return upb_Map_Insert(map, key, val, arena) !=
+         kUpb_MapInsertStatus_OutOfMemory;
+}
 
 /* Deletes this key from the table.  Returns true if the key was present. */
 bool upb_Map_Delete(upb_Map* map, upb_MessageValue key);
