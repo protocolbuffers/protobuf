@@ -24,6 +24,11 @@ if (( ${#DIST_ARCHIVE[@]} != 1 )); then
 fi
 
 #
+# Check for all expected files
+#
+kokoro/common/check_missing_dist_files.sh ${DIST_ARCHIVE}
+
+#
 # Extract to a temporary directory
 #
 if [[ -z ${DIST_WORK_ROOT:-} ]]; then
@@ -45,8 +50,16 @@ tar -C ${DIST_WORK_ROOT} --strip-components=1 -axf ${DIST_ARCHIVE}
 DOCKER_IMAGE_NAME=protobuf/protoc_$(sha1sum protoc-artifacts/Dockerfile | cut -f1 -d " ")
 until docker pull $DOCKER_IMAGE_NAME; do sleep 10; done
 
+if [[ -z ${KOKORO_ARTIFACTS_DIR:-} ]]; then
+  KOKORO_ARTIFACTS_DIR_MOUNT=
+else
+  KOKORO_ARTIFACTS_DIR_MOUNT="-v ${KOKORO_ARTIFACTS_DIR}:${KOKORO_ARTIFACTS_DIR}"
+fi
+
 docker run --rm \
   -v ${DIST_WORK_ROOT}:/var/local/protobuf \
+  ${KOKORO_ARTIFACTS_DIR_MOUNT} \
+  -e KOKORO_ARTIFACTS_DIR \
   -e CMAKE_GENERATOR=Ninja \
   -e CTEST_PARALLEL_LEVEL=$(nproc) \
   $DOCKER_IMAGE_NAME \
