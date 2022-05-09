@@ -12,7 +12,7 @@ set -o pipefail
 : ${SOURCE_DIR:=$(cd $(dirname $0)/../.. ; pwd)}
 
 # Use a temporary directory for intermediate files.
-# Note that pipelines below use subshells to avoid mutiple trap executions.
+# Note that pipelines below use subshells to avoid multiple trap executions.
 _workdir=$(mktemp -d)
 function cleanup_workdir() { rm -r ${_workdir}; }
 trap cleanup_workdir EXIT
