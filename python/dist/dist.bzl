@@ -4,6 +4,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 
 def _get_suffix(limited_api, python_version, cpu):
+    """Computes an ABI version tag for an extension module per PEP 3149."""
     suffix = "pyd" if ("win" in cpu) else "so"
 
     if limited_api == True:
@@ -37,50 +38,99 @@ def _get_suffix(limited_api, python_version, cpu):
 
     fail("Unsupported combination of flags")
 
-def _py_dist_module_impl(ctx):
-    base_filename = ctx.attr.module_name.replace(".", "/")
+def _declare_module_file(ctx, module_name, python_version, limited_api):
+    """Declares an output file for a Python module with this name, version, and limited api."""
+    base_filename = module_name.replace(".", "/")
     suffix = _get_suffix(
-        limited_api = ctx.attr._limited_api[BuildSettingInfo].value,
-        python_version = ctx.attr._python_version[BuildSettingInfo].value,
+        python_version = python_version,
+        limited_api = limited_api,
         cpu = ctx.var["TARGET_CPU"],
     )
     filename = base_filename + suffix
-    file = ctx.actions.declare_file(filename)
-    src = ctx.attr.extension[DefaultInfo].files.to_list()[0]
-    ctx.actions.run(
-        executable = "cp",
-        arguments = [src.path, file.path],
-        inputs = [src],
-        outputs = [file],
-    )
-    return [
-        DefaultInfo(files = depset([file])),
-    ]
+    return ctx.actions.declare_file(filename)
 
-_py_dist_module_rule = rule(
+# --------------------------------------------------------------------------------------------------
+# py_dist_module()
+#
+# Creates a Python binary extension module that is ready for distribution.
+#
+#   py_dist_module(
+#       name = "message_mod",
+#       extension = "//python:_message_binary",
+#       module_name = "google._upb._message",
+#   )
+#
+# In the simple case, this simply involves copying the input file to the proper filename for
+# our current configuration (module_name, cpu, python_version, limited_abi).
+#
+# For multiarch platforms (osx-universal2), we must combine binaries for multiple architectures
+# into a single output binary using the "llvm-lipo" tool.  A config transition depends on multiple
+# architectures to get us the input files we need.
+
+def _py_multiarch_transition_impl(settings, attr):
+    if settings["//command_line_option:cpu"] == "osx-universal2":
+        return [{"//command_line_option:cpu": cpu} for cpu in ["osx-aarch_64", "osx-x86_64"]]
+    else:
+        return settings
+
+_py_multiarch_transition = transition(
+    implementation = _py_multiarch_transition_impl,
+    inputs = ["//command_line_option:cpu"],
+    outputs = ["//command_line_option:cpu"],
+)
+
+def _py_dist_module_impl(ctx):
+    output_file = _declare_module_file(
+        ctx = ctx,
+        module_name = ctx.attr.module_name,
+        python_version = ctx.attr._python_version[BuildSettingInfo].value,
+        limited_api = ctx.attr._limited_api[BuildSettingInfo].value,
+    )
+    if len(ctx.attr.extension) == 1:
+        src = ctx.attr.extension[0][DefaultInfo].files.to_list()[0]
+        ctx.actions.run(
+            executable = "cp",
+            arguments = [src.path, output_file.path],
+            inputs = [src],
+            outputs = [output_file],
+        )
+        return [
+            DefaultInfo(files = depset([output_file])),
+        ]
+    else:
+        srcs = [mod[DefaultInfo].files.to_list()[0] for mod in ctx.attr.extension]
+        ctx.actions.run(
+            executable = "/usr/local/bin/llvm-lipo",
+            arguments = ["-create", "-output", output_file.path] + [src.path for src in srcs],
+            inputs = srcs,
+            outputs = [output_file],
+        )
+        return [
+            DefaultInfo(files = depset([output_file])),
+        ]
+
+py_dist_module = rule(
     output_to_genfiles = True,
     implementation = _py_dist_module_impl,
-    fragments = ["cpp"],
     attrs = {
         "module_name": attr.string(mandatory = True),
         "extension": attr.label(
             mandatory = True,
-            providers = [CcInfo],
+            cfg = _py_multiarch_transition,
         ),
         "_limited_api": attr.label(default = "//python:limited_api"),
         "_python_version": attr.label(default = "//python:python_version"),
-        "_cc_toolchain": attr.label(
-            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
+        "_allowlist_function_transition": attr.label(
+            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
     },
 )
 
-def py_dist_module(name, module_name, extension):
-    _py_dist_module_rule(
-        name = name,
-        module_name = module_name,
-        extension = extension,
-    )
+# --------------------------------------------------------------------------------------------------
+# py_dist()
+#
+# A rule that builds a collection of binary wheels, using transitions to depend on many different
+# python versions and cpus.
 
 def _py_dist_transition_impl(settings, attr):
     _ignore = (settings)  # @unused
