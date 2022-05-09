@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash
 #
 # Build tests under CMake.
 #
@@ -8,7 +8,7 @@
 #
 # This script uses `caplog` to save logfiles. See caplog.sh for details.
 
-source ${SOURCE_DIR}/kokoro/caplog.sh
+set -eux
 
 ################################################################################
 # If you are using this script to run tests, you can set some environment
@@ -34,10 +34,13 @@ fi
 #   https://cmake.org/cmake/help/latest/manual/cmake-env-variables.7.html
 #
 # Some variables you may want to override (see cmake docs for details):
+#   CMAKE_BUILD_PARALLEL_LEVEL
 #   CMAKE_CONFIG_TYPE (N.B.: not to be confused with CMAKE_BUILD_TYPE)
 #   CMAKE_GENERATOR
 #   CTEST_PARALLEL_LEVEL
 ################################################################################
+
+source ${SOURCE_DIR}/kokoro/common/caplog.sh
 
 #
 # Configure under $BUILD_DIR:
