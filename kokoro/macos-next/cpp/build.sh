@@ -21,7 +21,7 @@ cd $(dirname $0)/../../..
 #
 # Update submodules
 #
-git -C "${SOURCE_DIR}" submodule update --init --recursive
+git submodule update --init --recursive
 
 #
 # Run build

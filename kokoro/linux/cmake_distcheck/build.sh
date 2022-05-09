@@ -8,6 +8,11 @@ set -eux
 cd $(dirname $0)/../../..
 
 #
+# Update git submodules
+#
+git submodule update --init --recursive
+
+#
 # Build distribution archive
 #
 # TODO: this should use Bazel-built dist archives.
