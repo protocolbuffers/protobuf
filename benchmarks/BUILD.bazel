@@ -75,7 +75,6 @@ pkg_files(
         ],
         exclude = [
             "__init__.py",  # not in autotools dist
-            "BUILD.bazel",
             "go/*",
         ],
     ),

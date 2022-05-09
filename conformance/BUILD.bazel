@@ -1,7 +1,13 @@
 # Conformance testing for Protobuf.
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", "cc_proto_library")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library")
+load(
+    "@rules_pkg//:mappings.bzl",
+    "pkg_attributes",
+    "pkg_filegroup",
+    "pkg_files",
+    "strip_prefix",
+)
 
 exports_files([
     "conformance_test_runner.sh",
@@ -145,16 +151,33 @@ pkg_files(
     srcs = glob(
         ["**/*"],
         exclude = [
+            # Handled by dist_scripts:
+            "conformance_test_runner.sh",
+
             # The following are not in autotools dist:
-            "conformance/autoload.php",
-            "conformance/conformance_nodejs.js",
-            "conformance/conformance_test_runner.sh",
-            "conformance/failure_list_java_lite.txt",
-            "conformance/failure_list_jruby.txt",
-            "conformance/text_format_failure_list_*.txt",
-            "conformance/update_failure_list.py",
+            "autoload.php",
+            "conformance_nodejs.js",
+            "failure_list_jruby.txt",
+            "update_failure_list.py",
         ],
     ),
     strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+pkg_files(
+    name = "dist_scripts",
+    srcs = ["conformance_test_runner.sh"],
+    attributes = pkg_attributes(mode = "0555"),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+pkg_filegroup(
+    name = "all_dist_files",
+    srcs = [
+        ":dist_files",
+        ":dist_scripts",
+    ],
     visibility = ["//pkg:__pkg__"],
 )
