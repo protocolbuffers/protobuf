@@ -10,160 +10,232 @@ in Visual Studio Code:
   https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced
 --->
 
-# Wrapping upb in other languages
+# Building a protobuf library on upb
 
-upb is a C kernel that is designed to be wrapped in other languages.  This is a
-guide for creating a new protobuf implementation based on upb.
+This is a guide for creating a new protobuf implementation based on upb.  It
+starts from the beginning and walks you through the process, highlighting
+some important design choices you will need to make.
 
-## What you will need
+## Overview
 
-There are certain things that the language runtime must provide in order to be
-wrapped by upb.
+A protobuf implementation consists of two main pieces:
 
-1. **Finalizers, Destructors, or Cleaners**: This is one unavoidable
-   requirement: the language *must* provide finalizers or destructors of some sort.
-   There must be a way of calling a C function when the language GCs or otherwise
-   destroys an object.  We don't care much whether it is a finalizer, a destructor,
-   or a cleaner, as long as it gets called eventually when the object is destroyed.
-   Without finalizers, we would have no way of cleaning up upb data and everything
-   would leak.
-2. **HashMap with weak values**: This is not an absolute requirement, but in
-   languages with automatic memory management, we generally end up wanting a
-   hash map with weak values to act as a `upb_msg* -> wrapper` object cache.
-   We want the values to be weak (not the keys).
+1. a code generator, run at compile time, to turn `.proto` files into source
+   files in your language (we will call this "zlang", assuming an extension of ".z").
+2. a runtime component, which implements the wire format and provides the data
+   structures for representing protobuf data and metadata.
 
-## Reflection vs. Direct Access
+<br/>
 
-Each language wrapping upb gets to decide whether it will access messages
-through *reflection* or through *direct access*.  This decision has some deep
-implications that will affect the design, features, and performance of your
-library.
-
-### Reflection
-
-The simplest option is to load full reflection data into the upb library at
-runtime.  You can load reflection data using serialized descriptors, which are a
-stable and widely supported format across all protobuf tooling.
-
-```c
-  // A upb_symtab is a dynamic container that we can load reflection data into.
-  upb_symtab* symtab = upb_symtab_new();
-
-  // We load reflection data via a serialized descriptor.  The code generator
-  // for your language should embed serialized descriptors into your generated
-  // files. For each generated file loaded by your library, you can add the
-  // serialized descriptor to the symtab as shown.
-  upb_arena *tmp = upb_arena_new();
-  google_protobuf_FileDescriptorProto* file =
-      google_protobuf_FileDescriptorProto_parse(desc_data, desc_size, tmp);
-  if (!file || !upb_symtab_addfile(symtab, file, NULL)) {
-    // Handle error.
-  }
-  upb_arena_free(tmp);
-
-  // At application exit, we free the symtab.
-  upb_symtab_free(symtab);
-```
-
-The `upb_symtab` will give you full access to all data from the `.proto` file,
-including convenient APIs like looking up a field by name. It will allow you to
-use JSON and text format.  The APIs for accessing a message through reflection
-are simple and well-supported.  These APIs cleanly encapsulate upb's internal
-implementation details.  
-
-```c
-  upb_symtab* symtab = BuildSymtab();
-
-  // Look up a message type in the symtab.
-  const upb_msgdef* m = upb_symtab_lookupmsg(symtab, "FooMessage");
-
-  // Construct a new message of this type, via reflection.
-  upb_arena *arena = upb_arena_new();
-  upb_msg *msg = upb_msg_new(m, arena);
-
-  // Set a message field using reflection.
-  const upb_fielddef* f = upb_msgdef_ntof("bar_field");
-  upb_msgval val = {.int32_val = 123};
-  upb_msg_set(m, f, val, arena);
-
-  // Free the message and symtab.
-  upb_arena_free(arena);
-  upb_symtab_free(symtab);
-```
-
-Using reflection is a natural choice in heavily reflective, dynamic runtimes
-like Python, Ruby, PHP, or Lua.  These languages generally perform method
-dispatch through a dictionary/hash table anyway, so we are not adding any extra
-overhead by using upb's hash table to lookup fields by name at field access
-time.
-
-### Direct Access
-
-Using reflection has some downsides.  Reflection data is relatively large, both
-in your binary (at rest) and in RAM (at runtime).  It contains names of
-everything, and these names will be exposed in your binary.  Reflection APIs for
-accessing a message will have more overhead than you might want, especially if
-crossing the FFI boundary for your language runtime imposes significant
-overhead.
-
-We can reduce these overheads by using *direct access*.  upb's parser and
-serializer do not actually require full reflection data, they use a more compact
-data structure known as **mini tables**.  Mini tables will take up less space
-than reflection, both in the binary and in RAM, and they will not leak field
-names.  Mini tables will let us parse and serialize binary wire format data
-without reflection.
-
-```c
-  // TODO: demonstrate upb API for loading mini table data at runtime.
-  // This API does not exist yet.
-```
-
-To access messages themselves without the reflection API, we will be using
-different, lower-level APIs that will require you to supply precise data such as
-the offset of a given field.  This is information that will come from the upb
-compiler framework, and the correctness (and even memory safety!) of the program
-will rely on you passing these values through from the upb compiler libraries to
-the upb runtime correctly.
-
-```c
-  // TODO: demonstrate using low-level APIs for direct field access.
-  // These APIs do not exist yet.
-```
-
-It can even be possible in certain circumstances to bypass the upb API completely
-and access raw field data directly at a given offset, using unsafe APIs like
-`sun.misc.unsafe`.  This can theoretically allow for field access that is no
-more expensive than referencing a struct/class field.
-
-```java
-import sun.misc.Unsafe;
-
-class FooProto {
-  private final long addr;
-  private final Arena arena;
-
-  // Accessor that a Java library built on upb could conceivably generate.
-  long getFoo() {
-    // The offset 1234 came from the upb compiler library, and was injected by the
-    // Java+upb code generator.
-    return Unsafe.getLong(self.addr + 1234);
-  }
+```dot {align="center"}
+digraph {
+    rankdir=LR; 
+    newrank=true;
+    node [style="rounded,filled" shape=box]
+    "foo.proto" -> protoc;
+    "foo.proto" [shape=folder];
+    protoc [fillcolor=lightgrey];
+    protoc -> "protoc-gen-zlang";
+    "protoc-gen-zlang" -> "foo.z";
+    "protoc-gen-zlang" [fillcolor=palegreen3];
+    "foo.z" [shape=folder];
+    labelloc="b";
+    label="Compile Time";
 }
 ```
 
-It is always possible to load reflection data as desired, even if your library
-is designed primarily around direct access.  Users who want to use JSON, text
-format, or reflection could potentially load reflection data from separate
-generated modules, for cases where they do not mind the size overhead or the
-leaking of field names. You do not give up any of these possibilities by using
-direct access.
+<br/>
 
-However, using direct access does have some noticeable downsides.  It requires
-tighter coupling with upb's implementation details, as the mini table format is
-upb-specific and requires building your code generator against upb's compiler
-libraries.  Any direct access of memory is especially tightly coupled, and would
-need to be changed if upb's in-memory format ever changes.  It also is more
-prone to hard-to-debug memory errors if you make any mistakes.
+```dot {align="center"}
+digraph {
+    newrank=true;
+    node [style="rounded,filled" shape=box fillcolor=lightgrey]
+    "foo.z" -> "zlang/upb glue (FFI)";
+    "zlang/upb glue (FFI)" -> "upb (C)";
+    "zlang/upb glue (FFI)" [fillcolor=palegreen3];
+    labelloc="b";
+    label="Runtime";
+}
+```
+
+The parts in green are what you will need to implement.
+
+Note that your code generator (`protoc-gen-zlang`) does *not* need to generate
+any C code (eg. `foo.c`). While upb itself is written in C, upb's parsers and
+serializers are fully table-driven, which means there is never any need or even
+benefit to generating C code for each proto. upb is capable of full-speed
+parsing even when schema data is loaded at runtime from strings embedded into
+`foo.z`. This is a key benefit of upb compared with C++ protos, which have
+traditionally relied on generated parsers in `foo.pb.cc` files to achieve full
+parsing speed, and suffered a ~10x speed penalty in the parser when the schema
+data was loaded at runtime.
+
+## Prerequisites
+
+There are a few things that the language runtime must provide in order to wrap
+upb.
+
+1.  **FFI**: To wrap upb, your language must be able to call into a C API
+    through a Foreign Function Interface (FFI). Most languages support FFI in
+    some form, either through "native extensions" (in which you write some C
+    code to implement new methods in your language) or through a direct FFI (in
+    which you can call into regular C functions directly from your language
+    using a special library).
+2.  **Finalizers, Destructors, or Cleaners**: The runtime must provide
+    finalizers or destructors of some sort. There must be a way of triggering a
+    call to a C function when the language garbage collects or otherwise
+    destroys an object. We don't care much whether it is a finalizer, a
+    destructor, or a cleaner, as long as it gets called eventually when the
+    object is destroyed. upb allocates memory in C space, and a finalizer is our
+    only way of making sure that memory is freed and does not leak.
+3.  **HashMap with weak values**: (optional) This is not a strong requirement,
+    but it is sometimes helpful to have a global hashmap with weak values to act
+    as a `upb_msg* -> wrapper` object cache. We want the values to be weak (not
+    the keys). There is some question about whether we want to continue to use
+    this pattern going forward.
+
+## Reflection vs. MiniTables
+
+The first key design decision you will need to make is whether your generated
+code will access message data via reflection or minitables. Generally more
+dynamic languages will want to use reflection and more static languages will
+want to use minitables.
+
+### Reflection
+
+Reflection-based data access makes the most sense in highly dynamic language
+interpreters, where method dispatch is generally resolved via strings and hash
+table lookups.  
+
+In such languages, you can often implement a special method like `__getattr__`
+(Python) or `method_missing` (Ruby) that receives the method name as a string.
+Using upb's reflection, you can look up a field name using the method name,
+thereby using a hash table belonging to upb instead of one provided by the
+language.
+
+```python
+class FooMessage:
+  # Written in Python for illustration, but in practice we will want to
+  # implement this in C for speed.
+  def __getattr__(self, name):
+    field = FooMessage.descriptor.fields_by_name[name]
+    return field.get_value(self)
+```
+
+Using this design, we only need to attach a single `__getattr__` method to each
+message class, instead of defining a getter/setter for each field. In this way
+we can avoid duplicating hash tables between upb and the language interpreter,
+reducing memory usage.
+
+Reflection-based access requires loading full reflection at runtime. Your
+generated code will need to embed serialized descriptors (ie. a serialized
+message of `descriptor.proto`), which has some amount of size overhead and
+exposes all message/field names to the binary. It also forces a hash table
+lookup in the critical path of field access. If method calls in your language
+already have this overhead, then this is no added burden, but for statically
+dispatched languages it would cause extra overhead.
+
+If we take this path to its logical conclusion, all class creation can be
+performed fully dynamically, using only a binary descriptor as input. The
+"generated code" becomes little more than an embedded descriptor plus a
+library call to load it. Python has recently gone down this path. Generated
+code now looks something like this:
+
+```python
+# main_pb2.py
+from google3.net.proto2.python.internal import builder as _builder
+from google3.net.proto2.python.public import descriptor_pool as _descriptor_pool
+
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile("<...>")
+_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'google3.main_pb2', globals())
+```
+
+This is all the runtime needs to create all of the classes for messages defined
+in that serialized descriptor.  This code has no pretense of readability, but
+a separate `.pyi` stub file provides a fully expanded and readable list of all
+methods a user can expect to be available:
+
+```python
+# main_pb2.pyi
+from google3.net.proto2.python.public import descriptor as _descriptor
+from google3.net.proto2.python.public import message as _message
+from typing import ClassVar as _ClassVar, Optional as _Optional
+
+DESCRIPTOR: _descriptor.FileDescriptor
+
+class MyMessage(_message.Message):
+    __slots__ = ["my_field"]
+    MY_FIELD_FIELD_NUMBER: _ClassVar[int]
+    my_field: str
+    def __init__(self, my_field: _Optional[str] = ...) -> None: ...
+```
+
+To use reflection-based access:
+
+1. Load and access descriptor data using the interfaces in google3/third_party/upb/upb/def.h.
+2. Access message data using the interfaces in google3/third_party/upb/upb/reflection.h.
+
+### MiniTables
+
+MiniTables are a "lite" schema representation that are much smaller that
+reflection. MiniTables omit names, options, and almost everything else from the
+`.proto` file, retaining only enough information to parse and serialize binary
+format.
+
+MiniTables can be loaded into upb through *MiniDescriptors*. MiniDescriptors are
+a byte-oriented format that can be embedded into your generated code and passed
+to upb to construct MiniTables. MiniDescriptors only use printable characters,
+and therefore do not require escaping when embedding them into generated code
+strings. Overall the size savings of MiniDescriptors are ~60x compared with
+regular descriptors.
+
+MiniTables and MiniDescriptors are a natural choice for compiled languages that
+resolve method calls at compile time. For languages that are sometimes compiled
+and sometimes interpreted, there might not be an obvious choice. When a method
+call is statically bound, we want to remove as much overhead as possible,
+especially from accessors. In the extreme case, we can use unsafe APIs to read
+raw memory at a known offset:
+
+```java
+// Example of a maximally-optimized generated accessor.
+class FooMessage {
+    public long getBarField() {
+        // Using Unsafe should give us performance that is comparable to a
+        // native member access.
+        //
+        // The constant "24" is obtained from upb at compile time.
+        sun.misc.Unsafe.getLong(this.ptr, 24);
+    }
+}
+```
+
+This design is very low-level, and tightly couples the generated code to one
+specific version of the schema and compiler.  A slower but safer version would
+look up a field by field number:
+
+```java
+// Example of a more loosely-coupled accessor.
+class FooMessage {
+    public long getBarField() {
+        // The constant "2" is the field number.  Internally this will look
+        // up the number "2" in the MiniTable and use that to read the value
+        // from the message.
+        upb.glue.getLong(this.ptr, 2);
+    }
+}
+```
+
+One downside of MiniTables is that they cannot support parsing or serializing
+to JSON or TextFormat, because they do now know the field names.  It should be
+possible to generate reflection data "on the side", into separate generated
+code files, so that reflection is only pulled in if it is being used.  However
+APIs to do this do not exist yet.
+
+To use MiniTable-based access:
+
+1. Load and access MiniDescriptors data using the interfaces in google3/third_party/upb/upb/mini_table.h.
+2. Access message data using the interfaces in google3/third_party/upb/upb/mini_table_accessors.h.
 
 ## Memory Management
 
