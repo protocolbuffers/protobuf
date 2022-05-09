@@ -38,6 +38,7 @@
 #include "src/google/protobuf/test_messages_proto3.upb.h"
 #include "upb/collections.h"
 #include "upb/mini_table.h"
+#include "upb/test.upb.h"
 
 namespace {
 
@@ -352,6 +353,71 @@ TEST(GeneratedCode, RepeatedScalar) {
                                                                       &len);
   EXPECT_EQ(0, len);
   EXPECT_EQ(true, zero_length_array != NULL);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, Extensions) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);
+  upb_test_ModelWithExtensions_set_random_int32(msg, 10);
+  upb_test_ModelWithExtensions_set_random_name(
+      msg, upb_StringView_FromString("Hello"));
+
+  upb_test_ModelExtension1* extension1 = upb_test_ModelExtension1_new(arena);
+  upb_test_ModelExtension1_set_str(extension1,
+                                   upb_StringView_FromString("World"));
+
+  upb_test_ModelExtension2* extension2 = upb_test_ModelExtension2_new(arena);
+  upb_test_ModelExtension2_set_i(extension2, 5);
+
+  upb_test_ModelExtension1_set_model_ext(msg, extension1, arena);
+  upb_test_ModelExtension2_set_model_ext(msg, extension2, arena);
+
+  size_t serialized_size;
+  char* serialized =
+      upb_test_ModelWithExtensions_serialize(msg, arena, &serialized_size);
+
+  // Test known GetExtension
+  const upb_Message_Extension* upb_ext2;
+  upb_GetExtension_Status promote_status = upb_MiniTable_GetOrPromoteExtension(
+      msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena, &upb_ext2);
+
+  upb_test_ModelExtension2* ext2 =
+      (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  EXPECT_EQ(5, upb_test_ModelExtension2_i(ext2));
+
+  upb_test_EmptyMessageWithExtensions* base_msg =
+      upb_test_EmptyMessageWithExtensions_parse(serialized, serialized_size,
+                                                arena);
+
+  // Get unknown extension bytes before promotion.
+  const char* extension_data;
+  size_t len;
+  upb_GetExtensionAsBytes_Status status = status =
+      upb_MiniTable_GetExtensionAsBytes(base_msg,
+                                        &upb_test_ModelExtension2_model_ext_ext,
+                                        0, arena, &extension_data, &len);
+  EXPECT_EQ(kUpb_GetExtensionAsBytes_Ok, status);
+  EXPECT_EQ(0x48, extension_data[0]);
+  EXPECT_EQ(5, extension_data[1]);
+
+  // Test unknown GetExtension.
+  promote_status = upb_MiniTable_GetOrPromoteExtension(
+      base_msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena, &upb_ext2);
+
+  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  EXPECT_EQ(5, upb_test_ModelExtension2_i(ext2));
+
+  // Get unknown extension bytes after promotion.
+  status = upb_MiniTable_GetExtensionAsBytes(
+      base_msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena,
+      &extension_data, &len);
+  EXPECT_EQ(kUpb_GetExtensionAsBytes_Ok, status);
+  EXPECT_EQ(0x48, extension_data[0]);
+  EXPECT_EQ(5, extension_data[1]);
 
   upb_Arena_Free(arena);
 }

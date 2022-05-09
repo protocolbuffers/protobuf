@@ -46,3 +46,29 @@ message HelloRequest {
   optional uint32 random_name_c9 = 31;
   optional string version = 32;
 }
+
+message EmptyMessageWithExtensions {
+  // Reserved for unknown fields/extensions test.
+  reserved 1000 to max;
+}
+
+message ModelWithExtensions {
+  optional int32 random_int32 = 3;
+  optional string random_name = 4;
+  // Reserved for unknown fields/extensions test.
+  extensions 1000 to max;
+}
+
+message ModelExtension1 {
+  extend ModelWithExtensions {
+    optional ModelExtension1 model_ext = 1547;
+  }
+  optional string str = 25;
+}
+
+message ModelExtension2 {
+  extend ModelWithExtensions {
+    optional ModelExtension2 model_ext = 4135;
+  }
+  optional int32 i = 9;
+}

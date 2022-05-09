@@ -191,6 +191,7 @@ cc_test(
         ":mini_table_internal",
         ":test_messages_proto2_proto_upb",
         ":test_messages_proto3_proto_upb",
+        ":test_upb_proto",
         ":upb",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",

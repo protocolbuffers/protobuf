@@ -221,7 +221,38 @@ UPB_INLINE upb_Array* upb_MiniTable_GetMutableArray(
   return (upb_Array*)*UPB_PTR_AT(msg, field->offset, upb_Array*);
 }
 
-// TODO(ferhat): Add support for extensions.
+typedef enum {
+  kUpb_GetExtension_Ok,
+  kUpb_GetExtension_NotPresent,
+  kUpb_GetExtension_ParseError,
+  kUpb_GetExtension_OutOfMemory,
+} upb_GetExtension_Status;
+
+typedef enum {
+  kUpb_GetExtensionAsBytes_Ok,
+  kUpb_GetExtensionAsBytes_NotPresent,
+  kUpb_GetExtensionAsBytes_EncodeError,
+} upb_GetExtensionAsBytes_Status;
+
+// Returns a message extension or promotes an unknown field to
+// an extension.
+//
+// TODO(ferhat): Only supports extension fields that are messages,
+// expand support to include non-message types.
+upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
+    upb_Message* msg, const upb_MiniTable_Extension* ext_table,
+    int decode_options, upb_Arena* arena,
+    const upb_Message_Extension** extension);
+
+// Returns a message extension or unknown field matching the extension
+// data as bytes.
+//
+// If an extension has already been decoded it will be re-encoded
+// to bytes.
+upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
+    const upb_Message* msg, const upb_MiniTable_Extension* ext_table,
+    int encode_options, upb_Arena* arena, const char** extension_data,
+    size_t* len);
 
 #ifdef __cplusplus
 } /* extern "C" */
