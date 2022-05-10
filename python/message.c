@@ -428,8 +428,8 @@ static bool PyUpb_CMessage_InitRepeatedAttribute(PyObject* _self,
   }
   bool ok = false;
   PyObject* repeated = PyUpb_CMessage_GetFieldValue(_self, field);
-  if (!repeated) goto err;
   PyObject* tmp = NULL;
+  if (!repeated) goto err;
   if (upb_FieldDef_IsSubMessage(field)) {
     if (!PyUpb_CMessage_InitRepeatedMessageAttribute(_self, repeated, value,
                                                      field)) {
@@ -1239,6 +1239,7 @@ static PyObject* PyUpb_CMessage_Clear(PyUpb_CMessage* self, PyObject* args) {
 
   if (subobj_map) {
     upb_Message* msg = PyUpb_CMessage_GetMsg(self);
+    (void)msg;  // Suppress unused warning when asserts are disabled.
     intptr_t iter = PYUPB_WEAKMAP_BEGIN;
     const void* key;
     PyObject* obj;
