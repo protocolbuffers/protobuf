@@ -55,17 +55,27 @@ tar -C ${DIST_WORK_ROOT} --strip-components=1 -axf ${DIST_ARCHIVE}
 DOCKER_IMAGE_NAME=protobuf/protoc_$(sha1sum protoc-artifacts/Dockerfile | cut -f1 -d " ")
 until docker pull $DOCKER_IMAGE_NAME; do sleep 10; done
 
-if [[ -z ${KOKORO_ARTIFACTS_DIR:-} ]]; then
-  KOKORO_ARTIFACTS_DIR_MOUNT=
-else
-  KOKORO_ARTIFACTS_DIR_MOUNT="-v ${KOKORO_ARTIFACTS_DIR}:${KOKORO_ARTIFACTS_DIR}"
+# Some flags are set conditionally.
+DOCKER_FLAGS=(
+  # Set variables used by cmake/ctest:
+  -e CMAKE_GENERATOR=Ninja
+  -e CTEST_PARALLEL_LEVEL=$(nproc)
+
+  # Work inside our extracted sources.
+  -v ${DIST_WORK_ROOT}:/var/local/protobuf
+
+  # Kokoro scripts are not part of the distribution. We only need common:
+  -v ${PWD}/kokoro/common:/var/local/protobuf/kokoro/common
+)
+if [[ -n ${KOKORO_ARTIFACTS_DIR:-} ]]; then
+  # Expose KOKORO_ARTIFACTS_DIR at the same mount point for caplog.
+  DOCKER_FLAGS+=(
+    -e KOKORO_ARTIFACTS_DIR
+    -v ${KOKORO_ARTIFACTS_DIR}:${KOKORO_ARTIFACTS_DIR}
+  )
 fi
 
 docker run --rm \
-  -v ${DIST_WORK_ROOT}:/var/local/protobuf \
-  ${KOKORO_ARTIFACTS_DIR_MOUNT} \
-  -e KOKORO_ARTIFACTS_DIR \
-  -e CMAKE_GENERATOR=Ninja \
-  -e CTEST_PARALLEL_LEVEL=$(nproc) \
+  ${DOCKER_FLAGS[@]} \
   $DOCKER_IMAGE_NAME \
   /var/local/protobuf/kokoro/common/cmake.sh
