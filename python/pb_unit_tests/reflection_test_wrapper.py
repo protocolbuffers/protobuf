@@ -39,8 +39,6 @@ SerializationTest.testCanonicalSerializationOrderSameAsCpp.__unittest_expecting_
 # This is an implementation detail that users should not depend on.
 SerializationTest.testFieldDataDescriptor.__unittest_expecting_failure__ = True
 
-ReflectionTest.testDeepCopy_proto2.__unittest_expecting_failure__ = True
-ReflectionTest.testDeepCopy_proto3.__unittest_expecting_failure__ = True
 SerializationTest.testFieldProperties.__unittest_expecting_failure__ = True
 
 if __name__ == '__main__':

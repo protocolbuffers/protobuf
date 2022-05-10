@@ -681,6 +681,7 @@ static PyType_Slot PyUpb_RepeatedCompositeContainer_Slots[] = {
     {Py_mp_subscript, PyUpb_RepeatedContainer_Subscript},
     {Py_mp_ass_subscript, PyUpb_RepeatedContainer_AssignSubscript},
     {Py_tp_new, PyUpb_Forbidden_New},
+    {Py_tp_richcompare, PyUpb_RepeatedContainer_RichCompare},
     {Py_tp_hash, PyObject_HashNotImplemented},
     {0, NULL}};
 
