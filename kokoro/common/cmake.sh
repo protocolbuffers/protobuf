@@ -55,11 +55,13 @@ source ${SCRIPT_ROOT}/kokoro/common/caplog.sh
 #
 mkdir -p "${BUILD_DIR}"
 
-caplog 01_configure \
-  cmake -S "${SOURCE_DIR}" -B "${BUILD_DIR}" \
-  ${CMAKE_BUILD_TYPE_FLAG} \
-  ${CAPLOG_CMAKE_ARGS:-}
-
+(
+  cd "${BUILD_DIR}"
+  caplog 01_configure \
+    cmake -S "${SOURCE_DIR}" \
+    ${CMAKE_BUILD_TYPE_FLAG} \
+    ${CAPLOG_CMAKE_ARGS:-}
+)
 if [[ -n ${CAPLOG_DIR:-} ]]; then
   # Save configuration logs.
   mkdir -p "${CAPLOG_DIR}/CMakeFiles"
