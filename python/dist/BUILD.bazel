@@ -26,7 +26,7 @@
 load("//bazel:py_proto_library.bzl", "py_proto_library")
 load(":dist.bzl", "py_dist", "py_dist_module")
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("@com_google_protobuf//:protobuf_version.bzl", "PROTOBUF_VERSION")
+load("@com_google_protobuf//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 
@@ -119,7 +119,7 @@ py_wheel(
         "python/dist/",
         "python/",
     ],
-    version = PROTOBUF_VERSION,
+    version = PROTOBUF_PYTHON_VERSION,
     deps = [
         ":message_mod",
         ":well_known_proto_py_pb2",
@@ -136,7 +136,7 @@ py_wheel(
     strip_path_prefixes = [
         "python/",
     ],
-    version = PROTOBUF_VERSION,
+    version = PROTOBUF_PYTHON_VERSION,
     deps = [
         ":well_known_proto_py_pb2",
         "@com_google_protobuf//:python_srcs",
@@ -150,7 +150,7 @@ py_wheel(
     platform = "any",
     python_tag = "py3",
     strip_path_prefixes = ["python/"],
-    version = PROTOBUF_VERSION,
+    version = PROTOBUF_PYTHON_VERSION,
     deps = [
         "//python/pb_unit_tests:test_files",
         "@com_google_protobuf//:python_common_test_protos",

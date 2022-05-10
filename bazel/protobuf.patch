@@ -1,5 +1,5 @@
---- BUILD
-+++ BUILD
+--- BUILD.bazel
++++ BUILD.bazel
 @@ -896,6 +896,10 @@ py_library(
          [
              "python/google/protobuf/**/*.py",
@@ -52,4 +52,3 @@
  
    # Search internally.
    path = '.'
-

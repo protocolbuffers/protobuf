@@ -37,8 +37,8 @@
 
 #include "conformance/conformance.upb.h"
 #include "conformance/conformance.upbdefs.h"
-#include "src/google/protobuf/test_messages_proto2.upbdefs.h"
-#include "src/google/protobuf/test_messages_proto3.upbdefs.h"
+#include "google/protobuf/test_messages_proto2.upbdefs.h"
+#include "google/protobuf/test_messages_proto3.upbdefs.h"
 #include "upb/decode.h"
 #include "upb/encode.h"
 #include "upb/json_decode.h"
@@ -325,9 +325,9 @@ int main(void) {
 
 #ifdef REBUILD_MINITABLES
   _upb_DefPool_LoadDefInitEx(
-      symtab, &src_google_protobuf_test_messages_proto2_proto_upbdefinit, true);
+      symtab, &google_protobuf_test_messages_proto2_proto_upbdefinit, true);
   _upb_DefPool_LoadDefInitEx(
-      symtab, &src_google_protobuf_test_messages_proto3_proto_upbdefinit, true);
+      symtab, &google_protobuf_test_messages_proto3_proto_upbdefinit, true);
 #else
   protobuf_test_messages_proto2_TestAllTypesProto2_getmsgdef(symtab);
   protobuf_test_messages_proto3_TestAllTypesProto3_getmsgdef(symtab);

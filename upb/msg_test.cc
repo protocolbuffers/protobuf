@@ -27,7 +27,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "src/google/protobuf/test_messages_proto3.upb.h"
+#include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/def.hpp"
 #include "upb/json_decode.h"
 #include "upb/json_encode.h"

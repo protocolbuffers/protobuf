@@ -83,8 +83,8 @@ cc_test(
         "//:third_party/lunit/console.lua",
         "//:third_party/lunit/lunit.lua",
         "//upb/bindings/lua:upb.lua",
-        "@com_google_protobuf//:conformance_proto",
         "@com_google_protobuf//:descriptor_proto",
+        "@com_google_protobuf//conformance:conformance_proto",
     ],
     linkstatic = 1,
     deps = [

@@ -494,13 +494,13 @@ cc_test(
 upb_proto_library(
     name = "conformance_proto_upb",
     testonly = 1,
-    deps = ["@com_google_protobuf//:conformance_proto"],
+    deps = ["@com_google_protobuf//conformance:conformance_proto"],
 )
 
 upb_proto_reflection_library(
     name = "conformance_proto_upbdefs",
     testonly = 1,
-    deps = ["@com_google_protobuf//:conformance_proto"],
+    deps = ["@com_google_protobuf//conformance:conformance_proto"],
 )
 
 upb_proto_reflection_library(
@@ -537,7 +537,7 @@ cc_binary(
 make_shell_script(
     name = "gen_test_conformance_upb",
     out = "test_conformance_upb.sh",
-    contents = "external/com_google_protobuf/conformance_test_runner " +
+    contents = "external/com_google_protobuf/conformance/conformance_test_runner " +
                " --enforce_recommended " +
                " --failure_list ./upb/conformance_upb_failures.txt" +
                " ./conformance_upb",
@@ -549,7 +549,7 @@ sh_test(
     data = [
         "upb/conformance_upb_failures.txt",
         ":conformance_upb",
-        "@com_google_protobuf//:conformance_test_runner",
+        "@com_google_protobuf//conformance:conformance_test_runner",
     ],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )
@@ -578,7 +578,7 @@ cc_binary(
 make_shell_script(
     name = "gen_test_conformance_upb_dynamic_minitable",
     out = "test_conformance_upb_dynamic_minitable.sh",
-    contents = "external/com_google_protobuf/conformance_test_runner " +
+    contents = "external/com_google_protobuf/conformance/conformance_test_runner " +
                " --enforce_recommended " +
                " --failure_list ./upb/conformance_upb_failures.txt" +
                " ./conformance_upb_dynamic_minitable",
@@ -590,7 +590,7 @@ sh_test(
     data = [
         "upb/conformance_upb_failures.txt",
         ":conformance_upb_dynamic_minitable",
-        "@com_google_protobuf//:conformance_test_runner",
+        "@com_google_protobuf//conformance:conformance_test_runner",
     ],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )

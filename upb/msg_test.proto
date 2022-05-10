@@ -31,7 +31,7 @@ syntax = "proto2";
 
 package upb_test;
 
-import "src/google/protobuf/test_messages_proto3.proto";
+import "google/protobuf/test_messages_proto3.proto";
 
 message TestExtensions {
   extensions 1000 to max;
