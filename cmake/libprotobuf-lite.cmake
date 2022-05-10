@@ -115,7 +115,7 @@ if(protobuf_BUILD_SHARED_LIBS)
 endif()
 set_target_properties(libprotobuf-lite PROPERTIES
     VERSION ${protobuf_VERSION}
-    SOVERSION 31
+    SOVERSION 32
     OUTPUT_NAME ${LIB_PREFIX}protobuf-lite
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
 add_library(protobuf::libprotobuf-lite ALIAS libprotobuf-lite)
