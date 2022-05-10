@@ -6,6 +6,7 @@ load(
     "flag_group",
     "flag_set",
     "tool_path",
+    "with_feature_set",
 )
 
 all_link_actions = [
@@ -172,7 +173,13 @@ def _impl(ctx):
       ],
   )
 
-  features = [linker_flags, compiler_flags, sysroot_flags]
+  features = [
+      linker_flags,
+      compiler_flags,
+      sysroot_flags,
+      feature(name = "dbg"),
+      feature(name = "opt"),
+  ]
 
   if "mingw" in ctx.attr.target_full_name:
       features.append(
