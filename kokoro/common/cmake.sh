@@ -47,7 +47,7 @@ echo "  Build output: ${BUILD_DIR}"
 if [[ ${SOURCE_DIR} != ${SCRIPT_ROOT} ]]; then
   echo " Build scripts: ${SCRIPT_ROOT}"
 fi
-set +x
+set -x
 source ${SCRIPT_ROOT}/kokoro/common/caplog.sh
 
 #
