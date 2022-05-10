@@ -8,14 +8,15 @@
 #
 # This script uses `caplog` to save logfiles. See caplog.sh for details.
 
-set -eux
+set -eu -o pipefail
+: ${SCRIPT_ROOT:=$(cd $(dirname $0)/../..; pwd)}
 
 ################################################################################
 # If you are using this script to run tests, you can set some environment
 # variables to control behavior:
 #
 # By default, find the sources based on this script's path.
-: ${SOURCE_DIR:=$(cd $(dirname $0)/../..; pwd)}
+: ${SOURCE_DIR:=${SCRIPT_ROOT}}
 #
 # By default, put outputs under <git root>/cmake/build.
 : ${BUILD_DIR:=${SOURCE_DIR}/cmake/build}
@@ -40,7 +41,14 @@ fi
 #   CTEST_PARALLEL_LEVEL
 ################################################################################
 
-source ${SOURCE_DIR}/kokoro/common/caplog.sh
+echo "Building using..."
+echo "       Sources: ${SOURCE_DIR}"
+echo "  Build output: ${BUILD_DIR}"
+if [[ ${SOURCE_DIR} != ${SCRIPT_ROOT} ]]; then
+  echo " Build scripts: ${SCRIPT_ROOT}"
+fi
+set +x
+source ${SCRIPT_ROOT}/kokoro/common/caplog.sh
 
 #
 # Configure under $BUILD_DIR:
