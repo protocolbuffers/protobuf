@@ -25,9 +25,14 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * 6x speedup in ArrayEncoder.writeUInt32NotTag
 
   Python
-  * Added UnknownFieldSet(message) for pure Python. The old
-    message.UnknownFields() will be deprecated after UnknownFieldSet(message) is
-    added for cpp extension.
+  * The C extension module for Python has been rewritten to use the upb library.
+    This is expected to deliver significant performance benefits, especially when
+    parsing large payloads.  There are some minor breaking changes, but these
+    should not impact most users.  For more information see:
+    https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+  * Due to the breaking changes for Python, the major version number for Python
+    has been incremented.
+  * The binary wheel for macOS now supports Apple silicon.
 
 2022-04-21 version 3.20.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
