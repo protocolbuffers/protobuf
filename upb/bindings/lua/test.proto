@@ -3,7 +3,7 @@ syntax = "proto2";
 
 import "google/protobuf/timestamp.proto";
 
-package upb_test;
+package upb_lua_test;
 
 message MapTest {
   map<string, double> map_string_double = 1;

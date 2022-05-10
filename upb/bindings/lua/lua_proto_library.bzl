@@ -23,11 +23,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+"""lua_proto_library(): a rule for building Lua protos."""
+
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
 # Generic support code #########################################################
-
-_is_bazel = not hasattr(native, "genmpm")
 
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:
@@ -57,7 +57,10 @@ def _generate_output_file(ctx, src, extension):
 
 # upb_proto_library / upb_proto_reflection_library shared code #################
 
-_LuaFiles = provider(fields = ["files"])
+_LuaFilesInfo = provider(
+    "A set of lua files generated from .proto files",
+    fields = ["files"],
+)
 
 def _compile_upb_protos(ctx, proto_info, proto_sources):
     files = [_generate_output_file(ctx, name, "_pb.lua") for name in proto_sources]
@@ -84,9 +87,9 @@ def _lua_proto_rule_impl(ctx):
     if len(ctx.attr.deps) != 1:
         fail("only one deps dependency allowed.")
     dep = ctx.attr.deps[0]
-    if _LuaFiles not in dep:
-        fail("proto_library rule must generate _LuaFiles (aspect should have handled this).")
-    files = dep[_LuaFiles].files
+    if _LuaFilesInfo not in dep:
+        fail("proto_library rule must generate _LuaFilesInfo (aspect should have handled this).")
+    files = dep[_LuaFilesInfo].files
     return [
         DefaultInfo(
             files = files,
@@ -98,8 +101,8 @@ def _lua_proto_library_aspect_impl(target, ctx):
     proto_info = target[ProtoInfo]
     files = _compile_upb_protos(ctx, proto_info, proto_info.direct_sources)
     deps = ctx.rule.attr.deps
-    transitive = [dep[_LuaFiles].files for dep in deps if _LuaFiles in dep]
-    return [_LuaFiles(files = depset(direct = files, transitive = transitive))]
+    transitive = [dep[_LuaFilesInfo].files for dep in deps if _LuaFilesInfo in dep]
+    return [_LuaFilesInfo(files = depset(direct = files, transitive = transitive))]
 
 # lua_proto_library() ##########################################################
 
@@ -117,7 +120,7 @@ _lua_proto_library_aspect = aspect(
         ),
     },
     implementation = _lua_proto_library_aspect_impl,
-    provides = [_LuaFiles],
+    provides = [_LuaFilesInfo],
     attr_aspects = ["deps"],
     fragments = ["cpp"],
 )
