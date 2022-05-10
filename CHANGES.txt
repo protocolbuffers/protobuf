@@ -26,7 +26,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Python
   * The C extension module for Python has been rewritten to use the upb library.
-    This is expected to deliver significant performance wins, especially when
+    This is expected to deliver significant performance benefits, especially when
     parsing large payloads.  There are some minor breaking changes, but these
     should not impact most users.  For more information see:
     https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
