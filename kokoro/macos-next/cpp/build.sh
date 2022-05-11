@@ -9,47 +9,21 @@ if [[ -h /tmpfs ]] && [[ ${PWD} == /tmpfs/src ]]; then
   cd /Volumes/BuildData/tmpfs/src
 fi
 
-# These vars can be changed when running manually, e.g.:
-#
-#   % BUILD_CONFIG=RelWithDebInfo path/to/build.sh
+# Default environment variables used by cmake build:
+: ${CMAKE_CONFIG_TYPE:=Debug}
+export CMAKE_CONFIG_TYPE
+: ${CTEST_PARALLEL_LEVEL:=4}
+export CTEST_PARALLEL_LEVEL
 
-# By default, build using Debug config.
-: ${BUILD_CONFIG:=Debug}
-
-# By default, find the sources based on this script path.
-: ${SOURCE_DIR:=$(cd $(dirname $0)/../../..; pwd)}
-
-# By default, put outputs under <git root>/cmake/build.
-: ${BUILD_DIR:=${SOURCE_DIR}/cmake/build}
-
-source ${SOURCE_DIR}/kokoro/caplog.sh
+# Run from the project root directory.
+cd $(dirname $0)/../../..
 
 #
 # Update submodules
 #
-git -C "${SOURCE_DIR}" submodule update --init --recursive
+git submodule update --init --recursive
 
 #
-# Configure and build in a separate directory
+# Run build
 #
-mkdir -p "${BUILD_DIR}"
-
-caplog 01_configure \
-  cmake -S "${SOURCE_DIR}" -B "${BUILD_DIR}" ${CAPLOG_CMAKE_ARGS:-}
-
-if [[ -n ${CAPLOG_DIR:-} ]]; then
-  mkdir -p "${CAPLOG_DIR}/CMakeFiles"
-  cp "${BUILD_DIR}"/CMakeFiles/CMake*.log "${CAPLOG_DIR}/CMakeFiles"
-fi
-
-caplog 02_build \
-  cmake --build "${BUILD_DIR}" --config "${BUILD_CONFIG}"
-
-#
-# Run tests
-#
-(
-  cd "${BUILD_DIR}"
-  caplog 03_combined_testlog \
-    ctest -C "${BUILD_CONFIG}" -j4 ${CAPLOG_CTEST_ARGS:-}
-)
+kokoro/common/cmake.sh
