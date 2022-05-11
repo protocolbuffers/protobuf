@@ -73,14 +73,18 @@ def _RelativeOutputPath(path, include, dest = ""):
     path = path[len(include):]
     return dest + path
 
+ProtoGenInfo = provider(
+    fields = ["srcs", "import_flags", "deps"],
+)
+
 def _proto_gen_impl(ctx):
     """General implementation for generating protos"""
     srcs = ctx.files.srcs
-    deps = depset(direct=ctx.files.srcs)
+    deps = depset(direct = ctx.files.srcs)
     source_dir = _SourceDir(ctx)
     gen_dir = _GenDir(ctx).rstrip("/")
     import_flags = []
-        
+
     if source_dir:
         has_sources = any([src.is_source for src in srcs])
         if has_sources:
@@ -92,27 +96,34 @@ def _proto_gen_impl(ctx):
     if has_generated:
         import_flags += ["-I" + gen_dir]
 
-    import_flags = depset(direct=import_flags)
+    import_flags = depset(direct = import_flags)
 
     for dep in ctx.attr.deps:
-        if type(dep.proto.import_flags) == "list":
-            import_flags = depset(transitive=[import_flags], direct=dep.proto.import_flags)
+        dep_proto = dep[ProtoGenInfo]
+        if type(dep_proto.import_flags) == "list":
+            import_flags = depset(
+                transitive = [import_flags],
+                direct = dep_proto.import_flags,
+            )
         else:
-            import_flags = depset(transitive=[import_flags, dep.proto.import_flags])
-        if type(dep.proto.deps) == "list":
-            deps = depset(transitive=[deps], direct=dep.proto.deps)
+            import_flags = depset(
+                transitive = [import_flags, dep_proto.import_flags],
+            )
+        if type(dep_proto.deps) == "list":
+            deps = depset(transitive = [deps], direct = dep_proto.deps)
         else:
-            deps = depset(transitive=[deps, dep.proto.deps])
+            deps = depset(transitive = [deps, dep_proto.deps])
 
     if not ctx.attr.gen_cc and not ctx.attr.gen_py and not ctx.executable.plugin:
-        return struct(
-            proto = struct(
+        return [
+            ProtoGenInfo(
                 srcs = srcs,
                 import_flags = import_flags,
                 deps = deps,
             ),
-        )
+        ]
 
+    generated_files = []
     for src in srcs:
         args = []
 
@@ -134,6 +145,8 @@ def _proto_gen_impl(ctx):
             outs.extend(_PyOuts([src.basename], use_grpc_plugin = use_grpc_plugin))
 
         outs = [ctx.actions.declare_file(out, sibling = src) for out in outs]
+        generated_files.extend(outs)
+
         inputs = [src] + deps.to_list()
         tools = [ctx.executable.protoc]
         if ctx.executable.plugin:
@@ -186,18 +199,19 @@ def _proto_gen_impl(ctx):
                     use_default_shell_env = True,
                 )
 
-    return struct(
-        proto = struct(
+    return [
+        ProtoGenInfo(
             srcs = srcs,
             import_flags = import_flags,
             deps = deps,
         ),
-    )
+        DefaultInfo(files = depset(generated_files)),
+    ]
 
 proto_gen = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
-        "deps": attr.label_list(providers = ["proto"]),
+        "deps": attr.label_list(providers = [ProtoGenInfo]),
         "includes": attr.string_list(),
         "protoc": attr.label(
             cfg = "exec",
@@ -214,7 +228,7 @@ proto_gen = rule(
         "plugin_options": attr.string_list(),
         "gen_cc": attr.bool(),
         "gen_py": attr.bool(),
-        "outs": attr.output_list(),
+        "outs": attr.label_list(),
     },
     output_to_genfiles = True,
     implementation = _proto_gen_impl,
@@ -315,7 +329,6 @@ def cc_proto_library(
         plugin = grpc_cpp_plugin,
         plugin_language = "grpc",
         gen_cc = 1,
-        outs = outs,
         visibility = ["//visibility:public"],
     )
 
@@ -456,8 +469,6 @@ internal_gen_kt_protos = rule(
     },
 )
 
-
-
 def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
     """Macro to copy files to a different directory and then create a filegroup.
 
@@ -479,10 +490,12 @@ def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
         outs = outs,
         cmd_bash = " && ".join(
             ["cp $(location %s) $(location %s)" %
-             (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs]),
+             (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs],
+        ),
         cmd_bat = " && ".join(
             ["@copy /Y $(location %s) $(location %s) >NUL" %
-             (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs]),
+             (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs],
+        ),
     )
 
     native.filegroup(
@@ -525,8 +538,6 @@ def py_proto_library(
       **kargs: other keyword arguments that are passed to py_library.
 
     """
-    outs = _PyOuts(srcs, use_grpc_plugin)
-
     includes = []
     if include != None:
         includes = [include]
@@ -545,7 +556,6 @@ def py_proto_library(
         includes = includes,
         protoc = protoc,
         gen_py = 1,
-        outs = outs,
         visibility = ["//visibility:public"],
         plugin = grpc_python_plugin,
         plugin_language = "grpc",
@@ -555,7 +565,7 @@ def py_proto_library(
         py_libs = py_libs + [default_runtime]
     py_library(
         name = name,
-        srcs = outs + py_extra_srcs,
+        srcs = [name + "_genproto"] + py_extra_srcs,
         deps = py_libs + deps,
         imports = includes,
         **kargs
