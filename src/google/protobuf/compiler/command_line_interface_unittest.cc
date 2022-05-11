@@ -2707,7 +2707,6 @@ TEST_P(EncodeDecodeTest, Encode) {
   EXPECT_TRUE(Run(args + " --encode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
       "net/proto2/internal/testdata/golden_message_oneof_implemented"));
-  ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, Decode) {
@@ -2719,7 +2718,6 @@ TEST_P(EncodeDecodeTest, Decode) {
   ExpectStdoutMatchesTextFile(TestUtil::GetTestDataPath(
       "net/proto2/internal/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
-  ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, Partial) {
@@ -2728,7 +2726,7 @@ TEST_P(EncodeDecodeTest, Partial) {
       Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
           " --encode=protobuf_unittest.TestRequired"));
   ExpectStdoutMatchesText("");
-  ExpectStderrMatchesText(
+  ExpectStderrContainsText(
       "warning:  Input message is missing required fields:  a, b, c\n");
 }
 
@@ -2752,7 +2750,7 @@ TEST_P(EncodeDecodeTest, UnknownType) {
       Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
           " --encode=NoSuchType"));
   ExpectStdoutMatchesText("");
-  ExpectStderrMatchesText("Type not defined: NoSuchType\n");
+  ExpectStderrContainsText("Type not defined: NoSuchType\n");
 }
 
 TEST_P(EncodeDecodeTest, ProtoParseError) {
@@ -2777,7 +2775,6 @@ TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
       args + " --encode=protobuf_unittest.TestAllTypes --deterministic_output"));
   ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
       "net/proto2/internal/testdata/golden_message_oneof_implemented"));
-  ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
