@@ -246,8 +246,8 @@ build_java() {
   cd ../..
 }
 
-# The conformance tests are hard-coded to work with the $ROOT/java directory.
-# So this can't run in parallel with two different sets of tests.
+# The conformance tests are hard-coded to work with the $ROOT/java directory
+# so this can't run in parallel with two different sets of tests.
 build_java_with_conformance_tests() {
   # Java build needs `protoc`.
   internal_build_cpp
@@ -257,7 +257,7 @@ build_java_with_conformance_tests() {
   cd java/core && $MVN test && $MVN install
   cd ../lite && $MVN test && $MVN install
   cd ../util && $MVN test && $MVN install && $MVN package assembly:single
-  if [ "$version" == "jdk8" ]; then
+  if [ "$version" != "jdk7" ]; then
     cd ../kotlin && $MVN test && $MVN install
     cd ../kotlin-lite && $MVN test && $MVN install
   fi
