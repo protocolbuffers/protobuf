@@ -58,7 +58,9 @@ if SOURCE_DIR=${DIST_WORK_ROOT} \
   kokoro/common/cmake.sh; then
   # TODO: remove this conditional.
   # The cmake build is expected to fail due to missing abseil sources.
-  echo -e "$0: Expected failure, but build passed.\nFAIL" >&2
+  echo "$0: Expected failure, but build passed." >&2
+  echo "Please update $(basename $0) to remove failure expectation." >&2
+  echo "FAIL" >&2
   exit 1
 fi
 echo "PASS"
