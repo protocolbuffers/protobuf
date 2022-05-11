@@ -71,6 +71,7 @@ junit_tests(
     deps = [
         ":lite",
         "//java/core:generic_test_protos_java_proto_lite",
+        "//java/core:lite_test_protos_java_proto_lite",
         "//java/core:java_test_protos_java_proto_lite",
         "//java/core:test_util_lite",
         "@maven//:com_google_truth_truth",

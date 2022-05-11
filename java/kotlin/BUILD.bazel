@@ -240,6 +240,7 @@ kt_jvm_library(
         ":well_known_protos_kotlin",
         "//java/core",
         "//java/core:generic_test_protos_java_proto",
+        "//java/core:lite_test_protos_java_proto",
     ],
 )
 
@@ -262,6 +263,7 @@ kt_jvm_library(
         ":shared_runtime",
         "//java/core",
         "//java/core:generic_test_protos_java_proto",
+        "//java/core:lite_test_protos_java_proto",
     ],
 )
 

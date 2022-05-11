@@ -1,7 +1,7 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library","cc_test")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
@@ -10,7 +10,6 @@ load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load(
     ":protobuf.bzl",
     "adapt_proto_library",
-    "cc_proto_library",
     "internal_copied_filegroup",
     "internal_protobuf_py_tests",
     "py_proto_library",
@@ -468,6 +467,26 @@ RELATIVE_LITE_TEST_PROTOS = [
 
 LITE_TEST_PROTOS = ["src/" + s for s in RELATIVE_LITE_TEST_PROTOS]
 
+proto_library(
+    name = "lite_test_protos",
+    srcs = LITE_TEST_PROTOS,
+    strip_import_prefix = "src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
+)
+
 RELATIVE_TEST_PROTOS = [
     # AUTOGEN(test_protos)
     "google/protobuf/any_test.proto",
@@ -519,6 +538,26 @@ RELATIVE_TEST_PROTOS = [
 
 TEST_PROTOS = ["src/" + s for s in RELATIVE_TEST_PROTOS]
 
+proto_library(
+    name = "test_protos",
+    srcs = TEST_PROTOS,
+    strip_import_prefix = "src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
+)
+
 GENERIC_RELATIVE_TEST_PROTOS = [
     "google/protobuf/map_proto2_unittest.proto",
     "google/protobuf/map_unittest.proto",
@@ -550,11 +589,9 @@ GENERIC_RELATIVE_TEST_PROTOS = [
     "google/protobuf/unittest_well_known_types.proto",
 ]
 
-GENERIC_TEST_PROTOS = ["src/" + s for s in GENERIC_RELATIVE_TEST_PROTOS]
-
 proto_library(
     name = "generic_test_protos",
-    srcs = LITE_TEST_PROTOS + GENERIC_TEST_PROTOS,
+    srcs = ["src/" + s for s in GENERIC_RELATIVE_TEST_PROTOS],
     strip_import_prefix = "src",
     visibility = ["//:__subpackages__"],
     deps = [
@@ -573,12 +610,13 @@ proto_library(
 )
 
 cc_proto_library(
+    name = "cc_lite_test_protos",
+    deps = [":lite_test_protos"],
+)
+
+cc_proto_library(
     name = "cc_test_protos",
-    srcs = LITE_TEST_PROTOS + TEST_PROTOS,
-    include = "src",
-    default_runtime = ":protobuf",
-    protoc = ":protoc",
-    deps = [":cc_wkt_protos"],
+    deps = [":test_protos"],
 )
 
 COMMON_TEST_SRCS = [
@@ -731,6 +769,7 @@ cc_test(
     ],
     linkopts = LINK_OPTS,
     deps = [
+        ":cc_lite_test_protos",
         ":cc_test_protos",
         ":protobuf",
         ":protoc_lib",
