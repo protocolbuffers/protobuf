@@ -50,6 +50,6 @@ fi
   for (( i=0 ; i < ${#MISSING_FILES[@]} ; i++ )); do
     echo "  ${MISSING_FILES[i]}"
   done
-  echo -e "\nAdd them to the `pkg_files` rule in corresponding BUILD.bazel.\n"
+  echo -e "\nAdd them to the 'pkg_files' rule in corresponding BUILD.bazel.\n"
 ) >&2
 exit 1

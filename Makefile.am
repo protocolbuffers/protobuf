@@ -993,6 +993,7 @@ php_EXTRA_DIST=                                                       \
 
 # Note: please keep this in sync with the python_dist_files rule in BUILD.bazel.
 python_EXTRA_DIST=                                                           \
+  python/BUILD.bazel                                                         \
   python/MANIFEST.in                                                         \
   python/google/__init__.py                                                  \
   python/google/protobuf/__init__.py                                         \
@@ -1107,6 +1108,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/text_format.py                                      \
   python/google/protobuf/unknown_fields.py                                   \
   python/google/protobuf/util/__init__.py                                    \
+  python/internal.bzl                                                        \
   python/release.sh                                                          \
   python/mox.py                                                              \
   python/setup.cfg                                                           \

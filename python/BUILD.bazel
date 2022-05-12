@@ -332,11 +332,13 @@ pkg_files(
         "google/protobuf/pyext/*.cc",
         "google/protobuf/pyext/*.h",
     ]) + [
+        "BUILD.bazel",
         "MANIFEST.in",
         "README.md",
         "google/protobuf/proto_api.h",
         "google/protobuf/pyext/README",
         "google/protobuf/python_protobuf.h",
+        "internal.bzl",
         "mox.py",
         "release.sh",
         "setup.cfg",
