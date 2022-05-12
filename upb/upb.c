@@ -116,8 +116,6 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 
 /* upb_Arena ******************************************************************/
 
-/* Be conservative and choose 16 in case anyone is using SSE. */
-
 struct mem_block {
   struct mem_block* next;
   uint32_t size;
@@ -130,7 +128,8 @@ typedef struct cleanup_ent {
   void* ud;
 } cleanup_ent;
 
-static const size_t memblock_reserve = UPB_ALIGN_UP(sizeof(mem_block), 16);
+static const size_t memblock_reserve =
+    UPB_ALIGN_UP(sizeof(mem_block), UPB_MALLOC_ALIGN);
 
 static upb_Arena* arena_findroot(upb_Arena* a) {
   /* Path splitting keeps time complexity down, see:
@@ -218,7 +217,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
 
   if (n) {
     /* Align initial pointer up so that we return properly-aligned pointers. */
-    void* aligned = (void*)UPB_ALIGN_UP((uintptr_t)mem, 16);
+    void* aligned = (void*)UPB_ALIGN_UP((uintptr_t)mem, UPB_MALLOC_ALIGN);
     size_t delta = (uintptr_t)aligned - (uintptr_t)mem;
     n = delta <= n ? n - delta : 0;
     mem = aligned;

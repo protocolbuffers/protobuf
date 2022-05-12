@@ -912,18 +912,12 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
     }
   }
 
-  if (d->platform == kUpb_MiniTablePlatform_64Bit) {
-    // For compatibility with fast table parsing, we have to align this up to a
-    // multiple of 16 + 8.  This is because arena alloc size must be a multiple
-    // of 16, but we will add sizeof(upb_Message_Internal) at runtime, as the
-    // table size does not include this value.
-    //
-    // This is a bit convoluted and should probably be simplified.
-    d->table->size = UPB_ALIGN_UP(d->table->size, 8);
-    if (UPB_ALIGN_UP(d->table->size, 16) == d->table->size) {
-      d->table->size += 8;
-    }
-  }
+  // The fasttable parser (supported on 64-bit only) depends on this being a
+  // multiple of 8 in order to satisfy UPB_MALLOC_ALIGN, which is also 8.
+  //
+  // On 32-bit we could potentially make this smaller, but there is no
+  // compelling reason to optimize this right now.
+  d->table->size = UPB_ALIGN_UP(d->table->size, 8);
 }
 
 upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,

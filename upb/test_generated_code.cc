@@ -36,6 +36,9 @@
 #include "upb/test.upb.h"
 #include "upb/upb.hpp"
 
+// Must be last.
+#include "upb/port_def.inc"
+
 #if !defined(MIN)
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #endif
@@ -962,16 +965,17 @@ TEST(GeneratedCode, ArenaDecode) {
 TEST(GeneratedCode, ArenaUnaligned) {
   char buf1[1024];
   // Force the pointer to be unaligned.
-  char* unaligned_buf_ptr = (char*)((uintptr_t)buf1 | 7);
+  uintptr_t low_bits = UPB_MALLOC_ALIGN - 1;
+  char* unaligned_buf_ptr = (char*)((uintptr_t)buf1 | low_bits);
   upb_Arena* arena = upb_Arena_Init(
       unaligned_buf_ptr, &buf1[sizeof(buf1)] - unaligned_buf_ptr, NULL);
   char* mem = static_cast<char*>(upb_Arena_Malloc(arena, 5));
-  EXPECT_EQ(0, reinterpret_cast<uintptr_t>(mem) & 15);
+  EXPECT_EQ(0, reinterpret_cast<uintptr_t>(mem) & low_bits);
   upb_Arena_Free(arena);
 
   // Try the same, but with a size so small that aligning up will overflow.
   arena = upb_Arena_Init(unaligned_buf_ptr, 5, &upb_alloc_global);
   mem = static_cast<char*>(upb_Arena_Malloc(arena, 5));
-  EXPECT_EQ(0, reinterpret_cast<uintptr_t>(mem) & 15);
+  EXPECT_EQ(0, reinterpret_cast<uintptr_t>(mem) & low_bits);
   upb_Arena_Free(arena);
 }

@@ -360,6 +360,7 @@ cc_test(
     srcs = ["upb/test_generated_code.cc"],
     deps = [
         ":empty_upbdefs_proto",
+        ":port",
         ":test_messages_proto2_proto_upb",
         ":test_messages_proto3_proto_upb",
         ":test_upb_proto",

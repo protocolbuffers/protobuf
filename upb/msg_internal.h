@@ -275,7 +275,7 @@ UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* l) {
 UPB_INLINE upb_Message* _upb_Message_New_inl(const upb_MiniTable* l,
                                              upb_Arena* a) {
   size_t size = upb_msg_sizeof(l);
-  void* mem = upb_Arena_Malloc(a, size);
+  void* mem = upb_Arena_Malloc(a, size + sizeof(upb_Message_Internal));
   upb_Message* msg;
   if (UPB_UNLIKELY(!mem)) return NULL;
   msg = UPB_PTR_AT(mem, sizeof(upb_Message_Internal), upb_Message);
