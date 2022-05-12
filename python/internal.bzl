@@ -1,20 +1,5 @@
 # Internal helpers for building the Python protobuf runtime.
 
-def _RelativeOutputPath(path, include, dest = ""):
-    if include == None:
-        return path
-
-    if not path.startswith(include):
-        fail("Include path %s isn't part of the path %s." % (include, path))
-
-    if include and include[-1] != "/":
-        include = include + "/"
-    if dest and dest[-1] != "/":
-        dest = dest + "/"
-
-    path = path[len(include):]
-    return dest + path
-
 def _internal_copy_files_impl(ctx):
     strip_prefix = ctx.attr.strip_prefix
     if strip_prefix[-1] != "/":
@@ -93,19 +78,4 @@ def internal_copy_files(name, srcs, strip_prefix):
             "@bazel_tools//src/conditions:host_windows": True,
             "//conditions:default": False,
         }),
-    )
-
-def _foo(name, srcs, strip_prefix, dest, outs):
-    native.genrule(
-        name = name,
-        srcs = srcs,
-        outs = outs,
-        cmd_bash = " && ".join(
-            ["cp $(location %s) $(location %s)" %
-             (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs],
-        ),
-        cmd_bat = " && ".join(
-            ["@copy /Y $(location %s) $(location %s) >NUL" %
-             (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs],
-        ),
     )

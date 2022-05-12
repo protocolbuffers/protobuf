@@ -29,6 +29,7 @@ trap print_test_logs EXIT
 bazel test -k --copt=-Werror --host_copt=-Werror \
   //build_defs:all \
   //java:tests \
+  //python:all \
   //:protoc \
   //:protobuf \
   //:protobuf_python \
@@ -44,4 +45,4 @@ popd
 DIST=`ls *.tar.gz`
 tar -xf $DIST
 cd ${DIST//.tar.gz}
-bazel build //:protobuf //:protobuf_java
+bazel build //:protobuf //:protobuf_java //:protobuf_python

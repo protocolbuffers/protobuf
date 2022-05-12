@@ -18,6 +18,7 @@ TEST_TARGETS=(
   //build_defs:all
   //conformance:all
   //java:tests
+  //python:all
   //:protobuf_test
 )
 
