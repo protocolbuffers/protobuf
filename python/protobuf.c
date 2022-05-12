@@ -131,10 +131,14 @@ PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
 
 void PyUpb_WeakMap_Free(PyUpb_WeakMap* map) { upb_Arena_Free(map->arena); }
 
+// To give better entropy in the table key, we shift away low bits that are
+// always zero.
+static const int PyUpb_PtrShift = (sizeof(void*) == 4) ? 2 : 3;
+
 uintptr_t PyUpb_WeakMap_GetKey(const void* key) {
   uintptr_t n = (uintptr_t)key;
-  assert((n & 7) == 0);
-  return n >> 3;
+  assert((n & ((1 << PyUpb_PtrShift) - 1)) == 0);
+  return n >> PyUpb_PtrShift;
 }
 
 void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
@@ -170,7 +174,7 @@ bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
   uintptr_t u_key;
   upb_value val;
   if (!upb_inttable_next2(&map->table, &u_key, &val, iter)) return false;
-  *key = (void*)(u_key << 3);
+  *key = (void*)(u_key << PyUpb_PtrShift);
   *obj = upb_value_getptr(val);
   return true;
 }
