@@ -30,7 +30,7 @@ make html
 cd ..
 deactivate
 
-python3 -m pip install protobuf==3.15.8 gcp-docuploader
+python3 -m pip install protobuf==4.21.0rc1 gcp-docuploader
 
 # install a json parser
 sudo apt-get -y install jq
