@@ -15,7 +15,7 @@ sudo add-apt-repository universe
 sudo apt-get update
 sudo apt-get -y install unzip
 wget https://github.com/protocolbuffers/protobuf/releases/download/v3.15.8/protoc-3.15.8-linux-x86_64.zip
-unzip protoc-3.15.8-linux-x86_64.zip bin/protoc
+unzip protoc-21.0-rc-1-linux-x86_64.zip bin/protoc
 mv bin/protoc ../src/protoc
 python3 -m venv venv
 source venv/bin/activate
