@@ -61,6 +61,11 @@ def _internal_copy_files_impl(ctx):
     ]
 
 internal_copy_files_impl = rule(
+    doc = """
+Implementation for internal_copy_files macro.
+
+This rule implements file copying, including a compatibility mode for Windows.
+""",
     implementation = _internal_copy_files_impl,
     attrs = {
         "srcs": attr.label_list(allow_files = True, providers = [DefaultInfo]),
@@ -70,6 +75,26 @@ internal_copy_files_impl = rule(
 )
 
 def internal_copy_files(name, srcs, strip_prefix):
+    """Copies common proto files to the python tree.
+
+    In order for Python imports to work, generated proto interfaces under
+    the google.protobuf package need to be in the same directory as other
+    source files. This rule copies the .proto files themselves, e.g. with
+    strip_prefix = 'src', 'src/google/protobuf/blah.proto' could be copied
+    to '<package>/google/protobuf/blah.proto'.
+
+    (An alternative might be to implement a separate rule to generate
+    Python code in a different location for the sources. However, this
+    would be strange behavior that doesn't match any other language's proto
+    library generation.)
+
+    Args:
+      name: the name for the rule.
+      srcs: the sources.
+      strip_prefix: the prefix to remove from each of the paths in 'srcs'. The
+          remainder will be used to construct the output path.
+
+    """
     internal_copy_files_impl(
         name = name,
         srcs = srcs,
