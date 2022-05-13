@@ -7,20 +7,6 @@
 
 set -eux
 
-BUILD_ONLY_TARGETS=(
-  //pkg:all
-  //:protoc
-  //:protobuf
-  //:protobuf_python
-)
-
-TEST_TARGETS=(
-  //build_defs:all
-  //conformance:all
-  //java:tests
-  //:protobuf_test
-)
-
 use_bazel.sh 5.0.0 || true
 bazel version
 

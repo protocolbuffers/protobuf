@@ -27,8 +27,7 @@ set -o pipefail
 # Wrapper to run bazel, conditionally adding flags on Kokoro.
 function _bazel() {
   local -a _flags
-  # If we have auth credentials for result logging, set the appropriate flags.
-  if [[ -z ${KOKORO_BAZEL_AUTH_CREDENTIAL:-} ]]; then
+  if [[ -z ${KOKORO_ARTIFACTS_DIR:-} ]]; then
     _flags=( "${@}" )
   else
     # Any flags need to be added before the terminating "--".
@@ -43,8 +42,6 @@ function _bazel() {
     echo ${_invocation_id} >> ${KOKORO_ARTIFACTS_DIR}/bazel_invocation_ids
     _flags+=(
       --google_default_credentials=true
-      --google_credentials=${KOKORO_BAZEL_AUTH_CREDENTIAL}
-      --google_auth_scopes=https://www.googleapis.com/auth/cloud-source-tools
       --invocation_id=${_invocation_id}
       "${@}"
     )
