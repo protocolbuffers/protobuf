@@ -26,6 +26,7 @@ bazel version
 
 # Change to repo root
 cd $(dirname $0)/../../..
+SCRIPT_ROOT=$(pwd)
 
 # Construct temp directory for running the dist build.
 # If you want to run locally and keep the build dir, create a directory
@@ -63,25 +64,4 @@ tar -C ${DIST_WORKSPACE} --strip-components=1 -axf ${DIST_ARCHIVE}
 # Perform build steps in the extracted dist sources.
 
 cd ${DIST_WORKSPACE}
-FAILED=false
-
-date
-bazel fetch --distdir=${TMP_DISTDIR} "${BUILD_ONLY_TARGETS[@]}" "${TEST_TARGETS[@]}"
-
-date
-bazel build --distdir=${TMP_DISTDIR} -k \
-  "${BUILD_ONLY_TARGETS[@]}" || FAILED=true
-
-date
-bazel test --distdir=${TMP_DISTDIR} --test_output=errors -k \
-  "${TEST_TARGETS[@]}" || FAILED=true
-
-date
-cd examples
-bazel build --distdir=${TMP_DISTDIR} //... || FAILED=true
-
-if ${FAILED}; then
-   echo FAILED
-   exit 1
-fi
-echo PASS
+${SCRIPT_ROOT}/kokoro/common/bazel_test.sh --distdir=${TMP_DISTDIR}
