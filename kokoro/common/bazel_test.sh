@@ -28,13 +28,15 @@ set -o pipefail
 function _bazel() {
   local -a _flags
   # If we have auth credentials for result logging, set the appropriate flags.
-  if [[ -n ${KOKORO_BAZEL_AUTH_CREDENTIAL:-} ]]; then
+  if [[ -z ${KOKORO_BAZEL_AUTH_CREDENTIAL:-} ]]; then
+    _flags=( "${@}" )
+  else
     # Any flags need to be added before the terminating "--".
     while (( ${#@} > 0 )); do
       if [[ $1 == "--" ]]; then
         break
       fi
-      _flags+=( $1 )
+      _flags+=( "${1}" )
       shift
     done
     local _invocation_id=$(uuidgen)
@@ -44,11 +46,12 @@ function _bazel() {
       --google_credentials=${KOKORO_BAZEL_AUTH_CREDENTIAL}
       --google_auth_scopes=https://www.googleapis.com/auth/cloud-source-tools
       --invocation_id=${_invocation_id}
+      "${@}"
     )
   fi
 
   echo -n "[[ $(date) ]]"
-  ( set -x ; ${BAZEL:-bazel} "${_flags[@]}" "${@}" )
+  ( set -x ; ${BAZEL:-bazel} "${_flags[@]}" )
 }
 
 function main() {
