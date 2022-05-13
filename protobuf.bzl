@@ -58,21 +58,6 @@ def _PyOuts(srcs, use_grpc_plugin = False):
         ret += [s[:-len(".proto")] + "_pb2_grpc.py" for s in srcs]
     return ret
 
-def _RelativeOutputPath(path, include, dest = ""):
-    if include == None:
-        return path
-
-    if not path.startswith(include):
-        fail("Include path %s isn't part of the path %s." % (include, path))
-
-    if include and include[-1] != "/":
-        include = include + "/"
-    if dest and dest[-1] != "/":
-        dest = dest + "/"
-
-    path = path[len(include):]
-    return dest + path
-
 ProtoGenInfo = provider(
     fields = ["srcs", "import_flags", "deps"],
 )
@@ -469,41 +454,6 @@ internal_gen_kt_protos = rule(
     },
 )
 
-def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
-    """Macro to copy files to a different directory and then create a filegroup.
-
-    This is used by the //:protobuf_python py_proto_library target to work around
-    an issue caused by Python source files that are part of the same Python
-    package being in separate directories.
-
-    Args:
-      srcs: The source files to copy and add to the filegroup.
-      strip_prefix: Path to the root of the files to copy.
-      dest: The directory to copy the source files into.
-      **kwargs: extra arguments that will be passesd to the filegroup.
-    """
-    outs = [_RelativeOutputPath(s, strip_prefix, dest) for s in srcs]
-
-    native.genrule(
-        name = name + "_genrule",
-        srcs = srcs,
-        outs = outs,
-        cmd_bash = " && ".join(
-            ["cp $(location %s) $(location %s)" %
-             (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs],
-        ),
-        cmd_bat = " && ".join(
-            ["@copy /Y $(location %s) $(location %s) >NUL" %
-             (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs],
-        ),
-    )
-
-    native.filegroup(
-        name = name,
-        srcs = outs,
-        **kwargs
-    )
-
 def py_proto_library(
         name,
         srcs = [],
@@ -570,28 +520,6 @@ def py_proto_library(
         imports = includes,
         **kargs
     )
-
-def internal_protobuf_py_tests(
-        name,
-        modules = [],
-        **kargs):
-    """Bazel rules to create batch tests for protobuf internal.
-
-    Args:
-      name: the name of the rule.
-      modules: a list of modules for tests. The macro will create a py_test for
-          each of the parameter with the source "google/protobuf/%s.py"
-      kargs: extra parameters that will be passed into the py_test.
-
-    """
-    for m in modules:
-        s = "python/google/protobuf/internal/%s.py" % m
-        py_test(
-            name = "py_%s" % m,
-            srcs = [s],
-            main = s,
-            **kargs
-        )
 
 def check_protobuf_required_bazel_version():
     """For WORKSPACE files, to check the installed version of bazel.

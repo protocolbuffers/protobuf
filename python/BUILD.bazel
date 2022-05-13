@@ -1,0 +1,351 @@
+# Protobuf Python runtime
+#
+# See also code generation logic under /src/google/protobuf/compiler/python.
+#
+# Most users should depend upon public aliases in the root:
+#   //:protobuf_python
+#   //:well_known_types_py_pb2
+
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_python//python:defs.bzl", "py_library")
+load("//:protobuf.bzl", "py_proto_library")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+load(":internal.bzl", "internal_copy_files")
+
+py_library(
+    name = "protobuf_python",
+    data = select({
+        "//conditions:default": [],
+        ":use_fast_cpp_protos": [
+            ":google/protobuf/internal/_api_implementation.so",
+            ":google/protobuf/pyext/_message.so",
+        ],
+    }),
+    visibility = ["//:__pkg__"],
+    deps = [
+        ":python_srcs",
+        ":well_known_types_py_pb2",
+    ],
+)
+
+config_setting(
+    name = "use_fast_cpp_protos",
+    values = {
+        "define": "use_fast_cpp_protos=true",
+    },
+)
+
+py_proto_library(
+    name = "well_known_types_py_pb2",
+    srcs = [":copied_wkt_proto_files"],
+    include = ".",
+    default_runtime = "",
+    protoc = "//:protoc",
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//:__pkg__",
+        "@upb//:__subpackages__",
+    ],
+)
+
+internal_copy_files(
+    name = "copied_wkt_proto_files",
+    srcs = [
+        "//:built_in_runtime_protos",
+        "//:well_known_type_protos",
+    ],
+    strip_prefix = "src",
+)
+
+cc_binary(
+    name = "google/protobuf/internal/_api_implementation.so",
+    srcs = ["google/protobuf/internal/api_implementation.cc"],
+    copts = COPTS + [
+        "-DPYTHON_PROTO2_CPP_IMPL_V2",
+    ],
+    linkshared = 1,
+    linkstatic = 1,
+    tags = [
+        # Exclude this target from wildcard expansion (//...) because it may
+        # not even be buildable. It will be built if it is needed according
+        # to :use_fast_cpp_protos.
+        # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
+        "manual",
+    ],
+    deps = select({
+        "//conditions:default": [],
+        ":use_fast_cpp_protos": ["//external:python_headers"],
+    }),
+)
+
+config_setting(
+    name = "allow_oversize_protos",
+    values = {
+        "define": "allow_oversize_protos=true",
+    },
+)
+
+cc_binary(
+    name = "google/protobuf/pyext/_message.so",
+    srcs = glob([
+        "google/protobuf/pyext/*.cc",
+        "google/protobuf/pyext/*.h",
+    ]),
+    copts = COPTS + [
+        "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
+    ] + select({
+        "//conditions:default": [],
+        ":allow_oversize_protos": ["-DPROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS=1"],
+    }),
+    includes = ["."],
+    linkshared = 1,
+    linkstatic = 1,
+    tags = [
+        # Exclude this target from wildcard expansion (//...) because it may
+        # not even be buildable. It will be built if it is needed according
+        # to :use_fast_cpp_protos.
+        # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
+        "manual",
+    ],
+    deps = [
+        ":proto_api",
+        "//:protobuf",
+    ] + select({
+        "//conditions:default": [],
+        ":use_fast_cpp_protos": ["//external:python_headers"],
+    }),
+)
+
+py_library(
+    name = "python_srcs",
+    srcs = glob(
+        [
+            "google/protobuf/**/*.py",
+        ],
+        exclude = [
+            "google/protobuf/internal/*_test.py",
+            "google/protobuf/internal/test_util.py",
+            "google/protobuf/internal/import_test_package/__init__.py",
+        ],
+    ),
+    imports = ["python"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//:__pkg__",
+        "@upb//:__subpackages__",
+    ],
+)
+
+py_library(
+    name = "python_test_srcs",
+    srcs = glob([
+        "google/protobuf/internal/*_test.py",
+    ]) + [
+        "google/protobuf/internal/test_util.py",
+        "google/protobuf/internal/import_test_package/__init__.py",
+    ],
+    imports = ["python"],
+    srcs_version = "PY3",
+    visibility = [
+        "//:__pkg__",
+        "@upb//:__subpackages__",
+    ],
+)
+
+################################################################################
+# Tests
+################################################################################
+
+internal_copy_files(
+    name = "copied_test_proto_files",
+    srcs = ["//:test_proto_srcs"],
+    strip_prefix = "src",
+)
+
+py_proto_library(
+    name = "python_common_test_protos",
+    srcs = [":copied_test_proto_files"],
+    include = ".",
+    default_runtime = "",
+    protoc = "//:protoc",
+    srcs_version = "PY2AND3",
+    visibility = ["//:__pkg__"],
+    deps = [":well_known_types_py_pb2"],
+)
+
+py_proto_library(
+    name = "python_specific_test_protos",
+    srcs = glob([
+        "google/protobuf/internal/*.proto",
+        "google/protobuf/internal/import_test_package/*.proto",
+    ]),
+    include = ".",
+    default_runtime = ":protobuf_python",
+    protoc = "//:protoc",
+    srcs_version = "PY2AND3",
+    visibility = ["//:__pkg__"],
+    deps = [":python_common_test_protos"],
+)
+
+py_library(
+    name = "python_test_lib",
+    srcs = [
+        "google/protobuf/internal/import_test_package/__init__.py",
+        "google/protobuf/internal/test_util.py",
+    ],
+    imports = ["python"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":protobuf_python",
+        ":python_common_test_protos",
+        ":python_specific_test_protos",
+    ],
+)
+
+py_test(
+    name = "descriptor_database_test",
+    srcs = ["google/protobuf/internal/descriptor_database_test.py"],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "descriptor_pool_test",
+    srcs = ["google/protobuf/internal/descriptor_pool_test.py"],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "descriptor_test",
+    srcs = ["google/protobuf/internal/descriptor_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "generator_test",
+    srcs = ["google/protobuf/internal/generator_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "json_format_test",
+    srcs = ["google/protobuf/internal/json_format_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "message_factory_test",
+    srcs = ["google/protobuf/internal/message_factory_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "message_test",
+    srcs = ["google/protobuf/internal/message_test.py"],
+    data = glob(["testdata/golden_pickle_*"]) + [
+        "//:testdata",
+    ],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "proto_builder_test",
+    srcs = ["google/protobuf/internal/proto_builder_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "reflection_test",
+    srcs = ["google/protobuf/internal/reflection_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "service_reflection_test",
+    srcs = ["google/protobuf/internal/service_reflection_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "symbol_database_test",
+    srcs = ["google/protobuf/internal/symbol_database_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "text_encoding_test",
+    srcs = ["google/protobuf/internal/text_encoding_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "text_format_test",
+    srcs = ["google/protobuf/internal/text_format_test.py"],
+    data = ["//:testdata"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "unknown_fields_test",
+    srcs = ["google/protobuf/internal/unknown_fields_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "wire_format_test",
+    srcs = ["google/protobuf/internal/wire_format_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+cc_library(
+    name = "proto_api",
+    hdrs = ["python/google/protobuf/proto_api.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//external:python_headers",
+    ],
+)
+
+################################################################################
+# Distribution files
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "google/**/*.proto",
+        "google/**/*.py",
+        "google/protobuf/internal/*.cc",
+        "google/protobuf/pyext/*.cc",
+        "google/protobuf/pyext/*.h",
+    ]) + [
+        "BUILD.bazel",
+        "MANIFEST.in",
+        "README.md",
+        "google/protobuf/proto_api.h",
+        "google/protobuf/pyext/README",
+        "google/protobuf/python_protobuf.h",
+        "internal.bzl",
+        "mox.py",
+        "release.sh",
+        "setup.cfg",
+        "setup.py",
+        "stubout.py",
+        "tox.ini",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
