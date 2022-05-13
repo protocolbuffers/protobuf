@@ -27,10 +27,10 @@ function pre_build {
 
     # Build protoc and protobuf libraries
     use_bazel.sh 5.1.1
-    bazel build -c opt //:protoc
+    bazel build -c opt //:protoc //pkg:protobuf //pkg:protobuf_lite
     local _bazel_bin=$(bazel info -c opt bazel-bin)
     export PROTOC=${_bazel_bin}/protoc
-    export LIBPROTOBUF=${_bazel_bin}/libprotobuf.a
+    export LIBPROTOBUF=${_bazel_bin}/pkg/libprotobuf.a
 
     # Generate python dependencies.
     pushd python
