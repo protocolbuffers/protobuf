@@ -4,7 +4,7 @@
 set -ex
 
 # Install Bazel 4.0.0.
-use_bazel.sh 4.0.0
+use_bazel.sh 5.1.1
 bazel version
 
 # Change to repo root
@@ -15,13 +15,10 @@ git submodule update --init --recursive
 #  Disabled for now, re-enable if appropriate.
 #  //:build_files_updated_unittest \
 
-bazel test \
-  -k --copt=-Werror --host_copt=-Werror --test_output=errors \
-  //build_defs:all \
-  //java:tests \
-  //src/... \
-  //:protobuf_python \
-  @com_google_protobuf_examples//...
+export SCRIPT_ROOT=$(pwd)
+${SCRIPT_ROOT}/kokoro/common/bazel_test.sh
+
+exit 0
 
 # Verify that we can build successfully from generated tar files.
 ./autogen.sh && ./configure && make -j$(nproc) dist
