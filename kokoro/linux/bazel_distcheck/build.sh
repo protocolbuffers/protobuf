@@ -18,8 +18,13 @@ TEST_TARGETS=(
   //build_defs:all
   //conformance:all
   //java:tests
+  //python:all
   //:protobuf_test
+  @com_google_protobuf_examples//...
 )
+
+CONTAINER_NAME=gcr.io/protobuf-build/bazel/linux
+CONTAINER_VERSION=5.1.1-e41ccfa1648716433276ebe077c665796550fcbb
 
 use_bazel.sh 5.0.0 || true
 bazel version
@@ -65,20 +70,17 @@ tar -C ${DIST_WORKSPACE} --strip-components=1 -axf ${DIST_ARCHIVE}
 cd ${DIST_WORKSPACE}
 FAILED=false
 
-date
-bazel fetch --distdir=${TMP_DISTDIR} "${BUILD_ONLY_TARGETS[@]}" "${TEST_TARGETS[@]}"
+until docker pull gcr.io/protobuf-build/bazel/linux:${CONTAINER_VERSION}; do
+  sleep 10
+done
 
 date
-bazel build --distdir=${TMP_DISTDIR} -k \
-  "${BUILD_ONLY_TARGETS[@]}" || FAILED=true
-
-date
-bazel test --distdir=${TMP_DISTDIR} --test_output=errors -k \
-  "${TEST_TARGETS[@]}" || FAILED=true
-
-date
-cd examples
-bazel build --distdir=${TMP_DISTDIR} //... || FAILED=true
+docker run --rm \
+  -v ${DIST_WORKSPACE}:/workspace \
+  -v ${TMP_DISTDIR}:${TMP_DISTDIR} \
+  ${CONTAINER_NAME}:${CONTAINER_VERSION} \
+  test --distdir=${TMP_DISTDIR} --test_output=errors -k \
+  "${BUILD_ONLY_TARGETS[@]}" "${TEST_TARGETS[@]}" || FAILED=true
 
 if ${FAILED}; then
    echo FAILED

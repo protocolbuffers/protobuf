@@ -238,7 +238,7 @@ pkg_filegroup(
     name = "python_srcs",
     srcs = [
         ":dist_common",
-        "//:python_dist_files",
+        "//python:dist_files",
     ],
 )
 
@@ -342,7 +342,7 @@ gen_automake_file_lists(
         "//:objectivec_dist_files": "dist_objectivec",
         "//objectivec:dist_files": "dist_objectivec2",
         "//php:dist_files": "dist_php",
-        "//:python_dist_files": "dist_python",
+        "//python:dist_files": "dist_python",
         "//ruby:dist_files": "dist_ruby",
     },
 )
@@ -360,6 +360,7 @@ cc_dist_library(
     deps = [
         "//:protobuf_lite",
     ],
+    tags = ["manual"],
 )
 
 cc_dist_library(
@@ -375,6 +376,7 @@ cc_dist_library(
         "//:protobuf",
         "//:protobuf_lite",
     ],
+    tags = ["manual"],
 )
 
 ################################################################################
