@@ -1,6 +1,7 @@
 # Protobuf stubs library.
 #   These are utilities that mirror the behavior of internal Google code.
 
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
 package(

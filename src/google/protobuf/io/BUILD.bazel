@@ -1,10 +1,6 @@
 # Protobuf IO library.
 
-load(
-    "@rules_cc//cc:defs.bzl",
-    "cc_library",
-    "cc_test",
-)
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
 package(
@@ -49,7 +45,10 @@ cc_library(
         "printer.h",
         "tokenizer.h",
     ],
-    copts = COPTS,
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["-Wno-maybe-uninitialized"],
+    }),
     include_prefix = "google/protobuf/io",
     textual_hdrs = [
         "coded_stream.h",
@@ -77,7 +76,10 @@ cc_test(
         "tokenizer_unittest.cc",
         "zero_copy_stream_unittest.cc",
     ],
-    copts = COPTS,
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["-Wno-maybe-uninitialized"],
+    }),
     data = [
         "//:testdata",
     ],
