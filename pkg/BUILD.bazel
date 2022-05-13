@@ -360,6 +360,7 @@ cc_dist_library(
     deps = [
         "//:protobuf_lite",
     ],
+    tags = ["manual"],
 )
 
 cc_dist_library(
@@ -375,6 +376,7 @@ cc_dist_library(
         "//:protobuf",
         "//:protobuf_lite",
     ],
+    tags = ["manual"],
 )
 
 ################################################################################
