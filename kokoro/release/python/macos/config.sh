@@ -27,11 +27,17 @@ function pre_build {
 
     # Build protoc and protobuf libraries
     use_bazel.sh 5.1.1
-    bazel build //:protoc
+    (
+      if [[ -h /tmpfs ]] && [[ ${PWD} =~ /tmpfs/src/.* ]]; then
+        # Workaround for internal Kokoro bug: b/227401944
+        cd /Volumes/BuildData/tmpfs/src/${PWD#*/src/}
+      fi
+      bazel build //:protoc //pkg:protobuf //pkg:protobuf_lite
+    )
     export PROTOC=$PWD/bazel-bin/protoc
     mkdir src/.libs
-    ln -s $PWD/bazel-bin/libprotobuf.a src/.libs/libprotobuf.a
-    ln -s $PWD/bazel-bin/libprotobuf_lite.a src/.libs/libprotobuf-lite.a
+    ln -s $PWD/bazel-bin/pkg/libprotobuf.a src/.libs/libprotobuf.a
+    ln -s $PWD/bazel-bin/pkg/libprotobuf_lite.a src/.libs/libprotobuf-lite.a
 
     # Generate python dependencies.
     pushd python

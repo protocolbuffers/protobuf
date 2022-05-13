@@ -359,6 +359,8 @@ cc_dist_library(
     }),
     deps = [
         "//:protobuf_lite",
+        "//src/google/protobuf/io:lite",
+        "//src/google/protobuf/stubs:lite",
     ],
     tags = ["manual"],
 )
@@ -375,6 +377,8 @@ cc_dist_library(
     deps = [
         "//:protobuf",
         "//:protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
     ],
     tags = ["manual"],
 )
