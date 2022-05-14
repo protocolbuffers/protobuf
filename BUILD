@@ -83,6 +83,9 @@ upb_proto_library_copts(
 
 cc_library(
     name = "port",
+    hdrs = [
+        "upb/internal/vsnprintf_compat.h",
+    ],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
         "upb/port_def.inc",

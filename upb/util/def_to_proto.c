@@ -32,6 +32,7 @@
 #include <setjmp.h>
 #include <stdio.h>
 
+#include "upb/internal/vsnprintf_compat.h"
 #include "upb/reflection.h"
 
 /* Must be last. */
@@ -89,7 +90,7 @@ static upb_StringView printf_dup(upb_ToProto_Context* ctx, const char* fmt,
   CHK_OOM(p);
   va_list args;
   va_start(args, fmt);
-  size_t n = vsnprintf(p, max, fmt, args);
+  size_t n = _upb_vsnprintf(p, max, fmt, args);
   va_end(args);
   UPB_ASSERT(n < max);
   return (upb_StringView){.data = p, .size = n};

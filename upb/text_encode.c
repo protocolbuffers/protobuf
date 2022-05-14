@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "upb/internal/vsnprintf_compat.h"
 #include "upb/reflection.h"
 #include "upb/upb_internal.h"
 
@@ -76,7 +77,7 @@ static void txtenc_printf(txtenc* e, const char* fmt, ...) {
   va_list args;
 
   va_start(args, fmt);
-  n = vsnprintf(e->ptr, have, fmt, args);
+  n = _upb_vsnprintf(e->ptr, have, fmt, args);
   va_end(args);
 
   if (UPB_LIKELY(have > n)) {
