@@ -51,7 +51,7 @@ def _create_archive_action(
                 cc_toolchain.all_files,
             ],
         ),
-        use_default_shell_env = True,
+        use_default_shell_env = False,
         outputs = [output_file],
         mnemonic = "CppArchiveDist",
     )
