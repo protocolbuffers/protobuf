@@ -747,6 +747,9 @@ static void upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr, size_t len,
     } else if (kUpb_EncodedValue_MinModifier <= ch &&
                ch <= kUpb_EncodedValue_MaxModifier) {
       ptr = upb_MtDecoder_ParseModifier(d, ptr, ch, last_field, &msg_modifiers);
+      if (msg_modifiers & kUpb_MessageModifier_IsExtendable) {
+        d->table->ext |= kUpb_ExtMode_Extendable;
+      }
     } else if (ch == kUpb_EncodedValue_End) {
       if (!d->table) {
         upb_MtDecoder_ErrorFormat(d, "Extensions cannot have oneofs.");

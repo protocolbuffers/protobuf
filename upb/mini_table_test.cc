@@ -228,3 +228,19 @@ TEST(MiniTableEnumTest, PositiveAndNegative) {
     EXPECT_EQ(values.contains(i), upb_MiniTable_Enum_CheckValue(table, i)) << i;
   }
 }
+
+TEST_P(MiniTableTest, Extendible) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(kUpb_MessageModifier_IsExtendable));
+  int count = 0;
+  for (int i = kUpb_FieldType_Double; i < kUpb_FieldType_SInt64; i++) {
+    ASSERT_TRUE(e.PutField(static_cast<upb_FieldType>(i), i, 0));
+    count++;
+  }
+  upb::Status status;
+  upb_MiniTable* table = upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  EXPECT_EQ(kUpb_ExtMode_Extendable, table->ext & kUpb_ExtMode_Extendable);
+}
