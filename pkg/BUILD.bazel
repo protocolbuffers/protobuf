@@ -387,6 +387,7 @@ cc_dist_library(
         "//:arena",
         "//:protobuf",
         "//:protobuf_lite",
+        "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:gzip_stream",
         "//src/google/protobuf/io:io_win32",
