@@ -4,6 +4,25 @@
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 
+filegroup(
+    name = "wkt_cs_srcs",
+    data = [
+        "src/Google.Protobuf.Conformance/Conformance.cs",
+        "src/Google.Protobuf/Reflection/Descriptor.cs",
+        "src/Google.Protobuf/WellKnownTypes/Any.cs",
+        "src/Google.Protobuf/WellKnownTypes/Api.cs",
+        "src/Google.Protobuf/WellKnownTypes/Duration.cs",
+        "src/Google.Protobuf/WellKnownTypes/Empty.cs",
+        "src/Google.Protobuf/WellKnownTypes/FieldMask.cs",
+        "src/Google.Protobuf/WellKnownTypes/SourceContext.cs",
+        "src/Google.Protobuf/WellKnownTypes/Struct.cs",
+        "src/Google.Protobuf/WellKnownTypes/Timestamp.cs",
+        "src/Google.Protobuf/WellKnownTypes/Type.cs",
+        "src/Google.Protobuf/WellKnownTypes/Wrappers.cs",
+    ],
+    visibility = ["//src/google/protobuf/compiler/csharp:__pkg__"],
+)
+
 pkg_files(
     name = "dist_files",
     srcs = glob([

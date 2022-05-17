@@ -541,7 +541,15 @@ protoc_inputs =                                                   \
 EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
   README.md                                                    \
+  google/protobuf/compiler/BUILD.bazel                         \
+  google/protobuf/compiler/cpp/BUILD.bazel                     \
+  google/protobuf/compiler/csharp/BUILD.bazel                  \
+  google/protobuf/compiler/java/BUILD.bazel                    \
+  google/protobuf/compiler/objectivec/BUILD.bazel              \
   google/protobuf/compiler/package_info.h                      \
+  google/protobuf/compiler/php/BUILD.bazel                     \
+  google/protobuf/compiler/python/BUILD.bazel                  \
+  google/protobuf/compiler/ruby/BUILD.bazel                    \
   google/protobuf/compiler/ruby/ruby_generated_code.proto      \
   google/protobuf/compiler/ruby/ruby_generated_code_pb.rb      \
   google/protobuf/compiler/ruby/ruby_generated_code_proto2.proto \

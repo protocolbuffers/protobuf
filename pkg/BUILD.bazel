@@ -41,13 +41,6 @@ pkg_files(
     visibility = ["//visibility:private"],
 )
 
-pkg_files(
-    name = "compiler_plugin_protos_files",
-    srcs = ["//:compiler_plugin_proto"],
-    prefix = "include/google/protobuf/compiler",
-    visibility = ["//visibility:private"],
-)
-
 ################################################################################
 # Generates protoc release artifacts.
 ################################################################################
@@ -83,11 +76,11 @@ pkg_files(
 pkg_zip(
     name = "protoc_release",
     srcs = [
-        ":compiler_plugin_protos_files",
         ":descriptor_protos_files",
         ":protoc_files",
         ":protoc_readme",
         ":wkt_protos_files",
+        "//src/google/protobuf/compiler:compiler_plugin_protos_files",
     ],
     package_file_name = "protoc-{version}-{platform}.zip",
     package_variables = ":protobuf_pkg_naming",
@@ -99,16 +92,16 @@ pkg_zip(
 # TODO: these will eventually replace autotools for release artifact packaging.
 ################################################################################
 
-
 pkg_filegroup(
     name = "dist_common",
     srcs = [
         ":dist_files",
         "//:common_dist_files",
-        "//:cpp_dist_files",  # to build protoc
+        "//:cpp_dist_files",
         "//benchmarks:all_dist_files",
         "//build_defs:dist_files",
         "//conformance:all_dist_files",
+        "//src/google/protobuf/compiler:all_dist_files",
         "//src/google/protobuf/io:dist_files",
         "//src/google/protobuf/stubs:dist_files",
         "//src/google/protobuf/testing:dist_files",
@@ -121,6 +114,7 @@ pkg_filegroup(
     srcs = [
         ":dist_common",
         "//:cpp_dist_files",
+        "//src/google/protobuf/compiler:all_dist_files",
     ],
 )
 
@@ -326,7 +320,7 @@ gen_file_lists(
     src_libs = {
         # source rule: name in generated file
         "//:protobuf": "libprotobuf",
-        "//:protoc_lib": "libprotoc",
+        "//src/google/protobuf/compiler:protoc_lib": "libprotoc",
         "//:protobuf_lite": "libprotobuf_lite",
     },
 )
@@ -385,6 +379,7 @@ cc_dist_library(
         "//:arena",
         "//:protobuf",
         "//:protobuf_lite",
+        "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:gzip_stream",
         "//src/google/protobuf/io:io_win32",
