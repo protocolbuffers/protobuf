@@ -656,6 +656,7 @@ cc_binary(
         "src/google/protobuf/compiler/mock_code_generator.cc",
         "src/google/protobuf/compiler/test_plugin.cc",
     ],
+    copts = COPTS,
     deps = [
         ":protobuf",
         ":protoc_lib",
@@ -912,15 +913,15 @@ alias(
 
 proto_library(
     name = "test_messages_proto2_proto",
-    strip_import_prefix = "src",
     srcs = ["src/google/protobuf/test_messages_proto2.proto"],
+    strip_import_prefix = "src",
     visibility = ["//visibility:public"],
 )
 
 proto_library(
     name = "test_messages_proto3_proto",
-    strip_import_prefix = "src",
     srcs = ["src/google/protobuf/test_messages_proto3.proto"],
+    strip_import_prefix = "src",
     visibility = ["//visibility:public"],
     deps = [
         ":any_proto",
@@ -1003,8 +1004,8 @@ proto_library(
         "src/google/protobuf/unittest_import_public_lite.proto",
         "src/google/protobuf/unittest_lite.proto",
     ],
-    visibility = ["//java/kotlin-lite:__subpackages__"],
     strip_import_prefix = "src",
+    visibility = ["//java/kotlin-lite:__subpackages__"],
 )
 
 proto_library(
@@ -1015,8 +1016,8 @@ proto_library(
         "src/google/protobuf/unittest_import.proto",
         "src/google/protobuf/unittest_import_public.proto",
     ],
-    visibility = ["//java/kotlin:__subpackages__"],
     strip_import_prefix = "src",
+    visibility = ["//java/kotlin:__subpackages__"],
 )
 
 proto_library(
@@ -1026,11 +1027,11 @@ proto_library(
         "src/google/protobuf/unittest_import_public.proto",
         "src/google/protobuf/unittest_proto3.proto",
     ],
+    strip_import_prefix = "src",
     visibility = [
         "//java/kotlin:__subpackages__",
         "//java/kotlin-lite:__subpackages__",
     ],
-    strip_import_prefix = "src",
 )
 
 ################################################################################
