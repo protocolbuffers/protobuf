@@ -320,7 +320,7 @@ gen_file_lists(
     src_libs = {
         # source rule: name in generated file
         "//:protobuf": "libprotobuf",
-        "//:protoc_lib": "libprotoc",
+        "//src/google/protobuf/compiler:protoc_lib": "libprotoc",
         "//:protobuf_lite": "libprotobuf_lite",
     },
 )
