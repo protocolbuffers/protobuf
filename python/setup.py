@@ -220,6 +220,59 @@ def GetOptionFromArgv(option_str):
   return False
 
 
+def _GetFlagValues(flag_long, flag_short):
+  """Searches sys.argv for distutils-style flags and yields values."""
+
+  expect_value = flag_long.endswith('=')
+  flag_res = [re.compile(r'--?%s(=(.*))?' %
+                         (flag_long[:-1] if expect_value else flag_long))]
+  if flag_short:
+    flag_res.append(re.compile(r'-%s(.*)?' % (flag_short)))
+
+  flag_match = None
+  for arg in sys.argv:
+    # If the last arg was like '-O', check if this is the library we want.
+    if flag_match is not None:
+      yield arg
+      flag_match = None
+      continue
+
+    for flag_re in flag_res:
+      m = flag_re.match(arg)
+      if m is None:
+        continue
+      if not expect_value:
+        yield arg
+        continue
+      groups = m.groups()
+      # Check for matches:
+      #   --long-name=foo => ('=foo', 'foo')
+      #   -Xfoo => ('foo')
+      # N.B.: if the flag is like '--long-name=', then there is a value
+      # (the empty string).
+      if groups[0] or groups[-1]:
+        yield groups[-1]
+        continue
+      flag_match = m
+
+  return False
+
+
+def HasStaticLibprotobufOpt():
+  """Returns true if there is a --link-objects arg for libprotobuf."""
+
+  lib_re = re.compile(r'(.*[/\\])?(lib)?protobuf([.]pic)?[.](a|lib)')
+  for value in _GetFlagValues('link-objects=', 'O'):
+    if lib_re.match(value):
+      return True
+  return False
+
+
+def HasLibraryDirsOpt():
+  """Returns true if there is a --library-dirs arg."""
+  return any(_GetFlagValues('library-dirs=', 'L'))
+
+
 if __name__ == '__main__':
   ext_module_list = []
   warnings_as_errors = '--warnings_as_errors'
@@ -227,13 +280,24 @@ if __name__ == '__main__':
     # Link libprotobuf.a and libprotobuf-lite.a statically with the
     # extension. Note that those libraries have to be compiled with
     # -fPIC for this to work.
-    compile_static_ext = GetOptionFromArgv('--compile_static_extension')
-    libraries = ['protobuf']
+    compile_static_ext = HasStaticLibprotobufOpt()
+    if GetOptionFromArgv('--compile_static_extension'):
+      # FUTURE: add a warning and deprecate --compile_static_extension.
+      compile_static_ext = True
     extra_objects = None
     if compile_static_ext:
       libraries = None
-      extra_objects = ['../src/.libs/libprotobuf.a',
-                       '../src/.libs/libprotobuf-lite.a']
+      library_dirs = None
+      if not HasStaticLibprotobufOpt():
+        extra_objects = ['../src/.libs/libprotobuf.a',
+                         '../src/.libs/libprotobuf-lite.a']
+    else:
+      libraries = ['protobuf']
+      if HasLibraryDirsOpt():
+        library_dirs = None
+      else:
+        library_dirs = ['../src/.libs']
+
     TestConformanceCmd.target = 'test_python_cpp'
 
     extra_compile_args = []
@@ -305,7 +369,7 @@ if __name__ == '__main__':
             libraries=libraries,
             extra_objects=extra_objects,
             extra_link_args=message_extra_link_args,
-            library_dirs=['../src/.libs'],
+            library_dirs=library_dirs,
             extra_compile_args=extra_compile_args,
         ),
         Extension(
