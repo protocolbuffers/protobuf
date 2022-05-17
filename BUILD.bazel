@@ -82,13 +82,32 @@ cc_library(
 
 cc_library(
     name = "protobuf",
+    hdrs = glob([
+        "src/**/*.h",
+        "src/**/*.inc",
+    ]),
+    copts = COPTS,
+    includes = ["src/"],
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":internal_protobuf_full",
+        "//src/google/protobuf/compiler:importer",
+    ],
+)
+
+# `:internal_protobuf_full` is an internal target which has the non-lite
+# portions of the protobuf runtime.
+#
+# Users of the full runtime should depend upon `:protobuf` instead, which
+# also includes the util library.
+cc_library(
+    name = "internal_protobuf_full",
     srcs = [
         # AUTOGEN(protobuf_srcs)
         "src/google/protobuf/any.cc",
         "src/google/protobuf/any.pb.cc",
         "src/google/protobuf/api.pb.cc",
-        "src/google/protobuf/compiler/importer.cc",
-        "src/google/protobuf/compiler/parser.cc",
         "src/google/protobuf/descriptor.cc",
         "src/google/protobuf/descriptor.pb.cc",
         "src/google/protobuf/descriptor_database.cc",
@@ -140,7 +159,9 @@ cc_library(
     copts = COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//:__subpackages__",  # this target is only to break circular deps
+    ],
     deps = [
         ":protobuf_lite",
         "//src/google/protobuf/io",
@@ -184,10 +205,7 @@ filegroup(
 
 filegroup(
     name = "built_in_runtime_protos",
-    srcs = [
-        "src/google/protobuf/compiler/plugin.proto",
-        "src/google/protobuf/descriptor.proto",
-    ],
+    srcs = ["src/google/protobuf/descriptor.proto"],
     visibility = ["//:__subpackages__"],
 )
 
@@ -332,12 +350,10 @@ proto_library(
 
 # Built-in runtime types
 
-proto_library(
+alias(
     name = "compiler_plugin_proto",
-    srcs = ["src/google/protobuf/compiler/plugin.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf/compiler:plugin_proto",
     visibility = ["//visibility:public"],
-    deps = ["//:descriptor_proto"],
 )
 
 proto_library(
@@ -351,107 +367,11 @@ proto_library(
 # Protocol Buffers Compiler
 ################################################################################
 
-cc_library(
-    name = "protoc_lib",
-    srcs = [
-        # AUTOGEN(protoc_lib_srcs)
-        "src/google/protobuf/compiler/code_generator.cc",
-        "src/google/protobuf/compiler/command_line_interface.cc",
-        "src/google/protobuf/compiler/cpp/enum.cc",
-        "src/google/protobuf/compiler/cpp/enum_field.cc",
-        "src/google/protobuf/compiler/cpp/extension.cc",
-        "src/google/protobuf/compiler/cpp/field.cc",
-        "src/google/protobuf/compiler/cpp/file.cc",
-        "src/google/protobuf/compiler/cpp/generator.cc",
-        "src/google/protobuf/compiler/cpp/helpers.cc",
-        "src/google/protobuf/compiler/cpp/map_field.cc",
-        "src/google/protobuf/compiler/cpp/message.cc",
-        "src/google/protobuf/compiler/cpp/message_field.cc",
-        "src/google/protobuf/compiler/cpp/padding_optimizer.cc",
-        "src/google/protobuf/compiler/cpp/parse_function_generator.cc",
-        "src/google/protobuf/compiler/cpp/primitive_field.cc",
-        "src/google/protobuf/compiler/cpp/service.cc",
-        "src/google/protobuf/compiler/cpp/string_field.cc",
-        "src/google/protobuf/compiler/csharp/csharp_doc_comment.cc",
-        "src/google/protobuf/compiler/csharp/csharp_enum.cc",
-        "src/google/protobuf/compiler/csharp/csharp_enum_field.cc",
-        "src/google/protobuf/compiler/csharp/csharp_field_base.cc",
-        "src/google/protobuf/compiler/csharp/csharp_generator.cc",
-        "src/google/protobuf/compiler/csharp/csharp_helpers.cc",
-        "src/google/protobuf/compiler/csharp/csharp_map_field.cc",
-        "src/google/protobuf/compiler/csharp/csharp_message.cc",
-        "src/google/protobuf/compiler/csharp/csharp_message_field.cc",
-        "src/google/protobuf/compiler/csharp/csharp_primitive_field.cc",
-        "src/google/protobuf/compiler/csharp/csharp_reflection_class.cc",
-        "src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc",
-        "src/google/protobuf/compiler/csharp/csharp_repeated_message_field.cc",
-        "src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc",
-        "src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc",
-        "src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc",
-        "src/google/protobuf/compiler/java/context.cc",
-        "src/google/protobuf/compiler/java/doc_comment.cc",
-        "src/google/protobuf/compiler/java/enum.cc",
-        "src/google/protobuf/compiler/java/enum_field.cc",
-        "src/google/protobuf/compiler/java/enum_field_lite.cc",
-        "src/google/protobuf/compiler/java/enum_lite.cc",
-        "src/google/protobuf/compiler/java/extension.cc",
-        "src/google/protobuf/compiler/java/extension_lite.cc",
-        "src/google/protobuf/compiler/java/field.cc",
-        "src/google/protobuf/compiler/java/file.cc",
-        "src/google/protobuf/compiler/java/generator.cc",
-        "src/google/protobuf/compiler/java/generator_factory.cc",
-        "src/google/protobuf/compiler/java/helpers.cc",
-        "src/google/protobuf/compiler/java/kotlin_generator.cc",
-        "src/google/protobuf/compiler/java/map_field.cc",
-        "src/google/protobuf/compiler/java/map_field_lite.cc",
-        "src/google/protobuf/compiler/java/message.cc",
-        "src/google/protobuf/compiler/java/message_builder.cc",
-        "src/google/protobuf/compiler/java/message_builder_lite.cc",
-        "src/google/protobuf/compiler/java/message_field.cc",
-        "src/google/protobuf/compiler/java/message_field_lite.cc",
-        "src/google/protobuf/compiler/java/message_lite.cc",
-        "src/google/protobuf/compiler/java/name_resolver.cc",
-        "src/google/protobuf/compiler/java/primitive_field.cc",
-        "src/google/protobuf/compiler/java/primitive_field_lite.cc",
-        "src/google/protobuf/compiler/java/service.cc",
-        "src/google/protobuf/compiler/java/shared_code_generator.cc",
-        "src/google/protobuf/compiler/java/string_field.cc",
-        "src/google/protobuf/compiler/java/string_field_lite.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_extension.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_field.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_file.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_generator.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_helpers.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_map_field.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_message.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_message_field.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_oneof.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc",
-        "src/google/protobuf/compiler/php/php_generator.cc",
-        "src/google/protobuf/compiler/plugin.cc",
-        "src/google/protobuf/compiler/plugin.pb.cc",
-        "src/google/protobuf/compiler/python/generator.cc",
-        "src/google/protobuf/compiler/python/helpers.cc",
-        "src/google/protobuf/compiler/python/pyi_generator.cc",
-        "src/google/protobuf/compiler/ruby/ruby_generator.cc",
-        "src/google/protobuf/compiler/subprocess.cc",
-        "src/google/protobuf/compiler/zip_writer.cc",
-    ],
-    copts = COPTS,
-    includes = ["src/"],
-    linkopts = LINK_OPTS,
-    visibility = ["//visibility:public"],
-    deps = [":protobuf"],
-)
-
 cc_binary(
     name = "protoc",
-    srcs = ["src/google/protobuf/compiler/main.cc"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = [":protoc_lib"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
 
 ################################################################################
@@ -502,8 +422,6 @@ proto_library(
 RELATIVE_TEST_PROTOS = [
     # AUTOGEN(test_protos)
     "google/protobuf/any_test.proto",
-    "google/protobuf/compiler/cpp/test_bad_identifiers.proto",
-    "google/protobuf/compiler/cpp/test_large_enum_value.proto",
     "google/protobuf/map_proto2_unittest.proto",
     "google/protobuf/map_unittest.proto",
     "google/protobuf/unittest.proto",
@@ -634,63 +552,61 @@ cc_proto_library(
 
 cc_proto_library(
     name = "cc_test_protos",
+    visibility = ["//src/google/protobuf/compiler:__subpackages__"],
     deps = [":test_protos"],
 )
 
-COMMON_TEST_SRCS = [
-    # AUTOGEN(common_test_srcs)
-    "src/google/protobuf/arena_test_util.cc",
-    "src/google/protobuf/map_lite_test_util.cc",
-    "src/google/protobuf/test_util_lite.cc",
-    "src/google/protobuf/map_test_util.inc",
-    "src/google/protobuf/reflection_tester.cc",
-    "src/google/protobuf/test_util.cc",
-    "src/google/protobuf/test_util.inc",
-]
+filegroup(
+    name = "descriptor_cc_srcs",
+    testonly = 1,
+    data = [
+        "src/google/protobuf/descriptor.pb.cc",
+        "src/google/protobuf/descriptor.pb.h",
+    ],
+    visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
+)
 
-cc_binary(
-    name = "test_plugin",
-    testonly = True,
+cc_library(
+    name = "test_util",
+    testonly = 1,
     srcs = [
-        # AUTOGEN(test_plugin_srcs)
-        "src/google/protobuf/compiler/mock_code_generator.cc",
-        "src/google/protobuf/compiler/test_plugin.cc",
+        "src/google/protobuf/arena_test_util.cc",
+        "src/google/protobuf/map_lite_test_util.cc",
+        "src/google/protobuf/reflection_tester.cc",
+        "src/google/protobuf/test_util.cc",
+        "src/google/protobuf/test_util_lite.cc",
+    ],
+    hdrs = [
+        "src/google/protobuf/arena_test_util.h",
+        "src/google/protobuf/map_lite_test_util.h",
+        "src/google/protobuf/map_test_util.h",
+        "src/google/protobuf/map_test_util_impl.h",
+        "src/google/protobuf/test_util.h",
+        "src/google/protobuf/test_util2.h",
+        "src/google/protobuf/test_util_lite.h",
     ],
     copts = COPTS,
+    includes = ["src"],
+    textual_hdrs = [
+        "src/google/protobuf/map_test_util.inc",
+        "src/google/protobuf/test_util.inc",
+    ],
+    visibility = ["//:__subpackages__"],
     deps = [
-        ":protobuf",
-        ":protoc_lib",
-        "//src/google/protobuf/testing",
+        ":cc_lite_test_protos",
+        ":cc_test_protos",
         "@com_google_googletest//:gtest",
     ],
 )
 
 cc_test(
     name = "protobuf_test",
-    srcs = COMMON_TEST_SRCS + [
+    srcs = [
         # AUTOGEN(test_srcs)
         "src/google/protobuf/any_test.cc",
         "src/google/protobuf/arena_unittest.cc",
         "src/google/protobuf/arenastring_unittest.cc",
         "src/google/protobuf/arenaz_sampler_test.cc",
-        "src/google/protobuf/compiler/annotation_test_util.cc",
-        "src/google/protobuf/compiler/command_line_interface_unittest.cc",
-        "src/google/protobuf/compiler/cpp/bootstrap_unittest.cc",
-        "src/google/protobuf/compiler/cpp/metadata_test.cc",
-        "src/google/protobuf/compiler/cpp/move_unittest.cc",
-        "src/google/protobuf/compiler/cpp/plugin_unittest.cc",
-        "src/google/protobuf/compiler/cpp/unittest.cc",
-        "src/google/protobuf/compiler/cpp/unittest.inc",
-        "src/google/protobuf/compiler/csharp/csharp_bootstrap_unittest.cc",
-        "src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc",
-        "src/google/protobuf/compiler/importer_unittest.cc",
-        "src/google/protobuf/compiler/java/doc_comment_unittest.cc",
-        "src/google/protobuf/compiler/java/plugin_unittest.cc",
-        "src/google/protobuf/compiler/mock_code_generator.cc",
-        "src/google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc",
-        "src/google/protobuf/compiler/parser_unittest.cc",
-        "src/google/protobuf/compiler/python/plugin_unittest.cc",
-        "src/google/protobuf/compiler/ruby/ruby_generator_unittest.cc",
         "src/google/protobuf/descriptor_database_unittest.cc",
         "src/google/protobuf/descriptor_unittest.cc",
         "src/google/protobuf/drop_unknown_fields_test.cc",
@@ -739,9 +655,6 @@ cc_test(
         ],
     }),
     data = [
-        # Files for csharp_bootstrap_unittest.cc.
-        "//conformance:all_files",
-        ":test_plugin",
         ":testdata",
     ] + glob([
         "src/google/protobuf/**/*",
@@ -760,7 +673,7 @@ cc_test(
         ":cc_lite_test_protos",
         ":cc_test_protos",
         ":protobuf",
-        ":protoc_lib",
+        ":test_util",
         "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",

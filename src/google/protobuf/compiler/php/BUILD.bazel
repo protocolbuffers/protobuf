@@ -1,0 +1,31 @@
+################################################################################
+# Protocol Buffers Compiler - PHP code generator
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "php",
+    srcs = ["php_generator.cc"],
+    hdrs = ["php_generator.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/php",
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+    deps = [
+        "//:protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)
