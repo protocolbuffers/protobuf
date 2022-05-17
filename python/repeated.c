@@ -129,8 +129,8 @@ upb_Array* PyUpb_RepeatedContainer_EnsureReified(PyObject* _self) {
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   arr = upb_Array_New(arena, upb_FieldDef_CType(f));
-  PyUpb_CMessage_SetConcreteSubobj(self->ptr.parent, f,
-                                   (upb_MessageValue){.array_val = arr});
+  PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f,
+                                  (upb_MessageValue){.array_val = arr});
   PyUpb_RepeatedContainer_Reify((PyObject*)self, arr);
   return arr;
 }
@@ -139,8 +139,8 @@ static void PyUpb_RepeatedContainer_Dealloc(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   Py_DECREF(self->arena);
   if (PyUpb_RepeatedContainer_IsStub(self)) {
-    PyUpb_CMessage_CacheDelete(self->ptr.parent,
-                               PyUpb_RepeatedContainer_GetField(self));
+    PyUpb_Message_CacheDelete(self->ptr.parent,
+                              PyUpb_RepeatedContainer_GetField(self));
     Py_DECREF(self->ptr.parent);
   } else {
     PyUpb_ObjCache_Delete(self->ptr.arr);
@@ -167,7 +167,7 @@ PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
                                           PyObject* arena) {
   // We only create stubs when the parent is reified, by convention.  However
   // this is not an invariant: the parent could become reified at any time.
-  assert(PyUpb_CMessage_GetIfReified(parent) == NULL);
+  assert(PyUpb_Message_GetIfReified(parent) == NULL);
   PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
   PyUpb_RepeatedContainer* repeated = (void*)PyType_GenericAlloc(cls, 0);
   repeated->arena = arena;
@@ -502,7 +502,7 @@ static bool PyUpb_RepeatedContainer_Assign(PyObject* _self, PyObject* list) {
     PyObject* obj = PyList_GetItem(list, i);
     upb_MessageValue msgval;
     if (submsg) {
-      msgval.msg_val = PyUpb_CMessage_GetIfReified(obj);
+      msgval.msg_val = PyUpb_Message_GetIfReified(obj);
       assert(msgval.msg_val);
     } else {
       if (!PyUpb_PyToUpb(obj, f, &msgval, arena)) return false;
@@ -580,7 +580,7 @@ static PyObject* PyUpb_RepeatedCompositeContainer_AppendNew(PyObject* _self) {
   upb_Message* msg = upb_Message_New(m, arena);
   upb_MessageValue msgval = {.msg_val = msg};
   upb_Array_Append(arr, msgval, arena);
-  return PyUpb_CMessage_Get(msg, m, self->arena);
+  return PyUpb_Message_Get(msg, m, self->arena);
 }
 
 PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* _self, PyObject* args,
@@ -588,7 +588,7 @@ PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* _self, PyObject* args,
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   PyObject* py_msg = PyUpb_RepeatedCompositeContainer_AppendNew(_self);
   if (!py_msg) return NULL;
-  if (PyUpb_CMessage_InitAttributes(py_msg, args, kwargs) < 0) {
+  if (PyUpb_Message_InitAttributes(py_msg, args, kwargs) < 0) {
     Py_DECREF(py_msg);
     upb_Array_Delete(self->ptr.arr, upb_Array_Size(self->ptr.arr) - 1, 1);
     return NULL;
@@ -598,10 +598,10 @@ PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* _self, PyObject* args,
 
 static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
                                                          PyObject* value) {
-  if (!PyUpb_CMessage_Verify(value)) return NULL;
+  if (!PyUpb_Message_Verify(value)) return NULL;
   PyObject* py_msg = PyUpb_RepeatedCompositeContainer_AppendNew(_self);
   if (!py_msg) return NULL;
-  PyObject* none = PyUpb_CMessage_MergeFrom(py_msg, value);
+  PyObject* none = PyUpb_Message_MergeFrom(py_msg, value);
   if (!none) {
     Py_DECREF(py_msg);
     return NULL;
@@ -632,8 +632,8 @@ static PyObject* PyUpb_RepeatedContainer_Insert(PyObject* _self,
     // Create message.
     const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
     upb_Message* msg = upb_Message_New(m, arena);
-    PyObject* py_msg = PyUpb_CMessage_Get(msg, m, self->arena);
-    PyObject* ret = PyUpb_CMessage_MergeFrom(py_msg, value);
+    PyObject* py_msg = PyUpb_Message_Get(msg, m, self->arena);
+    PyObject* ret = PyUpb_Message_MergeFrom(py_msg, value);
     Py_DECREF(py_msg);
     if (!ret) return NULL;
     Py_DECREF(ret);

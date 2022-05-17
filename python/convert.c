@@ -66,8 +66,8 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
       return ret;
     }
     case kUpb_CType_Message:
-      return PyUpb_CMessage_Get((upb_Message*)val.msg_val,
-                                upb_FieldDef_MessageSubDef(f), arena);
+      return PyUpb_Message_Get((upb_Message*)val.msg_val,
+                               upb_FieldDef_MessageSubDef(f), arena);
     default:
       PyErr_Format(PyExc_SystemError,
                    "Getting a value from a field of unknown type %d",
@@ -234,8 +234,8 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
   }
 }
 
-bool PyUpb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
-                           const upb_MessageDef* m);
+bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
+                         const upb_MessageDef* m);
 
 // -----------------------------------------------------------------------------
 // Equal
@@ -263,8 +263,8 @@ bool PyUpb_ValueEq(upb_MessageValue val1, upb_MessageValue val2,
              memcmp(val1.str_val.data, val2.str_val.data, val1.str_val.size) ==
                  0;
     case kUpb_CType_Message:
-      return PyUpb_Message_IsEqual(val1.msg_val, val2.msg_val,
-                                   upb_FieldDef_MessageSubDef(f));
+      return upb_Message_IsEqual(val1.msg_val, val2.msg_val,
+                                 upb_FieldDef_MessageSubDef(f));
     default:
       return false;
   }
@@ -333,8 +333,8 @@ bool PyUpb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
   return true;
 }
 
-bool PyUpb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
-                           const upb_MessageDef* m) {
+bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
+                         const upb_MessageDef* m) {
   if (msg1 == msg2) return true;
   if (upb_Message_ExtensionCount(msg1) != upb_Message_ExtensionCount(msg2))
     return false;

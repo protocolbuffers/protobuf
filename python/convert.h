@@ -52,12 +52,12 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
 bool PyUpb_ValueEq(upb_MessageValue val1, upb_MessageValue val2,
                    const upb_FieldDef* f);
 
-// Returns true if the given messages (of type `m`) are equal.
-bool PyUpb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
-                           const upb_MessageDef* m);
-
 // Returns true if the two arrays (with element type `f`) are equal.
 bool PyUpb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
                          const upb_FieldDef* f);
+
+// Returns true if the given messages (of type `m`) are equal.
+bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
+                         const upb_MessageDef* m);
 
 #endif  // PYUPB_CONVERT_H__

@@ -72,8 +72,8 @@ static void PyUpb_MapContainer_Dealloc(void* _self) {
   PyUpb_MapContainer* self = _self;
   Py_DECREF(self->arena);
   if (PyUpb_MapContainer_IsStub(self)) {
-    PyUpb_CMessage_CacheDelete(self->ptr.parent,
-                               PyUpb_MapContainer_GetField(self));
+    PyUpb_Message_CacheDelete(self->ptr.parent,
+                              PyUpb_MapContainer_GetField(self));
     Py_DECREF(self->ptr.parent);
   } else {
     PyUpb_ObjCache_Delete(self->ptr.map);
@@ -92,7 +92,7 @@ PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_FieldDef* f,
                                      PyObject* arena) {
   // We only create stubs when the parent is reified, by convention.  However
   // this is not an invariant: the parent could become reified at any time.
-  assert(PyUpb_CMessage_GetIfReified(parent) == NULL);
+  assert(PyUpb_Message_GetIfReified(parent) == NULL);
   PyTypeObject* cls = PyUpb_MapContainer_GetClass(f);
   PyUpb_MapContainer* map = (void*)PyType_GenericAlloc(cls, 0);
   map->arena = arena;
@@ -141,7 +141,7 @@ upb_Map* PyUpb_MapContainer_EnsureReified(PyObject* _self) {
   map =
       upb_Map_New(arena, upb_FieldDef_CType(key_f), upb_FieldDef_CType(val_f));
   upb_MessageValue msgval = {.map_val = map};
-  PyUpb_CMessage_SetConcreteSubobj(self->ptr.parent, f, msgval);
+  PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f, msgval);
   PyUpb_MapContainer_Reify((PyObject*)self, map);
   return map;
 }
@@ -284,8 +284,8 @@ PyUpb_MapContainer* PyUpb_MapContainer_Check(PyObject* _self) {
   return (PyUpb_MapContainer*)_self;
 }
 
-int PyUpb_CMessage_InitMapAttributes(PyObject* map, PyObject* value,
-                                     const upb_FieldDef* f);
+int PyUpb_Message_InitMapAttributes(PyObject* map, PyObject* value,
+                                    const upb_FieldDef* f);
 
 static PyObject* PyUpb_MapContainer_MergeFrom(PyObject* _self, PyObject* _arg) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
@@ -295,7 +295,7 @@ static PyObject* PyUpb_MapContainer_MergeFrom(PyObject* _self, PyObject* _arg) {
     return PyErr_Format(PyExc_AttributeError, "Merging of dict is not allowed");
   }
 
-  if (PyUpb_CMessage_InitMapAttributes(_self, _arg, f) < 0) {
+  if (PyUpb_Message_InitMapAttributes(_self, _arg, f) < 0) {
     return NULL;
   }
 

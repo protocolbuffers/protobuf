@@ -314,9 +314,9 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
     return NULL;
   }
 
-  if (!PyUpb_CMessage_Verify(py_msg)) return NULL;
+  if (!PyUpb_Message_Verify(py_msg)) return NULL;
   PyUpb_UnknownFieldSet* self = PyUpb_UnknownFieldSet_NewBare();
-  upb_Message* msg = PyUpb_CMessage_GetIfReified(py_msg);
+  upb_Message* msg = PyUpb_Message_GetIfReified(py_msg);
   if (!msg) return &self->ob_base;
 
   size_t size;
@@ -324,7 +324,7 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
   if (size == 0) return &self->ob_base;
 
   const char* end = ptr + size;
-  const upb_MessageDef* msgdef = PyUpb_CMessage_GetMsgdef(py_msg);
+  const upb_MessageDef* msgdef = PyUpb_Message_GetMsgdef(py_msg);
 
   bool ok;
   if (upb_MessageDef_IsMessageSet(msgdef)) {

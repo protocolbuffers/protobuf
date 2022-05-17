@@ -132,7 +132,7 @@ static PyObject* PyUpb_DescriptorBase_GetOptions(PyUpb_DescriptorBase* self,
     (void)ok;
     assert(ok);
 
-    self->options = PyUpb_CMessage_Get(opts2, m, py_arena);
+    self->options = PyUpb_Message_Get(opts2, m, py_arena);
     Py_DECREF(py_arena);
   }
 
@@ -167,8 +167,8 @@ static PyObject* PyUpb_DescriptorBase_CopyToProto(PyObject* _self,
                                                   const upb_MiniTable* layout,
                                                   const char* expected_type,
                                                   PyObject* py_proto) {
-  if (!PyUpb_CMessage_Verify(py_proto)) return NULL;
-  const upb_MessageDef* m = PyUpb_CMessage_GetMsgdef(py_proto);
+  if (!PyUpb_Message_Verify(py_proto)) return NULL;
+  const upb_MessageDef* m = PyUpb_Message_GetMsgdef(py_proto);
   const char* type = upb_MessageDef_FullName(m);
   if (strcmp(type, expected_type) != 0) {
     PyErr_Format(
@@ -180,7 +180,7 @@ static PyObject* PyUpb_DescriptorBase_CopyToProto(PyObject* _self,
   PyObject* serialized =
       PyUpb_DescriptorBase_GetSerializedProto(_self, func, layout);
   if (!serialized) return NULL;
-  PyObject* ret = PyUpb_CMessage_MergeFromString(py_proto, serialized);
+  PyObject* ret = PyUpb_Message_MergeFromString(py_proto, serialized);
   Py_DECREF(serialized);
   return ret;
 }

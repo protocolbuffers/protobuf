@@ -52,7 +52,7 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByName(PyObject* _self,
                                                          PyObject* key) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
   const char* name = PyUpb_GetStrData(key);
-  const upb_MessageDef* m = PyUpb_CMessage_GetMsgdef(self->msg);
+  const upb_MessageDef* m = PyUpb_Message_GetMsgdef(self->msg);
   const upb_FileDef* file = upb_MessageDef_File(m);
   const upb_DefPool* symtab = upb_FileDef_Pool(file);
   const upb_FieldDef* ext = upb_DefPool_FindExtensionByName(symtab, name);
@@ -66,7 +66,7 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByName(PyObject* _self,
 static PyObject* PyUpb_ExtensionDict_FindExtensionByNumber(PyObject* _self,
                                                            PyObject* arg) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
-  const upb_MessageDef* m = PyUpb_CMessage_GetMsgdef(self->msg);
+  const upb_MessageDef* m = PyUpb_Message_GetMsgdef(self->msg);
   const upb_MiniTable* l = upb_MessageDef_MiniTable(m);
   const upb_FileDef* file = upb_MessageDef_File(m);
   const upb_DefPool* symtab = upb_FileDef_Pool(file);
@@ -83,7 +83,7 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByNumber(PyObject* _self,
 }
 
 static void PyUpb_ExtensionDict_Dealloc(PyUpb_ExtensionDict* self) {
-  PyUpb_CMessage_ClearExtensionDict(self->msg);
+  PyUpb_Message_ClearExtensionDict(self->msg);
   Py_DECREF(self->msg);
   PyUpb_Dealloc(self);
 }
@@ -107,9 +107,9 @@ static PyObject* PyUpb_ExtensionDict_RichCompare(PyObject* _self,
 
 static int PyUpb_ExtensionDict_Contains(PyObject* _self, PyObject* key) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
-  const upb_FieldDef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
+  const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(self->msg, key);
   if (!f) return -1;
-  upb_Message* msg = PyUpb_CMessage_GetIfReified(self->msg);
+  upb_Message* msg = PyUpb_Message_GetIfReified(self->msg);
   if (!msg) return 0;
   if (upb_FieldDef_IsRepeated(f)) {
     upb_MessageValue val = upb_Message_Get(msg, f);
@@ -121,26 +121,26 @@ static int PyUpb_ExtensionDict_Contains(PyObject* _self, PyObject* key) {
 
 static Py_ssize_t PyUpb_ExtensionDict_Length(PyObject* _self) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
-  upb_Message* msg = PyUpb_CMessage_GetIfReified(self->msg);
+  upb_Message* msg = PyUpb_Message_GetIfReified(self->msg);
   return msg ? upb_Message_ExtensionCount(msg) : 0;
 }
 
 static PyObject* PyUpb_ExtensionDict_Subscript(PyObject* _self, PyObject* key) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
-  const upb_FieldDef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
+  const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(self->msg, key);
   if (!f) return NULL;
-  return PyUpb_CMessage_GetFieldValue(self->msg, f);
+  return PyUpb_Message_GetFieldValue(self->msg, f);
 }
 
 static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
                                                PyObject* val) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
-  const upb_FieldDef* f = PyUpb_CMessage_GetExtensionDef(self->msg, key);
+  const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(self->msg, key);
   if (!f) return -1;
   if (val) {
-    return PyUpb_CMessage_SetFieldValue(self->msg, f, val, PyExc_TypeError);
+    return PyUpb_Message_SetFieldValue(self->msg, f, val, PyExc_TypeError);
   } else {
-    PyUpb_CMessage_DoClearField(self->msg, f);
+    PyUpb_Message_DoClearField(self->msg, f);
     return 0;
   }
 }
@@ -207,9 +207,9 @@ static void PyUpb_ExtensionIterator_Dealloc(void* _self) {
 
 PyObject* PyUpb_ExtensionIterator_IterNext(PyObject* _self) {
   PyUpb_ExtensionIterator* self = (PyUpb_ExtensionIterator*)_self;
-  upb_Message* msg = PyUpb_CMessage_GetIfReified(self->msg);
+  upb_Message* msg = PyUpb_Message_GetIfReified(self->msg);
   if (!msg) return NULL;
-  const upb_MessageDef* m = PyUpb_CMessage_GetMsgdef(self->msg);
+  const upb_MessageDef* m = PyUpb_Message_GetMsgdef(self->msg);
   const upb_DefPool* symtab = upb_FileDef_Pool(upb_MessageDef_File(m));
   while (true) {
     const upb_FieldDef* f;
