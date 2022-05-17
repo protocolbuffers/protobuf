@@ -2,6 +2,7 @@
 #   This package contains testonly utilities used in C++ unit tests.
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
 package(default_visibility = ["//:__subpackages__"])
@@ -26,4 +27,15 @@ cc_library(
         "//src/google/protobuf/stubs:lite",
         "@com_google_googletest//:gtest",
     ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
 )
