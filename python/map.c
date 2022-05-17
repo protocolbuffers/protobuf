@@ -159,6 +159,7 @@ bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
     case kUpb_MapInsertStatus_OutOfMemory:
       return false;
   }
+  return false;  // Unreachable, silence compiler warning.
 }
 
 int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
