@@ -13,6 +13,7 @@ jobs:
   build_wheels:
     name: Build Wheels
     runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'protocolbuffers' }}
     env:
       DOCKER_IMAGE: gcr.io/protobuf-build/bazel/linux@sha256:05a41edee21f620445ca01c46b9d33be2e4d06c3d8adced4341ac5abea754baa
       BAZEL_CACHE: --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache --google_default_credentials

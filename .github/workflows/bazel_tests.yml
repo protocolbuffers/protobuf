@@ -14,7 +14,7 @@ jobs:
   ubuntu:
     runs-on: ${{ matrix.os }}
     env:
-      BAZEL_CACHE: --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache --google_default_credentials
+      BAZEL_CACHE: --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache
 
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
@@ -36,10 +36,17 @@ jobs:
         with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
           export_environment_variables: true
+        if: ${{ github.repository_owner == 'protocolbuffers' }}
+      - name: Set up Bazel read/write caching
+        run: echo "BAZEL_CACHE_AUTH=--google_default_credentials" >> $GITHUB_ENV
+        if: ${{ github.repository_owner == 'protocolbuffers' }}
+      - name: Set up Bazel read-only caching
+        run: echo "BAZEL_CACHE_AUTH=--remote_upload_local_results=false" >> $GITHUB_ENV
+        if: ${{ github.repository_owner != 'protocolbuffers' }}
       - name: Setup Python venv
         run: rm -rf /tmp/venv && python3 -m venv /tmp/venv
       - name: Install dependencies
         run: sudo apt update && sudo apt install -y ${{ matrix.install }}
         if: matrix.install != ''
       - name: Run tests
-        run: cd ${{ github.workspace }} && PATH=/tmp/venv/bin:$PATH CC=${{ matrix.CC }} bazel test --test_output=errors $BAZEL_CACHE ... ${{ matrix.flags }}
+        run: cd ${{ github.workspace }} && PATH=/tmp/venv/bin:$PATH CC=${{ matrix.CC }} bazel test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH ... ${{ matrix.flags }}
