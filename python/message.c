@@ -1075,6 +1075,25 @@ static PyObject* PyUpb_CMessage_ListFieldsItemKey(PyObject* self,
   return PyLong_FromLong(upb_FieldDef_Number(f));
 }
 
+static PyObject* PyUpb_CMessage_CheckCalledFromGeneratedFile(
+    PyObject* unused, PyObject* unused_arg) {
+  PyErr_SetString(
+      PyExc_TypeError,
+      "Descriptors cannot not be created directly.\n"
+      "If this call came from a _pb2.py file, your generated code is out of "
+      "date and must be regenerated with protoc >= 3.19.0.\n"
+      "If you cannot immediately regenerate your protos, some other possible "
+      "workarounds are:\n"
+      " 1. Downgrade the protobuf package to 3.20.x or lower.\n"
+      " 2. Set PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python (but this will "
+      "use pure-Python parsing and will be much slower).\n"
+      "\n"
+      "More information: "
+      "https://developers.google.com/protocol-buffers/docs/news/"
+      "2022-05-06#python-updates");
+  return NULL;
+}
+
 static bool PyUpb_CMessage_SortFieldList(PyObject* list) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   bool ok = false;
@@ -1607,6 +1626,9 @@ static PyMethodDef PyUpb_CMessage_Methods[] = {
     {"_ListFieldsItemKey", PyUpb_CMessage_ListFieldsItemKey,
      METH_O | METH_STATIC,
      "Compares ListFields() list entries by field number"},
+    {"_CheckCalledFromGeneratedFile",
+     PyUpb_CMessage_CheckCalledFromGeneratedFile, METH_NOARGS | METH_STATIC,
+     "Raises TypeError if the caller is not in a _pb2.py file."},
     {NULL, NULL}};
 
 static PyType_Slot PyUpb_CMessage_Slots[] = {
