@@ -99,6 +99,7 @@ pkg_zip(
 # TODO: these will eventually replace autotools for release artifact packaging.
 ################################################################################
 
+
 pkg_filegroup(
     name = "dist_common",
     srcs = [
@@ -108,6 +109,9 @@ pkg_filegroup(
         "//benchmarks:all_dist_files",
         "//build_defs:dist_files",
         "//conformance:all_dist_files",
+        "//src/google/protobuf/io:dist_files",
+        "//src/google/protobuf/stubs:dist_files",
+        "//src/google/protobuf/testing:dist_files",
         "@com_google_protobuf_examples//:dist_files",
     ],
 )
@@ -357,10 +361,14 @@ cc_dist_library(
         "//build_defs:config_msvc": [],
         "//conditions:default": ["-lpthread"],
     }),
-    deps = [
-        "//:protobuf_lite",
-    ],
     tags = ["manual"],
+    deps = [
+        "//:arena",
+        "//:protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/stubs:lite",
+    ],
 )
 
 cc_dist_library(
@@ -372,11 +380,19 @@ cc_dist_library(
             "-lpthread",
         ],
     }),
+    tags = ["manual"],
     deps = [
+        "//:arena",
         "//:protobuf",
         "//:protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:gzip_stream",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/stubs:lite",
     ],
-    tags = ["manual"],
 )
 
 ################################################################################

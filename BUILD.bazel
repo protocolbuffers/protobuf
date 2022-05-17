@@ -21,11 +21,35 @@ exports_files(["LICENSE"])
 ################################################################################
 
 cc_library(
+    name = "port_def",
+    hdrs = ["src/google/protobuf/port.h"],
+    includes = ["src"],
+    textual_hdrs = [
+        "src/google/protobuf/port_def.inc",
+        "src/google/protobuf/port_undef.inc",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+cc_library(
+    name = "arena",
+    srcs = [
+        "src/google/protobuf/arena.cc",
+        "src/google/protobuf/arena_impl.h",
+        "src/google/protobuf/arenaz_sampler.h",
+    ],
+    hdrs = ["src/google/protobuf/arena.h"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//src/google/protobuf/stubs:lite",
+    ],
+)
+
+cc_library(
     name = "protobuf_lite",
     srcs = [
         # AUTOGEN(protobuf_lite_srcs)
         "src/google/protobuf/any_lite.cc",
-        "src/google/protobuf/arena.cc",
         "src/google/protobuf/arenastring.cc",
         "src/google/protobuf/arenaz_sampler.cc",
         "src/google/protobuf/extension_set.cc",
@@ -34,27 +58,11 @@ cc_library(
         "src/google/protobuf/generated_message_util.cc",
         "src/google/protobuf/implicit_weak_message.cc",
         "src/google/protobuf/inlined_string_field.cc",
-        "src/google/protobuf/io/coded_stream.cc",
-        "src/google/protobuf/io/io_win32.cc",
-        "src/google/protobuf/io/strtod.cc",
-        "src/google/protobuf/io/zero_copy_stream.cc",
-        "src/google/protobuf/io/zero_copy_stream_impl.cc",
-        "src/google/protobuf/io/zero_copy_stream_impl_lite.cc",
         "src/google/protobuf/map.cc",
         "src/google/protobuf/message_lite.cc",
         "src/google/protobuf/parse_context.cc",
         "src/google/protobuf/repeated_field.cc",
         "src/google/protobuf/repeated_ptr_field.cc",
-        "src/google/protobuf/stubs/bytestream.cc",
-        "src/google/protobuf/stubs/common.cc",
-        "src/google/protobuf/stubs/int128.cc",
-        "src/google/protobuf/stubs/status.cc",
-        "src/google/protobuf/stubs/statusor.cc",
-        "src/google/protobuf/stubs/stringpiece.cc",
-        "src/google/protobuf/stubs/stringprintf.cc",
-        "src/google/protobuf/stubs/structurally_valid.cc",
-        "src/google/protobuf/stubs/strutil.cc",
-        "src/google/protobuf/stubs/time.cc",
         "src/google/protobuf/wire_format_lite.cc",
     ],
     hdrs = glob([
@@ -65,6 +73,11 @@ cc_library(
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
+    deps = [
+        ":arena",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs:lite",
+    ],
 )
 
 cc_library(
@@ -87,16 +100,12 @@ cc_library(
         "src/google/protobuf/generated_message_bases.cc",
         "src/google/protobuf/generated_message_reflection.cc",
         "src/google/protobuf/generated_message_tctable_full.cc",
-        "src/google/protobuf/io/gzip_stream.cc",
-        "src/google/protobuf/io/printer.cc",
-        "src/google/protobuf/io/tokenizer.cc",
         "src/google/protobuf/map_field.cc",
         "src/google/protobuf/message.cc",
         "src/google/protobuf/reflection_ops.cc",
         "src/google/protobuf/service.cc",
         "src/google/protobuf/source_context.pb.cc",
         "src/google/protobuf/struct.pb.cc",
-        "src/google/protobuf/stubs/substitute.cc",
         "src/google/protobuf/text_format.cc",
         "src/google/protobuf/timestamp.pb.cc",
         "src/google/protobuf/type.pb.cc",
@@ -132,10 +141,14 @@ cc_library(
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = [":protobuf_lite"] + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": ["@zlib//:zlib"],
-    }),
+    deps = [
+        ":protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:gzip_stream",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+    ],
 )
 
 # This provides just the header files for use in projects that need to build
@@ -447,7 +460,9 @@ cc_binary(
 
 filegroup(
     name = "testdata",
-    srcs = glob(["src/google/protobuf/testdata/**/*"]),
+    srcs = glob(["src/google/protobuf/testdata/**/*"]) + [
+        "src/google/protobuf/descriptor.cc",
+    ],
     visibility = [
         "//:__subpackages__",
         "@upb//:__subpackages__",
@@ -631,8 +646,6 @@ COMMON_TEST_SRCS = [
     "src/google/protobuf/reflection_tester.cc",
     "src/google/protobuf/test_util.cc",
     "src/google/protobuf/test_util.inc",
-    "src/google/protobuf/testing/file.cc",
-    "src/google/protobuf/testing/googletest.cc",
 ]
 
 cc_binary(
@@ -642,26 +655,13 @@ cc_binary(
         # AUTOGEN(test_plugin_srcs)
         "src/google/protobuf/compiler/mock_code_generator.cc",
         "src/google/protobuf/compiler/test_plugin.cc",
-        "src/google/protobuf/testing/file.cc",
     ],
+    copts = COPTS,
     deps = [
         ":protobuf",
         ":protoc_lib",
+        "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
-    ],
-)
-
-cc_test(
-    name = "win32_test",
-    srcs = ["src/google/protobuf/io/io_win32_unittest.cc"],
-    tags = [
-        "manual",
-        "windows",
-    ],
-    deps = [
-        ":protobuf_lite",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -699,11 +699,6 @@ cc_test(
         "src/google/protobuf/generated_message_reflection_unittest.cc",
         "src/google/protobuf/generated_message_tctable_lite_test.cc",
         "src/google/protobuf/inlined_string_field_unittest.cc",
-        "src/google/protobuf/io/coded_stream_unittest.cc",
-        "src/google/protobuf/io/io_win32_unittest.cc",
-        "src/google/protobuf/io/printer_unittest.cc",
-        "src/google/protobuf/io/tokenizer_unittest.cc",
-        "src/google/protobuf/io/zero_copy_stream_unittest.cc",
         "src/google/protobuf/map_field_test.cc",
         "src/google/protobuf/map_test.cc",
         "src/google/protobuf/map_test.inc",
@@ -718,17 +713,6 @@ cc_test(
         "src/google/protobuf/reflection_ops_unittest.cc",
         "src/google/protobuf/repeated_field_reflection_unittest.cc",
         "src/google/protobuf/repeated_field_unittest.cc",
-        "src/google/protobuf/stubs/bytestream_unittest.cc",
-        "src/google/protobuf/stubs/common_unittest.cc",
-        "src/google/protobuf/stubs/int128_unittest.cc",
-        "src/google/protobuf/stubs/status_test.cc",
-        "src/google/protobuf/stubs/statusor_test.cc",
-        "src/google/protobuf/stubs/stringpiece_unittest.cc",
-        "src/google/protobuf/stubs/stringprintf_unittest.cc",
-        "src/google/protobuf/stubs/structurally_valid_unittest.cc",
-        "src/google/protobuf/stubs/strutil_unittest.cc",
-        "src/google/protobuf/stubs/template_util_unittest.cc",
-        "src/google/protobuf/stubs/time_test.cc",
         "src/google/protobuf/text_format_unittest.cc",
         "src/google/protobuf/unknown_field_set_unittest.cc",
         "src/google/protobuf/util/delimited_message_util_test.cc",
@@ -758,6 +742,7 @@ cc_test(
         # Files for csharp_bootstrap_unittest.cc.
         "//conformance:all_files",
         ":test_plugin",
+        ":testdata",
     ] + glob([
         "src/google/protobuf/**/*",
     ]) + glob(
@@ -776,12 +761,10 @@ cc_test(
         ":cc_test_protos",
         ":protobuf",
         ":protoc_lib",
+        "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
-    ] + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": ["@zlib//:zlib"],
-    }),
+    ],
 )
 
 ################################################################################
@@ -930,15 +913,15 @@ alias(
 
 proto_library(
     name = "test_messages_proto2_proto",
-    strip_import_prefix = "src",
     srcs = ["src/google/protobuf/test_messages_proto2.proto"],
+    strip_import_prefix = "src",
     visibility = ["//visibility:public"],
 )
 
 proto_library(
     name = "test_messages_proto3_proto",
-    strip_import_prefix = "src",
     srcs = ["src/google/protobuf/test_messages_proto3.proto"],
+    strip_import_prefix = "src",
     visibility = ["//visibility:public"],
     deps = [
         ":any_proto",
@@ -1021,8 +1004,8 @@ proto_library(
         "src/google/protobuf/unittest_import_public_lite.proto",
         "src/google/protobuf/unittest_lite.proto",
     ],
-    visibility = ["//java/kotlin-lite:__subpackages__"],
     strip_import_prefix = "src",
+    visibility = ["//java/kotlin-lite:__subpackages__"],
 )
 
 proto_library(
@@ -1033,8 +1016,8 @@ proto_library(
         "src/google/protobuf/unittest_import.proto",
         "src/google/protobuf/unittest_import_public.proto",
     ],
-    visibility = ["//java/kotlin:__subpackages__"],
     strip_import_prefix = "src",
+    visibility = ["//java/kotlin:__subpackages__"],
 )
 
 proto_library(
@@ -1044,11 +1027,11 @@ proto_library(
         "src/google/protobuf/unittest_import_public.proto",
         "src/google/protobuf/unittest_proto3.proto",
     ],
+    strip_import_prefix = "src",
     visibility = [
         "//java/kotlin:__subpackages__",
         "//java/kotlin-lite:__subpackages__",
     ],
-    strip_import_prefix = "src",
 )
 
 ################################################################################
