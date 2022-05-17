@@ -33,12 +33,12 @@ cc_library(
 
 cc_library(
     name = "arena",
-    srcs = ["src/google/protobuf/arena.cc"],
-    hdrs = [
-        "src/google/protobuf/arena.h",
+    srcs = [
+        "src/google/protobuf/arena.cc",
         "src/google/protobuf/arena_impl.h",
         "src/google/protobuf/arenaz_sampler.h",
     ],
+    hdrs = ["src/google/protobuf/arena.h"],
     visibility = ["//:__subpackages__"],
     deps = [
         "//src/google/protobuf/stubs:lite",
