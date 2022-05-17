@@ -270,7 +270,7 @@ pkg_files(
     name = "compiler_plugin_protos_files",
     srcs = ["plugin.proto"],
     prefix = "include/google/protobuf/compiler",
-    visibility = ["//:__pkg__"],
+    visibility = ["//pkg:__pkg__"],
 )
 
 pkg_files(
