@@ -38,7 +38,6 @@ if __name__ == '__main__':
 # end:github_only
 
 # begin:google_only
-# CreateDescriptorPoolTest.testComplexNestingWithProtoFileParser.__unittest_expecting_failure__ = True
 # from absl import app
 # if __name__ == '__main__':
 #   app.run(lambda argv: unittest.main(verbosity=2))

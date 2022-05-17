@@ -184,7 +184,9 @@ done:
   if (type_id && msg) {
     PyObject* field = PyObject_CallFunction(
         s->unknown_field_type, "iiO", type_id, kUpb_WireType_Delimited, msg);
+    if (!field) goto err;
     PyList_Append(self->fields, field);
+    Py_DECREF(field);
   }
   Py_XDECREF(msg);
   return ptr;
@@ -293,6 +295,7 @@ static const char* PyUpb_UnknownFieldSet_Build(PyUpb_UnknownFieldSet* self,
     PyObject* field = PyObject_CallFunction(s->unknown_field_type, "iiN",
                                             field_number, wire_type, data);
     PyList_Append(self->fields, field);
+    Py_DECREF(field);
   }
   return ptr;
 
