@@ -150,7 +150,12 @@ cc_library(
         "**/*.h",
         "**/*.inc",
     ]),
-    copts = COPTS,
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error",
+        ],
+    }),
     include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
     visibility = [
