@@ -560,7 +560,7 @@ proto_library(
 
 pkg_files(
     name = "dist_files",
-    srcs = glob(["**/*"]),
+    srcs = glob(["**"]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
 )
