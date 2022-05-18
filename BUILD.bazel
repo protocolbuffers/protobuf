@@ -122,25 +122,6 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-# adapt_proto_library(
-#     name = "cc_wkt_protos_genproto",
-#     visibility = ["//visibility:public"],
-#     deps = [
-#         "//:any_proto",
-#         "//:api_proto",
-#         "//:compiler_plugin_proto",
-#         "//:descriptor_proto",
-#         "//:duration_proto",
-#         "//:empty_proto",
-#         "//:field_mask_proto",
-#         "//:source_context_proto",
-#         "//:struct_proto",
-#         "//:timestamp_proto",
-#         "//:type_proto",
-#         "//:wrappers_proto",
-#     ],
-# )
-
 cc_library(
     name = "cc_wkt_protos",
     deprecation = "Only for backward compatibility. Do not use.",
