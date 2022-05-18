@@ -458,7 +458,12 @@ cc_library(
         "test_util2.h",
         "test_util_lite.h",
     ],
-    copts = COPTS,
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
     strip_include_prefix = "/src",
     textual_hdrs = [
         "map_test_util.inc",
@@ -511,6 +516,7 @@ cc_test(
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated-declarations",
+            "-Wno-error=sign-compare",
         ],
     }),
     data = [

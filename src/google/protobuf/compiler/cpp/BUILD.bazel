@@ -93,6 +93,7 @@ cc_library(
 cc_test(
     name = "unittest",
     srcs = ["unittest.cc"],
+    copts = COPTS,
     data = [
         "//:test_proto_srcs",
         "//src/google/protobuf:testdata",
@@ -116,9 +117,9 @@ cc_test(
     name = "bootstrap_unittest",
     srcs = ["bootstrap_unittest.cc"],
     data = [
-        "//src/google/protobuf:descriptor_proto_srcs",
         "//:well_known_type_protos",
         "//src/google/protobuf:descriptor_cc_srcs",
+        "//src/google/protobuf:descriptor_proto_srcs",
         "//src/google/protobuf:testdata",
         "//src/google/protobuf/compiler:plugin_proto_srcs",
     ],
@@ -160,6 +161,7 @@ cc_test(
 cc_test(
     name = "move_unittest",
     srcs = ["move_unittest.cc"],
+    copts = COPTS,
     deps = [
         "//:protobuf",
         "//src/google/protobuf:cc_test_protos",

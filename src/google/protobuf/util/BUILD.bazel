@@ -11,6 +11,7 @@ cc_library(
     name = "delimited_message_util",
     srcs = ["delimited_message_util.cc"],
     hdrs = ["delimited_message_util.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
@@ -22,6 +23,7 @@ cc_library(
 cc_test(
     name = "delimited_message_util_test",
     srcs = ["delimited_message_util_test.cc"],
+    copts = COPTS,
     deps = [
         ":delimited_message_util",
         "//src/google/protobuf:cc_test_protos",
@@ -96,6 +98,7 @@ cc_library(
 cc_test(
     name = "field_mask_util_test",
     srcs = ["field_mask_util_test.cc"],
+    copts = COPTS,
     deps = [
         ":field_mask_util",
         "//src/google/protobuf",
