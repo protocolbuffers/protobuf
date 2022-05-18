@@ -545,7 +545,7 @@ cc_proto_library(
 
 cc_proto_library(
     name = "cc_test_protos",
-    visibility = ["//src/google/protobuf/compiler:__subpackages__"],
+    visibility = ["//:__subpackages__"],
     deps = [":test_protos"],
 )
 
