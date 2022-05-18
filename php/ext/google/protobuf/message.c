@@ -603,10 +603,9 @@ PHP_METHOD(Message, __construct) {
   // will trigger an infinite construction loop and blow the stack.  We
   // temporarily clear create_object to break this loop (see check in
   // NameMap_GetMessage()).
-  PBPHP_ASSERT(ce->create_object == Message_create);
-  ce->create_object = NULL;
+  NameMap_EnterConstructor(ce);
   desc = Descriptor_GetFromClassEntry(ce);
-  ce->create_object = Message_create;
+  NameMap_ExitConstructor(ce);
 
   if (!desc) {
     zend_throw_exception_ex(
