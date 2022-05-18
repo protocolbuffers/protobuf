@@ -89,6 +89,29 @@ class CodedInputStream
     {
         return substr($this->buffer, $start, $end - $start);
     }
+    
+    /**
+    * Total Bytes Limit -----------------------------------------------
+    * To prevent malicious users from sending excessively large messages
+    * and causing memory exhaustion, CodedInputStream imposes a hard limit on
+    * the total number of bytes it will read.
+    *
+    * Sets the maximum number of bytes that this CodedInputStream will read
+    * before refusing to continue.  To prevent servers from allocating enormous
+    * amounts of memory to hold parsed messages, the maximum message length
+    * should be limited to the shortest length that will not harm usability.
+    *
+    * Note: setting a limit less than the current read position is interpreted
+    * as a limit on the current position.
+    *
+    * This is unrelated to pushLimit() / popLimit().
+    *
+    * @param $total_bytes_limit
+    */
+    public function setTotalBytesLimit($total_bytes_limit) {
+        $this->total_bytes_limit = max($this->current(), $total_bytes_limit);
+        $this->recomputeBufferLimits();
+    }
 
     private function recomputeBufferLimits()
     {
