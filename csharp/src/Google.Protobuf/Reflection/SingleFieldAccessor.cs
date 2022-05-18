@@ -107,7 +107,7 @@ namespace Google.Protobuf.Reflection
             // Primitive proto3 fields without the optional keyword, which aren't in oneofs.
             else
             {
-                hasDelegate = message => { throw new InvalidOperationException("Presence is not implemented for this field"); };
+                hasDelegate = message => throw new InvalidOperationException("Presence is not implemented for this field");
 
                 // While presence isn't supported, clearing still is; it's just setting to a default value.
                 object? defaultValue = GetDefaultValue(descriptor);

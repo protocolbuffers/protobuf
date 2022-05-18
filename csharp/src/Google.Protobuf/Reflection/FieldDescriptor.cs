@@ -334,7 +334,7 @@ namespace Google.Protobuf.Reflection
         /// The (possibly empty) set of custom options for this field.
         /// </summary>
         [Obsolete("CustomOptions are obsolete. Use the GetOptions() method.")]
-        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
+        public CustomOptions CustomOptions => new (Proto.Options?._extensions?.ValuesByNumber);
 
         /// <summary>
         /// The <c>FieldOptions</c>, defined in <c>descriptor.proto</c>.
@@ -393,11 +393,11 @@ namespace Google.Protobuf.Reflection
 
                 if (fieldType == FieldType.Message || fieldType == FieldType.Group)
                 {
-                    if (typeDescriptor is not MessageDescriptor)
+                    if (typeDescriptor is not MessageDescriptor md)
                     {
                         throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not a message type.");
                     }
-                    messageType = (MessageDescriptor) typeDescriptor;
+                    messageType = md;
 
                     if (Proto.HasDefaultValue)
                     {
@@ -406,11 +406,11 @@ namespace Google.Protobuf.Reflection
                 }
                 else if (fieldType == FieldType.Enum)
                 {
-                    if (typeDescriptor is not EnumDescriptor)
+                    if (typeDescriptor is not EnumDescriptor ed)
                     {
                         throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not an enum type.");
                     }
-                    enumType = (EnumDescriptor) typeDescriptor;
+                    enumType = ed;
                 }
                 else
                 {

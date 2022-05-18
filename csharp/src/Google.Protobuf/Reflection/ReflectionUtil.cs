@@ -222,12 +222,10 @@ namespace Google.Protobuf.Reflection
 
             public object? GetExtension(IMessage message)
             {
-                if (message is not T1)
+                if (message is not T1 extensionMessage)
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
-
-                T1 extensionMessage = (T1)message;
 
                 if (extension is Extension<T1, T3> ext)
                 {
@@ -245,12 +243,10 @@ namespace Google.Protobuf.Reflection
 
             public bool HasExtension(IMessage message)
             {
-                if (message is not T1)
+                if (message is not T1 extensionMessage)
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
-
-                T1 extensionMessage = (T1)message;
 
                 if (extension is Extension<T1, T3> ext)
                 {
@@ -268,12 +264,10 @@ namespace Google.Protobuf.Reflection
 
             public void SetExtension(IMessage message, object? value)
             {
-                if (message is not T1)
+                if (message is not T1 extensionMessage)
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
-
-                T1 extensionMessage = (T1)message;
 
                 if (extension is Extension<T1, T3?> ext)
                 {
@@ -291,12 +285,10 @@ namespace Google.Protobuf.Reflection
 
             public void ClearExtension(IMessage message)
             {
-                if (message is not T1)
+                if (message is not T1 extensionMessage)
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
-
-                T1 extensionMessage = (T1)message;
 
                 if (extension is Extension<T1, T3> ext)
                 {

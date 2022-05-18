@@ -47,6 +47,13 @@ namespace Google.Protobuf.Collections
     public class MapFieldTest
     {
         [Test]
+        public void NullableKeyAndValue()
+        {
+            // See TODO in MapField.cs related to notnull constraints, this test simply ensures it's possible at this point.
+            var map = new MapField<int?, int?> { { 1, 1 } };
+        }
+
+        [Test]
         public void Clone_ClonesMessages()
         {
             var message = new ForeignMessage { C = 20 };

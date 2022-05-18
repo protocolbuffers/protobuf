@@ -73,7 +73,7 @@ namespace Google.Protobuf.Collections
         /// <returns>A deep clone of this repeated field.</returns>
         public RepeatedField<T> Clone()
         {
-            RepeatedField<T> clone = new RepeatedField<T>();
+            var clone = new RepeatedField<T>();
             if (array != EmptyArray)
             {
                 clone.array = (T[])array.Clone();
@@ -597,7 +597,7 @@ namespace Google.Protobuf.Collections
             }
             Array.Copy(array, index + 1, array, index, count - index - 1);
             count--;
-            array[count] = default(T);
+            array[count] = default;
         }
 
         /// <summary>
@@ -654,8 +654,8 @@ namespace Google.Protobuf.Collections
 
         object? IList.this[int index]
         {
-            get { return this[index]; }
-            set { this[index] = (T)value!; }
+            get => this[index];
+            set => this[index] = (T)value!;  // Regular indexer performs null validation.
         }
 
         int IList.Add(object? value)
@@ -666,16 +666,16 @@ namespace Google.Protobuf.Collections
 
         bool IList.Contains(object? value)
         {
-            return (value is T && Contains((T)value));
+            return value is T t && Contains(t);
         }
 
         int IList.IndexOf(object? value)
         {
-            if (value is not T)
+            if (value is T t)
             {
-                return -1;
+                return IndexOf(t);
             }
-            return IndexOf((T)value);
+            return -1;
         }
 
         void IList.Insert(int index, object? value)
@@ -685,11 +685,10 @@ namespace Google.Protobuf.Collections
 
         void IList.Remove(object? value)
         {
-            if (value is not T)
+            if (value is T t)
             {
-                return;
+                Remove(t);
             }
-            Remove((T)value);
         }
         #endregion        
     }

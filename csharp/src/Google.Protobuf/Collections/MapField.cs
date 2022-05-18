@@ -70,16 +70,17 @@ namespace Google.Protobuf.Collections
 #if !NET35
         , IReadOnlyDictionary<TKey, TValue>
 #endif
-        where TKey : notnull
-        where TValue : notnull
+        // TODO: Enable non-null constraints on a major version number change to avoid breaking any code on a minor version
+        //   that declared key or value as nullable.
+        // where TKey : notnull
+        // where TValue : notnull
     {
         private static readonly EqualityComparer<TValue> ValueEqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<TValue>();
         private static readonly EqualityComparer<TKey> KeyEqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<TKey>();
 
         // TODO: Don't create the map/list until we have an entry. (Assume many maps will be empty.)
-        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> map =
-            new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>(KeyEqualityComparer);
-        private readonly LinkedList<KeyValuePair<TKey, TValue>> list = new LinkedList<KeyValuePair<TKey, TValue>>();
+        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> map = new (KeyEqualityComparer);
+        private readonly LinkedList<KeyValuePair<TKey, TValue>> list = new ();
 
         /// <summary>
         /// Creates a deep clone of this object.
@@ -95,7 +96,14 @@ namespace Google.Protobuf.Collections
             {
                 foreach (var pair in list)
                 {
-                    clone.Add(pair.Key, ((IDeepCloneable<TValue>)pair.Value).Clone());
+                    if (pair.Value is not null)
+                    {
+                        clone.Add(pair.Key, ((IDeepCloneable<TValue>)pair.Value).Clone());
+                    }
+                    else
+                    {
+                        clone.Add(pair.Key, default!);
+                    }
                 }
             }
             else
@@ -532,11 +540,11 @@ namespace Google.Protobuf.Collections
 
         bool IDictionary.Contains(object key)
         {
-            if (key is not TKey)
+            if (key is TKey k)
             {
-                return false;
+                return ContainsKey(k);
             }
-            return ContainsKey((TKey)key);
+            return false;
         }
 
         IDictionaryEnumerator IDictionary.GetEnumerator()
@@ -547,11 +555,10 @@ namespace Google.Protobuf.Collections
         void IDictionary.Remove(object key)
         {
             ProtoPreconditions.CheckNotNull(key, nameof(key));
-            if (key is not TKey)
+            if (key is TKey k)
             {
-                return;
+                Remove(k);
             }
-            Remove((TKey)key);
         }
 
         void ICollection.CopyTo(Array array, int index)
@@ -576,12 +583,12 @@ namespace Google.Protobuf.Collections
             get
             {
                 ProtoPreconditions.CheckNotNull(key, nameof(key));
-                if (key is not TKey)
+                if (key is TKey k)
                 {
-                    return null;
+                    TryGetValue(k, out TValue? value);
+                    return value;
                 }
-                TryGetValue((TKey)key, out TValue? value);
-                return value;
+                return null;
             }
 
             set
@@ -619,7 +626,7 @@ namespace Google.Protobuf.Collections
             }
 
             public object Current => Entry;
-            public DictionaryEntry Entry => new DictionaryEntry(Key!, Value!);
+            public DictionaryEntry Entry => new (Key!, Value!);
             public object Key => enumerator.Current.Key!;
             public object Value => enumerator.Current.Value!;
         }

@@ -74,7 +74,7 @@ namespace Google.Protobuf.Reflection
         /// The (possibly empty) set of custom options for this method.
         /// </summary>
         [Obsolete("CustomOptions are obsolete. Use the GetOptions() method.")]
-        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
+        public CustomOptions CustomOptions => new (Proto.Options?._extensions?.ValuesByNumber);
 
         /// <summary>
         /// The <c>MethodOptions</c>, defined in <c>descriptor.proto</c>.
@@ -131,18 +131,18 @@ namespace Google.Protobuf.Reflection
         internal void CrossLink()
         {
             IDescriptor lookup = File.DescriptorPool.LookupSymbol(Proto.InputType, this);
-            if (lookup is not MessageDescriptor)
+            if (lookup is not MessageDescriptor mdInput)
             {
                 throw new DescriptorValidationException(this, "\"" + Proto.InputType + "\" is not a message type.");
             }
-            inputType = (MessageDescriptor) lookup;
+            inputType = mdInput;
 
             lookup = File.DescriptorPool.LookupSymbol(Proto.OutputType, this);
-            if (lookup is not MessageDescriptor)
+            if (lookup is not MessageDescriptor mdOutput)
             {
                 throw new DescriptorValidationException(this, "\"" + Proto.OutputType + "\" is not a message type.");
             }
-            outputType = (MessageDescriptor) lookup;
+            outputType = mdOutput;
         }
     }
 }
