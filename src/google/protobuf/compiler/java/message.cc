@@ -425,6 +425,8 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
     vars["oneof_index"] = StrCat((oneof)->index());
+    vars["{"] = "";
+    vars["}"] = "";
     // oneofCase_ and oneof_
     printer->Print(vars,
                    "private int $oneof_name$Case_ = 0;\n"
@@ -432,11 +434,12 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     // OneofCase enum
     printer->Print(
         vars,
-        "public enum $oneof_capitalized_name$Case\n"
+        "public enum ${$$oneof_capitalized_name$Case$}$\n"
         // TODO(dweis): Remove EnumLite when we want to break compatibility with
         // 3.x users
         "    implements com.google.protobuf.Internal.EnumLite,\n"
         "        com.google.protobuf.AbstractMessage.InternalOneOfEnum {\n");
+    printer->Annotate("{", "}", oneof);
     printer->Indent();
     for (int j = 0; j < (oneof)->field_count(); j++) {
       const FieldDescriptor* field = (oneof)->field(j);
@@ -445,6 +448,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
           field->options().deprecated() ? "@java.lang.Deprecated " : "",
           "field_name", ToUpper(field->name()), "field_number",
           StrCat(field->number()));
+      printer->Annotate("field_name", field);
     }
     printer->Print("$cap_oneof_name$_NOT_SET(0);\n", "cap_oneof_name",
                    ToUpper(vars["oneof_name"]));
@@ -487,11 +491,12 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     // oneofCase()
     printer->Print(vars,
                    "public $oneof_capitalized_name$Case\n"
-                   "get$oneof_capitalized_name$Case() {\n"
+                   "${$get$oneof_capitalized_name$Case$}$() {\n"
                    "  return $oneof_capitalized_name$Case.forNumber(\n"
                    "      $oneof_name$Case_);\n"
                    "}\n"
                    "\n");
+    printer->Annotate("{", "}", oneof);
   }
 
   if (IsAnyMessage(descriptor_)) {
@@ -1012,6 +1017,8 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
       " return true;\n"
       "}\n"
       "if (!(obj instanceof $classname$)) {\n"
+         // don't simply return false because mutable and immutable types
+         // can be equal
       "  return super.equals(obj);\n"
       "}\n"
       "$classname$ other = ($classname$) obj;\n"

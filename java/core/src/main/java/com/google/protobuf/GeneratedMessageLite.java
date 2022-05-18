@@ -244,11 +244,16 @@ public abstract class GeneratedMessageLite<
    *
    * <p>For use by generated code only.
    */
-  protected abstract Object dynamicMethod(MethodToInvoke method, Object arg0, Object arg1);
+  protected abstract Object dynamicMethod(
+      MethodToInvoke method,
+          Object arg0,
+          Object arg1);
 
   /** Same as {@link #dynamicMethod(MethodToInvoke, Object, Object)} with {@code null} padding. */
   @CanIgnoreReturnValue
-  protected Object dynamicMethod(MethodToInvoke method, Object arg0) {
+  protected Object dynamicMethod(
+      MethodToInvoke method,
+          Object arg0) {
     return dynamicMethod(method, arg0, null);
   }
 

@@ -464,6 +464,8 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
   @Override
   public void writeTo(final CodedOutputStream output) throws IOException {
+    // TODO(liujisi): Move this into the AbstractMessage once getAllFieldsRaw()
+    // is supported by other implementations of AbstractMessage (b/18390293)
     MessageReflection.writeMessageTo(this, getAllFieldsRaw(), output, false);
   }
 
@@ -474,8 +476,10 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       return size;
     }
 
+    // TODO(liujisi): Move this into the AbstractMessage once getAllFieldsRaw()
+    // is supported by other implementations of AbstractMessage (b/18390293)
     memoizedSize = MessageReflection.getSerializedSize(
-        this, getAllFieldsRaw());
+       this, getAllFieldsRaw());
     return memoizedSize;
   }
 
@@ -783,7 +787,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
                        .mergeFrom(unknownFields)
                        .build());
     }
-
 
     @Override
     public boolean isInitialized() {

@@ -3857,7 +3857,7 @@ public final class TestUtil {
   public static ByteString getGoldenMessage() {
     if (goldenMessage == null) {
       goldenMessage =
-          readBytesFromResource("/google/protobuf/testdata/golden_message_oneof_implemented");
+          readBytesFromResource("/third_party/protobuf/testdata/golden_message_oneof_implemented");
     }
     return goldenMessage;
   }
@@ -3873,7 +3873,7 @@ public final class TestUtil {
   public static ByteString getGoldenPackedFieldsMessage() {
     if (goldenPackedFieldsMessage == null) {
       goldenPackedFieldsMessage =
-          readBytesFromResource("/google/protobuf/testdata/golden_packed_fields_message");
+          readBytesFromResource("/third_party/protobuf/testdata/golden_packed_fields_message");
     }
     return goldenPackedFieldsMessage;
   }

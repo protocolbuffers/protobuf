@@ -131,7 +131,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * This will also be called for: $ele = $arr[$key]
      *
-     * @param int|bool|string $key The key of the element to be fetched.
+     * @param int|string $key The key of the element to be fetched.
      * @return object The stored element at given key.
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
@@ -148,7 +148,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * This will also be called for: $arr[$key] = $value
      *
-     * @param object $key The key of the element to be fetched.
+     * @param int|string $key The key of the element to be fetched.
      * @param object $value The element to be assigned.
      * @return void
      * @throws \ErrorException Invalid type for key.
@@ -211,7 +211,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * This will also be called for: unset($arr)
      *
-     * @param object $key The key of the element to be removed.
+     * @param int|string $key The key of the element to be removed.
      * @return void
      * @throws \ErrorException Invalid type for key.
      * @todo need to add return type void (require update php version to 7.1)
@@ -228,7 +228,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * This will also be called for: isset($arr)
      *
-     * @param object $key The key of the element to be removed.
+     * @param int|string $key The key of the element to be removed.
      * @return bool True if the element at the given key exists.
      * @throws \ErrorException Invalid type for key.
      */

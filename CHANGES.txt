@@ -1,33 +1,65 @@
-Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
-
-  PHP
-  * Fix building packaged PHP extension (#9727)
-  * Fixed composer.json to only advertise compatibility with PHP 7.0+.  (#9819)
-
-  Ruby
-  * Disable the aarch64 build on macOS until it can be fixed. (#9816)
-
-  Other
-  * Fix versioning issues in 3.20.0
+2022-05-10 version 21.0-rc1 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
   C++
+  * Rename main cmake/CMakeLists.txt to CMakeLists.txt (#9603)
+  * avoid allocating memory if all extension are cleared (#9345)
+  * cmake: Call get_filename_component() with DIRECTORY mode instead of PATH mode (#9614)
+  * Escape GetObject macro inside protoc-generated code (#9739)
+  * Update CMake configuration to add a dependency on Abseil (#9793)
+  * Use __constinit only in GCC 12.2 and up (#9936)
   * Refactor generated message class layout
   * Optimize tokenizer ParseInteger by removing division
   * Reserve exactly the right amount of capacity in ExtensionSet::MergeFrom
   * Parse FLT_MAX correctly when represented in JSON
 
+  Java
+  * Update protobuf_version.bzl to separate protoc and per-language java … (#9900)
+  * 6x speedup in ArrayEncoder.writeUInt32NotTag
+
+  Python
+  * Increment python major version to 4 in version.json for python upb (#9926)
+  * The C extension module for Python has been rewritten to use the upb library.
+    This is expected to deliver significant performance benefits, especially when
+    parsing large payloads.  There are some minor breaking changes, but these
+    should not impact most users.  For more information see:
+    https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+  * Due to the breaking changes for Python, the major version number for Python
+    has been incremented.
+  * The binary wheel for macOS now supports Apple silicon.
+
+
+  PHP
+  * chore: [PHP] fix phpdoc for MapField keys (#9536)
+  * [PHP] Remove unnecessary zval initialization (#9600)
+  * [PHP] fix PHP build system (#9571)
+  * Fix building packaged PHP extension (#9727)
+  * fix: reserve "ReadOnly" keyword for PHP 8.1 and add compatibility (#9633)
+  * fix: phpdoc syntax for repeatedfield parameters (#9784)
+  * fix: phpdoc for repeatedfield (#9783)
+  * Change enum string name for reserved words (#9780)
+  * Fixed composer.json to only advertise compatibility with PHP 7.0+.  (#9819)
+
+  Ruby
+  * Allow pre-compiled binaries for ruby 3.1.0 (#9566)
+  * Implement `respond_to?` in RubyMessage (#9677)
+  * [Ruby] Fix RepeatedField#last, #first inconsistencies (#9722)
+  * Do not use range based UTF-8 validation in truffleruby (#9769)
+  * Improve range handling logic of `RepeatedField` (#9799)
+  * Disable the aarch64 build on macOS until it can be fixed. (#9816)
+
+  Other
+  * [Kotlin] remove redundant public modifiers for compiled code (#9642)
+  * [C#] Update GetExtension to support getting typed value (#9655)
+  * Fix invalid dependency manifest when using `descriptor_set_out` (#9647)
+  * Fix C# generator handling of a field named "none" in a oneof (#9636)
+  * Add initial version.json file for 21-dev (#9840)
+  * Remove duplicate java generated code (#9909)
+  * Fix versioning issues in 3.20.0
+
   Compiler
   * Protoc outputs the list of suggested field numbers when invalid field
     numbers are specified in the .proto file.
   * Require package names to be less than 512 bytes in length
-
-  Java
-  * 6x speedup in ArrayEncoder.writeUInt32NotTag
-
-  Python
-  * Added UnknownFieldSet(message) for pure Python. The old
-    message.UnknownFields() will be deprecated after UnknownFieldSet(message) is
-    added for cpp extension.
 
 2022-04-21 version 3.20.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 

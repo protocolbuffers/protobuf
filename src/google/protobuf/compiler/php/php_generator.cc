@@ -408,19 +408,6 @@ std::string GeneratedClassFileName(const DescriptorType* desc,
 }
 
 template <typename DescriptorType>
-std::string LegacyGeneratedClassFileName(const DescriptorType* desc,
-                                         const Options& options) {
-  std::string result = LegacyFullClassName(desc, options);
-
-  for (int i = 0; i < result.size(); i++) {
-    if (result[i] == '\\') {
-      result[i] = '/';
-    }
-  }
-  return result + ".php";
-}
-
-template <typename DescriptorType>
 std::string LegacyReadOnlyGeneratedClassFileName(const DescriptorType* desc,
                                    const Options& options) {
   std::string php_namespace = RootPhpNamespace(desc, options);
@@ -1276,43 +1263,6 @@ void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
 }
 
 template <typename DescriptorType>
-void LegacyGenerateClassFile(const FileDescriptor* file,
-                             const DescriptorType* desc, const Options& options,
-                             GeneratorContext* generator_context) {
-  std::string filename = LegacyGeneratedClassFileName(desc, options);
-  std::unique_ptr<io::ZeroCopyOutputStream> output(
-      generator_context->Open(filename));
-  io::Printer printer(output.get(), '^');
-
-  GenerateHead(file, &printer);
-
-  std::string php_namespace = RootPhpNamespace(desc, options);
-  if (!php_namespace.empty()) {
-    printer.Print(
-        "namespace ^name^;\n\n",
-        "name", php_namespace);
-  }
-  std::string newname = FullClassName(desc, options);
-  printer.Print("if (false) {\n");
-  Indent(&printer);
-  printer.Print("/**\n");
-  printer.Print(" * This class is deprecated. Use ^new^ instead.\n",
-      "new", newname);
-  printer.Print(" * @deprecated\n");
-  printer.Print(" */\n");
-  printer.Print("class ^old^ {}\n",
-      "old", LegacyGeneratedClassName(desc));
-  Outdent(&printer);
-  printer.Print("}\n");
-  printer.Print("class_exists(^new^::class);\n",
-      "new", GeneratedClassNameImpl(desc));
-  printer.Print("@trigger_error('^old^ is deprecated and will be removed in "
-      "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",
-      "old", LegacyFullClassName(desc, options),
-      "fullname", newname);
-}
-
-template <typename DescriptorType>
 void LegacyReadOnlyGenerateClassFile(const FileDescriptor* file,
                              const DescriptorType* desc, const Options& options,
                              GeneratorContext* generator_context) {
@@ -1449,7 +1399,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   Outdent(&printer);
   printer.Print("}\n\n");
 
-  // write legacy file for backwards compatibility with nested messages and enums
+  // write legacy alias for backwards compatibility with nested messages and enums
   if (en->containing_type() != NULL) {
     printer.Print(
         "// Adding a class alias for backwards compatibility with the previous class name.\n");
@@ -1457,7 +1407,6 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
         "class_alias(^new^::class, \\^old^::class);\n\n",
         "new", fullname,
         "old", LegacyFullClassName(en, options));
-    LegacyGenerateClassFile(file, en, options, generator_context);
   }
 
   // Write legacy file for backwards compatibility with "readonly" keywword
@@ -1577,7 +1526,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   Outdent(&printer);
   printer.Print("}\n\n");
 
-  // write legacy file for backwards compatibility with nested messages and enums
+  // write legacy alias for backwards compatibility with nested messages and enums
   if (message->containing_type() != NULL) {
     printer.Print(
         "// Adding a class alias for backwards compatibility with the previous class name.\n");
@@ -1585,7 +1534,6 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
         "class_alias(^new^::class, \\^old^::class);\n\n",
         "new", fullname,
         "old", LegacyFullClassName(message, options));
-    LegacyGenerateClassFile(file, message, options, generator_context);
   }
 
   // Write legacy file for backwards compatibility with "readonly" keywword

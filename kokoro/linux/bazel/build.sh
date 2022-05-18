@@ -27,12 +27,17 @@ git submodule update --init --recursive
 
 trap print_test_logs EXIT
 bazel test -k --copt=-Werror --host_copt=-Werror \
+  //build_defs:all \
   //java:tests \
   //:protoc \
   //:protobuf \
   //:protobuf_python \
   //:protobuf_test \
-  @com_google_protobuf//:cc_proto_blacklist_test
+  //src/google/protobuf/compiler/... \
+  //src/google/protobuf/io:all \
+  //src/google/protobuf/stubs:all \
+  //src/google/protobuf/testing:all \
+  //src/google/protobuf/util/...
 trap - EXIT
 
 pushd examples

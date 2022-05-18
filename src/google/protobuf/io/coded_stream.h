@@ -109,7 +109,6 @@
 #ifndef GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 
-
 #include <assert.h>
 
 #include <atomic>

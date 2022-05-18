@@ -61,7 +61,9 @@ message TestConflictingSymbolNames {
   optional int32 total_size = 6;
   optional int32 tag = 7;
 
-  enum TestEnum { FOO = 0; }
+  enum TestEnum {
+    FOO = 0;
+  }
   message Data1 {
     repeated int32 data = 1;
   }

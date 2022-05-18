@@ -33,7 +33,6 @@
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import copy
-import os
 import unittest
 import warnings
 
@@ -414,7 +413,6 @@ class DescriptorPoolTestBase(object):
         more_messages_pb2.DESCRIPTOR.serialized_pb)
     field = file_json.message_types_by_name['class'].fields_by_name['int_field']
     self.assertEqual(field.json_name, 'json_int')
-
 
   def testEnumDefaultValue(self):
     """Test the default value of enums which don't start at zero."""
