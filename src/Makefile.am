@@ -540,7 +540,9 @@ protoc_inputs =                                                   \
 
 EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
+  BUILD.bazel                                                  \
   README.md                                                    \
+  google/protobuf/BUILD.bazel                                  \
   google/protobuf/compiler/BUILD.bazel                         \
   google/protobuf/compiler/cpp/BUILD.bazel                     \
   google/protobuf/compiler/csharp/BUILD.bazel                  \

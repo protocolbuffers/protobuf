@@ -85,7 +85,7 @@ cc_test(
     name = "doc_comment_unittest",
     srcs = ["doc_comment_unittest.cc"],
     data = [
-        "//:built_in_runtime_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
         "//:well_known_type_protos",
         "//conformance:conformance_proto",
     ],
@@ -119,5 +119,5 @@ pkg_files(
     name = "dist_files",
     srcs = glob(["**/*"]),
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+    visibility = ["//src:__pkg__"],
 )

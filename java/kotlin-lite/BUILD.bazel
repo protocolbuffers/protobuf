@@ -140,7 +140,7 @@ internal_gen_kt_protos(
 internal_gen_kt_protos(
     name = "gen_kotlin_unittest_lite",
     lite = True,
-    deps = ["//:kt_unittest_lite"],
+    deps = ["//src/google/protobuf:lite_test_protos"],
 )
 
 kt_jvm_library(
@@ -162,7 +162,7 @@ kt_jvm_library(
 internal_gen_kt_protos(
     name = "gen_kotlin_proto3_unittest_lite",
     lite = True,
-    deps = ["//:kt_proto3_unittest"],
+    deps = ["//src/google/protobuf:kt_proto3_unittest_protos"],
 )
 
 kt_jvm_library(

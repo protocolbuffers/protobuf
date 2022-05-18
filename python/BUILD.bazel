@@ -52,7 +52,7 @@ py_proto_library(
 internal_copy_files(
     name = "copied_wkt_proto_files",
     srcs = [
-        "//:built_in_runtime_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
         "//:well_known_type_protos",
     ],
     strip_prefix = "src",
@@ -254,7 +254,7 @@ py_test(
     name = "message_test",
     srcs = ["google/protobuf/internal/message_test.py"],
     data = glob(["testdata/golden_pickle_*"]) + [
-        "//:testdata",
+        "//src/google/protobuf:testdata",
     ],
     imports = ["."],
     deps = [":python_test_lib"],
@@ -298,7 +298,7 @@ py_test(
 py_test(
     name = "text_format_test",
     srcs = ["google/protobuf/internal/text_format_test.py"],
-    data = ["//:testdata"],
+    data = ["//src/google/protobuf:testdata"],
     imports = ["."],
     deps = [":python_test_lib"],
 )

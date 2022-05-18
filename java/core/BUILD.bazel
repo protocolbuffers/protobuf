@@ -191,7 +191,7 @@ java_export(
     maven_coordinates = "com.google.protobuf:protobuf-java:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "pom_template.xml",
     resources = [
-        "//:built_in_runtime_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
         "//:well_known_type_protos",
     ],
     tags = ["manual"],
@@ -242,9 +242,9 @@ proto_library(
     deps = [
         "//:any_proto",
         "//:descriptor_proto",
-        "//:generic_test_protos",
         "//:lite_test_protos",
         "//:wrappers_proto",
+        "//src/google/protobuf:generic_test_protos",
     ],
 )
 
@@ -253,7 +253,7 @@ java_proto_library(
     visibility = [
         "//java:__subpackages__",
     ],
-    deps = ["//:generic_test_protos"],
+    deps = ["//src/google/protobuf:generic_test_protos"],
 )
 
 java_proto_library(
@@ -279,8 +279,8 @@ java_library(
     deps = [
         ":core",
         ":generic_test_protos_java_proto",
-        ":lite_test_protos_java_proto",
         ":java_test_protos_java_proto",
+        ":lite_test_protos_java_proto",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
     ],
@@ -322,12 +322,12 @@ junit_tests(
             "src/test/java/com/google/protobuf/TestUtilLite.java",
         ],
     ),
-    data = ["//:testdata"],
+    data = ["//src/google/protobuf:testdata"],
     deps = [
         ":core",
         ":generic_test_protos_java_proto",
-        ":lite_test_protos_java_proto",
         ":java_test_protos_java_proto",
+        ":lite_test_protos_java_proto",
         ":test_util",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_truth_truth",
@@ -360,7 +360,7 @@ java_lite_proto_library(
         "//java/kotlin-lite:__pkg__",
         "//java/lite:__pkg__",
     ],
-    deps = ["//:generic_test_protos"],
+    deps = ["//src/google/protobuf:generic_test_protos"],
 )
 
 java_lite_proto_library(
@@ -402,9 +402,9 @@ java_library(
     ],
     deps = [
         ":generic_test_protos_java_proto_lite",
-        ":lite_test_protos_java_proto_lite",
         ":java_test_protos_java_proto_lite",
         ":lite_runtime_only",
+        ":lite_test_protos_java_proto_lite",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
     ],
@@ -461,13 +461,13 @@ junit_tests(
         ["src/test/java/**/*.java"],
         exclude = LITE_TEST_EXCLUSIONS,
     ),
-    data = ["//:testdata"],
+    data = ["//src/google/protobuf:testdata"],
     test_prefix = "Lite",
     deps = [
         ":generic_test_protos_java_proto_lite",
-        ":lite_test_protos_java_proto_lite",
         ":java_test_protos_java_proto_lite",
         ":lite",
+        ":lite_test_protos_java_proto_lite",
         ":test_util_lite",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",

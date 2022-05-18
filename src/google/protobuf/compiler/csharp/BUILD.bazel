@@ -62,12 +62,12 @@ cc_test(
     name = "bootstrap_unittest",
     srcs = ["csharp_bootstrap_unittest.cc"],
     data = [
-        "//:built_in_runtime_protos",
-        "//:testdata",
+        "//src/google/protobuf:descriptor_proto_srcs",
         "//:well_known_type_protos",
         "//conformance:all_files",
         "//conformance:conformance_proto",
         "//csharp:wkt_cs_srcs",
+        "//src/google/protobuf:testdata",
     ],
     deps = [
         ":csharp",
@@ -102,5 +102,5 @@ pkg_files(
     name = "dist_files",
     srcs = glob(["**/*"]),
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+    visibility = ["//src:__pkg__"],
 )

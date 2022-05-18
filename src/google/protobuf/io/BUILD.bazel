@@ -26,7 +26,7 @@ cc_library(
     include_prefix = "google/protobuf/io",
     deps = [
         ":io_win32",
-        "//:arena",
+        "//src/google/protobuf:arena",
         "//src/google/protobuf/stubs:lite",
     ],
 )
@@ -90,7 +90,7 @@ cc_library(
     include_prefix = "google/protobuf/io",
     visibility = ["//pkg:__pkg__"],
     deps = [
-        "//:arena",
+        "//src/google/protobuf:arena",
         "//src/google/protobuf/stubs:lite",
     ],
 )
@@ -108,7 +108,7 @@ cc_test(
         "//conditions:default": ["-Wno-maybe-uninitialized"],
     }),
     data = [
-        "//:testdata",
+        "//src/google/protobuf:testdata",
     ],
     deps = [
         ":gzip_stream",
@@ -142,5 +142,5 @@ pkg_files(
     name = "dist_files",
     srcs = glob(["**/*"]),
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//src:__pkg__"],
 )

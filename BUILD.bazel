@@ -6,252 +6,11 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
-load(
-    ":protobuf.bzl",
-    "adapt_proto_library",
-    "py_proto_library",
-)
+load(":protobuf.bzl", "py_proto_library")
 
 licenses(["notice"])
 
 exports_files(["LICENSE"])
-
-################################################################################
-# Protobuf Runtime Library
-################################################################################
-
-cc_library(
-    name = "port_def",
-    hdrs = ["src/google/protobuf/port.h"],
-    includes = ["src"],
-    textual_hdrs = [
-        "src/google/protobuf/port_def.inc",
-        "src/google/protobuf/port_undef.inc",
-    ],
-    visibility = ["//:__subpackages__"],
-)
-
-cc_library(
-    name = "arena",
-    srcs = [
-        "src/google/protobuf/arena.cc",
-        "src/google/protobuf/arena_impl.h",
-        "src/google/protobuf/arenaz_sampler.h",
-    ],
-    hdrs = ["src/google/protobuf/arena.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//src/google/protobuf/stubs:lite",
-    ],
-)
-
-# The "lite" runtime works for .proto files that specify the option:
-#     optimize_for = LITE_RUNTIME;
-#
-# The lite runtime does not include the `Reflection` APIs (including
-# `Descriptor` and related types) or Well-Known Types.
-#
-# See also:
-#     https://developers.google.com/protocol-buffers/docs/reference/cpp-generated#message
-#     https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
-cc_library(
-    name = "protobuf_lite",
-    srcs = [
-        # AUTOGEN(protobuf_lite_srcs)
-        "src/google/protobuf/any_lite.cc",
-        "src/google/protobuf/arenastring.cc",
-        "src/google/protobuf/arenaz_sampler.cc",
-        "src/google/protobuf/extension_set.cc",
-        "src/google/protobuf/generated_enum_util.cc",
-        "src/google/protobuf/generated_message_tctable_lite.cc",
-        "src/google/protobuf/generated_message_util.cc",
-        "src/google/protobuf/implicit_weak_message.cc",
-        "src/google/protobuf/inlined_string_field.cc",
-        "src/google/protobuf/map.cc",
-        "src/google/protobuf/message_lite.cc",
-        "src/google/protobuf/parse_context.cc",
-        "src/google/protobuf/repeated_field.cc",
-        "src/google/protobuf/repeated_ptr_field.cc",
-        "src/google/protobuf/wire_format_lite.cc",
-    ],
-    hdrs = glob([
-        "src/google/protobuf/**/*.h",
-        "src/google/protobuf/**/*.inc",
-    ]),
-    copts = COPTS,
-    includes = ["src/"],
-    linkopts = LINK_OPTS,
-    visibility = ["//visibility:public"],
-    # In Bazel 6.0+, these will be `interface_deps`:
-    deps = [
-        ":arena",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/stubs:lite",
-    ],
-)
-
-cc_library(
-    name = "protobuf",
-    hdrs = glob([
-        "src/**/*.h",
-        "src/**/*.inc",
-    ]),
-    copts = COPTS,
-    includes = ["src/"],
-    linkopts = LINK_OPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":internal_protobuf_full",
-        # Other targets which depend on ':internal_protobuf_full':
-        "//src/google/protobuf/compiler:importer",
-        "//src/google/protobuf/util:delimited_message_util",
-        "//src/google/protobuf/util:differencer",
-        "//src/google/protobuf/util:field_mask_util",
-        "//src/google/protobuf/util:json_util",
-        "//src/google/protobuf/util:time_util",
-        "//src/google/protobuf/util:type_resolver_util",
-    ],
-)
-
-# `:internal_protobuf_full` is an internal target which has the non-lite
-# portions of the protobuf runtime.
-#
-# Users of the full runtime should depend upon `:protobuf` instead, which
-# also includes the util library.
-cc_library(
-    name = "internal_protobuf_full",
-    srcs = [
-        # AUTOGEN(protobuf_srcs)
-        "src/google/protobuf/any.cc",
-        "src/google/protobuf/any.pb.cc",
-        "src/google/protobuf/api.pb.cc",
-        "src/google/protobuf/descriptor.cc",
-        "src/google/protobuf/descriptor.pb.cc",
-        "src/google/protobuf/descriptor_database.cc",
-        "src/google/protobuf/duration.pb.cc",
-        "src/google/protobuf/dynamic_message.cc",
-        "src/google/protobuf/empty.pb.cc",
-        "src/google/protobuf/extension_set_heavy.cc",
-        "src/google/protobuf/field_mask.pb.cc",
-        "src/google/protobuf/generated_message_bases.cc",
-        "src/google/protobuf/generated_message_reflection.cc",
-        "src/google/protobuf/generated_message_tctable_full.cc",
-        "src/google/protobuf/map_field.cc",
-        "src/google/protobuf/message.cc",
-        "src/google/protobuf/reflection_ops.cc",
-        "src/google/protobuf/service.cc",
-        "src/google/protobuf/source_context.pb.cc",
-        "src/google/protobuf/struct.pb.cc",
-        "src/google/protobuf/text_format.cc",
-        "src/google/protobuf/timestamp.pb.cc",
-        "src/google/protobuf/type.pb.cc",
-        "src/google/protobuf/unknown_field_set.cc",
-        "src/google/protobuf/wire_format.cc",
-        "src/google/protobuf/wrappers.pb.cc",
-    ],
-    hdrs = glob([
-        "src/**/*.h",
-        "src/**/*.inc",
-    ]),
-    copts = COPTS,
-    includes = ["src/"],
-    linkopts = LINK_OPTS,
-    visibility = [
-        "//:__subpackages__",  # this target is only to break circular deps
-    ],
-    deps = [
-        ":protobuf_lite",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/io:gzip_stream",
-        "//src/google/protobuf/io:printer",
-        "//src/google/protobuf/io:tokenizer",
-        "//src/google/protobuf/stubs",
-    ],
-)
-
-# This provides just the header files for use in projects that need to build
-# shared libraries for dynamic loading. This target is available until Bazel
-# adds native support for such use cases.
-# TODO(keveman): Remove this target once the support gets added to Bazel.
-cc_library(
-    name = "protobuf_headers",
-    hdrs = glob([
-        "src/**/*.h",
-        "src/**/*.inc",
-    ]),
-    includes = ["src/"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "well_known_type_protos",
-    srcs = [
-        "src/google/protobuf/any.proto",
-        "src/google/protobuf/api.proto",
-        "src/google/protobuf/duration.proto",
-        "src/google/protobuf/empty.proto",
-        "src/google/protobuf/field_mask.proto",
-        "src/google/protobuf/source_context.proto",
-        "src/google/protobuf/struct.proto",
-        "src/google/protobuf/timestamp.proto",
-        "src/google/protobuf/type.proto",
-        "src/google/protobuf/wrappers.proto",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "built_in_runtime_protos",
-    srcs = ["src/google/protobuf/descriptor.proto"],
-    visibility = ["//:__subpackages__"],
-)
-
-exports_files(
-    srcs = [
-        "src/google/protobuf/any.proto",
-        "src/google/protobuf/api.proto",
-        "src/google/protobuf/duration.proto",
-        "src/google/protobuf/empty.proto",
-        "src/google/protobuf/field_mask.proto",
-        "src/google/protobuf/source_context.proto",
-        "src/google/protobuf/struct.proto",
-        "src/google/protobuf/timestamp.proto",
-        "src/google/protobuf/type.proto",
-        "src/google/protobuf/wrappers.proto",
-    ],
-    visibility = ["//pkg:__pkg__"],
-)
-
-alias(
-    name = "lite_well_known_protos",
-    actual = ":well_known_type_protos",
-    visibility = ["//visibility:public"],
-)
-
-adapt_proto_library(
-    name = "cc_wkt_protos_genproto",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:compiler_plugin_proto",
-        "//:descriptor_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
-    ],
-)
-
-cc_library(
-    name = "cc_wkt_protos",
-    deprecation = "Only for backward compatibility. Do not use.",
-    visibility = ["//visibility:public"],
-)
 
 ################################################################################
 # Well Known Types Proto Library Rules
@@ -267,96 +26,105 @@ cc_library(
 # )
 ################################################################################
 
-proto_library(
+alias(
     name = "any_proto",
-    srcs = ["src/google/protobuf/any.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:any_proto",
     visibility = ["//visibility:public"],
 )
 
-proto_library(
+alias(
     name = "api_proto",
-    srcs = ["src/google/protobuf/api.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:api_proto",
     visibility = ["//visibility:public"],
-    deps = [
-        "//:source_context_proto",
-        "//:type_proto",
-    ],
 )
 
-proto_library(
+alias(
     name = "duration_proto",
-    srcs = ["//:src/google/protobuf/duration.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:duration_proto",
     visibility = ["//visibility:public"],
 )
 
-proto_library(
+alias(
     name = "empty_proto",
-    srcs = ["src/google/protobuf/empty.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:empty_proto",
     visibility = ["//visibility:public"],
 )
 
-proto_library(
+alias(
     name = "field_mask_proto",
-    srcs = ["src/google/protobuf/field_mask.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:field_mask_proto",
     visibility = ["//visibility:public"],
 )
 
-proto_library(
+alias(
     name = "source_context_proto",
-    srcs = ["src/google/protobuf/source_context.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:source_context_proto",
     visibility = ["//visibility:public"],
 )
 
-proto_library(
+alias(
     name = "struct_proto",
-    srcs = ["src/google/protobuf/struct.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:struct_proto",
     visibility = ["//visibility:public"],
 )
 
-proto_library(
+alias(
     name = "timestamp_proto",
-    srcs = ["src/google/protobuf/timestamp.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:timestamp_proto",
     visibility = ["//visibility:public"],
 )
 
-proto_library(
+alias(
     name = "type_proto",
-    srcs = ["src/google/protobuf/type.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:type_proto",
     visibility = ["//visibility:public"],
-    deps = [
-        "//:any_proto",
-        "//:source_context_proto",
-    ],
 )
 
-proto_library(
+alias(
     name = "wrappers_proto",
-    srcs = ["src/google/protobuf/wrappers.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:wrappers_proto",
     visibility = ["//visibility:public"],
 )
 
-# Built-in runtime types
+# Source files: these are aliases to a filegroup, not a `proto_library`.
+#
+# (This is _probably_ not what you want.)
+alias(
+    name = "lite_well_known_protos",
+    actual = "//src/google/protobuf:well_known_type_protos",  # filegroup
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "well_known_type_protos",
+    actual = "//src/google/protobuf:well_known_type_protos",  # filegroup
+    visibility = ["//visibility:public"],
+)
+
+# Built-in runtime protos: these are part of protobuf's internal
+# implementation, but are not Well-Known Types.
+
+alias(
+    name = "descriptor_proto",
+    actual = "//src/google/protobuf:descriptor_proto",  # proto_library
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "descriptor_proto_srcs",
+    actual = "//src/google/protobuf:descriptor_proto_srcs",  # filegroup
+    visibility = ["//visibility:public"],
+)
 
 alias(
     name = "compiler_plugin_proto",
-    actual = "//src/google/protobuf/compiler:plugin_proto",
+    actual = "//src/google/protobuf/compiler:plugin_proto",  # proto_library
     visibility = ["//visibility:public"],
 )
 
-proto_library(
-    name = "descriptor_proto",
-    srcs = ["src/google/protobuf/descriptor.proto"],
-    strip_import_prefix = "src",
+cc_library(
+    name = "cc_wkt_protos",
+    deprecation = "Only for backward compatibility. Do not use.",
     visibility = ["//visibility:public"],
 )
 
@@ -372,282 +140,54 @@ cc_binary(
 )
 
 ################################################################################
-# Tests
+# C++ runtime
 ################################################################################
 
-filegroup(
-    name = "testdata",
-    srcs = glob(["src/google/protobuf/testdata/**/*"]) + [
-        "src/google/protobuf/descriptor.cc",
-    ],
-    visibility = [
-        "//:__subpackages__",
-        "@upb//:__subpackages__",
-    ],
-)
-
-RELATIVE_LITE_TEST_PROTOS = [
-    # AUTOGEN(lite_test_protos)
-    "google/protobuf/map_lite_unittest.proto",
-    "google/protobuf/unittest_import_lite.proto",
-    "google/protobuf/unittest_import_public_lite.proto",
-    "google/protobuf/unittest_lite.proto",
-]
-
-LITE_TEST_PROTOS = ["src/" + s for s in RELATIVE_LITE_TEST_PROTOS]
-
-proto_library(
-    name = "lite_test_protos",
-    srcs = LITE_TEST_PROTOS,
-    strip_import_prefix = "src",
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:descriptor_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
-    ],
-)
-
-RELATIVE_TEST_PROTOS = [
-    # AUTOGEN(test_protos)
-    "google/protobuf/any_test.proto",
-    "google/protobuf/map_proto2_unittest.proto",
-    "google/protobuf/map_unittest.proto",
-    "google/protobuf/unittest.proto",
-    "google/protobuf/unittest_arena.proto",
-    "google/protobuf/unittest_custom_options.proto",
-    "google/protobuf/unittest_drop_unknown_fields.proto",
-    "google/protobuf/unittest_embed_optimize_for.proto",
-    "google/protobuf/unittest_empty.proto",
-    "google/protobuf/unittest_enormous_descriptor.proto",
-    "google/protobuf/unittest_import.proto",
-    "google/protobuf/unittest_import_public.proto",
-    "google/protobuf/unittest_lazy_dependencies.proto",
-    "google/protobuf/unittest_lazy_dependencies_custom_option.proto",
-    "google/protobuf/unittest_lazy_dependencies_enum.proto",
-    "google/protobuf/unittest_lite_imports_nonlite.proto",
-    "google/protobuf/unittest_mset.proto",
-    "google/protobuf/unittest_mset_wire_format.proto",
-    "google/protobuf/unittest_no_field_presence.proto",
-    "google/protobuf/unittest_no_generic_services.proto",
-    "google/protobuf/unittest_optimize_for.proto",
-    "google/protobuf/unittest_preserve_unknown_enum.proto",
-    "google/protobuf/unittest_preserve_unknown_enum2.proto",
-    "google/protobuf/unittest_proto3.proto",
-    "google/protobuf/unittest_proto3_arena.proto",
-    "google/protobuf/unittest_proto3_arena_lite.proto",
-    "google/protobuf/unittest_proto3_lite.proto",
-    "google/protobuf/unittest_proto3_optional.proto",
-    "google/protobuf/unittest_well_known_types.proto",
-]
-
-TEST_PROTOS = ["src/" + s for s in RELATIVE_TEST_PROTOS]
-
-filegroup(
-    name = "test_proto_srcs",
-    srcs = TEST_PROTOS,
-    visibility = ["//:__subpackages__"],
-)
-
-proto_library(
-    name = "test_protos",
-    srcs = [":test_proto_srcs"],
-    strip_import_prefix = "src",
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:descriptor_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
-    ],
-)
-
-GENERIC_RELATIVE_TEST_PROTOS = [
-    "google/protobuf/map_proto2_unittest.proto",
-    "google/protobuf/map_unittest.proto",
-    "google/protobuf/unittest.proto",
-    "google/protobuf/unittest_arena.proto",
-    "google/protobuf/unittest_custom_options.proto",
-    "google/protobuf/unittest_drop_unknown_fields.proto",
-    "google/protobuf/unittest_embed_optimize_for.proto",
-    "google/protobuf/unittest_empty.proto",
-    "google/protobuf/unittest_enormous_descriptor.proto",
-    "google/protobuf/unittest_import.proto",
-    "google/protobuf/unittest_import_public.proto",
-    "google/protobuf/unittest_lazy_dependencies.proto",
-    "google/protobuf/unittest_lazy_dependencies_custom_option.proto",
-    "google/protobuf/unittest_lazy_dependencies_enum.proto",
-    "google/protobuf/unittest_lite_imports_nonlite.proto",
-    "google/protobuf/unittest_mset.proto",
-    "google/protobuf/unittest_mset_wire_format.proto",
-    "google/protobuf/unittest_no_field_presence.proto",
-    "google/protobuf/unittest_no_generic_services.proto",
-    "google/protobuf/unittest_optimize_for.proto",
-    "google/protobuf/unittest_preserve_unknown_enum.proto",
-    "google/protobuf/unittest_preserve_unknown_enum2.proto",
-    "google/protobuf/unittest_proto3.proto",
-    "google/protobuf/unittest_proto3_arena.proto",
-    "google/protobuf/unittest_proto3_arena_lite.proto",
-    "google/protobuf/unittest_proto3_lite.proto",
-    "google/protobuf/unittest_proto3_optional.proto",
-    "google/protobuf/unittest_well_known_types.proto",
-]
-
-proto_library(
-    name = "generic_test_protos",
-    srcs = ["src/" + s for s in GENERIC_RELATIVE_TEST_PROTOS],
-    strip_import_prefix = "src",
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:descriptor_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
-    ],
-)
-
-cc_proto_library(
-    name = "cc_lite_test_protos",
-    deps = [":lite_test_protos"],
-)
-
-cc_proto_library(
-    name = "cc_test_protos",
-    visibility = ["//:__subpackages__"],
-    deps = [":test_protos"],
-)
-
-filegroup(
-    name = "descriptor_cc_srcs",
-    testonly = 1,
-    data = [
-        "src/google/protobuf/descriptor.pb.cc",
-        "src/google/protobuf/descriptor.pb.h",
-    ],
-    visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
+# The "lite" runtime works for .proto files that specify the option:
+#     optimize_for = LITE_RUNTIME;
+#
+# The lite runtime does not include the `Reflection` APIs (including
+# `Descriptor` and related types) or Well-Known Types.
+#
+# See also:
+#     https://developers.google.com/protocol-buffers/docs/reference/cpp-generated#message
+#     https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
+alias(
+    name = "protobuf_lite",
+    actual = "//src/google/protobuf:protobuf_lite",
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
-    name = "test_util",
-    testonly = 1,
-    srcs = [
-        "src/google/protobuf/arena_test_util.cc",
-        "src/google/protobuf/map_lite_test_util.cc",
-        "src/google/protobuf/reflection_tester.cc",
-        "src/google/protobuf/test_util.cc",
-        "src/google/protobuf/test_util_lite.cc",
-    ],
-    hdrs = [
-        "src/google/protobuf/arena_test_util.h",
-        "src/google/protobuf/map_lite_test_util.h",
-        "src/google/protobuf/map_test_util.h",
-        "src/google/protobuf/map_test_util_impl.h",
-        "src/google/protobuf/test_util.h",
-        "src/google/protobuf/test_util2.h",
-        "src/google/protobuf/test_util_lite.h",
-    ],
+    name = "protobuf",
+    hdrs = glob([
+        "src/**/*.h",
+        "src/**/*.inc",
+    ]),
     copts = COPTS,
-    includes = ["src"],
-    textual_hdrs = [
-        "src/google/protobuf/map_test_util.inc",
-        "src/google/protobuf/test_util.inc",
-    ],
-    visibility = ["//:__subpackages__"],
+    include_prefix = "google/protobuf/io",
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
     deps = [
-        ":cc_lite_test_protos",
-        ":cc_test_protos",
-        "@com_google_googletest//:gtest",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/util:delimited_message_util",
+        "//src/google/protobuf/util:differencer",
+        "//src/google/protobuf/util:field_mask_util",
+        "//src/google/protobuf/util:json_util",
+        "//src/google/protobuf/util:time_util",
+        "//src/google/protobuf/util:type_resolver_util",
     ],
 )
 
-cc_test(
-    name = "protobuf_test",
-    srcs = [
-        # AUTOGEN(test_srcs)
-        "src/google/protobuf/any_test.cc",
-        "src/google/protobuf/arena_unittest.cc",
-        "src/google/protobuf/arenastring_unittest.cc",
-        "src/google/protobuf/arenaz_sampler_test.cc",
-        "src/google/protobuf/descriptor_database_unittest.cc",
-        "src/google/protobuf/descriptor_unittest.cc",
-        "src/google/protobuf/drop_unknown_fields_test.cc",
-        "src/google/protobuf/dynamic_message_unittest.cc",
-        "src/google/protobuf/extension_set_unittest.cc",
-        "src/google/protobuf/generated_message_reflection_unittest.cc",
-        "src/google/protobuf/generated_message_tctable_lite_test.cc",
-        "src/google/protobuf/inlined_string_field_unittest.cc",
-        "src/google/protobuf/map_field_test.cc",
-        "src/google/protobuf/map_test.cc",
-        "src/google/protobuf/map_test.inc",
-        "src/google/protobuf/message_unittest.cc",
-        "src/google/protobuf/message_unittest.inc",
-        "src/google/protobuf/no_field_presence_test.cc",
-        "src/google/protobuf/preserve_unknown_enum_test.cc",
-        "src/google/protobuf/proto3_arena_lite_unittest.cc",
-        "src/google/protobuf/proto3_arena_unittest.cc",
-        "src/google/protobuf/proto3_lite_unittest.cc",
-        "src/google/protobuf/proto3_lite_unittest.inc",
-        "src/google/protobuf/reflection_ops_unittest.cc",
-        "src/google/protobuf/repeated_field_reflection_unittest.cc",
-        "src/google/protobuf/repeated_field_unittest.cc",
-        "src/google/protobuf/text_format_unittest.cc",
-        "src/google/protobuf/unknown_field_set_unittest.cc",
-        "src/google/protobuf/well_known_types_unittest.cc",
-        "src/google/protobuf/wire_format_unittest.cc",
-        "src/google/protobuf/wire_format_unittest.inc",
-    ],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-deprecated-declarations",
-        ],
-    }),
-    data = [
-        ":testdata",
-    ] + glob([
-        "src/google/protobuf/**/*",
-    ]) + glob(
-        [
-            # Files for csharp_bootstrap_unittest.cc.
-            "csharp/src/**/*",
-        ],
-        allow_empty = True,
-    ),
-    includes = [
-        "src/",
-    ],
-    linkopts = LINK_OPTS,
-    deps = [
-        ":cc_lite_test_protos",
-        ":cc_test_protos",
-        ":protobuf",
-        ":test_util",
-        "//src/google/protobuf/testing",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
+# This provides just the header files for use in projects that need to build
+# shared libraries for dynamic loading. This target is available until Bazel
+# adds native support for such use cases.
+# TODO(keveman): Remove this target once the support gets added to Bazel.
+alias(
+    name = "protobuf_headers",
+    actual = "//src/google/protobuf:protobuf_headers",
+    visibility = ["//visibility:public"],
 )
 
 ################################################################################
@@ -760,24 +300,47 @@ alias(
 )
 
 ################################################################################
-# Test generated proto support
+# Test protos
 ################################################################################
+
+alias(
+    name = "lite_test_protos",
+    actual = "//src/google/protobuf:lite_test_protos",  # proto_library
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
+    name = "test_proto_srcs",
+    actual = "//src/google/protobuf:test_proto_srcs",  # filegroup
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
+    name = "test_protos",
+    actual = "//src/google/protobuf:test_protos",  # proto_library
+    visibility = ["//:__subpackages__"],
+)
+
+# Validate generated proto source inputs:
 
 genrule(
     name = "generated_protos",
-    srcs = ["src/google/protobuf/unittest_import.proto"],
+    testonly = 1,
+    srcs = ["//src/google/protobuf:test_proto_srcs"],
     outs = ["unittest_gen_import.proto"],
-    cmd = "cat $(SRCS) >  $(OUTS)",
+    cmd = "cat src/google/protobuf/unittest_import.proto > $@",
 )
 
 proto_library(
     name = "generated_protos_proto",
+    testonly = 1,
     srcs = [":generated_protos"],
-    deps = [":generic_test_protos"],
+    deps = ["//src/google/protobuf:generic_test_protos"],
 )
 
 py_proto_library(
     name = "generated_protos_py",
+    testonly = 1,
     srcs = [":generated_protos"],
     default_runtime = "",
     protoc = ":protoc",
@@ -794,26 +357,16 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-proto_library(
+alias(
     name = "test_messages_proto2_proto",
-    srcs = ["src/google/protobuf/test_messages_proto2.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:test_messages_proto2_proto",  # proto_library
     visibility = ["//visibility:public"],
 )
 
-proto_library(
+alias(
     name = "test_messages_proto3_proto",
-    srcs = ["src/google/protobuf/test_messages_proto3.proto"],
-    strip_import_prefix = "src",
+    actual = "//src/google/protobuf:test_messages_proto3_proto",  # proto_library
     visibility = ["//visibility:public"],
-    deps = [
-        ":any_proto",
-        ":duration_proto",
-        ":field_mask_proto",
-        ":struct_proto",
-        ":timestamp_proto",
-        ":wrappers_proto",
-    ],
 )
 
 # TODO: re-enable this test if appropriate, or replace with something that
@@ -877,46 +430,6 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-# Kotlin proto rules
-
-proto_library(
-    name = "kt_unittest_lite",
-    srcs = [
-        "src/google/protobuf/map_lite_unittest.proto",
-        "src/google/protobuf/unittest_import_lite.proto",
-        "src/google/protobuf/unittest_import_public_lite.proto",
-        "src/google/protobuf/unittest_lite.proto",
-    ],
-    strip_import_prefix = "src",
-    visibility = ["//java/kotlin-lite:__subpackages__"],
-)
-
-proto_library(
-    name = "kt_unittest",
-    srcs = [
-        "src/google/protobuf/map_proto2_unittest.proto",
-        "src/google/protobuf/unittest.proto",
-        "src/google/protobuf/unittest_import.proto",
-        "src/google/protobuf/unittest_import_public.proto",
-    ],
-    strip_import_prefix = "src",
-    visibility = ["//java/kotlin:__subpackages__"],
-)
-
-proto_library(
-    name = "kt_proto3_unittest",
-    srcs = [
-        "src/google/protobuf/unittest_import.proto",
-        "src/google/protobuf/unittest_import_public.proto",
-        "src/google/protobuf/unittest_proto3.proto",
-    ],
-    strip_import_prefix = "src",
-    visibility = [
-        "//java/kotlin:__subpackages__",
-        "//java/kotlin-lite:__subpackages__",
-    ],
-)
-
 ################################################################################
 # Packaging rules
 ################################################################################
@@ -968,19 +481,6 @@ pkg_files(
         "//third_party:zlib.BUILD",
         "//util/python:BUILD.bazel",
     ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
-)
-
-# C++ runtime
-pkg_files(
-    name = "cpp_dist_files",
-    srcs = glob(
-        ["src/**/*"],
-        exclude = [
-            "src/google/protobuf/compiler/objectivec/method_dump.sh",  # not in autotools dist
-        ],
-    ),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],
 )

@@ -14,6 +14,7 @@ package(
 cc_library(
     name = "constants",
     hdrs = ["constants.h"],
+    strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf/stubs",
     ],
@@ -28,7 +29,7 @@ cc_library(
     deps = [
         ":constants",
         ":utility",
-        "//:internal_protobuf_full",
+        "//src/google/protobuf",
         "//src/google/protobuf/stubs",
     ],
 )
@@ -66,6 +67,7 @@ cc_library(
     name = "expecting_objectwriter",
     testonly = 1,
     hdrs = ["expecting_objectwriter.h"],
+    strip_include_prefix = "/src",
     deps = [":object_writer"],
 )
 
@@ -97,7 +99,7 @@ cc_library(
     deps = [
         ":object_writer",
         ":utility",
-        "//:internal_protobuf_full",
+        "//src/google/protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
     ],
@@ -130,6 +132,7 @@ cc_library(
     name = "mock_error_listener",
     testonly = 1,
     hdrs = ["mock_error_listener.h"],
+    strip_include_prefix = "/src",
     deps = [":protostream"],
 )
 
@@ -166,6 +169,7 @@ cc_library(
     srcs = ["type_info_test_helper.cc"],
     hdrs = ["type_info_test_helper.h"],
     copts = COPTS,
+    strip_include_prefix = "/src",
     deps = [
         ":default_value",
         ":protostream",
@@ -198,7 +202,7 @@ cc_library(
         ":object_writer",
         ":type_info",
         ":utility",
-        "//:internal_protobuf_full",
+        "//src/google/protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/util:type_resolver_util",
@@ -256,7 +260,7 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         ":constants",
-        "//:internal_protobuf_full",
+        "//src/google/protobuf",
         "//src/google/protobuf/stubs",
     ],
 )
@@ -442,5 +446,5 @@ pkg_files(
     name = "dist_files",
     srcs = glob(["**/*"]),
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//src:__pkg__"],
 )

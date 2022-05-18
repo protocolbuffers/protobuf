@@ -59,7 +59,7 @@ kt_jvm_export(
     maven_coordinates = "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/kotlin:pom_template.xml",
     resources = [
-        "//:built_in_runtime_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
         "//:well_known_type_protos",
     ],
     tags = ["manual"],
@@ -224,7 +224,7 @@ internal_gen_kt_protos(
 internal_gen_kt_protos(
     name = "gen_kotlin_unittest",
     visibility = ["//java:__subpackages__"],
-    deps = ["//:kt_unittest"],
+    deps = ["//src/google/protobuf:kt_unittest_protos"],
 )
 
 kt_jvm_library(
@@ -246,7 +246,7 @@ kt_jvm_library(
 
 internal_gen_kt_protos(
     name = "gen_kotlin_proto3_unittest",
-    deps = ["//:kt_proto3_unittest"],
+    deps = ["//src/google/protobuf:kt_proto3_unittest_protos"],
 )
 
 kt_jvm_library(
