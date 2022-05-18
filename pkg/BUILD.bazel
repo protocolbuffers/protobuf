@@ -348,8 +348,8 @@ cc_dist_library(
     }),
     tags = ["manual"],
     deps = [
-        "//src/google/protobuf:arena",
         "//:protobuf_lite",
+        "//src/google/protobuf:arena",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:io_win32",
         "//src/google/protobuf/stubs:lite",
@@ -367,9 +367,9 @@ cc_dist_library(
     }),
     tags = ["manual"],
     deps = [
-        "//src/google/protobuf:arena",
         "//:protobuf",
         "//:protobuf_lite",
+        "//src/google/protobuf:arena",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:gzip_stream",

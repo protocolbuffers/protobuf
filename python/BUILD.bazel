@@ -52,7 +52,7 @@ py_proto_library(
 internal_copy_files(
     name = "copied_wkt_proto_files",
     srcs = [
-        "//:built_in_runtime_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
         "//:well_known_type_protos",
     ],
     strip_prefix = "src",

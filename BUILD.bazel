@@ -111,7 +111,7 @@ alias(
 )
 
 alias(
-    name = "built_in_runtime_protos",
+    name = "descriptor_proto_srcs",
     actual = "//src/google/protobuf:descriptor_proto_srcs",  # filegroup
     visibility = ["//visibility:public"],
 )

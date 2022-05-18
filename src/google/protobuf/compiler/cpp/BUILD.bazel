@@ -116,7 +116,7 @@ cc_test(
     name = "bootstrap_unittest",
     srcs = ["bootstrap_unittest.cc"],
     data = [
-        "//:built_in_runtime_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
         "//:well_known_type_protos",
         "//src/google/protobuf:descriptor_cc_srcs",
         "//src/google/protobuf:testdata",
