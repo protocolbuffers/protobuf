@@ -524,7 +524,7 @@ namespace Google.Protobuf.Collections
             Assert.IsTrue(values.Contains("bar"));
             Assert.IsFalse(values.Contains("foo")); // It's a key!
             Assert.IsFalse(values.Contains("1"));
-            // Values can be null, so this makes sense
+            // The code is marked non-nullable but handles null.
             Assert.IsFalse(values.Contains(null!));
         }
 

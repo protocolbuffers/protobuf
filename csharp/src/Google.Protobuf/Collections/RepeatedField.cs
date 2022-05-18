@@ -56,10 +56,10 @@ namespace Google.Protobuf.Collections
         // where T : notnull
     {
         private static readonly EqualityComparer<T> EqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<T>();
-        private static readonly T?[] EmptyArray = new T[0];
+        private static readonly T[] EmptyArray = new T[0];
         private const int MinArraySize = 8;
 
-        private T?[] array = EmptyArray;
+        private T[] array = EmptyArray;
         private int count = 0;
 
         /// <summary>
