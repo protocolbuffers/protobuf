@@ -56,26 +56,25 @@
 // visual studio to compile (report internal errors).
 #include <google/protobuf/unittest_enormous_descriptor.pb.h>
 #endif
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/cpp/test_bad_identifiers.pb.h>
-#include <google/protobuf/unittest_no_generic_services.pb.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/compiler/scc.h>
-#include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/test_util2.h>
-
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/compiler/cpp/helpers.h>
+#include <google/protobuf/unittest_no_generic_services.pb.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/arena.h>
+#include <google/protobuf/compiler/cpp/test_bad_identifiers.pb.h>
+#include <google/protobuf/compiler/importer.h>
+#include <google/protobuf/compiler/scc.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/test_util2.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 // Must be included last.

@@ -427,12 +427,35 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
                                     bool>::type = true>
   PROTOBUF_NODISCARD const char* ParseMessage(T* msg, const char* ptr);
 
+  template <typename TcParser, typename Table>
+  PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
+      MessageLite* msg, const char* ptr, const Table* table) {
+    int old;
+    ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
+    ptr = ptr ? TcParser::ParseLoop(msg, ptr, this, table) : nullptr;
+    depth_++;
+    if (!PopLimit(old)) return nullptr;
+    return ptr;
+  }
+
   template <typename T>
   PROTOBUF_NODISCARD PROTOBUF_NDEBUG_INLINE const char* ParseGroup(
       T* msg, const char* ptr, uint32_t tag) {
     if (--depth_ < 0) return nullptr;
     group_depth_++;
     ptr = msg->_InternalParse(ptr, this);
+    group_depth_--;
+    depth_++;
+    if (PROTOBUF_PREDICT_FALSE(!ConsumeEndGroup(tag))) return nullptr;
+    return ptr;
+  }
+
+  template <typename TcParser, typename Table>
+  PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char* ParseGroup(
+      MessageLite* msg, const char* ptr, uint32_t tag, const Table* table) {
+    if (--depth_ < 0) return nullptr;
+    group_depth_++;
+    ptr = TcParser::ParseLoop(msg, ptr, this, table);
     group_depth_--;
     depth_++;
     if (PROTOBUF_PREDICT_FALSE(!ConsumeEndGroup(tag))) return nullptr;
@@ -450,6 +473,11 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   //   if (--depth_ < 0) return nullptr;
   PROTOBUF_NODISCARD const char* ReadSizeAndPushLimitAndDepth(const char* ptr,
                                                               int* old_limit);
+
+  // As above, but fully inlined for the cases where we care about performance
+  // more than size. eg TcParser.
+  PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
+  ReadSizeAndPushLimitAndDepthInlined(const char* ptr, int* old_limit);
 
   // The context keeps an internal stack to keep track of the recursive
   // part of the parse state.
@@ -749,9 +777,23 @@ PROTOBUF_NODISCARD const char* ParseContext::ParseMessage(T* msg,
                                                           const char* ptr) {
   int old;
   ptr = ReadSizeAndPushLimitAndDepth(ptr, &old);
-  ptr = ptr ? msg->_InternalParse(ptr, this) : nullptr;
+  if (ptr == nullptr) return ptr;
+  ptr = msg->_InternalParse(ptr, this);
   depth_++;
   if (!PopLimit(old)) return nullptr;
+  return ptr;
+}
+
+inline const char* ParseContext::ReadSizeAndPushLimitAndDepthInlined(
+    const char* ptr, int* old_limit) {
+  int size = ReadSize(&ptr);
+  if (PROTOBUF_PREDICT_FALSE(!ptr)) {
+    // Make sure this isn't uninitialized even on error return
+    *old_limit = 0;
+    return nullptr;
+  }
+  *old_limit = PushLimit(ptr, size);
+  if (--depth_ < 0) return nullptr;
   return ptr;
 }
 

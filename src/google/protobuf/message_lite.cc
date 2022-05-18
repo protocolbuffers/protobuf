@@ -38,6 +38,7 @@
 #include <climits>
 #include <cstdint>
 #include <string>
+#include <utility>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
