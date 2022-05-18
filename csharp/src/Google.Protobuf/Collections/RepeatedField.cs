@@ -143,7 +143,7 @@ namespace Google.Protobuf.Collections
                             // Only FieldCodecs with a fixed size can reach here, and they are all known
                             // types that don't allow the user to specify a custom reader action.
                             // reader action will never return null.
-                            array[count++] = reader(ref ctx);
+                            array[count++] = reader(ref ctx)!;
                         }
                     }
                     else
@@ -382,7 +382,7 @@ namespace Google.Protobuf.Collections
             }            
             Array.Copy(array, index + 1, array, index, count - index - 1);
             count--;
-            array[count] = default;
+            array[count] = default!;
             return true;
         }
 
@@ -598,7 +598,7 @@ namespace Google.Protobuf.Collections
             }
             Array.Copy(array, index + 1, array, index, count - index - 1);
             count--;
-            array[count] = default;
+            array[count] = default!;
         }
 
         /// <summary>

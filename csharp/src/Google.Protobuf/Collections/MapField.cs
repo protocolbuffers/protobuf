@@ -79,7 +79,9 @@ namespace Google.Protobuf.Collections
         private static readonly EqualityComparer<TKey> KeyEqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<TKey>();
 
         // TODO: Don't create the map/list until we have an entry. (Assume many maps will be empty.)
+#pragma warning disable CS8714 // "Nullability of type argument doesn't match 'notnull' constraint" - see TODO on notnull above.
         private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> map = new (KeyEqualityComparer);
+#pragma warning restore CS8714
         private readonly LinkedList<KeyValuePair<TKey, TValue>> list = new ();
 
         /// <summary>
@@ -371,7 +373,7 @@ namespace Google.Protobuf.Collections
             int hash = 0;
             foreach (KeyValuePair<TKey, TValue> pair in list)
             {
-                hash ^= keyComparer.GetHashCode(pair.Key) * 31 + valueComparer.GetHashCode(pair.Value);
+                hash ^= keyComparer.GetHashCode(pair.Key!) * 31 + valueComparer.GetHashCode(pair.Value!);
             }
             return hash;
         }

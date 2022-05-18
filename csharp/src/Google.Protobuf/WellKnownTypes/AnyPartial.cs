@@ -89,7 +89,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             // Note: this doesn't perform as well is it might. We could take a MessageParser<T> in an alternative overload,
             // which would be expected to perform slightly better... although the difference is likely to be negligible.
-            T target = new T();
+            var target = new T();
             if (GetTypeName(TypeUrl) != target.Descriptor.FullName)
             {
                 throw new InvalidProtocolBufferException(
@@ -109,10 +109,10 @@ namespace Google.Protobuf.WellKnownTypes
         {
             // Note: deliberately avoid writing anything to result until the end, in case it's being
             // monitored by other threads. (That would be a bug in the calling code, but let's not make it worse.)
-            T target = new T();
+            var target = new T();
             if (GetTypeName(TypeUrl) != target.Descriptor.FullName)
             {
-                result = default(T); // Can't use null as there's no class constraint, but this always *will* be null in real usage.
+                result = default; // Can't use null as there's no class constraint, but this always *will* be null in real usage.
                 return false;
             }
             target.MergeFrom(Value);
@@ -126,16 +126,16 @@ namespace Google.Protobuf.WellKnownTypes
         /// </summary>
         /// <param name="registry">The type registry to consult for messages.</param>
         /// <returns>The unpacked message, or <c>null</c> if no matching message was found.</returns>
-        public IMessage Unpack(TypeRegistry registry)
+        public IMessage? Unpack(TypeRegistry registry)
         {
             string typeName = GetTypeName(TypeUrl);
-            MessageDescriptor descriptor = registry.Find(typeName);
+            MessageDescriptor? descriptor = registry.Find(typeName);
             if (descriptor == null)
             {
                 return null;
             }
 
-            var message = descriptor.Parser.CreateTemplate();
+            var message = descriptor.Parser!.CreateTemplate();
             message.MergeFrom(Value);
             return message;
         }

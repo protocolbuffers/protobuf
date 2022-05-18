@@ -177,7 +177,7 @@ namespace Google.Protobuf.WellKnownTypes
                 UnittestProto3Reflection.Descriptor);
             var unpacked = anyMessages.Select(any => any.Unpack(registry)).ToList();
             var expected = (IMessage[]) messages.Clone();
-            expected[4] = null;
+            expected[4] = null!;
             Assert.AreEqual(expected, unpacked);
         }
     }

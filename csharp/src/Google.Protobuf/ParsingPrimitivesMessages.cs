@@ -33,8 +33,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.CompilerServices;
 using System.Security;
 using Google.Protobuf.Collections;
 
@@ -139,8 +137,10 @@ namespace Google.Protobuf
         }
 
         public static KeyValuePair<TKey, TValue> ReadMapEntry<TKey, TValue>(ref ParseContext ctx, MapField<TKey, TValue>.Codec codec)
-            where TKey : notnull
-            where TValue : notnull
+            // TODO: Enable non-null constraints on a major version number change to avoid breaking any code on a minor version
+            //   that declared key or value as nullable.
+            // where TKey : notnull
+            // where TValue : notnull
         {
             int length = ParsingPrimitives.ParseLength(ref ctx.buffer, ref ctx.state);
             if (ctx.state.recursionDepth >= ctx.state.recursionLimit)
