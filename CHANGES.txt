@@ -1,3 +1,12 @@
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  Java
+  * Annotate oneof accessors and enumerators.
+  * Java generated code is no longer compatible with runtimes 2.6.1 and earlier
+
+  Python
+  * In TextFormat, transform leaking UnicodeDecodeError into ParseError.
+
 2022-05-10 version 21.0-rc1 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
   C++
