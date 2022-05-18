@@ -51,7 +51,7 @@ cc_library(
     copts = COPTS,
     include_prefix = "google/protobuf/stubs",
     linkopts = LINK_OPTS,
-    deps = ["//:port_def"],
+    deps = ["//src/google/protobuf:port_def"],
 )
 
 cc_library(
@@ -91,7 +91,7 @@ cc_library(
     ],
     deps = [
         ":lite",
-        "//:port_def",
+        "//src/google/protobuf:port_def",
     ],
 )
 

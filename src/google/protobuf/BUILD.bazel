@@ -524,3 +524,31 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+# Helper targets for Kotlin tests:
+
+proto_library(
+    name = "kt_unittest_protos",
+    srcs = [
+        "map_proto2_unittest.proto",
+        "unittest.proto",
+        "unittest_import.proto",
+        "unittest_import_public.proto",
+    ],
+    strip_import_prefix = "/src",
+    visibility = ["//java/kotlin:__pkg__"],
+)
+
+proto_library(
+    name = "kt_proto3_unittest_protos",
+    srcs = [
+        "unittest_import.proto",
+        "unittest_import_public.proto",
+        "unittest_proto3.proto",
+    ],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//java/kotlin:__pkg__",
+        "//java/kotlin-lite:__pkg__",
+    ],
+)

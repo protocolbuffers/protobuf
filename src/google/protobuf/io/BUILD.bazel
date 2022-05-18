@@ -26,7 +26,7 @@ cc_library(
     include_prefix = "google/protobuf/io",
     deps = [
         ":io_win32",
-        "//:arena",
+        "//src/google/protobuf:arena",
         "//src/google/protobuf/stubs:lite",
     ],
 )
@@ -90,7 +90,7 @@ cc_library(
     include_prefix = "google/protobuf/io",
     visibility = ["//pkg:__pkg__"],
     deps = [
-        "//:arena",
+        "//src/google/protobuf:arena",
         "//src/google/protobuf/stubs:lite",
     ],
 )

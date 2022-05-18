@@ -209,19 +209,6 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-# TODO(dlj): remove:
-alias(
-    name = "arena",
-    actual = "//src/google/protobuf:arena",
-    visibility = [":__subpackages__"],
-)
-
-alias(
-    name = "port_def",
-    actual = "//src/google/protobuf:port_def",
-    visibility = [":__subpackages__"],
-)
-
 ################################################################################
 # Java support
 ################################################################################
