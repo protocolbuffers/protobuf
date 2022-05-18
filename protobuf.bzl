@@ -464,6 +464,7 @@ def py_proto_library(
         default_runtime = "@com_google_protobuf//:protobuf_python",
         protoc = "@com_google_protobuf//:protoc",
         use_grpc_plugin = False,
+        testonly = None,
         **kargs):
     """Bazel rule to create a Python protobuf library from proto source files
 
@@ -485,6 +486,8 @@ def py_proto_library(
       protoc: the label of the protocol compiler to generate the sources.
       use_grpc_plugin: a flag to indicate whether to call the Python C++ plugin
           when processing the proto files.
+      testonly: common rule attribute (see:
+          https://bazel.build/reference/be/common-definitions#common-attributes)
       **kargs: other keyword arguments that are passed to py_library.
 
     """
@@ -501,6 +504,7 @@ def py_proto_library(
 
     proto_gen(
         name = name + "_genproto",
+        testonly = testonly,
         srcs = srcs,
         deps = [s + "_genproto" for s in deps],
         includes = includes,
@@ -515,6 +519,7 @@ def py_proto_library(
         py_libs = py_libs + [default_runtime]
     py_library(
         name = name,
+        testonly = testonly,
         srcs = [name + "_genproto"] + py_extra_srcs,
         deps = py_libs + deps,
         imports = includes,

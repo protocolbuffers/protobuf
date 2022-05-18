@@ -159,12 +159,17 @@ py_library(
 
 internal_copy_files(
     name = "copied_test_proto_files",
-    srcs = ["//:test_proto_srcs"],
+    testonly = 1,
+    srcs = [
+        "//:test_proto_srcs",
+        "//src/google/protobuf/util:test_proto_srcs",
+    ],
     strip_prefix = "src",
 )
 
 py_proto_library(
     name = "python_common_test_protos",
+    testonly = 1,
     srcs = [":copied_test_proto_files"],
     include = ".",
     default_runtime = "",
@@ -176,6 +181,7 @@ py_proto_library(
 
 py_proto_library(
     name = "python_specific_test_protos",
+    testonly = 1,
     srcs = glob([
         "google/protobuf/internal/*.proto",
         "google/protobuf/internal/import_test_package/*.proto",
@@ -190,6 +196,7 @@ py_proto_library(
 
 py_library(
     name = "python_test_lib",
+    testonly = 1,
     srcs = [
         "google/protobuf/internal/import_test_package/__init__.py",
         "google/protobuf/internal/test_util.py",

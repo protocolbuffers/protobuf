@@ -208,6 +208,16 @@ cc_test(
 
 # Testonly protos
 
+filegroup(
+    name = "test_proto_srcs",
+    testonly = 1,
+    srcs = [
+        "json_format.proto",
+        "json_format_proto3.proto",
+    ],
+    visibility = ["//python:__pkg__"],
+)
+
 proto_library(
     name = "json_format_proto",
     testonly = 1,

@@ -74,7 +74,7 @@ This rule implements file copying, including a compatibility mode for Windows.
     },
 )
 
-def internal_copy_files(name, srcs, strip_prefix):
+def internal_copy_files(name, srcs, strip_prefix, **kwargs):
     """Copies common proto files to the python tree.
 
     In order for Python imports to work, generated proto interfaces under
@@ -93,6 +93,7 @@ def internal_copy_files(name, srcs, strip_prefix):
       srcs: the sources.
       strip_prefix: the prefix to remove from each of the paths in 'srcs'. The
           remainder will be used to construct the output path.
+      **kwargs: common rule arguments.
 
     """
     internal_copy_files_impl(
@@ -103,4 +104,5 @@ def internal_copy_files(name, srcs, strip_prefix):
             "@bazel_tools//src/conditions:host_windows": True,
             "//conditions:default": False,
         }),
+        **kwargs
     )
