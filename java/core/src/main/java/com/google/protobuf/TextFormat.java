@@ -1627,7 +1627,7 @@ public final class TextFormat {
        * unknown fields will also allow unknown extensions.
        *
        * <p>Use of this parameter is discouraged which may hide some errors (e.g. spelling error on
-       * field name).</p>
+       * field name).
        */
       public Builder setAllowUnknownFields(boolean allowUnknownFields) {
         this.allowUnknownFields = allowUnknownFields;
