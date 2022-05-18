@@ -1627,9 +1627,7 @@ public final class TextFormat {
        * unknown fields will also allow unknown extensions.
        *
        * <p>Use of this parameter is discouraged which may hide some errors (e.g. spelling error on
-       * field name). // BEGIN GOOGLE-INTERNAL For more info about why and how to avoid, see:
-       * http://sites/protocol-buffers/migration/proto2-faq#How_do_I_ignore_unknown_fields_w for
-       * more details. // END GOOGLE-INTERNAL
+       * field name).
        */
       public Builder setAllowUnknownFields(boolean allowUnknownFields) {
         this.allowUnknownFields = allowUnknownFields;
