@@ -27,5 +27,5 @@ pkg_files(
     name = "dist_files",
     srcs = glob(["**/*"]),
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+    visibility = ["//src:__pkg__"],
 )

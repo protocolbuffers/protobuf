@@ -86,16 +86,10 @@ pkg_filegroup(
     srcs = [
         ":dist_files",
         "//:common_dist_files",
-        "//:cpp_dist_files",
         "//benchmarks:all_dist_files",
         "//build_defs:dist_files",
         "//conformance:all_dist_files",
-        "//src/google/protobuf/compiler:all_dist_files",
-        "//src/google/protobuf/io:dist_files",
-        "//src/google/protobuf/stubs:dist_files",
-        "//src/google/protobuf/testing:dist_files",
-        "//src/google/protobuf/util:dist_files",
-        "//src/google/protobuf/util/internal:dist_files",
+        "//src:all_dist_files",
         "@com_google_protobuf_examples//:dist_files",
     ],
 )
@@ -104,8 +98,7 @@ pkg_filegroup(
     name = "cpp_srcs",
     srcs = [
         ":dist_common",
-        "//:cpp_dist_files",
-        "//src/google/protobuf/compiler:all_dist_files",
+        "//src:all_dist_files",
     ],
 )
 

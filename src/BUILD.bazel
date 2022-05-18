@@ -3,3 +3,25 @@
 ################################################################################
 
 # Most rules are under google/protobuf. This package exists for convenience.
+load("@rules_pkg//:mappings.bzl", "pkg_filegroup")
+
+pkg_filegroup(
+    name = "all_dist_files",
+    srcs = [
+        "//src/google/protobuf:dist_files",
+        "//src/google/protobuf/compiler:dist_files",
+        "//src/google/protobuf/compiler/cpp:dist_files",
+        "//src/google/protobuf/compiler/csharp:dist_files",
+        "//src/google/protobuf/compiler/java:dist_files",
+        "//src/google/protobuf/compiler/objectivec:dist_files",
+        "//src/google/protobuf/compiler/php:dist_files",
+        "//src/google/protobuf/compiler/python:dist_files",
+        "//src/google/protobuf/compiler/ruby:dist_files",
+        "//src/google/protobuf/io:dist_files",
+        "//src/google/protobuf/stubs:dist_files",
+        "//src/google/protobuf/testing:dist_files",
+        "//src/google/protobuf/util:dist_files",
+        "//src/google/protobuf/util/internal:dist_files",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)

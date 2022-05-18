@@ -88,7 +88,7 @@ cc_library(
     hdrs = ["io_win32.h"],
     copts = COPTS,
     include_prefix = "google/protobuf/io",
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//src:__pkg__"],
     deps = [
         "//src/google/protobuf:arena",
         "//src/google/protobuf/stubs:lite",
@@ -142,5 +142,5 @@ pkg_files(
     name = "dist_files",
     srcs = glob(["**/*"]),
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//src:__pkg__"],
 )

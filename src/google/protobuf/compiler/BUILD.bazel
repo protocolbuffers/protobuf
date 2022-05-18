@@ -291,20 +291,5 @@ pkg_files(
     name = "dist_files",
     srcs = glob(["**/*"]),
     strip_prefix = strip_prefix.from_root(""),
-)
-
-# Convenience pkg_filegroup: includes all code generators.
-pkg_filegroup(
-    name = "all_dist_files",
-    srcs = [
-        ":dist_files",
-        "//src/google/protobuf/compiler/cpp:dist_files",
-        "//src/google/protobuf/compiler/csharp:dist_files",
-        "//src/google/protobuf/compiler/java:dist_files",
-        "//src/google/protobuf/compiler/objectivec:dist_files",
-        "//src/google/protobuf/compiler/php:dist_files",
-        "//src/google/protobuf/compiler/python:dist_files",
-        "//src/google/protobuf/compiler/ruby:dist_files",
-    ],
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//src:__pkg__"],
 )

@@ -524,8 +524,9 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
-
-# Helper targets for Kotlin tests:
+################################################################################
+# Helper targets for Kotlin tests
+################################################################################
 
 proto_library(
     name = "kt_unittest_protos",
@@ -551,4 +552,15 @@ proto_library(
         "//java/kotlin:__pkg__",
         "//java/kotlin-lite:__pkg__",
     ],
+)
+
+################################################################################
+# Packaging rules
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
 )

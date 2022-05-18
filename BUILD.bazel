@@ -504,19 +504,6 @@ pkg_files(
     visibility = ["//pkg:__pkg__"],
 )
 
-# C++ runtime
-pkg_files(
-    name = "cpp_dist_files",
-    srcs = glob(
-        ["src/**/*"],
-        exclude = [
-            "src/google/protobuf/compiler/objectivec/method_dump.sh",  # not in autotools dist
-        ],
-    ),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
-)
-
 # Additional files for C#
 pkg_files(
     name = "csharp_dist_files",
