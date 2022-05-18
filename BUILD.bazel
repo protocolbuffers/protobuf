@@ -102,7 +102,7 @@ alias(
 )
 
 # Built-in runtime protos: these are part of protobuf's internal
-# impelementation, but are not Well-Known Types.
+# implementation, but are not Well-Known Types.
 
 alias(
     name = "descriptor_proto",
