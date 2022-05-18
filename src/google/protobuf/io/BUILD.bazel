@@ -108,7 +108,7 @@ cc_test(
         "//conditions:default": ["-Wno-maybe-uninitialized"],
     }),
     data = [
-        "//:testdata",
+        "//src/google/protobuf:testdata",
     ],
     deps = [
         ":gzip_stream",

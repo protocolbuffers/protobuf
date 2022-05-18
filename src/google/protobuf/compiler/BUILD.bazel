@@ -33,7 +33,7 @@ cc_library(
     copts = COPTS,
     include_prefix = "google/protobuf/compiler",
     visibility = ["//visibility:public"],
-    deps = ["//:internal_protobuf_full"],
+    deps = ["//src/google/protobuf"],
 )
 
 cc_library(
@@ -122,6 +122,7 @@ cc_library(
     srcs = ["annotation_test_util.cc"],
     hdrs = ["annotation_test_util.h"],
     copts = COPTS,
+    strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
         ":code_generator",
@@ -155,6 +156,7 @@ cc_library(
     srcs = ["mock_code_generator.cc"],
     hdrs = ["mock_code_generator.h"],
     copts = COPTS,
+    strip_include_prefix = "/src",
     deps = [
         ":code_generator",
         "//src/google/protobuf/io",
@@ -189,14 +191,14 @@ cc_test(
     data = [
         ":test_plugin",
         "//:test_proto_srcs",
-        "//:testdata",
+        "//src/google/protobuf:testdata",
     ],
     deps = [
         ":code_generator",
         ":command_line_interface",
         ":mock_code_generator",
-        "//:cc_test_protos",
         "//:protobuf",
+        "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
@@ -232,8 +234,8 @@ cc_test(
     }),
     deps = [
         ":importer",
-        "//:cc_test_protos",
         "//:protobuf",
+        "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",

@@ -34,7 +34,7 @@ cc_test(
         "ruby_generated_pkg_explicit_pb.rb",
         "ruby_generated_pkg_implicit.proto",
         "ruby_generated_pkg_implicit_pb.rb",
-        "//:testdata",
+        "//src/google/protobuf:testdata",
     ],
     deps = [
         ":ruby",

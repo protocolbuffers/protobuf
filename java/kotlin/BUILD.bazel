@@ -224,7 +224,7 @@ internal_gen_kt_protos(
 internal_gen_kt_protos(
     name = "gen_kotlin_unittest",
     visibility = ["//java:__subpackages__"],
-    deps = ["//:kt_unittest"],
+    deps = ["//src/google/protobuf:generic_test_protos"],
 )
 
 kt_jvm_library(

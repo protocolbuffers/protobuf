@@ -63,7 +63,7 @@ cc_test(
     srcs = ["csharp_bootstrap_unittest.cc"],
     data = [
         "//:built_in_runtime_protos",
-        "//:testdata",
+        "//src/google/protobuf:testdata",
         "//:well_known_type_protos",
         "//conformance:all_files",
         "//conformance:conformance_proto",

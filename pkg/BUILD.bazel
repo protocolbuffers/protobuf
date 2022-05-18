@@ -16,18 +16,7 @@ package_naming(
 
 pkg_files(
     name = "wkt_protos_files",
-    srcs = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
-    ],
+    srcs = ["//src/google/protobuf:well_known_type_protos"],
     prefix = "include/google/protobuf",
     visibility = ["//visibility:private"],
 )
