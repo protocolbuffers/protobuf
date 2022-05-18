@@ -1,0 +1,5 @@
+################################################################################
+# Protocol Buffers: C++ Runtime
+################################################################################
+
+# Most rules are under google/protobuf. This package exists for convenience.

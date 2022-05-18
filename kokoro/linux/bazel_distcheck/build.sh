@@ -19,12 +19,8 @@ TEST_TARGETS=(
   //conformance:all
   //java:tests
   //python:all
+  //src/...
   //:protobuf_test
-  //src/google/protobuf/compiler/...
-  //src/google/protobuf/io:all
-  //src/google/protobuf/stubs:all
-  //src/google/protobuf/testing:all
-  //src/google/protobuf/util/...
   @com_google_protobuf_examples//...
 )
 
