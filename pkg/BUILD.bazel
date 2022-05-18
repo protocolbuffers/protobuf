@@ -105,6 +105,8 @@ pkg_filegroup(
         "//src/google/protobuf/io:dist_files",
         "//src/google/protobuf/stubs:dist_files",
         "//src/google/protobuf/testing:dist_files",
+        "//src/google/protobuf/util:dist_files",
+        "//src/google/protobuf/util/internal:dist_files",
         "@com_google_protobuf_examples//:dist_files",
     ],
 )
@@ -387,6 +389,12 @@ cc_dist_library(
         "//src/google/protobuf/io:tokenizer",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/stubs:lite",
+        "//src/google/protobuf/util:delimited_message_util",
+        "//src/google/protobuf/util:differencer",
+        "//src/google/protobuf/util:field_mask_util",
+        "//src/google/protobuf/util:json_util",
+        "//src/google/protobuf/util:time_util",
+        "//src/google/protobuf/util:type_resolver_util",
     ],
 )
 

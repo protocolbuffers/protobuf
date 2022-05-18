@@ -45,6 +45,15 @@ cc_library(
     ],
 )
 
+# The "lite" runtime works for .proto files that specify the option:
+#     optimize_for = LITE_RUNTIME;
+#
+# The lite runtime does not include the `Reflection` APIs (including
+# `Descriptor` and related types) or Well-Known Types.
+#
+# See also:
+#     https://developers.google.com/protocol-buffers/docs/reference/cpp-generated#message
+#     https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
 cc_library(
     name = "protobuf_lite",
     srcs = [
@@ -73,6 +82,7 @@ cc_library(
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
+    # In Bazel 6.0+, these will be `interface_deps`:
     deps = [
         ":arena",
         "//src/google/protobuf/io",
@@ -92,7 +102,14 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal_protobuf_full",
+        # Other targets which depend on ':internal_protobuf_full':
         "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/util:delimited_message_util",
+        "//src/google/protobuf/util:differencer",
+        "//src/google/protobuf/util:field_mask_util",
+        "//src/google/protobuf/util:json_util",
+        "//src/google/protobuf/util:time_util",
+        "//src/google/protobuf/util:type_resolver_util",
     ],
 )
 
@@ -129,26 +146,6 @@ cc_library(
         "src/google/protobuf/timestamp.pb.cc",
         "src/google/protobuf/type.pb.cc",
         "src/google/protobuf/unknown_field_set.cc",
-        "src/google/protobuf/util/delimited_message_util.cc",
-        "src/google/protobuf/util/field_comparator.cc",
-        "src/google/protobuf/util/field_mask_util.cc",
-        "src/google/protobuf/util/internal/datapiece.cc",
-        "src/google/protobuf/util/internal/default_value_objectwriter.cc",
-        "src/google/protobuf/util/internal/error_listener.cc",
-        "src/google/protobuf/util/internal/field_mask_utility.cc",
-        "src/google/protobuf/util/internal/json_escaping.cc",
-        "src/google/protobuf/util/internal/json_objectwriter.cc",
-        "src/google/protobuf/util/internal/json_stream_parser.cc",
-        "src/google/protobuf/util/internal/object_writer.cc",
-        "src/google/protobuf/util/internal/proto_writer.cc",
-        "src/google/protobuf/util/internal/protostream_objectsource.cc",
-        "src/google/protobuf/util/internal/protostream_objectwriter.cc",
-        "src/google/protobuf/util/internal/type_info.cc",
-        "src/google/protobuf/util/internal/utility.cc",
-        "src/google/protobuf/util/json_util.cc",
-        "src/google/protobuf/util/message_differencer.cc",
-        "src/google/protobuf/util/time_util.cc",
-        "src/google/protobuf/util/type_resolver_util.cc",
         "src/google/protobuf/wire_format.cc",
         "src/google/protobuf/wrappers.pb.cc",
     ],
@@ -450,20 +447,6 @@ RELATIVE_TEST_PROTOS = [
     "google/protobuf/unittest_proto3_lite.proto",
     "google/protobuf/unittest_proto3_optional.proto",
     "google/protobuf/unittest_well_known_types.proto",
-    "google/protobuf/util/internal/testdata/anys.proto",
-    "google/protobuf/util/internal/testdata/books.proto",
-    "google/protobuf/util/internal/testdata/default_value.proto",
-    "google/protobuf/util/internal/testdata/default_value_test.proto",
-    "google/protobuf/util/internal/testdata/field_mask.proto",
-    "google/protobuf/util/internal/testdata/maps.proto",
-    "google/protobuf/util/internal/testdata/oneofs.proto",
-    "google/protobuf/util/internal/testdata/proto3.proto",
-    "google/protobuf/util/internal/testdata/struct.proto",
-    "google/protobuf/util/internal/testdata/timestamp_duration.proto",
-    "google/protobuf/util/internal/testdata/wrappers.proto",
-    "google/protobuf/util/json_format.proto",
-    "google/protobuf/util/json_format_proto3.proto",
-    "google/protobuf/util/message_differencer_unittest.proto",
 ]
 
 TEST_PROTOS = ["src/" + s for s in RELATIVE_TEST_PROTOS]
@@ -552,7 +535,7 @@ cc_proto_library(
 
 cc_proto_library(
     name = "cc_test_protos",
-    visibility = ["//src/google/protobuf/compiler:__subpackages__"],
+    visibility = ["//:__subpackages__"],
     deps = [":test_protos"],
 )
 
@@ -631,19 +614,6 @@ cc_test(
         "src/google/protobuf/repeated_field_unittest.cc",
         "src/google/protobuf/text_format_unittest.cc",
         "src/google/protobuf/unknown_field_set_unittest.cc",
-        "src/google/protobuf/util/delimited_message_util_test.cc",
-        "src/google/protobuf/util/field_comparator_test.cc",
-        "src/google/protobuf/util/field_mask_util_test.cc",
-        "src/google/protobuf/util/internal/default_value_objectwriter_test.cc",
-        "src/google/protobuf/util/internal/json_objectwriter_test.cc",
-        "src/google/protobuf/util/internal/json_stream_parser_test.cc",
-        "src/google/protobuf/util/internal/protostream_objectsource_test.cc",
-        "src/google/protobuf/util/internal/protostream_objectwriter_test.cc",
-        "src/google/protobuf/util/internal/type_info_test_helper.cc",
-        "src/google/protobuf/util/json_util_test.cc",
-        "src/google/protobuf/util/message_differencer_unittest.cc",
-        "src/google/protobuf/util/time_util_test.cc",
-        "src/google/protobuf/util/type_resolver_util_test.cc",
         "src/google/protobuf/well_known_types_unittest.cc",
         "src/google/protobuf/wire_format_unittest.cc",
         "src/google/protobuf/wire_format_unittest.inc",

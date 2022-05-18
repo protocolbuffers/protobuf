@@ -33,9 +33,11 @@ bazel test -k --copt=-Werror --host_copt=-Werror \
   //:protobuf \
   //:protobuf_python \
   //:protobuf_test \
+  //src/google/protobuf/compiler/... \
   //src/google/protobuf/io:all \
   //src/google/protobuf/stubs:all \
-  //src/google/protobuf/testing:all
+  //src/google/protobuf/testing:all \
+  //src/google/protobuf/util/...
 trap - EXIT
 
 pushd examples

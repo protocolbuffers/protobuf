@@ -584,6 +584,8 @@ EXTRA_DIST =                                                   \
   google/protobuf/testdata/text_format_unittest_extensions_data.txt \
   google/protobuf/testdata/text_format_unittest_extensions_data_pointy.txt \
   google/protobuf/testing/BUILD.bazel                          \
+  google/protobuf/util/BUILD.bazel                             \
+  google/protobuf/util/internal/BUILD.bazel                    \
   google/protobuf/util/package_info.h                          \
   libprotobuf-lite.map                                         \
   libprotobuf.map                                              \
