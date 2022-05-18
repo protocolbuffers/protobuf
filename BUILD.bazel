@@ -31,11 +31,6 @@ cc_library(
     visibility = ["//:__subpackages__"],
 )
 
-# Protobuf runtime: this is the primary C++ public target.
-#
-# Users of generated protobuf code (i.e. `#include "path/to/header.pb.h"`)
-# or Protobuf public APIs should use this target or `:protobuf_lite` (see
-# caveats below for the "lite" runtime).
 cc_library(
     name = "arena",
     srcs = [
@@ -95,11 +90,6 @@ cc_library(
     ],
 )
 
-# `:internal_protobuf_full` is an internal target which has the non-lite
-# portions of the protobuf runtime.
-#
-# Users of the full runtime should depend upon `:protobuf` instead, which
-# also includes the util library.
 cc_library(
     name = "protobuf",
     hdrs = glob([
