@@ -45,6 +45,13 @@ namespace Google.Protobuf.Collections
     public class RepeatedFieldTest
     {
         [Test]
+        public void NullableT()
+        {
+            // See TODO in RepeatedField.cs related to notnull constraint, this test simply ensures it's possible at this point.
+            var r = new RepeatedField<int?> { 1 };
+        }
+
+        [Test]
         public void NullValuesRejected()
         {
             var list = new RepeatedField<string>();

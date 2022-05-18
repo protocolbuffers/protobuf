@@ -51,7 +51,9 @@ namespace Google.Protobuf.Collections
 #if !NET35
         , IReadOnlyList<T>
 #endif
-        where T : notnull
+        // TODO: Enable non-null constraint on a major version number change to avoid breaking any code on a minor version
+        //   that declared T as nullable.
+        // where T : notnull
     {
         private static readonly EqualityComparer<T> EqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<T>();
         private static readonly T?[] EmptyArray = new T[0];
@@ -77,8 +79,7 @@ namespace Google.Protobuf.Collections
             if (array != EmptyArray)
             {
                 clone.array = (T[])array.Clone();
-                IDeepCloneable<T>[]? cloneableArray = clone.array as IDeepCloneable<T>[];
-                if (cloneableArray != null)
+                if (clone.array is IDeepCloneable<T>[] cloneableArray)
                 {
                     for (int i = 0; i < count; i++)
                     {
