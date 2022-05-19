@@ -51,8 +51,6 @@
 #endif
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
@@ -71,7 +69,9 @@
 #include <google/protobuf/pyext/unknown_field_set.h>
 #include <google/protobuf/pyext/unknown_fields.h>
 #include <google/protobuf/util/message_differencer.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/strtod.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/stubs/map_util.h>
 
 // clang-format off

@@ -147,57 +147,6 @@ static const int64 kint64min = -kint64max - 1;
 static const uint32 kuint32max = 0xFFFFFFFFu;
 static const uint64 kuint64max = uint64_t{0xFFFFFFFFFFFFFFFFu};
 
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||\
-    defined(MEMORY_SANITIZER)
-
-#ifdef __cplusplus
-extern "C" {
-#endif  // __cplusplus
-uint16_t __sanitizer_unaligned_load16(const void *p);
-uint32_t __sanitizer_unaligned_load32(const void *p);
-uint64_t __sanitizer_unaligned_load64(const void *p);
-void __sanitizer_unaligned_store16(void *p, uint16_t v);
-void __sanitizer_unaligned_store32(void *p, uint32_t v);
-void __sanitizer_unaligned_store64(void *p, uint64_t v);
-#ifdef __cplusplus
-}  // extern "C"
-#endif  // __cplusplus
-
-inline uint16_t GOOGLE_UNALIGNED_LOAD16(const void *p) {
-  return __sanitizer_unaligned_load16(p);
-}
-
-inline uint32_t GOOGLE_UNALIGNED_LOAD32(const void *p) {
-  return __sanitizer_unaligned_load32(p);
-}
-
-inline uint64_t GOOGLE_UNALIGNED_LOAD64(const void *p) {
-  return __sanitizer_unaligned_load64(p);
-}
-
-inline void GOOGLE_UNALIGNED_STORE16(void *p, uint16_t v) {
-  __sanitizer_unaligned_store16(p, v);
-}
-
-inline void GOOGLE_UNALIGNED_STORE32(void *p, uint32_t v) {
-  __sanitizer_unaligned_store32(p, v);
-}
-
-inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64_t v) {
-  __sanitizer_unaligned_store64(p, v);
-}
-
-#elif defined(GOOGLE_PROTOBUF_USE_UNALIGNED) && GOOGLE_PROTOBUF_USE_UNALIGNED
-
-#define GOOGLE_UNALIGNED_LOAD16(_p) (*reinterpret_cast<const uint16_t *>(_p))
-#define GOOGLE_UNALIGNED_LOAD32(_p) (*reinterpret_cast<const uint32_t *>(_p))
-#define GOOGLE_UNALIGNED_LOAD64(_p) (*reinterpret_cast<const uint64_t *>(_p))
-
-#define GOOGLE_UNALIGNED_STORE16(_p, _val) (*reinterpret_cast<uint16_t *>(_p) = (_val))
-#define GOOGLE_UNALIGNED_STORE32(_p, _val) (*reinterpret_cast<uint32_t *>(_p) = (_val))
-#define GOOGLE_UNALIGNED_STORE64(_p, _val) (*reinterpret_cast<uint64_t *>(_p) = (_val))
-
-#else
 inline uint16_t GOOGLE_UNALIGNED_LOAD16(const void *p) {
   uint16_t t;
   memcpy(&t, p, sizeof t);
@@ -227,7 +176,6 @@ inline void GOOGLE_UNALIGNED_STORE32(void *p, uint32_t v) {
 inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64_t v) {
   memcpy(p, &v, sizeof v);
 }
-#endif
 
 #if defined(GOOGLE_PROTOBUF_OS_NACL) \
     || (defined(__ANDROID__) && defined(__clang__) \

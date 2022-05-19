@@ -30,8 +30,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Reflection;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
+using System.Linq;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf.WellKnownTypes
 {
@@ -148,10 +151,34 @@ namespace Google.Protobuf.WellKnownTypes
             Assert.False(any.Is(TestOneof.Descriptor));
         }
 
+        [Test]
         public void IsRightType()
         {
             var any = Any.Pack(SampleMessages.CreateFullTestAllTypes());
             Assert.True(any.Is(TestAllTypes.Descriptor));
+        }
+
+        [Test]
+        public void Unpack_TypeRegistry()
+        {
+            var messages = new IMessage[]
+            {
+                SampleMessages.CreateFullTestAllTypes(),
+                new TestWellKnownTypes { BoolField = true },
+                new MoreString { Data = { "x" } },
+                new MoreBytes { Data = ByteString.CopyFromUtf8("xyz") },
+                new ReservedNames { Descriptor_ = 10 }
+            };
+            var anyMessages = messages.Select(Any.Pack);
+
+            // The type registry handles the first four of the packed messages, but not the final one.
+            var registry = TypeRegistry.FromFiles(
+                UnittestWellKnownTypesReflection.Descriptor,
+                UnittestProto3Reflection.Descriptor);
+            var unpacked = anyMessages.Select(any => any.Unpack(registry)).ToList();
+            var expected = (IMessage[]) messages.Clone();
+            expected[4] = null;
+            Assert.AreEqual(expected, unpacked);
         }
     }
 }

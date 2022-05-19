@@ -58,7 +58,10 @@ kt_jvm_export(
     ],
     maven_coordinates = "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/kotlin:pom_template.xml",
-    resources = ["//:well_known_protos"],
+    resources = [
+        "//src/google/protobuf:descriptor_proto_srcs",
+        "//:well_known_type_protos",
+    ],
     tags = ["manual"],
     runtime_deps = [
         ":bytestring_lib",
@@ -218,20 +221,32 @@ internal_gen_kt_protos(
     deps = [":multiple_files_proto3"],
 )
 
+internal_gen_kt_protos(
+    name = "gen_kotlin_unittest",
+    visibility = ["//java:__subpackages__"],
+    deps = ["//src/google/protobuf:kt_unittest_protos"],
+)
+
 kt_jvm_library(
     name = "kotlin_unittest",
     srcs = [
         ":gen_evil_names_proto2",
-        "//:gen_kotlin_unittest",
+        ":gen_kotlin_unittest",
     ],
     deps = [
         ":evil_names_proto2_java_proto",
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
         ":well_known_protos_kotlin",
-        "//:java_test_protos",
         "//java/core",
+        "//java/core:generic_test_protos_java_proto",
+        "//java/core:lite_test_protos_java_proto",
     ],
+)
+
+internal_gen_kt_protos(
+    name = "gen_kotlin_proto3_unittest",
+    deps = ["//src/google/protobuf:kt_proto3_unittest_protos"],
 )
 
 kt_jvm_library(
@@ -239,15 +254,16 @@ kt_jvm_library(
     srcs = [
         ":gen_evil_names_proto3",
         ":gen_kotlin_proto3_java_multiple_files",
-        "//:gen_kotlin_proto3_unittest",
+        ":gen_kotlin_proto3_unittest",
     ],
     deps = [
         ":evil_names_proto3_java_proto",
         ":multiple_files_proto3_java_proto",
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
-        "//:java_test_protos",
         "//java/core",
+        "//java/core:generic_test_protos_java_proto",
+        "//java/core:lite_test_protos_java_proto",
     ],
 )
 
@@ -285,10 +301,31 @@ java_test(
     runtime_deps = [":proto3_test_library"],
 )
 
+internal_gen_kt_protos(
+    name = "gen_well_known_protos_kotlin",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:compiler_plugin_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
+)
+
 kt_jvm_library(
     name = "well_known_protos_kotlin",
     srcs = [
-        "//:gen_well_known_protos_kotlin",
+        ":gen_well_known_protos_kotlin",
     ],
     deps = [
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",

@@ -19,7 +19,7 @@
 #
 # Use the provided functions below as build/test fixtures, e.g.:
 #
-#   source kokoro/capture_logs.sh
+#   source kokoro/common/capture_logs.sh
 #   caplog build/step1 <build command>
 #   caplog tests/step2 <test command>
 #

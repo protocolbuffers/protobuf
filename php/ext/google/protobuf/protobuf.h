@@ -127,7 +127,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_setter, 0, 0, 1)
   ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-#define PHP_PROTOBUF_VERSION "3.20.1"
+#define PHP_PROTOBUF_VERSION "3.21.0RC1"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
@@ -155,6 +155,8 @@ void NameMap_AddMessage(const upb_MessageDef *m);
 void NameMap_AddEnum(const upb_EnumDef *m);
 const upb_MessageDef *NameMap_GetMessage(zend_class_entry *ce);
 const upb_EnumDef *NameMap_GetEnum(zend_class_entry *ce);
+void NameMap_EnterConstructor(zend_class_entry* ce);
+void NameMap_ExitConstructor(zend_class_entry* ce);
 
 // Add this descriptor object to the global list of descriptors that will be
 // kept alive for the duration of the request but destroyed when the request

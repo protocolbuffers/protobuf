@@ -42,11 +42,17 @@ namespace google {
 namespace protobuf {
 namespace TestUtil {
 
-// Translate net/proto2/* -> google/protobuf/*
+// Translate net/proto2/* or third_party/protobuf/* to google/protobuf/*.
 inline std::string TranslatePathToOpensource(const std::string& google3_path) {
-  const std::string prefix = "net/proto2/";
-  GOOGLE_CHECK(google3_path.find(prefix) == 0) << google3_path;
-  std::string path = google3_path.substr(prefix.size());
+  std::string net_proto2 = "net/proto2/";
+  std::string third_party_protobuf = "third_party/protobuf/";
+  std::string path;
+  if (google3_path.find(net_proto2) == 0) {
+    path = google3_path.substr(net_proto2.size());
+  } else {
+    GOOGLE_CHECK(google3_path.find(third_party_protobuf) == 0) << google3_path;
+    path = google3_path.substr(third_party_protobuf.size());
+  }
 
   path = StringReplace(path, "internal/", "", false);
   path = StringReplace(path, "proto/", "", false);

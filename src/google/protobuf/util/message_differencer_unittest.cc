@@ -53,11 +53,11 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/util/message_differencer_unittest.pb.h>
 #include <google/protobuf/util/field_comparator.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/util/message_differencer_unittest.pb.h>
 
 namespace google {
 namespace protobuf {

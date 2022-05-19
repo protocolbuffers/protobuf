@@ -378,6 +378,138 @@ TEST(TimeUtilTest, TimestampOperators) {
   EXPECT_TRUE(t2 != t1);
 }
 
+TEST(TimeUtilTest, IsDurationValid) {
+  Duration valid;
+  Duration overflow;
+  overflow.set_seconds(TimeUtil::kDurationMaxSeconds + 1);
+  Duration underflow;
+  underflow.set_seconds(TimeUtil::kDurationMinSeconds - 1);
+  Duration overflow_nanos;
+  overflow_nanos.set_nanos(TimeUtil::kDurationMaxNanoseconds + 1);
+  Duration underflow_nanos;
+  underflow_nanos.set_nanos(TimeUtil::kDurationMinNanoseconds - 1);
+
+  EXPECT_TRUE(TimeUtil::IsDurationValid(valid));
+  EXPECT_FALSE(TimeUtil::IsDurationValid(overflow));
+  EXPECT_FALSE(TimeUtil::IsDurationValid(underflow));
+  EXPECT_FALSE(TimeUtil::IsDurationValid(overflow_nanos));
+  EXPECT_FALSE(TimeUtil::IsDurationValid(underflow_nanos));
+}
+
+TEST(TimeUtilTest, IsTimestampValid) {
+  Timestamp valid;
+  Timestamp overflow;
+  overflow.set_seconds(TimeUtil::kTimestampMaxSeconds + 1);
+  Timestamp underflow;
+  underflow.set_seconds(TimeUtil::kTimestampMinSeconds - 1);
+  Timestamp overflow_nanos;
+  overflow_nanos.set_nanos(TimeUtil::kTimestampMaxNanoseconds + 1);
+  Timestamp underflow_nanos;
+  underflow_nanos.set_nanos(TimeUtil::kTimestampMinNanoseconds - 1);
+
+  EXPECT_TRUE(TimeUtil::IsTimestampValid(valid));
+  EXPECT_FALSE(TimeUtil::IsTimestampValid(overflow));
+  EXPECT_FALSE(TimeUtil::IsTimestampValid(underflow));
+  EXPECT_FALSE(TimeUtil::IsTimestampValid(overflow_nanos));
+  EXPECT_FALSE(TimeUtil::IsTimestampValid(underflow_nanos));
+}
+
+#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet.
+
+TEST(TimeUtilTest, DurationBounds) {
+  Duration overflow;
+  overflow.set_seconds(TimeUtil::kDurationMaxSeconds + 1);
+  Duration underflow;
+  underflow.set_seconds(TimeUtil::kDurationMinSeconds - 1);
+  Duration overflow_nanos;
+  overflow_nanos.set_nanos(TimeUtil::kDurationMaxNanoseconds + 1);
+  Duration underflow_nanos;
+  underflow_nanos.set_nanos(TimeUtil::kDurationMinNanoseconds - 1);
+
+  EXPECT_DEBUG_DEATH({ TimeUtil::SecondsToDuration(overflow.seconds()); },
+                     "Duration seconds");
+  EXPECT_DEBUG_DEATH({ TimeUtil::SecondsToDuration(underflow.seconds()); },
+                     "Duration seconds");
+  EXPECT_DEBUG_DEATH(
+      { TimeUtil::MinutesToDuration(overflow.seconds() / 60 + 1); },
+      "Duration minutes");
+  EXPECT_DEBUG_DEATH(
+      { TimeUtil::MinutesToDuration(underflow.seconds() / 60 - 1); },
+      "Duration minutes");
+  EXPECT_DEBUG_DEATH(
+      { TimeUtil::HoursToDuration(overflow.seconds() / 60 + 1); },
+      "Duration hours");
+  EXPECT_DEBUG_DEATH(
+      { TimeUtil::HoursToDuration(underflow.seconds() / 60 - 1); },
+      "Duration hours");
+
+  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToNanoseconds(overflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToNanoseconds(underflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToNanoseconds(overflow_nanos); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToNanoseconds(underflow_nanos); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToSeconds(overflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToSeconds(underflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToSeconds(overflow_nanos); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToSeconds(underflow_nanos); },
+                     "outside of the valid range");
+}
+
+TEST(TimeUtilTest, TimestampBounds) {
+  Timestamp overflow;
+  overflow.set_seconds(TimeUtil::kDurationMaxSeconds + 1);
+  Timestamp underflow;
+  underflow.set_seconds(TimeUtil::kDurationMinSeconds - 1);
+  Timestamp overflow_nanos;
+  overflow_nanos.set_nanos(TimeUtil::kDurationMaxNanoseconds + 1);
+  Timestamp underflow_nanos;
+  underflow_nanos.set_nanos(TimeUtil::kDurationMinNanoseconds - 1);
+
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToNanoseconds(overflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToNanoseconds(underflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToNanoseconds(overflow_nanos); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToNanoseconds(underflow_nanos); },
+                     "outside of the valid range");
+
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMicroseconds(overflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMicroseconds(underflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMicroseconds(overflow_nanos); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMicroseconds(underflow_nanos); },
+                     "outside of the valid range");
+
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMilliseconds(overflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMilliseconds(underflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMilliseconds(overflow_nanos); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMilliseconds(underflow_nanos); },
+                     "outside of the valid range");
+
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToSeconds(overflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToSeconds(underflow); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToSeconds(overflow_nanos); },
+                     "outside of the valid range");
+  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToSeconds(underflow_nanos); },
+                     "outside of the valid range");
+}
+
+#endif  // PROTOBUF_HAS_DEATH_TEST
+
 }  // namespace
 }  // namespace util
 }  // namespace protobuf

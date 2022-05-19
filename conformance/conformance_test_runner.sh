@@ -40,7 +40,7 @@ while [[ -n "$@" ]]; do
   esac
 done
 
-conformance_test_runner=$(rlocation com_google_protobuf/conformance_test_runner)
+conformance_test_runner=$(rlocation com_google_protobuf/conformance/conformance_test_runner)
 conformance_testee=$(rlocation $TESTEE)
 args=(--enforce_recommended)
 

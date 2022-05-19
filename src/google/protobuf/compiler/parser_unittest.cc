@@ -221,9 +221,8 @@ TEST_F(ParserTest, StopAfterSyntaxIdentifierWithErrors) {
 TEST_F(ParserTest, WarnIfSyntaxIdentifierOmmitted) {
   SetupParser("message A {}");
   FileDescriptorProto file;
-  CaptureTestStderr();
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
-  EXPECT_TRUE(GetCapturedTestStderr().find("No syntax specified") !=
+  EXPECT_TRUE(error_collector_.warning_.find("No syntax specified") !=
               std::string::npos);
 }
 

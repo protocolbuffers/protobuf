@@ -1217,7 +1217,8 @@ TEST_F(CommandLineInterfaceTest, InsertWithAnnotationFixup) {
       "--plug_out=insert_endlines=test_generator,test_plugin:$tmpdir "
       "--proto_path=$tmpdir foo.proto");
 
-  ExpectNoErrors();
+  ExpectWarningSubstring(
+      "foo.proto:2:36: warning: Message name should be in UpperCamelCase.");
   CheckGeneratedAnnotations("test_generator", "foo.proto");
   CheckGeneratedAnnotations("test_plugin", "foo.proto");
 }
@@ -2371,6 +2372,21 @@ TEST_F(CommandLineInterfaceTest, Warnings) {
   ExpectErrorSubstring("foo.proto:2:1: warning: Import bar.proto is unused.");
 }
 
+TEST_F(CommandLineInterfaceTest, ParserWarnings) {
+  // Test that parser warnings are propagated. See #9343.
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message bad_to_the_bone {};\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectCapturedStderrSubstringWithZeroReturnCode(
+      "foo.proto:2:25: warning: Message name should be in UpperCamelCase. "
+      "Found: bad_to_the_bone. "
+      "See https://developers.google.com/protocol-buffers/docs/style");
+}
+
 // -------------------------------------------------------------------
 // Flag parsing tests
 
@@ -2681,7 +2697,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
 
 TEST_P(EncodeDecodeTest, Encode) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "net/proto2/internal/"
+      "third_party/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
   std::string args;
   if (GetParam() != DESCRIPTOR_SET_IN) {
@@ -2690,20 +2706,18 @@ TEST_P(EncodeDecodeTest, Encode) {
   }
   EXPECT_TRUE(Run(args + " --encode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
-      "net/proto2/internal/testdata/golden_message_oneof_implemented"));
-  ExpectStderrMatchesText("");
+      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
 }
 
 TEST_P(EncodeDecodeTest, Decode) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "net/proto2/internal/testdata/golden_message_oneof_implemented"));
+      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
   EXPECT_TRUE(
       Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
           " --decode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesTextFile(TestUtil::GetTestDataPath(
-      "net/proto2/internal/"
+      "third_party/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
-  ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, Partial) {
@@ -2712,7 +2726,7 @@ TEST_P(EncodeDecodeTest, Partial) {
       Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
           " --encode=protobuf_unittest.TestRequired"));
   ExpectStdoutMatchesText("");
-  ExpectStderrMatchesText(
+  ExpectStderrContainsText(
       "warning:  Input message is missing required fields:  a, b, c\n");
 }
 
@@ -2736,7 +2750,7 @@ TEST_P(EncodeDecodeTest, UnknownType) {
       Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
           " --encode=NoSuchType"));
   ExpectStdoutMatchesText("");
-  ExpectStderrMatchesText("Type not defined: NoSuchType\n");
+  ExpectStderrContainsText("Type not defined: NoSuchType\n");
 }
 
 TEST_P(EncodeDecodeTest, ProtoParseError) {
@@ -2750,7 +2764,7 @@ TEST_P(EncodeDecodeTest, ProtoParseError) {
 
 TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "net/proto2/internal/"
+      "third_party/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
   std::string args;
   if (GetParam() != DESCRIPTOR_SET_IN) {
@@ -2760,13 +2774,12 @@ TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
   EXPECT_TRUE(Run(
       args + " --encode=protobuf_unittest.TestAllTypes --deterministic_output"));
   ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
-      "net/proto2/internal/testdata/golden_message_oneof_implemented"));
-  ExpectStderrMatchesText("");
+      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
 }
 
 TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "net/proto2/internal/testdata/golden_message_oneof_implemented"));
+      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
   EXPECT_FALSE(
       Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
           " --decode=protobuf_unittest.TestAllTypes --deterministic_output"));

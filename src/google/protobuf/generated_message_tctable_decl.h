@@ -120,6 +120,8 @@ struct Offset {
 #pragma warning(disable : 4324)
 #endif
 
+struct FieldAuxDefaultMessage {};
+
 // Base class for message-level table with info for the tail-call parser.
 struct alignas(uint64_t) TcParseTableBase {
   // Common attributes for message layout:
@@ -191,7 +193,7 @@ struct alignas(uint64_t) TcParseTableBase {
   // Field entry for all fields.
   struct FieldEntry {
     uint32_t offset;     // offset in the message object
-    int32_t has_idx;     // has-bit index
+    int32_t has_idx;     // has-bit index, relative to the message object
     uint16_t aux_idx;    // index for `field_aux`.
     uint16_t type_card;  // `FieldType` and `Cardinality` (see _impl.h)
   };
@@ -204,20 +206,28 @@ struct alignas(uint64_t) TcParseTableBase {
 
   // Auxiliary entries for field types that need extra information.
   union FieldAux {
-    constexpr FieldAux() : message_default(nullptr) {}
+    constexpr FieldAux() : message_default_p(nullptr) {}
     constexpr FieldAux(bool (*enum_validator)(int))
         : enum_validator(enum_validator) {}
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
     constexpr FieldAux(int16_t range_start, uint16_t range_length)
         : enum_range{range_start, range_length} {}
-    constexpr FieldAux(const MessageLite* msg) : message_default(msg) {}
+    constexpr FieldAux(const MessageLite* msg) : message_default_p(msg) {}
+    constexpr FieldAux(FieldAuxDefaultMessage, const void* msg)
+        : message_default_p(msg) {}
+    constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
     bool (*enum_validator)(int);
     struct {
       int16_t start;    // minimum enum number (if it fits)
       uint16_t length;  // length of range (i.e., max = start + length - 1)
     } enum_range;
     uint32_t offset;
-    const MessageLite* message_default;
+    const void* message_default_p;
+    const TcParseTableBase* table;
+
+    const MessageLite* message_default() const {
+      return static_cast<const MessageLite*>(message_default_p);
+    }
   };
   const FieldAux* field_aux(uint32_t idx) const {
     return reinterpret_cast<const FieldAux*>(reinterpret_cast<uintptr_t>(this) +

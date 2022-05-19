@@ -4,6 +4,7 @@ load(
     "pkg_attributes",
     "pkg_filegroup",
     "pkg_files",
+    "strip_prefix",
 )
 load("//:protobuf_release.bzl", "package_naming")
 load(":build_systems.bzl", "gen_automake_file_lists", "gen_file_lists")
@@ -15,18 +16,7 @@ package_naming(
 
 pkg_files(
     name = "wkt_protos_files",
-    srcs = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
-    ],
+    srcs = ["//src/google/protobuf:well_known_type_protos"],
     prefix = "include/google/protobuf",
     visibility = ["//visibility:private"],
 )
@@ -37,13 +27,6 @@ pkg_files(
         "//:descriptor_proto",
     ],
     prefix = "include/google/protobuf",
-    visibility = ["//visibility:private"],
-)
-
-pkg_files(
-    name = "compiler_plugin_protos_files",
-    srcs = ["//:compiler_plugin_proto"],
-    prefix = "include/google/protobuf/compiler",
     visibility = ["//visibility:private"],
 )
 
@@ -82,11 +65,11 @@ pkg_files(
 pkg_zip(
     name = "protoc_release",
     srcs = [
-        ":compiler_plugin_protos_files",
         ":descriptor_protos_files",
         ":protoc_files",
         ":protoc_readme",
         ":wkt_protos_files",
+        "//src/google/protobuf/compiler:compiler_plugin_protos_files",
     ],
     package_file_name = "protoc-{version}-{platform}.zip",
     package_variables = ":protobuf_pkg_naming",
@@ -101,10 +84,12 @@ pkg_zip(
 pkg_filegroup(
     name = "dist_common",
     srcs = [
+        ":dist_files",
         "//:common_dist_files",
-        "//:conformance_dist_files",
-        "//:cpp_dist_files",  # to build protoc
         "//benchmarks:all_dist_files",
+        "//build_defs:dist_files",
+        "//conformance:all_dist_files",
+        "//src:all_dist_files",
         "@com_google_protobuf_examples//:dist_files",
     ],
 )
@@ -113,7 +98,7 @@ pkg_filegroup(
     name = "cpp_srcs",
     srcs = [
         ":dist_common",
-        "//:cpp_dist_files",
+        "//src:all_dist_files",
     ],
 )
 
@@ -235,7 +220,7 @@ pkg_filegroup(
     name = "python_srcs",
     srcs = [
         ":dist_common",
-        "//:python_dist_files",
+        "//python:dist_files",
     ],
 )
 
@@ -319,7 +304,7 @@ gen_file_lists(
     src_libs = {
         # source rule: name in generated file
         "//:protobuf": "libprotobuf",
-        "//:protoc_lib": "libprotoc",
+        "//src/google/protobuf/compiler:protoc_lib": "libprotoc",
         "//:protobuf_lite": "libprotobuf_lite",
     },
 )
@@ -331,7 +316,7 @@ gen_automake_file_lists(
     src_libs = {
         # source rule: name in generated file
         "//:common_dist_files": "dist_common",
-        "//:conformance_dist_files": "dist_conformance",
+        "//conformance:dist_files": "dist_conformance",
         "//benchmarks:all_dist_files": "dist_benchmark",
         "@com_google_protobuf_examples//:dist_files": "dist_example",
         "//:csharp_dist_files": "dist_csharp",
@@ -339,7 +324,7 @@ gen_automake_file_lists(
         "//:objectivec_dist_files": "dist_objectivec",
         "//objectivec:dist_files": "dist_objectivec2",
         "//php:dist_files": "dist_php",
-        "//:python_dist_files": "dist_python",
+        "//python:dist_files": "dist_python",
         "//ruby:dist_files": "dist_ruby",
     },
 )
@@ -351,25 +336,56 @@ gen_automake_file_lists(
 cc_dist_library(
     name = "protobuf_lite",
     linkopts = select({
-        "//:msvc": [],
+        "//build_defs:config_msvc": [],
         "//conditions:default": ["-lpthread"],
     }),
+    tags = ["manual"],
     deps = [
         "//:protobuf_lite",
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/stubs:lite",
     ],
 )
 
 cc_dist_library(
     name = "protobuf",
     linkopts = select({
-        "//:msvc": [],
+        "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-lz",
             "-lpthread",
         ],
     }),
+    tags = ["manual"],
     deps = [
         "//:protobuf",
         "//:protobuf_lite",
+        "//src/google/protobuf:arena",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:gzip_stream",
+        "//src/google/protobuf/io:io_win32",
+        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/stubs:lite",
+        "//src/google/protobuf/util:delimited_message_util",
+        "//src/google/protobuf/util:differencer",
+        "//src/google/protobuf/util:field_mask_util",
+        "//src/google/protobuf/util:json_util",
+        "//src/google/protobuf/util:time_util",
+        "//src/google/protobuf/util:type_resolver_util",
     ],
+)
+
+################################################################################
+# Distribution sources
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["*"]),
+    strip_prefix = strip_prefix.from_root(""),
 )

@@ -56,6 +56,9 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
   // Set by the user to make the descriptor pool persist between requests.
   zend_bool keep_descriptor_pool_after_request;
 
+  // Set by the user to make the descriptor pool persist between requests.
+  zend_class_entry* constructing_class;
+
   // A upb_DefPool that we are saving for the next request so that we don't have
   // to rebuild it from scratch. When keep_descriptor_pool_after_request==true,
   // we steal the upb_DefPool from the global DescriptorPool object just before
@@ -173,6 +176,7 @@ static PHP_RINIT_FUNCTION(protobuf) {
 
   zend_hash_init(&PROTOBUF_G(object_cache), 64, NULL, NULL, 0);
   zend_hash_init(&PROTOBUF_G(descriptors), 64, NULL, ZVAL_PTR_DTOR, 0);
+  PROTOBUF_G(constructing_class) = NULL;
 
   return SUCCESS;
 }
@@ -253,7 +257,7 @@ const upb_MessageDef *NameMap_GetMessage(zend_class_entry *ce) {
   const upb_MessageDef *ret =
       zend_hash_find_ptr(&PROTOBUF_G(name_msg_cache), ce->name);
 
-  if (!ret && ce->create_object) {
+  if (!ret && ce->create_object && ce != PROTOBUF_G(constructing_class)) {
 #if PHP_VERSION_ID < 80000
     zval tmp;
     zval zv;
@@ -277,6 +281,16 @@ const upb_EnumDef *NameMap_GetEnum(zend_class_entry *ce) {
   const upb_EnumDef *ret =
       zend_hash_find_ptr(&PROTOBUF_G(name_enum_cache), ce->name);
   return ret;
+}
+
+void NameMap_EnterConstructor(zend_class_entry* ce) {
+  assert(!PROTOBUF_G(constructing_class));
+  PROTOBUF_G(constructing_class) = ce;
+}
+
+void NameMap_ExitConstructor(zend_class_entry* ce) {
+  assert(PROTOBUF_G(constructing_class) == ce);
+  PROTOBUF_G(constructing_class) = NULL;
 }
 
 // -----------------------------------------------------------------------------

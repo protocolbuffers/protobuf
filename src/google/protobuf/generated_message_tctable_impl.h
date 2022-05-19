@@ -147,6 +147,10 @@ enum TransformValidation : uint16_t {
   // String fields:
   kTvUtf8Debug = 1 << kTvShift,  // proto2
   kTvUtf8      = 2 << kTvShift,  // proto3
+
+  // Message fields:
+  kTvDefault   = 1 << kTvShift,  // Aux has default_instance
+  kTvTable     = 2 << kTvShift,  // Aux has TcParseTableBase*
 };
 
 static_assert((kTvEnum & kTvRange) != 0,
@@ -262,6 +266,11 @@ extern template void AlignFail<8>(uintptr_t);
 // TcParser implements most of the parsing logic for tailcall tables.
 class PROTOBUF_EXPORT TcParser final {
  public:
+  template <typename T>
+  static constexpr const TcParseTableBase* GetTable() {
+    return &T::_table_.header;
+  }
+
   static const char* GenericFallback(PROTOBUF_TC_PARAM_DECL);
   static const char* GenericFallbackLite(PROTOBUF_TC_PARAM_DECL);
 
@@ -364,16 +373,26 @@ class PROTOBUF_EXPORT TcParser final {
 
   // Functions referenced by generated fast tables (message types):
   //   M: message    G: group
+  //   d: default*   t: TcParseTable* (the contents of aux)
   //   S: singular   R: repeated
   //   1/2: tag length (bytes)
-  static const char* FastMS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastMS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastMR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastMR2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGS1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGS2(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGR1(PROTOBUF_TC_PARAM_DECL);
-  static const char* FastGR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastMdS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastMdS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGdS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGdS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastMtS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastMtS2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGtS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGtS2(PROTOBUF_TC_PARAM_DECL);
+
+  static const char* FastMdR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastMdR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGdR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGdR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastMtR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastMtR2(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGtR1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastGtR2(PROTOBUF_TC_PARAM_DECL);
 
   template <typename T>
   static inline T& RefAt(void* x, size_t offset) {
@@ -421,9 +440,9 @@ class PROTOBUF_EXPORT TcParser final {
  private:
   friend class GeneratedTcTableLiteTest;
 
-  template <typename TagType, bool group_coding>
+  template <typename TagType, bool group_coding, bool aux_is_table>
   static inline const char* SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
-  template <typename TagType, bool group_coding>
+  template <typename TagType, bool group_coding, bool aux_is_table>
   static inline const char* RepeatedParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
 
   static inline PROTOBUF_ALWAYS_INLINE void SyncHasbits(
@@ -432,7 +451,7 @@ class PROTOBUF_EXPORT TcParser final {
     if (has_bits_offset) {
       // Only the first 32 has-bits are updated. Nothing above those is stored,
       // but e.g. messages without has-bits update the upper bits.
-      RefAt<uint32_t>(msg, has_bits_offset) = static_cast<uint32_t>(hasbits);
+      RefAt<uint32_t>(msg, has_bits_offset) |= static_cast<uint32_t>(hasbits);
     }
   }
 

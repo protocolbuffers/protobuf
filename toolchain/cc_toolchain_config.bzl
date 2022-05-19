@@ -6,6 +6,7 @@ load(
     "flag_group",
     "flag_set",
     "tool_path",
+    "with_feature_set",
 )
 
 all_link_actions = [
@@ -154,10 +155,31 @@ def _impl(ctx):
                   ),
               ],
           ),
+          flag_set(
+              actions = all_compile_actions,
+              flag_groups = [flag_group(flags = ["-DNDEBUG", "-O3"])],
+              with_features = [with_feature_set(features = ["opt"])],
+          ),
+          flag_set(
+              actions = all_compile_actions,
+              flag_groups = [flag_group(flags = ["-g"])],
+              with_features = [with_feature_set(features = ["dbg"])],
+          ),
+          flag_set(
+              actions = all_compile_actions,
+              flag_groups = [flag_group(flags = ["-O1"])],
+              with_features = [with_feature_set(features = ["fastbuild"])],
+          ),
       ],
   )
 
-  features = [linker_flags, compiler_flags, sysroot_flags]
+  features = [
+      linker_flags,
+      compiler_flags,
+      sysroot_flags,
+      feature(name = "dbg"),
+      feature(name = "opt"),
+  ]
 
   if "mingw" in ctx.attr.target_full_name:
       features.append(

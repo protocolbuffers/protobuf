@@ -178,17 +178,17 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3020001
+#define PROTOBUF_VERSION 3021000
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
 #endif
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3020000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3021000
 
 #ifdef PROTOBUF_MIN_PROTOC_VERSION
 #error PROTOBUF_MIN_PROTOC_VERSION was previously defined
 #endif
-#define PROTOBUF_MIN_PROTOC_VERSION 3020000
+#define PROTOBUF_MIN_PROTOC_VERSION 3021000
 
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
@@ -385,7 +385,7 @@
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3020000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3021000
 
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
@@ -650,7 +650,7 @@
      (!defined(__APPLE__) && __clang_major__ >= 12))
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #define PROTOBUF_CONSTEXPR constexpr
-#elif PROTOBUF_GNUC_MIN(12, 0)
+#elif PROTOBUF_GNUC_MIN(12, 2)
 #define PROTOBUF_CONSTINIT __constinit
 #define PROTOBUF_CONSTEXPR constexpr
 #else
