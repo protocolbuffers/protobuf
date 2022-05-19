@@ -155,6 +155,8 @@ void NameMap_AddMessage(const upb_MessageDef *m);
 void NameMap_AddEnum(const upb_EnumDef *m);
 const upb_MessageDef *NameMap_GetMessage(zend_class_entry *ce);
 const upb_EnumDef *NameMap_GetEnum(zend_class_entry *ce);
+void NameMap_EnterConstructor(zend_class_entry* ce);
+void NameMap_ExitConstructor(zend_class_entry* ce);
 
 // Add this descriptor object to the global list of descriptors that will be
 // kept alive for the duration of the request but destroyed when the request
