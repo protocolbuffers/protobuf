@@ -19,10 +19,12 @@ DIST_SUBDIRS = src conformance benchmarks third_party/googletest
 # which takes a lot of time and is generally not useful to us.  Also, we don't
 # want "make install" to recurse into gmock since we don't want to overwrite
 # the installed version of gmock if there is one.
+if USE_GTEST_SUBMODULE
 check-local:
 	@echo "Making lib/libgmock.a lib/libgmock_main.a in gmock"
 	@cd third_party/googletest/googletest && $(MAKE) $(AM_MAKEFLAGS) lib/libgtest.la lib/libgtest_main.la
 	@cd third_party/googletest/googlemock && $(MAKE) $(AM_MAKEFLAGS) lib/libgmock.la lib/libgmock_main.la
+endif
 
 # We would like to clean gmock when "make clean" is invoked.  But we have to
 # be careful because clean-local is also invoked during "make distclean", but
