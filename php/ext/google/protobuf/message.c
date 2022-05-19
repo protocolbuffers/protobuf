@@ -601,7 +601,7 @@ PHP_METHOD(Message, __construct) {
   //
   // However, if the user created their own class derived from Message, this
   // will trigger an infinite construction loop and blow the stack.  We
-  // temporarily clear create_object to break this loop (see check in
+  // store this `ce` in a global variable to break the cycle (see the check in
   // NameMap_GetMessage()).
   NameMap_EnterConstructor(ce);
   desc = Descriptor_GetFromClassEntry(ce);
