@@ -136,6 +136,20 @@ AC_FUNC_MEMCMP
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([ftruncate memset mkdir strchr strerror strtol])
 
+# Check for a local installation of GoogleTest and GMock, but fall back on the
+# Git submodule if they are not available.
+PKG_CHECK_MODULES(
+  [GTEST], [gtest_main, gmock],
+  [USE_GTEST_SUBMODULE=0],
+  [USE_GTEST_SUBMODULE=1
+   GTEST_FLAGS="-I\${top_srcdir}/third_party/googletest/googletest/include -I\${top_srcdir}/third_party/googletest/googlemock/include"
+   GTEST_LIBS="\${top_builddir}/third_party/googletest/googlemock/lib/libgmock_main.la \${top_builddir}/third_party/googletest/googlemock/lib/libgmock.la \${top_builddir}/third_party/googletest/googletest/lib/libgtest.la"
+  ]
+)
+AC_SUBST([GTEST_FLAGS])
+AC_SUBST([GTEST_LIBS])
+AM_CONDITIONAL([USE_GTEST_SUBMODULE], [test $USE_GTEST_SUBMODULE = 1])
+
 # Check for zlib.
 HAVE_ZLIB=0
 AS_IF([test "$with_zlib" != no], [
@@ -239,9 +253,11 @@ AC_SUBST([LIBLOG_LIBS])
 # HACK:  Make gmock's configure script pick up our copy of CFLAGS and CXXFLAGS,
 #   since the flags added by ACX_CHECK_SUNCC must be used when compiling gmock
 #   too.
-export CFLAGS
-export CXXFLAGS
-AC_CONFIG_SUBDIRS([third_party/googletest])
+if test $USE_GTEST_SUBMODULE = 1; then
+  export CFLAGS
+  export CXXFLAGS
+  AC_CONFIG_SUBDIRS([third_party/googletest])
+fi
 
 AC_CONFIG_FILES([Makefile src/Makefile benchmarks/Makefile conformance/Makefile protobuf.pc protobuf-lite.pc])
 AC_OUTPUT

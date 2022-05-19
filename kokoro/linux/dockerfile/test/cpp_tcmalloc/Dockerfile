@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM debian:bullseye
 
 # Install dependencies.  We start with the basic ones require to build protoc
 # and the C++ build
@@ -14,10 +14,12 @@ RUN apt-get update && apt-get install -y \
   libc6 \
   libc6-dbg \
   libc6-dev \
+  libgmock-dev \
   libgtest-dev \
   libtool \
   make \
   parallel \
+  pkg-config \
   time \
   wget \
   && apt-get clean

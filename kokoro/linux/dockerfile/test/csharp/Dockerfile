@@ -14,10 +14,12 @@ RUN apt-get update && apt-get install -y \
   libc6 \
   libc6-dbg \
   libc6-dev \
+  libgmock-dev \
   libgtest-dev \
   libtool \
   make \
   parallel \
+  pkg-config \
   time \
   wget \
   && apt-get clean

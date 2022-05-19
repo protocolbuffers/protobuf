@@ -8,6 +8,7 @@ set -ex
 
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
+sudo yum -y install pkgconfig
 ./autogen.sh
 CXXFLAGS="-fPIC -g -O2" ./configure --host=aarch64
 make -j8
