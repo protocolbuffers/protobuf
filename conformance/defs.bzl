@@ -1,6 +1,22 @@
-# PLEASE DO NOT DEPEND ON THE CONTENTS OF THIS FILE, IT IS UNSTABLE.
+"""Starlark definitions for Protobuf conformance tests.
 
-def conformance_test(name, testee, failure_list = None, text_format_failure_list = None):
+PLEASE DO NOT DEPEND ON THE CONTENTS OF THIS FILE, IT IS UNSTABLE.
+"""
+
+def conformance_test(
+        name,
+        testee,
+        failure_list = None,
+        text_format_failure_list = None):
+    """Conformance test runner.
+
+    Args:
+      name: the name for the test.
+      testee: a conformance test client binary.
+      failure_list: a text file with known failures, one per line.
+      text_format_failure_list: a text file with known failures (one per line)
+          for the text format conformance suite.
+    """
     args = ["--testee %s" % _strip_bazel(testee)]
     failure_lists = []
     if failure_list:
