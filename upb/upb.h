@@ -351,8 +351,8 @@ UPB_INLINE uint64_t _upb_BigEndian_Swap64(uint64_t val) {
   if (_upb_IsLittleEndian()) {
     return val;
   } else {
-    return ((uint64_t)_upb_BigEndian_Swap32(val) << 32) |
-           _upb_BigEndian_Swap32(val >> 32);
+    return ((uint64_t)_upb_BigEndian_Swap32((uint32_t)val) << 32) |
+           _upb_BigEndian_Swap32((uint32_t)(val >> 32));
   }
 }
 
