@@ -540,18 +540,8 @@ protoc_inputs =                                                   \
 
 EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
-  BUILD.bazel                                                  \
   README.md                                                    \
-  google/protobuf/BUILD.bazel                                  \
-  google/protobuf/compiler/BUILD.bazel                         \
-  google/protobuf/compiler/cpp/BUILD.bazel                     \
-  google/protobuf/compiler/csharp/BUILD.bazel                  \
-  google/protobuf/compiler/java/BUILD.bazel                    \
-  google/protobuf/compiler/objectivec/BUILD.bazel              \
   google/protobuf/compiler/package_info.h                      \
-  google/protobuf/compiler/php/BUILD.bazel                     \
-  google/protobuf/compiler/python/BUILD.bazel                  \
-  google/protobuf/compiler/ruby/BUILD.bazel                    \
   google/protobuf/compiler/ruby/ruby_generated_code.proto      \
   google/protobuf/compiler/ruby/ruby_generated_code_pb.rb      \
   google/protobuf/compiler/ruby/ruby_generated_code_proto2.proto \
@@ -564,12 +554,10 @@ EXTRA_DIST =                                                   \
   google/protobuf/compiler/ruby/ruby_generated_pkg_implicit.proto \
   google/protobuf/compiler/ruby/ruby_generated_pkg_implicit_pb.rb \
   google/protobuf/compiler/zip_output_unittest.sh              \
-  google/protobuf/io/BUILD.bazel                               \
   google/protobuf/io/gzip_stream.h                             \
   google/protobuf/io/gzip_stream_unittest.sh                   \
   google/protobuf/io/package_info.h                            \
   google/protobuf/package_info.h                               \
-  google/protobuf/stubs/BUILD.bazel                            \
   google/protobuf/test_messages_proto2.proto                   \
   google/protobuf/test_messages_proto3.proto                   \
   google/protobuf/testdata/bad_utf8_string                     \
@@ -585,9 +573,6 @@ EXTRA_DIST =                                                   \
   google/protobuf/testdata/text_format_unittest_data_pointy_oneof.txt \
   google/protobuf/testdata/text_format_unittest_extensions_data.txt \
   google/protobuf/testdata/text_format_unittest_extensions_data_pointy.txt \
-  google/protobuf/testing/BUILD.bazel                          \
-  google/protobuf/util/BUILD.bazel                             \
-  google/protobuf/util/internal/BUILD.bazel                    \
   google/protobuf/util/package_info.h                          \
   libprotobuf-lite.map                                         \
   libprotobuf.map                                              \

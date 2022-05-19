@@ -1197,6 +1197,8 @@ class PROTOBUF_EXPORT Reflection final {
   void SwapOneofField(Message* lhs, Message* rhs,
                       const OneofDescriptor* oneof_descriptor) const;
 
+  void InternalSwap(Message* lhs, Message* rhs) const;
+
   inline bool HasOneofField(const Message& message,
                             const FieldDescriptor* field) const;
   inline void SetOneofCase(Message* message,

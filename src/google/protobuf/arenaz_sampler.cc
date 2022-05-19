@@ -97,15 +97,12 @@ void RecordResetSlow(ThreadSafeArenaStats* info) {
 
 void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t requested,
                         size_t allocated, size_t wasted) {
+  info->num_allocations.fetch_add(1, std::memory_order_relaxed);
   info->bytes_requested.fetch_add(requested, std::memory_order_relaxed);
   info->bytes_allocated.fetch_add(allocated, std::memory_order_relaxed);
   info->bytes_wasted.fetch_add(wasted, std::memory_order_relaxed);
-  info->num_allocations.fetch_add(1, std::memory_order_relaxed);
-  const uint64_t tid = (1ULL << (GetCachedTID() % 63));
-  const uint64_t thread_ids = info->thread_ids.load(std::memory_order_relaxed);
-  if (!(thread_ids & tid)) {
-    info->thread_ids.store(thread_ids | tid, std::memory_order_relaxed);
-  }
+  const uint64_t tid = 1ULL << (GetCachedTID() % 63);
+  info->thread_ids.fetch_or(tid, std::memory_order_relaxed);
 }
 
 ThreadSafeArenaStats* SampleSlow(int64_t* next_sample) {

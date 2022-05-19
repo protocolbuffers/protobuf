@@ -279,7 +279,8 @@ const char* ParseContext::ReadSizeAndPushLimitAndDepth(const char* ptr,
 const char* ParseContext::ParseMessage(MessageLite* msg, const char* ptr) {
   int old;
   ptr = ReadSizeAndPushLimitAndDepth(ptr, &old);
-  ptr = ptr ? msg->_InternalParse(ptr, this) : nullptr;
+  if (ptr == nullptr) return ptr;
+  ptr = msg->_InternalParse(ptr, this);
   depth_++;
   if (!PopLimit(old)) return nullptr;
   return ptr;

@@ -94,7 +94,7 @@ class TextFormatTest : public testing::Test {
   static void SetUpTestSuite() {
     GOOGLE_CHECK_OK(File::GetContents(
         TestUtil::GetTestDataPath(
-            "net/proto2/internal/"
+            "third_party/protobuf/"
             "testdata/text_format_unittest_data_oneof_implemented.txt"),
         &static_proto_text_format_, true));
     CleanStringLineEndings(&static_proto_text_format_, false);
@@ -116,7 +116,7 @@ class TextFormatExtensionsTest : public testing::Test {
  public:
   static void SetUpTestSuite() {
     GOOGLE_CHECK_OK(File::GetContents(
-        TestUtil::GetTestDataPath("net/proto2/internal/testdata/"
+        TestUtil::GetTestDataPath("third_party/protobuf/testdata/"
                                   "text_format_unittest_extensions_data.txt"),
         &static_proto_text_format_, true));
     CleanStringLineEndings(&static_proto_text_format_, false);
@@ -1033,6 +1033,19 @@ TEST_F(TextFormatTest, ParseShortRepeatedConcatenatedWithEmpty) {
   ASSERT_EQ(2, proto_.repeatedgroup_size());
   EXPECT_EQ(3, proto_.repeatedgroup(0).a());
   EXPECT_EQ(4, proto_.repeatedgroup(1).a());
+}
+
+TEST_F(TextFormatTest, ParseShortRepeatedUnknownEmpty) {
+  std::string parse_string =
+      "repeated_string: \"before\"\n"
+      "unknown_field: []\n"
+      "repeated_string: \"after\"\n";
+  TextFormat::Parser parser;
+  parser.AllowUnknownField(true);
+
+  ASSERT_TRUE(parser.ParseFromString(parse_string, &proto_));
+
+  EXPECT_EQ(2, proto_.repeated_string_size());
 }
 
 

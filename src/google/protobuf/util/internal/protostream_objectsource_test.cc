@@ -39,6 +39,10 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/internal/expecting_objectwriter.h>
+#include <gtest/gtest.h>
+#include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/status.h>
+#include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/testdata/anys.pb.h>
 #include <google/protobuf/util/internal/testdata/books.pb.h>
 #include <google/protobuf/util/internal/testdata/field_mask.pb.h>
@@ -46,10 +50,6 @@
 #include <google/protobuf/util/internal/testdata/proto3.pb.h>
 #include <google/protobuf/util/internal/testdata/struct.pb.h>
 #include <google/protobuf/util/internal/testdata/timestamp_duration.pb.h>
-#include <gtest/gtest.h>
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/type_info_test_helper.h>
 
 
