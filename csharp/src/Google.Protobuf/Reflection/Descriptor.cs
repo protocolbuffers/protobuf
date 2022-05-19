@@ -7098,11 +7098,8 @@ namespace Google.Protobuf.Reflection {
     /// check its required fields, regardless of whether or not the message has
     /// been parsed.
     ///
-    /// As of 2021, lazy does no correctness checks on the byte stream during
-    /// parsing.  This may lead to crashes if and when an invalid byte stream is
-    /// finally parsed upon access.
-    ///
-    /// TODO(b/211906113):  Enable validation on lazy fields.
+    /// As of May 2022, lazy verifies the contents of the byte stream during
+    /// parsing.  An invalid byte stream will cause the overall parsing to fail.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
