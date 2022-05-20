@@ -7,19 +7,10 @@ function pre_build {
     pushd protobuf
 
     # Build protoc and libprotobuf
-    if [ "$PLAT" == "aarch64" ]
-    then
-      mkdir -p cmake
-      cd cmake
-      cmake .
-      make -j8
-      export PROTOC=cmake/protoc
-      export LIBPROTOBUF=cmake/libprotobuf.a
-    else
-      ./autogen.sh
-      CXXFLAGS="-fPIC -g -O2" ./configure $configure_host_flag
-      make -j8
-    fi
+    bazel build -c opt //:protoc
+    local _bazel_bin=$(bazel info -c opt bazel-bin)
+    export PROTOC=${_bazel_bin}/protoc
+    export LIBPROTOBUF=${_bazel_bin}/libprotobuf.a
 
     if [ "$PLAT" == "aarch64" ]
     then
@@ -74,7 +65,7 @@ function bdist_wheel_cmd {
       export PROTOCOL_BUFFERS_OVERRIDE_EXT_SUFFIX="$(python -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX").replace("-x86_64-linux-gnu.so", "-aarch64-linux-gnu.so"))')"
     fi
 
-    python setup.py build_ext --cpp_implementation $plat_name_flag -O${LIBPROTOBUF}
+    python setup.py build_ext --cpp_implementation -O${LIBPROTOBUF}
     python setup.py bdist_wheel --cpp_implementation $plat_name_flag
     cp dist/*.whl $abs_wheelhouse
 }

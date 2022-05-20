@@ -69,7 +69,7 @@ build_x86_64_manylinux2010_artifact_version() {
 
 build_crosscompiled_aarch64_manylinux2014_artifact_version() {
   # crosscompilation is only supported with the dockcross manylinux2014 image
-  DOCKER_IMAGE=dockcross/manylinux2014-aarch64:20210706-65bf2dd
+  DOCKER_IMAGE=testimage_protobuf_manylinux2014_aarch64
   MB_ML_VER=2014
   PLAT=aarch64
 

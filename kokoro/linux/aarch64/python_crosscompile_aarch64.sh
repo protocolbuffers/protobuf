@@ -8,16 +8,11 @@ set -ex
 
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
-# Initialize any submodules.
-git submodule update --init --recursive
-
 # Build protoc and libprotobuf
-# The build commands are expected to run under dockcross docker image
-# where the CC, CXX and other toolchain variables already point to the crosscompiler
-mkdir -p cmake/crossbuild_aarch64
-cd cmake/crossbuild_aarch64
-cmake ..
-make -j8
+bazel build --cpu=aarch64 //:protoc
+local _bazel_bin=$(bazel info -c opt bazel-bin)
+export PROTOC=${_bazel_bin}/protoc
+export LIBPROTOBUF=${_bazel_bin}/libprotobuf.a
 
 # create a simple shell wrapper that runs crosscompiled protoc under qemu
 echo '#!/bin/bash' >protoc_qemu_wrapper.sh
@@ -42,7 +37,7 @@ plat_name_flag="--plat-name=$AUDITWHEEL_PLAT"
 export PROTOCOL_BUFFERS_OVERRIDE_EXT_SUFFIX="$(${PYTHON} -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX").replace("-x86_64-linux-gnu.so", "-aarch64-linux-gnu.so"))')"
 
 # Build the python extension inplace to be able to python unittests later
-${PYTHON} setup.py build_ext --cpp_implementation --compile_static_extension --inplace
+${PYTHON} setup.py build_ext --cpp_implementation --compile_static_extension --inplace -O${LIBPROTOBUF}
 
 # Build the binary wheel (to check it with auditwheel)
 ${PYTHON} setup.py bdist_wheel --cpp_implementation --compile_static_extension $plat_name_flag
