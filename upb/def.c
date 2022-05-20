@@ -2339,8 +2339,7 @@ static void create_fielddef(
   }
 
   if (google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
-    int oneof_index =
-        google_protobuf_FieldDescriptorProto_oneof_index(field_proto);
+    uint32_t oneof_index = google_protobuf_FieldDescriptorProto_oneof_index(field_proto);
     upb_OneofDef* oneof;
     upb_value v = upb_value_constptr(f);
 
