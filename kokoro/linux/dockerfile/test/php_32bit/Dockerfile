@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
   build-essential \
   bzip2 \
   ccache \
+  cmake \
   curl \
   gcc \
   git \
@@ -18,6 +19,7 @@ RUN apt-get update && apt-get install -y \
   libtool \
   make \
   parallel \
+  pkg-config \
   time \
   wget \
   re2c \

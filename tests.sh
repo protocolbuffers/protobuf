@@ -54,14 +54,7 @@ build_cpp_tcmalloc() {
 }
 
 build_cpp_distcheck() {
-  grep -q -- "-Og" src/Makefile.am &&
-    echo "The -Og flag is incompatible with Clang versions older than 4.0." &&
-    exit 1
-
-  # Initialize any submodules.
-  git submodule update --init --recursive
-  ./autogen.sh
-  ./configure
+  internal_build_cpp
   make dist
 
   # List all files that should be included in the distribution package.
