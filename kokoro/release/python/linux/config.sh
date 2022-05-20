@@ -12,7 +12,6 @@ function pre_build {
     fi
 
     # Build protoc and libprotobuf
-    use_bazel.sh 5.1.1
     bazel build -c opt //:protoc
     local _bazel_bin=$(bazel info -c opt bazel-bin)
     export PROTOC=${_bazel_bin}/protoc
