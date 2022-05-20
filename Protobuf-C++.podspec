@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
   s.cocoapods_version = '>= 1.0'
 
   s.source = { :git => 'https://github.com/google/protobuf.git',
-               :tag => "v21.0-rc2" }
+               :tag => "v#{s.version}" }
 
   s.source_files = 'src/google/protobuf/*.{h,cc,inc}',
                    'src/google/protobuf/stubs/*.{h,cc}',
