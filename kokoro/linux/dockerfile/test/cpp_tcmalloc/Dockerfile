@@ -8,9 +8,11 @@ RUN apt-get update && apt-get install -y \
   build-essential \
   bzip2 \
   ccache \
+  cmake \
   curl \
   gcc \
   git \
+  libabsl-dev \
   libc6 \
   libc6-dbg \
   libc6-dev \
