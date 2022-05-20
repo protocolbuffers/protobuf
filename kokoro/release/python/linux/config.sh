@@ -13,11 +13,10 @@ function pre_build {
 
     # Build protoc and libprotobuf
     use_bazel.sh 5.1.1
-    bazel build $configure_host_flag //:protoc
-    export PROTOC=$PWD/bazel-bin/protoc
-    mkdir src/.libs
-    ln -s $PWD/bazel-bin/libprotobuf.a src/.libs/libprotobuf.a
-    ln -s $PWD/bazel-bin/libprotobuf_lite.a src/.libs/libprotobuf-lite.a
+    bazel build -c opt //:protoc
+    local _bazel_bin=$(bazel info -c opt bazel-bin)
+    export PROTOC=${_bazel_bin}/protoc
+    export LIBPROTOBUF=${_bazel_bin}/libprotobuf.a
 
     if [ "$PLAT" == "aarch64" ]
     then
@@ -72,7 +71,8 @@ function bdist_wheel_cmd {
       export PROTOCOL_BUFFERS_OVERRIDE_EXT_SUFFIX="$(python -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX").replace("-x86_64-linux-gnu.so", "-aarch64-linux-gnu.so"))')"
     fi
 
-    python setup.py bdist_wheel --cpp_implementation --compile_static_extension $plat_name_flag
+    python setup.py build_ext --cpp_implementation $plat_name_flag -O${LIBPROTOBUF}
+    python setup.py bdist_wheel --cpp_implementation $plat_name_flag
     cp dist/*.whl $abs_wheelhouse
 }
 

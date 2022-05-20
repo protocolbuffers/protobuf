@@ -9,7 +9,6 @@ set -ex
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
 # Build protoc and libprotobuf
-use_bazel.sh 5.1.1
 bazel build --cpu=aarch64 //:protoc
 export PROTOC=$PWD/bazel-bin/protoc
 mkdir src/.libs
