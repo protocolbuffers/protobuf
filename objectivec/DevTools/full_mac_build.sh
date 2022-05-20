@@ -161,9 +161,7 @@ fi
 
 if [[ "${DO_AUTOGEN}" == "yes" ]] ; then
   header "Running autogen & configure"
-  ./autogen.sh
-  ./configure \
-    CPPFLAGS="-mmacosx-version-min=10.9 -Wunused-const-variable -Wunused-function"
+  CXXFLAGS="-mmacosx-version-min=10.9 -Wunused-const-variable -Wunused-function" cmake .
 fi
 
 if [[ "${DO_CLEAN}" == "yes" ]] ; then
