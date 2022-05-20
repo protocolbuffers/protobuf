@@ -34,6 +34,7 @@ bazel "${bazel_args[@]}"
 (
   pyenv versions
   pyenv shell 2.7.9  # python2 required for old googletest autotools support
+  git submodule update --init --recursive
   ./autogen.sh && ./configure && make -j$(nproc) dist
 )
 DIST=`ls *.tar.gz`
