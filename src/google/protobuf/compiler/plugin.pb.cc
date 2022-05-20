@@ -234,6 +234,8 @@ constexpr int CodeGeneratorResponse::Feature_ARRAYSIZE;
 class Version::_Internal {
  public:
   using HasBits = decltype(std::declval<Version>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(Version, _impl_._has_bits_);
   static void set_has_major(HasBits* has_bits) {
     (*has_bits)[0] |= 2u;
   }
@@ -558,6 +560,8 @@ void Version::InternalSwap(Version* other) {
 class CodeGeneratorRequest::_Internal {
  public:
   using HasBits = decltype(std::declval<CodeGeneratorRequest>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_);
   static void set_has_parameter(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -910,6 +914,8 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
 class CodeGeneratorResponse_File::_Internal {
  public:
   using HasBits = decltype(std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_);
   static void set_has_name(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -1300,6 +1306,8 @@ void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* other)
 class CodeGeneratorResponse::_Internal {
  public:
   using HasBits = decltype(std::declval<CodeGeneratorResponse>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._has_bits_);
   static void set_has_error(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }

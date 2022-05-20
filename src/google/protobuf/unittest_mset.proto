@@ -53,6 +53,11 @@ message NestedTestMessageSetContainer {
   optional NestedTestMessageSetContainer child = 2;
 }
 
+message NestedTestInt {
+  optional fixed32 a = 1;
+  optional NestedTestInt child = 2;
+}
+
 message TestMessageSetExtension1 {
   extend proto2_wireformat_unittest.TestMessageSet {
     optional TestMessageSetExtension1 message_set_extension = 1545008;
@@ -67,11 +72,6 @@ message TestMessageSetExtension2 {
     optional TestMessageSetExtension2 message_set_extension = 1547769;
   }
   optional string str = 25;
-}
-
-message NestedTestInt {
-  optional fixed32 a = 1;
-  optional NestedTestInt child = 2;
 }
 
 message TestMessageSetExtension3 {

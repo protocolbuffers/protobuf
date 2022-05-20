@@ -67,9 +67,7 @@ import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Test case for {@link TextFormat}.
- */
+/** Test case for {@link TextFormat}. */
 @RunWith(JUnit4.class)
 public class TextFormatTest {
 
@@ -1448,6 +1446,18 @@ public class TextFormatTest {
             + "unknown_field2: 2\n"
             + "[unknown_extension]: 12345\n"
             + "unknown_field3: 3\n");
+  }
+
+  @Test
+  public void testParseUnknownExtensionWithAnyMessage() throws Exception {
+    assertParseSuccessWithUnknownExtensions(
+        "[unknown_extension]: { "
+            + "  any_value { "
+            + "    [type.googleapis.com/protobuf_unittest.OneString] { "
+            + "      data: 123 "
+            + "    } "
+            + " } "
+            + "}");
   }
 
   // See additional coverage in testOneofOverwriteForbidden and testMapOverwriteForbidden.

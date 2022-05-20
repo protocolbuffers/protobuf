@@ -3749,7 +3749,7 @@ TEST(MapSerializationTest, DeterministicSubmessage) {
   const std::string filename = "golden_message_maps";
   std::string golden;
   GOOGLE_CHECK_OK(File::GetContents(
-      TestUtil::GetTestDataPath("net/proto2/internal/testdata/" + filename),
+      TestUtil::GetTestDataPath("third_party/protobuf/testdata/" + filename),
       &golden, true));
   t.ParseFromString(golden);
   *(p.mutable_m()) = t;
@@ -3791,7 +3791,7 @@ TEST(TextFormatMapTest, DynamicMessage) {
 
   std::string expected_text;
   GOOGLE_CHECK_OK(
-      File::GetContents(TestUtil::GetTestDataPath("net/proto2/internal/"
+      File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
 
@@ -3808,7 +3808,7 @@ TEST(TextFormatMapTest, Sorted) {
 
   std::string expected_text;
   GOOGLE_CHECK_OK(
-      File::GetContents(TestUtil::GetTestDataPath("net/proto2/internal/"
+      File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
 
@@ -3828,10 +3828,10 @@ TEST(TextFormatMapTest, Sorted) {
 
 TEST(TextFormatMapTest, ParseCorruptedString) {
   std::string serialized_message;
-  GOOGLE_CHECK_OK(
-      File::GetContents(TestUtil::GetTestDataPath(
-                            "net/proto2/internal/testdata/golden_message_maps"),
-                        &serialized_message, true));
+  GOOGLE_CHECK_OK(File::GetContents(
+      TestUtil::GetTestDataPath(
+          "third_party/protobuf/testdata/golden_message_maps"),
+      &serialized_message, true));
   UNITTEST::TestMaps message;
   GOOGLE_CHECK(message.ParseFromString(serialized_message));
   TestParseCorruptedString<UNITTEST::TestMaps, true>(message);

@@ -983,8 +983,6 @@ void Reflection::Swap(Message* message1, Message* message2) const {
     return;
   }
 
-  GOOGLE_DCHECK_EQ(message1->GetOwningArena(), message2->GetOwningArena());
-
   UnsafeArenaSwap(message1, message2);
 }
 
@@ -1013,9 +1011,6 @@ void Reflection::SwapFieldsImpl(
          "descriptor.";
 
   std::set<int> swapped_oneof;
-
-  GOOGLE_DCHECK(!unsafe_shallow_swap || message1->GetArenaForAllocation() ==
-                                     message2->GetArenaForAllocation());
 
   const Message* prototype =
       message_factory_->GetPrototype(message1->GetDescriptor());
@@ -1073,6 +1068,9 @@ void Reflection::SwapFields(
 void Reflection::UnsafeShallowSwapFields(
     Message* message1, Message* message2,
     const std::vector<const FieldDescriptor*>& fields) const {
+  GOOGLE_DCHECK_EQ(message1->GetArenaForAllocation(),
+            message2->GetArenaForAllocation());
+
   SwapFieldsImpl<true>(message1, message2, fields);
 }
 
@@ -1103,6 +1101,11 @@ bool Reflection::HasField(const Message& message,
 }
 
 void Reflection::UnsafeArenaSwap(Message* lhs, Message* rhs) const {
+  GOOGLE_DCHECK_EQ(lhs->GetOwningArena(), rhs->GetOwningArena());
+  InternalSwap(lhs, rhs);
+}
+
+void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
   if (lhs == rhs) return;
 
   MutableInternalMetadata(lhs)->InternalSwap(MutableInternalMetadata(rhs));

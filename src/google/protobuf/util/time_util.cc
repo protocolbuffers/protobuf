@@ -50,19 +50,24 @@ using google::protobuf::Duration;
 using google::protobuf::Timestamp;
 
 namespace {
-static const int kNanosPerSecond = 1000000000;
-static const int kMicrosPerSecond = 1000000;
-static const int kMillisPerSecond = 1000;
-static const int kNanosPerMillisecond = 1000000;
-static const int kNanosPerMicrosecond = 1000;
-static const int kSecondsPerMinute = 60;  // Note that we ignore leap seconds.
-static const int kSecondsPerHour = 3600;
+static constexpr int32_t kNanosPerSecond = 1000000000;
+static constexpr int32_t kMicrosPerSecond = 1000000;
+static constexpr int32_t kMillisPerSecond = 1000;
+static constexpr int32_t kNanosPerMillisecond = 1000000;
+static constexpr int32_t kNanosPerMicrosecond = 1000;
+static constexpr int32_t kSecondsPerMinute =
+    60;  // Note that we ignore leap seconds.
+static constexpr int32_t kSecondsPerHour = 3600;
 
 template <typename T>
-T CreateNormalized(int64_t seconds, int64_t nanos);
+T CreateNormalized(int64_t seconds, int32_t nanos);
 
 template <>
-Timestamp CreateNormalized(int64_t seconds, int64_t nanos) {
+Timestamp CreateNormalized(int64_t seconds, int32_t nanos) {
+  GOOGLE_DCHECK(seconds >= TimeUtil::kTimestampMinSeconds &&
+         seconds <= TimeUtil::kTimestampMaxSeconds)
+      << "Timestamp seconds are outside of the valid range";
+
   // Make sure nanos is in the range.
   if (nanos <= -kNanosPerSecond || nanos >= kNanosPerSecond) {
     seconds += nanos / kNanosPerSecond;
@@ -73,8 +78,12 @@ Timestamp CreateNormalized(int64_t seconds, int64_t nanos) {
     seconds -= 1;
     nanos += kNanosPerSecond;
   }
+
   GOOGLE_DCHECK(seconds >= TimeUtil::kTimestampMinSeconds &&
-         seconds <= TimeUtil::kTimestampMaxSeconds);
+         seconds <= TimeUtil::kTimestampMaxSeconds &&
+         nanos >= TimeUtil::kTimestampMinNanoseconds &&
+         nanos <= TimeUtil::kTimestampMaxNanoseconds)
+      << "Timestamp is outside of the valid range";
   Timestamp result;
   result.set_seconds(seconds);
   result.set_nanos(static_cast<int32_t>(nanos));
@@ -82,7 +91,11 @@ Timestamp CreateNormalized(int64_t seconds, int64_t nanos) {
 }
 
 template <>
-Duration CreateNormalized(int64_t seconds, int64_t nanos) {
+Duration CreateNormalized(int64_t seconds, int32_t nanos) {
+  GOOGLE_DCHECK(seconds >= TimeUtil::kDurationMinSeconds &&
+         seconds <= TimeUtil::kDurationMaxSeconds)
+      << "Duration seconds are outside of the valid range";
+
   // Make sure nanos is in the range.
   if (nanos <= -kNanosPerSecond || nanos >= kNanosPerSecond) {
     seconds += nanos / kNanosPerSecond;
@@ -96,8 +109,12 @@ Duration CreateNormalized(int64_t seconds, int64_t nanos) {
     seconds -= 1;
     nanos += kNanosPerSecond;
   }
+
   GOOGLE_DCHECK(seconds >= TimeUtil::kDurationMinSeconds &&
-         seconds <= TimeUtil::kDurationMaxSeconds);
+         seconds <= TimeUtil::kDurationMaxSeconds &&
+         nanos >= TimeUtil::kDurationMinNanoseconds &&
+         nanos <= TimeUtil::kDurationMaxNanoseconds)
+      << "Duration is outside of the valid range";
   Duration result;
   result.set_seconds(seconds);
   result.set_nanos(static_cast<int32_t>(nanos));
@@ -148,10 +165,14 @@ int64_t RoundTowardZero(int64_t value, int64_t divider) {
 // Actually define these static const integers. Required by C++ standard (but
 // some compilers don't like it).
 #ifndef _MSC_VER
-const int64_t TimeUtil::kTimestampMinSeconds;
-const int64_t TimeUtil::kTimestampMaxSeconds;
-const int64_t TimeUtil::kDurationMaxSeconds;
-const int64_t TimeUtil::kDurationMinSeconds;
+constexpr int64_t TimeUtil::kTimestampMinSeconds;
+constexpr int64_t TimeUtil::kTimestampMaxSeconds;
+constexpr int32_t TimeUtil::kTimestampMinNanoseconds;
+constexpr int32_t TimeUtil::kTimestampMaxNanoseconds;
+constexpr int64_t TimeUtil::kDurationMaxSeconds;
+constexpr int64_t TimeUtil::kDurationMinSeconds;
+constexpr int32_t TimeUtil::kDurationMaxNanoseconds;
+constexpr int32_t TimeUtil::kDurationMinNanoseconds;
 #endif  // !_MSC_VER
 
 std::string TimeUtil::ToString(const Timestamp& timestamp) {
@@ -261,37 +282,43 @@ Duration TimeUtil::SecondsToDuration(int64_t seconds) {
 }
 
 Duration TimeUtil::MinutesToDuration(int64_t minutes) {
-  return CreateNormalized<Duration>(minutes * kSecondsPerMinute, 0);
+  GOOGLE_DCHECK(minutes >= TimeUtil::kDurationMinSeconds / kSecondsPerMinute &&
+         minutes <= TimeUtil::kDurationMaxSeconds / kSecondsPerMinute)
+      << "Duration minutes are outside of the valid range";
+  return SecondsToDuration(minutes * kSecondsPerMinute);
 }
 
 Duration TimeUtil::HoursToDuration(int64_t hours) {
-  return CreateNormalized<Duration>(hours * kSecondsPerHour, 0);
+  GOOGLE_DCHECK(hours >= TimeUtil::kDurationMinSeconds / kSecondsPerHour &&
+         hours <= TimeUtil::kDurationMaxSeconds / kSecondsPerHour)
+      << "Duration hours are outside of the valid range";
+  return SecondsToDuration(hours * kSecondsPerHour);
 }
 
 int64_t TimeUtil::DurationToNanoseconds(const Duration& duration) {
+  GOOGLE_DCHECK(IsDurationValid(duration)) << "Duration is outside of the valid range";
   return duration.seconds() * kNanosPerSecond + duration.nanos();
 }
 
 int64_t TimeUtil::DurationToMicroseconds(const Duration& duration) {
-  return duration.seconds() * kMicrosPerSecond +
-         RoundTowardZero(duration.nanos(), kNanosPerMicrosecond);
+  return RoundTowardZero(DurationToNanoseconds(duration), kNanosPerMicrosecond);
 }
 
 int64_t TimeUtil::DurationToMilliseconds(const Duration& duration) {
-  return duration.seconds() * kMillisPerSecond +
-         RoundTowardZero(duration.nanos(), kNanosPerMillisecond);
+  return RoundTowardZero(DurationToNanoseconds(duration), kNanosPerMillisecond);
 }
 
 int64_t TimeUtil::DurationToSeconds(const Duration& duration) {
+  GOOGLE_DCHECK(IsDurationValid(duration)) << "Duration is outside of the valid range";
   return duration.seconds();
 }
 
 int64_t TimeUtil::DurationToMinutes(const Duration& duration) {
-  return RoundTowardZero(duration.seconds(), kSecondsPerMinute);
+  return RoundTowardZero(DurationToSeconds(duration), kSecondsPerMinute);
 }
 
 int64_t TimeUtil::DurationToHours(const Duration& duration) {
-  return RoundTowardZero(duration.seconds(), kSecondsPerHour);
+  return RoundTowardZero(DurationToSeconds(duration), kSecondsPerHour);
 }
 
 Timestamp TimeUtil::NanosecondsToTimestamp(int64_t nanos) {
@@ -316,20 +343,28 @@ Timestamp TimeUtil::SecondsToTimestamp(int64_t seconds) {
 }
 
 int64_t TimeUtil::TimestampToNanoseconds(const Timestamp& timestamp) {
+  GOOGLE_DCHECK(IsTimestampValid(timestamp))
+      << "Timestamp is outside of the valid range";
   return timestamp.seconds() * kNanosPerSecond + timestamp.nanos();
 }
 
 int64_t TimeUtil::TimestampToMicroseconds(const Timestamp& timestamp) {
+  GOOGLE_DCHECK(IsTimestampValid(timestamp))
+      << "Timestamp is outside of the valid range";
   return timestamp.seconds() * kMicrosPerSecond +
          RoundTowardZero(timestamp.nanos(), kNanosPerMicrosecond);
 }
 
 int64_t TimeUtil::TimestampToMilliseconds(const Timestamp& timestamp) {
+  GOOGLE_DCHECK(IsTimestampValid(timestamp))
+      << "Timestamp is outside of the valid range";
   return timestamp.seconds() * kMillisPerSecond +
          RoundTowardZero(timestamp.nanos(), kNanosPerMillisecond);
 }
 
 int64_t TimeUtil::TimestampToSeconds(const Timestamp& timestamp) {
+  GOOGLE_DCHECK(IsTimestampValid(timestamp))
+      << "Timestamp is outside of the valid range";
   return timestamp.seconds();
 }
 

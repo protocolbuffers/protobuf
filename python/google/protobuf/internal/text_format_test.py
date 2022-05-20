@@ -1598,6 +1598,47 @@ class Proto2Tests(TextFormatBase):
     self.assertEqual(23, message.message_set.Extensions[ext1].i)
     self.assertEqual('foo', message.message_set.Extensions[ext2].str)
 
+    # Handle Any messages inside unknown extensions.
+    message = any_test_pb2.TestAny()
+    text = ('any_value {\n'
+            '  [type.googleapis.com/google.protobuf.internal.TestAny] {\n'
+            '    [unknown_extension] {\n'
+            '      str: "string"\n'
+            '      any_value {\n'
+            '        [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '          data: "string"\n'
+            '        }\n'
+            '      }\n'
+            '    }\n'
+            '  }\n'
+            '}\n'
+            'int32_value: 123')
+    text_format.Parse(text, message, allow_unknown_extension=True)
+    self.assertEqual(123, message.int32_value)
+
+    # Fail if invalid Any message type url inside unknown extensions.
+    message = any_test_pb2.TestAny()
+    text = ('any_value {\n'
+            '  [type.googleapis.com.invalid/google.protobuf.internal.TestAny] {\n'
+            '    [unknown_extension] {\n'
+            '      str: "string"\n'
+            '      any_value {\n'
+            '        [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '          data: "string"\n'
+            '        }\n'
+            '      }\n'
+            '    }\n'
+            '  }\n'
+            '}\n'
+            'int32_value: 123')
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        '[type.googleapis.com.invalid/google.protobuf.internal.TestAny]',
+        text_format.Parse,
+        text,
+        message,
+        allow_unknown_extension=True)
+
   def testParseBadIdentifier(self):
     message = unittest_pb2.TestAllTypes()
     text = ('optional_nested_message { "bb": 1 }')

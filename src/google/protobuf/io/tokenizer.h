@@ -37,7 +37,6 @@
 #ifndef GOOGLE_PROTOBUF_IO_TOKENIZER_H__
 #define GOOGLE_PROTOBUF_IO_TOKENIZER_H__
 
-
 #include <string>
 #include <vector>
 

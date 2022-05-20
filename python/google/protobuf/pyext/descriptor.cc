@@ -40,7 +40,6 @@
 #include <string>
 #include <unordered_map>
 
-#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/pyext/descriptor_containers.h>
@@ -48,6 +47,7 @@
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/stubs/hash.h>
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
