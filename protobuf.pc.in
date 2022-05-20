@@ -8,6 +8,7 @@ Description: Google's Data Interchange Format
 Version: @VERSION@
 Libs: -L${libdir} -lprotobuf
 Libs.private: @LIBS@
+Requires: absl_strings
 
 Cflags: -I${includedir}
 Conflicts: protobuf-lite
