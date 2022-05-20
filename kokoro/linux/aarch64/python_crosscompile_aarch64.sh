@@ -10,9 +10,7 @@ PYTHON="/opt/python/cp38-cp38/bin/python"
 
 # Build protoc and libprotobuf
 bazel build //:protoc
-local _bazel_bin=$(bazel info -c opt bazel-bin)
-export PROTOC=${_bazel_bin}/protoc
-export LIBPROTOBUF=${_bazel_bin}/libprotobuf.a
+export PROTOC=bazel-bin/protoc
 
 # create a simple shell wrapper that runs crosscompiled protoc under qemu
 echo '#!/bin/bash' >protoc_qemu_wrapper.sh
@@ -37,7 +35,7 @@ plat_name_flag="--plat-name=$AUDITWHEEL_PLAT"
 export PROTOCOL_BUFFERS_OVERRIDE_EXT_SUFFIX="$(${PYTHON} -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX").replace("-x86_64-linux-gnu.so", "-aarch64-linux-gnu.so"))')"
 
 # Build the python extension inplace to be able to python unittests later
-${PYTHON} setup.py build_ext --cpp_implementation --compile_static_extension --inplace -O${LIBPROTOBUF}
+${PYTHON} setup.py build_ext --cpp_implementation --compile_static_extension --inplace
 
 # Build the binary wheel (to check it with auditwheel)
 ${PYTHON} setup.py bdist_wheel --cpp_implementation --compile_static_extension $plat_name_flag
