@@ -2,8 +2,15 @@
 #
 # This file should be `source`d.
 
+# Requested version of Python can be overridden by env variable.
+: ${PYTHON_VERSION:=3.9.5}
+
 if pyenv --version >/dev/null ; then
   eval "$(pyenv init -)"
-  pyenv global 3.9.5
+  if ! pyenv global ${PYTHON_VERSION}; then
+    echo "Python ${PYTHON_VERSION} is not available. Versions available:" >&2
+    pyenv versions >&2
+    exit 1
+  fi
 fi
-python --version || python3 --version
+echo "Using $(python --version || python3 --version)"
