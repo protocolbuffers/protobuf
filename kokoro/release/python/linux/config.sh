@@ -6,18 +6,20 @@ function pre_build {
     # Runs in the root directory of this repository.
     pushd protobuf
 
+    # Build protoc and libprotobuf
     if [ "$PLAT" == "aarch64" ]
     then
-      local configure_host_flag="--cpu=aarch64"
+      mkdir -p cmake
+      cd cmake
+      cmake .
+      make -j8
+      export PROTOC=cmake/protoc
+      export LIBPROTOBUF=cmake/libprotobuf.a
+    else
+      ./autogen.sh
+      CXXFLAGS="-fPIC -g -O2" ./configure $configure_host_flag
+      make -j8
     fi
-
-    # Build protoc and libprotobuf
-    mkdir -p cmake
-    cd cmake
-    cmake .
-    make -j8
-    export PROTOC=cmake/protoc
-    export LIBPROTOBUF=cmake/libprotobuf.a
 
     if [ "$PLAT" == "aarch64" ]
     then

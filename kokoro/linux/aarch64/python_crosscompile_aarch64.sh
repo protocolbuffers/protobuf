@@ -8,6 +8,9 @@ set -ex
 
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
+# Initialize any submodules.
+git submodule update --init --recursive
+
 # Build protoc and libprotobuf
 # The build commands are expected to run under dockcross docker image
 # where the CC, CXX and other toolchain variables already point to the crosscompiler
