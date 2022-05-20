@@ -9,6 +9,7 @@ bazel version
 
 # Change to repo root
 cd $(dirname $0)/../../..
+source kokoro/common/pyenv.sh
 
 git submodule update --init --recursive
 
