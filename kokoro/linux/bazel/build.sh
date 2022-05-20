@@ -9,6 +9,7 @@ bazel version
 
 # Change to repo root
 cd $(dirname $0)/../../..
+source kokoro/common/pyenv.sh
 
 git submodule update --init --recursive
 
@@ -24,7 +25,11 @@ bazel test \
   @com_google_protobuf_examples//...
 
 # Verify that we can build successfully from generated tar files.
-./autogen.sh && ./configure && make -j$(nproc) dist
+(
+  pyenv versions
+  pyenv shell 2.7.9  # python2 required for old googletest autotools support
+  ./autogen.sh && ./configure && make -j$(nproc) dist
+)
 DIST=`ls *.tar.gz`
 tar -xf $DIST
 cd ${DIST//.tar.gz}
