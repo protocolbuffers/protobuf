@@ -9,7 +9,7 @@ set -ex
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
 # Build protoc and libprotobuf
-bazel build --cpu=aarch64 //:protoc
+bazel build //:protoc
 local _bazel_bin=$(bazel info -c opt bazel-bin)
 export PROTOC=${_bazel_bin}/protoc
 export LIBPROTOBUF=${_bazel_bin}/libprotobuf.a
