@@ -16,17 +16,20 @@ package_naming(
 
 pkg_files(
     name = "wkt_protos_files",
-    srcs = ["//src/google/protobuf:well_known_type_protos"],
+    srcs = [
+        "//:well_known_type_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
+    ],
     prefix = "include/google/protobuf",
     visibility = ["//visibility:private"],
 )
 
 pkg_files(
-    name = "descriptor_protos_files",
+    name = "compiler_plugin_protos_files",
     srcs = [
-        "//:descriptor_proto",
+      "//src/google/protobuf/compiler:compiler_plugin_protos_files",
     ],
-    prefix = "include/google/protobuf",
+    prefix = "include/google/protobuf/compiler",
     visibility = ["//visibility:private"],
 )
 
@@ -65,11 +68,10 @@ pkg_files(
 pkg_zip(
     name = "protoc_release",
     srcs = [
-        ":descriptor_protos_files",
+        ":compiler_plugin_protos_files",
         ":protoc_files",
         ":protoc_readme",
         ":wkt_protos_files",
-        "//src/google/protobuf/compiler:compiler_plugin_protos_files",
     ],
     package_file_name = "protoc-{version}-{platform}.zip",
     package_variables = ":protobuf_pkg_naming",
