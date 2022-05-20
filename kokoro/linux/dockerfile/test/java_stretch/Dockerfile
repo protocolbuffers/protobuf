@@ -15,9 +15,11 @@ RUN apt-get update && apt-get install -y \
   curl \
   gcc \
   git \
+  libabsl-dev \
   libc6 \
   libc6-dbg \
   libc6-dev \
+  libgmock-dev \
   libgtest-dev \
   libtool \
   make \

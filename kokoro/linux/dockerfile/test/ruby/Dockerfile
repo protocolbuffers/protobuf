@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM debian:bullseye
 
 # Install dependencies.  We start with the basic ones require to build protoc
 # and the C++ build
@@ -8,21 +8,25 @@ RUN apt-get update && apt-get install -y \
   build-essential \
   bzip2 \
   ccache \
+  cmake \
   curl \
   gcc \
   git \
+  libabsl-dev \
   libc6 \
   libc6-dbg \
   libc6-dev \
+  libgmock-dev \
   libgtest-dev \
   libtool \
   make \
   parallel \
+  pkg-config \
   time \
   wget \
   # Java dependencies
   maven \
-  openjdk-8-jdk \
+  openjdk-11-jdk \
   && apt-get clean
 
 # Install rvm

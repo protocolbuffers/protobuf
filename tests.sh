@@ -17,7 +17,7 @@ internal_build_cpp() {
   mkdir abseil_install
   cmake -S third_party/abseil-cpp -B third_party/abseil-cpp \
     -DABSL_BUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX=abseil_install \
-    -DABSL_ENABLE_INSTALL=ON
+    -DABSL_ENABLE_INSTALL=ON -DCMAKE_CXX_STANDARD=11
   cmake --build third_party/abseil-cpp
   cmake --build third_party/abseil-cpp --target install
 
