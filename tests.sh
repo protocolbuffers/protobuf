@@ -312,6 +312,7 @@ build_java_linkage_monitor() {
 }
 
 build_objectivec_ios() {
+  git submodule update --init --recursive
   # Reused the build script that takes care of configuring and ensuring things
   # are up to date.  The OS X test runs the objc conformance test, so skip it
   # here.
@@ -328,6 +329,7 @@ build_objectivec_ios_release() {
 }
 
 build_objectivec_osx() {
+  git submodule update --init --recursive
   # Reused the build script that takes care of configuring and ensuring things
   # are up to date.
   objectivec/DevTools/full_mac_build.sh \
@@ -335,6 +337,7 @@ build_objectivec_osx() {
 }
 
 build_objectivec_tvos() {
+  git submodule update --init --recursive
   # Reused the build script that takes care of configuring and ensuring things
   # are up to date.  The OS X test runs the objc conformance test, so skip it
   # here.
