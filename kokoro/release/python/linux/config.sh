@@ -12,10 +12,12 @@ function pre_build {
     fi
 
     # Build protoc and libprotobuf
-    bazel build -c opt //:protoc
-    local _bazel_bin=$(bazel info -c opt bazel-bin)
-    export PROTOC=${_bazel_bin}/protoc
-    export LIBPROTOBUF=${_bazel_bin}/libprotobuf.a
+    mkdir -p cmake
+    cd cmake
+    cmake .
+    make -j8
+    export PROTOC=cmake/protoc
+    export LIBPROTOBUF=cmake/libprotobuf.a
 
     if [ "$PLAT" == "aarch64" ]
     then

@@ -9,11 +9,12 @@ set -ex
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
 # Build protoc and libprotobuf
-bazel build --cpu=aarch64 //:protoc
-export PROTOC=$PWD/bazel-bin/protoc
-mkdir src/.libs
-ln -s $PWD/bazel-bin/libprotobuf.a src/.libs/libprotobuf.a
-ln -s $PWD/bazel-bin/libprotobuf_lite.a src/.libs/libprotobuf-lite.a
+# The build commands are expected to run under dockcross docker image
+# where the CC, CXX and other toolchain variables already point to the crosscompiler
+mkdir -p cmake/crossbuild_aarch64
+cd cmake/crossbuild_aarch64
+cmake ..
+make -j8
 
 # create a simple shell wrapper that runs crosscompiled protoc under qemu
 echo '#!/bin/bash' >protoc_qemu_wrapper.sh
