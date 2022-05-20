@@ -13,9 +13,17 @@ internal_build_cpp() {
   # Initialize any submodules.
   git submodule update --init --recursive
 
+  # Install Abseil locally.
+  mkdir abseil_install
+  cmake -S third_party/abseil-cpp -B third_party/abseil-cpp \
+    -DABSL_BUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX=abseil_install \
+    -DABSL_ENABLE_INSTALL=ON
+  cmake --build third_party/abseil-cpp
+  cmake --build third_party/abseil-cpp --target install
+
   ./autogen.sh
-  ./configure CXXFLAGS="-fPIC -std=c++11"  # -fPIC is needed for python cpp test.
-                                           # See python/setup.py for more details
+  # -fPIC is needed for python cpp test. See python/setup.py for more details
+  PKG_CONFIG_PATH=$PWD/abseil_install/lib/pkgconfig ./configure CXXFLAGS="-fPIC -std=c++11"
   make -j$(nproc)
 }
 
