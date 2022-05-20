@@ -8,13 +8,16 @@ function pre_build {
 
     if [ "$PLAT" == "aarch64" ]
     then
-      local configure_host_flag="--host=aarch64"
+      local configure_host_flag="--cpu=aarch64"
     fi
 
     # Build protoc and libprotobuf
-    ./autogen.sh
-    CXXFLAGS="-fPIC -g -O2" ./configure $configure_host_flag
-    make -j8
+    use_bazel.sh 5.1.1
+    bazel build $configure_host_flag //:protoc
+    export PROTOC=$PWD/bazel-bin/protoc
+    mkdir src/.libs
+    ln -s $PWD/bazel-bin/libprotobuf.a src/.libs/libprotobuf.a
+    ln -s $PWD/bazel-bin/libprotobuf_lite.a src/.libs/libprotobuf-lite.a
 
     if [ "$PLAT" == "aarch64" ]
     then

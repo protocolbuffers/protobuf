@@ -8,9 +8,13 @@ set -ex
 
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
-./autogen.sh
-CXXFLAGS="-fPIC -g -O2" ./configure --host=aarch64
-make -j8
+# Build protoc and libprotobuf
+use_bazel.sh 5.1.1
+bazel build --cpu=aarch64 //:protoc
+export PROTOC=$PWD/bazel-bin/protoc
+mkdir src/.libs
+ln -s $PWD/bazel-bin/libprotobuf.a src/.libs/libprotobuf.a
+ln -s $PWD/bazel-bin/libprotobuf_lite.a src/.libs/libprotobuf-lite.a
 
 # create a simple shell wrapper that runs crosscompiled protoc under qemu
 echo '#!/bin/bash' >protoc_qemu_wrapper.sh

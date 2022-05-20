@@ -4,6 +4,6 @@
 
 set -ex
 
-./autogen.sh
-CXXFLAGS="-fPIC -g -O2" ./configure --host=aarch64
-make -j8
+use_bazel.sh 5.1.1
+bazel build --cpu=aarch64 //:protoc
+export PROTOC=$PWD/bazel-bin/protoc
