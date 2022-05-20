@@ -9,9 +9,10 @@ bazel version
 
 # Change to repo root
 cd $(dirname $0)/../../..
-source kokoro/common/pyenv.sh
-source kokoro/common/bazel_wrapper.sh
-trap cleanup_invocation_ids ERR
+
+# Get kokoro scripts from repo root by default.
+: ${SCRIPT_ROOT:=$(pwd)}
+source ${SCRIPT_ROOT}/kokoro/common/pyenv.sh
 
 #  Disabled for now, re-enable if appropriate.
 #  //:build_files_updated_unittest \
@@ -28,7 +29,7 @@ bazel_args=(
   @com_google_protobuf_examples//...
 )
 
-bazel "${bazel_args[@]}"
+${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh "${bazel_args[@]}"
 
 # Verify that we can build successfully from generated tar files.
 (
@@ -40,6 +41,4 @@ bazel "${bazel_args[@]}"
 DIST=`ls *.tar.gz`
 tar -xf $DIST
 cd ${DIST//.tar.gz}
-bazel build //:protobuf //:protobuf_java
-
-cleanup_invocation_ids
+${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh build //:protobuf //:protobuf_java

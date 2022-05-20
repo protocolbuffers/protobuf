@@ -12,15 +12,17 @@ bazel version
 
 # Change to repo root
 cd $(dirname $0)/../../..
-source kokoro/common/pyenv.sh
-source kokoro/common/bazel_wrapper.sh
+
+# Get kokoro scripts from repo root by default.
+: ${SCRIPT_ROOT:=$(pwd)}
+source ${SCRIPT_ROOT}/kokoro/common/pyenv.sh
 
 # Build distribution archive
 echo "============================================================"
 echo -e "[[ $(date) ]] Building distribution archive...\n"
-bazel build //pkg:dist_all_tar
-DIST_ARCHIVE=$(readlink $(${BAZEL} info bazel-bin)/pkg/dist_all_tar.tar.gz)
-${BAZEL} shutdown
+${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh build //pkg:dist_all_tar
+DIST_ARCHIVE=$(readlink $(bazel info bazel-bin)/pkg/dist_all_tar.tar.gz)
+bazel shutdown
 
 # Extract the dist archive.
 echo "============================================================"
@@ -32,13 +34,9 @@ echo -e "[[ $(date) ]] Extracting distribution archive...\n"
 if [[ -z ${DIST_WORK_ROOT:-} ]]; then
   : ${DIST_WORK_ROOT:=$(mktemp -d)}
   function dist_cleanup() {
-    rm -rf ${DIST_WORK_ROOT}
-    cleanup_invocation_ids
+    (( $BASH_SUBSHELL == 0 )) && rm -rf ${DIST_WORK_ROOT}
   }
-  trap dist_cleanup ERR
-else
-  function dist_cleanup() { :; }
-  trap cleanup_invocation_ids ERR
+  trap dist_cleanup EXIT
 fi
 
 DIST_WORKSPACE=${DIST_WORK_ROOT}/protobuf
@@ -59,5 +57,4 @@ bazel_args=(
   -//objectivec/...  # only works on macOS
   @com_google_protobuf_examples//...
 )
-bazel "${bazel_args[@]}"
-dist_cleanup
+${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh "${bazel_args[@]}"
