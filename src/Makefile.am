@@ -23,12 +23,18 @@ PROTOBUF_VERSION = 32:0:0
 if GCC
 # Turn on all warnings except for sign comparison (we ignore sign comparison
 # in Google so our code base have tons of such warnings).
-NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) -Wall -Wno-sign-compare
+NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ABSL_CFLAGS) $(ZLIB_DEF) -Wall -Wno-sign-compare
 else
-NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF)
+NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ABSL_CFLAGS) $(ZLIB_DEF)
 endif
 
 AM_CXXFLAGS = $(NO_OPT_CXXFLAGS) $(PROTOBUF_OPT_FLAG)
+
+# The libabsl-dev package in Debian currently has some spurious -Wl flags in
+# its pkg-config files:
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1011294
+# Let's work around that problem by filtering them out.
+MODIFIED_ABSL_LIBS = $(shell echo $(ABSL_LIBS) | sed 's/-Wl //g')
 
 AM_LDFLAGS = $(PTHREAD_CFLAGS) ${LIBLOG_LIBS}
 
@@ -482,7 +488,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/zip_writer.h
 
 bin_PROGRAMS = protoc
-protoc_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
+protoc_LDADD = libprotoc.la libprotobuf.la $(MODIFIED_ABSL_LIBS) $(PTHREAD_LIBS)
 protoc_SOURCES = google/protobuf/compiler/main.cc
 
 # Tests ==============================================================
@@ -735,7 +741,7 @@ COMMON_TEST_SOURCES =                                          \
 check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
                  protobuf-lite-test test_plugin protobuf-lite-arena-test \
                  no-warning-test $(GZCHECKPROGRAMS)
-protobuf_test_LDADD = $(GTEST_LIBS) $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
+protobuf_test_LDADD = libprotoc.la libprotobuf.la $(MODIFIED_ABSL_LIBS) $(GTEST_LIBS) $(PTHREAD_LIBS)
 protobuf_test_CPPFLAGS = $(GTEST_CFLAGS)
 # Disable optimization for tests unless the user explicitly asked for it,
 # since test_util.cc takes forever to compile with optimization (with GCC).
@@ -829,7 +835,7 @@ nodist_protobuf_test_SOURCES = $(protoc_outputs)
 $(am_protobuf_test_OBJECTS): unittest_proto_middleman
 
 # Run cpp_unittest again with PROTOBUF_TEST_NO_DESCRIPTORS defined.
-protobuf_lazy_descriptor_test_LDADD = $(GTEST_LIBS) $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
+protobuf_lazy_descriptor_test_LDADD = libprotoc.la libprotobuf.la $(MODIFIED_ABSL_LIBS) $(GTEST_LIBS) $(PTHREAD_LIBS)
 protobuf_lazy_descriptor_test_CPPFLAGS = $(GTEST_CFLAGS) -DPROTOBUF_TEST_NO_DESCRIPTORS
 protobuf_lazy_descriptor_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lazy_descriptor_test_SOURCES =                        \
@@ -851,7 +857,7 @@ COMMON_LITE_TEST_SOURCES =                                             \
 # depend on gtest because our internal version of gtest depend on proto
 # full runtime and we want to make sure this test builds without full
 # runtime.
-protobuf_lite_test_LDADD = $(GTEST_LIBS) $(PTHREAD_LIBS) libprotobuf-lite.la
+protobuf_lite_test_LDADD = libprotobuf-lite.la $(MODIFIED_ABSL_LIBS) $(GTEST_LIBS) $(PTHREAD_LIBS)
 protobuf_lite_test_CPPFLAGS= $(GTEST_CFLAGS)
 protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_test_SOURCES =                                           \
@@ -863,7 +869,7 @@ $(am_protobuf_lite_test_OBJECTS): unittest_proto_middleman
 # lite_arena_unittest depends on gtest because teboring@ found that without
 # gtest when building the test internally our memory sanitizer doesn't detect
 # memory leaks (don't know why).
-protobuf_lite_arena_test_LDADD = $(GTEST_LIBS) $(PTHREAD_LIBS) libprotobuf-lite.la
+protobuf_lite_arena_test_LDADD = libprotobuf-lite.la $(MODIFIED_ABSL_LIBS) $(GTEST_LIBS) $(PTHREAD_LIBS)
 protobuf_lite_arena_test_CPPFLAGS = $(GTEST_CFLAGS)
 protobuf_lite_arena_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_arena_test_SOURCES =       \
@@ -873,8 +879,8 @@ nodist_protobuf_lite_arena_test_SOURCES = $(protoc_lite_outputs)
 $(am_protobuf_lite_arena_test_OBJECTS): unittest_proto_middleman
 
 # Test plugin binary.
-test_plugin_LDADD = $(GTEST_LIBS) $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
-test_plugin_CPPFLAGS = $(GTEST_CFLAGS)
+test_plugin_LDADD = libprotoc.la libprotobuf.la $(MODIFIED_ABSL_LIBS) $(GTEST_LIBS) $(PTHREAD_LIBS)
+test_plugin_CPPFLAGS = $(ABSL_CFLAGS) $(GTEST_CFLAGS)
 test_plugin_SOURCES =                                          \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/compiler/test_plugin.cc                      \
@@ -882,10 +888,10 @@ test_plugin_SOURCES =                                          \
   google/protobuf/testing/file.h
 
 if HAVE_ZLIB
-zcgzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la
+zcgzip_LDADD = libprotobuf.la $(MODIFIED_ABSL_LIBS) $(PTHREAD_LIBS)
 zcgzip_SOURCES = google/protobuf/testing/zcgzip.cc
 
-zcgunzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la
+zcgunzip_LDADD = libprotobuf.la $(MODIFIED_ABSL_LIBS) $(PTHREAD_LIBS)
 zcgunzip_SOURCES = google/protobuf/testing/zcgunzip.cc
 endif
 
@@ -900,8 +906,8 @@ no_warning_test.cc:
 	done
 	echo "int main(int, char**) { return 0; }" >> no_warning_test.cc
 
-no_warning_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
-no_warning_test_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) \
+no_warning_test_LDADD = libprotoc.la libprotobuf.la $(MODIFIED_ABSL_LIBS) $(PTHREAD_LIBS)
+no_warning_test_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ABSL_CFLAGS) $(ZLIB_DEF) \
                            -Wall -Wextra -Werror -Wno-unused-parameter
 nodist_no_warning_test_SOURCES = no_warning_test.cc $(protoc_outputs)
 

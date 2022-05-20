@@ -136,6 +136,8 @@ AC_FUNC_MEMCMP
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([ftruncate memset mkdir strchr strerror strtol])
 
+PKG_CHECK_MODULES([ABSL], [absl_strings])
+
 # Check for a local installation of GoogleTest and GMock, but fall back on the
 # Git submodule if they are not available.
 PKG_CHECK_MODULES(
