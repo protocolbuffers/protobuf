@@ -736,7 +736,7 @@ check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
                  protobuf-lite-test test_plugin protobuf-lite-arena-test \
                  no-warning-test $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(GTEST_LIBS) $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
-protobuf_test_CPPFLAGS = $(GTEST_FLAGS)
+protobuf_test_CPPFLAGS = $(GTEST_CFLAGS)
 # Disable optimization for tests unless the user explicitly asked for it,
 # since test_util.cc takes forever to compile with optimization (with GCC).
 # See configure.ac for more info.
@@ -830,7 +830,7 @@ $(am_protobuf_test_OBJECTS): unittest_proto_middleman
 
 # Run cpp_unittest again with PROTOBUF_TEST_NO_DESCRIPTORS defined.
 protobuf_lazy_descriptor_test_LDADD = $(GTEST_LIBS) $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
-protobuf_lazy_descriptor_test_CPPFLAGS = $(GTEST_FLAGS) -DPROTOBUF_TEST_NO_DESCRIPTORS
+protobuf_lazy_descriptor_test_CPPFLAGS = $(GTEST_CFLAGS) -DPROTOBUF_TEST_NO_DESCRIPTORS
 protobuf_lazy_descriptor_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lazy_descriptor_test_SOURCES =                        \
   google/protobuf/compiler/cpp/unittest.cc                     \
@@ -852,7 +852,7 @@ COMMON_LITE_TEST_SOURCES =                                             \
 # full runtime and we want to make sure this test builds without full
 # runtime.
 protobuf_lite_test_LDADD = $(GTEST_LIBS) $(PTHREAD_LIBS) libprotobuf-lite.la
-protobuf_lite_test_CPPFLAGS= $(GTEST_FLAGS)
+protobuf_lite_test_CPPFLAGS= $(GTEST_CFLAGS)
 protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_test_SOURCES =                                           \
   google/protobuf/lite_unittest.cc                                     \
@@ -864,7 +864,7 @@ $(am_protobuf_lite_test_OBJECTS): unittest_proto_middleman
 # gtest when building the test internally our memory sanitizer doesn't detect
 # memory leaks (don't know why).
 protobuf_lite_arena_test_LDADD = $(GTEST_LIBS) $(PTHREAD_LIBS) libprotobuf-lite.la
-protobuf_lite_arena_test_CPPFLAGS = $(GTEST_FLAGS)
+protobuf_lite_arena_test_CPPFLAGS = $(GTEST_CFLAGS)
 protobuf_lite_arena_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_arena_test_SOURCES =       \
   google/protobuf/lite_arena_unittest.cc \
@@ -874,7 +874,7 @@ $(am_protobuf_lite_arena_test_OBJECTS): unittest_proto_middleman
 
 # Test plugin binary.
 test_plugin_LDADD = $(GTEST_LIBS) $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
-test_plugin_CPPFLAGS = $(GTEST_FLAGS)
+test_plugin_CPPFLAGS = $(GTEST_CFLAGS)
 test_plugin_SOURCES =                                          \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/compiler/test_plugin.cc                      \

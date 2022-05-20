@@ -142,11 +142,11 @@ PKG_CHECK_MODULES(
   [GTEST], [gtest_main, gmock],
   [USE_GTEST_SUBMODULE=0],
   [USE_GTEST_SUBMODULE=1
-   GTEST_FLAGS="-I\${top_srcdir}/third_party/googletest/googletest/include -I\${top_srcdir}/third_party/googletest/googlemock/include"
+   GTEST_CFLAGS="-I\${top_srcdir}/third_party/googletest/googletest/include -I\${top_srcdir}/third_party/googletest/googlemock/include"
    GTEST_LIBS="\${top_builddir}/third_party/googletest/googlemock/lib/libgmock_main.la \${top_builddir}/third_party/googletest/googlemock/lib/libgmock.la \${top_builddir}/third_party/googletest/googletest/lib/libgtest.la"
   ]
 )
-AC_SUBST([GTEST_FLAGS])
+AC_SUBST([GTEST_CFLAGS])
 AC_SUBST([GTEST_LIBS])
 AM_CONDITIONAL([USE_GTEST_SUBMODULE], [test $USE_GTEST_SUBMODULE = 1])
 
