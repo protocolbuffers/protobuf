@@ -16,17 +16,27 @@ package_naming(
 
 pkg_files(
     name = "wkt_protos_files",
-    srcs = ["//src/google/protobuf:well_known_type_protos"],
+    srcs = [
+        "//:src/google/protobuf/any.proto",
+        "//:src/google/protobuf/api.proto",
+        "//:src/google/protobuf/descriptor.proto",
+        "//:src/google/protobuf/duration.proto",
+        "//:src/google/protobuf/empty.proto",
+        "//:src/google/protobuf/field_mask.proto",
+        "//:src/google/protobuf/source_context.proto",
+        "//:src/google/protobuf/struct.proto",
+        "//:src/google/protobuf/timestamp.proto",
+        "//:src/google/protobuf/type.proto",
+        "//:src/google/protobuf/wrappers.proto",
+    ],
     prefix = "include/google/protobuf",
     visibility = ["//visibility:private"],
 )
 
 pkg_files(
-    name = "descriptor_protos_files",
-    srcs = [
-        "//:descriptor_proto",
-    ],
-    prefix = "include/google/protobuf",
+    name = "compiler_plugin_protos_files",
+    srcs = ["//:src/google/protobuf/compiler/plugin.proto"],
+    prefix = "include/google/protobuf/compiler",
     visibility = ["//visibility:private"],
 )
 
@@ -65,6 +75,7 @@ pkg_files(
 pkg_zip(
     name = "protoc_release",
     srcs = [
+        ":compiler_plugin_protos_files",
         ":descriptor_protos_files",
         ":protoc_files",
         ":protoc_readme",
