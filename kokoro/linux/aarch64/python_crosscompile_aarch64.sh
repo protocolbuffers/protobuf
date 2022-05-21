@@ -9,8 +9,25 @@ set -ex
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
 # Build protoc and libprotobuf
-bazel --bazelrc toolchain/toolchains.bazelrc build --config=linux-aarch_64 //:protoc
-export PROTOC=bazel-bin/protoc
+ls /usr/bin
+ls /usr/include
+ls /usr/include/c++/*
+ls /usr/lib/clang/*
+find /usr -name zlib
+#bazel --bazelrc toolchain/toolchains.bazelrc build --config=linux-aarch_64 //:protoc  --sandbox_debug
+#export PROTOC=bazel-bin/protoc
+# Initialize any submodules.
+git submodule update --init --recursive
+
+# the build commands are expected to run under dockcross docker image
+# where the CC, CXX and other toolchain variables already point to the crosscompiler
+gcc --version
+yum list installed 'gcc*'
+mkdir -p cmake/crossbuild_aarch64
+cd cmake/crossbuild_aarch64
+cmake -Dprotobuf_WITH_ZLIB=0 ..
+make VERBOSE=1 -j1
+export PROTOC=cmake/protoc
 
 # create a simple shell wrapper that runs crosscompiled protoc under qemu
 echo '#!/bin/bash' >protoc_qemu_wrapper.sh
