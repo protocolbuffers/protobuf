@@ -40,8 +40,23 @@ function bazel_wrapper::kokoro_flags() {
     --bes_results_url=https://source.cloud.google.com/results/invocations/
     --invocation_id=$(bazel_wrapper::gen_invocation_id)
     --project_id=${KOKORO_BES_PROJECT_ID}  # --bes_instance_name in Bazel 5+
-    --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache
   )
+  if [[ -n ${KOKORO_FOUNDRY_BACKEND_ADDRESS:-} ]] && \
+     [[ -z ${KOKORO_BAZEL_LOCAL_EXECUTION:-} ]]; then
+    _flags+=(
+      --remote_cache=${KOKORO_FOUNDRY_BACKEND_ADDRESS}
+      --remote_executor=${KOKORO_FOUNDRY_BACKEND_ADDRESS}
+      --remote_instance_name=${KOKORO_FOUNDRY_PROJECT_ID:-${KOKORO_BES_PROJECT_ID}}
+      --spawn_strategy=remote
+      --remote_timeout=3600
+      --strategy=Javac=remote
+      --genrule_strategy=remote
+    )
+  else
+    _flags+=(
+      --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache
+    )
+  fi
   if [[ -n ${KOKORO_BAZEL_AUTH_CREDENTIAL:-} ]]; then
     _flags+=( --google_credentials=${KOKORO_BAZEL_AUTH_CREDENTIAL} )
   else

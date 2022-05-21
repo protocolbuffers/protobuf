@@ -8,6 +8,14 @@ local_repository(
 )
 
 http_archive(
+    name = "rbe_default",
+    # Based on:
+    # https://storage.googleapis.com/rbe-toolchain/bazel-configs/bazel_5.1.1/rbe-ubuntu1604/latest/manifest.json
+    sha256 = "9f81180099ebc84da906c53cf56c1e9835d7dbc4bbc8ac5c7e075f050c450c3a",
+    urls = ["https://storage.googleapis.com/rbe-toolchain/bazel-configs/bazel_5.1.1/rbe-ubuntu1604/latest/rbe_default.tar"],
+)
+
+http_archive(
     name = "com_google_googletest",
     sha256 = "9dc9157a9a1551ec7a7e43daea9a694a0bb5fb8bec81235d8a1e6ef64c716dcb",
     strip_prefix = "googletest-release-1.10.0",
