@@ -43,24 +43,26 @@ function bazel_wrapper::kokoro_build_flags() {
   [[ -n ${KOKORO_BES_PROJECT_ID:-} ]] || return
 
   local -a _flags
+  # BES flags:
   _flags+=(
     --bes_backend=${KOKORO_BES_BACKEND_ADDRESS:-buildeventservice.googleapis.com}
     --bes_results_url=https://source.cloud.google.com/results/invocations/
     --invocation_id=$(bazel_wrapper::gen_invocation_id)
     --project_id=${KOKORO_BES_PROJECT_ID}  # --bes_instance_name in Bazel 5+
   )
+  # Remote Build Execution flags:
   if [[ -n ${KOKORO_FOUNDRY_BACKEND_ADDRESS:-} ]] && \
      [[ -z ${KOKORO_BAZEL_LOCAL_EXECUTION:-} ]]; then
     # The --remote_instance_name can be overridden by environment variable:
     : ${FOUNDRY_INSTANCE_NAME:=${KOKORO_FOUNDRY_PROJECT_ID}/instances/default_instance}
     _flags+=(
-      --remote_cache=${KOKORO_FOUNDRY_BACKEND_ADDRESS}
-      --remote_executor=${KOKORO_FOUNDRY_BACKEND_ADDRESS}
+      --config=remote_gcp
       --remote_instance_name=${FOUNDRY_INSTANCE_NAME}
     )
   else
     _flags+=( --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache )
   fi
+  # Credentials:
   if [[ -n ${KOKORO_BAZEL_AUTH_CREDENTIAL:-} ]]; then
     _flags+=( --google_credentials=${KOKORO_BAZEL_AUTH_CREDENTIAL} )
   else
