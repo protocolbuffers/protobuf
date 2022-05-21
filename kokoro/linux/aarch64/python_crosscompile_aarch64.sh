@@ -9,7 +9,7 @@ set -ex
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
 # Build protoc and libprotobuf
-bazel build //:protoc
+bazel --bazelrc toolchain/toolchains.bazelrc build --config=linux-aarch_64 //:protoc
 export PROTOC=bazel-bin/protoc
 
 # create a simple shell wrapper that runs crosscompiled protoc under qemu
