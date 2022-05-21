@@ -178,7 +178,7 @@ Output is CcFileList and/or ProtoFileList. Example:
 # fragment generator function.
 ################################################################################
 
-def _create_file_list_impl(fragment_generator):
+def _create_file_list_impl(ctx, fragment_generator):
     # `fragment_generator` is a function like:
     #     def fn(originating_rule: Label,
     #            varname: str,
@@ -191,92 +191,89 @@ def _create_file_list_impl(fragment_generator):
     # When dealing with `File` objects, the `short_path` is used to strip
     # the output prefix for generated files.
 
-    def _impl(ctx):
-        out = ctx.outputs.out
+    out = ctx.outputs.out
 
-        fragments = []
-        for srcrule, libname in ctx.attr.src_libs.items():
-            if CcFileList in srcrule:
-                cc_file_list = srcrule[CcFileList]
-                fragments.extend([
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_srcs",
-                        ctx.attr.source_prefix,
-                        [f.short_path for f in cc_file_list.srcs],
-                    ),
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_hdrs",
-                        ctx.attr.source_prefix,
-                        [f.short_path for f in (cc_file_list.hdrs +
-                                                cc_file_list.textual_hdrs)],
-                    ),
-                ])
+    fragments = []
+    for srcrule, libname in ctx.attr.src_libs.items():
+        if CcFileList in srcrule:
+            cc_file_list = srcrule[CcFileList]
+            fragments.extend([
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_srcs",
+                    ctx.attr.source_prefix,
+                    [f.short_path for f in cc_file_list.srcs],
+                ),
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_hdrs",
+                    ctx.attr.source_prefix,
+                    [f.short_path for f in (cc_file_list.hdrs +
+                                            cc_file_list.textual_hdrs)],
+                ),
+            ])
 
-            if ProtoFileList in srcrule:
-                proto_file_list = srcrule[ProtoFileList]
-                fragments.extend([
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_proto_srcs",
-                        ctx.attr.source_prefix,
-                        [f.short_path for f in proto_file_list.proto_srcs],
-                    ),
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_srcs",
-                        ctx.attr.source_prefix,
-                        proto_file_list.srcs,
-                    ),
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_hdrs",
-                        ctx.attr.source_prefix,
-                        proto_file_list.hdrs,
-                    ),
-                ])
+        if ProtoFileList in srcrule:
+            proto_file_list = srcrule[ProtoFileList]
+            fragments.extend([
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_proto_srcs",
+                    ctx.attr.source_prefix,
+                    [f.short_path for f in proto_file_list.proto_srcs],
+                ),
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_srcs",
+                    ctx.attr.source_prefix,
+                    proto_file_list.srcs,
+                ),
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_hdrs",
+                    ctx.attr.source_prefix,
+                    proto_file_list.hdrs,
+                ),
+            ])
 
-            files = {}
+        files = {}
 
-            if PackageFilegroupInfo in srcrule:
-                for pkg_files_info, origin in srcrule[PackageFilegroupInfo].pkg_files:
-                    # keys are the destination path:
-                    files.update(pkg_files_info.dest_src_map)
+        if PackageFilegroupInfo in srcrule:
+            for pkg_files_info, origin in srcrule[PackageFilegroupInfo].pkg_files:
+                # keys are the destination path:
+                files.update(pkg_files_info.dest_src_map)
 
-            if PackageFilesInfo in srcrule:
-                # keys are the destination:
-                files.update(srcrule[PackageFilesInfo].dest_src_map)
+        if PackageFilesInfo in srcrule:
+            # keys are the destination:
+            files.update(srcrule[PackageFilesInfo].dest_src_map)
 
-            if files == {} and DefaultInfo in srcrule and CcInfo not in srcrule:
-                # This could be an individual file or filegroup.
-                # We explicitly ignore rules with CcInfo, since their
-                # output artifacts are libraries or binaries.
-                files.update(
-                    {
-                        f.short_path: 1
-                        for f in srcrule[DefaultInfo].files.to_list()
-                    },
-                )
+        if files == {} and DefaultInfo in srcrule and CcInfo not in srcrule:
+            # This could be an individual file or filegroup.
+            # We explicitly ignore rules with CcInfo, since their
+            # output artifacts are libraries or binaries.
+            files.update(
+                {
+                    f.short_path: 1
+                    for f in srcrule[DefaultInfo].files.to_list()
+                },
+            )
 
-            if files:
-                fragments.append(
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_files",
-                        ctx.attr.source_prefix,
-                        sorted(files.keys()),
-                    ),
-                )
+        if files:
+            fragments.append(
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_files",
+                    ctx.attr.source_prefix,
+                    sorted(files.keys()),
+                ),
+            )
 
-        ctx.actions.write(
-            output = out,
-            content = (ctx.attr._header % ctx.label) + "\n".join(fragments),
-        )
+    ctx.actions.write(
+        output = out,
+        content = (ctx.attr._header % ctx.label) + "\n".join(fragments),
+    )
 
-        return [DefaultInfo(files = depset([out]))]
-
-    return _impl
+    return [DefaultInfo(files = depset([out]))]
 
 # Common rule attrs for rules that use `_create_file_list_impl`:
 # (note that `_header` is also required)
@@ -343,6 +340,9 @@ def _cmake_var_fragment(owner, varname, prefix, entries):
         entries = "\n".join(["  %s%s" % (prefix, f) for f in entries]),
     )
 
+def _cmake_file_list_impl(ctx):
+    _create_file_list_impl(ctx, _cmake_var_fragment)
+
 gen_cmake_file_lists = rule(
     doc = """
 Generates a CMake-syntax file with lists of files.
@@ -361,7 +361,7 @@ For proto_library, the following are generated:
     {libname}_hdrs: contains syntesized paths for generated C++ headers.
 
 """,
-    implementation = _create_file_list_impl(_cmake_var_fragment),
+    implementation = _cmake_file_list_impl,
     attrs = dict(
         _source_list_common_attrs,
         _header = attr.string(
@@ -416,6 +416,9 @@ def _automake_var_fragment(owner, varname, prefix, entries):
     )
     return fragment.rstrip("\\ ") + "\n"
 
+def _automake_file_list_impl(ctx):
+    _create_file_list_impl(ctx, _automake_var_fragment)
+
 gen_automake_file_lists = rule(
     doc = """
 Generates an Automake-syntax file with lists of files.
@@ -434,7 +437,7 @@ For proto_library, the following are generated:
     {libname}_hdrs: contains syntesized paths for generated C++ headers.
 
 """,
-    implementation = _create_file_list_impl(_automake_var_fragment),
+    implementation = _automake_file_list_impl,
     attrs = dict(
         _source_list_common_attrs.items(),
         _header = attr.string(
