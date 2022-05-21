@@ -1,27 +1,14 @@
-# Based on:
+# Adapted from:
 # https://github.com/bazelbuild/bazel-toolchains/blob/master/bazelrc/bazel-4.1.0.bazelrc
 
-
-# Depending on how many machines are in the remote execution instance, setting
-# this higher can make builds faster by allowing more jobs to run in parallel.
-# Setting it too high can result in jobs that timeout, however, while waiting
-# for a remote machine to execute them.
 build:remote --jobs=50
 
-# Set several flags related to specifying the platform, toolchain and java
-# properties.
-# These flags should only be used as is for the rbe-ubuntu16-04 container
-# and need to be adapted to work with other toolchain containers.
 build:remote --java_runtime_version=rbe_jdk
 build:remote --tool_java_runtime_version=rbe_jdk
 build:remote --extra_toolchains=@rbe_default//java:all
-
 build:remote --crosstool_top=@rbe_default//cc:toolchain
 build:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
-# Platform flags:
-# The toolchain container used for execution is defined in the target indicated
-# by "extra_execution_platforms", "host_platform" and "platforms".
-# More about platforms: https://docs.bazel.build/versions/master/platforms.html
+
 build:remote --extra_toolchains=@rbe_default//config:cc-toolchain
 build:remote --extra_execution_platforms=@rbe_default//config:platform
 build:remote --host_platform=@rbe_default//config:platform
@@ -31,22 +18,14 @@ build:remote --platforms=@rbe_default//config:platform
 # defined. See https://github.com/bazelbuild/bazel/issues/7480
 build:remote --define=EXECUTOR=remote
 
-# Enable remote execution so actions are performed on the remote systems.
-build:remote --remote_executor=grpcs://remotebuildexecution.googleapis.com
-
-# Enforce stricter environment rules, which eliminates some non-hermetic
-# behavior and therefore improves both the remote cache hit rate and the
-# correctness and repeatability of the build.
 build:remote --incompatible_strict_action_env=true
-
-# Set a higher timeout value, just in case.
 build:remote --remote_timeout=3600
 
-# Enable authentication. This will pick up application default credentials by
-# default. You can use --google_credentials=some_file.json to use a service
-# account credential instead.
-build:remote --google_default_credentials=true
+# Specific config for using GCP RBE:
+build:remote_gcp --config=remote
+build:remote_gcp --remote_executor=grpcs://remotebuildexecution.googleapis.com
+build:remote_gcp --remote_cache=grpcs://remotebuildexecution.googleapis.com
 
-# Protobuf-specific flags:
-build:remote --remote_cache=remotebuildexecution.googleapis.com
-build:remote --remote_instance_name=projects/protobuf-build/instances/default_instance
+# Note that you will still need to specify:
+# * One of { --google_default_credentials=true , --google_credentials=... }
+# * --remote_instance_name=...

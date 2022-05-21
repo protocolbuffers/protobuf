@@ -30,8 +30,16 @@ function bazel_wrapper::gen_invocation_id() {
   echo -n ${_invocation_id}
 }
 
-# Prints flags to use on Kokoro.
-function bazel_wrapper::kokoro_flags() {
+# Prints startup flags to use on Kokoro.
+# These need to come before the subcommand in ${@}.
+function bazel_wrapper::kokoro_startup_flags() {
+  [[ -n ${KOKORO_FOUNDRY_BACKEND_ADDRESS:-} ]] || return
+  [[ -z ${KOKORO_BAZEL_LOCAL_EXECUTION:-} ]] || return
+  echo "--bazelrc=build_defs/rbe_default.bazelrc"
+}
+
+# Prints build flags to use on Kokoro.
+function bazel_wrapper::kokoro_build_flags() {
   [[ -n ${KOKORO_BES_PROJECT_ID:-} ]] || return
 
   local -a _flags
@@ -43,19 +51,15 @@ function bazel_wrapper::kokoro_flags() {
   )
   if [[ -n ${KOKORO_FOUNDRY_BACKEND_ADDRESS:-} ]] && \
      [[ -z ${KOKORO_BAZEL_LOCAL_EXECUTION:-} ]]; then
+    # The --remote_instance_name can be overridden by environment variable:
+    : ${FOUNDRY_INSTANCE_NAME:=${KOKORO_FOUNDRY_PROJECT_ID}/instances/default_instance}
     _flags+=(
       --remote_cache=${KOKORO_FOUNDRY_BACKEND_ADDRESS}
       --remote_executor=${KOKORO_FOUNDRY_BACKEND_ADDRESS}
-      --remote_instance_name=${KOKORO_FOUNDRY_PROJECT_ID:-${KOKORO_BES_PROJECT_ID}}
-      --spawn_strategy=remote
-      --remote_timeout=3600
-      --strategy=Javac=remote
-      --genrule_strategy=remote
+      --remote_instance_name=${FOUNDRY_INSTANCE_NAME}
     )
   else
-    _flags+=(
-      --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache
-    )
+    _flags+=( --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache )
   fi
   if [[ -n ${KOKORO_BAZEL_AUTH_CREDENTIAL:-} ]]; then
     _flags+=( --google_credentials=${KOKORO_BAZEL_AUTH_CREDENTIAL} )
@@ -68,17 +72,21 @@ function bazel_wrapper::kokoro_flags() {
 
 # Runs bazel with Kokoro flags, if appropriate.
 function bazel_wrapper() {
-  local -a _flags
+  local -a _args
 
   # We might need to add flags. They need to come after any startup flags and
-  # the command, but before any terminating "--", so copy them into the _flags
+  # the command, but before any terminating "--", so copy them into the _args
   # variable.
   until (( ${#@} == 0 )) || [[ $1 == "--" ]]; do
-    _flags+=( "${1}" ); shift
+    _args+=( "${1}" ); shift
   done
 
   # Set the `BAZEL` env variable to override the actual bazel binary to use:
-  ${BAZEL:=bazel} "${_flags[@]}" $(bazel_wrapper::kokoro_flags) "${@}"
+  ${BAZEL:=bazel} \
+    $(bazel_wrapper::kokoro_startup_flags) \
+    "${_args[@]}" \
+    $(bazel_wrapper::kokoro_build_flags) \
+    "${@}"
 }
 
 # If this script was called directly, run bazel. Otherwise (i.e., this script
