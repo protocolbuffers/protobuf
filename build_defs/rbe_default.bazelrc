@@ -26,6 +26,11 @@ build:remote_gcp --config=remote
 build:remote_gcp --remote_executor=grpcs://remotebuildexecution.googleapis.com
 build:remote_gcp --remote_cache=grpcs://remotebuildexecution.googleapis.com
 
+# Shortcut for team members:
+build:team_rbe --config=remote_gcp
+build:team_rbe --google_default_credentials=true
+build:team_rbe --remote_instance_name=projects/protobuf-build/instances/default_instance
+
 # Note that you will still need to specify:
 # * One of { --google_default_credentials=true , --google_credentials=... }
 # * --remote_instance_name=...
