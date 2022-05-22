@@ -50,7 +50,15 @@ cc_toolchain_config(
 
 cc_toolchain_config(
     name = "linux-aarch_64-config",
-    sysroot = "/opt/manylinux/2014/aarch64",
+    sysroot = "",
+    extra_compiler_flags = [
+        "-E",
+        "-v",
+        "-stdlib=libc++",
+    ],
+    extra_include = "/usr/xcc/aarch64-unknown-linux-gnueabi/aarch64-unknown-linux-gnueabi/include/c++/4.8.5",
+    extra_linker_flags = [
+    ],
     linker_path = "/usr/bin/ld",
     target_cpu = "aarch64",
     target_full_name = "aarch64-linux-gnu",
