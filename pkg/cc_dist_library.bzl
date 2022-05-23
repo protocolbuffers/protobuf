@@ -7,30 +7,21 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 # Archive/linking support
 ################################################################################
 
-def _collect_linker_input_objects(deps):
-    """Collect the set of object files from the immediate deps."""
+def _collect_linker_input_objects(dep_label, cc_info, objs, pic_objs):
+    """Accumulate .o and .pic.o files into `objs` and `pic_objs`."""
+    link_ctx = cc_info.linking_context
+    if link_ctx == None:
+        return
 
-    objs = []
-    pic_objs = []
-    for dep in deps:
-        if CcInfo not in dep:
+    linker_inputs = link_ctx.linker_inputs.to_list()
+    for link_input in linker_inputs:
+        if link_input.owner != dep_label:
+            # This is a transitive dep: skip it.
             continue
 
-        link_ctx = dep[CcInfo].linking_context
-        if link_ctx == None:
-            continue
-
-        linker_inputs = link_ctx.linker_inputs.to_list()
-        for link_input in linker_inputs:
-            if link_input.owner != dep.label:
-                # This is a transitive dep: skip it.
-                continue
-
-            for lib in link_input.libraries:
-                objs.extend(lib.objects or [])
-                pic_objs.extend(lib.pic_objects or [])
-
-    return (objs, pic_objs)
+        for lib in link_input.libraries:
+            objs.extend(lib.objects or [])
+            pic_objs.extend(lib.pic_objects or [])
 
 # Creates an action to build the `output_file` static library (archive)
 # using `object_files`.
@@ -123,6 +114,157 @@ def _create_dso_link_action(
 
     return outputs
 
+################################################################################
+# Source file/header support
+################################################################################
+
+CcFileList = provider(
+    doc = "List of files to be built into a library.",
+    fields = {
+        # As a rule of thumb, `hdrs` and `textual_hdrs` are the files that
+        # would be installed along with a prebuilt library.
+        "hdrs": "public header files, including those used by generated code",
+        "textual_hdrs": "files which are included but are not self-contained",
+
+        # The `internal_hdrs` are header files which appear in `srcs`.
+        # These are only used when compiling the library.
+        "internal_hdrs": "internal header files (only used to build .cc files)",
+        "srcs": "source files",
+    },
+)
+
+def _flatten_target_files(targets):
+    return depset(transitive = [target.files for target in targets])
+
+    files = []
+    for target in targets:
+        files.extend(target.files.to_list())
+    return files
+
+def _cc_file_list_aspect_impl(target, ctx):
+    # Extract sources from a `cc_library` (or similar):
+    if CcInfo not in target:
+        return []
+
+    # We're going to reach directly into the attrs on the traversed rule.
+    rule_attr = ctx.rule.attr
+
+    # CcInfo is a proxy for what we expect this rule to look like.
+    # However, some deps may expose `CcInfo` without having `srcs`,
+    # `hdrs`, etc., so we use `getattr` to handle that gracefully.
+
+    internal_hdrs = []
+    srcs = []
+
+    # Filter `srcs` so it only contains source files. Headers will go
+    # into `internal_headers`.
+    for src in _flatten_target_files(getattr(rule_attr, "srcs", [])).to_list():
+        if src.extension.lower() in ["c", "cc", "cpp", "cxx"]:
+            srcs.append(src)
+        else:
+            internal_hdrs.append(src)
+
+    return [CcFileList(
+        hdrs = _flatten_target_files(getattr(rule_attr, "hdrs", depset())),
+        textual_hdrs = _flatten_target_files(getattr(
+            rule_attr,
+            "textual_hdrs",
+            depset(),
+        )),
+        internal_hdrs = depset(internal_hdrs),
+        srcs = depset(srcs),
+    )]
+
+cc_file_list_aspect = aspect(
+    doc = """
+Aspect to provide the list of sources and headers from a rule.
+
+Output is CcFileList. Example:
+
+  cc_library(
+      name = "foo",
+      srcs = [
+          "foo.cc",
+          "foo_internal.h",
+      ],
+      hdrs = ["foo.h"],
+      textual_hdrs = ["foo_inl.inc"],
+  )
+  # produces:
+  # CcFileList(
+  #     hdrs = depset([File("foo.h")]),
+  #     textual_hdrs = depset([File("foo_inl.inc")]),
+  #     internal_hdrs = depset([File("foo_internal.h")]),
+  #     srcs = depset([File("foo.cc")]),
+  # )
+""",
+    implementation = _cc_file_list_aspect_impl,
+)
+
+################################################################################
+# Rule impl
+################################################################################
+
+def _collect_inputs(deps):
+    """Collects files from a list of immediate deps.
+
+    This rule collects source files and linker inputs for C++ deps. Only
+    these immediate deps are considered, not transitive deps.
+
+    The return value is a struct with object files (linker inputs),
+    partitioned by PIC and non-pic, and the rules' source and header files:
+
+        struct(
+            objects = ...,       # non-PIC object files
+            pic_objects = ...,   # PIC objects
+            cc_file_list = ...,  # a CcFileList
+        )
+
+    Args:
+      deps: Iterable of immediate deps. These will be treated as the "inputs,"
+          but not the transitive deps.
+
+    Returns:
+      A struct with linker inputs, source files, and header files.
+    """
+
+    objs = []
+    pic_objs = []
+
+    # The returned CcFileList will contain depsets of the deps' file lists.
+    # These lists hold `depset()`s from each of `deps`.
+    srcs = []
+    hdrs = []
+    internal_hdrs = []
+    textual_hdrs = []
+
+    for dep in deps:
+        if CcInfo in dep:
+            _collect_linker_input_objects(
+                dep.label,
+                dep[CcInfo],
+                objs,
+                pic_objs,
+            )
+
+        if CcFileList in dep:
+            cfl = dep[CcFileList]
+            srcs.append(cfl.srcs)
+            hdrs.append(cfl.hdrs)
+            internal_hdrs.append(cfl.internal_hdrs)
+            textual_hdrs.append(cfl.textual_hdrs)
+
+    return struct(
+        objects = objs,
+        pic_objects = pic_objs,
+        cc_file_list = CcFileList(
+            srcs = depset(transitive = srcs),
+            hdrs = depset(transitive = hdrs),
+            internal_hdrs = depset(transitive = internal_hdrs),
+            textual_hdrs = depset(transitive = textual_hdrs),
+        ),
+    )
+
 # Implementation for cc_dist_library rule.
 def _cc_dist_library_impl(ctx):
     cc_toolchain_info = find_cc_toolchain(ctx)
@@ -132,32 +274,32 @@ def _cc_dist_library_impl(ctx):
         cc_toolchain = cc_toolchain_info,
     )
 
-    objs, pic_objs = _collect_linker_input_objects(ctx.attr.deps)
+    inputs = _collect_inputs(ctx.attr.deps)
 
     # For static libraries, build separately with and without pic.
 
     stemname = "lib" + ctx.label.name
     outputs = []
 
-    if len(objs) > 0:
+    if len(inputs.objects) > 0:
         archive_out = ctx.actions.declare_file(stemname + ".a")
         _create_archive_action(
             ctx,
             feature_configuration,
             cc_toolchain_info,
             archive_out,
-            objs,
+            inputs.objects,
         )
         outputs.append(archive_out)
 
-    if len(pic_objs) > 0:
+    if len(inputs.pic_objects) > 0:
         pic_archive_out = ctx.actions.declare_file(stemname + ".pic.a")
         _create_archive_action(
             ctx,
             feature_configuration,
             cc_toolchain_info,
             pic_archive_out,
-            pic_objs,
+            inputs.pic_objects,
         )
         outputs.append(pic_archive_out)
 
@@ -167,8 +309,8 @@ def _cc_dist_library_impl(ctx):
         ctx,
         feature_configuration,
         cc_toolchain_info,
-        objs,
-        pic_objs,
+        inputs.objects,
+        inputs.pic_objects,
     ))
 
     # We could expose the libraries for use from cc rules:
@@ -193,6 +335,7 @@ def _cc_dist_library_impl(ctx):
 
     return [
         DefaultInfo(files = depset(outputs)),
+        inputs.cc_file_list,
     ]
 
 cc_dist_library = rule(
@@ -238,6 +381,7 @@ Example:
                    "Only these targets' compilation outputs will be " +
                    "included (i.e., the transitive dependencies are not " +
                    "included in the output)."),
+            aspects = [cc_file_list_aspect],
         ),
         "linkopts": attr.string_list(
             doc = ("Add these flags to the C++ linker command when creating " +
