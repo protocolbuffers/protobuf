@@ -74,7 +74,10 @@ cc_library(
     ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/java",
-    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
     deps = [
         "//:protobuf",
         "//src/google/protobuf/compiler:code_generator",
@@ -85,9 +88,9 @@ cc_test(
     name = "doc_comment_unittest",
     srcs = ["doc_comment_unittest.cc"],
     data = [
-        "//src/google/protobuf:descriptor_proto_srcs",
         "//:well_known_type_protos",
         "//conformance:conformance_proto",
+        "//src/google/protobuf:descriptor_proto_srcs",
     ],
     deps = [
         ":java",

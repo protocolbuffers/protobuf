@@ -51,7 +51,10 @@ cc_library(
         "//conditions:default": ["-Wno-overloaded-virtual"],
     }),
     include_prefix = "google/protobuf/compiler/csharp",
-    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
     deps = [
         "//:protobuf",
         "//src/google/protobuf/compiler:code_generator",
@@ -62,11 +65,11 @@ cc_test(
     name = "bootstrap_unittest",
     srcs = ["csharp_bootstrap_unittest.cc"],
     data = [
-        "//src/google/protobuf:descriptor_proto_srcs",
         "//:well_known_type_protos",
         "//conformance:all_files",
         "//conformance:conformance_proto",
         "//csharp:wkt_cs_srcs",
+        "//src/google/protobuf:descriptor_proto_srcs",
         "//src/google/protobuf:testdata",
     ],
     deps = [

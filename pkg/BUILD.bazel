@@ -306,7 +306,7 @@ gen_file_lists(
     src_libs = {
         # source rule: name in generated file
         ":protobuf": "libprotobuf",
-        "//src/google/protobuf/compiler:protoc_lib": "libprotoc",
+        ":protoc": "libprotoc",
         ":protobuf_lite": "libprotobuf_lite",
     },
 )
@@ -379,6 +379,22 @@ cc_dist_library(
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:time_util",
         "//src/google/protobuf/util:type_resolver_util",
+    ],
+)
+
+cc_dist_library(
+    name = "protoc",
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/compiler/cpp",
+        "//src/google/protobuf/compiler/csharp",
+        "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/objectivec",
+        "//src/google/protobuf/compiler/php",
+        "//src/google/protobuf/compiler/python",
+        "//src/google/protobuf/compiler/ruby",
     ],
 )
 
