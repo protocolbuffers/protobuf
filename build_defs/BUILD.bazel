@@ -59,6 +59,20 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "config_win32",
+    values = {
+        "cpu": "win32",
+    },
+)
+
+config_setting(
+    name = "config_win64",
+    values = {
+        "cpu": "win64",
+    },
+)
+
 # Internal testing:
 
 starlark_cc_proto_library(
