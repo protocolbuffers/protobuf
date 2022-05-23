@@ -3,12 +3,41 @@
 load("@rules_cc//cc:action_names.bzl", cc_action_names = "ACTION_NAMES")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 
+################################################################################
+# Archive/linking support
+################################################################################
+
+def _collect_linker_input_objects(deps):
+    """Collect the set of object files from the immediate deps."""
+
+    objs = []
+    pic_objs = []
+    for dep in deps:
+        if CcInfo not in dep:
+            continue
+
+        link_ctx = dep[CcInfo].linking_context
+        if link_ctx == None:
+            continue
+
+        linker_inputs = link_ctx.linker_inputs.to_list()
+        for link_input in linker_inputs:
+            if link_input.owner != dep.label:
+                # This is a transitive dep: skip it.
+                continue
+
+            for lib in link_input.libraries:
+                objs.extend(lib.objects or [])
+                pic_objs.extend(lib.pic_objects or [])
+
+    return (objs, pic_objs)
+
 # Creates an action to build the `output_file` static library (archive)
 # using `object_files`.
 def _create_archive_action(
         ctx,
         feature_configuration,
-        cc_toolchain,
+        cc_toolchain_info,
         output_file,
         object_files):
     # Based on Bazel's src/main/starlark/builtins_bzl/common/cc/cc_import.bzl:
@@ -16,7 +45,7 @@ def _create_archive_action(
     # Build the command line and add args for all of the input files:
     archiver_variables = cc_common.create_link_variables(
         feature_configuration = feature_configuration,
-        cc_toolchain = cc_toolchain,
+        cc_toolchain = cc_toolchain_info,
         output_file = output_file.path,
         is_using_linker = False,
     )
@@ -48,7 +77,7 @@ def _create_archive_action(
         inputs = depset(
             direct = object_files,
             transitive = [
-                cc_toolchain.all_files,
+                cc_toolchain_info.all_files,
             ],
         ),
         use_default_shell_env = False,
@@ -56,38 +85,54 @@ def _create_archive_action(
         mnemonic = "CppArchiveDist",
     )
 
+def _create_dso_link_action(
+        ctx,
+        feature_configuration,
+        cc_toolchain_info,
+        object_files,
+        pic_object_files):
+    compilation_outputs = cc_common.create_compilation_outputs(
+        objects = depset(object_files),
+        pic_objects = depset(pic_object_files),
+    )
+    link_output = cc_common.link(
+        actions = ctx.actions,
+        feature_configuration = feature_configuration,
+        cc_toolchain = cc_toolchain_info,
+        compilation_outputs = compilation_outputs,
+        name = ctx.label.name,
+        output_type = "dynamic_library",
+        user_link_flags = ctx.attr.linkopts,
+    )
+    library_to_link = link_output.library_to_link
+
+    outputs = []
+
+    # Note: library_to_link.dynamic_library and interface_library are often
+    # symlinks in the solib directory. For DefaultInfo, prefer reporting
+    # the resolved artifact paths.
+    if library_to_link.resolved_symlink_dynamic_library != None:
+        outputs.append(library_to_link.resolved_symlink_dynamic_library)
+    elif library_to_link.dynamic_library != None:
+        outputs.append(library_to_link.dynamic_library)
+
+    if library_to_link.resolved_symlink_interface_library != None:
+        outputs.append(library_to_link.resolved_symlink_interface_library)
+    elif library_to_link.interface_library != None:
+        outputs.append(library_to_link.interface_library)
+
+    return outputs
+
 # Implementation for cc_dist_library rule.
 def _cc_dist_library_impl(ctx):
     cc_toolchain_info = find_cc_toolchain(ctx)
-    if cc_toolchain_info.ar_executable == None:
-        return []
 
     feature_configuration = cc_common.configure_features(
         ctx = ctx,
         cc_toolchain = cc_toolchain_info,
     )
 
-    # Collect the set of object files from the immediate deps.
-
-    objs = []
-    pic_objs = []
-    for dep in ctx.attr.deps:
-        if CcInfo not in dep:
-            continue
-
-        link_ctx = dep[CcInfo].linking_context
-        if link_ctx == None:
-            continue
-
-        linker_inputs = link_ctx.linker_inputs.to_list()
-        for link_input in linker_inputs:
-            if link_input.owner != dep.label:
-                # This is a transitive dep: skip it.
-                continue
-
-            for lib in link_input.libraries:
-                objs.extend(lib.objects or [])
-                pic_objs.extend(lib.pic_objects or [])
+    objs, pic_objs = _collect_linker_input_objects(ctx.attr.deps)
 
     # For static libraries, build separately with and without pic.
 
@@ -118,34 +163,13 @@ def _cc_dist_library_impl(ctx):
 
     # For dynamic libraries, use the `cc_common.link` command to ensure
     # everything gets built correctly according to toolchain definitions.
-
-    compilation_outputs = cc_common.create_compilation_outputs(
-        objects = depset(objs),
-        pic_objects = depset(pic_objs),
-    )
-    link_output = cc_common.link(
-        actions = ctx.actions,
-        feature_configuration = feature_configuration,
-        cc_toolchain = cc_toolchain_info,
-        compilation_outputs = compilation_outputs,
-        name = ctx.label.name,
-        output_type = "dynamic_library",
-        user_link_flags = ctx.attr.linkopts,
-    )
-    library_to_link = link_output.library_to_link
-
-    # Note: library_to_link.dynamic_library and interface_library are often
-    # symlinks in the solib directory. For DefaultInfo, prefer reporting
-    # the resolved artifact paths.
-    if library_to_link.resolved_symlink_dynamic_library != None:
-        outputs.append(library_to_link.resolved_symlink_dynamic_library)
-    elif library_to_link.dynamic_library != None:
-        outputs.append(library_to_link.dynamic_library)
-
-    if library_to_link.resolved_symlink_interface_library != None:
-        outputs.append(library_to_link.resolved_symlink_interface_library)
-    elif library_to_link.interface_library != None:
-        outputs.append(library_to_link.interface_library)
+    outputs.extend(_create_dso_link_action(
+        ctx,
+        feature_configuration,
+        cc_toolchain_info,
+        objs,
+        pic_objs,
+    ))
 
     # We could expose the libraries for use from cc rules:
     #
