@@ -23,52 +23,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
+import unittest
+from google.protobuf.internal.numpy_test import *
 
-licenses(["notice"])
+# TODO(b/227379846): upb does not match pure-python and fast cpp behavior for
+# assignment of numpy arrays to proto float or multidimensional arrays to
+# repeated fields yet.
+NumpyFloatProtoTest.testNumpyFloatArrayToScalar_RaisesTypeError.__unittest_expecting_failure__ = True
+NumpyFloatProtoTest.testNumpyDim2FloatArrayToRepeated_RaisesTypeError.__unittest_expecting_failure__ = True
 
-pyproto_test_wrapper(name = "descriptor_database_test")
-
-pyproto_test_wrapper(name = "descriptor_pool_test")
-
-pyproto_test_wrapper(name = "descriptor_test")
-
-# begin:github_only
-pyproto_test_wrapper(name = "generator_test")
-# end:github_only
-
-pyproto_test_wrapper(name = "json_format_test")
-
-pyproto_test_wrapper(name = "keywords_test")
-
-pyproto_test_wrapper(name = "message_factory_test")
-
-pyproto_test_wrapper(name = "message_test")
-
-# begin:google_only
-# pyproto_test_wrapper(name = "numpy_test")
-# end:google_only
-
-pyproto_test_wrapper(name = "proto_builder_test")
-
-pyproto_test_wrapper(name = "reflection_test")
-
-pyproto_test_wrapper(name = "service_reflection_test")
-
-pyproto_test_wrapper(name = "symbol_database_test")
-
-pyproto_test_wrapper(name = "text_encoding_test")
-
-pyproto_test_wrapper(name = "text_format_test")
-
-pyproto_test_wrapper(name = "unknown_fields_test")
-
-pyproto_test_wrapper(name = "well_known_types_test")
-
-pyproto_test_wrapper(name = "wire_format_test")
-
-filegroup(
-    name = "test_files",
-    srcs = glob(["*.py"]),
-    visibility = ["//python/dist:__pkg__"],
-)
+if __name__ == '__main__':
+  unittest.main(verbosity=2)
