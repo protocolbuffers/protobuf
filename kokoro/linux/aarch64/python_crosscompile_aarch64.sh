@@ -22,7 +22,7 @@ ls /opt/rh/devtoolset-9/root/usr/local/*
 #bazel --bazelrc toolchain/toolchains.bazelrc build --config=linux-aarch_64 //:protoc  --sandbox_debug
 #export PROTOC=bazel-bin/protoc
 # Initialize any submodules.
-#git submodule update --init --recursive
+git submodule update --init --recursive
 
 # the build commands are expected to run under dockcross docker image
 # where the CC, CXX and other toolchain variables already point to the crosscompiler
