@@ -6,7 +6,7 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
-load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
 load(
     ":protobuf.bzl",
     "adapt_proto_library",
@@ -442,7 +442,7 @@ cc_library(
 cc_binary(
     name = "protoc",
     srcs = ["src/google/protobuf/compiler/main.cc"],
-    linkopts = LINK_OPTS,
+    linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
     visibility = ["//visibility:public"],
     deps = [":protoc_lib"],
 )
