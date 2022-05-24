@@ -643,11 +643,10 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       // Store the syntax into the file.
       if (file != nullptr) file->set_syntax(syntax_identifier_);
     } else if (!stop_after_syntax_identifier_) {
-      AddWarning(
-        "No syntax specified. Please use 'syntax = \"proto2\";' or "
-        "'syntax = \"proto3\";' to specify a syntax version. "
-        "(Defaulted to proto2 syntax.)"
-      );
+      GOOGLE_LOG(WARNING) << "No syntax specified for the proto file: " << file->name()
+                   << ". Please use 'syntax = \"proto2\";' "
+                   << "or 'syntax = \"proto3\";' to specify a syntax "
+                   << "version. (Defaulted to proto2 syntax.)";
       syntax_identifier_ = "proto2";
     }
 
@@ -1020,8 +1019,7 @@ bool Parser::ParseMessageFieldNoLabel(
     location.RecordLegacyLocation(field, DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(field->mutable_name(), "Expected field name."));
 
-    if (field->type() != FieldDescriptorProto::TYPE_GROUP &&
-        !IsLowerUnderscore(field->name())) {
+    if (!IsLowerUnderscore(field->name())) {
       AddWarning(
           "Field name should be lowercase. Found: " + field->name() +
           ". See: https://developers.google.com/protocol-buffers/docs/style");
