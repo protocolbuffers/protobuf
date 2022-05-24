@@ -301,52 +301,38 @@ libprotoc_srcs = \
   google/protobuf/compiler/zip_writer.cc
 
 libprotoc_hdrs = \
-  google/protobuf/compiler/code_generator.h                      \
-  google/protobuf/compiler/command_line_interface.h              \
-  google/protobuf/compiler/cpp/cpp_generator.h                   \
-  google/protobuf/compiler/cpp/file.h                            \
-  google/protobuf/compiler/cpp/generator.h                       \
-  google/protobuf/compiler/cpp/helpers.h                         \
-  google/protobuf/compiler/cpp/names.h                           \
-  google/protobuf/compiler/csharp/csharp_doc_comment.h           \
-  google/protobuf/compiler/csharp/csharp_generator.h             \
-  google/protobuf/compiler/csharp/csharp_names.h                 \
-  google/protobuf/compiler/csharp/csharp_options.h               \
-  google/protobuf/compiler/java/generator.h                      \
-  google/protobuf/compiler/java/java_generator.h                 \
-  google/protobuf/compiler/java/kotlin_generator.h               \
-  google/protobuf/compiler/java/names.h                          \
-  google/protobuf/compiler/objectivec/objectivec_generator.h     \
-  google/protobuf/compiler/objectivec/objectivec_helpers.h       \
-  google/protobuf/compiler/php/php_generator.h                   \
-  google/protobuf/compiler/plugin.h                              \
-  google/protobuf/compiler/plugin.pb.h                           \
-  google/protobuf/compiler/python/generator.h                    \
-  google/protobuf/compiler/python/pyi_generator.h                \
-  google/protobuf/compiler/python/python_generator.h             \
-  google/protobuf/compiler/ruby/ruby_generator.h                 \
-  \
+  google/protobuf/compiler/code_generator.h                    \
+  google/protobuf/compiler/command_line_interface.h            \
+  google/protobuf/compiler/cpp/cpp_generator.h                 \
   google/protobuf/compiler/cpp/enum.h                          \
   google/protobuf/compiler/cpp/enum_field.h                    \
   google/protobuf/compiler/cpp/extension.h                     \
   google/protobuf/compiler/cpp/field.h                         \
+  google/protobuf/compiler/cpp/file.h                          \
+  google/protobuf/compiler/cpp/generator.h                     \
+  google/protobuf/compiler/cpp/helpers.h                       \
   google/protobuf/compiler/cpp/map_field.h                     \
   google/protobuf/compiler/cpp/message.h                       \
   google/protobuf/compiler/cpp/message_field.h                 \
   google/protobuf/compiler/cpp/message_layout_helper.h         \
+  google/protobuf/compiler/cpp/names.h                         \
   google/protobuf/compiler/cpp/options.h                       \
   google/protobuf/compiler/cpp/padding_optimizer.h             \
   google/protobuf/compiler/cpp/parse_function_generator.h      \
   google/protobuf/compiler/cpp/primitive_field.h               \
   google/protobuf/compiler/cpp/service.h                       \
   google/protobuf/compiler/cpp/string_field.h                  \
+  google/protobuf/compiler/csharp/csharp_doc_comment.h         \
   google/protobuf/compiler/csharp/csharp_enum.h                \
   google/protobuf/compiler/csharp/csharp_enum_field.h          \
   google/protobuf/compiler/csharp/csharp_field_base.h          \
+  google/protobuf/compiler/csharp/csharp_generator.h           \
   google/protobuf/compiler/csharp/csharp_helpers.h             \
   google/protobuf/compiler/csharp/csharp_map_field.h           \
   google/protobuf/compiler/csharp/csharp_message.h             \
   google/protobuf/compiler/csharp/csharp_message_field.h       \
+  google/protobuf/compiler/csharp/csharp_names.h               \
+  google/protobuf/compiler/csharp/csharp_options.h             \
   google/protobuf/compiler/csharp/csharp_primitive_field.h     \
   google/protobuf/compiler/csharp/csharp_reflection_class.h    \
   google/protobuf/compiler/csharp/csharp_repeated_enum_field.h \
@@ -364,8 +350,11 @@ libprotoc_hdrs = \
   google/protobuf/compiler/java/extension_lite.h               \
   google/protobuf/compiler/java/field.h                        \
   google/protobuf/compiler/java/file.h                         \
+  google/protobuf/compiler/java/generator.h                    \
   google/protobuf/compiler/java/generator_factory.h            \
   google/protobuf/compiler/java/helpers.h                      \
+  google/protobuf/compiler/java/java_generator.h               \
+  google/protobuf/compiler/java/kotlin_generator.h             \
   google/protobuf/compiler/java/map_field.h                    \
   google/protobuf/compiler/java/map_field_lite.h               \
   google/protobuf/compiler/java/message.h                      \
@@ -375,6 +364,7 @@ libprotoc_hdrs = \
   google/protobuf/compiler/java/message_field_lite.h           \
   google/protobuf/compiler/java/message_lite.h                 \
   google/protobuf/compiler/java/name_resolver.h                \
+  google/protobuf/compiler/java/names.h                        \
   google/protobuf/compiler/java/options.h                      \
   google/protobuf/compiler/java/primitive_field.h              \
   google/protobuf/compiler/java/primitive_field_lite.h         \
@@ -387,13 +377,22 @@ libprotoc_hdrs = \
   google/protobuf/compiler/objectivec/objectivec_extension.h   \
   google/protobuf/compiler/objectivec/objectivec_field.h       \
   google/protobuf/compiler/objectivec/objectivec_file.h        \
+  google/protobuf/compiler/objectivec/objectivec_generator.h   \
+  google/protobuf/compiler/objectivec/objectivec_helpers.h     \
   google/protobuf/compiler/objectivec/objectivec_map_field.h   \
   google/protobuf/compiler/objectivec/objectivec_message.h     \
   google/protobuf/compiler/objectivec/objectivec_message_field.h \
   google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h \
   google/protobuf/compiler/objectivec/objectivec_oneof.h       \
   google/protobuf/compiler/objectivec/objectivec_primitive_field.h \
+  google/protobuf/compiler/php/php_generator.h                 \
+  google/protobuf/compiler/plugin.h                            \
+  google/protobuf/compiler/plugin.pb.h                         \
+  google/protobuf/compiler/python/generator.h                  \
   google/protobuf/compiler/python/helpers.h                    \
+  google/protobuf/compiler/python/pyi_generator.h              \
+  google/protobuf/compiler/python/python_generator.h           \
+  google/protobuf/compiler/ruby/ruby_generator.h               \
   google/protobuf/compiler/scc.h                               \
   google/protobuf/compiler/subprocess.h                        \
   google/protobuf/compiler/zip_writer.h
