@@ -14,7 +14,7 @@ internal_build_cpp() {
   git submodule update --init --recursive
 
   # Install Abseil locally.
-  mkdir abseil_install
+  mkdir -p abseil_install
   cmake -S third_party/abseil-cpp -B third_party/abseil-cpp \
     -DABSL_BUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX=abseil_install \
     -DABSL_ENABLE_INSTALL=ON -DCMAKE_CXX_STANDARD=11
@@ -81,7 +81,7 @@ build_cpp_distcheck() {
   fi
 
   # Do the regular dist-check for C++.
-  make distcheck -j$(nproc)
+  PKG_CONFIG_PATH=$PWD/abseil_install/lib/pkgconfig make distcheck -j$(nproc)
 }
 
 build_dist_install() {
