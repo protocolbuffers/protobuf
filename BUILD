@@ -79,6 +79,11 @@ upb_proto_library_copts(
     visibility = ["//visibility:public"],
 )
 
+package_group(
+    name = "friends",
+    packages = [],
+)
+
 # Public C/C++ libraries #######################################################
 
 cc_library(
@@ -161,7 +166,7 @@ cc_library(
         "upb/mini_table_accessors.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = ["//video/youtube/utils/elements/javascript/client/proto/upb/native:__pkg__"],
+    visibility = ["//visibility:public"],
     deps = [
         ":collections",
         ":mini_table",

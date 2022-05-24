@@ -192,6 +192,9 @@ class BuildFileFunctions(object):
   def map_dep(self, arg):
     return arg
 
+  def package_group(self, **kwargs):
+    pass
+
 
 class WorkspaceFileFunctions(object):
   def __init__(self, converter):
