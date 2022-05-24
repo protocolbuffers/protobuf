@@ -70,7 +70,7 @@ ls /usr/xcc/aarch64-unknown-linux-gnueabi/aarch64-unknown-linux-gnueabi/sysroot/
 #        -DCMAKE_C_COMPILER_RANLIB=/usr/xcc/aarch64-unknown-linux-gnueabi/bin/aarch64-unknown-linux-gnueabi-ranlib \
 #        -DCMAKE_EXE_LINKER_FLAGS=-static
 #cmake -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_EXE_LINKER_FLAGS="-lstdc++ -lgcc -lc" -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
-cmake -DCMAKE_EXE_LINKER_FLAGS=-static -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
+cmake -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
 
 make VERBOSE=1 -j8
 export PROTOC=cmake/protoc

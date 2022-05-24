@@ -1,4 +1,10 @@
-FROM dockcross/manylinux2014-aarch64:20210925-32768e3
+# We use an older version of dockcross image that has gcc4.9.4 because it was built
+# before https://github.com/dockcross/dockcross/pull/449
+# Thanks to that, wheel build with this image aren't actually
+# compliant with manylinux2014, but only with manylinux_2_24
+FROM dockcross/manylinux2014-aarch64:20200929-608e6ac
+ENV AUDITWHEEL_PLAT manylinux_2_24_$AUDITWHEEL_ARCH
+#FROM dockcross/manylinux2014-aarch64:20210925-32768e3
 # Pin the dockcross image since newer versions of the image break the build
 #:20210803-41e5c69
 #:20210925-32768e3
