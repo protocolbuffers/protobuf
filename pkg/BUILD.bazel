@@ -305,9 +305,9 @@ gen_file_lists(
     out_stem = "src_file_lists",
     src_libs = {
         # source rule: name in generated file
-        "//:protobuf": "libprotobuf",
-        "//src/google/protobuf/compiler:protoc_lib": "libprotoc",
-        "//:protobuf_lite": "libprotobuf_lite",
+        ":protobuf": "libprotobuf",
+        ":protoc": "libprotoc",
+        ":protobuf_lite": "libprotobuf_lite",
     },
 )
 
@@ -343,8 +343,8 @@ cc_dist_library(
     }),
     tags = ["manual"],
     deps = [
-        "//:protobuf_lite",
         "//src/google/protobuf:arena",
+        "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:io_win32",
         "//src/google/protobuf/stubs:lite",
@@ -362,8 +362,6 @@ cc_dist_library(
     }),
     tags = ["manual"],
     deps = [
-        "//:protobuf",
-        "//:protobuf_lite",
         "//src/google/protobuf:arena",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
@@ -371,6 +369,8 @@ cc_dist_library(
         "//src/google/protobuf/io:io_win32",
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf:protobuf",
+        "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/stubs:lite",
         "//src/google/protobuf/util:delimited_message_util",
@@ -379,6 +379,22 @@ cc_dist_library(
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:time_util",
         "//src/google/protobuf/util:type_resolver_util",
+    ],
+)
+
+cc_dist_library(
+    name = "protoc",
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/compiler/cpp",
+        "//src/google/protobuf/compiler/csharp",
+        "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/objectivec",
+        "//src/google/protobuf/compiler/php",
+        "//src/google/protobuf/compiler/python",
+        "//src/google/protobuf/compiler/ruby",
     ],
 )
 
